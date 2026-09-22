@@ -16,6 +16,9 @@ public enum FeatureMessage {
     /// Represent a Browser SDK event sent through the JS bridge.
     case webview(WebViewMessage)
 
+    /// Session Replay records produced by an embedded renderer.
+    case embeddedContent(EmbeddedContentMessage)
+
     /// A core context message.
     ///
     /// The core will send updated context through the bus. Do not send new context values

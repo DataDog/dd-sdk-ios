@@ -12,6 +12,15 @@ import Foundation
 /// Any reference to `DatadogCoreProtocol` must be captured as `weak` within a Feature. This is to avoid
 /// retain cycle of core holding the Feature and vice-versa.
 public protocol DatadogCoreProtocol: AnyObject, MessageSending, AdditionalContextSharing, Storage {
+    /// The last successfully fetched and cached remote configuration for the RUM SDK, or `nil` if
+    /// none is available.
+    ///
+    /// Features read this synchronously when they are enabled to apply remote values on top of their
+    /// developer-supplied `Configuration`. The core must return whatever remote document was cached
+    /// at initialization time; it must return `nil` when remote configuration was not opted into or
+    /// when no document has been cached yet (e.g. first-ever launch).
+    var remoteConfiguration: RemoteConfiguration? { get }
+
     // Remove `DatadogCoreProtocol` conformance to `MessageSending` and `BaggageSharing` once
     // all features are migrated to depend on `FeatureScope` interface.
 
@@ -250,6 +259,8 @@ public extension FeatureScope {
 /// No-op implementation of `DatadogFeatureRegistry`.
 public class NOPDatadogCore: DatadogCoreProtocol {
     public init() { }
+    /// no-op
+    public var remoteConfiguration: RemoteConfiguration? { nil }
     /// no-op
     public func register<T>(feature: T) throws where T: DatadogFeature { }
     /// no-op

@@ -82,7 +82,7 @@ final class RUMViewHitchesMetricIntegrationTests: XCTestCase {
         XCTAssertEqual(attributes[2].viewDuration, 2_000_000_000)
     }
 
-    #if !os(watchOS)
+    #if !os(watchOS) && !os(macOS)
     func testViewHitchesCollectedForTelemetry() throws {
         RUM.enable(with: rumConfig, in: core)
 

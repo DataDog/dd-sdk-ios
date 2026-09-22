@@ -1,0 +1,27 @@
+{
+    "type": "object",
+    "$defs": {
+        "TypeA": {
+            "title": "TypeA",
+            "type": "object",
+            "properties": {
+                "valueA": {
+                    "type": "string"
+                }
+            }
+        },
+        "TypeB": {
+            "title": "TypeB",
+            "type": "object",
+            "properties": {
+                "valueB": {
+                    "type": "integer"
+                }
+            }
+        }
+    },
+    "anyOf": [
+        { "$ref": "#/$defs/TypeA" },
+        { "$ref": "#/$defs/TypeB" }
+    ]
+}

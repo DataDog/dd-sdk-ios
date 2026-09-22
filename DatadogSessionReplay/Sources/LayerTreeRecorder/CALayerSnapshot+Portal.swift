@@ -8,7 +8,6 @@
 import Foundation
 import QuartzCore
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
     /// Replaces supported portal layers with their hidden source layer hierarchy.
     func resolvingPortalLayers() -> CALayerSnapshot {
@@ -17,7 +16,6 @@ extension CALayerSnapshot {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 private struct PortalLayerResolver {
     typealias PortalSemantics = CALayerSnapshot.SemanticObservation.PortalSemantics
 
@@ -136,7 +134,6 @@ private struct PortalLayerResolver {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
     fileprivate mutating func move(contentsFrom sourceRect: CGRect, to destinationFrame: CGRect) -> Bool {
         guard sourceRect.size == destinationFrame.size else {

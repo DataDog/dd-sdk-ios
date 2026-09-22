@@ -7,16 +7,18 @@
 #if os(iOS)
 import CoreGraphics
 import DatadogInternal
+import Foundation
 
 /// Builds the composition tree produced by the layer recording pipeline.
-@available(iOS 13.0, tvOS 13.0, *)
 internal class CompositionTreeBuilder {
     private typealias TextInputSemantics = CALayerSnapshot.SemanticObservation.TextInputSemantics
     private typealias VisualEffect = CALayerSnapshot.SemanticObservation.VisualEffect
+    private static let defaultBundleIdentifier = Bundle.main.bundleIdentifier ?? "unknown"
 
     private struct Context {
         var textInput: TextInputSemantics?
         var visualEffects: [VisualEffect] = []
+        var heatmapPath: [String] = []
 
         mutating func merge(_ observation: CALayerSnapshot.SemanticObservation) {
             if let textInput = observation.textInputSemantics {
@@ -25,6 +27,12 @@ internal class CompositionTreeBuilder {
 
             if let visualEffect = observation.visualEffect {
                 visualEffects.append(visualEffect)
+            }
+        }
+
+        mutating func append(heatmapKey: String?) {
+            if let heatmapKey {
+                heatmapPath.append(heatmapKey)
             }
         }
 
@@ -44,13 +52,17 @@ internal class CompositionTreeBuilder {
         let compositionTree: SRCompositionTree
         let wireframes: [SRWireframe]
         let resources: [Resource]
+        let heatmapIdentifiers: [ObjectIdentifier: HeatmapIdentifier]
     }
 
     private let root: CALayerSnapshot
+    private let screenName: String?
+    private let bundleIdentifier: String
 
     private var layers: [SRCompositionLayer] = []
     private var wireframes: [SRWireframe] = []
     private var resources: [Resource] = []
+    private var heatmapIdentifiers: [ObjectIdentifier: HeatmapIdentifier] = [:]
 
     private let compositionLayerBuilder: CompositionLayerBuilder
     private var layerWireframeBuilder: LayerWireframeBuilder
@@ -58,15 +70,21 @@ internal class CompositionTreeBuilder {
     init(
         root: CALayerSnapshot,
         webViewSlotIDs: Set<Int>,
-        imageSnapshots: ImageSnapshotBatch
+        embeddedContentSlots: [Int64: String],
+        imageSnapshots: ImageSnapshotBatch,
+        screenName: String? = nil,
+        bundleIdentifier: String? = nil
     ) {
         self.root = root
+        self.screenName = screenName
+        self.bundleIdentifier = bundleIdentifier ?? Self.defaultBundleIdentifier
         self.compositionLayerBuilder = CompositionLayerBuilder(
             maskSnapshots: imageSnapshots.maskSnapshots
         )
         self.layerWireframeBuilder = LayerWireframeBuilder(
             contentSnapshots: imageSnapshots.contentSnapshots,
-            webViewSlotIDs: webViewSlotIDs
+            webViewSlotIDs: webViewSlotIDs,
+            embeddedContentSlots: embeddedContentSlots
         )
     }
 
@@ -74,17 +92,20 @@ internal class CompositionTreeBuilder {
         layers.removeAll(keepingCapacity: true)
         wireframes.removeAll(keepingCapacity: true)
         resources.removeAll(keepingCapacity: true)
+        heatmapIdentifiers.removeAll(keepingCapacity: true)
         layerWireframeBuilder.reset()
 
         let rootLayer = makeCompositionLayer(from: root, context: Context())
         let hiddenWebViewWireframes = layerWireframeBuilder.makeHiddenWebViewWireframes()
+        let hiddenEmbeddedContentWireframes = layerWireframeBuilder.makeHiddenEmbeddedContentWireframes()
         let output = Output(
             compositionTree: SRCompositionTree(
                 layers: layers,
                 root: rootLayer
             ),
-            wireframes: hiddenWebViewWireframes + wireframes,
-            resources: resources
+            wireframes: hiddenWebViewWireframes + hiddenEmbeddedContentWireframes + wireframes,
+            resources: resources,
+            heatmapIdentifiers: heatmapIdentifiers
         )
 
         return output
@@ -112,6 +133,7 @@ internal class CompositionTreeBuilder {
     ) -> [SRCompositionLayerChild] {
         var context = context
         context.merge(snapshot.observation)
+        context.append(heatmapKey: snapshot.heatmapKey)
 
         guard !snapshot.sublayers.isEmpty else {
             return makeWireframeReference(for: snapshot, context: context)
@@ -145,6 +167,8 @@ internal class CompositionTreeBuilder {
         context: Context
     ) -> SRCompositionLayerChild? {
         guard !snapshot.sublayers.isEmpty || snapshot.requiresCompositionLayer else {
+            var context = context
+            context.append(heatmapKey: snapshot.heatmapKey)
             return makeWireframeReference(for: snapshot, context: context)
         }
 
@@ -158,10 +182,13 @@ internal class CompositionTreeBuilder {
         for snapshot: CALayerSnapshot,
         context: Context
     ) -> SRCompositionLayerChild? {
+        let heatmapIdentifier = makeHeatmapIdentifier(from: context.heatmapPath)
+
         guard let output = layerWireframeBuilder.build(
             from: snapshot,
             textInput: context.textInput,
-            cornerRadius: context.cornerRadius(for: snapshot)
+            cornerRadius: context.cornerRadius(for: snapshot),
+            heatmapIdentifier: heatmapIdentifier
         ) else {
             return nil
         }
@@ -170,12 +197,27 @@ internal class CompositionTreeBuilder {
             resources.append(resource)
         }
 
+        if let heatmapIdentifier, let layerIdentifier = snapshot.layer.identifier {
+            heatmapIdentifiers[layerIdentifier] = heatmapIdentifier
+        }
+
         wireframes.append(output.wireframe)
-        return SRCompositionLayerChild(id: output.id, type: .wireframe)
+        return SRCompositionLayerChild(id: output.wireframe.id, type: .wireframe)
+    }
+
+    private func makeHeatmapIdentifier(from path: [String]) -> HeatmapIdentifier? {
+        guard !path.isEmpty, let screenName else {
+            return nil
+        }
+
+        return HeatmapIdentifier(
+            elementPath: path,
+            screenName: screenName,
+            bundleIdentifier: bundleIdentifier
+        )
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 private extension CALayerSnapshot.SemanticObservation {
     var gradient: GradientSemantics? {
         guard case .gradient(let gradient) = semantics else {

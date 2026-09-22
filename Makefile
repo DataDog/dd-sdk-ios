@@ -5,11 +5,11 @@ all: env-check repo-setup dependencies templates
 		ui-test ui-test-all ui-test-podinstall \
 		sr-snapshot-test sr-snapshots-pull sr-snapshots-push sr-layer-snapshot-test sr-layer-snapshots-pull sr-layer-snapshots-push sr-snapshot-tests-open \
 		tools-test \
-		smoke-test smoke-test-ios smoke-test-ios-all smoke-test-tvos smoke-test-tvos-all \
+		smoke-test smoke-test-ios smoke-test-ios-all smoke-test-tvos smoke-test-tvos-all smoke-test-macos smoke-test-macos-all \
 		spm-build spm-build-ios spm-build-tvos spm-build-visionos spm-build-macos spm-build-watchos \
 		e2e-upload \
 		benchmark-build benchmark-upload \
-		models-generate rum-models-generate sr-models-generate models-verify rum-models-verify sr-models-verify \
+		models-generate rum-models-generate sr-models-generate rc-models-generate models-verify rum-models-verify sr-models-verify rc-models-verify \
 		api-surface spi-docs-build \
 		profiling-protoc \
 		dogfood-shopist dogfood-datadog-app \
@@ -76,15 +76,16 @@ DEFAULT_VISIONOS_OS := latest
 DEFAULT_VISIONOS_PLATFORM := visionOS Simulator
 DEFAULT_VISIONOS_DEVICE := Apple Vision Pro
 
+# Test env for running macOS tests in local:
+# macOS runs natively (no simulator), so OS and DEVICE are placeholders ignored by tools/test.sh.
+DEFAULT_MACOS_OS := latest
+DEFAULT_MACOS_PLATFORM := macOS
+DEFAULT_MACOS_DEVICE := macOS
+
 # Test env for running SR snapshot tests in local:
 DEFAULT_SR_SNAPSHOT_TESTS_OS := 17.5
 DEFAULT_SR_SNAPSHOT_TESTS_PLATFORM := iOS Simulator
 DEFAULT_SR_SNAPSHOT_TESTS_DEVICE := iPhone 15
-
-# Test env for running SR layer snapshot tests in local:
-DEFAULT_SR_LAYER_SNAPSHOT_TESTS_OS := 26.0.1
-DEFAULT_SR_LAYER_SNAPSHOT_TESTS_PLATFORM := iOS Simulator
-DEFAULT_SR_LAYER_SNAPSHOT_TESTS_DEVICE := iPhone 17
 
 # Default location for deploying artifacts
 DEFAULT_ARTIFACTS_PATH := artifacts
@@ -186,6 +187,25 @@ test-visionos-all:
 	@$(MAKE) test-visionos SCHEME="DatadogProfiling"
 	@$(MAKE) test-visionos SCHEME="DatadogIntegrationTests"
 
+# Run unit tests for specified SCHEME using macOS
+test-macos:
+	@$(call require_param,SCHEME)
+	@:$(eval OS ?= $(DEFAULT_MACOS_OS))
+	@:$(eval PLATFORM ?= $(DEFAULT_MACOS_PLATFORM))
+	@:$(eval DEVICE ?= $(DEFAULT_MACOS_DEVICE))
+	@$(MAKE) test SCHEME="$(SCHEME)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
+
+# Run unit tests for all schemes ready for macOS so far
+test-macos-all:
+	@$(MAKE) test-macos SCHEME="DatadogInternal"
+	@$(MAKE) test-macos SCHEME="DatadogCore"
+	@$(MAKE) test-macos SCHEME="DatadogRUM"
+	@$(MAKE) test-macos SCHEME="DatadogLogs"
+	@$(MAKE) test-macos SCHEME="DatadogTrace"
+	@$(MAKE) test-macos SCHEME="DatadogCrashReporting"
+	@$(MAKE) test-macos SCHEME="DatadogWebViewTracking"
+	@$(MAKE) test-macos SCHEME="DatadogFlags"
+
 # Run UI tests for specified TEST_PLAN
 ui-test:
 	@$(call require_param,TEST_PLAN)
@@ -253,6 +273,19 @@ smoke-test-tvos-all:
 	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/cocoapods"
 	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/xcframeworks"
 
+# Run smoke tests for specified TEST_DIRECTORY using macOS (runs natively on the host)
+smoke-test-macos:
+	@$(call require_param,TEST_DIRECTORY)
+	@:$(eval OS ?= $(DEFAULT_MACOS_OS))
+	@:$(eval PLATFORM ?= $(DEFAULT_MACOS_PLATFORM))
+	@:$(eval DEVICE ?= $(DEFAULT_MACOS_DEVICE))
+	@$(MAKE) smoke-test TEST_DIRECTORY="$(TEST_DIRECTORY)" OS="$(OS)" PLATFORM="$(PLATFORM)" DEVICE="$(DEVICE)"
+
+# Run all smoke tests using macOS (SmokeTests/spm + spm-6 have macOS targets)
+smoke-test-macos-all:
+	@$(MAKE) smoke-test-macos TEST_DIRECTORY="SmokeTests/spm"
+	@$(MAKE) smoke-test-macos TEST_DIRECTORY="SmokeTests/spm-6"
+
 # Builds SPM package SCHEME for specified DESTINATION
 spm-build:
 	@$(call require_param,SCHEME)
@@ -281,11 +314,15 @@ spm-build-watchos:
 spm-build-macos:
 	# Whole package for Mac Catalyst:
 	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="platform=macOS,variant=Mac Catalyst"
-	# Only compatible schemes for macOS:
+	# Only macOS-compatible product schemes (DatadogInternal is built transitively as a
+	# dependency of these; it is not a package product, so it has no scheme of its own):
 	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogCore"
 	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogLogs"
 	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogTrace"
+	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogRUM"
 	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogCrashReporting"
+	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogWebViewTracking"
+	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogFlags"
 
 # Builds a new version of the E2E app and publishes it to synthetics.
 e2e-upload:
@@ -320,15 +357,16 @@ templates:
 	@$(ECHO_TITLE) "make templates"
 	./tools/xcode-templates/install-xcode-templates.sh
 
-# Generate data models from https://github.com/DataDog/rum-events-format
+# Generate data models from rum-events-format ('rum', 'sr') or dd-go ('rc')
 models-generate:
-	@$(call require_param,PRODUCT) # 'rum' or 'sr'
+	@$(call require_param,PRODUCT) # 'rum', 'sr', or 'rc'
 	@$(call require_param,GIT_REF)
 	@$(ECHO_TITLE) "make models-generate PRODUCT='$(PRODUCT)' GIT_REF='$(GIT_REF)'"
 	./tools/rum-models-generator/run.py generate $(PRODUCT) --git_ref=$(GIT_REF) --skip_objc $(SKIP_OBJC_TYPES)
-# Validate data models against https://github.com/DataDog/rum-events-format
+
+# Validate data models against rum-events-format ('rum', 'sr') or dd-go ('rc')
 models-verify:
-	@$(call require_param,PRODUCT) # 'rum' or 'sr'
+	@$(call require_param,PRODUCT) # 'rum', 'sr', or 'rc'
 	@$(ECHO_TITLE) "make models-verify PRODUCT='$(PRODUCT)'"
 	./tools/rum-models-generator/run.py verify $(PRODUCT) --skip_objc $(SKIP_OBJC_TYPES)
 
@@ -350,6 +388,15 @@ sr-models-generate:
 sr-models-verify:
 	@$(MAKE) models-verify PRODUCT="sr"
 
+# Generate RC data models (uses gh CLI to authenticate against the private dd-go repo)
+rc-models-generate:
+	@:$(eval GIT_REF ?= prod)
+	GITHUB_TOKEN="$$(gh auth token)" $(MAKE) models-generate PRODUCT="rc" GIT_REF="$(GIT_REF)"
+
+# Validate RC data models (uses gh CLI to authenticate against the private dd-go repo)
+rc-models-verify:
+	GITHUB_TOKEN="$$(gh auth token)" $(MAKE) models-verify PRODUCT="rc"
+
 # Generate profiling protobuf-c files from pprof proto
 protoc-pprof:
 	@$(ECHO_TITLE) "protoc-pprof"
@@ -368,12 +415,12 @@ sr-snapshots-pull:
 # Pushes current SR layer snapshots to snapshots repo
 sr-layer-snapshots-push:
 	@$(ECHO_TITLE) "make sr-layer-snapshots-push"
-	./tools/sr-snapshot-test.sh --suite layer-tree --push
+	./tools/sr-snapshot-test.sh --suite layer-tree --push $(if $(SNAPSHOT_ENV),--snapshot-env "$(SNAPSHOT_ENV)")
 
 # Pulls SR layer snapshots from snapshots repo
 sr-layer-snapshots-pull:
 	@$(ECHO_TITLE) "make sr-layer-snapshots-pull"
-	./tools/sr-snapshot-test.sh --suite layer-tree --pull
+	./tools/sr-snapshot-test.sh --suite layer-tree --pull $(if $(SNAPSHOT_ENV),--snapshot-env "$(SNAPSHOT_ENV)")
 
 # Run Session Replay snapshot tests
 sr-snapshot-test:
@@ -387,13 +434,12 @@ sr-snapshot-test:
 
 # Run Session Replay layer snapshot tests
 sr-layer-snapshot-test:
-	@:$(eval OS ?= $(DEFAULT_SR_LAYER_SNAPSHOT_TESTS_OS))
-	@:$(eval PLATFORM ?= $(DEFAULT_SR_LAYER_SNAPSHOT_TESTS_PLATFORM))
-	@:$(eval DEVICE ?= $(DEFAULT_SR_LAYER_SNAPSHOT_TESTS_DEVICE))
 	@:$(eval ARTIFACTS_PATH ?= $(DEFAULT_ARTIFACTS_PATH))
-	@$(ECHO_TITLE) "make sr-layer-snapshot-test OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)' ARTIFACTS_PATH='$(ARTIFACTS_PATH)'"
+	@$(ECHO_TITLE) "make sr-layer-snapshot-test SNAPSHOT_ENV='$(SNAPSHOT_ENV)' ARTIFACTS_PATH='$(ARTIFACTS_PATH)'"
 	./tools/sr-snapshot-test.sh \
-		--suite layer-tree --test --os "$(OS)" --device "$(DEVICE)" --platform "$(PLATFORM)" --artifacts-path "$(ARTIFACTS_PATH)"
+		--suite layer-tree --test $(if $(SNAPSHOT_ENV),--snapshot-env "$(SNAPSHOT_ENV)") \
+		$(if $(OS),--os "$(OS)") $(if $(DEVICE),--device "$(DEVICE)") $(if $(PLATFORM),--platform "$(PLATFORM)") \
+		--artifacts-path "$(ARTIFACTS_PATH)"
 
 # Opens `SRSnapshotTests` project with passing required ENV variables
 sr-snapshot-tests-open:

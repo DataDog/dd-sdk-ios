@@ -16,7 +16,6 @@ import UIKit
 @Suite(.datadogTesting)
 @MainActor
 struct CALayerSnapshotOcclusionTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Draws content when the contents property is set")
     func drawsContentWhenContentsPropertyIsSet() throws {
         // Given
@@ -31,7 +30,6 @@ struct CALayerSnapshotOcclusionTests {
         #expect(snapshot.drawsContent)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Draws content when the layer has a visible background color")
     func drawsContentWhenLayerHasAVisibleBackgroundColor() throws {
         // Given
@@ -46,7 +44,6 @@ struct CALayerSnapshotOcclusionTests {
         #expect(snapshot.drawsContent)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Draws content when the layer has a visible border")
     func drawsContentWhenLayerHasAVisibleBorder() throws {
         // Given
@@ -62,7 +59,6 @@ struct CALayerSnapshotOcclusionTests {
         #expect(snapshot.drawsContent)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Does not draw content when the layer is bare")
     func doesNotDrawContentWhenLayerIsBare() throws {
         // Given
@@ -76,7 +72,6 @@ struct CALayerSnapshotOcclusionTests {
         #expect(!snapshot.drawsContent)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Draws content when the layer subclass has unmodeled drawing state")
     func drawsContentWhenLayerSubclassHasUnmodeledDrawingState() throws {
         // Given
@@ -92,7 +87,6 @@ struct CALayerSnapshotOcclusionTests {
         #expect(snapshot.drawsContent)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Is an occluder when fully opaque with a solid background")
     func isOccluderWhenFullyOpaqueWithSolidBackground() throws {
         // Given
@@ -107,7 +101,6 @@ struct CALayerSnapshotOcclusionTests {
         #expect(snapshot.isOccluder)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Is not an occluder when opacity is less than one")
     func isNotOccluderWhenOpacityIsLessThanOne() throws {
         // Given
@@ -123,7 +116,6 @@ struct CALayerSnapshotOcclusionTests {
         #expect(!snapshot.isOccluder)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Is not an occluder when the background is translucent")
     func isNotOccluderWhenBackgroundIsTranslucent() throws {
         // Given
@@ -138,7 +130,6 @@ struct CALayerSnapshotOcclusionTests {
         #expect(!snapshot.isOccluder)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Is not an occluder when a mask is present")
     func isNotOccluderWhenMaskIsPresent() throws {
         // Given
@@ -154,7 +145,6 @@ struct CALayerSnapshotOcclusionTests {
         #expect(!snapshot.isOccluder)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Is not an occluder when rotated")
     func isNotOccluderWhenRotated() throws {
         // Given
@@ -170,7 +160,6 @@ struct CALayerSnapshotOcclusionTests {
         #expect(!snapshot.isOccluder)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Is not an occluder when a filter affects opacity")
     func isNotOccluderWhenFilterAffectsOpacity() throws {
         // Given
@@ -186,7 +175,6 @@ struct CALayerSnapshotOcclusionTests {
         #expect(!snapshot.isOccluder)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Is not an occluder when a compositing filter is applied")
     func isNotOccluderWhenCompositingFilterIsApplied() throws {
         // Given
@@ -202,7 +190,6 @@ struct CALayerSnapshotOcclusionTests {
         #expect(!snapshot.isOccluder)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Is an occluder when filters preserve opacity")
     func isOccluderWhenFiltersPreserveOpacity() throws {
         // Given
@@ -218,7 +205,6 @@ struct CALayerSnapshotOcclusionTests {
         #expect(snapshot.isOccluder)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Returns the visible frame as the only occlusion rect when corners are not rounded")
     func returnsVisibleFrameAsOnlyOcclusionRectWhenCornersAreNotRounded() throws {
         // Given
@@ -233,7 +219,6 @@ struct CALayerSnapshotOcclusionTests {
         #expect(rects == [CGRect(x: 0, y: 0, width: 40, height: 60)])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Insets each edge by the larger of the two adjacent corner radii")
     func insetsEachEdgeByTheLargerOfTheTwoAdjacentCornerRadii() {
         // Given
@@ -252,7 +237,6 @@ struct CALayerSnapshotOcclusionTests {
         #expect(rects.contains(CGRect(x: 4, y: 0, width: 84, height: 100)))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Drops a band whose inset exceeds the available extent")
     func dropsBandWhoseInsetExceedsAvailableExtent() {
         // Given
@@ -270,7 +254,6 @@ struct CALayerSnapshotOcclusionTests {
         #expect(rects == [CGRect(x: 12, y: 0, width: 16, height: 20)])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Removes a content-bearing leaf fully covered by an opaque sibling in front")
     func removesLeafFullyCoveredByOpaqueSiblingInFront() throws {
         // Given
@@ -297,7 +280,6 @@ struct CALayerSnapshotOcclusionTests {
         #expect(result.sublayers.map(\.absoluteFrame) == [CGRect(x: 0, y: 0, width: 100, height: 100)])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Keeps a content-bearing leaf that is only partially covered")
     func keepsLeafPartiallyCoveredByOpaqueSibling() throws {
         // Given
@@ -329,7 +311,6 @@ struct CALayerSnapshotOcclusionTests {
         )
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Keeps a layer subclass with unmodeled drawing state")
     func keepsLayerSubclassWithUnmodeledDrawingState() throws {
         // Given
@@ -350,7 +331,6 @@ struct CALayerSnapshotOcclusionTests {
         #expect(result.sublayers.map(\.absoluteFrame) == [CGRect(x: 10, y: 10, width: 20, height: 20)])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Keeps a covered content-bearing leaf when it casts a shadow")
     func keepsCoveredContentBearingLeafWhenItCastsShadow() throws {
         // Given
@@ -381,7 +361,6 @@ struct CALayerSnapshotOcclusionTests {
         #expect(result.sublayers.map(\.backgroundColor) == [behindColor, frontColor])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Removes a covered content-bearing container once its children are removed")
     func removesCoveredContentBearingContainerOnceChildrenAreRemoved() throws {
         // Given
@@ -412,7 +391,6 @@ struct CALayerSnapshotOcclusionTests {
         #expect(result.sublayers.map(\.absoluteFrame) == [CGRect(x: 0, y: 0, width: 100, height: 100)])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Does not propagate opaque coverage past a masksToBounds ancestor")
     func doesNotPropagateCoveragePastMasksToBoundsAncestor() throws {
         // Given
@@ -449,7 +427,6 @@ struct CALayerSnapshotOcclusionTests {
         )
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Does not treat a descendant of a semi-transparent ancestor as an occluder")
     func doesNotTreatDescendantOfSemiTransparentAncestorAsOccluder() throws {
         // Given
@@ -486,7 +463,6 @@ struct CALayerSnapshotOcclusionTests {
         )
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Removes an empty structural container when all its children are removed")
     func removesEmptyStructuralContainerWhenAllChildrenRemoved() throws {
         // Given
@@ -517,7 +493,6 @@ struct CALayerSnapshotOcclusionTests {
         #expect(result.sublayers.map(\.absoluteFrame) == [CGRect(x: 0, y: 0, width: 100, height: 100)])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Keeps visible children of a zero-sized container that does not clip")
     func keepsVisibleChildrenOfZeroSizedNonClippingContainer() throws {
         // Given
@@ -541,7 +516,6 @@ struct CALayerSnapshotOcclusionTests {
         #expect(visibleContainer.sublayers.map(\.replayID) == [child.replayID])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Does not treat a rotated layer as an occluder")
     func doesNotTreatRotatedLayerAsOccluder() throws {
         // Given
@@ -569,7 +543,6 @@ struct CALayerSnapshotOcclusionTests {
         #expect(result.sublayers.map(\.absoluteFrame).contains(CGRect(x: 10, y: 10, width: 10, height: 10)))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Does not treat a descendant of a masked ancestor as an occluder")
     func doesNotTreatDescendantOfMaskedAncestorAsOccluder() throws {
         // Given
@@ -608,7 +581,6 @@ struct CALayerSnapshotOcclusionTests {
         )
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Does not treat descendants of an opacity-filtered ancestor as occluders")
     func doesNotTreatDescendantsOfOpacityFilteredAncestorAsOccluders() throws {
         // Given
@@ -645,7 +617,6 @@ struct CALayerSnapshotOcclusionTests {
         )
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Does not cull a layer in the corner area of a rounded occluder")
     func doesNotCullLayerInCornerAreaOfRoundedOccluder() throws {
         // Given

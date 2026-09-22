@@ -8,7 +8,6 @@
 import Foundation
 import SwiftUI
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
     var requiresCompositionLayer: Bool {
         masksToBounds
@@ -120,7 +119,6 @@ extension CALayerSnapshot {
 }
 
 extension SRCompositionLayer.CompositeOperation {
-    @available(iOS 13.0, tvOS 13.0, *)
     init?(
         compositingFilter: CALayerSnapshot.CompositingFilter?,
         semantics: CALayerSnapshot.SemanticObservation.Semantics
@@ -146,7 +144,6 @@ extension SRCompositionLayer.CompositeOperation {
 }
 
 extension SRCompositionLayerModifier {
-    @available(iOS 13.0, tvOS 13.0, *)
     fileprivate init?(
         filter: CALayerSnapshot.Filter,
         semantics: CALayerSnapshot.SemanticObservation.Semantics
@@ -185,7 +182,6 @@ extension SRCompositionLayerModifier {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.ColorMatrix {
     fileprivate var values: [Double] {
         [

@@ -12,7 +12,6 @@ import UIKit
 @testable import TestUtilities
 @testable import DatadogSessionReplay
 
-@available(iOS 13.0, tvOS 13.0, *)
 final class ImageRendererTests: XCTestCase {
     func testCacheHitReturnsCachedImage() {
         // Given

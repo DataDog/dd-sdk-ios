@@ -244,7 +244,8 @@ class SnapshotProcessorTests: XCTestCase {
             ),
             viewportSize: .mockRandom(minWidth: 1_000, minHeight: 1_000),
             nodes: [node],
-            webViewSlotIDs: Set([hiddenSlot, visibleSlot])
+            webViewSlotIDs: Set([hiddenSlot, visibleSlot]),
+            embeddedContentSlots: [:]
         )
 
         processor.process(viewTreeSnapshot: snapshot, touchSnapshot: nil)
@@ -264,6 +265,69 @@ class SnapshotProcessorTests: XCTestCase {
 
         XCTAssertEqual(fullSnapshotRecord.data.wireframes.first?.id, Int64(hiddenSlot), "The hidden webview wireframe should be first")
         XCTAssertEqual(fullSnapshotRecord.data.wireframes.last?.id, Int64(visibleSlot), "The visible webview wireframe should be last")
+    }
+
+    func testProcessingSnapshotHidesCachedEmbeddedContentViewsMissingFromTree() throws {
+        // Given
+        let time = Date()
+        let rum: RUMCoreContext = .mockWith(serverTimeOffset: 0)
+        let processor = SnapshotProcessor(
+            queue: NoQueue(),
+            recordWriter: recordWriter,
+            resourceProcessor: ResourceProcessorSpy(),
+            srContextPublisher: SRContextPublisher(core: PassthroughCoreMock()),
+            telemetry: TelemetryMock()
+        )
+        let hiddenWireframeID: WireframeID = 42
+        let visibleWireframeID: WireframeID = 84
+        let visibleWireframesBuilder = EmbeddedContentWireframesBuilder(
+            wireframeID: visibleWireframeID,
+            slotID: "visible-slot",
+            attributes: .mock(fixture: .visible())
+        )
+        let snapshot = ViewTreeSnapshot(
+            date: time,
+            context: .init(
+                textAndInputPrivacy: .mockRandom(),
+                imagePrivacy: .mockRandom(),
+                touchPrivacy: .mockRandom(),
+                rumContext: rum,
+                date: time
+            ),
+            viewportSize: .mockRandom(minWidth: 1_000, minHeight: 1_000),
+            nodes: [Node(viewAttributes: .mockAny(), wireframesBuilder: visibleWireframesBuilder)],
+            webViewSlotIDs: [],
+            embeddedContentSlots: [
+                hiddenWireframeID: "hidden-slot",
+                visibleWireframeID: "visible-slot"
+            ]
+        )
+
+        // When
+        processor.process(viewTreeSnapshot: snapshot, touchSnapshot: nil)
+
+        // Then
+        let enrichedRecord = try XCTUnwrap(recordWriter.records.first)
+        let fullSnapshotRecord = try XCTUnwrap(enrichedRecord.records.last?.fullSnapshot)
+        XCTAssertEqual(fullSnapshotRecord.data.wireframes.count, 2)
+
+        guard case let .embeddedContentWireframe(hiddenWireframe) = fullSnapshotRecord.data.wireframes.first else {
+            return XCTFail("The hidden wireframe must be embeddedContentWireframe case")
+        }
+        XCTAssertEqual(hiddenWireframe.id, hiddenWireframeID)
+        XCTAssertEqual(hiddenWireframe.slotId, "hidden-slot")
+        XCTAssertEqual(hiddenWireframe.isVisible, false)
+        XCTAssertEqual(hiddenWireframe.width, 0)
+        XCTAssertEqual(hiddenWireframe.height, 0)
+        XCTAssertEqual(hiddenWireframe.x, 0)
+        XCTAssertEqual(hiddenWireframe.y, 0)
+
+        guard case let .embeddedContentWireframe(visibleWireframe) = fullSnapshotRecord.data.wireframes.last else {
+            return XCTFail("The visible wireframe must be embeddedContentWireframe case")
+        }
+        XCTAssertEqual(visibleWireframe.id, visibleWireframeID)
+        XCTAssertEqual(visibleWireframe.slotId, "visible-slot")
+        XCTAssertEqual(visibleWireframe.isVisible, true)
     }
 
     func testWhenProcessingViewTreeSnapshot_itIncludeWebViewSlotFromCache() throws {

@@ -129,6 +129,7 @@ public final class objc_SessionReplayConfiguration: NSObject {
     /// Available flags:
     /// - `swiftui`: `false` by default.
     /// - `heatmaps`: `false` by default.
+    /// - `composition_tree_recording`: `false` by default (iOS 13+).
     @objc public var featureFlags: [String: Bool] {
         set { _swift.featureFlags = newValue.dd.featureFlags }
         get { _swift.featureFlags.dd.featureFlags }

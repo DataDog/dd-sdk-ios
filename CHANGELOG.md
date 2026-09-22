@@ -1,7 +1,41 @@
 # Unreleased
 
+# 3.18.0 / 21-09-2026
+
+- [FIX] Preserve delayed WebView correlation for long-lived active native RUM views.
+- [FIX] Resolve the RUM session sampling decision synchronously in `RUM.enable()`, so WebViews instrumented immediately after initialization get a decision consistent with the session. See [#3183][]
+- [FEATURE] Add CPU-time samples alongside wall-time samples by default for application launch and Continuous Profiling. See [#3195][]
+- [IMPROVEMENT] Migrate `DatadogProfiling` to Swift 6. See [#3186][]
+- [FIX] Fix truncated profiler stacks on arm64e-capable devices by handling pointer authentication when unwinding stack frames. See [#3200][]
+- [FIX] Resolve the RUM session sampling decision synchronously in `RUM.enable()`, so WebViews instrumented immediately after initialization get a decision consistent with the session. See [#3183][]
+- [IMPROVEMENT] Populate RUM Resource `delivery_type` and `transfer_size` from network cache signals, replacing the mobile-only `local_cache_hit` field. See [#3187][]
+- [IMPROVEMENT] Add the `view.name` tag to spans enriched with a sampled-in RUM context, so APM spans can be searched and grouped by RUM view. A `view.name` already set on the span is preserved. See [#3208][]
+
+# 3.17.0 / 09-09-2026
+
+- [FEATURE] Add a configurable initialization timeout for the first Datadog Flags evaluation context. See [#3167][]
+- [FEATURE] Add `remoteConfiguration` to `Datadog.Configuration`, set with `RemoteConfiguration(id:)`, to fetch and cache the remote configuration document from the Datadog CDN at SDK startup. See [#2919][]
+- [IMPROVEMENT] Bump minimum deployment targets to iOS 15.0, tvOS 15.0, and watchOS 9.0. See [#3155][]
+- [FEATURE] Add `CrashReporting.Configuration.appHangBacktraceEnabled` to opt out of stack trace collection in App Hang errors while keeping Crash Reporting enabled. See [#3136][]
+- [IMPROVEMENT] Report cross-platform-specific instrumentation types (Flutter, React Native, Unity, Kotlin Multiplatform) for RUM views in SDK telemetry. See [#3165][]
+- [IMPROVEMENT] Return `nil` carrier info on iOS 16+ since `CTCarrier` is deprecated with no replacement. See [#3164][]
+
+# 3.16.0 / 19-08-2026
+
+- [FEATURE] Add an experimental Core Animation recording pipeline for Session Replay, available through the `compositionTreeRecording` feature flag. See [#3127][]
+- [FEATURE] Add `disallowList` to `RUM.Configuration.URLSessionTracking` to exclude URLs from automatic RUM resource tracking, with `*` wildcard support. [#3097][]
+- [IMPROVEMENT] Forward `local_cache_hit` signal on RUM resources [#3074][]
+- [FIX] Fix `EXC_BREAKPOINT` crash when a log or RUM attribute's `encode(to:)` throws after partially encoding a value. [#3134][]
+
+# 3.15.0 / 05-08-2026
+
 - [FEATURE] Add support for UK1 Datadog Site. See [#3087][]
 - [FIX] Avoid delaying `DatadogFlags` provider initialization on the initial cached flags read. See [#3078][]
+- [FEATURE] Improve Session Replay capture fidelity for visual effects, embedded content, and gradients. See [#3057][] [#3061][] [#3066][] [#3089][] [#3092][] [#3098][] [#3109][]
+- [FIX] onSessionStart is now called only after sampling information used by WebView Tracking is in place, avoiding missing traces in early requests. See [#3104][]
+- [FIX] Fix crash when defining `onSessionStart` in RUM configuration in Swift 6 projects. See [#3106][]
+- [FIX] Merge WebView RUM `ddtags` by key to avoid duplicate keys. See [#3073][]
+- [IMPROVEMENT] Bump KSCrash to 2.5.1. See [#3102][]
 
 # 3.14.0 / 15-07-2026
 
@@ -1181,6 +1215,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2866]: https://github.com/DataDog/dd-sdk-ios/pull/2866
 [#2876]: https://github.com/DataDog/dd-sdk-ios/pull/2876
 [#2891]: https://github.com/DataDog/dd-sdk-ios/pull/2891
+[#2919]: https://github.com/DataDog/dd-sdk-ios/pull/2919
 [#2937]: https://github.com/DataDog/dd-sdk-ios/pull/2937
 [#2941]: https://github.com/DataDog/dd-sdk-ios/pull/2941
 [#2942]: https://github.com/DataDog/dd-sdk-ios/pull/2942
@@ -1200,8 +1235,34 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2995]: https://github.com/DataDog/dd-sdk-ios/pull/2995
 [#3019]: https://github.com/DataDog/dd-sdk-ios/pull/3019
 [#3051]: https://github.com/DataDog/dd-sdk-ios/pull/3051
+[#3057]: https://github.com/DataDog/dd-sdk-ios/pull/3057
+[#3061]: https://github.com/DataDog/dd-sdk-ios/pull/3061
+[#3066]: https://github.com/DataDog/dd-sdk-ios/pull/3066
+[#3073]: https://github.com/DataDog/dd-sdk-ios/pull/3073
 [#3087]: https://github.com/DataDog/dd-sdk-ios/pull/3087
 [#3078]: https://github.com/DataDog/dd-sdk-ios/pull/3078
+[#3089]: https://github.com/DataDog/dd-sdk-ios/pull/3089
+[#3092]: https://github.com/DataDog/dd-sdk-ios/pull/3092
+[#3098]: https://github.com/DataDog/dd-sdk-ios/pull/3098
+[#3102]: https://github.com/DataDog/dd-sdk-ios/pull/3102
+[#3104]: https://github.com/DataDog/dd-sdk-ios/pull/3104
+[#3106]: https://github.com/DataDog/dd-sdk-ios/pull/3106
+[#3109]: https://github.com/DataDog/dd-sdk-ios/pull/3109
+[#3074]: https://github.com/DataDog/dd-sdk-ios/pull/3074
+[#3127]: https://github.com/DataDog/dd-sdk-ios/pull/3127
+[#3097]: https://github.com/DataDog/dd-sdk-ios/pull/3097
+[#3134]: https://github.com/DataDog/dd-sdk-ios/pull/3134
+[#3155]: https://github.com/DataDog/dd-sdk-ios/pull/3155
+[#3136]: https://github.com/DataDog/dd-sdk-ios/pull/3136
+[#3165]: https://github.com/DataDog/dd-sdk-ios/pull/3165
+[#3164]: https://github.com/DataDog/dd-sdk-ios/pull/3164
+[#3167]: https://github.com/DataDog/dd-sdk-ios/pull/3167
+[#3183]: https://github.com/DataDog/dd-sdk-ios/pull/3183
+[#3186]: https://github.com/DataDog/dd-sdk-ios/pull/3186
+[#3195]: https://github.com/DataDog/dd-sdk-ios/pull/3195
+[#3200]: https://github.com/DataDog/dd-sdk-ios/pull/3200
+[#3187]: https://github.com/DataDog/dd-sdk-ios/pull/3187
+[#3208]: https://github.com/DataDog/dd-sdk-ios/pull/3208
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
@@ -1241,3 +1302,4 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [@blimmer]: https://github.com/blimmer
 [@thedavidharris]: https://github.com/thedavidharris
 [@noremac]: https://github.com/noremac
+[@saladdays831]: https://github.com/saladdays831

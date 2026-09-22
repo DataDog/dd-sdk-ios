@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-07-14
-sdk_version: 3.14.0
-verified_against_commit: 32c08d29c
+last_updated: 2026-09-22
+sdk_version: 3.18.0
+verified_against_commit: 72b56e859
 tracked_files:
   - DatadogProfiling/Sources/Profiling.swift
   - DatadogProfiling/Sources/ProfilingConfiguration.swift
@@ -12,7 +12,7 @@ tracked_files:
 
 ## Overview
 
-Profiling captures pprof wall-time samples from Apple application processes and correlates them with RUM context. It supports two profiling paths:
+Profiling captures pprof wall-time and CPU-time samples from Apple application processes and correlates them with RUM context. It supports two profiling paths:
 
 - **Application launch profiling**: captures process startup and writes the launch profile when RUM emits the TTID app-launch vital.
 - **Continuous Profiling**: periodically records profiles for sampled-in RUM sessions and links long tasks and app hangs.
@@ -102,9 +102,9 @@ monitor.succeedOperation(
 
 ## Architecture Overview
 
-Profiling is a `DatadogRemoteFeature` named `profiler`. `Profiling.enable(with:in:)` registers `ProfilerFeature`, which builds a request builder, session sampler provider, quota checker, app-launch profiler, and the main `DatadogProfiler` message receiver.
+Profiling is a `DatadogRemoteFeature` named `profiler`. `Profiling.enable(with:in:)` registers `ProfilerFeature`, which builds a request builder, session sampler provider, quota checker, and a single `DatadogProfiler` message receiver.
 
-The low-level sampler lives in `DatadogProfiling/Mach`. It samples application threads with Mach APIs, aggregates stack traces into a pprof profile, and exposes the native profiler to Swift through a C interface.
+The low-level sampler lives in `DatadogProfiling/Mach`. It samples application thread stacks and CPU time with Mach APIs, aggregates them into a pprof profile, and exposes the native profiler to Swift through a C interface.
 
 `ProfilerFeature` writes UserDefaults keys consumed by the native auto-start path for app-launch profiling. The Swift side then decides when to keep the native profiler running, when to flush profiles, and whether to write or drop a profile.
 
@@ -132,12 +132,11 @@ flowchart TD
 - **`DatadogProfiling/Sources/Profiling.swift`** - Main entry point. Call `Profiling.enable(with:in:)` to register the feature with core.
 
 ### Configuration
-- **`DatadogProfiling/Sources/ProfilingConfiguration.swift`** - Customer-facing configuration: `customEndpoint`, `applicationLaunchSampleRate`, and `continuousSampleRate`.
+- **`DatadogProfiling/Sources/ProfilingConfiguration.swift`** - Customer-facing configuration: `customEndpoint`, `applicationLaunchSampleRate`, and `continuousSampleRate`. Also defines `apply(remoteConfiguration:)` (see [Remote Configuration](#remote-configuration)).
 
 ### Runtime Orchestration
 - **`DatadogProfiling/Sources/ProfilerFeature.swift`** - Internal feature composition. Registers message receivers, configures app-launch UserDefaults, creates samplers and quota checks.
-- **`DatadogProfiling/Sources/AppLaunchProfiler.swift`** - Handles app-launch profiles and flushes them when TTID arrives.
-- **`DatadogProfiling/Sources/DatadogProfiler.swift`** - Main Continuous Profiling state machine. Starts/stops native profiling, handles RUM operation/app hang/long task messages, and flushes profiles.
+- **`DatadogProfiling/Sources/DatadogProfiler.swift`** - App-launch, Continuous, and Custom Profiling state machine. Owns the native profiler lifecycle, handles RUM messages, and flushes profiles.
 - **`DatadogProfiling/Sources/ProfilingSamplerProvider.swift`** - Stores continuous profiling configuration and session-linked sampling decisions.
 - **`DatadogProfiling/Sources/ProfilingQuotaChecker.swift`** - Checks session-scoped profiling quota admission.
 - **`DatadogProfiling/Sources/Models/ProfilingConditions.swift`** - Blocks profiling in low battery, Low Power Mode, or background conditions.
@@ -157,7 +156,7 @@ flowchart TD
 - **`customEndpoint`**: Optional replacement URL for profile uploads. Default: `nil`, which uses the Datadog site endpoint plus `/api/v2/profile`.
 
 ### Sampling
-- **Application launch**: `applicationLaunchSampleRate` default is `5.0`. The value is stored in the profiling UserDefaults suite for the native app-launch path and takes effect on the next process launch. If multiple SDK instances set it, the native side uses the lowest sample rate.
+- **Application launch**: `applicationLaunchSampleRate` default is `5.0`. The value is stored in the profiling UserDefaults suite for the native app-launch path and takes effect on the next process launch.
 - **Continuous Profiling**: `continuousSampleRate` default is `5.0`. A value above zero configures continuous profiling. The final decision is composed with the current RUM session sampler via `RUMCoreContext.sessionSampler.combined(with: continuousSampleRate)`.
 - **Operations**: Pass `ProfilingOptions(sampleRate:)` to `RUMMonitor.shared().startOperation(...)`. RUM composes this operation sample rate with the session sampler before sending operation messages to Profiling. Sampled operation steps are attached to the continuous profile while Continuous Profiling is running.
 
@@ -175,6 +174,13 @@ Continuous profiles are also flushed when the app backgrounds after foreground a
 ### Upload Format
 Profile uploads are multipart/form-data requests that include profile metadata, serialized pprof data, and correlated RUM events when present.
 
+## Remote Configuration
+
+When `Datadog.Configuration.remoteConfiguration` is set, Core fetches and caches a configuration document from the Datadog CDN. If one is available (from cache or from the initial fetch) when `Profiling.enable(with:)` runs, it is merged onto the in-code `Profiling.Configuration` **once**, before the feature starts — not applied live afterward, so a later CDN refresh during the same session has no effect until the next process launch.
+
+- The `profiling` namespace overrides `applicationLaunchSampleRate` and `continuousSampleRate`. A `nil`/omitted value keeps the in-code value; passing `nil` for the whole remote configuration (none fetched) leaves the configuration unchanged.
+- See `ProfilingConfiguration.swift`'s `apply(remoteConfiguration:)` for the merge logic.
+
 ## Common Troubleshooting Patterns
 
 ### "No profiles appear"
@@ -190,7 +196,7 @@ Profile uploads are multipart/form-data requests that include profile metadata, 
 3. Report TTFD with `monitor.reportAppFullyDisplayed()`, use sampled RUM operation steps, or enable RUM long tasks (`longTaskThreshold`) and app hangs (`appHangThreshold`) if those correlations are expected.
 
 ### "App launch profile is missing"
-1. Ensure RUM is enabled early enough to emit the TTID message consumed by `AppLaunchProfiler`.
+1. Ensure RUM is enabled early enough to emit the TTID message consumed by `DatadogProfiler`.
 2. Do not rely on `monitor.reportAppFullyDisplayed()` to emit TTID. It reports TTFD, which is delivered as a vital/operation message for continuous profile correlation.
 3. Verify `applicationLaunchSampleRate` is greater than zero.
 4. Remember that app-launch profiling settings are read at library load, before `Profiling.enable()` runs. Enabling profiling or changing `applicationLaunchSampleRate` affects the next process launch, not the current launch.
@@ -202,9 +208,11 @@ This is expected. Background state is a profiling blocker, and the profiler flus
 ## Feature Interactions
 
 - **RUM**: Profiling reads RUM context and RUM payload messages for session-linked sampling, quota checks, and profile correlation.
+- **Remote Configuration**: overrides `applicationLaunchSampleRate` and `continuousSampleRate` — see [Remote Configuration](#remote-configuration)
 
 ## Additional Context
 
-- Only one `DatadogProfiler` instance can be active in a process. The initializer returns `nil` if another instance is already active.
+- Profiling supports one SDK core instance per process. If another core calls `Profiling.enable`, the existing Profiling feature remains active and the SDK logs a warning identifying its core instance.
+- Profiles include wall-time and CPU-time sample values by default.
 - Profiling can stop when runtime conditions block sampling and restart when conditions become valid again, such as after the app returns to foreground.
 - Profile uploads include pprof data, correlated RUM events, and profile metadata.

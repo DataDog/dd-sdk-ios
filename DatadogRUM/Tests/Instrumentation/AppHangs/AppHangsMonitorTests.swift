@@ -87,6 +87,36 @@ class AppHangsMonitorTests: XCTestCase {
         XCTAssertEqual(command.isStackTraceTruncated, hang.backtraceResult.wasTruncated)
     }
 
+    func testDisabledAndNotAvailableStackMessagesAreDistinct() {
+        // Each message is otherwise only asserted against its own constant, so copy-pasting them equal would keep
+        // every test green while silently collapsing "Crash Reporting opted out" into "Crash Reporting never enabled".
+        XCTAssertNotEqual(
+            AppHangsMonitor.Constants.appHangStackDisabledErrorMessage,
+            AppHangsMonitor.Constants.appHangStackNotAvailableErrorMessage
+        )
+    }
+
+    func testWhenAppHangEndsWithBacktraceGenerationDisabled_itSendsAppHangCommandWithNoStackTrace() throws {
+        // Given
+        let subscriber = RUMCommandSubscriberMock()
+        monitor.nonFatalHangsHandler.publish(to: subscriber)
+        monitor.start()
+        defer { monitor.stop() }
+
+        // When
+        let hang: AppHang = .mockWith(backtraceResult: .disabled)
+        watchdogThread.delegate?.hangEnded(hang, duration: .mockRandom(min: 1, max: 4))
+
+        // Then
+        let command = try XCTUnwrap(subscriber.lastReceivedCommand as? RUMAddCurrentViewAppHangCommand)
+        XCTAssertEqual(command.message, AppHangsMonitor.Constants.appHangErrorMessage)
+        XCTAssertEqual(command.type, AppHangsMonitor.Constants.appHangErrorType)
+        XCTAssertEqual(command.stack, AppHangsMonitor.Constants.appHangStackDisabledErrorMessage)
+        XCTAssertNil(command.threads)
+        XCTAssertNil(command.binaryImages)
+        XCTAssertNil(command.isStackTraceTruncated)
+    }
+
     // MARK: - Fatal App Hangs Monitoring
 
     func testGivenFatalErrorViewContextAvailable_whenAppHangStarts_itSavesPendingAppHangToDataStore() throws {
@@ -280,6 +310,80 @@ class AppHangsMonitorTests: XCTestCase {
 
         XCTAssertEqual(featureScope.eventsWritten.count, 0, "It must send no event")
         XCTAssertNil(featureScope.dataStoreMock.value(forKey: RUMDataStore.Key.fatalAppHangKey.rawValue))
+    }
+
+    func testGivenPendingHangWithTooManyAttributes_whenStartedInAnotherProcess_itSanitizesRUMErrorContextBeforeWriting() throws {
+        let numberOfAttributes = AttributesSanitizer.Constraints.maxNumberOfAttributes * 2
+        let currentDate: Date = .mockDecember15th2019At10AMUTC()
+        let hangDate: Date = currentDate.secondsAgo(.random(in: 0...4.hours))
+        var view: RUMViewEvent = .mockRandom()
+        view.context = RUMEventAttributes(
+            contextInfo: Dictionary(uniqueKeysWithValues: (0..<numberOfAttributes).map { ("attribute-\($0)", String.mockAny() as Encodable) })
+        )
+        let hang: AppHang = .mockWith(startDate: hangDate)
+
+        // Given
+        featureScope.contextMock.trackingConsent = .granted
+        monitor.start()
+        fatalErrorContext.view = view
+        watchdogThread.delegate?.hangStarted(hang)
+        monitor.stop()
+
+        // When
+        let monitor = AppHangsMonitor(
+            featureScope: featureScope,
+            watchdogThread: watchdogThread,
+            fatalErrorContext: fatalErrorContext,
+            processID: UUID(), // different process
+            dateProvider: DateProviderMock(now: currentDate),
+            uuidGenerator: RUMUUIDGeneratorMock()
+        )
+        monitor.start()
+        defer { monitor.stop() }
+
+        // Then
+        let sentRUMError = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self).first)
+        let usrInfoCount = sentRUMError.usr?.usrInfo.count ?? 0
+        let accountInfoCount = sentRUMError.account?.accountInfo.count ?? 0
+        let contextInfoCount = sentRUMError.context?.contextInfo.count ?? 0
+        XCTAssertEqual(usrInfoCount + accountInfoCount + contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes)
+    }
+
+    func testGivenPendingHangWithTooManyAttributes_whenStartedInAnotherProcess_itSanitizesRUMViewContextBeforeWriting() throws {
+        let numberOfAttributes = AttributesSanitizer.Constraints.maxNumberOfAttributes * 2
+        let currentDate: Date = .mockDecember15th2019At10AMUTC()
+        let hangDate: Date = currentDate.secondsAgo(.random(in: 0...4.hours))
+        var view: RUMViewEvent = .mockRandom()
+        view.context = RUMEventAttributes(
+            contextInfo: Dictionary(uniqueKeysWithValues: (0..<numberOfAttributes).map { ("attribute-\($0)", String.mockAny() as Encodable) })
+        )
+        let hang: AppHang = .mockWith(startDate: hangDate)
+
+        // Given
+        featureScope.contextMock.trackingConsent = .granted
+        monitor.start()
+        fatalErrorContext.view = view
+        watchdogThread.delegate?.hangStarted(hang)
+        monitor.stop()
+
+        // When
+        let monitor = AppHangsMonitor(
+            featureScope: featureScope,
+            watchdogThread: watchdogThread,
+            fatalErrorContext: fatalErrorContext,
+            processID: UUID(), // different process
+            dateProvider: DateProviderMock(now: currentDate),
+            uuidGenerator: RUMUUIDGeneratorMock()
+        )
+        monitor.start()
+        defer { monitor.stop() }
+
+        // Then
+        let sentRUMView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).first)
+        let usrInfoCount = sentRUMView.usr?.usrInfo.count ?? 0
+        let accountInfoCount = sentRUMView.account?.accountInfo.count ?? 0
+        let contextInfoCount = sentRUMView.context?.contextInfo.count ?? 0
+        XCTAssertEqual(usrInfoCount + accountInfoCount + contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes)
     }
 
     // MARK: - Fatal App Hangs - Testing Uploaded Data

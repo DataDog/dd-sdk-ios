@@ -33,7 +33,6 @@ internal class LayerSnapshotTestCase: XCTestCase {
         imagePrivacyLevel: ImagePrivacyLevel = .maskNonBundledOnly,
         waitTime: TimeInterval = 0.2,
         shouldRecord: Bool,
-        folderPath: String,
         fileNamePrefix: String? = nil,
         file: StaticString = #filePath,
         function: StaticString = #function
@@ -47,7 +46,6 @@ internal class LayerSnapshotTestCase: XCTestCase {
             imagePrivacyLevel: imagePrivacyLevel,
             waitTime: waitTime,
             shouldRecord: shouldRecord,
-            folderPath: folderPath,
             fileNamePrefix: fileNamePrefix,
             file: file,
             function: function
@@ -61,11 +59,15 @@ internal class LayerSnapshotTestCase: XCTestCase {
         imagePrivacyLevel: ImagePrivacyLevel = .maskNonBundledOnly,
         waitTime: TimeInterval = 0.2,
         shouldRecord: Bool,
-        folderPath: String,
         fileNamePrefix: String? = nil,
         file: StaticString = #filePath,
         function: StaticString = #function
     ) async throws {
+        let environment = try LayerSnapshotEnvironment(
+            osVersion: UIDevice.current.systemVersion,
+            modelIdentifier: ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"]
+        )
+
         try await show(viewController)
         await wait(seconds: waitTime)
 
@@ -83,13 +85,13 @@ internal class LayerSnapshotTestCase: XCTestCase {
             DDAssertSnapshotTest(
                 newImage: image,
                 snapshotLocation: .folder(
-                    named: folderPath,
+                    named: environment.snapshotsFolderPath,
                     fileNameSuffix: fileNameSuffix,
                     file: file,
                     function: function
                 ),
                 record: shouldRecord,
-                simulator: .layerTree,
+                simulator: environment.simulator,
                 file: file
             )
         }
@@ -231,6 +233,7 @@ internal class LayerSnapshotTestCase: XCTestCase {
         let output = CompositionTreeBuilder(
             root: layerTreeSnapshot.root,
             webViewSlotIDs: layerTreeSnapshot.webViewSlotIDs,
+            embeddedContentSlots: layerTreeSnapshot.embeddedContentSlots,
             imageSnapshots: imageSnapshots
         ).build()
 

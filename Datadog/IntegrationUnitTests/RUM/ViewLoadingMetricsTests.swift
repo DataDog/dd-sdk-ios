@@ -63,7 +63,6 @@ class ViewLoadingMetricsTests: XCTestCase {
         XCTAssertEqual(actualTNS, expectedTNS, "TNS should span from the view start to the last completed initial resource.")
     }
 
-    @available(iOS 13, *)
     func testWhenResourcesHaveMetrics_thenTheyAreIncludedInTNSMetricCalculation() throws {
         let rumTime = DateProviderMock()
         rumConfig.dateProvider = rumTime

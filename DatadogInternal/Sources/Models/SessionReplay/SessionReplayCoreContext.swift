@@ -46,18 +46,23 @@ public enum SessionReplayCoreContext {
         public let sampleRate: SampleRate
         /// Whether session replay recording should be started manually.
         public let startRecordingManually: Bool
+        /// Session Replay experimental features enabled in the SDK configuration.
+        public let experimentalFeatures: [String]
 
         /// Creates a Session Replay configuration.
         ///
         /// - Parameters:
         ///   - sampleRate: The sample rate for session replay.
         ///   - startRecordingManually: Whether session replay recording should be started manually.
+        ///   - experimentalFeatures: Session Replay experimental features enabled in the SDK configuration.
         public init(
             sampleRate: SampleRate,
-            startRecordingManually: Bool
+            startRecordingManually: Bool,
+            experimentalFeatures: [String] = []
         ) {
             self.sampleRate = sampleRate
             self.startRecordingManually = startRecordingManually
+            self.experimentalFeatures = experimentalFeatures
         }
     }
 }

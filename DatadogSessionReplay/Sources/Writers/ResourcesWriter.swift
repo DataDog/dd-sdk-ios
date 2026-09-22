@@ -113,6 +113,13 @@ extension Data {
     }
 }
 
+extension Data.SerializationError: TelemetrySanitizableError {
+    /// The only case, `invalidData`, carries no associated value, so the full description is safe to report as-is.
+    func sanitize() -> TelemetrySanitizedError {
+        TelemetrySanitizedError(unsafelyDescribing: self)
+    }
+}
+
 extension TimeInterval {
     func asData() -> Data {
         return Swift.withUnsafeBytes(of: self) {

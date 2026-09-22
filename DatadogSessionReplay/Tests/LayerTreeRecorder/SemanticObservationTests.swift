@@ -39,7 +39,6 @@ struct SemanticObservationTests {
         }
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records plain layer semantics")
     func recordsPlainLayerSemantics() {
         // Given
@@ -52,7 +51,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records linear gradient semantics")
     func recordsLinearGradientSemantics() throws {
         // Given
@@ -80,7 +78,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .gradient(gradient)))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records unsupported gradient as plain layer semantics")
     func recordsUnsupportedGradientAsPlainLayerSemantics() {
         // Given
@@ -95,7 +92,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records masked leaf gradient as plain layer semantics")
     func recordsMaskedLeafGradientAsPlainLayerSemantics() {
         // Given
@@ -110,7 +106,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records visual effect backdrop semantics and ignores sublayers")
     func recordsVisualEffectBackdropSemanticsAndIgnoresSublayers() throws {
         // Given
@@ -398,7 +393,6 @@ struct SemanticObservationTests {
         ))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records application DestOutView as plain layer semantics")
     func recordsApplicationDestOutViewAsPlainLayerSemantics() {
         // Given
@@ -411,7 +405,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Rejects gradient semantics with fewer than two colors")
     func rejectsGradientSemanticsWithFewerThanTwoColors() {
         // Given
@@ -430,7 +423,6 @@ struct SemanticObservationTests {
         #expect(gradient == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Rejects gradient semantics with mismatched locations")
     func rejectsGradientSemanticsWithMismatchedLocations() {
         // Given
@@ -449,7 +441,6 @@ struct SemanticObservationTests {
         #expect(gradient == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records activity indicators as plain layers and ignores sublayers")
     func recordsActivityIndicatorsAsPlainLayersAndIgnoresSublayers() {
         // Given
@@ -462,7 +453,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer, ignoresSublayers: true))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records label semantics and ignores sublayers")
     func recordsLabelSemanticsAndIgnoresSublayers() {
         // Given
@@ -494,7 +484,6 @@ struct SemanticObservationTests {
         ))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records single run attributed label semantics")
     func recordsSingleRunAttributedLabelSemantics() {
         // Given
@@ -526,7 +515,6 @@ struct SemanticObservationTests {
         ))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records bold labels as layer semantics")
     func recordsBoldLabelsAsLayerSemantics() {
         // Given
@@ -541,7 +529,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records non-regular system font labels as layer semantics")
     func recordsNonRegularSystemFontLabelsAsLayerSemantics() {
         // Given
@@ -556,7 +543,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records italic labels as layer semantics")
     func recordsItalicLabelsAsLayerSemantics() {
         // Given
@@ -571,7 +557,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records non-system font labels as layer semantics")
     func recordsNonSystemFontLabelsAsLayerSemantics() {
         // Given
@@ -586,7 +571,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records underlined single run attributed labels as layer semantics")
     func recordsUnderlinedSingleRunAttributedLabelsAsLayerSemantics() {
         // Given
@@ -606,7 +590,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records multi run attributed label as layer semantics")
     func recordsMultiRunAttributedLabelAsLayerSemantics() {
         // Given
@@ -623,7 +606,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records image semantics and ignores sublayers")
     func recordsImageSemanticsAndIgnoresSublayers() {
         // Given
@@ -642,7 +624,6 @@ struct SemanticObservationTests {
         ))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records progress view as layer semantics ignoring image privacy")
     func recordsProgressViewAsLayerSemanticsIgnoringImagePrivacy() {
         // Given
@@ -656,7 +637,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer, ignoresImagePrivacy: true))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records slider as layer semantics ignoring image privacy")
     func recordsSliderAsLayerSemanticsIgnoringImagePrivacy() {
         // Given
@@ -674,7 +654,6 @@ struct SemanticObservationTests {
         #expect(observation == expected)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records button as layer semantics ignoring image privacy")
     func recordsButtonAsLayerSemanticsIgnoringImagePrivacy() {
         // Given
@@ -687,7 +666,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer, ignoresImagePrivacy: true))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records stepper as layer semantics ignoring image privacy")
     func recordsStepperAsLayerSemanticsIgnoringImagePrivacy() {
         // Given
@@ -703,7 +681,6 @@ struct SemanticObservationTests {
         ))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records text view input semantics and records sublayers")
     func recordsTextViewInputSemanticsAndRecordsSublayers() {
         // Given
@@ -725,7 +702,6 @@ struct SemanticObservationTests {
         )))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records empty text view input semantics")
     func recordsEmptyTextViewInputSemantics() {
         // Given
@@ -744,7 +720,6 @@ struct SemanticObservationTests {
         )))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records nil text view input semantics")
     func recordsNilTextViewInputSemantics() {
         // Given
@@ -764,7 +739,6 @@ struct SemanticObservationTests {
         )))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records text field input semantics and records sublayers")
     func recordsTextFieldInputSemanticsAndRecordsSublayers() {
         // Given
@@ -789,7 +763,6 @@ struct SemanticObservationTests {
         ))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records empty text field input semantics")
     func recordsEmptyTextFieldInputSemantics() {
         // Given
@@ -812,7 +785,6 @@ struct SemanticObservationTests {
         ))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records switch as layer semantics")
     func recordsSwitchAsLayerSemantics() {
         // Given
@@ -830,7 +802,6 @@ struct SemanticObservationTests {
         #expect(observation == expected)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records web view semantics and caches web view")
     func recordsWebViewSemanticsAndCachesWebView() {
         // Given

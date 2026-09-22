@@ -14,6 +14,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         static let minimumTimeSpentForRates = 1.0 // 1s
         /// Minimum duration of a view (1ns). Prevents negative durations and serves as placeholder value assigned when view starts.
         static let minimumTimeSpent: TimeInterval = 1e-9 // 1ns
+        /// Maximum number of consecutive `RUMViewUpdateEvent` deltas sent for a view under the `viewUpdates`
+        /// feature flag before a full `RUMViewEvent` is sent again, so the view state can be fully reconstructed
+        /// even if some update events are lost in transit. Set to 5 to reconcile 50% of views.
+        static let maxConsecutiveViewUpdates: UInt = 5
     }
 
     // MARK: - Child Scopes
@@ -105,6 +109,14 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     /// Current version of this View to use for RUM `documentVersion`.
     private var version: UInt = 0
+
+    /// The last full view event sent through the mapper, stored for `viewUpdates` projection.
+    /// `nil` until the first event is written; non-`nil` after that.
+    private var lastSentViewEvent: RUMViewEvent?
+
+    /// Number of consecutive `RUMViewUpdateEvent` deltas sent since `lastSentViewEvent` was last a full event.
+    /// Reset to `0` whenever a full `RUMViewEvent` is sent.
+    private var consecutiveViewUpdatesCount: UInt = 0
 
     /// Whether or not the current call to `process(command:)` should trigger a `sendViewEvent()` with an update.
     /// It can be toggled from inside `RUMResourceScope`/`RUMUserActionScope` callbacks, as they are called from processing `RUMCommand`s inside `process()`.
@@ -564,32 +576,92 @@ extension RUMViewScope {
         accessibilityState = currentAccessibilityState
 
         // Retrieve Session Replay config if any
-        let sessionReplayConfig = context.additionalContext(ofType: SessionReplayCoreContext.Configuration.self)
+        let sessionReplayConfig = context.sessionReplayConfiguration
         let profiling = context.additionalContext(ofType: ProfilingContext.self)?.ddProfiling
 
-        let viewEvent = RUMViewEvent(
-            dd: .init(
-                browserSdkVersion: nil,
-                cls: nil,
-                configuration: .init(
-                    sessionReplaySampleRate: sessionReplayConfig.map { Double($0.sampleRate) },
-                    sessionSampleRate: Double(dependencies.samplingRate),
-                    startSessionReplayRecordingManually: sessionReplayConfig?.startRecordingManually,
-                    traceSampleRate: dependencies.distributedTracingSampleRate.map(Double.init)
-                ),
-                documentVersion: version.toInt64,
-                pageStates: nil,
-                profiling: profiling,
-                replayStats: .init(
-                    recordsCount: context.recordsCountByViewID[viewUUID.toRUMDataFormat],
-                    segmentsCount: nil,
-                    segmentsTotalRawSize: nil
-                ),
-                session: .init(
-                    plan: .plan1,
-                    sessionPrecondition: self.context.sessionPrecondition
-                )
+        let viewEventDD: RUMViewEvent.DD = .init(
+            browserSdkVersion: nil,
+            cls: nil,
+            configuration: .init(
+                remoteConfigurationId: context.remoteConfigurationId,
+                sessionReplayExperimentalFeatures: sessionReplayConfig?.experimentalFeatures,
+                sessionReplaySampleRate: sessionReplayConfig.map { Double($0.sampleRate) },
+                sessionSampleRate: Double(dependencies.samplingRate),
+                startSessionReplayRecordingManually: sessionReplayConfig?.startRecordingManually,
+                traceSampleRate: dependencies.distributedTracingSampleRate.map(Double.init)
             ),
+            documentVersion: version.toInt64,
+            pageStates: nil,
+            profiling: profiling,
+            replayStats: .init(
+                recordsCount: context.recordsCountByViewID[viewUUID.toRUMDataFormat],
+                segmentsCount: nil,
+                segmentsTotalRawSize: nil
+            ),
+            session: .init(
+                plan: .plan1,
+                sessionPrecondition: self.context.sessionPrecondition
+            )
+        )
+
+        let viewEventView: RUMViewEvent.View = .init(
+            accessibility: accessibility,
+            action: .init(count: actionsCount.toInt64),
+            cpuTicksCount: cpuInfo?.greatestDiff,
+            cpuTicksPerSecond: timeSpent > 1.0 ? cpuInfo?.greatestDiff?.dd.divideIfNotZero(by: Double(timeSpent)) : nil,
+            crash: isCrash ? .init(count: 1) : .init(count: 0),
+            cumulativeLayoutShift: nil,
+            cumulativeLayoutShiftTargetSelector: nil,
+            cumulativeLayoutShiftTime: nil,
+            customTimings: .init(customTimingsInfo: customTimings.reduce(into: [:]) { acc, element in
+                acc[sanitizeCustomTimingName(customTiming: element.key)] = element.value
+            }),
+            domComplete: nil,
+            domContentLoaded: nil,
+            domInteractive: nil,
+            error: .init(count: errorsCount.toInt64),
+            firstByte: nil,
+            firstContentfulPaint: nil,
+            firstInputDelay: nil,
+            firstInputTargetSelector: nil,
+            firstInputTime: nil,
+            flutterBuildTime: viewPerformanceMetrics[.flutterBuildTime]?.asFlutterBuildTime(),
+            flutterRasterTime: viewPerformanceMetrics[.flutterRasterTime]?.asFlutterRasterTime(),
+            freezeRate: freezeRate,
+            frozenFrame: .init(count: frozenFramesCount),
+            frustration: .init(count: frustrationCount),
+            id: viewUUID.toRUMDataFormat,
+            inForegroundPeriods: nil,
+            interactionToNextPaint: nil,
+            interactionToNextPaintTargetSelector: nil,
+            interactionToNextPaintTime: nil,
+            interactionToNextViewTime: interactionToNextViewTime.value?.dd.toInt64Nanoseconds,
+            isActive: isActive,
+            isSlowRendered: isSlowRendered ?? false,
+            jsRefreshRate: viewPerformanceMetrics[.jsFrameTimeSeconds]?.asJsRefreshRate(),
+            largestContentfulPaint: nil,
+            largestContentfulPaintTargetSelector: nil,
+            loadEvent: nil,
+            loadingTime: viewLoadingTime?.dd.toInt64Nanoseconds,
+            loadingType: nil,
+            longTask: .init(count: longTasksCount),
+            memoryAverage: memoryInfo?.meanValue,
+            memoryMax: memoryInfo?.maxValue,
+            name: viewName,
+            networkSettledTime: networkSettledTime.value?.dd.toInt64Nanoseconds,
+            performance: performance,
+            referrer: nil,
+            refreshRateAverage: refreshRateInfo?.meanValue,
+            refreshRateMin: refreshRateInfo?.minValue,
+            resource: .init(count: resourcesCount.toInt64),
+            slowFrames: viewHitchesReader?.dataModel.hitches.map { .init(duration: $0.duration, start: $0.start) },
+            slowFramesRate: slowFramesRate,
+            timeSpent: timeSpent.dd.toInt64Nanoseconds,
+            url: viewPath
+        )
+
+        let viewEvent = RUMViewEvent(
+            dd: viewEventDD,
             account: .init(context: context),
             application: .init(currentLocale: context.localeInfo.currentLocale, id: self.context.rumApplicationID),
             buildId: context.buildId,
@@ -617,69 +689,37 @@ extension RUMViewScope {
             synthetics: dependencies.syntheticsTest,
             usr: .init(context: context),
             version: context.version,
-            view: .init(
-                accessibility: accessibility,
-                action: .init(count: actionsCount.toInt64),
-                cpuTicksCount: cpuInfo?.greatestDiff,
-                cpuTicksPerSecond: timeSpent > 1.0 ? cpuInfo?.greatestDiff?.dd.divideIfNotZero(by: Double(timeSpent)) : nil,
-                crash: isCrash ? .init(count: 1) : .init(count: 0),
-                cumulativeLayoutShift: nil,
-                cumulativeLayoutShiftTargetSelector: nil,
-                cumulativeLayoutShiftTime: nil,
-                customTimings: .init(customTimingsInfo: customTimings.reduce(into: [:]) { acc, element in
-                    acc[sanitizeCustomTimingName(customTiming: element.key)] = element.value
-                }),
-                domComplete: nil,
-                domContentLoaded: nil,
-                domInteractive: nil,
-                error: .init(count: errorsCount.toInt64),
-                firstByte: nil,
-                firstContentfulPaint: nil,
-                firstInputDelay: nil,
-                firstInputTargetSelector: nil,
-                firstInputTime: nil,
-                flutterBuildTime: viewPerformanceMetrics[.flutterBuildTime]?.asFlutterBuildTime(),
-                flutterRasterTime: viewPerformanceMetrics[.flutterRasterTime]?.asFlutterRasterTime(),
-                freezeRate: freezeRate,
-                frozenFrame: .init(count: frozenFramesCount),
-                frustration: .init(count: frustrationCount),
-                id: viewUUID.toRUMDataFormat,
-                inForegroundPeriods: nil,
-                interactionToNextPaint: nil,
-                interactionToNextPaintTargetSelector: nil,
-                interactionToNextPaintTime: nil,
-                interactionToNextViewTime: interactionToNextViewTime.value?.dd.toInt64Nanoseconds,
-                isActive: isActive,
-                isSlowRendered: isSlowRendered ?? false,
-                jsRefreshRate: viewPerformanceMetrics[.jsFrameTimeSeconds]?.asJsRefreshRate(),
-                largestContentfulPaint: nil,
-                largestContentfulPaintTargetSelector: nil,
-                loadEvent: nil,
-                loadingTime: viewLoadingTime?.dd.toInt64Nanoseconds,
-                loadingType: nil,
-                longTask: .init(count: longTasksCount),
-                memoryAverage: memoryInfo?.meanValue,
-                memoryMax: memoryInfo?.maxValue,
-                name: viewName,
-                networkSettledTime: networkSettledTime.value?.dd.toInt64Nanoseconds,
-                performance: performance,
-                referrer: nil,
-                refreshRateAverage: refreshRateInfo?.meanValue,
-                refreshRateMin: refreshRateInfo?.minValue,
-                resource: .init(count: resourcesCount.toInt64),
-                slowFrames: viewHitchesReader?.dataModel.hitches.map { .init(duration: $0.duration, start: $0.start) },
-                slowFramesRate: slowFramesRate,
-                timeSpent: timeSpent.dd.toInt64Nanoseconds,
-                url: viewPath
-            )
+            view: viewEventView
         )
 
         if let event = dependencies.eventBuilder.build(from: viewEvent) {
-            writer.write(
-                value: event,
-                metadata: event.metadata(viewIndexInSession: viewIndexInSession),
-                completion: completionHandler
-            )
+            if dependencies.featureFlags[.viewUpdates],
+               let previousEvent = lastSentViewEvent,
+               consecutiveViewUpdatesCount < Constants.maxConsecutiveViewUpdates {
+                let update = previousEvent.update(from: event)
+                lastSentViewEvent = event
+                consecutiveViewUpdatesCount += 1
+                writer.write(value: update, completion: completionHandler)
+            } else {
+                writer.write(
+                    value: event,
+                    metadata: event.metadata(
+                        viewIndexInSession: viewIndexInSession,
+                        isDeltaBaseline: dependencies.featureFlags[.viewUpdates]
+                    ),
+                    completion: completionHandler
+                )
+                // Only promote to baseline if the event will not be dropped by RUMViewEventsFilter.
+                // The filter discards events where indexInSession == 0 AND duration == 1ns — the initial
+                // view's placeholder written when command.time == viewStartTime. Storing that dropped event
+                // as baseline would produce deltas against an event the backend never received.
+                // Subsequent views' 1ns start event is kept by the filter, so it is safe as baseline.
+                if dependencies.featureFlags[.viewUpdates],
+                   viewIndexInSession != 0 || event.view.timeSpent > Constants.minimumTimeSpent.dd.toInt64Nanoseconds {
+                    lastSentViewEvent = event
+                    consecutiveViewUpdatesCount = 0
+                }
+            }
 
             // Only update fatal error context when this event describes the still-active view,
             // an inactive view's terminal event must not clobber the active view's pointer.

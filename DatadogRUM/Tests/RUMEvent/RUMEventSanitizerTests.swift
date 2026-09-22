@@ -14,6 +14,8 @@ class RUMEventSanitizerTests: XCTestCase {
     private let actionEvent: RUMActionEvent = .mockAny()
     private let errorEvent: RUMErrorEvent = .mockRandom()
     private let longTaskEvent: RUMLongTaskEvent = .mockRandom()
+    private let vitalAppLaunchEvent: RUMVitalAppLaunchEvent = .mockRandom()
+    private let vitalOperationStepEvent: RUMVitalOperationStepEvent = .mockRandom()
 
     func testWhenAttributeNameExceeds10NestedLevels_itIsEscapedByUnderscore() {
         func test<Event>(event: Event) where Event: RUMSanitizableEvent {
@@ -84,6 +86,8 @@ class RUMEventSanitizerTests: XCTestCase {
         test(event: actionEvent)
         test(event: errorEvent)
         test(event: longTaskEvent)
+        test(event: vitalAppLaunchEvent)
+        test(event: vitalOperationStepEvent)
     }
 
     func testWhenNumberOfAttributesExceedsLimit_itDropsExtraOnes() {
@@ -125,6 +129,8 @@ class RUMEventSanitizerTests: XCTestCase {
         test(event: actionEvent)
         test(event: errorEvent)
         test(event: longTaskEvent)
+        test(event: vitalAppLaunchEvent)
+        test(event: vitalOperationStepEvent)
     }
 
     // MARK: - Private

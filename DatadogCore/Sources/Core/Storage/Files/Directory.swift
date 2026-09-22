@@ -188,4 +188,16 @@ extension Directory {
         }
         return Directory(url: cachesDirectoryURL)
     }
+
+    /// Returns `Directory` pointing to `/Library/Application Support`.
+    /// - Unlike `/Library/Caches`, the system does not purge `/Library/Application Support` under disk pressure,
+    ///   so it is suitable for data that must persist across launches (e.g. remote configuration).
+    /// - The directory is included in iTunes and iCloud backups by default.
+    /// - It is not guaranteed to exist; callers create the subdirectories they need.
+    static func applicationSupport() throws -> Directory {
+        guard let applicationSupportDirectoryURL = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+            throw InternalError(description: "Cannot obtain `/Library/Application Support/` url.")
+        }
+        return Directory(url: applicationSupportDirectoryURL)
+    }
 }

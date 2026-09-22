@@ -76,6 +76,7 @@ extension DeviceInfo {
         case appleTV
         case appleVision
         case appleWatch
+        case mac
         case other(model: String, os: String)
 
         public var normalizedDeviceType: Device.DeviceType {
@@ -86,6 +87,8 @@ extension DeviceInfo {
                     .tablet
             case .appleTV:
                     .tv
+            case .mac:
+                    .desktop
             case .appleVision, .appleWatch, .other:
                     .other
             }
@@ -110,6 +113,8 @@ private extension DeviceInfo.DeviceType {
             self = .iPad
         } else if lowercasedModelName.hasPrefix("appletv") || lowercasedOSName == "tvos" || lowercasedOSName == "apple tvos" {
             self = .appleTV
+        } else if lowercasedModelName.hasPrefix("mac") || lowercasedOSName == "macos" {
+            self = .mac
         } else if lowercasedModelName.hasPrefix("realitydevice") || lowercasedOSName == "visionos" {
             self = .appleVision
         } else if lowercasedModelName.hasPrefix("watch") || lowercasedOSName == "watchos" {

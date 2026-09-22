@@ -24,6 +24,8 @@ private struct RootCommand: ParsableCommand {
         case rum = "rum"
         /// Decorate generated code using Session Replay conventions.
         case sessionReplay = "sr"
+        /// Decorate generated code using Remote Configuration conventions.
+        case remoteConfiguration = "rc"
     }
 
     struct GenerateSwift: ParsableCommand {
@@ -45,6 +47,8 @@ private struct RootCommand: ParsableCommand {
                 print(try generateRUMSwiftModels(from: schemaURL))
             case .sessionReplay:
                 print(try generateSRSwiftModels(from: schemaURL))
+            case .remoteConfiguration:
+                print(try generateRCSwiftModels(from: schemaURL))
             }
         }
     }
@@ -71,6 +75,8 @@ private struct RootCommand: ParsableCommand {
                 print(try generateRUMObjcInteropModels(from: schemaURL, skip: .init(skip)))
             case .sessionReplay:
                 print(try generateSRObjcInteropModels(from: schemaURL, skip: .init(skip)))
+            case .remoteConfiguration:
+                throw Exception.unimplemented("Generating Objc-interop code for Remote Configuration models is not supported.")
             }
         }
     }

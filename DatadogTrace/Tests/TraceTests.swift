@@ -56,6 +56,50 @@ class TraceTests: XCTestCase {
         XCTAssertTrue(Tracer.shared(in: core) is DatadogTracer)
     }
 
+    // MARK: - Remote Configuration
+
+    func testWhenEnabledWithRemoteTrace_itOverridesSampleRateButLeavesNetworkInstrumentationUnchanged() {
+        // Given no in-code URLSession tracking, but a remote `trace` namespace with a full configuration
+        config = Trace.Configuration(urlSessionTracking: nil)
+        core.remoteConfiguration = .mockWith(
+            trace: .init(
+                sampleRate: 55,
+                traceContextInjection: .all,
+                tracedHosts: [
+                    .init(host: "api.example.com", propagatorTypes: [.datadog, .b3]),
+                    .init(host: "example.com", propagatorTypes: [.datadog, .b3])
+                ]
+            )
+        )
+
+        // When
+        Trace.enable(with: config, in: core)
+
+        // Then
+        let tracer = Tracer.shared(in: core).dd
+        XCTAssertEqual(tracer.samplerProvider.sampler.samplingRate, 55)
+        XCTAssertNil(
+            core.get(feature: NetworkInstrumentationFeature.self),
+            "Remote `trace` hosts must not enable `NetworkInstrumentationFeature`: distributed tracing is enabled through RUM's remote configuration"
+        )
+    }
+
+    func testWhenEnabledWithNoRemoteConfiguration_itUsesInCodeConfiguration() {
+        // Given
+        config = Trace.Configuration(urlSessionTracking: nil)
+        core.remoteConfiguration = nil
+
+        // When
+        Trace.enable(with: config, in: core)
+
+        // Then
+        XCTAssertNotNil(core.get(feature: TraceFeature.self))
+        XCTAssertNil(
+            core.get(feature: NetworkInstrumentationFeature.self),
+            "Without remote configuration, Trace must behave exactly as configured in-code"
+        )
+    }
+
     // MARK: - Configuration Tests
 
     func testWhenEnabledWithDefaultConfiguration() throws {

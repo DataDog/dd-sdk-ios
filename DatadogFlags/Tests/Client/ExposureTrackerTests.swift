@@ -17,7 +17,8 @@ final class ExposureTrackerTests: XCTestCase {
             targetingKey: "subject-1",
             flagKey: "flag-1",
             allocationKey: "allocation-a",
-            variationKey: "variation-a"
+            variationKey: "variation-a",
+            serialID: nil
         )
 
         // When
@@ -36,13 +37,15 @@ final class ExposureTrackerTests: XCTestCase {
             targetingKey: "subject-1",
             flagKey: "flag-1",
             allocationKey: "allocation-a",
-            variationKey: "variation-a"
+            variationKey: "variation-a",
+            serialID: nil
         )
         let exposureB = ExposureTracker.Exposure(
             targetingKey: "subject-1",
             flagKey: "flag-1",
             allocationKey: "allocation-b",
-            variationKey: "variation-b"
+            variationKey: "variation-b",
+            serialID: nil
         )
 
         // When
@@ -54,6 +57,62 @@ final class ExposureTrackerTests: XCTestCase {
         XCTAssertTrue(firstTrack)
         XCTAssertTrue(secondTrack)
         XCTAssertTrue(thirdTrack)
+    }
+
+    func testItTracksSerialIDAppearingOnAnUnchangedAssignment() {
+        // Given
+        let tracker = ExposureTracker()
+        let withoutSerialID = ExposureTracker.Exposure(
+            targetingKey: "subject-1",
+            flagKey: "flag-1",
+            allocationKey: "allocation-a",
+            variationKey: "variation-a",
+            serialID: nil
+        )
+        let withSerialID = ExposureTracker.Exposure(
+            targetingKey: "subject-1",
+            flagKey: "flag-1",
+            allocationKey: "allocation-a",
+            variationKey: "variation-a",
+            serialID: 0
+        )
+
+        // When
+        let firstTrack = tracker.track(withoutSerialID)
+        let secondTrack = tracker.track(withSerialID)
+        let thirdTrack = tracker.track(withSerialID)
+
+        // Then
+        XCTAssertTrue(firstTrack)
+        XCTAssertTrue(secondTrack)
+        XCTAssertFalse(thirdTrack)
+    }
+
+    func testItTracksSerialIDChangingOnAnUnchangedAssignment() {
+        // Given
+        let tracker = ExposureTracker()
+        let exposureA = ExposureTracker.Exposure(
+            targetingKey: "subject-1",
+            flagKey: "flag-1",
+            allocationKey: "allocation-a",
+            variationKey: "variation-a",
+            serialID: 340_132
+        )
+        let exposureB = ExposureTracker.Exposure(
+            targetingKey: "subject-1",
+            flagKey: "flag-1",
+            allocationKey: "allocation-a",
+            variationKey: "variation-a",
+            serialID: 340_133
+        )
+
+        // When
+        let firstTrack = tracker.track(exposureA)
+        let secondTrack = tracker.track(exposureB)
+
+        // Then
+        XCTAssertTrue(firstTrack)
+        XCTAssertTrue(secondTrack)
     }
 
     func testItTracksTwoSubjectsAcrossManyFlags() {
@@ -71,7 +130,8 @@ final class ExposureTrackerTests: XCTestCase {
                             targetingKey: targetingKey,
                             flagKey: flagKey,
                             allocationKey: "allocation-a",
-                            variationKey: "variation-a"
+                            variationKey: "variation-a",
+                            serialID: nil
                         )
                     )
                 )
@@ -86,7 +146,8 @@ final class ExposureTrackerTests: XCTestCase {
                             targetingKey: targetingKey,
                             flagKey: flagKey,
                             allocationKey: "allocation-a",
-                            variationKey: "variation-a"
+                            variationKey: "variation-a",
+                            serialID: nil
                         )
                     )
                 )

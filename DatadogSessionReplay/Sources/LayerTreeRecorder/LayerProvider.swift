@@ -9,12 +9,10 @@ import QuartzCore
 import UIKit
 
 /// Provides the root layer for a layer tree capture.
-@available(iOS 13.0, tvOS 13.0, *)
 internal protocol LayerProvider {
     @MainActor var rootLayer: CALayer? { get }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension KeyWindowObserver: LayerProvider {
     var rootLayer: CALayer? {
         relevantWindow?.layer

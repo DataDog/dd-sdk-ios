@@ -16,7 +16,6 @@ import UIKit
 @Suite(.datadogTesting)
 @MainActor
 struct ContentSnapshotRequestTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Throws when layer reference is deallocated")
     func throwsWhenLayerReferenceIsDeallocated() {
         // Given
@@ -33,7 +32,6 @@ struct ContentSnapshotRequestTests {
         }
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Throws when local rect is empty")
     func throwsWhenLocalRectIsEmpty() {
         // Given
@@ -49,7 +47,6 @@ struct ContentSnapshotRequestTests {
         }
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("New plain layer with contents needs snapshot")
     func newPlainLayerWithContentsNeedsSnapshot() throws {
         // Given
@@ -71,7 +68,6 @@ struct ContentSnapshotRequestTests {
         #expect(resolvedRequest.needsSnapshot)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Plain layer with contents does not need snapshot after first appearance")
     func plainLayerWithContentsDoesNotNeedSnapshotAfterFirstAppearance() throws {
         // Given
@@ -96,7 +92,6 @@ struct ContentSnapshotRequestTests {
         #expect(resolvedRequest.needsSnapshot == false)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Layer with content changes needs snapshot")
     func layerWithContentChangesNeedsSnapshot() throws {
         // Given
@@ -121,7 +116,6 @@ struct ContentSnapshotRequestTests {
         #expect(resolvedRequest.needsSnapshot)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Layer subclass without changes does not need snapshot after first appearance")
     func layerSubclassWithoutChangesDoesNotNeedSnapshotAfterFirstAppearance() throws {
         // Given
@@ -145,7 +139,6 @@ struct ContentSnapshotRequestTests {
         #expect(resolvedRequest.needsSnapshot == false)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Layer subclass needs snapshot when bounds change")
     func layerSubclassNeedsSnapshotWhenBoundsChange() throws {
         // Given
@@ -170,7 +163,6 @@ struct ContentSnapshotRequestTests {
         #expect(resolvedRequest.needsSnapshot)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Layer subclass with geometry animation does not need snapshot")
     func layerSubclassWithGeometryAnimationDoesNotNeedSnapshot() throws {
         // Given
@@ -195,7 +187,6 @@ struct ContentSnapshotRequestTests {
         #expect(resolvedRequest.needsSnapshot == false)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Uses captured frame when live layer moves before resolution")
     func usesCapturedFrameWhenLiveLayerMovesBeforeResolution() throws {
         // Given
@@ -218,7 +209,6 @@ struct ContentSnapshotRequestTests {
         #expect(resolvedRequest.geometry.frame == capturedFrame)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Partial snapshot needs snapshot when local rect changes")
     func partialSnapshotNeedsSnapshotWhenLocalRectChanges() throws {
         // Given
@@ -249,7 +239,6 @@ struct ContentSnapshotRequestTests {
         #expect(resolvedRequest.needsSnapshot)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Partial snapshot does not need snapshot when local rect is unchanged")
     func partialSnapshotDoesNotNeedSnapshotWhenLocalRectIsUnchanged() throws {
         // Given
@@ -281,7 +270,6 @@ struct ContentSnapshotRequestTests {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension ContentSnapshotRequest {
     @MainActor
     fileprivate static func mockAny(

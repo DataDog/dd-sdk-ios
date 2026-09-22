@@ -304,7 +304,6 @@ class WebViewTrackingTests: XCTestCase {
     }
 
     /// Loads a simulated request on a WebView, and waits for the page to finish loading.
-    @available(iOS 15.0, *)
     private func loadAndWait(on webView: WKWebView, request: URLRequest, responseHTML: String) {
         final class NavigationDelegate: NSObject, WKNavigationDelegate {
             let expectation: XCTestExpectation
@@ -332,7 +331,41 @@ class WebViewTrackingTests: XCTestCase {
         }
     }
 
-    @available(iOS 15.0, *)
+    func testItInjectsATracingDecisionBeforeTheInitialSessionExists() throws {
+        // Given
+        // This session ID is not sampled at 50%, but it is sampled at 60%:
+        let sessionUUID = RUMUUID(rawValue: UUID(uuidString: "c5b3c4ab-fa4a-4de9-8199-a522131ec48a")!)
+
+        // `FeatureRegistrationCoreMock` returns a NOP feature scope, so the asynchronous flow that creates
+        // the initial RUM session never runs. Any decision available here can only have been resolved
+        // synchronously inside `RUM.enable()`.
+        //
+        // A real core cannot express this deterministically: whether the session lands before the WebView is
+        // instrumented depends on machine load, which is precisely the race reported in RUMS-6198.
+        let core = FeatureRegistrationCoreMock()
+
+        // When
+        RUM.enable(
+            with: .mockWith(applicationID: "test-app-id") {
+                $0.sessionSampleRate = 100
+                $0.uuidGenerator = RUMUUIDGeneratorMock(uuid: sessionUUID)
+                $0.urlSessionTracking = .init(
+                    firstPartyHostsTracing: .trace(hosts: ["localhost"], sampleRate: 60)
+                )
+            },
+            in: core
+        )
+
+        // Then - the value injected into the JS bridge must be a real decision. `null` hands sampling back to
+        // the Browser SDK, which then decides independently of the native session. See RUM-17921.
+        let decision = WebViewTracking.isTraceSampledStringValue(for: core)
+        XCTAssertEqual(
+            decision,
+            "true",
+            "Session sampled at 100% composed with a 60% first party host rate must resolve to `true`, not `\(decision)`"
+        )
+    }
+
     func testItChangesBridgeDecisionOnSessionRollover() throws {
         // Given
         // This session ID is not sampled at 50%, but it is sampled at 60%:
@@ -400,7 +433,6 @@ class WebViewTrackingTests: XCTestCase {
         waitForJS("window.DatadogEventBridge.getIsTraceSampled()", toReturn: "true", webView: webView, description: "sessionUUID2 after loading a new page")
     }
 
-    @available(iOS 15.0, *)
     func testItChangesBridgeDecisionOnSessionRolloverInIframes() throws {
         // Given
         // This session ID is not sampled at 50%, but it is sampled at 60%:
@@ -481,7 +513,6 @@ class WebViewTrackingTests: XCTestCase {
         waitForJS(nestedIframeJS, toReturn: "true", webView: webView, description: "nested iframe sessionUUID2")
     }
 
-    @available(iOS 15.0, *)
     func testItSetsBridgeDecisionToNullOnSessionStop() throws {
         // Given
         // This session ID is not sampled at 50%, but it is sampled at 60%:

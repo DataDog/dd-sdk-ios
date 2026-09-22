@@ -8,7 +8,6 @@
 import Foundation
 import QuartzCore
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
     /// Returns the image snapshot requests needed to represent this layer tree.
     func imageSnapshotRequests(for changeset: CALayerChangeset, cache: ImageSnapshotCache) -> [ImageSnapshotRequest] {
@@ -83,7 +82,6 @@ extension CALayerSnapshot {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension MaskSnapshotRequest {
     fileprivate init?(
         layerSnapshot: CALayerSnapshot,
@@ -112,7 +110,6 @@ extension MaskSnapshotRequest {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension ContentSnapshotRequest {
     fileprivate init?(
         layerSnapshot: CALayerSnapshot,

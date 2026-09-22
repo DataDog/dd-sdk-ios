@@ -9,12 +9,10 @@ import DatadogInternal
 import UIKit
 
 /// Maps layer snapshots to wireframes and resources.
-@available(iOS 13.0, tvOS 13.0, *)
 internal struct LayerWireframeBuilder {
     typealias TextInputSemantics = CALayerSnapshot.SemanticObservation.TextInputSemantics
 
     struct Output {
-        let id: Int64
         let wireframe: SRWireframe
         let resource: Resource?
     }
@@ -22,29 +20,39 @@ internal struct LayerWireframeBuilder {
     private let contentSnapshots: [Int64: ContentSnapshotResult]
     private let webViewSlotIDs: Set<Int>
     private var pendingWebViewSlotIDs: Set<Int>
+    private let embeddedContentSlots: [Int64: String]
+    private var pendingEmbeddedContentSlots: [Int64: String]
 
     init(
         contentSnapshots: [Int64: ContentSnapshotResult],
-        webViewSlotIDs: Set<Int>
+        webViewSlotIDs: Set<Int>,
+        embeddedContentSlots: [Int64: String] = [:]
     ) {
         self.contentSnapshots = contentSnapshots
         self.webViewSlotIDs = webViewSlotIDs
         self.pendingWebViewSlotIDs = webViewSlotIDs
+        self.embeddedContentSlots = embeddedContentSlots
+        self.pendingEmbeddedContentSlots = embeddedContentSlots
     }
 
     mutating func reset() {
         pendingWebViewSlotIDs = webViewSlotIDs
+        pendingEmbeddedContentSlots = embeddedContentSlots
     }
 
     mutating func build(
         from snapshot: CALayerSnapshot,
         textInput: TextInputSemantics?,
-        cornerRadius: CGFloat?
+        cornerRadius: CGFloat?,
+        heatmapIdentifier: HeatmapIdentifier? = nil
     ) -> Output? {
         guard !snapshot.isPrivate else {
             return Output(
-                id: snapshot.replayID,
-                wireframe: SRWireframe(placeholderFor: snapshot, label: .hiddenPlaceholder),
+                wireframe: SRWireframe(
+                    placeholderFor: snapshot,
+                    label: .hiddenPlaceholder,
+                    permanentId: heatmapIdentifier?.rawValue
+                ),
                 resource: nil
             )
         }
@@ -59,72 +67,107 @@ internal struct LayerWireframeBuilder {
                 for: snapshot,
                 result: result,
                 textInput: textInput,
-                cornerRadius: cornerRadius
+                cornerRadius: cornerRadius,
+                permanentId: heatmapIdentifier?.rawValue
             )
         case (.layer, .none):
-            return SRWireframe(layerSnapshot: snapshot, cornerRadius: cornerRadius)
-                .map { Output(id: snapshot.replayID, wireframe: $0, resource: nil) }
+            return SRWireframe(
+                layerSnapshot: snapshot,
+                cornerRadius: cornerRadius,
+                permanentId: heatmapIdentifier?.rawValue
+            )
+                .map { Output(wireframe: $0, resource: nil) }
         case (.gradient(let gradient), _):
             return SRWireframe(
                 layerSnapshot: snapshot,
                 backgroundGradient: SRShapeGradient(gradient: gradient),
-                cornerRadius: cornerRadius
-            ).map { Output(id: snapshot.replayID, wireframe: $0, resource: nil) }
+                cornerRadius: cornerRadius,
+                permanentId: heatmapIdentifier?.rawValue
+            ).map { Output(wireframe: $0, resource: nil) }
         case (.label(let label), _):
             return SRWireframe(
                 layerSnapshot: snapshot,
                 label: label,
-                cornerRadius: cornerRadius
-            ).map { Output(id: snapshot.replayID, wireframe: $0, resource: nil) }
+                cornerRadius: cornerRadius,
+                permanentId: heatmapIdentifier?.rawValue
+            ).map { Output(wireframe: $0, resource: nil) }
         case (.textInput, .none):
-            return SRWireframe(layerSnapshot: snapshot, cornerRadius: cornerRadius)
-                .map { Output(id: snapshot.replayID, wireframe: $0, resource: nil) }
+            return SRWireframe(
+                layerSnapshot: snapshot,
+                cornerRadius: cornerRadius,
+                permanentId: heatmapIdentifier?.rawValue
+            )
+                .map { Output(wireframe: $0, resource: nil) }
         case (.image(let image), .none) where image.hasContent:
             let wireframe = SRWireframe(
                 placeholderFor: snapshot,
                 label: snapshot.imagePrivacyLevel == .maskNonBundledOnly
                     ? .contentImagePlaceholder
-                    : .imagePlaceholder
+                    : .imagePlaceholder,
+                permanentId: heatmapIdentifier?.rawValue
             )
-            return Output(id: snapshot.replayID, wireframe: wireframe, resource: nil)
+            return Output(wireframe: wireframe, resource: nil)
         case (.image, .none):
-            return SRWireframe(layerSnapshot: snapshot, cornerRadius: cornerRadius)
-                .map { Output(id: snapshot.replayID, wireframe: $0, resource: nil) }
+            return SRWireframe(
+                layerSnapshot: snapshot,
+                cornerRadius: cornerRadius,
+                permanentId: heatmapIdentifier?.rawValue
+            )
+                .map { Output(wireframe: $0, resource: nil) }
         case (.webView(let webView), _):
             pendingWebViewSlotIDs.remove(webView.slotID)
             return Output(
-                id: Int64(webView.slotID),
-                wireframe: SRWireframe(layerSnapshot: snapshot, webView: webView),
+                wireframe: SRWireframe(
+                    layerSnapshot: snapshot,
+                    webView: webView,
+                    permanentId: heatmapIdentifier?.rawValue
+                ),
+                resource: nil
+            )
+        case (.embeddedContent(let embeddedContent), _):
+            pendingEmbeddedContentSlots.removeValue(forKey: snapshot.replayID)
+            return Output(
+                wireframe: SRWireframe(
+                    layerSnapshot: snapshot,
+                    embeddedContent: embeddedContent,
+                    permanentId: heatmapIdentifier?.rawValue
+                ),
                 resource: nil
             )
         case (.visualEffect(.automaticCapsule), _):
             return Output(
-                id: snapshot.replayID,
                 wireframe: SRWireframe(
                     layerSnapshot: snapshot,
                     backgroundColor: .systemBackground,
-                    cornerRadius: min(snapshot.absoluteFrame.width, snapshot.absoluteFrame.height) / 2
+                    cornerRadius: min(snapshot.absoluteFrame.width, snapshot.absoluteFrame.height) / 2,
+                    permanentId: heatmapIdentifier?.rawValue
                 ),
                 resource: nil
             )
         case (.visualEffect(.glassGroup), _) where snapshot.cornerRadii != .zero:
             return Output(
-                id: snapshot.replayID,
-                wireframe: SRWireframe(layerSnapshot: snapshot, backgroundColor: .systemBackground),
+                wireframe: SRWireframe(
+                    layerSnapshot: snapshot,
+                    backgroundColor: .systemBackground,
+                    permanentId: heatmapIdentifier?.rawValue
+                ),
                 resource: nil
             )
         case (.visualEffect(.backdrop), _):
             return Output(
-                id: snapshot.replayID,
-                wireframe: SRWireframe(layerSnapshot: snapshot, backgroundColor: .systemBackground),
+                wireframe: SRWireframe(
+                    layerSnapshot: snapshot,
+                    backgroundColor: .systemBackground,
+                    permanentId: heatmapIdentifier?.rawValue
+                ),
                 resource: nil
             )
         case (.visualEffect(.background(let color)), _):
             return Output(
-                id: snapshot.replayID,
                 wireframe: SRWireframe(
                     layerSnapshot: snapshot,
-                    backgroundColor: color ?? .secondarySystemFill
+                    backgroundColor: color ?? .secondarySystemFill,
+                    permanentId: heatmapIdentifier?.rawValue
                 ),
                 resource: nil
             )
@@ -132,8 +175,12 @@ internal struct LayerWireframeBuilder {
             guard let gradient = SRShapeGradient(scrollPocketEdge: edge) else {
                 return nil
             }
-            return SRWireframe(layerSnapshot: snapshot, backgroundGradient: gradient)
-                .map { Output(id: snapshot.replayID, wireframe: $0, resource: nil) }
+            return SRWireframe(
+                layerSnapshot: snapshot,
+                backgroundGradient: gradient,
+                permanentId: heatmapIdentifier?.rawValue
+            )
+                .map { Output(wireframe: $0, resource: nil) }
         default:
             return nil
         }
@@ -145,11 +192,20 @@ internal struct LayerWireframeBuilder {
         return wireframes
     }
 
+    mutating func makeHiddenEmbeddedContentWireframes() -> [SRWireframe] {
+        let wireframes = pendingEmbeddedContentSlots.map {
+            SRWireframe(hiddenEmbeddedContentReplayID: $0.key, slotID: $0.value)
+        }
+        pendingEmbeddedContentSlots.removeAll()
+        return wireframes
+    }
+
     private func makeContentSnapshotOutput(
         for layerSnapshot: CALayerSnapshot,
         result: ContentSnapshotResult,
         textInput: TextInputSemantics?,
-        cornerRadius: CGFloat?
+        cornerRadius: CGFloat?,
+        permanentId: String?
     ) -> Output? {
         switch result {
         case .success(let imageSnapshot):
@@ -158,41 +214,41 @@ internal struct LayerWireframeBuilder {
                 case .image(let image):
                     let resource = ImageSnapshotResource(image: image)
                     return Output(
-                        id: layerSnapshot.replayID,
                         wireframe: SRWireframe(
-                            id: layerSnapshot.replayID,
+                            replayID: layerSnapshot.replayID,
                             imageSnapshot: imageSnapshot,
-                            resource: resource
+                            resource: resource,
+                            permanentId: permanentId
                         ),
                         resource: resource
                     )
                 case .placeholder(let color):
                     return Output(
-                        id: layerSnapshot.replayID,
                         wireframe: SRWireframe(
                             layerSnapshot: layerSnapshot,
                             backgroundColor: color,
-                            cornerRadius: cornerRadius
+                            cornerRadius: cornerRadius,
+                            permanentId: permanentId
                         ),
                         resource: nil
                     )
                 }
             } catch {
                 return Output(
-                    id: layerSnapshot.replayID,
                     wireframe: SRWireframe(
                         placeholderFor: layerSnapshot,
-                        label: .redactedPlaceholder
+                        label: .redactedPlaceholder,
+                        permanentId: permanentId
                     ),
                     resource: nil
                 )
             }
         case .failure(.timedOut):
             return Output(
-                id: layerSnapshot.replayID,
                 wireframe: SRWireframe(
                     placeholderFor: layerSnapshot,
-                    label: .timedOutPlaceholder
+                    label: .timedOutPlaceholder,
+                    permanentId: permanentId
                 ),
                 resource: nil
             )

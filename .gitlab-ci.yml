@@ -21,6 +21,7 @@ variables:
   DEFAULT_TVOS_OS: "26.0"
   DEFAULT_WATCHOS_OS: "26.0"
   DEFAULT_VISIONOS_OS: "26.0"
+  DEFAULT_MACOS_OS: "26.0"
   # Prefilled variables for running a pipeline manually:
   # Ref.: https://docs.gitlab.com/ee/ci/pipelines/index.html#prefill-variables-in-manual-pipelines
   RELEASE_GIT_TAG:
@@ -33,6 +34,18 @@ default:
   tags:
     - macos:sequoia-arm64
     - specific:true
+  interruptible: true # a pending/running job may be canceled by a newer push to the same branch
+
+# On any branch other than a known stable branch, cancel interruptible jobs from
+# the previous pipeline when a new commit is pushed to that branch.
+workflow:
+  rules:
+    - if: '$CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH !~ /^(develop|master|dogfooding|release\/.*|hotfix\/.*)$/'
+      auto_cancel:
+        on_new_commit: interruptible
+    - when: always # develop, master, dogfooding, release/*, hotfix/*: never auto-canceled
+      auto_cancel:
+        on_new_commit: none
 
 # ┌───────────────┐
 # │ Utility jobs: │
@@ -252,6 +265,26 @@ Unit Tests (visionOS):
       - "ResultBundles/*.log"
     when: always
 
+Unit Tests (macOS):
+  stage: test
+  rules:
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
+  dependencies:
+    - "Build Dependencies"
+  variables:
+    PLATFORM: "macOS"
+    DEVICE: "macOS"
+  script:
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
+    - make clean repo-setup ENV=ci
+    - make test-macos-all OS="$DEFAULT_MACOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" USE_TEST_VISIBILITY=1
+  artifacts:
+    paths:
+      - "ResultBundles/*.xcresult"
+      - "ResultBundles/*.log"
+    when: always
+
 UI Tests:
   stage: ui-test
   rules: 
@@ -323,9 +356,7 @@ SR Layer Snapshot Tests:
   # artifacts: when: always are needed together to capture logs on a hang.
   timeout: 55m
   variables:
-    PLATFORM: "iOS Simulator"
-    IOS_OS: "26.0.1"
-    DEVICE: "iPhone 17"
+    SNAPSHOT_ENV: "ios-26.0.1-iphone17"
     ARTIFACTS_PATH: "artifacts"
     RUNNER_SCRIPT_TIMEOUT: "50m"
   artifacts:
@@ -336,7 +367,7 @@ SR Layer Snapshot Tests:
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh
     - make clean repo-setup ENV=ci
-    - make sr-layer-snapshots-pull sr-layer-snapshot-test OS="$IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" ARTIFACTS_PATH="$ARTIFACTS_PATH"
+    - make sr-layer-snapshots-pull sr-layer-snapshot-test SNAPSHOT_ENV="$SNAPSHOT_ENV" ARTIFACTS_PATH="$ARTIFACTS_PATH"
 
 Tools Tests:
   stage: test
@@ -371,9 +402,17 @@ Smoke Tests (iOS):
     PLATFORM: "iOS Simulator"
     DEVICE: "iPhone 17 Pro"
   script:
-    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh --datadog-ci
     - make clean repo-setup ENV=ci
     - make smoke-test-ios-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
+  after_script:
+    - ./tools/upload-smoke-test-reports.sh
+  artifacts:
+    paths:
+      - "artifacts/smoke-test-reports/**/*.xml"
+    reports:
+      junit: "artifacts/smoke-test-reports/**/*.xml"
+    when: always
 
 Smoke Tests (tvOS):
   stage: smoke-test
@@ -386,9 +425,32 @@ Smoke Tests (tvOS):
     PLATFORM: "tvOS Simulator"
     DEVICE: "Apple TV"
   script:
-    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh --datadog-ci
     - make clean repo-setup ENV=ci
     - make smoke-test-tvos-all OS="$DEFAULT_TVOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
+  after_script:
+    - ./tools/upload-smoke-test-reports.sh
+  artifacts:
+    paths:
+      - "artifacts/smoke-test-reports/**/*.xml"
+    reports:
+      junit: "artifacts/smoke-test-reports/**/*.xml"
+    when: always
+
+Smoke Tests (macOS):
+  stage: smoke-test
+  rules:
+    - !reference [.test-pipeline-job, rules]
+    - !reference [.release-pipeline-job, rules]
+  id_tokens:
+    <<: *dd-octo-sts-id-token
+  variables:
+    PLATFORM: "macOS"
+    DEVICE: "macOS"
+  script:
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh
+    - make clean repo-setup ENV=ci
+    - make smoke-test-macos-all OS="$DEFAULT_MACOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
 
 SPM Build (Swift 6.2):
   stage: smoke-test
@@ -457,6 +519,7 @@ Benchmark Test (upload to s8s):
 
 Dogfood (Shopist):
   stage: dogfood
+  interruptible: false
   rules:
     - if: '$CI_COMMIT_BRANCH == $DOGFOODING_BRANCH'
       when: manual
@@ -469,6 +532,7 @@ Dogfood (Shopist):
 
 Dogfood (Datadog app):
   stage: dogfood
+  interruptible: false
   rules:
     - if: '$CI_COMMIT_BRANCH == $DOGFOODING_BRANCH'
       when: manual
@@ -492,6 +556,7 @@ Dogfood (Datadog app):
 
 Build Artifacts:
   stage: release-build
+  interruptible: false
   rules:
     - !reference [.release-pipeline-job, rules]
   id_tokens:
@@ -510,7 +575,8 @@ Build Artifacts:
 
 Publish GH Asset:
   stage: release-publish
-  rules: 
+  interruptible: false
+  rules:
     - !reference [.release-pipeline-job, rules]
   id_tokens:
     <<: *dd-octo-sts-id-token
@@ -524,6 +590,7 @@ Publish GH Asset:
 
 Publish CP podspecs (internal):
   stage: release-publish
+  interruptible: false
   retry: 2
   rules:
     - !reference [.release-pipeline-job, rules]
@@ -537,6 +604,7 @@ Publish CP podspecs (internal):
 
 .publish-dependent-podspec:
   stage: release-publish
+  interruptible: false
   retry: 2
   rules:
     - !reference [.release-pipeline-20m-delayed-job, rules]

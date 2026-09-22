@@ -15,6 +15,16 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         static let sessionMaxDuration: TimeInterval = 4 * 60 * 60 // 4 hours
     }
 
+    /// Whether a session is timed out due to inactivity, given the time of its last interaction.
+    static func hasTimedOut(lastInteractionTime: Date, currentTime: Date) -> Bool {
+        currentTime.timeIntervalSince(lastInteractionTime) >= Constants.sessionTimeoutDuration
+    }
+
+    /// Whether a session has exceeded its maximum duration, given its start time.
+    static func hasExpired(sessionStartTime: Date, currentTime: Date) -> Bool {
+        currentTime.timeIntervalSince(sessionStartTime) >= Constants.sessionMaxDuration
+    }
+
     /// The reason of ending a session.
     enum EndReason: String {
         /// The session timed out because it received no interaction for x minutes.
@@ -32,7 +42,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     /// Active View scopes. Scopes are added / removed when the View starts / stops displaying.
     private(set) var viewScopes: [RUMViewScope] = [] {
         didSet {
-            activeView = viewScopes.last(where: { $0.isActiveView })
+            let previousActiveViewUUID = activeView?.viewUUID
+            let nextActiveView = viewScopes.last(where: { $0.isActiveView })
+            if previousActiveViewUUID != nextActiveView?.viewUUID, let previousActiveViewUUID {
+                dependencies.viewCache.markInactive(id: previousActiveViewUUID.toRUMDataFormat)
+            }
+            activeView = nextActiveView
             if !state.hasTrackedAnyView && !viewScopes.isEmpty {
                 state = RUMSessionState(
                     sessionUUID: state.sessionUUID,
@@ -95,13 +110,22 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     /// If this is the very first session created in the current app process (`false` for session created upon expiration of a previous one).
     let isInitialSession: Bool
     /// The start time of this Session, measured in device date. In initial session this is the time of SDK init.
-    private let sessionStartTime: Date
+    let sessionStartTime: Date
     /// Time of the last RUM interaction noticed by this Session.
-    private var lastInteractionTime: Date
+    private(set) var lastInteractionTime: Date
     /// Indicates whether the "ApplicationLaunch" view was active when the app entered the background.
     private var hadApplicationLaunchViewWhenEnteringBackground: Bool? = nil
     /// The reason why this session has ended or `nil` if it is still active.
-    private(set) var endReason: EndReason?
+    private(set) var endReason: EndReason? {
+        didSet {
+            if oldValue == nil, endReason != nil {
+                deactivateActiveView()
+            }
+            if endReason != nil {
+                dependencies.timeseriesCollector?.stop(sessionID: sessionUUID.toRUMDataFormat)
+            }
+        }
+    }
 
     /// Counter to track the index of views in this session. Starts at 0 for the first view.
     private var nextViewIndex: Int = 0
@@ -116,9 +140,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         context: DatadogContext,
         dependencies: RUMScopeDependencies,
         applicationState: RUMApplicationState,
-        resumingViewScope: RUMViewScope? = nil
+        resumingViewScope: RUMViewScope? = nil,
+        presetSessionUUID: RUMUUID? = nil
     ) {
-        let sessionUUID = dependencies.rumUUIDGenerator.generateUnique()
+        // `presetSessionUUID` is created synchronously in `RUM.enable()` for the initial session, so the
+        // sampler derived from it is exposed through `RUMSessionSamplerProvider` before `RUM.enable()` returns.
+        // Every other session generates its ID here, as before.
+        let sessionUUID = presetSessionUUID ?? dependencies.rumUUIDGenerator.generateUnique()
 
         self.parent = parent
         self.dependencies = dependencies
@@ -168,6 +196,17 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
         // Update fatal error context with recent RUM session state:
         dependencies.fatalErrorContext.sessionState = state
+
+        if sampler.isSampled {
+            dependencies.timeseriesCollector?.start(
+                sessionID: sessionUUID.toRUMDataFormat,
+                applicationID: dependencies.rumApplicationID,
+                sessionType: dependencies.sessionType
+            )
+            if !context.applicationStateHistory.currentState.isRunningInForeground {
+                dependencies.timeseriesCollector?.pause(sessionID: sessionUUID.toRUMDataFormat)
+            }
+        }
     }
 
     /// Creates a new Session upon expiration of the previous one.
@@ -208,6 +247,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 )
                 self.viewScopes = [activeView]
                 self.activeView = activeView
+                dependencies.viewCache.insert(
+                    id: activeView.viewUUID.toRUMDataFormat,
+                    timestamp: startTime.timeIntervalSince1970.dd.toInt64Milliseconds,
+                    hasReplay: context.hasReplay,
+                    isActive: true
+                )
                 nextViewIndex += 1
             } else {
                 self.viewScopes = []
@@ -273,11 +318,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .didEnterBackground:
                 hadApplicationLaunchViewWhenEnteringBackground = activeView?.viewPath == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL
                 appLaunchManager.process(command, context: context, writer: writer)
+                dependencies.timeseriesCollector?.pause(sessionID: sessionUUID.toRUMDataFormat)
             case let appLifecycleCommand as RUMHandleAppLifecycleEventCommand where appLifecycleCommand.event == .willEnterForeground:
                 if hadApplicationLaunchViewWhenEnteringBackground == true {
                     startApplicationLaunchView(on: appLifecycleCommand, context: context, writer: writer)
                 }
                 hadApplicationLaunchViewWhenEnteringBackground = nil
+                dependencies.timeseriesCollector?.resume(sessionID: sessionUUID.toRUMDataFormat)
 
             case let operationStepVitalCommand as RUMOperationStepVitalCommand:
                 // Forward command to the feature operation manager
@@ -383,8 +430,20 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         dependencies.viewCache.insert(
             id: id,
             timestamp: startTime.timeIntervalSince1970.dd.toInt64Milliseconds,
-            hasReplay: hasReplay
+            hasReplay: hasReplay,
+            isActive: true
         )
+    }
+
+    deinit {
+        deactivateActiveView()
+    }
+
+    private func deactivateActiveView() {
+        guard let activeView else {
+            return
+        }
+        dependencies.viewCache.markInactive(id: activeView.viewUUID.toRUMDataFormat)
     }
 
     private func startApplicationLaunchView(on command: RUMCommand, context: DatadogContext, writer: Writer) {
@@ -481,12 +540,10 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     }
 
     private func hasTimedOut(currentTime: Date) -> Bool {
-        let timeElapsedSinceLastInteraction = currentTime.timeIntervalSince(lastInteractionTime)
-        return timeElapsedSinceLastInteraction >= Constants.sessionTimeoutDuration
+        Self.hasTimedOut(lastInteractionTime: lastInteractionTime, currentTime: currentTime)
     }
 
     private func hasExpired(currentTime: Date) -> Bool {
-        let sessionDuration = currentTime.timeIntervalSince(sessionStartTime)
-        return sessionDuration >= Constants.sessionMaxDuration
+        Self.hasExpired(sessionStartTime: sessionStartTime, currentTime: currentTime)
     }
 }

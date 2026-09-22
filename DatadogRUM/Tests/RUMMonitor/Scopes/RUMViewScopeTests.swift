@@ -5,7 +5,6 @@
  */
 
 import XCTest
-import UIKit
 import DatadogInternal
 @testable import DatadogRUM
 @testable import TestUtilities
@@ -116,12 +115,23 @@ class RUMViewScopeTests: XCTestCase {
         let hasReplay: Bool = .mockRandom()
         let sessionReplaySampleRate: SampleRate = .mockRandom(min: 0, max: 100)
         let startRecordingManually: Bool = .random()
-        var context = self.context
+        let remoteConfigurationId: String = .mockRandom()
+        let sessionReplayExperimentalFeatures = ["composition_tree_recording", "swiftui"]
+        var context = DatadogContext.mockWith(
+            service: self.context.service,
+            version: self.context.version,
+            buildNumber: self.context.buildNumber,
+            buildId: self.context.buildId,
+            device: self.context.device,
+            os: self.context.os,
+            remoteConfigurationId: remoteConfigurationId
+        )
         context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
         context.set(additionalContext: SessionReplayCoreContext.RecordsCount(value: [scope.viewUUID.toRUMDataFormat: 1]))
         context.set(additionalContext: SessionReplayCoreContext.Configuration(
             sampleRate: sessionReplaySampleRate,
-            startRecordingManually: startRecordingManually
+            startRecordingManually: startRecordingManually,
+            experimentalFeatures: sessionReplayExperimentalFeatures
         ))
 
         _ = scope.process(
@@ -150,7 +160,9 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.documentVersion, 1)
         XCTAssertEqual(event.dd.configuration?.traceSampleRate, Double(traceSampleRate))
         XCTAssertEqual(event.dd.configuration?.sessionReplaySampleRate, Double(sessionReplaySampleRate))
+        XCTAssertEqual(event.dd.configuration?.sessionReplayExperimentalFeatures, sessionReplayExperimentalFeatures)
         XCTAssertEqual(event.dd.configuration?.startSessionReplayRecordingManually, startRecordingManually)
+        XCTAssertEqual(event.dd.configuration?.remoteConfigurationId, remoteConfigurationId)
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, "test-service")
@@ -164,6 +176,38 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.os?.version, "os-version")
         XCTAssertEqual(event.os?.build, "os-build")
         XCTAssertEqual(event.dd.replayStats?.recordsCount, 1)
+    }
+
+    func testWhenSessionReplayHasNoExperimentalFeatures_itSendsEmptyExperimentalFeatures() throws {
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            isInitialView: true,
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: .mockAny()
+        )
+
+        var context = self.context
+        context.set(additionalContext: SessionReplayCoreContext.Configuration(
+            sampleRate: .mockRandom(min: 0, max: 100),
+            startRecordingManually: .random()
+        ))
+
+        _ = scope.process(
+            command: RUMCommandMock(time: currentTime),
+            context: context,
+            writer: writer
+        )
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
+        XCTAssertEqual(event.dd.configuration?.sessionReplayExperimentalFeatures, [])
     }
 
     func testWhenInitialViewHasConfiguredSource_itSendsViewUpdateEventWithConfiguredSource() throws {
@@ -1978,7 +2022,7 @@ class RUMViewScopeTests: XCTestCase {
         (0..<5).forEach { i in
             XCTAssertTrue(
                 scope.process(
-                    command: RUMAddUserActionCommand.mockWith(time: currentTime, actionType: .tap),
+                    command: RUMAddUserActionCommand.mockWith(time: currentTime, actionType: pointerActionType),
                     context: context,
                     writer: writer
                 )
@@ -2008,6 +2052,115 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.view.frustration?.count, 5)
     }
 
+    #if os(macOS)
+    func testWhenTwoClickActionsTrackedSequentially_thenHigherPriorityInstrumentationWins() throws {
+        func actionName(for instrumentationType: InstrumentationType) -> String {
+            switch instrumentationType {
+            case .manual: return "Manual action"
+            case .appkit: return "AppKit action"
+            case .swiftuiAutomatic: return "Automatic SwiftUI action"
+            case .swiftui: return "SwiftUI action"
+            case .crossPlatform(let value): return "\(value) action"
+            }
+        }
+
+        /// Simulates two consecutive click actions, triggered by different instrumentation types,
+        /// and asserts that the higher priority action is tracked.
+        /// - Parameters:
+        ///   - firstClick: The type of instrumentation that tracks the first click.
+        ///   - secondClick: The type of instrumentation that tracks the second click.
+        ///   - expectedActionName: The expected action name after the second click is processed.
+        func testClickActions(
+            firstClick: InstrumentationType, secondClick: InstrumentationType, expectedActionName: String
+        ) throws {
+            let firstActionName = actionName(for: firstClick)
+            let secondActionName = actionName(for: secondClick)
+
+            var currentTime = Date()
+            let scope = RUMViewScope(
+                isInitialView: false,
+                parent: parent,
+                dependencies: .mockAny(),
+                identity: .mockViewIdentifier(),
+                path: .mockAny(),
+                name: .mockAny(),
+                customTimings: [:],
+                startTime: currentTime,
+                serverTimeOffset: .zero,
+                interactionToNextViewMetric: INVMetricMock(),
+                viewIndexInSession: .mockAny()
+            )
+            _ = scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+
+            // Given: The first click action is tracked
+            _ = scope.process(
+                command: RUMAddUserActionCommand.mockWith(
+                    time: currentTime, instrumentation: firstClick, actionType: .click, name: firstActionName
+                ),
+                context: context,
+                writer: writer
+            )
+
+            // When: The second click action is tracked shortly after
+            currentTime.addTimeInterval(.mockRandom(min: 0, max: RUMUserActionScope.Constants.discreteActionTimeoutDuration))
+            _ = scope.process(
+                command: RUMAddUserActionCommand.mockWith(
+                    time: currentTime, instrumentation: secondClick, actionType: .click, name: secondActionName
+                ),
+                context: context,
+                writer: writer
+            )
+
+            // Then: Assert that the higher-priority action is the one being tracked
+            currentTime.addTimeInterval(RUMUserActionScope.Constants.discreteActionTimeoutDuration)
+            _ = scope.process(
+                command: RUMStopViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+
+            let viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+            let actionName = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last?.action.target?.name)
+            XCTAssertEqual(viewEvent.view.action.count, 1)
+            XCTAssertEqual(
+                actionName,
+                expectedActionName,
+                "When \(firstActionName) is followed by \(secondActionName) it should sent \(expectedActionName) not \(actionName)"
+            )
+        }
+
+        let crossPlatform = InstrumentationType.crossPlatform("Cross-platform")
+
+        try testClickActions(firstClick: .appkit, secondClick: .manual, expectedActionName: actionName(for: .manual))
+        try testClickActions(firstClick: .appkit, secondClick: .swiftuiAutomatic, expectedActionName: actionName(for: .swiftuiAutomatic))
+        try testClickActions(firstClick: .appkit, secondClick: .swiftui, expectedActionName: actionName(for: .swiftui))
+        try testClickActions(firstClick: .appkit, secondClick: crossPlatform, expectedActionName: actionName(for: crossPlatform))
+
+        try testClickActions(firstClick: .swiftuiAutomatic, secondClick: .appkit, expectedActionName: actionName(for: .swiftuiAutomatic))
+        try testClickActions(firstClick: .swiftuiAutomatic, secondClick: .manual, expectedActionName: actionName(for: .manual))
+        try testClickActions(firstClick: .swiftuiAutomatic, secondClick: .swiftui, expectedActionName: actionName(for: .swiftui))
+        try testClickActions(firstClick: .swiftuiAutomatic, secondClick: crossPlatform, expectedActionName: actionName(for: crossPlatform))
+
+        try testClickActions(firstClick: .swiftui, secondClick: .appkit, expectedActionName: actionName(for: .swiftui))
+        try testClickActions(firstClick: .swiftui, secondClick: .manual, expectedActionName: actionName(for: .manual))
+        try testClickActions(firstClick: .swiftui, secondClick: .swiftuiAutomatic, expectedActionName: actionName(for: .swiftui))
+        try testClickActions(firstClick: .swiftui, secondClick: crossPlatform, expectedActionName: actionName(for: crossPlatform))
+
+        try testClickActions(firstClick: .manual, secondClick: .appkit, expectedActionName: actionName(for: .manual))
+        try testClickActions(firstClick: .manual, secondClick: .swiftuiAutomatic, expectedActionName: actionName(for: .manual))
+        try testClickActions(firstClick: .manual, secondClick: .swiftui, expectedActionName: actionName(for: .manual))
+        try testClickActions(firstClick: .manual, secondClick: crossPlatform, expectedActionName: actionName(for: crossPlatform))
+
+        try testClickActions(firstClick: crossPlatform, secondClick: .appkit, expectedActionName: actionName(for: crossPlatform))
+        try testClickActions(firstClick: crossPlatform, secondClick: .swiftuiAutomatic, expectedActionName: actionName(for: crossPlatform))
+        try testClickActions(firstClick: crossPlatform, secondClick: .swiftui, expectedActionName: actionName(for: crossPlatform))
+        try testClickActions(firstClick: crossPlatform, secondClick: .manual, expectedActionName: actionName(for: crossPlatform))
+    }
+    #elseif !os(macOS)
     func testWhenTwoTapActionsTrackedSequentially_thenHigherPriorityInstrumentationWins() throws {
         func actionName(for instrumentationType: InstrumentationType) -> String {
             switch instrumentationType {
@@ -2015,6 +2168,7 @@ class RUMViewScopeTests: XCTestCase {
             case .uikit: return "UIKit action"
             case .swiftuiAutomatic: return "Automatic SwiftUI action"
             case .swiftui: return "SwiftUI action"
+            case .crossPlatform(let value): return "\(value) action"
             }
         }
 
@@ -2097,6 +2251,7 @@ class RUMViewScopeTests: XCTestCase {
         try testTapActions(firstTap: .manual, secondTap: .swiftui, expectedActionName: actionName(for: .manual))
         try testTapActions(firstTap: .manual, secondTap: .swiftuiAutomatic, expectedActionName: actionName(for: .manual))
     }
+    #endif
 
     // MARK: - Error Tracking
 
@@ -4281,7 +4436,6 @@ class RUMViewScopeTests: XCTestCase {
     }
 
     // MARK: - View Attributes
-    @available(iOS 13.0, tvOS 13.0, *)
     @MainActor
     func testAccessibilityAttributesInViewEvents() throws {
         // Given
@@ -4394,5 +4548,13 @@ class RUMViewScopeTests: XCTestCase {
         // Then
         let viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
         XCTAssertNil(viewEvent.view.accessibility)
+    }
+
+    private var pointerActionType: RUMActionType {
+        #if os(macOS)
+        .click
+        #else
+        .tap
+        #endif
     }
 }

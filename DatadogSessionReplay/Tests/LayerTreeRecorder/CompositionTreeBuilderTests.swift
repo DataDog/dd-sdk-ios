@@ -17,7 +17,6 @@ import UIKit
 @Suite(.datadogTesting)
 @MainActor
 struct CompositionTreeBuilderTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates background and content references for container")
     func buildCreatesBackgroundAndContentReferencesForContainer() throws {
         // Given
@@ -45,6 +44,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [],
+            embeddedContentSlots: [:],
             imageSnapshots: .init()
         )
 
@@ -60,14 +60,13 @@ struct CompositionTreeBuilderTests {
             output.compositionTree.layers?.first { $0.id == containerSnapshot.replayID }
         )
         #expect(layer.children == [
-            .init(id: containerSnapshot.replayID, type: .wireframe),
-            .init(id: contentSnapshot.replayID, type: .wireframe)
+            .init(id: .init(namespace: .shape, replayID: containerSnapshot.replayID), type: .wireframe),
+            .init(id: .init(namespace: .shape, replayID: contentSnapshot.replayID), type: .wireframe)
         ])
         #expect(output.wireframes.count == 2)
         #expect(output.resources.isEmpty)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates fallback and content references for automatic capsule")
     func buildCreatesFallbackAndContentReferencesForAutomaticCapsule() throws {
         // Given
@@ -86,6 +85,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [],
+            embeddedContentSlots: [:],
             imageSnapshots: .init()
         )
 
@@ -97,12 +97,11 @@ struct CompositionTreeBuilderTests {
             output.compositionTree.layers?.first { $0.id == capsuleSnapshot.replayID }
         )
         #expect(layer.children == [
-            .init(id: capsuleSnapshot.replayID, type: .wireframe),
-            .init(id: contentSnapshot.replayID, type: .wireframe)
+            .init(id: .init(namespace: .shape, replayID: capsuleSnapshot.replayID), type: .wireframe),
+            .init(id: .init(namespace: .shape, replayID: contentSnapshot.replayID), type: .wireframe)
         ])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates composition layer for leaf with modifiers")
     func buildCreatesCompositionLayerForLeafWithModifiers() throws {
         // Given
@@ -120,6 +119,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [],
+            embeddedContentSlots: [:],
             imageSnapshots: .init()
         )
 
@@ -133,11 +133,12 @@ struct CompositionTreeBuilderTests {
 
         let layer = try #require(output.compositionTree.layers?.first)
         #expect(layer.id == leaf.replayID)
-        #expect(layer.children == [.init(id: leaf.replayID, type: .wireframe)])
+        #expect(layer.children == [
+            .init(id: .init(namespace: .shape, replayID: leaf.replayID), type: .wireframe)
+        ])
         #expect(output.wireframes.count == 1)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build applies inherited visual effect to descendant wireframe")
     func buildAppliesInheritedVisualEffectToDescendantWireframe() throws {
         // Given
@@ -156,6 +157,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [],
+            embeddedContentSlots: [:],
             imageSnapshots: .init()
         )
 
@@ -167,7 +169,7 @@ struct CompositionTreeBuilderTests {
             guard case .shapeWireframe(let shapeWireframe) = wireframe else {
                 return false
             }
-            return shapeWireframe.id == contentSnapshot.replayID
+            return shapeWireframe.id == Int64(namespace: .shape, replayID: contentSnapshot.replayID)
         })
         guard case .shapeWireframe(let shapeWireframe) = wireframe else {
             Issue.record("Expected a shape wireframe")
@@ -177,7 +179,119 @@ struct CompositionTreeBuilderTests {
         #expect(shapeWireframe.shapeStyle?.cornerRadius == 12)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build includes embedded content visibility state")
+    func buildIncludesEmbeddedContentVisibilityState() throws {
+        // Given
+        let visibleReplayID: Int64 = 2
+        let hiddenReplayID: Int64 = 3
+        let visibleSnapshot = CALayerSnapshot.mockWith(
+            replayID: visibleReplayID,
+            absoluteFrame: CGRect(x: 10, y: 20, width: 30, height: 40),
+            observation: .init(semantics: .embeddedContent(.init(slotID: "visible-slot")))
+        )
+        let builder = CompositionTreeBuilder(
+            root: .mockRoot(sublayers: [visibleSnapshot]),
+            webViewSlotIDs: [],
+            embeddedContentSlots: [
+                visibleReplayID: "visible-slot",
+                hiddenReplayID: "hidden-slot"
+            ],
+            imageSnapshots: .init()
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        let visibleWireframeID = Int64(namespace: .embeddedContent, replayID: visibleReplayID)
+        let hiddenWireframeID = Int64(namespace: .embeddedContent, replayID: hiddenReplayID)
+        #expect(output.compositionTree.root.children == [
+            .init(id: visibleWireframeID, type: .wireframe)
+        ])
+        try #require(output.wireframes.count == 2)
+
+        guard
+            case .embeddedContentWireframe(let hiddenWireframe) = output.wireframes[0],
+            case .embeddedContentWireframe(let visibleWireframe) = output.wireframes[1]
+        else {
+            Issue.record("Expected embedded content wireframes")
+            return
+        }
+
+        #expect(hiddenWireframe.id == hiddenWireframeID)
+        #expect(hiddenWireframe.slotId == "hidden-slot")
+        #expect(hiddenWireframe.isVisible == false)
+        #expect(visibleWireframe.id == visibleWireframeID)
+        #expect(visibleWireframe.slotId == "visible-slot")
+        #expect(visibleWireframe.isVisible == true)
+    }
+
+    @Test("Build computes heatmap identifiers from layer paths")
+    func buildComputesHeatmapIdentifiersFromLayerPaths() throws {
+        // Given
+        let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+        rootView.accessibilityIdentifier = "root"
+
+        let containerView = UIView(frame: CGRect(x: 10, y: 20, width: 80, height: 60))
+        containerView.accessibilityIdentifier = "container"
+        containerView.backgroundColor = .blue
+        rootView.addSubview(containerView)
+
+        let leafView = UIView(frame: CGRect(x: 10, y: 10, width: 40, height: 20))
+        leafView.accessibilityIdentifier = "button"
+        leafView.backgroundColor = .red
+        containerView.addSubview(leafView)
+
+        let root = try #require(
+            CALayerSnapshot(from: rootView.layer, in: .mockAny(heatmapsEnabled: true))
+        )
+        let container = try #require(root.sublayers.first)
+        let leaf = try #require(container.sublayers.first)
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            embeddedContentSlots: [:],
+            imageSnapshots: .init(),
+            screenName: "Home",
+            bundleIdentifier: "com.example.app"
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        let containerIdentifier = HeatmapIdentifier(
+            elementPath: ["root", "container"],
+            screenName: "Home",
+            bundleIdentifier: "com.example.app"
+        )
+        let leafIdentifier = HeatmapIdentifier(
+            elementPath: ["root", "container", "button"],
+            screenName: "Home",
+            bundleIdentifier: "com.example.app"
+        )
+        #expect(output.heatmapIdentifiers == [
+            container.layer.identifier: containerIdentifier,
+            leaf.layer.identifier: leafIdentifier
+        ])
+
+        let containerWireframe = try #require(output.wireframes.first {
+            $0.id == Int64(namespace: .shape, replayID: container.replayID)
+        })
+        let leafWireframe = try #require(output.wireframes.first {
+            $0.id == Int64(namespace: .shape, replayID: leaf.replayID)
+        })
+        guard
+            case .shapeWireframe(let containerShape) = containerWireframe,
+            case .shapeWireframe(let leafShape) = leafWireframe
+        else {
+            Issue.record("Expected shape wireframes")
+            return
+        }
+        #expect(containerShape.permanentId == containerIdentifier.rawValue)
+        #expect(leafShape.permanentId == leafIdentifier.rawValue)
+    }
+
     @Test("Build can be reused without accumulating output state")
     func buildCanBeReusedWithoutAccumulatingOutputState() throws {
         // Given
@@ -193,6 +307,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [slotID, hiddenSlotID],
+            embeddedContentSlots: [:],
             imageSnapshots: .init()
         )
 
@@ -213,17 +328,14 @@ struct CompositionTreeBuilderTests {
         #expect(secondOutput.resources.isEmpty)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     private func visibleWebViewSlotIDs(in wireframes: [SRWireframe]) -> [String] {
         webViewSlotIDs(in: wireframes, isVisible: true)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     private func hiddenWebViewSlotIDs(in wireframes: [SRWireframe]) -> [String] {
         webViewSlotIDs(in: wireframes, isVisible: false)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     private func webViewSlotIDs(in wireframes: [SRWireframe], isVisible: Bool) -> [String] {
         wireframes.compactMap { wireframe in
             guard case .webviewWireframe(let value) = wireframe, value.isVisible == isVisible else {

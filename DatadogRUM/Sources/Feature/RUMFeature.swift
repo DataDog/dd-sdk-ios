@@ -6,7 +6,11 @@
 
 import Foundation
 import DatadogInternal
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider {
     static var name: String { Feature.rum }
@@ -22,6 +26,10 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
     let configuration: RUM.Configuration
 
     let anonymousIdentifierManager: AnonymousIdentifierManaging
+
+    /// Collects memory/CPU timeseries samples during the RUM session, if enabled. Retained here so it can be
+    /// flushed alongside other instrumentation in `flush()`.
+    let timeseriesCollector: TimeseriesCollecting?
 
     /// Used by WebViewTracking to obtain the RUM session sampler synchronously.
     @ReadWriteLock
@@ -88,13 +96,13 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
 
         let firstFrameReader = FirstFrameReader(dateProvider: configuration.dateProvider, mediaTimeProvider: configuration.mediaTimeProvider)
 
-        #if !os(watchOS)
-        if #available(iOS 13.0, tvOS 13.0, *), configuration.collectAccessibility {
-             accessibilityReader = AccessibilityReader(notificationCenter: configuration.notificationCenter)
+        #if !os(watchOS) && !os(macOS)
+        if configuration.collectAccessibility {
+            accessibilityReader = AccessibilityReader(notificationCenter: configuration.notificationCenterProvider.applicationCenter)
         }
 
         renderLoopObserver = DisplayLinker(
-            notificationCenter: configuration.notificationCenter,
+            notificationCenter: configuration.notificationCenterProvider.applicationCenter,
             frameInfoProviderFactory: configuration.frameInfoProviderFactory
         )
         #endif
@@ -111,18 +119,77 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
         }()
 
         let onSessionUpdate: RUM.SessionUpdater = { [onSessionStart = configuration.onSessionStart, _rumSessionSampler] sessionScope in
+            _rumSessionSampler.mutate { $0 = sessionScope?.sampler }
             if let sessionScope {
                 let sessionID = sessionScope.sessionUUID.toRUMDataFormat
                 let isDiscarded = !sessionScope.sampler.isSampled
                 onSessionStart?(sessionID, isDiscarded)
             }
-            _rumSessionSampler.mutate { $0 = sessionScope?.sampler }
+        }
+
+        let vitalsReaders = configuration.vitalsUpdateFrequency.map {
+            VitalsReaders(
+                frequency: $0.timeInterval,
+                notificationCenterProvider: .default,
+                telemetry: core.telemetry
+            )
+        }
+
+        let ciTest = configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) }
+        let syntheticsTest: RUMSyntheticsTest? = {
+            if let testId = configuration.syntheticsTestId,
+               let resultId = configuration.syntheticsResultId {
+                return RUMSyntheticsTest(injected: nil, resultId: resultId, testId: testId, syntheticsInfo: [:])
+            } else {
+                return nil
+            }
+        }()
+
+        let sessionSampleRate = configuration.debugSDK ? 100 : configuration.sessionSampleRate
+
+        // Create the initial session identity here, synchronously, while still on the main thread inside
+        // `RUM.enable()`. The session scope is still created asynchronously further down the line and adopts
+        // this ID, but deriving the sampler now means `RUMSessionSamplerProvider` resolves by the time
+        // `RUM.enable()` returns instead of staying `nil` until the initial session is created. WebViewTracking
+        // reads it through that protocol, so a WebView instrumented immediately after enable gets a real
+        // tracing decision rather than `null`.
+        //
+        // Trace, Profiling and the URLSession handlers do NOT read this. They still resolve their RUM context
+        // through the message bus and keep their existing behaviour until the centralized sampling service
+        // lands. See RUM-17921.
+        //
+        // Note this derives the sampler in a second place: `RUMSessionScope` still derives its own for every
+        // other session, from the same UUID and sampling rate, so the two always agree. The centralized
+        // service removes the duplication by becoming the only owner of the session identity.
+        let initialSessionUUID = configuration.uuidGenerator.generateUnique()
+        _rumSessionSampler.mutate {
+            $0 = DeterministicSampler(uuid: initialSessionUUID.rawValue, samplingRate: sessionSampleRate)
+        }
+
+        let timeseriesCollector: TimeseriesCollecting? = configuration.timeseries.flatMap { timeseries -> TimeseriesCollecting? in
+            let effectiveCollectTypes = timeseries.effectiveCollectTypes
+            // An empty effective selection (explicit `[]`, or emptied by platform availability, e.g.
+            // `collectTypes: [.cpu]` on watchOS) would run the sampling timer for the whole session
+            // without ever producing events, so skip creating the collector entirely.
+            guard !effectiveCollectTypes.isEmpty else {
+                return nil
+            }
+            return TimeseriesSessionCollector(
+                memoryReader: VitalMemoryReader(),
+                featureScope: featureScope,
+                collectTypes: effectiveCollectTypes,
+                ciTest: ciTest,
+                syntheticsTest: syntheticsTest,
+                sessionSampleRate: Double(sessionSampleRate),
+                now: { configuration.dateProvider.now },
+                mediaTimeProvider: configuration.mediaTimeProvider
+            )
         }
 
         let dependencies = RUMScopeDependencies(
             featureScope: featureScope,
             rumApplicationID: configuration.applicationID,
-            samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate,
+            samplingRate: sessionSampleRate,
             trackBackgroundEvents: configuration.trackBackgroundEvents,
             trackFrustrations: configuration.trackFrustrations,
             hasAppHangsEnabled: configuration.appHangThreshold != nil,
@@ -133,15 +200,8 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             ),
             rumUUIDGenerator: configuration.uuidGenerator,
             backtraceReporter: core.backtraceReporter,
-            ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
-            syntheticsTest: {
-                if let testId = configuration.syntheticsTestId,
-                   let resultId = configuration.syntheticsResultId {
-                    return RUMSyntheticsTest(injected: nil, resultId: resultId, testId: testId, syntheticsInfo: [:])
-                } else {
-                    return nil
-                }
-            }(),
+            ciTest: ciTest,
+            syntheticsTest: syntheticsTest,
             renderLoopObserver: renderLoopObserver,
             firstFrameReader: firstFrameReader,
             viewHitchesReaderFactory: {
@@ -149,12 +209,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 ? ViewHitchesReader(hangThreshold: configuration.appHangThreshold)
                 : nil
             },
-            vitalsReaders: configuration.vitalsUpdateFrequency.map {
-                VitalsReaders(
-                    frequency: $0.timeInterval,
-                    telemetry: core.telemetry
-                )
-            },
+            vitalsReaders: vitalsReaders,
             accessibilityReader: accessibilityReader,
             onSessionUpdate: onSessionUpdate,
             viewCache: ViewCache(dateProvider: configuration.dateProvider),
@@ -182,6 +237,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             },
             appStateManager: appStateManager,
             watchdogTermination: watchdogTermination,
+            featureFlags: configuration.featureFlags,
             networkSettledMetricFactory: { viewStartDate, viewName in
                 return TNSMetric(
                     viewName: viewName,
@@ -197,13 +253,18 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                     predicate: nextViewActionPredicate
                 )
             },
-            sessionType: configuration.sessionTypeOverride.flatMap { RUMSessionType(rawValue: $0) }
+            sessionType: configuration.sessionTypeOverride.flatMap { RUMSessionType(rawValue: $0) },
+            initialSessionUUID: initialSessionUUID,
+            timeseriesCollector: timeseriesCollector
         )
 
         self.monitor = Monitor(
             dependencies: dependencies,
             dateProvider: configuration.dateProvider
         )
+
+        timeseriesCollector?.activeContextReader = monitor
+        self.timeseriesCollector = timeseriesCollector
 
         if let refreshRateVital = dependencies.vitalsReaders?.refreshRate as? RenderLoopReader {
             dependencies.renderLoopObserver?.register(refreshRateVital)
@@ -212,25 +273,25 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
         firstFrameReader.publish(to: monitor)
         dependencies.renderLoopObserver?.register(firstFrameReader)
 
-        #if !os(watchOS)
-        var memoryWarningMonitor: MemoryWarningMonitor?
-        if configuration.trackMemoryWarnings {
-            let memoryWarningReporter = MemoryWarningReporter()
-            memoryWarningMonitor = MemoryWarningMonitor(
-                memoryWarningReporter: memoryWarningReporter,
-                notificationCenter: configuration.notificationCenter
-            )
+        // Resolved on each hang rather than captured here, as Crash Reporting - which owns this setting - can be
+        // enabled after RUM. A missing Crash Reporting Feature means backtrace generation is *unavailable* rather
+        // than *disabled*, which the App Hangs monitor reports differently, hence the `true` default.
+        let isAppHangBacktraceEnabled: @Sendable () -> Bool = { [weak core] in
+            core?.feature(named: Feature.crashReporting, type: CrashReportingConfiguration.self)?
+                .appHangBacktraceEnabled ?? true
         }
 
+        #if os(macOS)
         let heatmapIdentifierStore = HeatmapIdentifierStore()
-        try core.register(heatmapIdentifierRegistry: heatmapIdentifierStore)
+        //try core.register(heatmapIdentifierRegistry: heatmapIdentifierStore)
 
         self.instrumentation = RUMInstrumentation(
             featureScope: featureScope,
-            uiKitRUMViewsPredicate: configuration.uiKitViewsPredicate,
-            uiKitRUMActionsPredicate: configuration.uiKitActionsPredicate,
-            swiftUIRUMViewsPredicate: configuration.swiftUIViewsPredicate,
-            swiftUIRUMActionsPredicate: configuration.swiftUIActionsPredicate,
+            predicates: .init(
+                rumViewsPredicate: configuration.appKitViewsPredicate,
+                rumActionsPredicate: configuration.macOSActionsPredicate,
+                swiftUIRUMViewsPredicate: configuration.swiftUIViewsPredicate
+            ),
             trackScrollAndSwipeActions: configuration.featureFlags[.trackScrollAndSwipeActions, default: true],
             longTaskThreshold: configuration.longTaskThreshold,
             appHangThreshold: configuration.appHangThreshold,
@@ -239,14 +300,15 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             backtraceReporter: core.backtraceReporter,
             fatalErrorContext: dependencies.fatalErrorContext,
             processID: configuration.processID,
-            notificationCenter: configuration.notificationCenter,
+            notificationCenterProvider: configuration.notificationCenterProvider,
             bundleType: bundleType,
             watchdogTermination: watchdogTermination,
-            memoryWarningMonitor: memoryWarningMonitor,
+            memoryWarningMonitor: nil,
             uuidGenerator: configuration.uuidGenerator,
-            heatmapIdentifierRegistry: heatmapIdentifierStore
+            heatmapIdentifierRegistry: heatmapIdentifierStore,
+            isAppHangBacktraceEnabled: isAppHangBacktraceEnabled
         )
-        #else
+        #elseif os(watchOS)
         self.instrumentation = RUMInstrumentation(
             featureScope: featureScope,
             longTaskThreshold: configuration.longTaskThreshold,
@@ -256,11 +318,49 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             backtraceReporter: core.backtraceReporter,
             fatalErrorContext: dependencies.fatalErrorContext,
             processID: configuration.processID,
-            notificationCenter: configuration.notificationCenter,
+            notificationCenterProvider: configuration.notificationCenterProvider,
             bundleType: bundleType,
             watchdogTermination: watchdogTermination,
             memoryWarningMonitor: nil,
-            uuidGenerator: configuration.uuidGenerator
+            uuidGenerator: configuration.uuidGenerator,
+            isAppHangBacktraceEnabled: isAppHangBacktraceEnabled
+        )
+        #else
+        var memoryWarningMonitor: MemoryWarningMonitor?
+        if configuration.trackMemoryWarnings {
+            let memoryWarningReporter = MemoryWarningReporter()
+            memoryWarningMonitor = MemoryWarningMonitor(
+                memoryWarningReporter: memoryWarningReporter,
+                notificationCenter: configuration.notificationCenterProvider.applicationCenter
+            )
+        }
+
+        let heatmapIdentifierStore = HeatmapIdentifierStore()
+        try core.register(heatmapIdentifierRegistry: heatmapIdentifierStore)
+
+        self.instrumentation = RUMInstrumentation(
+            featureScope: featureScope,
+            predicates: .init(
+                rumViewsPredicate: configuration.uiKitViewsPredicate,
+                rumActionsPredicate: configuration.uiKitActionsPredicate,
+                swiftUIRUMViewsPredicate: configuration.swiftUIViewsPredicate,
+                swiftUIRUMActionsPredicate: configuration.swiftUIActionsPredicate
+            ),
+            trackScrollAndSwipeActions: configuration.featureFlags[.trackScrollAndSwipeActions, default: true],
+            longTaskThreshold: configuration.longTaskThreshold,
+            appHangThreshold: configuration.appHangThreshold,
+            mainQueue: configuration.mainQueue,
+            dateProvider: configuration.dateProvider,
+            backtraceReporter: core.backtraceReporter,
+            fatalErrorContext: dependencies.fatalErrorContext,
+            processID: configuration.processID,
+            notificationCenterProvider: configuration.notificationCenterProvider,
+            bundleType: bundleType,
+            watchdogTermination: watchdogTermination,
+            memoryWarningMonitor: memoryWarningMonitor,
+            uuidGenerator: configuration.uuidGenerator,
+            heatmapIdentifierRegistry: heatmapIdentifierStore,
+            isAppHangBacktraceEnabled: isAppHangBacktraceEnabled
         )
         #endif
         self.requestBuilder = RequestBuilder(
@@ -311,6 +411,10 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             messageReceivers.append(watchdogTermination)
         }
 
+        if timeseriesCollector != nil {
+            messageReceivers.append(HasReplayMessageReceiver(monitor: monitor))
+        }
+
         self.messageReceiver = CombinedFeatureMessageReceiver(messageReceivers)
 
         // Forward instrumentation calls to monitor:
@@ -325,9 +429,13 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
         // Send configuration telemetry:
         #if !os(watchOS)
         let swiftUIViewTrackingEnabled = configuration.swiftUIViewsPredicate != nil
+        #if os(macOS)
+        let swiftUIActionTrackingEnabled = configuration.ddKitActionsPredicate != nil
+        #else
         let swiftUIActionTrackingEnabled = configuration.swiftUIActionsPredicate != nil
-        let trackNativeViews = configuration.uiKitViewsPredicate != nil
-        let trackUserInteractions = configuration.uiKitActionsPredicate != nil
+        #endif
+        let trackNativeViews = configuration.ddKitViewsPredicate != nil
+        let trackUserInteractions = configuration.ddKitActionsPredicate != nil
         #else
         let swiftUIViewTrackingEnabled = false
         let swiftUIActionTrackingEnabled = false
@@ -403,6 +511,7 @@ extension RUMFeature: Flushable {
     /// **blocks the caller thread**
     func flush() {
         instrumentation.appHangs?.flush()
+        timeseriesCollector?.flush()
     }
 }
 

@@ -129,6 +129,12 @@ internal class RUMResourceScope: RUMScope {
         // Extract captured HTTP headers
         let requestHeaders: [String: String]? = attributes.removeValue(forKey: CrossPlatformAttributes.requestHeaders)?.dd.decode()
         let responseHeaders: [String: String]? = attributes.removeValue(forKey: CrossPlatformAttributes.responseHeaders)?.dd.decode()
+        let deliveryType: RUMResourceEvent.Resource.DeliveryType? =
+            switch resourceMetrics?.deliveryType {
+            case .cache: .cache
+            case .other: .other
+            case nil: nil
+            }
 
         // Metrics values take precedence over other values.
         if let metrics = resourceMetrics {
@@ -207,7 +213,7 @@ internal class RUMResourceScope: RUMScope {
                     )
                 },
                 decodedBodySize: decodedBodySize,
-                deliveryType: nil,
+                deliveryType: deliveryType,
                 dns: resourceMetrics?.dns.map { metric in
                     .init(
                         duration: metric.duration.dd.toInt64Nanoseconds,
@@ -250,7 +256,7 @@ internal class RUMResourceScope: RUMScope {
                     )
                 },
                 statusCode: command.httpStatusCode?.toInt64 ?? 0,
-                transferSize: nil,
+                transferSize: resourceMetrics?.transferSize,
                 type: resourceKindBasedOnRequest ?? command.kind,
                 url: resourceURL,
                 worker: nil

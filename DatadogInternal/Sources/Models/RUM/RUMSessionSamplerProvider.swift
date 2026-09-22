@@ -6,9 +6,14 @@
 
 import Foundation
 
-/// Provides the RUM session deterministic sampler for the active session.
+/// Provides the deterministic sampler for the current RUM session.
 public protocol RUMSessionSamplerProvider {
-    /// The RUM session deterministic sampler for the active session. `nil` if there is no active session.
+    /// The deterministic sampler for the current RUM session, including the initial session while it is
+    /// still being created.
+    ///
+    /// The initial session's identity is created synchronously inside `RUM.enable()`, so this is populated
+    /// by the time `RUM.enable()` returns, before the session scope itself exists. It is `nil` when RUM is
+    /// not enabled, and while no session is active, for example after `stopSession()`.
     var rumSessionSampler: DeterministicSampler? { get }
 }
 

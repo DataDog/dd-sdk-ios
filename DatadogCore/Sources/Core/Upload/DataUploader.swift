@@ -66,7 +66,7 @@ internal final class DataUploader: DataUploaderType {
 
         httpClient.send(request: request, delegate: delegate) { result in
             switch result {
-            case .success(let httpResponse):
+            case .success(let (httpResponse, _)):
                 uploadStatus = DataUploadStatus(
                     httpResponse: httpResponse,
                     ddRequestID: requestID,

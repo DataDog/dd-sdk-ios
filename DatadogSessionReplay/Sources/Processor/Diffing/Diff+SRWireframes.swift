@@ -6,6 +6,7 @@
 
 #if os(iOS)
 import Foundation
+import DatadogInternal
 
 // MARK: - `Diffable` Conformance
 
@@ -73,6 +74,14 @@ internal enum WireframeMutationError: Error, Equatable {
     case idMismatch
     /// Indicates an attempt of computing mutation for wireframes that have different type.
     case typeMismatch(fromType: String, toType: String)
+}
+
+extension WireframeMutationError: TelemetrySanitizableError {
+    /// Both cases only ever describe the SDK's own wireframe kind names (e.g. "shape", "text"),
+    /// never customer content, so the full description is safe to report as-is.
+    func sanitize() -> TelemetrySanitizedError {
+        TelemetrySanitizedError(unsafelyDescribing: self)
+    }
 }
 
 internal protocol MutableWireframe {

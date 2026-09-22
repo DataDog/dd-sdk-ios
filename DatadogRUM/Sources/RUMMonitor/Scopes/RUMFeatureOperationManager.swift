@@ -36,6 +36,7 @@ internal class RUMFeatureOperationManager {
     private unowned let parent: RUMContextProvider
     private let dependencies: RUMScopeDependencies
     private let sessionSampler: DeterministicSampler
+    private let sanitizer = RUMEventSanitizer()
 
     // MARK: - Initialization
 
@@ -142,7 +143,7 @@ internal class RUMFeatureOperationManager {
             vital: vital
         )
 
-        writer.write(value: vitalEvent)
+        writer.write(value: sanitizer.sanitize(event: vitalEvent))
     }
 
     private func shouldSendOperationMessage(for command: RUMOperationStepVitalCommand) -> Bool {

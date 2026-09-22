@@ -10,8 +10,26 @@ import QuartzCore
 import UIKit
 import WebKit
 
-@available(iOS 13.0, tvOS 13.0, *)
+@_spi(Internal)
+import DatadogInternal
+
 extension CALayerSnapshot.SemanticObservationMapping {
+    static let embeddedContent = Self { layer, _, context in
+        guard
+            let view = layer.delegate as? UIView,
+            let slotID = view.dd.sessionReplaySlotID
+        else {
+            return nil
+        }
+
+        context.embeddedContentViewCache.add(view)
+
+        return .init(
+            semantics: .embeddedContent(.init(slotID: slotID)),
+            ignoresSublayers: true
+        )
+    }
+
     static let gradient = Self { layer, _, _ in
         guard let gradientLayer = layer as? CAGradientLayer else {
             return nil
@@ -114,7 +132,6 @@ extension CALayerSnapshot.SemanticObservationMapping {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation.GradientSemantics {
     fileprivate init?(gradientLayer: CAGradientLayer) {
         guard let colorValues = gradientLayer.colors else {
@@ -137,7 +154,6 @@ extension CALayerSnapshot.SemanticObservation.GradientSemantics {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation.LabelSemantics {
     fileprivate init(label: UILabel) {
         self.init(
@@ -151,7 +167,6 @@ extension CALayerSnapshot.SemanticObservation.LabelSemantics {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation.ImageSemantics {
     fileprivate init(imageView: UIImageView) {
         let image = imageView.isHighlighted ? imageView.highlightedImage ?? imageView.image : imageView.image
@@ -163,7 +178,6 @@ extension CALayerSnapshot.SemanticObservation.ImageSemantics {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation.TextInputSemantics {
     fileprivate init(textView: UITextView) {
         self.init(
@@ -182,7 +196,6 @@ extension CALayerSnapshot.SemanticObservation.TextInputSemantics {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservation.WebViewSemantics {
     fileprivate init(webView: WKWebView, absoluteFrame: CGRect) {
         self.init(

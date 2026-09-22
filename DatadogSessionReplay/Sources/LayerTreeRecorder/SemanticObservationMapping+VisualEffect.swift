@@ -8,7 +8,6 @@
 import Foundation
 import UIKit
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservationMapping {
     static let signedDistanceField = Self { layer, _, _ in
         guard layer.isSignedDistanceField else {

@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 
 import XCTest
 @_spi(objc)
@@ -50,9 +50,6 @@ class DDUIKitRUMActionsPredicateTests: XCTestCase {
 
 #if canImport(SwiftUI)
     func testGivenDefaultPredicate_whenAskingSwiftUIView_itReturnsAction() {
-        guard #available(iOS 13, tvOS 13, *) else {
-            return
-        }
         // Given
         let predicate = objc_DefaultUIKitRUMActionsPredicate()
 

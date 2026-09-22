@@ -27,6 +27,9 @@ public struct RUMCoreContext: AdditionalContext, Equatable {
     /// Current RUM view path
     public let viewPath: String?
 
+    /// Current RUM view user defined name
+    public let viewName: String?
+
     /// Creates a RUM context.
     ///
     /// - Parameters:
@@ -37,6 +40,7 @@ public struct RUMCoreContext: AdditionalContext, Equatable {
     ///   - userActionID: The ID of current RUM action (standard UUID `String`, lowercased).
     ///   - viewServerTimeOffset: Current view related server time offset
     ///   - viewPath: Current RUM view path
+    ///   - viewName: Current RUM view user defined name
     public init(
         applicationID: String,
         sessionID: String,
@@ -44,7 +48,8 @@ public struct RUMCoreContext: AdditionalContext, Equatable {
         viewID: String? = nil,
         userActionID: String? = nil,
         viewServerTimeOffset: TimeInterval? = nil,
-        viewPath: String? = nil
+        viewPath: String? = nil,
+        viewName: String? = nil
     ) {
         self.applicationID = applicationID
         self.sessionID = sessionID
@@ -53,6 +58,7 @@ public struct RUMCoreContext: AdditionalContext, Equatable {
         self.userActionID = userActionID
         self.viewServerTimeOffset = viewServerTimeOffset
         self.viewPath = viewPath
+        self.viewName = viewName
     }
 }
 

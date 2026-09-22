@@ -5,7 +5,11 @@
  */
 
 import TestUtilities
+#if os(macOS)
+import AppKit
+#else
 import UIKit
+#endif
 import XCTest
 
 @testable import DatadogRUM

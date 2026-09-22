@@ -5,6 +5,7 @@
  */
 
 #if os(iOS)
+@_spi(Internal)
 import DatadogInternal
 import QuartzCore
 import TestUtilities
@@ -16,7 +17,6 @@ import WebKit
 @Suite(.datadogTesting)
 @MainActor
 struct LayerTreeSnapshotBuilderTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     enum Fixtures {
         struct NOPTelemetry: Telemetry {
             func send(telemetry: TelemetryMessage) {}
@@ -44,7 +44,6 @@ struct LayerTreeSnapshotBuilderTests {
         }
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @MainActor
     private final class TestLayerProvider: LayerProvider {
         var rootLayer: CALayer?
@@ -54,7 +53,6 @@ struct LayerTreeSnapshotBuilderTests {
         }
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Returns nil when root layer is unavailable")
     func returnsNilWhenRootLayerIsUnavailable() {
         // Given
@@ -67,7 +65,6 @@ struct LayerTreeSnapshotBuilderTests {
         #expect(snapshot == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Captures snapshot with recording context")
     func capturesSnapshotWithRecordingContext() throws {
         // Given
@@ -102,7 +99,6 @@ struct LayerTreeSnapshotBuilderTests {
         #expect(snapshot.root.sublayers.first?.layer.matches(childLayer) == true)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Captures web view slot IDs from layer tree")
     func capturesWebViewSlotIDsFromLayerTree() throws {
         // Given
@@ -129,7 +125,6 @@ struct LayerTreeSnapshotBuilderTests {
         )
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Keeps detached web view slot while web view is alive")
     func keepsDetachedWebViewSlotWhileWebViewIsAlive() throws {
         // Given
@@ -150,6 +145,40 @@ struct LayerTreeSnapshotBuilderTests {
         // Then
         #expect(snapshot.root.sublayers.isEmpty)
         #expect(snapshot.webViewSlotIDs == expectedSlots)
+    }
+
+    @Test("Captures embedded content as a leaf and keeps its slot while detached")
+    func capturesEmbeddedContentAsLeafAndKeepsItsSlotWhileDetached() throws {
+        // Given
+        let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 320, height: 640))
+        let embeddedContentView = UILabel(frame: CGRect(x: 10, y: 20, width: 100, height: 80))
+        embeddedContentView.text = "Native label"
+        embeddedContentView.dd.setSessionReplaySlotID("embedded-slot")
+        embeddedContentView.addSubview(UIView(frame: embeddedContentView.bounds))
+        rootView.addSubview(embeddedContentView)
+
+        let builder = LayerTreeSnapshotBuilder(
+            layerProvider: TestLayerProvider(rootLayer: rootView.layer)
+        )
+
+        // When
+        let initialSnapshot = try #require(builder.takeSnapshot(context: Fixtures.context()))
+        embeddedContentView.removeFromSuperview()
+        let detachedSnapshot = try #require(builder.takeSnapshot(context: Fixtures.context()))
+
+        // Then
+        let embeddedContentSnapshot = try #require(initialSnapshot.root.sublayers.first)
+        #expect(
+            embeddedContentSnapshot.observation == .init(
+                semantics: .embeddedContent(.init(slotID: "embedded-slot")),
+                ignoresSublayers: true
+            )
+        )
+        #expect(embeddedContentSnapshot.sublayers.isEmpty)
+        #expect(initialSnapshot.embeddedContentSlots == [embeddedContentView.layer.replayID: "embedded-slot"])
+        #expect(detachedSnapshot.root.sublayers.isEmpty)
+        #expect(detachedSnapshot.embeddedContentSlots == initialSnapshot.embeddedContentSlots)
+        withExtendedLifetime(embeddedContentView) {}
     }
 }
 #endif

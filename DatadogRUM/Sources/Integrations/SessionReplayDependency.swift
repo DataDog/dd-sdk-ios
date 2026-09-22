@@ -10,6 +10,11 @@ import DatadogInternal
 // MARK: - Extracting SR context from `DatadogContext`
 
 extension DatadogContext {
+    /// The Session Replay configuration.
+    var sessionReplayConfiguration: SessionReplayCoreContext.Configuration? {
+        additionalContext(ofType: SessionReplayCoreContext.Configuration.self)
+    }
+
     /// The value indicating if replay is being performed by Session Replay.
     var hasReplay: Bool? {
         additionalContext(ofType: SessionReplayCoreContext.HasReplay.self)?.value

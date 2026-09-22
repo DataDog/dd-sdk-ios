@@ -1,10 +1,11 @@
 ---
-last_updated: 2026-06-29
-sdk_version: 3.13.0
-verified_against_commit: 48f0891ec
+last_updated: 2026-09-22
+sdk_version: 3.18.0
+verified_against_commit: 72b56e859
 tracked_files:
   - DatadogSessionReplay/Sources/SessionReplay.swift
   - DatadogSessionReplay/Sources/SessionReplayConfiguration.swift
+  - DatadogSessionReplay/Sources/SessionReplayConfiguration+RemoteConfiguration.swift
   - DatadogSessionReplay/Sources/SessionReplayPrivacyOverrides.swift
   - DatadogSessionReplay/Sources/SessionReplayPrivacyView.swift
   - DatadogInternal/Sources/Models/SessionReplay/SessionReplayConfiguration.swift
@@ -94,6 +95,7 @@ SessionReplay.enable(
         //   .swiftui                - Enable SwiftUI recording (experimental)
         //   .heatmaps               - Enable heatmap identifier computation (experimental)
         //   .screenChangeScheduling - DEPRECATED: now default and always enabled; setting it has no effect
+        //   .compositionTreeRecording - Enable the Core Animation recording pipeline (experimental)
         featureFlags: [
             .swiftui: true,   // Enable SwiftUI recording (experimental)
             .heatmaps: false  // Enable heatmap identifier computation (experimental)
@@ -139,6 +141,7 @@ SessionReplayPrivacyView(
 ### Configuration
 - **`DatadogSessionReplay/Sources/SessionReplayConfiguration.swift`** - All configuration options
   - Sampling rate, privacy levels, feature flags
+- **`DatadogSessionReplay/Sources/SessionReplayConfiguration+RemoteConfiguration.swift`** - Applies Datadog Remote Configuration on top of the in-code `SessionReplay.Configuration`, once, at `SessionReplay.enable(with:)` time (see [Remote Configuration](#remote-configuration))
 
 ### Privacy Overrides (Per-View)
 - **`DatadogSessionReplay/Sources/SessionReplayPrivacyOverrides.swift`** - UIKit per-view privacy control
@@ -180,7 +183,7 @@ Override global privacy for specific views:
 
 **UIKit:**
 ```swift
-view.dd.sessionReplayPrivacyOverrides.textAndInputPrivacy = .maskNone
+view.dd.sessionReplayPrivacyOverrides.textAndInputPrivacy = .maskSensitiveInputs  // Sensitive inputs stay masked.
 view.dd.sessionReplayPrivacyOverrides.imagePrivacy = .maskNone
 view.dd.sessionReplayPrivacyOverrides.touchPrivacy = .show
 view.dd.sessionReplayPrivacyOverrides.hide = true  // Completely hide view and subviews
@@ -189,7 +192,7 @@ view.dd.sessionReplayPrivacyOverrides.hide = true  // Completely hide view and s
 **SwiftUI (iOS 16+):**
 ```swift
 SessionReplayPrivacyView(
-    textAndInputPrivacy: .maskNone,
+    textAndInputPrivacy: .maskSensitiveInputs,
     imagePrivacy: .maskNone,
     touchPrivacy: .show,
     hide: false
@@ -197,6 +200,14 @@ SessionReplayPrivacyView(
     // Content to apply overrides to
 }
 ```
+
+## Remote Configuration
+
+When `Datadog.Configuration.remoteConfiguration` is set, Core fetches and caches a configuration document from the Datadog CDN. If one is available (from cache or from the initial fetch) when `SessionReplay.enable(with:)` runs, it is merged onto the in-code `SessionReplay.Configuration` **once**, before the feature starts — not applied live afterward, so a later CDN refresh during the same session has no effect until the next process launch.
+
+- The `sessionReplay` namespace overrides `replaySampleRate`, `textAndInputPrivacyLevel`, `imagePrivacyLevel`, and `touchPrivacyLevel`. `startRecordingImmediately` and `featureFlags` are not remotely configurable.
+- A parameter the remote configuration omits keeps its in-code value. Passing `nil` (no remote configuration fetched) leaves the configuration unchanged.
+- See `SessionReplayConfiguration+RemoteConfiguration.swift` for the merge logic.
 
 ## Common Troubleshooting Patterns
 
@@ -233,6 +244,7 @@ SessionReplayPrivacyView(
 - `.swiftui` — Enable SwiftUI recording (experimental, default: `false`)
 - `.heatmaps` — Enable heatmap identifier computation (experimental, default: `false`)
 - `.screenChangeScheduling` — **Deprecated.** Screen change scheduling is now the default and always enabled; setting this flag has no effect. Kept on the public API for backward compatibility.
+- `.compositionTreeRecording` — Enable the Core Animation recording pipeline (experimental, default: `false`)
 
 ## Feature Interactions
 
@@ -242,6 +254,7 @@ SessionReplayPrivacyView(
   - Web page instrumented with Datadog Browser SDK
   - See `DatadogWebViewTracking/Sources/WebViewTracking.swift`
 - **Tracking Consent**: Respects user consent settings from Core SDK
+- **Remote Configuration**: overrides `replaySampleRate` and privacy levels — see [Remote Configuration](#remote-configuration)
 
 ## Additional Context
 

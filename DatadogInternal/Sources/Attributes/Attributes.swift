@@ -179,6 +179,10 @@ public struct CrossPlatformAttributes {
     /// Used in RUM resources to transport response headers through the RUM command pipeline.
     /// Expects `[String: String]` value containing header keys and values.
     public static let responseHeaders = "_dd.response_headers"
+
+    /// Instrumentation type passed from a CP SDK to identify which cross-platform framework started this view (e.g. `"flutter"`, `"react-native"`).
+    /// Expects `String` value.
+    public static let instrumentationType = "_dd.instrumentation_type"
 }
 
 /// HTTP header names used to pass GraphQL metadata from the application to the SDK.

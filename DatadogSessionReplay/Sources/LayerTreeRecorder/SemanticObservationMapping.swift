@@ -8,7 +8,6 @@
 import Foundation
 import QuartzCore
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
     struct SemanticObservationMapping {
         let observe: @MainActor (
@@ -19,9 +18,9 @@ extension CALayerSnapshot {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.SemanticObservationMapping: CaseIterable {
     static let allCases: [Self] = [
+        .embeddedContent,
         .gradient,
         .activityIndicator,
         .label,

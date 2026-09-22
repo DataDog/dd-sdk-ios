@@ -8,7 +8,6 @@
 import Foundation
 import QuartzCore
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CATransform3D {
     /// A Boolean value indicating whether the transform contains no rotation, skew, or perspective.
     var isAxisAligned: Bool {

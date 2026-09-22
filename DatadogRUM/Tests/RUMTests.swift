@@ -7,6 +7,7 @@
 import XCTest
 import TestUtilities
 @testable import DatadogInternal
+@_spi(Experimental)
 @testable import DatadogRUM
 
 class RUMTests: XCTestCase {
@@ -76,6 +77,45 @@ class RUMTests: XCTestCase {
 
     // MARK: - Configuration Tests
 
+    func testWhenEnabled_thenSessionSamplerIsAvailableBeforeEnableReturns() throws {
+        // Given
+        // This session ID is not sampled at 50%, but it is sampled at 60%:
+        let sessionUUID = UUID(uuidString: "c5b3c4ab-fa4a-4de9-8199-a522131ec48a")!
+        config.sessionSampleRate = 60
+        config.uuidGenerator = RUMUUIDGeneratorMock(uuid: RUMUUID(rawValue: sessionUUID))
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then - deliberately no `flush()` and no waiting: the sampling decision must already be resolved
+        // by the time `RUM.enable()` returns, otherwise Features instrumenting a request right here (e.g.
+        // WebViewTracking) get no decision at all. See RUM-17921.
+        let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        let sampler = try XCTUnwrap(
+            rum.rumSessionSampler,
+            "The session sampler must be available synchronously, without waiting for the initial session"
+        )
+        XCTAssertEqual(sampler, DeterministicSampler(uuid: sessionUUID, samplingRate: 60))
+        XCTAssertTrue(sampler.isSampled)
+    }
+
+    func testWhenEnabledWithDebugSDK_thenSessionSamplerUsesTheOverriddenRate() throws {
+        // Given
+        let sessionUUID = UUID(uuidString: "c5b3c4ab-fa4a-4de9-8199-a522131ec48a")!
+        config.sessionSampleRate = 0
+        config.debugSDK = true
+        config.uuidGenerator = RUMUUIDGeneratorMock(uuid: RUMUUID(rawValue: sessionUUID))
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then - `debugSDK` forces 100%, and the synchronous sampler must honour it like the session does
+        let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        let sampler = try XCTUnwrap(rum.rumSessionSampler)
+        XCTAssertEqual(sampler, DeterministicSampler(uuid: sessionUUID, samplingRate: 100))
+        XCTAssertTrue(sampler.isSampled)
+    }
+
     func testWhenEnabledWithDefaultConfiguration() throws {
         // Given
         let applicationID: String = .mockRandom()
@@ -100,10 +140,17 @@ class RUMTests: XCTestCase {
     #if !os(watchOS)
     func testWhenEnabledWithAllInstrumentations() throws {
         // Given
+        #if os(macOS)
+        config.appKitViewsPredicate = UIKitRUMViewsPredicateMock()
+        config.macOSActionsPredicate = MacOSRUMActionsPredicateMock()
+        #else
         config.uiKitViewsPredicate = UIKitRUMViewsPredicateMock()
         config.uiKitActionsPredicate = UIKitRUMActionsPredicateMock()
+        #endif
         config.swiftUIViewsPredicate = SwiftUIRUMViewsPredicateMock()
+        #if !os(macOS)
         config.swiftUIActionsPredicate = SwiftUIRUMActionsPredicateMock()
+        #endif
         config.longTaskThreshold = 0.5
         config.appHangThreshold = 2
 
@@ -117,10 +164,12 @@ class RUMTests: XCTestCase {
         XCTAssertIdentical(monitor, (rum.instrumentation.actionsHandler as? RUMActionsHandler)?.subscriber)
         XCTAssertIdentical(monitor, rum.instrumentation.longTasks?.subscriber)
         XCTAssertIdentical(monitor, rum.instrumentation.appHangs?.nonFatalHangsHandler.subscriber)
+        #if !os(macOS)
         XCTAssertIdentical(monitor, (rum.instrumentation.memoryWarningMonitor?.reporter as? MemoryWarningReporter)?.subscriber)
+        #endif
     }
 
-    #if !os(tvOS)
+    #if !os(tvOS) && !os(macOS)
     func testWhenEnabledWithEmptyFeatureFlags_scrollAndSwipeTrackingRemainsEnabled() throws {
         // Given
         config.uiKitActionsPredicate = UIKitRUMActionsPredicateMock()
@@ -139,10 +188,17 @@ class RUMTests: XCTestCase {
 
     func testWhenEnabledWithNoInstrumentations() throws {
         // Given
+        #if os(macOS)
+        config.appKitViewsPredicate = nil
+        config.macOSActionsPredicate = nil
+        #else
         config.uiKitViewsPredicate = nil
         config.uiKitActionsPredicate = nil
+        #endif
         config.swiftUIViewsPredicate = nil
+        #if !os(macOS)
         config.swiftUIActionsPredicate = nil
+        #endif
         config.longTaskThreshold = nil
         config.appHangThreshold = nil
         config.trackMemoryWarnings = false
@@ -405,7 +461,103 @@ class RUMTests: XCTestCase {
         XCTAssertEqual(telemetryReceiver?.configurationExtraSampler.samplingRate, 20)
     }
 
+    // MARK: - Remote Configuration
+
+    func testWhenEnabled_itAppliesRemoteConfigurationOnTopOfInCodeConfiguration() throws {
+        // Given
+        config = RUM.Configuration(applicationID: .mockRandom())
+        config.trackBackgroundEvents = false
+        core.remoteConfiguration = RemoteConfiguration(
+            rum: .init(applicationId: .mockRandom(), trackBackgroundEvents: true)
+        )
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
+        XCTAssertTrue(monitor.applicationScope.dependencies.trackBackgroundEvents)
+    }
+
+    func testWhenEnabledWithNoRemoteConfiguration_itUsesInCodeConfiguration() throws {
+        // Given
+        config = RUM.Configuration(applicationID: .mockRandom())
+        config.trackBackgroundEvents = true
+        core.remoteConfiguration = nil
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
+        XCTAssertTrue(monitor.applicationScope.dependencies.trackBackgroundEvents)
+    }
+
+    func testWhenEnabledWithRemoteTrackResources_itEnablesNetworkInstrumentation() throws {
+        // Given
+        config = RUM.Configuration(applicationID: .mockRandom())
+        config.urlSessionTracking = nil
+        core.remoteConfiguration = RemoteConfiguration(
+            rum: .init(applicationId: .mockRandom(), trackResources: true)
+        )
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        XCTAssertNotNil(
+            core.get(feature: NetworkInstrumentationFeature.self),
+            "Remote `trackResources` must enable `NetworkInstrumentationFeature` at enable time"
+        )
+    }
+
+    func testWhenEnabledWithRemoteTrace_itEnablesNetworkInstrumentation() throws {
+        // Given
+        config = RUM.Configuration(applicationID: .mockRandom())
+        config.urlSessionTracking = nil
+        core.remoteConfiguration = RemoteConfiguration(
+            trace: .init(tracedHosts: [.init(host: "example.com", propagatorTypes: [])])
+        )
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let networkInstrumentation = try XCTUnwrap(
+            core.get(feature: NetworkInstrumentationFeature.self),
+            "Remote `trace` must enable `NetworkInstrumentationFeature` at enable time"
+        )
+        let urlSessionHandler = try XCTUnwrap(
+            networkInstrumentation.handlers.firstElement(of: URLSessionRUMResourcesHandler.self)
+        )
+        XCTAssertEqual(urlSessionHandler.distributedTracing?.firstPartyHosts.hosts, ["example.com"])
+    }
+
     // MARK: - Behaviour Tests
+
+    func testWhenEnabledWithTimeseries_itSendsUsageTelemetryOnlyAfterFeatureIsRegistered() throws {
+        // Given
+        weak var core: SingleFeatureCoreMock<RUMFeature>?
+        var featureWasRegisteredWhenTelemetryReceived: Bool?
+        let receiver = FeatureMessageReceiverMock { message in
+            guard case .telemetry(.usage(let usage)) = message, case .timeseries = usage.event else {
+                return
+            }
+            featureWasRegisteredWhenTelemetryReceived = core?.get(feature: RUMFeature.self) != nil
+        }
+        let strongCore = SingleFeatureCoreMock<RUMFeature>(messageReceiver: receiver)
+        // `TimeseriesSessionCollector` keeps a long-lived reference to its feature scope, which would otherwise
+        // create a core -> feature -> collector -> scope -> core retain cycle with the default `self`-as-scope.
+        strongCore.featureScopeOverride = NOPFeatureScope()
+        core = strongCore
+        config.timeseries = .init(collectTypes: [.memory])
+
+        // When
+        RUM.enable(with: config, in: strongCore)
+
+        // Then
+        XCTAssertEqual(featureWasRegisteredWhenTelemetryReceived, true)
+    }
 
     func testWhenEnabled_itSetsRUMContextInCore() throws {
         let core = PassthroughCoreMock()

@@ -15,6 +15,12 @@ import DatadogSessionReplay
 import CatalogSwiftUI
 
 struct SessionReplaySwiftUIScenario: Scenario {
+    private let recordingPipeline: SessionReplayRecordingPipeline
+
+    init(recordingPipeline: SessionReplayRecordingPipeline) {
+        self.recordingPipeline = recordingPipeline
+    }
+
     var initialViewController: UIViewController {
         UIHostingController(
             rootView: CatalogSwiftUI.ContentView()
@@ -40,11 +46,29 @@ struct SessionReplaySwiftUIScenario: Scenario {
                 textAndInputPrivacyLevel: .maskSensitiveInputs,
                 imagePrivacyLevel: .maskNone,
                 touchPrivacyLevel: .show,
-                featureFlags: [.swiftui: true, .heatmaps: true]
+                featureFlags: featureFlags
             )
         )
 
-        RUMMonitor.shared().addAttribute(forKey: "scenario", value: "SessionReplaySwiftUI")
+        RUMMonitor.shared().addAttribute(forKey: "scenario", value: rumScenarioName)
+    }
+
+    private var featureFlags: SessionReplay.Configuration.FeatureFlags {
+        switch recordingPipeline {
+        case .viewTree:
+            return [.swiftui: true, .heatmaps: true]
+        case .compositionTree:
+            return [.compositionTreeRecording: true]
+        }
+    }
+
+    private var rumScenarioName: String {
+        switch recordingPipeline {
+        case .viewTree:
+            return "SessionReplaySwiftUI"
+        case .compositionTree:
+            return "SessionReplaySwiftUICompositionTree"
+        }
     }
 }
 
