@@ -65,47 +65,8 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     /// The interceptions **must** be accessed using the `queue`.
     private var interceptions: [URLSessionTask: URLSessionTaskInterception] = [:]
 
-    /// Coordinates active preparations and weak terminal identities without retaining tasks.
-    private let preparationLock = NSLock()
-    private let preparations = NSMapTable<URLSessionTask, TaskPreparation>(
-        keyOptions: [.weakMemory, .objectPointerPersonality],
-        valueOptions: .strongMemory
-    )
-    private let terminalTasks = NSHashTable<URLSessionTask>(options: [.weakMemory, .objectPointerPersonality])
-
-    private final class TaskPreparation {
-        enum Phase { case preparing, ready }
-        var phase: Phase
-        let trackingMode: TrackingMode
-        var continuations: [URLSessionTaskSwizzler.ResumeContinuation] = []
-        var events: [TaskEvent] = []
-        var bufferedBodySize = 0
-        var discardedBody = false
-        var observedTerminal = false
-
-        init(phase: Phase, trackingMode: TrackingMode = .automatic) {
-            self.phase = phase
-            self.trackingMode = trackingMode
-        }
-    }
-
-    private enum ResumeAction { case prepare, forward, deferred }
-
-    private enum TaskEvent {
-        case metrics(URLSessionTaskMetrics)
-        case data(Data)
-        case discardResponseBody
-        case completion(Error?, Date, CFTimeInterval)
-        case state(Int, Date, CFTimeInterval)
-
-        var isTerminal: Bool {
-            switch self {
-            case .completion: return true
-            case let .state(state, _, _): return state == URLSessionTask.State.completed.rawValue
-            case .metrics, .data, .discardResponseBody: return false
-            }
-        }
-    }
+    private let taskPreparation = URLSessionTaskPreparationCoordinator(maxBufferedBodySize: NetworkInstrumentationFeature.maxBufferedBodySize)
+    private typealias TaskEvent = URLSessionTaskPreparationCoordinator.Event
 
     init(
         networkContextProvider: NetworkContextProvider,
@@ -155,19 +116,19 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                     return
                 }
 
-                if let action = self.existingResumeAction(for: task, continuation: continuation) {
+                if let action = self.taskPreparation.existingResumeAction(for: task, continuation: continuation) {
                     if case .forward = action { continuation() }
                     return
                 }
 
                 guard let currentRequest = task.currentRequest else {
-                    self.forwardUnlessPreparing(task, continuation: continuation)
+                    self.taskPreparation.forwardUnlessPreparing(task, continuation: continuation)
                     return
                 }
 
                 // Skip Datadog's own internal requests to prevent infinite recursion
                 if self.isDatadogInternalRequest(request: currentRequest) {
-                    self.forwardUnlessPreparing(task, continuation: continuation)
+                    self.taskPreparation.forwardUnlessPreparing(task, continuation: continuation)
                     return
                 }
 
@@ -176,18 +137,18 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                 // in multiple internal URLSessionTask wrapper objects sharing the same taskIdentifier.
                 // Internal wrappers have `_internalDelegateWrapper` set; the user-facing task does not.
                 if task.dd.isInternalTask {
-                    self.forwardUnlessPreparing(task, continuation: continuation)
+                    self.taskPreparation.forwardUnlessPreparing(task, continuation: continuation)
                     return
                 }
                 #endif
 
                 // Determine if this swizzler should intercept this task based on the configuration
                 guard shouldInterceptTask(task, for: configuration) else {
-                    self.forwardUnlessPreparing(task, continuation: continuation)
+                    self.taskPreparation.forwardUnlessPreparing(task, continuation: continuation)
                     return
                 }
 
-                switch self.beginPreparation(
+                switch self.taskPreparation.beginPreparation(
                     for: task,
                     continuation: continuation,
                     trackingMode: trackingMode,
@@ -208,7 +169,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                 let (request, traceContexts) = self.intercept(request: currentRequest, additionalFirstPartyHosts: configuredFirstPartyHosts)
                 task.dd.override(currentRequest: request)
                 self.intercept(task: task, with: traceContexts, additionalFirstPartyHosts: configuredFirstPartyHosts, trackingMode: trackingMode, fallbackRequest: request)
-                self.finishPreparation(for: task)
+                self.taskPreparation.finishPreparation(for: task, enqueue: self.enqueue)
             }
         )
 
@@ -425,115 +386,8 @@ extension NetworkInstrumentationFeature {
         }
     }
 
-    private func existingResumeAction(
-        for task: URLSessionTask,
-        continuation: @escaping URLSessionTaskSwizzler.ResumeContinuation
-    ) -> ResumeAction? {
-        preparationLock.lock()
-        defer { preparationLock.unlock() }
-        if let preparation = preparations.object(forKey: task) {
-            return resumeAction(for: preparation, continuation: continuation)
-        }
-        return terminalTasks.contains(task) ? .forward : nil
-    }
-
-    /// Called only while holding `preparationLock`; never invokes customer or native code.
-    private func resumeAction(
-        for preparation: TaskPreparation,
-        continuation: @escaping URLSessionTaskSwizzler.ResumeContinuation
-    ) -> ResumeAction {
-        switch preparation.phase {
-        case .preparing:
-            preparation.continuations.append(continuation)
-            return .deferred
-        case .ready:
-            return .forward
-        }
-    }
-
-    private func forwardUnlessPreparing(_ task: URLSessionTask, continuation: @escaping URLSessionTaskSwizzler.ResumeContinuation) {
-        if let action = existingResumeAction(for: task, continuation: continuation), case .deferred = action {
-            return
-        }
-        continuation()
-    }
-
-    private func beginPreparation(
-        for task: URLSessionTask,
-        continuation: @escaping URLSessionTaskSwizzler.ResumeContinuation,
-        trackingMode: TrackingMode,
-        isCompleted: Bool
-    ) -> ResumeAction {
-        preparationLock.lock()
-        defer { preparationLock.unlock() }
-        if let preparation = preparations.object(forKey: task) {
-            return resumeAction(for: preparation, continuation: continuation)
-        }
-        if terminalTasks.contains(task) || isCompleted {
-            terminalTasks.add(task)
-            return .forward
-        }
-        let preparation = TaskPreparation(phase: .preparing, trackingMode: trackingMode)
-        preparations.setObject(preparation, forKey: task)
-        preparation.continuations.append(continuation)
-        return .prepare
-    }
-
-    private func finishPreparation(for task: URLSessionTask) {
-        preparationLock.lock()
-        guard let preparation = preparations.object(forKey: task), preparation.phase == .preparing else {
-            preparationLock.unlock()
-            return
-        }
-        // Start is already enqueued. Keep callback enqueue order inside the coordinator lock.
-        let events = preparation.events
-        events.forEach { enqueue($0, for: task) }
-        let continuations = preparation.continuations
-        preparation.events.removeAll()
-        preparation.continuations.removeAll()
-        if preparation.observedTerminal {
-            terminalTasks.add(task)
-            preparations.removeObject(forKey: task)
-        } else {
-            preparation.phase = .ready
-        }
-        preparationLock.unlock()
-        withExtendedLifetime((preparation, events)) {}
-        continuations.forEach { $0() }
-    }
-
-    private func route(_ event: TaskEvent, for task: URLSessionTask) {
-        preparationLock.lock()
-        let preparation = preparations.object(forKey: task)
-        defer {
-            preparationLock.unlock()
-            withExtendedLifetime(preparation) {}
-        }
-        if let preparation, preparation.phase == .preparing {
-            preparation.observedTerminal = preparation.observedTerminal || event.isTerminal
-            if case let .data(data) = event, preparation.trackingMode == .registeredDelegate {
-                guard !preparation.discardedBody else {
-                    return
-                }
-                if data.count > Self.maxBufferedBodySize - preparation.bufferedBodySize {
-                    preparation.discardedBody = true
-                    preparation.events.append(.discardResponseBody)
-                    return
-                }
-                preparation.bufferedBodySize += data.count
-            }
-            preparation.events.append(event)
-            return
-        }
-        if event.isTerminal {
-            // State interception precedes the native setter, so task.state alone is insufficient.
-            terminalTasks.add(task)
-            preparations.removeObject(forKey: task)
-        }
-        enqueue(event, for: task)
-    }
-
-    /// Enqueues only. Handlers and previous implementations execute outside `preparationLock`.
+    /// Called under the preparation coordinator's lock: only submit work to the serial queue.
+    /// Handler callbacks execute asynchronously and must never be invoked directly here.
     private func enqueue(_ event: TaskEvent, for task: URLSessionTask) {
         switch event {
         case let .metrics(metrics): enqueue(task, didFinishCollecting: metrics)
@@ -621,14 +475,18 @@ extension NetworkInstrumentationFeature {
     ///   - injectedTraceContexts: The list of trace contexts injected into the task's request, one or none for each handler.
     ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception, used in conjunction with hosts defined in each handler.
     ///   - trackingMode: The tracking mode to use for this interception (automatic or registered delegate).
+    ///   - fallbackRequest: The prepared request snapshot, used only if the task no longer exposes a current request.
     func intercept(task: URLSessionTask, with instrumentationContexts: [RequestInstrumentationContext], additionalFirstPartyHosts: FirstPartyHosts?, trackingMode: TrackingMode, fallbackRequest: URLRequest? = nil) {
         // In response to https://github.com/DataDog/dd-sdk-ios/issues/1638 capture the current request object on the
         // caller thread and freeze its attributes through `ImmutableRequest`. This is to avoid changing the request
         // object from multiple threads:
-        guard let currentRequest = task.currentRequest ?? fallbackRequest else {
+        // A task can complete during customization and stop exposing currentRequest. The prepared
+        // snapshot still lets us create the start before replaying its buffered completion. Prefer
+        // the live request when available, since it also contains URLSession configuration headers.
+        guard let requestToCapture = task.currentRequest ?? fallbackRequest else {
             return
         }
-        let request = ImmutableRequest(request: currentRequest)
+        let request = ImmutableRequest(request: requestToCapture)
 
         // Capture start time before entering the queue for more accurate timing.
         // `startMediaTime` is captured from a monotonic clock so the duration computed at
@@ -701,7 +559,7 @@ extension NetworkInstrumentationFeature {
     ///   - task: The task whose metrics have been collected.
     ///   - metrics: The collected metrics.
     func task(_ task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
-        route(.metrics(metrics), for: task)
+        taskPreparation.route(.metrics(metrics), for: task, enqueue: enqueue)
     }
 
     private func enqueue(_ task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
@@ -730,7 +588,7 @@ extension NetworkInstrumentationFeature {
     ///   - task: The task that provided data.
     ///   - data: A data object containing the transferred data.
     func task(_ task: URLSessionTask, didReceive data: Data) {
-        route(.data(data), for: task)
+        taskPreparation.route(.data(data), for: task, enqueue: enqueue)
     }
 
     private func enqueue(_ task: URLSessionTask, didReceive data: Data) {
@@ -775,7 +633,7 @@ extension NetworkInstrumentationFeature {
         // duration is guaranteed `>= 0` regardless of wall-clock corrections.
         let endTime = Date()
         let endMediaTime = mediaTimeProvider.current
-        route(.completion(error, endTime, endMediaTime), for: task)
+        taskPreparation.route(.completion(error, endTime, endMediaTime), for: task, enqueue: enqueue)
     }
 
     private func enqueue(_ task: URLSessionTask, didCompleteWithError error: Error?, endTime: Date, endMediaTime: CFTimeInterval) {
@@ -844,7 +702,7 @@ extension NetworkInstrumentationFeature {
         // duration is guaranteed `>= 0` regardless of wall-clock corrections.
         let endTime = Date()
         let endMediaTime = mediaTimeProvider.current
-        route(.state(state, endTime, endMediaTime), for: task)
+        taskPreparation.route(.state(state, endTime, endMediaTime), for: task, enqueue: enqueue)
     }
 
     private func enqueue(_ task: URLSessionTask, didChangeToState state: Int, endTime: Date, endMediaTime: CFTimeInterval) {

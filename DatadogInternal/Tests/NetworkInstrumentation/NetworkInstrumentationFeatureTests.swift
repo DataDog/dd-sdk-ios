@@ -833,6 +833,206 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(handler.interceptions.first?.value.completion)
     }
 
+    func testAutomaticMode_whenDifferentTasksPrepareInParallel_itKeepsIndependentLifecycles() throws {
+        try assertDifferentTasksPrepareInParallel(mode: .automatic)
+    }
+
+    func testRegisteredDelegate_whenDifferentTasksPrepareInParallel_itKeepsIndependentLifecycles() throws {
+        try assertDifferentTasksPrepareInParallel(mode: .registeredDelegate)
+    }
+
+    /// Keeps every task inside request mutation before releasing either half of the tasks.
+    /// Native transport is withheld so callbacks can be injected with distinct per-task payloads.
+    private func assertDifferentTasksPrepareInParallel(mode: TrackingMode) throws {
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        let taskCount = 16
+        let sessions = (0..<2).map { _ in
+            URLSession(configuration: .ephemeral, delegate: mode == .registeredDelegate ? SessionDataDelegateMock() : nil, delegateQueue: nil)
+        }
+        defer { sessions.forEach { $0.invalidateAndCancel() } }
+        let urls = (0..<taskCount).map { URL(string: "https://example.com/parallel-preparation/\($0)")! }
+        let tasks = urls.enumerated().map { index, url in
+            var request = URLRequest(url: url)
+            request.setValue(String(index), forHTTPHeaderField: "X-Task")
+            return sessions[index % sessions.count].dataTask(with: request)
+        }
+        let indices = Dictionary(uniqueKeysWithValues: urls.enumerated().map { ($0.element, $0.offset) })
+        let releaseMutations = tasks.map { _ in DispatchSemaphore(value: 0) }
+        defer {
+            releaseMutations.forEach { $0.signal() }
+            handler.onRequestMutation = nil
+        }
+        let mutations = ReadWriteLock(wrappedValue: [URL: Int]())
+        let finishedMutations = ReadWriteLock(wrappedValue: Set<URL>())
+        let forwarded = ReadWriteLock(wrappedValue: [URL: Int]())
+        let order = ReadWriteLock(wrappedValue: [URL: [String]]())
+        let entered = expectation(description: "Every distinct task enters preparation concurrently")
+        entered.expectedFulfillmentCount = taskCount
+        let firstHalfReturned = expectation(description: "Half the tasks finish while the others remain preparing")
+        firstHalfReturned.expectedFulfillmentCount = taskCount / 2
+        let allReturned = expectation(description: "All initial resume calls return")
+        allReturned.expectedFulfillmentCount = taskCount
+
+        let previous = URLSessionTaskSwizzler()
+        try previous.swizzle { candidate, continuation in
+            guard let url = candidate.currentRequest?.url, let index = indices[url], candidate === tasks[index] else {
+                continuation()
+                return
+            }
+            XCTAssertTrue(finishedMutations.wrappedValue.contains(url), "Forwarding must follow this task's preparation")
+            XCTAssertEqual(candidate.currentRequest?.value(forHTTPHeaderField: "X-Task"), String(index))
+            var isFirstForward = false
+            forwarded.mutate {
+                $0[url, default: 0] += 1
+                isFirstForward = $0[url] == 1
+            }
+            if isFirstForward && !index.isMultiple(of: 2) {
+                feature.task(candidate, didCompleteWithError: nil)
+            }
+        }
+        defer { previous.unswizzle() }
+        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])
+        handler.shouldInterceptRequest = { $0.url.map { indices[$0] != nil } ?? false }
+        handler.onInterceptionDidStart = { interception in
+            order.mutate { $0[interception.request.url!, default: []].append("start") }
+        }
+        handler.onInterceptionDidComplete = { interception in
+            order.mutate { $0[interception.request.url!, default: []].append("complete") }
+        }
+        handler.onRequestMutation = { request, _, _ in
+            guard let url = request.url, let index = indices[url] else {
+                return
+            }
+            mutations.mutate { $0[url, default: 0] += 1 }
+            feature.task(tasks[index], didReceive: Data([UInt8(index)]))
+            feature.task(tasks[index], didFinishCollecting: .mockWith())
+            if index.isMultiple(of: 2) {
+                feature.task(tasks[index], didCompleteWithError: nil)
+            }
+            entered.fulfill()
+            XCTAssertEqual(releaseMutations[index].wait(timeout: .now() + 10), .success)
+            finishedMutations.mutate { $0.insert(url) }
+        }
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        if mode == .registeredDelegate {
+            try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        }
+
+        for (index, task) in tasks.enumerated() {
+            DispatchQueue.global().async {
+                task.resume()
+                if index < taskCount / 2 { firstHalfReturned.fulfill() }
+                allReturned.fulfill()
+            }
+        }
+        wait(for: [entered], timeout: 5)
+        tasks.forEach { $0.resume() }
+        feature.flush()
+        XCTAssertTrue(forwarded.wrappedValue.isEmpty)
+        XCTAssertTrue(order.wrappedValue.isEmpty)
+
+        releaseMutations.prefix(taskCount / 2).forEach { $0.signal() }
+        wait(for: [firstHalfReturned], timeout: 5)
+        feature.flush()
+        for index in urls.indices {
+            XCTAssertEqual(forwarded.wrappedValue[urls[index], default: 0], index < taskCount / 2 ? 2 : 0)
+            XCTAssertEqual(order.wrappedValue[urls[index], default: []], index < taskCount / 2 ? ["start", "complete"] : [])
+        }
+
+        releaseMutations.suffix(taskCount / 2).forEach { $0.signal() }
+        wait(for: [allReturned], timeout: 5)
+        feature.flush()
+        XCTAssertEqual(handler.interceptions.count, taskCount)
+        for (index, url) in urls.enumerated() {
+            XCTAssertEqual(mutations.wrappedValue[url], 1)
+            XCTAssertEqual(forwarded.wrappedValue[url], 2)
+            XCTAssertEqual(order.wrappedValue[url], ["start", "complete"])
+            let interception = try XCTUnwrap(handler.interception(for: url))
+            XCTAssertEqual(interception.trackingMode, mode)
+            XCTAssertEqual(interception.data, Data([UInt8(index)]))
+            XCTAssertNotNil(interception.metrics)
+            XCTAssertNotNil(interception.completion)
+            XCTAssertNil(try Self.preparation(for: tasks[index], in: feature))
+        }
+    }
+
+    func testAutomaticMode_whenConcurrentResumesReturn_itPreservesSubsequentSuspend() throws {
+        #if os(watchOS)
+        throw XCTSkip("watchOS ignores URLProtocol stubs; this test must keep native transport pending.")
+        #else
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        let url = URL(string: "https://example.com/suspend-after-concurrent-resumes")!
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [PendingRequestURLProtocol.self]
+        let session = URLSession(configuration: configuration)
+        defer { session.invalidateAndCancel() }
+        let completed = expectation(description: "Native cancellation completes")
+        let task = session.dataTask(with: url) { _, _, error in
+            XCTAssertEqual((error as NSError?)?.code, NSURLErrorCancelled)
+            completed.fulfill()
+        }
+        let forwarded = ReadWriteLock(wrappedValue: 0)
+        let previous = URLSessionTaskSwizzler()
+        try previous.swizzle { candidate, resume in
+            resume()
+            if candidate === task { forwarded.mutate { $0 += 1 } }
+        }
+        defer { previous.unswizzle() }
+        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])
+        handler.shouldInterceptRequest = { $0.url == url }
+        let mutations = ReadWriteLock(wrappedValue: 0)
+        let mutationEntered = expectation(description: "First preparation entered")
+        let firstResumeReturned = expectation(description: "First resume and all deferred forwarding returned")
+        let releaseMutation = DispatchSemaphore(value: 0)
+        defer {
+            releaseMutation.signal()
+            handler.onRequestMutation = nil
+        }
+        handler.onRequestMutation = { request, _, _ in
+            guard request.url == url else {
+                return
+            }
+            mutations.mutate { $0 += 1 }
+            mutationEntered.fulfill()
+            XCTAssertEqual(releaseMutation.wait(timeout: .now() + 5), .success)
+        }
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+
+        DispatchQueue.global().async {
+            task.resume()
+            firstResumeReturned.fulfill()
+        }
+        wait(for: [mutationEntered], timeout: 5)
+        task.resume()
+        XCTAssertEqual(forwarded.wrappedValue, 0)
+        releaseMutation.signal()
+        wait(for: [firstResumeReturned], timeout: 5)
+        XCTAssertEqual(forwarded.wrappedValue, 2)
+
+        // Order suspend after both public resume calls have returned. Suspending while the
+        // first call is still forwarding would race with that call's remaining native work.
+        task.suspend()
+        feature.flush()
+        XCTAssertEqual(task.state, .suspended)
+        XCTAssertEqual(forwarded.wrappedValue, 2, "No resume may remain deferred after both calls return")
+
+        task.resume()
+        XCTAssertEqual(task.state, .running)
+        XCTAssertEqual(forwarded.wrappedValue, 3)
+        XCTAssertEqual(mutations.wrappedValue, 1)
+        task.cancel()
+        wait(for: [completed], timeout: 5)
+        feature.flush()
+        #endif
+    }
+
+    private final class PendingRequestURLProtocol: URLProtocol {
+        override class func canInit(with request: URLRequest) -> Bool { true }
+        override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+        override func startLoading() { }
+        override func stopLoading() { }
+    }
+
     func testAutomaticMode_whenMutationResumesTheTask_itDoesNotReenterPreparation() throws {
         let (server, started, completed) = setupInterceptionTest()
         let url = try XCTUnwrap(URL(string: "https://example.com/reentrant-resume"))
@@ -1209,8 +1409,10 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     /// Observes ownership without adding a production test hook or keeping the record alive.
     private static func preparation(for task: URLSessionTask, in feature: NetworkInstrumentationFeature) throws -> AnyObject? {
-        let fields = Mirror(reflecting: feature).children
-        let lock = try XCTUnwrap(fields.first { $0.label == "preparationLock" }?.value as? NSLock)
+        let featureFields = Mirror(reflecting: feature).children
+        let coordinator = try XCTUnwrap(featureFields.first { $0.label == "taskPreparation" }?.value)
+        let fields = Mirror(reflecting: coordinator).children
+        let lock = try XCTUnwrap(fields.first { $0.label == "lock" }?.value as? NSLock)
         let table = try XCTUnwrap(fields.first { $0.label == "preparations" }?.value as? NSMapTable<AnyObject, AnyObject>)
         lock.lock()
         defer { lock.unlock() }
@@ -1370,6 +1572,26 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         let interception = try XCTUnwrap(handler.interceptions.first?.value)
         XCTAssertEqual(interception.request.unsafeOriginal, request)
+        XCTAssertNotNil(interception.completion)
+    }
+
+    func testPreparation_currentRequestTakesPrecedenceOverPreparedFallback() throws {
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.httpAdditionalHeaders = ["X-Session-Configuration": "preserved"]
+        let session = URLSession(configuration: configuration)
+        defer { session.invalidateAndCancel() }
+        let task = session.dataTask(with: URL(string: "https://example.com/current-request")!)
+        let currentRequest = try XCTUnwrap(task.currentRequest)
+        let fallbackRequest = URLRequest(url: URL(string: "https://example.com/prepared-fallback")!)
+
+        feature.intercept(task: task, with: [], additionalFirstPartyHosts: nil, trackingMode: .automatic, fallbackRequest: fallbackRequest)
+        feature.task(task, didCompleteWithError: nil)
+        feature.flush()
+
+        let interception = try XCTUnwrap(handler.interceptions.first?.value)
+        XCTAssertEqual(interception.request.unsafeOriginal, currentRequest)
+        XCTAssertEqual(interception.request.unsafeOriginal.value(forHTTPHeaderField: "X-Session-Configuration"), "preserved")
         XCTAssertNotNil(interception.completion)
     }
 
