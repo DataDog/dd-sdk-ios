@@ -72,6 +72,17 @@ private final class InitializationCompletion {
     }
 }
 
+private struct PendingCacheReadCallback {
+    let takeCompletion: () -> InitializationCompletion.Completion?
+    let callback: (InitializationCompletion.Completion?) -> Void
+
+    // Claim results before any application callback can delay cancellation of their timeouts.
+    func prepare() -> () -> Void {
+        let completion = takeCompletion()
+        return { callback(completion) }
+    }
+}
+
 internal final class FlagsRepository {
     let clientName: String
     private let stateManager = FlagsStateManager()
@@ -100,9 +111,11 @@ internal final class FlagsRepository {
         var flagsData: FlagsData?
         var cachedFlagsData: FlagsData?
         var flagsDataVersion: UInt64 = 0
+        var contextUpdateID: UInt64 = 0
+        var lastAppliedContextUpdateID: UInt64 = 0
         var hasStartedEvaluationContextRequest = false
         var reconcilingContext: FlagsEvaluationContext?
-        var pendingDiskReadCallbacks: [() -> Void] = []
+        var pendingDiskReadCallbacks: [PendingCacheReadCallback] = []
         var initialFlagsDataGroup: DispatchGroup? = {
             let group = DispatchGroup()
             group.enter()
@@ -113,7 +126,7 @@ internal final class FlagsRepository {
             initialFlagsDataGroup != nil
         }
 
-        mutating func applyInitialFlagsData(_ data: FlagsData?) -> [() -> Void] {
+        mutating func applyInitialFlagsData(_ data: FlagsData?) -> [PendingCacheReadCallback] {
             // A successful fetch or reset supersedes both active and fallback data from disk.
             if flagsDataVersion == 0 {
                 cachedFlagsData = data
@@ -131,7 +144,7 @@ internal final class FlagsRepository {
             return finishWaitingForInitialFlagsData()
         }
 
-        mutating func finishWaitingForInitialFlagsData() -> [() -> Void] {
+        mutating func finishWaitingForInitialFlagsData() -> [PendingCacheReadCallback] {
             // Leave only once, waking all getters even if a late disk read follows a fetch or reset.
             initialFlagsDataGroup?.leave()
             initialFlagsDataGroup = nil
@@ -240,16 +253,18 @@ internal final class FlagsRepository {
     private func readState() {
         // Retain the read lifecycle, not the repository, so the group is balanced even after deallocation.
         featureScope.flagsDataStore.flagsData(forClientNamed: clientName) { [weak self, _repositoryState] data in
-            var callbacks: [() -> Void] = []
+            var callbacks: [PendingCacheReadCallback] = []
             _repositoryState.mutate { state in
                 callbacks = state.applyInitialFlagsData(data)
             }
 
-            self?.executePendingDiskReadCallbacks(callbacks)
+            if self != nil {
+                Self.executePendingDiskReadCallbacks(callbacks.map { $0.prepare() })
+            }
         }
     }
 
-    private func executePendingDiskReadCallbacks(_ callbacks: [() -> Void]) {
+    private static func executePendingDiskReadCallbacks(_ callbacks: [() -> Void]) {
         guard !callbacks.isEmpty else {
             return
         }
@@ -272,7 +287,7 @@ internal final class FlagsRepository {
 
     /// Executes the callback once the initial cache is available, or immediately if a fetch or reset superseded it.
     /// Used on fetch failure so cached flags can be used without delaying the network request.
-    private func whenCacheReady(_ callback: @escaping () -> Void) {
+    private func whenCacheReady(_ callback: PendingCacheReadCallback) {
         var shouldExecuteNow = false
         _repositoryState.mutate { state in
             if state.shouldWaitForFlagsDataRead {
@@ -283,7 +298,7 @@ internal final class FlagsRepository {
         }
 
         if shouldExecuteNow {
-            callback()
+            callback.prepare()()
         }
     }
 
@@ -372,32 +387,42 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
     ) {
+        let stateManager = self.stateManager
         let initializationCompletion = makeInitializationCompletion(completion, context: context) {
             stateManager.updateState(.reconciling)
         }
-        let complete: (Result<Void, FlagsError>, FlagsClientState?) -> Void = { [stateManager] result, newState in
-            // Claim initialization before notifying listeners so its timeout cannot replace the result.
-            let operationCompletion = initializationCompletion?.take()
+        let takeCompletion = {
+            initializationCompletion?.take()
                 ?? (initializationCompletion == nil ? completion : nil)
-
+        }
+        func complete(
+            _ result: Result<Void, FlagsError>,
+            _ newState: FlagsClientState?,
+            _ operationCompletion: InitializationCompletion.Completion?,
+            pendingCompletions: [() -> Void] = []
+        ) {
             guard let newState else {
                 operationCompletion?(result)
                 return
             }
 
             // The provider reads currentState in completion; initialization must also complete before listeners.
-            if initializationCompletion != nil {
-                stateManager.updateState(newState) {
+            stateManager.updateState(newState) {
+                Self.executePendingDiskReadCallbacks(pendingCompletions)
+                if initializationCompletion != nil {
                     operationCompletion?(result)
                 }
-            } else {
-                stateManager.updateState(newState)
+            }
+            if initializationCompletion == nil {
                 operationCompletion?(result)
             }
         }
 
         var versionAtStart: UInt64 = 0
+        var contextUpdateID: UInt64 = 0
         _repositoryState.mutate { state in
+            state.contextUpdateID += 1
+            contextUpdateID = state.contextUpdateID
             state.hasStartedEvaluationContextRequest = true
             state.reconcilingContext = context
             versionAtStart = state.flagsDataVersion
@@ -408,7 +433,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
 
         flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
             guard let self else {
-                complete(.failure(.clientNotInitialized), nil)
+                complete(.failure(.clientNotInitialized), nil, takeCompletion())
                 return
             }
 
@@ -419,9 +444,14 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     context: context,
                     date: self.dateProvider.now
                 )
-                var versionAfterSuccess: UInt64 = 0
-                var callbacks: [() -> Void] = []
+                var versionAfterSuccess: UInt64?
+                var callbacks: [PendingCacheReadCallback] = []
                 self._repositoryState.mutate { state in
+                    // Concurrent delivery must not let an older success replace a newer one.
+                    guard contextUpdateID >= state.lastAppliedContextUpdateID else {
+                        return
+                    }
+                    state.lastAppliedContextUpdateID = contextUpdateID
                     state.flagsData = flagsData
                     state.cachedFlagsData = flagsData
                     state.flagsDataVersion += 1
@@ -429,13 +459,17 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     state.reconcilingContext = nil
                     callbacks = state.finishWaitingForInitialFlagsData()
                 }
+                guard let versionAfterSuccess else {
+                    complete(.success(()), nil, takeCompletion())
+                    return
+                }
+                let pendingCompletions = callbacks.map { $0.prepare() }
                 self.writeState(flagsData, version: versionAfterSuccess)
-                complete(.success(()), .ready)
-                self.executePendingDiskReadCallbacks(callbacks)
+                complete(.success(()), .ready, takeCompletion(), pendingCompletions: pendingCompletions)
             case .failure(let error):
-                self.whenCacheReady { [weak self] in
+                self.whenCacheReady(PendingCacheReadCallback(takeCompletion: takeCompletion) { [weak self] operationCompletion in
                     guard let self else {
-                        complete(.failure(.clientNotInitialized), nil)
+                        complete(.failure(.clientNotInitialized), nil, operationCompletion)
                         return
                     }
 
@@ -443,8 +477,8 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                         for: context,
                         versionAtStart: versionAtStart
                     )
-                    complete(.failure(error), newState)
-                }
+                    complete(.failure(error), newState, operationCompletion)
+                })
             }
         }
     }
@@ -452,22 +486,26 @@ extension FlagsRepository: FlagsRepositoryProtocol {
     func reset() {
         let flagsDataStore = featureScope.flagsDataStore
         let clientName = clientName
-        var callbacks: [() -> Void] = []
+        var callbacks: [PendingCacheReadCallback] = []
 
         _repositoryState.mutate { state in
             state.flagsData = nil
             state.cachedFlagsData = nil
             state.flagsDataVersion += 1
+            state.contextUpdateID += 1
+            state.lastAppliedContextUpdateID = state.contextUpdateID
             state.reconcilingContext = nil
             callbacks = state.finishWaitingForInitialFlagsData()
         }
+        let pendingCompletions = callbacks.map { $0.prepare() }
         // Enqueue removal after any already-started cache write to avoid
         // re-persisting stale flags after reset.
         cachePersistenceQueue.sync {
             flagsDataStore.removeFlagsData(forClientNamed: clientName)
         }
-        stateManager.updateState(.notReady)
-        executePendingDiskReadCallbacks(callbacks)
+        stateManager.updateState(.notReady) {
+            Self.executePendingDiskReadCallbacks(pendingCompletions)
+        }
     }
 
     func flush() {

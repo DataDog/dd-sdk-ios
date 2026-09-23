@@ -14,6 +14,217 @@ import DatadogInternal
 final class FlagsRepositoryTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
 
+    func testOverlappingContextUpdates_whenResultDeliveryIsReordered_preservesNewerSuccess() throws {
+        let dateProvider = PausingDateProvider()
+        let requested = expectation(description: "both requests started")
+        requested.expectedFulfillmentCount = 2
+        @ReadWriteLock
+        var networkCompletions: [(Result<Data, Error>) -> Void] = []
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: nil,
+            featureScope: featureScope,
+            fetch: { _, completion in
+                _networkCompletions.mutate { $0.append(completion) }
+                requested.fulfill()
+            }
+        )
+        let repository = FlagsRepository(
+            clientName: "client",
+            flagAssignmentsFetcher: fetcher,
+            dateProvider: dateProvider,
+            featureScope: featureScope,
+            initializationTimeout: nil
+        )
+        featureScope.dataStore.flush()
+        let contextA = FlagsEvaluationContext(targetingKey: "user-A")
+        let contextB = FlagsEvaluationContext(targetingKey: "user-B")
+        let finished = DispatchGroup()
+        let secondFinished = DispatchSemaphore(value: 0)
+        finished.enter()
+        finished.enter()
+        defer {
+            dateProvider.resume.signal()
+            _ = finished.wait(timeout: .now() + 2)
+            repository.flush()
+        }
+        repository.setEvaluationContext(contextA) { result in
+            if case .failure(let error) = result {
+                XCTFail("Expected success, got \(error)")
+            }
+            finished.leave()
+        }
+        repository.setEvaluationContext(contextB) { result in
+            if case .failure(let error) = result {
+                XCTFail("Expected success, got \(error)")
+            }
+            secondFinished.signal()
+            finished.leave()
+        }
+        wait(for: [requested], timeout: 1)
+
+        let completions = networkCompletions
+        XCTAssertEqual(completions.count, 2)
+        guard completions.count == 2 else {
+            return
+        }
+        completions[0](.success(.mockAnyFlagAssignmentsResponse()))
+        XCTAssertEqual(dateProvider.started.wait(timeout: .now() + 1), .success)
+        completions[1](.success(.mockAnyFlagAssignmentsResponse()))
+        // B can finish while A is paused, but A must not overwrite it when resumed.
+        XCTAssertEqual(secondFinished.wait(timeout: .now() + 1), .success)
+        dateProvider.resume.signal()
+        XCTAssertEqual(finished.wait(timeout: .now() + 1), .success)
+        XCTAssertEqual(repository.context, contextB)
+        XCTAssertEqual(repository.state.currentState, .ready)
+
+        repository.flush()
+        featureScope.dataStore.flush()
+        let persisted = try XCTUnwrap(featureScope.dataStoreMock.storage["client"]?.data())
+        XCTAssertEqual(try JSONDecoder().decode(FlagsData.self, from: persisted).context, contextB)
+    }
+
+    func testOverlappingContextUpdates_whenSuccessesArriveInEitherOrder_preservesNewerFlags() {
+        for responseOrder in [[0, 1], [1, 0]] {
+            var completions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+            let repository = FlagsRepository(
+                clientName: "client",
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in completions.append(completion) },
+                dateProvider: DateProviderMock(),
+                featureScope: featureScope,
+                initializationTimeout: nil
+            )
+            featureScope.dataStore.flush()
+            defer { repository.flush() }
+            let olderContext = FlagsEvaluationContext(targetingKey: "user-A")
+            let newerContext = FlagsEvaluationContext(targetingKey: "user-B")
+            var completed = 0
+            repository.setEvaluationContext(olderContext) { _ in completed += 1 }
+            repository.setEvaluationContext(newerContext) { _ in completed += 1 }
+
+            for index in responseOrder {
+                completions[index](.success([index == 0 ? "old" : "new": .mockAny()]))
+            }
+
+            XCTAssertEqual(completed, 2)
+            XCTAssertEqual(repository.context, newerContext)
+            XCTAssertEqual(repository.state.currentState, .ready)
+            XCTAssertNotNil(repository.flagAssignment(for: "new"))
+            XCTAssertNil(repository.flagAssignment(for: "old"))
+        }
+    }
+
+    func testOverlappingContextUpdates_whenSupersededSuccessArrives_doesNotEndNewerReconciliation() {
+        var completions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+        let repository = FlagsRepository(
+            clientName: "client",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in completions.append(completion) },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: nil
+        )
+        defer { repository.flush() }
+        repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "user-A")) { _ in }
+        let newerContext = FlagsEvaluationContext(targetingKey: "user-B")
+        repository.setEvaluationContext(newerContext) { _ in }
+        completions[1](.success(["new": .mockAny()]))
+        repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "user-C")) { _ in }
+
+        completions[0](.success(["old": .mockAny()]))
+
+        XCTAssertEqual(repository.state.currentState, .reconciling)
+        XCTAssertEqual(repository.context, newerContext)
+        XCTAssertNotNil(repository.flagAssignment(for: "new"))
+        XCTAssertNil(repository.flagAssignment(for: "old"))
+        completions[2](.success(["latest": .mockAny()]))
+        XCTAssertEqual(repository.state.currentState, .ready)
+        XCTAssertNotNil(repository.flagAssignment(for: "latest"))
+    }
+
+    func testSetEvaluationContext_whenSuccessArrivesAfterReset_doesNotRestoreFlags() {
+        var fetchCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+        let repository = FlagsRepository(
+            clientName: "client",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in fetchCompletion = completion },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: nil
+        )
+        var completed = false
+        repository.setEvaluationContext(.mockAny()) { _ in completed = true }
+        repository.reset()
+
+        fetchCompletion?(.success(["old": .mockAny()]))
+        repository.flush()
+        featureScope.dataStore.flush()
+
+        XCTAssertTrue(completed)
+        XCTAssertEqual(repository.state.currentState, .notReady)
+        XCTAssertNil(repository.context)
+        XCTAssertNil(repository.flagAssignments())
+        XCTAssertNil(featureScope.dataStoreMock.storage["client"]?.data())
+    }
+
+    func testPendingFailure_whenNewerRequestSucceeds_claimsResultBeforeReadyListener() throws {
+        let dataStore = DelayedReadDataStore()
+        let readStarted = expectation(description: "initial read started")
+        dataStore.onReadStarted = { readStarted.fulfill() }
+        var fetchCompletions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+        var timeoutAction: (() -> Void)?
+        var timeoutCancellationCount = 0
+        @ReadWriteLock
+        var results: [Result<Void, FlagsError>] = []
+        let firstCompleted = DispatchGroup()
+        firstCompleted.enter()
+        let repository = FlagsRepository(
+            clientName: "client",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                fetchCompletions.append(completion)
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: FeatureScopeMock(dataStore: dataStore),
+            initializationTimeout: 5,
+            scheduleInitializationTimeout: { _, action in
+                timeoutAction = action
+                return { timeoutCancellationCount += 1 }
+            }
+        )
+        defer {
+            dataStore.resumeRead()
+            dataStore.flush()
+            repository.flush()
+        }
+        wait(for: [readStarted], timeout: 1)
+        let listener = ClosureFlagsStateListener { state in
+            if state == .ready {
+                XCTAssertEqual(timeoutCancellationCount, 1)
+                timeoutAction?()
+                XCTAssertEqual(firstCompleted.wait(timeout: .now() + 1), .success)
+            }
+        }
+        repository.state.addListener(listener)
+        repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "user-A")) { result in
+            XCTAssertEqual(repository.state.currentState, .ready)
+            _results.mutate { $0.append(result) }
+            firstCompleted.leave()
+        }
+        fetchCompletions[0](.failure(.invalidResponse))
+        XCTAssertTrue(results.isEmpty)
+        repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "user-B")) { _ in
+            timeoutAction?()
+        }
+        fetchCompletions[1](.success(["fresh": .mockAny()]))
+
+        XCTAssertEqual(firstCompleted.wait(timeout: .now() + 1), .success)
+        guard case .failure(.invalidResponse) = try XCTUnwrap(results.first) else {
+            return XCTFail("Expected the original fetch failure")
+        }
+        dataStore.resumeRead()
+        dataStore.flush()
+        try XCTUnwrap(timeoutAction)()
+        XCTAssertEqual(results.count, 1)
+    }
+
     func testInitAndReset() throws {
         // Given
         let initialState = FlagsData(
@@ -1922,6 +2133,26 @@ private final class DelayedReadDataStore: DataStore, @unchecked Sendable {
 
     func resumeRead() {
         readSemaphore.signal()
+    }
+}
+
+private final class PausingDateProvider: DateProvider {
+    @ReadWriteLock
+    private var calls = 0
+    let started = DispatchSemaphore(value: 0)
+    let resume = DispatchSemaphore(value: 0)
+
+    var now: Date {
+        var shouldPause = false
+        _calls.mutate { value in
+            shouldPause = value == 0
+            value += 1
+        }
+        if shouldPause {
+            started.signal()
+            resume.wait()
+        }
+        return Date()
     }
 }
 
