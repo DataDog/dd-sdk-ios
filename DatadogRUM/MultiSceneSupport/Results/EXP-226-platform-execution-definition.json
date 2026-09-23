@@ -1,0 +1,358 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-226",
+  "status": "DEFINED_BEFORE_CORRECTION",
+  "at": 1790201901.698112,
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp226-platform-execution-kzftyi5x",
+  "prepared_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp226-isolated-platforms-9bhuuha3",
+  "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "original_plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp226-isolated-platforms-9bhuuha3/plan.json",
+    "sha256": "53de89374688468a9d4566b967066c91ed9ba89b879e8a8acd2e2bb62e2bc3d9"
+  },
+  "original_stop": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp226-isolated-platforms-9bhuuha3/summary.json",
+    "sha256": "8ff2259bb65caa5c36fe36a0caf82ad98fa871da1af586013fda8c8f182d79c1"
+  },
+  "saved_discovery": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp226-isolated-platforms-9bhuuha3/discovery.log",
+    "sha256": "5c85162dd6bde830cb7bd926609317b640cde829a5a9ed472faa26e4161a363f"
+  },
+  "saved_discovery_receipt": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp226-isolated-platforms-9bhuuha3/discovery-receipt.json",
+    "sha256": "c0aaf2bb2c8e4fa8db6311cc934c51733cbf09c069f0995f6300623538825c73"
+  },
+  "budgets_seconds": {
+    "preparation": 600,
+    "discovery": 180,
+    "per_build": 600,
+    "command_cleanup": 30,
+    "cell_cleanup": 60,
+    "stage": 13800
+  },
+  "cells": [
+    {
+      "id": "ios-Debug",
+      "gate": "M04",
+      "platform": "ios",
+      "destination": "generic/platform=iOS",
+      "configuration": "Debug",
+      "scheme": "Datadog-Package",
+      "modules": [
+        "DatadogCore",
+        "DatadogInternal",
+        "DatadogLogs",
+        "DatadogTrace",
+        "DatadogRUM",
+        "DatadogCrashReporting",
+        "DatadogWebViewTracking",
+        "DatadogSessionReplay",
+        "DatadogProfiling",
+        "DatadogFlags"
+      ]
+    },
+    {
+      "id": "ios-Release",
+      "gate": "M04",
+      "platform": "ios",
+      "destination": "generic/platform=iOS",
+      "configuration": "Release",
+      "scheme": "Datadog-Package",
+      "modules": [
+        "DatadogCore",
+        "DatadogInternal",
+        "DatadogLogs",
+        "DatadogTrace",
+        "DatadogRUM",
+        "DatadogCrashReporting",
+        "DatadogWebViewTracking",
+        "DatadogSessionReplay",
+        "DatadogProfiling",
+        "DatadogFlags"
+      ]
+    },
+    {
+      "id": "tvos-Debug",
+      "gate": "M05",
+      "platform": "tvos",
+      "destination": "generic/platform=tvOS",
+      "configuration": "Debug",
+      "scheme": "Datadog-Package",
+      "modules": [
+        "DatadogCore",
+        "DatadogInternal",
+        "DatadogLogs",
+        "DatadogTrace",
+        "DatadogRUM",
+        "DatadogCrashReporting",
+        "DatadogWebViewTracking",
+        "DatadogSessionReplay",
+        "DatadogProfiling",
+        "DatadogFlags"
+      ]
+    },
+    {
+      "id": "tvos-Release",
+      "gate": "M05",
+      "platform": "tvos",
+      "destination": "generic/platform=tvOS",
+      "configuration": "Release",
+      "scheme": "Datadog-Package",
+      "modules": [
+        "DatadogCore",
+        "DatadogInternal",
+        "DatadogLogs",
+        "DatadogTrace",
+        "DatadogRUM",
+        "DatadogCrashReporting",
+        "DatadogWebViewTracking",
+        "DatadogSessionReplay",
+        "DatadogProfiling",
+        "DatadogFlags"
+      ]
+    },
+    {
+      "id": "watchos-Debug",
+      "gate": "M06",
+      "platform": "watchos",
+      "destination": "generic/platform=watchOS",
+      "configuration": "Debug",
+      "scheme": "Datadog-Package",
+      "modules": [
+        "DatadogCore",
+        "DatadogInternal",
+        "DatadogLogs",
+        "DatadogTrace",
+        "DatadogRUM",
+        "DatadogCrashReporting",
+        "DatadogWebViewTracking",
+        "DatadogSessionReplay",
+        "DatadogProfiling",
+        "DatadogFlags"
+      ]
+    },
+    {
+      "id": "watchos-Release",
+      "gate": "M06",
+      "platform": "watchos",
+      "destination": "generic/platform=watchOS",
+      "configuration": "Release",
+      "scheme": "Datadog-Package",
+      "modules": [
+        "DatadogCore",
+        "DatadogInternal",
+        "DatadogLogs",
+        "DatadogTrace",
+        "DatadogRUM",
+        "DatadogCrashReporting",
+        "DatadogWebViewTracking",
+        "DatadogSessionReplay",
+        "DatadogProfiling",
+        "DatadogFlags"
+      ]
+    },
+    {
+      "id": "visionos-Debug",
+      "gate": "M07",
+      "platform": "visionos",
+      "destination": "generic/platform=visionOS",
+      "configuration": "Debug",
+      "scheme": "Datadog-Package",
+      "modules": [
+        "DatadogCore",
+        "DatadogInternal",
+        "DatadogLogs",
+        "DatadogTrace",
+        "DatadogRUM",
+        "DatadogCrashReporting",
+        "DatadogWebViewTracking",
+        "DatadogSessionReplay",
+        "DatadogProfiling",
+        "DatadogFlags"
+      ]
+    },
+    {
+      "id": "visionos-Release",
+      "gate": "M07",
+      "platform": "visionos",
+      "destination": "generic/platform=visionOS",
+      "configuration": "Release",
+      "scheme": "Datadog-Package",
+      "modules": [
+        "DatadogCore",
+        "DatadogInternal",
+        "DatadogLogs",
+        "DatadogTrace",
+        "DatadogRUM",
+        "DatadogCrashReporting",
+        "DatadogWebViewTracking",
+        "DatadogSessionReplay",
+        "DatadogProfiling",
+        "DatadogFlags"
+      ]
+    },
+    {
+      "id": "catalyst-Debug",
+      "gate": "M08",
+      "platform": "catalyst",
+      "destination": "generic/platform=macOS,variant=Mac Catalyst",
+      "configuration": "Debug",
+      "scheme": "Datadog-Package",
+      "modules": [
+        "DatadogCore",
+        "DatadogInternal",
+        "DatadogLogs",
+        "DatadogTrace",
+        "DatadogRUM",
+        "DatadogCrashReporting",
+        "DatadogWebViewTracking",
+        "DatadogSessionReplay",
+        "DatadogProfiling",
+        "DatadogFlags"
+      ]
+    },
+    {
+      "id": "catalyst-Release",
+      "gate": "M08",
+      "platform": "catalyst",
+      "destination": "generic/platform=macOS,variant=Mac Catalyst",
+      "configuration": "Release",
+      "scheme": "Datadog-Package",
+      "modules": [
+        "DatadogCore",
+        "DatadogInternal",
+        "DatadogLogs",
+        "DatadogTrace",
+        "DatadogRUM",
+        "DatadogCrashReporting",
+        "DatadogWebViewTracking",
+        "DatadogSessionReplay",
+        "DatadogProfiling",
+        "DatadogFlags"
+      ]
+    },
+    {
+      "id": "macos-DatadogCore-Debug",
+      "gate": "M09",
+      "platform": "macos",
+      "destination": "platform=macOS,arch=arm64",
+      "configuration": "Debug",
+      "scheme": "DatadogCore",
+      "modules": [
+        "DatadogInternal",
+        "DatadogCore"
+      ]
+    },
+    {
+      "id": "macos-DatadogCore-Release",
+      "gate": "M09",
+      "platform": "macos",
+      "destination": "platform=macOS,arch=arm64",
+      "configuration": "Release",
+      "scheme": "DatadogCore",
+      "modules": [
+        "DatadogInternal",
+        "DatadogCore"
+      ]
+    },
+    {
+      "id": "macos-DatadogLogs-Debug",
+      "gate": "M09",
+      "platform": "macos",
+      "destination": "platform=macOS,arch=arm64",
+      "configuration": "Debug",
+      "scheme": "DatadogLogs",
+      "modules": [
+        "DatadogInternal",
+        "DatadogLogs"
+      ]
+    },
+    {
+      "id": "macos-DatadogLogs-Release",
+      "gate": "M09",
+      "platform": "macos",
+      "destination": "platform=macOS,arch=arm64",
+      "configuration": "Release",
+      "scheme": "DatadogLogs",
+      "modules": [
+        "DatadogInternal",
+        "DatadogLogs"
+      ]
+    },
+    {
+      "id": "macos-DatadogTrace-Debug",
+      "gate": "M09",
+      "platform": "macos",
+      "destination": "platform=macOS,arch=arm64",
+      "configuration": "Debug",
+      "scheme": "DatadogTrace",
+      "modules": [
+        "DatadogInternal",
+        "DatadogTrace"
+      ]
+    },
+    {
+      "id": "macos-DatadogTrace-Release",
+      "gate": "M09",
+      "platform": "macos",
+      "destination": "platform=macOS,arch=arm64",
+      "configuration": "Release",
+      "scheme": "DatadogTrace",
+      "modules": [
+        "DatadogInternal",
+        "DatadogTrace"
+      ]
+    },
+    {
+      "id": "macos-DatadogCrashReporting-Debug",
+      "gate": "M09",
+      "platform": "macos",
+      "destination": "platform=macOS,arch=arm64",
+      "configuration": "Debug",
+      "scheme": "DatadogCrashReporting",
+      "modules": [
+        "DatadogInternal",
+        "DatadogCrashReporting"
+      ]
+    },
+    {
+      "id": "macos-DatadogCrashReporting-Release",
+      "gate": "M09",
+      "platform": "macos",
+      "destination": "platform=macOS,arch=arm64",
+      "configuration": "Release",
+      "scheme": "DatadogCrashReporting",
+      "modules": [
+        "DatadogInternal",
+        "DatadogCrashReporting"
+      ]
+    },
+    {
+      "id": "macos-DatadogWebViewTracking-Debug",
+      "gate": "M09",
+      "platform": "macos",
+      "destination": "platform=macOS,arch=arm64",
+      "configuration": "Debug",
+      "scheme": "DatadogWebViewTracking",
+      "modules": [
+        "DatadogInternal",
+        "DatadogWebViewTracking"
+      ]
+    },
+    {
+      "id": "macos-DatadogWebViewTracking-Release",
+      "gate": "M09",
+      "platform": "macos",
+      "destination": "platform=macOS,arch=arm64",
+      "configuration": "Release",
+      "scheme": "DatadogWebViewTracking",
+      "modules": [
+        "DatadogInternal",
+        "DatadogWebViewTracking"
+      ]
+    }
+  ],
+  "discriminator": "Qualify the exact saved IDERunDestination warning prefix and complete scheme JSON without repeating native discovery. Run only the twenty previously unexecuted platform cells under a fresh fixed stage.",
+  "scope": "No source, dependency, compiler/link/resource oracle change; preserve original STOPPED/evidence incomplete/cleanup PASS.",
+  "native_admitted": false
+}

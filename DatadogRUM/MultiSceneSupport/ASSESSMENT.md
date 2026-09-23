@@ -6,6 +6,8 @@ owns finite gate status, owners, dependencies, tests and environments;
 [PLAN](PLAN.md) is generated. [The cursor](../../.continue-here.md) alone owns the
 current execution state and next action.
 
+The provisional S3 candidate now qualifies all20 platform builds in [EXP-226](Results/EXP-226-platform-result.json). Full RUM27/17.5 remains qualified; nine other M01 schemes, API approval and final release review remain. These compilation results do not replace the outstanding runtime/human gates.
+
 ## Release evidence boundaries
 
 | Stage | Qualified scope | Remaining limit |

@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-227",
+  "name": "Complete the remaining full-module compatibility slice",
+  "status": "DEFINED_BEFORE_IMPLEMENTATION",
+  "at": "2026-09-23T22:29:07.856131+00:00",
+  "gate": "S3:F03:M01",
+  "owner": "SDK implementer",
+  "reviewer": "/root/c06_runtime_plan",
+  "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-modules-zc7ndjbq",
+  "environments": {
+    "27.0": {
+      "device": {
+        "udid": "59A8E789-932A-48D0-9281-0F49DEB8E96D",
+        "name": "iPhone 18 Pro",
+        "state": "Shutdown",
+        "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro",
+        "isAvailable": true
+      },
+      "runtime": {
+        "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+        "version": "27.0",
+        "buildversion": "24A434",
+        "isAvailable": true
+      }
+    },
+    "26.5": {
+      "device": {
+        "udid": "551660C0-C850-4140-A994-320FE2ADEBE8",
+        "name": "iPhone 17 Pro",
+        "state": "Shutdown",
+        "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro",
+        "isAvailable": true
+      },
+      "runtime": {
+        "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-26-5",
+        "version": "26.5",
+        "buildversion": "23F77",
+        "isAvailable": true
+      }
+    }
+  },
+  "inventory_sha256": {
+    "devices": "1d36d4aade462d20673ca99d56a933427ab429c9df65cd1b5632998cf4591493",
+    "runtimes": "134c7e3ff86b1d3c677ae475649e14272d82d2c6b09da349abea8caf77731be4"
+  },
+  "cells": [
+    {
+      "id": "core",
+      "scheme": "DatadogCore",
+      "target": "DatadogCoreTests",
+      "runtime": "27.0",
+      "host_bundle": null,
+      "excluded_selectors": []
+    },
+    {
+      "id": "internal",
+      "scheme": "DatadogInternal",
+      "target": "DatadogInternalTests",
+      "runtime": "27.0",
+      "host_bundle": null,
+      "excluded_selectors": [
+        "UIViewSessionReplaySlotIDTests/slotIDIsNilByDefault()",
+        "UIViewSessionReplaySlotIDTests/slotIDIsStoredPerView()",
+        "UIViewSessionReplaySlotIDTests/settingSlotIDToNilClearsIt()",
+        "UIViewSessionReplaySlotIDTests/changingSlotIDMarksTheViewAsNeedingLayout()",
+        "UIViewSessionReplaySlotIDTests/settingSameSlotIDDoesNotMarkTheViewAsNeedingLayout()",
+        "UIViewSessionReplaySlotIDTests/clearingSlotIDMarksTheViewAsNeedingLayout()"
+      ]
+    },
+    {
+      "id": "logs",
+      "scheme": "DatadogLogs",
+      "target": "DatadogLogsTests",
+      "runtime": "27.0",
+      "host_bundle": null,
+      "excluded_selectors": []
+    },
+    {
+      "id": "trace",
+      "scheme": "DatadogTrace",
+      "target": "DatadogTraceTests",
+      "runtime": "27.0",
+      "host_bundle": null,
+      "excluded_selectors": []
+    },
+    {
+      "id": "crash",
+      "scheme": "DatadogCrashReporting",
+      "target": "DatadogCrashReportingTests",
+      "runtime": "27.0",
+      "host_bundle": null,
+      "excluded_selectors": []
+    },
+    {
+      "id": "webview",
+      "scheme": "DatadogWebViewTracking",
+      "target": "DatadogWebViewTrackingTests",
+      "runtime": "27.0",
+      "host_bundle": null,
+      "excluded_selectors": [
+        "WebViewTrackingTests/testSendingWebRecordEvent()",
+        "WebViewTrackingTests/testItAddsUserScriptWithSessionReplay()"
+      ]
+    },
+    {
+      "id": "flags",
+      "scheme": "DatadogFlags",
+      "target": "DatadogFlagsTests",
+      "runtime": "27.0",
+      "host_bundle": null,
+      "excluded_selectors": []
+    },
+    {
+      "id": "profiling",
+      "scheme": "DatadogProfiling",
+      "target": "DatadogProfilingTests",
+      "runtime": "27.0",
+      "host_bundle": null,
+      "excluded_selectors": []
+    },
+    {
+      "id": "integration",
+      "scheme": "DatadogIntegrationTests",
+      "target": "DatadogIntegrationTests",
+      "runtime": "26.5",
+      "host_bundle": "com.datadogqh.Example",
+      "excluded_selectors": [
+        "WebRecordIntegrationTests/testWebRecordIntegration()",
+        "WebRecordIntegrationTests/testWebRecordIntegrationWithNewSessionReplayConfigurationAPI()"
+      ]
+    }
+  ],
+  "source_contract": "Explicit committed source/project/test/tool paths with the already qualified protected project overlay; no local config content exported. Freeze all sources, full PBX source membership, actual complete compiler/link/products/dependencies and test host.",
+  "dependency_cache": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-availability-kts5muog/SourcePackages",
+  "dependency_alternate_origin": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/DerivedData/SourcePackages",
+  "carthage_cache": "/Users/valentin.pertuisot/work/dd-sdk-ios/Carthage/Build",
+  "budgets_seconds": {
+    "preparation": 600,
+    "build": 600,
+    "boot": 180,
+    "discovery": 180,
+    "execution": 900,
+    "cleanup": 120,
+    "cell": 2100,
+    "stage": 19500
+  },
+  "attempts": {
+    "per_cell": 1,
+    "stop_affected_lane_on_failure": true,
+    "no_retry_for_green": true
+  },
+  "decisive_assertions": [
+    "All nine schemes match the Makefile minus accepted RUM and excluded Replay.",
+    "Complete source-phase/compiler membership and exact actual test-host/build/runtime identity.",
+    "Full raw discovery then exact Replay exclusion partition; preserve the source-bound methodless framework helper separately. Freeze complete selection before assertions.",
+    "Exact selected/executed identifiers, parameter identities/multiplicity, predeclared OS skips and owned diagnostics; no unexpected warning exemption.",
+    "Finalized same-attempt xcresult, actual exit and fixed budgets; owned workers quiescent and original simulator/app state restored."
+  ],
+  "reuse": [
+    "Results/EXP-225-rum-suite-result.json"
+  ],
+  "excluded": [
+    "Accepted RUM native rerun",
+    "Full Session Replay or captured-content correctness",
+    "SDK/source behavior changes",
+    "Unrelated flaky CI repairs",
+    "API promotion/RFC approval",
+    "Human or physical/Duo interactions",
+    "Performance claims"
+  ],
+  "native_admitted": false,
+  "gate_closures": [],
+  "archive_paths": [
+    "Datadog",
+    "Datadog.xcworkspace",
+    "TestUtilities",
+    "xcconfigs",
+    "tools/test.sh",
+    "tools/utils",
+    "tools/secrets/get-secret.sh",
+    "Makefile",
+    "Package.swift",
+    "Cartfile",
+    "Cartfile.resolved",
+    "DatadogCore/Sources",
+    "DatadogCore/Private",
+    "DatadogCore/Resources",
+    "DatadogCore/Tests",
+    "DatadogInternal/Sources",
+    "DatadogInternal/Tests",
+    "DatadogRUM/Sources",
+    "DatadogRUM/Private",
+    "DatadogRUM/Resources",
+    "DatadogRUM/Tests",
+    "DatadogLogs/Sources",
+    "DatadogLogs/Tests",
+    "DatadogTrace/Sources",
+    "DatadogTrace/Tests",
+    "DatadogCrashReporting/Sources",
+    "DatadogCrashReporting/Resources",
+    "DatadogCrashReporting/Tests",
+    "DatadogWebViewTracking/Sources",
+    "DatadogWebViewTracking/Tests",
+    "DatadogSessionReplay/Sources",
+    "DatadogSessionReplay/Tests",
+    "DatadogFlags/Sources",
+    "DatadogFlags/Tests",
+    "DatadogProfiling/Sources",
+    "DatadogProfiling/Resources",
+    "DatadogProfiling/Tests",
+    "DatadogProfiling/Mach"
+  ],
+  "project_overlay_sha256": "bbe593b88e84ea88146cd14aa78187c6da11fa11dfa563a656244a439a7df35f",
+  "command_disposition": "Use the Makefile scheme inventory and tools/test.sh environment/configuration contract. Split its equivalent xcodebuild action into build-for-testing, complete discovery and test-without-building so exact source/selection admission precedes assertions. Disable Test Visibility and coverage as in the accepted compatibility collector; preserve scheme sanitizer settings.",
+  "empty_source_entries": {
+    "DatadogTrace": [
+      "D2C1A50429C4C4CB00946C31"
+    ]
+  },
+  "pins_sha256": "358fd5be085dbd80252d1a2f5b55e5d413a54244cb63655495d1856d37ae5313"
+}

@@ -51,6 +51,12 @@ public networking reaches the changed code. Verify the actual `TEST_HOST` and ap
 bundle, then use a launchable host/runtime pair. Build success followed by not-run
 tests, a legacy-host startup trap or a nonexistent result bundle is not execution.
 
+The [finite package runner](../../../tools/multi-scene/compatibility/README.md)
+verifies copied Git object-store isolation and each private compiled object's
+actual link-list and final product membership. Preserve diagnostics preceding
+Xcode JSON; qualify only the exact observed schema against its original command
+receipt. Reuse a complete saved listing instead of repeating native discovery.
+
 Preserve availability filters, skips and parameterized invocations. Discover test
 identifiers before assertions with the exact intended command filters. Require all
 selected methods and parents enabled, with no extra, missing or duplicate selected
