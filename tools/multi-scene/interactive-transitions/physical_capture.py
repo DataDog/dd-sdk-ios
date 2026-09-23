@@ -8,6 +8,8 @@ import sys
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'app-acceptance'))
 import driver
 import physical_io as io
+import physical_release
+import physical_transition
 from capture_io import atomic, encoded
 
 shared=io.shared
@@ -19,6 +21,7 @@ class Collector(driver.Collector):
         super().__init__(device=remote.identifier,**kwargs)
         self.remote=remote;self.bundle=bundle;self.downloads=self.output.parent/'downloads';self.downloads.mkdir()
         self.transfer_sequence=0;self.last_process=None;self.process_checked=0;self.process_path=None
+        self.prompt_issued=False
     def fresh(self,label):
         self.transfer_sequence+=1
         return self.downloads/(str(self.transfer_sequence).zfill(5)+'-'+label)
@@ -36,8 +39,21 @@ class Collector(driver.Collector):
         if time.time()-self.process_checked>=2:
             require(self.process_live(),'original physical process ended or changed');self.process_checked=time.time()
     def download(self,name,deadline,*,optional=False):
-        destination=self.fresh(Path(name).name)
-        raw,receipt=self.remote.pull(self.bundle,'Documents/'+name,destination,'read-'+Path(name).name,deadline,check=not optional)
+        for attempt in range(2):
+            require(time.time()<deadline,'physical read deadline expired')
+            destination=self.fresh(Path(name).name)
+            raw,receipt=self.remote.pull(self.bundle,'Documents/'+name,destination,'read-'+Path(name).name,deadline,check=False)
+            require(time.time()<deadline,'physical read returned after deadline')
+            if receipt['returncode']==0:break
+            info=(raw or {}).get('info',{});args=info.get('arguments',[])
+            transient=(raw or {}).get('errorSignature')=='(com.apple.dt.CoreDeviceError 7000 (NSPOSIXErrorDomain 60))'
+            bound=(info.get('outcome')=='failed' and info.get('commandType')=='devicectl.device.copy.from' and
+                   isinstance(args,list) and args.count('--device')==1 and
+                   args.index('--device')+1<len(args) and args[args.index('--device')+1]==self.device)
+            repeat=attempt==0 and transient and bound and time.time()+1<deadline
+            atomic(destination.with_suffix('.failed-read.json'),encoded(dict(response=raw,receipt=receipt,
+                repeated_operation='read-only copy once' if repeat else None,deadline=deadline)))
+            if not repeat:break
         if receipt['returncode']!=0:
             require(optional,'required native file unavailable');return None
         io.returned(raw,self.device,'devicectl.device.copy.from')
@@ -45,6 +61,11 @@ class Collector(driver.Collector):
                 'missing/oversized physical evidence')
         data=destination.read_bytes();atomic(self.documents/name,data,exclusive=False)
         return data
+    def wait(self,condition,deadline):
+        while True:
+            self.live(deadline);value=condition();self.live(deadline)
+            if value is not None:return value
+            time.sleep(.5)
     def pending(self):
         data=self.download('events.jsonl',self.deadline,optional=not (self.documents/'events.jsonl').exists())
         return driver.shared_capture.pending_rows(data,self.run) if data is not None else []
@@ -85,8 +106,25 @@ class Collector(driver.Collector):
         prompt=dict(kind='HUMAN_INPUT_REQUEST',phase=phase,run_id=self.run,request_id=before['payload']['request_id'],
             instruction=instruction,device=self.device,issued_at=time.time(),deadline=deadline,
             screenshot=str(folder/'ready.png'),screenshot_sha256=shared.sha(folder/'ready.png'),native_before_sequence=before['sequence'])
-        atomic(folder/'prompt.json',encoded(prompt));print(json.dumps(dict(human_input=prompt)),flush=True)
+        atomic(folder/'prompt.json',encoded(prompt));self.prompt_issued=True
+        print(json.dumps(dict(human_input=prompt)),flush=True)
         return actual
+    def cleanup_idle(self,folder,identity,deadline):
+        limit=min(deadline,time.time()+30)
+        request=dict(schema_version=1,run_id=self.run,request_id=str(uuid.uuid4()),phase='cleanup.idle')
+        raw=encoded(request);atomic(folder/'native-request.json',raw);fingerprint=hashlib.sha256(raw).hexdigest()
+        self.remote.push(self.bundle,folder/'native-request.json','Documents/snapshot-'+fingerprint+'.json','cleanup-idle-payload',limit)
+        atomic(folder/'native-marker',fingerprint.encode())
+        self.remote.push(self.bundle,folder/'native-marker','Documents/human-snapshot-request.json','cleanup-idle-publish',limit)
+        name='events-checkpoint-'+request['request_id']+'.json';committed=None
+        while committed is None:
+            require(time.time()<limit,'native cleanup idle checkpoint unavailable; defer teardown')
+            committed=self.download(name,limit,optional=True)
+            if committed is None:time.sleep(.2)
+        data=self.download('events.jsonl',limit);checkpoint=json.loads(committed)
+        atomic(folder/'native-checkpoint.json',committed);atomic(folder/'native-events.jsonl',data)
+        proof=physical_release.native_idle(data,checkpoint,raw,identity,self.binding)
+        require(time.time()<limit,'late native cleanup idle proof; defer teardown');return proof
     def interactive(self,phase):
         cancelled=phase.endswith('.cancel');pop=phase.startswith('pop.')
         screen='detail' if pop else 'sheet';after_screen=screen if cancelled else 'home' if pop else 'detail'
@@ -106,7 +144,7 @@ class Collector(driver.Collector):
         after,after_folder=self.snapshot(phase+'.effect',deadline);driver.journey.visible(after,after_screen,self.binding)
         require(not any(r['kind'] in ['human_callback','native_input','native_background'] for r in self.evidence
             if before['sequence']<r['sequence']<after['sequence']),'unplanned input inside interactive boundary')
-        result=driver.native.transition(self.evidence,before,after,cancelled=cancelled,binding=self.binding)
+        result=physical_transition.transition(self.evidence,before,after,cancelled=cancelled,binding=self.binding)
         front=driver.geometry.visible_transition(before,after,self.binding,result)
         changed=self.display(after_folder,'display',deadline);require(actual==changed,'physical display changed during gesture');self.screen(after,changed)
         owner=driver.ownership.transition_owners(self.evidence,before,after,result)

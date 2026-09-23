@@ -20,8 +20,10 @@ def run(args):
     argv=[sys.executable,'-B',str(Path(runtime.__file__).resolve()),'cell','--root',str(root),'--key',args.key,
           '--native-deadline',str(native),'--execution-deadline',str(execution),'--cleanup-deadline',str(cleanup)]
     def message(value):
-        operator.forward(root/'operator',value,context=args.key)
-        if any(k in value for k in ['human_input','backend_request','cell_phase']):print(json.dumps(value),flush=True)
+        if 'human_release' in value:
+            operator.publish(root/'operator',value['human_release'],context=args.key,cleanup=True)
+        else:operator.forward(root/'operator',value,context=args.key)
+        if any(k in value for k in ['human_input','backend_request','cell_phase','human_release']):print(json.dumps(value),flush=True)
     problem=None;original=human_processes.members;human_processes.members=runtime.io.members
     try:code=supervisor.supervise(argv,root/(args.key+'-driver.log'),message,execution,cleanup)
     except BaseException as error:problem=str(error);code=1

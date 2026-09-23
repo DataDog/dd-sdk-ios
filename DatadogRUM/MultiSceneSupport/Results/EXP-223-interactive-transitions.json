@@ -7,7 +7,7 @@
     "S2:H13",
     "S2:H14"
   ],
-  "status": "PHYSICAL_BASELINE_INVALID_HARNESS_STOPPED_DUO_PREPARATION_RETAINED",
+  "status": "PHYSICAL_CORRECTION_INVALID_INTERACTIVE_PATH_STOPPED",
   "defined_at": "2026-09-22T23:17:07.076784+00:00",
   "owner": "SDK implementer + device operator",
   "reviewer": "/root/c06_runtime_plan",
@@ -308,10 +308,25 @@
       },
       "candidate": "NOT_RUN",
       "gate_closures": []
+    },
+    {
+      "environment": "physical_ipad",
+      "cell": "physical_ipad-UIKit-automatic-stack-A",
+      "continuation": "physical observer/release correction",
+      "state": "INVALID",
+      "scenario": "UNQUALIFIED",
+      "evidence": "INCOMPLETE",
+      "cleanup": "PASS",
+      "assessment": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-ipad-ctltv_x8/correction-hfpq07yr/native-assessment.json",
+        "sha256": "7f2a6b701b70f7ae12e2a08e2ad7e17db299332f6e8b4e581c9a63992fcacbb5"
+      },
+      "candidate": "NOT_RUN",
+      "gate_closures": []
     }
   ],
   "gate_closures": [],
-  "next_action": "Keep current path stopped. Correct early coordinator observation and require operator release plus native idle before teardown. Offline controls and scoped review precede any separately admitted continuation.",
+  "next_action": "Stop this physical interactive observation path. Preserve both invalid qualifications. No equivalent retry or candidate admission; continue independent finite gates.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
@@ -382,7 +397,7 @@
       "scope": "Fixture/native and local paired oracle only. Full runtime, backend, adaptive geometry and physical execution remain unqualified."
     }
   },
-  "updated_at": "2026-09-23T19:45:47.121281+00:00",
+  "updated_at": "2026-09-23T20:22:29.417473+00:00",
   "live_environment": {
     "observed_at": "2026-09-23T19:45:47.121281+00:00",
     "xcode": "27.1 (27A9269)",
@@ -485,5 +500,87 @@
       "Repair observer ordering and human release/quiescence before new native admission",
       "Complete physical and Duo comparisons with local/backend/source classification"
     ]
+  },
+  "physical_correction": {
+    "state": "NATIVE_BASELINE_INVALID_OBSERVER_STOPPED",
+    "defined_at": "2026-09-23T20:07:45.654757+00:00",
+    "discriminator": "Original sheet observer rejected a coordinator during a real began callback; the corrected physical fixture selects public navigation/presentation recognizers, binds the expected endpoints at readiness, and resolves once on the next main queue turn while still interactive.",
+    "cleanup": "After any failed prompted cell, require a fresh request-bound operator release reply followed by a new native snapshot of zero touches, idle public pans and no transition coordinator. Otherwise defer teardown within the unchanged cleanup deadline.",
+    "transfer": "At most one second read-only copy for the exact observed CoreDevice7000/POSIX60 failure, with matching command/device identity and the original deadline. Retain both actual responses and partial bytes; never reuse cached observations.",
+    "original_assessment": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-ipad-ctltv_x8/physical-invalid-assessment.json",
+      "sha256": "98879d1c1a80257efefe007a765e91634f56129615d54400cf33c679a3c92dd7"
+    },
+    "artifacts": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-ipad-ctltv_x8/correction-hfpq07yr",
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-ipad-ctltv_x8/correction-hfpq07yr/controls.json",
+      "sha256": "17c30efdb116777481ee3345391924a9bd054861c9492edf220a4eb8a06de5a5",
+      "state": "PASS",
+      "tests": 30
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-ipad-ctltv_x8/correction-hfpq07yr/review.json",
+      "sha256": "06cc6850192502cb8d9e2c6c2ead2a6c7039274bc2b5682c1363e9e5f4c0331b",
+      "state": "PASS_FOR_PREPARATION"
+    },
+    "source_change": "Physical fixture and capture only; both selected SDK revisions and original Duo observer/contract unchanged.",
+    "builds": {
+      "keys": [
+        "A-device",
+        "B-device"
+      ],
+      "max_new_builds": 2,
+      "seconds_per_key": 900,
+      "products_per_build": [
+        "UIKit",
+        "SwiftUI"
+      ]
+    },
+    "native_policy": {
+      "native_admitted": false,
+      "max_first_qualification_cells": 1,
+      "first_cell": "physical_ipad-UIKit-automatic-stack-A",
+      "successor": "Only planned UIKit candidate after full native, backend, cleanup and visual qualification; no equivalent retry on mechanism failure.",
+      "readiness": "Fresh explicit operator availability and actual environment/access receipts before starting the separate pair clock.",
+      "pair_seconds": 5700,
+      "native_seconds": 1800,
+      "backend_seconds": 600,
+      "cleanup_seconds": 300,
+      "deadline_extension": false
+    },
+    "native_launches": 1,
+    "gate_closures": [],
+    "runtime_plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-ipad-ctltv_x8/correction-hfpq07yr/runtime-uikit/plan.json",
+      "sha256": "015fbcff6fa499f963139b66807ce948f7a3f62f68ff41ea8e5a2cd2007b157a"
+    },
+    "runtime_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-ipad-ctltv_x8/correction-hfpq07yr/runtime-uikit/review.json",
+      "sha256": "d7b962c2e19ab573d887808ca48a0ae95f4b919ec37dc616f1f6ac734bd5c579"
+    },
+    "runtime_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-ipad-ctltv_x8/correction-hfpq07yr/runtime-uikit/controls.json",
+      "sha256": "59d4acf8be924b2976613dd6a3f9eadcc823ee1f0544f06ef9dc9c48f83904de"
+    },
+    "signed_products": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-ipad-ctltv_x8/correction-hfpq07yr/build/signed-qualified/plan.json",
+      "sha256": "0d6c797f827cdd3e6ce0dc79c17c4b0706abe3cd81e4c698282c07d97bcfaa0a"
+    },
+    "admission": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-ipad-ctltv_x8/correction-hfpq07yr/runtime-uikit/native-admission.json",
+      "sha256": "2cad9050bc06c6bc3cb24beaa3555a72701e8b0cf5ac4494bea202cfa74702a5"
+    },
+    "operator_ready": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-ipad-ctltv_x8/correction-hfpq07yr/runtime-uikit/operator-ready.json",
+      "sha256": "4bec6a1b6486befc385aeaf7bd343aedb15a0d6c6f684627e7aaff512f1b624d"
+    },
+    "builds_qualified": 2,
+    "products_signed": 4,
+    "candidate": "NOT_RUN",
+    "result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-ipad-ctltv_x8/correction-hfpq07yr/native-assessment.json",
+      "sha256": "7f2a6b701b70f7ae12e2a08e2ad7e17db299332f6e8b4e581c9a63992fcacbb5"
+    },
+    "release_guard": "NATIVE_QUALIFIED_FOR_THIS_FAILED_CELL: actual reply, fresh same-owner zero-touch/no-coordinator snapshot, then task-only teardown."
   }
 }

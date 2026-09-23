@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import time
 import build as original
+import physical_observer
 
 shared = original.shared
 require = original.require
@@ -22,6 +23,7 @@ CODE = HERE.parent / 'application-impact/InstalledCode.swift'
 def helpers():
     return {**{n: shared.sha(shared.REPO / n) for n in original.HELPERS},
             str(Path(__file__).resolve().relative_to(shared.REPO)): shared.sha(__file__),
+            str(Path(physical_observer.__file__).resolve().relative_to(shared.REPO)): shared.sha(physical_observer.__file__),
             str(CODE.relative_to(shared.REPO)): shared.sha(CODE)}
 
 
@@ -84,6 +86,14 @@ def prepare(root):
                       let bytes = try? Data(contentsOf: path.deletingLastPathComponent().appendingPathComponent("snapshot-" + marker + ".json")),
                       SHA256.hash(data: bytes).map({ String(format: "%02x", $0) }).joined() == marker else { return }''')
         human.write_text(text)
+        observer = client/'TransitionObservation.swift'
+        observer.write_bytes(physical_observer.render(observer.read_bytes(), shared.sha(observer)))
+        human.write_text(original.variant.replace_once(human.read_text(),
+            '"transition": TransitionObservation.shared.snapshot(), "topology":',
+            '"input_state": PhysicalInputState.snapshot(), "transition": TransitionObservation.shared.snapshot(), "topology":'))
+        human.write_text(original.variant.replace_once(human.read_text(),
+            'TransitionObservation.shared.prepare(requestID: requestID, phase: phase)',
+            'if phase != "cleanup.idle" { TransitionObservation.shared.prepare(requestID: requestID, phase: phase) }'))
         fixture = original.digest({p.name: shared.sha(p) for p in client.glob('*.swift')})
         for path in client.glob('*Transitions.plist'):
             info = plistlib.loads(path.read_bytes()); info['TransitionFixture'] = fixture
@@ -93,7 +103,8 @@ def prepare(root):
             archive_sha256=shared.sha(folder/'source.tar'), sdk=shared.tree(folder/'sdk'), client=shared.tree(client),
             project_audit=project_audit(folder),derivation=dict(installed_code_sha256=shared.sha(CODE),
             observation_sha256=shared.sha(observation),human_sha256=shared.sha(human),
-            changes=['pre-SDK installed-code receipt with exact run guard','hash-committed remote snapshot request']))
+            changes=['pre-SDK installed-code receipt with exact run guard','hash-committed remote snapshot request',
+                     'scoped public recognizers and single-turn coordinator registration','independent native cleanup idle snapshot']))
     shared.save(root/'plan.json', plan, exclusive=True); verify(root)
     print(json.dumps(dict(state=plan['state'], root=str(root), native_admitted=False)), flush=True)
 

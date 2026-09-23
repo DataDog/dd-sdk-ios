@@ -48,9 +48,14 @@ CoreDevice transfers retain actual responses, and immutable snapshot payloads ar
 published through separate hash markers. SDK source and the frozen Duo helpers
 are unchanged.
 
-The first physical UIKit baseline is INVALID and this path is stopped. Both edge
-pops were captured before a sheet-observer rejection and file-transfer failure.
-Cleanup verified task removal but occurred while the operator still held the
-gesture. Preserve the original receipts; require the owning record's observer and
-human-release corrections before another admission. These prepared products and
-offline controls do not qualify physical acceptance or the planned candidate.
+The first physical UIKit baseline remains INVALID. Both edge pops were captured
+before a sheet-observer rejection and file-transfer failure. Cleanup verified task
+removal but occurred while the operator still held the gesture. The physical-only
+correction binds public recognizers/endpoints, resolves once after UIKit's existing
+targets, and requires operator release plus a fresh native idle snapshot before
+failed-step teardown. It retains each actual transfer and permits one bounded
+read-only recovery of the observed socket error. Thirty controls, scoped review
+and four signed products pass. The separately admitted baseline again rejected
+sheet observation, so this interactive path is stopped. Its actual release reply
+and native idle capture preceded successful task removal; both failed runs remain
+invalid and the candidate remains unrun. No equivalent retry is admitted.

@@ -68,7 +68,7 @@ class Transport(unittest.TestCase):
     def test_transfer_failure_never_substitutes_cached_matching_bytes(self):
         self.collector.download('events.jsonl',time.time()+30);self.remote.failed=True
         self.assertIsNone(self.collector.download('checkpoint.json',time.time()+30,optional=True))
-        with self.assertRaises(ValueError):self.collector.pending()
+        with self.assertRaises(Rejected):self.collector.pending()
     def test_wrong_response_device_rejected_before_publication(self):
         self.remote.wrong=True
         with self.assertRaises(Rejected):self.collector.download('events.jsonl',time.time()+30)

@@ -15,6 +15,7 @@ import physical_capture as capture
 import physical_io as io
 import physical_ownership as ownership
 import physical_backend as backend
+import physical_release
 import runtime as original
 import installed_code
 from capture_io import atomic, encoded
@@ -203,10 +204,13 @@ def cell(args):
         print(json.dumps(dict(cell_phase=dict(phase='cleanup',at=began,execution_deadline=execution,cleanup_deadline=deadline))),flush=True)
         try:
             remote.quiescent(deadline)
+            if collector is not None and collector.prompt_issued and joined is None:
+                physical_release.fence(collector,out,identity,deadline)
             errors=cleanup(remote,out,bundle,pid,owned,collector,initial,deadline)
         except Exception as error:errors=['physical cleanup deferred: '+str(error)]
         summary.update(state='INVALID',cleanup='INVALID' if errors else 'PASS',evidence_errors=[],
-            cleanup_details=dict(started_at=began,deadline=deadline,finished_at=time.time(),errors=errors,input_workers='NONE; human gestures only'))
+            cleanup_details=dict(started_at=began,deadline=deadline,finished_at=time.time(),errors=errors,
+                input_workers='Host workers checked; failed prompted cells require operator release and native idle'))
         if (out/'sealed-events.jsonl').exists() and (not (out/'native-preserved.jsonl').exists() or
             shared.sha(out/'sealed-events.jsonl')!=shared.sha(out/'native-preserved.jsonl')):
             summary['evidence']='INCOMPLETE';summary['evidence_errors'].append('physical final preserved stream differs')

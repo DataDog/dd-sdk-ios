@@ -45,7 +45,22 @@ when teardown began, despite the guide asking them to release. Original INVALID,
 cleanup PASS and supervisor receipts remain immutable; the separate assessment
 records that host-process quiescence did not prove human-input quiescence.
 
-The physical path is stopped. A continuation requires source-supported coordinator
-ordering, explicit operator release plus native idle before teardown, focused
-negative controls and scoped review. Exact build, runtime, failure and user-observation
-receipts live in the owning result. Existing Duo preparation remains unchanged.
+The physical correction passes 30 focused controls and scoped review. It binds
+public navigation/presentation recognizers and expected endpoints before input,
+then resolves the coordinator once on the next main queue turn while interaction
+is still active. Failed prompted steps require a fresh operator release reply and
+native idle capture before teardown; missing proof leaves the app installed.
+One read-only transfer recovery is allowed for the exact observed socket failure,
+with both actual responses retained under the original deadline.
+
+Both corrected build keys compiled and four products were signed. After fresh
+operator readiness, the separate baseline again captured both edge pops, then
+rejected the sheet coordinator in its single queued resolution. The candidate and
+backend collection did not run. The interactive observation path is stopped;
+there is no equivalent retry or SDK regression finding.
+
+This time the runner waited for the actual release reply, captured zero touches
+and no coordinator in the same window, and only then removed the task app. Cleanup
+and supervisor quiescence passed; original landscape Home was verified. This proves
+the release guard for the failed cell, while overall acceptance remains INVALID.
+Both failed qualifications, selected SDK revisions and Duo preparation are retained.

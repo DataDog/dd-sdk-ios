@@ -209,6 +209,19 @@ If either is unavailable within the original cleanup budget, defer teardown and
 retain that unresolved verdict. Never terminate a held gesture merely because
 evidence transfer or an observer failed.
 
+The physical transition runner publishes a request-bound `human-release/request.json`.
+After an actual operator reply, record it with `physical_release.py --request <path>
+--user-message <reply>`; never infer release from elapsed time. The runner then
+captures a new checkpoint from the same process/window, requiring zero touches,
+idle public pan recognizers and no transition coordinator. That cleanup-only proof
+does not discard earlier failure rows or qualify the scenario. Expiry leaves the
+app installed and cleanup incomplete; later restoration is a separate record.
+
+A physical evidence copy may recover once from the specifically qualified
+CoreDevice7000/POSIX60 socket failure. Require the failed command's exact device
+binding, preserve each destination and response, and keep the original deadline.
+Any other failure or late response stops the read; cached bytes cannot replace it.
+
 Export app JSONL, runner checkpoints/hierarchy/images, console and partial xcresult
 before uninstall. Bind each to this run and contiguous sequence. Preserve raw
 bytes even if parsing fails; ignore foreign receipts and reject symlinks. Cleanup
