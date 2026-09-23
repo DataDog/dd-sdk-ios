@@ -1,0 +1,210 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-224",
+  "gates": [
+    "S3:P01"
+  ],
+  "status": "REVIEWED_PREPARATION_REBUILD_DEFERRED_TO_API_CANDIDATE",
+  "defined_at": "2026-09-23T08:56:29.275849+00:00",
+  "owner": "SDK implementer",
+  "reviewer": "/root/c06_runtime_plan",
+  "purpose": "Prepare and execute the finite physical application-impact gate independently of the S2 human gesture session. No API promotion or SDK source change.",
+  "baseline": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
+  "candidate": "7fef86acad43b4eefeb7f62c84e3b6c12c7acbcf",
+  "source_scope": [
+    "DatadogCore/Sources",
+    "DatadogCore/Private",
+    "DatadogCore/Resources",
+    "DatadogInternal/Sources",
+    "DatadogRUM/Sources",
+    "DatadogRUM/Private",
+    "DatadogRUM/Resources"
+  ],
+  "source_limits": "Baseline is release3.17.0 before the multi-scene prototype. Candidate is the full current prototype, not the selected S2 composition or an approved future S3 release. Any measured result binds to exact source bytes; future API/production changes require a scoped reuse decision. A regression does not by itself attribute cost to an individual component.",
+  "workloads": [
+    {
+      "id": "UIKit",
+      "tracking": "Ordinary automatic UIKit views/actions on both arms; one active scene in a multi-scene-capable application.",
+      "journey": "Deterministic local list, animated scroll, animated push to detail, sheet present/dismiss, pop to same root. Twelve measured cycles, eight seconds per cycle; two unmeasured warmup cycles. No external request or generated native gesture."
+    },
+    {
+      "id": "SwiftUI",
+      "tracking": "Same customer-owned NavigationStack and sheet on both arms. Baseline existing trackRUMView modifiers; candidate existing experimental RUMNavigationHost observes one accepted-state publisher. No API addition or generated RUM start/stop shortcut.",
+      "journey": "Same deterministic local list, animated scroll and accepted route/presentation sequence as UIKit. Native visible callbacks and actual route state verify completion. Ordinary programmatic navigation is the measured workload, not interactive-gesture acceptance."
+    }
+  ],
+  "matrix": [
+    {
+      "workload": "UIKit",
+      "order": 1,
+      "arm": "A",
+      "attempts": 1
+    },
+    {
+      "workload": "UIKit",
+      "order": 2,
+      "arm": "B",
+      "attempts": 1
+    },
+    {
+      "workload": "UIKit",
+      "order": 3,
+      "arm": "B",
+      "attempts": 1
+    },
+    {
+      "workload": "UIKit",
+      "order": 4,
+      "arm": "A",
+      "attempts": 1
+    },
+    {
+      "workload": "SwiftUI",
+      "order": 1,
+      "arm": "A",
+      "attempts": 1
+    },
+    {
+      "workload": "SwiftUI",
+      "order": 2,
+      "arm": "B",
+      "attempts": 1
+    },
+    {
+      "workload": "SwiftUI",
+      "order": 3,
+      "arm": "B",
+      "attempts": 1
+    },
+    {
+      "workload": "SwiftUI",
+      "order": 4,
+      "arm": "A",
+      "attempts": 1
+    }
+  ],
+  "measurement": {
+    "environment": "One connected, unlocked physical iPhone27+ with Developer Mode; Release arm64 on Xcode27.1. No simulator performance substitution.",
+    "duration_seconds": {
+      "trace_ready_reserve": 15,
+      "warmup": 16,
+      "active": 96,
+      "sustained_idle": 30
+    },
+    "primary": "Physical xctrace Core Animation FPS, Hitches and Hangs with process/run signpost interval. Task CPU time deltas and phys_footprint samples provide process CPU and sustained memory. Raw full trace and exported table inventories retained.",
+    "secondary": "Delivered display-link timestamp gaps and main-queue heartbeat support diagnosis only; requested display interval is not measured rendered FPS.",
+    "validity": [
+      "Exact clean install, source/helper/compiler/product/installed identities and unique run nonce before workload",
+      "Identical fixed work and completed real controller/view callbacks; SDK mapper activity required in both arms",
+      "Foreground active throughout, one owned scene/window, unchanged display geometry/refresh policy, low-power disabled and nominal thermal state",
+      "All twelve cycles complete before immutable deadline; metric samples cover the entire active and final idle windows",
+      "Required raw trace tables and complete process/time mapping. Missing, unsupported or unparseable data is INVALID, never zero",
+      "No dropped samples, restored run ID, non-finite metric, stale build or missing cleanup; separate scenario/evidence/cleanup verdicts"
+    ],
+    "thresholds": {
+      "frame_rate": "Each B/A directional comparison loses no more than5% active-interval mean rendered FPS. Same effective display refresh required.",
+      "hitches": "Candidate excess hitch time ratio <=1 percentage point in each directional pair, and no new >=250ms hitch.",
+      "hangs": "No candidate main-thread hang >=250ms. A baseline hang >=250ms invalidates this workload qualification rather than normalizing a bad baseline.",
+      "cpu": "Candidate active CPU-seconds / wall-seconds increase <=max(10% of baseline,0.02 CPU cores) in each directional pair.",
+      "memory": "Median final20s physical footprint increase <=max(10% of baseline,10MiB); least-squares final20s footprint slope <=0.1MiB/s with >=20 samples and gaps <=1.5s. Candidate repeat growth minus baseline repeat growth <=5MiB across the fixed ABBA wave.",
+      "pairing": "A1 versus B2 and A4 versus B3 must each pass. No averages hiding one failing pair, adaptive thresholds or automatic rerun."
+    },
+    "sample_interval_seconds": 1
+  },
+  "build_contract": {
+    "keys": [
+      "A-device",
+      "B-device"
+    ],
+    "products": [
+      "UIKitImpact",
+      "SwiftUIImpact"
+    ],
+    "configuration": "Release",
+    "architecture": "arm64",
+    "fixture_deployment": "27.0",
+    "sdk_deployment": "15.0",
+    "signing": "Unsigned generic-device builds may prepare compiler/source proof; installation requires a fresh signed-product manifest and actual signing availability. No protected project/config edits."
+  },
+  "budgets_seconds": {
+    "build_per_key": 900,
+    "preflight": 120,
+    "native_per_cell": 240,
+    "trace_export_per_cell": 180,
+    "cleanup_per_cell": 120,
+    "physical_stage": 5400,
+    "final_cleanup": 180
+  },
+  "attempt_policy": {
+    "native_attempts_per_cell": 1,
+    "retries": 0,
+    "deadline_extension": false,
+    "qualification": "First planned UIKit baseline qualifies capture/export/runtime. Missing required table, native effect or ownership stops this automated path. No equivalent diagnostic series."
+  },
+  "offline_controls": [
+    "wrong source/product/run/process",
+    "missing trace table versus true empty hitch table",
+    "partial active or idle coverage",
+    "non-finite/negative sample",
+    "missing or reordered native boundary",
+    "thermal/background/display changes",
+    "late result and incomplete cleanup",
+    "positive comparison and each decisive metric regression",
+    "pair ordering and no noisy-baseline normalization"
+  ],
+  "native_admitted": false,
+  "gate_closures": [],
+  "preparation_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-app-impact-rugffx2v",
+  "live_prerequisite": {
+    "physical_iphone": "Disconnected in fresh devicectl inventory; no physical native execution admitted.",
+    "physical_ipad": "Absent.",
+    "human_session": "User unavailable; S2 prepared human groups remain unadmitted."
+  },
+  "next_action": "Finish the local API proposal implementation first, then bind the measurement candidate to its resulting exact source. Reuse baseline only if fixture/config/compiler identities still match. Finish native/trace controls and fresh physical-device/signing admission before the single planned baseline qualification.",
+  "telemetry_mode": "Both arms initialize Core+RUM with granted consent, the same probe application and ios-s3-application-impact service. Default vitals/slow-frame settings remain enabled; normal upload uses the existing authorized local configuration. No external application data request. No alternate endpoint, stubbed upload or networking benchmark.",
+  "trace_contract": "Required full raw physical trace and exported inventory include Core Animation FPS, Hitches, Hangs and Points of Interest. Exactly one Workload active signpost interval binds run UUID, exact PID/process lifetime and twelve native cycles; reject partial tables, unsupported tables, ambiguous process/time join or a competing foreground workload. Capture/decoder qualification remains unadmitted and must occur in the first planned baseline.",
+  "preparation_review": {
+    "reviewer": "/root/c06_runtime_plan",
+    "state": "PREPARATION_APPROVED_WITH_ADDITIONS",
+    "findings": [
+      "Freeze complete fixture/dependency/compiler/product/config identities",
+      "Quantify retained-work trend and sampling",
+      "Require exact signpost/process interval and complete physical tables"
+    ],
+    "disposition": "Definition now quantifies sampling/trend and trace joins. Builder will bind full fixture, dependency and product identities; no native admission follows from preparation."
+  },
+  "preparation": {
+    "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-app-impact-rugffx2v/builds",
+    "builds": {
+      "A-device": "UNSIGNED_DEVICE_BUILD_QUALIFIED",
+      "B-device": "UNSIGNED_DEVICE_BUILD_QUALIFIED"
+    },
+    "comparison_controls": {
+      "tests": 10,
+      "state": "PASS"
+    },
+    "runtime_limits": [
+      "No installed/signed product, native qualification, trace decoder or metric result exists.",
+      "Native scenario validator still needs its own positive/negative controls and the first-baseline qualification.",
+      "Only unsigned Release compiler/product preparation is qualified.",
+      "The current sampler correction is reviewed source, not compiled/runtime proof; prior product receipts remain immutable."
+    ],
+    "warning_dispositions": [
+      "Both builds emit the existing SDK deprecation/exhaustiveness warnings. No production source changed.",
+      "The shared fixture uses the still-supported onChange(of:perform:) overload; both arms have identical bytes.",
+      "Portrait fixture on iPad produces an orientation warning; this finite physical comparison targets iPhone only.",
+      "Xcode reports a SwiftCompile worker exited zero without additional output; build exits zero with complete checked compiler membership, object files and products."
+    ],
+    "review_followup": {
+      "reviewer": "/root/c06_runtime_plan",
+      "findings": [
+        "Drain sampling callbacks before the immutable terminal snapshot",
+        "Allow only exact declared generated resource accessors and target/platform/architecture compiler lists"
+      ],
+      "fixes": "Sampler now drains its serial queue and seals the terminal snapshot under its evidence lock. Strict compiler membership revalidates both existing inventories unchanged.",
+      "compiler_membership_recheck": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-app-impact-rugffx2v/compiler-membership-review.json",
+      "build_limit": "Four prior unsigned products validate the initial fixture. The sampler correction changes fixture bytes and requires refreshed builds; combine that with the newly authorized API candidate rather than launching/rebuilding the obsolete candidate."
+    }
+  },
+  "updated_at": "2026-09-23T09:10:07.134607+00:00"
+}

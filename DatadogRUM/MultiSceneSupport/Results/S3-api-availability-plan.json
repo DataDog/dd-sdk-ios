@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "status": "PLANNED_AWAITING_ATTRIBUTABLE_F01_APPROVAL",
+  "status": "LOCAL_IMPLEMENTATION_AUTHORIZED_RFC_PENDING",
   "recorded_at": "2026-09-21T14:20:51.740756+00:00",
   "owner": "SDK implementer; RUM API reviewers own approval",
   "scope": "Documentation-only finite S3 gate alignment; no implementation, API approval, test result or S1/S2 scope change",
@@ -31,11 +31,16 @@
     "A02 residual human gestures/dismissals remain separate"
   ],
   "conditional_older_routing": "Keep older exact family capability disabled until its bounded ownership and fallback qualification passes. Older exact semantics are optional; ordinary iOS15 callability/fallback is required.",
-  "source_boundary": "Prototype availability is unchanged; proposal is not implemented. No source or baseline edits before F01 approval.",
+  "source_boundary": "User authorization September23 permits local proposal implementation and testing before RFC approval. Public promotion, API baselines and release approval remain separate. Preserve protected user-owned proposal files.",
   "independent_review": {
     "reviewer": "/root/c06_runtime_plan",
     "status": "PASS",
     "dependency_graph": "acyclic",
     "scope": "No gate closed or S1/S2 requirement changed; future exact same-key evidence and post-F01 source binding remain required."
+  },
+  "authorization": {
+    "at": "2026-09-23T09:10:07.135841+00:00",
+    "request": "The API proposal still need reviews, but can we implement it fully already?",
+    "scope": "Full local proposed availability/routing/fallback and Objective-C safety implementation with provisional validation. No attributable F01 approval or publication."
   }
 }
