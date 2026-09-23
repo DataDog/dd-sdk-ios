@@ -67,6 +67,17 @@ extension CALayerSnapshot.SemanticObservationMapping {
         return .init(semantics: .label(.init(label: label)), ignoresSublayers: true)
     }
 
+    static let roundedRectShadow = Self { layer, _, _ in
+        guard layer.isRoundedRectShadow else {
+            return nil
+        }
+
+        return .init(
+            semantics: .visualEffect(.compositorSupport),
+            ignoresSublayers: true
+        )
+    }
+
     static let imageView = Self { layer, _, _ in
         guard let imageView = layer.delegate as? UIImageView else {
             return nil

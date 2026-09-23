@@ -24,6 +24,7 @@ extension CALayerSnapshot.SemanticObservationMapping: CaseIterable {
         .gradient,
         .activityIndicator,
         .label,
+        .roundedRectShadow,
         .imageView,
         .textView,
         .textField,
