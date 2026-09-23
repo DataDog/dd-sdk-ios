@@ -56,6 +56,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/kstenerud/KSCrash.git", exact: "2.5.1"),
         .package(url: "https://github.com/open-telemetry/opentelemetry-swift-core", .upToNextMinor(from: "2.5.0")),
+        .package(url: "https://github.com/DataDog/dd-sdk-swift-testing.git", .upToNextMinor(from: "2.7.10")),
     ],
     targets: [
         .target(
@@ -267,6 +268,7 @@ let package = Package(
                 .target(name: "DatadogCrashReporting"),
                 .target(name: "DatadogWebViewTracking"),
                 .target(name: "DatadogFlags"),
+                .product(name: "DatadogSDKTesting", package: "dd-sdk-swift-testing"),
             ],
             path: "TestUtilities/Sources",
             swiftSettings: [.define("SPM_BUILD")] + internalSwiftSettings

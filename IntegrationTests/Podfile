@@ -17,6 +17,8 @@ target 'Runner iOS' do
     target 'IntegrationScenarios' do
         pod 'DatadogInternal', :path => '..'
         pod 'TestUtilities', :path => '..'
+        # 2.7.10 is not published to CocoaPods trunk yet.
+        pod 'DatadogSDKTesting', :podspec => 'https://raw.githubusercontent.com/DataDog/dd-sdk-swift-testing/2.7.10/DatadogSDKTesting.podspec'
     end
 end
 

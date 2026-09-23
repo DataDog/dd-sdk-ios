@@ -19,6 +19,7 @@ let package = Package(
     ],
     dependencies: [
         .package(name: "Datadog", path: ".."),
+        .package(url: "https://github.com/DataDog/dd-sdk-swift-testing.git", .upToNextMinor(from: "2.7.10")),
     ],
     targets: [
         .target(
@@ -30,7 +31,8 @@ let package = Package(
                 .product(name: "DatadogTrace",package: "Datadog"),
                 .product(name: "DatadogCrashReporting",package: "Datadog"),
                 .product(name: "DatadogSessionReplay", package: "Datadog"),
-                .product(name: "DatadogWebViewTracking",package: "Datadog")
+                .product(name: "DatadogWebViewTracking",package: "Datadog"),
+                .product(name: "DatadogSDKTesting", package: "dd-sdk-swift-testing")
             ],
             path: ".",
             sources: ["Sources"],

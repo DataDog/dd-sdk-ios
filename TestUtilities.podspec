@@ -38,5 +38,6 @@ Pod::Spec.new do |s|
   s.dependency 'DatadogTrace'
   s.dependency 'DatadogCrashReporting'
   s.dependency 'DatadogWebViewTracking'
+  s.dependency 'DatadogSDKTesting', '~> 2.7.10'
 
 end
