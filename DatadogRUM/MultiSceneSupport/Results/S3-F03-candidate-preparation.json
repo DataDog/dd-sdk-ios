@@ -2,11 +2,11 @@
   "schema_version": 1,
   "gate": "S3:F03",
   "status": "PROVISIONAL_SOURCE_REUSE_ASSESSMENT",
-  "at": "2026-09-23T13:48:01.134381+00:00",
+  "at": "2026-09-23T14:04:24.062992+00:00",
   "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
   "release_approval": "F01 remains required for public promotion and final source-bound closure",
   "native_active": false,
-  "builds_admitted": 0,
+  "builds_admitted": 2,
   "prior_full_matrix": {
     "owner": "Results/EXP-217-s2-compatibility.json",
     "production": "c9faed816a1d4828d7d8c4b64acae01119425889",
@@ -359,7 +359,7 @@
     "verdict": "DIRECT_BINARY_REUSE_REJECTED",
     "reason": "Do not reuse the old unit binary. Four live product hashes differ from products-before.json and no post-correction full manifest exists. Preserve all original source/test results. One fresh isolated build is required.",
     "next_definition": "Results/EXP-225-rum-suite-definition.json",
-    "preparation": "Original isolated build stopped before compilation because the existing Carthage framework was omitted; no native tests, cleanup PASS. Separately reviewed dependency-complete preparation now includes unchanged OpenTelemetryApi2.5.0 artifacts. The runtime/oracle/cleanup and controls are unchanged.",
+    "preparation": "The corrected dependency-complete build passes with10 Swift target inventories and174 C/ObjC objects. Full-target discovery succeeds, but its3-second process-inventory guard times out before any test method runs. Original INVALID and cleanup PASS retained;17.5 unexecuted. Qualified products may be reused after a separately bounded collector correction.",
     "result_owner": "Results/EXP-225-rum-suite-result.json"
   }
 }

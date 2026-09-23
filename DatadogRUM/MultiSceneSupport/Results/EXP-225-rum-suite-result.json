@@ -2,7 +2,7 @@
   "schema_version": 1,
   "experiment": "EXP-225",
   "continuation": "Full RUM module compatibility",
-  "status": "DEPENDENCY_COMPLETE_PREPARATION_REVIEWED",
+  "status": "BUILD_PASS_TEST_EXECUTION_STOPPED_BY_COLLECTOR",
   "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
   "definition": "Results/EXP-225-rum-suite-definition.json",
   "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-dependencies-23a2oh4a",
@@ -22,14 +22,37 @@
     "invocations": 948,
     "role": "Parser qualification only; no current-candidate runtime credit"
   },
-  "build": "NOT_STARTED",
-  "runtimes": [],
+  "build": {
+    "state": "PASS",
+    "compiler_lists": 10,
+    "clang_objects": 174,
+    "product_files": 163
+  },
+  "runtimes": [
+    {
+      "runtime": "27.0",
+      "device": "59A8E789-932A-48D0-9281-0F49DEB8E96D",
+      "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+      "scenario": "NOT_EXECUTED",
+      "evidence": "INCOMPLETE",
+      "cleanup": "PASS",
+      "overall": "INVALID",
+      "original_state": "Shutdown",
+      "failure": "ValueError: TimeoutExpired: Command '['/bin/ps', '-axo', 'pid=,pgid=']' timed out after 3 seconds",
+      "cleanup_deadline": 1790172222.024226,
+      "finished_at": 1790172046.8141508
+    },
+    {
+      "runtime": "17.5",
+      "state": "NOT_EXECUTED_AFTER_STOP"
+    }
+  ],
   "gate_closures": [],
   "limits": [
     "Provisional RUM portion only; the rest of M01/F03 and approved public API exposure remain open.",
     "No Session Replay capture/content suite."
   ],
-  "updated_at": "2026-09-23T13:58:38.634708+00:00",
+  "updated_at": "2026-09-23T14:04:24.062300+00:00",
   "checkpoint": "432c4ba81dca92f4c70b583e45fa9aa7c849702b",
   "original_attempts": [
     {
@@ -43,5 +66,10 @@
     }
   ],
   "inputs_sha256": "2f1921d1cb58fa07e3474548bff2f8a0c95d9433ad3dde87962216c85c83842c",
-  "review_sha256": "c7725fa62fda895c638a3a2d0a7a3a3289b81d2a954c09b493bbf2548f0f4ab2"
+  "review_sha256": "c7725fa62fda895c638a3a2d0a7a3a3289b81d2a954c09b493bbf2548f0f4ab2",
+  "discovered_cases": 1408,
+  "next_action": "Repair the process-inventory deadline handling before separately admitting only unexecuted tests. Reuse the qualified build and source-bound enumeration where valid; no rebuild or equivalent input diagnostic is due.",
+  "sdk_finding": false,
+  "stage_stop_sha256": "fbf386bcf8aa0e7c3eb197f897a636201e9f2d53ba56a9036972163bd9f71b4a",
+  "later_quiescence_sha256": "ee77d511f690be434d6bc329dd9f876f56334943dc9c7ed0cd91bd743a826cdd"
 }

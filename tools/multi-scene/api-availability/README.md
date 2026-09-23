@@ -173,3 +173,9 @@ runs. Exact case identifiers, parameter arguments, invocation counts, result-dev
 identity, all compiler inputs/products and owned-worker cleanup are required.
 The fixed stage covers both runtimes; consumed attempts cannot be renewed.
 This does not close the other F03 modules or promote the experimental public API.
+
+The current result owner retains a process-inventory timeout after successful
+full-target discovery, before any test method ran. The original runtime admission
+is closed; a future collector correction must preserve that INVALID and the
+qualified build, use a separate fixed admission and avoid repeating discovery
+when its exact source/product/runtime binding permits reuse.

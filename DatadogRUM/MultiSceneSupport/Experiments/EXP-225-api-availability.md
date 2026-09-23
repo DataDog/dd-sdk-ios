@@ -90,8 +90,11 @@ review, exact source/compiler/dependency bindings and finite execution state.
 Twelve offline test methods and four artifact-registry controls qualify the
 collector. The first isolated build stopped before compilation because the copied
 workspace omitted its existing Carthage framework; cleanup passes and no test ran.
-A separately reviewed preparation includes that unchanged declared dependency.
-This remains only the RUM portion of the candidate compatibility matrix.
+The separately reviewed dependency-complete build passes with ten Swift target
+inventories and174 C/Objective-C objects. Discovery succeeds, but its process
+inventory guard times out before any test method runs. That original INVALID and
+cleanup PASS remain;17.5 is unexecuted. The bound products can be reused after a
+collector correction. No full-suite or release credit follows.
 
 ## Remaining boundary
 
