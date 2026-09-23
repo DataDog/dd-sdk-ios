@@ -54,6 +54,13 @@ native values. The bridge replaces application/session IDs, not those Browser fi
 Inventory the full application/session without native service/version filters, then
 reconcile the native partition. See the [offline app guards](../../../tools/multi-scene/acceptance/README.md#controlled-app-inventory-preparation).
 
+For an embedded dashboard journey, derive the URL mode and supported widget
+capabilities from the frozen app source. Desktop toolbar controls may be absent in
+mobile embedding. Preserve an actual read-only control/effect candidate, then
+require fresh native accessibility and Browser-owner proof in the first planned
+baseline. Browser authentication and desktop interaction cannot qualify native
+app sign-in or replace the precritical ownership boundary.
+
 ## Cross-query identity and revisions
 
 Opaque search-envelope IDs identify rows within a response; they are not stable

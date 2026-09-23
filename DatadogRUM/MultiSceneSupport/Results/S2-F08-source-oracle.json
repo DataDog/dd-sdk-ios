@@ -182,7 +182,7 @@
     "partial cleanup relabeled as ordinary pass"
   ],
   "admission_limits": "This is source preparation only. No runtime/oracle pass, gate closure, new experiment or environment retry is implied. Existing J01, Duo and EXP220 automation stops remain closed; fresh execution needs materially changed environment and reviewed fixed admission.",
-  "next_action": "Prepare remaining H11-H14 bindings for the ordered human session. F08 runtime design, controls and existing complete product reuse qualify; account/control and fresh operator/environment prerequisites remain.",
+  "next_action": "Use the prepared F08 runtime in its ordered human-session group. The desktop control candidate is prepared; native sign-in, selected route/control qualification and paired ownership comparison remain.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/source-review.json",
     "sha256": "41f6a1f5348c383e8c11770dc50da59e45e9dc020559a49c2a60d8691815d6e9"
@@ -245,7 +245,7 @@
     "runtime_acceptance": false
   },
   "runtime_capture_preparation": {
-    "state": "CONTEXT_COMPATIBLE_CAPTURE_BASELINE_BUILD_RUNNING",
+    "state": "REVIEWED_CAPTURE_BOTH_PRODUCTS_AND_RUNTIME_PREPARED_NATIVE_UNADMITTED",
     "at": "2026-09-22T19:27:10.255660+00:00",
     "scope": "Symmetric validation-only app capture preparation/build qualification for existing J01-J04; SDK unchanged; native/backend execution unadmitted.",
     "inspected_baseline_app_sources": {
@@ -266,8 +266,8 @@
       "Qualify changed capture in the first planned baseline journey, not another input diagnostic. Preserve all original Home/input failures; use the one ordered human session."
     ],
     "remaining": [
-      "Complete native/mapper/browser/backend runtime joins and first-baseline admission",
-      "Authenticated account/service/dashboard prerequisite in the ordered human session"
+      "First planned baseline native capture/ownership qualification",
+      "Interactive native sign-in and selected service/dashboard control qualification"
     ],
     "new_builds_admitted": true,
     "native_launches": 0,
@@ -285,7 +285,7 @@
       "processing": "ALL",
       "runtime_admission": false
     },
-    "updated_at": "2026-09-22T21:40:27.734228+00:00",
+    "updated_at": "2026-09-23T00:37:59.130350+00:00",
     "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-reviewed-controls-32tvi0u8",
     "review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-reviewed-controls-32tvi0u8/capture-review.json",
@@ -446,17 +446,26 @@
       "Incidental vital/operation payloads and source/backend view-update retention differences"
     ],
     "account_preparation": {
-      "state": "READ_ONLY_MCP_TARGETS_FOUND_NOT_NATIVE_PREREQUISITE_PROOF",
+      "state": "DESKTOP_EMBEDDED_CONTROL_PREPARED_NATIVE_UNADMITTED",
       "organization": "mobile-integration",
       "service_candidate": "ios-benchmark",
       "dashboard_candidate": "Mobile Template Variable Test",
-      "remaining": "Interactive app sign-in and exact actual read-only Browser control/effect; freeze before candidate input."
+      "remaining": "Bind the selected read-only control before F08 admission and qualify its actual native readiness/effect in the first planned baseline; no separate input diagnostic.",
+      "at": "2026-09-23T00:37:59.130350+00:00",
+      "evidence": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-account-controls-qyyw4xaq/summary.json",
+        "sha256": "a67d22031f48ce1caac24be73febbdf134df90b35fbee58930baa441158208de"
+      },
+      "selection_candidate": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-account-controls-qyyw4xaq/selection-candidate.json",
+        "sha256": "d858881e3caf34ed4a1c68108bce74452ecc3ff4a0aef0aad6a985345b73385f"
+      },
+      "scope": "Actual authenticated Chrome embedded dashboard and direct MCP service lookup only. Native app sign-in, route/control accessibility and Browser ownership remain unproved."
     },
     "remaining": [
-      "H11-H14 bindings before requesting the ordered session",
-      "Account/control readiness",
       "Fresh operator/Xcode/runtime/backend admission",
-      "First planned baseline mechanism qualification and paired source comparison"
+      "Native account/route/control qualification in the first planned F08 baseline",
+      "Paired complete source/ownership comparison"
     ],
     "preserved_control_failures": [
       "Initial test import/mock setup and terminal join test-shape failures remain local evidence; no native or SDK failure is inferred."

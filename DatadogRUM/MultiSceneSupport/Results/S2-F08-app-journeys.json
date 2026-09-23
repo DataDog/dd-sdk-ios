@@ -141,7 +141,7 @@
     "review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-tf3_dxfy/review.json",
     "candidate": "UNRUN"
   },
-  "next_action": "Continue complete native/browser capture and authenticated J02-J04 preparation independently. Home automation remains stopped; use the ordered S2 input session for unresolved Home/authentication/gestures after its fixture/capture prerequisites are complete. No further equivalent Home diagnostic is admitted.",
+  "next_action": "Use the prepared J01-J04 runtime in the ordered human session after operator readiness. The source/oracle owner retains the desktop account/control candidate; native login, exact control effect and all ownership gates remain open. Preserve stopped Home automation and every original attempt.",
   "environment_readiness": "Results/S2-Duo-environment-readiness.json",
   "source_oracle": "Results/S2-F08-source-oracle.json",
   "source_preparation_status": "SOURCE_AND_OFFLINE_INVENTORY_PREPARATION_REVIEWED",
@@ -182,7 +182,7 @@
     "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-qualified-_wnijcda/terminal-summary.json",
     "summary_sha256": "ba211a0311a01d103535424c1a63a96d1e5b06fd544c95850ec1b656e8f44499"
   },
-  "updated_at": "2026-09-22T11:17:06.650377+00:00",
+  "updated_at": "2026-09-23T00:37:59.130350+00:00",
   "incremental_continuation": {
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-incremental-f8xss4f3",
     "status": "STOPPED_AFTER_ONE_TAP_NATIVE_OBSERVER",

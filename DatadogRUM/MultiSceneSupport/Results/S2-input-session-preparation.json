@@ -2,11 +2,11 @@
   "schema_version": 1,
   "work_item": "S2:A02 ordered single human-input session",
   "status": "RUNNERS_PREPARED_OPERATOR_AND_ACCOUNT_PREREQUISITES_REMAIN",
-  "updated_at": "2026-09-23T00:20:44.791667+00:00",
+  "updated_at": "2026-09-23T00:37:59.130350+00:00",
   "owner": "Harness implementer",
   "user_role": "Only real gestures and any required interactive sign-in",
-  "request_user_now": true,
-  "reason": "All simulator-family runner/build bindings are prepared. Genuine input now requires the already planned human session; request operator readiness without starting a clock. F08 account/control and physical iPad prerequisites remain separate and do not block earlier simulator groups.",
+  "request_user_now": false,
+  "reason": "All simulator-family runner/build bindings are prepared. Operator readiness has been requested; no stage clock has started. F08 native account/control qualification and physical iPad prerequisites remain separate and do not block earlier simulator groups.",
   "source_candidate": "c9faed816a1d4828d7d8c4b64acae01119425889",
   "ordered_groups": [
     {
@@ -168,13 +168,13 @@
       "automated_checks": "Preserve the accepted original app pair; qualify separate symmetric capture builds against the same J01-J04 source/ownership contract. Query Browser separately from native and prove same-process lifecycle.",
       "build_owner": "S2-F08-app-preparation.json",
       "oracle_owner": "S2-F08-source-oracle.json",
-      "remaining": "Fresh account/control and operator/environment prerequisites remain. Reviewed runtime owns native/mapper/Browser/backend collection and task-only cleanup.",
+      "remaining": "Desktop account/control candidate prepared at the source/oracle owner. Native sign-in, exact control qualification and fresh operator/environment admission remain.",
       "capture_binding": {
         "owner": "S2-F08-source-oracle.json",
         "state": "REVIEWED_RUNTIME_AND_BOTH_PRODUCTS_PREPARED",
         "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-reviewed-controls-32tvi0u8",
         "review_sha256": "ae252cf2d3656e9ad447e9b58e43b4e4e9e076664db25a2f7b352f494fca638c",
-        "remaining": "No native admission. Account/control prerequisites and final paired source classifications remain.",
+        "remaining": "No native admission. First planned baseline qualifies native account/control and capture; final paired source classification remains.",
         "build_preparation_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-build-h670kgc1",
         "corrected_build_preparation_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-relocated-e35i8m4l",
         "context_compatible_build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-context-wwea5ijl",
@@ -203,14 +203,20 @@
       "H16 remaining paced manual candidate",
       "T10 WebView baseline/candidate",
       "T03/T08 Resource/Trace four human-fold cells with unchanged build reuse",
-      "F08 reviewed J01-J04 runtime and both capture products; account/control prerequisite remains",
+      "F08 reviewed J01-J04 runtime and both capture products; desktop control candidate prepared, native account/control qualification pending",
       "H11-H14 reviewed eight-cell Duo runtime and four existing simulator products;67 offline controls, native qualification pending"
     ],
     "remaining_bindings": [
-      "F08 account and exact read-only Browser control; can be prepared independently of earlier simulator groups",
-      "Fresh shared operator/environment admission; physical iPad and physical builds remain separate"
+      "Fresh shared operator/environment admission; readiness requested, no stage clock started",
+      "F08 native sign-in and first-baseline control qualification; see S2-F08-source-oracle.json",
+      "Physical iPad availability, builds and runtime remain separate"
     ],
     "native_cells_executed": 0,
     "gates_closed": []
+  },
+  "operator_readiness": {
+    "state": "REQUESTED_AWAITING_RESPONSE",
+    "fixed_stage_started": false,
+    "native_cells_started": 0
   }
 }
