@@ -105,4 +105,19 @@ class CompleteInventories(unittest.TestCase):
         a,ca=complete_inventory();b,cb=complete_inventory();b['views']['one']['event']['view']['action']['count']=3
         with self.assertRaises(ValueError):self.compare(a,b,ca,cb)
 
+
+
+class SplitInventory(unittest.TestCase):
+    def test_split_has_no_synthetic_callback_requirement(self):
+        a,_=complete_inventory();a['accepted']={};b=copy.deepcopy(a)
+        result=c.paired_inventory(a,b,{}, {},tracking='manual',layout='split');self.assertEqual(result['non_view_count'],0)
+    def test_unplanned_split_callback_rejected(self):
+        a,callbacks=complete_inventory()
+        with self.assertRaises(ValueError):c.paired_inventory(a,a,callbacks,callbacks,tracking='manual',layout='split')
+    def test_new_occurrence_after_fold_does_not_pass_same_name(self):
+        owner=dict(id='a',name='detail',path='process-hash')
+        a=[dict(phase=p,ownership=c.adaptive_owners([owner],[owner])) for p in ['open','close','reopen']]
+        b=copy.deepcopy(a);b[1]['ownership']=c.adaptive_owners([owner],[dict(owner,id='new')])
+        with self.assertRaises(ValueError):c.paired_adaptive(a,b,tracking='manual')
+
 if __name__=='__main__':unittest.main()

@@ -180,6 +180,10 @@ is valid even when no animation is queued. Keep native controller/model results
 separate from RUM owner assertions. Manual SwiftUI path hashes are process-local;
 automatic paths retain exact comparison. Record unchanged baseline limitations
 separately without changing failed semantic expectations into passes.
+Restoration must equal the original actual display, orientation, owned window and
+selection, not merely reach a smaller display. Reserve each complete cell inside
+one immutable aggregate stage clock. Keep the uploader alive until backend capture
+is durable, then seal the stopped stream and rejoin saved responses only.
 
 ## Specialized fixture entry points
 

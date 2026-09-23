@@ -7,7 +7,7 @@
     "S2:H13",
     "S2:H14"
   ],
-  "status": "SIMULATOR_FIXTURE_BUILDS_QUALIFIED_RUNTIME_BINDINGS_REMAIN",
+  "status": "REVIEWED_DUO_RUNTIME_AND_BUILDS_PREPARED_NATIVE_UNADMITTED",
   "defined_at": "2026-09-22T23:17:07.076784+00:00",
   "owner": "SDK implementer + device operator",
   "reviewer": "/root/c06_runtime_plan",
@@ -265,7 +265,12 @@
     "backend_per_cell": 600,
     "cleanup": 300,
     "native_snapshot_max": 0.1,
-    "observer_callback_max": 0.002
+    "observer_callback_max": 0.002,
+    "settle": 1.2,
+    "human_fold": 180,
+    "fold_input_reserve": 45,
+    "duo_stage_execution": 21600,
+    "duo_stage_final_cleanup": 300
   },
   "budget_basis": "Build900s follows existing two-target automatic builds; each finite stack has four human interactive boundaries plus setup/return taps within1800s. Human180s, capture30s, backend600s and cleanup300s reuse measured recent S2 budgets. No original deadline is changed.",
   "attempt_policy": {
@@ -287,21 +292,22 @@
     "Extra/missing backend event and incomplete pagination",
     "Late evidence/publication or missing cleanup"
   ],
-  "review_status": "FIXTURE_NATIVE_AND_LOCAL_OWNERSHIP_PREPARATION_APPROVED_RUNTIME_REVIEW_REMAINS",
+  "review_status": "DUO_WORKFLOW_PREPARATION_APPROVED",
   "native_admitted": false,
   "results": [],
   "gate_closures": [],
-  "next_action": "Finish scoped design review, implement passive fixture/strict oracle, run focused offline controls and qualify source-bound builds. Schedule only as part of the existing ordered human session.",
+  "next_action": "Perform fresh operator/environment admission for the existing ordered human session. First planned baseline qualifies each changed mechanism; no native retry or deadline extension. Physical iPad remains a separate concrete prerequisite.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
     "First-began registration and recognizer target lifecycle; no polling rescue.",
     "Explicit12cell physicaliPad mapping and deferred SwiftUI callbacks.",
     "Native attachment/enablement changes are captured as observations, never falsely attributed to an observer assignment.",
-    "Reviewer withdrew a requested animations_queued=true assertion after verifying the actual UIKit header: completion-only registration may return false while its genuine completion still runs. Keep the Boolean diagnostic and strict actual callback ordering."
+    "Reviewer withdrew a requested animations_queued=true assertion after verifying the actual UIKit header: completion-only registration may return false while its genuine completion still runs. Keep the Boolean diagnostic and strict actual callback ordering.",
+    "Runtime review required exact original display/window/selection restoration and an immutable aggregate stage clock. Both are enforced and covered by negative controls; preparation approval adds no runtime or gate credit."
   ],
   "preparation": {
-    "status": "SIMULATOR_FIXTURE_BUILDS_QUALIFIED_RUNTIME_BINDINGS_REMAIN",
+    "status": "SIMULATOR_FIXTURE_BUILDS_QUALIFIED",
     "offline_controls": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-transition-build-nvt_f6jx/run/preparation-review/controls.json",
       "sha256": "003deaff4732706fa4d87a7b21b6d47ae46be4f969ed7ef2d3faa0935de063b3",
@@ -310,9 +316,9 @@
     },
     "native_admitted": false,
     "remaining": [
-      "Human-paced runtime/backend and adaptive geometry bindings",
-      "Final scoped implementation review of complete workflow",
-      "Live physical iPad/signing availability and ordered human session"
+      "Fresh operator/environment admission and actual eight-cell Duo comparison",
+      "Live physical iPad/signing availability, two physical build keys and twelve required cells",
+      "Final backend/source classifications and release gate review"
     ],
     "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-transition-build-nvt_f6jx/run",
     "build_plan_sha256": "9863378a92cde9547fb4cfc8ab9c5f9847005aa44d11e9e847305e59b83b17a8",
@@ -361,15 +367,53 @@
       "scope": "Fixture/native and local paired oracle only. Full runtime, backend, adaptive geometry and physical execution remain unqualified."
     }
   },
-  "updated_at": "2026-09-22T23:47:12.511107+00:00",
+  "updated_at": "2026-09-23T00:20:44.791667+00:00",
   "live_environment": {
-    "observed_at": "2026-09-22T23:41:23.416020+00:00",
+    "observed_at": "2026-09-23T00:20:44.791667+00:00",
     "xcode": "27.1 (27A9269)",
     "workspace": "/Users/valentin.pertuisot/work/dd-sdk-ios/Datadog.xcworkspace",
     "duo_simulators_eligible": 2,
     "physical_ipad_available": false,
     "physical_iphone_available": true,
     "native_admission": false,
-    "qualification_limit": "MCP eligibility inventory only; actual display/device/operator prerequisites must be refreshed before native execution."
+    "qualification_limit": "Fresh actual MCP workspace/destination and RUM application reads. No physical iPad listed; no native/display/operator admission. Refresh required at execution.",
+    "backend_probe_application_access": true,
+    "receipts": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-human-runtime-ov_vev9r/run/preparation-access"
+  },
+  "runtime_budget_binding": "Prospective binding before any native admission: reuse1.2second settle,180second fold and45second fold-evidence reserve from the qualified human collector. No existing or active clock changes. Duo aggregate stage is21600seconds (eight2700second native/backend/cleanup reservations), with300seconds final cleanup. Each cell must fit its complete original reservation; later readiness never renews the stage.",
+  "runtime_preparation": {
+    "state": "REVIEWED_DUO_RUNTIME_AND_BUILDS_PREPARED_NATIVE_UNADMITTED",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-human-runtime-ov_vev9r/run",
+    "plan_sha256": "c27099dc870820b8387a90e109aa00df8f5036cc416090eacdcc68c0b675571d",
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-human-runtime-ov_vev9r/run/controls.json",
+      "sha256": "64244e39d4ae715f26839208664011e55c218c8c59f20f4d94658bd832f2aeec",
+      "tests": 67,
+      "state": "PASS"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-human-runtime-ov_vev9r/run/review.json",
+      "sha256": "1b7fb473523f7744eceef97eb83ad6a9dbeec110b533145aad78d05c76326855",
+      "reviewer": "/root/c06_runtime_plan",
+      "state": "PASS_FOR_DUO_PREPARATION"
+    },
+    "native_launches": 0,
+    "builds_added": 0,
+    "physical_native_admitted": false,
+    "scope": "Existing human collector, process supervisor, durable MCP transport, complete payload joins and task-only cleanup; no frozen helper or SDK change.",
+    "decisive_controls": [
+      "Actual returned display and exact original restoration",
+      "Foremost native controller, real selection and mapper occurrences",
+      "Consumed readiness and process start/PID/executable substitution",
+      "Missing/extra/foreign backend events and exact reducer counts",
+      "Original uploader stays alive until complete persisted evidence; final stream equals frozen inventory",
+      "Late publication, worker absence and incomplete cleanup cannot qualify the next cell",
+      "Immutable six-hour stage; every full per-cell reservation must fit"
+    ],
+    "remaining": [
+      "Fresh operator and actual runtime/display admission",
+      "Eight Duo native cells with paired source classifications",
+      "Physical iPad availability/builds and twelve required cells"
+    ]
   }
 }

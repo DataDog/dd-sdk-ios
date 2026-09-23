@@ -25,7 +25,14 @@ membership and complete product manifests. Thirty-three focused controls pass.
 A positive test mock initially changed an aliased owner twice; its failure and
 correction are retained separately without changing the production oracle.
 
-The fixture/native review is complete for preparation. Runtime supervision,
-backend joins, adaptive geometry bindings and the final workflow review remain.
-Current Xcode discovery has no physical iPad. No native cell has been admitted,
-and no ownership or release gate has closed. Exact receipts live in the owner.
+The Duo runtime is now reviewed and frozen, reusing the existing human capture,
+supervisor, backend transport and cleanup. Sixty-seven focused controls pass.
+The scoped review required exact original display/window/selection restoration
+and a fixed aggregate stage clock; both corrections are qualified offline.
+Actual process start identity supplements PID and executable checks. Backend
+collection retains the original uploader, then seals and rejoins the saved stream.
+
+Fresh human readiness and actual environment admission remain. No native cell has
+run and no H11–H14 gate closes. The twelve physical iPad cells still need a live
+resize-capable device, signing and the two admitted physical build keys. Exact
+runtime, review and control receipts live in the owning result.

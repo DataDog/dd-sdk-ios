@@ -9,12 +9,17 @@ from hosting_contract import APP_ID
 SERVICE='ios-s2-transition-validation'
 
 
-def inventory(rows, identity):
+def launch_identity(rows, identity):
     launch=native.one([r for r in rows if r['kind']=='launch'],'native launch')['payload']
     for field in ['source','fixture','tracking','framework','layout','nonce','pid']:
         native.require(launch[field]==identity[field],'wrong source-bound '+field)
     native.require(launch['build_sdk']=='iphonesimulator27.1' and launch['multiple_scenes'] is False,
                    'unqualified simulator/manifest')
+    native.require(launch.get('bundle')==identity['bundle'],'native task bundle differs')
+
+
+def inventory(rows, identity):
+    launch_identity(rows,identity)
     native.require(rows and [r['sequence'] for r in rows]==list(range(1,len(rows)+1))
                    and all(r['run_id']==identity['run_id'] for r in rows),'incomplete or foreign run')
     views={};order=[];accepted={};sessions=set()
@@ -103,14 +108,15 @@ def paired(baseline,candidate,*,tracking):
                 release_acceptance=False,remaining='Complete native/backend/cleanup inventory and source classification, including process-local paths and automatic limitations.')
 
 
-def paired_inventory(baseline,candidate,baseline_callbacks,candidate_callbacks,*,tracking):
+def paired_inventory(baseline,candidate,baseline_callbacks,candidate_callbacks,*,tracking,layout="stack"):
     """Compare all unique local events and terminal counters; backend is still required."""
     native.require(tracking in ['automatic','manual'],'unqualified paired inventory mode')
-    phases={'pop.finish','pop.cancel','dismiss.finish','dismiss.cancel'}
+    native.require(layout in ['stack','split'],'unknown paired layout')
+    phases={'pop.finish','pop.cancel','dismiss.finish','dismiss.cancel'} if layout=='stack' else set()
     def project(local,callbacks):
         native.require(set(callbacks)==phases,'callback phase inventory incomplete')
         reverse={value['callback_id']:phase for phase,value in callbacks.items()}
-        native.require(len(reverse)==4,'aliased real callback identities')
+        native.require(len(reverse)==len(phases),'aliased real callback identities')
         order=local['occurrence_order'];rank={identity:index for index,identity in enumerate(order)}
         native.require(set(rank)==set(local['views']) and len(order)==len(rank),'incomplete view order')
         views=[]
@@ -131,9 +137,34 @@ def paired_inventory(baseline,candidate,baseline_callbacks,candidate_callbacks,*
             native.require(event['view']['id'] in rank,'foreign action owner')
             events.append(dict(family=family,type=action['type'],target=action.get('target'),
                 owner=rank[event['view']['id']],callback_phase=reverse.get(callback)))
-        native.require(len(seen_callbacks)==4 and set(seen_callbacks)==set(reverse),'missing/extra callback work')
+        native.require(len(seen_callbacks)==len(phases) and set(seen_callbacks)==set(reverse),'missing/extra callback work')
         return dict(views=views,events=sorted(json.dumps(e,sort_keys=True) for e in events))
     a,b=project(baseline,baseline_callbacks),project(candidate,candidate_callbacks)
     native.require(a==b,'paired terminal view counters or complete event inventory differs')
     return dict(state='PAIRED_LOCAL_INVENTORY_MATCH_BACKEND_REQUIRED',view_count=len(a['views']),
                 non_view_count=len(a['events']),release_acceptance=False)
+
+
+def adaptive_owners(before,after):
+    relation=('missing' if not before or not after else 'ambiguous' if len(before)!=1 or len(after)!=1 else
+              'preserved' if before[0]['id']==after[0]['id'] else 'fresh')
+    return dict(before=before,after=after,relation=relation,
+                semantic_expectation='PASS' if relation=='preserved' else 'FAIL',
+                remaining='Any inherited owner change requires paired source classification.')
+
+
+def paired_adaptive(baseline,candidate,*,tracking):
+    native.require(tracking in ['automatic','manual'],'unknown adaptive tracking')
+    native.require([r['phase'] for r in baseline]==[r['phase'] for r in candidate]==['open','close','reopen'],
+                   'incomplete actual adaptive sequence')
+    limitations=[]
+    for a,b in zip(baseline,candidate):
+        def signature(record):
+            value=record['ownership']
+            return dict(relation=value['relation'],semantic_expectation=value['semantic_expectation'],
+                owners={side:[(r['name'],r['path'] if tracking=='automatic' else None) for r in value[side]]
+                        for side in ['before','after']})
+        native.require(signature(a)==signature(b),'paired adaptive ownership differs at '+a['phase'])
+        if a['ownership']['semantic_expectation']!='PASS':limitations.append(a['phase'])
+    return dict(state='PAIRED_ADAPTIVE_OWNER_PATTERN_REQUIRES_CLASSIFICATION',
+                inherited_limitations=limitations,release_acceptance=False)

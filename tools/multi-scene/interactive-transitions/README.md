@@ -13,3 +13,30 @@ Callback work is explicitly labelled custom work, outside automatic-action claim
 
 Preparation preserves the existing automatic/hosting/Resource/WebView/app builds.
 Only new experiment files and explicit owning-record updates belong in commits.
+
+The reviewed Duo runtime reuses the existing human prompt page, owned process
+supervisor, complete MCP response transport and task-only cleanup. It never sends
+native input. The owner links the frozen runtime and qualified original products;
+no rebuild is needed for admission. The twelve physical iPad cells remain separate
+and unadmitted until actual device/signing/build prerequisites are available.
+
+Before starting, retain fresh Xcode workspace/destination and probe-application
+access responses, actual prebooted Duo identity, and explicit operator readiness.
+`runtime.py stage` binds those receipts to the reviewed plan. The first cell must
+start within five minutes; later cells require continuous operator readiness.
+The aggregate six-hour execution clock and final cleanup reserve never renew.
+Each complete native/backend/cleanup reservation must fit before dispatch.
+
+Run one declared cell through `session.py --root <frozen-runtime> --key <cell-id>
+--device <fresh-device-id>`. The existing `human_operator.py` serves the local
+prompt page. Forward emitted backend requests through the existing
+`app-acceptance/journey_connector.js`; preserve every actual tool return before
+parsing. No tool/model round trip advances a gesture or substitutes its effect.
+Baseline mechanism qualification permits only its planned successor. Any input,
+capture, transport, cleanup or pairing failure stops that path without retry.
+
+Stack cells retain four actual interactive callback chains and separately labelled
+custom callback work. Split cells add no synthetic callback action. Compare the
+complete local/backend inventory and terminal counters as well as phase owners.
+A matched inherited limitation stays a failed semantic expectation until explicit
+source classification; preparation and mechanism qualification close no gate.
