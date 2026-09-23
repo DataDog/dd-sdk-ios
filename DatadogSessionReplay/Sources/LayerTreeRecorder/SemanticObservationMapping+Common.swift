@@ -154,6 +154,17 @@ extension CALayerSnapshot.SemanticObservationMapping {
         )
     }
 
+    static let captureVideoPreviewLayer = Self { layer, _, _ in
+        guard layer is AVCaptureVideoPreviewLayer else {
+            return nil
+        }
+
+        return .init(
+            semantics: .unsupported("Camera preview"),
+            ignoresSublayers: true
+        )
+    }
+
     static let layerHost = Self { layer, _, _ in
         guard layer.isHost else {
             return nil
