@@ -83,6 +83,21 @@ struct SemanticObservationTests {
         ))
     }
 
+    @Test("Records camera preview as unsupported and ignores sublayers")
+    func recordsCameraPreviewAsUnsupportedAndIgnoresSublayers() {
+        // Given
+        let layer = AVCaptureVideoPreviewLayer()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(
+            semantics: .unsupported("Camera preview"),
+            ignoresSublayers: true
+        ))
+    }
+
     @Test("Records linear gradient semantics")
     func recordsLinearGradientSemantics() throws {
         // Given
