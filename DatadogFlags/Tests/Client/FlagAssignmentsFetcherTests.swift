@@ -121,34 +121,6 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         XCTAssertEqual(capturedRequest?.allHTTPHeaderFields?["X-Custom-Header"], "custom-value")
     }
 
-    func testFlagAssignmentsFetchRunsOffContextQueue() {
-        // Given
-        let contextQueue = DispatchQueue(label: "com.datadoghq.flags-tests-context")
-        let assignmentFetchQueue = DispatchQueue(label: "com.datadoghq.flags-tests-assignment-fetch")
-        let featureScope = QueuedFeatureScope(contextQueue: contextQueue)
-        var wasFetchCalledOnContextQueue: Bool?
-        let fetcher = FlagAssignmentsFetcher(
-            customEndpoint: nil,
-            customHeaders: [:],
-            featureScope: featureScope,
-            assignmentFetchQueue: assignmentFetchQueue,
-            fetch: { _, completion in
-                wasFetchCalledOnContextQueue = featureScope.isOnContextQueue
-                completion(.success(.mockAnyFlagAssignmentsResponse()))
-            }
-        )
-        let completed = expectation(description: "completed")
-
-        // When
-        fetcher.flagAssignments(for: .mockAny()) { _ in
-            completed.fulfill()
-        }
-
-        // Then
-        waitForExpectations(timeout: 1)
-        XCTAssertEqual(wasFetchCalledOnContextQueue, false)
-    }
-
     func testFlagsEndpointForAllSites() {
         let flagsEndpoints: [(DatadogSite, String)] = [
             (.us1, "https://preview.ff-cdn.datadoghq.com"),
@@ -174,6 +146,8 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
 
         for result in results {
             // Given
+            let contextQueue = DispatchQueue(label: "com.datadoghq.flags-tests-context")
+            let featureScope = QueuedFeatureScope(contextQueue: contextQueue)
             let queue = DispatchQueue(label: "com.datadoghq.flags-tests-assignment-fetch")
             let queueKey = DispatchSpecificKey<Void>()
             queue.setSpecific(key: queueKey, value: ())
@@ -183,6 +157,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
                 featureScope: featureScope,
                 assignmentFetchQueue: queue,
                 fetch: { _, completion in
+                    XCTAssertFalse(featureScope.isOnContextQueue)
                     XCTAssertNotNil(DispatchQueue.getSpecific(key: queueKey))
                     completion(result)
                 }
@@ -197,6 +172,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
             }
 
             fetcher.flagAssignments(for: .mockAny()) { _ in
+                XCTAssertFalse(featureScope.isOnContextQueue)
                 XCTAssertNil(DispatchQueue.getSpecific(key: queueKey))
                 firstCompletionStarted.fulfill()
                 releaseCompletion.wait()
@@ -206,6 +182,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
 
             // When
             fetcher.flagAssignments(for: .mockAny()) { _ in
+                XCTAssertFalse(featureScope.isOnContextQueue)
                 XCTAssertNil(DispatchQueue.getSpecific(key: queueKey))
                 secondCompleted.fulfill()
             }
