@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FIX] Release the RUM display-link observer and its frame readers when their owner is released.
+
 # 3.18.0 / 21-09-2026
 
 - [FIX] Preserve delayed WebView correlation for long-lived active native RUM views.

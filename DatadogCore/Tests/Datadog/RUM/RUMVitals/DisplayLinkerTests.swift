@@ -7,11 +7,191 @@
 #if !os(watchOS) && !os(macOS)
 
 import XCTest
+import QuartzCore
 import TestUtilities
 import DatadogInternal
 @testable import DatadogRUM
+@testable import DatadogCore
 
 final class DisplayLinkerTests: XCTestCase {
+    @MainActor
+    func testGivenActiveDisplayLinker_whenOwnerIsReleased_itReleasesNativeTargetAndReader() {
+        let center = NotificationCenter()
+        defer { center.post(name: DDApplication.willResignActiveNotification, object: nil) }
+        weak var observedLinker: DisplayLinker?
+        weak var observedReader: ViewHitchesMock?
+
+        autoreleasepool {
+            let linker = DisplayLinker(notificationCenter: center)
+            let reader = ViewHitchesMock()
+            linker.register(reader)
+            observedLinker = linker
+            observedReader = reader
+            XCTAssertTrue(linker.isActive)
+            XCTAssertNotNil(observedLinker)
+            XCTAssertNotNil(observedReader)
+        }
+
+        let released = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in observedLinker == nil && observedReader == nil },
+            object: nil
+        )
+        _ = XCTWaiter.wait(for: [released], timeout: 2)
+        XCTAssertNil(observedLinker, "Dropping the active owner must release its native display target")
+        XCTAssertNil(observedReader, "An unowned display target must not retain its readers")
+    }
+
+    @MainActor
+    func testGivenInactiveDisplayLinker_whenOwnerIsReleased_itReleasesNativeTargetAndReader() {
+        let center = NotificationCenter()
+        defer { center.post(name: DDApplication.willResignActiveNotification, object: nil) }
+        weak var observedLinker: DisplayLinker?
+        weak var observedReader: ViewHitchesMock?
+
+        autoreleasepool {
+            let linker = DisplayLinker(notificationCenter: center)
+            let reader = ViewHitchesMock()
+            linker.register(reader)
+            observedLinker = linker
+            observedReader = reader
+            XCTAssertTrue(linker.isActive)
+            XCTAssertNotNil(observedLinker)
+            XCTAssertNotNil(observedReader)
+            center.post(name: DDApplication.willResignActiveNotification, object: nil)
+            XCTAssertFalse(linker.isActive)
+        }
+
+        let released = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in observedLinker == nil && observedReader == nil },
+            object: nil
+        )
+        _ = XCTWaiter.wait(for: [released], timeout: 2)
+        XCTAssertNil(observedLinker)
+        XCTAssertNil(observedReader)
+    }
+
+    @MainActor
+    func testGivenRUMFeature_whenConfigurationDeliveryFinishesAndCoreIsTornDown_itReleasesNativeDisplayTarget() {
+        let centers = NotificationCenterProvider.makeTestProvider()
+        defer {
+            centers.applicationCenter.post(name: DDApplication.willResignActiveNotification, object: nil)
+            XCTAssertNoThrow(try temporaryCoreDirectory.delete())
+        }
+        weak var observedTarget: AnyObject?
+        weak var observedFeature: RUMFeature?
+        weak var observedCore: DatadogCoreProxy?
+        weak var observedMonitor: Monitor?
+        weak var observedApplicationScope: RUMApplicationScope?
+        weak var observedLinker: DisplayLinker?
+        weak var observedFirstFrameReader: FirstFrameReader?
+        weak var observedSDKCore: DatadogCore?
+        weak var observedMessageBus: MessageBus?
+        let configurationDelivered = expectation(description: "Pending configuration was delivered before teardown")
+
+        autoreleasepool {
+            let context = DatadogContext.mockAny()
+            let sdkCore = DatadogCore(
+                directory: temporaryCoreDirectory,
+                dateProvider: SystemDateProvider(),
+                initialConsent: context.trackingConsent,
+                performance: .mockAny(),
+                httpClient: HTTPClientMock(),
+                encryption: nil,
+                contextProvider: DatadogContextProvider(context: context),
+                applicationVersion: context.version,
+                maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+                backgroundTasksEnabled: .mockAny()
+            )
+            let core = DatadogCoreProxy(core: sdkCore)
+            observedSDKCore = sdkCore
+            observedMessageBus = sdkCore.bus
+            sdkCore.bus.connect(
+                FeatureMessageReceiverMock { message in
+                    guard case .telemetry(.configuration) = message else {
+                        return
+                    }
+                    configurationDelivered.fulfill()
+                },
+                forKey: "display-link-lifetime-configuration"
+            )
+            defer { XCTAssertNoThrow(try core.flushAndTearDown()) }
+            observedCore = core
+            var configuration = RUM.Configuration(applicationID: "00000000-0000-0000-0000-000000000211")
+            configuration.notificationCenterProvider = centers
+            configuration.longTaskThreshold = nil
+            configuration.appHangThreshold = nil
+            configuration.trackWatchdogTerminations = false
+            configuration.vitalsUpdateFrequency = nil
+            configuration.collectAccessibility = false
+            configuration.telemetrySampleRate = 0
+            configuration.frameInfoProviderFactory = { target, selector in
+                observedTarget = target as AnyObject
+                return CADisplayLink(target: target, selector: selector)
+            }
+            RUM.enable(with: configuration, in: core)
+            observedFeature = core.feature(named: RUMFeature.name, type: RUMFeature.self)
+            observedMonitor = observedFeature?.monitor
+            observedApplicationScope = observedMonitor?.applicationScope
+            observedLinker = observedApplicationScope?.dependencies.renderLoopObserver as? DisplayLinker
+            observedFirstFrameReader = observedApplicationScope?.dependencies.firstFrameReader as? FirstFrameReader
+            XCTAssertNotNil(observedMonitor)
+            XCTAssertNotNil(observedApplicationScope)
+            XCTAssertNotNil(observedLinker)
+            XCTAssertNotNil(observedFirstFrameReader)
+            XCTAssertNotNil(observedSDKCore)
+            XCTAssertNotNil(observedMessageBus)
+            XCTAssertNotNil(observedCore)
+            XCTAssertNotNil(observedFeature)
+            XCTAssertNotNil(observedTarget)
+            // The message bus owns its receivers until its scheduled configuration task finishes.
+            // Witness that existing owner before measuring the final-owner teardown boundary.
+            XCTAssertEqual(XCTWaiter.wait(for: [configurationDelivered], timeout: 7), .completed)
+        }
+
+        let released = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in observedTarget == nil && observedFeature == nil && observedCore == nil },
+            object: nil
+        )
+        _ = XCTWaiter.wait(for: [released], timeout: 2)
+        XCTAssertNil(observedCore)
+        XCTAssertNil(observedSDKCore, "The actual SDK core must release after teardown")
+        XCTAssertNil(observedMessageBus, "The message bus must release after its pending configuration is delivered")
+        XCTAssertNil(observedFeature)
+        XCTAssertNil(observedMonitor, "Monitor must release after feature/core teardown")
+        XCTAssertNil(observedApplicationScope, "Application scope must release after feature/core teardown")
+        XCTAssertNil(observedLinker, "DisplayLinker must release after feature/core teardown")
+        XCTAssertNil(observedFirstFrameReader, "First-frame reader must release after feature/core teardown")
+        XCTAssertNil(observedTarget, "Core teardown must release the RUM native display target without an app-state notification")
+    }
+
+    @MainActor
+    func testGivenReleasedDisplayLinker_whenProviderDeliversFrame_itDoesNotRetainOrNotifyReader() {
+        let center = NotificationCenter()
+        defer { center.post(name: DDApplication.willResignActiveNotification, object: nil) }
+        var provider: FrameInfoProviderMock?
+        weak var observedLinker: DisplayLinker?
+        let reader = ViewHitchesMock()
+
+        autoreleasepool {
+            let linker = DisplayLinker(notificationCenter: center) { target, selector in
+                let frameProvider = FrameInfoProviderMock(target: target, selector: selector)
+                provider = frameProvider
+                return frameProvider
+            }
+            linker.register(reader)
+            observedLinker = linker
+            XCTAssertNotNil(observedLinker)
+            XCTAssertNotNil(provider)
+            provider?.triggerCallback(interval: 1)
+            XCTAssertTrue(reader.isActive)
+        }
+
+        XCTAssertNil(observedLinker)
+        XCTAssertFalse(reader.isActive)
+        provider?.triggerCallback(interval: 2)
+        XCTAssertFalse(reader.isActive, "A callback after owner release must not revive a stopped reader")
+    }
+
     private let mockNotificationCenter = NotificationCenter()
 
     func testWhenMainThreadOverheadGoesUp_itMeasuresLowerRefreshRate() throws {
