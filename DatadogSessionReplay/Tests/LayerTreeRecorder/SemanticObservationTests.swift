@@ -5,6 +5,7 @@
  */
 
 #if os(iOS)
+import AVFoundation
 import DatadogInternal
 import QuartzCore
 import SwiftUI
@@ -63,6 +64,21 @@ struct SemanticObservationTests {
         // Then
         #expect(observation == .init(
             semantics: .unsupported("Remote content"),
+            ignoresSublayers: true
+        ))
+    }
+
+    @Test("Records video as unsupported and ignores sublayers")
+    func recordsVideoAsUnsupportedAndIgnoresSublayers() {
+        // Given
+        let layer = AVPlayerLayer()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(
+            semantics: .unsupported("Video"),
             ignoresSublayers: true
         ))
     }
