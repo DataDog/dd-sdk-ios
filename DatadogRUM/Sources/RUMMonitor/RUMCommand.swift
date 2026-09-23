@@ -459,6 +459,38 @@ internal protocol RUMResourceCommand: RUMCommand {
     var resourceKey: String { get }
 }
 
+/// Internal dispatch metadata for Resource terminal commands. It is never serialized.
+internal protocol RUMResourceCompletionCommand: RUMResourceCommand {
+    var isAutomatic: Bool { get }
+    var owningViewIDs: [RUMUUID]? { get set }
+}
+
+extension RUMResourceCompletionCommand {
+    func updatesAction(in viewID: RUMUUID?) -> Bool {
+        guard let owners = owningViewIDs, !owners.isEmpty else {
+            // Untracked manual stops retain their existing compatibility behavior.
+            return !isAutomatic
+        }
+        guard let viewID else {
+            return false
+        }
+        return owners.contains(viewID)
+    }
+}
+
+extension RUMCommand {
+    func resolvingResourceOwners(in views: @autoclosure () -> [RUMViewScope]) -> RUMCommand {
+        guard var completion = self as? RUMResourceCompletionCommand, completion.owningViewIDs == nil else {
+            return self
+        }
+        let key = completion.resourceKey
+        completion.owningViewIDs = views().compactMap { view in
+            view.resourceScopes[key] != nil ? view.viewUUID : nil
+        }
+        return completion
+    }
+}
+
 /// Tracing information propagated by Tracing to the underlying `URLRequest`. It is passed to the RUM backend
 /// in order to create the APM span. The actual `Span` is not sent by the SDK.
 internal struct RUMSpanContext {
@@ -520,8 +552,10 @@ internal struct RUMAddResourceMetricsCommand: RUMResourceCommand {
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
 }
 
-internal struct RUMStopResourceCommand: RUMResourceCommand {
+internal struct RUMStopResourceCommand: RUMResourceCompletionCommand {
     let resourceKey: String
+    var isAutomatic = false
+    var owningViewIDs: [RUMUUID]? = nil
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
@@ -541,8 +575,10 @@ internal struct RUMStopResourceCommand: RUMResourceCommand {
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
 }
 
-internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
+internal struct RUMStopResourceWithErrorCommand: RUMResourceCompletionCommand {
     let resourceKey: String
+    var isAutomatic = false
+    var owningViewIDs: [RUMUUID]? = nil
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]

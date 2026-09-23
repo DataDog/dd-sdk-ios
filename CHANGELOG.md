@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FIX] Report failed URLSession body transfers as network errors with their received HTTP status, and keep late Resource completions from changing another view's action counters.
+
 # 3.18.0 / 21-09-2026
 
 - [FIX] Preserve delayed WebView correlation for long-lived active native RUM views.
