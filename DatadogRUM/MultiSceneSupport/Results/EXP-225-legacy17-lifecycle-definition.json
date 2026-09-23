@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-225",
+  "deliverable": "Remaining four legacy17.5 lifecycle cells after captured pre-active fixture markers",
+  "status": "DEFINED",
+  "owner": "SDK implementer",
+  "reviewer": "/root/c06_runtime_plan",
+  "defined_at": "2026-09-23T12:35:59.218462+00:00",
+  "baseline_revision": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
+  "candidate_revision": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "source_scope": [
+    "DatadogCore/Sources",
+    "DatadogCore/Private",
+    "DatadogCore/Resources",
+    "DatadogInternal/Sources",
+    "DatadogRUM/Sources",
+    "DatadogRUM/Private",
+    "DatadogRUM/Resources"
+  ],
+  "build": {
+    "developer": "/Applications/Xcode.app/Contents/Developer",
+    "version": "26.6",
+    "build": "17F113",
+    "sdk": "26.5",
+    "deployment": "15.0",
+    "configuration": "Release",
+    "architecture": "arm64"
+  },
+  "runtime": {
+    "developer": "/Applications/Xcode_27.1.app/Contents/Developer",
+    "version": "17.5",
+    "build": "21F79",
+    "device": "iPad; rediscover exact identifier and initial state"
+  },
+  "matrix": [
+    {
+      "arm": "baseline",
+      "mode": "lifecycle-automatic"
+    },
+    {
+      "arm": "candidate",
+      "mode": "lifecycle-automatic"
+    },
+    {
+      "arm": "baseline",
+      "mode": "lifecycle-manual"
+    },
+    {
+      "arm": "candidate",
+      "mode": "lifecycle-manual"
+    }
+  ],
+  "fixture": "Existing observed_lifecycle_source with real first/second didBecomeActive plus UIApplication.active waits replacing the fixed500ms delay. Ordinary navigation unchanged.",
+  "readiness": "Reuse the four accepted navigation cells only after exact source/fixture/product/result checks. First baseline automatic lifecycle cell qualifies the corrected activation boundary before the candidate lifecycle build; stop on any invalid cell.",
+  "decisive": [
+    "Exact SDK/source/helper/compiler/product/installed identities, actual SDK26.5 and deployment15, no UIApplicationSceneManifest.",
+    "Three Home/Detail/freshHome occurrences and exact Action/Resource owners; no duplicates or lost stops.",
+    "Actual OS background by foregrounding Settings only after run-bound Home readiness; reactivation of the same process only after actual background notification. Never synthesize lifecycle.",
+    "Actual [active,background,foreground,active] order; automatic gets a fresh Home, manual retains its Home. Preserve PID, run ID and raw boundary events.",
+    "Complete eight unique cells and exact normalized A/B signatures; independent cleanup and original simulator state restoration."
+  ],
+  "budgets_seconds": {
+    "preparation": 120,
+    "build_per_variant": 900,
+    "boot": 120,
+    "native_per_cell": 120,
+    "cleanup_per_cell": 60,
+    "final_cleanup": 120,
+    "stage": 3600
+  },
+  "attempts_per_cell": 1,
+  "deadline_extension": false,
+  "backend": "Mapper ownership only, using the existing no-credentials local fixture endpoint. No backend-ingestion claim or Datadog query required.",
+  "review": "Designated reviewer confirms eight no-scene cells are sufficient for this remaining legacy obligation; no extra Scene target.",
+  "limits": [
+    "This continuation does not repeat or replace EXP225 ordinary scene API proof.",
+    "S3:C06 remains subject to F01 approval and final source binding; no full release closure,15/16 runtime, physical topology, performance or S2 claim."
+  ],
+  "native_admitted": false,
+  "gates_closed": [],
+  "reuse": "native-qualified retains4 navigation passes, baseline lifecycle INVALID and three unrun lifecycle cells. Original summary/logs/results remain immutable; only the four newly built lifecycle cells execute.",
+  "discriminator": "Readiness includes initial actual didBecomeActive; resumed markers require the second actual didBecomeActive. Terminal ownership/order oracle remains unchanged; no synthetic lifecycle or sleep-based readiness."
+}

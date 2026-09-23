@@ -121,3 +121,12 @@ unchanged definition/source/protected files and only the reviewed classifier/tes
 helper delta. Original summaries and logs remain immutable; the build tree is
 reused for remaining variants and reverified, including previously built products
 and objects. This does not retry a native cell or renew an old deadline.
+
+The four-cell lifecycle continuation uses `legacy17_lifecycle.py --root <new-root>
+--accepted-navigation <qualified-navigation-root>`. It requires the separately
+frozen lifecycle definition and the exact retained pre-active marker failure.
+Readiness waits for the first actual active notification and emits its initial
+markers afterward; resumed markers wait for the second active notification. The
+strict terminal oracle is unchanged. Existing navigation results are reused only
+with their complete source/build/compiler/product/result/cleanup bindings; only
+two lifecycle products are built. The stage budget is3600 seconds.

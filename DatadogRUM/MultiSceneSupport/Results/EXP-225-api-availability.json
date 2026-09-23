@@ -431,7 +431,7 @@
   ],
   "legacy17_continuation": {
     "definition": "Results/EXP-225-legacy17-definition.json",
-    "state": "REVIEWED_CLASSIFIER_REUSE_READY",
+    "state": "REVIEWED_LIFECYCLE_CONTINUATION_READY",
     "scope": "Eight source-paired no-scene navigation/lifecycle cells; preserve original API acceptance and failed attempts. No new experiment number or gate closure.",
     "evidence_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r",
     "offline_controls": {
@@ -443,8 +443,8 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/scoped-review.json",
       "sha256": "aa66e862c52245c94c0fcb9da17e6c27f3e09bfe0076bb04c1665dd32a2e17ca"
     },
-    "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/qualification",
-    "runner_commit": "f2d296afa3510f62613e495a67f78c93fee338e4",
+    "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/native-qualified",
+    "runner_commit": "241a006403f38f4deea53942fd9a2c675e5b4780",
     "attempts": [
       {
         "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/qualification",
@@ -452,6 +452,16 @@
         "reason": "Exact Swift compiler path assumed Xcode27 suffix; actual26.6 build uses .build, not -t.build.",
         "summary_sha256": "fcfa4e6966a144c70371afd9639af5c4a61b4ba59d7fd64c17a726d49c2dee7f",
         "native_cells": 0,
+        "cleanup": "PASS"
+      },
+      {
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/native-qualified",
+        "status": "INVALID",
+        "reason": "Baseline fixture emitted post-foreground markers before actual didBecomeActive; candidate lifecycle not run.",
+        "summary_sha256": "76b7c567d362135f85576fa7fcc8b381011ea07033e20da5b3a60e3a19ba285a",
+        "passed_navigation": 4,
+        "lifecycle_executed": 1,
+        "lifecycle_unrun": 3,
         "cleanup": "PASS"
       }
     ],
@@ -463,6 +473,11 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/classifier-review/summary.json",
       "sha256": "20a4f38d520ce85daf6423ef67a43c3fc37b94c9ae63e78a9bfcf202cb567f4f"
     },
-    "current_controls": 31
+    "current_controls": 37,
+    "lifecycle_definition": "Results/EXP-225-legacy17-lifecycle-definition.json",
+    "activation_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/activation-review.json",
+      "sha256": "cca3d173ee8f9300ec72f3e6489f2ffbed17ee597be4494f42f6dad8cdcaf031"
+    }
   }
 }

@@ -198,8 +198,9 @@ class Runner(legacy.Runner):
                 elif p.is_relative_to(folder/'Sources') or p.is_relative_to(folder/'LifecycleSources'):fixture.setdefault(target,set()).add(str(p.relative_to(folder)))
                 else:require(target in ['DatadogCore','DatadogRUM'] and p==target_root/'DerivedSources/resource_bundle_accessor.swift','foreign compiler input')
         require(sdk=={n for n in self.frozen[arm]['sdk'] if n.endswith('.swift') and n!='Package.swift'},'incomplete SDK compiler membership')
-        expected={'FixtureLegacy':{'Sources/App.swift'}}
-        if variant=='Lifecycle':expected['FixtureLegacyLifecycle']={'LifecycleSources/App.swift'}
+        expected={}
+        if arm+'/Navigation' in self.summary['builds']:expected['FixtureLegacy']={'Sources/App.swift'}
+        if arm+'/Lifecycle' in self.summary['builds']:expected['FixtureLegacyLifecycle']={'LifecycleSources/App.swift'}
         require(fixture==expected,'wrong fixture compiler membership')
         clang={}
         for row in commands:
@@ -212,8 +213,8 @@ class Runner(legacy.Runner):
                 require(obj.is_relative_to(derived) and 'Release-iphonesimulator' in obj.parts and obj.parent.name=='arm64','foreign C/Objective-C compiler output')
                 clang[str(obj.relative_to(folder))]=dict(source=str(source),sha256=shared.sha(source),object_sha256=shared.sha(obj))
         expected_c={str(folder/'sdk'/n) for n in self.frozen[arm]['sdk'] if n.endswith(('.c','.m'))}
-        expected_c.add(str(folder/'Sources/AllocationCounter.c'))
-        if variant=='Lifecycle':expected_c.add(str(folder/'LifecycleSources/AllocationCounter.c'))
+        if 'FixtureLegacy' in expected:expected_c.add(str(folder/'Sources/AllocationCounter.c'))
+        if 'FixtureLegacyLifecycle' in expected:expected_c.add(str(folder/'LifecycleSources/AllocationCounter.c'))
         require({v['source'] for v in clang.values()}==expected_c,'incomplete C/Objective-C compiler membership')
         record.update(compiler_lists=lists,clang=clang,full_product=shared.product(record['app'],record['bundle']))
         record['compiled_objects']={str(p.relative_to(folder)):shared.sha(p) for p in derived.rglob('*.o')}
@@ -348,18 +349,20 @@ class Runner(legacy.Runner):
             require(time.time()<self.summary['stage_deadline'],'final evidence after stage deadline')
             self.summary['status']=matrix(self.summary['cases'])
         except Exception as error:self.summary['status']='INVALID';self.summary['error']=str(error)
-        finally:
-            self.phase('final_cleanup',cleanup=True)
-            try:
-                for version in self.booted:self.command('restore-shutdown',['xcrun','simctl','shutdown',self.summary['devices'][version]['udid']])
-                if self.summary['devices']:
-                    _,raw=self.command('restored-devices',['xcrun','simctl','list','devices','--json'])
-                    restored_states(self.summary['devices'],json.loads(raw))
-                self.summary['final_cleanup']='PASS';self.verify_inputs()
-            except Exception as error:self.summary['final_cleanup']='INVALID';self.summary['cleanup_error']=str(error);self.summary['status']='INVALID'
-            self.summary['finished_at']=legacy.now();self.summary['gates_closed']=[];self.save()
-            print(json.dumps({k:self.summary[k] for k in ['status','artifact_root','final_cleanup','gates_closed']}),flush=True)
+        finally:self.finish()
         return self.summary['status']=='PASS'
+
+    def finish(self):
+        self.phase('final_cleanup',cleanup=True)
+        try:
+            for version in self.booted:self.command('restore-shutdown',['xcrun','simctl','shutdown',self.summary['devices'][version]['udid']])
+            if self.summary['devices']:
+                _,raw=self.command('restored-devices',['xcrun','simctl','list','devices','--json'])
+                restored_states(self.summary['devices'],json.loads(raw))
+            self.summary['final_cleanup']='PASS';self.verify_inputs()
+        except Exception as error:self.summary['final_cleanup']='INVALID';self.summary['cleanup_error']=str(error);self.summary['status']='INVALID'
+        self.summary['finished_at']=legacy.now();self.summary['gates_closed']=[];self.save()
+        print(json.dumps({k:self.summary[k] for k in ['status','artifact_root','final_cleanup','gates_closed']}),flush=True)
 
 
 if __name__=='__main__':
