@@ -87,3 +87,30 @@ python3 -B -m unittest discover -s tools/multi-scene/api-availability -p test_co
 Offline negative controls exercise the same strict oracle. They qualify rejection
 logic, not a simulator or SDK. Results and failed attempts belong in the experiment
 record, not this procedure.
+
+## Older legacy lifecycle comparison
+
+`legacy17.py` runs the separately defined eight-cell baseline/current continuation
+for C06. It uses the existing navigation/lifecycle ownership oracle with genuine
+SDK26.5 Release builds targeting15 on the discovered17.5 iPad simulator. There is
+no scene manifest. The first baseline navigation cell qualifies the mechanism
+before the candidate build. Every cell has one attempt; a failed cell stops later
+execution. This is separate from the ordinary API client above.
+
+```bash
+python3 -B tools/multi-scene/api-availability/legacy17.py --root <new-output>
+```
+
+Commit reviewed definition and helper inputs before admission. The runner freezes
+complete source trees, exact Swift/C compiler membership, compiled objects, built
+and installed products, and all protected workspace paths. Each fixture receipt
+contains the launch PID and fresh run ID. Lifecycle readiness precedes the Settings
+launch; actual background notification precedes reactivation of the same process.
+Raw publications are retained before decoding. Exact ownership, counts and order
+must match across the two arms.
+
+Native cells have120 seconds, cleanup60 seconds and final restoration120 seconds;
+builds have900 seconds each within the fixed5400-second stage. Cleanup retains its
+independent budget after an expired work deadline. The runner removes only its task
+app and restores the original simulator boot state. Scenario, evidence and cleanup
+verdicts remain separate. No backend, iOS15/16 runtime, physical or RFC claim follows.
