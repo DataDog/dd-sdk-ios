@@ -28,7 +28,7 @@ def protected():
     return result
 
 
-def prepare(root):
+def prepare(root, *, fixture_directory=HERE, multiple_scenes=False):
     require(not root.exists(), 'output already consumed')
     state = protected(); root.mkdir()
     sdk = root / 'sdk'; client = root / 'client'; client.mkdir(); sdk.mkdir()
@@ -39,13 +39,13 @@ def prepare(root):
     package = module.package().replace('.unsafeFlags(["-enable-testing"])', '.define("DD_SCENE_API_VALIDATION")')
     require('-enable-testing' not in package and 'DD_SCENE_API_VALIDATION' in package, 'incorrect validation settings')
     (sdk / 'Package.swift').write_text(package)
-    for name in FILES: shutil.copy2(HERE / name, client / name)
+    for name in FILES: shutil.copy2(fixture_directory / name, client / name)
     source = digest(shared.tree(sdk))
     info = dict(CFBundleName='APIClient', CFBundleDisplayName='API validation', CFBundleIdentifier='$(PRODUCT_BUNDLE_IDENTIFIER)',
                 CFBundleExecutable='$(EXECUTABLE_NAME)', CFBundlePackageType='APPL', CFBundleVersion='1', CFBundleShortVersionString='1.0',
                 UILaunchScreen={}, LSRequiresIPhoneOS=True, UIFileSharingEnabled=True, FixtureSource=source,
                 NSAppTransportSecurity={'NSAllowsArbitraryLoads': True},
-                UIApplicationSceneManifest={'UIApplicationSupportsMultipleScenes': False, 'UISceneConfigurations': {
+                UIApplicationSceneManifest={'UIApplicationSupportsMultipleScenes': multiple_scenes, 'UISceneConfigurations': {
                     'UIWindowSceneSessionRoleApplication': [{'UISceneConfigurationName': 'Default', 'UISceneDelegateClassName': '$(PRODUCT_MODULE_NAME).SceneDelegate'}]}})
     (client / 'Info.plist').write_bytes(plistlib.dumps(info))
     settings = dict(PRODUCT_BUNDLE_IDENTIFIER=BUNDLE, SWIFT_VERSION='5.0', GENERATE_INFOPLIST_FILE='NO', INFOPLIST_FILE='Info.plist',
@@ -58,7 +58,8 @@ def prepare(root):
                 schemes={'APIClient': {'build': {'targets': {'APIClient': 'all'}}, 'run': {'config': 'Release'}}}), exclusive=True)
     shared.command(['xcodegen', 'generate', '--spec', 'project.json'], root, 'generate', deadline=time.time()+60, cwd=client)
     shared.save(root / 'plan.json', dict(source=source, sdk=shared.tree(sdk), client=shared.tree(client), protected=state,
-                fixture={n: shared.sha(HERE/n) for n in FILES}, native_admitted=False), exclusive=True)
+                fixture={n: shared.sha(fixture_directory/n) for n in FILES}, fixture_directory=str(fixture_directory),
+                multiple_scenes=multiple_scenes, native_admitted=False), exclusive=True)
     verify(root)
 
 
@@ -66,7 +67,9 @@ def verify(root):
     plan = shared.read(root / 'plan.json')
     require(protected() == plan['protected'], 'protected files changed')
     require(shared.tree(root / 'sdk') == plan['sdk'] and shared.tree(root / 'client') == plan['client'], 'build inputs changed')
-    require({n: shared.sha(HERE/n) for n in FILES} == plan['fixture'], 'fixture changed')
+    fixture_directory = Path(plan.get('fixture_directory', str(HERE)))
+    require(fixture_directory in [HERE, HERE/'same-key'], 'unrecognized fixture')
+    require({n: shared.sha(fixture_directory/n) for n in FILES} == plan['fixture'], 'fixture changed')
     for rel, value in plan['sdk'].items():
         if rel != 'Package.swift': require(shared.sha(shared.REPO / rel) == value, 'candidate source changed')
     return plan

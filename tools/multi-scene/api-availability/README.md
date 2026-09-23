@@ -2,7 +2,8 @@
 
 This fixture qualifies the local experimental API implementation for C06 and
 F03 M02/M03. It does not approve F01, promote public API, query Datadog, or replace
-same-key simultaneous-scene, human-input or physical acceptance.
+human-input or physical acceptance. The bounded same-key continuation below provides
+a separate native API ownership check.
 
 The client targets iOS 15 without caller-side OS 27 guards for ordinary APIs.
 Run it on an available ordinary iPhone 27 simulator and the iPad 17.5 simulator,
@@ -130,3 +131,34 @@ markers afterward; resumed markers wait for the second active notification. The
 strict terminal oracle is unchanged. Existing navigation results are reused only
 with their complete source/build/compiler/product/result/cleanup bindings; only
 two lifecycle products are built. The stage budget is3600 seconds.
+
+## Concurrent same-key manual views
+
+`same_key.py` extends this builder and runner with the defined EXP-225 two-cell
+continuation. Read `Results/EXP-225-same-key-definition.json` and qualify its current
+destination before admission. Use a fresh root with `prepare`, then `build`, then
+`swift`, then `objc`, always passing `--root <root>`. The Objective-C cell requires
+the first Swift cell to pass. A failed scene-activation mechanism stops this path;
+there is no equivalent retry or system-preference change.
+
+One optimized product targets15 with the same experimental Swift/local Objective-C
+exposure as the ordinary client. UIKit creates the second scene normally. Both
+actual scenes must be foreground-active, each with its exact appeared root and
+owned key window. Complete window inventories admit auxiliary windows through
+ownership assertions, never a window count or private class name.
+
+Four flushed local-intake checkpoints are validated before their acknowledgments:
+ready, both live, B stopped, A stopped. Both manual views use the same key; their
+view IDs must be distinct and continuous. Three Actions, two Errors, isolated view
+metadata and two delayed Resource completions must retain exact owners. Completing
+a Resource after its view stops is expected; new targeted B work after B stops
+must produce no event or mutation. The final receipt must repeat the exact fresh
+acknowledgments and preserve topology. Raw checkpoint bodies, wire inventories,
+command outputs, source/build/installed identities and separate cleanup verdicts
+remain in the evidence root. This is simulator ownership evidence, not physical
+co-visibility, RFC approval, normal public API or full final-matrix acceptance.
+
+Native cells retain300-second execution and180-second cleanup budgets. Ordinary
+scene activation has one30-second readiness interval; no accepted source or prior
+runtime cells are rerun. `test_same_key.py` owns the focused positive/negative
+controls for this phase oracle and transport identity.

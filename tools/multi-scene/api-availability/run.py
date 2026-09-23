@@ -18,7 +18,7 @@ import contract
 shared=build.shared
 
 
-def run(root, udid, os_version, mode, attempt=None):
+def run(root, udid, os_version, mode, attempt=None, *, qualification=None):
     plan=build.verify(root); built=shared.read(root/'simulator/product.json')
     app=Path(built['path']); contract.require(shared.product(app,build.BUNDLE)==built['product'],'changed product')
     cells=root/'cells'; cells.mkdir(exist_ok=True)
@@ -28,6 +28,11 @@ def run(root, udid, os_version, mode, attempt=None):
     summary=dict(attempt=attempt,run_id=run_id,source=plan['source'],device=udid,runtime=os_version,automatic=mode,started_at=started,
                  execution_deadline=deadline,scenario='NOT_EXECUTED',evidence='INCOMPLETE',cleanup='NOT_STARTED',overall='INVALID')
     helpers={n:shared.sha(Path(__file__).parent/n) for n in ['build.py','run.py','contract.py']}
+    checkpoints=[]; launch_published=threading.Event()
+    if qualification is not None:
+        contract.require(plan.get('multiple_scenes') is True and mode in ['swift','objc'], 'incorrect same-key admission')
+        for name in ['same_key.py','same_key_contract.py']:
+            helpers[name]=shared.sha(Path(__file__).parent/name)
     shared.save(folder/'admission.json',dict(**summary,helpers=helpers,product_sha256=shared.sha(root/'simulator/product.json')),exclusive=True)
     events=[]; http_errors=[]; lock=threading.Lock(); requests_count=0; sealed=False; boundary=None
     request_threads=[]; thread_lock=threading.Lock()
@@ -51,6 +56,29 @@ def run(root, udid, os_version, mode, attempt=None):
         def do_POST(self):
             nonlocal requests_count
             body=self.rfile.read(int(self.headers['Content-Length']))
+            if self.path == '/checkpoint' and qualification is not None:
+                if not launch_published.wait(timeout=10):
+                    http_errors.append('launch identity not published before checkpoint')
+                with lock:
+                    stem='checkpoint-'+str(len(checkpoints))
+                    (folder/(stem+'.bin')).write_bytes(body)
+                    native=None; accepted=None
+                    try:
+                        contract.require(not sealed and time.time()<deadline, 'late checkpoint')
+                        native=json.loads(body)
+                        qualification.validate_envelope(native,run_id,plan['source'],mode,pid,os_version)
+                        accepted=qualification.validate_checkpoint(native,list(events),checkpoints)
+                        ack=dict(run_id=run_id,phase=native['phase'],nonce=str(uuid.uuid4()),event_count=len(events),at=time.time())
+                        checkpoints.append(dict(native=native,events=list(events),ack=ack,assertions=accepted))
+                        shared.save(folder/(stem+'.json'),checkpoints[-1],exclusive=True)
+                        status=200
+                    except Exception as error:
+                        http_errors.append('checkpoint rejected: '+str(error));status=409
+                        ack=dict(failure=str(error))
+                        shared.save(folder/(stem+'-rejected.json'),dict(native=native,events=list(events),failure=str(error)),exclusive=True)
+                    encoded=json.dumps(ack).encode()
+                self.send_response(status);self.send_header('Content-Length',str(len(encoded)));self.end_headers();self.wfile.write(encoded)
+                return
             encoding=self.headers.get('Content-Encoding','identity')
             with lock:
                 if sealed: http_errors.append('request after seal')
@@ -127,9 +155,9 @@ def run(root, udid, os_version, mode, attempt=None):
         contract.require(installed_product==built['product'],'installed code differs')
         container=Path(command(['xcrun','simctl','get_app_container',udid,build.BUNDLE,'data']).stdout.decode().strip())
         output=container/'Documents/result.json';contract.require(not output.exists(),'stale fixture output')
-        launched=command(['xcrun','simctl','launch',udid,build.BUNDLE,'--run-id',run_id,'--endpoint','http://127.0.0.1:'+str(port)+'/rum','--automatic',mode])
+        launched=command(['xcrun','simctl','launch',udid,build.BUNDLE,'--run-id',run_id,'--endpoint','http://127.0.0.1:'+str(port)+'/rum',('--language' if qualification is not None else '--automatic'),mode])
         match=re.fullmatch(re.escape(build.BUNDLE)+r': (\d+)\s*',launched.stdout.decode());contract.require(match,'launch PID missing')
-        pid=int(match[1]);summary['pid']=pid
+        pid=int(match[1]);summary['pid']=pid;launch_published.set()
         while not output.exists():
             contract.require(time.time()<deadline,'result receipt deadline expired')
             time.sleep(.2)
@@ -142,9 +170,13 @@ def run(root, udid, os_version, mode, attempt=None):
             sealed=True;captured=list(events);errors=list(http_errors)
         shared.save(folder/'events.json',captured,exclusive=True);shared.save(folder/'intake-errors.json',errors,exclusive=True)
         contract.require(not errors,'intake decoding failed')
-        contract.require(receipt.get('pre_background')==boundary and boundary is not None,'unbound background boundary')
+        if qualification is None:
+            contract.require(receipt.get('pre_background')==boundary and boundary is not None,'unbound background boundary')
         summary['evidence']='PASS'
-        summary['assertions']=contract.validate(receipt,captured,run_id,plan['source'],mode,pid,os_version)
+        if qualification is None:
+            summary['assertions']=contract.validate(receipt,captured,run_id,plan['source'],mode,pid,os_version)
+        else:
+            summary['assertions']=qualification.validate(receipt,captured,checkpoints,run_id,plan['source'],mode,pid,os_version)
         summary['scenario']='PASS'
         contract.require(time.time()<deadline,'late final assertion')
     except Exception as error:

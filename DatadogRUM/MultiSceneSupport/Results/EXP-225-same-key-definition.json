@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-225",
+  "continuation": "concurrent native same-key API",
+  "defined_at": "2026-09-23T12:52:33.551667+00:00",
+  "status": "DEFINED_BEFORE_IMPLEMENTATION",
+  "owner": "SDK implementer",
+  "reviewer": "/root/c06_runtime_plan",
+  "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "gates": [
+    "S3:F01",
+    "S3:F03:M02",
+    "S3:F03:M03"
+  ],
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-same-key-ak36h_b1",
+  "environment": {
+    "xcode": "/Applications/Xcode_27.1.app/Contents/Developer",
+    "sdk": "27.1",
+    "runtime": "27.0",
+    "device": "D8DA372C-56E5-4B19-9208-0576CA3614F8",
+    "name": "iPad Pro 13-inch (M5) (16GB)",
+    "initial_state": "Shutdown",
+    "deployment": "15.0"
+  },
+  "cells": [
+    "swift",
+    "objc"
+  ],
+  "build": {
+    "configuration": "Release",
+    "optimization": "-O",
+    "testability": false,
+    "swift_exposure": "Experimental SPI",
+    "objc_exposure": "DD_SCENE_API_VALIDATION dedicated local condition"
+  },
+  "scope": [
+    "One candidate product and two clean-install cells; A/B are scene owners, not SDK arms",
+    "Create a genuine second UIWindowScene through ordinary UIKit activation; no SDK-state injection or synthetic lifecycle notifications",
+    "Both exact scene/window/root-controller chains foregroundActive and mounted before first API call, overlap, stop B and stop A",
+    "Start identical manual view key in A then B; wire evidence must show two distinct simultaneously live view IDs",
+    "Targeted Action/Error and unique app-wide Resource starts belong to their scene; reverse stop B then A preserves live peer A",
+    "Complete B Resource after B stop and A Resource after A stop with captured start ownership; no new B Action/Error or metadata mutation after B stop",
+    "Full window inventory allows auxiliary windows only while fixture-owned window/controller/key identity stays exact; no count/private-name acceptance rule",
+    "Synchronous flush and server-acknowledged phase evidence before dependent API work; preserve raw wire/native receipts and strict inventories"
+  ],
+  "expected": {
+    "manual_views": 2,
+    "custom_actions": {
+      "A": 2,
+      "B": 1
+    },
+    "errors": {
+      "A": 1,
+      "B": 1
+    },
+    "resources": {
+      "A": 1,
+      "B": 1
+    },
+    "stop_order": [
+      "B",
+      "A"
+    ],
+    "phases": [
+      "ready",
+      "overlap",
+      "stopped-B",
+      "stopped-A"
+    ]
+  },
+  "attempt_limit": {
+    "builds": 1,
+    "native_per_cell": 1,
+    "first_cell": "swift",
+    "stop_automated_path_on_topology_failure": true
+  },
+  "budgets_seconds": {
+    "build": 900,
+    "native_cell": 300,
+    "topology": 30,
+    "cleanup": 180
+  },
+  "reuse": [
+    "Original four API cells cover all ordinary forms, fallback and ObjC off-main behavior",
+    "Legacy17.5 8/8 compatibility result unchanged"
+  ],
+  "excluded": [
+    "Production SDK edits",
+    "F01 approval/public promotion or full F03 closure",
+    "Physical co-visibility, device performance or S2 human gate credit",
+    "Changing system preferences, undocumented UI input, equivalent input diagnostics or retry"
+  ],
+  "gate_closures": []
+}

@@ -59,6 +59,22 @@ delay. That original INVALID also remains. The separately reviewed continuation
 waits for real first/second activation and passes the four lifecycle cells without
 changing the SDK or weakening the terminal oracle. These are fixture findings.
 
+## Concurrent native API preparation
+
+The [same-key definition](../Results/EXP-225-same-key-definition.json) admits one
+candidate build and two clean-install cells, Swift then Objective-C. Both actual
+scene/window/controller chains must be foreground-active before API work. The
+existing runner now validates four local-intake checkpoints before acknowledging
+the next phase. It requires distinct live same-key owners, reverse stop, live peer
+continuity and exact Action/Error/Resource/metadata ownership. Delayed Resource
+completion after view stop remains expected. This is provisional local API proof;
+normal public exposure, physical co-visibility and final matrix credit stay separate.
+
+Preparation adds33 focused controls; the original12 API oracle controls still pass.
+The scoped review required fresh activation-request binding and exact candidate
+revision/blob binding; both are implemented before admission. No native result is
+implied by preparation. The owning result records the review and execution outcome.
+
 ## Remaining boundary
 
 No release gate closes. Local SPI/header validation is not normal public API
