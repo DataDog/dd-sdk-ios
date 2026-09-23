@@ -113,6 +113,21 @@ struct SemanticObservationTests {
         ))
     }
 
+    @Test("Records Metal content as unsupported and ignores sublayers")
+    func recordsMetalContentAsUnsupportedAndIgnoresSublayers() {
+        // Given
+        let layer = CAMetalLayer()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(
+            semantics: .unsupported("Metal"),
+            ignoresSublayers: true
+        ))
+    }
+
     @Test("Records linear gradient semantics")
     func recordsLinearGradientSemantics() throws {
         // Given
