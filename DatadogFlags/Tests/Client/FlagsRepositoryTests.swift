@@ -86,6 +86,7 @@ final class FlagsRepositoryTests: XCTestCase {
 
     func testOverlappingContextUpdates_whenSuccessesArriveInEitherOrder_preservesNewerFlags() {
         for responseOrder in [[0, 1], [1, 0]] {
+            let featureScope = FeatureScopeMock()
             var completions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
             let repository = FlagsRepository(
                 clientName: "client",
@@ -98,15 +99,31 @@ final class FlagsRepositoryTests: XCTestCase {
             defer { repository.flush() }
             let olderContext = FlagsEvaluationContext(targetingKey: "user-A")
             let newerContext = FlagsEvaluationContext(targetingKey: "user-B")
-            var completed = 0
-            repository.setEvaluationContext(olderContext) { _ in completed += 1 }
-            repository.setEvaluationContext(newerContext) { _ in completed += 1 }
+            var callbackCounts = [0, 0]
+            for (index, context) in [olderContext, newerContext].enumerated() {
+                repository.setEvaluationContext(context) { result in
+                    if case .failure(let error) = result {
+                        XCTFail("Expected the original success, got \(error)")
+                    }
+                    callbackCounts[index] += 1
+                }
+            }
 
             for index in responseOrder {
                 completions[index](.success([index == 0 ? "old" : "new": .mockAny()]))
+
+                if index == 0 && responseOrder[0] == 0 {
+                    XCTAssertEqual(callbackCounts, [1, 0])
+                    XCTAssertEqual(repository.state.currentState, .reconciling)
+                    XCTAssertNil(repository.context)
+                    XCTAssertNil(repository.flagAssignments())
+                    repository.flush()
+                    featureScope.dataStore.flush()
+                    XCTAssertNil(featureScope.dataStoreMock.storage["client"]?.data())
+                }
             }
 
-            XCTAssertEqual(completed, 2)
+            XCTAssertEqual(callbackCounts, [1, 1])
             XCTAssertEqual(repository.context, newerContext)
             XCTAssertEqual(repository.state.currentState, .ready)
             XCTAssertNotNil(repository.flagAssignment(for: "new"))

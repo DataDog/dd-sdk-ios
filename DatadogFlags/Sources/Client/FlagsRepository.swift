@@ -112,7 +112,6 @@ internal final class FlagsRepository {
         var cachedFlagsData: FlagsData?
         var flagsDataVersion: UInt64 = 0
         var contextUpdateID: UInt64 = 0
-        var lastAppliedContextUpdateID: UInt64 = 0
         var hasStartedEvaluationContextRequest = false
         var reconcilingContext: FlagsEvaluationContext?
         var pendingDiskReadCallbacks: [PendingCacheReadCallback] = []
@@ -334,7 +333,6 @@ internal final class FlagsRepository {
                 return
             }
 
-            state.lastAppliedContextUpdateID = contextUpdateID
             state.reconcilingContext = nil
 
             // Only use cached flags if they match the requested context to avoid
@@ -444,11 +442,10 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 var versionAfterSuccess: UInt64?
                 var callbacks: [PendingCacheReadCallback] = []
                 self._repositoryState.mutate { state in
-                    // Concurrent delivery must not let an older success replace a newer result.
-                    guard contextUpdateID >= state.lastAppliedContextUpdateID else {
+                    // Only the latest request can install assignments or end reconciliation.
+                    guard contextUpdateID == state.contextUpdateID else {
                         return
                     }
-                    state.lastAppliedContextUpdateID = contextUpdateID
                     state.flagsData = flagsData
                     state.cachedFlagsData = flagsData
                     state.flagsDataVersion += 1
@@ -490,7 +487,6 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             state.cachedFlagsData = nil
             state.flagsDataVersion += 1
             state.contextUpdateID += 1
-            state.lastAppliedContextUpdateID = state.contextUpdateID
             state.reconcilingContext = nil
             callbacks = state.finishWaitingForInitialFlagsData()
         }
