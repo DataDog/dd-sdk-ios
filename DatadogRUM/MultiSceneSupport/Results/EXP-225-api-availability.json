@@ -63,7 +63,7 @@
   },
   "native_admitted": false,
   "gate_closures": [],
-  "next_action": "Qualify the defined two-scene same-key local API slice after scoped review. EXP224 automatic capture stays stopped; F01 public promotion and the full final matrix remain open.",
+  "next_action": "Keep same-key native qualification pending actual concurrent two-window setup in the ordered human session. Preserve local API and8/8 legacy17.5 evidence; assess source-matched reuse/preparation for the remaining F03 matrix without public promotion or redundant native retries.",
   "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_",
   "native_qualification": {
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/release-client-06",
@@ -76,7 +76,7 @@
     "review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/review-admission.json",
     "source": "d6f6967e5ebd0e87ea639505b5e5d62e44becfcf698ee767cf304b8aa661e6fc"
   },
-  "updated_at": "2026-09-23T13:03:34.753870+00:00",
+  "updated_at": "2026-09-23T13:10:11.805518+00:00",
   "sdk_source": "d6f6967e5ebd0e87ea639505b5e5d62e44becfcf698ee767cf304b8aa661e6fc",
   "implementation_sha256": {
     "DatadogRUM/Sources/RUMMonitorProtocol+Convenience.swift": "d9712a5d8e3d93801ec90a304d535048addb0830b271ec9ad8c879888edfedb2",
@@ -492,7 +492,7 @@
     "next": "Qualify concurrent native same-key Swift/Objective-C ownership locally; F01/public exposure and full F03 matrix remain separate."
   },
   "same_key_continuation": {
-    "status": "REVIEWED_PREPARED",
+    "status": "TOPOLOGY_PREREQUISITE_NOT_ESTABLISHED",
     "definition": "Results/EXP-225-same-key-definition.json",
     "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-same-key-ak36h_b1",
     "native_admitted": false,
@@ -503,6 +503,13 @@
     "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
     "offline_controls": 33,
     "prior_oracle_controls": 12,
-    "review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-same-key-ak36h_b1/scoped-review.json"
+    "review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-same-key-ak36h_b1/scoped-review.json",
+    "result": "Results/EXP-225-same-key-result.json",
+    "native_active": false,
+    "build": "PASS",
+    "swift": "INVALID_BEFORE_API_CALLS",
+    "objc": "NOT_EXECUTED",
+    "cleanup": "PASS",
+    "automatic_path": "STOPPED_NO_EQUIVALENT_RETRY"
   }
 }

@@ -72,8 +72,13 @@ normal public exposure, physical co-visibility and final matrix credit stay sepa
 
 Preparation adds33 focused controls; the original12 API oracle controls still pass.
 The scoped review required fresh activation-request binding and exact candidate
-revision/blob binding; both are implemented before admission. No native result is
-implied by preparation. The owning result records the review and execution outcome.
+revision/blob binding; both are implemented and accepted before admission. The optimized deployment15
+build passes for arm64/x86_64. The [native result](../Results/EXP-225-same-key-result.json)
+is INVALID before API work: UIKit connected the fresh B scene but backgrounded A.
+No checkpoint or targeted call executed. Objective-C was skipped, task cleanup and
+Shutdown restoration pass, and the automatic path is stopped. This proves neither
+an SDK regression nor same-key acceptance. Actual concurrent-window setup remains
+a prerequisite for the already-planned human session.
 
 ## Remaining boundary
 

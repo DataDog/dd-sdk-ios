@@ -1,0 +1,357 @@
+{
+  "schema_version": 1,
+  "gate": "S3:F03",
+  "status": "PROVISIONAL_SOURCE_REUSE_ASSESSMENT",
+  "at": "2026-09-23T13:13:51.285600+00:00",
+  "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "release_approval": "F01 remains required for public promotion and final source-bound closure",
+  "native_active": false,
+  "builds_admitted": 0,
+  "prior_full_matrix": {
+    "owner": "Results/EXP-217-s2-compatibility.json",
+    "production": "c9faed816a1d4828d7d8c4b64acae01119425889",
+    "disposition": "Retain accepted S2 evidence only. Core/Internal, production/test inputs and package/build settings differ; no whole S3 module/platform result inherits that pass."
+  },
+  "module_delta": {
+    "DatadogCore": {
+      "paths": [
+        "DatadogCore/Private/ObjcAppLaunchHandler.m",
+        "DatadogCore/Sources/Core/Context/ApplicationStatePublisher.swift",
+        "DatadogCore/Sources/Core/Context/LaunchInfoPublisher.swift",
+        "DatadogCore/Sources/Core/Context/iOS/AppStateProvider.swift",
+        "DatadogCore/Sources/Core/Context/macOS/AppStateProvider_macOS.swift",
+        "DatadogCore/Sources/Core/Context/macOS/ApplicationStatePublisher_macOS.swift",
+        "DatadogCore/Sources/Core/Context/macOS/MacOSApplicationStateProvider.swift",
+        "DatadogCore/Sources/Core/Context/macOS/NSRunningApplication+AppStateUtilities.swift",
+        "DatadogCore/Sources/Core/Context/macOS/NSWorkspace+AppStateUtilities.swift",
+        "DatadogCore/Sources/Core/DatadogCore.swift",
+        "DatadogCore/Sources/Core/RemoteConfigurationProvider.swift",
+        "DatadogCore/Sources/Datadog.swift",
+        "DatadogCore/Sources/DatadogConfiguration.swift",
+        "DatadogCore/Tests/Datadog/Core/RemoteConfigurationTests.swift",
+        "DatadogCore/Tests/Datadog/Core/Upload/AppBackgroundTaskCoordinatorTests.swift",
+        "DatadogCore/Tests/Datadog/Core/Upload/ExtensionBackgroundTaskCoordinatorTests.swift",
+        "DatadogCore/Tests/Datadog/DatadogConfigurationTests.swift",
+        "DatadogCore/Tests/Datadog/DatadogCore/Context/ApplicationStatePublisherTests.swift",
+        "DatadogCore/Tests/Datadog/DatadogCore/Context/CarrierInfoPublisherTests.swift",
+        "DatadogCore/Tests/Datadog/DatadogCore/Context/LaunchInfoPublisherTests.swift",
+        "DatadogCore/Tests/Datadog/DatadogCore/Context/iOS/AppStateTests.swift",
+        "DatadogCore/Tests/Datadog/DatadogCore/Context/macOS/ApplicationStatePublisherTests_macOS.swift",
+        "DatadogCore/Tests/Datadog/DatadogCore/DatadogCoreTests.swift",
+        "DatadogCore/Tests/Datadog/DatadogCore/MessageBusTests.swift",
+        "DatadogCore/Tests/Datadog/RUM/Integrations/CrashReportReceiverTests.swift",
+        "DatadogCore/Tests/Datadog/RUM/RUMMonitorTests.swift",
+        "DatadogCore/Tests/Datadog/RUM/RUMVitals/DisplayLinkerTests.swift",
+        "DatadogCore/Tests/Datadog/RUM/RUMVitals/VitalCPUReaderTests.swift",
+        "DatadogCore/Tests/Datadog/RUM/RUMVitals/VitalInfoSamplerTests.swift",
+        "DatadogCore/Tests/Datadog/RUM/RUMVitals/VitalRefreshRateReaderTests.swift",
+        "DatadogCore/Tests/Datadog/RUM/UIKitRUMViewsPredicateTests.swift",
+        "DatadogCore/Tests/Datadog/RUM/UIViewControllerSwizzlerTests.swift",
+        "DatadogCore/Tests/Datadog/Utils/SwiftUIExtensionsTests.swift",
+        "DatadogCore/Tests/Datadog/Utils/UIKitExtensionsTests.swift",
+        "DatadogCore/Tests/Helpers/CustomObjcViewController.h",
+        "DatadogCore/Tests/Objc/DDCoreTestPlatformTypes.swift",
+        "DatadogCore/Tests/Objc/DDRUMConfigurationTests.swift",
+        "DatadogCore/Tests/Objc/DDRUMMonitorTests.swift",
+        "DatadogCore/Tests/Objc/DDSwiftUIRUMActionsPredicateTests.swift",
+        "DatadogCore/Tests/Objc/DDUIKitRUMActionsPredicateTests.swift",
+        "DatadogCore/Tests/Objc/DDUIKitRUMViewsPredicateTests.swift",
+        "DatadogCore/Tests/Objc/ObjcAPITests/DDRUM+apiTests.m",
+        "DatadogCore/Tests/Objc/ObjcAPITests/DDRUMMonitor+apiTests.m"
+      ],
+      "count": 43
+    },
+    "DatadogInternal": {
+      "paths": [
+        "DatadogInternal/Sources/Context/AppState.swift",
+        "DatadogInternal/Sources/Context/ApplicationNotifications.swift",
+        "DatadogInternal/Sources/Context/DeviceInfo.swift",
+        "DatadogInternal/Sources/Context/WorkspaceNotifications.swift",
+        "DatadogInternal/Sources/CoreRegistry.swift",
+        "DatadogInternal/Sources/DDPlatformTypes.swift",
+        "DatadogInternal/Sources/Heatmaps/HeatmapIdentifierRegistry.swift",
+        "DatadogInternal/Sources/MessageBus/FeatureMessage.swift",
+        "DatadogInternal/Sources/Models/RUM/RUMSessionSamplerProvider.swift",
+        "DatadogInternal/Sources/NetworkInstrumentation/DatadogURLSessionHandler.swift",
+        "DatadogInternal/Sources/NetworkInstrumentation/NetworkContext.swift",
+        "DatadogInternal/Sources/NetworkInstrumentation/NetworkContextProvider.swift",
+        "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift",
+        "DatadogInternal/Sources/NotificationCenterProvider.swift",
+        "DatadogInternal/Sources/Utils/SwiftExtensions.swift",
+        "DatadogInternal/Sources/Utils/UIKitExtensions.swift",
+        "DatadogInternal/Tests/Context/AppStateHistoryTests.swift",
+        "DatadogInternal/Tests/Context/DeviceInfoTests.swift",
+        "DatadogInternal/Tests/CoreRegistryTest.swift",
+        "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift",
+        "DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift"
+      ],
+      "count": 23
+    },
+    "DatadogRUM": {
+      "paths": [
+        "DatadogRUM/Sources/DDPlatformTypes.swift",
+        "DatadogRUM/Sources/Debugging/RUMDebugging.swift",
+        "DatadogRUM/Sources/Feature/RUMFeature.swift",
+        "DatadogRUM/Sources/Heatmaps/HeatmapIdentifierStore.swift",
+        "DatadogRUM/Sources/Instrumentation/Actions/AppKit/AppKitApplicationInstrumentation.swift",
+        "DatadogRUM/Sources/Instrumentation/Actions/AppKit/AppKitEventCommandFactory.swift",
+        "DatadogRUM/Sources/Instrumentation/Actions/AppKit/AppKitRUMActionsHandler.swift",
+        "DatadogRUM/Sources/Instrumentation/Actions/AppKit/AppKitRUMUserActionsPredicate.swift",
+        "DatadogRUM/Sources/Instrumentation/Actions/RUMActionsHandler.swift",
+        "DatadogRUM/Sources/Instrumentation/Actions/RUMScrollHandler.swift",
+        "DatadogRUM/Sources/Instrumentation/Actions/SwiftUI/LegacySwiftUIComponentDetector.swift",
+        "DatadogRUM/Sources/Instrumentation/Actions/SwiftUI/ModernSwiftUIComponentDetector.swift",
+        "DatadogRUM/Sources/Instrumentation/Actions/SwiftUI/SwiftUIActionModifier.swift",
+        "DatadogRUM/Sources/Instrumentation/Actions/SwiftUI/SwiftUIComponentDetector.swift",
+        "DatadogRUM/Sources/Instrumentation/Actions/SwiftUI/SwiftUIRUMActionsPredicate.swift",
+        "DatadogRUM/Sources/Instrumentation/Actions/SwiftUI/macOS/AccessibilityHierarchyDetector.swift",
+        "DatadogRUM/Sources/Instrumentation/Actions/SwiftUI/macOS/MacOSAccessibilityHierarchyDetector.swift",
+        "DatadogRUM/Sources/Instrumentation/Actions/UIKit/UIApplicationSwizzler.swift",
+        "DatadogRUM/Sources/Instrumentation/Actions/UIKit/UIEventCommandFactory.swift",
+        "DatadogRUM/Sources/Instrumentation/Actions/UIKit/UIKitRUMUserActionsPredicate.swift",
+        "DatadogRUM/Sources/Instrumentation/Actions/UIKit/UIRUMActionsHandler.swift",
+        "DatadogRUM/Sources/Instrumentation/AppState/AppStateInfo.swift",
+        "DatadogRUM/Sources/Instrumentation/AppState/AppStateManager.swift",
+        "DatadogRUM/Sources/Instrumentation/MemoryWarnings/MemoryWarningMonitor.swift",
+        "DatadogRUM/Sources/Instrumentation/MemoryWarnings/MemoryWarningReporter.swift",
+        "DatadogRUM/Sources/Instrumentation/RUMCommandSubscriber.swift",
+        "DatadogRUM/Sources/Instrumentation/RUMInstrumentation.swift",
+        "DatadogRUM/Sources/Instrumentation/Resources/URLSessionRUMResourcesHandler.swift",
+        "DatadogRUM/Sources/Instrumentation/Views/AppKit/AppKitRUMViewsPredicate.swift",
+        "DatadogRUM/Sources/Instrumentation/Views/AppKit/AppKitViewControllerHandler.swift",
+        "DatadogRUM/Sources/Instrumentation/Views/AppKit/AppKitViewControllerSwizzler.swift",
+        "DatadogRUM/Sources/Instrumentation/Views/RUMViewsHandler.swift",
+        "DatadogRUM/Sources/Instrumentation/Views/SwiftUI/SwiftUIControllerType.swift",
+        "DatadogRUM/Sources/Instrumentation/Views/SwiftUI/SwiftUIRUMViewsPredicate+objc.swift",
+        "DatadogRUM/Sources/Instrumentation/Views/SwiftUI/SwiftUIViewHandler.swift",
+        "DatadogRUM/Sources/Instrumentation/Views/SwiftUI/SwiftUIViewModifier.swift",
+        "DatadogRUM/Sources/Instrumentation/Views/SwiftUI/SwiftUIViewNameExtractor.swift",
+        "DatadogRUM/Sources/Instrumentation/Views/UIKit/UIKitRUMViewsPredicate.swift",
+        "DatadogRUM/Sources/Instrumentation/Views/UIKit/UIViewControllerHandler.swift",
+        "DatadogRUM/Sources/Instrumentation/Views/UIKit/UIViewControllerSwizzler.swift",
+        "DatadogRUM/Sources/Instrumentation/WatchdogTerminations/WatchdogTerminationChecker.swift",
+        "DatadogRUM/Sources/Instrumentation/WatchdogTerminations/WatchdogTerminationMonitor.swift",
+        "DatadogRUM/Sources/Integrations/ErrorMessageReceiver.swift",
+        "DatadogRUM/Sources/Integrations/FlagEvaluationReceiver.swift",
+        "DatadogRUM/Sources/Integrations/WebViewEventReceiver.swift",
+        "DatadogRUM/Sources/RUM+objc.swift",
+        "DatadogRUM/Sources/RUM.swift",
+        "DatadogRUM/Sources/RUMConfiguration+RemoteConfiguration.swift",
+        "DatadogRUM/Sources/RUMConfiguration.swift",
+        "DatadogRUM/Sources/RUMContext/AccessibilityReader.swift",
+        "DatadogRUM/Sources/RUMMetrics/TNSMetric.swift",
+        "DatadogRUM/Sources/RUMMonitor/Monitor.swift",
+        "DatadogRUM/Sources/RUMMonitor/RUMCommand.swift",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMApplicationScope.swift",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMFeatureOperationManager.swift",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMScopeDependencies.swift",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMUserActionScope.swift",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/LaunchReasonResolver.swift",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewIdentifier.swift",
+        "DatadogRUM/Sources/RUMMonitorProtocol+Convenience.swift",
+        "DatadogRUM/Sources/RUMMonitorProtocol+Internal.swift",
+        "DatadogRUM/Sources/RUMMonitorProtocol.swift",
+        "DatadogRUM/Sources/RUMVitals/RenderLoop/FirstFrameReader.swift",
+        "DatadogRUM/Sources/RUMVitals/RenderLoop/Providers/FrameInfoProvider.swift",
+        "DatadogRUM/Sources/RUMVitals/RenderLoop/RenderLoopObserver.swift",
+        "DatadogRUM/Sources/RUMVitals/RenderLoop/ViewHitchesReader.swift",
+        "DatadogRUM/Sources/RUMVitals/RenderLoop/VitalRefreshRateReader.swift",
+        "DatadogRUM/Sources/RUMVitals/VitalCPUReader.swift",
+        "DatadogRUM/Sources/RUMVitals/VitalInfoSampler.swift",
+        "DatadogRUM/Sources/SDKMetrics/SessionEndedMetric.swift",
+        "DatadogRUM/Sources/Utils/AccessibilityUtilities.swift",
+        "DatadogRUM/Sources/Utils/AppKitExtensions.swift",
+        "DatadogRUM/Sources/Utils/CommonExtensions.swift",
+        "DatadogRUM/Sources/Utils/SwiftUIExtensions.swift",
+        "DatadogRUM/Sources/Utils/UIKitExtensions.swift",
+        "DatadogRUM/Tests/Heatmaps/HeatmapIdentifierStoreTests.swift",
+        "DatadogRUM/Tests/Instrumentation/Actions/RUMActionsHandlerTests.swift",
+        "DatadogRUM/Tests/Instrumentation/Actions/RUMActionsHandlerToolbar_macOSTests.swift",
+        "DatadogRUM/Tests/Instrumentation/Actions/RUMActionsHandler_macOSTests.swift",
+        "DatadogRUM/Tests/Instrumentation/Actions/RUMScrollHandlerTests.swift",
+        "DatadogRUM/Tests/Instrumentation/Actions/SwiftUIComponentDetectorTests.swift",
+        "DatadogRUM/Tests/Instrumentation/Actions/SwiftUIComponentDetector_macOSTests.swift",
+        "DatadogRUM/Tests/Instrumentation/Actions/UIKit/ThirdPartyDelegateProxy.swift",
+        "DatadogRUM/Tests/Instrumentation/AppHangs/AppHangsMonitorTests.swift",
+        "DatadogRUM/Tests/Instrumentation/AppHangs/AppHangsWatchdogThreadTests.swift",
+        "DatadogRUM/Tests/Instrumentation/MemoryWarnings/MemoryWarningMonitorTests.swift",
+        "DatadogRUM/Tests/Instrumentation/RUMInstrumentationTests.swift",
+        "DatadogRUM/Tests/Instrumentation/Resources/URLSessionRUMResourcesHandlerTests.swift",
+        "DatadogRUM/Tests/Instrumentation/Views/RUMViewsHandlerTests.swift",
+        "DatadogRUM/Tests/Instrumentation/Views/SwiftUIViewNameExtractorTests.swift",
+        "DatadogRUM/Tests/Instrumentation/WatchdogTerminations/AppStateManagerTests.swift",
+        "DatadogRUM/Tests/Integrations/ErrorMessageReceiverTests.swift",
+        "DatadogRUM/Tests/Integrations/WebViewEventReceiverTests.swift",
+        "DatadogRUM/Tests/RUMConfiguration+RemoteConfigurationTests.swift",
+        "DatadogRUM/Tests/RUMConfigurationTests.swift",
+        "DatadogRUM/Tests/RUMContext/AccessibilityReaderTests.swift",
+        "DatadogRUM/Tests/RUMMetrics/TNSMetricTests.swift",
+        "DatadogRUM/Tests/RUMMonitor/MonitorTests.swift",
+        "DatadogRUM/Tests/RUMMonitor/RUMCommandTests.swift",
+        "DatadogRUM/Tests/RUMMonitor/RUMFeatureOperationManagerTests.swift",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMUserActionScopeTests.swift",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMViewScopeTests.swift",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMViewScope_Tests.swift",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/Utils/LaunchReasonResolverTests.swift",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/Utils/ViewCacheTests.swift",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/Utils/ViewIdentifierTests.swift",
+        "DatadogRUM/Tests/RUMMonitorProtocol+ConvenienceTests.swift",
+        "DatadogRUM/Tests/RUMMonitorProtocol+InternalTests.swift",
+        "DatadogRUM/Tests/RUMMonitorProtocolTests.swift",
+        "DatadogRUM/Tests/RUMTests.swift",
+        "DatadogRUM/Tests/SDKMetrics/SessionEndedMetricTests.swift",
+        "DatadogRUM/Tests/Utils/AppKitExtensionsTests.swift",
+        "DatadogRUM/Tests/Utils/UIKitExtensionsTests.swift"
+      ],
+      "count": 118
+    },
+    "DatadogLogs": {
+      "paths": [
+        "DatadogLogs/Sources/RemoteLogger.swift",
+        "DatadogLogs/Tests/RemoteLoggerTests.swift"
+      ],
+      "count": 2
+    },
+    "DatadogTrace": {
+      "paths": [
+        "DatadogTrace/Sources/DatadogTracer.swift",
+        "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift",
+        "DatadogTrace/Sources/OpenTelemetry/OTelSpanBuilder.swift",
+        "DatadogTrace/Sources/Span/SpanWriteContext.swift",
+        "DatadogTrace/Tests/ContextMessageReceiverTests.swift",
+        "DatadogTrace/Tests/DDSpanTests.swift",
+        "DatadogTrace/Tests/OpenTelemetry/OTelSpanTests.swift",
+        "DatadogTrace/Tests/TracingURLSessionHandlerTests.swift"
+      ],
+      "count": 8
+    },
+    "DatadogCrashReporting": {
+      "paths": [
+        "DatadogCrashReporting/Sources/KSCrashIntegration/DatadogCrashReportFilter.swift",
+        "DatadogCrashReporting/Tests/CrashContextCoreProviderTests.swift",
+        "DatadogCrashReporting/Tests/CrashReportingFeatureTests.swift",
+        "DatadogCrashReporting/Tests/KSCrashIntegration/DatadogCrashReportFilterTests.swift",
+        "DatadogCrashReporting/Tests/KSCrashIntegration/KSCrashBacktraceTests.swift"
+      ],
+      "count": 5
+    },
+    "DatadogWebViewTracking": {
+      "paths": [
+        "DatadogWebViewTracking/Sources/DDScriptMessageHandler.swift",
+        "DatadogWebViewTracking/Sources/MessageEmitter.swift",
+        "DatadogWebViewTracking/Tests/MessageEmitterTests.swift",
+        "DatadogWebViewTracking/Tests/WebViewTrackingTests.swift"
+      ],
+      "count": 4
+    },
+    "DatadogFlags": {
+      "paths": [
+        "DatadogFlags/Sources/Client/RUMFlagEvaluationReporter.swift",
+        "DatadogFlags/Tests/Client/RUMFlagEvaluationReporterTests.swift"
+      ],
+      "count": 2
+    },
+    "DatadogProfiling": {
+      "paths": [
+        "DatadogProfiling/Sources/AppLaunchProfiler.swift",
+        "DatadogProfiling/Sources/DatadogProfiler.swift",
+        "DatadogProfiling/Sources/Models/ProfileAttachments.swift",
+        "DatadogProfiling/Sources/Models/ProfilingOperation.swift",
+        "DatadogProfiling/Sources/ProfilerFeature.swift",
+        "DatadogProfiling/Sources/Profiling.swift",
+        "DatadogProfiling/Sources/ProfilingConfiguration.swift",
+        "DatadogProfiling/Sources/ProfilingHandler.swift",
+        "DatadogProfiling/Sources/ProfilingQuotaChecker.swift",
+        "DatadogProfiling/Sources/RequestBuilder.swift",
+        "DatadogProfiling/Sources/SDKMetrics/AggregationDiagnosticsMetric.swift",
+        "DatadogProfiling/Sources/SDKMetrics/ConfigurationMetric.swift",
+        "DatadogProfiling/Sources/SDKMetrics/ProfilingSessionMetric.swift",
+        "DatadogProfiling/Sources/SDKMetrics/ProfilingTelemetryController.swift",
+        "DatadogProfiling/Tests/AppLaunchProfilerTests.swift",
+        "DatadogProfiling/Tests/DDProfilerTests.swift",
+        "DatadogProfiling/Tests/DatadogProfilerTests.swift",
+        "DatadogProfiling/Tests/MachSamplingProfilerTests.swift",
+        "DatadogProfiling/Tests/ProfileCxxTests.swift",
+        "DatadogProfiling/Tests/ProfileMocks.swift",
+        "DatadogProfiling/Tests/ProfilerFeatureTests.swift",
+        "DatadogProfiling/Tests/ProfilingConfigurationTests.swift",
+        "DatadogProfiling/Tests/ProfilingHandlerTests.swift",
+        "DatadogProfiling/Tests/ProfilingQuotaCheckerTests.swift",
+        "DatadogProfiling/Tests/ProfilingTest.swift",
+        "DatadogProfiling/Tests/RequestBuilderTests.swift",
+        "DatadogProfiling/Tests/SDKMetrics/ProfilingTelemetryControllerTests.swift",
+        "DatadogProfiling/Tests/SafeReadTests.swift"
+      ],
+      "count": 28
+    }
+  },
+  "settings": {
+    "Makefile": {
+      "prior": "3e53dfe329363a5b7e25f6a7a91f832aa4f46264",
+      "candidate": "7013868f2405cb4d28a1febe22f2792f06b0f487"
+    },
+    "Package.swift": {
+      "prior": "026bbfb30bf798917d31dadbf6540b74aac1c2c9",
+      "candidate": "e3bc04a1217338ef454589d63b919433ad989c4a"
+    }
+  },
+  "cells": [
+    {
+      "id": "M01",
+      "disposition": "Assess existing EXP225 RUM test artifact for exact-source reuse and execution of only the still-unrun inventory; other selected complete modules remain unqualified at this S3 source. Exclude Replay capture/content assertions before results."
+    },
+    {
+      "id": "M02",
+      "disposition": "Reuse EXP225 local Swift deployment15/17.5 fallback and8/8 legacy comparison within experimental exposure. Swift5/6 Debug/Release normal public clients and concurrent same-key proof remain."
+    },
+    {
+      "id": "M03",
+      "disposition": "Reuse EXP225 optimized dedicated-condition Objective-C main/off-main/fallback evidence. Normal public header and actual concurrent same-key proof remain; first native setup failure is not an SDK finding."
+    },
+    {
+      "id": "M04",
+      "disposition": "Require complete candidate-bound target/compiler/resource proof in the existing final matrix; prior S2 package settings differ. No build admitted by this assessment."
+    },
+    {
+      "id": "M05",
+      "disposition": "Require complete candidate-bound target/compiler/resource proof in the existing final matrix; prior S2 package settings differ. No build admitted by this assessment."
+    },
+    {
+      "id": "M06",
+      "disposition": "Require complete candidate-bound target/compiler/resource proof in the existing final matrix; prior S2 package settings differ. No build admitted by this assessment."
+    },
+    {
+      "id": "M07",
+      "disposition": "Require complete candidate-bound target/compiler/resource proof in the existing final matrix; prior S2 package settings differ. No build admitted by this assessment."
+    },
+    {
+      "id": "M08",
+      "disposition": "Require complete candidate-bound target/compiler/resource proof in the existing final matrix; prior S2 package settings differ. No build admitted by this assessment."
+    },
+    {
+      "id": "M09",
+      "disposition": "Require complete candidate-bound target/compiler/resource proof in the existing final matrix; prior S2 package settings differ. No build admitted by this assessment."
+    },
+    {
+      "id": "M10",
+      "disposition": "Preserve scoped changed-file lint and shipping-header exclusion evidence. Approved API baseline/public exposure comparison awaits F01."
+    },
+    {
+      "id": "M11",
+      "disposition": "Candidate feature-document integration remains; protected user API documents must stay unchanged. No publication or F02 closure."
+    }
+  ],
+  "reuse_owners": [
+    "Results/EXP-225-api-availability.json",
+    "Results/EXP-225-legacy17-result.json",
+    "Results/EXP-225-same-key-result.json"
+  ],
+  "gate_closures": []
+}

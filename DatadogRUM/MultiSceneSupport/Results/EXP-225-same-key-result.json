@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-225",
+  "continuation": "Concurrent native same-key API",
+  "status": "TOPOLOGY_PREREQUISITE_NOT_ESTABLISHED",
+  "at": "2026-09-23T13:10:11.805518+00:00",
+  "definition": "Results/EXP-225-same-key-definition.json",
+  "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "sdk_digest": "d6f6967e5ebd0e87ea639505b5e5d62e44becfcf698ee767cf304b8aa661e6fc",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-same-key-ak36h_b1",
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-same-key-ak36h_b1/scoped-review.json",
+    "sha256": "e9e845963e3abe4c864f75d6227fd455a37404c52729d2d342172ad2627dff91"
+  },
+  "preparation_commit": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-same-key-ak36h_b1/preparation-commit.json",
+    "sha256": "faef7b8ddbdf2a82051d55fb97dd5710cea525cd5cd0b91be18a42b050a64c5f"
+  },
+  "build": {
+    "verdict": "PASS",
+    "configuration": "Release",
+    "minimum_os": "15.0",
+    "architectures": [
+      "arm64",
+      "x86_64"
+    ],
+    "swift_file_lists": 8,
+    "c_objc_objects": 16,
+    "receipt": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-same-key-ak36h_b1/candidate/simulator/product.json",
+      "sha256": "d2fbfa193fbbf10ba3aa18510aaab566a9fe26097badbdd89c535ebf70fa040a"
+    },
+    "candidate_binding": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-same-key-ak36h_b1/candidate/same-key-inputs.json",
+      "sha256": "590c36f271a64d33ed5b138fea88764c62e220fe878799fbaa71e61f384e82b6"
+    },
+    "limits": "Experimental Swift SPI and dedicated DD_SCENE_API_VALIDATION Objective-C condition; no shipping header/public approval claim. Compiler warnings retained in original build.log."
+  },
+  "offline_controls": {
+    "same_key": 33,
+    "retained_api_oracle": 12
+  },
+  "cells": [
+    {
+      "language": "swift",
+      "overall": "INVALID",
+      "scenario": "ASSERTION_OR_HARNESS_FAILURE",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "run_id": "5aa410ee-4760-423f-a7a2-ba8db2ad7430",
+      "pid": 30630,
+      "summary": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-same-key-ak36h_b1/candidate/cells/27.0-swift/summary.json",
+        "sha256": "aafcdf86afef6f6601fcb35e2ae4ed9b0735e8699e1882265a0970029aec8caa"
+      },
+      "native": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-same-key-ak36h_b1/candidate/cells/27.0-swift/result.json",
+        "sha256": "25f4b439a3708a34fb3acffde683ace0d5fc7be422141866056c04f8c9d9eb32"
+      },
+      "failure": "concurrent-scene-readiness",
+      "operations_executed": 0,
+      "checkpoints": 0,
+      "topology": [
+        {
+          "owner": "A",
+          "scene": "26DC4DC2-87BD-4158-92A6-5D7F8C546334",
+          "state": 2,
+          "activities": []
+        },
+        {
+          "owner": "B",
+          "scene": "A5B1D4B8-C086-4430-89E7-E61E24B57B4F",
+          "state": 0,
+          "activities": [
+            {
+              "run_id": "5aa410ee-4760-423f-a7a2-ba8db2ad7430",
+              "type": "com.datadoghq.exp225.same-key"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "language": "objc",
+      "verdict": "NOT_EXECUTED",
+      "reason": "First native mechanism qualification did not establish required simultaneous-active topology"
+    }
+  ],
+  "interpretation": "UIKit accepted the fresh activation request and connected sceneB with the exact run activity, but backgrounded sceneA (state2) while B was foregroundActive (state0). The precritical requirement rejected before any targeted API work. This is a native topology prerequisite failure, not an SDK ownership regression or acceptance.",
+  "cleanup": {
+    "verdict": "PASS",
+    "restored_state": "Shutdown",
+    "task_app_removed": true,
+    "process_absent": true,
+    "intake_workers_quiescent": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-same-key-ak36h_b1/candidate/cells/27.0-swift/http-quiescence.json",
+      "sha256": "1948f29b9a864b3f996ed096340b7a8371fa543eccf736ce7cf7d4eb60dc9248"
+    },
+    "protected_paths_unchanged": true
+  },
+  "gate_closures": [],
+  "native_active": false,
+  "automatic_path": "STOPPED_NO_EQUIVALENT_RETRY",
+  "remaining_prerequisite": "An actually concurrent foreground-active two-window environment. Prepare it within the already-planned ordered human window session; start no new clock until topology is established. Retain both Swift/ObjC obligations and F01/F03 boundaries."
+}

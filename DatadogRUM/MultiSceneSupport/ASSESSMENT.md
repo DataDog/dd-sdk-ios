@@ -68,6 +68,8 @@ Optimized single-scene clients qualify on17.5/27 with automatic tracking on/off.
 automatic/manual navigation and actual background/foreground ownership on17.5.
 This remains experimental: attributable API approval, normal public exposure,
 simultaneous native same-key ownership and the complete final matrix stay open.
+The [same-key native attempt](Results/EXP-225-same-key-result.json) stopped before API
+work because activating B backgrounded A; it provides no SDK regression finding.
 
 [Application-impact preparation](Results/EXP-224-application-impact.json) now binds
 four signed Release clients and reviewed sampler/trace controls to that API candidate.
