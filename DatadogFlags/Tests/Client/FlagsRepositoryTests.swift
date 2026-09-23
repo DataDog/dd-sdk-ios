@@ -496,7 +496,7 @@ final class FlagsRepositoryTests: XCTestCase {
 
         let errorStateObserved = expectation(description: "error state observed")
         var wasErrorStateNotifiedOnDataStoreQueue: Bool?
-        let listener = StateChangeListener { state in
+        let listener = ClosureFlagsStateListener { state in
             guard state == .error else {
                 return
             }
@@ -867,6 +867,64 @@ final class FlagsRepositoryTests: XCTestCase {
         // Then
         XCTAssertNoThrow(try XCTUnwrap(callbackResult).get())
         XCTAssertEqual(flagsRepository.state.currentState, .ready)
+    }
+
+    func testInitializationFailureClaimsCompletionBeforeStateListeners() throws {
+        for hasCache in [false, true] {
+            // Given
+            let featureScope = FeatureScopeMock()
+            let context = FlagsEvaluationContext.mockAny()
+            let expectedState: FlagsClientState = hasCache ? .stale : .error
+            if hasCache {
+                let cachedData = FlagsData(flags: ["cached": .mockAny()], context: context, date: .mockAny())
+                try featureScope.dataStoreMock.setValue(JSONEncoder().encode(cachedData), forKey: .mockAny())
+            }
+            var fetchCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+            var timeoutAction: (() -> Void)?
+            var timeoutCancellationCount = 0
+            var callbackResults: [Result<Void, FlagsError>] = []
+            var stateAtCompletion: FlagsClientState?
+            var callbackWasDeliveredBeforeListener = false
+            let flagsRepository = FlagsRepository(
+                clientName: .mockAny(),
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                    fetchCompletion = completion
+                },
+                dateProvider: DateProviderMock(),
+                featureScope: featureScope,
+                initializationTimeout: 2.5,
+                scheduleInitializationTimeout: { _, action in
+                    timeoutAction = action
+                    return { timeoutCancellationCount += 1 }
+                }
+            )
+            featureScope.dataStore.flush()
+            let listener = ClosureFlagsStateListener { state in
+                if state == expectedState {
+                    callbackWasDeliveredBeforeListener = !callbackResults.isEmpty
+                    timeoutAction?()
+                }
+            }
+            flagsRepository.state.addListener(listener)
+            flagsRepository.setEvaluationContext(context) {
+                stateAtCompletion = flagsRepository.state.currentState
+                callbackResults.append($0)
+            }
+
+            // When
+            try XCTUnwrap(fetchCompletion)(.failure(.networkError(URLError(.notConnectedToInternet))))
+
+            // Then
+            XCTAssertTrue(callbackWasDeliveredBeforeListener)
+            XCTAssertEqual(callbackResults.count, 1)
+            XCTAssertEqual(timeoutCancellationCount, 1)
+            XCTAssertEqual(stateAtCompletion, expectedState)
+            XCTAssertEqual(flagsRepository.state.currentState, expectedState)
+            guard case .failure(.networkError(let error)) = try XCTUnwrap(callbackResults.first) else {
+                return XCTFail("Expected the network error, not an initialization timeout")
+            }
+            XCTAssertEqual((error as? URLError)?.code, .notConnectedToInternet)
+        }
     }
 
     func testInitializationTimeoutCompletesBeforeErrorListeners() throws {
@@ -1524,18 +1582,6 @@ private final class DelayedReadDataStore: DataStore, @unchecked Sendable {
 
     func resumeRead() {
         readSemaphore.signal()
-    }
-}
-
-private final class StateChangeListener: FlagsStateListener {
-    private let onStateChange: (FlagsClientState) -> Void
-
-    init(onStateChange: @escaping (FlagsClientState) -> Void) {
-        self.onStateChange = onStateChange
-    }
-
-    func flagsStateDidChange(_ newState: FlagsClientState) {
-        onStateChange(newState)
     }
 }
 
