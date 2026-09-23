@@ -143,12 +143,12 @@ internal struct LayerWireframeBuilder {
                 ),
                 resource: nil
             )
-        case (.visualEffect(.automaticCapsule), _):
+        case (.visualEffect, _) where snapshot.requiresGlassApproximation:
             return Output(
                 wireframe: SRWireframe(
                     layerSnapshot: snapshot,
                     backgroundColor: .systemBackground,
-                    cornerRadius: min(snapshot.absoluteFrame.width, snapshot.absoluteFrame.height) / 2,
+                    cornerRadius: snapshot.glassCornerRadii?.uniformCornerRadius,
                     permanentId: heatmapIdentifier?.rawValue
                 ),
                 resource: nil

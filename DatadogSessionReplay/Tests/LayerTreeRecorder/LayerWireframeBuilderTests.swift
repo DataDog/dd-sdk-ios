@@ -286,6 +286,23 @@ struct LayerWireframeBuilderTests {
         #expect(wireframe.shapeStyle?.cornerRadius == 20)
     }
 
+    @Test("Build skips platform glass without corners")
+    func buildSkipsPlatformGlassWithoutCorners() {
+        // Given
+        let snapshot = CALayerSnapshot.mockWith(
+            replayID: 2,
+            absoluteFrame: CGRect(x: 10, y: 20, width: 100, height: 40),
+            observation: .init(semantics: .visualEffect(.platformGlass))
+        )
+        var builder = LayerWireframeBuilder(contentSnapshots: [:], webViewSlotIDs: [])
+
+        // When
+        let output = builder.build(from: snapshot, textInput: nil, cornerRadius: nil)
+
+        // Then
+        #expect(output == nil)
+    }
+
     @Test("Build creates unsupported placeholder without an image resource")
     func buildCreatesPlaceholderForUnsupportedContent() throws {
         // Given

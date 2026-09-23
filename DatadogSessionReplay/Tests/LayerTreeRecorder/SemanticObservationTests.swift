@@ -286,8 +286,8 @@ struct SemanticObservationTests {
     }
 
     @available(iOS 26.0, *)
-    @Test("Records platform glass interaction as an automatic capsule and records sublayers")
-    func recordsPlatformGlassInteractionAsAutomaticCapsuleAndRecordsSublayers() throws {
+    @Test("Records platform glass semantics and records sublayers")
+    func recordsPlatformGlassAndRecordsSublayers() throws {
         // Given
         let viewController = UIHostingController(rootView: ScrollPocketFixture())
 
@@ -313,7 +313,7 @@ struct SemanticObservationTests {
         )
 
         // Then
-        #expect(observation == .init(semantics: .visualEffect(.automaticCapsule)))
+        #expect(observation == .init(semantics: .visualEffect(.platformGlass)))
     }
 
     @available(iOS 26.0, *)

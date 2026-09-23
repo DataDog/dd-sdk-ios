@@ -79,14 +79,19 @@ extension CALayerSnapshot.SemanticObservationMapping {
     }
 
     static let automaticCapsule = Self { layer, _, _ in
-        guard layer.isTabBarPlatter
-            || layer.isNavigationBarPlatter
-            || layer.isPlatformGlassInteraction
-        else {
+        guard layer.isTabBarPlatter || layer.isNavigationBarPlatter else {
             return nil
         }
 
         return .init(semantics: .visualEffect(.automaticCapsule))
+    }
+
+    static let platformGlass = Self { layer, _, _ in
+        guard layer.isPlatformGlassInteraction else {
+            return nil
+        }
+
+        return .init(semantics: .visualEffect(.platformGlass))
     }
 
     static let scrollPocket = Self { layer, _, _ in
