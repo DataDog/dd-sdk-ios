@@ -1,0 +1,89 @@
+# Ordinary scene API compatibility client
+
+This fixture qualifies the local experimental API implementation for C06 and
+F03 M02/M03. It does not approve F01, promote public API, query Datadog, or replace
+same-key simultaneous-scene, human-input or physical acceptance.
+
+The client targets iOS 15 without caller-side OS 27 guards for ordinary APIs.
+Run it on an available ordinary iPhone 27 simulator and the iPad 17.5 simulator,
+with automatic UIKit view tracking off and on. Actual iOS 15/16 execution is not
+available. Semantic host APIs keep their separate iOS 27 availability.
+
+## Build and admission
+
+Read the owning experiment and discover current simulator identifiers first.
+Use a new evidence directory for every changed set of build inputs:
+
+```bash
+python3 -B tools/multi-scene/api-availability/build.py prepare --root <new-root>
+python3 -B tools/multi-scene/api-availability/build.py simulator --root <new-root>
+python3 -B tools/multi-scene/api-availability/build.py device --root <new-root>
+```
+
+Preparation copies complete Core, Internal and RUM sources/private code/resources,
+then freezes SDK and client files. The isolated package enables the provisional
+Objective-C declarations with `DD_SCENE_API_VALIDATION`; both clients use optimized
+Release and disable testability. The ordinary SDK Release configuration must be
+checked separately to prove its shipping header still excludes these declarations.
+Swift calls use the existing Experimental SPI. Neither client proves ordinary
+public imports or approved API baselines.
+
+Build receipts contain per-architecture compiler membership, Objective-C compiler
+inputs, generated header hash, deployment target, and complete app fingerprints.
+Verification rejects changes to frozen sources, fixture files or protected paths.
+Never reuse a build merely because its version string matches.
+
+## Run one cell
+
+```bash
+python3 -B tools/multi-scene/api-availability/run.py \
+  --root <qualified-root> --device <discovered-udid> --os <27.0-or-17.5> \
+  --automatic <off-or-on>
+```
+
+The first planned cell qualifies the mechanism. Execution has a fixed 300-second
+budget and cleanup a separate 180-second budget. The runner creates a unique run
+ID, starts a local intake, proves response publication and clean app absence,
+installs and fingerprints the app, then waits for its atomic receipt. It removes
+only this fixture's app, requires repeated container/file absence over six seconds,
+and restores the cell's original simulator boot state. A separately admitted
+continuation uses `--attempt <label>` and never overwrites a previous receipt.
+There are no native gestures or fold operations.
+
+Before API calls, the app requires its appeared controller, owned key window,
+active scene and, when enabled, the automatic RUM owner. The three lanes exercise
+legacy Swift, targeted Swift and all 20 Objective-C selectors, including errors,
+three Resource forms with completion after view stop, Actions, Operations, flags,
+timing, loading time and attribute mutation. Error callbacks must occur once.
+
+The background lane checks the nullable factory and all 20 selectors. Rejected
+calls must read no UIKit state, retain no synthetic scene argument, create no
+telemetry, and preserve an existing view's attributes and continuous Action.
+A real scene is supplied to the rejected factory; an instrumented NSObject
+argument detects accidental scene access in early rejection. This is not proof
+that an OS-owned UIWindowScene deallocates.
+
+`Datadog.flush()` waits for queued writes and uploads in this SDK. A local intake
+boundary receipt binds the exact event count to the run before background calls.
+The app flushes again before publishing its result. The runner then proves the
+app process absent, joins all intake workers, and seals the raw event inventory
+before assertions. It preserves raw requests, decoded events and command outputs.
+Automatic long-task tracking is disabled because the synchronous fixture flush
+can itself cross the default threshold; the strict post-boundary oracle does not
+allow unrelated events to pass.
+
+## Verdict and failure handling
+
+`summary.json` retains separate scenario, evidence and cleanup verdicts. Overall
+acceptance is invalid if any required component is incomplete. Wrong owners,
+missing or duplicate forms, unexpected background telemetry, changed parameters,
+stale identities and late evidence fail closed. Preserve the original summary;
+a correction uses a new root and separately recorded admission.
+
+```bash
+python3 -B -m unittest discover -s tools/multi-scene/api-availability -p test_contract.py
+```
+
+Offline negative controls exercise the same strict oracle. They qualify rejection
+logic, not a simulator or SDK. Results and failed attempts belong in the experiment
+record, not this procedure.

@@ -1,0 +1,432 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-225",
+  "gates": [
+    "S3:C06",
+    "S3:F01",
+    "S3:F03"
+  ],
+  "status": "LOCAL_IMPLEMENTATION_QUALIFIED_RFC_PENDING",
+  "defined_at": "2026-09-23T09:15:41.688986+00:00",
+  "owner": "SDK implementer",
+  "reviewer": "/root/c06_runtime_plan",
+  "authorization": "User explicitly authorizes full local proposal implementation before API review. This changes implementation ordering, not the RFC disposition or release/publication authorization.",
+  "source_before": "ef3914c4aca136db7cc13371b54a851349f747ff",
+  "scope": [
+    "Lower21 existing ordinary Swift overloads, RUMViewTarget and its experimental alias to iOS15",
+    "Select each existing private family capability only on qualified runtime; otherwise call the existing method exactly once before scene state mutation",
+    "Keep manual start/stop routes coherent, Resource completion start-owned, continuous Action pairing and independent Operation step attribution",
+    "Implement nullable off-main Objective-C factory and no-op targeted shims before actor/UIKit access; lower20 existing selectors and factory to iOS15",
+    "Validate existing experimental ObjC declarations in optimized Release under a dedicated local validation compilation condition; ordinary shipping exposure remains unchanged",
+    "Preserve semantic host/destination/metadata iOS27 and compiler6.4 Observation boundary"
+  ],
+  "excluded": [
+    "Attributable RFC approval or F01 closure",
+    "Removing SPI or ordinary Debug-only public exposure gates",
+    "Publishing approved API baselines or changing protected user-owned proposal documents",
+    "Enabling unqualified exact older-scene routing",
+    "New public forms, protocol witnesses, feature imports, dependencies, networking or wire-format changes",
+    "S2 source change, human/physical gate substitution, push or release"
+  ],
+  "implementation_files": [
+    "DatadogRUM/Sources/RUMMonitorProtocol+Convenience.swift",
+    "DatadogRUM/Sources/RUM+objc.swift",
+    "DatadogRUM/Sources/RUMMonitor/Monitor.swift"
+  ],
+  "test_scope": [
+    "Extend existing family-specific custom/NOP forwarding controls with unsupported-runtime selection and lazy scene capture",
+    "Actual available17.5 fallback versus equivalent legacy event stream, attributes and error completion; automatic on/off where relevant",
+    "iOS27 same-key manual A/B reverse-stop, peer continuity and targeted owner regression controls",
+    "Unguarded ordinary Swift SPI client and Objective-C validation-header client targeting15; guarded semantic client remains27",
+    "Optimized Objective-C main/off-main factory and all targeted shims, no trap/deadlock/deferred UIKit read or telemetry",
+    "Targeted full RUM unit compatibility and ordinary Release API-exclusion check; broader final F03 matrix stays separate"
+  ],
+  "required_environments": [
+    "Xcode27.1 with genuine27.1 SDK",
+    "available iPad17.5 simulator",
+    "available ordinary iPhone27 simulator",
+    "generic arm64 iOS Release build targeting15"
+  ],
+  "decisive_assertions": [
+    "Every valid unsupported-family call forwards exactly once with original parameters, callbacks/options and pairing contract",
+    "No scene-specific state is created on fallback; scene identity is read only after applicable manual route selection",
+    "Existing iOS27 exact owners and peer continuity preserved",
+    "Target object retains identifiers only; off-main ObjC invalid calls do not touch UIKit or hop queues",
+    "All20 ObjC selectors plus nullable factory and21 Swift overloads compile atdeployment15 without customer27guards",
+    "Default public/API baselines and semantic availability remain unchanged"
+  ],
+  "budgets_seconds": {
+    "build": 900,
+    "focused_tests": 900,
+    "client_native": 300,
+    "cleanup": 180
+  },
+  "native_admitted": false,
+  "gate_closures": [],
+  "next_action": "Bind EXP-224 application-impact preparation to this API candidate. F01 approval and complete final/native same-key obligations stay open.",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_",
+  "native_qualification": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/release-client-06",
+    "cells": [
+      "27.0-off",
+      "17.5-off",
+      "27.0-on",
+      "17.5-on"
+    ],
+    "review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/review-admission.json",
+    "source": "d6f6967e5ebd0e87ea639505b5e5d62e44becfcf698ee767cf304b8aa661e6fc"
+  },
+  "updated_at": "2026-09-23T10:26:25.561876+00:00",
+  "sdk_source": "d6f6967e5ebd0e87ea639505b5e5d62e44becfcf698ee767cf304b8aa661e6fc",
+  "implementation_sha256": {
+    "DatadogRUM/Sources/RUMMonitorProtocol+Convenience.swift": "d9712a5d8e3d93801ec90a304d535048addb0830b271ec9ad8c879888edfedb2",
+    "DatadogRUM/Sources/RUM+objc.swift": "6660045c09091885f999e973928ac8839281871654bc5e21875adc4af0a6127b",
+    "DatadogRUM/Sources/RUMMonitor/Monitor.swift": "6701d34418976e0f287c106c3f610b650cbf4869ddfa6fb2008ff7a055a07161"
+  },
+  "unit_results": {
+    "iOS27": {
+      "initial": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/unit27-summary.json",
+        "sha256": "6c7a73633f82b9f2b087ad80299525dce78996e32df5ddb948763a433d2ee909"
+      },
+      "passed": 124,
+      "failed": 1,
+      "corrected_single_test": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/unit27-corrected-summary.json",
+        "sha256": "681e3850ff09822930b1c6c062202207f0aca110b5ac4845fe5ad3522dc929ee"
+      },
+      "corrected_passed": 1,
+      "disposition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/unit27-failure-disposition.json",
+        "sha256": "b00efc9317822287065d991098b8480f2fd1b811383e45c1e94f6cfca4a43821"
+      },
+      "interpretation": "All125 selected methods have passing evidence; initial test asserted absent session context instead of absent viewID. Original failure remains."
+    },
+    "iOS17_5": {
+      "summary": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/unit17-summary.json",
+        "sha256": "95bcb0d603fc43e80efb0f985639b0f85b5c6040ec1e4e78b6adfbb2268daace"
+      },
+      "passed": 124,
+      "skipped": 1,
+      "failed": 0,
+      "skip": "Qualified scene instrumentation requires iOS27; older-system fallback is separately exercised."
+    },
+    "formatting_reuse": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/unit-formatting-reuse.json",
+      "sha256": "060e69a85544f20295bc23a4eba95e8b1ce291ed04d6e8beb15a8291e9d027bb"
+    },
+    "limits": "Four complete affected classes, not the full RUM module or final F03 matrix. Prior duplicate-class diagnostics remain; no sanitizer claim.",
+    "selection_receipt": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/selection.json",
+      "sha256": "8f93e9f133878951346a16a0c86a631cf33e3b77a919b4a0e8d21a601c05fd0a"
+    }
+  },
+  "native_results": [
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/release-client-05/cells/27.0-off-restored/summary.json",
+      "sha256": "c2e0b53fe6b7b701f2a8faed02492f7b9a809f73bec27d758af2afd25bd748e9",
+      "runtime": "27.0",
+      "automatic": "off",
+      "run_id": "2a235b00-ff51-41db-a805-a3b420ee2aa3",
+      "source": "d6f6967e5ebd0e87ea639505b5e5d62e44becfcf698ee767cf304b8aa661e6fc",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "assertions": {
+        "verdict": "PASS",
+        "lanes": {
+          "swift-legacy": {
+            "owner": "0f0f8070-bb6f-47c7-b47f-11542ff4c921",
+            "errors": 3,
+            "resources": 3,
+            "actions": 2,
+            "operations": 3
+          },
+          "swift-targeted": {
+            "owner": "cf8616b2-df5a-40a0-8895-71414dad0045",
+            "errors": 3,
+            "resources": 3,
+            "actions": 2,
+            "operations": 3
+          },
+          "objc-main": {
+            "owner": "c5ff2f23-2f03-4617-95c6-d0e9899bc232",
+            "errors": 2,
+            "resources": 3,
+            "actions": 2,
+            "operations": 3
+          }
+        },
+        "callbacks": 2,
+        "objc_selectors": 20,
+        "ui_accesses": 0,
+        "evidence": "optimized local runtime and decoded local intake; no Datadog backend or public promotion claim"
+      }
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/release-client-05/cells/17.5-off/summary.json",
+      "sha256": "62e409db93a47e47f70fad348074d797865bcd464b4ab0f99a3e1fe36fd6735b",
+      "runtime": "17.5",
+      "automatic": "off",
+      "run_id": "9657793b-0e66-49b1-a0e2-05c5e6674a28",
+      "source": "d6f6967e5ebd0e87ea639505b5e5d62e44becfcf698ee767cf304b8aa661e6fc",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "assertions": {
+        "verdict": "PASS",
+        "lanes": {
+          "swift-legacy": {
+            "owner": "a2e437f0-33c0-4a5f-b307-f9aa2de27b81",
+            "errors": 3,
+            "resources": 3,
+            "actions": 2,
+            "operations": 3
+          },
+          "swift-targeted": {
+            "owner": "374ebf10-e9b8-4078-9600-5ab3a9890d88",
+            "errors": 3,
+            "resources": 3,
+            "actions": 2,
+            "operations": 3
+          },
+          "objc-main": {
+            "owner": "96024e1d-cf7e-4666-8d7d-da767d14e381",
+            "errors": 2,
+            "resources": 3,
+            "actions": 2,
+            "operations": 3
+          }
+        },
+        "callbacks": 2,
+        "objc_selectors": 20,
+        "ui_accesses": 0,
+        "evidence": "optimized local runtime and decoded local intake; no Datadog backend or public promotion claim"
+      }
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/release-client-06/cells/27.0-on/summary.json",
+      "sha256": "d25ec4b6b54b2c80954ccfb24c3ceddfcaa13ec6c210e75be3815121fc2f39df",
+      "runtime": "27.0",
+      "automatic": "on",
+      "run_id": "f874610c-92e8-4b91-9089-1a4d8c106b86",
+      "source": "d6f6967e5ebd0e87ea639505b5e5d62e44becfcf698ee767cf304b8aa661e6fc",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "assertions": {
+        "verdict": "PASS",
+        "lanes": {
+          "swift-legacy": {
+            "owner": "4892e30d-917b-4940-bd8d-9f1782b4d119",
+            "errors": 3,
+            "resources": 3,
+            "actions": 2,
+            "operations": 3
+          },
+          "swift-targeted": {
+            "owner": "d994e0ff-45b6-496f-b7fd-fb49e9882015",
+            "errors": 3,
+            "resources": 3,
+            "actions": 2,
+            "operations": 3
+          },
+          "objc-main": {
+            "owner": "6ae0364e-2b9d-4093-8b01-d2d6941e4934",
+            "errors": 2,
+            "resources": 3,
+            "actions": 2,
+            "operations": 3
+          }
+        },
+        "callbacks": 2,
+        "objc_selectors": 20,
+        "ui_accesses": 0,
+        "evidence": "optimized local runtime and decoded local intake; no Datadog backend or public promotion claim"
+      }
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/release-client-06/cells/17.5-on/summary.json",
+      "sha256": "d9e789abc203765e69322035637311f80e2cab32e19c7b78a0014ca113883901",
+      "runtime": "17.5",
+      "automatic": "on",
+      "run_id": "5513c276-b24f-412f-a0dd-362ce0ed160a",
+      "source": "d6f6967e5ebd0e87ea639505b5e5d62e44becfcf698ee767cf304b8aa661e6fc",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "assertions": {
+        "verdict": "PASS",
+        "lanes": {
+          "swift-legacy": {
+            "owner": "1595e492-3c75-45e1-8933-87d92164445a",
+            "errors": 3,
+            "resources": 3,
+            "actions": 2,
+            "operations": 3
+          },
+          "swift-targeted": {
+            "owner": "d12b71c0-3b94-4997-85fc-5769f65fcc67",
+            "errors": 3,
+            "resources": 3,
+            "actions": 2,
+            "operations": 3
+          },
+          "objc-main": {
+            "owner": "6607d8e5-c867-42da-979f-bbc71ea7006f",
+            "errors": 2,
+            "resources": 3,
+            "actions": 2,
+            "operations": 3
+          }
+        },
+        "callbacks": 2,
+        "objc_selectors": 20,
+        "ui_accesses": 0,
+        "evidence": "optimized local runtime and decoded local intake; no Datadog backend or public promotion claim"
+      }
+    }
+  ],
+  "invalid_native_attempts": [
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/release-client-04/cells/27.0-off/summary.json",
+      "sha256": "946e18aa82e1d8839deeb662a6ef462c55d2d33dbe79fd4d838a2e02b9597621",
+      "failure": "ValueError: foreign or unexpected off-main delta",
+      "cleanup": "PASS"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/release-client-05/cells/17.5-on/summary.json",
+      "sha256": "58e2a7b85fc32efc56a74b8f3ffb7916e997b554aa69d07b9af5290c856b7247",
+      "failure": "ValueError: unbound background boundary",
+      "cleanup": "PASS"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/release-client-05/cells/27.0-off/summary.json",
+      "sha256": "2669c6a28ec065d00ec00c3525500d909d220fce22cb2741b2ae9a4579c94f3b",
+      "failure": "ValueError: clean install not proved",
+      "cleanup": "PASS"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/release-client-05/cells/27.0-on/summary.json",
+      "sha256": "4e7d025c9bd849ce21dc4275b6df43e288a980b1b497888ea6d62f519eb285f7",
+      "failure": "ValueError: command failed: simctl",
+      "cleanup": "PASS"
+    }
+  ],
+  "failure_dispositions": [
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/preflight-correction.json",
+      "sha256": "8c9c7419df4f990523afe099a27ac98686351b32af7770034f415d3c46438537"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/native-first-failure-disposition.json",
+      "sha256": "230369b3c06e7ee385cea8ea2ffdb5454c5b864ed6f85dd46bba5cfa0cfece2a"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/restored-container-disposition.json",
+      "sha256": "bd5fc4bda28765c3addb68eceeeaee43e949acd69fd058bd4687e8bb6d7b3d62"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/automatic27-launch-disposition.json",
+      "sha256": "2d9fe06a85153e34d8fc2f243a428ac3a6113b4f2704a5feda912ad43c7116ea"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/automatic-owner-disposition.json",
+      "sha256": "dd1dccf78348e74d1b389622281ba4a10523ff1522fed8acb23955aca72a2e10"
+    }
+  ],
+  "validation": {
+    "offline_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/offline-controls-03.json",
+      "sha256": "c545828b1edfecc78bddeb0e73f8daadcbbac8e89ef836d9848b150f81105ac9",
+      "passed": 12
+    },
+    "lint": {
+      "source": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/lint-sources-02.json",
+        "sha256": "2ba33ca0557f1bb5b7ba88d67f9d0093c7185a36ec51fe2b7bd9372d3e001d6d"
+      },
+      "tests": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/lint-tests-02.json",
+        "sha256": "2ba33ca0557f1bb5b7ba88d67f9d0093c7185a36ec51fe2b7bd9372d3e001d6d"
+      },
+      "violations": 0
+    },
+    "default_release_exposure": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/default-release/exposure.json",
+      "sha256": "1a59424ef35a57cdca482d6208469484b81068e13c277731ccf6a756e6154e06"
+    },
+    "builds": [
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/release-client-06/simulator/product.json",
+        "sha256": "61fb8f16c7240fdfc9d7f21881b99d07717d8230e9d1622a440a7239d9648987"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/release-client-06/device/product.json",
+        "sha256": "91026ea591e6dd120e66e3afbcecbc840e6c537c0513bcf21179006c14766f8a"
+      }
+    ],
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/review-admission.json",
+      "sha256": "c91d82384576da59c3fbb717359cc86f2485f4787535a27abd37bfb1884b81a0"
+    },
+    "existing_callers": {
+      "objc_smoke_compile": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/objc-smoke-compile.json",
+      "objc_warning": "One pre-existing NSURLSessionTaskMetrics new deprecation at unchanged smoke-test line; no warning-free claim.",
+      "probe_full_build": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/probe-callers/build.json",
+      "probe_compiler_membership": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/probe-callers/compiler-proof.json"
+    }
+  },
+  "evidence_limits": [
+    "Experimental SPI and dedicated Objective-C validation compilation condition; normal public API baselines remain unchanged and unapproved.",
+    "One actual scene per optimized client. Unit peer/owner controls do not replace the required27 simultaneous native A/B same-key reverse-stop case.",
+    "Local decoded intake proves runtime serialization and ownership; no Datadog backend persistence claim.",
+    "Deployment15 compilation/linking plus actual17.5 and27 execution; no15/16 runtime proof.",
+    "No physical scene-deallocation claim from synthetic rejected-object lifetime checks.",
+    "C06/F03 still require their complete F01-approved candidate matrix; no gate closes and S1/S2 selected source remains untouched."
+  ],
+  "source_commit": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "signature": "UNSIGNED_AUTHORIZED_LOCAL_FALLBACK",
+  "commit_receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/source-commit.json",
+  "signing_failure": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/source-signing-timeout.json",
+  "cleanup": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/cleanup-final.json",
+  "build_attempts": [
+    {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/release-client",
+      "simulator_product": false,
+      "device_product": false,
+      "native_used": false
+    },
+    {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/release-client-02",
+      "simulator_product": true,
+      "device_product": false,
+      "native_used": false
+    },
+    {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/release-client-03",
+      "simulator_product": true,
+      "device_product": false,
+      "native_used": false
+    },
+    {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/release-client-04",
+      "simulator_product": true,
+      "device_product": true,
+      "native_used": true
+    },
+    {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/release-client-05",
+      "simulator_product": true,
+      "device_product": true,
+      "native_used": true
+    },
+    {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/release-client-06",
+      "simulator_product": true,
+      "device_product": true,
+      "native_used": true
+    }
+  ]
+}

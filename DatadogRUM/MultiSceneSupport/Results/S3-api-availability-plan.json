@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "status": "LOCAL_IMPLEMENTATION_AUTHORIZED_RFC_PENDING",
+  "status": "LOCAL_IMPLEMENTATION_QUALIFIED_RFC_PENDING",
   "recorded_at": "2026-09-21T14:20:51.740756+00:00",
   "owner": "SDK implementer; RUM API reviewers own approval",
-  "scope": "Documentation-only finite S3 gate alignment; no implementation, API approval, test result or S1/S2 scope change",
+  "scope": "Local implementation and provisional compatibility qualification are authorized before RFC review; public promotion, approved API baselines and S1/S2 scope remain separate.",
   "reviewer": "/root/c06_runtime_plan",
   "proposal_sha256": {
     "DatadogRUM/MULTI_SCENE_SUPPORT.md": "dce1ba9fddfb0277330b3348e995e3027860b3e96dfef7ac4ba077b8d9373cf5",
@@ -42,5 +42,8 @@
     "at": "2026-09-23T09:10:07.135841+00:00",
     "request": "The API proposal still need reviews, but can we implement it fully already?",
     "scope": "Full local proposed availability/routing/fallback and Objective-C safety implementation with provisional validation. No attributable F01 approval or publication."
-  }
+  },
+  "implementation_record": "Results/EXP-225-api-availability.json",
+  "source_commit": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "qualification": "EXP-225 implements ordinary availability/fallback and Objective-C off-main rejection; optimized local clients qualify17.5/27 with automatic tracking on/off. Normal public promotion, exact simultaneous native same-key proof and complete final matrix remain."
 }

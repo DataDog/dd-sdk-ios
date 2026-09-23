@@ -27,6 +27,12 @@ The repository's SPM helper can rename the workspace. Use an isolated package fo
 checks that would disturb protected workspace state. Do not modify build scripts
 or dependency pins to repair an unrelated preparation failure.
 
+The [ordinary API client](../../../tools/multi-scene/api-availability/README.md)
+qualifies unguarded deployment15 calls, runtime-selected fallback and Objective-C
+background rejection. Its optimized validation flag does not approve normal public
+exposure. Disable unrelated automatic instrumentation in a focused API oracle,
+and derive automatic view names from the predicate's actual source contract.
+
 ## Full-target platform compatibility checks
 
 Derive membership from the frozen Xcode target's source phase, including shared

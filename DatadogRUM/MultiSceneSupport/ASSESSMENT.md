@@ -60,9 +60,12 @@ requires materially changed conditions and separate admission.
 Physical Duo hardware is unavailable before release. S2 can use qualified Duo
 simulator and relevant iPhone/iPad evidence while disclosing uncertainty; F09 owns
 later confirmation and full F04 remains S3. API availability amendments stay under
-[existing S3 F01/C06/F03/A02 obligations](Results/S3-api-availability-plan.json), with
-unguarded deployment15 clients, older-system fallback and newer exact ownership
-requiring proof before promotion.
+[existing S3 F01/C06/F03/A02 obligations](Results/S3-api-availability-plan.json).
+[EXP-225](Results/EXP-225-api-availability.json) implements ordinary deployment15
+calls with SDK-selected fallback and crash-safe Objective-C background rejection.
+Optimized single-scene clients qualify on17.5/27 with automatic tracking on/off.
+This remains experimental: attributable API approval, normal public exposure,
+simultaneous native same-key ownership and the complete final matrix stay open.
 
 ## Immediate compatibility priority
 
