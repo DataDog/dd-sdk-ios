@@ -48,7 +48,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         featureScope: any FeatureScope,
         assignmentFetchQueue: DispatchQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-flags-assignment-fetch",
-            qos: .userInitiated,
+            qos: .utility,
             autoreleaseFrequency: .workItem
         ),
         fetch: @escaping (URLRequest, @escaping (Result<Data, Error>) -> Void) -> Void
