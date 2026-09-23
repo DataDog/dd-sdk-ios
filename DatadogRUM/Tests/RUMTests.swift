@@ -172,6 +172,9 @@ class RUMTests: XCTestCase {
     #if os(iOS)
     @MainActor
     func testWhenEnabled_thenSceneTargetedManualViewBridgeUsesInstrumentationStack() throws {
+        guard #available(iOS 27.0, *) else {
+            throw XCTSkip("Exact scene routing is qualified on iOS 27; older runtimes use the legacy fallback.")
+        }
         let core = SingleFeatureCoreMock<RUMFeature>()
         core.featureScopeOverride = FeatureScopeMock()
         RUM.enable(with: config, in: core)

@@ -13,6 +13,20 @@ import UIKit
 @testable import DatadogRUM
 @testable import TestUtilities
 
+#if os(iOS)
+@MainActor
+private final class ManualViewHandlerSpy: RUMSceneTargetedManualViewHandling {
+    var starts: [String] = []
+    var stops: [String] = []
+    func startView(key: String, name: String?, attributes: [AttributeKey: AttributeValue], sceneIdentifier: RUMSceneIdentifier) {
+        starts.append(key)
+    }
+    func stopView(key: String, attributes: [AttributeKey: AttributeValue], sceneIdentifier: RUMSceneIdentifier) {
+        stops.append(key)
+    }
+}
+#endif
+
 class MonitorTests: XCTestCase {
     private var featureScope: FeatureScope! // swiftlint:disable:this implicitly_unwrapped_optional
 
@@ -27,6 +41,140 @@ class MonitorTests: XCTestCase {
             )
         )
     }
+
+    #if os(iOS)
+    @MainActor
+    func testMissingManualHandlerUsesOneLegacyRouteEvenAfterLateBinding() throws {
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: DateProviderMock())
+        let scene = RUMSceneIdentifier(rawValue: "scene")
+        monitor.startView(key: "same", name: "Manual", attributes: ["start": 1], sceneIdentifier: scene)
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewName, "Manual")
+        let handler = ManualViewHandlerSpy()
+        monitor.bind(sceneTargetedManualViewHandler: handler)
+        monitor.stopView(key: "same", attributes: ["stop": 2], sceneIdentifier: scene)
+        XCTAssertTrue(handler.starts.isEmpty)
+        XCTAssertTrue(handler.stops.isEmpty)
+        XCTAssertNil(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID)
+        let scope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        let views = scope.eventsWritten(ofType: RUMViewEvent.self).filter { $0.view.name == "Manual" }
+        let final = try XCTUnwrap(views.last)
+        XCTAssertEqual(Set(views.map { $0.view.id }).count, 1)
+        XCTAssertEqual(final.view.isActive, false)
+        XCTAssertEqual(final.context?.contextInfo["start"] as? Int, 1)
+        XCTAssertEqual(final.context?.contextInfo["stop"] as? Int, 2)
+    }
+
+    @MainActor
+    func testManualHandlerCannotBeReboundAcrossAStartStopPair() {
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope), dateProvider: DateProviderMock())
+        let first = ManualViewHandlerSpy()
+        let second = ManualViewHandlerSpy()
+        let scene = RUMSceneIdentifier(rawValue: "scene")
+        monitor.bind(sceneTargetedManualViewHandler: first)
+        monitor.startView(key: "same", name: nil, attributes: [:], sceneIdentifier: scene)
+        monitor.bind(sceneTargetedManualViewHandler: second)
+        monitor.stopView(key: "same", attributes: [:], sceneIdentifier: scene)
+        XCTAssertEqual(first.starts, ["same"])
+        XCTAssertEqual(first.stops, ["same"])
+        XCTAssertTrue(second.starts.isEmpty)
+        XCTAssertTrue(second.stops.isEmpty)
+    }
+
+    @MainActor
+    func testReleasedManualHandlerDoesNotStopALegacyViewOrRetainInstrumentation() throws {
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: DateProviderMock())
+        let scene = RUMSceneIdentifier(rawValue: "scene")
+        var handler: ManualViewHandlerSpy? = ManualViewHandlerSpy()
+        weak var weakHandler = handler
+        monitor.bind(sceneTargetedManualViewHandler: try XCTUnwrap(handler))
+        monitor.startView(key: "same", name: nil, attributes: [:], sceneIdentifier: scene)
+        handler = nil
+        XCTAssertNil(weakHandler)
+        monitor.startView(key: "same", name: "Legacy peer", attributes: [:])
+        let peer = monitor.rumContextSnapshot(for: .processRepresentative)
+        monitor.stopView(key: "same", attributes: [:], sceneIdentifier: scene)
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, peer?.viewID)
+        XCTAssertNotNil(peer)
+    }
+
+    @MainActor
+    func testOrdinaryTargetBridgesUseQualifiedSceneOrLegacyOwner() throws {
+        let clock = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: clock)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+        let expectedScene: RUMSceneIdentifier
+        if #available(iOS 27.0, *) { expectedScene = sceneA } else { expectedScene = sceneB }
+        let owner = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(expectedScene)))
+        let target = RUMCommandTarget.scene(sceneA)
+        RUMFeatureFlagTargetBridge.addEvaluation(on: monitor, name: "flag", value: true, explicitTarget: target)
+        RUMViewTimingTargetBridge.addTiming(on: monitor, name: "loaded", explicitTarget: target)
+        RUMViewTimingTargetBridge.addViewLoadingTime(on: monitor, overwrite: true, explicitTarget: target)
+        RUMViewAttributeTargetBridge.addViewAttribute(on: monitor, forKey: "retained", value: "yes", explicitTarget: target)
+        RUMViewAttributeTargetBridge.addViewAttributes(on: monitor, attributes: ["removed": "no"], explicitTarget: target)
+        RUMViewAttributeTargetBridge.removeViewAttributes(on: monitor, forKeys: ["removed"], explicitTarget: target)
+        RUMViewAttributeTargetBridge.removeViewAttribute(on: monitor, forKey: "absent", explicitTarget: target)
+        var callbacks = 0
+        RUMErrorViewTargetBridge.addError(
+            on: monitor,
+            error: ErrorMock("expected"),
+            source: .custom,
+            attributes: ["error": 1],
+            completionHandler: { callbacks += 1 },
+            explicitTarget: target
+        )
+        RUMResourceViewTargetBridge.startResource(
+            on: monitor,
+            resourceKey: "request",
+            request: URLRequest(url: URL(string: "https://example.com/request")!),
+            attributes: ["start": 1],
+            explicitTarget: target
+        )
+        RUMResourceViewTargetBridge.startResource(
+            on: monitor,
+            resourceKey: "url",
+            url: URL(string: "https://example.com/url")!,
+            attributes: ["start": 1],
+            explicitTarget: target
+        )
+        RUMResourceViewTargetBridge.startResource(
+            on: monitor,
+            resourceKey: "method",
+            httpMethod: .put,
+            urlString: "https://example.com/method",
+            attributes: ["start": 1],
+            explicitTarget: target
+        )
+        RUMActionViewTargetBridge.startAction(on: monitor, type: .custom, name: "continuous", attributes: [:], explicitTarget: target)
+        clock.now = clock.now.addingTimeInterval(1)
+        RUMActionViewTargetBridge.stopAction(on: monitor, type: .custom, name: "complete", attributes: [:], explicitTarget: target)
+        RUMOperationViewTargetBridge.startOperation(on: monitor, name: "load", operationKey: "key", attributes: [:], options: nil, explicitTarget: target)
+        RUMOperationViewTargetBridge.succeedOperation(on: monitor, name: "load", operationKey: "key", attributes: [:], explicitTarget: target)
+        for key in ["request", "url", "method"] {
+            monitor.stopResource(resourceKey: key, statusCode: 200, kind: .native, size: 1, attributes: ["stop": 2])
+        }
+        let scope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        XCTAssertEqual(callbacks, 1)
+        let errors = scope.eventsWritten(ofType: RUMErrorEvent.self)
+        XCTAssertEqual(errors.count, 1)
+        XCTAssertEqual(errors.first?.view.id, owner.viewID)
+        let resources = scope.eventsWritten(ofType: RUMResourceEvent.self)
+        XCTAssertEqual(resources.count, 3)
+        XCTAssertEqual(Set(resources.map { $0.view.id }), [owner.viewID])
+        XCTAssertTrue(resources.allSatisfy { $0.context?.contextInfo["start"] as? Int == 1 && $0.context?.contextInfo["stop"] as? Int == 2 })
+        let actions = scope.eventsWritten(ofType: RUMActionEvent.self).filter { $0.action.target?.name == "complete" }
+        XCTAssertEqual(actions.count, 1)
+        XCTAssertEqual(actions.first?.view.id, owner.viewID)
+        let operations = scope.eventsWritten(ofType: RUMVitalOperationStepEvent.self)
+        XCTAssertEqual(operations.count, 2)
+        XCTAssertEqual(Set(operations.map { $0.view.id }), [owner.viewID])
+        let views = scope.eventsWritten(ofType: RUMViewEvent.self)
+        let selected = try XCTUnwrap(views.last { $0.view.id == owner.viewID })
+        XCTAssertEqual(selected.featureFlags?.featureFlagsInfo["flag"] as? Bool, true)
+        XCTAssertEqual(selected.context?.contextInfo["retained"] as? String, "yes")
+        XCTAssertNil(selected.context?.contextInfo["removed"])
+        XCTAssertNotNil(selected.view.customTimings?.customTimingsInfo["loaded"])
+    }
+    #endif
 
     func testWhenSessionIsSampled_itSetsRUMContextInCore() throws {
         // Given

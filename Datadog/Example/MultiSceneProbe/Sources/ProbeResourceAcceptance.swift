@@ -111,7 +111,9 @@ enum ProbeResourceAcceptance {
         }
         let targetA = RUMViewTarget.current(in: sceneA)
         let targetB = RUMViewTarget.current(in: sceneB)
-        let objcTargetA = objc_RUMViewTarget.current(in: sceneA)
+        guard let objcTargetA = objc_RUMViewTarget.current(in: sceneA) else {
+            throw FixtureError.missing("main-thread Objective-C target")
+        }
         let objc = objc_RUMMonitor(swiftRUMMonitor: monitor)
         let allPhases = manualSuccess + manualFailure + automatic + [legacy]
         func url(_ phase: String) -> URL {

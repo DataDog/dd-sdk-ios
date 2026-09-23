@@ -12,11 +12,12 @@ import DatadogInternal
 
 #if os(iOS)
 /// Selects the RUM view used to attribute explicitly targeted telemetry.
+/// Unsupported scene targeting preserves the receiving monitor’s legacy behavior.
 ///
 /// This API is experimental and may change before becoming generally available.
 /// It does not expose or retain an internal RUM view identifier.
 @_spi(Experimental)
-@available(iOS 27.0, *)
+@available(iOS 15.0, *)
 public struct RUMViewTarget {
     fileprivate let sceneIdentifier: RUMSceneIdentifier
 
@@ -38,7 +39,7 @@ public struct RUMViewTarget {
 
 /// Compatibility spelling retained while the experimental API is under review.
 @_spi(Experimental)
-@available(iOS 27.0, *)
+@available(iOS 15.0, *)
 public typealias RUMOperationViewTarget = RUMViewTarget
 #endif
 
@@ -49,7 +50,7 @@ public extension RUMMonitorProtocol {
     /// This API is experimental. An unavailable target preserves independent
     /// inference. Repeated names retain the existing replacement behavior.
     @_spi(Experimental)
-    @available(iOS 27.0, *)
+    @available(iOS 15.0, *)
     @MainActor
     func addFeatureFlagEvaluation(name: String, value: Encodable, view: RUMViewTarget) {
         RUMFeatureFlagTargetBridge.addEvaluation(on: self, name: name, value: value, explicitTarget: .scene(view.sceneIdentifier))
@@ -64,7 +65,7 @@ internal protocol RUMFeatureFlagTargetHandling: AnyObject {
 @MainActor
 internal enum RUMFeatureFlagTargetBridge {
     static func addEvaluation(on monitor: any RUMMonitorProtocol, name: String, value: Encodable, explicitTarget: RUMCommandTarget) {
-        guard let monitor = monitor as? any RUMFeatureFlagTargetHandling else {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMFeatureFlagTargetHandling else {
             monitor.addFeatureFlagEvaluation(name: name, value: value)
             return
         }
@@ -78,7 +79,7 @@ public extension RUMMonitorViewProtocol {
     /// This API is experimental. An unavailable target preserves independent
     /// inference. Repeated names retain the existing replacement behavior.
     @_spi(Experimental)
-    @available(iOS 27.0, *)
+    @available(iOS 15.0, *)
     @MainActor
     func addTiming(name: String, view: RUMViewTarget) {
         RUMViewTimingTargetBridge.addTiming(on: self, name: name, explicitTarget: .scene(view.sceneIdentifier))
@@ -89,7 +90,7 @@ public extension RUMMonitorViewProtocol {
     /// This API is experimental. An unavailable target preserves independent
     /// inference. Loading time changes only when absent or overwrite is true.
     @_spi(Experimental)
-    @available(iOS 27.0, *)
+    @available(iOS 15.0, *)
     @MainActor
     func addViewLoadingTime(overwrite: Bool, view: RUMViewTarget) {
         RUMViewTimingTargetBridge.addViewLoadingTime(on: self, overwrite: overwrite, explicitTarget: .scene(view.sceneIdentifier))
@@ -100,7 +101,7 @@ public extension RUMMonitorViewProtocol {
     /// This API is experimental. An unavailable target preserves independent
     /// inference. Global monitor attributes remain process-wide.
     @_spi(Experimental)
-    @available(iOS 27.0, *)
+    @available(iOS 15.0, *)
     @MainActor
     func addViewAttribute(forKey key: AttributeKey, value: AttributeValue, view: RUMViewTarget) {
         RUMViewAttributeTargetBridge.addViewAttribute(on: self, forKey: key, value: value, explicitTarget: .scene(view.sceneIdentifier))
@@ -111,7 +112,7 @@ public extension RUMMonitorViewProtocol {
     /// This API is experimental. An unavailable target preserves independent
     /// inference. These values retain the existing view-attribute precedence.
     @_spi(Experimental)
-    @available(iOS 27.0, *)
+    @available(iOS 15.0, *)
     @MainActor
     func addViewAttributes(_ attributes: [AttributeKey: AttributeValue], view: RUMViewTarget) {
         RUMViewAttributeTargetBridge.addViewAttributes(on: self, attributes: attributes, explicitTarget: .scene(view.sceneIdentifier))
@@ -122,7 +123,7 @@ public extension RUMMonitorViewProtocol {
     /// This API is experimental. A same-key global value remains available.
     /// Events created before removal keep their attributes.
     @_spi(Experimental)
-    @available(iOS 27.0, *)
+    @available(iOS 15.0, *)
     @MainActor
     func removeViewAttribute(forKey key: AttributeKey, view: RUMViewTarget) {
         RUMViewAttributeTargetBridge.removeViewAttribute(on: self, forKey: key, explicitTarget: .scene(view.sceneIdentifier))
@@ -133,7 +134,7 @@ public extension RUMMonitorViewProtocol {
     /// This API is experimental. An unavailable target preserves independent
     /// inference. Removing view values does not remove global monitor values.
     @_spi(Experimental)
-    @available(iOS 27.0, *)
+    @available(iOS 15.0, *)
     @MainActor
     func removeViewAttributes(forKeys keys: [AttributeKey], view: RUMViewTarget) {
         RUMViewAttributeTargetBridge.removeViewAttributes(on: self, forKeys: keys, explicitTarget: .scene(view.sceneIdentifier))
@@ -149,7 +150,7 @@ internal protocol RUMViewTimingTargetHandling: AnyObject {
 @MainActor
 internal enum RUMViewTimingTargetBridge {
     static func addTiming(on monitor: any RUMMonitorViewProtocol, name: String, explicitTarget: RUMCommandTarget) {
-        guard let monitor = monitor as? any RUMViewTimingTargetHandling else {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMViewTimingTargetHandling else {
             monitor.addTiming(name: name)
             return
         }
@@ -157,7 +158,7 @@ internal enum RUMViewTimingTargetBridge {
     }
 
     static func addViewLoadingTime(on monitor: any RUMMonitorViewProtocol, overwrite: Bool, explicitTarget: RUMCommandTarget) {
-        guard let monitor = monitor as? any RUMViewTimingTargetHandling else {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMViewTimingTargetHandling else {
             monitor.addViewLoadingTime(overwrite: overwrite)
             return
         }
@@ -176,7 +177,7 @@ internal protocol RUMViewAttributeTargetHandling: AnyObject {
 @MainActor
 internal enum RUMViewAttributeTargetBridge {
     static func addViewAttribute(on monitor: any RUMMonitorViewProtocol, forKey key: AttributeKey, value: AttributeValue, explicitTarget: RUMCommandTarget) {
-        guard let monitor = monitor as? any RUMViewAttributeTargetHandling else {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMViewAttributeTargetHandling else {
             monitor.addViewAttribute(forKey: key, value: value)
             return
         }
@@ -184,7 +185,7 @@ internal enum RUMViewAttributeTargetBridge {
     }
 
     static func addViewAttributes(on monitor: any RUMMonitorViewProtocol, attributes: [AttributeKey: AttributeValue], explicitTarget: RUMCommandTarget) {
-        guard let monitor = monitor as? any RUMViewAttributeTargetHandling else {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMViewAttributeTargetHandling else {
             monitor.addViewAttributes(attributes)
             return
         }
@@ -192,7 +193,7 @@ internal enum RUMViewAttributeTargetBridge {
     }
 
     static func removeViewAttribute(on monitor: any RUMMonitorViewProtocol, forKey key: AttributeKey, explicitTarget: RUMCommandTarget) {
-        guard let monitor = monitor as? any RUMViewAttributeTargetHandling else {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMViewAttributeTargetHandling else {
             monitor.removeViewAttribute(forKey: key)
             return
         }
@@ -200,7 +201,7 @@ internal enum RUMViewAttributeTargetBridge {
     }
 
     static func removeViewAttributes(on monitor: any RUMMonitorViewProtocol, forKeys keys: [AttributeKey], explicitTarget: RUMCommandTarget) {
-        guard let monitor = monitor as? any RUMViewAttributeTargetHandling else {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMViewAttributeTargetHandling else {
             monitor.removeViewAttributes(forKeys: keys)
             return
         }
@@ -280,7 +281,7 @@ public extension RUMMonitorProtocol {
     ///   - scene: the window scene that owns this view.
     ///   - attributes: custom attributes to attach to this view.
     @_spi(Experimental)
-    @available(iOS 27.0, *)
+    @available(iOS 15.0, *)
     @MainActor
     func startView(
         key: String,
@@ -309,7 +310,7 @@ public extension RUMMonitorProtocol {
     ///   - scene: the window scene that owns this view.
     ///   - attributes: custom attributes to attach to this view.
     @_spi(Experimental)
-    @available(iOS 27.0, *)
+    @available(iOS 15.0, *)
     @MainActor
     func stopView(
         key: String,
@@ -378,7 +379,7 @@ public extension RUMMonitorProtocol {
     /// independently inferred view or process representative. Reporting an error
     /// does not change that representative. File and line supply a missing stack.
     @_spi(Experimental)
-    @available(iOS 27.0, *)
+    @available(iOS 15.0, *)
     @MainActor
     func addError(
         message: String,
@@ -408,7 +409,7 @@ public extension RUMMonitorProtocol {
     /// This experimental overload uses independent inference when the scene has
     /// no live view. Resource errors retain the owner captured by startResource.
     @_spi(Experimental)
-    @available(iOS 27.0, *)
+    @available(iOS 15.0, *)
     @MainActor
     func addError(
         error: Error,
@@ -427,7 +428,7 @@ public extension RUMMonitorProtocol {
     /// error; it does not indicate backend delivery. Custom monitors retain their
     /// existing completion-handler behavior.
     @_spi(Experimental)
-    @available(iOS 27.0, *)
+    @available(iOS 15.0, *)
     @MainActor
     func addError(
         error: Error,
@@ -499,7 +500,7 @@ public extension RUMMonitorProtocol {
     /// the start owner even after navigation; they do not need another target.
     /// The request supplies the URL, method and inferred Resource type.
     @_spi(Experimental)
-    @available(iOS 27.0, *)
+    @available(iOS 15.0, *)
     @MainActor
     func startResource(
         resourceKey: String,
@@ -524,7 +525,7 @@ public extension RUMMonitorProtocol {
     /// the start owner even after navigation; they do not need another target.
     /// The URL form uses the GET method.
     @_spi(Experimental)
-    @available(iOS 27.0, *)
+    @available(iOS 15.0, *)
     @MainActor
     func startResource(
         resourceKey: String,
@@ -549,7 +550,7 @@ public extension RUMMonitorProtocol {
     /// the start owner even after navigation; they do not need another target.
     /// The supplied method and URL string are preserved.
     @_spi(Experimental)
-    @available(iOS 27.0, *)
+    @available(iOS 15.0, *)
     @MainActor
     func startResource(
         resourceKey: String,
@@ -693,7 +694,7 @@ public extension RUMMonitorProtocol {
     /// If the selected scene has no current tracked view, the SDK preserves the
     /// call site's inferred and process-representative fallbacks.
     @_spi(Experimental)
-    @available(iOS 27.0, *)
+    @available(iOS 15.0, *)
     @MainActor
     func addAction(
         type: RUMActionType,
@@ -734,7 +735,7 @@ public extension RUMMonitorProtocol {
     /// If the selected scene has no current tracked view, the SDK preserves the
     /// call site's inferred and process-representative fallbacks.
     @_spi(Experimental)
-    @available(iOS 27.0, *)
+    @available(iOS 15.0, *)
     @MainActor
     func startAction(
         type: RUMActionType,
@@ -776,7 +777,7 @@ public extension RUMMonitorProtocol {
     /// If the selected scene has no current tracked view, the SDK preserves the
     /// call site's inferred and process-representative fallbacks.
     @_spi(Experimental)
-    @available(iOS 27.0, *)
+    @available(iOS 15.0, *)
     @MainActor
     func stopAction(
         type: RUMActionType,
@@ -894,7 +895,7 @@ public extension RUMMonitorProtocol {
     /// The scene does not namespace the Operation identity: every later step must
     /// reuse the same `name` and `operationKey`.
     @_spi(Experimental)
-    @available(iOS 27.0, *)
+    @available(iOS 15.0, *)
     @MainActor
     func startOperation(
         name: String,
@@ -916,7 +917,7 @@ public extension RUMMonitorProtocol {
     /// Completes a RUM Operation successfully on the current tracked view in
     /// an explicitly selected window scene.
     @_spi(Experimental)
-    @available(iOS 27.0, *)
+    @available(iOS 15.0, *)
     @MainActor
     func succeedOperation(
         name: String,
@@ -936,7 +937,7 @@ public extension RUMMonitorProtocol {
     /// Fails a RUM Operation on the current tracked view in an explicitly
     /// selected window scene.
     @_spi(Experimental)
-    @available(iOS 27.0, *)
+    @available(iOS 15.0, *)
     @MainActor
     func failOperation(
         name: String,
@@ -1011,7 +1012,7 @@ internal enum RUMErrorViewTargetBridge {
         line: UInt?,
         explicitTarget: RUMCommandTarget
     ) {
-        guard let monitor = monitor as? any RUMErrorViewTargetHandling else {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMErrorViewTargetHandling else {
             monitor.addError(message: message, type: type, stack: stack, source: source, attributes: attributes, file: file, line: line)
             return
         }
@@ -1034,7 +1035,7 @@ internal enum RUMErrorViewTargetBridge {
         attributes: [AttributeKey: AttributeValue],
         explicitTarget: RUMCommandTarget
     ) {
-        guard let monitor = monitor as? any RUMErrorViewTargetHandling else {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMErrorViewTargetHandling else {
             monitor.addError(error: error, source: source, attributes: attributes)
             return
         }
@@ -1049,7 +1050,7 @@ internal enum RUMErrorViewTargetBridge {
         completionHandler: @escaping CompletionHandler,
         explicitTarget: RUMCommandTarget
     ) {
-        guard let monitor = monitor as? any RUMErrorViewTargetHandling else {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMErrorViewTargetHandling else {
             monitor.addError(error: error, source: source, attributes: attributes, completionHandler: completionHandler)
             return
         }
@@ -1096,7 +1097,7 @@ internal enum RUMResourceViewTargetBridge {
         attributes: [AttributeKey: AttributeValue],
         explicitTarget: RUMCommandTarget
     ) {
-        guard let monitor = monitor as? any RUMResourceViewTargetHandling else {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMResourceViewTargetHandling else {
             monitor.startResource(resourceKey: resourceKey, request: request, attributes: attributes)
             return
         }
@@ -1115,7 +1116,7 @@ internal enum RUMResourceViewTargetBridge {
         attributes: [AttributeKey: AttributeValue],
         explicitTarget: RUMCommandTarget
     ) {
-        guard let monitor = monitor as? any RUMResourceViewTargetHandling else {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMResourceViewTargetHandling else {
             monitor.startResource(resourceKey: resourceKey, url: url, attributes: attributes)
             return
         }
@@ -1135,7 +1136,7 @@ internal enum RUMResourceViewTargetBridge {
         attributes: [AttributeKey: AttributeValue],
         explicitTarget: RUMCommandTarget
     ) {
-        guard let monitor = monitor as? any RUMResourceViewTargetHandling else {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMResourceViewTargetHandling else {
             monitor.startResource(resourceKey: resourceKey, httpMethod: httpMethod, urlString: urlString, attributes: attributes)
             return
         }
@@ -1186,7 +1187,7 @@ internal enum RUMActionViewTargetBridge {
         attributes: [AttributeKey: AttributeValue],
         explicitTarget: RUMCommandTarget
     ) {
-        guard let monitor = monitor as? any RUMActionViewTargetHandling else {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMActionViewTargetHandling else {
             monitor.addAction(type: type, name: name, attributes: attributes)
             return
         }
@@ -1205,7 +1206,7 @@ internal enum RUMActionViewTargetBridge {
         attributes: [AttributeKey: AttributeValue],
         explicitTarget: RUMCommandTarget
     ) {
-        guard let monitor = monitor as? any RUMActionViewTargetHandling else {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMActionViewTargetHandling else {
             monitor.startAction(type: type, name: name, attributes: attributes)
             return
         }
@@ -1225,7 +1226,7 @@ internal enum RUMActionViewTargetBridge {
         attributes: [AttributeKey: AttributeValue],
         explicitTarget: RUMCommandTarget
     ) {
-        guard let monitor = monitor as? any RUMActionViewTargetHandling else {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMActionViewTargetHandling else {
             monitor.stopAction(type: type, name: name, attributes: attributes)
             return
         }
@@ -1278,7 +1279,7 @@ internal enum RUMOperationViewTargetBridge {
         options: OperationOptions?,
         explicitTarget: RUMCommandTarget
     ) {
-        guard let monitor = monitor as? any RUMOperationViewTargetHandling else {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMOperationViewTargetHandling else {
             monitor.startOperation(
                 name: name,
                 operationKey: operationKey,
@@ -1304,7 +1305,7 @@ internal enum RUMOperationViewTargetBridge {
         attributes: [AttributeKey: AttributeValue],
         explicitTarget: RUMCommandTarget
     ) {
-        guard let monitor = monitor as? any RUMOperationViewTargetHandling else {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMOperationViewTargetHandling else {
             monitor.succeedOperation(
                 name: name,
                 operationKey: operationKey,
@@ -1329,7 +1330,7 @@ internal enum RUMOperationViewTargetBridge {
         attributes: [AttributeKey: AttributeValue],
         explicitTarget: RUMCommandTarget
     ) {
-        guard let monitor = monitor as? any RUMOperationViewTargetHandling else {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMOperationViewTargetHandling else {
             monitor.failOperation(
                 name: name,
                 operationKey: operationKey,
@@ -1358,9 +1359,9 @@ internal enum RUMSceneTargetedManualViewBridge {
         key: String,
         name: String?,
         attributes: [AttributeKey: AttributeValue],
-        sceneIdentifier: RUMSceneIdentifier
+        sceneIdentifier: @autoclosure () -> RUMSceneIdentifier
     ) {
-        guard let monitor = monitor as? any RUMSceneTargetedManualViewHandling else {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMSceneTargetedManualViewHandling else {
             monitor.startView(key: key, name: name, attributes: attributes)
             return
         }
@@ -1369,7 +1370,7 @@ internal enum RUMSceneTargetedManualViewBridge {
             key: key,
             name: name,
             attributes: attributes,
-            sceneIdentifier: sceneIdentifier
+            sceneIdentifier: sceneIdentifier()
         )
     }
 
@@ -1377,9 +1378,9 @@ internal enum RUMSceneTargetedManualViewBridge {
         on monitor: any RUMMonitorViewProtocol,
         key: String,
         attributes: [AttributeKey: AttributeValue],
-        sceneIdentifier: RUMSceneIdentifier
+        sceneIdentifier: @autoclosure () -> RUMSceneIdentifier
     ) {
-        guard let monitor = monitor as? any RUMSceneTargetedManualViewHandling else {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMSceneTargetedManualViewHandling else {
             monitor.stopView(key: key, attributes: attributes)
             return
         }
@@ -1387,7 +1388,7 @@ internal enum RUMSceneTargetedManualViewBridge {
         monitor.stopView(
             key: key,
             attributes: attributes,
-            sceneIdentifier: sceneIdentifier
+            sceneIdentifier: sceneIdentifier()
         )
     }
 }

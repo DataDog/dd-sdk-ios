@@ -164,6 +164,10 @@ internal class Monitor: RUMCommandSubscriber {
     /// Per-scene navigation owner for future explicitly targeted manual views.
     /// Kept weak so the monitor cannot extend instrumentation lifetime.
     private weak var sceneTargetedManualViewHandler: (any RUMSceneTargetedManualViewHandling)?
+    private var hasBoundSceneTargetedManualViewHandler = false
+    /// Freeze the route at first use so a start/stop pair cannot change owners
+    /// when instrumentation is missing, bound late, or released.
+    private var isManualViewSceneRoutingEnabled: Bool?
     #endif
 
     init(
@@ -179,9 +183,15 @@ internal class Monitor: RUMCommandSubscriber {
     }
 
     #if os(iOS)
+    // Called once during RUMFeature initialization, before feature publication.
+    // RUM.enable synchronizes that initialization on the main thread.
     func bind(
         sceneTargetedManualViewHandler: any RUMSceneTargetedManualViewHandling
     ) {
+        guard !hasBoundSceneTargetedManualViewHandler, isManualViewSceneRoutingEnabled == nil else {
+            return
+        }
+        hasBoundSceneTargetedManualViewHandler = true
         self.sceneTargetedManualViewHandler = sceneTargetedManualViewHandler
     }
     #endif
@@ -1134,6 +1144,10 @@ extension Monitor: RUMSceneTargetedManualViewHandling {
         attributes: [AttributeKey: AttributeValue],
         sceneIdentifier: RUMSceneIdentifier
     ) {
+        guard routesManualViewsToScene() else {
+            startView(key: key, name: name, attributes: attributes)
+            return
+        }
         sceneTargetedManualViewHandler?.startView(
             key: key,
             name: name,
@@ -1147,11 +1161,25 @@ extension Monitor: RUMSceneTargetedManualViewHandling {
         attributes: [AttributeKey: AttributeValue],
         sceneIdentifier: RUMSceneIdentifier
     ) {
+        guard routesManualViewsToScene() else {
+            stopView(key: key, attributes: attributes)
+            return
+        }
         sceneTargetedManualViewHandler?.stopView(
             key: key,
             attributes: attributes,
             sceneIdentifier: sceneIdentifier
         )
+    }
+
+    @MainActor
+    private func routesManualViewsToScene() -> Bool {
+        if let isManualViewSceneRoutingEnabled {
+            return isManualViewSceneRoutingEnabled
+        }
+        let enabled = sceneTargetedManualViewHandler != nil
+        isManualViewSceneRoutingEnabled = enabled
+        return enabled
     }
 }
 #endif

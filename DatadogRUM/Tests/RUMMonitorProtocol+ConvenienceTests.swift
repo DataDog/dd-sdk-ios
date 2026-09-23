@@ -50,8 +50,7 @@ class RUMMonitorProtocol_ConvenienceTests: XCTestCase {
         monitor.succeedOperation(name: .mockAny())
         monitor.failOperation(name: .mockAny(), reason: .mockAny())
         #if os(iOS)
-        if #available(iOS 27.0, *),
-           let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
             let target = RUMViewTarget.current(in: scene)
             monitor.addFeatureFlagEvaluation(name: "flag", value: true, view: target)
             monitor.addTiming(name: "timing", view: target)

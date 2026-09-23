@@ -275,6 +275,36 @@ class NOPMonitorTests: XCTestCase {
 
     #if os(iOS)
     @MainActor
+    func testCustomManualFallbackDoesNotResolveSceneIdentity() {
+        let monitor = SceneTargetedFallbackMonitor()
+        var reads = 0
+        func sceneIdentifier() -> RUMSceneIdentifier {
+            reads += 1
+            return RUMSceneIdentifier(rawValue: "unused")
+        }
+
+        RUMSceneTargetedManualViewBridge.startView(
+            on: monitor,
+            key: "same",
+            name: "Manual",
+            attributes: ["start": 1],
+            sceneIdentifier: sceneIdentifier()
+        )
+        RUMSceneTargetedManualViewBridge.stopView(
+            on: monitor,
+            key: "same",
+            attributes: ["stop": 2],
+            sceneIdentifier: sceneIdentifier()
+        )
+
+        XCTAssertEqual(reads, 0)
+        XCTAssertEqual(monitor.starts.count, 1)
+        XCTAssertEqual(monitor.stops.count, 1)
+        XCTAssertEqual(monitor.starts.first?.attributes["start"] as? Int, 1)
+        XCTAssertEqual(monitor.stops.first?.attributes["stop"] as? Int, 2)
+    }
+
+    @MainActor
     func testWhenUsingSceneTargetedManualViewBridgeOnNOPMonitor_itFallsBackExactlyOnce() {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }

@@ -108,7 +108,9 @@ enum ProbeErrorAcceptance {
         record("error-owner-b", context: ownerB)
         let targetA = RUMViewTarget.current(in: a)
         let targetB = RUMViewTarget.current(in: b)
-        let objcTarget = objc_RUMViewTarget.current(in: a)
+        guard let objcTarget = objc_RUMViewTarget.current(in: a) else {
+            throw FixtureError.missing("main-thread Objective-C target")
+        }
         let objc = objc_RUMMonitor(swiftRUMMonitor: monitor)
         func attributes(_ phase: String, source: String = "scene-A") -> [String: Encodable] {
             [

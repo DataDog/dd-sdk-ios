@@ -69,32 +69,30 @@
     [monitor stopViewWithKey:@"view" attributes:@{}];
     [monitor startViewWithKey:@"" name:nil attributes:@{}];
     [monitor stopViewWithKey:@"" attributes:@{}];
-    #if TARGET_OS_IOS && DEBUG
-    if (@available(iOS 27.0, *)) {
-        UIWindowScene *scene = (UIWindowScene *)UIApplication.sharedApplication.connectedScenes.anyObject;
-        if (scene != nil) {
-            [monitor startViewWithKey:@"view" name:@"Scene View" inScene:scene attributes:@{}];
-            [monitor stopViewWithKey:@"view" inScene:scene attributes:@{}];
-            DDRUMViewTarget *target = [DDRUMViewTarget currentInScene:scene];
-            [monitor addFeatureFlagEvaluationWithName:@"flag" value:@YES view:target];
-            [monitor addTimingWithName:@"timing" view:target];
-            [monitor addViewLoadingTimeWithOverwrite:NO view:target];
-            [monitor addViewAttributeForKey:@"single" value:@"value" view:target];
-            [monitor addViewAttributes:@{@"batch": @7} view:target];
-            [monitor removeViewAttributeForKey:@"single" view:target];
-            [monitor removeViewAttributesForKeys:@[@"batch"] view:target];
-            [monitor addErrorWithMessage:@"targeted" stack:@"stack" source:DDRUMErrorSourceCustom view:target attributes:@{}];
-            [monitor addErrorWithError:[NSError errorWithDomain:@"targeted" code:1 userInfo:nil] source:DDRUMErrorSourceCustom view:target attributes:@{}];
-            [monitor startResourceWithResourceKey:@"targeted_request" request:[NSURLRequest new] view:target attributes:@{}];
-            [monitor startResourceWithResourceKey:@"targeted_url" url:[NSURL new] view:target attributes:@{}];
-            [monitor startResourceWithResourceKey:@"targeted_method" httpMethod:DDRUMMethodGet urlString:@"" view:target attributes:@{}];
-            [monitor addActionWithType:DDRUMActionTypeCustom name:@"targeted_action" view:target attributes:@{}];
-            [monitor startActionWithType:DDRUMActionTypeCustom name:@"targeted_action" view:target attributes:@{}];
-            [monitor stopActionWithType:DDRUMActionTypeCustom name:nil view:target attributes:@{}];
-            [monitor startOperationWithName:@"targeted_flow" operationKey:@"targeted_1" view:target attributes:@{} options:nil];
-            [monitor succeedOperationWithName:@"targeted_flow" operationKey:@"targeted_1" view:target attributes:@{}];
-            [monitor failOperationWithName:@"targeted_flow" operationKey:@"targeted_1" reason:DDRUMFeatureOperationFailureReasonError view:target attributes:@{}];
-        }
+    #if TARGET_OS_IOS && (DEBUG || DD_SCENE_API_VALIDATION)
+    UIWindowScene *scene = NSThread.isMainThread ? (UIWindowScene *)UIApplication.sharedApplication.connectedScenes.anyObject : nil;
+    DDRUMViewTarget *target = [scene isKindOfClass:UIWindowScene.class] ? [DDRUMViewTarget currentInScene:scene] : nil;
+    if (target != nil) {
+        [monitor startViewWithKey:@"view" name:@"Scene View" inScene:scene attributes:@{}];
+        [monitor stopViewWithKey:@"view" inScene:scene attributes:@{}];
+        [monitor addFeatureFlagEvaluationWithName:@"flag" value:@YES view:target];
+        [monitor addTimingWithName:@"timing" view:target];
+        [monitor addViewLoadingTimeWithOverwrite:NO view:target];
+        [monitor addViewAttributeForKey:@"single" value:@"value" view:target];
+        [monitor addViewAttributes:@{@"batch": @7} view:target];
+        [monitor removeViewAttributeForKey:@"single" view:target];
+        [monitor removeViewAttributesForKeys:@[@"batch"] view:target];
+        [monitor addErrorWithMessage:@"targeted" stack:@"stack" source:DDRUMErrorSourceCustom view:target attributes:@{}];
+        [monitor addErrorWithError:[NSError errorWithDomain:@"targeted" code:1 userInfo:nil] source:DDRUMErrorSourceCustom view:target attributes:@{}];
+        [monitor startResourceWithResourceKey:@"targeted_request" request:[NSURLRequest new] view:target attributes:@{}];
+        [monitor startResourceWithResourceKey:@"targeted_url" url:[NSURL new] view:target attributes:@{}];
+        [monitor startResourceWithResourceKey:@"targeted_method" httpMethod:DDRUMMethodGet urlString:@"" view:target attributes:@{}];
+        [monitor addActionWithType:DDRUMActionTypeCustom name:@"targeted_action" view:target attributes:@{}];
+        [monitor startActionWithType:DDRUMActionTypeCustom name:@"targeted_action" view:target attributes:@{}];
+        [monitor stopActionWithType:DDRUMActionTypeCustom name:nil view:target attributes:@{}];
+        [monitor startOperationWithName:@"targeted_flow" operationKey:@"targeted_1" view:target attributes:@{} options:nil];
+        [monitor succeedOperationWithName:@"targeted_flow" operationKey:@"targeted_1" view:target attributes:@{}];
+        [monitor failOperationWithName:@"targeted_flow" operationKey:@"targeted_1" reason:DDRUMFeatureOperationFailureReasonError view:target attributes:@{}];
     }
     #endif
     [monitor addViewLoadingTimeWithOverwrite:YES];

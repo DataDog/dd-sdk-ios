@@ -120,7 +120,9 @@ enum ProbeFlagAcceptance {
         record("flag-owner-b", context: ownerB)
         let targetA = RUMViewTarget.current(in: a)
         let targetB = RUMViewTarget.current(in: b)
-        let objcTarget = objc_RUMViewTarget.current(in: b)
+        guard let objcTarget = objc_RUMViewTarget.current(in: b) else {
+            throw FixtureError.missing("main-thread Objective-C target")
+        }
         let objc = objc_RUMMonitor(swiftRUMMonitor: monitor)
         func checkpoint(_ index: Int) {
             for (offset, target) in [(0, targetA), (1, targetB)] {
