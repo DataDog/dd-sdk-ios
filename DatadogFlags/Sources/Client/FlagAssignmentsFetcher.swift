@@ -64,6 +64,12 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         for evaluationContext: FlagsEvaluationContext,
         completion: @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
     ) {
+        // Repository callbacks can invoke application code; keep them off shared SDK work queues.
+        let completion: (Result<[String: FlagAssignment], FlagsError>) -> Void = { result in
+            DispatchQueue.global(qos: .utility).async {
+                completion(result)
+            }
+        }
         featureScope.context { [weak self] context in
             guard let self else {
                 completion(.failure(.clientNotInitialized))
