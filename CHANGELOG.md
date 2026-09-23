@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FIX] Avoid delaying `DatadogFlags` provider initialization on the initial cached flags read. See [#3078][]
+
 # 3.18.0 / 21-09-2026
 
 - [FIX] Preserve delayed WebView correlation for long-lived active native RUM views.
@@ -30,7 +32,6 @@
 # 3.15.0 / 05-08-2026
 
 - [FEATURE] Add support for UK1 Datadog Site. See [#3087][]
-- [FIX] Avoid delaying `DatadogFlags` provider initialization on the initial cached flags read. See [#3078][]
 - [FEATURE] Improve Session Replay capture fidelity for visual effects, embedded content, and gradients. See [#3057][] [#3061][] [#3066][] [#3089][] [#3092][] [#3098][] [#3109][]
 - [FIX] onSessionStart is now called only after sampling information used by WebView Tracking is in place, avoiding missing traces in early requests. See [#3104][]
 - [FIX] Fix crash when defining `onSessionStart` in RUM configuration in Swift 6 projects. See [#3106][]
