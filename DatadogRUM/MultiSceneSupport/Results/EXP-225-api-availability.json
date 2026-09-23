@@ -515,6 +515,6 @@
   "rum_suite_continuation": {
     "definition": "Results/EXP-225-rum-suite-definition.json",
     "result": "Results/EXP-225-rum-suite-result.json",
-    "state": "REVIEWED_PREPARATION_READY_FOR_ONE_BUILD"
+    "state": "DEPENDENCY_COMPLETE_PREPARATION_REVIEWED"
   }
 }

@@ -359,7 +359,7 @@
     "verdict": "DIRECT_BINARY_REUSE_REJECTED",
     "reason": "Do not reuse the old unit binary. Four live product hashes differ from products-before.json and no post-correction full manifest exists. Preserve all original source/test results. One fresh isolated build is required.",
     "next_definition": "Results/EXP-225-rum-suite-definition.json",
-    "preparation": "Fresh isolated source/dependency inputs and corrected collector qualify under scoped review; twelve offline test methods and four artifact-registry controls pass. One build and two runtime cells remain unstarted.",
+    "preparation": "Original isolated build stopped before compilation because the existing Carthage framework was omitted; no native tests, cleanup PASS. Separately reviewed dependency-complete preparation now includes unchanged OpenTelemetryApi2.5.0 artifacts. The runtime/oracle/cleanup and controls are unchanged.",
     "result_owner": "Results/EXP-225-rum-suite-result.json"
   }
 }

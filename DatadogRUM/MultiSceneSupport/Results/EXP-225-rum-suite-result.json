@@ -2,20 +2,20 @@
   "schema_version": 1,
   "experiment": "EXP-225",
   "continuation": "Full RUM module compatibility",
-  "status": "REVIEWED_PREPARATION_READY_FOR_ONE_BUILD",
+  "status": "DEPENDENCY_COMPLETE_PREPARATION_REVIEWED",
   "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
   "definition": "Results/EXP-225-rum-suite-definition.json",
-  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-qb8fbxcp",
-  "inputs_sha256": "9d0267a2c293340baf01c0720d76d5e49485e57aa7b3ade8794c8516df869800",
-  "review_sha256": "a8b47eb0349c11f79d2b176daee00bdc15ddec95e8c4f20a09b3a6a7dedabe57",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-dependencies-23a2oh4a",
   "preparation": {
-    "workspace_files": 1407,
+    "workspace_files": 1551,
     "dependency_source_files": 733,
     "dependency_artifact_files": 266,
     "swift_target_inventories": 10,
     "rum_test_source_files": 76,
     "controls": 12,
-    "registry_controls": 4
+    "registry_controls": 4,
+    "carthage_artifact_files": 142,
+    "control_reuse": "Exact unchanged runtime/oracle/cleanup AST and test controls; only prepare() adds the omitted existing dependency."
   },
   "schema_reference": {
     "cases": 912,
@@ -29,5 +29,19 @@
     "Provisional RUM portion only; the rest of M01/F03 and approved public API exposure remain open.",
     "No Session Replay capture/content suite."
   ],
-  "updated_at": "2026-09-23T13:51:55.705436+00:00"
+  "updated_at": "2026-09-23T13:58:38.634708+00:00",
+  "checkpoint": "432c4ba81dca92f4c70b583e45fa9aa7c849702b",
+  "original_attempts": [
+    {
+      "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-qb8fbxcp",
+      "scenario": "NOT_EXECUTED",
+      "overall": "INVALID_PREPARATION",
+      "cleanup": "PASS",
+      "sdk_finding": false,
+      "reason": "Existing OpenTelemetryApi2.5.0 binary dependency was omitted from the isolated source workspace; no compilation/native test ran.",
+      "stop_sha256": "7e329d4bacac2634e55aabad0f560c8be069aeb554aba89cb7c1f8c7773a226e"
+    }
+  ],
+  "inputs_sha256": "2f1921d1cb58fa07e3474548bff2f8a0c95d9433ad3dde87962216c85c83842c",
+  "review_sha256": "c7725fa62fda895c638a3a2d0a7a3a3289b81d2a954c09b493bbf2548f0f4ab2"
 }

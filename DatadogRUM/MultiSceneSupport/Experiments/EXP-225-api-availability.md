@@ -88,8 +88,10 @@ selected-test binary cannot be reused because its full post-correction fingerpri
 is missing. The [result owner](../Results/EXP-225-rum-suite-result.json) retains the
 review, exact source/compiler/dependency bindings and finite execution state.
 Twelve offline test methods and four artifact-registry controls qualify the
-collector; the build and native runs have not started. This is only the RUM portion
-of the remaining candidate compatibility matrix.
+collector. The first isolated build stopped before compilation because the copied
+workspace omitted its existing Carthage framework; cleanup passes and no test ran.
+A separately reviewed preparation includes that unchanged declared dependency.
+This remains only the RUM portion of the candidate compatibility matrix.
 
 ## Remaining boundary
 

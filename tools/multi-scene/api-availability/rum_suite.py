@@ -70,7 +70,7 @@ def prepare(root):
     require(not (root/'workspace').exists(), 'preparation already consumed')
     protected = build.protected()
     require(protected == shared.read(root/'protected-before.json'), 'protected workspace changed')
-    paths = ['Datadog', 'Datadog.xcworkspace', 'TestUtilities', 'xcconfigs', 'tools/lint', 'Makefile', 'Package.swift']
+    paths = ['Datadog', 'Datadog.xcworkspace', 'TestUtilities', 'xcconfigs', 'tools/lint', 'Makefile', 'Package.swift', 'Cartfile', 'Cartfile.resolved']
     modules = ['DatadogCore','DatadogInternal','DatadogRUM','DatadogLogs','DatadogTrace','DatadogCrashReporting',
                'DatadogWebViewTracking','DatadogSessionReplay','DatadogFlags','DatadogProfiling']
     names = shared.capture(['git','ls-tree','-r','--name-only',definition['source']]).stdout.decode().splitlines()
@@ -89,6 +89,16 @@ def prepare(root):
     project_hash = shared.sha(shared.REPO/PROJECT)
     require(project_hash == shared.read(prior/'sources-02.json')[PROJECT], 'target membership project differs')
     shutil.copy2(shared.REPO/PROJECT,workspace/PROJECT)
+    # The existing project links this declared binary dependency outside SwiftPM.
+    carthage=shared.REPO/'Carthage/Build'
+    require((workspace/'Cartfile.resolved').read_bytes()==(shared.REPO/'Cartfile.resolved').read_bytes(), 'Carthage pin differs from selected source')
+    require(shared.read(carthage/'.OpenTelemetryApi.version')['commitish']=='2.5.0', 'cached Carthage version differs')
+    require('OpenTelemetryApi.json" "2.5.0"' in (workspace/'Cartfile.resolved').read_text(), 'declared Carthage pin differs')
+    require(set(re.findall(r'path = \.\./Carthage/Build/([^;]+);', (workspace/PROJECT).read_text()))=={'OpenTelemetryApi.xcframework'}, 'unqualified binary framework reference')
+    (workspace/'Carthage/Build').mkdir(parents=True)
+    for name in ['OpenTelemetryApi.xcframework','.OpenTelemetryApi.version']:
+        shared.command(['/bin/cp','-cR',str(carthage/name),str(workspace/'Carthage/Build'/name)],root,'copy-'+name.replace('.','-'),deadline=time.time()+180)
+    require(inventory(workspace/'Carthage/Build')==inventory(carthage), 'copied Carthage artifacts differ')
     shared.command(['/bin/cp','-cR',str(prior/'DerivedData/SourcePackages'),str(root/'SourcePackages')],root,'copy-dependencies',deadline=time.time()+180)
     artifact_registry=relocate_artifact_registry(root,prior)
     dependencies = inventory(root/'SourcePackages/checkouts')

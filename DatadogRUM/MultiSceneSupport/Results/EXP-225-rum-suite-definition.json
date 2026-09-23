@@ -3,13 +3,13 @@
   "experiment": "EXP-225",
   "continuation": "Full RUM module compatibility at the implemented API candidate",
   "status": "DEFINED_BEFORE_EXECUTION",
-  "defined_at": "2026-09-23T13:22:25.255898+00:00",
+  "defined_at": "2026-09-23T13:56:01.467207+00:00",
   "gates": [
     "S3:F03:M01",
     "S3:C06"
   ],
   "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
-  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-qb8fbxcp",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-dependencies-23a2oh4a",
   "owner": "SDK implementer",
   "reviewer": "/root/c06_runtime_plan",
   "previous_unit_artifact": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_",
@@ -21,7 +21,8 @@
     "Freeze complete post-build compiler input membership, dependency revisions, xctestrun, test bundle and every linked product",
     "Enumerate and execute the unfiltered DatadogRUMTests target once on actual27.0 and17.5, including previously selected methods as part of the required full-suite run",
     "Compare exact discovered/executed identifiers, not just counts; retain every failure/skip/diagnostic and restore original simulator states",
-    "Parameterized XCTest cases retain exact source-declared argument sets and distinct execution identities; summary case counts remain separate from invocation counts."
+    "Parameterized XCTest cases retain exact source-declared argument sets and distinct execution identities; summary case counts remain separate from invocation counts.",
+    "Copy and fingerprint the existing declared Carthage OpenTelemetryApi2.5.0 framework and version receipt; preserve pin and include all bytes in the workspace manifest."
   ],
   "excluded": [
     "SDK implementation or test expectation changes",
@@ -72,5 +73,11 @@
   "environment_contract": "Both selected simulators must be freshly rediscovered and initially Shutdown. Hostless XCTest uses the selected Xcode agent and installs no task app. Restore Shutdown and verify owned workers have exited.",
   "commands": "Direct xcodebuild uses the existing Makefile DatadogRUM scheme/workspace with isolated build-for-testing and exact unfiltered enumeration; no repository build-script changes or Test Visibility credentials.",
   "parameter_source": "DatadogRUM/Tests/Utils/UIKitExtensionsTests.swift at candidate94842cc8: two Cartesian products1...5 x0...2 and two1...5 argument sets.",
-  "schema_reference": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope/rum/tests.json"
+  "schema_reference": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope/rum/tests.json",
+  "original_attempt": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-qb8fbxcp",
+    "state": "INVALID_PREPARATION",
+    "reason": "Existing OpenTelemetryApi2.5.0 binary dependency was omitted from the isolated source workspace; no compilation/native test ran.",
+    "stop_sha256": "7e329d4bacac2634e55aabad0f560c8be069aeb554aba89cb7c1f8c7773a226e"
+  }
 }
