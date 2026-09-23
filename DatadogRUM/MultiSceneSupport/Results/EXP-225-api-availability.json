@@ -431,7 +431,7 @@
   ],
   "legacy17_continuation": {
     "definition": "Results/EXP-225-legacy17-definition.json",
-    "state": "REVIEWED_LIFECYCLE_CONTINUATION_READY",
+    "state": "LEGACY17_SLICE_QUALIFIED_RFC_PENDING",
     "scope": "Eight source-paired no-scene navigation/lifecycle cells; preserve original API acceptance and failed attempts. No new experiment number or gate closure.",
     "evidence_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r",
     "offline_controls": {
@@ -443,8 +443,8 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/scoped-review.json",
       "sha256": "aa66e862c52245c94c0fcb9da17e6c27f3e09bfe0076bb04c1665dd32a2e17ca"
     },
-    "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/native-qualified",
-    "runner_commit": "241a006403f38f4deea53942fd9a2c675e5b4780",
+    "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/activation-qualified",
+    "runner_commit": "6dbd70b6ca832454bfcfbf53e133d553b5ee997a",
     "attempts": [
       {
         "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/qualification",
@@ -478,6 +478,17 @@
     "activation_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/activation-review.json",
       "sha256": "cca3d173ee8f9300ec72f3e6489f2ffbed17ee597be4494f42f6dad8cdcaf031"
-    }
+    },
+    "result": "Results/EXP-225-legacy17-result.json",
+    "accepted_summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/activation-qualified/summary.json",
+      "sha256": "96680282d690b35ae3bc822db1045f14c72304cc84298200fedd8fb2dc56fdcc"
+    },
+    "accepted_cells": 8,
+    "reused_navigation": 4,
+    "new_lifecycle": 4,
+    "cleanup": "PASS",
+    "gates_closed": [],
+    "next": "Qualify concurrent native same-key Swift/Objective-C ownership locally; F01/public exposure and full F03 matrix remain separate."
   }
 }

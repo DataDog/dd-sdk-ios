@@ -215,7 +215,7 @@
       "environment": "Xcode27.1 deployment15 builds; actual iOS17.5(21F79) iPad simulator; exact older-scene behavior stays disabled unless its finite family cases are separately qualified",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "EXP-225 locally implements the ordinary iOS15 API and unsupported-runtime legacy fallback. Deployment15 optimized clients and bounded17.5/27 checks are recorded in Results/EXP-225-api-availability.json; they do not close post-F01 approval/source-bound or baseline/current legacy-lifecycle obligations. Actual15/16 execution remains unavailable.",
+      "evidence": "EXP-225 locally qualifies ordinary deployment15 API/fallback and actual17.5/27 single-scene clients. Results/EXP-225-legacy17-result.json now qualifies8 baseline/current no-scene navigation/lifecycle cells at candidate94842cc8 with genuineSDK26.5 and exact owner/order parity;4 accepted navigation cells reused,4 lifecycle cells pass after the captured fixture activation repair. Original invalid attempts retained; cleanup passes. F01 approval/public promotion and final source binding remain open. Actual15/16 execution is unavailable.",
       "release_requirements": {
         "S3": {
           "scope": "iOS 15 deployment and oldest debuggable runtime",
@@ -225,7 +225,7 @@
           ],
           "decisive_test": "After F01, compile/link unguarded ordinary Swift/ObjC scene/target clients at iOS15 deployment, preserving guarded iOS27 semantic APIs; execute exact-once legacy fallback, attributes/options/callbacks, Resource/Action/Operation pairing, custom/NOP and baseline/current automatic/manual/legacy lifecycle on actual17.5. Disclose unexecuted15/16 runtime.",
           "environment": "Xcode27.1 deployment15 builds; actual iOS17.5(21F79) iPad simulator; exact older-scene behavior stays disabled unless its finite family cases are separately qualified",
-          "evidence": "EXP-225 locally implements the ordinary iOS15 API and unsupported-runtime legacy fallback. Deployment15 optimized clients and bounded17.5/27 checks are recorded in Results/EXP-225-api-availability.json; they do not close post-F01 approval/source-bound or baseline/current legacy-lifecycle obligations. Actual15/16 execution remains unavailable.",
+          "evidence": "EXP-225 locally qualifies ordinary deployment15 API/fallback and actual17.5/27 single-scene clients. Results/EXP-225-legacy17-result.json now qualifies8 baseline/current no-scene navigation/lifecycle cells at candidate94842cc8 with genuineSDK26.5 and exact owner/order parity;4 accepted navigation cells reused,4 lifecycle cells pass after the captured fixture activation repair. Original invalid attempts retained; cleanup passes. F01 approval/public promotion and final source binding remain open. Actual15/16 execution is unavailable.",
           "required": true
         },
         "S1": {

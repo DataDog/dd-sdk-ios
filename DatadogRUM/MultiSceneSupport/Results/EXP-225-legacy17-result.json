@@ -1,0 +1,370 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-225",
+  "status": "LEGACY17_SLICE_QUALIFIED_RFC_PENDING",
+  "scope": "Current prototype baseline/current no-scene automatic/manual navigation and actual lifecycle on17.5",
+  "source_revisions": {
+    "baseline": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
+    "candidate": "94842cc8ad7b104c1394c236b98b95b6c24a0956"
+  },
+  "build": "Xcode26.6 /17F113; actualSDK26.5; Release arm64; minimum15; no scene manifest",
+  "runtime": {
+    "udid": "EEF49588-982B-492E-92AF-57F900ACEACD",
+    "name": "iPad Pro 11-inch (M4) (16GB)",
+    "state": "Shutdown",
+    "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-17-5",
+    "runtime_build": "21F79"
+  },
+  "accepted_summary": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/activation-qualified/summary.json",
+    "sha256": "96680282d690b35ae3bc822db1045f14c72304cc84298200fedd8fb2dc56fdcc"
+  },
+  "accepted_cells": 8,
+  "reused_navigation": 4,
+  "new_lifecycle": 4,
+  "cases": [
+    {
+      "arm": "baseline",
+      "mode": "automatic",
+      "run_id": "exp225-legacy17-9cdf869f-3ef6-468b-9eca-03f551545809",
+      "pid": 7977,
+      "status": "PASS",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "binary_sha256": "29e46794d88c86f088c376c044924c37b05e5a8461f0a246bcb5e50586098923",
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/native-qualified/exp225-legacy17-9cdf869f-3ef6-468b-9eca-03f551545809/result.json",
+        "sha256": "649ae2c5b314250e2e56d3de527771ee984a73ed7c7b302bd370a084c5513f3d"
+      },
+      "reused_from": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/native-qualified/summary.json"
+    },
+    {
+      "arm": "candidate",
+      "mode": "automatic",
+      "run_id": "exp225-legacy17-fb3a994e-7fe5-4ab4-8a8d-9b06491b5d0a",
+      "pid": 9128,
+      "status": "PASS",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "binary_sha256": "e53b4229ff9acf96b1efe1e0bef62ed6c72e709f2fbfd37dd0aff82cbab1e178",
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/native-qualified/exp225-legacy17-fb3a994e-7fe5-4ab4-8a8d-9b06491b5d0a/result.json",
+        "sha256": "3e05848ac6a464476ad35b234ec9ec72a5877edfeee7271130dba3e32c457ee2"
+      },
+      "reused_from": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/native-qualified/summary.json"
+    },
+    {
+      "arm": "baseline",
+      "mode": "manual",
+      "run_id": "exp225-legacy17-2e56249d-52df-410c-a2ce-67296003959b",
+      "pid": 9298,
+      "status": "PASS",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "binary_sha256": "29e46794d88c86f088c376c044924c37b05e5a8461f0a246bcb5e50586098923",
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/native-qualified/exp225-legacy17-2e56249d-52df-410c-a2ce-67296003959b/result.json",
+        "sha256": "9e4ee4125b24f4342f6e746aa4c925450d6049321a68e159db5e6a5670e5af1a"
+      },
+      "reused_from": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/native-qualified/summary.json"
+    },
+    {
+      "arm": "candidate",
+      "mode": "manual",
+      "run_id": "exp225-legacy17-cfa1c546-d267-47ec-bfd1-0e43c039023e",
+      "pid": 9511,
+      "status": "PASS",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "binary_sha256": "e53b4229ff9acf96b1efe1e0bef62ed6c72e709f2fbfd37dd0aff82cbab1e178",
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/native-qualified/exp225-legacy17-cfa1c546-d267-47ec-bfd1-0e43c039023e/result.json",
+        "sha256": "2f914831732386fc8a4c3d5a98f201e136ebcec887934b455c7751aabb625914"
+      },
+      "reused_from": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/native-qualified/summary.json"
+    },
+    {
+      "arm": "baseline",
+      "mode": "lifecycle-automatic",
+      "run_id": "exp225-legacy17-7c366998-3b68-44bc-9d91-70551596a630",
+      "pid": 14163,
+      "status": "PASS",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "binary_sha256": "b0bded6dac7097ed5f542dd4e9a07fb3cf5b5e7dd8e4ef56f84f799b89523d77",
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/activation-qualified/exp225-legacy17-7c366998-3b68-44bc-9d91-70551596a630/result.json",
+        "sha256": "2a5ff97f43fa31e8249621226c19d755f6321bc6d7f357907ef3dec9a318dd93"
+      },
+      "reused_from": null
+    },
+    {
+      "arm": "candidate",
+      "mode": "lifecycle-automatic",
+      "run_id": "exp225-legacy17-358d6e86-3106-4f7e-9e45-1f7579ca2492",
+      "pid": 15005,
+      "status": "PASS",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "binary_sha256": "f053928c631c3507c8b9a5bb98e8b949ff7b7726b7e7ba2a79d9f7f2d25aac93",
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/activation-qualified/exp225-legacy17-358d6e86-3106-4f7e-9e45-1f7579ca2492/result.json",
+        "sha256": "add740786a9a4371504ed77735e833148a0daf2417f101079088702bdaa2df3e"
+      },
+      "reused_from": null
+    },
+    {
+      "arm": "baseline",
+      "mode": "lifecycle-manual",
+      "run_id": "exp225-legacy17-2358021e-9b3d-4466-9d69-595c8b2e0872",
+      "pid": 15189,
+      "status": "PASS",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "binary_sha256": "b0bded6dac7097ed5f542dd4e9a07fb3cf5b5e7dd8e4ef56f84f799b89523d77",
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/activation-qualified/exp225-legacy17-2358021e-9b3d-4466-9d69-595c8b2e0872/result.json",
+        "sha256": "c9cec547a1caaf12b7f08d920f78e393f22ed92813169aeba93c5242d228a165"
+      },
+      "reused_from": null
+    },
+    {
+      "arm": "candidate",
+      "mode": "lifecycle-manual",
+      "run_id": "exp225-legacy17-8bf9a448-ab3f-47d4-bd8f-e1f39e54de5f",
+      "pid": 15387,
+      "status": "PASS",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "binary_sha256": "f053928c631c3507c8b9a5bb98e8b949ff7b7726b7e7ba2a79d9f7f2d25aac93",
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/activation-qualified/exp225-legacy17-8bf9a448-ab3f-47d4-bd8f-e1f39e54de5f/result.json",
+        "sha256": "58b451de1077841218528f5a0e9b8db1fffe6604fa68a9b35def40e792744d99"
+      },
+      "reused_from": null
+    }
+  ],
+  "builds": {
+    "baseline/Lifecycle": {
+      "app": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/activation-qualified/builds/baseline/derived/Build/Products/Release-iphonesimulator/FixtureLegacyLifecycle.app",
+      "bundle": "com.datadoghq.exp225.baseline.legacy17.lifecycle",
+      "sha256": "b0bded6dac7097ed5f542dd4e9a07fb3cf5b5e7dd8e4ef56f84f799b89523d77",
+      "uuid": "36664425-1628-3dc7-b842-e15eb39859bd",
+      "sdk": "iphonesimulator26.5",
+      "minimum_os": "15.0"
+    },
+    "candidate/Lifecycle": {
+      "app": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/activation-qualified/builds/candidate/derived/Build/Products/Release-iphonesimulator/FixtureLegacyLifecycle.app",
+      "bundle": "com.datadoghq.exp225.candidate.legacy17.lifecycle",
+      "sha256": "f053928c631c3507c8b9a5bb98e8b949ff7b7726b7e7ba2a79d9f7f2d25aac93",
+      "uuid": "405a7330-3fd4-3fb3-9bd4-e83d3bd19c05",
+      "sdk": "iphonesimulator26.5",
+      "minimum_os": "15.0"
+    }
+  },
+  "navigation_builds": {
+    "baseline/Navigation": {
+      "app": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/qualification/builds/baseline/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app",
+      "bundle": "com.datadoghq.exp225.baseline.legacy17",
+      "sha256": "29e46794d88c86f088c376c044924c37b05e5a8461f0a246bcb5e50586098923",
+      "uuid": "ae3dfc19-704f-3fc2-a284-90269e71a653",
+      "sdk": "iphonesimulator26.5",
+      "minimum_os": "15.0"
+    },
+    "candidate/Navigation": {
+      "app": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/qualification/builds/candidate/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app",
+      "bundle": "com.datadoghq.exp225.candidate.legacy17",
+      "sha256": "e53b4229ff9acf96b1efe1e0bef62ed6c72e709f2fbfd37dd0aff82cbab1e178",
+      "uuid": "53473f83-25d1-39b7-9180-82925912ec60",
+      "sdk": "iphonesimulator26.5",
+      "minimum_os": "15.0"
+    }
+  },
+  "controls": 37,
+  "protected_paths_unchanged": 12,
+  "final_cleanup": "PASS",
+  "gates_closed": [],
+  "remaining": [
+    "Attributable F01 approval and public promotion",
+    "Final source-bound C06/F03 matrix",
+    "Simultaneous foreground-active native A/B same-key M02/M03 proof"
+  ],
+  "limits": [
+    "No iOS15/16 runtime, backend, physical, performance, Scene-host or S2 claim.",
+    "Original classifier rejection and premature-activation baseline fixture failure remain INVALID with their passed cleanups."
+  ],
+  "matched_outcomes": {
+    "automatic": {
+      "view_names": [
+        "Home",
+        "Detail",
+        "Home"
+      ],
+      "stopped": [
+        true,
+        true,
+        false
+      ],
+      "owners": [
+        {
+          "kind": "action",
+          "phase": "Home1",
+          "occurrence": 0
+        },
+        {
+          "kind": "resource",
+          "phase": "https://fixture.invalid/Home1",
+          "occurrence": 0
+        },
+        {
+          "kind": "action",
+          "phase": "Detail1",
+          "occurrence": 1
+        },
+        {
+          "kind": "resource",
+          "phase": "https://fixture.invalid/Detail1",
+          "occurrence": 1
+        },
+        {
+          "kind": "action",
+          "phase": "Home2",
+          "occurrence": 2
+        },
+        {
+          "kind": "resource",
+          "phase": "https://fixture.invalid/Home2",
+          "occurrence": 2
+        }
+      ],
+      "notifications": []
+    },
+    "manual": {
+      "view_names": [
+        "Home",
+        "Detail",
+        "Home"
+      ],
+      "stopped": [
+        true,
+        true,
+        false
+      ],
+      "owners": [
+        {
+          "kind": "action",
+          "phase": "Home1",
+          "occurrence": 0
+        },
+        {
+          "kind": "resource",
+          "phase": "https://fixture.invalid/Home1",
+          "occurrence": 0
+        },
+        {
+          "kind": "action",
+          "phase": "Detail1",
+          "occurrence": 1
+        },
+        {
+          "kind": "resource",
+          "phase": "https://fixture.invalid/Detail1",
+          "occurrence": 1
+        },
+        {
+          "kind": "action",
+          "phase": "Home2",
+          "occurrence": 2
+        },
+        {
+          "kind": "resource",
+          "phase": "https://fixture.invalid/Home2",
+          "occurrence": 2
+        }
+      ],
+      "notifications": []
+    },
+    "lifecycle-automatic": {
+      "view_names": [
+        "Home",
+        "Home"
+      ],
+      "stopped": [
+        true,
+        false
+      ],
+      "owners": [
+        {
+          "kind": "action",
+          "phase": "BeforeBackground",
+          "occurrence": 0
+        },
+        {
+          "kind": "resource",
+          "phase": "https://fixture.invalid/BeforeBackground",
+          "occurrence": 0
+        },
+        {
+          "kind": "action",
+          "phase": "AfterForeground",
+          "occurrence": 1
+        },
+        {
+          "kind": "resource",
+          "phase": "https://fixture.invalid/AfterForeground",
+          "occurrence": 1
+        }
+      ],
+      "notifications": [
+        "UIApplicationDidBecomeActiveNotification",
+        "UIApplicationDidEnterBackgroundNotification",
+        "UIApplicationWillEnterForegroundNotification",
+        "UIApplicationDidBecomeActiveNotification"
+      ]
+    },
+    "lifecycle-manual": {
+      "view_names": [
+        "Home"
+      ],
+      "stopped": [
+        false
+      ],
+      "owners": [
+        {
+          "kind": "action",
+          "phase": "BeforeBackground",
+          "occurrence": 0
+        },
+        {
+          "kind": "resource",
+          "phase": "https://fixture.invalid/BeforeBackground",
+          "occurrence": 0
+        },
+        {
+          "kind": "action",
+          "phase": "AfterForeground",
+          "occurrence": 0
+        },
+        {
+          "kind": "resource",
+          "phase": "https://fixture.invalid/AfterForeground",
+          "occurrence": 0
+        }
+      ],
+      "notifications": [
+        "UIApplicationDidBecomeActiveNotification",
+        "UIApplicationDidEnterBackgroundNotification",
+        "UIApplicationWillEnterForegroundNotification",
+        "UIApplicationDidBecomeActiveNotification"
+      ]
+    }
+  }
+}

@@ -64,6 +64,8 @@ later confirmation and full F04 remains S3. API availability amendments stay und
 [EXP-225](Results/EXP-225-api-availability.json) implements ordinary deployment15
 calls with SDK-selected fallback and crash-safe Objective-C background rejection.
 Optimized single-scene clients qualify on17.5/27 with automatic tracking on/off.
+[Current-source legacy comparisons](Results/EXP-225-legacy17-result.json) also preserve
+automatic/manual navigation and actual background/foreground ownership on17.5.
 This remains experimental: attributable API approval, normal public exposure,
 simultaneous native same-key ownership and the complete final matrix stay open.
 

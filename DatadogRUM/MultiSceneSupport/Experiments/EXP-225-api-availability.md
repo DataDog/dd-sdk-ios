@@ -41,6 +41,24 @@ fixture corrections and separate restoration receipts preserve attribution;
 none establishes an SDK regression. Accepted manual-mode cells were reused at
 identical SDK bytes instead of rerun for an automatic-only matcher correction.
 
+## Legacy runtime continuation
+
+The [paired legacy result](../Results/EXP-225-legacy17-result.json) completes the
+prototype's remaining17.5 baseline/current navigation and lifecycle obligation.
+Both source arms use genuine SDK26.5 Release builds targeting15 without a scene
+manifest. Automatic/manual navigation preserves Home, Detail and a fresh Home;
+automatic backgrounding stops Home and creates a fresh occurrence, while manual
+tracking retains its Home. Exact Action/Resource owners and notification order
+match. All eight accepted cells and final restoration pass.
+
+Four navigation results were reused with unchanged source, SDK, fixture, compiler,
+product and raw-result identities. The original compiler-directory rejection
+remains INVALID; its build was reclassified offline. A later baseline lifecycle
+attempt emitted markers before actual activation because the fixture used a fixed
+delay. That original INVALID also remains. The separately reviewed continuation
+waits for real first/second activation and passes the four lifecycle cells without
+changing the SDK or weakening the terminal oracle. These are fixture findings.
+
 ## Remaining boundary
 
 No release gate closes. Local SPI/header validation is not normal public API
