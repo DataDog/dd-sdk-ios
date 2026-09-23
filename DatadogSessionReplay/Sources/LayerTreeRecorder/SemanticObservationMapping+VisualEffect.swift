@@ -90,16 +90,19 @@ extension CALayerSnapshot.SemanticObservationMapping {
     }
 
     static let scrollPocket = Self { layer, _, _ in
-        guard
-            layer.isScrollPocket,
-            let delegate = layer.delegate as? NSObject,
-            let edge = delegate.safeValue(forKey: "edge") as? NSNumber
-        else {
+        guard layer.isScrollPocket || layer.isScrollEdgeEffect else {
             return nil
         }
 
+        guard let edge = layer.scrollPocketEdge else {
+            return .init(
+                semantics: .visualEffect(.compositorSupport),
+                ignoresSublayers: true
+            )
+        }
+
         return .init(
-            semantics: .visualEffect(.scrollPocket(UIRectEdge(rawValue: edge.uintValue))),
+            semantics: .visualEffect(.scrollPocket(edge)),
             ignoresSublayers: true
         )
     }
@@ -129,6 +132,17 @@ extension CALayerSnapshot.SemanticObservationMapping {
         }
 
         return .init(semantics: .visualEffect(.liquidLens))
+    }
+
+    static let tabSelectionBackdrop = Self { layer, _, _ in
+        guard layer.isTabSelectionBackdrop else {
+            return nil
+        }
+
+        return .init(
+            semantics: .visualEffect(.backdrop),
+            ignoresSublayers: true
+        )
     }
 
     static let visualEffectBackdrop = Self { layer, _, _ in

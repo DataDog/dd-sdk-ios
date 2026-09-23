@@ -1,6 +1,7 @@
 # Unreleased
 
 - [FIX] Avoid delaying `DatadogFlags` provider initialization on the initial cached flags read. See [#3078][]
+- [FIX] Release the RUM display-link observer and its frame readers when their owner is released.
 
 # 3.18.0 / 21-09-2026
 
