@@ -1890,6 +1890,141 @@ final class FlagsRepositoryTests: XCTestCase {
 
     // MARK: - Overlapping Requests
 
+    func testOverlappingContextUpdates_whenBothFail_onlyLatestContextCanUseCache() throws {
+        let olderContext = FlagsEvaluationContext(targetingKey: "user-A")
+        let newerContext = FlagsEvaluationContext(targetingKey: "user-B")
+        let cachedContexts: [FlagsEvaluationContext?] = [olderContext, newerContext, nil]
+
+        for cachedContext in cachedContexts {
+            for responseOrder in [[0, 1], [1, 0]] {
+                for delayCacheRead in [false, true] {
+                    var storage: [String: DataStoreValueResult] = [:]
+                    if let cachedContext {
+                        let data = FlagsData(flags: ["cached": .mockAny()], context: cachedContext, date: .mockAny())
+                        storage["client"] = .value(try JSONEncoder().encode(data), dataStoreDefaultKeyVersion)
+                    }
+                    let dataStore = DelayedReadDataStore(storage: storage)
+                    let readStarted = expectation(description: "cache read started")
+                    dataStore.onReadStarted = { readStarted.fulfill() }
+                    var completions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+                    let repository = FlagsRepository(
+                        clientName: "client",
+                        flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in completions.append(completion) },
+                        dateProvider: DateProviderMock(),
+                        featureScope: FeatureScopeMock(dataStore: dataStore),
+                        initializationTimeout: nil
+                    )
+                    defer {
+                        dataStore.resumeRead()
+                        dataStore.flush()
+                    }
+                    wait(for: [readStarted], timeout: 1)
+                    if !delayCacheRead {
+                        dataStore.resumeRead()
+                        dataStore.flush()
+                    }
+                    let completed = expectation(description: "both failures completed")
+                    completed.expectedFulfillmentCount = 2
+                    @ReadWriteLock
+                    var callbackCounts = [0, 0]
+                    for (index, context) in [olderContext, newerContext].enumerated() {
+                        repository.setEvaluationContext(context) { result in
+                            guard case .failure(.invalidResponse) = result else {
+                                return XCTFail("Expected the original fetch error, got \(result)")
+                            }
+                            _callbackCounts.mutate { $0[index] += 1 }
+                            completed.fulfill()
+                        }
+                    }
+
+                    for index in responseOrder {
+                        completions[index](.failure(.invalidResponse))
+                    }
+                    dataStore.resumeRead()
+                    dataStore.flush()
+                    wait(for: [completed], timeout: 1)
+
+                    let hasMatchingCache = cachedContext == newerContext
+                    XCTAssertEqual(callbackCounts, [1, 1])
+                    XCTAssertEqual(repository.state.currentState, hasMatchingCache ? .stale : .error)
+                    XCTAssertEqual(repository.context, hasMatchingCache ? newerContext : nil)
+                    XCTAssertEqual(repository.flagAssignment(for: "cached") != nil, hasMatchingCache)
+                    XCTAssertEqual(repository.flagAssignments() != nil, hasMatchingCache)
+                }
+            }
+        }
+    }
+
+    func testOverlappingContextUpdates_whenOlderRequestFails_preservesNewerReconciliation() throws {
+        let featureScope = FeatureScopeMock()
+        let newerContext = FlagsEvaluationContext(targetingKey: "user-B")
+        let cachedData = FlagsData(flags: ["cached": .mockAny()], context: newerContext, date: .mockAny())
+        try featureScope.dataStoreMock.setValue(JSONEncoder().encode(cachedData), forKey: "client")
+        var completions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+        let repository = FlagsRepository(
+            clientName: "client",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in completions.append(completion) },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            initializationTimeout: nil
+        )
+        featureScope.dataStore.flush()
+        var callbackCount = 0
+        repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "user-A")) { _ in callbackCount += 1 }
+        repository.setEvaluationContext(newerContext) { _ in callbackCount += 1 }
+
+        completions[0](.failure(.invalidResponse))
+
+        XCTAssertEqual(callbackCount, 1)
+        XCTAssertEqual(repository.state.currentState, .reconciling)
+        XCTAssertEqual(repository.context, newerContext)
+        XCTAssertNotNil(repository.flagAssignment(for: "cached"))
+
+        completions[1](.failure(.invalidResponse))
+        XCTAssertEqual(callbackCount, 2)
+        XCTAssertEqual(repository.state.currentState, .stale)
+        XCTAssertEqual(repository.context, newerContext)
+    }
+
+    func testOverlappingContextUpdates_whenLatestRequestFails_olderSuccessCannotRestoreWrongContext() {
+        for responseOrder in [[0, 1], [1, 0]] {
+            let featureScope = FeatureScopeMock()
+            var completions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+            let repository = FlagsRepository(
+                clientName: "client",
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in completions.append(completion) },
+                dateProvider: DateProviderMock(),
+                featureScope: featureScope,
+                initializationTimeout: nil
+            )
+            featureScope.dataStore.flush()
+            defer { repository.flush() }
+            var callbackCounts = [0, 0]
+            repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "user-A")) { result in
+                if case .failure(let error) = result {
+                    XCTFail("Expected the original success, got \(error)")
+                }
+                callbackCounts[0] += 1
+            }
+            repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "user-B")) { result in
+                if case .success = result {
+                    XCTFail("Expected the original fetch error")
+                }
+                callbackCounts[1] += 1
+            }
+
+            for index in responseOrder {
+                completions[index](index == 0 ? .success(["old": .mockAny()]) : .failure(.invalidResponse))
+            }
+
+            XCTAssertEqual(callbackCounts, [1, 1])
+            XCTAssertEqual(repository.state.currentState, .error)
+            XCTAssertNil(repository.context)
+            XCTAssertNil(repository.flagAssignment(for: "old"))
+            XCTAssertNil(repository.flagAssignments())
+        }
+    }
+
     func testOverlappingContextUpdates_laterSuccessShouldNotBeClearedByEarlierFailure() {
         // This test reproduces the race condition from Codex feedback #24:
         // 1. Request A starts (captures hadFlags = false)

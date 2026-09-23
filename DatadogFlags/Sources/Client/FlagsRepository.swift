@@ -325,17 +325,16 @@ internal final class FlagsRepository {
 
     private func applyFailedContextUpdate(
         for context: FlagsEvaluationContext,
-        versionAtStart: UInt64
+        contextUpdateID: UInt64
     ) -> FlagsClientState? {
-        // Only update state if no newer request has succeeded.
-        // This prevents an older failing request from clearing data
-        // written by a newer successful request.
+        // Only the latest request can select fallback data or end reconciliation.
         var stateToUpdate: FlagsClientState?
         _repositoryState.mutate { state in
-            guard state.flagsDataVersion == versionAtStart else {
+            guard contextUpdateID == state.contextUpdateID else {
                 return
             }
 
+            state.lastAppliedContextUpdateID = contextUpdateID
             state.reconcilingContext = nil
 
             // Only use cached flags if they match the requested context to avoid
@@ -418,14 +417,12 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             }
         }
 
-        var versionAtStart: UInt64 = 0
         var contextUpdateID: UInt64 = 0
         _repositoryState.mutate { state in
             state.contextUpdateID += 1
             contextUpdateID = state.contextUpdateID
             state.hasStartedEvaluationContextRequest = true
             state.reconcilingContext = context
-            versionAtStart = state.flagsDataVersion
         }
         if initializationCompletion == nil {
             stateManager.updateState(.reconciling)
@@ -447,7 +444,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 var versionAfterSuccess: UInt64?
                 var callbacks: [PendingCacheReadCallback] = []
                 self._repositoryState.mutate { state in
-                    // Concurrent delivery must not let an older success replace a newer one.
+                    // Concurrent delivery must not let an older success replace a newer result.
                     guard contextUpdateID >= state.lastAppliedContextUpdateID else {
                         return
                     }
@@ -475,7 +472,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
 
                     let newState = self.applyFailedContextUpdate(
                         for: context,
-                        versionAtStart: versionAtStart
+                        contextUpdateID: contextUpdateID
                     )
                     complete(.failure(error), newState, operationCompletion)
                 })
