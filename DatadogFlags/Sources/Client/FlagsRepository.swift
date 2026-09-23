@@ -128,6 +128,10 @@ internal final class FlagsRepository {
             }
 
             isDiskReadComplete = true
+            return takePendingDiskReadCallbacks()
+        }
+
+        mutating func takePendingDiskReadCallbacks() -> [() -> Void] {
             let callbacks = pendingDiskReadCallbacks
             pendingDiskReadCallbacks = []
             return callbacks
@@ -261,8 +265,8 @@ internal final class FlagsRepository {
             return
         }
 
-        // The initial disk-read callback runs on DatadogCore's shared read/write queue.
-        // Hop off that queue before notifying state listeners or invoking public completions.
+        // Disk reads can release callbacks on DatadogCore's shared read/write queue.
+        // Keep state listeners and public completions off that queue.
         DispatchQueue.global(qos: .utility).async {
             callbacks.forEach { $0() }
         }
@@ -427,15 +431,18 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     date: self.dateProvider.now
                 )
                 var versionAfterSuccess: UInt64 = 0
+                var callbacks: [() -> Void] = []
                 self._repositoryState.mutate { state in
                     state.flagsData = flagsData
                     state.cachedFlagsData = flagsData
                     state.flagsDataVersion += 1
                     versionAfterSuccess = state.flagsDataVersion
                     state.reconcilingContext = nil
+                    callbacks = state.takePendingDiskReadCallbacks()
                 }
                 self.writeState(flagsData, version: versionAfterSuccess)
                 complete(.success(()), .ready)
+                self.executePendingDiskReadCallbacks(callbacks)
             case .failure(let error):
                 self.whenCacheReady { [weak self] in
                     guard let self else {
@@ -456,12 +463,14 @@ extension FlagsRepository: FlagsRepositoryProtocol {
     func reset() {
         let flagsDataStore = featureScope.flagsDataStore
         let clientName = clientName
+        var callbacks: [() -> Void] = []
 
         _repositoryState.mutate { state in
             state.flagsData = nil
             state.cachedFlagsData = nil
             state.flagsDataVersion += 1
             state.reconcilingContext = nil
+            callbacks = state.takePendingDiskReadCallbacks()
         }
         // Enqueue removal after any already-started cache write to avoid
         // re-persisting stale flags after reset.
@@ -469,6 +478,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             flagsDataStore.removeFlagsData(forClientNamed: clientName)
         }
         stateManager.updateState(.notReady)
+        executePendingDiskReadCallbacks(callbacks)
     }
 
     func flush() {

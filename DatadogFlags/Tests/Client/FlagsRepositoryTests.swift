@@ -455,6 +455,95 @@ final class FlagsRepositoryTests: XCTestCase {
         }
     }
 
+    func testPendingFailedContextUpdates_whenCacheReadIsSuperseded_completeWithoutWaitingForDisk() throws {
+        for shouldReset in [false, true] {
+            // Given
+            let context = FlagsEvaluationContext(targetingKey: "user-A")
+            let newerContext = FlagsEvaluationContext(targetingKey: "user-B")
+            let cachedData = FlagsData(flags: ["cached": .mockAny()], context: context, date: .mockAny())
+            let dataStore = DelayedReadDataStore(storage: [
+                "client": .value(try JSONEncoder().encode(cachedData), dataStoreDefaultKeyVersion)
+            ])
+            let readStarted = expectation(description: "initial read started")
+            dataStore.onReadStarted = { readStarted.fulfill() }
+            var fetchCompletions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+            var timeoutAction: (() -> Void)?
+            @ReadWriteLock
+            var timeoutCancellationCount = 0
+            @ReadWriteLock
+            var callbackCount = 0
+            let completed = DispatchSemaphore(value: 0)
+            let expectedState: FlagsClientState = shouldReset ? .notReady : .ready
+            let repository = FlagsRepository(
+                clientName: "client",
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                    fetchCompletions.append(completion)
+                },
+                dateProvider: DateProviderMock(),
+                featureScope: FeatureScopeMock(dataStore: dataStore),
+                initializationTimeout: 5,
+                scheduleInitializationTimeout: { _, action in
+                    timeoutAction = action
+                    return { _timeoutCancellationCount.mutate { $0 += 1 } }
+                }
+            )
+            defer {
+                dataStore.resumeRead()
+                dataStore.flush()
+                repository.flush()
+            }
+            wait(for: [readStarted], timeout: 1)
+
+            for index in 0..<2 {
+                repository.setEvaluationContext(context) { result in
+                    switch result {
+                    case .failure(.invalidResponse):
+                        break
+                    default:
+                        XCTFail("Expected the original fetch error, got \(result)")
+                    }
+                    XCTAssertEqual(repository.state.currentState, expectedState)
+                    XCTAssertFalse(dataStore.isOnReadQueue)
+                    // Reentrant getters verify that callbacks do not run under the repository lock.
+                    XCTAssertEqual(repository.context, shouldReset ? nil : newerContext)
+                    _callbackCount.mutate { $0 += 1 }
+                    completed.signal()
+                }
+                fetchCompletions[index](.failure(.invalidResponse))
+            }
+            XCTAssertEqual(callbackCount, 0)
+
+            // When
+            if shouldReset {
+                repository.reset()
+            } else {
+                repository.setEvaluationContext(newerContext) { result in
+                    if case .failure(let error) = result {
+                        XCTFail("Expected success, got \(error)")
+                    }
+                }
+                fetchCompletions[2](.success(["fresh": .mockAny()]))
+            }
+
+            // Then
+            XCTAssertEqual(completed.wait(timeout: .now() + 1), .success)
+            XCTAssertEqual(completed.wait(timeout: .now() + 1), .success)
+            XCTAssertEqual(callbackCount, 2)
+            XCTAssertEqual(timeoutCancellationCount, 1)
+
+            // A late disk read and an already-scheduled timeout must not complete requests again.
+            dataStore.resumeRead()
+            dataStore.flush()
+            try XCTUnwrap(timeoutAction)()
+            XCTAssertEqual(completed.wait(timeout: .now() + 0.05), .timedOut)
+            XCTAssertEqual(callbackCount, 2)
+            XCTAssertEqual(repository.state.currentState, expectedState)
+            XCTAssertEqual(repository.context, shouldReset ? nil : newerContext)
+            XCTAssertEqual(repository.flagAssignment(for: "fresh") != nil, !shouldReset)
+            XCTAssertNil(repository.flagAssignment(for: "cached"))
+        }
+    }
+
     func testInitialDataStoreRead_whenCompletesAfterReset_doesNotRestoreCachedFlags() throws {
         // Given
         let clientName = "client"
