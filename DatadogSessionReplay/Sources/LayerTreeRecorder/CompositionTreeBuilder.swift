@@ -148,7 +148,7 @@ internal class CompositionTreeBuilder {
         if snapshot.hasBackgroundColor
             || snapshot.hasBorder
             || snapshot.observation.gradient != nil
-            || snapshot.observation.semantics == .visualEffect(.automaticCapsule),
+            || snapshot.requiresGlassApproximation,
            let backgroundWireframe = makeWireframeReference(for: snapshot, context: context) {
             children.append(backgroundWireframe)
         }
