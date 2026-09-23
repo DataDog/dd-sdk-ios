@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-225",
+  "continuation": "Runtime-gate semantic navigation tests and decode diagnostic result nodes",
+  "status": "DEFINED_BEFORE_IMPLEMENTATION",
+  "defined_at": "2026-09-23T21:21:31.064553+00:00",
+  "gates": [
+    "S3:F03:M01",
+    "S3:C06"
+  ],
+  "owner": "SDK implementer",
+  "reviewer": "/root/c06_runtime_plan",
+  "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-availability-kts5muog",
+  "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-dependencies-23a2oh4a",
+  "prior_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-inventory-n_fwd0nv",
+  "diagnosis": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-inventory-n_fwd0nv/diagnosis/assessment.json",
+    "sha256": "9ed7844bae6c72ae069640faab2b4fc8eb85ec8135124acb42ed49d9e266c6c5"
+  },
+  "test_path": "DatadogRUM/Tests/Instrumentation/Views/SwiftUIViewNameExtractorTests.swift",
+  "test_before_sha256": "32ca0de0d889b8238aff02a06a6183b0fb8042e346fc49c7be2a219c27fea130",
+  "allowed_test_class": "RUMSwiftUISemanticNavigationEngineTests",
+  "class_identifiers": [
+    "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testConfiguredObservedSourceDoesNotFallThroughToCapabilityWhilePending()",
+    "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testExplicitTransitionSourceOverridesOptionalCapability()",
+    "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testHostStatePinsFirstSourceAcrossContainerReconstruction()",
+    "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testNativeAdapterUsesInjectedContainerIndependentEngine()",
+    "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testNavigationHostAcceptsArbitraryCustomerContent()",
+    "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testNavigationHostResolvesOptionalCapability()",
+    "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testNavigationInputsProduceEquivalentAcceptedDestinationTimeline()",
+    "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterNestedMutationKeepsEveryObserverOnLatestDestination()",
+    "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterRearmsBeforeNestedObserverMutation()",
+    "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterRearmsSynchronouslyAfterEachDidSet()",
+    "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterRemainsCrashSafeForBackgroundMutation()",
+    "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterStopsRearmingAfterDeallocation()",
+    "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterTreatsIndependentPropertyMutationsAsSeparateStates()",
+    "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservationHostKeepsStandardSwiftUINavigation()",
+    "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservationNavigationHostTracksOnceAcrossSwiftUIReconstruction()",
+    "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservedNavigationHostSubscribesOnceAcrossSwiftUIReconstruction()",
+    "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservedPublisherNestedCommitKeepsEveryObserverOnLatestDestination()",
+    "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testSceneAttachmentIsIndependentFromVisualContainer()",
+    "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testTransitionSourceAddAndRemoveDuringNestedCommitUsesCurrentMembership()",
+    "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testTransitionSourceCanWaitForSceneDependentInitialMetadata()",
+    "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testTransitionSourceNestedCommitDoesNotRegressAnyObserver()",
+    "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testTransitionSourceNestedGenerationsStaySynchronousAtEveryReturn()",
+    "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testTransitionSourceNestedInitialPublicationDoesNotRegressAnyObserver()",
+    "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testTransitionSourcePublishesOnlyCommittedDestinationsAsFreshOccurrences()",
+    "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testTransitionSourceRemovalCancelsPendingObserverDelivery()"
+  ],
+  "allowed_skips": {
+    "27.0": [],
+    "17.5": [
+      "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testConfiguredObservedSourceDoesNotFallThroughToCapabilityWhilePending()",
+      "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testExplicitTransitionSourceOverridesOptionalCapability()",
+      "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testHostStatePinsFirstSourceAcrossContainerReconstruction()",
+      "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testNativeAdapterUsesInjectedContainerIndependentEngine()",
+      "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testNavigationHostAcceptsArbitraryCustomerContent()",
+      "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testNavigationHostResolvesOptionalCapability()",
+      "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testNavigationInputsProduceEquivalentAcceptedDestinationTimeline()",
+      "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterNestedMutationKeepsEveryObserverOnLatestDestination()",
+      "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterRearmsBeforeNestedObserverMutation()",
+      "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterRearmsSynchronouslyAfterEachDidSet()",
+      "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterRemainsCrashSafeForBackgroundMutation()",
+      "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterStopsRearmingAfterDeallocation()",
+      "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterTreatsIndependentPropertyMutationsAsSeparateStates()",
+      "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservationHostKeepsStandardSwiftUINavigation()",
+      "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservationNavigationHostTracksOnceAcrossSwiftUIReconstruction()",
+      "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservedNavigationHostSubscribesOnceAcrossSwiftUIReconstruction()",
+      "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservedPublisherNestedCommitKeepsEveryObserverOnLatestDestination()",
+      "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testSceneAttachmentIsIndependentFromVisualContainer()",
+      "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testTransitionSourceAddAndRemoveDuringNestedCommitUsesCurrentMembership()",
+      "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testTransitionSourceCanWaitForSceneDependentInitialMetadata()",
+      "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testTransitionSourceNestedCommitDoesNotRegressAnyObserver()",
+      "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testTransitionSourceNestedGenerationsStaySynchronousAtEveryReturn()",
+      "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testTransitionSourceNestedInitialPublicationDoesNotRegressAnyObserver()",
+      "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testTransitionSourcePublishesOnlyCommittedDestinationsAsFreshOccurrences()",
+      "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testTransitionSourceRemovalCancelsPendingObserverDelivery()",
+      "DatadogRUMTests/RUMTests/testWhenEnabled_thenSceneTargetedManualViewBridgeUsesInstrumentationStack()"
+    ]
+  },
+  "skip_reason": "Semantic navigation requires iOS 27 or later.",
+  "environments": [
+    {
+      "runtime": "27.0",
+      "device": "59A8E789-932A-48D0-9281-0F49DEB8E96D",
+      "name": "iPhone 18 Pro",
+      "device_type": "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro",
+      "result_model": "iPhone 18 Pro"
+    },
+    {
+      "runtime": "17.5",
+      "device": "EEF49588-982B-492E-92AF-57F900ACEACD",
+      "name": "iPad Pro 11-inch (M4) (16GB)",
+      "device_type": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-M4-16GB",
+      "result_model": "iPad Pro 11-inch (M4)"
+    }
+  ],
+  "scope": [
+    "Add only a runtime setup guard to the affected iOS27-only XCTest class, retaining every test body and assertion.",
+    "Decode source-bound Skip Message and Failure Message children without suppressing case or invocation failures.",
+    "One fresh isolated build using unchanged SDK/dependencies and one test-file overlay.",
+    "Execute only the25 changed-class tests on27.0; reuse unchanged1407-case full27 evidence. Then execute the complete target on17.5.",
+    "Preserve exact selected/executed identifiers, argument identities, expected skip identifiers/reasons, runtime, product/source evidence and cleanup."
+  ],
+  "excluded": [
+    "SDK behavior changes",
+    "Equivalent human/input/performance retries",
+    "New public API approval or release gate closure"
+  ],
+  "budgets_seconds": {
+    "preparation": 600,
+    "build": 900,
+    "stage": 4500,
+    "boot": 180,
+    "enumeration": 120,
+    "execution_27": 300,
+    "execution_17": 900,
+    "runtime_reservation_27": 990,
+    "runtime_reservation_17": 1590,
+    "cleanup": 180
+  },
+  "attempts": {
+    "build": 1,
+    "per_runtime": 1,
+    "stop_after_failure": true
+  },
+  "native_admitted": false,
+  "gate_closures": [],
+  "reuse_full_27": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-inventory-n_fwd0nv/offline-27.json",
+    "sha256": "c300b39b8622140dec3740a7be710ed4f9f26523d5d7402c180fae3fa2811bf3"
+  }
+}

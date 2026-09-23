@@ -71,8 +71,11 @@ simultaneous native same-key ownership and the complete final matrix stay open.
 The [same-key native attempt](Results/EXP-225-same-key-result.json) stopped before API
 work because activating B backgrounded A; it provides no SDK regression finding.
 The [full-RUM continuation](Results/EXP-225-rum-suite-result.json) qualifies the
-complete build, but its process-inventory guard stops after discovery and before
-test execution. Both simulators are restored; neither full-suite result is qualified.
+complete target on27.0 and17.5. The older run exposed XCTest invoking an iOS27-only
+test class; its runtime guard now skips exactly those25 methods, which all pass
+on27. With the existing routing skip,17.5 passes1,381 cases and explicitly skips26.
+SDK bytes and test assertions are unchanged, original crashes remain recorded,
+and both simulators are restored. Other modules and final release approval remain.
 
 [Application-impact preparation](Results/EXP-224-application-impact.json) now binds
 four signed Release clients and reviewed sampler/trace controls to that API candidate.

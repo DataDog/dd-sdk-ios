@@ -174,8 +174,32 @@ identity, all compiler inputs/products and owned-worker cleanup are required.
 The fixed stage covers both runtimes; consumed attempts cannot be renewed.
 This does not close the other F03 modules or promote the experimental public API.
 
-The current result owner retains a process-inventory timeout after successful
-full-target discovery, before any test method ran. The original runtime admission
-is closed; a future collector correction must preserve that INVALID and the
-qualified build, use a separate fixed admission and avoid repeating discovery
-when its exact source/product/runtime binding permits reuse.
+`rum_suite_execution.py` continues an unexecuted suite from unchanged qualified
+products under a separate definition, review and fixed stage. It preserves the
+original failed admission and can reuse complete discovery only with exact
+source/product/runtime binding and separate worker-quiescence proof. Each runtime
+has one attempt; a failed runtime stops the matrix.
+
+Process inventory retains its actual output and has a 15-second cap inside each
+command's fixed 30-second cleanup reserve. An already reaped group needs one read.
+Unproven native workers prevent simulator teardown. A timely, fully reaped XCTest
+failure may read its fresh result bundle for diagnosis within the original deadline;
+that evidence cannot repair the failed command. No physical device or human input
+is required for the admitted 27.0 and 17.5 simulator cells.
+
+`rum_suite_inventory.py` reconciles only the source-defined, methodless discovery
+helper and retains the original raw verdict. `rum_suite_compatibility.py` owns the
+separately defined test-runtime correction: `prepare`, scoped review, `build`,
+`27.0`, then `17.5`, each with `--root <fresh-root>`. The only source overlay is the
+affected class's runtime setup guard. The changed class must run completely on27;
+the full17 target must report the exact predefined skips and reasons. Failure and
+skip message children are retained separately from parameter executions. Unknown
+schemas, changed test bodies or contradictory results fail closed. Do not edit
+already frozen helpers or renew consumed runtime/build attempts.
+
+For a reviewed selective continuation, `rum_suite_selection.py` validates enabled
+and disabled lists as an exact partition of the frozen complete inventory. A
+selected-class run permits only its predetermined complement to be disabled; the
+full-suite path still permits none. Raw rows and their hashes remain in the receipt.
+Use `prepare`, review, `27.0`, then `17.5` with its separate fresh root; reuse the
+unchanged qualified build and retain every original discovery stop.

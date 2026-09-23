@@ -2,7 +2,7 @@
   "schema_version": 1,
   "experiment": "EXP-225",
   "continuation": "Full RUM module compatibility",
-  "status": "BUILD_PASS_TEST_EXECUTION_STOPPED_BY_COLLECTOR",
+  "status": "RUM_27_AND_17_QUALIFIED",
   "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
   "definition": "Results/EXP-225-rum-suite-definition.json",
   "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-dependencies-23a2oh4a",
@@ -52,7 +52,7 @@
     "Provisional RUM portion only; the rest of M01/F03 and approved public API exposure remain open.",
     "No Session Replay capture/content suite."
   ],
-  "updated_at": "2026-09-23T14:04:24.062300+00:00",
+  "updated_at": "2026-09-23T21:43:17.099036+00:00",
   "checkpoint": "432c4ba81dca92f4c70b583e45fa9aa7c849702b",
   "original_attempts": [
     {
@@ -68,8 +68,166 @@
   "inputs_sha256": "2f1921d1cb58fa07e3474548bff2f8a0c95d9433ad3dde87962216c85c83842c",
   "review_sha256": "c7725fa62fda895c638a3a2d0a7a3a3289b81d2a954c09b493bbf2548f0f4ab2",
   "discovered_cases": 1408,
-  "next_action": "Repair the process-inventory deadline handling before separately admitting only unexecuted tests. Reuse the qualified build and source-bound enumeration where valid; no rebuild or equivalent input diagnostic is due.",
+  "next_action": "Continue the remaining finite S3 F03 modules/platforms. Do not repeat this source-bound RUM evidence or reopen stopped human/input mechanisms.",
   "sdk_finding": false,
   "stage_stop_sha256": "fbf386bcf8aa0e7c3eb197f897a636201e9f2d53ba56a9036972163bd9f71b4a",
-  "later_quiescence_sha256": "ee77d511f690be434d6bc329dd9f876f56334943dc9c7ed0cd91bd743a826cdd"
+  "later_quiescence_sha256": "ee77d511f690be434d6bc329dd9f876f56334943dc9c7ed0cd91bd743a826cdd",
+  "execution_continuation": {
+    "definition": "Results/EXP-225-rum-suite-continuation.json",
+    "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-execution-lnxumpja",
+    "state": "STOPPED_ON_DISCOVERY_PLACEHOLDER",
+    "controls": 16,
+    "native_admitted": true,
+    "original_verdict": "INVALID_UNCHANGED",
+    "gate_closures": [],
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-execution-lnxumpja/review.json"
+    },
+    "stage": {
+      "started_at": 1790196846.0264761,
+      "deadline": 1790201346.0264761,
+      "plan_sha256": "b01c2f7823508d16ccbb863c222f5df2cef13a5ef0567e76f10837b7098e066b",
+      "review_sha256": "ee49e3133edbabd02b2fa2f42e3814b2d518caf4f2e3c0a6a118d8d47c21b706"
+    },
+    "runtime_27": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-execution-lnxumpja/runtime-27.0/summary.json",
+      "sha256": "09e20f56b271faad20c593e75a262f41686b1c8805524eabb3d38307425dc25b"
+    },
+    "runtime_17": "NOT_EXECUTED",
+    "sdk_finding": false
+  },
+  "inventory_continuation": {
+    "definition": "Results/EXP-225-rum-inventory-continuation.json",
+    "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-inventory-n_fwd0nv",
+    "state": "STOPPED_ON_TEST_CRASHES",
+    "offline_27": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-inventory-n_fwd0nv/offline-27.json",
+      "sha256": "c300b39b8622140dec3740a7be710ed4f9f26523d5d7402c180fae3fa2811bf3"
+    },
+    "qualified_27": {
+      "raw_discovery_entries": 1408,
+      "methodless_helpers": 1,
+      "cases": 1407,
+      "executions": 1443,
+      "failures": 0,
+      "skips": 0,
+      "runtime_warnings": 0,
+      "cleanup": "PASS"
+    },
+    "controls": 6,
+    "native_17_admitted": true,
+    "gate_closures": [],
+    "runtime_17": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-inventory-n_fwd0nv/runtime-17.5/summary.json",
+      "sha256": "2eaec13b2edeb99f3e0113f243f363272dfc67382cde79d7efe5e9f813b822d6"
+    },
+    "diagnosis": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-inventory-n_fwd0nv/diagnosis/assessment.json",
+      "sha256": "9ed7844bae6c72ae069640faab2b4fc8eb85ec8135124acb42ed49d9e266c6c5"
+    },
+    "native_counts": {
+      "cases": 1407,
+      "passed": 1398,
+      "failed": 8,
+      "skipped": 1,
+      "runtime_warnings": 0
+    },
+    "cleanup": "PASS",
+    "sdk_finding": false,
+    "attribution": "XCTest invoked an iOS27-only class on17.5; seven unavailable Observation calls and one collection conformance. The production host remains availability-gated."
+  },
+  "availability_correction": {
+    "definition": "Results/EXP-225-rum-availability-correction.json",
+    "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-availability-kts5muog",
+    "build": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-availability-kts5muog/built.json",
+      "sha256": "3e987225d43fa7cd637ac6477422ecad6fde860d61e0eafa5eabeca2059eb8b7"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-availability-kts5muog/review.json",
+      "sha256": "1a2fe99f6e2c64b42d426381472a300503df3d80640fc8a408d879d03213142c"
+    },
+    "controls": 9,
+    "initial_filtered_attempt": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-availability-kts5muog/runtime-27.0/summary.json",
+      "sha256": "4615ee4948eb4613e5e905111774786ac7831dfc17bbe688d7b0f02821eac67f"
+    },
+    "initial_scenario": "NOT_EXECUTED",
+    "initial_overall": "INVALID_UNCHANGED",
+    "initial_cleanup": "PASS"
+  },
+  "selection_continuation": {
+    "definition": "Results/EXP-225-rum-selection-continuation.json",
+    "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-selection-fkie24uc",
+    "state": "PASS",
+    "controls": 5,
+    "completion": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-selection-fkie24uc/completion.json",
+      "sha256": "edd9e485857067bac3a01ff091e5bd9c11a45938b6bf65d84e5018c000ecfb21"
+    },
+    "runtimes": {
+      "27.0": {
+        "summary": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-selection-fkie24uc/runtime-27.0/summary.json",
+          "sha256": "e849417875ff9c92c0bda6846a8651dbf326ddacc372431e9ea3fe7aafe9df4e"
+        },
+        "cases": 25,
+        "executions": 25,
+        "passed": 25,
+        "skipped": [],
+        "failures": 0,
+        "runtime_warnings": [],
+        "cleanup": "PASS"
+      },
+      "17.5": {
+        "summary": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-selection-fkie24uc/runtime-17.5/summary.json",
+          "sha256": "edc9593750cec8d7287f38d807a22a143fe096a382173e8b3e789f1bb69e2220"
+        },
+        "cases": 1407,
+        "executions": 1443,
+        "passed": 1381,
+        "skipped": [
+          "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testConfiguredObservedSourceDoesNotFallThroughToCapabilityWhilePending()",
+          "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testExplicitTransitionSourceOverridesOptionalCapability()",
+          "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testHostStatePinsFirstSourceAcrossContainerReconstruction()",
+          "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testNativeAdapterUsesInjectedContainerIndependentEngine()",
+          "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testNavigationHostAcceptsArbitraryCustomerContent()",
+          "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testNavigationHostResolvesOptionalCapability()",
+          "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testNavigationInputsProduceEquivalentAcceptedDestinationTimeline()",
+          "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterNestedMutationKeepsEveryObserverOnLatestDestination()",
+          "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterRearmsBeforeNestedObserverMutation()",
+          "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterRearmsSynchronouslyAfterEachDidSet()",
+          "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterRemainsCrashSafeForBackgroundMutation()",
+          "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterStopsRearmingAfterDeallocation()",
+          "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterTreatsIndependentPropertyMutationsAsSeparateStates()",
+          "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservationHostKeepsStandardSwiftUINavigation()",
+          "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservationNavigationHostTracksOnceAcrossSwiftUIReconstruction()",
+          "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservedNavigationHostSubscribesOnceAcrossSwiftUIReconstruction()",
+          "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testObservedPublisherNestedCommitKeepsEveryObserverOnLatestDestination()",
+          "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testSceneAttachmentIsIndependentFromVisualContainer()",
+          "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testTransitionSourceAddAndRemoveDuringNestedCommitUsesCurrentMembership()",
+          "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testTransitionSourceCanWaitForSceneDependentInitialMetadata()",
+          "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testTransitionSourceNestedCommitDoesNotRegressAnyObserver()",
+          "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testTransitionSourceNestedGenerationsStaySynchronousAtEveryReturn()",
+          "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testTransitionSourceNestedInitialPublicationDoesNotRegressAnyObserver()",
+          "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testTransitionSourcePublishesOnlyCommittedDestinationsAsFreshOccurrences()",
+          "DatadogRUMTests/RUMSwiftUISemanticNavigationEngineTests/testTransitionSourceRemovalCancelsPendingObserverDelivery()",
+          "DatadogRUMTests/RUMTests/testWhenEnabled_thenSceneTargetedManualViewBridgeUsesInstrumentationStack()"
+        ],
+        "failures": 0,
+        "runtime_warnings": [],
+        "cleanup": "PASS"
+      }
+    }
+  },
+  "test_guard_checkpoint": {
+    "commit": "1522e835e2fb6debd4adce11f48ebc796f8dbcfc",
+    "signed": false,
+    "signing": "20-second agent timeout; authorized local unsigned fallback",
+    "receipt": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-selection-fkie24uc/test-guard-commit.json",
+      "sha256": "d364ee50e02a32dc4ed776cf808d13fa46e65b3dbb7aa4daf5f20cf94845a715"
+    }
+  }
 }

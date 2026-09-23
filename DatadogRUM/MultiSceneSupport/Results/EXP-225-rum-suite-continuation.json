@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-225",
+  "continuation": "Execute the unrun full RUM suite with bounded process inventory",
+  "status": "DEFINED_BEFORE_IMPLEMENTATION",
+  "defined_at": "2026-09-23T20:29:42.718722+00:00",
+  "gates": [
+    "S3:F03:M01",
+    "S3:C06"
+  ],
+  "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "owner": "SDK implementer",
+  "reviewer": "/root/c06_runtime_plan",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-execution-lnxumpja",
+  "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-dependencies-23a2oh4a",
+  "original_definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/EXP-225-rum-suite-definition.json",
+    "sha256": "ffb6e861b6dd2ad2724a7291a43f3eab7a47beddebef55cd44bab5f25a13c70d"
+  },
+  "inputs": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-dependencies-23a2oh4a/inputs.json",
+    "sha256": "2f1921d1cb58fa07e3474548bff2f8a0c95d9433ad3dde87962216c85c83842c"
+  },
+  "built": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-dependencies-23a2oh4a/built.json",
+    "sha256": "c7d4e6b9ea1186bb09d83073d0db9d81a527fb485bd7dfd9f9d9261735f107ff"
+  },
+  "original_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-dependencies-23a2oh4a/review.json",
+    "sha256": "c7725fa62fda895c638a3a2d0a7a3a3289b81d2a954c09b493bbf2548f0f4ab2"
+  },
+  "original_invalid": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-dependencies-23a2oh4a/runtime-27.0/summary.json",
+    "sha256": "5112d626a4ec3e1b2b970cbc563eb1733caee79f5065a45a0423baaa74ccbdc5"
+  },
+  "original_stage_stop": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-dependencies-23a2oh4a/stage-stop.json",
+    "sha256": "fbf386bcf8aa0e7c3eb197f897a636201e9f2d53ba56a9036972163bd9f71b4a"
+  },
+  "later_quiescence": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-dependencies-23a2oh4a/later-quiescence.json",
+    "sha256": "ee77d511f690be434d6bc329dd9f876f56334943dc9c7ed0cd91bd743a826cdd"
+  },
+  "discriminator": "The original xcodebuild enumeration succeeded but process inventory exceeded a fixed3second timeout before XCTest execution. Use one deadline-bound inventory when the reaped group is empty; retain actual process rows and allow up to15seconds per inventory within a predeclared30second command cleanup reserve. Timeout/late proof still invalidates acceptance.",
+  "build_reuse": "Verify unchanged source, dependencies, compiler inputs/objects, unfiltered xctestrun and all163 product files before and after each runtime. Do not rebuild or modify original receipts.",
+  "enumeration_reuse": "Reuse the original complete27.0 enumeration only with its timely exit0 receipt, unchanged build/runtime identity and separate later group quiescence. Preserve its original INVALID. Discover17.5 once.",
+  "environments": [
+    {
+      "runtime": "27.0",
+      "device": "59A8E789-932A-48D0-9281-0F49DEB8E96D",
+      "name": "iPhone 18 Pro",
+      "device_type": "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro",
+      "result_model": "iPhone 18 Pro"
+    },
+    {
+      "runtime": "17.5",
+      "device": "EEF49588-982B-492E-92AF-57F900ACEACD",
+      "name": "iPad Pro 11-inch (M4) (16GB)",
+      "device_type": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-M4-16GB",
+      "result_model": "iPad Pro 11-inch (M4)"
+    }
+  ],
+  "allowed_skips": {
+    "27.0": [],
+    "17.5": [
+      "DatadogRUMTests/RUMTests/testWhenEnabled_thenSceneTargetedManualViewBridgeUsesInstrumentationStack()"
+    ]
+  },
+  "budgets_seconds": {
+    "stage": 4500,
+    "boot_per_runtime": 180,
+    "enumeration_per_runtime": 120,
+    "execution_per_runtime": 900,
+    "cleanup_per_runtime": 180,
+    "inventory": 15,
+    "command_cleanup_reserve": 30,
+    "runtime_reservation": 1590
+  },
+  "budget_basis": {
+    "original_inventory_timeout": 3,
+    "current_inventory_seconds": 0.077132,
+    "basis": "15seconds matches current physical transport inventory cap;30seconds bounds two maximum inventories and worker termination. Empty groups need one query. All deadlines fixed before dispatch."
+  },
+  "attempts": {
+    "build": 0,
+    "per_runtime": 1,
+    "stop_after_failure": true,
+    "retries": 0
+  },
+  "native_admitted": false,
+  "diagnostic_collection": "A timely nonzero XCTest exit with proven native quiescence may read its existing xcresult within the original deadline to retain exact failures. Read-only extraction is not another test attempt and never repairs that failed verdict. Interrupted, late or unproven native execution goes directly to bounded cleanup; no later runtime is admitted after failure.",
+  "gate_closures": [],
+  "scope": [
+    "Unfiltered DatadogRUMTests at selected source on27.0 then17.5; no method ran previously.",
+    "Exact discovered/executed identifiers, source-defined parameter invocations, expected skip and actual runtime/configuration binding.",
+    "Separate scenario/evidence/cleanup verdicts and restore original Shutdown."
+  ],
+  "excluded": [
+    "SDK or test expectation changes",
+    "Session Replay content/capture suite",
+    "RFC or public API promotion",
+    "Full M01/F03 closure",
+    "Human input and physical-device execution"
+  ]
+}

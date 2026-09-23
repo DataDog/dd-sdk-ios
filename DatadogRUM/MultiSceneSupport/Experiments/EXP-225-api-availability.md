@@ -96,6 +96,43 @@ inventory guard times out before any test method runs. That original INVALID and
 cleanup PASS remain;17.5 is unexecuted. The bound products can be reused after a
 collector correction. No full-suite or release credit follows.
 
+The [collector continuation](../Results/EXP-225-rum-suite-continuation.json)
+reuses that build with reviewed process-inventory and teardown guards. Its27.0
+run completes with zero XCTest failures and cleanup PASS, but the strict case
+join rejects one extra discovery entry. The pinned test-infrastructure dependency
+defines that entry, `DDXCSkippedTestCase`, as a helper with no test methods.
+
+The [inventory continuation](../Results/EXP-225-rum-inventory-continuation.json)
+classifies only that exact source-bound placeholder. A separate offline assessment
+qualifies all1,407 executable cases and1,443 invocations from the saved27.0 result,
+with zero skips/failures/warnings and every other oracle unchanged. Both original
+INVALIDs remain intact; no27.0 rerun occurs. Six focused controls qualify the
+classifier. The separately admitted17.5 run completes with1,398 passes, eight
+crashes and one predefined skip; cleanup passes. All eight crash images match the
+frozen test/SDK Mach-O UUIDs. XCTest invoked the iOS27-only semantic engine test
+class on17.5: seven methods entered the new Observation API and one used the
+iOS26 `EnumeratedSequence.Collection` conformance. The production host and adapter
+remain availability-gated; this is an attributable test-suite defect.
+
+The [bounded correction](../Results/EXP-225-rum-availability-correction.json)
+adds a runtime setup guard to that class, preserving every test body and SDK byte.
+All25 class methods must execute on27 and explicitly skip on17.5; ordinary RUM
+tests remain enabled. A fresh isolated build, the changed class on27 and the full
+17.5 target qualify the correction. The result decoder also distinguishes actual
+skip/failure message nodes from parameter arguments, retaining diagnostics and
+every failed case. Original failed/INVALID results remain immutable.
+
+The corrected build passes with the same complete compiler membership. Its first
+selective discovery stops before tests because Xcode reports unselected methods as
+disabled; cleanup passes. The [selection continuation](../Results/EXP-225-rum-selection-continuation.json)
+accounts for the exact25 enabled methods,1,382 excluded methods and the methodless
+helper, reusing that build. Five controls and the scoped review qualify this change;
+the full17 classifier still permits no disabled methods. All25 changed-class tests
+pass on27. The complete17.5 target passes1,381 cases with exactly26 predefined skips,
+1,443 total invocations, zero failures/warnings and cleanup PASS. The unchanged full27
+result remains reused. Strict lint finds no violations; its deprecated rule-name
+warning is retained. The RUM matrix slice is complete, without closing broader F03.
+
 ## Remaining boundary
 
 No release gate closes. Local SPI/header validation is not normal public API

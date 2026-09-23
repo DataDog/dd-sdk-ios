@@ -515,6 +515,10 @@
   "rum_suite_continuation": {
     "definition": "Results/EXP-225-rum-suite-definition.json",
     "result": "Results/EXP-225-rum-suite-result.json",
-    "state": "BUILD_PASS_TEST_EXECUTION_STOPPED_BY_COLLECTOR"
+    "state": "RUM_27_AND_17_QUALIFIED",
+    "completion": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-selection-fkie24uc/completion.json",
+      "sha256": "edd9e485857067bac3a01ff091e5bd9c11a45938b6bf65d84e5018c000ecfb21"
+    }
   }
 }

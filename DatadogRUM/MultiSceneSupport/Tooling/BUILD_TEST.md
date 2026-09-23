@@ -77,6 +77,14 @@ A historical suite count cannot silently omit a newer failure.
 
 ## Bounded XCTest collection
 
+An availability annotation on an XCTest class does not prevent selector discovery
+on an older runtime. Tests of a newer-only surface need a runtime setup guard that
+does not rely on a redundant availability branch inside the annotated class.
+Declare exact skipped IDs/reasons before execution and prove the class still runs
+on its supported OS. Treat result-tree failure/skip messages as diagnostics owned
+by the case or argument; preserve their raw nodes and all failure results. They do
+not create extra parameter invocations or justify broad skip exclusions.
+
 Prepare source, selection, output paths and the oracle before starting Xcode.
 Use the repository test skill and commands with the smallest relevant target.
 The Objective-C monitor API class is `DatadogCoreTests/DDRUMMonitor_apiTests`.
@@ -107,6 +115,12 @@ experiment/app/output path before termination, reap it and prove absence. Proces
 guards should match actual XCTest/test bundles, known SDK hosts and competing
 build/profile workloads; a broad `Runner` suffix also matches unrelated system apps.
 Never kill or exclude an unrelated process to repair a guard.
+
+Include process-inventory latency in the fixed cleanup reservation and retain the
+actual rows or partial timeout output. An empty reaped group needs one inventory.
+If quiescence is unproven, defer simulator teardown. Read a failed run's result
+bundle only after timely quiescence and fresh bundle ownership are proved; this is
+diagnostic collection from that attempt, never a retry or acceptance rescue.
 
 ## Assertion and warning interpretation
 

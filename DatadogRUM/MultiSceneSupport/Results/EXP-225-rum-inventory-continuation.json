@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-225",
+  "continuation": "Reconcile the source-defined discovery helper and execute only the unrun17.5 suite",
+  "status": "DEFINED_BEFORE_IMPLEMENTATION",
+  "defined_at": "2026-09-23T20:59:39.282253+00:00",
+  "owner": "SDK implementer",
+  "reviewer": "/root/c06_runtime_plan",
+  "gates": [
+    "S3:F03:M01",
+    "S3:C06"
+  ],
+  "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-inventory-n_fwd0nv",
+  "prior_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-execution-lnxumpja",
+  "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-dependencies-23a2oh4a",
+  "discriminator": "Complete saved27.0 tree has1407 cases/1443 invocations and no failures, skips or warnings. Its1408-entry enumeration additionally includes one methodless dependency helper; do not rerun27.0.",
+  "source_helper": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-dependencies-23a2oh4a/SourcePackages/checkouts/dd-sdk-swift-testing/Sources/DatadogSDKTesting/XCTest/DDXCTestCase.swift",
+    "sha256": "6d0f01b2c8028b4622748687984358b7b9bff95c491ff900acfb6e3a69cbff40"
+  },
+  "known_non_case": "DatadogRUMTests/DDXCSkippedTestCase",
+  "source_basis": "Pinned dependency source lines331-343 defines only set(reason:) and setUpWithError(); direct synthetic skip helper at310. No test selector or test annotation. Bare class entry is not an executed or skipped case.",
+  "original_27_summary": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-execution-lnxumpja/runtime-27.0/summary.json",
+    "sha256": "09e20f56b271faad20c593e75a262f41686b1c8805524eabb3d38307425dc25b"
+  },
+  "original_selection": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-execution-lnxumpja/runtime-27.0/selection.json",
+    "sha256": "e8cdb57679410f1b80e32cd9f773c9bdfd24fc5c6adce337309479dc22f27e3e"
+  },
+  "original_stage_stop": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-execution-lnxumpja/stage-stop.json",
+    "sha256": "4d7cbd1478743749ec1fc338d919ef9f34f8ebd9ee76856f9a916b808024a8c9"
+  },
+  "prior_definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-execution-lnxumpja/definition.json",
+    "sha256": "b2723d29171e5b7835c4d5cf458696048fad95a7eddb570f329405b23d93c6b4"
+  },
+  "original_enumeration": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-dependencies-23a2oh4a/runtime-27.0/enumeration.json",
+    "sha256": "a1a2950e3faec2ef1e3ed1d736f9cb4bff2f14c7e0eab5a193b080b956dc0cfe"
+  },
+  "budgets_seconds": {
+    "stage": 2400,
+    "runtime_reservation": 1590,
+    "boot": 180,
+    "enumeration": 120,
+    "execution": 900,
+    "cleanup": 180
+  },
+  "runtime": "17.5",
+  "attempts": {
+    "27.0": 0,
+    "17.5": 1,
+    "build": 0,
+    "retries": 0
+  },
+  "oracle": "Classify only the exact source-bound methodless helper; reject unknown class-only entries and retain all executable IDs. Reuse unchanged strict case/parameter/runtime/skip/warning assertions. Qualify27.0 from saved timely evidence in a separate assessment, never rewrite its INVALID. Require matching executable inventories on17.5, preserve its one predefined27-only skip.",
+  "scope_exclusions": [
+    "SDK/test changes",
+    "physical input",
+    "native27 rerun",
+    "Replay content suite",
+    "RFC/public API approval",
+    "fullM01/F03 closure"
+  ],
+  "native_admitted": false,
+  "gate_closures": []
+}
