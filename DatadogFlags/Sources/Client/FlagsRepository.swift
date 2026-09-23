@@ -109,19 +109,22 @@ internal final class FlagsRepository {
         var pendingDiskReadCallbacks: [() -> Void] = []
 
         var shouldWaitForFlagsDataRead: Bool {
-            !isDiskReadComplete && flagsData == nil
+            !isDiskReadComplete && flagsDataVersion == 0
         }
 
         mutating func applyInitialFlagsData(_ data: FlagsData?) -> [() -> Void] {
-            cachedFlagsData = data
+            // A successful fetch or reset supersedes both active and fallback data from disk.
+            if flagsDataVersion == 0 {
+                cachedFlagsData = data
 
-            let isInitialReadStillAuthoritative = !hasStartedEvaluationContextRequest
-            let isReconcilingSameContextBeforeFirstSuccess = data.map {
-                flagsDataVersion == 0 && reconcilingContext == $0.context
-            } ?? false
+                let isInitialReadStillAuthoritative = !hasStartedEvaluationContextRequest
+                let isReconcilingSameContext = data.map {
+                    reconcilingContext == $0.context
+                } ?? false
 
-            if isInitialReadStillAuthoritative || isReconcilingSameContextBeforeFirstSuccess {
-                flagsData = data
+                if isInitialReadStillAuthoritative || isReconcilingSameContext {
+                    flagsData = data
+                }
             }
 
             isDiskReadComplete = true
@@ -274,15 +277,15 @@ internal final class FlagsRepository {
         _ = readSemaphore.wait(timeout: .now() + Constants.readTimeout)
     }
 
-    /// Executes the callback after the initial disk read completes.
+    /// Executes the callback once the initial cache is available, or immediately if a fetch or reset superseded it.
     /// Used on fetch failure so cached flags can be used without delaying the network request.
-    private func whenFlagsDataRead(_ callback: @escaping () -> Void) {
+    private func whenCacheReady(_ callback: @escaping () -> Void) {
         var shouldExecuteNow = false
         _repositoryState.mutate { state in
-            if state.isDiskReadComplete {
-                shouldExecuteNow = true
-            } else {
+            if state.shouldWaitForFlagsDataRead {
                 state.pendingDiskReadCallbacks.append(callback)
+            } else {
+                shouldExecuteNow = true
             }
         }
 
@@ -434,7 +437,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 self.writeState(flagsData, version: versionAfterSuccess)
                 complete(.success(()), .ready)
             case .failure(let error):
-                self.whenFlagsDataRead { [weak self] in
+                self.whenCacheReady { [weak self] in
                     guard let self else {
                         complete(.failure(.clientNotInitialized), nil)
                         return
