@@ -2,7 +2,7 @@
   "schema_version": 1,
   "work_item": "S2:A02 ordered single human-input session",
   "status": "RUNNERS_PREPARED_OPERATOR_AND_ACCOUNT_PREREQUISITES_REMAIN",
-  "updated_at": "2026-09-23T00:37:59.130350+00:00",
+  "updated_at": "2026-09-23T13:38:54.447704+00:00",
   "owner": "Harness implementer",
   "user_role": "Only real gestures and any required interactive sign-in",
   "request_user_now": false,
@@ -218,5 +218,14 @@
     "state": "REQUESTED_AWAITING_RESPONSE",
     "fixed_stage_started": false,
     "native_cells_started": 0
+  },
+  "session_splitting": {
+    "user_question_at": "2026-09-23T13:38:54.447557+00:00",
+    "requirement": "The ordered work does not require one uninterrupted sitting. Existing families have independent admissions and can be scheduled separately.",
+    "ready_now": "Simulator-family preparation only, subject to fresh live/operator preflight. Physical iPad builds/runtime and F08 native sign-in remain prerequisites.",
+    "safe_boundary": "Prefer a complete baseline/candidate pair with persisted evidence and verified cleanup. Never stop in the middle of a timing-sensitive gesture, delayed-event interval or same-process lifecycle sequence.",
+    "current_runner_limit": "Within-family cross-day continuation is not yet implemented. In particular, automatic coverage binds all40 cells and predecessor receipts to one immutable stage ID/deadline.",
+    "continuation_requirement": "Before splitting an unfinished family across sittings, prepare and review a finite continuation for only unexecuted cells, referencing qualified original receipts and unchanged source/build identities. Never overwrite an old stage, renew its clock, reuse consumed readiness or rerun qualified cells merely to resume.",
+    "estimated_duration": "Not measured; stage time limits are maximum budgets, not predictions of required user time."
   }
 }

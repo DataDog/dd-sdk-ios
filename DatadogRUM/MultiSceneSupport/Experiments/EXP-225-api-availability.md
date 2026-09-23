@@ -78,7 +78,18 @@ is INVALID before API work: UIKit connected the fresh B scene but backgrounded A
 No checkpoint or targeted call executed. Objective-C was skipped, task cleanup and
 Shutdown restoration pass, and the automatic path is stopped. This proves neither
 an SDK regression nor same-key acceptance. Actual concurrent-window setup remains
-a prerequisite for the already-planned human session.
+a prerequisite for a separate S3 qualification, outside the S2 human session.
+
+## Full RUM compatibility preparation
+
+The [fresh suite definition](../Results/EXP-225-rum-suite-definition.json) selects
+one isolated build and the complete RUM test target on27.0 and17.5. The prior
+selected-test binary cannot be reused because its full post-correction fingerprint
+is missing. The [result owner](../Results/EXP-225-rum-suite-result.json) retains the
+review, exact source/compiler/dependency bindings and finite execution state.
+Twelve offline test methods and four artifact-registry controls qualify the
+collector; the build and native runs have not started. This is only the RUM portion
+of the remaining candidate compatibility matrix.
 
 ## Remaining boundary
 

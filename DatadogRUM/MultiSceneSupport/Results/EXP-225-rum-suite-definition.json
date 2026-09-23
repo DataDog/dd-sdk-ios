@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-225",
+  "continuation": "Full RUM module compatibility at the implemented API candidate",
+  "status": "DEFINED_BEFORE_EXECUTION",
+  "defined_at": "2026-09-23T13:22:25.255898+00:00",
+  "gates": [
+    "S3:F03:M01",
+    "S3:C06"
+  ],
+  "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-suite-qb8fbxcp",
+  "owner": "SDK implementer",
+  "reviewer": "/root/c06_runtime_plan",
+  "previous_unit_artifact": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_",
+  "reuse_disposition": "Do not reuse the old unit binary. Four live product hashes differ from products-before.json and no post-correction full manifest exists. Preserve all original source/test results. One fresh isolated build is required.",
+  "scope": [
+    "One isolated build-for-testing of the existing DatadogRUM scheme at candidate source bytes",
+    "Preserve the user-owned project exactly; copy its unchanged current bytes as an explicitly hashed local build-input overlay only",
+    "Reuse pinned dependency source/artifact cache by copying it into fresh output; never mutate the prior artifact",
+    "Freeze complete post-build compiler input membership, dependency revisions, xctestrun, test bundle and every linked product",
+    "Enumerate and execute the unfiltered DatadogRUMTests target once on actual27.0 and17.5, including previously selected methods as part of the required full-suite run",
+    "Compare exact discovered/executed identifiers, not just counts; retain every failure/skip/diagnostic and restore original simulator states",
+    "Parameterized XCTest cases retain exact source-declared argument sets and distinct execution identities; summary case counts remain separate from invocation counts."
+  ],
+  "excluded": [
+    "SDK implementation or test expectation changes",
+    "Session Replay test suite or captured-content correctness; RUM hasReplay/dependency continuity tests stay included",
+    "Full ten-module M01 or full F03 closure",
+    "Public API promotion, RFC approval, human/co-visibility/performance/Datadog backend acceptance",
+    "Equivalent same-key/input/capture retries"
+  ],
+  "environments": [
+    {
+      "runtime": "27.0",
+      "device": "59A8E789-932A-48D0-9281-0F49DEB8E96D",
+      "name": "iPhone 18 Pro",
+      "device_type": "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro",
+      "result_model": "iPhone 18 Pro"
+    },
+    {
+      "runtime": "17.5",
+      "device": "EEF49588-982B-492E-92AF-57F900ACEACD",
+      "name": "iPad Pro 11-inch (M4) (16GB)",
+      "device_type": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-M4-16GB",
+      "result_model": "iPad Pro 11-inch (M4)"
+    }
+  ],
+  "allowed_skips": {
+    "27.0": [],
+    "17.5": [
+      "DatadogRUMTests/RUMTests/testWhenEnabled_thenSceneTargetedManualViewBridgeUsesInstrumentationStack()"
+    ]
+  },
+  "allowed_skip_reason": "Exact scene routing is qualified on iOS 27; older runtimes use the legacy fallback.",
+  "budgets_seconds": {
+    "build": 900,
+    "enumeration_per_runtime": 120,
+    "execution_per_runtime": 900,
+    "cleanup_per_runtime": 180,
+    "stage": 4500,
+    "command_cleanup_reserve": 10
+  },
+  "attempts": {
+    "build": 1,
+    "per_runtime": 1,
+    "stop_after_failure": true
+  },
+  "native_admitted": false,
+  "gate_closures": [],
+  "budget_contract": "One fixed stage begins at build admission and covers both runtimes including cleanup. Each runtime needs its complete boot/enumeration/execution/cleanup reservation before admission. No deadline renewal.",
+  "environment_contract": "Both selected simulators must be freshly rediscovered and initially Shutdown. Hostless XCTest uses the selected Xcode agent and installs no task app. Restore Shutdown and verify owned workers have exited.",
+  "commands": "Direct xcodebuild uses the existing Makefile DatadogRUM scheme/workspace with isolated build-for-testing and exact unfiltered enumeration; no repository build-script changes or Test Visibility credentials.",
+  "parameter_source": "DatadogRUM/Tests/Utils/UIKitExtensionsTests.swift at candidate94842cc8: two Cartesian products1...5 x0...2 and two1...5 argument sets.",
+  "schema_reference": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope/rum/tests.json"
+}

@@ -162,3 +162,14 @@ Native cells retain300-second execution and180-second cleanup budgets. Ordinary
 scene activation has one30-second readiness interval; no accepted source or prior
 runtime cells are rerun. `test_same_key.py` owns the focused positive/negative
 controls for this phase oracle and transport identity.
+
+## Full RUM module compatibility
+
+`rum_suite.py` owns EXP225's finite RUM portion of the provisional F03 matrix.
+It archives the selected SDK/test source, copies the unchanged protected project
+as an explicit local input, and copies pinned dependencies into isolated output.
+A scoped review binds those inputs before one build and two unfiltered runtime
+runs. Exact case identifiers, parameter arguments, invocation counts, result-device
+identity, all compiler inputs/products and owned-worker cleanup are required.
+The fixed stage covers both runtimes; consumed attempts cannot be renewed.
+This does not close the other F03 modules or promote the experimental public API.

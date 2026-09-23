@@ -2,7 +2,7 @@
   "schema_version": 1,
   "gate": "S3:F03",
   "status": "PROVISIONAL_SOURCE_REUSE_ASSESSMENT",
-  "at": "2026-09-23T13:13:51.285600+00:00",
+  "at": "2026-09-23T13:48:01.134381+00:00",
   "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
   "release_approval": "F01 remains required for public promotion and final source-bound closure",
   "native_active": false,
@@ -305,7 +305,7 @@
   "cells": [
     {
       "id": "M01",
-      "disposition": "Assess existing EXP225 RUM test artifact for exact-source reuse and execution of only the still-unrun inventory; other selected complete modules remain unqualified at this S3 source. Exclude Replay capture/content assertions before results."
+      "disposition": "Fresh isolated unfiltered DatadogRUMTests compatibility preparation at94842cc8 is defined in EXP-225-rum-suite-definition.json; prior binary reuse was rejected. Other selected complete modules remain unqualified. No Replay capture/content suite or public API promotion."
     },
     {
       "id": "M02",
@@ -353,5 +353,13 @@
     "Results/EXP-225-legacy17-result.json",
     "Results/EXP-225-same-key-result.json"
   ],
-  "gate_closures": []
+  "gate_closures": [],
+  "unit_reuse_review": {
+    "reviewer": "/root/c06_runtime_plan",
+    "verdict": "DIRECT_BINARY_REUSE_REJECTED",
+    "reason": "Do not reuse the old unit binary. Four live product hashes differ from products-before.json and no post-correction full manifest exists. Preserve all original source/test results. One fresh isolated build is required.",
+    "next_definition": "Results/EXP-225-rum-suite-definition.json",
+    "preparation": "Fresh isolated source/dependency inputs and corrected collector qualify under scoped review; twelve offline test methods and four artifact-registry controls pass. One build and two runtime cells remain unstarted.",
+    "result_owner": "Results/EXP-225-rum-suite-result.json"
+  }
 }

@@ -63,7 +63,7 @@
   },
   "native_admitted": false,
   "gate_closures": [],
-  "next_action": "Keep same-key native qualification pending actual concurrent two-window setup in the ordered human session. Preserve local API and8/8 legacy17.5 evidence; assess source-matched reuse/preparation for the remaining F03 matrix without public promotion or redundant native retries.",
+  "next_action": "Execute the reviewed fresh RUM compatibility build and finite27.0/17.5 unfiltered suite cells at94842cc8. Keep concurrent same-key native work stopped pending real simultaneous-window setup in a separate S3 qualification; no new obligation is added to the S2 human session. Public promotion and full F03 remain open.",
   "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_",
   "native_qualification": {
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/release-client-06",
@@ -76,7 +76,7 @@
     "review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/review-admission.json",
     "source": "d6f6967e5ebd0e87ea639505b5e5d62e44becfcf698ee767cf304b8aa661e6fc"
   },
-  "updated_at": "2026-09-23T13:10:11.805518+00:00",
+  "updated_at": "2026-09-23T13:51:55.706014+00:00",
   "sdk_source": "d6f6967e5ebd0e87ea639505b5e5d62e44becfcf698ee767cf304b8aa661e6fc",
   "implementation_sha256": {
     "DatadogRUM/Sources/RUMMonitorProtocol+Convenience.swift": "d9712a5d8e3d93801ec90a304d535048addb0830b271ec9ad8c879888edfedb2",
@@ -511,5 +511,10 @@
     "objc": "NOT_EXECUTED",
     "cleanup": "PASS",
     "automatic_path": "STOPPED_NO_EQUIVALENT_RETRY"
+  },
+  "rum_suite_continuation": {
+    "definition": "Results/EXP-225-rum-suite-definition.json",
+    "result": "Results/EXP-225-rum-suite-result.json",
+    "state": "REVIEWED_PREPARATION_READY_FOR_ONE_BUILD"
   }
 }
