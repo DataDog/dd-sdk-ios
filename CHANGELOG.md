@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FIX] Ensure repeated URLSession resumes apply request customization once and preserve ordering when completion callbacks arrive early.
+
 # 3.18.0 / 21-09-2026
 
 - [FIX] Preserve delayed WebView correlation for long-lived active native RUM views.

@@ -36,7 +36,7 @@ internal final class NetworkInstrumentationSwizzler {
 
     /// Swizzles `URLSessionTask.resume()` method.
     func swizzle(
-        interceptResume: @escaping (URLSessionTask) -> Void
+        interceptResume: @escaping (URLSessionTask, @escaping URLSessionTaskSwizzler.ResumeContinuation) -> Void
     ) throws {
         try urlSessionTaskSwizzler.swizzle(interceptResume: interceptResume)
     }

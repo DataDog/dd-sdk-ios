@@ -7,6 +7,8 @@
 import Foundation
 
 internal final class URLSessionTaskSwizzler {
+    typealias ResumeContinuation = () -> Void
+
     private let lock: NSLocking
     private var taskResume: TaskResume?
 
@@ -16,7 +18,7 @@ internal final class URLSessionTaskSwizzler {
 
     /// Swizzles `URLSessionTask.resume()` method.
     func swizzle(
-        interceptResume: @escaping (URLSessionTask) -> Void
+        interceptResume: @escaping (URLSessionTask, @escaping ResumeContinuation) -> Void
     ) throws {
         lock.lock()
         defer { lock.unlock() }
@@ -59,12 +61,11 @@ internal final class URLSessionTaskSwizzler {
             super.init()
         }
 
-        func swizzle(intercept: @escaping (URLSessionTask) -> Void) {
+        func swizzle(intercept: @escaping (URLSessionTask, @escaping ResumeContinuation) -> Void) {
             typealias Signature = @convention(block) (URLSessionTask) -> Void
             swizzle(method) { previousImplementation -> Signature in
                 return { task in
-                    intercept(task)
-                    previousImplementation(task, Self.selector)
+                    intercept(task) { previousImplementation(task, Self.selector) }
                 }
             }
         }

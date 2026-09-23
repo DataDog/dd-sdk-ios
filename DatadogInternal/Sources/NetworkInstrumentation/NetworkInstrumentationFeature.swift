@@ -65,6 +65,9 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     /// The interceptions **must** be accessed using the `queue`.
     private var interceptions: [URLSessionTask: URLSessionTaskInterception] = [:]
 
+    private let taskPreparation = URLSessionTaskPreparationCoordinator(maxBufferedBodySize: NetworkInstrumentationFeature.maxBufferedBodySize)
+    private typealias TaskEvent = URLSessionTaskPreparationCoordinator.Event
+
     init(
         networkContextProvider: NetworkContextProvider,
         messageReceiver: FeatureMessageReceiver,
@@ -99,8 +102,9 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 
         // Intercept when the task is started
         try swizzler.swizzle(
-            interceptResume: { [weak self] task in
+            interceptResume: { [weak self] task, continuation in
                 guard let self = self else {
+                    continuation()
                     return
                 }
 
@@ -108,15 +112,23 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                 // NS_UNAVAILABLE and throw NSGenericException at runtime when accessed
                 // (e.g. AVAssetDownloadTask, AVAggregateAssetDownloadTask).
                 guard task.isSupportedForInstrumentation else {
+                    continuation()
+                    return
+                }
+
+                if let action = self.taskPreparation.existingResumeAction(for: task, continuation: continuation) {
+                    if case .forward = action { continuation() }
                     return
                 }
 
                 guard let currentRequest = task.currentRequest else {
+                    self.taskPreparation.forwardUnlessPreparing(task, continuation: continuation)
                     return
                 }
 
                 // Skip Datadog's own internal requests to prevent infinite recursion
                 if self.isDatadogInternalRequest(request: currentRequest) {
+                    self.taskPreparation.forwardUnlessPreparing(task, continuation: continuation)
                     return
                 }
 
@@ -125,25 +137,39 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                 // in multiple internal URLSessionTask wrapper objects sharing the same taskIdentifier.
                 // Internal wrappers have `_internalDelegateWrapper` set; the user-facing task does not.
                 if task.dd.isInternalTask {
+                    self.taskPreparation.forwardUnlessPreparing(task, continuation: continuation)
                     return
                 }
                 #endif
 
                 // Determine if this swizzler should intercept this task based on the configuration
                 guard shouldInterceptTask(task, for: configuration) else {
+                    self.taskPreparation.forwardUnlessPreparing(task, continuation: continuation)
                     return
+                }
+
+                switch self.taskPreparation.beginPreparation(
+                    for: task,
+                    continuation: continuation,
+                    trackingMode: trackingMode,
+                    isCompleted: task.state == .completed
+                ) {
+                case .forward:
+                    continuation()
+                    return
+                case .deferred:
+                    return
+                case .prepare:
+                    break
                 }
 
                 // Only perform interception if this swizzler should handle this task
                 // This allows the swizzler chain to continue for tasks we don't handle
-                var injectedTraceContexts = [RequestInstrumentationContext]()
-
                 let configuredFirstPartyHosts = FirstPartyHosts(firstPartyHosts: configuration?.firstPartyHostsTracing) ?? .init()
                 let (request, traceContexts) = self.intercept(request: currentRequest, additionalFirstPartyHosts: configuredFirstPartyHosts)
                 task.dd.override(currentRequest: request)
-                injectedTraceContexts = traceContexts
-
-                self.intercept(task: task, with: injectedTraceContexts, additionalFirstPartyHosts: configuredFirstPartyHosts, trackingMode: trackingMode)
+                self.intercept(task: task, with: traceContexts, additionalFirstPartyHosts: configuredFirstPartyHosts, trackingMode: trackingMode, fallbackRequest: request)
+                self.taskPreparation.finishPreparation(for: task, enqueue: self.enqueue)
             }
         )
 
@@ -360,6 +386,25 @@ extension NetworkInstrumentationFeature {
         }
     }
 
+    /// Called under the preparation coordinator's lock: only submit work to the serial queue.
+    /// Handler callbacks execute asynchronously and must never be invoked directly here.
+    private func enqueue(_ event: TaskEvent, for task: URLSessionTask) {
+        switch event {
+        case let .metrics(metrics): enqueue(task, didFinishCollecting: metrics)
+        case let .data(data): enqueue(task, didReceive: data)
+        case let .completion(error, date, mediaTime): enqueue(task, didCompleteWithError: error, endTime: date, endMediaTime: mediaTime)
+        case let .state(state, date, mediaTime): enqueue(task, didChangeToState: state, endTime: date, endMediaTime: mediaTime)
+        case .discardResponseBody:
+            queue.async { [weak self] in
+                guard let self, let interception = self.interceptions[task] else {
+                    return
+                }
+                interception.resetData()
+                self.truncatedInterceptions.insert(task)
+            }
+        }
+    }
+
     /// Checks if a URLRequest is an SDK internal request that should not be tracked
     ///
     /// - Parameter request: The URLRequest to check.
@@ -430,14 +475,18 @@ extension NetworkInstrumentationFeature {
     ///   - injectedTraceContexts: The list of trace contexts injected into the task's request, one or none for each handler.
     ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception, used in conjunction with hosts defined in each handler.
     ///   - trackingMode: The tracking mode to use for this interception (automatic or registered delegate).
-    func intercept(task: URLSessionTask, with instrumentationContexts: [RequestInstrumentationContext], additionalFirstPartyHosts: FirstPartyHosts?, trackingMode: TrackingMode) {
+    ///   - fallbackRequest: The prepared request snapshot, used only if the task no longer exposes a current request.
+    func intercept(task: URLSessionTask, with instrumentationContexts: [RequestInstrumentationContext], additionalFirstPartyHosts: FirstPartyHosts?, trackingMode: TrackingMode, fallbackRequest: URLRequest? = nil) {
         // In response to https://github.com/DataDog/dd-sdk-ios/issues/1638 capture the current request object on the
         // caller thread and freeze its attributes through `ImmutableRequest`. This is to avoid changing the request
         // object from multiple threads:
-        guard let currentRequest = task.currentRequest else {
+        // A task can complete during customization and stop exposing currentRequest. The prepared
+        // snapshot still lets us create the start before replaying its buffered completion. Prefer
+        // the live request when available, since it also contains URLSession configuration headers.
+        guard let requestToCapture = task.currentRequest ?? fallbackRequest else {
             return
         }
-        let request = ImmutableRequest(request: currentRequest)
+        let request = ImmutableRequest(request: requestToCapture)
 
         // Capture start time before entering the queue for more accurate timing.
         // `startMediaTime` is captured from a monotonic clock so the duration computed at
@@ -510,6 +559,10 @@ extension NetworkInstrumentationFeature {
     ///   - task: The task whose metrics have been collected.
     ///   - metrics: The collected metrics.
     func task(_ task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
+        taskPreparation.route(.metrics(metrics), for: task, enqueue: enqueue)
+    }
+
+    private func enqueue(_ task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
         queue.async { [weak self] in
             guard let self = self, let interception = self.interceptions[task] else {
                 return
@@ -535,6 +588,10 @@ extension NetworkInstrumentationFeature {
     ///   - task: The task that provided data.
     ///   - data: A data object containing the transferred data.
     func task(_ task: URLSessionTask, didReceive data: Data) {
+        taskPreparation.route(.data(data), for: task, enqueue: enqueue)
+    }
+
+    private func enqueue(_ task: URLSessionTask, didReceive data: Data) {
         queue.async { [weak self] in
             guard let self = self, let interception = self.interceptions[task] else {
                 return
@@ -576,7 +633,10 @@ extension NetworkInstrumentationFeature {
         // duration is guaranteed `>= 0` regardless of wall-clock corrections.
         let endTime = Date()
         let endMediaTime = mediaTimeProvider.current
+        taskPreparation.route(.completion(error, endTime, endMediaTime), for: task, enqueue: enqueue)
+    }
 
+    private func enqueue(_ task: URLSessionTask, didCompleteWithError error: Error?, endTime: Date, endMediaTime: CFTimeInterval) {
         queue.async { [weak self] in
             guard let self = self, let interception = self.interceptions[task] else {
                 return
@@ -642,7 +702,10 @@ extension NetworkInstrumentationFeature {
         // duration is guaranteed `>= 0` regardless of wall-clock corrections.
         let endTime = Date()
         let endMediaTime = mediaTimeProvider.current
+        taskPreparation.route(.state(state, endTime, endMediaTime), for: task, enqueue: enqueue)
+    }
 
+    private func enqueue(_ task: URLSessionTask, didChangeToState state: Int, endTime: Date, endMediaTime: CFTimeInterval) {
         queue.async { [weak self] in
             guard let self = self, let interception = self.interceptions[task] else {
                 return
