@@ -165,6 +165,17 @@ extension CALayerSnapshot.SemanticObservationMapping {
         )
     }
 
+    static let sampleBufferDisplayLayer = Self { layer, _, _ in
+        guard layer is AVSampleBufferDisplayLayer else {
+            return nil
+        }
+
+        return .init(
+            semantics: .unsupported("Video"),
+            ignoresSublayers: true
+        )
+    }
+
     static let layerHost = Self { layer, _, _ in
         guard layer.isHost else {
             return nil

@@ -98,6 +98,21 @@ struct SemanticObservationTests {
         ))
     }
 
+    @Test("Records sample buffer video as unsupported and ignores sublayers")
+    func recordsSampleBufferVideoAsUnsupportedAndIgnoresSublayers() {
+        // Given
+        let layer = AVSampleBufferDisplayLayer()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(
+            semantics: .unsupported("Video"),
+            ignoresSublayers: true
+        ))
+    }
+
     @Test("Records linear gradient semantics")
     func recordsLinearGradientSemantics() throws {
         // Given
