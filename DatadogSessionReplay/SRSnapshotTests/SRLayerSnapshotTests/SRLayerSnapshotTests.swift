@@ -45,6 +45,14 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
         )
     }
 
+    func testVideoPlayer() async throws {
+        try await takeLayerSnapshotFor(
+            VideoPlayerFixtureView(),
+            waitTime: 1.0,
+            shouldRecord: shouldRecord
+        )
+    }
+
     func testSafari() async throws {
         let fixture = SafariFixtureViewController()
         try await takeLayerSnapshotFor(

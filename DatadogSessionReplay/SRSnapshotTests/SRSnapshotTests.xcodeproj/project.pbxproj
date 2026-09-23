@@ -20,6 +20,9 @@
 		5BA7641D3063DD7C008553D1 /* SafariFixtureViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA7641C3063DD7C008553D1 /* SafariFixtureViewController.swift */; };
 		5BB746152E02ABB900B568F1 /* SwiftUIFixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB746142E02ABB500B568F1 /* SwiftUIFixture.swift */; };
 		5BB746182E02B4CD00B568F1 /* SwiftUIViewWithPrivacyOverrides.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB746172E02B4CD00B568F1 /* SwiftUIViewWithPrivacyOverrides.swift */; };
+		5BBEC0493064081900D05D8B /* four-colors.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 5BBEC0483064081900D05D8B /* four-colors.mp4 */; };
+		5BBEC04B3064081D00D05D8B /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 5BBEC04A3064081D00D05D8B /* README.md */; };
+		5BBEC04D3064091600D05D8B /* VideoPlayerFixtureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BBEC04C3064091600D05D8B /* VideoPlayerFixtureView.swift */; };
 		614396642A5E8C0600197326 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614396632A5E8C0600197326 /* Environment.swift */; };
 		614396652A5E8C0600197326 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614396632A5E8C0600197326 /* Environment.swift */; };
 		619C49B429952E12006B66A6 /* SnapshotTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619C49B329952E12006B66A6 /* SnapshotTestCase.swift */; };
@@ -84,6 +87,9 @@
 		5BA7641C3063DD7C008553D1 /* SafariFixtureViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariFixtureViewController.swift; sourceTree = "<group>"; };
 		5BB746142E02ABB500B568F1 /* SwiftUIFixture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIFixture.swift; sourceTree = "<group>"; };
 		5BB746172E02B4CD00B568F1 /* SwiftUIViewWithPrivacyOverrides.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIViewWithPrivacyOverrides.swift; sourceTree = "<group>"; };
+		5BBEC0483064081900D05D8B /* four-colors.mp4 */ = {isa = PBXFileReference; lastKnownFileType = text; path = "four-colors.mp4"; sourceTree = "<group>"; };
+		5BBEC04A3064081D00D05D8B /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		5BBEC04C3064091600D05D8B /* VideoPlayerFixtureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerFixtureView.swift; sourceTree = "<group>"; };
 		614396632A5E8C0600197326 /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Environment.swift; path = SRHost/Environment.swift; sourceTree = "<group>"; };
 		619C49B329952E12006B66A6 /* SnapshotTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotTestCase.swift; sourceTree = "<group>"; };
 		619C49B62995512A006B66A6 /* ImageComparison.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageComparison.swift; sourceTree = "<group>"; };
@@ -153,6 +159,7 @@
 				E1BB1A8A078646BD8B2DB48F /* Utils */,
 				99A974B3215D420797736C48 /* _snapshots_ */,
 				5B1C4F8F305C42B300C2745C /* SnapshotEnvironments.json */,
+				5BBEC0473064081100D05D8B /* Resources */,
 			);
 			path = SRLayerSnapshotTests;
 			sourceTree = "<group>";
@@ -163,6 +170,15 @@
 				5BB746172E02B4CD00B568F1 /* SwiftUIViewWithPrivacyOverrides.swift */,
 			);
 			path = Fixtures;
+			sourceTree = "<group>";
+		};
+		5BBEC0473064081100D05D8B /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				5BBEC0483064081900D05D8B /* four-colors.mp4 */,
+				5BBEC04A3064081D00D05D8B /* README.md */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 		619C49B529955106006B66A6 /* Utils */ = {
@@ -261,6 +277,7 @@
 				5B0E062330060D7B004CF4D3 /* ToolbarFixtureView.swift */,
 				5B5797B13062BD300002F9DF /* ShareSheetFixtureViewController.swift */,
 				5BA7641C3063DD7C008553D1 /* SafariFixtureViewController.swift */,
+				5BBEC04C3064091600D05D8B /* VideoPlayerFixtureView.swift */,
 			);
 			path = Fixtures;
 			sourceTree = "<group>";
@@ -396,6 +413,8 @@
 			files = (
 				CD65E35AAD9F4369911A5903 /* _snapshots_ in Resources */,
 				5B1C4F90305C42B300C2745C /* SnapshotEnvironments.json in Resources */,
+				5BBEC04B3064081D00D05D8B /* README.md in Resources */,
+				5BBEC0493064081900D05D8B /* four-colors.mp4 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -468,6 +487,7 @@
 				5B5797B23062BD300002F9DF /* ShareSheetFixtureViewController.swift in Sources */,
 				BBC8DFBCE103473D93F1139A /* TextFixtureView.swift in Sources */,
 				5BA07FD13002E97700322F5D /* TabFixtureView.swift in Sources */,
+				5BBEC04D3064091600D05D8B /* VideoPlayerFixtureView.swift in Sources */,
 				B32BB660FF454E58B4B8B6BD /* BasicControlsAndIndicatorsFixtureView.swift in Sources */,
 				F5D1C29527334F449C400E97 /* LayerSnapshotTestCase.swift in Sources */,
 			);

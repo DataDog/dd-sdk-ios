@@ -5,6 +5,7 @@
  */
 
 #if os(iOS)
+import AVFoundation
 import DatadogInternal
 import QuartzCore
 import SwiftUI
@@ -63,6 +64,66 @@ struct SemanticObservationTests {
         // Then
         #expect(observation == .init(
             semantics: .unsupported("Remote content"),
+            ignoresSublayers: true
+        ))
+    }
+
+    @Test("Records video as unsupported and ignores sublayers")
+    func recordsVideoAsUnsupportedAndIgnoresSublayers() {
+        // Given
+        let layer = AVPlayerLayer()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(
+            semantics: .unsupported("Video"),
+            ignoresSublayers: true
+        ))
+    }
+
+    @Test("Records camera preview as unsupported and ignores sublayers")
+    func recordsCameraPreviewAsUnsupportedAndIgnoresSublayers() {
+        // Given
+        let layer = AVCaptureVideoPreviewLayer()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(
+            semantics: .unsupported("Camera preview"),
+            ignoresSublayers: true
+        ))
+    }
+
+    @Test("Records sample buffer video as unsupported and ignores sublayers")
+    func recordsSampleBufferVideoAsUnsupportedAndIgnoresSublayers() {
+        // Given
+        let layer = AVSampleBufferDisplayLayer()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(
+            semantics: .unsupported("Video"),
+            ignoresSublayers: true
+        ))
+    }
+
+    @Test("Records Metal content as unsupported and ignores sublayers")
+    func recordsMetalContentAsUnsupportedAndIgnoresSublayers() {
+        // Given
+        let layer = CAMetalLayer()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(
+            semantics: .unsupported("Metal"),
             ignoresSublayers: true
         ))
     }

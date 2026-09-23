@@ -21,6 +21,11 @@ extension CALayerSnapshot {
 extension CALayerSnapshot.SemanticObservationMapping: CaseIterable {
     static let allCases: [Self] = [
         .embeddedContent,
+        .playerLayer,
+        .captureVideoPreviewLayer,
+        .sampleBufferDisplayLayer,
+        .metalLayer,
+        .layerHost,
         .gradient,
         .activityIndicator,
         .label,
@@ -44,8 +49,7 @@ extension CALayerSnapshot.SemanticObservationMapping: CaseIterable {
         .tabSelectionBackdrop,
         .visualEffectBackdrop,
         .visualEffectBackground,
-        .liquidLens,
-        .unsupported
+        .liquidLens
     ]
 }
 #endif
