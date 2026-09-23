@@ -202,6 +202,13 @@ prompt immediately on cleanup entry; publish any restoration gesture as a separa
 cleanup request. EOF can precede process exit: wait within the original cleanup
 budget before escalation, and never relabel a late absence receipt as timely.
 
+For human input, host-worker absence does not prove the operator has released a
+gesture. A failure must retire the prompt, request release and stop, and require
+operator acknowledgement plus native idle/terminal evidence before app teardown.
+If either is unavailable within the original cleanup budget, defer teardown and
+retain that unresolved verdict. Never terminate a held gesture merely because
+evidence transfer or an observer failed.
+
 Export app JSONL, runner checkpoints/hierarchy/images, console and partial xcresult
 before uninstall. Bind each to this run and contiguous sequence. Preserve raw
 bytes even if parsing fails; ignore foreign receipts and reject symlinks. Cleanup

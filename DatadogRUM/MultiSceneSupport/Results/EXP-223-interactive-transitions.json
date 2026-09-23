@@ -7,7 +7,7 @@
     "S2:H13",
     "S2:H14"
   ],
-  "status": "REVIEWED_DUO_RUNTIME_AND_BUILDS_PREPARED_NATIVE_UNADMITTED",
+  "status": "PHYSICAL_BASELINE_INVALID_HARNESS_STOPPED_DUO_PREPARATION_RETAINED",
   "defined_at": "2026-09-22T23:17:07.076784+00:00",
   "owner": "SDK implementer + device operator",
   "reviewer": "/root/c06_runtime_plan",
@@ -292,11 +292,26 @@
     "Extra/missing backend event and incomplete pagination",
     "Late evidence/publication or missing cleanup"
   ],
-  "review_status": "DUO_WORKFLOW_PREPARATION_APPROVED",
+  "review_status": "PHYSICAL_PREPARATION_REVIEWED; NATIVE_QUALIFICATION_FAILED",
   "native_admitted": false,
-  "results": [],
+  "results": [
+    {
+      "environment": "physical_ipad",
+      "cell": "physical_ipad-UIKit-automatic-stack-A",
+      "state": "INVALID",
+      "scenario": "UNQUALIFIED",
+      "evidence": "INCOMPLETE",
+      "cleanup": "PASS",
+      "assessment": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-ipad-ctltv_x8/physical-invalid-assessment.json",
+        "sha256": "98879d1c1a80257efefe007a765e91634f56129615d54400cf33c679a3c92dd7"
+      },
+      "candidate": "NOT_RUN",
+      "gate_closures": []
+    }
+  ],
   "gate_closures": [],
-  "next_action": "Perform fresh operator/environment admission for the existing ordered human session. First planned baseline qualifies each changed mechanism; no native retry or deadline extension. Physical iPad remains a separate concrete prerequisite.",
+  "next_action": "Keep current path stopped. Correct early coordinator observation and require operator release plus native idle before teardown. Offline controls and scoped review precede any separately admitted continuation.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
@@ -367,16 +382,16 @@
       "scope": "Fixture/native and local paired oracle only. Full runtime, backend, adaptive geometry and physical execution remain unqualified."
     }
   },
-  "updated_at": "2026-09-23T00:20:44.791667+00:00",
+  "updated_at": "2026-09-23T19:45:47.121281+00:00",
   "live_environment": {
-    "observed_at": "2026-09-23T00:20:44.791667+00:00",
+    "observed_at": "2026-09-23T19:45:47.121281+00:00",
     "xcode": "27.1 (27A9269)",
     "workspace": "/Users/valentin.pertuisot/work/dd-sdk-ios/Datadog.xcworkspace",
     "duo_simulators_eligible": 2,
-    "physical_ipad_available": false,
+    "physical_ipad_available": true,
     "physical_iphone_available": true,
     "native_admission": false,
-    "qualification_limit": "Fresh actual MCP workspace/destination and RUM application reads. No physical iPad listed; no native/display/operator admission. Refresh required at execution.",
+    "qualification_limit": "Physical baseline preparation and native run executed; transport/observer failure stops current path. No release qualification.",
     "backend_probe_application_access": true,
     "receipts": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-human-runtime-ov_vev9r/run/preparation-access"
   },
@@ -414,6 +429,61 @@
       "Fresh operator and actual runtime/display admission",
       "Eight Duo native cells with paired source classifications",
       "Physical iPad availability/builds and twelve required cells"
+    ]
+  },
+  "physical_preparation": {
+    "state": "NATIVE_BASELINE_INVALID_HARNESS_STOPPED",
+    "operator_available_at": "2026-09-23T18:30:00Z",
+    "authorization": "User explicitly approved physical iPad build and capture adapter and tests",
+    "device": "wired iPad Pro11 third generation, iPadOS27.0, developer services enabled and unlocked",
+    "artifacts": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-ipad-ctltv_x8",
+    "first_pair": [
+      "physical_ipad-UIKit-automatic-stack-A",
+      "physical_ipad-UIKit-automatic-stack-B"
+    ],
+    "builds": [
+      "A-device",
+      "B-device"
+    ],
+    "fixture_delta": "pre-SDK signed Mach-O identity receipt and hash-committed remote snapshot requests only",
+    "pair_budget_seconds": 5700,
+    "native_per_cell_seconds": 1800,
+    "backend_per_cell_seconds": 600,
+    "cleanup_per_cell_seconds": 300,
+    "pair_final_cleanup_reserve_seconds": 300,
+    "attempts": 1,
+    "native_admitted": true,
+    "native_launches": 1,
+    "gate_closures": [],
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-ipad-ctltv_x8/runtime-uikit/review.json",
+      "sha256": "cbe27cee3a576f5fbd9140cd2ebc64f16e68bf16a96da865893559c1639d7e80"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-ipad-ctltv_x8/runtime-uikit/controls.json",
+      "sha256": "83e82ac3d35d70fbe6157971651c07de0ac5b16cddccb9365d937e3ba14a5d9c",
+      "tests": 13,
+      "state": "PASS"
+    },
+    "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-ipad-ctltv_x8/build-reviewed",
+    "signed_products": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-ipad-ctltv_x8/build-reviewed/signed-qualified/plan.json",
+      "sha256": "60d7f4ad0bb62859ced8583cf82b303869f44f8bf0dd374fbbd754cfa6c5c961"
+    },
+    "runtime_plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-ipad-ctltv_x8/runtime-uikit/plan.json",
+      "sha256": "bbb698128e373280ed28f7e0aca346250241570d7c4ac0fb76444b30bc0b7725"
+    },
+    "result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-ipad-ctltv_x8/physical-invalid-assessment.json",
+      "sha256": "98879d1c1a80257efefe007a765e91634f56129615d54400cf33c679a3c92dd7"
+    },
+    "candidate": "NOT_RUN",
+    "builds_qualified": 2,
+    "products_signed": 4,
+    "remaining": [
+      "Repair observer ordering and human release/quiescence before new native admission",
+      "Complete physical and Duo comparisons with local/backend/source classification"
     ]
   }
 }

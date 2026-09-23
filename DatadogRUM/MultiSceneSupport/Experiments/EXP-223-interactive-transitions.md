@@ -8,8 +8,8 @@ candidate. Stack cells combine completed/cancelled edge pops and sheet dismissal
 split cells prove geometry, selection and ownership through real resize or fold.
 The existing automatic Duo matrix supplies its two automatic split comparisons.
 
-This is preparation for the already planned single human-input session. No native
-cell is admitted and no release gate closes. The first planned baseline qualifies
+This implements the already planned single human-input session. No release gate
+closes. The first planned baseline qualifies
 the passive transition mechanism; a missed native callback stops that path without
 another equivalent diagnostic. Automatic tracking limitations remain separate
 from manual modifier behavior and from a reproduced candidate regression.
@@ -32,7 +32,20 @@ and a fixed aggregate stage clock; both corrections are qualified offline.
 Actual process start identity supplements PID and executable checks. Backend
 collection retains the original uploader, then seals and rejoins the saved stream.
 
-Fresh human readiness and actual environment admission remain. No native cell has
-run and no H11–H14 gate closes. The twelve physical iPad cells still need a live
-resize-capable device, signing and the two admitted physical build keys. Exact
-runtime, review and control receipts live in the owning result.
+The physical adapter built and signed four products from the same two SDK revisions;
+13 focused controls and scoped preparation review passed. The first physical UIKit
+baseline captured completed and cancelled edge pops, then stopped during sheet
+dismissal. The observer could not bind a unique coordinator at gesture begin, and
+a separate CoreDevice transfer failed with a closed socket. Candidate was not run;
+native/backend qualification and H11–H14 remain open.
+
+The app was alive immediately before the harness sent SIGTERM. No matching physical
+crash report was present. The operator reported still holding the dismissal gesture
+when teardown began, despite the guide asking them to release. Original INVALID,
+cleanup PASS and supervisor receipts remain immutable; the separate assessment
+records that host-process quiescence did not prove human-input quiescence.
+
+The physical path is stopped. A continuation requires source-supported coordinator
+ordering, explicit operator release plus native idle before teardown, focused
+negative controls and scoped review. Exact build, runtime, failure and user-observation
+receipts live in the owning result. Existing Duo preparation remains unchanged.
