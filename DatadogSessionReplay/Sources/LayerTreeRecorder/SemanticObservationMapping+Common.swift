@@ -176,6 +176,17 @@ extension CALayerSnapshot.SemanticObservationMapping {
         )
     }
 
+    static let metalLayer = Self { layer, _, _ in
+        guard layer is CAMetalLayer else {
+            return nil
+        }
+
+        return .init(
+            semantics: .unsupported("Metal"),
+            ignoresSublayers: true
+        )
+    }
+
     static let layerHost = Self { layer, _, _ in
         guard layer.isHost else {
             return nil

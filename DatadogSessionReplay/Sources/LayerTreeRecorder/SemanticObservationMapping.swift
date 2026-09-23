@@ -48,6 +48,7 @@ extension CALayerSnapshot.SemanticObservationMapping: CaseIterable {
         .playerLayer,
         .captureVideoPreviewLayer,
         .sampleBufferDisplayLayer,
+        .metalLayer,
         .layerHost
     ]
 }
