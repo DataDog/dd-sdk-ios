@@ -99,9 +99,6 @@ internal final class FlagsRepository {
     private let initializationTimeout: TimeInterval?
     private let scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler
 
-    private let initializationLock = NSLock()
-    private var didStartInitialization = false
-
     @ReadWriteLock
     private var repositoryState = RepositoryState()
 
@@ -208,23 +205,14 @@ internal final class FlagsRepository {
     private func makeInitializationCompletion(
         _ completion: @escaping (Result<Void, FlagsError>) -> Void,
         context: FlagsEvaluationContext,
-        beforeScheduling: () -> Void
+        contextUpdateID: UInt64
     ) -> InitializationCompletion? {
-        initializationLock.lock()
-        guard !didStartInitialization else {
-            initializationLock.unlock()
-            return nil
-        }
-        didStartInitialization = true
-        initializationLock.unlock()
-
         guard let initializationTimeout,
               initializationTimeout.isFinite,
               initializationTimeout > 0 else {
             return nil
         }
 
-        beforeScheduling()
         let initializationCompletion = InitializationCompletion(completion: completion)
         let cancelTimeout = scheduleInitializationTimeout(initializationTimeout) { [weak self, initializationCompletion] in
             guard let completion = initializationCompletion.take() else {
@@ -234,16 +222,19 @@ internal final class FlagsRepository {
                 completion(.failure(.clientNotInitialized))
                 return
             }
-            let timeoutState: FlagsClientState = self.repositoryState.flagsData?.context == context ? .stale : .error
-            let accepted = self.stateManager.updateState(
-                timeoutState,
-                unlessCurrentStateIs: [.ready, .stale]
-            ) {
-                completion(.failure(.initializationTimedOut))
+            var notifyListeners: (() -> Void)?
+            self._repositoryState.mutate { state in
+                guard contextUpdateID == state.contextUpdateID else {
+                    return
+                }
+                let timeoutState: FlagsClientState = state.flagsData?.context == context ? .stale : .error
+                notifyListeners = self.stateManager.updateStateWithoutNotifying(
+                    timeoutState,
+                    unlessCurrentStateIs: [.ready, .stale]
+                )
             }
-            if !accepted {
-                completion(.failure(.initializationTimedOut))
-            }
+            completion(.failure(.initializationTimedOut))
+            notifyListeners?()
         }
         initializationCompletion.armTimeoutCancellation(cancelTimeout)
         return initializationCompletion
@@ -325,31 +316,33 @@ internal final class FlagsRepository {
     private func applyFailedContextUpdate(
         for context: FlagsEvaluationContext,
         contextUpdateID: UInt64
-    ) -> FlagsClientState? {
+    ) -> (() -> Void)? {
         // Only the latest request can select fallback data or end reconciliation.
-        var stateToUpdate: FlagsClientState?
+        var notifyListeners: (() -> Void)?
         _repositoryState.mutate { state in
             guard contextUpdateID == state.contextUpdateID else {
                 return
             }
 
             state.reconcilingContext = nil
+            let newState: FlagsClientState
 
             // Only use cached flags if they match the requested context to avoid
             // serving flags from a different user/context.
             if let matchingFlagsData = state.flagsData(matching: context) {
                 state.flagsData = matchingFlagsData
-                stateToUpdate = .stale
+                newState = .stale
             } else {
                 // Clear cached data to prevent cross-context flag leakage.
                 // Without this, flagAssignment() could return the previous
                 // user's flags while in .error state.
                 state.flagsData = nil
-                stateToUpdate = .error
+                newState = .error
             }
+            notifyListeners = stateManager.updateStateWithoutNotifying(newState)
         }
 
-        return stateToUpdate
+        return notifyListeners
     }
 }
 
@@ -384,46 +377,47 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
     ) {
-        let stateManager = self.stateManager
-        let initializationCompletion = makeInitializationCompletion(completion, context: context) {
-            stateManager.updateState(.reconciling)
+        var contextUpdateID: UInt64 = 0
+        var isFirstContextUpdate = false
+        var notifyReconciling: (() -> Void)?
+        // Request registration, assignments, and client state use the same synchronization boundary.
+        // Listener delivery and public completions must remain outside this lock.
+        _repositoryState.mutate { state in
+            state.contextUpdateID += 1
+            contextUpdateID = state.contextUpdateID
+            isFirstContextUpdate = !state.hasStartedEvaluationContextRequest
+            state.hasStartedEvaluationContextRequest = true
+            state.reconcilingContext = context
+            notifyReconciling = stateManager.updateStateWithoutNotifying(.reconciling)
         }
+        notifyReconciling?()
+        let initializationCompletion = isFirstContextUpdate
+            ? makeInitializationCompletion(completion, context: context, contextUpdateID: contextUpdateID)
+            : nil
         let takeCompletion = {
             initializationCompletion?.take()
                 ?? (initializationCompletion == nil ? completion : nil)
         }
         func complete(
             _ result: Result<Void, FlagsError>,
-            _ newState: FlagsClientState?,
+            _ notifyListeners: (() -> Void)?,
             _ operationCompletion: InitializationCompletion.Completion?,
             pendingCompletions: [() -> Void] = []
         ) {
-            guard let newState else {
+            guard let notifyListeners else {
                 operationCompletion?(result)
                 return
             }
 
-            // The provider reads currentState in completion; initialization must also complete before listeners.
-            stateManager.updateState(newState) {
-                Self.executePendingDiskReadCallbacks(pendingCompletions)
-                if initializationCompletion != nil {
-                    operationCompletion?(result)
-                }
+            // State is already updated; initialization must also complete before listeners.
+            Self.executePendingDiskReadCallbacks(pendingCompletions)
+            if initializationCompletion != nil {
+                operationCompletion?(result)
             }
+            notifyListeners()
             if initializationCompletion == nil {
                 operationCompletion?(result)
             }
-        }
-
-        var contextUpdateID: UInt64 = 0
-        _repositoryState.mutate { state in
-            state.contextUpdateID += 1
-            contextUpdateID = state.contextUpdateID
-            state.hasStartedEvaluationContextRequest = true
-            state.reconcilingContext = context
-        }
-        if initializationCompletion == nil {
-            stateManager.updateState(.reconciling)
         }
 
         flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
@@ -441,6 +435,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 )
                 var versionAfterSuccess: UInt64?
                 var callbacks: [PendingCacheReadCallback] = []
+                var notifyListeners: (() -> Void)?
                 self._repositoryState.mutate { state in
                     // Only the latest request can install assignments or end reconciliation.
                     guard contextUpdateID == state.contextUpdateID else {
@@ -452,6 +447,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     versionAfterSuccess = state.flagsDataVersion
                     state.reconcilingContext = nil
                     callbacks = state.finishWaitingForInitialFlagsData()
+                    notifyListeners = self.stateManager.updateStateWithoutNotifying(.ready)
                 }
                 guard let versionAfterSuccess else {
                     complete(.success(()), nil, takeCompletion())
@@ -459,7 +455,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 }
                 let pendingCompletions = callbacks.map { $0.prepare() }
                 self.writeState(flagsData, version: versionAfterSuccess)
-                complete(.success(()), .ready, takeCompletion(), pendingCompletions: pendingCompletions)
+                complete(.success(()), notifyListeners, takeCompletion(), pendingCompletions: pendingCompletions)
             case .failure(let error):
                 self.whenCacheReady(PendingCacheReadCallback(takeCompletion: takeCompletion) { [weak self] operationCompletion in
                     guard let self else {
@@ -467,11 +463,11 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                         return
                     }
 
-                    let newState = self.applyFailedContextUpdate(
+                    let notifyListeners = self.applyFailedContextUpdate(
                         for: context,
                         contextUpdateID: contextUpdateID
                     )
-                    complete(.failure(error), newState, operationCompletion)
+                    complete(.failure(error), notifyListeners, operationCompletion)
                 })
             }
         }
@@ -481,6 +477,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         let flagsDataStore = featureScope.flagsDataStore
         let clientName = clientName
         var callbacks: [PendingCacheReadCallback] = []
+        var notifyListeners: (() -> Void)?
 
         _repositoryState.mutate { state in
             state.flagsData = nil
@@ -489,6 +486,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             state.contextUpdateID += 1
             state.reconcilingContext = nil
             callbacks = state.finishWaitingForInitialFlagsData()
+            notifyListeners = stateManager.updateStateWithoutNotifying(.notReady)
         }
         let pendingCompletions = callbacks.map { $0.prepare() }
         // Enqueue removal after any already-started cache write to avoid
@@ -496,9 +494,8 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         cachePersistenceQueue.sync {
             flagsDataStore.removeFlagsData(forClientNamed: clientName)
         }
-        stateManager.updateState(.notReady) {
-            Self.executePendingDiskReadCallbacks(pendingCompletions)
-        }
+        Self.executePendingDiskReadCallbacks(pendingCompletions)
+        notifyListeners?()
     }
 
     func flush() {
