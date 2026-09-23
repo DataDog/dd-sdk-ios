@@ -3,32 +3,36 @@
 ## EXP-224 — Measure the application impact of the S3 prototype
 
 The [owning definition](../Results/EXP-224-application-impact.json) fixes two local
-application journeys and an eight-cell physical before/after comparison for S3:P01.
-UIKit uses ordinary automatic tracking; SwiftUI compares existing manual modifiers
-with the existing experimental semantic host around unchanged native containers.
-The release3.17.0 baseline and current full prototype remain exact source identities.
+journeys and eight physical before/after cells for S3:P01. UIKit uses automatic
+tracking; SwiftUI compares manual modifiers with the experimental semantic host
+around unchanged native containers. Baseline3.17.0 is paired with the implemented
+API candidate `94842cc8a`. Programmatic navigation does not qualify gestures.
 
-Preparation can advance while the S2 human gesture session is unavailable. It adds
-no API, does not change SDK source and does not certify the selected S2 composition
-or a future S3 release. Programmatic workload transitions do not qualify gestures.
-The physical phone is currently disconnected; native execution is unadmitted.
+Four refreshed unsigned Release apps pass exact compiler and product checks.
+The sampler serializes phase boundaries and CPU reads, labels boundary samples,
+and seals after draining its timer. A native ready boundary requires one owned
+foreground window filling an unchanged display. Thirty-eight distinct offline
+controls pass, covering comparison thresholds, native scenarios and trace parsing.
+The designated reviewer approved the sampler and addressed decoder findings.
 
-The definition owns finite workloads, numeric thresholds, source/build guards and
-separate scenario, evidence and cleanup verdicts. Actual rendered-frame, hitch and
-hang evidence requires the physical trace. A requested display-link interval or a
-simulator measurement cannot substitute. The first planned baseline qualifies the
-capture mechanism; missing evidence stops the path without a diagnostic series.
+Installed Xcode27.1 schemas and modelers establish the metric scope. Core Animation
+FPS is a measured display-driver estimate; hitch render processes belong to the
+window server. The comparison retains global display hitches during the app's
+exact Workload interval. Hangs, CPU and footprint bind to the app PID. Complete
+trace columns, process lifetime, run/phase messages, clock mapping and interval
+coverage are checked. Present empty hitch tables differ from absent tables. The
+renderer display integer is an unjoined diagnostic; physical display UUID and
+native geometry are verified separately. No exact app-rendered-frame or individual
+hitch-causality claim follows. The numeric comparison thresholds are unchanged.
 
-Both isolated Release generic-device builds pass with exact compiler and complete
-product inventories (four unsigned apps). Ten comparison controls pass. These
-results establish client compilation and metric-threshold checks only. Native
-scenario controls, physical trace decoding, signed installation and collection
-remain unqualified. The next measurement candidate must bind the newly authorized
-API implementation before collection; the original source/build receipts remain.
+The physical iPhone is now connected with working device services. Signed
+installation, pre-SDK installed-
+code proof, recorder readiness and complete capture/export/cleanup orchestration
+remain prerequisites. The first planned UIKit baseline qualifies native collection;
+missing evidence stops that path. No physical measurement, performance pass or
+release gate closure is claimed. Any fixture change receives a new build identity.
 
-The scoped code review found a terminal-snapshot race and an overly broad generated
-compiler-input allowance. The sampler now drains its queue and seals the snapshot.
-Compiler input guards admit only each declared resource accessor and the exact
-target/platform/architecture; both saved inventories pass that stricter check.
-The sampler correction requires refreshed products. Build them with the newly
-authorized API candidate; the four original products remain historical preparation.
+The original four products and earlier review corrections remain in the owning
+record as historical preparation. Current warnings retain SDK diagnostics,
+identical fixture deprecations and the iPad orientation warning; this comparison
+targets a physical iPhone. No SDK code changed in this preparation checkpoint.

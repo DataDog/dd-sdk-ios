@@ -67,6 +67,10 @@ Optimized single-scene clients qualify on17.5/27 with automatic tracking on/off.
 This remains experimental: attributable API approval, normal public exposure,
 simultaneous native same-key ownership and the complete final matrix stay open.
 
+[Application-impact preparation](Results/EXP-224-application-impact.json) now binds
+four Release clients and reviewed sampler/trace controls to that API candidate.
+Physical collection remains unqualified; there is no new performance or gate claim.
+
 ## Immediate compatibility priority
 
 The criterion is no RUM degradation when an existing app rebuilds with the iOS27

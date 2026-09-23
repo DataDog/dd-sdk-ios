@@ -1,0 +1,74 @@
+{
+  "hitches-summary": {
+    "start": "start-time",
+    "duration": "duration",
+    "swap-id": "uint32",
+    "earliest-time": "event-time",
+    "presentation-time": "event-time",
+    "latency-allowed": "duration",
+    "narrative": "formatted-label",
+    "severity": "event-concept",
+    "color": "render-buffer-depth",
+    "layout-qualifier": "layout-id",
+    "hitch-id": "uint32",
+    "context-count": "uint32",
+    "buffer-count": "uint32",
+    "refresh-interval": "uint32",
+    "type-label": "string"
+  },
+  "hitches-render-interval": {
+    "start": "start-time",
+    "duration": "duration",
+    "hid-delivery": "event-time",
+    "process": "process",
+    "narrative": "formatted-label",
+    "severity": "event-concept",
+    "color": "render-buffer-depth",
+    "render-count": "uint32",
+    "buffer-count": "uint32",
+    "display-id": "uint32",
+    "frame-seed": "uint32",
+    "swap-id": "uint32",
+    "hitch-id": "uint32"
+  },
+  "process-info": {
+    "time": "event-time",
+    "pid": "pid",
+    "unique-id": "uint64",
+    "process": "process",
+    "process-name": "string"
+  },
+  "core-animation-fps-estimate": {
+    "interval": "start-time",
+    "period": "duration",
+    "fps": "fps",
+    "device-utilization": "percent"
+  },
+  "os-signpost-interval": {
+    "start": "start-time",
+    "duration": "duration",
+    "layout-qualifier": "layout-id",
+    "name": "signpost-name",
+    "category": "category",
+    "subsystem": "subsystem",
+    "identifier": "os-signpost-identifier",
+    "process": "process",
+    "end-process": "process",
+    "start-thread": "thread",
+    "end-thread": "thread",
+    "start-message": "os-log-metadata",
+    "end-message": "os-log-metadata",
+    "start-backtrace": "text-backtrace",
+    "end-backtrace": "text-backtrace",
+    "start-emit-location": "return-location",
+    "end-emit-location": "return-location",
+    "signature": "os-log-metadata"
+  },
+  "potential-hangs": {
+    "start": "start-time",
+    "duration": "duration",
+    "hang-type": "hang-type",
+    "thread": "thread",
+    "process": "process"
+  }
+}

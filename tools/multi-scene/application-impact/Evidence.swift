@@ -61,6 +61,7 @@ final class ImpactEvidence: @unchecked Sendable {
         return true
     }
 
+    @MainActor
     func startSampling() {
         let timer = DispatchSource.makeTimerSource(queue: samplingQueue)
         timer.setEventHandler { [weak self] in self?.sample() }
@@ -69,7 +70,8 @@ final class ImpactEvidence: @unchecked Sendable {
         self.timer = timer
     }
 
-    private func sample() {
+    private func sample(role: String = "periodic") {
+        dispatchPrecondition(condition: .onQueue(samplingQueue))
         var usage = rusage()
         var memory = task_vm_info_data_t()
         var count = mach_msg_type_number_t(MemoryLayout<task_vm_info_data_t>.size / MemoryLayout<integer_t>.size)
@@ -83,35 +85,44 @@ final class ImpactEvidence: @unchecked Sendable {
         else { record("metric-failure"); return }
         let cpu = Double(usage.ru_utime.tv_sec + usage.ru_stime.tv_sec)
             + Double(usage.ru_utime.tv_usec + usage.ru_stime.tv_usec) / 1_000_000
-        record("sample", ["cpu_seconds": cpu, "footprint_bytes": memory.phys_footprint,
+        record("sample", ["sample_role": role, "cpu_seconds": cpu, "footprint_bytes": memory.phys_footprint,
             "thermal": ProcessInfo.processInfo.thermalState.rawValue,
             "low_power": ProcessInfo.processInfo.isLowPowerModeEnabled])
     }
 
+    @MainActor
     func begin(_ name: String) {
-        lock.lock(); phase = name; lock.unlock()
-        sample()
-        record("phase-begin", ["name": name])
-        interval = OSSignpostID(log: log)
-        if let interval { os_signpost(.begin, log: log, name: "Workload", signpostID: interval, "%{public}s %{public}s", runID, name) }
+        samplingQueue.sync {
+            lock.lock(); phase = name; lock.unlock()
+            record("phase-begin", ["name": name])
+            interval = OSSignpostID(log: log)
+            if let interval { os_signpost(.begin, log: log, name: "Workload", signpostID: interval, "%{public}s %{public}s", runID, name) }
+            sample(role: "begin")
+        }
     }
 
+    @MainActor
     func end(_ name: String) {
-        sample()
-        record("phase-end", ["name": name])
-        if let interval { os_signpost(.end, log: log, name: "Workload", signpostID: interval, "%{public}s %{public}s", runID, name) }
-        interval = nil
+        samplingQueue.sync {
+            sample(role: "end")
+            if let interval { os_signpost(.end, log: log, name: "Workload", signpostID: interval, "%{public}s %{public}s", runID, name) }
+            interval = nil
+            record("phase-end", ["name": name])
+            lock.lock(); phase = "transition"; lock.unlock()
+        }
     }
 
     @MainActor
     func topology(window: UIWindow, step: String, cycle: Int) -> Bool {
         guard let scene = window.windowScene, scene.activationState == .foregroundActive,
-              window.isKeyWindow, !window.isHidden, window.alpha > 0,
+              window.isKeyWindow, !window.isHidden, window.alpha > 0, UIScreen.screens.count == 1,
+              window.bounds.size == window.screen.bounds.size,
               UIApplication.shared.connectedScenes.filter({ $0.activationState == .foregroundActive }).count == 1
         else { record("topology-failure", ["step": step, "cycle": cycle]); return false }
         record("boundary", ["step": step, "cycle": cycle, "scene": scene.session.persistentIdentifier,
             "window": String(describing: ObjectIdentifier(window)), "width": window.bounds.width,
-            "height": window.bounds.height, "screen_width": window.screen.bounds.width,
+            "height": window.bounds.height, "screen_id": String(describing: ObjectIdentifier(window.screen)),
+            "screen_count": UIScreen.screens.count, "screen_width": window.screen.bounds.width,
             "screen_height": window.screen.bounds.height, "scale": window.screen.scale,
             "maximum_fps": window.screen.maximumFramesPerSecond,
             "windows": scene.windows.map { ["owned": $0 === window, "key": $0.isKeyWindow,
@@ -122,15 +133,17 @@ final class ImpactEvidence: @unchecked Sendable {
     @MainActor
     func finish(_ state: String, reason: String = "") {
         timer?.cancel(); timer = nil
-        samplingQueue.sync {}
-        lock.lock()
-        rows.append(["kind": "terminal", "state": state, "reason": reason, "sequence": rows.count + 1,
-                     "uptime_ns": DispatchTime.now().uptimeNanoseconds, "phase": phase])
-        sealed = true
-        let records = rows
-        lock.unlock()
+        let records: [[String: Any]] = samplingQueue.sync {
+            lock.lock()
+            defer { lock.unlock() }
+            rows.append(["kind": "terminal", "state": state, "reason": reason, "sequence": rows.count + 1,
+                         "uptime_ns": DispatchTime.now().uptimeNanoseconds, "phase": phase])
+            sealed = true
+            return rows
+        }
         let document: [String: Any] = ["schema_version": 1, "run_id": runID, "nonce": nonce,
-            "source": source, "fixture": fixture, "framework": framework, "records": records]
+            "source": source, "fixture": fixture, "framework": framework,
+            "pid": ProcessInfo.processInfo.processIdentifier, "records": records]
         do {
             let data = try JSONSerialization.data(withJSONObject: document, options: [.sortedKeys])
             let directory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
@@ -158,6 +171,9 @@ final class ImpactDriver {
         do {
             // Reserve time for the external recorder. Native admission must prove recorder readiness.
             try await Task.sleep(nanoseconds: 15_000_000_000)
+            guard journey.verify(step: 0, cycle: 0), evidence.topology(window: window, step: "ready", cycle: -1) else {
+                evidence.finish("INVALID", reason: "initial owned foreground display not ready"); return
+            }
             evidence.startSampling()
             for (phase, cycles) in [("warmup", 2), ("active", 12)] {
                 evidence.begin(phase)

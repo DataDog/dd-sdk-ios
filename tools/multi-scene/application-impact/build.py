@@ -18,8 +18,8 @@ from acceptance_common import require, digest
 HERE = Path(__file__).resolve().parent
 OWNER = shared.REPO / 'DatadogRUM/MultiSceneSupport/Results/EXP-224-application-impact.json'
 SOURCES = ['Evidence.swift', 'UIKitApp.swift', 'SwiftUIApp.swift']
-HELPERS = ['tools/multi-scene/application-impact/' + n for n in ['build.py','contract.py','test_contract.py']]
-HELPERS += ['tools/multi-scene/baselines/run.py'] + ['tools/multi-scene/acceptance/' + n for n in ['s2_hosting_workflow.py','acceptance_common.py','hosting_contract.py','app_journey_inventory.py','app_journey_transport.py']]
+HELPERS = ['tools/multi-scene/application-impact/' + n for n in ['build.py','contract.py','test_contract.py','trace_contract.py','test_trace_contract.py','trace-schemas.json']]
+HELPERS += ['tools/multi-scene/baselines/run.py'] + ['tools/multi-scene/acceptance/' + n for n in ['s2_hosting_workflow.py','acceptance_common.py','hosting_contract.py','app_journey_inventory.py','app_journey_transport.py','s2_webview_runtime.py']]
 
 
 def protected():

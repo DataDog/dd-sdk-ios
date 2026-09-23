@@ -172,3 +172,12 @@ Keep original median/p95/allocation/count limits and independent overrun control
 - The [controlled app preparation](../Results/S2-F08-app-preparation.json) owns
   generated-resource, static-framework and exact source/object inventories. Build
   qualification is separate from its [journeys](../Results/S2-F08-app-journeys.json).
+
+## Application-impact clients
+
+[EXP-224 preparation](../../../tools/multi-scene/application-impact/README.md)
+freezes identical UIKit/SwiftUI fixtures against the baseline and exact API candidate.
+Unsigned Release builds qualify compiler/product identity only. Serialize metric
+reads with phase boundaries and distinguish app-process CPU/hangs from global
+physical-display FPS estimates/hitches. Strict offline decoder controls cannot
+qualify native exported formats, installed code, recorder readiness or cleanup.
