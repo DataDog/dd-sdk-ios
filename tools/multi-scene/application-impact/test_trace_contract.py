@@ -42,7 +42,7 @@ class TraceControls(unittest.TestCase):
         rows['core-animation-fps-estimate']=[{'interval':i*10**9,'period':10**9,'fps':60} for i in range(9,154)]
         device='f0e8c4cb-35ab-43da-9a20-19813f6d5b34'
         display={'info':{'outcome':'success','commandType':'devicectl.device.info.displays','arguments':['devicectl','--device',device]},
-            'result':{'displays':[{'uniqueId':'118cc575-03d5-4d90-87c2-750c8f1559c3','displayId':1,'active':True,'backlightState':'activeOn',
+            'result':{'displays':[{'displayId':1,'primary':True,'type':{'integrated':{}},'backlightState':'activeOn',
                                   'nativeSize':[1200,2400],'pointScale':3,'currentOrientation':'rot0','bounds':[[0,0],[400,800]]}]}}
         return ET.tostring(root),rows,doc,expected,process['name'],display,copy.deepcopy(display),device
 
@@ -68,8 +68,9 @@ class TraceControls(unittest.TestCase):
         with self.assertRaises(Invalid):self.measure(values)
 
     def test_hang_threshold_cannot_miss_250ms(self):
-        values=list(self.fixture());toc=ET.fromstring(values[0]);toc.find(".//table[@schema='potential-hangs']").set('hangs-threshold','500');values[0]=ET.tostring(toc)
-        with self.assertRaises(Invalid):self.measure(values)
+        for threshold in ['100','500']:
+            values=list(self.fixture());toc=ET.fromstring(values[0]);toc.find(".//table[@schema='potential-hangs']").set('hangs-threshold',threshold);values[0]=ET.tostring(toc)
+            with self.subTest(threshold=threshold),self.assertRaises(Invalid):self.measure(values)
 
     def test_foreign_or_reused_process(self):
         for reused in [False,True]:
@@ -137,3 +138,8 @@ class TraceControls(unittest.TestCase):
 
     def test_xml_entities_rejected(self):
         with self.assertRaises(Invalid):inventory(b'<!DOCTYPE trace-toc><trace-toc/>')
+
+    def test_foreign_process_lifetimes_are_explicitly_partitioned(self):
+        values=list(self.fixture());values[1]['process-info'].append({'time':0,'pid':55,'unique-id':5,'process':{'pid':55,'name':'server'},'process-name':'server'})
+        result=self.measure(values)
+        self.assertEqual(result['process_partition'],{'app_lifetime':[42],'foreign_lifetimes':[(55,5,'server')]})

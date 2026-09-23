@@ -50,6 +50,7 @@ class NativeScenarioControls(unittest.TestCase):
                 windows=[dict(owned=True,key=True,hidden=False,root='UINavigationController'),
                          dict(owned=False,key=False,hidden=True,root='AuxiliaryController')])
         add('launch',99,'launch',**expected)
+        add('admission',99.8,'launch',state='TRACE_READY',**expected)
         boundary(99.9,'launch',-1,'ready')
         start=100
         for phase,seconds,cycles in [('warmup',16,2),('active',96,12),('idle',30,0)]:
@@ -153,4 +154,14 @@ class NativeScenarioControls(unittest.TestCase):
             else:
                 for row in document['records']:
                     if row['kind']=='view':row['id']='one-view'
+            with self.subTest(change=change),self.assertRaises(Invalid):self.validate(document,expected)
+
+    def test_missing_foreign_or_late_recorder_admission(self):
+        for change in ['missing','foreign','late']:
+            document,expected=self.fixture();row=next(r for r in document['records'] if r['kind']=='admission')
+            if change=='missing':document['records'].remove(row)
+            elif change=='foreign':row['nonce']='stale'
+            else:row['uptime_ns']=100_000_000_000
+            document['records'].sort(key=lambda r:r['uptime_ns'])
+            for i,r in enumerate(document['records'],1):r['sequence']=i
             with self.subTest(change=change),self.assertRaises(Invalid):self.validate(document,expected)

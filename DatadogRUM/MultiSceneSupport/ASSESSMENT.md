@@ -68,8 +68,10 @@ This remains experimental: attributable API approval, normal public exposure,
 simultaneous native same-key ownership and the complete final matrix stay open.
 
 [Application-impact preparation](Results/EXP-224-application-impact.json) now binds
-four Release clients and reviewed sampler/trace controls to that API candidate.
-Physical collection remains unqualified; there is no new performance or gate claim.
+four signed Release clients and reviewed sampler/trace controls to that API candidate.
+Physical baseline install, launch and code identity pass, but recorder attachment fails
+before workload readiness. Capture is stopped; cleanup passes. There is no performance
+result, SDK regression finding or gate closure.
 
 ## Immediate compatibility priority
 

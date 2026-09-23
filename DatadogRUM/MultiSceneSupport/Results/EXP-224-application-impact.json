@@ -4,7 +4,7 @@
   "gates": [
     "S3:P01"
   ],
-  "status": "REVIEWED_API_CANDIDATE_BUILDS_QUALIFIED",
+  "status": "CAPTURE_QUALIFICATION_INVALID",
   "defined_at": "2026-09-23T08:56:29.275849+00:00",
   "owner": "SDK implementer",
   "reviewer": "/root/c06_runtime_plan",
@@ -86,7 +86,7 @@
   "measurement": {
     "environment": "One connected, unlocked physical iPhone27+ with Developer Mode; Release arm64 on Xcode27.1. No simulator performance substitution.",
     "duration_seconds": {
-      "trace_ready_reserve": 15,
+      "trace_ready_reserve": 60,
       "warmup": 16,
       "active": 96,
       "sustained_idle": 30
@@ -152,18 +152,18 @@
     "positive comparison and each decisive metric regression",
     "pair ordering and no noisy-baseline normalization"
   ],
-  "native_admitted": false,
+  "native_admitted": true,
   "gate_closures": [],
   "preparation_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw",
   "live_prerequisite": {
-    "physical_iphone": "User connected/unlocked the physical iPhone16 Pro Max, iOS27.2. Fresh inventory confirms connected, Developer Mode enabled and DDI available. Two existing Apple Development signing identities found; exact profile/device/bundle matching remains.",
+    "physical_iphone": "Fresh physical inventory confirms the connected/unlocked iPhone16 Pro Max, iOS27.2, Developer Mode and DDI. An existing Apple Development identity and wildcard profile grant this exact device and all four task bundles; no provisioning change required.",
     "physical_ipad": "Absent.",
     "human_session": "User unavailable; S2 prepared human groups remain unadmitted.",
     "inventory": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/physical-device-connected.json"
   },
-  "next_action": "Complete pre-SDK installed-code proof and bounded physical recorder/readiness/export/cleanup orchestration. Preserve the four reviewed compiler products; any fixture change needs newly bound products. The first planned UIKit baseline is the sole native capture qualification, after physical iPhone and signed-product prerequisites are ready.",
+  "next_action": "Automated physical capture is stopped. Preserve the three original invalid admissions and passed cleanup. A future continuation needs a concrete changed capture prerequisite or qualified mechanism, not an equivalent retry. Continue the independent S3:C06 legacy17.5 compatibility obligation while S2 human input and RFC review wait.",
   "telemetry_mode": "Both arms initialize Core+RUM with granted consent, the same probe application and ios-s3-application-impact service. Default vitals/slow-frame settings remain enabled; normal upload uses the existing authorized local configuration. No external application data request. No alternate endpoint, stubbed upload or networking benchmark.",
-  "trace_contract": "Required complete raw physical trace and six exported tables: process-info, os-signpost-interval, core-animation-fps-estimate, hitches-summary, hitches-render-interval, potential-hangs. Exact Workload warmup/active/idle messages bind run UUID and PID/process lifetime, with consistent native-to-trace clocks. FPS is display-level; retain all global hitches and never filter window-server renders by app PID. Require one unchanged physical internal display, native full-screen owned readiness before workload, complete FPS coverage, positive process proof, hang threshold<=250ms, and no competing workload. Present empty hitch/hang tables differ from absent tables. First planned physical baseline qualifies actual exported formats and full capture; missing/ambiguous evidence is INVALID.",
+  "trace_contract": "Required complete raw physical trace and six exported tables: process-info, os-signpost-interval, core-animation-fps-estimate, hitches-summary, hitches-render-interval, potential-hangs. Exact Workload warmup/active/idle messages bind run UUID and PID/process lifetime, with consistent native-to-trace clocks. FPS is display-level; retain all global hitches and never filter window-server renders by app PID. Require one unchanged physical internal display, native full-screen owned readiness before workload, complete FPS coverage, positive process proof, hang threshold exactly250ms, and no competing workload. Present empty hitch/hang tables differ from absent tables. First planned physical baseline qualifies actual exported formats and full capture; missing/ambiguous evidence is INVALID.",
   "preparation_review": {
     "reviewer": "/root/c06_runtime_plan",
     "state": "PREPARATION_APPROVED_WITH_ADDITIONS",
@@ -174,7 +174,7 @@
     ],
     "disposition": "Definition now quantifies sampling/trend and trace joins. Builder will bind full fixture, dependency and product identities; no native admission follows from preparation."
   },
-  "updated_at": "2026-09-23T11:08:04.864134+00:00",
+  "updated_at": "2026-09-23T11:55:42.351762+00:00",
   "prior_preparation": {
     "candidate": "7fef86acad43b4eefeb7f62c84e3b6c12c7acbcf",
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-app-impact-rugffx2v",
@@ -217,8 +217,8 @@
       "A-device": {
         "state": "UNSIGNED_DEVICE_BUILD_QUALIFIED",
         "source": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
-        "receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/clients/A-device/build-result.json",
-        "sha256": "3453696dce32982c7f3fd7001725a8f96332b6deeaf563027d210e99debc7f80",
+        "receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/clients-physical/A-device/build-result.json",
+        "sha256": "45ab443d2da1c6fa371cc940a373d8ebbc8b65ca575c5b39eab5be7c512ed64d",
         "products": [
           "UIKit",
           "SwiftUI"
@@ -227,8 +227,8 @@
       "B-device": {
         "state": "UNSIGNED_DEVICE_BUILD_QUALIFIED",
         "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
-        "receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/clients/B-device/build-result.json",
-        "sha256": "08bad0fb7e510673dc68c5370d8ab9847671f1ec8d6d36aed63c54241cfd8fd6",
+        "receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/clients-physical/B-device/build-result.json",
+        "sha256": "74210f46ffa5ef36cfe841bfee4402bf0584e6792da3982d6945808765aad9f4",
         "products": [
           "UIKit",
           "SwiftUI"
@@ -237,8 +237,8 @@
     },
     "offline_controls": {
       "state": "PASS",
-      "unique_tests": 38,
-      "receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/offline-controls-final.json"
+      "unique_tests": 58,
+      "receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/offline-controls-transport.json"
     },
     "schema_audit": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/trace-schema-audit.json",
     "sampler_review": {
@@ -252,9 +252,8 @@
       "decision": "Same-display/workload comparison is sufficient for S3:P01; per-app exact rendered-frame and individual hitch-causality claims remain excluded. Numeric thresholds and finite workload are unchanged."
     },
     "runtime_limits": [
-      "Four refreshed unsigned Release apps qualify compiler/product identities, not installed execution.",
-      "No native capture/export, performance result or gate closure.",
-      "Pre-SDK installed-code proof, recorder readiness, bounded physical capture/export/cleanup and signed-product admission remain required. Any added fixture code must receive a new product identity before native use."
+      "All four signed products and58 offline controls qualify preparation; no performance workload, trace export, paired metric result or P01 closure.",
+      "Actual clean install, launch and pre-SDK signed-code proof qualify the baseline only; the recorder failed before workload admission. Candidate and SwiftUI cells remain unrun."
     ],
     "trace_decoder_review": {
       "reviewer": "/root/c06_runtime_plan",
@@ -264,9 +263,9 @@
         "Freeze complete column schemas",
         "Disclose render display integer as unjoined diagnostic"
       ],
-      "disposition": "Strict kind/schema guards and controls added. Physical display UUID/native geometry remain separately bound; no renderer-to-UUID mapping claim."
+      "disposition": "Strict kind/schema guards and controls added. Physical CoreDevice ID plus displayId and native geometry are bound separately; the window-server render integer remains an unjoined diagnostic."
     },
-    "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/clients",
+    "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/clients-physical",
     "warning_dispositions": [
       "Both builds emit the existing SDK deprecation/exhaustiveness warnings. No production source changed.",
       "The shared fixture uses the still-supported onChange(of:perform:) overload; both arms have identical bytes.",
@@ -274,6 +273,133 @@
       "Xcode reports a SwiftCompile worker exited zero without additional output; build exits zero with complete checked compiler membership, object files and products.",
       "Both arms use deprecated but supported UIScreen.screens for a conservative one-display guard; fresh native devicectl display evidence is independently required.",
       "Candidate startResource return-value warning is retained; this build is not zero-warning clearance."
+    ],
+    "runtime_admission_update": {
+      "state": "NATIVE_CAPTURE_QUALIFICATION_FAILED",
+      "changed_input": "Before any native attempt, replace the blind 15s sleep with a bounded 60s host admission handshake. Pre-SDK signed-code receipt, recorder-start notification and two-phase nonce publication precede the same 16/96/30s measured workload.",
+      "budget_reason": "Physical readiness needs receipt copy, exact installed-code comparison, recorder attach and two ordered file copies. Existing supported-command limits are 15s each; allow 60s within the unchanged 240s native cell, not an active deadline extension. Actual latencies will be retained.",
+      "products": "Four new exact compiler-qualified Release apps contain installed-code proof and readiness handshake. Runtime-only certificate extraction correction has separately reviewed/frozen helpers; original compiler plans and products are unchanged.",
+      "controls": "57 focused controls pass. A test-discovery module collision was corrected before qualification; no native attempt. Unique notification, dead/late/consumed readiness, ordered admission-before-marker, stale output and independent failed cleanup controls are included."
+    },
+    "offline_controls_prior": {
+      "state": "PASS",
+      "unique_tests": 38,
+      "receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/offline-controls-final.json"
+    },
+    "physical_runner_review": {
+      "reviewer": "/root/c06_runtime_plan",
+      "state": "PREPARATION_APPROVED",
+      "findings": [
+        "Preserve full-workload recorder reserve",
+        "Freeze exactly250ms Hangs threshold",
+        "Partition foreign process metadata",
+        "Bind final summaries and comparisons to exact admissions/products"
+      ],
+      "disposition": "All addressed and reviewed;57 controls pass. First planned baseline still must qualify actual native capture/export/cleanup."
+    },
+    "previous_compiler_preparation": {
+      "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/clients",
+      "builds": {
+        "A-device": {
+          "receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/clients/A-device/build-result.json",
+          "sha256": "3453696dce32982c7f3fd7001725a8f96332b6deeaf563027d210e99debc7f80"
+        },
+        "B-device": {
+          "receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/clients/B-device/build-result.json",
+          "sha256": "08bad0fb7e510673dc68c5370d8ab9847671f1ec8d6d36aed63c54241cfd8fd6"
+        }
+      }
+    },
+    "signed_products": {
+      "state": "SIGNED_PRODUCTS_PREPARED",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/physical-wave-transport",
+      "receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/physical-wave-transport/signed-plan.json",
+      "sha256": "2d43926cd4e60d74532beba8b721f664df51baaf5532882cd7494c8f500bd843"
+    },
+    "host_preparation_failures": [
+      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/physical-wave/preparation-failure.json",
+      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/physical-wave-qualified/preparation-failure.json"
     ]
+  },
+  "physical_clean_install_contract": "Require complete empty task-bundle inventory before install, then successful empty Documents inventory before launch and unique pre-SDK code/run receipt before admission. For cleanup require successful task uninstall plus complete empty task-bundle and PID inventories. Preserve the physical CoreDevice generic unavailable-container response as corroboration; it never proves absence alone.",
+  "physical_attempts": [
+    {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/physical-wave-frozen",
+      "summary": {
+        "state": "INVALID",
+        "cells_completed": 0,
+        "cells_planned": 8,
+        "scenario": "INVALID",
+        "evidence": "INVALID",
+        "cleanup": "PASS",
+        "comparisons": {},
+        "error": null,
+        "experiment": "EXP-224",
+        "signed_plan_sha256": "c026115a2394186384be59fe1f7868f10598eb9e102f616cbe7e15085277c4c9",
+        "receipts": {
+          "cells/0/summary.json": "e7e52ea1dcc845adadfce93fac07e3c3678f1c705c2f1165c1fa5023d34b7032"
+        },
+        "finished_at": 1790163916.816715,
+        "scope": "Application/display workload impact; not exact app-rendered frames or backend ownership acceptance"
+      },
+      "classification": "ENVIRONMENT_PRECONDITION_INVALID; no app installed/launched, no recorder/workload; original cleanup PASS"
+    },
+    {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/physical-wave-unlocked",
+      "summary": {
+        "state": "INVALID",
+        "cells_completed": 0,
+        "cells_planned": 8,
+        "scenario": "INVALID",
+        "evidence": "INVALID",
+        "cleanup": "PASS",
+        "comparisons": {},
+        "error": null,
+        "experiment": "EXP-224",
+        "signed_plan_sha256": "68480ac0104b2af4f2a9188cde2f3400315ba186d565c82c9378851717faeeb1",
+        "receipts": {
+          "cells/0/summary.json": "71d75ebac28bacabd0d2078a61b24eecc3f61f760d8a921775145297cd772f37"
+        },
+        "finished_at": 1790164029.7543402,
+        "scope": "Application/display workload impact; not exact app-rendered frames or backend ownership acceptance"
+      },
+      "classification": "HOST_TRANSPORT_INVALID; install and empty Documents PASS; devicectl rejected launch before starting app; original cleanup PASS"
+    },
+    {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/physical-wave-transport",
+      "summary": {
+        "state": "INVALID",
+        "cells_completed": 0,
+        "cells_planned": 8,
+        "scenario": "INVALID",
+        "evidence": "INVALID",
+        "cleanup": "PASS",
+        "comparisons": {},
+        "error": null,
+        "experiment": "EXP-224",
+        "signed_plan_sha256": "2d43926cd4e60d74532beba8b721f664df51baaf5532882cd7494c8f500bd843",
+        "receipts": {
+          "cells/0/summary.json": "cb7a727f5d0e977f8de4f14fec283030902093772f4266e272131a417ea060bc"
+        },
+        "finished_at": 1790164200.683037,
+        "scope": "Application/display workload impact; not exact app-rendered frames or backend ownership acceptance"
+      },
+      "classification": "CAPTURE_QUALIFICATION_INVALID; actual installed baseline PID38748 and complete signed-code receipt PASS; Instruments cannot find that PID before recorder readiness; no measured workload; original cleanup PASS"
+    }
+  ],
+  "continuation_admission": {
+    "reason": "Corrected a reproduced host CLI app-argument boundary, separately reviewed by /root/c06_runtime_plan",
+    "changed_prerequisite": "Place CoreDevice options before launch bundle ID;58 controls pass; unchanged SDK/fixture/compiler/product, recorder/oracle, workload and budgets",
+    "prior_verdicts_immutable": true,
+    "qualification": "One bounded qualification of corrected transport using the planned baseline; stop on any invalid native capture/evidence; no equivalent diagnostics"
+  },
+  "active_physical_root": null,
+  "native_active": false,
+  "last_physical_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/physical-wave-transport",
+  "followup_read_only": {
+    "xctrace_device_inventory": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/xctrace-device-inventory-after-stop.log",
+    "result": "Instruments lists the same connected physical UDID after cleanup; this does not establish process visibility during the failed attach.",
+    "task_crash_inventory": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/task-crash-inventory.raw.json",
+    "crash_result": "Successful UIKitImpact-filtered systemCrashLogs inventory is empty. This does not prove the process remained alive or rule out a late report; no SDK-crash inference."
   }
 }

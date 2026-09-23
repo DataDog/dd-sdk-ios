@@ -181,3 +181,10 @@ Unsigned Release builds qualify compiler/product identity only. Serialize metric
 reads with phase boundaries and distinguish app-process CPU/hangs from global
 physical-display FPS estimates/hitches. Strict offline decoder controls cannot
 qualify native exported formats, installed code, recorder readiness or cleanup.
+
+The physical runner binds runtime helpers separately when a reviewed host-only
+correction leaves fixture/compiler/product bytes unchanged. Keep the original
+build plan and failed attempts. CoreDevice launch options must precede the bundle
+ID, after which tokens are app arguments. A clean install and matching pre-SDK
+receipt cannot substitute for recorder readiness; stop failed qualification before
+claiming workload or performance evidence. See the owner for current admission.

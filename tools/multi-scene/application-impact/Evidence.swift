@@ -20,6 +20,7 @@ final class ImpactEvidence: @unchecked Sendable {
     private let log = OSLog(subsystem: "com.datadoghq.application-impact", category: .pointsOfInterest)
     private var interval: OSSignpostID?
     private var phase = "launch"
+    private var previousIdleTimerSetting: Bool?
     let runID = ProcessInfo.processInfo.environment["IMPACT_RUN_ID"] ?? ""
     let nonce = ProcessInfo.processInfo.environment["IMPACT_NONCE"] ?? ""
     let source = Bundle.main.object(forInfoDictionaryKey: "ImpactSource") as? String ?? ""
@@ -38,11 +39,19 @@ final class ImpactEvidence: @unchecked Sendable {
         rows.append(row)
     }
 
+    @MainActor
     func configure() -> Bool {
         guard UUID(uuidString: runID) != nil, UUID(uuidString: nonce) != nil, runID != nonce,
               source.count == 40, fixture.count == 64,
               let token = Bundle.main.object(forInfoDictionaryKey: "ImpactToken") as? String,
               !token.isEmpty, !token.contains("$(") else { return false }
+        let environment = ProcessInfo.processInfo.environment
+        guard environment["MULTISCENE_CODE_IDENTITY_RUN_ID"] == runID,
+              environment["MULTISCENE_CODE_IDENTITY_REVISION"] == source else { return false }
+        do { try InstalledCodeReceipt.writeIfRequested(runID: runID) }
+        catch { return false }
+        previousIdleTimerSetting = UIApplication.shared.isIdleTimerDisabled
+        UIApplication.shared.isIdleTimerDisabled = true
         Datadog.initialize(
             with: .init(clientToken: token, env: "integration", service: "ios-s3-application-impact"),
             trackingConsent: .granted
@@ -59,6 +68,31 @@ final class ImpactEvidence: @unchecked Sendable {
         record("launch", ["pid": ProcessInfo.processInfo.processIdentifier, "source": source,
             "fixture": fixture, "framework": framework, "run_id": runID, "nonce": nonce])
         return true
+    }
+
+    @MainActor
+    func awaitRecorder() async throws {
+        let directory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let marker = directory.appendingPathComponent("impact-ready-" + runID)
+        let admission = directory.appendingPathComponent("impact-admission-" + runID + ".json")
+        let deadline = ProcessInfo.processInfo.systemUptime + 60
+        while ProcessInfo.processInfo.systemUptime < deadline {
+            // The host copies the complete admission first, then publishes the nonce marker.
+            if let data = try? Data(contentsOf: marker), String(data: data, encoding: .utf8) == nonce {
+                let value = try JSONSerialization.jsonObject(with: Data(contentsOf: admission)) as? [String: Any]
+                guard let value, Set(value.keys) == ["state", "run_id", "nonce", "source", "fixture", "framework", "pid"],
+                      value["state"] as? String == "TRACE_READY", value["run_id"] as? String == runID,
+                      value["nonce"] as? String == nonce, value["source"] as? String == source,
+                      value["fixture"] as? String == fixture, value["framework"] as? String == framework,
+                      value["pid"] as? Int32 == ProcessInfo.processInfo.processIdentifier else {
+                    throw CocoaError(.fileReadCorruptFile)
+                }
+                record("admission", value)
+                return
+            }
+            try await Task.sleep(nanoseconds: 100_000_000)
+        }
+        throw CocoaError(.fileReadUnknown)
     }
 
     @MainActor
@@ -96,7 +130,7 @@ final class ImpactEvidence: @unchecked Sendable {
             lock.lock(); phase = name; lock.unlock()
             record("phase-begin", ["name": name])
             interval = OSSignpostID(log: log)
-            if let interval { os_signpost(.begin, log: log, name: "Workload", signpostID: interval, "%{public}s %{public}s", runID, name) }
+            if let interval { os_signpost(.begin, log: log, name: "Workload", signpostID: interval, "%{public}@ %{public}@", runID as NSString, name as NSString) }
             sample(role: "begin")
         }
     }
@@ -105,7 +139,7 @@ final class ImpactEvidence: @unchecked Sendable {
     func end(_ name: String) {
         samplingQueue.sync {
             sample(role: "end")
-            if let interval { os_signpost(.end, log: log, name: "Workload", signpostID: interval, "%{public}s %{public}s", runID, name) }
+            if let interval { os_signpost(.end, log: log, name: "Workload", signpostID: interval, "%{public}@ %{public}@", runID as NSString, name as NSString) }
             interval = nil
             record("phase-end", ["name": name])
             lock.lock(); phase = "transition"; lock.unlock()
@@ -133,6 +167,7 @@ final class ImpactEvidence: @unchecked Sendable {
     @MainActor
     func finish(_ state: String, reason: String = "") {
         timer?.cancel(); timer = nil
+        if let previousIdleTimerSetting { UIApplication.shared.isIdleTimerDisabled = previousIdleTimerSetting }
         let records: [[String: Any]] = samplingQueue.sync {
             lock.lock()
             defer { lock.unlock() }
@@ -169,8 +204,7 @@ final class ImpactDriver {
     func run() async {
         let evidence = ImpactEvidence.shared
         do {
-            // Reserve time for the external recorder. Native admission must prove recorder readiness.
-            try await Task.sleep(nanoseconds: 15_000_000_000)
+            try await evidence.awaitRecorder()
             guard journey.verify(step: 0, cycle: 0), evidence.topology(window: window, step: "ready", cycle: -1) else {
                 evidence.finish("INVALID", reason: "initial owned foreground display not ready"); return
             }

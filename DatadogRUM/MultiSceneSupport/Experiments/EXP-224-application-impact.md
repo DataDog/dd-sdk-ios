@@ -2,37 +2,40 @@
 
 ## EXP-224 — Measure the application impact of the S3 prototype
 
-The [owning definition](../Results/EXP-224-application-impact.json) fixes two local
-journeys and eight physical before/after cells for S3:P01. UIKit uses automatic
-tracking; SwiftUI compares manual modifiers with the experimental semantic host
-around unchanged native containers. Baseline3.17.0 is paired with the implemented
-API candidate `94842cc8a`. Programmatic navigation does not qualify gestures.
+The [owning record](../Results/EXP-224-application-impact.json) fixes the eight-cell
+UIKit/SwiftUI physical comparison of baseline3.17.0 and local API candidate
+`94842cc8a`. Numeric thresholds, workload and deadlines are unchanged.
 
-Four refreshed unsigned Release apps pass exact compiler and product checks.
-The sampler serializes phase boundaries and CPU reads, labels boundary samples,
-and seals after draining its timer. A native ready boundary requires one owned
-foreground window filling an unchanged display. Thirty-eight distinct offline
-controls pass, covering comparison thresholds, native scenarios and trace parsing.
-The designated reviewer approved the sampler and addressed decoder findings.
+Four Release arm64 products pass exact source/compiler/product checks and are
+signed with an existing profile for the connected iPhone16 Pro Max27.2. The
+pre-SDK installed-code receipt, serial sampler, run-bound recorder handshake,
+strict decoder and independent cleanup have58 offline controls and scoped review.
+Host-only certificate extraction and launch-option ordering corrections are
+separately frozen; original compiler products and failed preparation are retained.
 
-Installed Xcode27.1 schemas and modelers establish the metric scope. Core Animation
-FPS is a measured display-driver estimate; hitch render processes belong to the
-window server. The comparison retains global display hitches during the app's
-exact Workload interval. Hangs, CPU and footprint bind to the app PID. Complete
-trace columns, process lifetime, run/phase messages, clock mapping and interval
-coverage are checked. Present empty hitch tables differ from absent tables. The
-renderer display integer is an unjoined diagnostic; physical display UUID and
-native geometry are verified separately. No exact app-rendered-frame or individual
-hitch-causality claim follows. The numeric comparison thresholds are unchanged.
+Three original admissions remain immutable:
 
-The physical iPhone is now connected with working device services. Signed
-installation, pre-SDK installed-
-code proof, recorder readiness and complete capture/export/cleanup orchestration
-remain prerequisites. The first planned UIKit baseline qualifies native collection;
-missing evidence stops that path. No physical measurement, performance pass or
-release gate closure is claimed. Any fixture change receives a new build identity.
+| Admission | Decisive evidence | Result |
+| --- | --- | --- |
+| Initial | Phone locked before install; no app or recorder | INVALID; cleanup PASS |
+| Fresh unlock | Clean install/empty Documents; CLI rejected options after bundle ID before launch | INVALID; cleanup PASS |
+| Reviewed transport correction | App launched as PID38748; full signed Mach-O receipt matched before SDK initialization; Instruments could not find the PID before readiness | INVALID; cleanup PASS |
 
-The original four products and earlier review corrections remain in the owning
-record as historical preparation. Current warnings retain SDK diagnostics,
-identical fixture deprecations and the iPad orientation warning; this comparison
-targets a physical iPhone. No SDK code changed in this preparation checkpoint.
+The corrected transport received one native qualification. No measured workload,
+complete trace/export or paired performance result exists. Candidate and SwiftUI
+cells are unrun, P01 remains open and the automated capture path is stopped.
+Instruments subsequently lists the same physical UDID; the task-filtered crash
+inventory is empty. Neither observation establishes process liveness during the
+failed attach or identifies an SDK defect. A future continuation requires a new
+capture prerequisite or discriminator; original deadlines cannot be reopened.
+
+Core Animation FPS is a display-driver estimate. Global hitches are compared
+during the exact app Workload interval; Hangs, CPU and footprint bind to the app
+PID. Complete table schemas, process lifetimes, run/phase messages, native clocks
+and interval coverage are required. Physical CoreDevice/display identity and
+native geometry are bound separately from the unjoined render display integer.
+Present empty hitch tables differ from absent tables. No exact per-app rendered
+frame count or individual hitch-causality claim is made.
+
+Earlier unsigned products,38-control preparation and the initial candidate remain
+in the owner as historical evidence. No SDK source changed in this checkpoint.

@@ -11,15 +11,15 @@ import subprocess
 import sys
 import tarfile
 import time
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'acceptance'))
+sys.path.append(str(Path(__file__).resolve().parents[1] / 'acceptance'))
 import s2_hosting_workflow as shared
 from acceptance_common import require, digest
 
 HERE = Path(__file__).resolve().parent
 OWNER = shared.REPO / 'DatadogRUM/MultiSceneSupport/Results/EXP-224-application-impact.json'
-SOURCES = ['Evidence.swift', 'UIKitApp.swift', 'SwiftUIApp.swift']
-HELPERS = ['tools/multi-scene/application-impact/' + n for n in ['build.py','contract.py','test_contract.py','trace_contract.py','test_trace_contract.py','trace-schemas.json']]
-HELPERS += ['tools/multi-scene/baselines/run.py'] + ['tools/multi-scene/acceptance/' + n for n in ['s2_hosting_workflow.py','acceptance_common.py','hosting_contract.py','app_journey_inventory.py','app_journey_transport.py','s2_webview_runtime.py']]
+SOURCES = ['Evidence.swift', 'InstalledCode.swift', 'UIKitApp.swift', 'SwiftUIApp.swift']
+HELPERS = ['tools/multi-scene/application-impact/' + n for n in ['build.py','contract.py','test_contract.py','trace_contract.py','test_trace_contract.py','trace-schemas.json','physical.py','physical_contract.py','notification.py','test_physical_contract.py','test_physical.py']]
+HELPERS += ['tools/multi-scene/baselines/run.py'] + ['tools/multi-scene/acceptance/' + n for n in ['s2_hosting_workflow.py','acceptance_common.py','hosting_contract.py','app_journey_inventory.py','app_journey_transport.py','installed_code.py']]
 
 
 def protected():
@@ -37,12 +37,13 @@ def contract():
     return {k:owner[k] for k in ['baseline','candidate','source_scope','build_contract','telemetry_mode']}
 
 
-def verify(root):
+def verify(root, *, repository_helpers=True):
     root = Path(root); plan = shared.read(root/'plan.json')
     require(plan['contract'] == contract(), 'build contract changed')
     require(protected() == plan['protected'], 'protected paths changed')
     require(shared.tree(root/'helpers') == plan['helpers'], 'frozen helper changed')
-    require(all(shared.sha(shared.REPO/n) == v for n,v in plan['helpers'].items()), 'repository helper changed')
+    if repository_helpers:
+        require(all(shared.sha(shared.REPO/n) == v for n,v in plan['helpers'].items()), 'repository helper changed')
     require({n:shared.sha(HERE/n) for n in SOURCES} == plan['fixture_sources'], 'fixture changed')
     for key, bound in plan['arms'].items():
         folder = root/key
@@ -86,7 +87,7 @@ def prepare(root):
                       UIApplicationSceneManifest={'UIApplicationSupportsMultipleScenes':True,'UISceneConfigurations':{
                           'UIWindowSceneSessionRoleApplication':[{'UISceneConfigurationName':'Default','UISceneDelegateClassName':'$(PRODUCT_MODULE_NAME).SceneDelegate'}]}})
             (client/(name+'.plist')).write_bytes(plistlib.dumps(info))
-            targets[name]=dict(type='application',platform='iOS',deploymentTarget='27.0',sources=[{'path':n} for n in ['Evidence.swift',framework+'App.swift']],
+            targets[name]=dict(type='application',platform='iOS',deploymentTarget='27.0',sources=[{'path':n} for n in ['Evidence.swift','InstalledCode.swift',framework+'App.swift']],
                 configFiles={'Debug':'CredentialInclude.xcconfig','Release':'CredentialInclude.xcconfig'},settings={'base':dict(
                     PRODUCT_BUNDLE_IDENTIFIER=prefix+'.'+framework.lower(),SWIFT_VERSION='5.0',GENERATE_INFOPLIST_FILE='NO',
                     INFOPLIST_FILE=name+'.plist',CODE_SIGNING_ALLOWED='NO',SWIFT_OPTIMIZATION_LEVEL='-O',ENABLE_TESTABILITY='NO',
@@ -118,7 +119,7 @@ def compiler(folder,bound):
                 require(target in ['DatadogCore','DatadogRUM'] and p==target_root/'DerivedSources/resource_bundle_accessor.swift', 'undeclared generated compiler input')
         lists[str(path.relative_to(folder))]=dict(sha256=shared.sha(path),members=members)
     require(sdk == {n for n in bound['sdk'] if n.endswith('.swift') and n!='Package.swift'},'SDK compiler inventory differs')
-    require(clients=={f+'Impact':{'Evidence.swift',f+'App.swift'} for f in ['UIKit','SwiftUI']},'fixture membership differs')
+    require(clients=={f+'Impact':{'Evidence.swift','InstalledCode.swift',f+'App.swift'} for f in ['UIKit','SwiftUI']},'fixture membership differs')
     objects={str(p.relative_to(folder)):shared.sha(p) for p in (derived/'Build/Intermediates.noindex').rglob('*.o')}
     require(lists and objects,'missing compiler evidence');return dict(lists=lists,objects=objects)
 

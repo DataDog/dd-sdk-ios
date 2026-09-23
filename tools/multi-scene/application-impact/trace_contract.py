@@ -6,8 +6,7 @@ import sys
 from pathlib import Path
 import xml.etree.ElementTree as ET
 from contract import Invalid, number, require, scenario, slope
-sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'acceptance'))
-from s2_webview_runtime import active_display, display_signature
+from physical_contract import display
 
 SCHEMAS = {
     'process-info': {'time':'event-time','pid':'pid','unique-id':'uint64','process':'process','process-name':'string'},
@@ -38,7 +37,7 @@ def inventory(raw):
         result[name]=dict(matches[0].attrib)
     try:threshold=int(result['potential-hangs']['hangs-threshold'])
     except (KeyError,ValueError):raise Invalid('missing hang detection threshold')
-    require(0<threshold<=250, 'hang instrument misses required threshold')
+    require(threshold==250, 'hang instrument threshold changed')
     return result
 
 
@@ -117,9 +116,9 @@ def measure(toc, exports, document, expected, process_name, display_before, disp
     """Returns metrics only. The caller must separately qualify capture and cleanup."""
     inventory(toc)
     native=scenario(document,expected)
-    before=active_display(display_before,device);after=active_display(display_after,device)
+    before=display(display_before,device);after=display(display_after,device)
     require(len(display_before['result']['displays'])==len(display_after['result']['displays'])==1
-            and display_signature(before)==display_signature(after), 'physical display changed or ambiguous')
+            and before==after, 'physical display changed or ambiguous')
     ready=next(r for r in document['records'] if r['kind']=='boundary' and r['step']=='ready')
     pixels=before['nativeSize'] if before['currentOrientation'] in ['rot0','rot180'] else before['nativeSize'][::-1]
     require(ready['scale']==before['pointScale'] and [ready['screen_width']*ready['scale'],ready['screen_height']*ready['scale']]==pixels,
@@ -130,6 +129,9 @@ def measure(toc, exports, document, expected, process_name, display_before, disp
     lifetimes=[r for r in rows['process-info'] if r['pid']==expected['pid']]
     require(lifetimes and all(r['process']==process and r['process-name']==process_name for r in lifetimes)
             and len({r['unique-id'] for r in lifetimes})==1, 'wrong or reused process lifetime')
+    foreign_processes=[r for r in rows['process-info'] if r['pid']!=expected['pid']]
+    process_partition=dict(app_lifetime=sorted({r['unique-id'] for r in lifetimes}),
+        foreign_lifetimes=sorted({(r['pid'],r['unique-id'],r['process-name']) for r in foreign_processes}))
     signs=[r for r in rows['os-signpost-interval'] if r['subsystem']=='com.datadoghq.application-impact' and r['name']=='Workload']
     require(len(signs)==3, 'missing/extra workload signpost')
     phases={};offsets=[]
@@ -173,7 +175,7 @@ def measure(toc, exports, document, expected, process_name, display_before, disp
     metrics=dict(fps=weighted/weight,hitch_ratio=union_duration(hitches)/(end-start),max_hitch_seconds=max_hitch,
                  max_hang_seconds=max(hangs,default=0),cpu_cores=native['active']['cpu_cores'],
                  idle_memory_bytes=statistics.median([r[1] for r in idle]),idle_slope_bytes_per_second=slope(idle))
-    return dict(metrics=metrics,trace_phases_ns=phases,process=process,physical_display_id=before['uniqueId'],render_display_id_unjoined=render[0]['display-id'] if render else None,
+    return dict(identity=expected,metrics=metrics,trace_phases_ns=phases,process=process,process_partition=process_partition,physical_display_identity=dict(device=device,display_id=before['displayId']),render_display_id_unjoined=render[0]['display-id'] if render else None,
                 column_schema_sha256=hashlib.sha256(json.dumps(COLUMN_TYPES,separators=(',',':')).encode()).hexdigest(),
                 fps_scope='display-driver estimate during app workload',hitch_scope='global display during app workload',
                 native_admitted=False)

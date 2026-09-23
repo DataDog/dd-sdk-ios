@@ -37,7 +37,7 @@ def scenario(document, expected):
     require(document.get('schema_version') == 1, "unsupported native schema")
     require(all(document.get(k) == v for k,v in expected.items()), "source, fixture or run identity changed")
     rows = document.get('records', [])
-    require(all(r.get('kind') in {'launch','sample','phase-begin','phase-end','boundary','view','terminal',
+    require(all(r.get('kind') in {'launch','admission','sample','phase-begin','phase-end','boundary','view','terminal',
                 'native-appear','native-navigation','inactive','disconnected','metric-failure','topology-failure'} for r in rows), 'unknown native record kind')
     require(rows and [r.get('sequence') for r in rows] == list(range(1,len(rows)+1)), "incomplete native sequence")
     times = [number(r.get('uptime_ns'), 'native time') for r in rows]
@@ -47,10 +47,13 @@ def scenario(document, expected):
     require(not any(r['kind'] in ['inactive','disconnected','metric-failure','topology-failure'] for r in rows), "native continuity/metric failure")
     launches = [r for r in rows if r['kind'] == 'launch']
     require(len(launches) == 1 and all(launches[0].get(k)==v for k,v in expected.items()), "wrong launch identity")
+    admissions = [r for r in rows if r['kind']=='admission']
+    require(len(admissions)==1 and admissions[0].get('state')=='TRACE_READY'
+            and all(admissions[0].get(k)==v for k,v in expected.items()), 'missing/foreign recorder admission')
     windows = [r for r in rows if r['kind']=='boundary']
     require(windows and len({(r['scene'],r['window'],r['width'],r['height'],r['screen_id'],r['screen_width'],r['screen_height'],r['scale'],r['maximum_fps']) for r in windows}) == 1, "scene/display changed")
     ready = [r for r in windows if r['step']=='ready' and r['cycle']==-1 and r['phase']=='launch']
-    require(len(ready)==1, 'missing initial topology')
+    require(len(ready)==1 and launches[0]['uptime_ns'] < admissions[0]['uptime_ns'] < ready[0]['uptime_ns'], 'missing/late initial topology or admission')
     for r in windows:
         require(r.get('screen_count')==1 and r['width']==r['screen_width'] and r['height']==r['screen_height'], 'ambiguous or partial display')
         require(all(number(r[k],k)>0 for k in ['width','height','scale','maximum_fps']), 'empty display')
