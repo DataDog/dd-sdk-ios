@@ -544,6 +544,104 @@ final class FlagsRepositoryTests: XCTestCase {
         }
     }
 
+    func testWaitingGetters_whenInitialDataBecomesAvailable_allResumeBeforeTimeout() throws {
+        enum DataSource {
+            case fetch, reset, disk
+        }
+
+        for source in [DataSource.fetch, .reset, .disk] {
+            // Given
+            let cachedContext = FlagsEvaluationContext(targetingKey: "cached-user")
+            let freshContext = FlagsEvaluationContext(targetingKey: "fresh-user")
+            let flags = ["test": FlagAssignment.mockAny()]
+            let cachedData = FlagsData(flags: flags, context: cachedContext, date: .mockAny())
+            let dataStore = DelayedReadDataStore(storage: [
+                "client": .value(try JSONEncoder().encode(cachedData), dataStoreDefaultKeyVersion)
+            ])
+            let readStarted = expectation(description: "initial read started")
+            dataStore.onReadStarted = { readStarted.fulfill() }
+            let repository = FlagsRepository(
+                clientName: "client",
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                    completion(.success(flags))
+                },
+                dateProvider: DateProviderMock(),
+                featureScope: FeatureScopeMock(dataStore: dataStore),
+                readTimeout: 5
+            )
+            let started = DispatchGroup()
+            let finished = DispatchGroup()
+            defer {
+                dataStore.resumeRead()
+                dataStore.flush()
+                XCTAssertEqual(finished.wait(timeout: .now() + 6), .success)
+                repository.flush()
+            }
+            wait(for: [readStarted], timeout: 1)
+            let expectedContext = source == .fetch ? freshContext : cachedContext
+            let getters: [() -> Void] = [
+                { XCTAssertEqual(repository.context, source == .reset ? nil : expectedContext) },
+                { XCTAssertEqual(repository.flagAssignment(for: "test"), source == .reset ? nil : flags["test"]) },
+                { XCTAssertEqual(repository.flagAssignments(), source == .reset ? nil : flags) }
+            ]
+            for getter in getters {
+                started.enter()
+                finished.enter()
+                DispatchQueue.global().async {
+                    started.leave()
+                    getter()
+                    finished.leave()
+                }
+            }
+            XCTAssertEqual(started.wait(timeout: .now() + 1), .success)
+            XCTAssertEqual(finished.wait(timeout: .now() + 0.05), .timedOut)
+
+            // When
+            switch source {
+            case .fetch:
+                repository.setEvaluationContext(freshContext) { result in
+                    if case .failure(let error) = result {
+                        XCTFail("Expected success, got \(error)")
+                    }
+                }
+            case .reset:
+                repository.reset()
+            case .disk:
+                dataStore.resumeRead()
+                dataStore.flush()
+            }
+
+            // Then: all three getters finish well before their five-second timeout.
+            XCTAssertEqual(finished.wait(timeout: .now() + 1), .success)
+            dataStore.resumeRead()
+            dataStore.flush()
+            XCTAssertEqual(repository.context, source == .reset ? nil : expectedContext)
+        }
+    }
+
+    func testInitialDataStoreRead_whenPending_doesNotRetainRepository() {
+        // Given
+        let dataStore = DelayedReadDataStore()
+        let readStarted = expectation(description: "initial read started")
+        dataStore.onReadStarted = { readStarted.fulfill() }
+        var repository: FlagsRepository? = FlagsRepository(
+            clientName: "client",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
+            dateProvider: DateProviderMock(),
+            featureScope: FeatureScopeMock(dataStore: dataStore)
+        )
+        weak var weakRepository = repository
+        wait(for: [readStarted], timeout: 1)
+
+        // When
+        repository = nil
+
+        // Then
+        XCTAssertNil(weakRepository)
+        dataStore.resumeRead()
+        dataStore.flush()
+    }
+
     func testInitialDataStoreRead_whenCompletesAfterReset_doesNotRestoreCachedFlags() throws {
         // Given
         let clientName = "client"

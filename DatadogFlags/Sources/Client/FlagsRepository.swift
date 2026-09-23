@@ -73,16 +73,13 @@ private final class InitializationCompletion {
 }
 
 internal final class FlagsRepository {
-    private enum Constants {
-        static let readTimeout: TimeInterval = 0.1
-    }
-
     let clientName: String
     private let stateManager = FlagsStateManager()
 
     private let flagAssignmentsFetcher: any FlagAssignmentsFetching
     private let dateProvider: any DateProvider
     private let featureScope: any FeatureScope
+    private let readTimeout: TimeInterval
     private let cachePersistenceQueue = DispatchQueue(
         label: "com.datadoghq.ios-sdk-flags-cache-persistence",
         autoreleaseFrequency: .workItem,
@@ -105,11 +102,15 @@ internal final class FlagsRepository {
         var flagsDataVersion: UInt64 = 0
         var hasStartedEvaluationContextRequest = false
         var reconcilingContext: FlagsEvaluationContext?
-        var isDiskReadComplete = false
         var pendingDiskReadCallbacks: [() -> Void] = []
+        var initialFlagsDataGroup: DispatchGroup? = {
+            let group = DispatchGroup()
+            group.enter()
+            return group
+        }()
 
         var shouldWaitForFlagsDataRead: Bool {
-            !isDiskReadComplete && flagsDataVersion == 0
+            initialFlagsDataGroup != nil
         }
 
         mutating func applyInitialFlagsData(_ data: FlagsData?) -> [() -> Void] {
@@ -127,11 +128,13 @@ internal final class FlagsRepository {
                 }
             }
 
-            isDiskReadComplete = true
-            return takePendingDiskReadCallbacks()
+            return finishWaitingForInitialFlagsData()
         }
 
-        mutating func takePendingDiskReadCallbacks() -> [() -> Void] {
+        mutating func finishWaitingForInitialFlagsData() -> [() -> Void] {
+            // Leave only once, waking all getters even if a late disk read follows a fetch or reset.
+            initialFlagsDataGroup?.leave()
+            initialFlagsDataGroup = nil
             let callbacks = pendingDiskReadCallbacks
             pendingDiskReadCallbacks = []
             return callbacks
@@ -148,16 +151,12 @@ internal final class FlagsRepository {
         }
     }
 
-    /// Semaphore for blocking synchronous getters until disk read completes.
-    /// Sync getters (context, flagAssignment, flagAssignments) block because callers
-    /// explicitly request data synchronously and expect cached values if available.
-    private let readSemaphore = DispatchSemaphore(value: 0)
-
     init(
         clientName: String,
         flagAssignmentsFetcher: any FlagAssignmentsFetching,
         dateProvider: any DateProvider,
         featureScope: any FeatureScope,
+        readTimeout: TimeInterval = 0.1,
         initializationTimeout: TimeInterval? = Flags.Configuration.defaultInitializationTimeout,
         scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler? = nil
     ) {
@@ -165,6 +164,7 @@ internal final class FlagsRepository {
         self.flagAssignmentsFetcher = flagAssignmentsFetcher
         self.dateProvider = dateProvider
         self.featureScope = featureScope
+        self.readTimeout = readTimeout
         self.initializationTimeout = initializationTimeout
         self.scheduleInitializationTimeout = scheduleInitializationTimeout ?? Self.scheduleInitializationTimeout
         readState()
@@ -238,25 +238,14 @@ internal final class FlagsRepository {
     }
 
     private func readState() {
-        featureScope.flagsDataStore.flagsData(forClientNamed: clientName) { [weak self, readSemaphore] data in
-            guard let self else {
-                // Signal even if self is nil to unblock any waiting getters
-                DispatchQueue.global(qos: .userInitiated).async {
-                    readSemaphore.signal()
-                }
-                return
-            }
+        // Retain the read lifecycle, not the repository, so the group is balanced even after deallocation.
+        featureScope.flagsDataStore.flagsData(forClientNamed: clientName) { [weak self, _repositoryState] data in
             var callbacks: [() -> Void] = []
-            self._repositoryState.mutate { state in
+            _repositoryState.mutate { state in
                 callbacks = state.applyInitialFlagsData(data)
             }
 
-            // Signal semaphore for blocking getters (on elevated queue to avoid priority inversion)
-            DispatchQueue.global(qos: .userInitiated).async {
-                readSemaphore.signal()
-            }
-
-            self.executePendingDiskReadCallbacks(callbacks)
+            self?.executePendingDiskReadCallbacks(callbacks)
         }
     }
 
@@ -272,13 +261,13 @@ internal final class FlagsRepository {
         }
     }
 
-    /// Blocks until disk read completes (up to timeout).
+    /// Blocks until the initial disk read completes or is superseded (up to timeout).
     /// Used by synchronous getters where callers expect cached data if available.
     private func waitForFlagsDataRead() {
-        guard repositoryState.shouldWaitForFlagsDataRead else {
+        guard let group = repositoryState.initialFlagsDataGroup else {
             return
         }
-        _ = readSemaphore.wait(timeout: .now() + Constants.readTimeout)
+        _ = group.wait(timeout: .now() + readTimeout)
     }
 
     /// Executes the callback once the initial cache is available, or immediately if a fetch or reset superseded it.
@@ -438,7 +427,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     state.flagsDataVersion += 1
                     versionAfterSuccess = state.flagsDataVersion
                     state.reconcilingContext = nil
-                    callbacks = state.takePendingDiskReadCallbacks()
+                    callbacks = state.finishWaitingForInitialFlagsData()
                 }
                 self.writeState(flagsData, version: versionAfterSuccess)
                 complete(.success(()), .ready)
@@ -470,7 +459,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             state.cachedFlagsData = nil
             state.flagsDataVersion += 1
             state.reconcilingContext = nil
-            callbacks = state.takePendingDiskReadCallbacks()
+            callbacks = state.finishWaitingForInitialFlagsData()
         }
         // Enqueue removal after any already-started cache write to avoid
         // re-persisting stale flags after reset.
