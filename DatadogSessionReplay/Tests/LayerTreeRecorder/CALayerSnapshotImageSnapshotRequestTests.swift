@@ -379,6 +379,30 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(requests.isEmpty)
     }
 
+    @Test("Skips image snapshots for rounded rectangle shadow and its sublayers")
+    func skipsImageSnapshotsForRoundedRectShadowAndItsSublayers() throws {
+        // Given
+        let viewClass = try #require(NSClassFromString("_UIRoundedRectShadowView") as? UIImageView.Type)
+        let shadowView = viewClass.init(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+        shadowView.image = UIImage()
+        shadowView.layer.contents = NSObject()
+
+        let child = CALayer()
+        child.frame = shadowView.bounds
+        child.contents = NSObject()
+        shadowView.layer.addSublayer(child)
+
+        let snapshot = try #require(CALayerSnapshot(from: shadowView.layer, in: .mockAny(imagePrivacyLevel: .maskNone)))
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(snapshot.sublayers.isEmpty)
+        #expect(requests.isEmpty)
+    }
+
     @Test("Creates request for progress view image sublayer when image privacy masks all")
     func createsRequestForProgressViewImageSublayerWhenImagePrivacyMasksAll() throws {
         // Given

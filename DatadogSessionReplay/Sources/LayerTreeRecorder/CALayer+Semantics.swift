@@ -14,6 +14,10 @@ extension CALayer {
         delegate?.isKind(of: Classes.barBackground) == true
     }
 
+    var isRoundedRectShadow: Bool {
+        delegate?.isKind(of: Classes.roundedRectShadowView) == true
+    }
+
     var isGlassGroup: Bool {
         delegate?.isKind(of: Classes.glassGroupView) == true
     }
@@ -137,6 +141,7 @@ extension CALayer {
 
 private enum Classes {
     static let barBackground: AnyClass? = NSClassFromString("_UIBarBackground")
+    static let roundedRectShadowView: AnyClass? = NSClassFromString("_UIRoundedRectShadowView")
     static let glassGroupView: AnyClass? = NSClassFromString("UIKit._GlassGroupView")
     static let liquidLensView: AnyClass? = NSClassFromString("_UILiquidLensView")
     static let portalLayer: AnyClass? = NSClassFromString("CAPortalLayer")
