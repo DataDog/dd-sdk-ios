@@ -5,6 +5,7 @@
  */
 
 #if os(iOS)
+import AVFoundation
 import Foundation
 import QuartzCore
 import UIKit
@@ -142,7 +143,18 @@ extension CALayerSnapshot.SemanticObservationMapping {
         return .init(semantics: .layer, ignoresImagePrivacy: true)
     }
 
-    static let unsupported = Self { layer, _, _ in
+    static let playerLayer = Self { layer, _, _ in
+        guard layer is AVPlayerLayer else {
+            return nil
+        }
+
+        return .init(
+            semantics: .unsupported("Video"),
+            ignoresSublayers: true
+        )
+    }
+
+    static let layerHost = Self { layer, _, _ in
         guard layer.isHost else {
             return nil
         }
