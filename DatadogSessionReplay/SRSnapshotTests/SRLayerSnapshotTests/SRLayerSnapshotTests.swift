@@ -45,6 +45,18 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
         )
     }
 
+    func testShareSheet() async throws {
+        let fixture = ShareSheetFixtureViewController()
+        try await takeLayerSnapshotFor(
+            fixture,
+            waitTime: 1.0,
+            beforeSnapshot: {
+                await fixture.showShareSheet()
+            },
+            shouldRecord: shouldRecord
+        )
+    }
+
     func testTab() async throws {
         try await takeLayerSnapshotFor(
             TabFixtureView(),
