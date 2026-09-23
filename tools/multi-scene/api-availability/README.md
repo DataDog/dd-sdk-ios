@@ -114,3 +114,10 @@ builds have900 seconds each within the fixed5400-second stage. Cleanup retains i
 independent budget after an expired work deadline. The runner removes only its task
 app and restores the original simulator boot state. Scenario, evidence and cleanup
 verdicts remain separate. No backend, iOS15/16 runtime, physical or RFC claim follows.
+
+A classifier-only pre-native stop can use `--reuse-preparation <original-root>`
+with a fresh output root. Admission requires zero prior cells, successful cleanup,
+unchanged definition/source/protected files and only the reviewed classifier/test
+helper delta. Original summaries and logs remain immutable; the build tree is
+reused for remaining variants and reverified, including previously built products
+and objects. This does not retry a native cell or renew an old deadline.

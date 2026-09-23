@@ -50,6 +50,23 @@ def matrix(cases):
     return 'PASS'
 
 
+def reuse_contract(prior,current):
+    require(prior['status']=='INVALID' and prior.get('error')=='foreign compiler platform/architecture' and prior['cases']==[] and prior['final_cleanup']=='PASS','not the retained pre-native classifier rejection')
+    require(prior['definition_sha256']==current['definition_sha256'] and prior['source_revisions']==current['source_revisions'],'reused definition/source differs')
+    require(set(prior['inputs'])==set(current['inputs']),'reused helper inventory differs')
+    changed={n for n in current['inputs'] if prior['inputs'][n]!=current['inputs'][n]}
+    require(changed=={'tools/multi-scene/api-availability/legacy17.py','tools/multi-scene/api-availability/test_legacy17.py'},'unreviewed reuse delta')
+    return sorted(changed)
+
+
+def compiler_target_root(derived,path):
+    target=path.stem;sdk_target=target in ['DatadogCore','DatadogRUM','DatadogInternal']
+    require(sdk_target or target in ['FixtureLegacy','FixtureLegacyLifecycle'],'foreign compiler target')
+    target_root=derived/('DatadogBaseline.build' if sdk_target else 'EXP160.build')/'Release-iphonesimulator'/(target+'.build')
+    require(path==target_root/'Objects-normal/arm64'/(target+'.SwiftFileList') and not path.is_symlink(),'foreign compiler platform/architecture')
+    return target_root
+
+
 def restored_states(initial,inventory):
     for device in initial.values():
         rows=[d for devices in inventory['devices'].values() for d in devices if d['udid']==device['udid']]
@@ -57,9 +74,9 @@ def restored_states(initial,inventory):
 
 
 class Runner(legacy.Runner):
-    def __init__(self,root):
+    def __init__(self,root,reuse_preparation=None):
         self.root=Path(root).resolve();require(not self.root.exists(),'consumed continuation output');self.root.mkdir()
-        self.attempt=self.root/'builds';self.definition=shared.read(OWNER)
+        self.attempt=self.root/'builds';self.definition=shared.read(OWNER);self.reuse_preparation=Path(reuse_preparation).resolve() if reuse_preparation else None
         self.protected_state=lambda repo:api_build.protected();self.protected=self.protected_state(shared.REPO)
         self.inputs=[shared.REPO/n for n in HELPERS]
         require(not subprocess.check_output(['git','status','--porcelain','--',*HELPERS],cwd=shared.REPO,text=True).strip(),'commit reviewed continuation inputs first')
@@ -122,6 +139,20 @@ class Runner(legacy.Runner):
         options=[d for d in json.loads(raw)['devices'][r['identifier']] if d['name']=='iPad Pro 11-inch (M4) (16GB)' and d['isAvailable'] and d['state'] in ['Shutdown','Booted']]
         require(len(options)==1,'qualified iPad runtime destination ambiguous');d=options[0]
         self.summary['devices']['17.5']={**{k:d[k] for k in ['udid','name','state']},'runtime':r['identifier'],'runtime_build':r['buildversion']}
+        if self.reuse_preparation:
+            prior=shared.read(self.reuse_preparation/'summary.json')
+            changed=reuse_contract(prior,self.summary)
+            require(shared.tree(self.reuse_preparation/'helpers')==prior['inputs'],'original helper evidence changed')
+            frozen=shared.read(self.reuse_preparation/'frozen-inputs.json');require(frozen['protected']==self.protected,'protected paths changed since build')
+            self.attempt=self.reuse_preparation/'builds';self.frozen=frozen['arms'];self.verify_inputs()
+            self.summary['reused_preparation']=dict(root=str(self.reuse_preparation),summary_sha256=shared.sha(self.reuse_preparation/'summary.json'),frozen_inputs_sha256=shared.sha(self.reuse_preparation/'frozen-inputs.json'),reason='SDK26.5 compiler directory suffix corrected; no build/native retry',changed_helpers=sorted(changed))
+            immutable=[self.reuse_preparation/'summary.json',self.reuse_preparation/'frozen-inputs.json']
+            immutable += [Path(row[key]) for row in prior['commands'] for key in ['stdout','stderr']]
+            self.summary['reused_preparation']['immutable_files']={str(p):shared.sha(p) for p in immutable}
+            key='baseline/Navigation';self.summary['builds'][key]=copy.deepcopy(prior['builds'][key])
+            self.qualify_build('baseline','Navigation',prior['commands'])
+            shared.save(self.root/'frozen-inputs.json',frozen,exclusive=True)
+            self.save();return
         baseline.REVISIONS=self.summary['source_revisions'];baseline.ENV=dict(shared.environment(),DEVELOPER_DIR=old)
         def fixture_call(argv,*,cwd=None,log=None,check=True):return self.command('fixture-preparation',argv,old,check=check,cwd=cwd)[1]
         baseline.call=fixture_call
@@ -148,13 +179,17 @@ class Runner(legacy.Runner):
         admission=self.phase('build_per_variant')
         legacy.BUILD_DEVELOPER=self.definition['build']['developer']
         super().build(arm,variant)
+        commands=list(self.summary['commands'])
+        if self.reuse_preparation:commands=shared.read(self.reuse_preparation/'summary.json')['commands']+commands
+        self.qualify_build(arm,variant,commands)
+        self.summary['builds'][arm+'/'+variant]['admission']=admission;self.save()
+
+    def qualify_build(self,arm,variant,commands):
         folder=self.attempt/arm;record=self.summary['builds'][arm+'/'+variant]
+        require(shared.sha(Path(record['app'])/record['executable'])==record['sha256'],'original built binary changed')
         sdk=set();lists={};fixture={};derived=folder/'derived/Build/Intermediates.noindex'
         for path in derived.rglob('*.SwiftFileList'):
-            target=path.stem;sdk_target=target in ['DatadogCore','DatadogRUM','DatadogInternal']
-            require(sdk_target or target in ['FixtureLegacy','FixtureLegacyLifecycle'],'foreign compiler target')
-            target_root=derived/('DatadogBaseline.build' if sdk_target else 'EXP160.build')/'Release-iphonesimulator'/(target+('-t.build' if sdk_target else '.build'))
-            require(path==target_root/'Objects-normal/arm64'/(target+'.SwiftFileList') and not path.is_symlink(),'foreign compiler platform/architecture')
+            target=path.stem;target_root=compiler_target_root(derived,path)
             members={value:shared.sha(value) for value in shlex.split(path.read_text())}
             lists[str(path.relative_to(folder))]=dict(sha256=shared.sha(path),members=members)
             for value in members:
@@ -167,8 +202,9 @@ class Runner(legacy.Runner):
         if variant=='Lifecycle':expected['FixtureLegacyLifecycle']={'LifecycleSources/App.swift'}
         require(fixture==expected,'wrong fixture compiler membership')
         clang={}
-        for row in self.summary['commands']:
+        for row in commands:
             if not row['name'].startswith('build-'+arm+'-'):continue
+            require(row['exit_code']==0,'reused build did not succeed')
             for line in Path(row['stdout']).read_text().splitlines():
                 if 'clang ' not in line or ' -c ' not in line or ' -o ' not in line:continue
                 args=shlex.split(line);source=Path(args[args.index('-c')+1]);obj=Path(args[args.index('-o')+1])
@@ -179,13 +215,15 @@ class Runner(legacy.Runner):
         expected_c.add(str(folder/'Sources/AllocationCounter.c'))
         if variant=='Lifecycle':expected_c.add(str(folder/'LifecycleSources/AllocationCounter.c'))
         require({v['source'] for v in clang.values()}==expected_c,'incomplete C/Objective-C compiler membership')
-        record.update(compiler_lists=lists,clang=clang,full_product=shared.product(record['app'],record['bundle']),admission=admission)
+        record.update(compiler_lists=lists,clang=clang,full_product=shared.product(record['app'],record['bundle']))
         record['compiled_objects']={str(p.relative_to(folder)):shared.sha(p) for p in derived.rglob('*.o')}
         require(record['compiled_objects'] and time.time()<self.deadline,'missing or late compiler evidence');self.verify_inputs();self.save()
 
     def verify_inputs(self):
         require(self.protected_state(shared.REPO)==self.protected,'protected workspace changed')
         require(shared.tree(self.root/'helpers')==self.summary['inputs'] and all(shared.sha(shared.REPO/n)==v for n,v in self.summary['inputs'].items()),'helper bytes changed')
+        if self.summary.get('reused_preparation'):
+            require(all(shared.sha(p)==v for p,v in self.summary['reused_preparation']['immutable_files'].items()),'original summary or log changed')
         if self.frozen:
             for arm,frozen in self.frozen.items():
                 folder=self.attempt/arm
@@ -299,7 +337,9 @@ class Runner(legacy.Runner):
 
     def execute(self):
         try:
-            self.preflight();self.build('baseline','Navigation');self.run_case('baseline','17.5','automatic')
+            self.preflight()
+            if 'baseline/Navigation' not in self.summary['builds']:self.build('baseline','Navigation')
+            self.run_case('baseline','17.5','automatic')
             self.summary['baseline_readiness']='PASS';self.build('candidate','Navigation')
             for arm in legacy.ARMS:self.build(arm,'Lifecycle')
             for item in self.definition['matrix']:
@@ -323,5 +363,5 @@ class Runner(legacy.Runner):
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--root',type=Path,required=True);args=p.parse_args()
-    raise SystemExit(0 if Runner(args.root).execute() else 1)
+    p=argparse.ArgumentParser();p.add_argument('--root',type=Path,required=True);p.add_argument('--reuse-preparation',type=Path);args=p.parse_args()
+    raise SystemExit(0 if Runner(args.root,args.reuse_preparation).execute() else 1)

@@ -31,6 +31,30 @@ class LegacyContinuationTests(unittest.TestCase):
         runner.cleanup_phase=False
         return runner
 
+    def test_reuse_rejects_native_attempts_cleanup_failure_and_changed_inputs(self):
+        prior=dict(status='INVALID',error='foreign compiler platform/architecture',cases=[],final_cleanup='PASS',definition_sha256='definition',source_revisions={'baseline':'a','candidate':'b'},
+                   inputs={n:'old' for n in ['tools/multi-scene/api-availability/legacy17.py','tools/multi-scene/api-availability/test_legacy17.py','stable']})
+        current=copy.deepcopy(prior)
+        for n in current['inputs']:
+            if n!='stable':current['inputs'][n]='new'
+        self.assertEqual(len(subject.reuse_contract(prior,current)),2)
+        for key,value in [('cases',[{'status':'INVALID'}]),('final_cleanup','INVALID'),('definition_sha256','changed'),('source_revisions',{'baseline':'c','candidate':'b'}),('error','different')]:
+            changed=copy.deepcopy(prior);changed[key]=value
+            with self.subTest(key=key),self.assertRaises(ValueError):subject.reuse_contract(changed,current)
+        for kind in ['changed','removed','added']:
+            changed=copy.deepcopy(current)
+            if kind=='changed':changed['inputs']['stable']='new'
+            elif kind=='removed':del changed['inputs']['stable']
+            else:changed['inputs']['extra']='new'
+            with self.subTest(kind=kind),self.assertRaises(ValueError):subject.reuse_contract(prior,changed)
+
+    def test_actual_sdk26_compiler_layout_and_foreign_paths(self):
+        derived=Path('/fixture/derived/Build/Intermediates.noindex')
+        captured=derived/'DatadogBaseline.build/Release-iphonesimulator/DatadogCore.build/Objects-normal/arm64/DatadogCore.SwiftFileList'
+        self.assertEqual(subject.compiler_target_root(derived,captured).name,'DatadogCore.build')
+        for old,new in [('Release-iphonesimulator','Debug-iphonesimulator'),('arm64','x86_64'),('DatadogCore.build','DatadogCore-t.build'),('DatadogBaseline.build','Other.build')]:
+            with self.subTest(new=new),self.assertRaises(ValueError):subject.compiler_target_root(derived,Path(str(captured).replace(old,new)))
+
     def test_final_state_checks_both_initial_boot_states(self):
         for state in ['Shutdown','Booted']:
             initial={'17.5':dict(udid='selected',state=state)}

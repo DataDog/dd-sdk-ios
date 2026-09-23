@@ -431,7 +431,7 @@
   ],
   "legacy17_continuation": {
     "definition": "Results/EXP-225-legacy17-definition.json",
-    "state": "REVIEWED_READY_FOR_NATIVE",
+    "state": "REVIEWED_CLASSIFIER_REUSE_READY",
     "scope": "Eight source-paired no-scene navigation/lifecycle cells; preserve original API acceptance and failed attempts. No new experiment number or gate closure.",
     "evidence_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r",
     "offline_controls": {
@@ -442,6 +442,27 @@
     "review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/scoped-review.json",
       "sha256": "aa66e862c52245c94c0fcb9da17e6c27f3e09bfe0076bb04c1665dd32a2e17ca"
-    }
+    },
+    "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/qualification",
+    "runner_commit": "f2d296afa3510f62613e495a67f78c93fee338e4",
+    "attempts": [
+      {
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/qualification",
+        "status": "INVALID",
+        "reason": "Exact Swift compiler path assumed Xcode27 suffix; actual26.6 build uses .build, not -t.build.",
+        "summary_sha256": "fcfa4e6966a144c70371afd9639af5c4a61b4ba59d7fd64c17a726d49c2dee7f",
+        "native_cells": 0,
+        "cleanup": "PASS"
+      }
+    ],
+    "classifier_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/classifier-reuse-review.json",
+      "sha256": "61e4614f41f58c107e1f8551b888744eea522040c8955b8df2f86711ce506ce4"
+    },
+    "offline_classifier": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-legacy17-xpk0s60r/classifier-review/summary.json",
+      "sha256": "20a4f38d520ce85daf6423ef67a43c3fc37b94c9ae63e78a9bfcf202cb567f4f"
+    },
+    "current_controls": 31
   }
 }
