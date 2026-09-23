@@ -5023,6 +5023,16 @@ class RUMSwiftUINavigationOccurrenceSourceTests: XCTestCase {
 @available(iOS 27.0, *)
 @MainActor
 final class RUMSwiftUISemanticNavigationEngineTests: XCTestCase {
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        // XCTest discovers selectors even when their class is unavailable on the running OS.
+        guard ProcessInfo.processInfo.isOperatingSystemAtLeast(
+            OperatingSystemVersion(majorVersion: 27, minorVersion: 0, patchVersion: 0)
+        ) else {
+            throw XCTSkip("Semantic navigation requires iOS 27 or later.")
+        }
+    }
+
     private struct SemanticSnapshot: Equatable {
         let generation: UInt64
         let name: String
