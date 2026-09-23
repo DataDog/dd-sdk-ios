@@ -87,6 +87,7 @@ let package = Package(
             dependencies: [
                 .target(name: "DatadogInternal"),
                 .target(name: "TestUtilities"),
+                .product(name: "DatadogSDKTesting", package: "dd-sdk-swift-testing"),
             ],
             path: "DatadogInternal/Tests"
         ),
@@ -152,6 +153,7 @@ let package = Package(
             dependencies: [
                 .target(name: "DatadogRUM"),
                 .target(name: "TestUtilities"),
+                .product(name: "DatadogSDKTesting", package: "dd-sdk-swift-testing"),
             ],
             path: "DatadogRUM/Tests"
         ),
@@ -204,6 +206,7 @@ let package = Package(
             dependencies: [
                 .target(name: "DatadogSessionReplay"),
                 .target(name: "TestUtilities"),
+                .product(name: "DatadogSDKTesting", package: "dd-sdk-swift-testing"),
             ],
             path: "DatadogSessionReplay/Tests",
             resources: [
@@ -268,7 +271,6 @@ let package = Package(
                 .target(name: "DatadogCrashReporting"),
                 .target(name: "DatadogWebViewTracking"),
                 .target(name: "DatadogFlags"),
-                .product(name: "DatadogSDKTesting", package: "dd-sdk-swift-testing"),
             ],
             path: "TestUtilities/Sources",
             swiftSettings: [.define("SPM_BUILD")] + internalSwiftSettings

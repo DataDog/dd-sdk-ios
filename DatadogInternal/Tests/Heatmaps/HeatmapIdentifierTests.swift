@@ -6,6 +6,7 @@
 
 import TestUtilities
 import Testing
+import DatadogSDKTesting
 import DatadogInternal
 
 @Suite(.datadogTesting)

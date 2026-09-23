@@ -9,6 +9,7 @@ import TestUtilities
 import QuartzCore
 import SwiftUI
 import Testing
+import DatadogSDKTesting
 
 @testable import DatadogSessionReplay
 

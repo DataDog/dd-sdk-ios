@@ -8,6 +8,7 @@
 import QuartzCore
 import TestUtilities
 import Testing
+import DatadogSDKTesting
 
 @testable import DatadogSessionReplay
 

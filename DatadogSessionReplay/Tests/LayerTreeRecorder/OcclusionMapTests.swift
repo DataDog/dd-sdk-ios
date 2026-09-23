@@ -8,6 +8,7 @@
 import CoreGraphics
 import TestUtilities
 import Testing
+import DatadogSDKTesting
 
 @testable import DatadogSessionReplay
 

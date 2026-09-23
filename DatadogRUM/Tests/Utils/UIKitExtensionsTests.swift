@@ -7,6 +7,7 @@
 #if !os(watchOS) && !os(macOS)
 
 import Testing
+import DatadogSDKTesting
 import UIKit
 import TestUtilities
 @testable import DatadogRUM
