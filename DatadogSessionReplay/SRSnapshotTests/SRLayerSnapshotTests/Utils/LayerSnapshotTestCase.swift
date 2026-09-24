@@ -58,7 +58,7 @@ internal class LayerSnapshotTestCase: XCTestCase {
         with textAndInputPrivacyLevels: [TextAndInputPrivacyLevel] = [.maskSensitiveInputs],
         imagePrivacyLevel: ImagePrivacyLevel = .maskNonBundledOnly,
         waitTime: TimeInterval = 0.2,
-        beforeSnapshot: (() async -> Void)? = nil,
+        beforeSnapshot: (() async throws -> Void)? = nil,
         shouldRecord: Bool,
         fileNamePrefix: String? = nil,
         file: StaticString = #filePath,
@@ -70,7 +70,7 @@ internal class LayerSnapshotTestCase: XCTestCase {
         )
 
         try await show(viewController)
-        await beforeSnapshot?()
+        try await beforeSnapshot?()
         await wait(seconds: waitTime)
 
         for textAndInputPrivacyLevel in textAndInputPrivacyLevels {

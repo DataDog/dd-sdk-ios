@@ -50,7 +50,7 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
         try await takeLayerSnapshotFor(
             fixture,
             beforeSnapshot: {
-                await fixture.showSafari()
+                try await fixture.showSafari()
             },
             shouldRecord: shouldRecord
         )
