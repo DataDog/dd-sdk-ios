@@ -447,3 +447,10 @@ exchange preserves its original hash and UNQUALIFIED result; missing replay meta
 stale Home activity/duration/brightness and the absent TTID witness remain explicit.
 A separate future RUM gate contract must distinguish required RUM payloads from
 unassessed Replay metadata while retaining exact earlier-revision pending proof.
+
+The separate offline RUM-fields contract passes15 controls and scoped review. Raw
+Replay metadata stays unassessed and the full projection verdict remains visible.
+Pending requires an exact captured earlier body; unknown mixtures fail, and only
+the latest required body can qualify. Native TTID evidence is mandatory. The saved
+Home remains invalid; integration and physical qualification remain open. No gate
+closes. The owning result binds source hashes, controls and original test failures.

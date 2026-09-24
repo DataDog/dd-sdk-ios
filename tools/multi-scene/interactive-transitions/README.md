@@ -224,3 +224,11 @@ registered/foreground dispatch and exact backend identity, owner, name, path,
 duration and corrected date. The default keeps unwitnessed incidental events
 unqualified. This offline rule cannot clear missing replay metadata or stale Home
 fields, change the generic join, renew old queries, or qualify a release.
+
+`physical_rum_contract.assess` is a separate offline RUM-fields assessment. It requires
+the complete native stream and independent TTID witness. Only `session.has_replay`
+is outside this payload scope; preserve its actual presence/type/value and the full
+projection verdict. An earlier view is pending only when its complete required body
+exactly matches a captured mapper revision; only the latest required body can qualify.
+Unknown mixtures fail immediately. `pending=False` makes incomplete ingestion invalid
+at the original final boundary. This module has no runtime or release authority.

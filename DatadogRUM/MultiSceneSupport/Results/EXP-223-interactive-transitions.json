@@ -326,7 +326,7 @@
     }
   ],
   "gate_closures": [],
-  "next_action": "Execute the one reviewed SwiftUI capture qualification, then prove input-worker quiescence and task-only cleanup/session end/Shutdown restoration. No retry.",
+  "next_action": "Review and integrate an explicit physical-runner RUM-fields mode with fixed polling/seal/cleanup boundaries; keep generic/full projection and original failures. No human or native admission tonight.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
@@ -397,7 +397,7 @@
       "scope": "Fixture/native and local paired oracle only. Full runtime, backend, adaptive geometry and physical execution remain unqualified."
     }
   },
-  "updated_at": 1790290975.808158,
+  "updated_at": 1790293789.106677,
   "live_environment": {
     "observed_at": "2026-09-23T19:45:47.121281+00:00",
     "xcode": "27.1 (27A9269)",
@@ -2427,7 +2427,7 @@
                   "native_operations": 1,
                   "native_admitted": false,
                   "gate_closures": [],
-                  "next_action": "Define a separate future RUM gate contract with raw Replay metadata unassessed and exact independently captured prior-revision pending rules; retain generic full projection and original failed runs. No human request or native retry tonight.",
+                  "next_action": "Review and integrate an explicit physical-runner RUM-fields mode with fixed polling/seal/cleanup boundaries; keep generic/full projection and original failures. No human or native admission tonight.",
                   "runtime_preparation": {
                     "state": "COMPLETE_CAPTURE_PASS_CLEANUP_PASS",
                     "plan": {
@@ -2495,6 +2495,16 @@
                     "controls_count": 18,
                     "original_control_failures": "Retained controls-01: two test-harness assumptions corrected, production/oracle unchanged for those corrections",
                     "next_action": "Define a separate future RUM gate contract with raw Replay metadata unassessed and exact independently captured prior-revision pending rules; retain generic full projection and original failed runs. No human request or native retry tonight."
+                  },
+                  "rum_fields_contract": {
+                    "state": "OFFLINE_RUM_FIELDS_CONTRACT_QUALIFIED",
+                    "outcome": {
+                      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-rum-gate-contract-v97_b59y/outcome.json",
+                      "sha256": "0a7b29a82a702c57c923eee0d53cc20e70aeb4dbfba25f7a76b5b18fb1a5cb9d"
+                    },
+                    "native_admitted": false,
+                    "gate_closures": [],
+                    "next_action": "Review and integrate an explicit physical-runner RUM-fields mode with fixed polling/seal/cleanup boundaries; keep generic/full projection and original failures. No human or native admission tonight."
                   }
                 }
               }

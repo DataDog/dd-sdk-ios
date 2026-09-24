@@ -15,7 +15,7 @@
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
   "human_work": "UNADMITTED_WHILE_OPERATOR_SLEEPS",
-  "checkpoint": "f916f5c1c31533378d2a086617807fcc35944114",
+  "checkpoint": "09606da39cd530bbf241600c8f4578e5e0a8d519",
   "tasks": [
     {
       "id": "capture-backend",
@@ -30,15 +30,15 @@
       "dependency": "Saved EXP223 Home inventories and existing strict join",
       "decisive_test": "Complete offline mapping table and controls reject missing/stale terminal, wrong owners/counts, nonempty omission, late publication and forged request scopes; original run remains INVALID",
       "environment": "Source and saved evidence; no human/native/query retry",
-      "state": "PHYSICAL_WITNESS_BUILDS_QUALIFIED_RUNTIME_CONTRACT_OPEN",
+      "state": "OFFLINE_RUM_FIELDS_CONTRACT_QUALIFIED_RUNTIME_INTEGRATION_OPEN",
       "result": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/post-home-offline/source-audit/source-contract.json",
         "sha256": "9376249aadf3029c4c9ead2e0e29a0178bb54dcdafacf3f1f110309a018b21e5"
       },
       "remaining": [
-        "No explicit session.has_replay value in the saved reducer",
-        "Home backend terminal is active with initial duration and old brightness",
-        "Incidental TTID requires its independent dispatch witness; do not infer its exact ownership from mapper timing"
+        "Future explicit runner integration and fixed-boundary controls",
+        "Physical TTID witness and terminal backend behavior remain unqualified; original failed Home unchanged",
+        "Human/candidate session unadmitted while operator sleeps"
       ],
       "next_preparation": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-witness-69uk3guu/definition.json",
@@ -48,7 +48,11 @@
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-witness-69uk3guu/outcome.json",
         "sha256": "902e32e68714ccaaebca624af9898e346ab89af6dd1ed551f68a344a1b88c43b"
       },
-      "next_action": "Define a separate future RUM gate contract with raw Replay metadata unassessed and exact independently captured prior-revision pending rules; retain generic full projection and original failed runs. No human request or native retry tonight."
+      "next_action": "Review and integrate an explicit physical-runner RUM-fields mode with fixed polling/seal/cleanup boundaries; keep generic/full projection and original failures. No human or native admission tonight.",
+      "rum_fields_contract": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-rum-gate-contract-v97_b59y/outcome.json",
+        "sha256": "0a7b29a82a702c57c923eee0d53cc20e70aeb4dbfba25f7a76b5b18fb1a5cb9d"
+      }
     },
     {
       "id": "capture-swiftui",
@@ -95,5 +99,5 @@
     "No Replay content, unrelated CI flakes, optional networking benchmarks or physical Duo acceptance"
   ],
   "gate_closures": [],
-  "updated_at": 1790292917.32302
+  "updated_at": 1790293789.1083531
 }
