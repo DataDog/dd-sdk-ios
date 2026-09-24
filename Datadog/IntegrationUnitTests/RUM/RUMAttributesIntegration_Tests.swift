@@ -469,6 +469,86 @@ final class RUMAttributesIntegration_Tests: XCTestCase {
         }
     }
 
+    func testSameKeyViewOccurrences_areIsolatedInSerializedEvents() throws {
+        // Given
+        let h1Key = "home"
+        let detailKey = "detail"
+        let resourceKey = "h1-resource"
+        let h1Occurrence = "home-1"
+        let h2Occurrence = "home-2"
+        let h2StopOccurrence = "home-2-stop"
+        RUM.enable(with: rumConfig, in: core)
+
+        let monitor = RUMMonitor.shared(in: core)
+
+        // When
+        monitor.startView(key: h1Key, name: "Home", attributes: ["occurrence": h1Occurrence])
+        monitor.startResource(
+            resourceKey: resourceKey,
+            httpMethod: .get,
+            urlString: "https://example.com/h1",
+            attributes: [:]
+        )
+        monitor.stopView(key: h1Key)
+        monitor.startView(key: detailKey, name: "Detail")
+        monitor.startView(key: h1Key, name: "Home", attributes: ["occurrence": h2Occurrence])
+        monitor.addAction(type: .custom, name: "h2-action", attributes: ["action": "h2"])
+        monitor.stopView(key: h1Key, attributes: ["occurrence": h2StopOccurrence])
+        monitor.stopResource(
+            resourceKey: resourceKey,
+            statusCode: 200,
+            kind: .fetch,
+            size: nil,
+            attributes: [:]
+        )
+
+        // Then
+        let session = try RUMSessionMatcher
+            .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
+            .takeSingle()
+        XCTAssertEqual(session.views.filter { $0.isApplicationLaunchView() }.count, 1)
+        XCTAssertEqual(session.views.count, 4)
+        let userViews = session.views.filter { !$0.isApplicationLaunchView() }
+        XCTAssertEqual(userViews.count, 3) // Home H1, Detail, and Home H2; ApplicationLaunch is excluded.
+        XCTAssertEqual(userViews.filter { $0.name == "Home" }.count, 2)
+        XCTAssertEqual(userViews.filter { $0.name == "Detail" }.count, 1)
+        XCTAssertEqual(Set(userViews.map(\.viewID)).count, 3)
+
+        let homeViews = userViews.filter { $0.name == "Home" }
+        let h1 = try XCTUnwrap(homeViews.first(where: {
+            ($0.viewEvents.first?.attribute(forKey: "occurrence") as String?) == h1Occurrence
+        }))
+        let h2 = try XCTUnwrap(homeViews.first(where: {
+            ($0.viewEvents.first?.attribute(forKey: "occurrence") as String?) == h2Occurrence
+        }))
+        let detail = try XCTUnwrap(userViews.first(where: { $0.name == "Detail" }))
+        XCTAssertNotEqual(h1.viewID, h2.viewID)
+
+        let h1Occurrences = h1.viewEvents.compactMap { $0.attribute(forKey: "occurrence") as String? }
+            + h1.viewUpdateEvents.compactMap { $0.attribute(forKey: "occurrence") as String? }
+        XCTAssertFalse(h1Occurrences.isEmpty)
+        XCTAssertEqual(Set(h1Occurrences), Set([h1Occurrence]))
+
+        let h2Occurrences = h2.viewEvents.compactMap { $0.attribute(forKey: "occurrence") as String? }
+            + h2.viewUpdateEvents.compactMap { $0.attribute(forKey: "occurrence") as String? }
+        XCTAssertTrue(h2Occurrences.contains(h2Occurrence))
+        XCTAssertTrue(h2Occurrences.contains(h2StopOccurrence))
+        XCTAssertEqual(h2.isActive, false)
+
+        XCTAssertEqual(h2.actionEvents.count, 1)
+        let h2Action = try XCTUnwrap(h2.actionEvents.first)
+        XCTAssertEqual(h2Action.attribute(forKey: "action"), "h2")
+        XCTAssertEqual(h2Action.view.id, h2.viewID)
+        XCTAssertTrue(h1.actionEvents.isEmpty)
+        XCTAssertTrue(detail.actionEvents.isEmpty)
+
+        XCTAssertEqual(h1.resourceEvents.count, 1)
+        let h1Resource = try XCTUnwrap(h1.resourceEvents.first)
+        XCTAssertEqual(h1Resource.view.id, h1.viewID)
+        XCTAssertTrue(h2.resourceEvents.isEmpty)
+        XCTAssertTrue(detail.resourceEvents.isEmpty)
+    }
+
     // MARK: - Precedences
 
     func testViewAttributes_havePrecedenceOverGlobalAttributes() throws {

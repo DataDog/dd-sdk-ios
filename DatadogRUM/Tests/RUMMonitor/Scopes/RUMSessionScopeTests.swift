@@ -172,6 +172,160 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(viewCache.lastView(before: dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds), firstViewID)
     }
 
+    func testGivenSingleSceneH1HasPendingResource_whenNavigatingThroughDetailToH2_itKeepsOccurrencesIsolated() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let homeIdentity = ViewIdentifier("home")
+        let detailIdentity = ViewIdentifier("detail")
+        let resourceKey = "h1-resource"
+
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(
+                attributes: ["occurrence": "home-1"],
+                identity: homeIdentity,
+                name: "Home"
+            ),
+            context: context,
+            writer: writer
+        )
+        let firstHome = try XCTUnwrap(scope.viewScopes.first(where: \.isActiveView))
+        let firstHomeViewID = firstHome.viewUUID
+
+        _ = scope.process(
+            command: RUMStartResourceCommand.mockWith(resourceKey: resourceKey),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStopViewCommand.mockWith(identity: homeIdentity),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(identity: detailIdentity, name: "Detail"),
+            context: context,
+            writer: writer
+        )
+        let detailViewID = try XCTUnwrap(scope.viewScopes.first(where: \.isActiveView)?.viewUUID)
+        XCTAssertNotEqual(firstHomeViewID, detailViewID)
+
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(
+                attributes: ["occurrence": "home-2"],
+                identity: homeIdentity,
+                name: "Home"
+            ),
+            context: context,
+            writer: writer
+        )
+        let returnedHome = try XCTUnwrap(scope.viewScopes.first(where: \.isActiveView))
+
+        // A later start belongs only to the new Home occurrence.
+        XCTAssertEqual(firstHome.attributes["occurrence"] as? String, "home-1")
+        XCTAssertEqual(returnedHome.attributes["occurrence"] as? String, "home-2")
+        XCTAssertNotEqual(firstHome.viewUUID, returnedHome.viewUUID)
+        XCTAssertEqual(scope.viewScopes.filter(\.isActiveView).count, 1)
+
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(
+                actionType: .custom,
+                name: "h2-action"
+            ),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStopResourceCommand.mockWith(resourceKey: resourceKey),
+            context: context,
+            writer: writer
+        )
+
+        let resource = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).last)
+        XCTAssertEqual(resource.view.id, firstHomeViewID.toRUMDataFormat)
+        let action = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
+        XCTAssertEqual(action.view.id, returnedHome.viewUUID.toRUMDataFormat)
+        XCTAssertTrue(scope.viewScopes.first(where: \.isActiveView) === returnedHome)
+        XCTAssertEqual(scope.viewScopes.filter(\.isActiveView).count, 1)
+    }
+
+    func testGivenInactiveH1AndActiveH2_whenH2Stops_itDoesNotMutateH1() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let homeIdentity = ViewIdentifier("home")
+        let detailIdentity = ViewIdentifier("detail")
+        let resourceKey = "h1-resource"
+
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(
+                attributes: ["occurrence": "home-1"],
+                identity: homeIdentity,
+                name: "Home"
+            ),
+            context: context,
+            writer: writer
+        )
+        let firstHome = try XCTUnwrap(scope.viewScopes.first(where: \.isActiveView))
+        let firstHomeViewID = firstHome.viewUUID
+        _ = scope.process(
+            command: RUMStartResourceCommand.mockWith(resourceKey: resourceKey),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStopViewCommand.mockWith(identity: homeIdentity),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(identity: detailIdentity, name: "Detail"),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(
+                attributes: [:],
+                identity: homeIdentity,
+                name: "Home"
+            ),
+            context: context,
+            writer: writer
+        )
+        let secondHome = try XCTUnwrap(scope.viewScopes.first(where: \.isActiveView))
+        XCTAssertEqual(firstHome.attributes["occurrence"] as? String, "home-1")
+
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(
+                actionType: .custom,
+                name: "h2-action"
+            ),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStopViewCommand.mockWith(
+                attributes: ["occurrence": "late-stop"],
+                identity: homeIdentity
+            ),
+            context: context,
+            writer: writer
+        )
+
+        // The active H2 legitimately receives the stop attributes; inactive H1 must not.
+        XCTAssertEqual(firstHome.attributes["occurrence"] as? String, "home-1")
+        XCTAssertEqual(secondHome.attributes["occurrence"] as? String, "late-stop")
+        XCTAssertFalse(secondHome.isActiveView)
+        XCTAssertEqual(scope.viewScopes.filter(\.isActiveView).count, 0)
+        let action = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
+        XCTAssertEqual(action.view.id, secondHome.viewUUID.toRUMDataFormat)
+
+        _ = scope.process(
+            command: RUMStopResourceCommand.mockWith(resourceKey: resourceKey),
+            context: context,
+            writer: writer
+        )
+        let resource = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).last)
+        XCTAssertEqual(resource.view.id, firstHomeViewID.toRUMDataFormat)
+        XCTAssertEqual(scope.viewScopes.filter(\.isActiveView).count, 0)
+    }
+
     // MARK: - Background Events Tracking
 
     #if !os(macOS)
