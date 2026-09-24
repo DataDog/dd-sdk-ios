@@ -111,7 +111,7 @@ class Publication(unittest.TestCase):
         self.native=root/'native.jsonl';self.native.write_text(json.dumps(self.snapshot)+'\n')
         self.request.update(native_events_path=str(self.native),process_identity=dict(pid=123,start='now',executable='/task'))
         self.path.write_bytes(encoded(self.request));self.path.with_name('events.jsonl').write_bytes(self.native.read_bytes())
-        (root/'cells/UIKit/summary.json').write_bytes(encoded(dict(state='RUNNING',identity=dict(run_id='run',pid=123,bundle='owned.app'))))
+        (root/'cells/UIKit/summary.json').write_bytes(encoded(dict(state='RUNNING',cleanup='NOT_STARTED',identity=dict(run_id='run',pid=123,bundle='owned.app'))))
         session=root/'sessions/UIKit';session.mkdir(parents=True);(session/'start.json').write_bytes(encoded(dict(actual_return=dict(structuredContent=dict(interactionSessionKey='current')))))
         (root/'current.txt').write_text(self.raw);(root/'current.png').write_bytes(b'actual screenshot')
         self.observed=dict(command='',interaction_session_key='current',started_at=time.time()-1,finished_at=time.time(),
@@ -139,6 +139,20 @@ class Publication(unittest.TestCase):
         self.run_plan()
         with self.assertRaises((FileExistsError,Rejected)):self.run_plan()
         self.assertFalse(self.path.with_name('input-failure.json').exists())
+    def test_cleanup_beginning_before_plan_prevents_dispatch_intent(self):
+        summary=self.path.parents[2]/'summary.json';value=json.loads(summary.read_bytes())
+        value['cleanup']='INCOMPLETE';summary.write_bytes(encoded(value))
+        self.assertEqual(self.run_plan()['state'],'STOP')
+        self.assertFalse(self.path.with_name('action-intent.json').exists())
+        self.assertEqual(c.q.completed_input(self.path)['kind'],'ZERO_ACTION_CAPTURE_FAILURE')
+    def test_ready_plan_and_uncertain_dispatch_remain_cleanup_fenced(self):
+        self.assertEqual(self.run_plan()['state'],'READY')
+        with self.assertRaisesRegex(Rejected,'outstanding or ambiguous input'):
+            c.q.completed_input(self.path)
+        # Even a durable failure with an attempted effect is no completion proof.
+        self.path.with_name('worker-action.json').write_bytes(encoded(dict(dispatch_attempted=True,reason='provider lost')))
+        with self.assertRaisesRegex(Rejected,'outstanding or ambiguous input'):
+            c.q.completed_input(self.path)
     def test_action_complete_publication_preserves_both_actual_returns(self):
         result=self.run_plan();action=copy.deepcopy(self.observed);action.update(command=result['command'],started_at=time.time(),finished_at=time.time())
         output=c.publish(self.path,dict(observation=action));self.assertEqual(output['state'],'PUBLISHED')

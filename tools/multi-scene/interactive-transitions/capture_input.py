@@ -153,7 +153,8 @@ def pending(request_path, now):
     require(not any(request_path.with_name(n).exists() for n in ['tool-return.json', 'input-failure.json', 'action-intent.json']), 'input prompt already consumed')
     out = request_path.parents[2]
     summary = q.shared.read(out/'summary.json')
-    require(summary['state'] == 'RUNNING' and summary['identity']['run_id'] == request['run_id']
+    require(summary['state'] == 'RUNNING' and summary['cleanup'] == 'NOT_STARTED'
+            and summary['identity']['run_id'] == request['run_id']
             and summary['identity']['pid'] == request['app_pid'] and summary['identity']['bundle'] == request['app_bundle'], 'cell no longer owns this input')
     require(q.driver.process_identity(request['app_pid']) == request['process_identity'], 'task process changed')
     native_path = Path(request['native_events_path'])

@@ -156,3 +156,14 @@ retained. Worker quiescence, actual session absence, task-only removal and origi
 Shutdown restoration are recorded separately as PASS. This does not validate the
 combined correction; automated qualification remains stopped. No SDK regression, full capture
 qualification or release gate is established; SwiftUI/candidate/human remain unrun.
+
+The stopped worker transcript identifies a transport gap: setup returned, then the
+next prompt expired without a capture or action call after a provider disconnect.
+The finite phase pump now performs the existing eleven stack exchanges in one
+awaited invocation. All184 focused offline controls pass, including changed source,
+run/process/session, stale readiness, duplicate/reordered input, uncertain dispatch,
+late publication and raw-response preservation. Scoped review confirmed that the
+existing per-prompt completion proof fences teardown; planning now also rejects
+cleanup already in progress. The owning `phase_pump` record binds the preparation,
+controls and review. One fresh UIKit qualification is justified, with the first-
+failure stop retained. Native capture and all release gates remain unqualified.

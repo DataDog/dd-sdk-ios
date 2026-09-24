@@ -97,3 +97,13 @@ do not insert a model-driven launch step after readiness.
 Wait for bounded `simctl bootstatus` completion before reading the app inventory.
 A simulator can report Booted while LaunchServices still lists a removed app.
 A missing directory alone is not proof of clean installation.
+
+For a reviewed stack qualification, evaluate `capture_input.js` once with `helper`,
+`sequenceHelper`, `sequenceRoot` and `framework` pointing to the frozen phase and
+sequence helpers and admitted root. Start only after the current first prompt is
+published. `capture_sequence.py` binds the canonical eleven phases and preserves
+each complete returned exchange before advancing. Every phase rechecks the original
+run, process lifetime, session, frozen helper sources, native readiness and deadlines.
+A missing/uncertain completion stops the pump and continues to block teardown.
+The final transport stop is not native idle, release or cleanup proof; the owner
+must still end the actual session and verify task removal and original state.

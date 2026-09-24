@@ -65,7 +65,8 @@ def ordinary_display_capture(device, folder, label, deadline):
 def helpers():
     return {**runtime.helpers(), **{str(p.relative_to(shared.REPO)):shared.sha(p) for p in
         [Path(__file__).resolve(), *[Path(__file__).with_name(n).resolve() for n in
-         ['test_capture_qualification.py', 'capture_input.py', 'capture_input.js', 'test_capture_input.py']]]}}
+         ['test_capture_qualification.py', 'capture_input.py', 'capture_input.js', 'test_capture_input.py',
+          'capture_sequence.py', 'test_capture_sequence.py']]]}}
 
 
 def verify(root):
