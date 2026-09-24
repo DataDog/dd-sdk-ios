@@ -59,18 +59,22 @@ def verify(root):
     return plan
 
 
-def prepare(root):
+def prepare(root, *, keys=KEYS, event_capture=False):
     root=Path(root).resolve();require(not root.exists(),'preparation path already consumed')
+    require(keys in [KEYS, ['A-simulator']], 'unadmitted build slice')
     definition=contract();require(definition['baseline']==shared.ARMS['A'] and definition['candidate']==shared.ARMS['B'],'wrong source pair')
     original=BASE/'Fixture/Observation.swift';human=BASE/'HumanObservation.swift';state=protected()
-    root.mkdir(parents=True);helpers={n:shared.sha(shared.REPO/n) for n in HELPERS};shared.freeze_helpers(root,helpers)
+    root.mkdir(parents=True);helper_paths=list(HELPERS)
+    if event_capture:helper_paths.append('tools/multi-scene/interactive-transitions/physical_observer.py')
+    helpers={n:shared.sha(shared.REPO/n) for n in helper_paths};shared.freeze_helpers(root,helpers)
     spec=importlib.util.spec_from_file_location('fixture_package',shared.REPO/'tools/multi-scene/baselines/run.py')
     package=importlib.util.module_from_spec(spec);spec.loader.exec_module(package)
     actual=shared.capture(['xcrun','--sdk','iphonesimulator','--show-sdk-version']).stdout.decode().strip()
     require(actual=='27.1','genuine SDK27.1 required')
     plan=dict(experiment='EXP-223',created_at=time.time(),contract=definition,protected=state,helpers=helpers,
         fixture_sources=fixture_sources(),toolchain=shared.capture(['xcodebuild','-version']).stdout.decode().strip(),arms={},native_admitted=False)
-    for key in KEYS:
+    plan['observer'] = 'actual-pan-callbacks' if event_capture else 'original-began'
+    for key in keys:
         arm=key.split('-')[0];folder=root/key;folder.mkdir();(folder/'sdk').mkdir();client=folder/'client';client.mkdir()
         archive=folder/'source.tar'
         with archive.open('xb') as output:
@@ -82,6 +86,10 @@ def prepare(root):
         (client/'Observation.swift').write_bytes(variant.observation(original.read_bytes(),shared.sha(original)))
         (client/'HumanObservation.swift').write_bytes(variant.human(human.read_bytes(),shared.sha(human)))
         for name in SOURCES:shutil.copy2(HERE/name,client/name)
+        if event_capture:
+            import physical_observer
+            observer=client/'TransitionObservation.swift'
+            observer.write_bytes(physical_observer.render(observer.read_bytes(),shared.sha(observer)))
         fixture=digest({p.name:shared.sha(p) for p in client.glob('*.swift')})
         (client/'CredentialInclude.xcconfig').write_text('#include "'+str(shared.REPO/'xcconfigs/Datadog.local.xcconfig')+'"\n')
         targets={};prefix='com.datadoghq.s2.transitions.'+arm.lower()

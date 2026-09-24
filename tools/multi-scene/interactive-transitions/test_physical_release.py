@@ -109,15 +109,22 @@ class Release(unittest.TestCase):
             self.assertTrue((root/'human-release/quiescent.json').exists())
 
 
-def ordered(cancelled=False):
+def ordered(cancelled=False, delayed=True):
     rows,before,after=sample(cancelled)
-    for row in rows:
-        if row['sequence']>=4:row['sequence']+=1
     armed=rows[0]['payload'];armed.update(expected_from='detail',expected_to='home')
     begin=next(r for r in rows if r['kind']=='transition_begin')['payload']
-    begin.update(pan_began_uptime_ns=11,resolution_turns=1,recognizer_state=2)
-    rows.insert(2,dict(sequence=4,kind='transition_pan_began',payload=dict(request_id='request',
-        phase=before['payload']['phase'],uptime_ns=11,recognizer=copy.deepcopy(begin['recognizer']),expected_from='detail',expected_to='home')))
+    begin.update(pan_began_uptime_ns=11,resolution_index=2 if delayed else 1,
+                 resolution_probe='bound-probe',recognizer_state=2 if delayed else 1)
+    pan=dict(kind='transition_pan_began',payload=dict(request_id='request',phase=before['payload']['phase'],
+        uptime_ns=11,recognizer=copy.deepcopy(begin['recognizer']),expected_from='detail',expected_to='home'))
+    candidate={k:begin[k] for k in ['coordinator','from','to','window','scene','interactive','initially_interactive','percent_complete']}
+    def probe(index,coordinators):
+        return dict(kind='transition_probe',payload=dict(request_id='request',phase=before['payload']['phase'],
+            probe_id='bound-probe' if coordinators else 'waiting-probe',index=index,uptime_ns=11+index,
+            recognizer=copy.deepcopy(begin['recognizer']),recognizer_state=1 if index==1 else 2,
+            pan_began_uptime_ns=11,coordinators=coordinators))
+    rows[2:2]=[pan]+([probe(1,[]),probe(2,[candidate])] if delayed else [probe(1,[candidate])])
+    for index,row in enumerate(rows,1):row['sequence']=index
     return rows,before,after
 
 
@@ -125,9 +132,10 @@ class ObserverOrdering(unittest.TestCase):
     def check(self,values,cancelled=False):
         return physical_transition.transition(*values,cancelled=cancelled,binding=dict(window='window',scene='scene'))
     def test_native_pan_then_still_interactive_resolution_and_completion(self):
-        for cancelled in [False,True]:self.check(ordered(cancelled),cancelled)
+        for cancelled in [False,True]:
+            for delayed in [False,True]:self.check(ordered(cancelled,delayed),cancelled)
     def test_late_duplicate_or_foreign_resolution_rejected(self):
-        for field,value in [('recognizer_state',3),('interactive',False),('resolution_turns',2),('pan_began_uptime_ns',12),('from','other')]:
+        for field,value in [('recognizer_state',3),('interactive',False),('resolution_index',3),('pan_began_uptime_ns',12),('from','other')]:
             rows,a,b=ordered();next(r for r in rows if r['kind']=='transition_begin')['payload'][field]=value
             with self.subTest(field=field),self.assertRaises(ValueError):self.check((rows,a,b))
         rows,a,b=ordered();rows.insert(2,copy.deepcopy(rows[2]))
@@ -135,7 +143,50 @@ class ObserverOrdering(unittest.TestCase):
         rows,a,b=ordered();rows[2]['sequence']=8
         with self.assertRaises(ValueError):self.check((rows,a,b))
     def test_early_interaction_change_cannot_be_repaired_by_later_registration(self):
-        rows,a,b=ordered();next(r for r in rows if r['kind']=='transition_change')['sequence']=5.5
+        rows,a,b=ordered();next(r for r in rows if r['kind']=='transition_change')['sequence']=6.5
+        with self.assertRaises(ValueError):self.check((rows,a,b))
+    def test_observed_coordinator_must_be_exact_unique_and_live(self):
+        for field,value in [('from','foreign'),('to','foreign'),('window','foreign'),('scene','foreign'),
+                            ('coordinator','foreign'),('interactive',False),('initially_interactive',False),
+                            ('percent_complete',float('nan'))]:
+            rows,a,b=ordered();probe=[r for r in rows if r['kind']=='transition_probe'][-1]
+            probe['payload']['coordinators'][0][field]=value
+            with self.subTest(field=field),self.assertRaises(ValueError):self.check((rows,a,b))
+        rows,a,b=ordered();probe=[r for r in rows if r['kind']=='transition_probe'][-1]
+        probe['payload']['coordinators'].append(dict(probe['payload']['coordinators'][0],coordinator='other'))
+        with self.assertRaises(ValueError):self.check((rows,a,b))
+    def test_no_rescue_after_an_earlier_registration_boundary(self):
+        rows,a,b=ordered();probes=[r for r in rows if r['kind']=='transition_probe']
+        probes[0]['payload']['coordinators']=copy.deepcopy(probes[1]['payload']['coordinators'])
+        with self.assertRaises(ValueError):self.check((rows,a,b))
+    def test_missing_reordered_ended_or_substituted_callback_rejected(self):
+        for field,value in [('index',True),('index',3),('recognizer_state',3),('recognizer_state',True),
+                            ('pan_began_uptime_ns',12),('probe_id','waiting-probe'),('uptime_ns',100)]:
+            rows,a,b=ordered();probe=[r for r in rows if r['kind']=='transition_probe'][-1]
+            probe['payload'][field]=value
+            with self.subTest(field=field),self.assertRaises(ValueError):self.check((rows,a,b))
+        rows,a,b=ordered();rows.remove(next(r for r in rows if r['kind']=='transition_probe'))
+        with self.assertRaises(ValueError):self.check((rows,a,b))
+    def test_original_rejected_native_attempt_cannot_be_qualified(self):
+        rows,a,b=ordered();rows.append(dict(kind='human_failure',payload=dict(reason='original rejection')))
+        with self.assertRaises(ValueError):self.check((rows,a,b))
+
+    def test_unrelated_content_pan_cannot_satisfy_or_poison_bound_sheet_chain(self):
+        rows,a,b=ordered();real=next(r for r in rows if r['kind']=='transition_pan_began')
+        unrelated=copy.deepcopy(real);unrelated['payload']['recognizer']['id']='content-pan'
+        a['payload']['transition']['armed'].append(unrelated['payload']['recognizer'])
+        rows[0]['payload']['recognizers'].append(unrelated['payload']['recognizer'])
+        probe=copy.deepcopy(next(r for r in rows if r['kind']=='transition_probe'))
+        probe['payload'].update(probe_id='content-probe',recognizer=unrelated['payload']['recognizer'])
+        terminal=dict(kind='transition_unmatched_pan_end',payload=dict(unrelated['payload'],recognizer_state=3,uptime_ns=12,pan_began_uptime_ns=11))
+        rows[2:2]=[unrelated,probe,terminal]
+        for index,row in enumerate(rows,1):row['sequence']=index
+        for index,row in enumerate([r for r in rows if r['kind']=='transition_probe'],1):row['payload']['index']=index
+        begin=next(r for r in rows if r['kind']=='transition_begin');begin['payload']['resolution_index']=3
+        closed=next(r for r in rows if r['kind']=='transition_closed')
+        closed['payload']['terminal_recognizers'].append(copy.deepcopy(unrelated['payload']['recognizer']))
+        self.check((rows,a,b))
+        rows.remove(terminal)
         with self.assertRaises(ValueError):self.check((rows,a,b))
     def test_overlay_preserves_the_frozen_source(self):
         path=Path(__file__).with_name('TransitionObservation.swift');raw=path.read_bytes();sha=hashlib.sha256(raw).hexdigest()
@@ -143,7 +194,8 @@ class ObserverOrdering(unittest.TestCase):
         self.assertEqual(path.read_bytes(),raw)
         self.assertIn('navigation.interactivePopGestureRecognizer',result)
         self.assertIn('controller.presentationController?.containerView',result)
-        self.assertEqual(result.count('DispatchQueue.main.async'),1)
+        self.assertNotIn('DispatchQueue.main.async',result)
+        self.assertIn('owner?.observed(self, recognizer: recognizer)',result)
         self.assertNotIn('var pending: [UIView] = [window]; var seen',result)
         with self.assertRaises(ValueError):physical_observer.render(raw+b'changed','old')
 

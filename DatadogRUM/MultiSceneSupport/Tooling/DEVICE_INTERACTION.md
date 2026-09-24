@@ -217,6 +217,28 @@ idle public pan recognizers and no transition coordinator. That cleanup-only pro
 does not discard earlier failure rows or qualify the scenario. Expiry leaves the
 app installed and cleanup incomplete; later restoration is a separate record.
 
+Interactive sheet pans can begin before a controller transition is observable.
+The reviewed EXP223 correction resolves only from actual recognizer callbacks,
+retaining the public coordinator inventory at every lookup. Unrelated content
+pans cannot satisfy the chain; exact source-bound endpoints, live interactivity,
+registration before interaction change and actual completion remain required.
+An ordinary iPad can omit the Duo `active` field. Select its single lit primary
+integrated display with a scoped parser and preflight it before installation; do
+not invent response fields or relax the Duo fold parser.
+The separate simulator capture qualification retains complete current UI-tool
+returns plus their exact returned artifacts. It cannot promote a human, candidate
+or physical-device gate, and its cleanup must finish before a successor cell.
+A workspace-free capture can report `NotRun` while naming the running app in its
+hierarchy. Bind actual bundle/PID to the native launch before input; retain the
+scalar state unchanged. Start a waiting host runner before session creation so it
+can consume the actual ready receipt and dispatch directly; another model/tool
+handoff can outlive readiness. Bound setup independently, and require simulator
+boot completion before reading installation state. Keep a failed readiness result
+separate from a later successful capture.
+A failed empty capture may prove zero-action quiescence
+only with its complete return and explicit worker stop. Uncertain action delivery
+cannot authorize teardown.
+
 A physical evidence copy may recover once from the specifically qualified
 CoreDevice7000/POSIX60 socket failure. Require the failed command's exact device
 binding, preserve each destination and response, and keep the original deadline.

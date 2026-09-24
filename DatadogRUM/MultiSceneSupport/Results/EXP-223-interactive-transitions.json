@@ -7,7 +7,7 @@
     "S2:H13",
     "S2:H14"
   ],
-  "status": "PHYSICAL_CORRECTION_INVALID_INTERACTIVE_PATH_STOPPED",
+  "status": "CAPTURE_CONTRACT_REPAIR",
   "defined_at": "2026-09-22T23:17:07.076784+00:00",
   "owner": "SDK implementer + device operator",
   "reviewer": "/root/c06_runtime_plan",
@@ -326,7 +326,7 @@
     }
   ],
   "gate_closures": [],
-  "next_action": "Stop this physical interactive observation path. Preserve both invalid qualifications. No equivalent retry or candidate admission; continue independent finite gates.",
+  "next_action": "Review and remove repeated immutable metadata work while retaining actual live topology and unchanged cost threshold; define any build/native continuation before implementation.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
@@ -397,7 +397,7 @@
       "scope": "Fixture/native and local paired oracle only. Full runtime, backend, adaptive geometry and physical execution remain unqualified."
     }
   },
-  "updated_at": "2026-09-23T20:22:29.417473+00:00",
+  "updated_at": "2026-09-24T09:44:45.520930+00:00",
   "live_environment": {
     "observed_at": "2026-09-23T19:45:47.121281+00:00",
     "xcode": "27.1 (27A9269)",
@@ -582,5 +582,332 @@
       "sha256": "7f2a6b701b70f7ae12e2a08e2ad7e17db299332f6e8b4e581c9a63992fcacbb5"
     },
     "release_guard": "NATIVE_QUALIFIED_FOR_THIS_FAILED_CELL: actual reply, fresh same-owner zero-touch/no-coordinator snapshot, then task-only teardown."
+  },
+  "event_capture_correction": {
+    "state": "STOPPED_ON_MEASURED_FIXTURE_CALLBACK_COST",
+    "defined_at": "2026-09-24T08:22:20.372735+00:00",
+    "artifacts": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo",
+    "objective": "Repair shared human-session capture before another operator session; unchanged S2/S3 release criteria.",
+    "discriminator": "The preserved physical sheet pan began at sequence95, but the single queued resolution rejected at96 before actual native disappearance98. A pan beginning is not proof that an interactive controller transition already exists. Resolve only on actual began/changed callbacks, retaining all candidate identities and states; never synthesize or retrospectively accept a boundary.",
+    "source_scope": [
+      "physical_observer.py",
+      "physical_transition.py",
+      "focused observer controls",
+      "shared baseline simulator qualification adapter"
+    ],
+    "sdk_source": "Both SDK revisions, the original frozen observer and old INVALID verdicts remain unchanged.",
+    "rules": [
+      "Require original readiness, exact public endpoints/window/scene, live interactive coordinator and callback registration before interaction change.",
+      "No timer, queue-turn assumption, gesture delegate replacement, programmatic transition, source swizzle or new controller.",
+      "Retain each actual pre-binding pan callback and complete public coordinator inventory; reject foreign, ambiguous, ended, duplicate or late registration.",
+      "Preserve request-bound operator release plus fresh native idle before failed human teardown."
+    ],
+    "offline_controls": [
+      "no coordinator at began then exact interactive coordinator at changed",
+      "finish and cancel",
+      "wrong endpoints/scene/window",
+      "noninteractive/ended registration",
+      "missing/duplicate/reordered callback",
+      "ambiguous coordinator",
+      "late interaction change",
+      "policy mutation",
+      "original stopped evidence remains invalid",
+      "release fence regressions"
+    ],
+    "qualification": {
+      "state": "STOPPED_BEFORE_INPUT",
+      "scope": "One baseline UIKit+SwiftUI stack qualification on an ordinary iPad simulator using supported UI input; success does not close physical or candidate release gates.",
+      "max_builds": 2,
+      "products": [
+        "UIKit",
+        "SwiftUI"
+      ],
+      "build_seconds": 900,
+      "max_native_cells": 2,
+      "native_seconds_per_cell": 900,
+      "cleanup_seconds": 300,
+      "deadline_extension": false,
+      "retries": 0,
+      "stop": "Stop on first mechanism failure; no candidate or equivalent diagnostic series. Correct a further defect only from a newly captured discriminator.",
+      "additional_build_reason": "Rebuild only the baseline after the consequential competing-pan review correction; original compiled product receives no native admission.",
+      "native_launches": 1,
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification/cells/UIKit/summary.json",
+        "sha256": "c7971c3d7b76455c075b35d5e621da0585172181f5f6a52539f7f95f74a59fae"
+      },
+      "scenario": "NOT_EXECUTED",
+      "cleanup": "PASS",
+      "input_calls": 0,
+      "SwiftUI": "NOT_RUN"
+    },
+    "reviewer": "/root/c06_runtime_plan",
+    "gate_closures": [],
+    "offline_tests": 126,
+    "review_adjustment": "Retain unrelated content-pan begin/probe/end observations without allowing them to satisfy a dismissal; reject unresolved or ambiguous chains.",
+    "qualified_build_before_review": {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/build",
+      "receipt_sha256": "64df83329d6bd2b5f2b1195da4c2778e89662d991cd5d3b38125fd6c212e3806",
+      "state": "SUPERSEDED_BEFORE_NATIVE_BY_COMPETING_PAN_REVIEW",
+      "native_launches": 0
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification/review.json",
+      "sha256": "a8db0cda372d591812e60354dced07742c84c7502c18bd498a108881a32b6c53"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification/controls.json",
+      "sha256": "258f907630202a5cc586c1f1096c5bd8a4a12270cb5185cf85cd33e922190682"
+    },
+    "qualified_build": {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/build-reviewed",
+      "plan": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/build-reviewed/plan.json",
+        "sha256": "713694a892a0a4da12819d5ab1078ed7ca11f6a6befb1a0eb126af1a332cff9d"
+      },
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/build-reviewed/A-simulator/build-result.json",
+        "sha256": "2c0790909757c8892df511b5797495d05c4b6db3291ef161084daae141cc56f3"
+      }
+    },
+    "display_schema_correction": {
+      "defined_at": "2026-09-24T08:51:45.673062+00:00",
+      "state": "PREFLIGHT_STOPPED_BEFORE_INSTALL",
+      "evidence": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification/cells/UIKit/input/setup.detail.before/display.raw.json",
+        "sha256": "a7ad1cccf776810192aad856b1e5791e5328391c4d122928fcf022aa6c7cd9d1"
+      },
+      "discriminator": "Actual ordinary iPad display inventory contains one lit primary integrated display and no active field. Existing Duo parser requires active=true. Failure preceded all input; no gesture/observer or SDK finding.",
+      "repair": "Qualification-only ordinary-display parser and early actual-display preflight; original Duo active-display and fold checks remain unchanged. Reuse exact already-reviewed observer products.",
+      "native_policy": {
+        "max_cells": 2,
+        "order": [
+          "UIKit",
+          "SwiftUI only after UIKit PASS"
+        ],
+        "seconds_per_cell": 900,
+        "cleanup_seconds": 300,
+        "retries": 0,
+        "deadline_extension": false,
+        "additional_builds": 0,
+        "stop": "Stop on first further mechanism failure; preserve actual responses and do not dispatch a successor."
+      },
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-display/cells/UIKit/summary.json",
+        "sha256": "139ebbc6c6032efd3373e022c23e91f51490b2c9cbe58b077ae918d68d3a893a"
+      },
+      "input_calls": 0,
+      "native_launches": 0,
+      "cleanup": "PASS",
+      "missed_call": "s2_webview_driver.display validates Duo active_display internally before returning bytes, so the scoped selector was not reached.",
+      "call_path_correction": {
+        "defined_at": "2026-09-24T08:58:59.028744+00:00",
+        "repair": "Scoped ordinary-display command reader used by both preinstall and each stack boundary; test the complete prompt path with real parser/publication and mock only external command and unrelated native snapshot. Original Duo command reader unchanged.",
+        "native_policy": {
+          "max_cells": 2,
+          "order": [
+            "UIKit",
+            "SwiftUI only after UIKit PASS"
+          ],
+          "seconds_per_cell": 900,
+          "cleanup_seconds": 300,
+          "retries": 0,
+          "deadline_extension": false,
+          "additional_builds": 0,
+          "stop": "Stop on first further mechanism failure; preserve actual responses and do not dispatch a successor."
+        },
+        "builds": 0
+      }
+    },
+    "tool_contract_correction": {
+      "state": "STOPPED_ON_EARLY_BOOT_REGISTRATION",
+      "defined_at": "2026-09-24T09:08:18.489380+00:00",
+      "prior_result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-reader/cells/UIKit/summary.json",
+        "sha256": "7a255d4557ecc827c51186d63bf373687d0b70704338eefb0f29d043316fe7ed"
+      },
+      "separate_restoration": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-reader/restoration/summary.json",
+        "sha256": "9f900b6ab48350f3c190fb108badfea92ea0f6bf3516214651136eae17dc9d67"
+      },
+      "actual_capture": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-reader/cells/UIKit/input/setup.detail.before/input-worker-stopped.json",
+        "sha256": "ccc3f9a7f8452c59697cb56178aea678f8c648d450580b12ce1f6c3fa9be057e"
+      },
+      "discriminator": "Workspace-free Xcode capture returns NotRun while its exact actual hierarchy names the already-launched task bundle and matching PID. No action was sent. The scalar tool state is not sufficient process-identity evidence.",
+      "repair": "Bind prompt bundle/PID and validate actual returned hierarchy before every action and after it, with native process/source/ownership checks unchanged. Preserve NotRun diagnostically rather than substituting state. Publish an explicit zero-action failure so the runner stops promptly and can prove input quiescence; uncertain action delivery still defers teardown.",
+      "native_policy": {
+        "max_cells": 2,
+        "order": [
+          "UIKit",
+          "SwiftUI only after UIKit PASS"
+        ],
+        "seconds_per_cell": 900,
+        "cleanup_seconds": 300,
+        "retries": 0,
+        "deadline_extension": false,
+        "additional_builds": 0,
+        "stop": "Stop on first further mechanism failure; preserve actual responses and do not dispatch a successor."
+      },
+      "builds": 0,
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-identity-final",
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-identity-final/cells/UIKit/summary.json",
+        "sha256": "86827bd79730f28c6faeab7d40c80d280099d13f9437ab85d4a8384349a7fa04"
+      },
+      "native_launches": 0,
+      "input_calls": 0
+    },
+    "boot_readiness_correction": {
+      "state": "STOPPED_ON_MISSING_XCODE_SESSION",
+      "defined_at": "2026-09-24T09:21:07.690358+00:00",
+      "discriminator": "Xcode StartSession Booted precedes complete simulator readiness. Initial inventory retained a removed task registration pointing to nonexistent files; after simctl bootstatus -b completed, the registration was absent without another uninstall.",
+      "before": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-identity-final/preexisting-assessment/apps.json",
+        "sha256": "8c5d5e3f244b4115821e35ecba48e99d0eb1702a3169a328ad000606f9681e70"
+      },
+      "after": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-identity-final/orphan-registration-cleanup/after-boot-assessment.json",
+        "sha256": "0daf44ce8b2955ab5002ef9a0c0ed0dd93bd5fc0d970bc0091405c8d58cd8a2f"
+      },
+      "restoration": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-identity-final/orphan-registration-cleanup/stopped.json",
+        "sha256": "3480fb3202f6398d807b2bf6e36eb0a7634490591fd3fba21443ee6a6b5961fa"
+      },
+      "repair": "Wait for actual bounded bootstatus completion before initial app inventory or installation; preserve raw command, stop before mutation on failure. No absent-directory shortcut or weakening of clean-install checks.",
+      "boot_seconds": 60,
+      "native_policy": {
+        "max_cells": 2,
+        "order": [
+          "UIKit",
+          "SwiftUI only after UIKit PASS"
+        ],
+        "seconds_per_cell": 900,
+        "cleanup_seconds": 300,
+        "retries": 0,
+        "deadline_extension": false,
+        "additional_builds": 0,
+        "stop": "Stop on first further mechanism failure; preserve actual responses and do not dispatch a successor."
+      },
+      "builds": 0,
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-boot-ready",
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-boot-ready/cells/UIKit/summary.json",
+        "sha256": "06c5fb6e314e529c81d3b98b5aa14538320757052e9878fe79fc05f371be5797"
+      },
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-boot-ready/controls.json",
+        "sha256": "03ab9c16c99bc6736742b21e36540bcedbea7d2a83bc84e87a82b0c69bb5db3e"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-boot-ready/review.json",
+        "sha256": "f9165dc3aa315b3259da5e69a812261e374d060ea86a4f88cb296354ed12d9dc"
+      },
+      "native_launches": 1,
+      "action_calls": 0,
+      "capture_calls": 1,
+      "cleanup": "PASS"
+    },
+    "session_readiness_continuation": {
+      "defined_at": "2026-09-24T09:30:08.824218+00:00",
+      "state": "INVALID_HOST_LAUNCH",
+      "prior_result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-boot-ready/cells/UIKit/summary.json",
+        "sha256": "06c5fb6e314e529c81d3b98b5aa14538320757052e9878fe79fc05f371be5797"
+      },
+      "discriminator": "StartSession returned a key but the first empty capture reported session not found. No gesture ran; zero-action failure publication and cleanup passed. Require an immediate successful empty capture of the fresh session before installing a task app.",
+      "scope": "Existing unchanged reviewed baseline capture qualification only. No SDK, product, observer, oracle or helper changes.",
+      "session_probe": {
+        "max_calls": 1,
+        "command": "",
+        "activation": null,
+        "seconds": 60,
+        "required": "Actual successful complete hierarchy and screenshot response; preserve returned state and exact artifact bytes. No install if absent, failed or late."
+      },
+      "native_policy": {
+        "max_cells": 2,
+        "order": [
+          "UIKit",
+          "SwiftUI only after UIKit PASS"
+        ],
+        "seconds_per_cell": 900,
+        "cleanup_seconds": 300,
+        "retries": 0,
+        "deadline_extension": false,
+        "additional_builds": 0,
+        "stop": "Stop on first further mechanism failure; preserve actual responses and do not dispatch a successor."
+      },
+      "start_after_probe_seconds": 60,
+      "review_reuse": "Same frozen helper bytes and exact plan/controls/review bindings as the already scoped boot-readiness review. No new code changes.",
+      "stop": "A second missing session is an environment blocker. No session restart or equivalent retry; preserve and restore original Shutdown.",
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-live-session/summary.json",
+        "sha256": "1e4b42266254bd82cdcc179c99ce68d9382051e7591ff39fb5c5cfd3f8a5f21f"
+      },
+      "capture": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-live-session/session-preflight.json",
+        "sha256": "f2e1fe0f3de374c9cc8ff833a502730a002e4013eec7390f7ca441c96f8cfc01"
+      },
+      "native_launches": 0,
+      "cleanup": "PASS"
+    },
+    "session_handoff_correction": {
+      "defined_at": "2026-09-24T09:34:21.417080+00:00",
+      "state": "TRANSPORT_QUALIFIED_OBSERVER_COST_STOP",
+      "discriminator": "Successful current Xcode capture was followed by two killed host launches and an expired handoff interval. Native execution must consume the ready receipt directly, without another model/tool round trip.",
+      "repair": "Start the bounded existing qualification runner before creating the session. Await and validate the exact current session-start and empty-capture receipts, retain actual artifacts, and dispatch the same existing cell immediately in that process. A failed, stale, foreign or missing receipt stops before installation.",
+      "scope": [
+        "capture_qualification.py",
+        "test_capture_qualification.py"
+      ],
+      "session_setup_seconds": 120,
+      "post_capture_max_seconds": 60,
+      "native_seconds": 900,
+      "cleanup_seconds": 300,
+      "max_cells": 2,
+      "order": [
+        "UIKit",
+        "SwiftUI only after full UIKit PASS"
+      ],
+      "additional_builds": 0,
+      "retries": 0,
+      "deadline_extension": false,
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-direct-handoff",
+      "plan_sha256": "11a79f7f2f4c75a65122fb613a2db6273c7c209957560170b973df15d1caeba3",
+      "controls_sha256": "cc4ef50b0d6c405510bc2ec690d5b14b847c64587d62cd26547970a846dc8256",
+      "review_sha256": "fdcc9acac5f2e40d97c35364fafcc2eaa4b4a42011b578919f8c94f8d359bf64",
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-direct-handoff/cells/UIKit/summary.json",
+        "sha256": "5ce2f3fe726adce2db050e4f610b40c4cad88a8e25ab2ae68277dc66df92f8ef"
+      },
+      "setup_capture": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-direct-handoff/sessions/UIKit/capture.json",
+        "sha256": "e2f3172f707b7b55c39654d60cddee1ac0894e5c1d18ed74986a95b736a014cd"
+      },
+      "actual_input": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-direct-handoff/cells/UIKit/input/setup.detail.before/tool-return.json",
+        "sha256": "ab32b57726e61a3d894ce71deb6810d6d48310312a80cf1ec030ef53922b6101"
+      },
+      "native_evidence": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-direct-handoff/cells/UIKit/native-preserved/events.jsonl",
+        "sha256": "4fd72aeb885a9040686380edd9ea66441cd49af5822ddc6c7af113e74ff9e253"
+      },
+      "native_launches": 1,
+      "action_calls": 1,
+      "cleanup": "PASS",
+      "transition_gestures": 0,
+      "SwiftUI": "NOT_RUN"
+    },
+    "measured_callback_stop": {
+      "operation": "human_callback",
+      "target": "home.next",
+      "event_sequence": 16,
+      "cost_sequence": 17,
+      "duration_ns": 2686500,
+      "limit_ns": 2000000,
+      "actual_effect": "Open detail succeeded with same original PID; complete actual before/action capture and native records retained.",
+      "attribution": "Fixture HumanObservation.input/topology/append interval, before native_input and navigation. No SDK regression finding. No sheet gesture ran.",
+      "source_review": "Callback recomputes framework bundle metadata and complete live scene/window topology. Persistor serialization/file work is already off-main; there is no evidence to relax the2ms limit.",
+      "next": "Review and remove repeated immutable metadata work while retaining actual live topology and unchanged cost threshold; define any build/native continuation before implementation."
+    }
   }
 }

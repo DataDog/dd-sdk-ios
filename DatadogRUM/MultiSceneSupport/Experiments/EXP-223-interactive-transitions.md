@@ -64,3 +64,44 @@ and no coordinator in the same window, and only then removed the task app. Clean
 and supervisor quiescence passed; original landscape Home was verified. This proves
 the release guard for the failed cell, while overall acceptance remains INVALID.
 Both failed qualifications, selected SDK revisions and Duo preparation are retained.
+
+The callback-driven correction removes the queued-turn assumption. Actual pan
+callbacks retain the complete public coordinator inventory and can bind only the
+exact still-interactive transition. Unrelated content pans cannot satisfy the
+chain. The designated review required that distinction; the corrected baseline
+UIKit/SwiftUI products compiled and passed scoped review. No human session or
+candidate comparison follows from build success.
+
+Autonomous qualification exposed host assumptions before any gesture: ordinary
+iPad display responses omit the Duo `active` field; the underlying display reader
+also enforced that parser; and a workspace-free Xcode capture reported `NotRun`
+while its actual hierarchy named the correct running app/PID. The scoped adapter
+now reads the actual ordinary-display inventory, binds every prompt and returned
+hierarchy to the launched task, and publishes a completed zero-action failure
+promptly. Original Duo checks remain unchanged. One earlier timeout retains its
+original cleanup INCOMPLETE; separately proven task removal/Shutdown is recorded
+without changing that verdict.
+
+A further clean-install preflight caught a removed app's stale registration before
+boot settled. Bounded boot completion now precedes inventory. The next run reached
+its first prompt, but Xcode no longer recognized the newly created session. Actual
+zero-action failure publication stopped the runner promptly; task removal and
+original Shutdown passed. No input effect or SDK behavior was measured.
+
+An immediate fresh-session capture succeeded, then two host Python invocations
+were killed before launching the runner. Its original handoff interval expired;
+no app was installed and restoration passed. The reviewed direct handoff starts
+the host runner first, validates actual session/capture receipts and dispatches the
+same cell in-process. All126 focused controls pass. This path captured one
+actual Open detail tap with a matching before/after bundle/PID and native Detail
+appearance. The runner then rejected its fixture callback's2.6865ms cost against
+the unchanged2ms limit. No interactive transition ran; SwiftUI stayed unrun. Input
+quiescence, task removal and original Shutdown were verified; cleanup PASS.
+
+The measured interval covers fixture topology collection and record reservation,
+before the original input callback. Serialization/file work is already off-main.
+Repeated immutable framework metadata lookup is a source-supported optimization
+candidate; live scene/window ownership and the cost limit must remain unchanged.
+No specific sub-operation has yet been measured as the cause. The next correction
+needs an explicit definition before implementation. This is neither a reproduced
+SDK regression nor evidence that a human session is ready.

@@ -85,6 +85,12 @@ Physical baseline install, launch and code identity pass, but recorder attachmen
 before workload readiness. Capture is stopped; cleanup passes. There is no performance
 result, SDK regression finding or gate closure.
 
+The shared human-session capture repair takes priority over further human runs.
+[EXP223](Results/EXP-223-interactive-transitions.json) preserves both failed physical
+qualifications. A callback-driven observer and exact-return transport pass offline
+controls; native mechanism qualification remains pending. This changes capture,
+not the selected SDK or the release criteria.
+
 ## Immediate compatibility priority
 
 The criterion is no RUM degradation when an existing app rebuilds with the iOS27

@@ -39,6 +39,9 @@ def tap(phase,target,screen,after):
 
 
 class Collector(shared_capture.Collector):
+    transition_oracle = native
+    select_display = staticmethod(displays.active_display)
+    read_display = staticmethod(transport.display)
     def __init__(self,**kwargs):
         super().__init__(**kwargs);self.transition_results={};self.adaptive_results=[];self.executable=None;self.process_started=None
     def live(self,deadline):
@@ -51,9 +54,11 @@ class Collector(shared_capture.Collector):
         path=self.documents/'events.jsonl'
         require(not path.exists() or path.stat().st_size<=MAX_BYTES,'native evidence bound exceeded')
         return super().pending()
+    def prompt_fields(self):
+        return {}
     def prompt(self,phase,instruction,folder,deadline,before):
-        actual=transport.display(self.device,folder,'display',deadline)
-        active=displays.active_display(json.loads(actual),self.device)
+        actual=self.read_display(self.device,folder,'display',deadline)
+        active=self.select_display(json.loads(actual),self.device)
         human_fold.screen(before,self.binding,active,'27.1',self.evidence)
         shared.command(['xcrun','devicectl','device','capture','screenshot','--device',self.device,
             '--display-unique-id',active['uniqueId'],'--destination',str(folder/'ready.png')],folder,'screenshot',
@@ -62,7 +67,7 @@ class Collector(shared_capture.Collector):
         self.live(deadline)
         prompt=dict(kind='HUMAN_INPUT_REQUEST',phase=phase,run_id=self.run,request_id=before['payload']['request_id'],
             instruction=instruction,device=self.device,issued_at=time.time(),deadline=deadline,
-            screenshot=str(folder/'ready.png'),screenshot_sha256=shared.sha(folder/'ready.png'),native_before_sequence=before['sequence'])
+            screenshot=str(folder/'ready.png'),screenshot_sha256=shared.sha(folder/'ready.png'),native_before_sequence=before['sequence'],**self.prompt_fields())
         shared.save(folder/'prompt.json',prompt,exclusive=True)
         print(json.dumps(dict(human_input=prompt)),flush=True)
         return actual
@@ -89,10 +94,10 @@ class Collector(shared_capture.Collector):
         journey.visible(after,after_screen,self.binding)
         require(not any(r['kind'] in ['human_callback','native_input','native_background'] for r in self.evidence
             if before['sequence']<r['sequence']<after['sequence']),'unplanned input inside interactive boundary')
-        result=native.transition(self.evidence,before,after,cancelled=cancelled,binding=self.binding)
+        result=self.transition_oracle.transition(self.evidence,before,after,cancelled=cancelled,binding=self.binding)
         front=geometry.visible_transition(before,after,self.binding,result)
-        changed=transport.display(self.device,after_folder,'display',deadline)
-        before_display=displays.active_display(json.loads(actual),self.device);after_display=displays.active_display(json.loads(changed),self.device)
+        changed=self.read_display(self.device,after_folder,'display',deadline)
+        before_display=self.select_display(json.loads(actual),self.device);after_display=self.select_display(json.loads(changed),self.device)
         require(displays.display_signature(before_display)==displays.display_signature(after_display),'display changed during navigation gesture')
         human_fold.screen(after,self.binding,after_display,'27.1',self.evidence)
         owner=ownership.transition_owners(self.evidence,before,after,result)

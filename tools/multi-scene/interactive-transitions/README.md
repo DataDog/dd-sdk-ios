@@ -59,3 +59,41 @@ and four signed products pass. The separately admitted baseline again rejected
 sheet observation, so this interactive path is stopped. Its actual release reply
 and native idle capture preceded successful task removal; both failed runs remain
 invalid and the candidate remains unrun. No equivalent retry is admitted.
+
+The current repair replaces queue-turn resolution with actual began/changed pan
+callbacks. Every pre-binding callback retains the public coordinator inventory;
+unrelated content pans stay diagnostic-only and cannot satisfy the transition.
+`capture_qualification.py` reuses this stack runner for one baseline UIKit/SwiftUI
+ordinary-iPad simulator qualification before another human session. It requires
+reviewed, freshly built products, exact current UI-tool returns and their returned
+artifacts, native callback/owner checks and separately completed cleanup. It makes
+no candidate, backend, physical-device or release claim. Failed qualifications
+remain immutable; no equivalent native retry is admitted.
+
+The ordinary-iPad qualification selects exactly one lit primary integrated display
+from the actual response before install. It does not require or manufacture the
+Duo-specific `active` field. The production Duo capture path retains its stricter
+active-display selection and all fold checks.
+
+The supported-input worker calls `before_action(request, observed, now)` before
+sending an effect. The request binds the installed task bundle/PID; the returned
+hierarchy must match, including when a workspace-free Xcode session reports
+`NotRun`. Native liveness and source checks remain independent. Publish the complete
+before/action returns with `publish`. If the empty capture fails and **no action
+call was sent**, retain its raw return and call `publish_no_input_failure`; the
+runner records INVALID promptly and verifies that zero-action proof before cleanup.
+Never use that path after sending an action or to invent a missing tool return.
+
+Start the qualification with `await-cell` before opening the Xcode interaction
+session. Publish the complete timestamped StartSession return as
+`sessions/<framework>/start.json`, then let the supported-input worker publish its
+single empty call as `capture.json`, including the exact `interaction_session_key`.
+The runner validates and retains both actual capture artifacts within the fixed
+120-second setup budget, then starts the existing cell in-process. Missing, failed,
+foreign or late receipts stop before installation. The native/input/cleanup clocks
+remain separate and cannot be extended. Preparation must finish before this wait;
+do not insert a model-driven launch step after readiness.
+
+Wait for bounded `simctl bootstatus` completion before reading the app inventory.
+A simulator can report Booted while LaunchServices still lists a removed app.
+A missing directory alone is not proof of clean installation.

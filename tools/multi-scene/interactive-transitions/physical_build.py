@@ -104,7 +104,7 @@ def prepare(root):
             project_audit=project_audit(folder),derivation=dict(installed_code_sha256=shared.sha(CODE),
             observation_sha256=shared.sha(observation),human_sha256=shared.sha(human),
             changes=['pre-SDK installed-code receipt with exact run guard','hash-committed remote snapshot request',
-                     'scoped public recognizers and single-turn coordinator registration','independent native cleanup idle snapshot']))
+                     'scoped public recognizers and actual-callback coordinator registration','independent native cleanup idle snapshot']))
     shared.save(root/'plan.json', plan, exclusive=True); verify(root)
     print(json.dumps(dict(state=plan['state'], root=str(root), native_admitted=False)), flush=True)
 

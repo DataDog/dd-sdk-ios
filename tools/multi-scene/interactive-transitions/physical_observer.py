@@ -10,7 +10,8 @@ def render(raw, fingerprint):
     value = replace_once(value, '    private var failed = false', '''    private var failed = false
     private weak var expectedFrom: UIViewController?
     private weak var expectedTo: UIViewController?
-    private var resolving = Set<ObjectIdentifier>()''')
+    private var panBegins: [ObjectIdentifier: UInt64] = [:]
+    private var probeIndex = 0''')
     start = value.index('        var pending: [UIView] = [window]')
     end = value.index('        guard !witnesses.isEmpty', start)
     value = value[:start] + '''        let graph = controllers()
@@ -58,37 +59,82 @@ def render(raw, fingerprint):
     value = replace_once(value, '"recognizers": witnesses.map(\\.initial), "uptime_ns": DispatchTime.now().uptimeNanoseconds])',
         '''"recognizers": witnesses.map(\\.initial), "uptime_ns": DispatchTime.now().uptimeNanoseconds,
             "expected_from": Self.key(expectedFrom), "expected_to": Self.key(expectedTo)])''')
-    value = replace_once(value, '    fileprivate func began(_ witness: PanWitness, recognizer: UIPanGestureRecognizer) {', '''    fileprivate func began(_ witness: PanWitness, recognizer: UIPanGestureRecognizer) {
-        guard !failed, witness.request == requestID, HumanObservation.shared.currentRequestID == requestID,
-              witness.unchanged(), recognizer.state == .began,
-              resolving.insert(ObjectIdentifier(recognizer)).inserted else { fail("invalid native gesture begin"); return }
-        let beganAt = DispatchTime.now().uptimeNanoseconds
-        ObservationStore.shared.append("transition_pan_began", ["request_id": witness.request,
-            "phase": phase, "recognizer": witness.initial, "uptime_ns": beganAt,
-            "expected_from": Self.key(expectedFrom), "expected_to": Self.key(expectedTo)])
-        // A single queued turn lets UIKit's existing targets finish this event.
-        // No timer or repeated search supplies a missed transition boundary.
-        DispatchQueue.main.async { [weak self, weak witness, weak recognizer] in
-            guard let self = self, let witness = witness, let recognizer = recognizer else { return }
-            self.resolve(witness, recognizer: recognizer, beganAt: beganAt)
-        }
-    }
-    private func resolve(_ witness: PanWitness, recognizer: UIPanGestureRecognizer, beganAt: UInt64) {''')
-    value = replace_once(value, 'witness.unchanged(), recognizer.state == .began else { fail("foreign or changed gesture boundary"); return }',
-        '''witness.unchanged(), resolving.remove(ObjectIdentifier(recognizer)) != nil,
-              recognizer.state == .began || recognizer.state == .changed else {
-            fail("gesture ended or changed before single-turn coordinator resolution"); return
-        }''')
-    value = replace_once(value, '&& candidate.containerView.window?.windowScene === witness.window?.windowScene {',
-        '''&& candidate.containerView.window?.windowScene === witness.window?.windowScene
-            && candidate.viewController(forKey: .from) === expectedFrom
-            && candidate.viewController(forKey: .to) === expectedTo {''')
-    value = replace_once(value, 'fail("no unique interactive coordinator at gesture began"); return',
-        'fail("no unique bound coordinator in the single resolution turn"); return')
+    start = value.index('    fileprivate func began(')
+    end = value.index('        let record = ActiveTransition(', start)
+    value = value[:start] + EVENT_RESOLUTION + value[end:]
     value = replace_once(value, '"registration_uptime_ns": started]))', '''"registration_uptime_ns": started,
-            "pan_began_uptime_ns": beganAt, "resolution_turns": 1]))''')
+            "pan_began_uptime_ns": beganAt, "resolution_probe": probeID, "resolution_index": probeIndex]))''')
+    value = replace_once(value, '        if recognizer.state == .began { owner?.began(self, recognizer: recognizer) }',
+        '        owner?.observed(self, recognizer: recognizer)')
+    value = replace_once(value, '        self.requestID = requestID; self.phase = phase',
+        '        self.requestID = requestID; self.phase = phase; panBegins.removeAll(); probeIndex = 0')
     value += IDLE_SNAPSHOT
     return value.encode()
+
+
+EVENT_RESOLUTION = r'''
+    fileprivate func observed(_ witness: PanWitness, recognizer: UIPanGestureRecognizer) {
+        let state = recognizer.state
+        guard state == .began || state == .changed || state == .ended || state == .cancelled else { return }
+        guard !failed, witness.request == requestID, HumanObservation.shared.currentRequestID == requestID,
+              witness.policiesUnchanged() else { fail("foreign or changed gesture callback"); return }
+        if let active = active {
+            guard active.recognizer == Self.key(recognizer) else { fail("overlapping native gestures"); return }
+            return
+        }
+        let identity = ObjectIdentifier(recognizer)
+        if state == .began {
+            guard panBegins[identity] == nil, witness.unchanged() else { fail("duplicate or changed pan begin"); return }
+            let beganAt = DispatchTime.now().uptimeNanoseconds
+            panBegins[identity] = beganAt
+            ObservationStore.shared.append("transition_pan_began", ["request_id": witness.request,
+                "phase": phase, "recognizer": witness.initial, "uptime_ns": beganAt,
+                "expected_from": Self.key(expectedFrom), "expected_to": Self.key(expectedTo)])
+        }
+        guard let beganAt = panBegins[identity] else { fail("pan callback without its actual begin"); return }
+        guard state == .began || state == .changed else {
+            ObservationStore.shared.append("transition_unmatched_pan_end", ["request_id": witness.request,
+                "phase": phase, "recognizer": witness.initial, "recognizer_state": state.rawValue,
+                "pan_began_uptime_ns": beganAt, "uptime_ns": DispatchTime.now().uptimeNanoseconds])
+            return
+        }
+        guard witness.unchanged() else { fail("recognizer changed before coordinator registration"); return }
+        let started = DispatchTime.now().uptimeNanoseconds
+        let candidates = controllers().compactMap(\.transitionCoordinator)
+        var unique: [ObjectIdentifier: UIViewControllerTransitionCoordinator] = [:]
+        for candidate in candidates { unique[ObjectIdentifier(candidate)] = candidate }
+        let inventory: [[String: Any]] = unique.values.map { candidate in
+            ["coordinator": Self.key(candidate), "from": Self.key(candidate.viewController(forKey: .from)),
+             "to": Self.key(candidate.viewController(forKey: .to)), "window": Self.key(candidate.containerView.window),
+             "scene": candidate.containerView.window?.windowScene?.session.persistentIdentifier ?? "nil",
+             "interactive": candidate.isInteractive, "initially_interactive": candidate.initiallyInteractive,
+             "percent_complete": candidate.percentComplete]
+        }.sorted { ($0["coordinator"] as? String ?? "") < ($1["coordinator"] as? String ?? "") }
+        probeIndex += 1
+        guard probeIndex <= 1024 else { fail("gesture observation bound exceeded"); return }
+        let probeID = UUID().uuidString.lowercased()
+        ObservationStore.shared.append("transition_probe", ["request_id": witness.request, "phase": phase,
+            "probe_id": probeID, "index": probeIndex, "recognizer": witness.initial,
+            "recognizer_state": state.rawValue, "pan_began_uptime_ns": beganAt,
+            "uptime_ns": started, "coordinators": inventory])
+        let interactive = unique.values.filter { $0.initiallyInteractive && $0.isInteractive }
+        // A native sheet pan can begin before a controller dismissal begins.
+        // Only subsequent real recognizer callbacks can supply that boundary.
+        // No queued work, timer, delegate replacement or synthetic gesture is used.
+        guard !interactive.isEmpty else {
+            if unique.values.contains(where: { $0.initiallyInteractive && !$0.isInteractive }) {
+                fail("interaction already ended before coordinator registration")
+            }
+            return
+        }
+        guard interactive.count == 1, let coordinator = interactive.first,
+              coordinator.containerView.window === witness.window,
+              coordinator.containerView.window?.windowScene === witness.window?.windowScene,
+              let from = coordinator.viewController(forKey: .from), let to = coordinator.viewController(forKey: .to),
+              from === expectedFrom, to === expectedTo, from !== to else {
+            fail("foreign or ambiguous interactive coordinator"); return
+        }
+'''
 
 
 IDLE_SNAPSHOT = '''

@@ -273,7 +273,7 @@ conclusions belong in [ASSESSMENT.md](ASSESSMENT.md).
 
 | <a id="exp-222"></a>EXP-222 | H16 | THREE CELLS QUALIFIED; MANUAL LIFECYCLE ORACLE INVALID | Five manual-candidate UIKit/RUM occurrences and cleanup complete; deferred SwiftUI callback inventory differs. Reviewed human-paced fixture/runner/build awaits its single remaining cell; automatic path stopped. Physical/A02 open. | [record](Experiments/EXP-222-hosted-swiftui.md#exp-222--qualify-ordinary-hosting-on-the-selected-s2-composition) |
 
-| <a id="exp-223"></a>EXP-223 | H11, H12, H13, H14 | INVALID · interactive path stopped | Reviewed correction/four signed products/30 controls; baseline again rejected sheet observation. Actual release then native idle preceded cleanup PASS. Both failures retained; candidate unrun. No gate closes. | [record](Experiments/EXP-223-interactive-transitions.md#exp-223--compare-recognized-navigation-dismissal-and-resize-ownership) |
+| <a id="exp-223"></a>EXP-223 | H11, H12, H13, H14 | Capture repair · cost stop |126 controls/review; direct handoff captured one native tap, then fixture callback exceeded2ms. Cleanup PASS; no transition, human readiness or gate credit. | [record](Experiments/EXP-223-interactive-transitions.md#exp-223--compare-recognized-navigation-dismissal-and-resize-ownership) |
 
 | <a id="exp-224"></a>EXP-224 | P01 | INVALID · physical capture | Four signed clients/58 controls qualify. Actual baseline install/launch/code proof passes; Instruments cannot attach before readiness. Three original invalid admissions and passed cleanups retained; no workload, metric or gate credit. | [record](Experiments/EXP-224-application-impact.md#exp-224--measure-the-application-impact-of-the-s3-prototype) |
 
