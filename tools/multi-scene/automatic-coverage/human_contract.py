@@ -91,9 +91,50 @@ def snapshot(all_rows,request_bytes,run):
     require(type(result['payload']['uptime_ns']) is int and result['payload']['uptime_ns']>0,'missing native clock')
     topology(result['payload']['topology'],binding_row['payload']);return result,binding_row['payload']
 
+def accessibility_owner(inventory,selected,window):
+    """Validate the optional, source-bound public-container inventory as one graph."""
+    graph_format=any('container_ids' in row or 'container_edges' in row for row in inventory)
+    if not graph_format:
+        require(not any(row.get('kind')=='UIAccessibilityObject' for row in inventory),
+                'generic accessibility target lacks container provenance')
+        return  # Legacy fixture inventories keep their original contract.
+    require(0<len(inventory)<=4096,'invalid public accessibility inventory size')
+    require(all(type(row.get('id')) is str and row['id'] and row['id']!='nil' for row in inventory),
+            'missing public accessibility object identity')
+    ids={row['id'] for row in inventory};require(len(ids)==len(inventory),'duplicate public accessibility object')
+    children={identity:set() for identity in ids};roots=[]
+    allowed={'subviews','accessibilityElements','automationElements','accessibilityElementAtIndex'}
+    for row in inventory:
+        parents=row.get('container_ids');edges=row.get('container_edges')
+        require(type(parents) is list and parents and all(type(p) is str for p in parents)
+                and len(parents)==len(set(parents)), 'missing/duplicate public accessibility containers')
+        require(type(edges) is list and edges and all(type(e) is str for e in edges)
+                and len(edges)==len(set(edges)), 'missing/duplicate public accessibility edges')
+        actual_parents=set()
+        for edge in edges:
+            parts=edge.rsplit(':',1);require(len(parts)==2,'malformed public accessibility edge')
+            parent,kind=parts;actual_parents.add(parent)
+            if kind=='owned-window':
+                require(parent=='nil' and row['id']==window and row.get('kind')=='UIView',
+                        'foreign public accessibility root')
+                roots.append(row['id'])
+            else:
+                require(kind in allowed and parent in ids,'unknown public accessibility edge/parent')
+                children[parent].add(row['id'])
+        require(actual_parents==set(parents),'public accessibility parent/edge mismatch')
+    require(roots==[window],'missing/duplicate owned public accessibility root')
+    reachable=set();pending=[window]
+    while pending:
+        current=pending.pop()
+        if current in reachable:continue
+        reachable.add(current);pending.extend(children[current]-reachable)
+    require(reachable==ids and selected['id'] in reachable,'disconnected public accessibility ownership')
+
+
 def target(before,identifier,binding):
     value=before['payload']['topology'];_,window=topology(value,binding)
     item=one([r for r in value['accessibility'] if r.get('identifier')==identifier],'actual target '+identifier)
+    accessibility_owner(value['accessibility'],item,binding['window'])
     frame=rectangle(item['frame_in_window'])
     require(item.get('hidden',False) is False and item.get('alpha',1)>0 and intersects(frame,window['bounds']),'target not visible in owned window')
     return item

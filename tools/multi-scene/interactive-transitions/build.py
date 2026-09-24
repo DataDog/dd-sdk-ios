@@ -59,11 +59,14 @@ def verify(root):
     return plan
 
 
-def prepare(root, *, keys=KEYS, event_capture=False, observer_cost_partition=False):
+def prepare(root, *, keys=KEYS, event_capture=False, observer_cost_partition=False,
+            public_accessibility_inventory=False):
     root=Path(root).resolve();require(not root.exists(),'preparation path already consumed')
     require(keys in [KEYS, ['A-simulator']], 'unadmitted build slice')
     require(not observer_cost_partition or (event_capture and keys == ['A-simulator']),
             'cost partition is baseline event-capture preparation only')
+    require(not public_accessibility_inventory or (event_capture and keys == ['A-simulator']),
+            'public accessibility inventory is baseline event-capture preparation only')
     definition=contract();require(definition['baseline']==shared.ARMS['A'] and definition['candidate']==shared.ARMS['B'],'wrong source pair')
     original=BASE/'Fixture/Observation.swift';human=BASE/'HumanObservation.swift';state=protected()
     root.mkdir(parents=True);helper_paths=list(HELPERS)
@@ -71,6 +74,9 @@ def prepare(root, *, keys=KEYS, event_capture=False, observer_cost_partition=Fal
     if observer_cost_partition:
         helper_paths.extend('tools/multi-scene/interactive-transitions/'+name for name in
                             ['observer_cost.py', 'test_observer_cost.py'])
+    if public_accessibility_inventory:
+        helper_paths.extend('tools/multi-scene/interactive-transitions/'+name for name in
+                            ['accessibility_capture.py', 'test_accessibility_capture.py'])
     helpers={n:shared.sha(shared.REPO/n) for n in helper_paths};shared.freeze_helpers(root,helpers)
     spec=importlib.util.spec_from_file_location('fixture_package',shared.REPO/'tools/multi-scene/baselines/run.py')
     package=importlib.util.module_from_spec(spec);spec.loader.exec_module(package)
@@ -80,6 +86,7 @@ def prepare(root, *, keys=KEYS, event_capture=False, observer_cost_partition=Fal
         fixture_sources=fixture_sources(),toolchain=shared.capture(['xcodebuild','-version']).stdout.decode().strip(),arms={},native_admitted=False)
     plan['observer'] = 'actual-pan-callbacks' if event_capture else 'original-began'
     if observer_cost_partition:plan['observer_cost_partition'] = True
+    if public_accessibility_inventory:plan['public_accessibility_inventory'] = True
     for key in keys:
         arm=key.split('-')[0];folder=root/key;folder.mkdir();(folder/'sdk').mkdir();client=folder/'client';client.mkdir()
         archive=folder/'source.tar'
@@ -95,6 +102,10 @@ def prepare(root, *, keys=KEYS, event_capture=False, observer_cost_partition=Fal
             import observer_cost
             copied_human=client/'HumanObservation.swift'
             copied_human.write_bytes(observer_cost.render_human(copied_human.read_bytes(),shared.sha(copied_human)))
+        if public_accessibility_inventory:
+            import accessibility_capture
+            copied_human=client/'HumanObservation.swift'
+            copied_human.write_bytes(accessibility_capture.render_human(copied_human.read_bytes(),shared.sha(copied_human)))
         for name in SOURCES:shutil.copy2(HERE/name,client/name)
         if event_capture:
             import physical_observer

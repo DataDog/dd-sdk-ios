@@ -326,7 +326,7 @@
     }
   ],
   "gate_closures": [],
-  "next_action": "See .continue-here.md: audit the fixture accessibility capture offline. SwiftUI input precondition failed; no equivalent native retry. UIKit mechanism qualification and original semantic limits remain.",
+  "next_action": "See .continue-here.md: implement and review the explicit old/new source mapping, then prepare one fresh SwiftUI-only qualification. No accepted UIKit rerun or native admission follows from the build.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
@@ -2100,9 +2100,54 @@
           "cleanup": "PASS",
           "input_exchanges": 0,
           "transition_callback_samples": 0
+        },
+        "public_accessibility_repair": {
+          "state": "QUALIFIED_BUILD_ONLY",
+          "definition": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-accessibility-repair-4s4vxova/definition.json",
+            "sha256": "46148494e9e6e757374f680486f4cb120ea4c9c7c5ff43dd04725c8228125289"
+          },
+          "source_audit": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-accessibility-source-hzhy5y29/result.json",
+            "sha256": "6bb2d9cea85bb2b0d18221fe68e4a3130da2d6395a33e2d9aca8912f7d08f1fe"
+          },
+          "controls": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-accessibility-repair-4s4vxova/controls-owned-inventory.json",
+            "sha256": "9e35178258b6207618366cf63563d413fc71aa245868a23b0234e9595be75bce"
+          },
+          "controls_count": 48,
+          "typecheck": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-accessibility-repair-4s4vxova/typecheck-build-binding.json",
+            "sha256": "2871240766659812c69fe1a7b128b1be51e238eed14de79d6a44398d01114652"
+          },
+          "review": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-accessibility-repair-4s4vxova/preparation-review.json",
+            "sha256": "3ae8b592cceda9202c3ba5d3ac1bc039d7cc8f5bf31058b69ae95e91c8c03c0b"
+          },
+          "source_mapping": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-accessibility-repair-4s4vxova/source-mapping.json",
+            "sha256": "0178bf80b8dbbefd87b9b9958b4c5dabbea5cf8e6db070e8c7d970381dcaab30"
+          },
+          "build_definition": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-inventory-build-2tsxd5xs/definition.json",
+            "sha256": "ac9a466df6a60fd791ebe4f2a7f763c5c3755f6599bf480ed226c1db0e123ff9"
+          },
+          "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-inventory-build-2tsxd5xs/products",
+          "build_plan": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-inventory-build-2tsxd5xs/products/plan.json",
+            "sha256": "ff8a33d360a795244d8f7cfd5b16d5407ffe6e9c4ac5e0868b98a38395be5e31"
+          },
+          "native_admitted": false,
+          "gate_closures": [],
+          "limits": "Source-bound fixture and optional oracle repair only. Actual SwiftUI graph, runtime cost and behavioral ownership remain unqualified; prior failures and accepted UIKit capture remain unchanged.",
+          "build_receipt": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-inventory-build-2tsxd5xs/products/A-simulator/build-result.json",
+            "sha256": "0958ac8107421e5f3e2684e7e3170dbdbbafb842efbf3cd006e2184433653aca"
+          },
+          "fixture": "05b06dec322d9071851d990e221546361a88d8d87c5afc83d87922d6cd7567c9"
         }
       }
     }
   },
-  "state": "UIKIT_QUALIFIED_SWIFTUI_READINESS_BLOCKED"
+  "state": "SWIFTUI_CAPTURE_REPAIR_BUILT"
 }

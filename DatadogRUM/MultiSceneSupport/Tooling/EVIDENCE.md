@@ -111,6 +111,14 @@ Bind markers to independently observed event/view/session IDs and the immediatel
 preceding mapper version/sequence. Reject early same-name completion and stale
 readiness. Native/model/backend evidence must agree independently.
 
+Public accessibility inventories can include non-view containers. Preserve actual
+object identities and container edges, and require every selected target to have a
+path to the source-bound owned window. Reject mixed/partial provenance, duplicate
+objects, unknown parents and disconnected graphs. Connected cycles are valid when
+the walk is bounded; private class names, matching titles and overlapping frames
+do not establish ownership. A source-only traversal control does not prove the
+actual SwiftUI graph or its observation cost.
+
 A boundary must select its mapper and append its sequence under the same evidence
 lock. A snapshot taken before asynchronous readiness work can become stale while
 retaining the correct view ID. Complete SDK callbacks and main-thread observations

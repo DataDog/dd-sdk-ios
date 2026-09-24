@@ -241,3 +241,18 @@ PASS; overall INVALID/NOT_EXECUTED and evidence INCOMPLETE remain. The scoped re
 classifies a fixture/input precondition, not an SDK regression. No equivalent retry
 is admitted. Audit the public accessibility traversal offline before selecting any
 separate fixture repair/build; do not substitute a title or controller frame.
+
+
+Offline execution of the original walker reproduces three public-container
+omissions: indexed non-UIView containers, nested element arrays and automation
+children. This proves source omissions, not the cause of the SwiftUI failure. The
+opt-in copied-fixture repair traverses those public paths, retains object identity
+and container edges, and leaves the original UIKit body unchanged. The oracle now
+requires a complete path from every captured object and selected target to the
+owned window, with strict all-or-none provenance and cycle-safe validation.
+All48 focused controls and the composed iOS18 API typecheck pass scoped review.
+The separate baseline build qualifies with fresh compiler/product identity; native
+input remains unadmitted. The
+owner binds source, controls, review and separate build definition. New products
+need explicit source mapping before SwiftUI-only qualification; old UIKit evidence
+is retained with its original fixture and semantic limits.
