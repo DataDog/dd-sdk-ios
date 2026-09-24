@@ -5,6 +5,7 @@ Supported UI tools supply input through immutable request/return files. This
 adapter does not synthesize input and cannot grant behavioral release acceptance.
 """
 import argparse
+import hashlib
 import json
 import math
 from pathlib import Path
@@ -80,7 +81,9 @@ def verify(root):
     return plan, compiled, product
 
 
-def prepare(root, build_root, device):
+def prepare(root, build_root, device, *, cells=None):
+    cells = ['UIKit', 'SwiftUI'] if cells is None else cells
+    require(cells in [['UIKit'], ['UIKit', 'SwiftUI']], 'unsupported qualification cell slice')
     require(not root.exists(), 'qualification directory consumed')
     compiled = build.verify(build_root)
     require(compiled['observer'] == 'actual-pan-callbacks' and list(compiled['arms']) == ['A-simulator'], 'wrong observer/source')
@@ -92,7 +95,7 @@ def prepare(root, build_root, device):
     members = helpers(); shared.freeze_helpers(root,members)
     atomic(root/'plan.json',encoded(dict(schema_version=1,build_root=str(build_root),build_plan=shared.sha(build_root/'plan.json'),
         build_receipt=shared.sha(build_root/'A-simulator/build-result.json'),helpers=members,device=target,
-        cells=['UIKit','SwiftUI'],native_seconds=900,cleanup_seconds=300,input_seconds=180,boot_seconds=60,
+        cells=cells,native_seconds=900,cleanup_seconds=300,input_seconds=180,boot_seconds=60,
         session_setup_seconds=120,session_freshness_seconds=60,
         max_attempts=1,release_acceptance=False,gate_closures=[])))
     verify(root)
@@ -109,7 +112,59 @@ def tool_value(actual):
 
 
 
+def same_device(actual, planned, state):
+    require(actual.get('state') == state and all(actual.get(k) == planned[k]
+            for k in ['udid', 'runtime', 'deviceTypeIdentifier']), 'session setup device identity/state changed')
+
+
+def prepare_session_boot(folder, plan, setup):
+    """Complete boot before publishing a request that can start a UI session."""
+    deadline = min(setup['deadline'], setup['started_at'] + plan['boot_seconds'])
+    before = device_state(setup['device'])
+    same_device(before, plan['device'], 'Shutdown')
+    shared.command(['xcrun', 'simctl', 'bootstatus', setup['device'], '-b'], folder,
+                   'boot-ready', deadline=deadline)
+    after = device_state(setup['device'])
+    same_device(after, plan['device'], 'Booted')
+    finished = time.time()
+    require(finished < deadline, 'boot readiness late')
+    atomic(folder/'boot-qualified.json', encoded(dict(setup_sha256=shared.sha(folder/'setup.json'),
+        plan_sha256=setup['plan_sha256'], before=before, after=after, finished_at=finished,
+        deadline=deadline, command_sha256=shared.sha(folder/'boot-ready.json'),
+        log_sha256=shared.sha(folder/'boot-ready.log'))))
+    return dict(setup, issued_at=time.time(), boot_receipt_sha256=shared.sha(folder/'boot-qualified.json'))
+
+
+def session_boot_response(folder, plan, request, now):
+    setup = shared.read(folder/'setup.json'); boot = shared.read(folder/'boot-qualified.json')
+    raw = shared.read(folder/'boot-ready.json')
+    require(setup['plan_sha256'] == hashlib.sha256(encoded(plan)).hexdigest()
+            and setup['deadline'] == setup['started_at'] + plan['session_setup_seconds']
+            and setup['cleanup_deadline'] == setup['deadline'] + plan['cleanup_seconds'],
+            'setup plan or original budgets changed')
+    require(all(request.get(k) == setup[k] for k in ['request_id', 'plan_sha256', 'device', 'framework',
+            'started_at', 'deadline', 'cleanup_deadline', 'command'])
+            and setup['device'] == plan['device']['udid'] and setup['framework'] in plan['cells']
+            and setup['command'] == '', 'foreign session setup request')
+    require(boot['setup_sha256'] == shared.sha(folder/'setup.json')
+            and boot['plan_sha256'] == setup['plan_sha256']
+            and request['boot_receipt_sha256'] == shared.sha(folder/'boot-qualified.json')
+            and boot['command_sha256'] == shared.sha(folder/'boot-ready.json')
+            and boot['log_sha256'] == raw['log_sha256'] == shared.sha(folder/'boot-ready.log'),
+            'boot receipt or raw evidence changed')
+    same_device(boot['before'], plan['device'], 'Shutdown')
+    same_device(boot['after'], plan['device'], 'Booted')
+    require(raw['argv'] == ['xcrun', 'simctl', 'bootstatus', setup['device'], '-b']
+            and raw['returncode'] == 0, 'boot command failed or selected another device')
+    require(boot['deadline'] == min(setup['deadline'], setup['started_at'] + plan['boot_seconds'])
+            and setup['started_at'] <= raw['started_at'] <= raw['finished_at'] <= boot['finished_at']
+            < boot['deadline'] and boot['finished_at'] <= request['issued_at'] <= now < setup['deadline'],
+            'boot receipt expired or reordered')
+    return boot
+
+
 def session_response(folder, plan, request, now):
+    session_boot_response(folder, plan, request, now)
     start = shared.read(folder/'start.json'); probe = shared.read(folder/'capture.json')
     actual = tool_value(start['actual_return'])
     require(actual.get('deviceIsSimulator') is True and actual.get('deviceUUID') == plan['device']['udid']
@@ -117,7 +172,7 @@ def session_response(folder, plan, request, now):
             'session selected a foreign device')
     require(probe.get('command') == '' and probe.get('interaction_session_key') == actual['interactionSessionKey'],
             'capture was not the empty current-session call')
-    require(request['started_at'] <= start['started_at'] <= start['finished_at'] <= probe['started_at']
+    require(request['issued_at'] <= start['started_at'] <= start['finished_at'] <= probe['started_at']
             <= probe['finished_at'] <= now < request['deadline']
             and now - probe['finished_at'] <= plan['session_freshness_seconds'], 'session receipt expired or reordered')
     value = returned_state(probe['actual_return'])
@@ -137,10 +192,15 @@ def await_cell(root, framework):
         require(shared.read(root/'cells/UIKit/summary.json')['state'] == 'PASS', 'prior qualification did not pass')
     folder = root/'sessions'/framework;folder.mkdir(parents=True)
     started = time.time()
-    request = dict(started_at=started, deadline=started+plan['session_setup_seconds'],
-                   device=plan['device']['udid'], framework=framework, command='')
-    atomic(folder/'request.json', encoded(request))
+    setup = dict(request_id=str(uuid.uuid4()), plan_sha256=shared.sha(root/'plan.json'),
+                 started_at=started, deadline=started+plan['session_setup_seconds'],
+                 cleanup_deadline=started+plan['session_setup_seconds']+plan['cleanup_seconds'],
+                 device=plan['device']['udid'], framework=framework, command='')
+    atomic(folder/'setup.json', encoded(setup))
     try:
+        request = prepare_session_boot(folder, plan, setup)
+        session_boot_response(folder, plan, request, time.time())
+        atomic(folder/'request.json', encoded(request))
         while not ((folder/'start.json').exists() and (folder/'capture.json').exists()):
             require(time.time() < request['deadline'], 'session readiness deadline expired')
             time.sleep(0.1)
@@ -154,9 +214,71 @@ def await_cell(root, framework):
         session_response(folder, plan, request, time.time())
     except Exception as error:
         atomic(folder/'summary.json', encoded(dict(state='INVALID',scenario='NOT_EXECUTED',native_launches=0,
-            reason=type(error).__name__+': '+str(error),cleanup='SESSION_RESTORE_PENDING')))
+            reason=type(error).__name__+': '+str(error),evidence='INCOMPLETE',
+            cleanup='SESSION_RESTORE_PENDING',cleanup_deadline=setup['cleanup_deadline'],
+            setup_sha256=shared.sha(folder/'setup.json'),finished_at=time.time())))
         return
     return cell(root, framework)
+
+
+def setup_cleanup_session(folder, setup, worker, end):
+    """Require actual worker quiescence before restoring a failed setup."""
+    require(worker.get('worker_stopped') is True and 'tool_pending' in worker and worker['tool_pending'] is None
+            and 'local_pending' in worker and worker['local_pending'] is None and worker.get('runner_stopped') is True
+            and worker.get('setup_sha256') == shared.sha(folder/'setup.json'), 'setup worker is not quiescent')
+    start = folder/'start.json'
+    if start.exists():
+        started = shared.read(start)
+        actual = tool_value(started['actual_return'])
+        require(actual.get('deviceUUID') == setup['device'] and actual.get('deviceIsSimulator') is True
+                and actual.get('interactionSessionKey') == worker.get('session_key')
+                and bool(worker.get('session_key')), 'setup session identity unknown')
+        require(end is not None and end.get('interaction_session_key') == worker['session_key']
+                and end.get('setup_sha256') == shared.sha(folder/'setup.json')
+                and started['finished_at'] <= worker['at'] <= end['started_at'] <= end['finished_at']
+                <= time.time() < setup['cleanup_deadline']
+                and tool_value(end.get('actual_return')).get('userMessage') == 'Session stopped',
+                'actual setup session end missing, foreign or stale')
+    else:
+        require(worker.get('session_start_attempted') is False and worker.get('session_key') is None
+                and end is None, 'session creation outcome unknown')
+
+
+def finish_setup(root, framework, quiescence, end_receipt=None):
+    """Restore failed pre-cell setup; never overwrite its original verdict."""
+    plan = shared.read(root/'plan.json'); folder = root/'sessions'/framework
+    setup = shared.read(folder/'setup.json'); summary = shared.read(folder/'summary.json')
+    require(setup['plan_sha256'] == shared.sha(root/'plan.json') and setup['framework'] == framework
+            and setup['device'] == plan['device']['udid'], 'foreign cleanup setup')
+    require(not (root/'cells'/framework).exists() and summary['state'] == 'INVALID'
+            and summary['native_launches'] == 0 and summary['cleanup'] == 'SESSION_RESTORE_PENDING',
+            'setup cleanup cannot remove an app or replace prior restoration')
+    atomic(folder/'original-setup-summary.json', encoded(summary))
+    try:
+        end = shared.read(end_receipt) if end_receipt else None
+        setup_cleanup_session(folder, setup, shared.read(quiescence), end)
+        deadline = setup['cleanup_deadline']
+        require(deadline == setup['deadline'] + plan['cleanup_seconds']
+                and setup['deadline'] == setup['started_at'] + plan['session_setup_seconds']
+                and time.time() < deadline, 'setup cleanup expired or budget changed')
+        before = device_state(setup['device'])
+        require(all(before[k] == plan['device'][k] for k in ['udid', 'runtime', 'deviceTypeIdentifier']),
+                'cleanup device identity changed')
+        if before['state'] != 'Shutdown':
+            shared.command(['xcrun', 'simctl', 'shutdown', setup['device']], folder, 'restore-shutdown', deadline=deadline)
+        after = device_state(setup['device']); same_device(after, plan['device'], 'Shutdown')
+        require(time.time() < deadline, 'setup restoration late')
+        restoration = dict(state='PASS',finished_at=time.time(),deadline=deadline,before=before,after=after,
+            original_setup_sha256=shared.sha(folder/'original-setup-summary.json'),
+            worker_sha256=shared.sha(quiescence),end_sha256=shared.sha(end_receipt) if end_receipt else None,
+            zero_task_mutations=True)
+        atomic(folder/'restoration.json', encoded(restoration))
+        summary.update(cleanup='PASS',restored_at=restoration['finished_at'],
+                       restoration_sha256=shared.sha(folder/'restoration.json'))
+    except Exception as error:
+        summary.update(cleanup='INCOMPLETE',cleanup_error=type(error).__name__+': '+str(error))
+    atomic(folder/'summary.json', encoded(summary), exclusive=False)
+    return summary
 
 
 def returned_state(actual):
@@ -377,11 +499,13 @@ def finish(root,framework,end_receipt):
 
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('stage',choices=['prepare','await-cell','cell','finish']);parser.add_argument('--root',type=Path,required=True)
+    parser=argparse.ArgumentParser();parser.add_argument('stage',choices=['prepare','await-cell','cell','finish','finish-setup']);parser.add_argument('--root',type=Path,required=True)
     parser.add_argument('--build-root',type=Path);parser.add_argument('--device');parser.add_argument('--framework',choices=['UIKit','SwiftUI'])
-    parser.add_argument('--end-receipt',type=Path);args=parser.parse_args();root=args.root.resolve()
+    parser.add_argument('--end-receipt',type=Path);parser.add_argument('--quiescence',type=Path)
+    args=parser.parse_args();root=args.root.resolve()
     if args.stage=='prepare':prepare(root,args.build_root.resolve(),args.device)
     elif args.stage=='await-cell':await_cell(root,args.framework)
     elif args.stage=='cell':cell(root,args.framework)
+    elif args.stage=='finish-setup':finish_setup(root,args.framework,args.quiescence,args.end_receipt)
     else:finish(root,args.framework,args.end_receipt)
 if __name__=='__main__':main()

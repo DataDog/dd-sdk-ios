@@ -247,9 +247,13 @@ A workspace-free capture can report `NotRun` while naming the running app in its
 hierarchy. Bind actual bundle/PID to the native launch before input; retain the
 scalar state unchanged. Start a waiting host runner before session creation so it
 can consume the actual ready receipt and dispatch directly; another model/tool
-handoff can outlive readiness. Bound setup independently, and require simulator
-boot completion before reading installation state. Keep a failed readiness result
-separate from a later successful capture.
+handoff can outlive readiness. Start the fixed setup budget before simulator boot;
+require a fresh device/plan-bound boot-completion receipt before publishing the
+session request, then verify actual session creation follows that receipt. Check
+boot completion again before installation-state reads. Failed boot must publish no
+input request; restore the owned boot state even if no session was created. Keep
+original setup failure and later restoration separate; successful boot alone does
+not explain or repair a failed capture.
 A failed empty capture may prove zero-action quiescence
 only with its complete return and explicit worker stop. Uncertain action delivery
 cannot authorize teardown.

@@ -204,3 +204,11 @@ release gate was obtained. Host logs place the capture start during boot and boo
 completion38.016s later. This identifies missing readiness ordering, not the cause
 of the timeout. The scoped review calls for an offline, bounded boot receipt before
 session creation, with exact device/plan/deadline binding and fresh admission.
+
+The readiness repair passes34 focused controls and scoped review. It starts the
+existing setup budget before boot, retains exact device/plan/raw-output bindings,
+and publishes the worker request only after boot completion. Task-free restoration
+handles failed setup with or without a session, preserving the original verdict.
+The actual session-end invocation binds its key, setup hash and times after worker
+quiescence. The owning `boot_readiness` record retains sources and controls; fresh
+UIKit-only preparation and admission remain separate from offline qualification.

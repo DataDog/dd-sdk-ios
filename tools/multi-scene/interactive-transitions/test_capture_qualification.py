@@ -207,18 +207,48 @@ class SessionHandoff(unittest.TestCase):
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup);self.root=Path(self.temp.name)
         self.now=time.time()
-        self.plan=dict(cells=['UIKit','SwiftUI'],device=dict(udid='device'),session_setup_seconds=120,session_freshness_seconds=60)
-        self.request=dict(started_at=self.now-5,deadline=self.now+30)
+        self.target=dict(udid='device',runtime='runtime',deviceTypeIdentifier='iPad',state='Shutdown')
+        self.plan=dict(cells=['UIKit','SwiftUI'],device=self.target,session_setup_seconds=120,
+                       session_freshness_seconds=60,boot_seconds=60,cleanup_seconds=300)
+        (self.root/'plan.json').write_bytes(encoded(self.plan))
+        self.setup=dict(request_id='new-setup',plan_sha256=q.shared.sha(self.root/'plan.json'),
+            device='device',framework='UIKit',command='',started_at=self.now-10,
+            deadline=self.now+110,cleanup_deadline=self.now+410)
+        self.request=None
     def receipts(self,folder):
         folder.mkdir(parents=True,exist_ok=True)
+        if not (folder/'setup.json').exists():
+            (folder/'setup.json').write_bytes(encoded(self.setup))
+            (folder/'boot-ready.log').write_bytes(b'Boot finished successfully')
+            raw=dict(argv=['xcrun','simctl','bootstatus','device','-b'],returncode=0,
+                started_at=self.now-9,finished_at=self.now-8,log_sha256=q.shared.sha(folder/'boot-ready.log'))
+            (folder/'boot-ready.json').write_bytes(encoded(raw))
+            boot=dict(setup_sha256=q.shared.sha(folder/'setup.json'),plan_sha256=self.setup['plan_sha256'],
+                before=self.target,after=dict(self.target,state='Booted'),finished_at=self.now-7,
+                deadline=self.setup['started_at']+60,command_sha256=q.shared.sha(folder/'boot-ready.json'),
+                log_sha256=raw['log_sha256'])
+            (folder/'boot-qualified.json').write_bytes(encoded(boot))
+            request=dict(self.setup,issued_at=self.now-6,boot_receipt_sha256=q.shared.sha(folder/'boot-qualified.json'))
+            (folder/'request.json').write_bytes(encoded(request))
+        self.request=json.loads((folder/'request.json').read_text())
+        issued=self.request['issued_at']
         hierarchy=folder/'returned.txt';hierarchy.write_text('Application, pid: 123, label: Home\n')
         screenshot=folder/'returned.png';screenshot.write_bytes(b'actual screenshot')
-        start=dict(started_at=self.now-4,finished_at=self.now-3,actual_return=dict(structuredContent=dict(
+        start=dict(started_at=issued+1,finished_at=issued+2,actual_return=dict(structuredContent=dict(
             deviceIsSimulator=True,deviceUUID='device',interactionSessionKey='actual session')))
-        probe=dict(command='',interaction_session_key='actual session',started_at=self.now-2,finished_at=self.now-1,
+        probe=dict(command='',interaction_session_key='actual session',started_at=issued+3,finished_at=issued+4,
             actual_return=dict(structuredContent=dict(applicationState='NotRun',hierarchyPath=str(hierarchy),screenshotPath=str(screenshot))))
         (folder/'start.json').write_bytes(encoded(start));(folder/'capture.json').write_bytes(encoded(probe))
+        self.now=max(self.now,issued+5)
         return start,probe
+    def command(self,argv,folder,name,*,deadline):
+        self.assertFalse((folder/'request.json').exists())
+        self.assertEqual(argv,['xcrun','simctl','bootstatus','device','-b'])
+        self.assertLess(self.now,deadline)
+        (folder/(name+'.log')).write_bytes(b'Boot finished successfully')
+        start=self.now;self.now+=1
+        (folder/(name+'.json')).write_bytes(encoded(dict(argv=argv,started_at=start,finished_at=self.now,
+            returncode=0,log_sha256=q.shared.sha(folder/(name+'.log')))))
     def test_exact_empty_capture_is_readiness_without_changing_notrun(self):
         self.receipts(self.root)
         self.assertEqual(q.session_response(self.root,self.plan,self.request,self.now)['applicationState'],'NotRun')
@@ -227,47 +257,157 @@ class SessionHandoff(unittest.TestCase):
                             ('capture',lambda r:r.update(interaction_session_key='old')),
                             ('capture',lambda r:r.update(command='t 10 10')),
                             ('capture',lambda r:r.update(started_at=self.now-10)),
-                            ('capture',lambda r:r.update(finished_at=self.now+50))]:
+                            ('capture',lambda r:r.update(finished_at=self.now+150))]:
             start,probe=self.receipts(self.root);value=start if kind=='start' else probe;change(value)
             (self.root/(kind+'.json')).write_bytes(encoded(value))
             with self.subTest(kind=kind),self.assertRaises(Rejected):q.session_response(self.root,self.plan,self.request,self.now)
         self.receipts(self.root)
-        with self.assertRaises(Rejected):q.session_response(self.root,self.plan,dict(self.request,deadline=self.now+100),self.now+61)
+        with self.assertRaises(Rejected):q.session_response(self.root,self.plan,self.request,self.now+61)
     def test_failed_or_empty_actual_capture_rejects_readiness(self):
         _,probe=self.receipts(self.root);probe['actual_return']=dict(isError=True,content=[dict(type='text',text='Session not found')])
         (self.root/'capture.json').write_bytes(encoded(probe))
         with self.assertRaises(Rejected):q.session_response(self.root,self.plan,self.request,self.now)
         self.receipts(self.root);(self.root/'returned.txt').write_text('')
         with self.assertRaises(Rejected):q.session_response(self.root,self.plan,self.request,self.now)
-    def test_waiter_retains_actual_bytes_and_dispatches_in_same_call(self):
+    def waiter(self,*,failed_capture=False,failed_boot=False):
         folder=self.root/'sessions/UIKit'
         def publish(_):
-            self.now=time.time()+0.01
-            request=json.loads((folder/'request.json').read_text())
-            self.now=request['started_at']+5
             self.receipts(folder)
-        with patch.object(q,'reviewed',return_value=(self.plan,{},{})),patch.object(q.time,'sleep',side_effect=publish),              patch.object(q.time,'time',side_effect=lambda:self.now),patch.object(q,'cell',return_value='dispatched') as cell:
-            # The publisher advances the deterministic clock before publication.
+            if failed_capture:
+                probe=json.loads((folder/'capture.json').read_text())
+                probe['actual_return']=dict(isError=True,content=[dict(type='text',text='Session not found')])
+                (folder/'capture.json').write_bytes(encoded(probe))
+        with patch.object(q,'reviewed',return_value=(self.plan,{},{})), \
+             patch.object(q,'device_state',side_effect=[self.target,dict(self.target,state='Booted')]), \
+             patch.object(q.shared,'command',side_effect=Rejected('boot incomplete') if failed_boot else self.command), \
+             patch.object(q.time,'sleep',side_effect=publish),patch.object(q.time,'time',side_effect=lambda:self.now), \
+             patch.object(q,'cell',return_value='dispatched') as cell:
             result=q.await_cell(self.root,'UIKit')
+        return folder,result,cell
+    def test_waiter_boots_before_request_and_dispatches_in_same_call(self):
+        folder,result,cell=self.waiter()
         self.assertEqual(result,'dispatched');cell.assert_called_once_with(self.root,'UIKit')
         saved=json.loads((folder/'qualified.json').read_text())
         for item in saved['artifacts'].values():self.assertEqual(Path(item['path']).read_bytes(),Path(item['source_path']).read_bytes())
-    def test_absent_receipt_stops_before_cell(self):
-        with patch.object(q,'reviewed',return_value=(dict(self.plan,session_setup_seconds=0),{},{})),              patch.object(q,'cell') as cell:
-            q.await_cell(self.root,'UIKit')
-        cell.assert_not_called()
-        result=json.loads((self.root/'sessions/UIKit/summary.json').read_text())
-        self.assertEqual(result['native_launches'],0)
+        request=json.loads((folder/'request.json').read_text())
+        boot=json.loads((folder/'boot-qualified.json').read_text())
+        self.assertLessEqual(boot['finished_at'],request['issued_at'])
+    def test_failed_boot_publishes_no_worker_request_and_stops_before_cell(self):
+        folder,_,cell=self.waiter(failed_boot=True)
+        cell.assert_not_called();self.assertFalse((folder/'request.json').exists())
+        summary=json.loads((folder/'summary.json').read_text())
+        self.assertEqual(summary['native_launches'],0)
+        self.assertEqual(summary['cleanup_deadline'],json.loads((folder/'setup.json').read_text())['cleanup_deadline'])
     def test_failed_capture_stops_before_cell(self):
-        folder=self.root/'sessions/UIKit'
-        def publish(_):
-            self.now=json.loads((folder/'request.json').read_text())['started_at']+5
-            _,probe=self.receipts(folder);probe['actual_return']=dict(isError=True,content=[dict(type='text',text='Session not found')])
-            (folder/'capture.json').write_bytes(encoded(probe))
-        with patch.object(q,'reviewed',return_value=(self.plan,{},{})),patch.object(q.time,'sleep',side_effect=publish),              patch.object(q.time,'time',side_effect=lambda:self.now),patch.object(q,'cell') as cell:
-            q.await_cell(self.root,'UIKit')
-        cell.assert_not_called()
+        folder,_,cell=self.waiter(failed_capture=True);cell.assert_not_called()
         self.assertIn('input tool failed',json.loads((folder/'summary.json').read_text())['reason'])
+    def test_boot_raw_and_receipt_hash_changes_rejected(self):
+        self.receipts(self.root)
+        for name in ['boot-ready.log','boot-ready.json','boot-qualified.json','setup.json']:
+            path=self.root/name;original=path.read_bytes();path.write_bytes(original+b' ')
+            with self.subTest(name=name),self.assertRaises(Rejected):q.session_response(self.root,self.plan,self.request,self.now)
+            path.write_bytes(original)
+        (self.root/'boot-qualified.json').unlink()
+        with self.assertRaises(FileNotFoundError):q.session_response(self.root,self.plan,self.request,self.now)
+    def test_foreign_or_stale_boot_evidence_rejected_even_with_matching_hashes(self):
+        self.receipts(self.root);path=self.root/'boot-qualified.json';original=json.loads(path.read_text())
+        changes=[lambda r:r['after'].update(udid='other'),lambda r:r['after'].update(runtime='old'),
+                 lambda r:r['after'].update(deviceTypeIdentifier='other'),lambda r:r['before'].update(state='Booted'),
+                 lambda r:r.update(finished_at=self.setup['started_at']-1),
+                 lambda r:r.update(finished_at=self.setup['started_at']+61),lambda r:r.update(plan_sha256='old')]
+        for change in changes:
+            boot=copy.deepcopy(original);change(boot);path.write_bytes(encoded(boot))
+            request=dict(self.request,boot_receipt_sha256=q.shared.sha(path))
+            with self.subTest(boot=boot),self.assertRaises(Rejected):q.session_response(self.root,self.plan,request,self.now)
+    def test_original_plan_and_setup_budgets_cannot_be_rebound(self):
+        self.receipts(self.root)
+        for changed in [dict(self.plan,boot_seconds=120),dict(self.plan,session_setup_seconds=180),
+                        dict(self.plan,cleanup_seconds=600)]:
+            with self.subTest(plan=changed),self.assertRaises(Rejected):q.session_response(self.root,changed,self.request,self.now)
+
+    def test_request_or_session_before_boot_completion_is_rejected(self):
+        start,_=self.receipts(self.root)
+        with self.assertRaises(Rejected):q.session_response(self.root,self.plan,dict(self.request,issued_at=self.now-9),self.now)
+        start['started_at']=self.now-9;(self.root/'start.json').write_bytes(encoded(start))
+        with self.assertRaises(Rejected):q.session_response(self.root,self.plan,self.request,self.now)
+    def test_initial_device_mismatch_prevents_boot_and_request(self):
+        for changed in [dict(self.target,udid='other'),dict(self.target,runtime='other'),
+                        dict(self.target,deviceTypeIdentifier='other'),dict(self.target,state='Booted')]:
+            with tempfile.TemporaryDirectory() as directory:
+                root=Path(directory);(root/'plan.json').write_bytes(encoded(self.plan))
+                with patch.object(q,'reviewed',return_value=(self.plan,{},{})),patch.object(q,'device_state',return_value=changed), \
+                     patch.object(q.shared,'command') as command,patch.object(q,'cell') as cell:
+                    q.await_cell(root,'UIKit')
+                command.assert_not_called();cell.assert_not_called()
+                self.assertFalse((root/'sessions/UIKit/request.json').exists())
+    def test_setup_restoration_without_and_with_established_session(self):
+        for with_session in [False,True]:
+            with tempfile.TemporaryDirectory() as directory:
+                root=Path(directory);(root/'plan.json').write_bytes(encoded(self.plan));folder=root/'sessions/UIKit';folder.mkdir(parents=True)
+                setup=dict(self.setup,plan_sha256=q.shared.sha(root/'plan.json'))
+                (folder/'setup.json').write_bytes(encoded(setup))
+                original=dict(state='INVALID',scenario='NOT_EXECUTED',evidence='INCOMPLETE',cleanup='SESSION_RESTORE_PENDING',native_launches=0)
+                (folder/'summary.json').write_bytes(encoded(original))
+                worker=dict(worker_stopped=True,tool_pending=None,local_pending=None,runner_stopped=True,
+                    setup_sha256=q.shared.sha(folder/'setup.json'),session_key=None,session_start_attempted=False,at=self.now-3)
+                end=None
+                if with_session:
+                    (folder/'start.json').write_bytes(encoded(dict(finished_at=self.now-4,actual_return=dict(structuredContent=dict(
+                        deviceIsSimulator=True,deviceUUID='device',interactionSessionKey='session')))))
+                    worker.update(session_key='session',session_start_attempted=True)
+                    end=folder/'end.json';end.write_bytes(encoded(dict(interaction_session_key='session',
+                        setup_sha256=q.shared.sha(folder/'setup.json'),started_at=self.now-2,finished_at=self.now-1,
+                        actual_return=dict(structuredContent=dict(userMessage='Session stopped')))))
+                proof=folder/'worker.json';proof.write_bytes(encoded(worker))
+                with patch.object(q,'device_state',side_effect=[dict(self.target,state='Booting'),self.target]),patch.object(q.shared,'command') as command:
+                    final=q.finish_setup(root,'UIKit',proof,end)
+                self.assertEqual(final['cleanup'],'PASS');self.assertEqual(final['state'],'INVALID')
+                self.assertEqual(json.loads((folder/'original-setup-summary.json').read_text()),original)
+                self.assertEqual(command.call_args.args[0],['xcrun','simctl','shutdown','device'])
+    def test_failed_restoration_preserves_original_and_marks_cleanup_incomplete(self):
+        folder=self.root/'sessions/UIKit';folder.mkdir(parents=True)
+        (folder/'setup.json').write_bytes(encoded(self.setup))
+        original=dict(state='INVALID',scenario='NOT_EXECUTED',evidence='INCOMPLETE',cleanup='SESSION_RESTORE_PENDING',native_launches=0)
+        (folder/'summary.json').write_bytes(encoded(original))
+        worker=dict(worker_stopped=True,tool_pending=None,local_pending=None,runner_stopped=True,
+            setup_sha256=q.shared.sha(folder/'setup.json'),session_key=None,session_start_attempted=False,at=self.now-3)
+        proof=folder/'worker.json';proof.write_bytes(encoded(worker))
+        with patch.object(q,'device_state',return_value=dict(self.target,state='Booting')), \
+             patch.object(q.shared,'command',side_effect=Rejected('shutdown failed')):
+            final=q.finish_setup(self.root,'UIKit',proof)
+        self.assertEqual(final['cleanup'],'INCOMPLETE')
+        self.assertEqual(json.loads((folder/'original-setup-summary.json').read_text()),original)
+        self.assertFalse((folder/'restoration.json').exists())
+
+    def test_unknown_session_or_worker_prevents_setup_teardown(self):
+        folder=self.root;self.receipts(folder)
+        worker=dict(worker_stopped=True,tool_pending=None,local_pending=None,runner_stopped=True,
+            setup_sha256=q.shared.sha(folder/'setup.json'),session_key='actual session',session_start_attempted=True,at=self.now-3)
+        end=dict(interaction_session_key='actual session',setup_sha256=q.shared.sha(folder/'setup.json'),
+                 started_at=self.now-2,finished_at=self.now-1,actual_return=dict(structuredContent=dict(userMessage='Session stopped')))
+        for change in [dict(tool_pending='empty capture'),dict(local_pending=12),dict(worker_stopped=False),
+                       dict(runner_stopped=False),dict(setup_sha256='old'),dict(session_key='other')]:
+            with self.subTest(change=change),self.assertRaises(Rejected):q.setup_cleanup_session(folder,self.setup,dict(worker,**change),end)
+        with self.assertRaises(Rejected):q.setup_cleanup_session(folder,self.setup,worker,None)
+        (folder/'start.json').unlink()
+        with self.assertRaises(Rejected):q.setup_cleanup_session(folder,self.setup,worker,None)
+    def test_end_receipt_must_bind_this_setup_session_and_quiescence(self):
+        folder=self.root;self.receipts(folder)
+        worker=dict(worker_stopped=True,tool_pending=None,local_pending=None,runner_stopped=True,
+            setup_sha256=q.shared.sha(folder/'setup.json'),session_key='actual session',session_start_attempted=True,at=self.now-3)
+        end=dict(interaction_session_key='actual session',setup_sha256=q.shared.sha(folder/'setup.json'),
+                 started_at=self.now-2,finished_at=self.now-1,actual_return=dict(structuredContent=dict(userMessage='Session stopped')))
+        q.setup_cleanup_session(folder,self.setup,worker,end)
+        for change in [dict(interaction_session_key='other'),dict(setup_sha256='old'),
+                       dict(started_at=self.now-4),dict(finished_at=self.now+300),
+                       dict(actual_return=dict(isError=True,content=[]))]:
+            with self.subTest(change=change),self.assertRaises(Rejected):q.setup_cleanup_session(folder,self.setup,worker,dict(end,**change))
+
+    def test_invalid_cell_slice_rejected_before_build_or_device_access(self):
+        with patch.object(q.build,'verify') as verify,patch.object(q,'device_state') as state:
+            for cells in [[],['SwiftUI'],['UIKit','UIKit'],['candidate']]:
+                with self.subTest(cells=cells),self.assertRaises(Rejected):q.prepare(self.root,self.root,'device',cells=cells)
+        verify.assert_not_called();state.assert_not_called()
 
 if __name__=='__main__':unittest.main()
 

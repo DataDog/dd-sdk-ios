@@ -85,18 +85,30 @@ runner records INVALID promptly and verifies that zero-action proof before clean
 Never use that path after sending an action or to invent a missing tool return.
 
 Start the qualification with `await-cell` before opening the Xcode interaction
-session. Publish the complete timestamped StartSession return as
-`sessions/<framework>/start.json`, then let the supported-input worker publish its
-single empty call as `capture.json`, including the exact `interaction_session_key`.
-The runner validates and retains both actual capture artifacts within the fixed
-120-second setup budget, then starts the existing cell in-process. Missing, failed,
-foreign or late receipts stop before installation. The native/input/cleanup clocks
-remain separate and cannot be extended. Preparation must finish before this wait;
-do not insert a model-driven launch step after readiness.
+session. Its immutable120-second setup budget starts before boot. The runner checks
+the exact planned shutdown simulator, runs `simctl bootstatus -b` within60seconds,
+and persists the raw output plus a device/plan-bound boot receipt. Only then does it
+publish `sessions/<framework>/request.json`. The input worker must wait for this
+request or a terminal setup summary; it must never create a session from `setup.json`.
+Publish the complete timestamped StartSession return as `start.json`, then the one
+actual empty capture as `capture.json`, including its `interaction_session_key`.
+The runner requires boot completion before StartSession and retains the current
+capture artifacts before dispatching the existing cell in-process. No missing,
+foreign, stale or late receipt can be repaired by extending a deadline.
 
-Wait for bounded `simctl bootstatus` completion before reading the app inventory.
+After a pre-cell failure, retain the actual worker return and prove both worker
+and runner quiescence. Use `finish-setup --quiescence <receipt>`; when a session was
+created, also pass `--end-receipt <invocation-receipt>`. Retain its actual return, exact session
+key, setup hash and start/end times after worker quiescence. Quiescence binds `setup_sha256`,
+`at`, `worker_stopped`, `runner_stopped`, `tool_pending`, `local_pending`, `session_key`
+and `session_start_attempted`. The helper restores only the planned simulator's
+original Shutdown state within the setup cleanup deadline. It preserves the original
+summary and records restoration separately; a failed restoration remains INCOMPLETE.
+This path cannot remove apps or clean a cell that already started.
+
 A simulator can report Booted while LaunchServices still lists a removed app.
-A missing directory alone is not proof of clean installation.
+Bounded boot completion must precede both session creation and app-inventory reads;
+missing filesystem directories alone do not establish clean installation.
 
 For a reviewed stack qualification, evaluate `capture_input.js` once with `helper`,
 `sequenceHelper`, `sequenceRoot` and `framework` pointing to the frozen phase and

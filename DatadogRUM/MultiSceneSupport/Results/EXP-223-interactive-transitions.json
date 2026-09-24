@@ -1982,7 +1982,25 @@
         "evidence": "INCOMPLETE",
         "cleanup": "PASS",
         "native_launches": 0,
-        "input_actions": 0
+        "input_actions": 0,
+        "boot_readiness": {
+          "state": "OFFLINE_REVIEWED",
+          "definition": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-boot-readiness-_x2hlep7/definition.json",
+            "sha256": "793d111e8e8f515fd2422dd2cf66e499a7b937aa8532163d2725186a18f832cd"
+          },
+          "controls": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-boot-readiness-_x2hlep7/controls-reviewed.json",
+            "sha256": "6784c9c3d90f6c9ea16bb140c69eb5ee8d858de2f08736d59e984af27bca2244"
+          },
+          "review": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-boot-readiness-_x2hlep7/review.json",
+            "sha256": "8b801d91c81fe7d11651ea591f1a603fbfd0037a88700c6dfc352e94b25c317a"
+          },
+          "tests": 34,
+          "native_admitted": false,
+          "gate_closures": []
+        }
       }
     }
   },
