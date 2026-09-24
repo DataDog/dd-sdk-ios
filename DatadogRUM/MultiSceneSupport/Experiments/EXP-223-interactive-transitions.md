@@ -307,7 +307,8 @@ background geometry synchronously, and uses a five-second fixture background tas
 until writer completion. The host requires the exact run/PID/checkpoint and an ended
 lease receipt; denial, expiry, failed writes and late callbacks remain invalid. Five
 controls, including seven compiled Swift lease scenarios, and three admission guards
-pass scoped review. Two source-bound physical builds are in progress. Only a fresh
+pass scoped review. Both replacement builds/four app signatures and exact runtime
+review pass. Only a fresh
 UIKit Home/checkpoint qualification may follow; it cannot recover the old run or
 admit candidate/SwiftUI or another full gesture pair. See the owning result for
 the definition, original failed controls, corrected controls and review.

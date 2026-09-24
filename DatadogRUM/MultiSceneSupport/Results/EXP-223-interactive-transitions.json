@@ -2319,7 +2319,7 @@
     "candidate": "NOT_RUN"
   },
   "physical_background_finalization": {
-    "state": "OFFLINE_QUALIFIED_BUILDS_IN_PROGRESS",
+    "state": "READY_FOR_HOME_ONLY_OPERATOR",
     "artifacts": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr",
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/definition.json",
@@ -2354,7 +2354,7 @@
     "scope": "Fixture-only five-second background lease, original 1.2-second settle, actual writer completion and required same-run/PID ended-lease receipt. No SDK or ownership-oracle change.",
     "native_launches": 0,
     "gate_closures": [],
-    "next_action": "Finish the two declared builds and signing; bind the reviewed one-cell Home-only UIKit runtime, refresh access and operator readiness, then qualify finalization before any full gesture pair.",
+    "next_action": "Await actual operator readiness, refresh any expired preflight, then run the single reviewed Home-only UIKit qualification. No four-gesture pair until its outcome review.",
     "limits": "Original physical INVALID and later restoration PASS remain separate. The uppercase UUID host mismatch was reproduced before any new native run; original two builds remain evidence, replaced by separately bound builds with unchanged generated Swift. No candidate, SwiftUI, equivalent retry or prior-run recovery.",
     "original_preparation": {
       "controls": {
@@ -2380,6 +2380,25 @@
     "identical_generated_source": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/identical-generated-source.json",
       "sha256": "9299b9a66148ea885b39dce3ad6f1590e5ddfda9e2655f0a21d3f8c44496317d"
-    }
+    },
+    "builds_qualified": 2,
+    "products_signed": 4,
+    "signed_products": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/build-receipt-case/signed-qualified/plan.json",
+      "sha256": "74e8e219061a0d8c1fe86a2db80a517d4ebffca4f9ec2fe223a3e5a5f3edeb55"
+    },
+    "runtime_plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/runtime-home/plan.json",
+      "sha256": "3b936c97ea8c01ad351d1cea692e5ef240b11e8e1f113e46f5cbc0a4b3ebf150"
+    },
+    "runtime_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/runtime-home/controls.json",
+      "sha256": "ed1cdb9872bcb2d0615119bc0be8128873d78ebe1a01b7bd0ece7d4a23c9582d"
+    },
+    "runtime_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/runtime-home/review.json",
+      "sha256": "1655db5ac7c240ff65a85a8edf0d04a31568a01b6306b6dcb439ae6928fa8f8f"
+    },
+    "source_checkpoint": "7384b9c01b45d6ee54a6e28bebd66d9847c31719"
   }
 }
