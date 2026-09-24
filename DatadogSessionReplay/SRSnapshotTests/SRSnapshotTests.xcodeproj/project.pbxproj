@@ -18,6 +18,8 @@
 		5BA07FD13002E97700322F5D /* TabFixtureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA07FD03002E97700322F5D /* TabFixtureView.swift */; };
 		5BB746152E02ABB900B568F1 /* SwiftUIFixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB746142E02ABB500B568F1 /* SwiftUIFixture.swift */; };
 		5BB746182E02B4CD00B568F1 /* SwiftUIViewWithPrivacyOverrides.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB746172E02B4CD00B568F1 /* SwiftUIViewWithPrivacyOverrides.swift */; };
+		5BBF351C3065310000E29D58 /* DrawingGroupFixtureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BBF351B3065310000E29D58 /* DrawingGroupFixtureView.swift */; };
+		5BBF351E3065417F00E29D58 /* CanvasFixtureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BBF351D3065417F00E29D58 /* CanvasFixtureView.swift */; };
 		614396642A5E8C0600197326 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614396632A5E8C0600197326 /* Environment.swift */; };
 		614396652A5E8C0600197326 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614396632A5E8C0600197326 /* Environment.swift */; };
 		619C49B429952E12006B66A6 /* SnapshotTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619C49B329952E12006B66A6 /* SnapshotTestCase.swift */; };
@@ -80,6 +82,8 @@
 		5BA07FD03002E97700322F5D /* TabFixtureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabFixtureView.swift; sourceTree = "<group>"; };
 		5BB746142E02ABB500B568F1 /* SwiftUIFixture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIFixture.swift; sourceTree = "<group>"; };
 		5BB746172E02B4CD00B568F1 /* SwiftUIViewWithPrivacyOverrides.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIViewWithPrivacyOverrides.swift; sourceTree = "<group>"; };
+		5BBF351B3065310000E29D58 /* DrawingGroupFixtureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawingGroupFixtureView.swift; sourceTree = "<group>"; };
+		5BBF351D3065417F00E29D58 /* CanvasFixtureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasFixtureView.swift; sourceTree = "<group>"; };
 		614396632A5E8C0600197326 /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Environment.swift; path = SRHost/Environment.swift; sourceTree = "<group>"; };
 		619C49B329952E12006B66A6 /* SnapshotTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotTestCase.swift; sourceTree = "<group>"; };
 		619C49B62995512A006B66A6 /* ImageComparison.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageComparison.swift; sourceTree = "<group>"; };
@@ -255,6 +259,8 @@
 				157EF5C8BCA348699A8B7D17 /* TextFixtureView.swift */,
 				5BA07FD03002E97700322F5D /* TabFixtureView.swift */,
 				5B0E062330060D7B004CF4D3 /* ToolbarFixtureView.swift */,
+				5BBF351B3065310000E29D58 /* DrawingGroupFixtureView.swift */,
+				5BBF351D3065417F00E29D58 /* CanvasFixtureView.swift */,
 			);
 			path = Fixtures;
 			sourceTree = "<group>";
@@ -453,12 +459,14 @@
 				0B2B4E26AC6546CAB12DB535 /* CompositionLayerView.swift in Sources */,
 				E6DE736005334DA8BD20F1E2 /* WireframeView.swift in Sources */,
 				5B94B8EB2FFFE3C5007DFF8E /* AlertFixtureView.swift in Sources */,
+				5BBF351C3065310000E29D58 /* DrawingGroupFixtureView.swift in Sources */,
 				5B0E062430060D80004CF4D3 /* ToolbarFixtureView.swift in Sources */,
 				86D5C4A1ED484C5DB60D627B /* ImageComposition.swift in Sources */,
 				AE7B8B1C89A64C54A5D4D229 /* ImageComparison.swift in Sources */,
 				DDE4CDCDBE7B45CBA219C5B6 /* SRLayerSnapshotTests.swift in Sources */,
 				5B1C4F92305C42B600C2745C /* LayerSnapshotEnvironment.swift in Sources */,
 				BBC8DFBCE103473D93F1139A /* TextFixtureView.swift in Sources */,
+				5BBF351E3065417F00E29D58 /* CanvasFixtureView.swift in Sources */,
 				5BA07FD13002E97700322F5D /* TabFixtureView.swift in Sources */,
 				B32BB660FF454E58B4B8B6BD /* BasicControlsAndIndicatorsFixtureView.swift in Sources */,
 				F5D1C29527334F449C400E97 /* LayerSnapshotTestCase.swift in Sources */,
