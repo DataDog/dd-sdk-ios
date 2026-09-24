@@ -12,9 +12,9 @@ from acceptance_common import Rejected
 from capture_io import encoded
 
 
-def sample(phase='setup.detail', framework='UIKit'):
+def sample(phase='setup.detail', framework='UIKit', surface=None):
     screen, target = c.PHASES[phase]; target = target or ('sheet.close' if screen == 'sheet' else screen+'.next')
-    sheet = screen == 'sheet'; rect = [48, 32, 936, 1312] if sheet else [0, 0, 1032, 1376]
+    sheet = screen == 'sheet'; rect = (surface or [48, 32, 936, 1312]) if sheet else [0, 0, 1032, 1376]
     marker = [rect[0]+20, rect[1]+70, 100, 20]; button = [rect[0]+20, rect[1]+120, rect[2]-40, 48]
     def fmt(r): return '{{'+str(float(r[0]))+', '+str(float(r[1]))+'}, {'+str(float(r[2]))+', '+str(float(r[3]))+'}}'
     raw = "Application bundle identifier: owned.app\nApplication UI orientation: Portrait\nApplication, pid: 123, label: 'fixture'\n"
@@ -39,6 +39,27 @@ def sample(phase='setup.detail', framework='UIKit'):
         topology=topology,transition=dict(model=dict(sheet=sheet),controllers=[
             dict(id='root',window='window',children=[],presented='sheet' if sheet else 'nil',presenting='nil'),
             *([dict(id='sheet',window='window',children=[],presented='nil',presenting='root')] if sheet else [])])))
+    if framework == 'SwiftUI' and sheet:
+        before['payload']['transition']['controllers'][1]['view'] = 'sheet-view'
+        inventory = []
+        for identity, identifier, parent, frame, is_view in [
+                ('window', 'nil', 'nil', [0, 0, 1032, 1376], True),
+                ('sheet-view', 'nil', 'window', rect, True),
+                ('marker', 'screen.sheet', 'sheet-view', marker, False),
+                ('close', 'sheet.close', 'sheet-view', button, False)]:
+            edge = 'owned-window' if parent == 'nil' else ('subviews' if is_view else 'accessibilityElements')
+            row = dict(id=identity, identifier=identifier, kind='UIView' if is_view else 'UIAccessibilityObject',
+                frame_in_window=frame, hidden=False, alpha=1, container_ids=[parent],
+                container_edges=[parent+':'+edge], visibility_basis='view-hierarchy' if is_view else 'container-path',
+                accessibility_elements_hidden=False,
+                visibility_paths=[dict(parent=parent, edge=edge, inherited_hidden=False, inherited_alpha=1, hidden=False, alpha=1)],
+                identifier_evidence=dict(typed_conformance=is_view, responds=True, selector='accessibilityIdentifier',
+                    value_present=identifier!='nil', returned_string=identifier!='nil',
+                    lookup='typed-protocol' if is_view else 'public-selector', return_type='typed-string' if is_view else '@',
+                    argument_count=0 if is_view else 2))
+            if is_view: row['view_state'] = dict(parent=parent, window='window', hidden=False, alpha=1)
+            inventory.append(row)
+        topology['accessibility'] = inventory
     return request, raw, before
 
 
@@ -89,7 +110,8 @@ class Selectors(unittest.TestCase):
         graph[0]['children']=['contained']
         graph.append(dict(id='contained',window='window',children=[],presented='sheet',presenting='nil'))
         value=c.select(request,raw,before)
-        self.assertEqual(value['provenance']['presentation'],dict(presenter='root',presented='sheet'))
+        self.assertEqual({k:value['provenance']['presentation'][k] for k in ['presenter','presented','view']},
+                         dict(presenter='root',presented='sheet',view='sheet-view'))
     def test_multiple_real_reciprocal_presentations_remain_ambiguous(self):
         request,raw,before=sample('dismiss.cancel','SwiftUI')
         graph=before['payload']['transition']['controllers']
@@ -101,6 +123,80 @@ class Selectors(unittest.TestCase):
         with self.assertRaises(Rejected):c.select(request,raw.replace('936.0, 1312.0','300.0, 200.0'),before)
         before['payload']['transition']['model']['sheet']=False
         with self.assertRaises(Rejected):c.select(request,raw,before)
+
+
+    def test_medium_swiftui_sheet_uses_actual_presented_view_not_window_fractions(self):
+        for phase in ['dismiss.finish', 'dismiss.cancel']:
+            request, raw, before = sample(phase, 'SwiftUI', [226, 358, 580, 660])
+            result = c.select(request, raw, before)
+            self.assertEqual(result['provenance']['sheet'], [226, 358, 580, 660])
+            self.assertEqual(result['provenance']['presentation']['view'], 'sheet-view')
+            self.assertEqual(result['provenance']['points'][0], (516, 374))
+            if phase.endswith('cancel'):
+                self.assertEqual(result['provenance']['points'][-1], (516, 374))
+
+    def test_identical_nested_wrappers_are_retained_as_geometry_not_native_identity(self):
+        request, raw, before = sample('dismiss.finish', 'SwiftUI', [226, 358, 580, 660])
+        wrapper = "Other, {{226.0, 358.0}, {580.0, 660.0}}"
+        raw = raw.replace("   StaticText,", "   "+wrapper+"\n    "+wrapper+"\n     "+wrapper+"\n      StaticText,", 1)
+        raw = raw.replace("   Button,", "      Button,", 1)
+        result = c.select(request, raw, before)
+        self.assertEqual(result['provenance']['sheet'], [226, 358, 580, 660])
+        self.assertEqual(result['provenance']['presentation']['tool_ancestors'], [wrapper]*4)
+        self.assertEqual(result['provenance']['presentation']['view'], 'sheet-view')
+
+    def test_equal_sibling_wrappers_cannot_be_substituted_for_a_shared_ancestor(self):
+        request, raw, before = sample('dismiss.finish', 'SwiftUI', [226, 358, 580, 660])
+        raw = raw.replace("   Button,", "  Other, {{226.0, 358.0}, {580.0, 660.0}}\n   Button,", 1)
+        with self.assertRaisesRegex(Rejected, 'not a shared ancestor'):
+            c.select(request, raw, before)
+
+    def test_duplicate_sheet_identifiers_do_not_collapse_to_one_rectangle(self):
+        request, raw, before = sample('dismiss.finish', 'SwiftUI', [226, 358, 580, 660])
+        for identifier in ['screen.sheet', 'sheet.close']:
+            line = next(line for line in raw.splitlines() if "identifier: '"+identifier+"'" in line)
+            changed = raw.replace(line, line+'\n'+line, 1)
+            with self.subTest(identifier=identifier), self.assertRaises(Rejected):
+                c.select(request, changed, before)
+
+    def test_presented_view_identity_physical_visibility_and_frame_are_required(self):
+        changes = [lambda t,g: g[1].pop('view'),
+                   lambda t,g: g[1].update(view='foreign'),
+                   lambda t,g: g[1].update(view='marker'),
+                   lambda t,g: t['accessibility'].append(copy.deepcopy(t['accessibility'][1])),
+                   lambda t,g: t['accessibility'][1].update(visibility_basis='container-path'),
+                   lambda t,g: t['accessibility'][1].pop('view_state'),
+                   lambda t,g: t['accessibility'][1]['view_state'].update(window='foreign'),
+                   lambda t,g: t['accessibility'][1]['view_state'].update(hidden=True),
+                   lambda t,g: t['accessibility'][1].update(frame_in_window=[20, 20, 200, 200]),
+                   lambda t,g: t['accessibility'][1].update(frame_in_window=[226, 358, float('nan'), 660])]
+        for change in changes:
+            request, raw, before = sample('dismiss.finish', 'SwiftUI', [226, 358, 580, 660])
+            change(before['payload']['topology'], before['payload']['transition']['controllers'])
+            with self.subTest(change=change), self.assertRaises((Rejected, ValueError)):
+                c.select(request, raw, before)
+
+    def test_sheet_identifiers_must_be_owned_by_presented_subtree_on_every_alias_path(self):
+        for target in ['marker', 'close']:
+            request, raw, before = sample('dismiss.finish', 'SwiftUI', [226, 358, 580, 660])
+            row = next(r for r in before['payload']['topology']['accessibility'] if r['id'] == target)
+            row['container_ids'].append('window'); row['container_edges'].append('window:automationElements')
+            row['visibility_paths'].append(dict(parent='window',edge='automationElements',inherited_hidden=False,
+                                                inherited_alpha=1,hidden=False,alpha=1))
+            with self.subTest(target=target), self.assertRaisesRegex(Rejected, 'bypasses presented view'):
+                c.select(request, raw, before)
+
+    def test_sheet_content_only_stale_or_different_target_geometry_rejects(self):
+        request, raw, before = sample('dismiss.finish', 'SwiftUI', [226, 358, 580, 660])
+        for changed in [raw.replace('580.0, 660.0', '200.0, 200.0'),
+                        raw.replace('226.0, 358.0', '240.0, 370.0'),
+                        raw.replace("identifier: 'screen.sheet'", "identifier: 'screen.other'"),
+                        raw.replace("label: 'Dismiss sheet'", "label: 'Other'"),
+                        raw.replace('Button,', 'StaticText,', 1),
+                        raw.replace('246.0, 428.0', '256.0, 428.0'),
+                        raw.replace('246.0, 478.0', '256.0, 478.0')]:
+            with self.subTest(raw=changed), self.assertRaises((Rejected, ValueError)):
+                c.select(request, changed, before)
 
 
 class Publication(unittest.TestCase):

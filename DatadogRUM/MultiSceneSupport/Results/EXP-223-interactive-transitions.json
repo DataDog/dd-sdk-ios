@@ -326,7 +326,7 @@
     }
   ],
   "gate_closures": [],
-  "next_action": "Preserve the original Home INVALID and separate restoration PASS. Backend metadata rules pass24 offline controls/review, but missing replay flags, stale Home terminal and incidental TTID still prevent acceptance. Advance the source-defined SwiftUI conflict capture preparation; no equivalent Home/query/candidate retry.",
+  "next_action": "Prepare and review an exact helper-only predecessor mapping before one fresh SwiftUI qualification. Reuse unchanged products and accepted UIKit; preserve original INVALID/cleanup PASS and all semantic limits.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
@@ -397,7 +397,7 @@
       "scope": "Fixture/native and local paired oracle only. Full runtime, backend, adaptive geometry and physical execution remain unqualified."
     }
   },
-  "updated_at": 1790287990.300622,
+  "updated_at": 1790290099.138643,
   "live_environment": {
     "observed_at": "2026-09-23T19:45:47.121281+00:00",
     "xcode": "27.1 (27A9269)",
@@ -2344,7 +2344,7 @@
               "cleanup": "PASS",
               "remaining": "Both required source-declared identifiers are absent. SwiftUI generic objects carry actual home/Open detail labels and geometry but formal UIAccessibilityIdentification cast yields no identifier. Labels cannot replace identifiers; inspect public getter contract before any correction.",
               "public_identifier_repair": {
-                "state": "BUILD_QUALIFIED_NATIVE_UNADMITTED",
+                "state": "IDENTIFIERS_AND_POP_CAPTURE_QUALIFIED_SHEET_INPUT_STOPPED",
                 "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-identifier-r2tgxyim",
                 "definition": {
                   "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-identifier-r2tgxyim/definition.json",
@@ -2386,7 +2386,49 @@
                 },
                 "native_admitted": false,
                 "gate_closures": [],
-                "next_action": "Final plan/worker review of one existing SwiftUI baseline qualification. Exact identifiers and owned graph must pass before input; accepted UIKit predecessor is mapped without rerun."
+                "next_action": "Prepare and review an exact helper-only predecessor mapping before one fresh SwiftUI qualification. Reuse unchanged products and accepted UIKit; preserve original INVALID/cleanup PASS and all semantic limits.",
+                "native_review": {
+                  "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-identifier-r2tgxyim/qualification/review.json",
+                  "sha256": "e0739d61e157acec39320af825aa7bf596ac10dc27b6deda325147ccd32411fe"
+                },
+                "source_checkpoint": "fcff50b9b6c6d16e1e32cfb2887f0519c40e82cc",
+                "outcome": {
+                  "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-identifier-r2tgxyim/qualification/outcome.json",
+                  "sha256": "c216c2c5dac6f38aac29e2376fe4048294a5678a584513e3b348617fc22c1d70"
+                },
+                "cleanup": {
+                  "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-identifier-r2tgxyim/qualification/cleanup-readback.json",
+                  "sha256": "2354643abd2dbb28cfb5de4ac8914b0776b5bdecc43d801118952a2d6339a955"
+                },
+                "outcome_review": {
+                  "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-identifier-r2tgxyim/qualification/outcome-review.json",
+                  "sha256": "bd617218d5ba62ccf69907f5f2553d6b49bfa7a0fac52dcc1ca62b320ead7137"
+                },
+                "sheet_owner_repair": {
+                  "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-sheet-owner-1quvrxj0",
+                  "state": "OFFLINE_SHEET_OWNER_REPAIR_REVIEWED",
+                  "definition": {
+                    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-sheet-owner-1quvrxj0/definition.json",
+                    "sha256": "345b53a6b383a9620f0a53985a1426fb63d6bc7a4c2bedd9e7d2157a75028874"
+                  },
+                  "controls": {
+                    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-sheet-owner-1quvrxj0/controls-02.json",
+                    "sha256": "042cce6aa9c982b42f929e392488c8708ac5bcf214194a279971accd2137ea8d"
+                  },
+                  "controls_count": 79,
+                  "replay": {
+                    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-sheet-owner-1quvrxj0/offline-replay-02.json",
+                    "sha256": "b351beb64ccaf5eddae2b2e7a6d97858149ae96eb4c8ad3d8e81c0100409e999"
+                  },
+                  "review": {
+                    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-sheet-owner-1quvrxj0/source-review.json",
+                    "sha256": "431386dad4039109258e591e3c7c3564132dea0d30aec7f1217049950c83d232"
+                  },
+                  "native_operations": 0,
+                  "native_admitted": false,
+                  "gate_closures": [],
+                  "next_action": "Prepare and review an exact helper-only predecessor mapping before one fresh SwiftUI qualification. Reuse unchanged products and accepted UIKit; preserve original INVALID/cleanup PASS and all semantic limits."
+                }
               }
             }
           }

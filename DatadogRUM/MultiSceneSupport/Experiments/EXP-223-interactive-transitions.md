@@ -399,3 +399,30 @@ scoped source review pass; a fresh baseline build qualifies. Exact source mappin
 reuses accepted UIKit evidence without another run. The single SwiftUI baseline
 qualification still needs final plan/worker review, and must stop before gestures
 unless the exact identifiers and full owned graph pass. No release gate closes.
+
+
+The one reviewed native qualification proves actual nonconforming-object identifiers
+and five completed inputs. Both pop callback chains qualify; cancellation preserves
+its occurrence. Completion keeps its semantic FAIL because independent occurrence
+mapping follows callback work. This is the baseline only, with no candidate or
+backend comparison. The sixth step stops before input: the native presented view
+and actual hierarchy show a580x660 sheet in a1032x1376 window, outside the selector's
+fractional size assumptions. Do not lower thresholds or change the fixture layout.
+
+The full attempt stays INVALID/NOT_EXECUTED/INCOMPLETE. All six request outcomes are
+proved, with no uncertain dispatch; task removal, creator-context session end and
+Shutdown restoration pass. A supplemental listapps read after Shutdown is separately
+unavailable; observed task-container and PID absence are verified without reboot.
+Automated sheet execution is stopped. The next bounded work is an offline owner/
+geometry correction using the saved presentedUIView and actual hierarchy, while
+preserving exact source, window, presentation and accessibility ownership checks.
+
+
+The offline sheet correction binds geometry to the reciprocal presented controller's
+actual visible UIView and both exact identifiers' native subtree. It retains all
+four same-frame nested tool ancestors with strict depth/ancestry checks. Seventy-nine
+controls and replay of the original capture pass scoped review; the frozen prior
+selector reproduces its original rejection. UIKit, pop, callbacks, transport and
+cleanup remain unchanged. No native effect or gate closure follows. The next
+preparation maps only this host selector delta to unchanged products before any
+fresh qualification; the stopped attempt and semantic limitations stay immutable.

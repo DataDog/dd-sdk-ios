@@ -15,7 +15,7 @@
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
   "human_work": "UNADMITTED_WHILE_OPERATOR_SLEEPS",
-  "checkpoint": "8788469ead96f43941fdfd003a9feaf153bcaeb8",
+  "checkpoint": "fcff50b9b6c6d16e1e32cfb2887f0519c40e82cc",
   "tasks": [
     {
       "id": "capture-backend",
@@ -52,14 +52,15 @@
       "dependency": "Read the current EXP223 visibility diagnostic definition and reviewer disposition",
       "decisive_test": "Focused source/negative controls and at most the already justified native qualification if all new prerequisites and bounded review are satisfied",
       "environment": "Offline first; qualified simulator only when available without human input",
-      "state": "PUBLIC_IDENTIFIER_BUILD_QUALIFIED_NATIVE_UNADMITTED",
+      "state": "OFFLINE_SHEET_OWNER_REPAIR_REVIEWED",
       "result": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-identifier-r2tgxyim/build/A-simulator/build-result.json",
-        "sha256": "7ce5cc6d35e568883647cdf206bb858f162d548979bb9ed0fd1785246769179d"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-sheet-owner-1quvrxj0/outcome.json",
+        "sha256": "3baf7e7cda12a6013ea46452d982a6d572904421b64d03958053a6da9427d6d5"
       },
       "remaining": [
-        "Review final SwiftUI-only baseline plan and supported-tool worker",
-        "Require exact public identifiers and full owned graph before input; one bounded qualification, no human/candidate/backend/gate claim"
+        "Fresh source-bound host-helper mapping and runtime review before one changed-selector qualification; no rebuild or accepted UIKit rerun",
+        "Original full scenario INVALID and cleanup PASS preserved; baseline completion semantic timing FAIL remains",
+        "Physical/backend qualification and human readiness remain open"
       ]
     },
     {
@@ -86,5 +87,5 @@
     "No Replay content, unrelated CI flakes, optional networking benchmarks or physical Duo acceptance"
   ],
   "gate_closures": [],
-  "updated_at": 1790287990.302212
+  "updated_at": 1790290099.140648
 }

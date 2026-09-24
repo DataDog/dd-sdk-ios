@@ -70,6 +70,60 @@ def nodes(request, raw):
     return result
 
 
+def swiftui_sheet_surface(snapshot, binding, window, marker, control, common):
+    """Bind tool geometry to the actual public presented view and its subtree."""
+    topology = snapshot['payload']['topology']
+    require(topology['framework'] == 'SwiftUI' and snapshot['payload']['transition']['model']['sheet'] is True,
+            'native SwiftUI sheet not presented')
+    graph = q.driver.native.controller_map(snapshot)
+    front = q.driver.geometry.front_controllers(snapshot, binding)
+    pairs = [(parent, graph.get(parent['presented'])) for parent in graph.values()
+             if parent['window'] == binding['window'] and parent['presented'] != 'nil'
+             and graph.get(parent['presented'], {}).get('presenting') == parent['id']]
+    parent, receiver = one(pairs, 'ambiguous public sheet presentation')
+    require(receiver is not None and receiver['id'] in front and receiver['window'] == binding['window'],
+            'public presented owner is not attached and foremost')
+    inventory = topology['accessibility']
+    view = one([row for row in inventory if row.get('id') == receiver.get('view')],
+               'presented public view missing or ambiguous')
+    require(view.get('kind') == 'UIView' and view.get('visibility_basis') == 'view-hierarchy'
+            and view.get('hidden') is False and view.get('alpha', 0) > 0,
+            'presented public view lacks physical visibility')
+    q.driver.capture_contract.accessibility_owner(inventory, view, binding['window'])
+    frame = q.driver.capture_contract.rectangle(view['frame_in_window'])
+    require(contains(window['rect'], frame), 'presented view outside owned window')
+    require(control['role'] == 'Button' and control['label'] == LABELS['sheet.close'],
+            'wrong sheet control role or label')
+    rows = {row['id']: row for row in inventory}
+    for identifier, actual in [('screen.sheet', marker), ('sheet.close', control)]:
+        target = q.driver.capture_contract.target(snapshot, identifier, binding)
+        require(close_rect(actual['rect'], target['frame_in_window']) and contains(frame, actual['rect']),
+                'sheet target differs from current presented geometry')
+        # Every public alias path must pass through the presented view. A path
+        # to the window through another content root cannot supply ownership.
+        seen = set(); pending = [target['id']]; reached = False
+        while pending:
+            current = pending.pop()
+            if current == view['id']:
+                reached = True; continue
+            require(current in rows and current != binding['window'], 'sheet target bypasses presented view')
+            if current in seen: continue
+            seen.add(current); pending.extend(rows[current]['container_ids'])
+        require(reached, 'sheet target is outside presented public subtree')
+    # AX may expose several wrappers for the same presented surface. Retain
+    # each observation; ownership comes from the unique native view above.
+    matching = [node for node in common if close_rect(node['rect'], frame)]
+    require(matching, 'actual enclosing surface does not match presented view')
+    for index, node in enumerate(matching):
+        require(all(any(node is ancestor for ancestor in target['ancestors']) for target in [marker, control]),
+                'matching surface is not a shared ancestor')
+        require(index == 0 or (matching[index-1]['depth'] < node['depth']
+                and any(matching[index-1] is ancestor for ancestor in node['ancestors'])),
+                'matching surfaces are not one nested ancestry chain')
+    return frame, dict(presenter=parent['id'], presented=receiver['id'], view=view['id'],
+                       tool_ancestors=[node['line'].strip() for node in matching])
+
+
 def select(request, raw, snapshot):
     """No stale coordinates: every command derives from this exact hierarchy."""
     require(request['phase'] in PHASES, 'unadmitted input phase')
@@ -110,29 +164,18 @@ def select(request, raw, snapshot):
             control = one([n for n in inventory if n['identifier'] == 'sheet.close'], 'sheet control missing or ambiguous')
             require(window in control['ancestors'], 'sheet control belongs to another window')
             common = [n for n in marker['ancestors'] if n in control['ancestors'] and n is not window]
-            # Source declares a sheet, not a custom popover. Require a large inset
-            # enclosing surface; a small SwiftUI content stack cannot supply it.
-            candidates = {tuple(n['rect']) for n in common if contains(window['rect'], n['rect'])
-                          and n['rect'][0] > x and n['rect'][1] > y and n['rect'][2] < w
-                          and n['rect'][2] > w*.7 and n['rect'][3] > h*.6
-                          and n['rect'][1] < y+h*.15 and n['rect'][1]+n['rect'][3] > y+h*.7}
-            outer = [r for r in candidates if all(contains(r, s) for s in candidates)]
-            sheet = one(outer, 'sheet enclosing surface missing or ambiguous')
             if t['framework'] == 'UIKit':
+                candidates = {tuple(n['rect']) for n in common if contains(window['rect'], n['rect'])
+                              and n['rect'][0] > x and n['rect'][1] > y and n['rect'][2] < w
+                              and n['rect'][2] > w*.7 and n['rect'][3] > h*.6
+                              and n['rect'][1] < y+h*.15 and n['rect'][1]+n['rect'][3] > y+h*.7}
+                outer = [r for r in candidates if all(contains(r, s) for s in candidates)]
+                sheet = one(outer, 'sheet enclosing surface missing or ambiguous')
                 controller = one([n for n in common if n['identifier'] == 'controller.sheet'], 'owned UIKit sheet surface missing')
                 require(close_rect(controller['rect'], sheet), 'UIKit sheet surface mismatch')
             else:
-                require(t['framework'] == 'SwiftUI' and snapshot['payload']['transition']['model']['sheet'] is True,
-                        'native SwiftUI sheet not presented')
-                graph = q.driver.native.controller_map(snapshot)
-                front = q.driver.geometry.front_controllers(snapshot, binding)
-                presented = [(parent, graph.get(parent['presented'])) for parent in graph.values()
-                             if parent['window'] == binding['window'] and parent['presented'] != 'nil'
-                             and graph.get(parent['presented'], {}).get('presenting') == parent['id']]
-                parent, receiver = one(presented, 'ambiguous public sheet presentation')
-                require(receiver is not None and receiver['id'] in front and receiver['window'] == binding['window']
-                        and receiver['presenting'] == parent['id'], 'public presented owner is not attached and foremost')
-                provenance['presentation'] = dict(presenter=parent['id'], presented=receiver['id'])
+                sheet, presentation = swiftui_sheet_surface(snapshot, binding, window, marker, control, common)
+                provenance['presentation'] = presentation
             sx, sy, sw, sh = sheet
             begin = (sx+sw/2, sy+16)
             require(begin[1] < min(marker['rect'][1], control['rect'][1]), 'sheet gesture would start in content')

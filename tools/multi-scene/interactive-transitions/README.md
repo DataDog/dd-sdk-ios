@@ -189,4 +189,12 @@ qualifies, but exact screen/action identifiers are absent on generic objects. Th
 is still a stop before gestures. The public getter repair is source-reviewed and
 build-qualified, with70 controls. It records the actual typed/selector lookup and
 checks object-return ABI before invoking a nonconforming getter. Missing identifiers
-still reject; the owner admits any separately reviewed native qualification.
+still reject. The single native qualification now proves identifiers and both pop
+chains, but stops before sheet input on an incorrect fractional-size assumption.
+The full attempt remains INVALID with cleanup PASS; no equivalent retry is admitted.
+The reviewed host correction uses the unique reciprocal presented controller view
+and exact native identifier subtree. It retains all matching nested tool wrappers
+and their raw lines, rejecting sibling substitution and conflicting geometry. The
+existing products need no rebuild; fresh runtime mapping/review must bind this delta
+before one qualification. Baseline completion semantic timing remains a separate
+FAIL; no candidate, backend or release claim follows.
