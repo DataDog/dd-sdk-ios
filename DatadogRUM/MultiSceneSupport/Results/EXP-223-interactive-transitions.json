@@ -326,7 +326,7 @@
     }
   ],
   "gate_closures": [],
-  "next_action": "Prepare and review an exact helper-only predecessor mapping before one fresh SwiftUI qualification. Reuse unchanged products and accepted UIKit; preserve original INVALID/cleanup PASS and all semantic limits.",
+  "next_action": "Freeze and review the fresh input-worker bindings, then run at most one SwiftUI baseline capture qualification. No rebuild, UIKit rerun, candidate, backend, human input or gate closure.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
@@ -397,7 +397,7 @@
       "scope": "Fixture/native and local paired oracle only. Full runtime, backend, adaptive geometry and physical execution remain unqualified."
     }
   },
-  "updated_at": 1790290099.138643,
+  "updated_at": 1790290546.5510058,
   "live_environment": {
     "observed_at": "2026-09-23T19:45:47.121281+00:00",
     "xcode": "27.1 (27A9269)",
@@ -2427,7 +2427,31 @@
                   "native_operations": 0,
                   "native_admitted": false,
                   "gate_closures": [],
-                  "next_action": "Prepare and review an exact helper-only predecessor mapping before one fresh SwiftUI qualification. Reuse unchanged products and accepted UIKit; preserve original INVALID/cleanup PASS and all semantic limits."
+                  "next_action": "Freeze and review the fresh input-worker bindings, then run at most one SwiftUI baseline capture qualification. No rebuild, UIKit rerun, candidate, backend, human input or gate closure.",
+                  "runtime_preparation": {
+                    "state": "PREPARED_UNADMITTED",
+                    "plan": {
+                      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-sheet-owner-1quvrxj0/qualification/plan.json",
+                      "sha256": "ead2deb50f00cf6bbc9e162ff4dff92288d659d53e68272f7557941392e71763"
+                    },
+                    "controls": {
+                      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-sheet-owner-1quvrxj0/qualification/controls.json",
+                      "sha256": "063c7a35082c66d66d4b8f14b5886cc7b17a9ebd0272ef625de280bc243341ce"
+                    },
+                    "mapping": {
+                      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-sheet-owner-1quvrxj0/selector-source-mapping.json",
+                      "sha256": "96ce44202010a65c54ad3a57d167b2050905208be39c60b801da838b5c84690b"
+                    },
+                    "review": {
+                      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-sheet-owner-1quvrxj0/mapping-review.json",
+                      "sha256": "18752c28fb0ba0491396e1be5238e51619a64ddc99f656cc194fdb487640110c"
+                    },
+                    "build_reused": true,
+                    "accepted_uikit_reused": true,
+                    "max_native_cells": 1,
+                    "retries": 0,
+                    "native_admitted": false
+                  }
                 }
               }
             }

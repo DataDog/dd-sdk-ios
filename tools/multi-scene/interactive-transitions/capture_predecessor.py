@@ -11,6 +11,7 @@ PREFIX = 'tools/multi-scene/interactive-transitions/'
 QUALIFIER = PREFIX + 'capture_qualification.py'
 ORACLE = 'tools/multi-scene/automatic-coverage/human_contract.py'
 BUILDER = PREFIX + 'build.py'
+INPUT = PREFIX + 'capture_input.py'
 FILES = ['plan.json', 'review.json', 'controls.json', 'outcome-review.json',
          'cells/UIKit/summary.json', 'cells/UIKit/native-summary.json',
          'cells/UIKit/restore-shutdown.json', 'cells/UIKit/restore-shutdown.log',
@@ -78,6 +79,33 @@ def source_mapping(previous, current, kind):
         require(False, 'unknown source mapping')
     require(ast.dump(old) == ast.dump(new), 'source changed beyond reviewed ' + kind + ' delta')
     return build.digest(ast.dump(old))
+
+
+
+def sheet_input_mapping(previous, current):
+    """Preserve every UIKit/shared statement outside the reviewed SwiftUI branch."""
+    old, new = ast.parse(previous), ast.parse(current)
+    def named(module, name):
+        found = [node for node in module.body if isinstance(node, ast.FunctionDef) and node.name == name]
+        require(len(found) == 1, 'ambiguous sheet mapping function: ' + name)
+        return found[0]
+    require(not any(isinstance(node, ast.FunctionDef) and node.name == 'swiftui_sheet_surface' for node in old.body),
+            'sheet helper already present in original qualification')
+    helper = named(new, 'swiftui_sheet_surface'); new.body.remove(helper)
+    condition = ast.dump(ast.parse("t['framework'] == 'UIKit'", mode='eval').body)
+    class UIKitBranch(ast.NodeTransformer):
+        count = 0
+        def visit_If(self, node):
+            if ast.dump(node.test) == condition:
+                self.count += 1
+                require(node.body and node.orelse, 'sheet mapping requires both framework branches')
+                return node.body
+            return self.generic_visit(node)
+    for module in [old, new]:
+        selection = named(module, 'select'); branch = UIKitBranch(); branch.visit(selection)
+        require(branch.count == 1, 'missing or duplicate sheet framework branch')
+    require(ast.dump(old) == ast.dump(new), 'sheet input changed outside the reviewed SwiftUI branch')
+    return dict(unchanged_module=build.digest(ast.dump(old)),swiftui_helper=build.digest(ast.dump(helper)))
 
 
 def verified_build(root):
@@ -209,6 +237,14 @@ def bind(root, build_root, compiled, products, device, helpers):
         mapping['oracle_unchanged_module'] = source_mapping((root/'helpers'/ORACLE).read_text(),(shared.REPO/ORACLE).read_text(),'oracle')
         mapping['old_oracle_sha256'] = plan['helpers'][ORACLE]
         mapping['new_oracle_sha256'] = helpers[ORACLE]
+    selector_mapping = None
+    if INPUT in plan['helpers'] and helpers.get(INPUT) != plan['helpers'][INPUT]:
+        require(mapping is not None and compiled.get('public_accessibility_inventory') is True,
+                'sheet mapping requires reviewed public native inventory')
+        selector_mapping = dict(**sheet_input_mapping((root/'helpers'/INPUT).read_text(),
+                                                     (shared.REPO/INPUT).read_text()),
+                                previous_sha256=plan['helpers'][INPUT],current_sha256=helpers[INPUT])
+        permitted_changes |= {INPUT, PREFIX+'test_capture_input.py'}
     require(set(plan['helpers']) <= set(helpers) and set(helpers)-set(plan['helpers']) <= additions
             and all(helpers[n] == h for n,h in plan['helpers'].items() if n not in permitted_changes),
             'predecessor native helper surface changed')
@@ -217,6 +253,7 @@ def bind(root, build_root, compiled, products, device, helpers):
         previous_qualifier_sha256=plan['helpers'][QUALIFIER],current_qualifier_sha256=helpers[QUALIFIER],
         runtime_functions=runtime,release_acceptance=False,gate_closures=[])
     if mapping is not None:result['build_mapping'] = mapping
+    if selector_mapping is not None:result['sheet_input_mapping'] = selector_mapping
     return result
 
 

@@ -30,6 +30,30 @@ def await_cell(root, framework):
 '''
 
 
+SHEET_OLD = """CONSTANT = 1
+def select(request, raw, snapshot):
+    verify_window()
+    if is_pop():
+        points = pop_points()
+    else:
+        candidates = old_candidates()
+        sheet = old_surface(candidates)
+        if t['framework'] == 'UIKit':
+            verify_uikit(sheet)
+        else:
+            verify_swiftui(sheet)
+    points = make_points(sheet)
+    return command(points)
+def publish():
+    preserve_actual_return()
+"""
+SHEET_NEW = """def swiftui_sheet_surface(snapshot):
+    return reviewed_native_surface(snapshot)
+"""+SHEET_OLD.replace("        candidates = old_candidates()\n        sheet = old_surface(candidates)\n", "").replace(
+    "        if t['framework'] == 'UIKit':\n", "        if t['framework'] == 'UIKit':\n            candidates = old_candidates()\n            sheet = old_surface(candidates)\n").replace(
+    "            verify_swiftui(sheet)", "            sheet = swiftui_sheet_surface(snapshot)")
+
+
 class Predecessor(unittest.TestCase):
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
@@ -128,6 +152,20 @@ class Predecessor(unittest.TestCase):
                         allowed.replace("== 'PASS'", "!= 'PASS'"),
                         allowed.replace('capture_predecessor.summary_path(root, plan)', 'foreign_summary(root)')]:
             with self.subTest(source=changed),self.assertRaises(Rejected):p.runtime_mapping(SOURCE,changed)
+    def test_sheet_delta_requires_public_inventory_and_binds_exact_source(self):
+        old = self.prior/'helpers'/p.INPUT; old.write_text(SHEET_OLD)
+        current = self.repo/p.INPUT; current.write_text(SHEET_NEW)
+        old_hash = p.shared.sha(old); new_hash = p.shared.sha(current)
+        self.plan['helpers'][p.INPUT] = old_hash; self.helpers[p.INPUT] = new_hash
+        self.write(self.prior/'plan.json',self.plan)
+        self.write(self.prior/'controls.json',dict(state='PASS',plan_sha256=p.shared.sha(self.prior/'plan.json'),helpers=self.plan['helpers']))
+        self.write(self.prior/'review.json',dict(state='PASS',reviewer='/root/c06_runtime_plan',
+            plan_sha256=p.shared.sha(self.prior/'plan.json'),controls_sha256=p.shared.sha(self.prior/'controls.json')))
+        worker=p.shared.read(self.prior/'fresh-worker-quiescence.json');worker['plan_sha256']=p.shared.sha(self.prior/'plan.json')
+        self.write(self.prior/'fresh-worker-quiescence.json',worker)
+        with self.assertRaisesRegex(Rejected, 'requires reviewed public native inventory'):
+            self.bind()
+
     def test_predecessor_cannot_enable_candidate_or_duplicate_uikit_execution(self):
         receipt=self.bind()
         for cells in [['UIKit'],['UIKit','SwiftUI'],['candidate'],[]]:
@@ -148,6 +186,29 @@ class SourceMappings(unittest.TestCase):
                         new.replace(call,'').replace('    return item\n','    return item\n'+call),
                         new.replace(call,'').replace('    item=',call+'    item='),new+'\ndef extra_native(): pass\n']:
             with self.subTest(source=changed),self.assertRaises(Rejected):p.source_mapping(old,changed,'oracle')
+
+    def test_sheet_mapping_preserves_uikit_and_every_shared_statement(self):
+        proof = p.sheet_input_mapping(SHEET_OLD, SHEET_NEW)
+        self.assertEqual(set(proof), {'unchanged_module', 'swiftui_helper'})
+        for original, replacement in [('CONSTANT = 1', 'CONSTANT = 2'),
+                ('verify_window()', 'skip_window()'), ('pop_points()', 'other_points()'),
+                ('old_candidates()', 'weaker_candidates()'), ('verify_uikit(sheet)', 'skip_uikit(sheet)'),
+                ('make_points(sheet)', 'change_gesture(sheet)'), ('command(points)', 'other_command(points)'),
+                ('preserve_actual_return()', 'substitute_old_return()')]:
+            with self.subTest(original=original), self.assertRaises(Rejected):
+                p.sheet_input_mapping(SHEET_OLD, SHEET_NEW.replace(original, replacement))
+        for source in [SHEET_NEW+"\ndef new_side_effect(): pass\n",
+                       SHEET_NEW.replace("t['framework'] == 'UIKit'", "t['framework'] != 'UIKit'"),
+                       SHEET_NEW.replace('    verify_window()', "    if t['framework'] == 'UIKit':\n        pass\n    else:\n        pass\n    verify_window()"),
+                       SHEET_NEW.replace('def swiftui_sheet_surface(snapshot):', 'def other_helper(snapshot):')]:
+            with self.subTest(source=source), self.assertRaises(Rejected):
+                p.sheet_input_mapping(SHEET_OLD, source)
+
+    def test_sheet_mapping_rejects_missing_original_selection_or_existing_helper(self):
+        for old in [SHEET_OLD.replace('def select(', 'def different('), SHEET_NEW,
+                    SHEET_OLD.replace("t['framework'] == 'UIKit'", "t['framework'] == 'SwiftUI'")]:
+            with self.subTest(source=old), self.assertRaises(Rejected):
+                p.sheet_input_mapping(old, SHEET_NEW)
 
     def test_builder_mapping_allows_only_preparation_function_change(self):
         old='SCOPE = 1\ndef prepare(): pass\ndef build(): check_product()\n'

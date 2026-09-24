@@ -198,3 +198,11 @@ and their raw lines, rejecting sibling substitution and conflicting geometry. Th
 existing products need no rebuild; fresh runtime mapping/review must bind this delta
 before one qualification. Baseline completion semantic timing remains a separate
 FAIL; no candidate, backend or release claim follows.
+
+
+Host-only SwiftUI sheet selection changes can reuse the accepted UIKit cell only
+through the predecessor's full-module AST comparison: selecting UIKit must preserve
+every original shared, pop, input and cleanup statement. The new SwiftUI helper and
+all current helper hashes remain separately reviewed and frozen. Require the public
+native inventory; a fresh plan and actual worker returns are still mandatory. This
+mapping neither renews a stopped attempt nor changes its original verdict.
