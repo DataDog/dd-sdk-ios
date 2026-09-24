@@ -208,3 +208,19 @@ every original shared, pop, input and cleanup statement. The new SwiftUI helper 
 all current helper hashes remain separately reviewed and frozen. Require the public
 native inventory; a fresh plan and actual worker returns are still mandatory. This
 mapping neither renews a stopped attempt nor changes its original verdict.
+
+
+Future physical preparation may explicitly add `public_accessibility_inventory=True`
+and `ttid_witness=True` alongside the reviewed cost/background options. The public
+inventory is the same qualified copied overlay. A passive feature records the typed
+TTID dispatch after Core initialization and before RUM enable, returns false, and
+records registration/type failures. `DatadogInternal` is an existing local SDK module;
+the PBX guard permits only its product/link addition to each target. All other
+objects, settings, sources and phases must remain identical. Fresh source/compiler/
+product binding is required; this option grants no native admission.
+
+`physical_projection.py --ttid-witness` additionally requires the independent
+registered/foreground dispatch and exact backend identity, owner, name, path,
+duration and corrected date. The default keeps unwitnessed incidental events
+unqualified. This offline rule cannot clear missing replay metadata or stale Home
+fields, change the generic join, renew old queries, or qualify a release.

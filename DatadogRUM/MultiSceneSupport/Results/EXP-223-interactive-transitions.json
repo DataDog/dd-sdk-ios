@@ -2427,7 +2427,7 @@
                   "native_operations": 1,
                   "native_admitted": false,
                   "gate_closures": [],
-                  "next_action": "Prepare a fresh copied physical fixture with qualified public inventory and passive TTID dispatch witness. Keep original Home backend omissions/stale values unqualified; no candidate or human session tonight.",
+                  "next_action": "Define a separate future RUM gate contract with raw Replay metadata unassessed and exact independently captured prior-revision pending rules; retain generic full projection and original failed runs. No human request or native retry tonight.",
                   "runtime_preparation": {
                     "state": "COMPLETE_CAPTURE_PASS_CLEANUP_PASS",
                     "plan": {
@@ -2468,7 +2468,7 @@
                     "gate_closures": []
                   },
                   "physical_witness_preparation": {
-                    "state": "OFFLINE_PREPARATION_DEFINED",
+                    "state": "PHYSICAL_WITNESS_BUILDS_QUALIFIED",
                     "definition": {
                       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-witness-69uk3guu/definition.json",
                       "sha256": "d36cfcf1b751bd158bdc92a1cc333279c22b32ef53ce43b934b6570b8af4d6b2"
@@ -2479,7 +2479,22 @@
                     },
                     "build_admitted": false,
                     "native_admitted": false,
-                    "gate_closures": []
+                    "gate_closures": [],
+                    "review": {
+                      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-witness-69uk3guu/source-review.json",
+                      "sha256": "4afaa2076e844c824fe49e79b577bbcd1569584420baf1be5e4d4f41e2525d4a"
+                    },
+                    "controls": {
+                      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-witness-69uk3guu/controls-03.json",
+                      "sha256": "3297a9a5aac803cfc9417af61ab8a930104255af4008b014cbbd35abe2d72cfd"
+                    },
+                    "outcome": {
+                      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-witness-69uk3guu/outcome.json",
+                      "sha256": "902e32e68714ccaaebca624af9898e346ab89af6dd1ed551f68a344a1b88c43b"
+                    },
+                    "controls_count": 18,
+                    "original_control_failures": "Retained controls-01: two test-harness assumptions corrected, production/oracle unchanged for those corrections",
+                    "next_action": "Define a separate future RUM gate contract with raw Replay metadata unassessed and exact independently captured prior-revision pending rules; retain generic full projection and original failed runs. No human request or native retry tonight."
                   }
                 }
               }

@@ -89,10 +89,12 @@ def tags(row, submitted, expected):
         require(all(k + ":" + v in indexed for k, v in wanted.items()), "submitted indexed tag missing")
 
 
-def assess(rows, native_rows, local, expected):
+def assess(rows, native_rows, local, expected, *, native_evidence=None):
     contract.native_partition(rows, native_rows)
     require(len({r["id"] for r in rows}) == len(rows), "duplicate broad raw ID")
-    views, events, reducers, incidental = {}, {}, [], []
+    import physical_witness
+    witness = physical_witness.dispatch(*native_evidence, local, expected) if native_evidence is not None else None
+    views, events, reducers, incidental, matched_ttid = {}, {}, [], [], []
     for row in rows:
         payload = contract.backend_event(row)
         require(contract.field(payload, "application.id") == expected["application_id"] and
@@ -110,7 +112,11 @@ def assess(rows, native_rows, local, expected):
         require(contract.field(payload, "view.id") in local["views"], "foreign persisted view owner")
         if family not in contract.MAPPER_FAMILIES:
             require(family in {"vital", "operation"}, "unclassified native family")
-            incidental.append(row)
+            if family == "vital" and witness is not None:
+                require(not matched_ttid, "duplicate witnessed TTID")
+                matched_ttid.append(physical_witness.persisted(row, payload, witness))
+            else:
+                incidental.append(row)
             continue
         key = contract.event_key(payload)
         if family == "view":
@@ -162,16 +168,19 @@ def assess(rows, native_rows, local, expected):
             observed = contract.field(payload, "session." + family + ".count")
             if type(observed) is not int or observed != wanted:
                 terminal_failures.append(dict(kind="SESSION_COUNT_DIFFERS", family=family, submitted=wanted, actual=observed))
+    if witness is not None and not matched_ttid:
+        terminal_failures.append(dict(kind="MISSING_WITNESSED_TTID"))
     unresolved = bool(mismatches or terminal_failures or incidental)
     return dict(state="SOURCE_CLASSIFICATION_REQUIRED" if unresolved else "OFFLINE_PROJECTION_MATCHED",
                 qualification="UNQUALIFIED" if unresolved else "OFFLINE_ONLY", runtime_acceptance=False,
                 release_acceptance=False, raw_rows=len(rows), raw_ids=[r["id"] for r in rows],
                 comparisons=comparisons, unresolved=mismatches, terminal_failures=terminal_failures,
+                matched_ttid=matched_ttid,
                 incidental_source_classification_required=[r["id"] for r in incidental],
                 expected_session_counts=wanted_counts, gate_closures=[])
 
 
-def record(cell, broad_path, native_path, output):
+def record(cell, broad_path, native_path, output, *, require_ttid_witness=False):
     """Publish one offline assessment from the exact two completed exchanges."""
     import physical_ownership
     from capture_io import atomic, encoded
@@ -181,14 +190,16 @@ def record(cell, broad_path, native_path, output):
     require(all(p.parent == cell for p in inputs) and len(set(inputs)) == 2, "foreign/duplicate saved inventory")
     source = json.loads((cell / "native-summary.json").read_bytes())
     identity, expected = source["identity"], source["expected"]
-    local = physical_ownership.inventory(backend.capture.rows((cell / "terminal-before-collection.jsonl").read_bytes(), identity["run_id"]), identity)
+    evidence = backend.capture.rows((cell / "terminal-before-collection.jsonl").read_bytes(), identity["run_id"])
+    local = physical_ownership.inventory(evidence, identity)
+    require(type(require_ttid_witness) is bool, "invalid TTID witness option")
     base = "@application.id:" + expected["application_id"] + " @session.id:" + expected["session_id"]
     bounds = [backend.transport.binding(p)[0] for p in inputs]
     require([b["request"]["query"] for b in bounds] == [base, base + " service:" + expected["service"] + " source:ios"] and
             all(b["request"]["run_id"] == identity["run_id"] for b in bounds) and
             all(bounds[0]["request"][k] == bounds[1]["request"][k] for k in ["from", "to"]), "saved query scope differs")
     inventories = [saved_inventory(p) for p in inputs]
-    result = assess(*inventories, local, expected)
+    result = assess(*inventories, local, expected, native_evidence=(evidence, identity) if require_ttid_witness else None)
     try:
         strict = backend.join(*inventories, local, expected, pending=False)
         strict_result = dict(state="JOINED_SOURCE_CLASSIFICATION_REQUIRED", release_acceptance=strict["release_acceptance"])
@@ -209,6 +220,7 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ["cell", "broad", "native", "output"]: parser.add_argument("--" + name, type=Path, required=True)
+    parser.add_argument("--ttid-witness", action="store_true", help="Require an independently recorded typed TTID dispatch")
     args = parser.parse_args()
-    value = record(args.cell, args.broad, args.native, args.output)
+    value = record(args.cell, args.broad, args.native, args.output, require_ttid_witness=args.ttid_witness)
     print(json.dumps({k: value[k] for k in ["state", "qualification", "raw_rows", "release_acceptance", "gate_closures"]}))

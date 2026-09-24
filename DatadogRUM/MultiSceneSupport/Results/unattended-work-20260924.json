@@ -15,7 +15,7 @@
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
   "human_work": "UNADMITTED_WHILE_OPERATOR_SLEEPS",
-  "checkpoint": "0d43e8cd379f5009c535d152a33661a6a2d4861e",
+  "checkpoint": "f916f5c1c31533378d2a086617807fcc35944114",
   "tasks": [
     {
       "id": "capture-backend",
@@ -30,7 +30,7 @@
       "dependency": "Saved EXP223 Home inventories and existing strict join",
       "decisive_test": "Complete offline mapping table and controls reject missing/stale terminal, wrong owners/counts, nonempty omission, late publication and forged request scopes; original run remains INVALID",
       "environment": "Source and saved evidence; no human/native/query retry",
-      "state": "OFFLINE_RULES_REVIEWED_ACCEPTANCE_BLOCKED",
+      "state": "PHYSICAL_WITNESS_BUILDS_QUALIFIED_RUNTIME_CONTRACT_OPEN",
       "result": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/post-home-offline/source-audit/source-contract.json",
         "sha256": "9376249aadf3029c4c9ead2e0e29a0178bb54dcdafacf3f1f110309a018b21e5"
@@ -43,7 +43,12 @@
       "next_preparation": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-witness-69uk3guu/definition.json",
         "sha256": "d36cfcf1b751bd158bdc92a1cc333279c22b32ef53ce43b934b6570b8af4d6b2"
-      }
+      },
+      "physical_witness": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-witness-69uk3guu/outcome.json",
+        "sha256": "902e32e68714ccaaebca624af9898e346ab89af6dd1ed551f68a344a1b88c43b"
+      },
+      "next_action": "Define a separate future RUM gate contract with raw Replay metadata unassessed and exact independently captured prior-revision pending rules; retain generic full projection and original failed runs. No human request or native retry tonight."
     },
     {
       "id": "capture-swiftui",
@@ -90,5 +95,5 @@
     "No Replay content, unrelated CI flakes, optional networking benchmarks or physical Duo acceptance"
   ],
   "gate_closures": [],
-  "updated_at": 1790291774.98823
+  "updated_at": 1790292917.32302
 }

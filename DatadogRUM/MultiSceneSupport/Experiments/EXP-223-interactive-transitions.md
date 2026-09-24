@@ -437,3 +437,13 @@ restoration pass before the fixed deadline; the actual session-end response is
 retained. This closes the ordinary-simulator capture prerequisite only. Physical,
 backend, candidate and release acceptance remain open. Next prepare the physical
 public-inventory/TTID witness overlay without changing SDK source or old verdicts.
+
+
+The physical witness preparation passes18 focused controls and scoped review,
+including a compiled passive receiver and strict full-project dependency delta.
+Both selected SDK revisions build UIKit/SwiftUI device products with exact compiler
+and product inventories. No device is installed or run. Replaying the saved Home
+exchange preserves its original hash and UNQUALIFIED result; missing replay metadata,
+stale Home activity/duration/brightness and the absent TTID witness remain explicit.
+A separate future RUM gate contract must distinguish required RUM payloads from
+unassessed Replay metadata while retaining exact earlier-revision pending proof.

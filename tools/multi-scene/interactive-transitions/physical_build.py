@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Build the declared physical pair without changing the frozen Duo helpers."""
 import argparse
+import copy
 import datetime
 import fnmatch
 import hashlib
@@ -20,7 +21,7 @@ HERE = Path(__file__).resolve().parent
 CODE = HERE.parent / 'application-impact/InstalledCode.swift'
 
 
-def helpers(observer_cost_partition=False, background_finalization=False):
+def helpers(observer_cost_partition=False, background_finalization=False, public_accessibility_inventory=False, ttid_witness=False):
     result = {**{n: shared.sha(shared.REPO / n) for n in original.HELPERS},
             str(Path(__file__).resolve().relative_to(shared.REPO)): shared.sha(__file__),
             str(Path(physical_observer.__file__).resolve().relative_to(shared.REPO)): shared.sha(physical_observer.__file__),
@@ -31,7 +32,76 @@ def helpers(observer_cost_partition=False, background_finalization=False):
     if background_finalization:
         result.update({str((HERE/name).relative_to(shared.REPO)): shared.sha(HERE/name)
                        for name in ['physical_background.py','test_physical_background.py']})
+    for enabled, names in [(public_accessibility_inventory, ['accessibility_capture.py', 'test_accessibility_capture.py']),
+                           (ttid_witness, ['physical_witness.py', 'test_physical_witness.py'])]:
+        if enabled:
+            result.update({str((HERE/name).relative_to(shared.REPO)): shared.sha(HERE/name) for name in names})
     return result
+
+
+def render_witness_capture(source, enabled):
+    require(type(enabled) is bool, 'physical TTID option is not Boolean')
+    if not enabled:return source, None
+    import physical_witness
+    before=hashlib.sha256(source).hexdigest()
+    rendered=physical_witness.render(source,before)
+    return rendered, dict(before_sha256=before,after_sha256=hashlib.sha256(rendered).hexdigest(),
+                          helper_sha256=shared.sha(HERE/'physical_witness.py'))
+
+
+def render_public_capture(source, enabled):
+    require(type(enabled) is bool, 'physical public inventory option is not Boolean')
+    if not enabled:return source, None
+    import accessibility_capture
+    before=hashlib.sha256(source).hexdigest()
+    rendered=accessibility_capture.render_human(source,before)
+    return rendered, dict(before_sha256=before,after_sha256=hashlib.sha256(rendered).hexdigest(),
+                          helper_sha256=shared.sha(HERE/'accessibility_capture.py'))
+
+
+def witness_dependencies(project):
+    require(set(project['targets']) == {'UIKitTransitions','SwiftUITransitions'}, 'unexpected physical targets')
+    for target in project['targets'].values():
+        require(target['dependencies'] == [dict(package='SDK',product=n) for n in ['DatadogCore','DatadogRUM']],
+                'unexpected physical module dependencies')
+        target['dependencies'].append(dict(package='SDK',product='DatadogInternal'))
+    return project
+
+
+def project_graph(path):
+    return json.loads(shared.capture(['plutil','-convert','json','-o','-',str(path)]).stdout)
+
+
+def witness_project_delta(before, after):
+    """Allow only one local SDK product and its link reference per existing target."""
+    reduced=copy.deepcopy(after);old=before['objects'];new=reduced['objects']
+    require(set(old) <= set(new), 'witness project removed existing objects')
+    targets={k:v for k,v in old.items() if v.get('isa')=='PBXNativeTarget'}
+    require({v['name'] for v in targets.values()}=={'UIKitTransitions','SwiftUITransitions'} and len(targets)==2,
+            'witness project target inventory differs')
+    added=set(new)-set(old);consumed=set();mapping={}
+    for key,target in targets.items():
+        deps=target['packageProductDependencies'];current=new[key]['packageProductDependencies']
+        extra=[p for p in current if p not in deps]
+        require(len(extra)==1 and [p for p in current if p in deps]==deps, 'unexpected witness dependency delta')
+        product=extra[0]
+        require(product in added and product not in consumed and
+                new[product]==dict(isa='XCSwiftPackageProductDependency',productName='DatadogInternal'),
+                'witness dependency is not the single declared local product')
+        phases=[p for p in target['buildPhases'] if old[p]['isa']=='PBXFrameworksBuildPhase']
+        require(len(phases)==1, 'ambiguous original link phase')
+        phase=phases[0];files=old[phase]['files'];current_files=new[phase]['files']
+        extra_files=[p for p in current_files if p not in files]
+        require(len(extra_files)==1 and [p for p in current_files if p in files]==files, 'unexpected witness link delta')
+        link=extra_files[0]
+        require(link in added and link not in consumed and new[link]==dict(isa='PBXBuildFile',productRef=product),
+                'witness link reference differs')
+        consumed.update([product,link]);mapping[target['name']]=dict(product=product,link=link,phase=phase)
+        new[key]['packageProductDependencies']=deps;new[phase]['files']=files
+    require(added==consumed and len(consumed)==4, 'unrelated objects added to witness project')
+    for key in consumed:del new[key]
+    require(reduced==before, 'unrelated build settings, phases, dependencies or source membership changed')
+    return dict(before_graph_sha256=original.digest(before),after_graph_sha256=original.digest(after),targets=mapping)
 
 
 def render_cost_capture(source, enabled):
@@ -69,9 +139,11 @@ def platform(app,bundle):
     return dict(architecture=arch,build_commands=commands)
 
 
-def prepare(root, *, observer_cost_partition=False, background_finalization=False):
+def prepare(root, *, observer_cost_partition=False, background_finalization=False,
+            public_accessibility_inventory=False, ttid_witness=False):
     require(type(observer_cost_partition) is bool, 'physical cost overlay option is not Boolean')
     require(type(background_finalization) is bool, 'physical finalization option is not Boolean')
+    require(type(public_accessibility_inventory) is bool and type(ttid_witness) is bool, 'invalid physical capture option')
     root = Path(root).resolve()
     require(not root.exists(), 'physical preparation already consumed')
     root.mkdir()
@@ -80,8 +152,9 @@ def prepare(root, *, observer_cost_partition=False, background_finalization=Fals
     plan = dict(schema_version=1, state='PHYSICAL_BUILD_PREPARED',
                 source_plan_sha256=shared.sha(root / 'source-preparation/plan.json'),
                 protected=original.protected(), toolchain=source['toolchain'],
-                contract=original.contract(), helpers=helpers(observer_cost_partition, background_finalization), arms={}, native_admitted=False,
-                observer_cost_partition=observer_cost_partition, background_finalization=background_finalization)
+                contract=original.contract(), helpers=helpers(observer_cost_partition, background_finalization, public_accessibility_inventory, ttid_witness), arms={}, native_admitted=False,
+                observer_cost_partition=observer_cost_partition, background_finalization=background_finalization,
+                public_accessibility_inventory=public_accessibility_inventory, ttid_witness=ttid_witness)
     shared.freeze_helpers(root, plan['helpers'])
     for arm in ['A', 'B']:
         key = arm + '-device'; folder = root / key
@@ -102,11 +175,13 @@ def prepare(root, *, observer_cost_partition=False, background_finalization=Fals
             text = rendered.decode()
             background_mapping = dict(before_sha256=before, after_sha256=hashlib.sha256(rendered).hexdigest(),
                 helper_sha256=shared.sha(HERE/'physical_background.py'))
-        observation.write_text(text + '\n' + CODE.read_text())
+        rendered_observation,witness_mapping=render_witness_capture(text.encode(),ttid_witness)
+        observation.write_text(rendered_observation.decode() + '\n' + CODE.read_text())
         # Remote copy is not an atomic rename. An immutable payload is consumed
         # only after its separate, complete SHA256 publication marker arrives.
         human = client/'HumanObservation.swift'
         rendered_human,cost_mapping=render_cost_capture(human.read_bytes(),observer_cost_partition)
+        rendered_human,public_mapping=render_public_capture(rendered_human,public_accessibility_inventory)
         text=rendered_human.decode()
         needle = 'guard let self = self, let bytes = try? Data(contentsOf: path) else { return }'
         require(text.count(needle)==1, 'request publication anchor ambiguous')
@@ -124,6 +199,14 @@ def prepare(root, *, observer_cost_partition=False, background_finalization=Fals
         human.write_text(original.variant.replace_once(human.read_text(),
             'TransitionObservation.shared.prepare(requestID: requestID, phase: phase)',
             'if phase != "cleanup.idle" { TransitionObservation.shared.prepare(requestID: requestID, phase: phase) }'))
+        project_mapping=None
+        if ttid_witness:
+            graph_path=client/'Transitions.xcodeproj/project.pbxproj'
+            before_graph=project_graph(graph_path)
+            project=client/'project.json'
+            shared.save(project,witness_dependencies(shared.read(project)))
+            shared.command(['xcodegen','generate','--spec','project.json'],folder,'generate-witness',deadline=time.time()+60,cwd=client)
+            project_mapping=witness_project_delta(before_graph,project_graph(graph_path))
         fixture = original.digest({p.name: shared.sha(p) for p in client.glob('*.swift')})
         for path in client.glob('*Transitions.plist'):
             info = plistlib.loads(path.read_bytes()); info['TransitionFixture'] = fixture
@@ -133,6 +216,7 @@ def prepare(root, *, observer_cost_partition=False, background_finalization=Fals
             archive_sha256=shared.sha(folder/'source.tar'), sdk=shared.tree(folder/'sdk'), client=shared.tree(client),
             project_audit=project_audit(folder),derivation=dict(installed_code_sha256=shared.sha(CODE),
             observation_sha256=shared.sha(observation),human_sha256=shared.sha(human),observer_cost=cost_mapping,background_finalization=background_mapping,
+            public_accessibility_inventory=public_mapping,ttid_witness=witness_mapping,project_delta=project_mapping,
             changes=['pre-SDK installed-code receipt with exact run guard','hash-committed remote snapshot request',
                      'scoped public recognizers and actual-callback coordinator registration','independent native cleanup idle snapshot']))
     shared.save(root/'plan.json', plan, exclusive=True); verify(root)
@@ -145,13 +229,19 @@ def verify(root):
     require(plan['protected'] == original.protected(), 'protected workspace changed')
     require(type(plan.get('observer_cost_partition',False)) is bool, 'physical cost overlay option changed')
     require(type(plan.get('background_finalization',False)) is bool, 'physical finalization option changed')
-    require(plan['helpers'] == helpers(plan.get('observer_cost_partition',False),plan.get('background_finalization',False)) == shared.tree(root/'helpers'), 'physical compiler helpers changed')
+    require(type(plan.get('public_accessibility_inventory',False)) is bool and type(plan.get('ttid_witness',False)) is bool, 'physical capture option changed')
+    require(plan['helpers'] == helpers(plan.get('observer_cost_partition',False),plan.get('background_finalization',False),
+                                     plan.get('public_accessibility_inventory',False),plan.get('ttid_witness',False)) == shared.tree(root/'helpers'), 'physical compiler helpers changed')
     require(plan['source_plan_sha256'] == shared.sha(root/'source-preparation/plan.json'), 'source derivation changed')
     for key, bound in plan['arms'].items():
         folder = root/key
         require(shared.sha(folder/'source.tar') == bound['archive_sha256'] and shared.tree(folder/'sdk') == bound['sdk'] and
                 shared.tree(folder/'client') == bound['client'], 'physical source/client inventory changed')
         require(project_audit(folder)==bound['project_audit'],'generated project inputs changed')
+        if plan.get('ttid_witness',False):
+            original_project=root/'source-preparation'/(key.split('-')[0]+'-simulator')/'client/Transitions.xcodeproj/project.pbxproj'
+            require(witness_project_delta(project_graph(original_project),project_graph(folder/'client/Transitions.xcodeproj/project.pbxproj'))
+                    == bound['derivation']['project_delta'], 'witness project derivation changed')
     return plan
 
 
