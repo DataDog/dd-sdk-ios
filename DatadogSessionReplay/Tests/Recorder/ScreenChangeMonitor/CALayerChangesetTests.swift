@@ -6,7 +6,6 @@
 
 #if os(iOS)
 import QuartzCore
-import TestUtilities
 import Testing
 import DatadogSDKTesting
 

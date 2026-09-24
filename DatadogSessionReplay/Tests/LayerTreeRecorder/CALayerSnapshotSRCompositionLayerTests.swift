@@ -5,7 +5,6 @@
  */
 
 #if os(iOS)
-import TestUtilities
 import QuartzCore
 import SwiftUI
 import Testing

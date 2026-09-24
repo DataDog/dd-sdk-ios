@@ -8,7 +8,6 @@
 import DatadogInternal
 import QuartzCore
 import SwiftUI
-import TestUtilities
 import Testing
 import DatadogSDKTesting
 import UIKit

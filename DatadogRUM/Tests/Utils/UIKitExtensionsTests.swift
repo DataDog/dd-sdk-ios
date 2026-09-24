@@ -9,7 +9,6 @@
 import Testing
 import DatadogSDKTesting
 import UIKit
-import TestUtilities
 @testable import DatadogRUM
 import SwiftUI
 

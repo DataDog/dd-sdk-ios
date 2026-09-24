@@ -8,7 +8,6 @@
 import AppKit
 import Testing
 import DatadogSDKTesting
-import TestUtilities
 @testable import DatadogRUM
 
 @Suite(.datadogTesting)

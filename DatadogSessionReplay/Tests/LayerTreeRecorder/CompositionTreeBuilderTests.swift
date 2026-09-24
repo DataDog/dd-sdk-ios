@@ -6,7 +6,6 @@
 
 #if os(iOS)
 import DatadogInternal
-import TestUtilities
 import QuartzCore
 import SwiftUI
 import Testing
