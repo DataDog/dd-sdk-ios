@@ -9,7 +9,7 @@ import DatadogInternal
 
 /// A `Sampling` that reports a decision which was already made.
 ///
-/// Used to hand a ``SessionSamplingSnapshot`` decision back through the `Sampling` interface that
+/// Used to hand a ``SessionSamplingDecision`` decision back through the `Sampling` interface that
 /// the Trace feature operations expect.
 private struct DecidedSampler: Sampling {
     let samplingRate: SampleRate
@@ -22,11 +22,11 @@ internal final class SamplerProvider: TracerSamplerProvider, @unchecked Sendable
     /// The sampling rate defined in the Trace feature configuration.
     private let sampleRate: SampleRate
 
-    /// Resolves synchronous access to the RUM session, or `nil` when RUM is not enabled on the core.
+    /// Synchronous access to the RUM session.
     ///
-    /// This is a closure rather than a stored reference for two reasons: RUM can be enabled after
-    /// Trace, so the lookup has to happen at read time; and a feature must not retain its core.
-    private let sessionSampling: () -> RUMSessionSamplerProvider?
+    /// Safe to store: it holds the core weakly and resolves the RUM feature on every call, so a
+    /// session created after `Trace.enable()` is still seen.
+    private let rumSessionSampler: RUMSessionSampler?
 
     /// Creates a `SamplerProvider` with the given sampler rate.
     ///
@@ -35,11 +35,11 @@ internal final class SamplerProvider: TracerSamplerProvider, @unchecked Sendable
     ///
     /// - parameters:
     ///   - sampleRate: The sample rate as described above.
-    ///   - sessionSampling: Resolves the RUM session sampling state on the core Trace is registered
-    ///   in. Defaults to always returning `nil`, which makes every sampler random.
-    init(sampleRate: SampleRate, sessionSampling: @escaping () -> RUMSessionSamplerProvider? = { nil }) {
+    ///   - rumSessionSampler: Synchronous access to the RUM session on the core Trace is registered
+    ///   in. Defaults to `nil`, which makes every sampler random.
+    init(sampleRate: SampleRate, rumSessionSampler: RUMSessionSampler? = nil) {
         self.sampleRate = sampleRate
-        self.sessionSampling = sessionSampling
+        self.rumSessionSampler = rumSessionSampler
     }
 
     /// Sampler appropriate for tracing operations with the configured sampling rate.
@@ -74,11 +74,11 @@ internal final class SamplerProvider: TracerSamplerProvider, @unchecked Sendable
         // The session is read synchronously, on the calling thread. Trace used to receive it over the
         // message bus, which left every span created before the first RUM context landed sampled at
         // random and therefore inconsistent with its session.
-        guard let snapshot = sessionSampling()?.sessionSamplingSnapshot(for: .featureRate, rate: samplingRate) else {
+        guard let decision = rumSessionSampler?.decision(for: .featureRate, rate: samplingRate) else {
             // No RUM session: nothing to be consistent with, so sample randomly.
             return Sampler(samplingRate: samplingRate)
         }
 
-        return DecidedSampler(samplingRate: samplingRate.normalizedSampleRate, isSampled: snapshot.isSampled)
+        return DecidedSampler(samplingRate: samplingRate.normalizedSampleRate, isSampled: decision.isSampled)
     }
 }

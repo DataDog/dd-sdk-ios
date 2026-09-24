@@ -35,11 +35,11 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     /// HTTP status codes whose `resource.name` span tag will be replaced with the status code string.
     /// Defaults to `Trace.Configuration.URLSessionTracking.defaultRedactedStatusCodes` for backward compatibility.
     let redactedStatusCodes: Set<Int>
-    /// Resolves synchronous access to the RUM session, or `nil` when RUM is not enabled on the core.
+    /// Synchronous access to the RUM session.
     ///
-    /// A closure rather than a stored reference: RUM can be enabled after Trace, and a feature must
-    /// not retain its core.
-    let sessionSampling: () -> RUMSessionSamplerProvider?
+    /// Safe to store: it holds the core weakly and resolves the RUM feature on every call, so a
+    /// session created after `Trace.enable()` is still seen.
+    let rumSessionSampler: RUMSessionSampler?
 
     weak var tracer: DatadogTracer?
 
@@ -64,7 +64,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         traceContextInjection: TraceContextInjection,
         telemetry: Telemetry,
         redactedStatusCodes: Set<Int> = Trace.Configuration.URLSessionTracking.defaultRedactedStatusCodes,
-        sessionSampling: @escaping () -> RUMSessionSamplerProvider? = { nil }
+        rumSessionSampler: RUMSessionSampler? = nil
     ) {
         self.tracer = tracer
         self.contextReceiver = contextReceiver
@@ -73,7 +73,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         self.traceContextInjection = traceContextInjection
         self.telemetry = telemetry
         self.redactedStatusCodes = redactedStatusCodes
-        self.sessionSampling = sessionSampling
+        self.rumSessionSampler = rumSessionSampler
     }
 
     func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
@@ -375,7 +375,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     ///    read, and its session-derived decision cannot disagree with the injected session ID. An
     ///    active parent span still takes precedence to preserve the parent trace's decision.
     /// - returns: A ``TracingURLSessionHandler.NewSpanElements`` helper struct.
-    private func makeElementsForNewSpanContext(tracer: DatadogTracer, parentSpanContext: DDSpanContext?, sessionSnapshot: SessionSamplingSnapshot?) -> NewSpanElements {
+    private func makeElementsForNewSpanContext(tracer: DatadogTracer, parentSpanContext: DDSpanContext?, sessionSnapshot: SessionSamplingDecision?) -> NewSpanElements {
         let traceID = parentSpanContext?.traceID ?? tracer.traceIDGenerator.generate()
         let sampled = isSampled(sessionSnapshot: sessionSnapshot, traceID: traceID.idLo)
         let samplingDecision = parentSpanContext.map { $0.samplingDecision } ?? SamplingDecision(
@@ -398,8 +398,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     ///
     /// `firstPartyHostsTracing`'s rate applies on top of the sessions RUM already keeps, so the two
     /// rates are composed: a 20% tracing rate inside a 10% RUM session traces 2% of requests.
-    private func currentSessionSnapshot() -> SessionSamplingSnapshot? {
-        sessionSampling()?.sessionSamplingSnapshot(for: .combinedWithSessionRate, rate: samplingRate)
+    private func currentSessionSnapshot() -> SessionSamplingDecision? {
+        rumSessionSampler?.decision(for: .combinedWithSessionRate, rate: samplingRate)
     }
 
     /// Determines whether the current request should be sampled.
@@ -413,7 +413,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     ///   - sessionSnapshot: The current RUM session sampling snapshot, if a session is active.
     ///   - traceID: The trace ID used as a deterministic seed when no RUM session is present.
     /// - Returns: `true` if the request should be sampled.
-    private func isSampled(sessionSnapshot: SessionSamplingSnapshot?, traceID: UInt64?) -> Bool {
+    private func isSampled(sessionSnapshot: SessionSamplingDecision?, traceID: UInt64?) -> Bool {
         if let sessionSnapshot {
             return sessionSnapshot.isSampled
         }

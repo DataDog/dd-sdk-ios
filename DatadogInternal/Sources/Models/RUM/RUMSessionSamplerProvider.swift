@@ -33,7 +33,7 @@ public enum SamplingRatePolicy: Sendable, Equatable {
 /// The ID and the decision are returned as one value on purpose. A consumer that read them in two
 /// steps could pair an ID from one session with a decision made for another if the session rolled
 /// over in between, which produces events that look tracked but cannot be correlated.
-public struct SessionSamplingSnapshot: Sendable, Equatable {
+public struct SessionSamplingDecision: Sendable, Equatable {
     /// The RUM session ID, in the format used on the wire.
     public let sessionID: String
 
@@ -46,6 +46,17 @@ public struct SessionSamplingSnapshot: Sendable, Equatable {
     }
 }
 
+/// Implemented by the RUM feature to expose its current session synchronously.
+///
+/// Features do not use this directly. They go through ``DatadogCoreProtocol/rumSessionSampler``,
+/// which resolves this per call so the RUM feature can be enabled after the reading feature.
+public protocol RUMSessionSamplerProvider {
+    /// The current session identity, and the sampling decision for the given policy and rate.
+    ///
+    /// - Returns: The decision, or `nil` when no session is active.
+    func decision(for policy: SamplingRatePolicy, rate: SampleRate) -> SessionSamplingDecision?
+}
+
 /// Synchronous access to the RUM session sampling state, without going through the message bus.
 ///
 /// RUM publishes its session through the core context, which reaches other features after three
@@ -54,12 +65,25 @@ public struct SessionSamplingSnapshot: Sendable, Equatable {
 /// lands, the request is already on the wire, and the tracing headers it should have carried are
 /// missing for good. Those features read this instead, which resolves on the calling thread.
 ///
-/// Obtain it through ``DatadogCoreProtocol/rumSessionSampling``. Resolve it per read rather than
-/// caching the result, since RUM can be enabled after the reading feature.
-public protocol RUMSessionSamplerProvider: AnyObject {
-    /// The current session identity, and the sampling decision for the given policy and rate.
+/// Obtain it with ``DatadogCoreProtocol/rumSessionSampler``. It is safe to store: it holds the core
+/// weakly, and it resolves the RUM feature on every call rather than capturing it, so a feature can
+/// hold one from its own `enable()` even when RUM is enabled later.
+public struct RUMSessionSampler {
+    /// A weak core reference.
+    private weak var core: DatadogCoreProtocol?
+
+    /// Creates a sampler associated with a core instance.
     ///
-    /// The returned snapshot is derived from a single read of the session state, so the ID and the
+    /// The `RUMSessionSampler` keeps a weak reference to the provided core.
+    ///
+    /// - Parameter core: The core instance.
+    public init(core: DatadogCoreProtocol) {
+        self.core = core
+    }
+
+    /// The current RUM session identity, and the sampling decision for the given policy and rate.
+    ///
+    /// The returned decision is derived from a single read of the session state, so the ID and the
     /// decision always belong to the same session.
     ///
     /// - Parameters:
@@ -67,18 +91,20 @@ public protocol RUMSessionSamplerProvider: AnyObject {
     ///   - rate: The consumer's own sampling rate, between `0.0` and `100.0`. Passing
     ///     `SampleRate.maxSampleRate` with ``SamplingRatePolicy/combinedWithSessionRate`` yields the
     ///     session's own decision unchanged.
-    /// - Returns: The snapshot, or `nil` when no session is active, for example before RUM creates
-    ///   its first session or after `stopSession()`. Consumers fall back to their own sampling then.
-    func sessionSamplingSnapshot(for policy: SamplingRatePolicy, rate: SampleRate) -> SessionSamplingSnapshot?
+    /// - Returns: The decision, or `nil` when RUM is not enabled on the core, or is enabled with no
+    ///   active session, for example after `stopSession()`. Consumers fall back to their own
+    ///   sampling then.
+    public func decision(for policy: SamplingRatePolicy, rate: SampleRate) -> SessionSamplingDecision? {
+        core?
+            .feature(named: Feature.rum, type: RUMSessionSamplerProvider.self)?
+            .decision(for: policy, rate: rate)
+    }
 }
 
 public extension DatadogCoreProtocol {
-    /// Synchronous access to the RUM session sampling state on this core, or `nil` when RUM is not
-    /// enabled on it.
+    /// Synchronous access to the RUM session sampling state on this core.
     ///
     /// Each core carries its own RUM session, so a feature must read this from the same core it was
-    /// registered in. Resolve it per read: RUM can be enabled after the reading feature.
-    var rumSessionSampling: RUMSessionSamplerProvider? {
-        feature(named: Feature.rum, type: RUMSessionSamplerProvider.self)
-    }
+    /// registered in.
+    var rumSessionSampler: RUMSessionSampler { RUMSessionSampler(core: self) }
 }

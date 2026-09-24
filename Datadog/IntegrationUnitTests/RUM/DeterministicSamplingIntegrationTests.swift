@@ -105,7 +105,7 @@ class DeterministicSamplingIntegrationTests: XCTestCase {
 
         let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
         let synchronousSnapshot = try XCTUnwrap(
-            rum.sessionSamplingSnapshot(for: .combinedWithSessionRate, rate: .maxSampleRate),
+            rum.decision(for: .combinedWithSessionRate, rate: .maxSampleRate),
             "The session identity must exist before any flush"
         )
 
@@ -115,7 +115,7 @@ class DeterministicSamplingIntegrationTests: XCTestCase {
 
         // Then - the session published by `onSessionUpdate` must be the one created at enable time
         XCTAssertEqual(
-            rum.sessionSamplingSnapshot(for: .combinedWithSessionRate, rate: .maxSampleRate),
+            rum.decision(for: .combinedWithSessionRate, rate: .maxSampleRate),
             synchronousSnapshot,
             "The initial session must adopt the preset identity, not generate a new one"
         )
@@ -259,7 +259,7 @@ class DeterministicSamplingIntegrationTests: XCTestCase {
         RUMMonitor.shared(in: core).startView(key: "test-view", name: "TestView")
         core.flush()
         XCTAssertNotNil(
-            rum.sessionSamplingSnapshot(for: .combinedWithSessionRate, rate: .maxSampleRate),
+            rum.decision(for: .combinedWithSessionRate, rate: .maxSampleRate),
             "Precondition: a session must be active before stopping it"
         )
 
@@ -271,7 +271,7 @@ class DeterministicSamplingIntegrationTests: XCTestCase {
         // of attaching the stopped session's ID and decision. Because the URLSession handler holds the
         // store strongly, a store that kept the stopped identity would keep stamping it indefinitely.
         XCTAssertNil(
-            rum.sessionSamplingSnapshot(for: .combinedWithSessionRate, rate: .maxSampleRate),
+            rum.decision(for: .combinedWithSessionRate, rate: .maxSampleRate),
             "`stopSession()` must clear the synchronous store, not just the RUM scope"
         )
     }
@@ -344,11 +344,12 @@ class DeterministicSamplingIntegrationTests: XCTestCase {
 
     /// Trace must pick up a RUM session that is enabled AFTER it.
     ///
-    /// Both Trace call sites resolve the store per read, through a closure capturing the core weakly
-    /// (`TraceFeature.init` for manual spans, `Trace.enableOrThrow` for the URLSession handler). The
-    /// closure exists precisely for this ordering: at `Trace.enable()` time RUM may not be registered,
-    /// so a stored provider would be `nil` for the process lifetime. Every other test in this file
-    /// enables RUM first, where an eagerly-resolved provider would still work.
+    /// Both Trace call sites store a `RUMSessionSampler`, which holds the core weakly and resolves
+    /// `RUMSessionSamplerProvider` on every read (`TraceFeature.init` for manual spans,
+    /// `Trace.enableOrThrow` for the URLSession handler). That per-read lookup exists precisely for
+    /// this ordering: at `Trace.enable()` time RUM may not be registered, so a provider resolved once
+    /// and stored would be `nil` for the process lifetime. Every other test in this file enables RUM
+    /// first, where an eagerly-resolved provider would still work.
     func testTraceEnabledBeforeRUM_stillResolvesTheSessionOnEveryRead() throws {
         let sessionUUID = Self.policyVectorUUID
         let sessionRate: SampleRate = 10
@@ -386,7 +387,7 @@ class DeterministicSamplingIntegrationTests: XCTestCase {
         rumConfig.urlSessionTracking = nil
         RUM.enable(with: rumConfig, in: core)
 
-        // Then (1) — the manual-span sampler, from `TraceFeature.init`'s closure, applies the trace
+        // Then (1) - the manual-span sampler, resolved through `TraceFeature.init`'s sampler, applies the trace
         // rate on its own seeded by the session, so the vector is kept.
         Tracer.shared(in: core).startSpan(operationName: "manual").finish()
         let spans = core.waitAndReturnSpanEvents()
@@ -396,7 +397,7 @@ class DeterministicSamplingIntegrationTests: XCTestCase {
             "A manual span must be seeded by a RUM session enabled after Trace"
         )
 
-        // Then (2) — the URLSession handler, from `Trace.enableOrThrow`'s closure, composes the two
+        // Then (2) - the URLSession handler, resolved through `Trace.enableOrThrow`'s sampler, composes the two
         // rates, so the same vector is dropped and still carries the session ID.
         URLSessionInstrumentation.enable(
             with: .init(delegateClass: SamplingSessionDelegate.self),
@@ -439,13 +440,13 @@ class DeterministicSamplingIntegrationTests: XCTestCase {
         secondConfig.uuidGenerator = RUMUUIDGeneratorMock(uuid: RUMUUID(rawValue: secondUUID))
         RUM.enable(with: secondConfig, in: secondCore)
 
-        // Then — resolving through `DatadogCoreProtocol.rumSessionSampling`, which is what Trace and
+        // Then - resolving through `DatadogCoreProtocol.rumSessionSampler`, which is what Trace and
         // WebView tracking use, must never cross cores.
         let first = try XCTUnwrap(
-            core.rumSessionSampling?.sessionSamplingSnapshot(for: .combinedWithSessionRate, rate: .maxSampleRate)
+            core.rumSessionSampler.decision(for: .combinedWithSessionRate, rate: .maxSampleRate)
         )
         let second = try XCTUnwrap(
-            secondCore.rumSessionSampling?.sessionSamplingSnapshot(for: .combinedWithSessionRate, rate: .maxSampleRate)
+            secondCore.rumSessionSampler.decision(for: .combinedWithSessionRate, rate: .maxSampleRate)
         )
 
         XCTAssertEqual(first.sessionID, RUMUUID(rawValue: firstUUID).toRUMDataFormat)

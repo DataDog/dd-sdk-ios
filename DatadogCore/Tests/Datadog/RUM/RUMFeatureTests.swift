@@ -254,7 +254,7 @@ class RUMSessionSamplingStoreTests: XCTestCase {
 
     func testFeatureRatePolicy_appliesTheFeatureRateAlone() throws {
         // When
-        let snapshot = try XCTUnwrap(makeStore().sessionSamplingSnapshot(for: .featureRate, rate: featureRate))
+        let snapshot = try XCTUnwrap(makeStore().decision(for: .featureRate, rate: featureRate))
 
         // Then — the session supplies only the seed, so a 20% feature rate stays 20%.
         XCTAssertTrue(snapshot.isSampled)
@@ -267,7 +267,7 @@ class RUMSessionSamplingStoreTests: XCTestCase {
 
     func testCombinedPolicy_multipliesTheFeatureRateWithTheSessionRate() throws {
         // When
-        let snapshot = try XCTUnwrap(makeStore().sessionSamplingSnapshot(for: .combinedWithSessionRate, rate: featureRate))
+        let snapshot = try XCTUnwrap(makeStore().decision(for: .combinedWithSessionRate, rate: featureRate))
 
         // Then — 20% of a 10% session is an effective 2%, which drops this vector.
         XCTAssertFalse(snapshot.isSampled)
@@ -281,7 +281,7 @@ class RUMSessionSamplingStoreTests: XCTestCase {
     func testCombinedPolicyAtMaxRate_returnsTheSessionsOwnDecision() throws {
         // When
         let snapshot = try XCTUnwrap(
-            makeStore().sessionSamplingSnapshot(for: .combinedWithSessionRate, rate: .maxSampleRate)
+            makeStore().decision(for: .combinedWithSessionRate, rate: .maxSampleRate)
         )
 
         // Then — composing with 100% leaves the session rate untouched, which is how a consumer asks
@@ -297,9 +297,9 @@ class RUMSessionSamplingStoreTests: XCTestCase {
         let otherID = "c5b3c4ab-fa4a-4de9-8199-a522131ec48a"
 
         // When — the session rolls over between two reads
-        let first = try XCTUnwrap(store.sessionSamplingSnapshot(for: .featureRate, rate: featureRate))
+        let first = try XCTUnwrap(store.decision(for: .featureRate, rate: featureRate))
         store.setSession(id: otherID, sampler: DeterministicSampler(uuid: otherUUID, samplingRate: sessionRate))
-        let second = try XCTUnwrap(store.sessionSamplingSnapshot(for: .featureRate, rate: featureRate))
+        let second = try XCTUnwrap(store.decision(for: .featureRate, rate: featureRate))
 
         // Then — each snapshot pairs an ID with the decision made for that same session
         XCTAssertEqual(first.sessionID, sessionID)
@@ -309,20 +309,20 @@ class RUMSessionSamplingStoreTests: XCTestCase {
     }
 
     func testWithNoSession_itReturnsNilSoConsumersFallBack() {
-        XCTAssertNil(RUMSessionSamplingStore().sessionSamplingSnapshot(for: .featureRate, rate: featureRate))
-        XCTAssertNil(RUMSessionSamplingStore().sessionSamplingSnapshot(for: .combinedWithSessionRate, rate: featureRate))
+        XCTAssertNil(RUMSessionSamplingStore().decision(for: .featureRate, rate: featureRate))
+        XCTAssertNil(RUMSessionSamplingStore().decision(for: .combinedWithSessionRate, rate: featureRate))
     }
 
     func testAfterClearingTheSession_itReturnsNil() {
         // Given
         let store = makeStore()
-        XCTAssertNotNil(store.sessionSamplingSnapshot(for: .featureRate, rate: featureRate))
+        XCTAssertNotNil(store.decision(for: .featureRate, rate: featureRate))
 
         // When — this is what `stopSession()` produces
         store.clearSession()
 
         // Then
-        XCTAssertNil(store.sessionSamplingSnapshot(for: .featureRate, rate: featureRate))
+        XCTAssertNil(store.decision(for: .featureRate, rate: featureRate))
     }
 
     func testConcurrentSessionRollover_neverPairsAnIDWithAnotherSessionsDecision() {
@@ -356,7 +356,7 @@ class RUMSessionSamplingStoreTests: XCTestCase {
             default:
                 // Composing with 100% leaves the session rate untouched, so `isSampled` here is the
                 // session's own decision and must match the ID it came back with.
-                guard let snapshot = store.sessionSamplingSnapshot(for: .combinedWithSessionRate, rate: .maxSampleRate) else {
+                guard let snapshot = store.decision(for: .combinedWithSessionRate, rate: .maxSampleRate) else {
                     return // no active session, nothing to correlate
                 }
                 switch snapshot.sessionID {

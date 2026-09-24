@@ -75,7 +75,7 @@ public enum Trace {
                 traceContextInjection: traceContextInjection,
                 telemetry: core.telemetry,
                 redactedStatusCodes: urlSessionTracking.redactedStatusCodes,
-                sessionSampling: { [weak core] in core?.rumSessionSampling }
+                rumSessionSampler: core.rumSessionSampler
             )
 
             try core.register(urlSessionHandler: urlSessionHandler)

@@ -299,7 +299,7 @@ extension DistributedTracing {
         // rate is the product of the two: `.combinedWithSessionRate`. The snapshot carries the ID and
         // the session-derived decision together. A sampled active span still takes precedence below,
         // as required to preserve the parent trace's decision.
-        let sessionSnapshot = sessionSampling?.sessionSamplingSnapshot(for: .combinedWithSessionRate, rate: samplingRate)
+        let sessionSnapshot = sessionSampling?.decision(for: .combinedWithSessionRate, rate: samplingRate)
         // When no RUM session is active, fall back to a random decision at the tracing rate.
         let isSampled: () -> Bool = {
             sessionSnapshot?.isSampled ?? Sampler(samplingRate: samplingRate).sample()

@@ -316,14 +316,14 @@ public enum WebViewTracking {
         // rates multiply. Reading the session from its store rather than from the core context means
         // a WebView instrumented immediately after `RUM.enable()` gets a real decision here instead
         // of `null`.
-        guard let snapshot = core.rumSessionSampling?.sessionSamplingSnapshot(
+        guard let decision = core.rumSessionSampler.decision(
             for: .combinedWithSessionRate,
             rate: distributedTracingSampleRate
         ) else {
             return "null"
         }
 
-        return snapshot.isSampled ? "true" : "false"
+        return decision.isSampled ? "true" : "false"
     }
 
     /// Conversion matrix from global privacy level to fine-grained privaly levels.

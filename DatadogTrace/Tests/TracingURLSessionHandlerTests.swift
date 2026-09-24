@@ -1009,7 +1009,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let receiver = ContextMessageReceiver()
         let sessionUUID = "abcdef01-2345-6789-abcd-ef0123456789"
         let sessionSampler = DeterministicSampler(uuid: .mockWith(sessionUUID), samplingRate: 80.0)
-        let sessionSampling = RUMSessionSamplerProviderMock(identity: .init(sessionID: sessionUUID, sampler: sessionSampler))
+        let samplingCore = FeatureRegistrationCoreMock()
+        try? samplingCore.register(feature: RUMSessionSamplerProviderMock(identity: .init(sessionID: sessionUUID, sampler: sessionSampler)))
 
         let handler = TracingURLSessionHandler(
             tracer: tracer,
@@ -1018,7 +1019,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
             firstPartyHosts: .init(["example.com": [.datadog]]),
             traceContextInjection: .all,
             telemetry: NOPTelemetry(),
-            sessionSampling: { sessionSampling }
+            rumSessionSampler: samplingCore.rumSessionSampler
         )
 
         // When — modify is called twice while the same session is active
@@ -1054,7 +1055,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let oldBehaviour = DeterministicSampler(uuid: .mockWith(sessionUUID), samplingRate: traceRate).isSampled
         XCTAssertNotEqual(expectedSampled, oldBehaviour, "Chosen vector must differ between composed and trace-only rate")
 
-        let sessionSampling = RUMSessionSamplerProviderMock(identity: .init(sessionID: sessionUUID, sampler: sessionSampler))
+        let samplingCore = FeatureRegistrationCoreMock()
+        try? samplingCore.register(feature: RUMSessionSamplerProviderMock(identity: .init(sessionID: sessionUUID, sampler: sessionSampler)))
         let handler = TracingURLSessionHandler(
             tracer: tracer,
             contextReceiver: receiver,
@@ -1062,7 +1064,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
             firstPartyHosts: .init(["example.com": [.datadog]]),
             traceContextInjection: .all,
             telemetry: NOPTelemetry(),
-            sessionSampling: { sessionSampling }
+            rumSessionSampler: samplingCore.rumSessionSampler
         )
 
         let (_, traceContext, _) = handler.modify(
@@ -1115,7 +1117,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let oldBehaviour = DeterministicSampler(uuid: .mockWith(sessionUUID), samplingRate: traceRate).isSampled
         XCTAssertNotEqual(expectedSampled, oldBehaviour, "Chosen vector must differ between composed and trace-only rate")
 
-        let sessionSampling = RUMSessionSamplerProviderMock(identity: .init(sessionID: sessionUUID, sampler: sessionSampler))
+        let samplingCore = FeatureRegistrationCoreMock()
+        try? samplingCore.register(feature: RUMSessionSamplerProviderMock(identity: .init(sessionID: sessionUUID, sampler: sessionSampler)))
         let handler = TracingURLSessionHandler(
             tracer: tracer,
             contextReceiver: receiver,
@@ -1123,7 +1126,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
             firstPartyHosts: .init(["example.com": [.datadog]]),
             traceContextInjection: .all,
             telemetry: NOPTelemetry(),
-            sessionSampling: { sessionSampling }
+            rumSessionSampler: samplingCore.rumSessionSampler
         )
 
         let (_, traceContext, _) = handler.modify(
