@@ -23,10 +23,11 @@ def transition(rows, before, after, *, cancelled, binding):
     registered = one([r for r in selected if r['kind'] == 'transition_registered'], 'callback registration')
     changes = [r for r in selected if r['kind'] == 'transition_change']
     change = one(changes, 'interaction change')
+    observed = one([r for r in selected if r['kind'] == 'transition_terminal_observed'], 'actual terminal context')
     end = one([r for r in selected if r['kind'] == 'transition_complete'], 'actual completion')
     closed = one([r for r in selected if r['kind'] == 'transition_closed' and r['payload']['reason'] == 'completion'], 'observer removal')
     require(armed['sequence'] < before['sequence'] < start['sequence'] < registered['sequence']
-            < change['sequence'] < end['sequence'] < closed['sequence'] < after['sequence'], 'missing precritical registration or effect boundary')
+            < change['sequence'] < observed['sequence'] < end['sequence'] < closed['sequence'] < after['sequence'], 'missing precritical registration or effect boundary')
     require(armed['payload']['phase'] == phase and armed['payload']['recognizers'] == before['payload']['transition']['armed'],
             'readiness recognizer inventory changed')
     require(armed['payload']['recognizers'] and len({x['id'] for x in armed['payload']['recognizers']})
@@ -102,19 +103,35 @@ def transition(rows, before, after, *, cancelled, binding):
             'registration did not observe native interactive began')
     require(first['recognizer'] in armed['payload']['recognizers'] and first['recognizer']['window'] == binding['window'],
             'recognizer not armed in the owned window')
-    keys = ['transition_id', 'coordinator', 'from', 'to', 'window', 'scene', 'phase', 'request_id']
+    keys = ['transition_id', 'coordinator', 'from', 'to', 'container', 'phase', 'request_id']
     require(all(first[k] not in ['', 'nil', None] for k in keys), 'missing native transition identity')
     previous = before['payload']['uptime_ns']
-    for row in [start, registered, change, end]:
+    for row in [start, registered, change, observed, end]:
         value = row['payload']
         require(all(value[k] == first[k] for k in keys) and value['current_request_id'] == request,
                 'foreign coordinator or consumed request')
-        require(value['window'] == binding['window'] and value['scene'] == binding['scene'], 'foreign native owner')
+        if row is not observed and row is not end:
+            require(value['window'] == binding['window'] and value['scene'] == binding['scene'], 'foreign native owner')
         require(value['initially_interactive'] is True and type(value['cancelled']) is bool, 'noninteractive or malformed cancellation')
         require(type(value['percent_complete']) in [int, float] and math.isfinite(value['percent_complete'])
                 and 0 <= value['percent_complete'] <= 1, 'invalid transition progress')
         require(type(value['uptime_ns']) is int and previous <= value['uptime_ns'] <= after['payload']['uptime_ns'], 'native clock outside boundary')
         previous = value['uptime_ns']
+    terminal = observed['payload']
+    require(all(end['payload'].get(k) == v for k, v in terminal.items() if k != 'mapper_views'),
+            'accepted completion substituted actual terminal context')
+    require(terminal.get('active_record') is True and terminal.get('completed_record') is False
+            and terminal.get('observer_failed') is False and terminal.get('observer_request_id') == request
+            and type(terminal.get('interaction_changes')) is int and terminal['interaction_changes'] == 1
+            and terminal.get('rejections') == [], 'terminal callback validation failed')
+    require(terminal.get('result_window') == binding['window'] and terminal.get('result_scene') == binding['scene']
+            and terminal.get('result_is_key') is True, 'terminal return controller lost native owner')
+    require(terminal.get('from_window' if cancelled else 'to_window') == binding['window'],
+            'terminal endpoint differs from returning controller')
+    attached = terminal['window'] == binding['window'] and terminal['scene'] == binding['scene']
+    detached = (phase == 'dismiss.finish.before' and cancelled is False and terminal['cancelled'] is False
+                and terminal['window'] == terminal['scene'] == terminal.get('from_window') == 'nil')
+    require(attached or detached, 'foreign or unqualified detached terminal container')
     require(type(registered['payload'].get('animations_queued')) is bool, 'missing registration diagnostic')
     require(type(registered['payload']['duration_ns']) is int and 0 <= registered['payload']['duration_ns'] <= 2_000_000, 'registration observer exceeded callback budget')
     require(change['payload']['interactive'] is False and end['payload']['interactive'] is False

@@ -152,6 +152,7 @@ class OrdinaryDisplay(unittest.TestCase):
             folder=Path(directory);raw=self.observed();actual=json.dumps(raw).encode()
             collector=q.Collector.__new__(q.Collector)
             collector.device='ipad';collector.binding={};collector.evidence=[];collector.run='run';collector.bundle='owned.app';collector.pid=123
+            collector.documents=folder;collector.process_started=dict(pid=123,start='now',executable='/task')
             collector.live=lambda deadline:None;collector.pending=lambda:[]
             before=dict(sequence=10,payload=dict(request_id='request'))
             def command(argv, out, label, **kwargs):

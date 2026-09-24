@@ -161,7 +161,7 @@
     "human_session": "User unavailable; S2 prepared human groups remain unadmitted.",
     "inventory": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/physical-device-connected.json"
   },
-  "next_action": "Automated physical capture is stopped. Preserve the three original invalid admissions and passed cleanup. A future continuation needs a concrete changed capture prerequisite or qualified mechanism, not an equivalent retry. Continue the independent S3:C06 legacy17.5 compatibility obligation while S2 human input and RFC review wait.",
+  "next_action": "Capture remains stopped. Qualify a concrete changed recorder prerequisite before another bounded baseline, retaining exact process/executable liveness at attach. Preserve existing invalid attempts and passed cleanup. The17.5 C06/full-RUM obligations are already accepted and must not be rerun merely to resume.",
   "telemetry_mode": "Both arms initialize Core+RUM with granted consent, the same probe application and ios-s3-application-impact service. Default vitals/slow-frame settings remain enabled; normal upload uses the existing authorized local configuration. No external application data request. No alternate endpoint, stubbed upload or networking benchmark.",
   "trace_contract": "Required complete raw physical trace and six exported tables: process-info, os-signpost-interval, core-animation-fps-estimate, hitches-summary, hitches-render-interval, potential-hangs. Exact Workload warmup/active/idle messages bind run UUID and PID/process lifetime, with consistent native-to-trace clocks. FPS is display-level; retain all global hitches and never filter window-server renders by app PID. Require one unchanged physical internal display, native full-screen owned readiness before workload, complete FPS coverage, positive process proof, hang threshold exactly250ms, and no competing workload. Present empty hitch/hang tables differ from absent tables. First planned physical baseline qualifies actual exported formats and full capture; missing/ambiguous evidence is INVALID.",
   "preparation_review": {
@@ -400,6 +400,36 @@
     "xctrace_device_inventory": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/xctrace-device-inventory-after-stop.log",
     "result": "Instruments lists the same connected physical UDID after cleanup; this does not establish process visibility during the failed attach.",
     "task_crash_inventory": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/task-crash-inventory.raw.json",
-    "crash_result": "Successful UIKitImpact-filtered systemCrashLogs inventory is empty. This does not prove the process remained alive or rule out a late report; no SDK-crash inference."
+    "crash_result": "Successful UIKitImpact-filtered systemCrashLogs inventory is empty. This does not prove the process remained alive or rule out a late report; no SDK-crash inference.",
+    "capture_timing_audit": {
+      "launch_finished_to_recorder_seconds": 1.672817,
+      "code_copy_finished_to_recorder_seconds": 0.244488,
+      "fixture_ready_budget_seconds": 60,
+      "source": "tools/multi-scene/application-impact/Evidence.swift: awaitRecorder",
+      "source_sha256": "48dd197620e5ad47a0a0b743ffa14d28e343fd083ee8436652da3bbdcfdb35b3",
+      "assessment": "Recorder starts1.672817s after launch acknowledgement, well inside the fixture60s readiness window. That timeout does not explain the immediate missing-PID error. A future capture must establish exact process/executable visibility at attach; post-cleanup device listing is insufficient. No SDK or tool-version cause established.",
+      "native_launches": 0
+    },
+    "process_visibility_contract": {
+      "at": "2026-09-24T11:06:03.450637+00:00",
+      "artifacts": {
+        "launch.raw.json": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/physical-wave-transport/cells/0/launch.raw.json",
+          "sha256": "5ef086b94e371f69b1808651585875d69c33ca668916212ca064bd45e7b0aace"
+        },
+        "installed-code.json": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/physical-wave-transport/cells/0/installed-code.json",
+          "sha256": "9ab10caa43e53df4086387b44808c1af55a83f2c3b0ce3eb7dc9d866c4a8334e"
+        },
+        "cleanup-processes.raw.json": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/physical-wave-transport/cells/0/cleanup-processes.raw.json",
+          "sha256": "1f9428b92fc2143732e38f760744e1adebe14cb696282aaf88b2ffb8a7315df4"
+        }
+      },
+      "confirmed": "The actual launch response contains both processIdentifier and the absolute executable file URL. The retained CoreDevice process inventory uses those same two fields; the installed-code receipt independently binds processID to the exact run/source.",
+      "gap": "Only post-cleanup process inventory was retained. An immediate pre-attach inventory can distinguish a lost or replaced app process from recorder-only visibility failure. No existing artifact proves that prerequisite at the failed attach.",
+      "next_preparation": "Bind one current process inventory to the exact launch PID and executable URL immediately before recorder admission; retain a failed attach and a bounded post-failure inventory before cleanup. Preserve the existing readiness/workload clocks and stop before workload if recorder readiness is absent. This is preparation only; no native retry admitted.",
+      "native_launches": 0
+    }
   }
 }

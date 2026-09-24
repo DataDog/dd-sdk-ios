@@ -64,7 +64,8 @@ def ordinary_display_capture(device, folder, label, deadline):
 
 def helpers():
     return {**runtime.helpers(), **{str(p.relative_to(shared.REPO)):shared.sha(p) for p in
-        [Path(__file__).resolve(), Path(__file__).with_name('test_capture_qualification.py').resolve()]}}
+        [Path(__file__).resolve(), *[Path(__file__).with_name(n).resolve() for n in
+         ['test_capture_qualification.py', 'capture_input.py', 'capture_input.js', 'test_capture_input.py']]]}}
 
 
 def verify(root):
@@ -171,7 +172,8 @@ def hierarchy_owner(request, raw, *, background=False):
     require(type(request.get('app_pid')) is int and request['app_pid'] > 0
             and type(request.get('app_bundle')) is str and request['app_bundle'], 'prompt app identity missing')
     if background:
-        require(len([p for b,p in applications if b == 'com.apple.springboard' and int(p) > 0]) == 1,
+        require(applications and applications[0][0] == 'com.apple.springboard'
+                and len([p for b,p in applications if b == 'com.apple.springboard' and int(p) > 0]) == 1,
                 'actual Home hierarchy missing')
     else:
         require([int(p) for b,p in applications if b == request['app_bundle']] == [request['app_pid']],
@@ -263,7 +265,8 @@ class Collector(driver.Collector):
     select_display = staticmethod(ordinary_display)
     read_display = staticmethod(ordinary_display_capture)
     def prompt_fields(self):
-        return dict(app_bundle=self.bundle, app_pid=self.pid)
+        return dict(app_bundle=self.bundle, app_pid=self.pid, native_events_path=str(self.documents/'events.jsonl'),
+                    process_identity=self.process_started)
     def prompt(self,phase,instruction,folder,deadline,before):
         actual = super().prompt(phase,instruction,folder,deadline,before)
         request = shared.read(folder/'prompt.json')
@@ -329,6 +332,7 @@ def cell(root, framework):
         collector.bundle=bundle
         collector.executable=(installed/item['product']['executable']).resolve();collector.process_started=driver.process_identity(pid)
         require(collector.process_started and collector.process_started['executable']==str(collector.executable),'process identity differs')
+        atomic(out/'summary.json',encoded(summary),exclusive=False)
         first,_=collector.snapshot('process-source-binding',deadline);driver.ownership.launch_identity(collector.evidence,identity)
         rows=collector.stack()
         require(set(collector.transition_results)=={'pop.finish','pop.cancel','dismiss.finish','dismiss.cancel'},'incomplete qualification')

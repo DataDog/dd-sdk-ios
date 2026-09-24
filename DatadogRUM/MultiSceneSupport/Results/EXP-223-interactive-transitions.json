@@ -326,7 +326,7 @@
     }
   ],
   "gate_closures": [],
-  "next_action": "Review and remove repeated immutable metadata work while retaining actual live topology and unchanged cost threshold; define any build/native continuation before implementation.",
+  "next_action": "Review the captured null-container boundary, implement its narrow completed-dismissal handling and decisive negative controls, then obtain scoped review before the single baseline build/qualification. Input exchange is qualified for the reached six effects; preserve full mechanism/human/S3 limits.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
@@ -397,7 +397,7 @@
       "scope": "Fixture/native and local paired oracle only. Full runtime, backend, adaptive geometry and physical execution remain unqualified."
     }
   },
-  "updated_at": "2026-09-24T09:44:45.520930+00:00",
+  "updated_at": "2026-09-24T11:10:53.598319+00:00",
   "live_environment": {
     "observed_at": "2026-09-23T19:45:47.121281+00:00",
     "xcode": "27.1 (27A9269)",
@@ -584,7 +584,7 @@
     "release_guard": "NATIVE_QUALIFIED_FOR_THIS_FAILED_CELL: actual reply, fresh same-owner zero-touch/no-coordinator snapshot, then task-only teardown."
   },
   "event_capture_correction": {
-    "state": "STOPPED_ON_MEASURED_FIXTURE_CALLBACK_COST",
+    "state": "METADATA_CORRECTION_NATIVE_ADMITTED",
     "defined_at": "2026-09-24T08:22:20.372735+00:00",
     "artifacts": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo",
     "objective": "Repair shared human-session capture before another operator session; unchanged S2/S3 release criteria.",
@@ -642,7 +642,7 @@
     },
     "reviewer": "/root/c06_runtime_plan",
     "gate_closures": [],
-    "offline_tests": 126,
+    "offline_tests": 129,
     "review_adjustment": "Retain unrelated content-pan begin/probe/end observations without allowing them to satisfy a dismissal; reject unresolved or ambiguous chains.",
     "qualified_build_before_review": {
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/build",
@@ -908,6 +908,771 @@
       "attribution": "Fixture HumanObservation.input/topology/append interval, before native_input and navigation. No SDK regression finding. No sheet gesture ran.",
       "source_review": "Callback recomputes framework bundle metadata and complete live scene/window topology. Persistor serialization/file work is already off-main; there is no evidence to relax the2ms limit.",
       "next": "Review and remove repeated immutable metadata work while retaining actual live topology and unchanged cost threshold; define any build/native continuation before implementation."
+    },
+    "metadata_cost_correction": {
+      "state": "INVALID_COMPLETION_CHECK",
+      "defined_at": "2026-09-24T09:48:10.551302+00:00",
+      "prior_result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-direct-handoff/cells/UIKit/summary.json",
+        "sha256": "5ce2f3fe726adce2db050e4f610b40c4cad88a8e25ab2ae68277dc66df92f8ef"
+      },
+      "discriminator": {
+        "operation": "human_callback",
+        "target": "home.next",
+        "event_sequence": 16,
+        "cost_sequence": 17,
+        "duration_ns": 2686500,
+        "limit_ns": 2000000,
+        "actual_effect": "Open detail succeeded with same original PID; complete actual before/action capture and native records retained.",
+        "attribution": "Fixture HumanObservation.input/topology/append interval, before native_input and navigation. No SDK regression finding. No sheet gesture ran.",
+        "source_review": "Callback recomputes framework bundle metadata and complete live scene/window topology. Persistor serialization/file work is already off-main; there is no evidence to relax the2ms limit.",
+        "next": "Review and remove repeated immutable metadata work while retaining actual live topology and unchanged cost threshold; define any build/native continuation before implementation."
+      },
+      "repair": "Cache immutable framework and actual window/controller class bundle paths in the copied HumanObservation fixture only. Every scene, window, controller identity, key state, geometry and lifecycle value remains freshly read at the callback; unchanged2ms total observation budget and complete raw timing records.",
+      "limits": "The captured aggregate cost does not identify which sub-operation dominated. Native qualification must demonstrate that the narrower metadata work fits the existing budget; do not relax it or claim an SDK regression.",
+      "source_scope": [
+        "tools/multi-scene/interactive-transitions/observation_variant.py",
+        "tools/multi-scene/interactive-transitions/test_observation_variant.py"
+      ],
+      "unchanged": [
+        "SDK source",
+        "original automatic-coverage fixture",
+        "capture_qualification transport and callbacks",
+        "all timing/ownership oracles"
+      ],
+      "qualification": {
+        "max_builds": 1,
+        "products": [
+          "baseline UIKit",
+          "baseline SwiftUI"
+        ],
+        "build_seconds": 900,
+        "max_cells": 2,
+        "order": [
+          "UIKit",
+          "SwiftUI only after UIKit PASS"
+        ],
+        "native_seconds": 900,
+        "input_seconds": 180,
+        "session_setup_seconds": 120,
+        "cleanup_seconds": 300,
+        "retries": 0,
+        "deadline_extension": false,
+        "gate_closures": []
+      },
+      "stop": "Stop at first invalid mechanism or exceeded bound. No automatic threshold increase or equivalent retry.",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-metadata",
+      "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/build-metadata",
+      "build_plan_sha256": "43e310fa4dd0cf9138c47ada2101f349346cf6e8a2177ddf35bb63986b305fe0",
+      "build_result_sha256": "a1f970f5e80c84adb9494099b4250186e456bb3b7634b3da461860a50c5fe910",
+      "plan_sha256": "0aff360e5265da3ec7674ec2a4f24d4cfa553bb6217a0f4d28036ae9647460f6",
+      "controls_sha256": "6282ecbe3ba79468b69f1722f3d8544fa47810d2d99c5b97a3dafbde706c93e0",
+      "review_sha256": "3d96f7a4cbbfd013827e17088b9e6b4ffa8f6f1622be302c60b1b7b0a387ca58",
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-metadata/cells/UIKit/summary.json",
+        "sha256": "b0a324c1cb1517d6e707458df44985ffce2818e296196d8c68ad3ca583cb41f6"
+      },
+      "native_evidence": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-metadata/cells/UIKit/native-preserved/events.jsonl",
+        "sha256": "a645ccc4f07043c53daf2d1b02303e1eed0eabbdbfc36cd8e49ba01c5836546d"
+      },
+      "actual_sheet_input": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-metadata/cells/UIKit/input/dismiss.finish.before/tool-return.json",
+        "sha256": "03134f0401037b5a3610755a139fb3a3cdd0c185a43d46b4e1f6a69240a3b60d"
+      },
+      "cleanup": "PASS",
+      "SwiftUI": "NOT_RUN",
+      "native_launches": 1,
+      "action_calls": 6,
+      "observations": {
+        "edge_pop_complete": "NATIVE_QUALIFIED",
+        "edge_pop_cancel": "NATIVE_QUALIFIED",
+        "sheet_probe_sequences": [
+          98,
+          99
+        ],
+        "sheet_transition_begin": 100,
+        "sheet_registration": 101,
+        "sheet_interaction_change": 102,
+        "sheet_disappear": 103,
+        "sheet_rejection": 104,
+        "reason": "Rejected: native observer rejected request",
+        "limit": "The compound completion guard did not retain its rejected context fields; the failing clause cannot be recovered from this run. No SDK regression or complete mechanism acceptance."
+      },
+      "observation_cost_ns": {
+        "appearance": {
+          "count": 6,
+          "maximum": 26584
+        },
+        "callback": {
+          "count": 3,
+          "maximum": 1809167
+        },
+        "snapshot": {
+          "count": 13,
+          "maximum": 12921375
+        }
+      }
+    },
+    "terminal_context_correction": {
+      "state": "PREPARED_STALE_CAPTURE_STOP",
+      "defined_at": "2026-09-24T10:08:37.775338+00:00",
+      "prior_result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-metadata/cells/UIKit/summary.json",
+        "sha256": "b0a324c1cb1517d6e707458df44985ffce2818e296196d8c68ad3ca583cb41f6"
+      },
+      "discriminator": "Actual sheet coordinator and interaction change are captured before a compound completion guard rejects. Guard requires presentation container attachment after dismissal; current failed record omits the actual rejected fields, so detachment is a source-supported hypothesis, not an observed cause.",
+      "contract": "Persist actual terminal context and separate rejection predicates before validation. Require same live record, unconsumed request, exact from/to/container identities and one prior interaction change. Only a completed noncancelled sheet dismissal may have a detached container, with actual returning controller attached to the original key window/scene and dismissed controller detached. Preserve actual nil container owner fields. Cancellation/pop keep attached container requirement; all foreign nonnil ownership fails. Join callback observation and accepted completion to fresh native result graph.",
+      "source_scope": [
+        "tools/multi-scene/interactive-transitions/physical_observer.py",
+        "tools/multi-scene/interactive-transitions/physical_transition.py",
+        "tools/multi-scene/interactive-transitions/test_physical_release.py"
+      ],
+      "unchanged": [
+        "SDK source",
+        "frozen TransitionObservation.swift",
+        "input transport",
+        "human release guard",
+        "cost thresholds",
+        "previous INVALID results"
+      ],
+      "qualification": {
+        "max_builds": 1,
+        "products": [
+          "baseline UIKit",
+          "baseline SwiftUI"
+        ],
+        "build_seconds": 900,
+        "max_cells": 2,
+        "order": [
+          "UIKit",
+          "SwiftUI only after full UIKit PASS and review"
+        ],
+        "native_seconds": 900,
+        "input_seconds": 180,
+        "session_setup_seconds": 120,
+        "cleanup_seconds": 300,
+        "retries": 0,
+        "deadline_extension": false,
+        "gate_closures": []
+      },
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/terminal-context-controls.json",
+        "sha256": "c24ace1495a83d402f8f418187a18bd5460b61a5245fd060ce5ee8d04b56030e",
+        "tests": 138,
+        "state": "PASS"
+      },
+      "stop": "Stop on first invalid mechanism or expired bound, retain precise rejected context, restore task-only state. No equivalent retry or candidate/human admission.",
+      "source_references": [
+        {
+          "path": "/Applications/Xcode_27.1.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/System/Library/Frameworks/UIKit.framework/Headers/UIViewControllerTransitionCoordinator.h",
+          "sha256": "2a2cc343696c05b30c75ae2b710489cce1b65af705739d967b772281444e98e9",
+          "scope": "Completion callback is after transition completion; coordinator is ephemeral through final callback. No assertion that container stays attached."
+        }
+      ],
+      "review": {
+        "reviewer": "/root/c06_runtime_plan",
+        "state": "PASS",
+        "scope": "Exact implementation and138 controls; one baseline build and UIKit qualification. SwiftUI conditional on full UIKit PASS; no gate credit."
+      },
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-terminal",
+      "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/build-terminal",
+      "plan_sha256": "7f4846492e1d2652e385576ab82cd9176af99a0860bb9e5e1e8892496a188e34",
+      "controls_sha256": "4bfac85e72578dc0f97d30ace591859ac6591c2ebe98dedd9d801e44093879c5",
+      "review_sha256": "52155eb4d1844d68d2014f3cce82e2808aa5d7ea2f4439e778c7bc1d33386165",
+      "build_plan_sha256": "023d425ea83a79f9ff3d9b44d5cde7db700555eb64097caa63e25e0877085216",
+      "build_result_sha256": "34b8eab9bdebdbaea6ad0f19aa51b5309eb7a8cd76149c620cda3932e4b6df82",
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-terminal/summary.json",
+        "sha256": "0b015a6a40b1d874b735ad7aeff7445c8bcda59c91a395162621f1de4d3c860e"
+      },
+      "qualification_result": {
+        "actions": 0,
+        "cleanup": "PASS",
+        "evidence": "INCOMPLETE",
+        "gate_closures": [],
+        "native_launches": 0,
+        "original_summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-terminal/sessions/UIKit/summary.json",
+        "reason": "Input agent provider connection failed before any UI call; original setup deadline expired. No SDK or gesture finding.",
+        "restoration": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-terminal/sessions/UIKit/restoration.json",
+        "scenario": "NOT_EXECUTED",
+        "state": "INVALID_HOST_TRANSPORT"
+      },
+      "SwiftUI": "NOT_RUN",
+      "replacement_setup": {
+        "state": "INVALID_STALE_CAPTURE",
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-worker-ready",
+        "definition_sha256": "755dea8d15e529790f130f140bdba2e0cb4fa59df64e5ef2ecd6b512a767494e",
+        "plan_sha256": "7f4846492e1d2652e385576ab82cd9176af99a0860bb9e5e1e8892496a188e34",
+        "controls_sha256": "4bfac85e72578dc0f97d30ace591859ac6591c2ebe98dedd9d801e44093879c5",
+        "review_sha256": "c54118bb166aa8cb386548634afbfef087cf7221e1f4b19d65cb17fcb07dd78b",
+        "max_attempts": 1,
+        "reason": "Fresh worker completed preparation and reported READY before setup; prior provider failure had zero UI calls, no install and cleanup PASS. Same products, controls and fixed budgets; no further transport retry.",
+        "result": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-worker-ready/cells/UIKit/summary.json",
+          "sha256": "c879c081b8a062ef5c717e7a3b268563f13ee275c8e163e6673fe769d60dfaaf"
+        },
+        "qualification_result": {
+          "cleanup": "PASS",
+          "cleanup_deadline": 1790246861.448342,
+          "evidence": "INCOMPLETE",
+          "finished_at": 1790245827.053951,
+          "gate_closures": [],
+          "identity": {
+            "bundle": "com.datadoghq.s2.transitions.a.uikit",
+            "fixture": "805f4d2ad0d256fb243d5683d024c5b5cb6f678cd44f79e11e9c2a85758034db",
+            "framework": "UIKit",
+            "layout": "stack",
+            "nonce": "2b958916-4ba2-472e-b79d-9c97a5613582",
+            "pid": 23139,
+            "run_id": "4f8dc5b1-da55-4c6b-bf42-36a07ec8d6ed",
+            "source": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+            "tracking": "automatic"
+          },
+          "native_deadline": 1790246561.448342,
+          "reason": "Rejected: input capture stopped before action",
+          "release_acceptance": false,
+          "restored_at": 1790245945.534603,
+          "scenario": "NOT_EXECUTED",
+          "started_at": 1790245661.448342,
+          "state": "INVALID"
+        },
+        "capture_calls": 2,
+        "action_calls": 0,
+        "cleanup": "PASS",
+        "quiescence": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-worker-ready/sessions/UIKit/worker-quiescence.json",
+          "sha256": "7703910ff073ed61277d2abcbb76acd0824c837b21453d80ee25e16366ad986b"
+        },
+        "timing": {
+          "capture_seconds": 3.641,
+          "recheck_issued_after_capture_seconds": 32.188,
+          "recheck_result_after_capture_seconds": 35.794,
+          "failure_published_after_capture_seconds": 82.910588
+        },
+        "attribution": "Freshness recheck correctly stopped before tap. The exact recheck execution time lies between its issuance and return; publication time is not the recheck time. Model handoff followed verbose hierarchy and screenshot output; cause within that model/provider interval is not separable."
+      }
+    },
+    "input_exchange_correction": {
+      "defined_at": "2026-09-24T10:41:11.998350+00:00",
+      "state": "TRANSPORT_QUALIFIED_TERMINAL_CONTAINER_STOP",
+      "prior_result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-worker-ready/cells/UIKit/summary.json",
+        "sha256": "c879c081b8a062ef5c717e7a3b268563f13ee275c8e163e6673fe769d60dfaaf"
+      },
+      "discriminator": "One successful empty capture was split from dispatch by a model round; recheck orchestration issued32.188s after capture exceeded unchanged30s freshness. No effect sent. Consolidate the time-critical steps in one awaited tool sequence.",
+      "scope": [
+        "tools/multi-scene/interactive-transitions/capture_qualification.py",
+        "tools/multi-scene/interactive-transitions/capture_input.py",
+        "tools/multi-scene/interactive-transitions/capture_input.js",
+        "tools/multi-scene/interactive-transitions/test_capture_input.py",
+        "tools/multi-scene/interactive-transitions/test_capture_qualification.py"
+      ],
+      "contract": [
+        "Before the critical sequence, inspect the runner-owned current ready screenshot and source-bound snapshot. After each action inspect its actual screenshot and hierarchy.",
+        "One empty current Xcode capture -> preserve complete raw return -> validate exact prompt/run/session/PID, unconsumed live native prefix and actual current semantic identifiers -> derive command from fresh hitPoint or owned geometry -> recheck freshness -> one supported Xcode effect -> preserve exact return and artifacts -> existing publication/oracle. No model turn inside this sequence.",
+        "Select only the exact task application section, unique screen/control and their containing window. Sheet bounds must be a unique enclosing large inset surface common to source-declared screen.sheet and sheet.close; UIKit additionally requires controller.sheet. Unknown or ambiguous geometry fails before action. No private-class whitelist or total-window-count assertion.",
+        "Retain input intent before dispatch. Do not assert zero-action quiescence after attempted effect or a missing tool return. Preserve original failed results and task-only cleanup."
+      ],
+      "unchanged": [
+        "SDK and fixture/build bytes",
+        "30s capture freshness",
+        "all native gesture/ownership/cost oracles",
+        "180s input,900s native,300s cleanup,120s setup clocks"
+      ],
+      "qualification": {
+        "max_builds": 0,
+        "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/build-terminal",
+        "max_cells": 2,
+        "order": [
+          "UIKit",
+          "SwiftUI only after full UIKit PASS"
+        ],
+        "max_attempts": 1,
+        "retries": 0,
+        "deadline_extension": false,
+        "gate_closures": []
+      },
+      "reviewer": "/root/c06_runtime_plan",
+      "stop": "Stop this automated qualification on first failure; no equivalent transport/gesture retry. A native observer finding needs captured values and a new source-supported discriminator before any further implementation.",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-input-exchange-reviewed",
+      "plan_sha256": "dfb32a022b9604e5c8cd88383bce1286d7b1c147b819ac1d0dc3030719d565be",
+      "controls_sha256": "837be8e29f9917f47f0cdf74a793255502f6c04d4457c2b4fcd80e95f551ecdb",
+      "tests": 155,
+      "preparation_corrections": [
+        "Preserve actual before/action wrappers and pending local helper handle on every transport error; await a yielded local helper within original input bound.",
+        "Require the unique attached foremost public presented controller before deriving SwiftUI sheet input from current AX ancestors."
+      ],
+      "review_sha256": "3a23ae941150b5ab8b9eeefd3b26b27865b0e50dbbddb1515d7a82a987448b2b",
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-input-exchange-reviewed/cells/UIKit/summary.json",
+        "sha256": "f44910f8b29ef5e5ec5f5af492f883c7b25c0559b24bd1fbc1987958dedf3535"
+      },
+      "cleanup": "PASS",
+      "quiescence": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-input-exchange-reviewed/sessions/UIKit/worker-quiescence.json",
+        "sha256": "9bff7f4f128503303dfccf5f487e614c688629f0d3b85f65b44024442487ca07"
+      },
+      "native_evidence": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-input-exchange-reviewed/cells/UIKit/native-preserved/events.jsonl",
+        "sha256": "ef912669e797be98439f937d49c30fa725d1e892ae5c2f06f288923618816ef5"
+      },
+      "native_launches": 1,
+      "empty_captures": 7,
+      "effects": 6,
+      "input_results": [
+        {
+          "phase": "setup.detail",
+          "capture_to_action_seconds": 5.687,
+          "return_artifact": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-input-exchange-reviewed/cells/UIKit/input/setup.detail.before/tool-return.json",
+            "sha256": "af422bd3c85bcb0ee22e7db1f31d57ab0c898019cc2bdde9f64609ea723b548f"
+          }
+        },
+        {
+          "phase": "setup.sheet",
+          "capture_to_action_seconds": 4.528,
+          "return_artifact": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-input-exchange-reviewed/cells/UIKit/input/setup.sheet.before/tool-return.json",
+            "sha256": "649523051d6f3c8d1a9edaa1c4242c55e16fd246f09f6f6cb401b0b40fa28067"
+          }
+        },
+        {
+          "phase": "pop.finish",
+          "capture_to_action_seconds": 5.347,
+          "return_artifact": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-input-exchange-reviewed/cells/UIKit/input/pop.finish.before/tool-return.json",
+            "sha256": "67786bb0dc7b243428c98e1645de65ce5730e70e248dace62918701c8763bf7f"
+          }
+        },
+        {
+          "phase": "pop.cancel",
+          "capture_to_action_seconds": 3.997,
+          "return_artifact": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-input-exchange-reviewed/cells/UIKit/input/pop.cancel.before/tool-return.json",
+            "sha256": "8899f0b264af79b726fb5a57037859592d1a1d3564f9f90f52de075fe05ecce6"
+          }
+        },
+        {
+          "phase": "dismiss.finish",
+          "capture_to_action_seconds": 4.952,
+          "return_artifact": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-input-exchange-reviewed/cells/UIKit/input/dismiss.finish.before/tool-return.json",
+            "sha256": "f3ba13ff5ee37fad0b49771d3215d1e7e4ff3fedd60ea0f327601496a46bc507"
+          }
+        },
+        {
+          "phase": "setup.detail-again",
+          "capture_to_action_seconds": 4.203,
+          "return_artifact": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-input-exchange-reviewed/cells/UIKit/input/setup.detail-again.before/tool-return.json",
+            "sha256": "f5fa19df53d3216e974034afa4f4c73ddf9acabd5404467165e6a2c415c6b725"
+          }
+        }
+      ],
+      "qualified_transitions": [
+        "pop.finish",
+        "pop.cancel"
+      ],
+      "SwiftUI": "NOT_RUN",
+      "terminal_observation": {
+        "kind": "transition_terminal_observed",
+        "payload": {
+          "active_record": true,
+          "cancelled": false,
+          "completed_record": false,
+          "container": "ObjectIdentifier(0x0000000000000000)",
+          "coordinator": "ObjectIdentifier(0x0000000108070f40)",
+          "current_request_id": "56bd03ec-aceb-48e2-9eb3-84ce71372293",
+          "from": "ObjectIdentifier(0x0000000104dba000)",
+          "from_window": "nil",
+          "initially_interactive": true,
+          "interaction_changes": 1,
+          "interactive": false,
+          "mapper_views": [
+            {
+              "date": 1790247442586,
+              "document": {
+                "configuration": {
+                  "session_sample_rate": 100
+                },
+                "document_version": 2,
+                "format_version": 2,
+                "replay_stats": {},
+                "session": {
+                  "plan": 1,
+                  "session_precondition": "user_app_launch"
+                }
+              },
+              "sequence": 7,
+              "session": {
+                "has_replay": false,
+                "id": "bbcd20c3-1e80-4b5a-ac63-0d218e5ce604",
+                "is_active": true,
+                "type": "user"
+              },
+              "view": {
+                "action": {
+                  "count": 0
+                },
+                "crash": {
+                  "count": 0
+                },
+                "custom_timings": {},
+                "error": {
+                  "count": 0
+                },
+                "frozen_frame": {
+                  "count": 0
+                },
+                "frustration": {
+                  "count": 0
+                },
+                "id": "0745420b-ac06-474e-af47-c0fbe2fd41d3",
+                "is_active": false,
+                "is_slow_rendered": false,
+                "long_task": {
+                  "count": 0
+                },
+                "name": "ApplicationLaunch",
+                "resource": {
+                  "count": 0
+                },
+                "time_spent": 3092229009,
+                "url": "com/datadog/application-launch/view"
+              }
+            },
+            {
+              "date": 1790247697116,
+              "document": {
+                "configuration": {
+                  "session_sample_rate": 100
+                },
+                "document_version": 3,
+                "format_version": 2,
+                "replay_stats": {},
+                "session": {
+                  "plan": 1,
+                  "session_precondition": "user_app_launch"
+                }
+              },
+              "sequence": 92,
+              "session": {
+                "has_replay": false,
+                "id": "bbcd20c3-1e80-4b5a-ac63-0d218e5ce604",
+                "is_active": true,
+                "type": "user"
+              },
+              "view": {
+                "action": {
+                  "count": 2
+                },
+                "crash": {
+                  "count": 0
+                },
+                "custom_timings": {},
+                "error": {
+                  "count": 0
+                },
+                "frozen_frame": {
+                  "count": 0
+                },
+                "frustration": {
+                  "count": 0
+                },
+                "id": "5aaf6346-d948-464a-b7d2-232e827ff443",
+                "interaction_to_next_view_time": 509992957,
+                "is_active": false,
+                "is_slow_rendered": false,
+                "long_task": {
+                  "count": 0
+                },
+                "name": "UIKitTransitions.DetailController",
+                "resource": {
+                  "count": 0
+                },
+                "time_spent": 186395304084,
+                "url": "UIKitTransitions.DetailController"
+              }
+            },
+            {
+              "date": 1790247630497,
+              "document": {
+                "configuration": {
+                  "session_sample_rate": 100
+                },
+                "document_version": 3,
+                "format_version": 2,
+                "replay_stats": {},
+                "session": {
+                  "plan": 1,
+                  "session_precondition": "user_app_launch"
+                }
+              },
+              "sequence": 60,
+              "session": {
+                "has_replay": false,
+                "id": "bbcd20c3-1e80-4b5a-ac63-0d218e5ce604",
+                "is_active": true,
+                "type": "user"
+              },
+              "view": {
+                "action": {
+                  "count": 2
+                },
+                "crash": {
+                  "count": 0
+                },
+                "custom_timings": {},
+                "error": {
+                  "count": 0
+                },
+                "frozen_frame": {
+                  "count": 0
+                },
+                "frustration": {
+                  "count": 0
+                },
+                "id": "5b3084ec-5b0d-40e1-81b7-58ee80a1b0c1",
+                "is_active": false,
+                "is_slow_rendered": false,
+                "long_task": {
+                  "count": 0
+                },
+                "name": "UIKitTransitions.HomeController",
+                "resource": {
+                  "count": 0
+                },
+                "time_spent": 66618839979,
+                "url": "UIKitTransitions.HomeController"
+              }
+            },
+            {
+              "date": 1790247538332,
+              "document": {
+                "configuration": {
+                  "session_sample_rate": 100
+                },
+                "document_version": 2,
+                "format_version": 2,
+                "replay_stats": {},
+                "session": {
+                  "plan": 1,
+                  "session_precondition": "user_app_launch"
+                }
+              },
+              "sequence": 41,
+              "session": {
+                "has_replay": false,
+                "id": "bbcd20c3-1e80-4b5a-ac63-0d218e5ce604",
+                "is_active": true,
+                "type": "user"
+              },
+              "view": {
+                "action": {
+                  "count": 0
+                },
+                "crash": {
+                  "count": 0
+                },
+                "custom_timings": {},
+                "error": {
+                  "count": 0
+                },
+                "frozen_frame": {
+                  "count": 0
+                },
+                "frustration": {
+                  "count": 0
+                },
+                "id": "8ae5398c-e6eb-496a-bcb5-9333d6fe083a",
+                "interaction_to_next_view_time": 577568889,
+                "is_active": false,
+                "is_slow_rendered": false,
+                "long_task": {
+                  "count": 0
+                },
+                "name": "UIKitTransitions.DetailController",
+                "resource": {
+                  "count": 0
+                },
+                "time_spent": 92164882064,
+                "url": "UIKitTransitions.DetailController"
+              }
+            },
+            {
+              "date": 1790247883511,
+              "document": {
+                "configuration": {
+                  "session_sample_rate": 100
+                },
+                "document_version": 2,
+                "format_version": 2,
+                "replay_stats": {},
+                "session": {
+                  "plan": 1,
+                  "session_precondition": "user_app_launch"
+                }
+              },
+              "sequence": 106,
+              "session": {
+                "has_replay": false,
+                "id": "bbcd20c3-1e80-4b5a-ac63-0d218e5ce604",
+                "is_active": true,
+                "type": "user"
+              },
+              "view": {
+                "action": {
+                  "count": 0
+                },
+                "crash": {
+                  "count": 0
+                },
+                "custom_timings": {},
+                "error": {
+                  "count": 0
+                },
+                "frozen_frame": {
+                  "count": 0
+                },
+                "frustration": {
+                  "count": 0
+                },
+                "id": "b68ed751-51fd-46e6-bb63-a9d5fdc32e9c",
+                "interaction_to_next_view_time": 553225994,
+                "is_active": false,
+                "is_slow_rendered": false,
+                "long_task": {
+                  "count": 0
+                },
+                "name": "UIKitTransitions.SheetController",
+                "resource": {
+                  "count": 0
+                },
+                "time_spent": 50252497911,
+                "url": "UIKitTransitions.SheetController"
+              }
+            },
+            {
+              "date": 1790247445678,
+              "document": {
+                "configuration": {
+                  "session_sample_rate": 100
+                },
+                "document_version": 2,
+                "format_version": 2,
+                "replay_stats": {},
+                "session": {
+                  "plan": 1,
+                  "session_precondition": "user_app_launch"
+                }
+              },
+              "sequence": 25,
+              "session": {
+                "has_replay": false,
+                "id": "bbcd20c3-1e80-4b5a-ac63-0d218e5ce604",
+                "is_active": true,
+                "type": "user"
+              },
+              "view": {
+                "action": {
+                  "count": 1
+                },
+                "crash": {
+                  "count": 0
+                },
+                "custom_timings": {},
+                "error": {
+                  "count": 0
+                },
+                "frozen_frame": {
+                  "count": 0
+                },
+                "frustration": {
+                  "count": 0
+                },
+                "id": "e92aab0c-fd74-4a70-aa65-127f0f95b582",
+                "is_active": false,
+                "is_slow_rendered": false,
+                "long_task": {
+                  "count": 0
+                },
+                "name": "UIKitTransitions.HomeController",
+                "resource": {
+                  "count": 0
+                },
+                "time_spent": 92649546981,
+                "url": "UIKitTransitions.HomeController"
+              }
+            }
+          ],
+          "model": {
+            "path": [],
+            "selection": null,
+            "selection_occurrence": null,
+            "sheet": false
+          },
+          "observer_failed": false,
+          "observer_request_id": "56bd03ec-aceb-48e2-9eb3-84ce71372293",
+          "percent_complete": 0.8191964285714286,
+          "phase": "dismiss.finish.before",
+          "rejections": [
+            "changed transition container"
+          ],
+          "request_id": "56bd03ec-aceb-48e2-9eb3-84ce71372293",
+          "result_is_key": true,
+          "result_scene": "FEE68FDA-2F4A-429B-B5FF-284433029560",
+          "result_window": "ObjectIdentifier(0x0000000104db8000)",
+          "scene": "nil",
+          "to": "ObjectIdentifier(0x0000000104ea8000)",
+          "to_window": "ObjectIdentifier(0x0000000104db8000)",
+          "transition_id": "42600687-4fee-4b3c-8e77-906179e76c2e",
+          "uptime_ns": 174202104826583,
+          "window": "nil"
+        },
+        "run_id": "8f9b8433-32c1-4168-8f3f-da58584ca6cf",
+        "sequence": 107,
+        "timestamp": 1790247933.760138
+      },
+      "attribution": "The actual completion context exposes a null ObjectIdentifier for containerView, not the retained original container identity. Exact endpoints and returning key window/scene remain valid, interaction changes1, outgoing window nil. The precise observer rejection is changed transition container. No SDK regression established."
+    },
+    "terminal_container_absence": {
+      "state": "DEFINED_SOURCE_REVIEW_PENDING",
+      "defined_at": "2026-09-24T11:10:53.598319+00:00",
+      "prior_result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-input-exchange-reviewed/cells/UIKit/summary.json",
+        "sha256": "f44910f8b29ef5e5ec5f5af492f883c7b25c0559b24bd1fbc1987958dedf3535"
+      },
+      "native_evidence": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-input-exchange-reviewed/cells/UIKit/native-preserved/events.jsonl",
+        "sha256": "ef912669e797be98439f937d49c30fa725d1e892ae5c2f06f288923618816ef5"
+      },
+      "sequence": 107,
+      "discriminator": "Real completed dismissal returns a null container identity while original endpoints and returning owner remain exact. Previous repair allowed a detached original container but still required it to exist.",
+      "scope": [
+        "tools/multi-scene/interactive-transitions/physical_observer.py",
+        "tools/multi-scene/interactive-transitions/physical_transition.py",
+        "tools/multi-scene/interactive-transitions/test_physical_release.py"
+      ],
+      "contract": "Retain actual container identity/presence once per callback. Before terminal, pop and cancellation require the original nonnull container. Only completed noncancelled dismissal may lose that container entirely, with exactly one prior interaction change, same original transition/coordinator/endpoints/unconsumed request, detached outgoing controller and returning controller in original key window/scene. Never accept a different nonnull container or replace actual terminal data with recorded owners. Source/interop review and negative controls precede build/admission.",
+      "qualification": {
+        "max_builds": 1,
+        "build_seconds": 900,
+        "max_cells": 2,
+        "order": [
+          "UIKit",
+          "SwiftUI only after complete UIKit PASS and outcome review"
+        ],
+        "native_seconds": 900,
+        "input_seconds": 180,
+        "session_setup_seconds": 120,
+        "cleanup_seconds": 300,
+        "retries": 0,
+        "deadline_extension": false,
+        "gate_closures": []
+      },
+      "reviewer": "/root/c06_runtime_plan",
+      "stop": "One qualification after concrete source repair/review; stop on first failure and preserve exact predicates. No input mechanism retry or SDK-on/off diagnostics."
     }
   }
 }

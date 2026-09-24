@@ -84,6 +84,12 @@ Prepare the receiver and evidence-transfer format before capturing a time-bounde
 UI snapshot. Retain the complete raw text losslessly; transfer and persistence count
 against its original freshness limit. A stale snapshot stops before mutation. Shorten
 the handoff and review a separate continuation rather than extending that limit.
+For a reviewed scripted input, inspect the runner's current readiness image first;
+keep fresh tool capture, exact semantic/owner checks, dispatch and publication in
+one awaited sequence. Inspect the actual result afterward. Freeze selectors before
+execution, bind coordinates to the new hierarchy, and preserve actual responses
+and pending local helper handles on failure. A dispatch intent alone proves neither
+input delivery nor quiescence; never relabel attempted input as a zero-action stop.
 
 Bind AX readiness to the observed role and attribute namespace: a SwiftUI text-field
 placeholder may appear in `AXValue` with a null `AXLabel`. Require the exact unique
@@ -222,6 +228,12 @@ The reviewed EXP223 correction resolves only from actual recognizer callbacks,
 retaining the public coordinator inventory at every lookup. Unrelated content
 pans cannot satisfy the chain; exact source-bound endpoints, live interactivity,
 registration before interaction change and actual completion remain required.
+Capture terminal callback values before validating them, with distinct failure
+reasons. A transition container's lifetime differs from the returning controller's
+ownership. Keep actual detached/nil observations; never substitute a recorded
+window. A narrow completed-dismissal exception still requires original endpoints,
+container identity, request, real interaction/terminal ordering and a fresh return
+controller in the owned key window/scene. Pop and cancellation remain strict.
 An ordinary iPad can omit the Duo `active` field. Select its single lit primary
 integrated display with a scoped parser and preflight it before installation; do
 not invent response fields or relax the Duo fold parser.

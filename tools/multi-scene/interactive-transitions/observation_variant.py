@@ -68,6 +68,29 @@ def human(original, fingerprint):
     if hashlib.sha256(original).hexdigest() != fingerprint:
         raise ValueError('frozen human observer source changed')
     value = original.decode()
+    value = replace_once(value, '    private var firstAppearance: String?', '''    private var firstAppearance: String?
+    private var bundlePaths: [ObjectIdentifier: String] = [:]
+
+    private func bundlePath(for objectType: AnyClass) -> String {
+        let identifier = ObjectIdentifier(objectType)
+        if let path = bundlePaths[identifier] { return path }
+        let path = Bundle(for: objectType).bundleURL.path
+        if bundlePaths.count < 128 { bundlePaths[identifier] = path }
+        return path
+    }''')
+    for before, after in [
+        ('Bundle(for: type(of: $0)).bundleURL.path', 'self.bundlePath(for: type(of: $0))'),
+        ('Bundle(for: type(of: window)).bundleURL.path', 'self.bundlePath(for: type(of: window))'),
+        ('Bundle(for: UIWindow.self).bundleURL.path', 'bundlePath(for: UIWindow.self)'),
+        ('Bundle(for: UINavigationController.self).bundleURL.path', 'bundlePath(for: UINavigationController.self)'),
+        ('Bundle(for: UISplitViewController.self).bundleURL.path', 'bundlePath(for: UISplitViewController.self)'),
+        ('Bundle(for: UIHostingController<EmptyView>.self).bundleURL.path', 'bundlePath(for: UIHostingController<EmptyView>.self)'),
+        ('Bundle(for: UIViewController.self).bundleURL.path', 'bundlePath(for: UIViewController.self)')
+    ]:
+        expected = 2 if before == 'Bundle(for: UIWindow.self).bundleURL.path' else 1
+        if value.count(before) != expected:
+            raise ValueError('immutable bundle lookup anchor changed')
+        value = value.replace(before, after)
     value = replace_once(value, '        bindWindowIfReady(); observeScrolls()',
                          '        bindWindowIfReady(); observeScrolls(); TransitionObservation.shared.prepare(requestID: requestID, phase: phase)')
     value = replace_once(value, '"phase": phase, "uptime_ns": DispatchTime.now().uptimeNanoseconds, "topology":',

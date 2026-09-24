@@ -68,6 +68,17 @@ def render(raw, fingerprint):
         '        owner?.observed(self, recognizer: recognizer)')
     value = replace_once(value, '        self.requestID = requestID; self.phase = phase',
         '        self.requestID = requestID; self.phase = phase; panBegins.removeAll(); probeIndex = 0')
+    value = replace_once(value, '    let from: String; let to: String; let window: String; let scene: String',
+        '    let from: String; let to: String; let window: String; let scene: String; let container: String')
+    value = replace_once(value, '        self.coordinator = coordinator; self.request = request; self.phase = phase; self.recognizer = recognizer',
+        '        self.coordinator = coordinator; self.request = request; self.phase = phase; self.recognizer = recognizer\n        self.container = TransitionObservation.key(coordinator.containerView)')
+    value = replace_once(value, '"phase": record.phase, "from": Self.key(context.viewController(forKey: .from)),',
+        '"phase": record.phase, "container": Self.key(context.containerView), "from": Self.key(context.viewController(forKey: .from)),')
+    value = replace_once(value, '            && record.scene == context.containerView.window?.windowScene?.session.persistentIdentifier',
+        '            && record.scene == context.containerView.window?.windowScene?.session.persistentIdentifier\n            && record.container == Self.key(context.containerView)')
+    start = value.index('    private func finished(')
+    end = value.index('    func close(reason:', start)
+    value = value[:start] + TERMINAL_CALLBACK + value[end:]
     value += IDLE_SNAPSHOT
     return value.encode()
 
@@ -172,4 +183,54 @@ IDLE_SNAPSHOT = '''
             "coordinators": coordinators.sorted(), "uptime_ns": DispatchTime.now().uptimeNanoseconds]
     }
 }
+'''
+
+
+TERMINAL_CALLBACK = r'''
+    private func finished(_ record: ActiveTransition, context: UIViewControllerTransitionCoordinatorContext) {
+        let from = context.viewController(forKey: .from)
+        let to = context.viewController(forKey: .to)
+        let result = context.isCancelled ? from : to
+        let resultWindow = result?.viewIfLoaded?.window
+        let containerWindow = context.containerView.window
+        var reasons = [String]()
+        if failed { reasons.append("failed observer") }
+        if active !== record { reasons.append("inactive transition record") }
+        if completed.contains(record.id) { reasons.append("duplicate terminal") }
+        if record.request != requestID || record.request != HumanObservation.shared.currentRequestID {
+            reasons.append("consumed or foreign request")
+        }
+        if record.changes != 1 { reasons.append("missing or repeated interaction change") }
+        if record.from != Self.key(from) || record.to != Self.key(to) { reasons.append("changed transition endpoints") }
+        if record.container != Self.key(context.containerView) { reasons.append("changed transition container") }
+        if !context.initiallyInteractive || context.isInteractive { reasons.append("nonterminal interaction") }
+        if Self.key(resultWindow) != record.window || resultWindow?.windowScene?.session.persistentIdentifier != record.scene
+            || resultWindow?.isKeyWindow != true {
+            reasons.append("return controller lost owned key window")
+        }
+        let attached = Self.key(containerWindow) == record.window
+            && containerWindow?.windowScene?.session.persistentIdentifier == record.scene
+        // Completion runs after the transition. A dismissed presentation container
+        // may be detached; the actual returning controller must still own the window.
+        let detachedDismissal = record.phase == "dismiss.finish.before" && !context.isCancelled
+            && containerWindow == nil && from?.viewIfLoaded?.window == nil
+        if !attached && !detachedDismissal { reasons.append("foreign or missing transition container owner") }
+        let observed = fields(record, context: context, extra: [
+            "active_record": active === record, "completed_record": completed.contains(record.id),
+            "observer_failed": failed, "observer_request_id": requestID ?? "nil",
+            "interaction_changes": record.changes, "rejections": reasons,
+            "from_window": Self.key(from?.viewIfLoaded?.window), "to_window": Self.key(to?.viewIfLoaded?.window),
+            "result_window": Self.key(resultWindow), "result_scene": resultWindow?.windowScene?.session.persistentIdentifier ?? "nil",
+            "result_is_key": resultWindow?.isKeyWindow ?? false])
+        // Retain actual callback values even when a predicate rejects them.
+        ObservationStore.shared.append("transition_terminal_observed", observed)
+        guard reasons.isEmpty else { fail(reasons.joined(separator: "; ")); return }
+        let callback = UUID().uuidString.lowercased()
+        var terminal = observed
+        terminal["callback_id"] = callback; terminal["controllers"] = controllers().map(describe)
+        ObservationStore.shared.append("transition_complete", terminal)
+        RUMMonitor.shared().addAction(type: .custom, name: "transition.callback", attributes: [
+            "transition_callback": callback, "transition_run": Settings.runID])
+        completed.insert(record.id); active = nil; close(reason: "completion")
+    }
 '''

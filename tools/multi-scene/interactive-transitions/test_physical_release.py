@@ -124,6 +124,15 @@ def ordered(cancelled=False, delayed=True):
             recognizer=copy.deepcopy(begin['recognizer']),recognizer_state=1 if index==1 else 2,
             pan_began_uptime_ns=11,coordinators=coordinators))
     rows[2:2]=[pan]+([probe(1,[]),probe(2,[candidate])] if delayed else [probe(1,[candidate])])
+    for row in rows:
+        if row['kind'] in ['transition_begin','transition_registered','transition_change','transition_complete']:
+            row['payload']['container']='container'
+    end=next(r for r in rows if r['kind']=='transition_complete')
+    end['payload'].update(active_record=True,completed_record=False,observer_failed=False,
+        observer_request_id='request',interaction_changes=1,rejections=[],from_window='window',to_window='window',
+        result_window='window',result_scene='scene',result_is_key=True)
+    observed=copy.deepcopy(end);observed['kind']='transition_terminal_observed';del observed['payload']['callback_id']
+    rows.insert(rows.index(end),observed)
     for index,row in enumerate(rows,1):row['sequence']=index
     return rows,before,after
 
@@ -198,6 +207,79 @@ class ObserverOrdering(unittest.TestCase):
         self.assertIn('owner?.observed(self, recognizer: recognizer)',result)
         self.assertNotIn('var pending: [UIView] = [window]; var seen',result)
         with self.assertRaises(ValueError):physical_observer.render(raw+b'changed','old')
+
+
+class TerminalContext(unittest.TestCase):
+    check=ObserverOrdering.check
+    def sheet(self, cancelled=False):
+        rows,a,b=ordered(cancelled)
+        for row in rows:
+            phase=row['payload'].get('phase')
+            if phase:row['payload']['phase']=phase.replace('pop.','dismiss.')
+        return rows,a,b
+    def terminals(self, rows):
+        return [r['payload'] for r in rows if r['kind'] in ['transition_terminal_observed','transition_complete']]
+    def test_completed_sheet_can_detach_container_but_keeps_actual_return_owner(self):
+        for detached in [False,True]:
+            rows,a,b=self.sheet()
+            for p in self.terminals(rows):
+                if detached:p.update(window='nil',scene='nil',from_window='nil')
+            self.check((rows,a,b))
+            for p in self.terminals(rows):
+                self.assertEqual(p['window'],'nil' if detached else 'window')
+    def test_detached_cancel_or_pop_is_not_accepted(self):
+        for make,cancelled in [(ordered,False),(ordered,True),(self.sheet,True)]:
+            rows,a,b=make(cancelled)
+            for p in self.terminals(rows):p.update(window='nil',scene='nil')
+            with self.subTest(make=make,cancelled=cancelled),self.assertRaises(ValueError):self.check((rows,a,b),cancelled)
+    def test_foreign_or_missing_terminal_result_owner_stays_invalid(self):
+        for key,value in [('window','foreign'),('scene','foreign'),('result_window','nil'),('result_window','foreign'),
+                          ('result_scene','nil'),('result_scene','foreign'),('result_is_key',False),('result_is_key',1),
+                          ('to_window','nil')]:
+            rows,a,b=self.sheet()
+            for p in self.terminals(rows):p[key]=value
+            with self.subTest(key=key,value=value),self.assertRaises(ValueError):self.check((rows,a,b))
+    def test_detached_container_requires_dismissed_endpoint_to_be_detached(self):
+        rows,a,b=self.sheet()
+        for p in self.terminals(rows):p.update(window='nil',scene='nil',from_window='foreign')
+        with self.assertRaises(ValueError):self.check((rows,a,b))
+    def test_terminal_predicate_failures_are_not_hidden_by_completion_row(self):
+        for key,value in [('active_record',False),('completed_record',True),('observer_failed',True),
+                          ('observer_request_id','old'),('interaction_changes',0),('interaction_changes',2),
+                          ('interaction_changes',True),('rejections',['changed transition endpoints']),
+                          ('from','foreign'),('to','foreign'),('container','foreign'),('current_request_id','old')]:
+            rows,a,b=self.sheet()
+            for p in self.terminals(rows):p[key]=value
+            with self.subTest(key=key,value=value),self.assertRaises(ValueError):self.check((rows,a,b))
+    def test_missing_repeated_or_late_terminal_observation_is_invalid(self):
+        for change in ['missing','duplicate','late']:
+            rows,a,b=self.sheet();observed=next(r for r in rows if r['kind']=='transition_terminal_observed')
+            if change=='missing':rows.remove(observed)
+            elif change=='duplicate':rows.insert(rows.index(observed),copy.deepcopy(observed))
+            else:observed['sequence']=100
+            with self.subTest(change=change),self.assertRaises(ValueError):self.check((rows,a,b))
+    def test_substituting_original_window_for_actual_nil_is_invalid(self):
+        rows,a,b=self.sheet()
+        for p in self.terminals(rows):p.update(window='nil',scene='nil',from_window='nil')
+        end=next(r['payload'] for r in rows if r['kind']=='transition_complete')
+        end.update(window='window',scene='scene')
+        with self.assertRaises(ValueError):self.check((rows,a,b))
+    def test_terminal_success_still_requires_fresh_attached_result_graph(self):
+        rows,a,b=self.sheet()
+        for p in self.terminals(rows):p.update(window='nil',scene='nil',from_window='nil')
+        b['payload']['transition']['controllers']=[]
+        with self.assertRaises(ValueError):self.check((rows,a,b))
+    def test_overlay_persists_rejected_context_before_guard(self):
+        path=Path(__file__).with_name('TransitionObservation.swift');raw=path.read_bytes()
+        value=physical_observer.render(raw,hashlib.sha256(raw).hexdigest()).decode()
+        observed=value.index('ObservationStore.shared.append("transition_terminal_observed", observed)')
+        guard=value.index('guard reasons.isEmpty else')
+        self.assertLess(observed,guard)
+        self.assertIn('"interaction_changes": record.changes, "rejections": reasons',value)
+        self.assertIn('record.phase == "dismiss.finish.before" && !context.isCancelled',value)
+        self.assertIn('resultWindow?.isKeyWindow != true',value)
+        self.assertNotIn('"window": record.window',value)
+        self.assertEqual(path.read_bytes(),raw)
 
 
 class TransferRecovery(unittest.TestCase):

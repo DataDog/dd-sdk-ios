@@ -100,8 +100,43 @@ quiescence, task removal and original Shutdown were verified; cleanup PASS.
 
 The measured interval covers fixture topology collection and record reservation,
 before the original input callback. Serialization/file work is already off-main.
-Repeated immutable framework metadata lookup is a source-supported optimization
-candidate; live scene/window ownership and the cost limit must remain unchanged.
-No specific sub-operation has yet been measured as the cause. The next correction
-needs an explicit definition before implementation. This is neither a reproduced
-SDK regression nor evidence that a human session is ready.
+The copied observer now caches immutable framework/class bundle metadata while
+reading all live identities, geometry and lifecycle state afresh. No specific
+sub-operation was measured as the earlier cost's cause. The separate qualification
+kept all reached callback costs below the unchanged2ms limit and passed complete
+and cancelled edge pops. Sheet resolution then bound the genuine coordinator on
+its second actual pan callback and recorded interaction change. Completion rejected
+the run through a compound guard that did not retain its failing predicate.
+Original INVALID, six actual actions and cleanup PASS remain; SwiftUI was unrun.
+
+The defined terminal-context correction retains every actual terminal field and
+separate failure reasons before validation. A completed dismissal may detach its
+presentation container only if the original endpoints/container/request still
+match and the actual return controller owns the original key window and scene.
+Cancellation and pop retain the attached-container rule. Actual nil fields are
+never replaced with recorded owner values. All138 controls and scoped source
+review pass; the revised baseline products compile. The first setup then lost its
+input-agent connection before any UI call. Its prepared-worker replacement captured
+successfully but stopped before the first tap: the next freshness check was issued
+32.188s later, beyond the unchanged30s cap. Both retain original INVALID verdicts,
+zero effects and separate successful cleanup/restoration evidence.
+
+The input exchange now performs fresh capture, exact native/semantic selection,
+validation, supported Xcode input and actual-return publication in one awaited
+sequence. Visual readiness/result review stays outside that critical interval.
+A dispatch intent distinguishes pending or uncertain effects from zero-input
+stops. Public presented-controller ownership precedes SwiftUI sheet geometry.
+All155 focused controls and scoped review pass. The one UIKit qualification
+published all six inputs in4.0–5.7s after capture and qualified both edge pops.
+Sheet completion now retains the exact rejected condition: UIKit returned a null
+container identity while the endpoints, single interaction change and returning
+key window/scene still matched. The original container did not merely detach.
+The observer's identity guard rejected its absence. Cleanup PASS and original
+Shutdown restoration are complete; SwiftUI/candidate/human remain unrun.
+
+The owner defines a narrow terminal-container correction before implementation:
+only a completed noncancelled dismissal can lose its container, retaining strict
+original transition/endpoints/request and returning-owner checks. A changed
+nonnull container, pop or cancellation remains invalid. Source/interop review,
+negative controls and scoped review precede another build/native admission. No
+SDK regression, complete mechanism qualification or release gate is established.
