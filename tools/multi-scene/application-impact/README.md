@@ -11,8 +11,8 @@ Swift compiler membership, objects and all product files for unsigned Release
 arm64 iOS apps. SDK and fixture testability are disabled. Physical signing requires
 a separate product manifest; compiler results are not install/runtime proof.
 
-`python3 -B -m unittest discover -s tools/multi-scene/application-impact` runs 58
-focused comparison, native-scenario and trace-decoder controls. Phase boundaries
+`python3 -B -m unittest discover -s tools/multi-scene/application-impact` runs
+focused comparison, native-scenario, process-binding and trace-decoder controls. Phase boundaries
 and CPU reads share one serial queue. Explicit boundary samples must cover the
 entire phase, and the terminal snapshot drains and seals the sampler. A native
 ready boundary precedes work and proves the owned foreground window fills one
@@ -60,8 +60,11 @@ A successful uninstall plus exact empty app/PID inventories prove physical task
 removal; generic CoreDevice container errors alone do not. Native performance and
 release acceptance require the actual complete paired results.
 
-Current native qualification is INVALID: Instruments could not attach to the
-verified launched baseline PID before readiness. All task apps were removed;
-no measured workload ran. Do not rerun `wave` without a separately justified
-changed capture prerequisite. The owner preserves both earlier preconditions and
-the transport correction; no old deadline or result is reusable as acceptance.
+Current native qualification is INVALID. Both documented PID and executable-name
+selectors failed while CoreDevice observed the exact baseline PID and executable
+before and after attachment. No workload ran; cell and final cleanup PASS.
+Do not rerun `wave` or try further selectors without a concrete changed recorder
+prerequisite. The name-selector variant and its78 controls remain frozen in the
+owning evidence; repository code is restored to the signed PID-selector checkpoint.
+Point-in-time visibility and successful tool discovery never replace recorder
+readiness or exact trace lifetime and workload joins.

@@ -156,12 +156,12 @@
   "gate_closures": [],
   "preparation_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw",
   "live_prerequisite": {
-    "physical_iphone": "Fresh inventory: disconnected; no native admission.",
+    "physical_iphone": "Connected and unlocked at the reviewed attempt; all four task apps and recorded PIDs are absent after cleanup. Recorder cannot resolve the exact process by PID or unique executable name. No workload or metrics; unlock alone does not resolve this prerequisite.",
     "physical_ipad": "Fresh inventory: disconnected.",
     "human_session": "No human gesture session admitted; shared capture qualification remains stopped.",
-    "inventory": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-process-binding-4f0mce4z/devices.raw.json"
+    "inventory": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-process-binding-live-34kb0qa8/devices.raw.json"
   },
-  "next_action": "Await a connected/unlocked physical iPhone, then freshly qualify device/signing/product/runtime-helper prerequisites and separately review one bounded baseline admission for the new process-visibility discriminator. No old root or expired deadline may resume. No equivalent recorder retry, SDK change or performance claim is authorized by offline preparation alone.",
+  "next_action": "Physical-recorder attachment is stopped after both documented selectors failed. Preserve source/products, leave seven cells unrun and require a concrete changed tooling prerequisite before any new native admission. Advance independent shared-capture and finite release work; no selector ladder or equivalent workload retry.",
   "telemetry_mode": "Both arms initialize Core+RUM with granted consent, the same probe application and ios-s3-application-impact service. Default vitals/slow-frame settings remain enabled; normal upload uses the existing authorized local configuration. No external application data request. No alternate endpoint, stubbed upload or networking benchmark.",
   "trace_contract": "Required complete raw physical trace and six exported tables: process-info, os-signpost-interval, core-animation-fps-estimate, hitches-summary, hitches-render-interval, potential-hangs. Exact Workload warmup/active/idle messages bind run UUID and PID/process lifetime, with consistent native-to-trace clocks. FPS is display-level; retain all global hitches and never filter window-server renders by app PID. Require one unchanged physical internal display, native full-screen owned readiness before workload, complete FPS coverage, positive process proof, hang threshold exactly250ms, and no competing workload. Present empty hitch/hang tables differ from absent tables. First planned physical baseline qualifies actual exported formats and full capture; missing/ambiguous evidence is INVALID.",
   "preparation_review": {
@@ -174,7 +174,7 @@
     ],
     "disposition": "Definition now quantifies sampling/trend and trace joins. Builder will bind full fixture, dependency and product identities; no native admission follows from preparation."
   },
-  "updated_at": "2026-09-24T12:30:28.766664+00:00",
+  "updated_at": "2026-09-24T13:29:49.656902+00:00",
   "prior_preparation": {
     "candidate": "7fef86acad43b4eefeb7f62c84e3b6c12c7acbcf",
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-app-impact-rugffx2v",
@@ -385,6 +385,50 @@
         "scope": "Application/display workload impact; not exact app-rendered frames or backend ownership acceptance"
       },
       "classification": "CAPTURE_QUALIFICATION_INVALID; actual installed baseline PID38748 and complete signed-code receipt PASS; Instruments cannot find that PID before recorder readiness; no measured workload; original cleanup PASS"
+    },
+    {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-process-binding-live-34kb0qa8/physical",
+      "summary": {
+        "state": "INVALID",
+        "cells_completed": 0,
+        "cells_planned": 8,
+        "scenario": "INVALID",
+        "evidence": "INVALID",
+        "cleanup": "PASS",
+        "comparisons": {},
+        "error": null,
+        "experiment": "EXP-224",
+        "signed_plan_sha256": "972a2dae1acc4cc1a0cfb7321acd2cbf58c1ece2b85017d3fa6fef1bea4ab8d7",
+        "receipts": {
+          "cells/0/summary.json": "99876da2ab26a993c1963aabf8341b88a03cd45245cc03fbac339b1f32ec3ff0"
+        },
+        "finished_at": 1790255494.986441,
+        "scope": "Application/display workload impact; not exact app-rendered frames or backend ownership acceptance"
+      },
+      "classification": "RECORDER_PROCESS_VISIBILITY_MISMATCH; baseline PID43962 and exact executable PRESENT immediately before/after attach failure. Installed-code PASS; no readiness/workload; original cleanup PASS.",
+      "outcome_review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-process-binding-live-34kb0qa8/outcome-review.json"
+    },
+    {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-recorder-selector-eljvnj12/physical",
+      "summary": {
+        "state": "INVALID",
+        "cells_completed": 0,
+        "cells_planned": 8,
+        "scenario": "INVALID",
+        "evidence": "INVALID",
+        "cleanup": "PASS",
+        "comparisons": {},
+        "error": null,
+        "experiment": "EXP-224",
+        "signed_plan_sha256": "db4677515743ee481b76e27365af92992e8c074e1e43060193bc0dfeb63b412d",
+        "receipts": {
+          "cells/0/summary.json": "3384db8cd11c4a48e75adc104cb3a2be6fa8d763adcf932474029032905785c7"
+        },
+        "finished_at": 1790256223.0651698,
+        "scope": "Application/display workload impact; not exact app-rendered frames or backend ownership acceptance"
+      },
+      "classification": "RECORDER_NAME_LOOKUP_INVALID; installed baseline PID44060/full executable and unique process name PRESENT before and after xctrace cannot find UIKitImpact. No recorder readiness/workload; cell and final cleanup PASS.",
+      "outcome_review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-recorder-selector-eljvnj12/outcome-review.json"
     }
   ],
   "continuation_admission": {
@@ -395,7 +439,7 @@
   },
   "active_physical_root": null,
   "native_active": false,
-  "last_physical_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/physical-wave-transport",
+  "last_physical_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-recorder-selector-eljvnj12/physical",
   "followup_read_only": {
     "xctrace_device_inventory": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/xctrace-device-inventory-after-stop.log",
     "result": "Instruments lists the same connected physical UDID after cleanup; this does not establish process visibility during the failed attach.",
@@ -494,5 +538,81 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-process-binding-4f0mce4z/review.json",
       "sha256": "8ee34ba45ec642fc6977b2c355d50e7c7b32664748c8817c8f207471eac21cfa"
     }
+  },
+  "current_capture_continuation": {
+    "state": "INVALID_RECORDER_VISIBILITY_MISMATCH",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-process-binding-live-34kb0qa8/physical",
+    "admission_review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-process-binding-live-34kb0qa8/admission-review.json",
+    "signed_plan_sha256": "972a2dae1acc4cc1a0cfb7321acd2cbf58c1ece2b85017d3fa6fef1bea4ab8d7",
+    "initial_cell": 0,
+    "device_connected": true,
+    "initial_unlock_verified": true,
+    "competing_checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership",
+    "native_launches": 1,
+    "next": "Read-only validation of the Xcode27.1 physical-device recorder attach contract and namespace, including supported executable identity. Any adapter change needs bounded preparation review; no equivalent retry.",
+    "preflight": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-process-binding-live-34kb0qa8/start-preflight-qdjh3m3n/summary.json",
+    "started_at": 1790255485.034684,
+    "workload_admitted": false,
+    "remaining_cells": "UNRUN",
+    "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-process-binding-live-34kb0qa8/physical/summary.json",
+    "outcome_review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-process-binding-live-34kb0qa8/outcome-review.json",
+    "evidence": {
+      "installed-code-verdict.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-process-binding-live-34kb0qa8/physical/cells/0/installed-code-verdict.json",
+        "sha256": "97e5b158e7d8f16aef5fea8204b9a45d689b3a26b45dce4d4eb2b316f94a45e7"
+      },
+      "process-before-attach-verdict.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-process-binding-live-34kb0qa8/physical/cells/0/process-before-attach-verdict.json",
+        "sha256": "428ce5ef8de05fdb0c6516c7ce6b3a8e622891b237df7898baba6da2fc443499"
+      },
+      "recorder-admission.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-process-binding-live-34kb0qa8/physical/cells/0/recorder-admission.json",
+        "sha256": "e055eaa3699299110807f0b0984e13f0ca6cc72588cfa7977d16986f2fc26a0b"
+      },
+      "recorder.log": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-process-binding-live-34kb0qa8/physical/cells/0/recorder.log",
+        "sha256": "95dd3baf3392c2ff8920cb183abe7c379be376218ba5d56fa19866a9e851f02c"
+      },
+      "process-after-attach-failure-verdict.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-process-binding-live-34kb0qa8/physical/cells/0/process-after-attach-failure-verdict.json",
+        "sha256": "91895ed525027f7c7a29765631414742770df7cdbdbc3f1a2de313a5bc928db6"
+      },
+      "cleanup.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-process-binding-live-34kb0qa8/physical/cells/0/cleanup.json",
+        "sha256": "c5253d980373a71d6f2c012610eefa8070df5622f2dec929c88e7b85d447707b"
+      }
+    }
+  },
+  "recorder_selector_preparation": {
+    "state": "NATIVE_QUALIFICATION_INVALID_VARIANT_RESTORED",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-recorder-selector-eljvnj12",
+    "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-recorder-selector-eljvnj12/definition.json",
+    "controls": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-recorder-selector-eljvnj12/controls.json",
+    "controls_sha256": "779538f0532066478135ff7fc7b523aea0603f96c3117d6a176b346a4a1aad6a",
+    "tests": 78,
+    "native_admitted": false,
+    "builds": 0,
+    "sdk_changes": 0,
+    "limits": "Alternative documented executable-name lookup is a hypothesis. Require one exact name at independently verified PID/full path before attach; exact trace PID/name/lifetime/run remains required. No equivalent numeric retry or selector ladder.",
+    "source_review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-recorder-selector-eljvnj12/source-review.json",
+    "signed_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-recorder-selector-eljvnj12/physical",
+    "prepared_admission": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-recorder-selector-eljvnj12/prepared-admission.json",
+    "signed_plan_sha256": "db4677515743ee481b76e27365af92992e8c074e1e43060193bc0dfeb63b412d",
+    "locked_preflight": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-recorder-selector-eljvnj12/locked-preflight.json",
+    "admission_review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-recorder-selector-eljvnj12/admission-review.json",
+    "native_launches": 1,
+    "workload_admitted": false,
+    "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-recorder-selector-eljvnj12/physical/summary.json",
+    "outcome_review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-recorder-selector-eljvnj12/outcome-review.json",
+    "repository_restoration": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-recorder-selector-eljvnj12/repository-restoration.json",
+    "doctor_result": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-recorder-selector-eljvnj12/doctor-result.json"
+  },
+  "recorder_environment_review": {
+    "at": 1790256589.657063,
+    "doctor": "Actual xcprof doctor reports xctrace27.1(27A9269),63 instruments and61 listed devices; this proves basic tool discovery only, not usable physical recording.",
+    "doctor_artifact": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-recorder-selector-eljvnj12/doctor-result.json",
+    "compatibility_source": "https://developer.apple.com/xcode/system-requirements",
+    "compatibility_limit": "Apple lists Xcode27.1 device support as iOS17 or later. This does not identify the cause of the recorder failure or establish that iOS27.2 is unsupported. No toolchain switch or speculative rebuild admitted.",
+    "fixture_lifecycle": "Both fixtures create their scene/window, then start the asynchronous driver. awaitRecorder uses Task.sleep and yields the main actor; source does not support a blocking readiness-loop cause. No fixture or SDK change follows."
   }
 }

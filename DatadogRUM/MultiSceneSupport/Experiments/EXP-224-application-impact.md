@@ -29,13 +29,22 @@ inventory is empty. Neither observation establishes process liveness during the
 failed attach or identifies an SDK defect. A future continuation requires a new
 capture prerequisite or discriminator; original deadlines cannot be reopened.
 
-The process-visibility follow-up is prepared offline with72 controls. It binds the
-launch PID and executable/app directory to the signed product, then requires a fresh
-same-device process inventory before attachment. One failure-only inventory keeps
-the recorder error and distinguishes missing/replaced processes from observed
-visibility. A snapshot is point-in-time evidence; recorder readiness and trace
-lifetime remain mandatory. Products are unchanged, both physical devices are now
-disconnected, and no native continuation is admitted.
+The process-visibility correction passes72 controls and scoped review. Its single
+baseline ran after competing integration tests finished. CoreDevice observed exact
+PID43962 and full executable immediately before and after Instruments could not
+find that PID. Installed-code proof passed; no readiness or workload followed.
+
+A separately reviewed executable-name adapter used Apple's documented selector,
+required one unique matching name at the exact installed PID/path and preserved
+trace ownership checks. Its78 controls pass, but the one admitted baseline also
+failed: Instruments could not find UIKitImpact while exact PID44060 remained
+visible before and after. No selector fallback or subsequent workload was run.
+Both original cell/final cleanups PASS; all seven remaining cells stay unrun.
+The unsuccessful variant is retained in frozen helpers and a patch, and the two
+repository adapter files are restored to signed1cf1fc64e. The basic profiler doctor
+passes tool discovery only. A concrete changed recorder prerequisite is needed;
+these failures do not establish SDK regression or OS-version incompatibility.
+Exact inventories, timestamps, reviews and hashes are retained in the owner.
 
 Core Animation FPS is a display-driver estimate. Global hitches are compared
 during the exact app Workload interval; Hangs, CPU and footprint bind to the app
