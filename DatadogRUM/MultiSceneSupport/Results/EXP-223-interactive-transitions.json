@@ -7,7 +7,7 @@
     "S2:H13",
     "S2:H14"
   ],
-  "status": "CAPTURE_QUALIFICATION_PROVIDER_STOPPED",
+  "status": "UIKIT_QUALIFIED_SWIFTUI_READINESS_BLOCKED",
   "defined_at": "2026-09-22T23:17:07.076784+00:00",
   "owner": "SDK implementer + device operator",
   "reviewer": "/root/c06_runtime_plan",
@@ -326,7 +326,7 @@
     }
   ],
   "gate_closures": [],
-  "next_action": "Read terminal_presentation_lifetime: corrected source/build/165 controls are reviewed; qualification stopped before gestures after provider interruption. No equivalent retry or human admission. Original failed cleanup and separate restoration remain immutable. Advance independent capture blockers while a materially changed interaction prerequisite is unavailable.",
+  "next_action": "See .continue-here.md: audit the fixture accessibility capture offline. SwiftUI input precondition failed; no equivalent native retry. UIKit mechanism qualification and original semantic limits remain.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
@@ -2050,7 +2050,7 @@
           }
         },
         "swiftui_predecessor": {
-          "state": "PREPARED_REVIEWED",
+          "state": "STOPPED_ROOT_NOT_OBSERVABLE",
           "definition": {
             "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-swiftui-predecessor-vqc4kb0l/definition.json",
             "sha256": "78654d8804e67102cbd0974cec97e33b20758a8ceb67d7ee68cb57e459a94257"
@@ -2075,10 +2075,34 @@
           },
           "native_admitted": false,
           "gate_closures": [],
-          "scope": "One fresh SwiftUI-only baseline capture using unchanged qualified products; no copied UIKit cell or rerun; worker freeze and admission remain"
+          "scope": "Fresh SwiftUI-only attempt stopped before gestures because actual public inventory lacks screen.home/home.next. UIKit result is unchanged; no retry without a reviewed capture correction and fresh build.",
+          "checkpoint": "ac2d99049fc85f515180f02d5f76e974398ef0d3",
+          "native_review": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-swiftui-predecessor-vqc4kb0l/qualification/review.json",
+            "sha256": "0b5df84a756e73aeb66e3144304a7899963a28705fe1d5a6adad7c63e6d1bc47"
+          },
+          "worker_sha256": "66bb55b48a947854fdbbb13be56e0677ff3b404e0d705be90afc609e12dd89c7",
+          "admission_consumed": true,
+          "result": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-swiftui-predecessor-vqc4kb0l/qualification/cells/SwiftUI/summary.json",
+            "sha256": "dbcef3d7a7c896038dc1ddb91c8a17d968b947828ac9503a3882e5d5b8a6a590"
+          },
+          "outcome_review": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-swiftui-predecessor-vqc4kb0l/qualification/outcome-review.json",
+            "sha256": "43ee225095f3628adf8928819fb0a2af812652d425af18572a5195f44175ecfc"
+          },
+          "readiness_observation": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-swiftui-predecessor-vqc4kb0l/qualification/readiness-observation.json",
+            "sha256": "5c3c67ce20be5a262986fe9515675fcd06df791c180a1ce457d065e3d9b83ee7"
+          },
+          "scenario": "NOT_EXECUTED",
+          "evidence": "INCOMPLETE",
+          "cleanup": "PASS",
+          "input_exchanges": 0,
+          "transition_callback_samples": 0
         }
       }
     }
   },
-  "state": "BASELINE_UIKIT_CAPTURE_QUALIFIED"
+  "state": "UIKIT_QUALIFIED_SWIFTUI_READINESS_BLOCKED"
 }

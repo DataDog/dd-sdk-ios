@@ -231,3 +231,13 @@ The SwiftUI-only reuse adapter passes42 focused controls and scoped review. It b
 All23 retained native functions compare unchanged, allowing only the prior-summary
 lookup. A fresh plan keeps the fixed budgets and no copied UIKit cell; native
 admission follows the frozen worker review. SDK and qualified products are unchanged.
+
+The SwiftUI-only cell stops before any input: its native Home appearance and owned
+scene/key window/root are present, but the actual accessibility inventory contains
+only Toolbar/Home, not the declared `screen.home`/`home.next`. The strict target check
+correctly rejects it. There are no transition callbacks or timing samples. Worker
+quiescence, task removal, actual session absence and original Shutdown restoration
+PASS; overall INVALID/NOT_EXECUTED and evidence INCOMPLETE remain. The scoped review
+classifies a fixture/input precondition, not an SDK regression. No equivalent retry
+is admitted. Audit the public accessibility traversal offline before selecting any
+separate fixture repair/build; do not substitute a title or controller frame.
