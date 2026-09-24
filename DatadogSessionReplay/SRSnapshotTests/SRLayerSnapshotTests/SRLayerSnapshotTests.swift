@@ -21,6 +21,22 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
         )
     }
 
+    func testDrawingGroup() async throws {
+        try await takeLayerSnapshotFor(
+            DrawingGroupFixtureView(),
+            with: [.maskAll, .maskSensitiveInputs],
+            shouldRecord: shouldRecord
+        )
+    }
+
+    func testCanvas() async throws {
+        try await takeLayerSnapshotFor(
+            CanvasFixtureView(),
+            with: [.maskAll, .maskSensitiveInputs],
+            shouldRecord: shouldRecord
+        )
+    }
+
     func testBasicControlsAndIndicators() async throws {
         try await takeLayerSnapshotFor(
             BasicControlsAndIndicatorsFixtureView(),
