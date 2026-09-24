@@ -6,6 +6,40 @@ START = '    private func accessibility(_ window: UIWindow) -> [[String: Any]] {
 END = '\n    func topology('
 
 PUBLIC_CAPTURE = r'''    private func publicAccessibility(_ window: UIWindow) -> [[String: Any]] {
+        func identifier(_ object: NSObject) -> (String?, [String: Any], String?) {
+            let selector = #selector(getter: UIAccessibilityIdentification.accessibilityIdentifier)
+            let typed = object as? UIAccessibilityIdentification
+            let responds = object.responds(to: selector)
+            var evidence: [String: Any] = ["typed_conformance": typed != nil, "responds": responds,
+                "selector": NSStringFromSelector(selector), "value_present": false, "returned_string": false,
+                "lookup": "unavailable", "return_type": "not-invoked", "argument_count": 0]
+            if let typed = typed {
+                let value = typed.accessibilityIdentifier
+                evidence["lookup"] = "typed-protocol"; evidence["return_type"] = "typed-string"
+                evidence["value_present"] = value != nil; evidence["returned_string"] = value != nil
+                return (value, evidence, nil)
+            }
+            guard responds else { return (nil, evidence, nil) }
+            evidence["lookup"] = "public-selector"
+            guard let method = class_getInstanceMethod(type(of: object), selector) else {
+                return (nil, evidence, "public identifier getter has no inspectable signature")
+            }
+            let returnType = method_copyReturnType(method)
+            defer { free(returnType) }
+            let encoding = String(cString: returnType), arguments = Int(method_getNumberOfArguments(method))
+            evidence["return_type"] = encoding; evidence["argument_count"] = arguments
+            guard encoding == "@", arguments == 2 else {
+                return (nil, evidence, "public identifier getter has unexpected signature")
+            }
+            let actual = object.perform(selector)?.takeUnretainedValue()
+            evidence["value_present"] = actual != nil
+            guard let actual = actual else { return (nil, evidence, nil) }
+            guard let string = actual as? NSString else {
+                return (nil, evidence, "public identifier getter returned a non-string")
+            }
+            evidence["returned_string"] = true
+            return (string as String, evidence, nil)
+        }
         typealias Visual = (view: UIView, parent: String, hidden: Bool, alpha: CGFloat,
                             localHidden: Bool, localAlpha: CGFloat, children: [ObjectIdentifier])
         func actualView(_ view: UIView) -> [String: Any] {
@@ -126,8 +160,12 @@ PUBLIC_CAPTURE = r'''    private func publicAccessibility(_ window: UIWindow) ->
                 kind = object is UIAccessibilityElement ? "UIAccessibilityElement" : "UIAccessibilityObject"
             }
             let elementsHidden = object.accessibilityElementsHidden
+            let (actualIdentifier, identifierEvidence, identifierError) = identifier(object)
+            if let identifierError = identifierError {
+                return [["capture_error": identifierError, "object_id": id, "identifier_evidence": identifierEvidence]]
+            }
             records[id] = ["id": id,
-                "identifier": (object as? UIAccessibilityIdentification)?.accessibilityIdentifier ?? "nil",
+                "identifier": actualIdentifier ?? "nil", "identifier_evidence": identifierEvidence,
                 "label": object.accessibilityLabel ?? "nil", "value": object.accessibilityValue ?? "nil",
                 "frame_in_window": Self.rect(frame), "hidden": hidden, "alpha": alpha, "kind": kind,
                 "visibility_basis": viewState == nil ? "container-path" : "view-hierarchy",
@@ -192,4 +230,7 @@ def render_human(source, source_sha256):
     text, start, end, function = original_function(source)
     dispatch = START + '\n        if Settings.framework == "SwiftUI" { return publicAccessibility(window) }'
     replacement = function.replace(START, dispatch, 1) + '\n' + PUBLIC_CAPTURE
-    return (text[:start] + replacement + text[end:]).encode()
+    rendered = text[:start] + replacement + text[end:]
+    if 'import ObjectiveC\n' not in rendered:
+        rendered = rendered.replace('import Foundation\n', 'import Foundation\nimport ObjectiveC\n', 1)
+    return rendered.encode()

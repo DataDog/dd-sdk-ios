@@ -301,3 +301,9 @@ On pause, preserve source/definition/helpers/controls and the original deadline.
 Close the attempt, release the host and write the sole next action in the cursor.
 A later execution needs fresh discovery and a separate bounded admission; it does
 not silently extend the old run or repeat accepted tests.
+
+For generic accessibility objects, retain exact public identifier provenance. A
+nonconforming object may expose the documented getter: verify selector support and
+object-return ABI before invoking it, then accept only an actual string. Labels,
+frames, private selectors and KVC cannot replace a missing fixture identifier.
+Fixture compilation and mock controls remain separate from native qualification.

@@ -129,6 +129,30 @@ def accessibility_owner(inventory,selected,window):
         if current in reachable:continue
         reachable.add(current);pending.extend(children[current]-reachable)
     require(reachable==ids and selected['id'] in reachable,'disconnected public accessibility ownership')
+    identifier_proof=any('identifier_evidence' in row for row in inventory)
+    require(identifier_proof or selected.get('kind')!='UIAccessibilityObject',
+            'generic accessibility target lacks public identifier provenance')
+    if identifier_proof:
+        for row in inventory:
+            evidence=row.get('identifier_evidence')
+            require(type(evidence) is dict and set(evidence)=={'typed_conformance','responds','selector','value_present',
+                    'returned_string','lookup','return_type','argument_count'}
+                    and all(type(evidence[k]) is bool for k in ['typed_conformance','responds','value_present','returned_string'])
+                    and evidence['selector']=='accessibilityIdentifier' and type(evidence['argument_count']) is int
+                    and type(row.get('identifier')) is str,'incomplete public identifier provenance')
+            lookup=evidence['lookup']
+            if lookup=='typed-protocol':
+                require(evidence['typed_conformance'] and evidence['responds'] and evidence['return_type']=='typed-string'
+                        and evidence['argument_count']==0,'changed typed identifier provenance')
+            elif lookup=='public-selector':
+                require(not evidence['typed_conformance'] and evidence['responds'] and evidence['return_type']=='@'
+                        and evidence['argument_count']==2,'changed public getter provenance')
+            else:
+                require(lookup=='unavailable' and not evidence['typed_conformance'] and not evidence['responds']
+                        and evidence['return_type']=='not-invoked' and evidence['argument_count']==0
+                        and not evidence['value_present'],'unrecognized identifier provenance')
+            require(evidence['value_present']==(row['identifier']!='nil')
+                    and evidence['returned_string']==evidence['value_present'],'identifier value/provenance differs')
     # Visual ancestry is independent of the aliases in an accessibility graph.
     fields={'visibility_basis','visibility_paths','view_state','accessibility_elements_hidden'}
     if not any(fields.intersection(row) for row in inventory):return

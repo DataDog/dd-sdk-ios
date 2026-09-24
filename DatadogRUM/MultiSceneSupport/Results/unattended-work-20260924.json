@@ -15,7 +15,7 @@
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
   "human_work": "UNADMITTED_WHILE_OPERATOR_SLEEPS",
-  "checkpoint": "5d6ab114e6c19275475a230013f57eef3552a982",
+  "checkpoint": "8788469ead96f43941fdfd003a9feaf153bcaeb8",
   "tasks": [
     {
       "id": "capture-backend",
@@ -52,14 +52,14 @@
       "dependency": "Read the current EXP223 visibility diagnostic definition and reviewer disposition",
       "decisive_test": "Focused source/negative controls and at most the already justified native qualification if all new prerequisites and bounded review are satisfied",
       "environment": "Offline first; qualified simulator only when available without human input",
-      "state": "VISUAL_GRAPH_QUALIFIED_TARGET_IDENTIFIERS_BLOCKED",
+      "state": "PUBLIC_IDENTIFIER_BUILD_QUALIFIED_NATIVE_UNADMITTED",
       "result": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-visibility-semantics-19l1uz0r/frontend/outcome.json",
-        "sha256": "0a70556a3df8de1047af62504c65bb382795188ef0290a5b15c6a60f3a7b04d3"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-identifier-r2tgxyim/build/A-simulator/build-result.json",
+        "sha256": "7ce5cc6d35e568883647cdf206bb858f162d548979bb9ed0fd1785246769179d"
       },
       "remaining": [
-        "Generic SwiftUI objects lack both exact fixture identifiers in the protocol-cast capture",
-        "Audit the documented public getter; no label/coordinate fallback or native retry without reviewed changed prerequisite"
+        "Review final SwiftUI-only baseline plan and supported-tool worker",
+        "Require exact public identifiers and full owned graph before input; one bounded qualification, no human/candidate/backend/gate claim"
       ]
     },
     {
@@ -86,5 +86,5 @@
     "No Replay content, unrelated CI flakes, optional networking benchmarks or physical Duo acceptance"
   ],
   "gate_closures": [],
-  "updated_at": 1790286825.574263
+  "updated_at": 1790287990.302212
 }

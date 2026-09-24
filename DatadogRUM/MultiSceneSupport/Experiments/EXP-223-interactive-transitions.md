@@ -388,3 +388,14 @@ Cleanup/session end/Shutdown restoration pass within66.2s. Both exact fixture
 identifiers are still absent, so target qualification and every interactive gate
 remain open. Inspect the public identifier getter on generic accessibility objects;
 labels and matching frames cannot substitute for the missing identifiers.
+
+
+The public-identifier repair retains typed protocol lookup first. For nonconforming
+objects it checks the documented getter's object-return ABI before invocation and
+accepts only an actual string. Provenance records selector support, conformance,
+lookup and return shape; nil/missing/empty values cannot invent a target. The
+original host-mock compiler failure remains separate. Seventy focused controls and
+scoped source review pass; a fresh baseline build qualifies. Exact source mapping
+reuses accepted UIKit evidence without another run. The single SwiftUI baseline
+qualification still needs final plan/worker review, and must stop before gestures
+unless the exact identifiers and full owned graph pass. No release gate closes.

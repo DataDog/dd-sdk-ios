@@ -18,14 +18,14 @@ import accessibility_capture as capture
 SOURCE = Path(__file__).resolve().parents[1]/'automatic-coverage/HumanObservation.swift'
 MOCKS = r"""import Foundation
 import CoreGraphics
-protocol UIAccessibilityIdentification: AnyObject { var accessibilityIdentifier: String? { get } }
+import ObjectiveC
+@objc protocol UIAccessibilityIdentification: AnyObject { var accessibilityIdentifier: String? { get } }
 class NSObject: Foundation.NSObject {
     var accessibilityElements: [Any]?
     var automationElements: [Any]?
     var indexedElements: [Any]?
     var forcedCount: Int?
     var missingChild = false
-    var accessibilityIdentifier: String?
     var accessibilityLabel: String?
     var accessibilityValue: String?
     var accessibilityElementsHidden = false
@@ -34,6 +34,7 @@ class NSObject: Foundation.NSObject {
     func accessibilityElement(at index: Int) -> Any? { missingChild ? nil : indexedElements?[index] }
 }
 class UIView: NSObject, UIAccessibilityIdentification {
+    @objc var accessibilityIdentifier: String?
     var subviews: [UIView] = [] { didSet { for child in subviews { child.superview = self } } }
     weak var superview: UIView?
     weak var window: UIWindow?
@@ -45,9 +46,14 @@ class UIView: NSObject, UIAccessibilityIdentification {
 class CoordinateSpace { func convert(_ rect: CGRect, to window: UIWindow) -> CGRect { rect } }
 class Screen { let coordinateSpace = CoordinateSpace() }
 class UIWindow: UIView { let screen = Screen() }
-class UIAccessibilityElement: NSObject, UIAccessibilityIdentification {}
+class UIAccessibilityElement: NSObject, UIAccessibilityIdentification { @objc var accessibilityIdentifier: String? }
 class PublicContainer: NSObject {}
-class PublicIdentifiedObject: NSObject, UIAccessibilityIdentification {}
+class PublicIdentifiedObject: NSObject, UIAccessibilityIdentification { @objc var accessibilityIdentifier: String? }
+class SelectorIdentifierObject: NSObject { @objc var accessibilityIdentifier: Any? }
+var primitiveGetterCalls = 0
+class PrimitiveIdentifierObject: NSObject {
+    @objc var accessibilityIdentifier: Int { primitiveGetterCalls += 1; return 7 }
+}
 class MutatingContainer: PublicContainer {
     var target: UIView?
     var changeParent = false
@@ -94,6 +100,17 @@ func inventory(_ scenario: String, framework: String = "SwiftUI") -> [[String: A
     case "generic":
         let generic = PublicIdentifiedObject(); generic.accessibilityIdentifier = "screen.home"
         root.accessibilityElements = [generic, next]
+    case "selector_identifier", "nil_identifier", "empty_identifier", "wrong_identifier_type":
+        let generic = SelectorIdentifierObject()
+        if scenario == "selector_identifier" { generic.accessibilityIdentifier = "screen.home" as NSString }
+        if scenario == "empty_identifier" { generic.accessibilityIdentifier = "" as NSString }
+        if scenario == "wrong_identifier_type" { generic.accessibilityIdentifier = NSNumber(value: 7) }
+        root.accessibilityElements = [generic, next]
+    case "missing_identifier":
+        let generic = PublicContainer(); generic.accessibilityLabel = "screen.home"
+        root.accessibilityElements = [generic, next]
+    case "primitive_identifier":
+        primitiveGetterCalls = 0; root.accessibilityElements = [PrimitiveIdentifierObject(), next]
     case "duplicate_object":
         root.accessibilityElements = [marker, next]; root.automationElements = [marker, next]
         root.indexedElements = [marker, next]
@@ -164,13 +181,15 @@ func inventory(_ scenario: String, framework: String = "SwiftUI") -> [[String: A
     return Capture().rows(root)
 }
 var results = [String: [[String: Any]]]()
-for name in ["direct", "indexed", "array", "automation", "generic", "duplicate_object", "cycle",
+for name in ["direct", "indexed", "array", "automation", "generic", "selector_identifier", "nil_identifier", "empty_identifier",
+             "wrong_identifier_type", "missing_identifier", "primitive_identifier", "duplicate_object", "cycle",
              "all_view_paths", "view_alias_visibility", "real_hidden_alias", "real_transparent_alias",
              "missing_visual_parent", "changed_visual_state", "changed_visual_parent", "changed_visual_alpha", "visual_cycle", "foreign_visual_parent",
              "alpha_divergence", "alpha_cycle", "temporary_children", "duplicate_identifier", "malformed", "missing_index", "negative_count", "child_limit", "array_limit",
              "inventory_limit", "foreign_view", "hidden", "transparent", "conflicting_visibility", "nonfinite_alpha"] {
     results[name] = inventory(name)
 }
+results["primitive_getter_calls"] = [["count": primitiveGetterCalls]]
 results["legacy_direct"] = inventory("direct", framework: "UIKit")
 results["legacy_automation"] = inventory("automation", framework: "UIKit")
 print(String(data: try JSONSerialization.data(withJSONObject: results, options: [.sortedKeys]), encoding: .utf8)!)
@@ -268,6 +287,43 @@ class PublicInventory(unittest.TestCase):
         root=next(r['id'] for r in rows if 'nil:owned-window' in r['container_edges'])
         with patch.object(human_contract,'topology',return_value=(None,{'bounds':[0,0,300,500]})):
             return human_contract.target({'payload':{'topology':{'accessibility':rows}}},'screen.home',{'window':root})
+
+    def test_public_getter_recovers_a_nonconforming_object_without_label_fallback(self):
+        item=self.actual_target(self.rows['selector_identifier']);e=item['identifier_evidence']
+        self.assertEqual(item['kind'],'UIAccessibilityObject');self.assertFalse(e['typed_conformance'])
+        self.assertTrue(e['responds']);self.assertEqual(e['selector'],'accessibilityIdentifier')
+        self.assertEqual(e['lookup'],'public-selector');self.assertEqual(e['return_type'],'@')
+        self.assertEqual(e['argument_count'],2);self.assertTrue(e['value_present']);self.assertTrue(e['returned_string'])
+        typed=self.actual_target(self.rows['generic'])['identifier_evidence']
+        self.assertTrue(typed['typed_conformance']);self.assertEqual(typed['lookup'],'typed-protocol')
+
+    def test_missing_nil_and_empty_getters_do_not_invent_a_target(self):
+        for name in ['missing_identifier','nil_identifier','empty_identifier']:
+            with self.subTest(name=name),self.assertRaisesRegex(ValueError,'missing/duplicate actual target'):
+                self.actual_target(self.rows[name])
+
+    def test_non_string_and_primitive_getters_reject_without_unsafe_invocation(self):
+        for name in ['wrong_identifier_type','primitive_identifier']:
+            row=self.rows[name][0];self.assertIn('capture_error',row);self.assertIn('identifier_evidence',row)
+        self.assertEqual(self.rows['primitive_getter_calls'][0]['count'],0)
+        self.assertEqual(self.rows['wrong_identifier_type'][0]['identifier_evidence']['returned_string'],False)
+
+    def test_foreign_or_forged_identifier_provenance_rejects(self):
+        changes=[lambda r:r.pop('identifier_evidence'),
+                 lambda r:r['identifier_evidence'].update(selector='privateGetter'),
+                 lambda r:r['identifier_evidence'].update(typed_conformance=True),
+                 lambda r:r['identifier_evidence'].update(responds=False),
+                 lambda r:r['identifier_evidence'].update(return_type='q'),
+                 lambda r:r['identifier_evidence'].update(argument_count=3),
+                 lambda r:r['identifier_evidence'].update(value_present=False),
+                 lambda r:r['identifier_evidence'].update(returned_string=False),
+                 lambda r:r['identifier_evidence'].update(lookup='label')]
+        for change in changes:
+            rows=copy.deepcopy(self.rows['selector_identifier']);item=next(r for r in rows if r.get('identifier')=='screen.home');change(item)
+            with self.subTest(change=change),self.assertRaises(ValueError):self.actual_target(rows)
+        rows=copy.deepcopy(self.rows['selector_identifier'])
+        for row in rows:row.pop('identifier_evidence')
+        with self.assertRaises(ValueError):self.actual_target(rows)
 
     def test_actual_native_alias_shape_uses_physical_visibility_and_retains_both_paths(self):
         rows=self.rows['view_alias_visibility'];target=self.actual_target(rows)

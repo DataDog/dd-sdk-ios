@@ -186,4 +186,7 @@ The repaired overlay derives UIView hidden/alpha from the owned physical hierarc
 retains every public alias path, and keeps non-view conflicts strict. Host assertions
 recompute that physical proof before accepting a target. The33-object native graph
 qualifies, but exact screen/action identifiers are absent on generic objects. That
-is still a stop before gestures; read the EXP223 owner for the public-getter audit.
+is still a stop before gestures. The public getter repair is source-reviewed and
+build-qualified, with70 controls. It records the actual typed/selector lookup and
+checks object-return ABI before invoking a nonconforming getter. Missing identifiers
+still reject; the owner admits any separately reviewed native qualification.

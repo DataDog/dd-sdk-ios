@@ -397,7 +397,7 @@
       "scope": "Fixture/native and local paired oracle only. Full runtime, backend, adaptive geometry and physical execution remain unqualified."
     }
   },
-  "updated_at": 1790284561.266968,
+  "updated_at": 1790287990.300622,
   "live_environment": {
     "observed_at": "2026-09-23T19:45:47.121281+00:00",
     "xcode": "27.1 (27A9269)",
@@ -2342,7 +2342,52 @@
                 "sha256": "0a70556a3df8de1047af62504c65bb382795188ef0290a5b15c6a60f3a7b04d3"
               },
               "cleanup": "PASS",
-              "remaining": "Both required source-declared identifiers are absent. SwiftUI generic objects carry actual home/Open detail labels and geometry but formal UIAccessibilityIdentification cast yields no identifier. Labels cannot replace identifiers; inspect public getter contract before any correction."
+              "remaining": "Both required source-declared identifiers are absent. SwiftUI generic objects carry actual home/Open detail labels and geometry but formal UIAccessibilityIdentification cast yields no identifier. Labels cannot replace identifiers; inspect public getter contract before any correction.",
+              "public_identifier_repair": {
+                "state": "BUILD_QUALIFIED_NATIVE_UNADMITTED",
+                "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-identifier-r2tgxyim",
+                "definition": {
+                  "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-identifier-r2tgxyim/definition.json",
+                  "sha256": "acf365917d30b7fa767f819d48e2819fa54cc953fef996aef3fdeb1122904441"
+                },
+                "original_failed_controls": {
+                  "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-identifier-r2tgxyim/controls-01.json",
+                  "sha256": "6da9295afb1178d026e188704a4bebe8a9693ee89a85fca6d38438d3231784ba"
+                },
+                "failure_scope": "Host mock compilation before traversal or native execution; nonnull runtime return binding corrected.",
+                "controls": {
+                  "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-identifier-r2tgxyim/controls-02.json",
+                  "sha256": "90cfb77285fddcca061fe34ef2cfc66e791aafed9b0ce81e94fd989a99a0c842"
+                },
+                "controls_count": 70,
+                "review": {
+                  "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-identifier-r2tgxyim/source-review.json",
+                  "sha256": "f59c2b004dcba245400f062ea5041b45892044d12c6f55c7d7829a12262cc925"
+                },
+                "build_definition": {
+                  "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-identifier-r2tgxyim/build-definition.json",
+                  "sha256": "58cecd9549bfc8672de3d3ece6a62d44d55170b5aaf6e471fb25cb2d439908ff"
+                },
+                "build_plan": {
+                  "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-identifier-r2tgxyim/build/plan.json",
+                  "sha256": "e7c1e607c2f5059fff4ba9671a512ce0268493cbaab36fde226fc979ab79a362"
+                },
+                "build_receipt": {
+                  "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-identifier-r2tgxyim/build/A-simulator/build-result.json",
+                  "sha256": "7ce5cc6d35e568883647cdf206bb858f162d548979bb9ed0fd1785246769179d"
+                },
+                "qualification_plan": {
+                  "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-identifier-r2tgxyim/qualification/plan.json",
+                  "sha256": "91d908428a5e7f659d0de296976a8335e5fce9ccb10a30c990fbdf3599bd77e5"
+                },
+                "qualification_controls": {
+                  "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-identifier-r2tgxyim/qualification/controls.json",
+                  "sha256": "f20114a96595473fc551f284bef174281f0eee783155723f5111fcaad9513029"
+                },
+                "native_admitted": false,
+                "gate_closures": [],
+                "next_action": "Final plan/worker review of one existing SwiftUI baseline qualification. Exact identifiers and owned graph must pass before input; accepted UIKit predecessor is mapped without rerun."
+              }
             }
           }
         }
