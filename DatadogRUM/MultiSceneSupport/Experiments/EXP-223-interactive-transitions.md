@@ -194,8 +194,13 @@ threshold relaxation, SwiftUI/human admission or equivalent native retry follows
 
 The source-bound cost overlay separates topology collection from event reservation
 and queueing while retaining the complete callback interval and unchanged2ms
-rejection. Eight focused controls and the preserved host mock controls pass;
-malformed partitions fail closed. Scoped review admits one baseline build only.
-The generated source and helper hashes bind the result. Host dictionary replay
-cannot measure UIKit getters or explain the failed native observation. The build
-must use the recorded opt-in programmatic call; no native retry is admitted.
+rejection. Eight focused controls and preserved host mock controls pass. The one
+baseline build qualifies; host dictionary replay cannot explain UIKit cost.
+Its separately reviewed UIKit-only measurement stopped during session setup: the
+actual empty capture timed out after64.070s, before any cell/install/launch/input.
+Worker quiescence, actual session end and original Shutdown restoration PASS.
+Original INVALID/NOT_EXECUTED and evidence INCOMPLETE remain; no timing sample or
+release gate was obtained. Host logs place the capture start during boot and boot
+completion38.016s later. This identifies missing readiness ordering, not the cause
+of the timeout. The scoped review calls for an offline, bounded boot receipt before
+session creation, with exact device/plan/deadline binding and fresh admission.
