@@ -191,3 +191,11 @@ The final scenario remains NOT_EXECUTED, evidence INCOMPLETE and overall INVALID
 The owner retains the exact source, raw events and scoped outcome review. The next
 step is offline partitioning of the generated observer's synchronous work; no
 threshold relaxation, SwiftUI/human admission or equivalent native retry follows.
+
+The source-bound cost overlay separates topology collection from event reservation
+and queueing while retaining the complete callback interval and unchanged2ms
+rejection. Eight focused controls and the preserved host mock controls pass;
+malformed partitions fail closed. Scoped review admits one baseline build only.
+The generated source and helper hashes bind the result. Host dictionary replay
+cannot measure UIKit getters or explain the failed native observation. The build
+must use the recorded opt-in programmatic call; no native retry is admitted.

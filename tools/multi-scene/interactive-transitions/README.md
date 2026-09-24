@@ -121,3 +121,11 @@ retain2ms. Inspect the generated source selected by the build manifest: the copi
 observer caches immutable bundle metadata and the writer serializes off-main.
 Partition remaining synchronous work offline before proposing a correction; a
 slow fixture callback is not an SDK regression or permission for a native retry.
+
+`observer_cost.render_human` prepares a copied callback timing overlay with exact
+source binding. It retains full elapsed time, reports disjoint topology/append
+intervals and labels the remainder as guard/instrumentation work. Its decoder never
+grants acceptance. The build-only opt-in is the explicit programmatic call
+`prepare(root, keys=['A-simulator'], event_capture=True, observer_cost_partition=True)`;
+the default CLI does not select it. Record that call and freeze the helper/control
+hashes. A host dictionary mock checks partition mechanics, never UIKit cost.

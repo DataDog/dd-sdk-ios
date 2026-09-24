@@ -584,7 +584,7 @@
     "release_guard": "NATIVE_QUALIFIED_FOR_THIS_FAILED_CELL: actual reply, fresh same-owner zero-touch/no-coordinator snapshot, then task-only teardown."
   },
   "event_capture_correction": {
-    "state": "STOPPED_PROVIDER_INTERRUPTION",
+    "state": "STOPPED_OBSERVER_COST",
     "defined_at": "2026-09-24T08:22:20.372735+00:00",
     "artifacts": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo",
     "objective": "Repair shared human-session capture before another operator session; unchanged S2/S3 release criteria.",
@@ -1858,7 +1858,7 @@
         "sha256": "03dec431017d8f431cd886a5b26d8f77eb2b87cbe39cb13e381c915e5c615a48"
       },
       "review_resolution": "Existing per-prompt completion proof already fences teardown; pending now also rejects any cleanup state other than NOT_STARTED. No second lease protocol.",
-      "next": "Offline source-bound observer cost diagnosis only; preserve all failed runs and unchanged limits. No equivalent native retry.",
+      "next": "Complete one reviewed build-only preparation of the callback partition; native admission remains separate.",
       "qualification_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-phase-pump-5efyqf40/qualification",
       "qualification_plan_sha256": "e38b4900a02c6bc9a4f544afc821563d69c1188bca8a7cdb5feef4ce010b9a89",
       "qualification_review": {
@@ -1922,6 +1922,31 @@
           "sha256": "5a0107d75d7152bdec5ce8fa337ac080010a46a633f8b0069a664f1f36dae7de"
         },
         "next": "Offline source-bound observer cost diagnosis only; preserve all failed runs and unchanged limits. No equivalent native retry."
+      },
+      "observer_cost_partition": {
+        "state": "OFFLINE_QUALIFIED_BUILD_REVIEWED",
+        "definition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-observer-cost-hl7nqlpl/definition.json",
+          "sha256": "cf37e6dde250be584e22dee4614be53f18a22df34e591e1a2d04001d003a7d8b"
+        },
+        "offline_result": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-observer-cost-hl7nqlpl/offline-result.json",
+          "sha256": "ab86dcf4fa0949ec1d2b6f85385f729f1616eeba685b9ee219c8973762270bb2"
+        },
+        "build_definition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-cost-partition-build-9bi3tet_/definition.json",
+          "sha256": "9f369b30fb4478dc283400a55a9b366db4718d9e6e7d80507f29bf484504a500"
+        },
+        "build_review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-cost-partition-build-9bi3tet_/review.json",
+          "sha256": "28668ac68e6702b451e64402491958b42d3bb9d4eaa70769f9cf4534f1f94d4e"
+        },
+        "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-cost-partition-build-9bi3tet_/products",
+        "controls": 8,
+        "host_negative_controls": 2,
+        "scope": "Measures topology and append separately while retaining full2ms rejection. Host mock does not reproduce UIKit cost. One unchanged-baseline build reviewed; no native admission.",
+        "native_admitted": false,
+        "gate_closures": []
       }
     }
   },
