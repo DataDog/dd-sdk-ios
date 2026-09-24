@@ -119,6 +119,8 @@ class DatadogCoreTests: XCTestCase {
         weak var weakCore = core
         let owner = try XCTUnwrap(core?.rumContextHandoffOwner)
         let scope = try XCTUnwrap(core?.scope(for: FeatureMock.self))
+        // Finish asynchronous initialization before checking dispatch ownership.
+        core?.flush()
         RUMContextHandoff.withValue(owner: owner, rumContext: nil, sceneIdentifier: "released") {
             core = nil
             XCTAssertNil(weakCore)
