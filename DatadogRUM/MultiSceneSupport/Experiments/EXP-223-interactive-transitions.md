@@ -167,3 +167,17 @@ existing per-prompt completion proof fences teardown; planning now also rejects
 cleanup already in progress. The owning `phase_pump` record binds the preparation,
 controls and review. One fresh UIKit qualification is justified, with the first-
 failure stop retained. Native capture and all release gates remain unqualified.
+
+That single qualification stopped in clean-install preflight: the actual simulator
+inventory contained the task registration from the prior owned run. Its registered
+app and container paths were absent, and its data path matched that prior run's
+native event path. No install, launch, input phase or pump execution occurred.
+Original INVALID/NOT_EXECUTED remains; session end and original Shutdown restoration
+complete cleanup PASS. Review admits only a bounded environment correction and
+cold-boot absence verification, followed by fresh admission review before any test.
+
+The separate environment correction passed: one supported uninstall removed only
+the exact owned orphan registration. App/container absence survived a cold boot;
+non-task inventory stayed unchanged and original Shutdown was restored. The original
+failed qualification is unchanged. This establishes a changed clean-install
+prerequisite, with no input-mechanism, SDK or release acceptance credit.

@@ -107,3 +107,10 @@ run, process lifetime, session, frozen helper sources, native readiness and dead
 A missing/uncertain completion stops the pump and continues to block teardown.
 The final transport stop is not native idle, release or cleanup proof; the owner
 must still end the actual session and verify task removal and original state.
+
+A successful `bootstatus` is not proof that a prior task registration is absent.
+Clean installation still requires actual app-inventory and container absence. If
+an orphan matches preserved prior task ownership, keep the failed cell immutable;
+a separate bounded supported uninstall may clear only that bundle. Verify absence
+across a cold boot and unchanged non-task inventory before seeking fresh admission.
+Never substitute missing filesystem paths for the required inventory checks.

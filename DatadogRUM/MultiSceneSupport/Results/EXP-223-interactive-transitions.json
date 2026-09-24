@@ -1835,10 +1835,10 @@
       }
     },
     "phase_pump": {
-      "state": "OFFLINE_QUALIFIED_NATIVE_PENDING",
+      "state": "PREFLIGHT_STOPPED_BEFORE_INSTALL",
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-phase-pump-5efyqf40",
       "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-phase-pump-5efyqf40/definition.json",
-      "native_admitted": false,
+      "native_admitted": true,
       "reviewer": "/root/c06_runtime_plan",
       "at": 1790258187.7756338,
       "controls": {
@@ -1858,7 +1858,36 @@
         "sha256": "03dec431017d8f431cd886a5b26d8f77eb2b87cbe39cb13e381c915e5c615a48"
       },
       "review_resolution": "Existing per-prompt completion proof already fences teardown; pending now also rejects any cleanup state other than NOT_STARTED. No second lease protocol.",
-      "next": "One freshly frozen UIKit qualification with existing baseline product; first-failure stop. No SwiftUI before complete UIKit PASS and outcome review. No human admission."
+      "next": "Fresh native admission review required after proved cold-boot absence. Original cell remains consumed; no automatic retry.",
+      "qualification_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-phase-pump-5efyqf40/qualification",
+      "qualification_plan_sha256": "e38b4900a02c6bc9a4f544afc821563d69c1188bca8a7cdb5feef4ce010b9a89",
+      "qualification_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-phase-pump-5efyqf40/qualification/review.json",
+        "sha256": "0d770e881f344f198c8ff05a4a7cd84e0d6f59a607af3e011310cda6c185a041"
+      },
+      "max_native_cells": 1,
+      "framework": "UIKit",
+      "active_framework": null,
+      "native_result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-phase-pump-5efyqf40/qualification/result.json",
+        "sha256": "b90e55999efb5a5d0a61a7a337c5c7c039c099ef9e32ebd5b429897cf57e3c73"
+      },
+      "native_launches": 0,
+      "phase_input_calls": 0,
+      "cleanup": "PASS",
+      "environment_repair": {
+        "state": "PASS",
+        "result": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-phase-pump-5efyqf40/orphan-registration-repair/result.json",
+          "sha256": "196989adba7253b482d71e4d250d6bc82e8aa2cf8add752b51034a3f39def6a2"
+        },
+        "definition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-phase-pump-5efyqf40/orphan-registration-repair/definition.json",
+          "sha256": "21e1f776fddd19d5fe8c017c29598809300acbf78514d62392a8900686982c42"
+        },
+        "scope": "One exact owned orphan registration removed through simctl; absence stable through cold boot; non-task apps unchanged; original Shutdown restored. Original failed qualification unchanged. No qualification credit."
+      }
     }
-  }
+  },
+  "state": "CAPTURE_QUALIFICATION_PREFLIGHT_STOPPED"
 }
