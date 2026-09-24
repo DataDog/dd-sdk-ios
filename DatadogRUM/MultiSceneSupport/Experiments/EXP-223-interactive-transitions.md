@@ -350,3 +350,10 @@ Home remains active with time_spent1 instead of its stopped17416640997ns termina
 The assessment stays UNQUALIFIED; it neither defaults missing values nor revives
 the original backend deadline. Source-backed projection remains the next shared
 capture prerequisite. No SDK edit, native run or gate closure follows this repair.
+
+The primary-source audit adds only typed-equal session-reducer witnesses and the
+explicit tablet/Tablet enum representation. Twenty-four projection/backend controls
+and scoped review pass. The exact saved inventory still lacks a replay flag and
+retains stale Home activity/duration/brightness plus an unclassified TTID. The
+original verdict and deadline are unchanged. These rules remain offline-only;
+SwiftUI conflict capture preparation can progress independently of another pair.

@@ -80,9 +80,10 @@ rather than substituting the backend search counter.
 
 For stopped physical captures, `interactive-transitions/physical_projection.py`
 assesses exact saved broad/native exchanges offline. It verifies their original
-publication hashes/deadlines and preserves every mismatch. Its finite empty-object
-and independent-revision rules do not alter the strict runtime join. Missing flags,
-changed metadata and stale terminal values remain explicit; a classifier result
+publication hashes/deadlines and preserves every mismatch. Finite empty-object,
+independent-revision, typed-equal session-reducer and explicit device-enum rules
+leave the runtime join unchanged. Missing flags, changed metadata and stale terminal
+values remain explicit; a classifier result
 cannot authorize a new native cell or rescue the old acceptance verdict.
 
 Generated launch/TTID records precede probe tags. Bind them by unique service and

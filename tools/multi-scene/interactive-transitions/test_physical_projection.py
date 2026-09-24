@@ -83,15 +83,88 @@ class Projection(unittest.TestCase):
         rows = copy.deepcopy(self.rows); rows[0]["attributes"]["tags"] = []
         with self.assertRaises(Rejected): self.assess(rows)
 
-    def test_unsupported_session_flags_and_device_case_are_not_defaulted(self):
+    def test_unsupported_session_flags_and_brightness_are_not_defaulted(self):
         for value in self.local["views"].values():
             value["event"]["session"].update(has_replay=False, is_active=True)
             value["event"]["device"] = dict(type="tablet", brightness_level=.5)
         self.view["attributes"]["custom"]["device"] = dict(type="Tablet", brightness_level=.6)
         result = self.assess()
         self.assertEqual(result["qualification"], "UNQUALIFIED")
-        self.assertTrue({"session.has_replay", "session.is_active", "device.type", "device.brightness_level"}
+        self.assertTrue({"session.has_replay", "session.is_active", "device.brightness_level"}
                         <= {v["path"] for v in result["unresolved"]})
+
+    def session_projection(self):
+        for value in self.local["views"].values():
+            value["event"]["session"].update(has_replay=False, is_active=True)
+            value["event"]["_dd"]["session"] = dict(session_precondition="user_app_launch")
+        payload = self.view["attributes"]["custom"]
+        payload["_dd"]["session"] = {}
+        reducer = self.rows[-1]["attributes"]["custom"]
+        reducer["session"].update(has_replay=False, is_active=True)
+        reducer["_dd"]["session"] = dict(session_precondition="user_app_launch")
+        return reducer
+
+    def test_session_omissions_require_exact_reducer_and_preserve_raw_rows(self):
+        self.session_projection()
+        before = copy.deepcopy(self.rows)
+        result = self.assess()
+        self.assertEqual(result["qualification"], "OFFLINE_ONLY")
+        row = next(c for c in result["comparisons"] if c["event"][0] == "view")
+        self.assertEqual(row["session_reducer_raw_id"], "session")
+        changes = [c for c in row["differences"] if c["disposition"] == "SESSION_REDUCER_MATCHED"]
+        self.assertEqual({c["path"] for c in changes}, set(projection.SESSION_FIELDS))
+        self.assertTrue(all(c["actual_present"] is False and type(c["reducer_actual"]) is type(c["submitted"])
+                            and c["reducer_actual"] == c["submitted"] for c in changes))
+        self.assertEqual(self.rows, before)
+        with self.assertRaises(Rejected): fixtures.b.join(self.rows, self.rows, self.local, fixtures.EXPECTED)
+
+    def test_missing_changed_or_wrong_type_session_witness_remains_unresolved(self):
+        reducer = self.session_projection()
+        for path, alternatives in [("session.has_replay", [None, 0, True]),
+                                   ("session.is_active", [None, 1, False]),
+                                   ("_dd.session.session_precondition", [None, False, "explicit_stop"])]:
+            target = reducer
+            for part in path.split(".")[:-1]: target = target[part]
+            key = path.split(".")[-1]; original = target[key]
+            for value in alternatives:
+                if value is None: target.pop(key, None)
+                else: target[key] = value
+                with self.subTest(path=path, value=value):
+                    result = self.assess()
+                    self.assertEqual(result["qualification"], "UNQUALIFIED")
+                    self.assertIn(path, {c["path"] for c in result["unresolved"]})
+            target[key] = original
+        self.assertEqual(self.assess(self.rows[:-1])["qualification"], "UNQUALIFIED")
+
+    def test_foreign_or_duplicate_reducer_cannot_supply_omitted_values(self):
+        reducer = self.session_projection()
+        for part in ["session", "application"]:
+            original = reducer[part]["id"]; reducer[part]["id"] = fixtures.uid(99)
+            with self.subTest(part=part), self.assertRaises(Rejected): self.assess()
+            reducer[part]["id"] = original
+        extra = copy.deepcopy(self.rows[-1]); extra["id"] = "extra-reducer"
+        with self.assertRaises(Rejected): self.assess(self.rows + [extra])
+
+    def test_projection_does_not_hide_present_wrong_session_fields_or_apply_to_actions(self):
+        reducer = self.session_projection()
+        self.view["attributes"]["custom"]["session"]["is_active"] = False
+        self.assertIn("session.is_active", {c["path"] for c in self.assess()["unresolved"]})
+        for value in [False, 0]:
+            changes = projection.differences({"session": {}}, {"session": {"has_replay": value}}, view=False, reducer=reducer)
+            self.assertEqual(changes[0]["disposition"], "UNRESOLVED_OMISSION")
+
+    def test_device_enum_is_one_documented_pair_without_casefold_or_mutation(self):
+        for actual, submitted, view, disposition in [
+            ("Tablet", "tablet", True, "SOURCE_DEVICE_ENUM"),
+            ("TABLET", "tablet", True, "UNRESOLVED_VALUE"),
+            ("Tablet", "TABLET", True, "UNRESOLVED_VALUE"),
+            ("Other", "other", True, "UNRESOLVED_VALUE"),
+            ("Tablet", "tablet", False, "UNRESOLVED_VALUE"),
+            ("Tablet", None, True, "UNRESOLVED_VALUE")]:
+            with self.subTest(actual=actual, submitted=submitted, view=view):
+                change = projection.differences({"device": {"type": actual}}, {"device": {"type": submitted}}, view=view)[0]
+                self.assertEqual(change["disposition"], disposition)
+                self.assertEqual((change["actual"], change["submitted"]), (actual, submitted))
 
     def test_missing_views_events_reducer_and_wrong_reducer_counts_are_unqualified(self):
         for index in range(len(self.rows)):

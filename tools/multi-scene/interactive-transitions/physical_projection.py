@@ -14,6 +14,11 @@ from capture_io import bounded_read
 
 contract = backend.contract
 EMPTY_VIEW_OBJECTS = {"_dd.replay_stats", "feature_flags", "view.custom_timings"}
+# The session reducer is a separate witness, not a source of default view values.
+SESSION_FIELDS = {"_dd.session.session_precondition": str, "session.is_active": bool,
+                  "session.has_replay": bool}
+# RUM schema enum and documented indexed device value; no general case folding.
+DEVICE_TYPES = {"tablet": "Tablet"}
 
 
 def saved_inventory(path):
@@ -35,7 +40,7 @@ def saved_inventory(path):
     return rows
 
 
-def differences(actual, submitted, *, view, path=""):
+def differences(actual, submitted, *, view, path="", reducer=None):
     """Finite source-bound omissions only; retain types, presence and raw values."""
     result = []
     if isinstance(submitted, dict) and isinstance(actual, dict):
@@ -43,14 +48,21 @@ def differences(actual, submitted, *, view, path=""):
             name = path + key
             if key not in actual:
                 allowed = view and name in EMPTY_VIEW_OBJECTS and type(value) is dict and value == {}
-                result.append(dict(path=name, disposition="EMPTY_OPTIONAL_OBJECT_OMITTED" if allowed else "UNRESOLVED_OMISSION",
-                                   submitted=copy.deepcopy(value), actual_present=False))
+                change = dict(path=name, disposition="EMPTY_OPTIONAL_OBJECT_OMITTED" if allowed else "UNRESOLVED_OMISSION",
+                              submitted=copy.deepcopy(value), actual_present=False)
+                if view and name in SESSION_FIELDS and reducer is not None:
+                    observed = contract.field(reducer, name)
+                    if type(value) is SESSION_FIELDS[name] and type(observed) is type(value) and observed == value:
+                        change.update(disposition="SESSION_REDUCER_MATCHED", reducer_actual=copy.deepcopy(observed))
+                result.append(change)
             else:
-                result.extend(differences(actual[key], value, view=view, path=name + "."))
+                result.extend(differences(actual[key], value, view=view, path=name + ".", reducer=reducer))
     elif type(actual) is not type(submitted) or actual != submitted:
         name = path.rstrip(".")
         revisions = view and name == "_dd.document_version" and type(actual) is int and type(submitted) is int and min(actual, submitted) > 0
-        result.append(dict(path=name, disposition="INDEPENDENT_REDUCER_REVISION" if revisions else "UNRESOLVED_VALUE",
+        device = view and name == "device.type" and type(submitted) is str and type(actual) is str and DEVICE_TYPES.get(submitted) == actual
+        disposition = "INDEPENDENT_REDUCER_REVISION" if revisions else "SOURCE_DEVICE_ENUM" if device else "UNRESOLVED_VALUE"
+        result.append(dict(path=name, disposition=disposition,
                            submitted=copy.deepcopy(submitted), actual_present=True, actual=copy.deepcopy(actual)))
     return result
 
@@ -109,6 +121,7 @@ def assess(rows, native_rows, local, expected):
                     "unknown, duplicate or dropped persisted event")
             events[key] = row
     require(len(reducers) <= 1, "ambiguous session reducer")
+    reducer = contract.backend_event(reducers[0]) if reducers else None
     mismatches, comparisons, terminal_failures = [], [], []
     expected_events = {k for k in local["accepted"] if k[0] != "view"}
     for key in sorted(expected_events - set(events)):
@@ -134,8 +147,10 @@ def assess(rows, native_rows, local, expected):
     for key, row, event in selected:
         submitted = copy.deepcopy(event)
         tags(row, submitted, expected)
-        changes = differences(contract.backend_event(row), submitted, view=key[0] == "view")
+        changes = differences(contract.backend_event(row), submitted, view=key[0] == "view", reducer=reducer)
         record = dict(event=list(key), raw_id=row["id"], differences=changes)
+        if any(c["disposition"] == "SESSION_REDUCER_MATCHED" for c in changes):
+            record["session_reducer_raw_id"] = reducers[0]["id"]
         comparisons.append(record)
         mismatches.extend(dict(event=list(key), **change) for change in changes if change["disposition"].startswith("UNRESOLVED"))
     wanted_counts = dict(view=len(local["views"]), action=sum(k[0] == "action" for k in local["accepted"]), crash=0)

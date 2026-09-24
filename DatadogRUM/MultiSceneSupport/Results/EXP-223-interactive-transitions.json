@@ -326,7 +326,7 @@
     }
   ],
   "gate_closures": [],
-  "next_action": "Complete the source-backed backend projection from the saved four-row inventories before any further human pair. Cleanup correction and40 offline controls pass review; the original Home attempt remains INVALID, the separate restoration PASS, and the actual Home terminal remains unqualified. No equivalent native retry.",
+  "next_action": "Preserve the original Home INVALID and separate restoration PASS. Backend metadata rules pass24 offline controls/review, but missing replay flags, stale Home terminal and incidental TTID still prevent acceptance. Advance the source-defined SwiftUI conflict capture preparation; no equivalent Home/query/candidate retry.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
@@ -397,7 +397,7 @@
       "scope": "Fixture/native and local paired oracle only. Full runtime, backend, adaptive geometry and physical execution remain unqualified."
     }
   },
-  "updated_at": 1790282103.05762,
+  "updated_at": 1790283490.8031209,
   "live_environment": {
     "observed_at": "2026-09-23T19:45:47.121281+00:00",
     "xcode": "27.1 (27A9269)",
@@ -2354,7 +2354,7 @@
     "scope": "Fixture-only five-second background lease, original 1.2-second settle, actual writer completion and required same-run/PID ended-lease receipt. No SDK or ownership-oracle change.",
     "native_launches": 1,
     "gate_closures": [],
-    "next_action": "Complete the source-backed backend projection from the saved four-row inventories before any further human pair. Cleanup correction and40 offline controls pass review; the original Home attempt remains INVALID, the separate restoration PASS, and the actual Home terminal remains unqualified. No equivalent native retry.",
+    "next_action": "Preserve the original Home INVALID and separate restoration PASS. Backend metadata rules pass24 offline controls/review, but missing replay flags, stale Home terminal and incidental TTID still prevent acceptance. Advance the source-defined SwiftUI conflict capture preparation; no equivalent Home/query/candidate retry.",
     "limits": "Original physical INVALID and later restoration PASS remain separate. The uppercase UUID host mismatch was reproduced before any new native run; original two builds remain evidence, replaced by separately bound builds with unchanged generated Swift. No candidate, SwiftUI, equivalent retry or prior-run recovery.",
     "original_preparation": {
       "controls": {
@@ -2427,12 +2427,39 @@
         "sha256": "702b107e9bb28175f4adf489d7e03cd0ddc78bd076fda4f7028ce3b7f1cdb031"
       },
       "cleanup": "Implemented same-process reactivation after actual release, original prefix preservation and fresh native idle within the existing30-second idle/cleanup budget. Existing physical restoration is supporting native mechanism evidence; no new launch.",
-      "backend": "The generic runtime join remains unchanged. Three empty optional objects and independent reducer revisions are classified offline; session flags/precondition, device case/brightness and stale Home terminal state remain unresolved.",
+      "backend": "The generic runtime join remains unchanged. The source-backed classifier resolves exact reducer metadata and tablet/Tablet representation only. Missing replay flags, stale Home terminal/brightness and incidental TTID remain unqualified.",
       "gate_closures": [],
       "native_launches": 0,
       "review_completion": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/post-home-offline/review-complete.json",
         "sha256": "c0fc1443716187142075036479adbe3da41f18e2bee2010efa5bd44dd5acc009"
+      },
+      "source_projection": {
+        "state": "SOURCE_RULES_REVIEWED_ACTUAL_CAPTURE_UNQUALIFIED",
+        "definition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/post-home-offline/source-audit/definition.json",
+          "sha256": "1dd0d9af31ba4acb0e1e9f0125135f4fce888dcdc0aa91e32aae0a20771d679e"
+        },
+        "contract": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/post-home-offline/source-audit/source-contract.json",
+          "sha256": "9376249aadf3029c4c9ead2e0e29a0178bb54dcdafacf3f1f110309a018b21e5"
+        },
+        "controls": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/post-home-offline/source-audit/controls.json",
+          "sha256": "4d98b51be3a0bf9a00f531737b55ac6776e1ea2864b0da878f1416e8ac3d5fe8",
+          "tests": 24,
+          "state": "PASS"
+        },
+        "assessment": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/post-home-offline/source-audit/assessment.json",
+          "sha256": "b988da4d4a75024501422f62bbde503929f8f9044346c9a26b2be484fb3498ff"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/post-home-offline/source-audit/review.json",
+          "sha256": "99d0d849be8c7738e605c6272446ce387ac55760c0aac1104b35d18d16ce8ba1"
+        },
+        "native_runs": 0,
+        "gate_closures": []
       }
     }
   }

@@ -172,6 +172,6 @@ is cleanup-only and cannot change scenario/backend evidence or an old verdict.
 --native <actual-request.json> --output <fresh-assessment.json>` performs an offline
 assessment of completed exchanges. It verifies original publication deadlines and
 hashes without renewing them. The generic runtime join stays unchanged. Only the
-three named empty view objects and independent reducer revision counters are
-classified; unsupported omissions, types/values and terminal mismatches remain
-UNQUALIFIED. This command never launches an app, queries Datadog or closes a gate.
+three named empty view objects, independent reducer revisions, typed-equal session
+reducer witnesses and the explicit tablet/Tablet enum pair are classified. Missing
+reducer flags are never defaulted; all other differences remain UNQUALIFIED. This command never launches an app, queries Datadog or closes a gate.

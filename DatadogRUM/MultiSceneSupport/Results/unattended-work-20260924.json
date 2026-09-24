@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "state": "ACTIVE",
+  "started_at": 1790282662.456799,
+  "work_deadline_utc": "2026-09-25T06:38:17Z",
+  "window": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-unattended-20260924-byrtjhm9/window.json",
+    "sha256": "90673b951573b501711ff80e5b2b6e06cd55b978bb8f81a1ab15f709e9da0313"
+  },
+  "caffeinate": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-unattended-20260924-byrtjhm9/caffeinate-10-hours.json",
+    "sha256": "bb7c9c68f1f6d7ac215370cd9a20acd2c2cd27f7ffc9b305595d8e2c28f8ae48"
+  },
+  "automation_id": "rum-unattended-progress",
+  "owner": "root",
+  "reviewer": "/root/c06_runtime_plan",
+  "human_work": "UNADMITTED_WHILE_OPERATOR_SLEEPS",
+  "checkpoint": "0127177f4cf7b91098fd1f0950cbc923f3ae8d36",
+  "tasks": [
+    {
+      "id": "capture-backend",
+      "gates": [
+        "S2:A02",
+        "S3:A02",
+        "S2:H11",
+        "S2:H12",
+        "S2:H13"
+      ],
+      "deliverable": "Source-backed native mapper/backend projection with original stale terminal discrimination",
+      "dependency": "Saved EXP223 Home inventories and existing strict join",
+      "decisive_test": "Complete offline mapping table and controls reject missing/stale terminal, wrong owners/counts, nonempty omission, late publication and forged request scopes; original run remains INVALID",
+      "environment": "Source and saved evidence; no human/native/query retry",
+      "state": "OFFLINE_RULES_REVIEWED_ACCEPTANCE_BLOCKED",
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/post-home-offline/source-audit/source-contract.json",
+        "sha256": "9376249aadf3029c4c9ead2e0e29a0178bb54dcdafacf3f1f110309a018b21e5"
+      },
+      "remaining": [
+        "No explicit session.has_replay value in the saved reducer",
+        "Home backend terminal is active with initial duration and old brightness",
+        "Incidental TTID requires its independent dispatch witness; do not infer its exact ownership from mapper timing"
+      ]
+    },
+    {
+      "id": "capture-swiftui",
+      "gates": [
+        "S2:A02",
+        "S3:A02",
+        "S2:H12"
+      ],
+      "deliverable": "Resolve the recorded conflicting public visibility paths without weakening screen ownership",
+      "dependency": "Read the current EXP223 visibility diagnostic definition and reviewer disposition",
+      "decisive_test": "Focused source/negative controls and at most the already justified native qualification if all new prerequisites and bounded review are satisfied",
+      "environment": "Offline first; qualified simulator only when available without human input",
+      "state": "IN_PROGRESS"
+    },
+    {
+      "id": "automated-release-preparation",
+      "gates": [
+        "S2:T10",
+        "S2:F08",
+        "S3:F02",
+        "S3:F03"
+      ],
+      "deliverable": "Advance source-defined WebView/app and final documentation/client preparation that remains executable",
+      "dependency": "Read each owning result; preserve accepted suites and stopped mechanisms",
+      "decisive_test": "Complete a named existing deliverable or record a concrete prerequisite; builds/diagnostics alone cannot close behavior gates",
+      "environment": "Source/offline or separately admitted unattended toolchain work",
+      "state": "QUEUED"
+    }
+  ],
+  "scope_limits": [
+    "No user gestures/unlocks/authentication requests overnight",
+    "No equivalent stopped native retry or old deadline extension",
+    "No accepted test suite reruns",
+    "No push; explicit paths; signed when available; authorized local fallback",
+    "Preserve user-owned files and original failure/restoration distinction",
+    "No Replay content, unrelated CI flakes, optional networking benchmarks or physical Duo acceptance"
+  ],
+  "gate_closures": [],
+  "updated_at": 1790283490.806806
+}
