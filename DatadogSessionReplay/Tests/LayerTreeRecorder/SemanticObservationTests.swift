@@ -51,6 +51,22 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer))
     }
 
+    @Test("Records remote content as unsupported and ignores sublayers")
+    func recordsRemoteContentAsUnsupportedAndIgnoresSublayers() throws {
+        // Given
+        let layerClass = try #require(NSClassFromString("CALayerHost") as? CALayer.Type)
+        let layer = layerClass.init()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(
+            semantics: .unsupported("Remote content"),
+            ignoresSublayers: true
+        ))
+    }
+
     @Test("Records linear gradient semantics")
     func recordsLinearGradientSemantics() throws {
         // Given
@@ -270,8 +286,8 @@ struct SemanticObservationTests {
     }
 
     @available(iOS 26.0, *)
-    @Test("Records platform glass interaction as an automatic capsule and records sublayers")
-    func recordsPlatformGlassInteractionAsAutomaticCapsuleAndRecordsSublayers() throws {
+    @Test("Records platform glass semantics and records sublayers")
+    func recordsPlatformGlassAndRecordsSublayers() throws {
         // Given
         let viewController = UIHostingController(rootView: ScrollPocketFixture())
 
@@ -297,7 +313,7 @@ struct SemanticObservationTests {
         )
 
         // Then
-        #expect(observation == .init(semantics: .visualEffect(.automaticCapsule)))
+        #expect(observation == .init(semantics: .visualEffect(.platformGlass)))
     }
 
     @available(iOS 26.0, *)

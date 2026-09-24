@@ -14,6 +14,10 @@ extension CALayer {
         delegate?.isKind(of: Classes.barBackground) == true
     }
 
+    var isRoundedRectShadow: Bool {
+        delegate?.isKind(of: Classes.roundedRectShadowView) == true
+    }
+
     var isGlassGroup: Bool {
         delegate?.isKind(of: Classes.glassGroupView) == true
     }
@@ -24,6 +28,10 @@ extension CALayer {
 
     var isPortal: Bool {
         isKind(of: Classes.portalLayer)
+    }
+
+    var isHost: Bool {
+        isKind(of: Classes.layerHost)
     }
 
     var isSignedDistanceField: Bool {
@@ -133,9 +141,11 @@ extension CALayer {
 
 private enum Classes {
     static let barBackground: AnyClass? = NSClassFromString("_UIBarBackground")
+    static let roundedRectShadowView: AnyClass? = NSClassFromString("_UIRoundedRectShadowView")
     static let glassGroupView: AnyClass? = NSClassFromString("UIKit._GlassGroupView")
     static let liquidLensView: AnyClass? = NSClassFromString("_UILiquidLensView")
     static let portalLayer: AnyClass? = NSClassFromString("CAPortalLayer")
+    static let layerHost: AnyClass? = NSClassFromString("CALayerHost")
     static let sdfLayer: AnyClass? = NSClassFromString("CASDFLayer")
     static let sdfElementLayer: AnyClass? = NSClassFromString("CASDFElementLayer")
     static let navigationBarPlatterView: AnyClass? = NSClassFromString("_UINavigationBarPlatterView")

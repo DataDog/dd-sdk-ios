@@ -61,6 +61,15 @@ internal struct LayerWireframeBuilder {
             snapshot.observation.semantics,
             contentSnapshots[snapshot.replayID]
         ) {
+        case (.unsupported(let label), _):
+            return Output(
+                wireframe: SRWireframe(
+                    placeholderFor: snapshot,
+                    label: label,
+                    permanentId: heatmapIdentifier?.rawValue
+                ),
+                resource: nil
+            )
         case (.layer, .some(let result)),
             (.image, .some(let result)):
             return makeContentSnapshotOutput(
@@ -134,12 +143,12 @@ internal struct LayerWireframeBuilder {
                 ),
                 resource: nil
             )
-        case (.visualEffect(.automaticCapsule), _):
+        case (.visualEffect, _) where snapshot.requiresGlassApproximation:
             return Output(
                 wireframe: SRWireframe(
                     layerSnapshot: snapshot,
                     backgroundColor: .systemBackground,
-                    cornerRadius: min(snapshot.absoluteFrame.width, snapshot.absoluteFrame.height) / 2,
+                    cornerRadius: snapshot.glassCornerRadii?.uniformCornerRadius,
                     permanentId: heatmapIdentifier?.rawValue
                 ),
                 resource: nil

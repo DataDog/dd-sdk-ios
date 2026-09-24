@@ -286,6 +286,55 @@ struct LayerWireframeBuilderTests {
         #expect(wireframe.shapeStyle?.cornerRadius == 20)
     }
 
+    @Test("Build skips platform glass without corners")
+    func buildSkipsPlatformGlassWithoutCorners() {
+        // Given
+        let snapshot = CALayerSnapshot.mockWith(
+            replayID: 2,
+            absoluteFrame: CGRect(x: 10, y: 20, width: 100, height: 40),
+            observation: .init(semantics: .visualEffect(.platformGlass))
+        )
+        var builder = LayerWireframeBuilder(contentSnapshots: [:], webViewSlotIDs: [])
+
+        // When
+        let output = builder.build(from: snapshot, textInput: nil, cornerRadius: nil)
+
+        // Then
+        #expect(output == nil)
+    }
+
+    @Test("Build creates unsupported placeholder without an image resource")
+    func buildCreatesPlaceholderForUnsupportedContent() throws {
+        // Given
+        let snapshot = CALayerSnapshot.mockWith(
+            replayID: 2,
+            absoluteFrame: CGRect(x: 10, y: 20, width: 100, height: 40),
+            observation: .init(semantics: .unsupported("Remote content"), ignoresSublayers: true)
+        )
+        var builder = LayerWireframeBuilder(contentSnapshots: [:], webViewSlotIDs: [])
+
+        // When
+        let result = builder.build(from: snapshot, textInput: nil, cornerRadius: nil)
+        let output = try #require(result)
+
+        // Then
+        guard case .placeholderWireframe(let wireframe) = output.wireframe else {
+            Issue.record("Expected a placeholder wireframe")
+            return
+        }
+
+        let expectedWireframe = SRPlaceholderWireframe(
+            height: 40,
+            id: Int64(namespace: .placeholder, replayID: snapshot.replayID),
+            label: "Remote content",
+            width: 100,
+            x: 10,
+            y: 20
+        )
+        #expect(wireframe == expectedWireframe)
+        #expect(output.resource == nil)
+    }
+
     @Test("Build creates hidden placeholder for private layer")
     func buildCreatesHiddenPlaceholderForPrivateLayer() throws {
         // Given

@@ -24,6 +24,7 @@ extension CALayerSnapshot.SemanticObservationMapping: CaseIterable {
         .gradient,
         .activityIndicator,
         .label,
+        .roundedRectShadow,
         .imageView,
         .textView,
         .textField,
@@ -36,13 +37,15 @@ extension CALayerSnapshot.SemanticObservationMapping: CaseIterable {
         .destinationOutView,
         .portal,
         .automaticCapsule,
+        .platformGlass,
         .glassGroup,
         .scrollPocket,
         .captureOnlyBackdrop,
         .tabSelectionBackdrop,
         .visualEffectBackdrop,
         .visualEffectBackground,
-        .liquidLens
+        .liquidLens,
+        .unsupported
     ]
 }
 #endif
