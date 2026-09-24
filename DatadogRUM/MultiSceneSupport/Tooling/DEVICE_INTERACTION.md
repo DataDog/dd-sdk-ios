@@ -228,12 +228,15 @@ The reviewed EXP223 correction resolves only from actual recognizer callbacks,
 retaining the public coordinator inventory at every lookup. Unrelated content
 pans cannot satisfy the chain; exact source-bound endpoints, live interactivity,
 registration before interaction change and actual completion remain required.
-Capture terminal callback values before validating them, with distinct failure
-reasons. A transition container's lifetime differs from the returning controller's
-ownership. Keep actual detached/nil observations; never substitute a recorded
-window. A narrow completed-dismissal exception still requires original endpoints,
-container identity, request, real interaction/terminal ordering and a fresh return
-controller in the owned key window/scene. Pop and cancellation remain strict.
+Capture actual terminal values and the public controller graph before validation,
+with distinct failure reasons. A modal transition container can disappear after
+completion or cancellation; its lifetime does not establish the surviving owner.
+Preserve actual nil values and require original endpoints/request/callback order,
+the returning key window/scene and the appropriate public presentation graph at
+terminal and after settling. A different nonnull container remains invalid.
+Presentation getters can inherit an ancestor's relationship: select reciprocal
+presenter/presented ownership before uniqueness, retaining the complete inventory.
+Do not infer extra presentations from inherited aliases or hardcode class names.
 An ordinary iPad can omit the Duo `active` field. Select its single lit primary
 integrated display with a scoped parser and preflight it before installation; do
 not invent response fields or relax the Duo fold parser.

@@ -29,7 +29,8 @@ def render(raw, fingerprint):
             pans = [pan]
         } else {
             let presented = graph.filter {
-                $0.presentingViewController != nil && $0.presentedViewController == nil && $0.viewIfLoaded?.window === window
+                $0.presentingViewController?.presentedViewController === $0
+                    && $0.presentedViewController == nil && $0.viewIfLoaded?.window === window
             }
             guard presented.count == 1, let controller = presented.first,
                   let container = controller.presentationController?.containerView, container.window === window else {
@@ -73,7 +74,15 @@ def render(raw, fingerprint):
     value = replace_once(value, '        self.coordinator = coordinator; self.request = request; self.phase = phase; self.recognizer = recognizer',
         '        self.coordinator = coordinator; self.request = request; self.phase = phase; self.recognizer = recognizer\n        self.container = TransitionObservation.key(coordinator.containerView)')
     value = replace_once(value, '"phase": record.phase, "from": Self.key(context.viewController(forKey: .from)),',
-        '"phase": record.phase, "container": Self.key(context.containerView), "from": Self.key(context.viewController(forKey: .from)),')
+        '"phase": record.phase, "container": container.identity, "container_present": container.present, "from": Self.key(context.viewController(forKey: .from)),')
+    value = replace_once(value, 'extra: [String: Any] = [:]) -> [String: Any] {',
+        'extra: [String: Any] = [:], containerObservation: ContainerObservation? = nil) -> [String: Any] {')
+    value = replace_once(value, '        var result: [String: Any] = ["transition_id": record.id,',
+        '        let container = containerObservation ?? Self.observeContainer(context)\n        var result: [String: Any] = ["transition_id": record.id,')
+    value = replace_once(value, '"to": Self.key(context.viewController(forKey: .to)), "window": Self.key(context.containerView.window),',
+        '"to": Self.key(context.viewController(forKey: .to)), "window": Self.key(container.window),')
+    value = replace_once(value, '            "scene": context.containerView.window?.windowScene?.session.persistentIdentifier ?? "nil",',
+        '            "scene": container.window?.windowScene?.session.persistentIdentifier ?? "nil",')
     value = replace_once(value, '            && record.scene == context.containerView.window?.windowScene?.session.persistentIdentifier',
         '            && record.scene == context.containerView.window?.windowScene?.session.persistentIdentifier\n            && record.container == Self.key(context.containerView)')
     start = value.index('    private func finished(')
@@ -187,12 +196,30 @@ IDLE_SNAPSHOT = '''
 
 
 TERMINAL_CALLBACK = r'''
+    private struct ContainerObservation {
+        let identity: String
+        let present: Bool
+        let window: UIWindow?
+    }
+    private static func observeContainer(_ context: UIViewControllerTransitionCoordinatorContext) -> ContainerObservation {
+        // The observed completed dismissal returned null despite the imported
+        // nonoptional getter. Read its identity before sending messages to it.
+        let container = context.containerView
+        let identity = ObjectIdentifier(container)
+        let present = UInt(bitPattern: identity) != 0
+        return ContainerObservation(identity: String(describing: identity), present: present,
+                                    window: present ? container.window : nil)
+    }
     private func finished(_ record: ActiveTransition, context: UIViewControllerTransitionCoordinatorContext) {
         let from = context.viewController(forKey: .from)
         let to = context.viewController(forKey: .to)
         let result = context.isCancelled ? from : to
         let resultWindow = result?.viewIfLoaded?.window
-        let containerWindow = context.containerView.window
+        let container = Self.observeContainer(context)
+        let containerWindow = container.window
+        let fromPresenting = from?.presentingViewController
+        let toPresented = to?.presentedViewController
+        let controllerGraph = controllers().map(describe)
         var reasons = [String]()
         if failed { reasons.append("failed observer") }
         if active !== record { reasons.append("inactive transition record") }
@@ -202,7 +229,6 @@ TERMINAL_CALLBACK = r'''
         }
         if record.changes != 1 { reasons.append("missing or repeated interaction change") }
         if record.from != Self.key(from) || record.to != Self.key(to) { reasons.append("changed transition endpoints") }
-        if record.container != Self.key(context.containerView) { reasons.append("changed transition container") }
         if !context.initiallyInteractive || context.isInteractive { reasons.append("nonterminal interaction") }
         if Self.key(resultWindow) != record.window || resultWindow?.windowScene?.session.persistentIdentifier != record.scene
             || resultWindow?.isKeyWindow != true {
@@ -210,24 +236,38 @@ TERMINAL_CALLBACK = r'''
         }
         let attached = Self.key(containerWindow) == record.window
             && containerWindow?.windowScene?.session.persistentIdentifier == record.scene
-        // Completion runs after the transition. A dismissed presentation container
-        // may be detached; the actual returning controller must still own the window.
-        let detachedDismissal = record.phase == "dismiss.finish.before" && !context.isCancelled
-            && containerWindow == nil && from?.viewIfLoaded?.window == nil
-        if !attached && !detachedDismissal { reasons.append("foreign or missing transition container owner") }
+        // The modal transition container can disappear after either outcome.
+        // Validate the surviving public presentation relationship independently.
+        let completedPresentation = record.phase == "dismiss.finish.before" && !context.isCancelled
+            && from?.viewIfLoaded?.window == nil && fromPresenting == nil && toPresented == nil
+        let cancelledPresentation = record.phase == "dismiss.cancel.before" && context.isCancelled
+            && fromPresenting === to && toPresented === from
+            && (to?.viewIfLoaded?.window == nil || Self.key(to?.viewIfLoaded?.window) == record.window)
+        let modalTerminal = completedPresentation || cancelledPresentation
+        if record.phase.hasPrefix("dismiss.") && !modalTerminal {
+            reasons.append("changed public presentation relationship")
+        }
+        let detachedPresentation = modalTerminal && containerWindow == nil
+        let missingPresentationContainer = detachedPresentation && !container.present
+        if record.container != container.identity && !missingPresentationContainer {
+            reasons.append("changed transition container")
+        }
+        if !attached && !detachedPresentation { reasons.append("foreign or missing transition container owner") }
         let observed = fields(record, context: context, extra: [
             "active_record": active === record, "completed_record": completed.contains(record.id),
             "observer_failed": failed, "observer_request_id": requestID ?? "nil",
             "interaction_changes": record.changes, "rejections": reasons,
             "from_window": Self.key(from?.viewIfLoaded?.window), "to_window": Self.key(to?.viewIfLoaded?.window),
+            "from_presenting": Self.key(fromPresenting), "to_presented": Self.key(toPresented),
+            "controllers": controllerGraph,
             "result_window": Self.key(resultWindow), "result_scene": resultWindow?.windowScene?.session.persistentIdentifier ?? "nil",
-            "result_is_key": resultWindow?.isKeyWindow ?? false])
+            "result_is_key": resultWindow?.isKeyWindow ?? false], containerObservation: container)
         // Retain actual callback values even when a predicate rejects them.
         ObservationStore.shared.append("transition_terminal_observed", observed)
         guard reasons.isEmpty else { fail(reasons.joined(separator: "; ")); return }
         let callback = UUID().uuidString.lowercased()
         var terminal = observed
-        terminal["callback_id"] = callback; terminal["controllers"] = controllers().map(describe)
+        terminal["callback_id"] = callback
         ObservationStore.shared.append("transition_complete", terminal)
         RUMMonitor.shared().addAction(type: .custom, name: "transition.callback", attributes: [
             "transition_callback": callback, "transition_run": Settings.runID])

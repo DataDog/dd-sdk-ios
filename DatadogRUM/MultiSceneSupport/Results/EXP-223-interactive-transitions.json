@@ -1637,7 +1637,7 @@
       "attribution": "The actual completion context exposes a null ObjectIdentifier for containerView, not the retained original container identity. Exact endpoints and returning key window/scene remain valid, interaction changes1, outgoing window nil. The precise observer rejection is changed transition container. No SDK regression established."
     },
     "terminal_container_absence": {
-      "state": "DEFINED_SOURCE_REVIEW_PENDING",
+      "state": "STOPPED_INVALID_CANCELLED_SHEET_CONTAINER",
       "defined_at": "2026-09-24T11:10:53.598319+00:00",
       "prior_result": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-input-exchange-reviewed/cells/UIKit/summary.json",
@@ -1672,7 +1672,137 @@
         "gate_closures": []
       },
       "reviewer": "/root/c06_runtime_plan",
-      "stop": "One qualification after concrete source repair/review; stop on first failure and preserve exact predicates. No input mechanism retry or SDK-on/off diagnostics."
+      "stop": "One qualification after concrete source repair/review; stop on first failure and preserve exact predicates. No input mechanism retry or SDK-on/off diagnostics.",
+      "interop_validation": {
+        "scope": "One optimized host Swift/Objective-C boundary control, no SDK/device code or UI; verify that public ObjectIdentifier and UInt(bitPattern:) retain the null value from a nonoptional Objective-C getter before relying on that predicate.",
+        "maximum_runs": 1,
+        "seconds": 60,
+        "source": "Public Swift ObjectIdentifier/UInt conversion; UIKit27.1 header declares containerView nonoptional while actual native completion returned a zero identity."
+      },
+      "source_references": [
+        {
+          "url": "https://developer.apple.com/documentation/swift/uint/init(bitpattern:)-gk5x",
+          "scope": "UInt initializer captures the full ObjectIdentifier value."
+        },
+        {
+          "path": "/Applications/Xcode_27.1.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/System/Library/Frameworks/UIKit.framework/Headers/UIViewControllerTransitionCoordinator.h",
+          "scope": "containerView nonnull declaration and coordinator lifetime through last callback; absent terminal value is measured evidence, not a documented universal promise."
+        }
+      ],
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/container-absence-controls.json",
+        "sha256": "a6de4b6f3bc76dbbf9492deb87a3fa4c67ebaefd34a38844ad23f9150d158c5a"
+      },
+      "controls_count": 159,
+      "interop_result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/container-interop-i5knd446/result.json",
+        "sha256": "e7798ba07325e37316fbf5ba812c6c4159407af0405211f85aa55baf57e6140b"
+      },
+      "source_sha256": {
+        "tools/multi-scene/interactive-transitions/physical_observer.py": "6bb1a4fdeaec0d5f61226837e5c300c3300120b56d39c873a80757fee723dfab",
+        "tools/multi-scene/interactive-transitions/physical_transition.py": "d4783c2d88c22bcac0e00ee4533b550571d5a0ab4be1625c166a3068b1ee3899",
+        "tools/multi-scene/interactive-transitions/test_physical_release.py": "e60694e9020127ebf37c49f4c27168cf6f93bc49874065621a462d8cdb49d8cf"
+      },
+      "source_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/container-absence-source-review.json",
+        "sha256": "79f74c455dfc75a151473dfdbfe6d69c1960819e10acb8057952e463c52aef8d"
+      },
+      "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/build-container-absence-838ba686",
+      "qualification_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-container-absence",
+      "build_result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/build-container-absence-838ba686/A-simulator/build-result.json",
+        "sha256": "2e4bb8b3774def3b1e52a0d382ca0c8de27fbcc1c1ecefac836fba75708e03be"
+      },
+      "qualification_plan_sha256": "ba95a178b53ad274aa4bc735b9fac89bd22f1f1fcca7647c1dd070804b82d54d",
+      "qualification_controls_sha256": "94962afe717e0a91dad7432c7f4a08cae20aa447679238c69807e4b198611c8d",
+      "qualification_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-container-absence/review.json",
+        "sha256": "160999646a4eea0abb4444d798c70b15df4d4204b4d3d25e59e102177a8e2f20"
+      },
+      "current_summary_path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-container-absence/cells/UIKit/summary.json",
+      "started_at": 1790249521.988471,
+      "native_deadline": 1790250421.988471,
+      "cleanup_deadline": 1790250721.988471,
+      "native_result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/container-absence-native-result.json",
+        "sha256": "f3e76b27d56ba0a7aa12ade3768a33ff996a80bbae8a0524d40ea398ad0c1077"
+      },
+      "conclusion": "Complete and cancelled edge pops and completed sheet dismissal qualify. Cancelled sheet context also clears its transient container; unchanged request/endpoints and returning key-window/scene remain valid. Observer rejects only container identity/owner. No SDK regression or gate closure. Original INVALID is immutable; task removal, session end and original Shutdown PASS."
+    },
+    "terminal_presentation_lifetime": {
+      "state": "SOURCE_REVIEW_PASS_BUILD_PENDING",
+      "defined_at": 1790250327.029757,
+      "prior_result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/container-absence-native-result.json",
+        "sha256": "f3e76b27d56ba0a7aa12ade3768a33ff996a80bbae8a0524d40ea398ad0c1077"
+      },
+      "discriminator": "Cancelled sheet terminal sequence140 also has an actual zero container, after exactly one interaction change, while original from/to endpoints remain attached to the original window. Complete dismissal already qualifies with the same null getter. The transient presentation transition container is not the post-transition presentation owner.",
+      "scope": [
+        "tools/multi-scene/interactive-transitions/physical_observer.py",
+        "tools/multi-scene/interactive-transitions/physical_transition.py",
+        "tools/multi-scene/interactive-transitions/test_physical_release.py",
+        "tools/multi-scene/interactive-transitions/capture_input.py",
+        "tools/multi-scene/interactive-transitions/test_capture_input.py"
+      ],
+      "contract": "Keep original nonnull owned container before terminal and for navigation. At modal terminal the original transient container may be detached or absent for either outcome, only after exact request/coordinator/endpoints and returning key-window/scene validation. Cancellation must retain the original public presenting/presented relationship and attached original returning sheet; a covered presenter may have no window, but may not move to a foreign window. Completion must clear that relationship and detach the outgoing controller. Retain the complete actual terminal controller graph before any rejection, and independently require the matching post-transition graph. A different nonnull container, foreign/missing return owner, mutated public presentation relationship, stale consumed callback, missing/repeated interaction change or wrong result remains invalid. Preserve actual nil values.",
+      "validation": {
+        "offline": "Focused positive/negative controls across all four outcomes; reuse unchanged optimized interop result.",
+        "interop_result": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/container-interop-i5knd446/result.json",
+          "sha256": "e7798ba07325e37316fbf5ba812c6c4159407af0405211f85aa55baf57e6140b"
+        },
+        "reviewer": "/root/c06_runtime_plan",
+        "max_builds": 1,
+        "build_seconds": 900,
+        "max_native_cells": 2,
+        "order": [
+          "UIKit",
+          "SwiftUI only after full UIKit PASS and outcome review"
+        ],
+        "native_seconds": 900,
+        "input_seconds": 180,
+        "session_setup_seconds": 120,
+        "cleanup_seconds": 300,
+        "retries": 0,
+        "deadline_extension": false
+      },
+      "stop": "No equivalent input retry; native admission only after reviewed source correction with a new frozen build/plan. Stop on first failure, preserve actual reasons and cleanup independently.",
+      "gate_closures": [],
+      "source_audit": {
+        "header": "/Applications/Xcode_27.1.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/System/Library/Frameworks/UIKit.framework/Headers/UIViewController.h",
+        "lines": [
+          221,
+          225
+        ],
+        "finding": "presentedViewController may come from the nearest ancestor; presentingViewController may describe the farthest ancestor. Counting all nonnil getters can falsely treat inherited aliases as multiple presentations.",
+        "correction": "Use reciprocal public presenting/presented ownership before uniqueness in both copied native observer and SwiftUI input selector. Retain full controller inventory and reject multiple actual reciprocal relationships. No private class names or allowed-count changes."
+      },
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/presentation-ownership-controls.json",
+        "sha256": "a0cedb9252a03747d1355412eac0e708f19f33ce53cb4770b1d7a864eb4f6a75"
+      },
+      "source_sha256": {
+        "tools/multi-scene/interactive-transitions/physical_observer.py": "f707fd6c05bceba8e04bc84dd23de4173afb3749ef649c86f1669cfed946b439",
+        "tools/multi-scene/interactive-transitions/physical_transition.py": "a5d9ed76c946bac3d24a8cc4ce1a303730eca45db53c23de171f36c720fda408",
+        "tools/multi-scene/interactive-transitions/test_physical_release.py": "639c6742020d527d4054930520ec395edeb16fb00050d03bdab7b725e95db4fb",
+        "tools/multi-scene/interactive-transitions/capture_input.py": "08c2aa3f1e83a622e0b569c8245c0c7c697b9759f1a5ce0193d1356c384a1edd",
+        "tools/multi-scene/interactive-transitions/test_capture_input.py": "b0c1242b42cf1e835931c2eb7355b5258db70feab54cd84e7954d53d4f42359d"
+      },
+      "source_review": {
+        "state": "PASS",
+        "reviewer": "/root/c06_runtime_plan",
+        "scope": "One new baseline UIKit/SwiftUI build; separate frozen-plan review required before UIKit. SwiftUI requires full UIKit PASS and outcome review.",
+        "at": 1790251019.433643,
+        "source_sha256": {
+          "tools/multi-scene/interactive-transitions/physical_observer.py": "f707fd6c05bceba8e04bc84dd23de4173afb3749ef649c86f1669cfed946b439",
+          "tools/multi-scene/interactive-transitions/physical_transition.py": "a5d9ed76c946bac3d24a8cc4ce1a303730eca45db53c23de171f36c720fda408",
+          "tools/multi-scene/interactive-transitions/test_physical_release.py": "639c6742020d527d4054930520ec395edeb16fb00050d03bdab7b725e95db4fb",
+          "tools/multi-scene/interactive-transitions/capture_input.py": "08c2aa3f1e83a622e0b569c8245c0c7c697b9759f1a5ce0193d1356c384a1edd",
+          "tools/multi-scene/interactive-transitions/test_capture_input.py": "b0c1242b42cf1e835931c2eb7355b5258db70feab54cd84e7954d53d4f42359d"
+        },
+        "controls_sha256": "a0cedb9252a03747d1355412eac0e708f19f33ce53cb4770b1d7a864eb4f6a75",
+        "findings": []
+      }
     }
   }
 }

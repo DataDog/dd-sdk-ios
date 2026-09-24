@@ -126,11 +126,12 @@ def ordered(cancelled=False, delayed=True):
     rows[2:2]=[pan]+([probe(1,[]),probe(2,[candidate])] if delayed else [probe(1,[candidate])])
     for row in rows:
         if row['kind'] in ['transition_begin','transition_registered','transition_change','transition_complete']:
-            row['payload']['container']='container'
+            row['payload']['container']='container';row['payload']['container_present']=True
     end=next(r for r in rows if r['kind']=='transition_complete')
     end['payload'].update(active_record=True,completed_record=False,observer_failed=False,
         observer_request_id='request',interaction_changes=1,rejections=[],from_window='window',to_window='window',
-        result_window='window',result_scene='scene',result_is_key=True)
+        result_window='window',result_scene='scene',result_is_key=True,from_presenting='nil',to_presented='nil',
+        controllers=copy.deepcopy(after['payload']['transition']['controllers']))
     observed=copy.deepcopy(end);observed['kind']='transition_terminal_observed';del observed['payload']['callback_id']
     rows.insert(rows.index(end),observed)
     for index,row in enumerate(rows,1):row['sequence']=index
@@ -216,6 +217,14 @@ class TerminalContext(unittest.TestCase):
         for row in rows:
             phase=row['payload'].get('phase')
             if phase:row['payload']['phase']=phase.replace('pop.','dismiss.')
+        before_graph=[dict(id='detail',window='window',presenting='home',presented='nil',children=[]),
+                      dict(id='home',window='window',presenting='nil',presented='detail',children=[])]
+        after_graph=copy.deepcopy(before_graph) if cancelled else [dict(before_graph[1],presented='nil')]
+        a['payload']['transition'].update(controllers=before_graph,model=dict(path=['detail'],sheet=True))
+        b['payload']['transition'].update(controllers=after_graph,model=dict(path=['detail'],sheet=cancelled))
+        for payload in self.terminals(rows):
+            payload.update(from_window='window' if cancelled else 'nil',from_presenting='home' if cancelled else 'nil',
+                           to_presented='detail' if cancelled else 'nil',controllers=copy.deepcopy(after_graph))
         return rows,a,b
     def terminals(self, rows):
         return [r['payload'] for r in rows if r['kind'] in ['transition_terminal_observed','transition_complete']]
@@ -227,8 +236,70 @@ class TerminalContext(unittest.TestCase):
             self.check((rows,a,b))
             for p in self.terminals(rows):
                 self.assertEqual(p['window'],'nil' if detached else 'window')
-    def test_detached_cancel_or_pop_is_not_accepted(self):
-        for make,cancelled in [(ordered,False),(ordered,True),(self.sheet,True)]:
+    def test_completed_sheet_can_lose_container_without_rewriting_actual_identity(self):
+        rows,a,b=self.sheet()
+        for p in self.terminals(rows):
+            p.update(container='ObjectIdentifier(0x0000000000000000)',container_present=False,
+                     window='nil',scene='nil',from_window='nil')
+        self.check((rows,a,b))
+        self.assertEqual(self.terminals(rows)[0]['container'],'ObjectIdentifier(0x0000000000000000)')
+    def test_absent_container_is_not_allowed_for_pop(self):
+        for cancelled in [False,True]:
+            rows,a,b=ordered(cancelled)
+            for p in self.terminals(rows):
+                p.update(container='ObjectIdentifier(0x0000000000000000)',container_present=False,
+                         window='nil',scene='nil',from_window='nil')
+            with self.subTest(cancelled=cancelled),self.assertRaises(ValueError):self.check((rows,a,b),cancelled)
+    def test_cancelled_sheet_retains_public_presentation_when_container_detaches_or_disappears(self):
+        for present in [False,True]:
+            for covered_presenter in [False,True]:
+                rows,a,b=self.sheet(True)
+                for p in self.terminals(rows):
+                    p.update(container='container' if present else 'ObjectIdentifier(0x0000000000000000)',
+                             container_present=present,window='nil',scene='nil',
+                             to_window='nil' if covered_presenter else 'window')
+                    p['controllers'][1]['window']=p['to_window']
+                b['payload']['transition']['controllers'][1]['window']='nil' if covered_presenter else 'window'
+                self.check((rows,a,b),True)
+    def test_public_presentation_relation_cannot_be_inferred_from_return_window(self):
+        for cancelled in [False,True]:
+            for key,value in [('from_presenting','foreign'),('to_presented','foreign'),
+                              ('from_presenting','nil' if cancelled else 'home'),
+                              ('to_presented','nil' if cancelled else 'detail')]:
+                rows,a,b=self.sheet(cancelled)
+                for p in self.terminals(rows):p[key]=value
+                with self.subTest(cancelled=cancelled,key=key,value=value),self.assertRaises(ValueError):
+                    self.check((rows,a,b),cancelled)
+    def test_original_presentation_graph_is_required_before_terminal_and_after(self):
+        for cancelled in [False,True]:
+            for boundary in ['before','terminal','after']:
+                rows,a,b=self.sheet(cancelled)
+                if boundary=='before':graphs=[a['payload']['transition']['controllers']]
+                elif boundary=='after':graphs=[b['payload']['transition']['controllers']]
+                else:graphs=[p['controllers'] for p in self.terminals(rows)]
+                for graph in graphs:next(c for c in graph if c['id']=='home')['presented']='foreign'
+                with self.subTest(cancelled=cancelled,boundary=boundary),self.assertRaises(ValueError):
+                    self.check((rows,a,b),cancelled)
+        rows,a,b=self.sheet(True)
+        for p in self.terminals(rows):p['controllers'][1]['window']='foreign'
+        with self.assertRaises(ValueError):self.check((rows,a,b),True)
+    def test_terminal_graph_must_be_preserved_and_contain_the_return_controller(self):
+        for make,cancelled in [(ordered,False),(ordered,True),(self.sheet,False),(self.sheet,True)]:
+            rows,a,b=make(cancelled)
+            for p in self.terminals(rows):p['controllers']=[]
+            with self.subTest(make=make,cancelled=cancelled),self.assertRaises(ValueError):self.check((rows,a,b),cancelled)
+    def test_presence_flag_cannot_hide_nonnull_replacement_or_null_identity(self):
+        for identity,present in [('foreign',False),('ObjectIdentifier(0x0000000000000000)',True),('nil',False),('foreign',True)]:
+            rows,a,b=self.sheet()
+            for p in self.terminals(rows):p.update(container=identity,container_present=present,window='nil',scene='nil',from_window='nil')
+            with self.subTest(identity=identity,present=present),self.assertRaises(ValueError):self.check((rows,a,b))
+    def test_initial_and_interaction_change_container_must_exist(self):
+        for kind in ['transition_begin','transition_registered','transition_change']:
+            rows,a,b=self.sheet();p=next(r['payload'] for r in rows if r['kind']==kind)
+            p.update(container='ObjectIdentifier(0x0000000000000000)',container_present=False)
+            with self.subTest(kind=kind),self.assertRaises(ValueError):self.check((rows,a,b))
+    def test_detached_pop_is_not_accepted(self):
+        for make,cancelled in [(ordered,False),(ordered,True)]:
             rows,a,b=make(cancelled)
             for p in self.terminals(rows):p.update(window='nil',scene='nil')
             with self.subTest(make=make,cancelled=cancelled),self.assertRaises(ValueError):self.check((rows,a,b),cancelled)

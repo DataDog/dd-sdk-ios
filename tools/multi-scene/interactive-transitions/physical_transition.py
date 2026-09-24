@@ -4,6 +4,7 @@ Pan begin may precede controller transition creation. Every actual pre-binding
 callback retains its coordinator inventory; no queue turn or timer is evidence.
 """
 import math
+import re
 from transition_contract import require, one, controller_map
 
 
@@ -103,21 +104,25 @@ def transition(rows, before, after, *, cancelled, binding):
             'registration did not observe native interactive began')
     require(first['recognizer'] in armed['payload']['recognizers'] and first['recognizer']['window'] == binding['window'],
             'recognizer not armed in the owned window')
-    keys = ['transition_id', 'coordinator', 'from', 'to', 'container', 'phase', 'request_id']
+    keys = ['transition_id', 'coordinator', 'from', 'to', 'phase', 'request_id']
     require(all(first[k] not in ['', 'nil', None] for k in keys), 'missing native transition identity')
+    require(first.get('container_present') is True and first.get('container') not in ['', 'nil', None]
+            and re.fullmatch(r'ObjectIdentifier\(0x0+\)', first['container']) is None, 'initial container missing')
     previous = before['payload']['uptime_ns']
     for row in [start, registered, change, observed, end]:
         value = row['payload']
         require(all(value[k] == first[k] for k in keys) and value['current_request_id'] == request,
                 'foreign coordinator or consumed request')
         if row is not observed and row is not end:
+            require(value.get('container_present') is True and value['container'] == first['container'],
+                    'preterminal container changed or missing')
             require(value['window'] == binding['window'] and value['scene'] == binding['scene'], 'foreign native owner')
         require(value['initially_interactive'] is True and type(value['cancelled']) is bool, 'noninteractive or malformed cancellation')
         require(type(value['percent_complete']) in [int, float] and math.isfinite(value['percent_complete'])
                 and 0 <= value['percent_complete'] <= 1, 'invalid transition progress')
         require(type(value['uptime_ns']) is int and previous <= value['uptime_ns'] <= after['payload']['uptime_ns'], 'native clock outside boundary')
         previous = value['uptime_ns']
-    terminal = observed['payload']
+    terminal = terminal_observation = observed['payload']
     require(all(end['payload'].get(k) == v for k, v in terminal.items() if k != 'mapper_views'),
             'accepted completion substituted actual terminal context')
     require(terminal.get('active_record') is True and terminal.get('completed_record') is False
@@ -129,9 +134,20 @@ def transition(rows, before, after, *, cancelled, binding):
     require(terminal.get('from_window' if cancelled else 'to_window') == binding['window'],
             'terminal endpoint differs from returning controller')
     attached = terminal['window'] == binding['window'] and terminal['scene'] == binding['scene']
-    detached = (phase == 'dismiss.finish.before' and cancelled is False and terminal['cancelled'] is False
-                and terminal['window'] == terminal['scene'] == terminal.get('from_window') == 'nil')
+    modal = phase.startswith('dismiss.')
+    if modal:
+        if cancelled:
+            require(terminal.get('from_presenting') == first['to'] and terminal.get('to_presented') == first['from']
+                    and terminal.get('to_window') in ['nil', binding['window']], 'cancelled public presentation changed')
+        else:
+            require(terminal.get('from_presenting') == terminal.get('to_presented') == terminal.get('from_window') == 'nil',
+                    'completed public presentation retained')
+    detached = modal and terminal['window'] == terminal['scene'] == 'nil'
     require(attached or detached, 'foreign or unqualified detached terminal container')
+    same_container = terminal.get('container_present') is True and terminal['container'] == first['container']
+    absent_container = (terminal.get('container_present') is False
+                        and re.fullmatch(r'ObjectIdentifier\(0x0+\)', terminal['container']) is not None)
+    require(same_container or (absent_container and detached), 'changed nonnull or unqualified absent terminal container')
     require(type(registered['payload'].get('animations_queued')) is bool, 'missing registration diagnostic')
     require(type(registered['payload']['duration_ns']) is int and 0 <= registered['payload']['duration_ns'] <= 2_000_000, 'registration observer exceeded callback budget')
     require(change['payload']['interactive'] is False and end['payload']['interactive'] is False
@@ -145,9 +161,23 @@ def transition(rows, before, after, *, cancelled, binding):
         require({k: v for k, v in prior.items() if k not in ['enabled', 'window']} ==
                 {k: v for k, v in value.items() if k not in ['enabled', 'window']}, 'observer/delegate policy mutation')
     a, b = controller_map(before), controller_map(after)
+    terminal_graph = controller_map({'payload': {'transition': terminal_observation}})
     require(first['from'] != first['to'] and first['from'] in a and first['to'] in a, 'unknown/aliased native transition endpoints')
     result = first['from'] if cancelled else first['to']
-    require(result in b and b[result]['window'] == binding['window'], 'actual result controller detached or absent')
+    if modal:
+        require(a[first['from']].get('presenting') == first['to'] and a[first['to']].get('presented') == first['from'],
+                'original public presentation graph changed')
+    for graph in [terminal_graph, b]:
+        require(result in graph and graph[result]['window'] == binding['window'], 'actual result controller detached or absent')
+        if modal:
+            require(first['to'] in graph, 'original presenting controller absent')
+            if cancelled:
+                require(graph[first['from']].get('presenting') == first['to']
+                        and graph[first['to']].get('presented') == first['from']
+                        and graph[first['to']]['window'] in ['nil', binding['window']], 'cancelled presentation graph changed')
+            else:
+                require(first['from'] not in graph and graph[first['to']].get('presented') == 'nil',
+                        'completed presentation graph retained')
     if cancelled:
         require(before['payload']['transition']['model'] == after['payload']['transition']['model'], 'cancelled selection/path changed')
     require(end['payload']['callback_id'], 'actual callback work missing identity')

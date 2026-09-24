@@ -127,7 +127,8 @@ def select(request, raw, snapshot):
                 graph = q.driver.native.controller_map(snapshot)
                 front = q.driver.geometry.front_controllers(snapshot, binding)
                 presented = [(parent, graph.get(parent['presented'])) for parent in graph.values()
-                             if parent['window'] == binding['window'] and parent['presented'] != 'nil']
+                             if parent['window'] == binding['window'] and parent['presented'] != 'nil'
+                             and graph.get(parent['presented'], {}).get('presenting') == parent['id']]
                 parent, receiver = one(presented, 'ambiguous public sheet presentation')
                 require(receiver is not None and receiver['id'] in front and receiver['window'] == binding['window']
                         and receiver['presenting'] == parent['id'], 'public presented owner is not attached and foremost')

@@ -83,6 +83,19 @@ class Selectors(unittest.TestCase):
             if change=='absent':graph[0]['presented']='nil'
             else:graph[1][change]='foreign'
             with self.subTest(change=change),self.assertRaises((Rejected,ValueError)):c.select(request,raw,before)
+    def test_inherited_presentation_getter_is_not_a_second_public_presentation(self):
+        request,raw,before=sample('dismiss.cancel','SwiftUI')
+        graph=before['payload']['transition']['controllers']
+        graph[0]['children']=['contained']
+        graph.append(dict(id='contained',window='window',children=[],presented='sheet',presenting='nil'))
+        value=c.select(request,raw,before)
+        self.assertEqual(value['provenance']['presentation'],dict(presenter='root',presented='sheet'))
+    def test_multiple_real_reciprocal_presentations_remain_ambiguous(self):
+        request,raw,before=sample('dismiss.cancel','SwiftUI')
+        graph=before['payload']['transition']['controllers']
+        graph.extend([dict(id='other-presenter',window='window',children=[],presented='other-sheet',presenting='nil'),
+                      dict(id='other-sheet',window='window',children=[],presented='nil',presenting='other-presenter')])
+        with self.assertRaises(Rejected):c.select(request,raw,before)
     def test_swiftui_small_content_stack_cannot_be_modal_geometry(self):
         request,raw,before=sample('dismiss.cancel','SwiftUI')
         with self.assertRaises(Rejected):c.select(request,raw.replace('936.0, 1312.0','300.0, 200.0'),before)

@@ -134,9 +134,20 @@ key window/scene still matched. The original container did not merely detach.
 The observer's identity guard rejected its absence. Cleanup PASS and original
 Shutdown restoration are complete; SwiftUI/candidate/human remain unrun.
 
-The owner defines a narrow terminal-container correction before implementation:
-only a completed noncancelled dismissal can lose its container, retaining strict
-original transition/endpoints/request and returning-owner checks. A changed
-nonnull container, pop or cancellation remains invalid. Source/interop review,
-negative controls and scoped review precede another build/native admission. No
-SDK regression, complete mechanism qualification or release gate is established.
+The first absence correction passed159 controls, an optimized host interop check,
+scoped review and one baseline build. It qualified both edge pops and the completed
+sheet dismissal. Cancellation then returned the same null container while the
+original sheet/endpoints and key-window/scene still matched. The observer rejected
+its continued lifetime assumption. Eight effects, original INVALID and cleanup
+PASS are retained; the worker is quiescent and the simulator is back to Shutdown.
+
+The next correction treats the transient modal container consistently for both
+outcomes. It requires the public presentation relationship to survive cancellation
+and disappear after completion, with the original returning owner and terminal/
+after controller graphs. The complete actual graph is retained before rejection.
+An SDK-header audit also found that presentation getters can inherit an ancestor's
+relationship. Native and SwiftUI selectors now require reciprocal public ownership
+before uniqueness, retaining the full inventory. All165 controls pass, including
+inherited aliases and multiple real presentations. Scoped source review passes; one new
+baseline build and frozen qualification review remain. No SDK regression, full capture
+qualification or release gate is established; SwiftUI/candidate/human remain unrun.
