@@ -267,3 +267,14 @@ selection. A test-double path-alias failure and the superseded unadmitted plan a
 preserved. The fresh SwiftUI-only plan retains its own fixture/products and original
 budgets; worker packaging and native admission remain. No accepted UIKit cell is
 copied or rerun, and its semantic failure classifications remain unchanged.
+
+
+The single public-inventory SwiftUI qualification stops before input. Snapshot13
+reports conflicting public accessibility visibility paths; all14 native records
+are retained, but the generic error drops the conflicting object/path identity.
+Source/build/install and owned Home/scene/key window/root remain valid. Zero input,
+transition callbacks or timing samples were obtained. Actual session end, task
+removal and original Shutdown restoration PASS; overall INVALID/NOT_EXECUTED and
+evidence INCOMPLETE remain. Scoped review admits offline duplicate-path/diagnostic
+characterization only, with conflicts still rejected. No SDK attribution, native
+repeat, human session or release gate follows.

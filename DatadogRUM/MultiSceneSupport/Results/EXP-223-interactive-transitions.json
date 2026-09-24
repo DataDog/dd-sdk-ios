@@ -2102,7 +2102,7 @@
           "transition_callback_samples": 0
         },
         "public_accessibility_repair": {
-          "state": "QUALIFIED_BUILD_ONLY",
+          "state": "NATIVE_QUALIFICATION_STOPPED",
           "definition": {
             "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-accessibility-repair-4s4vxova/definition.json",
             "sha256": "46148494e9e6e757374f680486f4cb120ea4c9c7c5ff43dd04725c8228125289"
@@ -2139,14 +2139,14 @@
           },
           "native_admitted": false,
           "gate_closures": [],
-          "limits": "Source-bound fixture and optional oracle repair only. Actual SwiftUI graph, runtime cost and behavioral ownership remain unqualified; prior failures and accepted UIKit capture remain unchanged.",
+          "limits": "Actual first inventory rejects conflicting public visibility paths before input. The conflicting objects are not retained; no SDK attribution or gate credit. Preserve prior failures and accepted UIKit capture.",
           "build_receipt": {
             "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-inventory-build-2tsxd5xs/products/A-simulator/build-result.json",
             "sha256": "0958ac8107421e5f3e2684e7e3170dbdbbafb842efbf3cd006e2184433653aca"
           },
           "fixture": "05b06dec322d9071851d990e221546361a88d8d87c5afc83d87922d6cd7567c9",
           "reuse_preparation": {
-            "state": "PREPARED_NOT_ADMITTED",
+            "state": "STOPPED_BEFORE_INPUT",
             "definition": {
               "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-inventory-reuse-49hkau4g/definition.json",
               "sha256": "346f86b246726c71f05d82c38fb8cf50282661a34b4826f8eee0a460c377c02d"
@@ -2173,13 +2173,74 @@
               "sha256": "5f34dbd532ec9f36b5317f10763521b8154d89b5396262b2dd46068b5558018a"
             },
             "qualification_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-inventory-reuse-49hkau4g/qualification-assertion-order",
-            "native_admitted": false,
+            "native_admitted": true,
             "gate_closures": [],
-            "scope": "Full SDK/archive equality and exact overlay/client mapping; separate original/new compiler and products. Every other native/oracle statement remains unchanged. Old UIKit capture is referenced, never copied into an unexecuted cell. Original mock path-alias control failure is retained."
+            "scope": "Full SDK/archive equality and exact overlay/client mapping; separate original/new compiler and products. Every other native/oracle statement remains unchanged. Old UIKit capture is referenced, never copied into an unexecuted cell. Original mock path-alias control failure is retained.",
+            "native_review": {
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-inventory-reuse-49hkau4g/qualification-assertion-order/review.json",
+              "sha256": "145fba3d8201e7e1c00136a46998815ca2856156ff5cbec83f96bbad6bc670d4"
+            },
+            "source_checkpoint": "046b5ad6dcbc78d3c8b94f1ac76b7e8559a0f9f7",
+            "native_result": {
+              "state": "INVALID",
+              "scenario": "NOT_EXECUTED",
+              "evidence": "INCOMPLETE",
+              "cleanup": "PASS",
+              "reason": "ValueError: automatic human input: incomplete public accessibility inventory",
+              "summary": {
+                "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-inventory-reuse-49hkau4g/qualification-assertion-order/cells/SwiftUI/summary.json",
+                "sha256": "57577dcfb2184443b72d4ecab694e6bdf7faa535163dd36bd372a551c1d64ca6"
+              },
+              "native_events": {
+                "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-inventory-reuse-49hkau4g/qualification-assertion-order/cells/SwiftUI/native-preserved/events.jsonl",
+                "sha256": "b9877c8296d1711e2e0f0adc0c225bb27b58f5aeacf25dcc288f40e6bd1cb0f8"
+              },
+              "event_count": 14,
+              "snapshot_sequence": 13,
+              "snapshot_phase": "process-source-binding",
+              "capture_error": "conflicting public accessibility visibility paths",
+              "worker_return": {
+                "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-inventory-reuse-49hkau4g/qualification-assertion-order/fresh-worker-return.json",
+                "sha256": "93c8abd2df9fa0a531a991a03df1afa5e8ecf7d391b0d2c8594858937645cb90"
+              },
+              "worker_quiescence": {
+                "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-inventory-reuse-49hkau4g/qualification-assertion-order/fresh-worker-quiescence.json",
+                "sha256": "aa76cc25a0f3f137a18584bf94feb2ed963d6b9922154331a78837ab1c75e5ce"
+              },
+              "session_end": {
+                "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-inventory-reuse-49hkau4g/qualification-assertion-order/sessions/SwiftUI/creator-session-end.json",
+                "sha256": "ef980bf4a89a20768804a20329c47548f9fb4892a83169bf5205e27481b5970c"
+              },
+              "session_end_invocation": {
+                "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-inventory-reuse-49hkau4g/qualification-assertion-order/sessions/SwiftUI/creator-session-end-invocation.json",
+                "sha256": "19248fc4ed9f532d02726d3665e30f7ac19d05bf7effa7c324e2ab23b47d1d58"
+              },
+              "outcome_review": {
+                "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-inventory-reuse-49hkau4g/qualification-assertion-order/outcome-review.json",
+                "sha256": "c3b99649641643845aad507d757985179ecd8d0becac7d5455f6a3aeae5eccb0"
+              },
+              "restored_at": 1790272053.993622,
+              "cleanup_deadline": 1790273096.657471,
+              "identity": {
+                "bundle": "com.datadoghq.s2.transitions.a.swiftui",
+                "fixture": "05b06dec322d9071851d990e221546361a88d8d87c5afc83d87922d6cd7567c9",
+                "framework": "SwiftUI",
+                "layout": "stack",
+                "nonce": "1c9f438f-ed01-4197-a1a3-4c02021f9fb1",
+                "pid": 8627,
+                "run_id": "9d29a4f8-340d-4f9b-a3b2-ded31b2d24ac",
+                "source": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+                "tracking": "automatic"
+              },
+              "input_count": 0,
+              "transition_callback_count": 0,
+              "gate_closures": [],
+              "limitation": "The generic capture_error drops conflicting object/path details. No actual target inventory, transition, timing or SDK regression is established."
+            }
           }
         }
       }
     }
   },
-  "state": "SWIFTUI_CAPTURE_QUALIFICATION_PREPARED"
+  "state": "SWIFTUI_CAPTURE_QUALIFICATION_STOPPED"
 }
