@@ -146,15 +146,153 @@ class FileReaderTests: XCTestCase {
         let batch: Batch
         batch = try reader.readNextBatches(1).first.unwrapOrThrow()
         XCTAssertEqual(batch.events.first, expected[0])
-        reader.markBatchAsRead(batch)
+        reader.markFileAsRead(batch.file)
 
         let batches = reader.readNextBatches(2)
         XCTAssertEqual(batches[0].events.first, expected[1])
         XCTAssertEqual(batches[1].events.first, expected[2])
-        batches.forEach { reader.markBatchAsRead($0) }
+        batches.forEach { reader.markFileAsRead($0.file) }
 
         XCTAssertTrue(reader.readNextBatches(1).isEmpty)
         XCTAssertEqual(try directory.files().count, 0)
+    }
+
+    // MARK: - Batches holding no event
+
+    func testGivenEmptyFile_whenReadingBatch_itDropsTheFile() throws {
+        let telemetry = TelemetryMock()
+        let reader = makeReader(telemetry: telemetry)
+        let file = try directory.createFile(named: Date().toFileName)
+
+        XCTAssertNil(reader.readBatch(from: file))
+        XCTAssertEqual(try directory.files().count, 0, "The file should be deleted, not read again")
+        XCTAssertEqual(telemetry.messages.firstError()?.message, "(rum) Dropping batch with no event")
+
+        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Deleted"))
+        XCTAssertEqual(metric.attributes["batch_removal_reason"] as? String, "invalid")
+    }
+
+    func testGivenFileWithoutEventBlock_whenReadingBatch_itDropsTheFile() throws {
+        let reader = makeReader()
+        let file = try directory.createFile(named: Date().toFileName)
+        try file.append(data: BatchDataBlock(type: .eventMetadata, data: "EFGH".utf8Data).serialize())
+
+        XCTAssertNil(reader.readBatch(from: file))
+        XCTAssertEqual(try directory.files().count, 0, "The file should be deleted, not read again")
+    }
+
+    func testGivenFileWithTruncatedBlock_whenReadingBatch_itKeepsTheFile() throws {
+        let telemetry = TelemetryMock()
+        let reader = makeReader(telemetry: telemetry)
+        let file = try directory.createFile(named: Date().toFileName)
+        let block = try BatchDataBlock(type: .event, data: "ABCD".utf8Data).serialize()
+        try file.append(data: block.dropLast()) // truncated mid-block
+
+        XCTAssertNil(reader.readBatch(from: file))
+        XCTAssertEqual(try directory.files().count, 1, "A short read should not delete the file")
+        XCTAssertTrue(telemetry.messages.firstError()?.message.contains("expected 4 bytes but got 3") == true)
+    }
+
+    func testGivenFileWithOversizedBlock_whenReadingBatch_itDropsTheFile() throws {
+        let reader = makeReader(
+            performance: StoragePerformanceMock(
+                maxFileSize: .max,
+                maxDirectorySize: .max,
+                maxFileAgeForWrite: .distantFuture,
+                minFileAgeForRead: .mockAny(),
+                maxFileAgeForRead: .distantFuture,
+                maxObjectsInFile: .max,
+                maxObjectSize: 2 // smaller than the 4-byte event below
+            )
+        )
+        let file = try directory.createFile(named: Date().toFileName)
+        try file.append(data: BatchDataBlock(type: .event, data: "ABCD".utf8Data).serialize())
+
+        XCTAssertNil(reader.readBatch(from: file))
+        XCTAssertEqual(try directory.files().count, 0, "The file should be deleted, not read again")
+    }
+
+    func testGivenFileWhoseBlocksCannotBeDecrypted_whenReadingBatch_itDropsTheFile() throws {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let telemetry = TelemetryMock()
+        let reader = makeReader(
+            encryption: DataEncryptionMock(decrypt: { _ in throw ErrorMock("sensitive customer data") }),
+            telemetry: telemetry
+        )
+        let file = try directory.createFile(named: Date().toFileName)
+        try file.append(data: BatchDataBlock(type: .event, data: "ABCD".utf8Data).serialize())
+
+        XCTAssertNil(reader.readBatch(from: file))
+        XCTAssertEqual(try directory.files().count, 0, "The file should not block newer batches")
+
+        let error = try XCTUnwrap(telemetry.messages.firstError())
+        XCTAssertEqual(error.message, "(rum) Failed to decrypt data")
+        XCTAssertEqual(dd.logger.errorLog?.message, "(rum) Failed to decrypt data")
+        XCTAssertNil(dd.logger.errorLog?.error)
+        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Deleted"))
+        XCTAssertEqual(metric.attributes["batch_removal_reason"] as? String, "invalid")
+    }
+
+    func testGivenUndecryptableMetadata_whenReadingBatch_itKeepsTheEvent() throws {
+        let reader = makeReader(encryption: DataEncryptionMock(decrypt: { data in
+            if data == "metadata".utf8Data {
+                throw ErrorMock("decryption key unavailable")
+            }
+            return data
+        }))
+        let file = try directory.createFile(named: Date().toFileName)
+        try file.append(data: BatchDataBlock(type: .eventMetadata, data: "metadata".utf8Data).serialize())
+        try file.append(data: BatchDataBlock(type: .event, data: "event".utf8Data).serialize())
+
+        let batch = try XCTUnwrap(reader.readBatch(from: file))
+        XCTAssertEqual(batch.events, [Event(data: "event".utf8Data, metadata: nil)])
+        XCTAssertEqual(try directory.files().count, 1)
+    }
+
+    func testGivenUndecryptableOldFiles_whenReadingBatches_itSelectsNewerFile() throws {
+        let reader = makeReader(encryption: DataEncryptionMock(decrypt: { data in
+            if data != "new".utf8Data {
+                throw ErrorMock("decryption key unavailable")
+            }
+            return data
+        }))
+        let now = Date()
+        let firstOldFile = try directory.createFile(named: now.addingTimeInterval(-3).toFileName)
+        let secondOldFile = try directory.createFile(named: now.addingTimeInterval(-2).toFileName)
+        let newFile = try directory.createFile(named: now.addingTimeInterval(-1).toFileName)
+        try firstOldFile.append(data: BatchDataBlock(type: .event, data: "old-1".utf8Data).serialize())
+        try secondOldFile.append(data: BatchDataBlock(type: .event, data: "old-2".utf8Data).serialize())
+        try newFile.append(data: BatchDataBlock(type: .event, data: "new".utf8Data).serialize())
+
+        XCTAssertTrue(reader.readNextBatches(2).isEmpty)
+        XCTAssertEqual(try directory.files().map(\.name), [newFile.name])
+        XCTAssertEqual(reader.readNextBatches(2).flatMap(\.events), [Event(data: "new".utf8Data)])
+    }
+
+    // MARK: - Helpers
+
+    private func makeReader(
+        performance: StoragePerformancePreset = StoragePerformanceMock.readAllFiles,
+        encryption: DataEncryption? = nil,
+        telemetry: Telemetry = NOPTelemetry()
+    ) -> FileReader {
+        FileReader(
+            orchestrator: FilesOrchestrator(
+                directory: directory,
+                performance: performance,
+                dateProvider: SystemDateProvider(),
+                telemetry: telemetry,
+                metricsData: .init(
+                    trackName: "rum",
+                    consentLabel: .mockAny(),
+                    uploaderPerformance: UploadPerformanceMock.noOp,
+                    backgroundTasksEnabled: .mockAny()
+                )
+            ),
+            encryption: encryption,
+            telemetry: telemetry
+        )
     }
 }
 

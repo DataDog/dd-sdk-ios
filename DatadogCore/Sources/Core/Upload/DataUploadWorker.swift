@@ -136,8 +136,8 @@ internal class DataUploadWorker: DataUploadWorkerType {
                         self.delay.reset()
                     }
 
-                    self.fileReader.markBatchAsRead(
-                        batch,
+                    self.fileReader.markFileAsRead(
+                        batch.file,
                         reason: .intakeCode(responseCode: uploadStatus.responseCode)
                     )
 #if DD_BENCHMARK
@@ -164,7 +164,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
                     // if we introduce a new status code in the API.
                 } catch let error {
                     // If upload can't be initiated do not retry, so drop the batch:
-                    self.fileReader.markBatchAsRead(batch, reason: .invalid)
+                    self.fileReader.markFileAsRead(batch.file, reason: .invalid)
                     previousUploadStatus = nil
                     self.telemetry.error("Failed to initiate '\(self.featureName)' data upload", error: error)
                     sendUploadQualityMetric(failure: "invalid")
@@ -197,7 +197,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
                     // RUMM-3459 Delete the underlying batch with `.flushed` reason that will be ignored in reported
                     // metrics or telemetry. This is legitimate as long as `flush()` routine is only available for testing
                     // purposes and never run in production apps.
-                    self.fileReader.markBatchAsRead(nextBatch, reason: .flushed)
+                    self.fileReader.markFileAsRead(nextBatch.file, reason: .flushed)
                     previousUploadStatus = nil
                 }
                 do {

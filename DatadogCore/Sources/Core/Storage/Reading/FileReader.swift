@@ -35,14 +35,56 @@ internal final class FileReader: Reader {
     }
 
     func readBatch(from file: ReadableFile) -> Batch? {
+        let decoded: DecodedBlocks
         do {
-            let dataBlocks = try decode(stream: file.stream())
-            return Batch(dataBlocks: dataBlocks, file: file)
+            decoded = try decode(stream: file.stream())
         } catch {
             DD.logger.error("(\(orchestrator.trackName)) Failed to read data from file", error: error)
             telemetry.error("(\(orchestrator.trackName)) Failed to read data from file", error: error)
+
+            // A block exceeding the fixed size limit will never decode. Other read failures,
+            // including a short read, may succeed on a later attempt, so keep the file.
+            if let error = error as? TLVBlockError, case .bytesLengthExceedsLimit = error {
+                markFileAsRead(file, reason: .invalid)
+            }
             return nil
         }
+
+        guard !decoded.hasEvent else {
+            return Batch(dataBlocks: decoded.blocks, file: file)
+        }
+
+        guard !decoded.hasUndecryptableBlocks else {
+            // No event could be decrypted. Retrying this file on every upload cycle can prevent
+            // newer batches from being selected. `decode(stream:)` reported the failure.
+            DD.logger.error("(\(orchestrator.trackName)) Failed to decrypt data")
+            telemetry.error("(\(orchestrator.trackName)) Failed to decrypt data")
+            markFileAsRead(file, reason: .invalid)
+            return nil
+        }
+
+        // A batch holding no event has nothing to upload and never will: the file either holds no
+        // complete event, or holds nothing at all. The latter is what a failed write leaves behind -
+        // `getWritableFile()` creates the file before the data is appended to it, so an append that
+        // fails, e.g. by running out of disk space, leaves an empty file. Delete it rather than
+        // handing an empty batch to the uploader.
+        DD.logger.error("(\(orchestrator.trackName)) Dropping batch with no event")
+        telemetry.error("(\(orchestrator.trackName)) Dropping batch with no event")
+        markFileAsRead(file, reason: .invalid)
+        return nil
+    }
+
+    func markFileAsRead(_ file: ReadableFile, reason: BatchDeletedMetric.RemovalReason) {
+        orchestrator.delete(readableFile: file, deletionReason: reason)
+        filesRead.insert(file.name)
+    }
+}
+
+private extension FileReader {
+    struct DecodedBlocks {
+        let blocks: [BatchDataBlock]
+        let hasEvent: Bool
+        let hasUndecryptableBlocks: Bool
     }
 
     /// Decodes input data
@@ -53,29 +95,32 @@ internal final class FileReader: Reader {
     ///
     /// - Parameter stream: The InputStream that provides data to decode.
     /// - Returns: The decoded and formatted data.
-    private func decode(stream: InputStream) throws -> [BatchDataBlock] {
+    func decode(stream: InputStream) throws -> DecodedBlocks {
         let reader = BatchDataBlockReader(
             input: stream,
             maxBlockLength: orchestrator.performance.maxObjectSize
         )
 
-        var failure: String? = nil
-        defer {
-            failure.map { DD.logger.error($0) }
-        }
-
-        return try reader.all()
-            .compactMap { dataBlock in
+        var hasEvent = false
+        var hasUndecryptableBlocks = false
+        let blocks = try reader.all()
+            .compactMap { dataBlock -> BatchDataBlock? in
                 do {
-                    return try decrypt(dataBlock: dataBlock)
+                    let block = try decrypt(dataBlock: dataBlock)
+                    if block.type == .event {
+                        hasEvent = true
+                    }
+                    return block
                 } catch {
-                    failure = "🔥 Failed to decrypt data with error: \(error)"
+                    hasUndecryptableBlocks = true
                     return nil
                 }
             }
+
+        return DecodedBlocks(blocks: blocks, hasEvent: hasEvent, hasUndecryptableBlocks: hasUndecryptableBlocks)
     }
 
-    private func decrypt(dataBlock: BatchDataBlock) throws -> BatchDataBlock {
+    func decrypt(dataBlock: BatchDataBlock) throws -> BatchDataBlock {
         let decrypted = try decrypt(data: dataBlock.data)
         return BatchDataBlock(type: dataBlock.type, data: decrypted)
     }
@@ -86,18 +131,11 @@ internal final class FileReader: Reader {
     ///
     /// - Parameter data: The data to decrypt.
     /// - Returns: Decrypted data.
-    private func decrypt(data: Data) throws -> Data {
+    func decrypt(data: Data) throws -> Data {
         guard let encryption = encryption else {
             return data
         }
 
         return try encryption.decrypt(data: data)
-    }
-
-    // MARK: - Accepting batches
-
-    func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason) {
-        orchestrator.delete(readableFile: batch.file, deletionReason: reason)
-        filesRead.insert(batch.file.name)
     }
 }

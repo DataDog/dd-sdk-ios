@@ -30,8 +30,8 @@ internal protocol Reader {
     /// Reads batch from given file.
     /// - Parameter file: file to read batch from.
     func readBatch(from file: ReadableFile) -> Batch?
-    /// Marks given batch as read.
-    /// - Parameter batch: batch to mark as read.
+    /// Marks given file as read.
+    /// - Parameter file: file to mark as read.
     /// - Parameter reason: reason for removing the batch.
-    func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason)
+    func markFileAsRead(_ file: ReadableFile, reason: BatchDeletedMetric.RemovalReason)
 }

@@ -48,7 +48,7 @@ class FeatureStorageTests: XCTestCase {
 
         let batch = try XCTUnwrap(storage.reader.readNextBatches(1).first)
         XCTAssertEqual(batch.events.count, 3, "All 3 events should be written to the same batch")
-        storage.reader.markBatchAsRead(batch)
+        storage.reader.markFileAsRead(batch.file)
 
         XCTAssertTrue(storage.reader.readNextBatches(1).isEmpty, "There must be no other batches")
     }
@@ -66,7 +66,7 @@ class FeatureStorageTests: XCTestCase {
 
         let batch = try XCTUnwrap(storage.reader.readNextBatches(1).first)
         XCTAssertEqual(batch.events.map { $0.data.utf8String }, [#"{"event.consent":"granted"}"#])
-        storage.reader.markBatchAsRead(batch)
+        storage.reader.markFileAsRead(batch.file)
 
         XCTAssertTrue(storage.reader.readNextBatches(1).isEmpty, "There must be no other batches")
     }
@@ -85,11 +85,11 @@ class FeatureStorageTests: XCTestCase {
 
         var batch = try XCTUnwrap(storage.reader.readNextBatches(1).first)
         XCTAssertEqual(batch.events.map { $0.data.utf8String }, [#"{"event.consent":"granted"}"#])
-        storage.reader.markBatchAsRead(batch)
+        storage.reader.markFileAsRead(batch.file)
 
         batch = try XCTUnwrap(storage.reader.readNextBatches(1).first)
         XCTAssertEqual(batch.events.map { $0.data.utf8String }, [#"{"event.consent":"pending"}"#])
-        storage.reader.markBatchAsRead(batch)
+        storage.reader.markFileAsRead(batch.file)
 
         XCTAssertTrue(storage.reader.readNextBatches(1).isEmpty, "There must be no other batches")
     }
@@ -108,7 +108,7 @@ class FeatureStorageTests: XCTestCase {
 
         let batch = try XCTUnwrap(storage.reader.readNextBatches(1).first)
         XCTAssertEqual(batch.events.map { $0.data.utf8String }, [#"{"event.consent":"granted"}"#])
-        storage.reader.markBatchAsRead(batch)
+        storage.reader.markFileAsRead(batch.file)
 
         XCTAssertTrue(storage.reader.readNextBatches(1).isEmpty, "There must be no other batches")
 

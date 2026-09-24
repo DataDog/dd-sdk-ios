@@ -218,9 +218,9 @@ extension FeatureUpload {
 }
 
 extension Reader {
-    public func markBatchAsRead(_ batch: Batch) {
+    public func markFileAsRead(_ file: ReadableFile) {
         // We can ignore `reason` in most tests (used for sending metric), so we provide this convenience variant.
-        markBatchAsRead(batch, reason: .flushed)
+        markFileAsRead(file, reason: .flushed)
     }
 }
 
@@ -234,7 +234,7 @@ extension FilesOrchestratorType {
 public class NOPReader: Reader {
     public func readFiles(limit: Int) -> [ReadableFile] { [] }
     public func readBatch(from file: ReadableFile) -> Batch? { nil }
-    public func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason) {}
+    public func markFileAsRead(_ file: ReadableFile, reason: BatchDeletedMetric.RemovalReason) {}
 }
 
 internal class NOPFilesOrchestrator: FilesOrchestratorType {
