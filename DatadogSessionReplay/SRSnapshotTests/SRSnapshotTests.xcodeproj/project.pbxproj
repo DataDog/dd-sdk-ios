@@ -20,6 +20,7 @@
 		5BB746182E02B4CD00B568F1 /* SwiftUIViewWithPrivacyOverrides.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BB746172E02B4CD00B568F1 /* SwiftUIViewWithPrivacyOverrides.swift */; };
 		5BBF351C3065310000E29D58 /* DrawingGroupFixtureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BBF351B3065310000E29D58 /* DrawingGroupFixtureView.swift */; };
 		5BBF351E3065417F00E29D58 /* CanvasFixtureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BBF351D3065417F00E29D58 /* CanvasFixtureView.swift */; };
+		5BBF3520306544E800E29D58 /* TextFixtureViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BBF351F306544E800E29D58 /* TextFixtureViewController.swift */; };
 		614396642A5E8C0600197326 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614396632A5E8C0600197326 /* Environment.swift */; };
 		614396652A5E8C0600197326 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614396632A5E8C0600197326 /* Environment.swift */; };
 		619C49B429952E12006B66A6 /* SnapshotTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619C49B329952E12006B66A6 /* SnapshotTestCase.swift */; };
@@ -84,6 +85,7 @@
 		5BB746172E02B4CD00B568F1 /* SwiftUIViewWithPrivacyOverrides.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIViewWithPrivacyOverrides.swift; sourceTree = "<group>"; };
 		5BBF351B3065310000E29D58 /* DrawingGroupFixtureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawingGroupFixtureView.swift; sourceTree = "<group>"; };
 		5BBF351D3065417F00E29D58 /* CanvasFixtureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasFixtureView.swift; sourceTree = "<group>"; };
+		5BBF351F306544E800E29D58 /* TextFixtureViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFixtureViewController.swift; sourceTree = "<group>"; };
 		614396632A5E8C0600197326 /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Environment.swift; path = SRHost/Environment.swift; sourceTree = "<group>"; };
 		619C49B329952E12006B66A6 /* SnapshotTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotTestCase.swift; sourceTree = "<group>"; };
 		619C49B62995512A006B66A6 /* ImageComparison.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageComparison.swift; sourceTree = "<group>"; };
@@ -261,6 +263,7 @@
 				5B0E062330060D7B004CF4D3 /* ToolbarFixtureView.swift */,
 				5BBF351B3065310000E29D58 /* DrawingGroupFixtureView.swift */,
 				5BBF351D3065417F00E29D58 /* CanvasFixtureView.swift */,
+				5BBF351F306544E800E29D58 /* TextFixtureViewController.swift */,
 			);
 			path = Fixtures;
 			sourceTree = "<group>";
@@ -461,6 +464,7 @@
 				5B94B8EB2FFFE3C5007DFF8E /* AlertFixtureView.swift in Sources */,
 				5BBF351C3065310000E29D58 /* DrawingGroupFixtureView.swift in Sources */,
 				5B0E062430060D80004CF4D3 /* ToolbarFixtureView.swift in Sources */,
+				5BBF3520306544E800E29D58 /* TextFixtureViewController.swift in Sources */,
 				86D5C4A1ED484C5DB60D627B /* ImageComposition.swift in Sources */,
 				AE7B8B1C89A64C54A5D4D229 /* ImageComparison.swift in Sources */,
 				DDE4CDCDBE7B45CBA219C5B6 /* SRLayerSnapshotTests.swift in Sources */,
