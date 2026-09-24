@@ -1,6 +1,7 @@
 # Unreleased
 
 - [FIX] Release the RUM display-link observer and its frame readers when their owner is released.
+- [FIX] Pin KSCrash to exact version 2.5.1 via SPM to prevent silently resolving newer, unvetted releases.
 
 # 3.18.0 / 21-09-2026
 
