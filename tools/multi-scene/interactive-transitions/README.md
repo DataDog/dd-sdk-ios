@@ -160,3 +160,18 @@ Home-only capture with300s native/600s backend/300s cleanup budgets; it cannot
 compare arms or admit the candidate. Bind fresh controls/review and operator
 readiness as for the stack runner. A pass qualifies only this mechanism, never
 repairs an earlier failed run or admits a full pair implicitly.
+
+Failed physical cleanup uses `physical_cleanup.py` only after the request-bound
+operator release. It saves the original event prefix, checks the bound scene and
+PID/executable, and activates a suspended task as that same process. A fresh idle
+checkpoint must extend the unchanged prefix and show no touches or coordinator.
+The30-second idle limit and original cleanup deadline still apply. Reactivation
+is cleanup-only and cannot change scenario/backend evidence or an old verdict.
+
+`physical_projection.py --cell <original-cell> --broad <actual-request.json>
+--native <actual-request.json> --output <fresh-assessment.json>` performs an offline
+assessment of completed exchanges. It verifies original publication deadlines and
+hashes without renewing them. The generic runtime join stays unchanged. Only the
+three named empty view objects and independent reducer revision counters are
+classified; unsupported omissions, types/values and terminal mismatches remain
+UNQUALIFIED. This command never launches an app, queries Datadog or closes a gate.

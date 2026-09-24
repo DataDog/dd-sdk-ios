@@ -78,6 +78,13 @@ versions can differ from mapper input; compare other terminal fields exactly and
 record both. Where exact SDK revisions matter, preserve an explicit mapper witness
 rather than substituting the backend search counter.
 
+For stopped physical captures, `interactive-transitions/physical_projection.py`
+assesses exact saved broad/native exchanges offline. It verifies their original
+publication hashes/deadlines and preserves every mismatch. Its finite empty-object
+and independent-revision rules do not alter the strict runtime join. Missing flags,
+changed metadata and stale terminal values remain explicit; a classifier result
+cannot authorize a new native cell or rescue the old acceptance verdict.
+
 Generated launch/TTID records precede probe tags. Bind them by unique service and
 actual app/session/view/Vital identities plus a one-use startup exchange; preserve
 absent probe fields and reject mismatched nonnil ones. A session reducer is not an

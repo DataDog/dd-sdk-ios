@@ -11,6 +11,7 @@ import physical_io as io
 import physical_release
 import physical_transition
 import physical_background
+import physical_cleanup
 from capture_io import atomic, encoded
 
 shared=io.shared
@@ -113,7 +114,8 @@ class Collector(driver.Collector):
         print(json.dumps(dict(human_input=prompt)),flush=True)
         return actual
     def cleanup_idle(self,folder,identity,deadline):
-        limit=min(deadline,time.time()+30)
+        prepared=physical_cleanup.prepare(self,folder,identity,deadline)
+        limit=prepared["deadline"]
         request=dict(schema_version=1,run_id=self.run,request_id=str(uuid.uuid4()),phase='cleanup.idle')
         raw=encoded(request);atomic(folder/'native-request.json',raw);fingerprint=hashlib.sha256(raw).hexdigest()
         self.remote.push(self.bundle,folder/'native-request.json','Documents/snapshot-'+fingerprint+'.json','cleanup-idle-payload',limit)
@@ -127,7 +129,9 @@ class Collector(driver.Collector):
         data=self.download('events.jsonl',limit);checkpoint=json.loads(committed)
         atomic(folder/'native-checkpoint.json',committed);atomic(folder/'native-events.jsonl',data)
         proof=physical_release.native_idle(data,checkpoint,raw,identity,self.binding)
-        require(time.time()<limit,'late native cleanup idle proof; defer teardown');return proof
+        require(time.time()<limit,'late native cleanup idle proof; defer teardown')
+        physical_cleanup.finish(self,folder,prepared,data,proof)
+        return proof
     def interactive(self,phase):
         cancelled=phase.endswith('.cancel');pop=phase.startswith('pop.')
         screen='detail' if pop else 'sheet';after_screen=screen if cancelled else 'home' if pop else 'detail'

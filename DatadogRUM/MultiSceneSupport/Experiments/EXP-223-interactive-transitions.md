@@ -319,3 +319,34 @@ The controls consume an actual compiled Swift success receipt and reject compact
 braced and non-string tokens. All5 pass. Both original builds passed; replacement
 builds bind the corrected helper/control hashes to exactly unchanged SDK/client
 trees. No native run occurred during this correction.
+
+The admitted Home-only physical baseline now reaches background16 and persists its
+writer checkpoint plus exact ended-lease receipt in1.307s. Both complete backend
+inventories contain4 rows, but the existing strict mapper join rejects omitted empty
+`_dd.replay_stats` before terminal settling. The saved Home reducer is still active;
+that remains incomplete evidence, not an established SDK regression. Overall
+INVALID/scenario PASS/evidence INCOMPLETE/cleanup INVALID remains immutable.
+
+The operator replied Released within the request deadline. Native idle could not
+run while the app was suspended. A separate bounded restoration preserved the
+preactivation stream, reactivated the exact same PID, captured fresh idle, removed
+only the task app and visually verified Home in6.7s. It is PASS without changing the
+original cleanup verdict. The prompt server is retired; no further input is needed.
+The [owner](../Results/EXP-223-interactive-transitions.json) binds original summaries,
+raw receipts and an offline-only projection/cleanup repair. Candidate/full-stack,
+SwiftUI and repeated Home runs remain unadmitted; no release gate closes.
+
+The bounded offline follow-up implements release-bound same-process reactivation
+before a failed-background idle check. It retains the preactivation prefix, rejects
+replacement/late processes and still requires fresh native idle. Twenty-one cleanup
+controls and19 projection/backend controls pass. Earlier discovery/import failures
+remain in the owning receipt. Scoped review finds no blocker; the saved physical
+restoration supports the cleanup mechanism without another diagnostic launch.
+
+The separate offline classifier preserves raw inventories and leaves the runtime
+join unchanged. It records three explicitly empty optional objects and independent
+mapper/reducer revisions, then reports all unsupported session/device differences.
+Home remains active with time_spent1 instead of its stopped17416640997ns terminal.
+The assessment stays UNQUALIFIED; it neither defaults missing values nor revives
+the original backend deadline. Source-backed projection remains the next shared
+capture prerequisite. No SDK edit, native run or gate closure follows this repair.

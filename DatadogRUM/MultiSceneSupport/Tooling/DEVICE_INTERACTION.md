@@ -219,7 +219,12 @@ The physical transition runner publishes a request-bound `human-release/request.
 After an actual operator reply, record it with `physical_release.py --request <path>
 --user-message <reply>`; never infer release from elapsed time. The runner then
 captures a new checkpoint from the same process/window, requiring zero touches,
-idle public pan recognizers and no transition coordinator. That cleanup-only proof
+idle public pan recognizers and no transition coordinator. A suspended task first
+requires preserved preactivation bytes and actual same-PID/executable activation
+after release. Verify the prefix is unchanged and keep the later idle stream
+separate; no scenario/backend evidence may come from cleanup reactivation. Use the
+existing idle/cleanup deadline, with no extension or replacement process.
+That cleanup-only proof
 does not discard earlier failure rows or qualify the scenario. Expiry leaves the
 app installed and cleanup incomplete; later restoration is a separate record.
 
