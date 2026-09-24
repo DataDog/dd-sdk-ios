@@ -12,6 +12,7 @@ PUBLIC_CAPTURE = r'''    private func publicAccessibility(_ window: UIWindow) ->
         var order = [String]()
         var records = [String: [String: Any]]()
         var visibility = [String: (Bool, CGFloat)]()
+        var visibilityPaths = [String: [String: Any]]()
         var containers = [String: Set<String>]()
         var edges = [String: Set<String>]()
         var error: String?
@@ -40,10 +41,18 @@ PUBLIC_CAPTURE = r'''    private func publicAccessibility(_ window: UIWindow) ->
             }
             containers[id, default: []].insert(item.parent)
             edges[id, default: []].insert(item.parent + ":" + item.edge)
+            let visibilityPath: [String: Any] = [
+                "parent": item.parent, "edge": item.edge,
+                "inherited_hidden": item.hidden, "inherited_alpha": item.alpha,
+                "hidden": hidden, "alpha": alpha]
             let identity = ObjectIdentifier(object)
             if observed[identity] != nil {
                 guard let prior = visibility[id], prior.0 == hidden, prior.1 == alpha else {
-                    return [["capture_error": "conflicting public accessibility visibility paths"]]
+                    return [["capture_error": "conflicting public accessibility visibility paths",
+                        "conflict": ["object_id": id,
+                            "first_path": visibilityPaths[id] ?? [:],
+                            "current_path": visibilityPath,
+                            "first_record": records[id] ?? [:]]]]
                 }
                 continue
             }
@@ -51,7 +60,7 @@ PUBLIC_CAPTURE = r'''    private func publicAccessibility(_ window: UIWindow) ->
             guard observed.count <= 4096 else {
                 return [["capture_error": "public accessibility inventory exceeded fixture bound"]]
             }
-            visibility[id] = (hidden, alpha); order.append(id)
+            visibility[id] = (hidden, alpha); visibilityPaths[id] = visibilityPath; order.append(id)
             let frame: CGRect
             let kind: String
             if let view = object as? UIView {

@@ -141,3 +141,10 @@ grants acceptance. The build-only opt-in is the explicit programmatic call
 `prepare(root, keys=['A-simulator'], event_capture=True, observer_cost_partition=True)`;
 the default CLI does not select it. Record that call and freeze the helper/control
 hashes. A host dictionary mock checks partition mechanics, never UIKit cost.
+
+For the reviewed physical UIKit continuation, call
+`physical_build.prepare(root, observer_cost_partition=True)`. This explicit option
+maps the qualified cost capture identically to both arms before the existing
+remote-publication and native-idle overlays, and binds the helper/control and
+before/after source hashes. Default preparation is unchanged. Fresh signed products
+and separate physical runtime admission are required; it does not admit SwiftUI.

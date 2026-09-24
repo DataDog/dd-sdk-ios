@@ -326,7 +326,7 @@
     }
   ],
   "gate_closures": [],
-  "next_action": "See .continue-here.md: finish and review the fresh SwiftUI-only worker package, then separately admit the one qualified-source capture cell. No accepted UIKit rerun; old artifacts and semantic limits remain unchanged.",
+  "next_action": "User available for a physical iPad session. Prepare and review the exact qualified UIKit observer/cost overlay in fresh physical products, then admit baseline only after device/backend/operator readiness. SwiftUI remains blocked; no reuse of old failed physical binaries.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
@@ -397,7 +397,7 @@
       "scope": "Fixture/native and local paired oracle only. Full runtime, backend, adaptive geometry and physical execution remain unqualified."
     }
   },
-  "updated_at": "2026-09-24T12:25:25.110708+00:00",
+  "updated_at": "2026-09-24T18:11:44Z",
   "live_environment": {
     "observed_at": "2026-09-23T19:45:47.121281+00:00",
     "xcode": "27.1 (27A9269)",
@@ -2235,12 +2235,64 @@
               "input_count": 0,
               "transition_callback_count": 0,
               "gate_closures": [],
-              "limitation": "The generic capture_error drops conflicting object/path details. No actual target inventory, transition, timing or SDK regression is established."
+              "limitation": "No complete target inventory, transition or callback-cost qualification is established. The rejected snapshot cost is recorded separately; no SDK regression finding.",
+              "snapshot_duration_ns": 62933000
             }
+          },
+          "visibility_path_characterization": {
+            "state": "OFFLINE_QUALIFIED",
+            "definition": {
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-visibility-paths-uy1mzxba/definition.json",
+              "sha256": "a0c54859070b470cf14c919c020109d0bda849ecb9fb95075f426c3602b8a997"
+            },
+            "controls": {
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-visibility-paths-uy1mzxba/controls.json",
+              "sha256": "ae4691dfadd7cbe15873faebfd866a06a018ea2847fb9ef48d13bd93ebba140e"
+            },
+            "review": {
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-visibility-paths-uy1mzxba/review.json",
+              "sha256": "288306dcc43a9c1acf099fe9227497fbad1080fab248b6080e79838f1ad30cb5"
+            },
+            "host_inventory": {
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-visibility-paths-uy1mzxba/host-inventory.json",
+              "sha256": "121fb24b57656837537e372520bbdac193e9f2f237216cea528fa148e6b78775"
+            },
+            "tests": 18,
+            "native_runs": 0,
+            "fixture_builds": 0,
+            "gate_closures": [],
+            "limits": "Synthetic graph results cannot identify the actual native conflicting object or relax rejection. Physical UIKit preparation is independently selected by operator availability; SwiftUI remains blocked."
           }
         }
       }
     }
   },
-  "state": "SWIFTUI_CAPTURE_QUALIFICATION_STOPPED"
+  "state": "SWIFTUI_CAPTURE_QUALIFICATION_STOPPED",
+  "physical_cost_mapping": {
+    "state": "BUILDING_FRESH_UIKIT_PAIR",
+    "artifacts": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-ipad-cost-mapping-pddjbmwg",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-ipad-cost-mapping-pddjbmwg/definition.json",
+      "sha256": "7f0c71c7b1328db23992d99748729f057fb54c21eeae01a9b88e8bb3b4151e39"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-ipad-cost-mapping-pddjbmwg/controls.json",
+      "sha256": "08bf0e248f0aa5a74acef96db8afb6769a71b18c3ebc451e01d44d7343517c68",
+      "tests": 11,
+      "state": "PASS"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-ipad-cost-mapping-pddjbmwg/preparation-review.json",
+      "sha256": "b29ccca220ebafb25201b92692f4230fc772468f877444475d01ac967abff4b6"
+    },
+    "build_plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-ipad-cost-mapping-pddjbmwg/build/plan.json",
+      "sha256": "50a8de8aca49830b32c773fd77f3f1313629dae1d2aa3d5787599eeece28e394"
+    },
+    "operator": "User available and confirmed unlocked/Home; actual fresh hardware, screenshot and task-app absence PASS",
+    "native_admitted": false,
+    "native_launches": 0,
+    "gate_closures": [],
+    "next_action": "Finish both physical builds/signing, review exact runtime/source mapping, then fresh operator/device/backend admission for UIKit baseline; candidate only after baseline qualifies. SwiftUI excluded."
+  }
 }

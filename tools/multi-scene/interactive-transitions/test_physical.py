@@ -125,4 +125,33 @@ class Admission(unittest.TestCase):
             self.assertTrue(capture.driver.consumed([dict(sequence=2,kind=kind)],dict(sequence=1)))
 
 
+class PhysicalCostMapping(unittest.TestCase):
+    def setUp(self):
+        import physical_build
+        self.build=physical_build
+        self.raw=(physical_build.original.BASE/'HumanObservation.swift').read_bytes()
+        self.source=physical_build.original.variant.human(self.raw,physical_build.hashlib.sha256(self.raw).hexdigest())
+
+    def test_partition_mapping_preserves_default_and_matches_reviewed_overlay(self):
+        import observer_cost
+        self.assertEqual(self.build.render_cost_capture(self.source,False),(self.source,None))
+        rendered,mapping=self.build.render_cost_capture(self.source,True)
+        self.assertEqual(rendered,observer_cost.render_human(self.source,self.build.hashlib.sha256(self.source).hexdigest()))
+        self.assertEqual(mapping,dict(before_sha256=self.build.hashlib.sha256(self.source).hexdigest(),
+            after_sha256=self.build.hashlib.sha256(rendered).hexdigest(),helper_sha256=self.build.shared.sha(observer_cost.__file__)))
+
+    def test_option_binds_exact_overlay_and_control_helpers(self):
+        base=self.build.helpers();partitioned=self.build.helpers(True)
+        extra={'tools/multi-scene/interactive-transitions/'+n for n in ['observer_cost.py','test_observer_cost.py']}
+        self.assertEqual(set(partitioned)-set(base),extra)
+        self.assertEqual({k:v for k,v in partitioned.items() if k not in extra},base)
+        self.assertTrue(all(partitioned[n]==self.build.shared.sha(self.build.shared.REPO/n) for n in extra))
+
+    def test_unrendered_or_malformed_option_rejects_before_preparation(self):
+        with self.assertRaises(ValueError):self.build.render_cost_capture(self.raw,True)
+        for value in [None,1,'true']:
+            with self.subTest(value=value),self.assertRaises(Rejected):self.build.render_cost_capture(self.source,value)
+            with self.subTest(value=value),self.assertRaises(Rejected):self.build.prepare(Path('/unused-cost-preparation'),observer_cost_partition=value)
+
+
 if __name__=='__main__':unittest.main()

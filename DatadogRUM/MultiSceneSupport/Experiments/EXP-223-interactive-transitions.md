@@ -273,8 +273,22 @@ The single public-inventory SwiftUI qualification stops before input. Snapshot13
 reports conflicting public accessibility visibility paths; all14 native records
 are retained, but the generic error drops the conflicting object/path identity.
 Source/build/install and owned Home/scene/key window/root remain valid. Zero input,
-transition callbacks or timing samples were obtained. Actual session end, task
+transition callback samples were obtained. Actual session end, task
 removal and original Shutdown restoration PASS; overall INVALID/NOT_EXECUTED and
 evidence INCOMPLETE remain. Scoped review admits offline duplicate-path/diagnostic
 characterization only, with conflicts still rejected. No SDK attribution, native
 repeat, human session or release gate follows.
+
+
+Offline conflict diagnostics and18 host controls pass review. Equal public aliases
+retain all four edge types; hidden/alpha divergence still rejects with the exact
+object and both paths. Synthetic cycle behavior cannot identify the missing native
+conflict. The user is available for a physical iPad session, so prepare UIKit alone
+using the qualified actual-pan observer and cost overlay. SwiftUI stays blocked.
+
+The available iPad session now takes priority: an explicit physical build option
+applies the already-qualified callback-cost capture identically to baseline and
+candidate before the existing remote-publication and cleanup-idle overlays. Eleven
+focused controls and source-preparation review pass. Fresh physical builds are in
+progress; UIKit baseline admission remains separate, and SwiftUI is excluded.
+The owner records the exact definition, helper hashes and device readiness.

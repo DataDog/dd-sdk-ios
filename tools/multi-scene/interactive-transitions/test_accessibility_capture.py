@@ -87,6 +87,17 @@ func inventory(_ scenario: String, framework: String = "SwiftUI") -> [[String: A
     case "duplicate_object":
         root.accessibilityElements = [marker, next]; root.automationElements = [marker, next]
         root.indexedElements = [marker, next]
+    case "all_view_paths":
+        let view = UIView(); view.window = root; view.accessibilityIdentifier = "screen.home"
+        root.subviews = [view]; root.accessibilityElements = [view, next]
+        root.indexedElements = [view]; root.automationElements = [view]
+    case "alpha_divergence":
+        let parent = UIView(); parent.window = root; parent.alpha = 0.5
+        parent.accessibilityElements = [marker]; root.subviews = [parent]
+        root.accessibilityElements = [marker, next]
+    case "alpha_cycle":
+        let parent = UIView(); parent.window = root; parent.alpha = 0.5
+        parent.accessibilityElements = [parent, marker, next]; root.subviews = [parent]
     case "cycle":
         let parent = PublicContainer(); parent.indexedElements = [parent, marker, next]; root.accessibilityElements = [parent]
     case "temporary_children":
@@ -121,7 +132,7 @@ func inventory(_ scenario: String, framework: String = "SwiftUI") -> [[String: A
 }
 var results = [String: [[String: Any]]]()
 for name in ["direct", "indexed", "array", "automation", "generic", "duplicate_object", "cycle",
-             "temporary_children", "duplicate_identifier", "malformed", "missing_index", "negative_count", "child_limit", "array_limit",
+             "all_view_paths", "alpha_divergence", "alpha_cycle", "temporary_children", "duplicate_identifier", "malformed", "missing_index", "negative_count", "child_limit", "array_limit",
              "inventory_limit", "foreign_view", "hidden", "transparent", "conflicting_visibility", "nonfinite_alpha"] {
     results[name] = inventory(name)
 }
@@ -176,9 +187,46 @@ class PublicInventory(unittest.TestCase):
 
     def test_malformed_missing_unbounded_and_foreign_children_fail_closed(self):
         for key in ['malformed','missing_index','negative_count','child_limit','array_limit','inventory_limit','foreign_view',
-                    'conflicting_visibility','nonfinite_alpha']:
+                    'conflicting_visibility','alpha_divergence','alpha_cycle','nonfinite_alpha']:
             with self.subTest(key=key):
                 self.assertEqual(len(self.rows[key]),1); self.assertIn('capture_error',self.rows[key][0])
+
+    def test_equal_view_aliases_retain_all_four_public_edges(self):
+        rows=self.rows['all_view_paths'];target=next(r for r in rows if r.get('identifier')=='screen.home')
+        root=next(r['id'] for r in rows if 'nil:owned-window' in r['container_edges'])
+        self.assertEqual(target['container_ids'],[root])
+        self.assertEqual({edge.rsplit(':',1)[1] for edge in target['container_edges']},
+                         {'subviews','accessibilityElements','accessibilityElementAtIndex','automationElements'})
+        human_contract.accessibility_owner(rows,target,root)
+
+    def test_rejected_visibility_paths_retain_exact_object_and_both_inputs(self):
+        fields={'parent','edge','hidden','alpha','inherited_hidden','inherited_alpha'}
+        for name in ['conflicting_visibility','alpha_divergence','alpha_cycle']:
+            with self.subTest(name=name):
+                row=self.rows[name][0];self.assertEqual(row['capture_error'],'conflicting public accessibility visibility paths')
+                conflict=row['conflict'];first=conflict['first_path'];current=conflict['current_path']
+                self.assertEqual(set(first),fields);self.assertEqual(set(current),fields)
+                self.assertEqual(conflict['object_id'],conflict['first_record']['id'])
+                self.assertNotEqual((first['hidden'],first['alpha']),(current['hidden'],current['alpha']))
+                self.assertTrue(first['parent']);self.assertTrue(current['parent'])
+                if name=='conflicting_visibility':
+                    self.assertEqual({first['hidden'],current['hidden']},{False,True})
+                    self.assertEqual(first['alpha'],current['alpha'])
+                elif name=='alpha_divergence':
+                    self.assertEqual({first['alpha'],current['alpha']},{0.5,1})
+                    self.assertEqual(first['hidden'],current['hidden'])
+                else:
+                    self.assertEqual(first['alpha'],0.5);self.assertEqual(current['alpha'],0.25)
+                    self.assertEqual(current['parent'],conflict['object_id'])
+                    self.assertEqual(first['edge'],'subviews');self.assertEqual(current['edge'],'accessibilityElements')
+
+    def test_conflict_diagnostics_remain_rejected_by_actual_target_entrypoint(self):
+        from test_human_contract import NativeInputControls
+        control=NativeInputControls();control.setUp()
+        for name in ['conflicting_visibility','alpha_divergence','alpha_cycle']:
+            value=copy.deepcopy(control.topology);value['accessibility']=self.rows[name]
+            with self.subTest(name=name),self.assertRaisesRegex(ValueError,'incomplete public accessibility inventory'):
+                human_contract.target({'payload':{'topology':value}},'screen.home',control.binding)
 
     def test_hidden_and_transparent_paths_cannot_produce_visible_targets(self):
         self.assertTrue(all(r['hidden'] for r in self.targets('hidden')))

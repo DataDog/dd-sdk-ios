@@ -20,11 +20,25 @@ HERE = Path(__file__).resolve().parent
 CODE = HERE.parent / 'application-impact/InstalledCode.swift'
 
 
-def helpers():
-    return {**{n: shared.sha(shared.REPO / n) for n in original.HELPERS},
+def helpers(observer_cost_partition=False):
+    result = {**{n: shared.sha(shared.REPO / n) for n in original.HELPERS},
             str(Path(__file__).resolve().relative_to(shared.REPO)): shared.sha(__file__),
             str(Path(physical_observer.__file__).resolve().relative_to(shared.REPO)): shared.sha(physical_observer.__file__),
             str(CODE.relative_to(shared.REPO)): shared.sha(CODE)}
+    if observer_cost_partition:
+        result.update({str((HERE/name).relative_to(shared.REPO)): shared.sha(HERE/name)
+                       for name in ['observer_cost.py','test_observer_cost.py']})
+    return result
+
+
+def render_cost_capture(source, enabled):
+    require(type(enabled) is bool, 'physical cost overlay option is not Boolean')
+    if not enabled:return source, None
+    import observer_cost
+    before=hashlib.sha256(source).hexdigest()
+    rendered=observer_cost.render_human(source,before)
+    return rendered, dict(before_sha256=before,after_sha256=hashlib.sha256(rendered).hexdigest(),
+                          helper_sha256=shared.sha(HERE/'observer_cost.py'))
 
 
 def project_audit(folder):
@@ -52,7 +66,8 @@ def platform(app,bundle):
     return dict(architecture=arch,build_commands=commands)
 
 
-def prepare(root):
+def prepare(root, *, observer_cost_partition=False):
+    require(type(observer_cost_partition) is bool, 'physical cost overlay option is not Boolean')
     root = Path(root).resolve()
     require(not root.exists(), 'physical preparation already consumed')
     root.mkdir()
@@ -61,7 +76,8 @@ def prepare(root):
     plan = dict(schema_version=1, state='PHYSICAL_BUILD_PREPARED',
                 source_plan_sha256=shared.sha(root / 'source-preparation/plan.json'),
                 protected=original.protected(), toolchain=source['toolchain'],
-                contract=original.contract(), helpers=helpers(), arms={}, native_admitted=False)
+                contract=original.contract(), helpers=helpers(observer_cost_partition), arms={}, native_admitted=False,
+                observer_cost_partition=observer_cost_partition)
     shared.freeze_helpers(root, plan['helpers'])
     for arm in ['A', 'B']:
         key = arm + '-device'; folder = root / key
@@ -77,7 +93,9 @@ def prepare(root):
         observation.write_text(text + '\n' + CODE.read_text())
         # Remote copy is not an atomic rename. An immutable payload is consumed
         # only after its separate, complete SHA256 publication marker arrives.
-        human = client/'HumanObservation.swift'; text = human.read_text()
+        human = client/'HumanObservation.swift'
+        rendered_human,cost_mapping=render_cost_capture(human.read_bytes(),observer_cost_partition)
+        text=rendered_human.decode()
         needle = 'guard let self = self, let bytes = try? Data(contentsOf: path) else { return }'
         require(text.count(needle)==1, 'request publication anchor ambiguous')
         text = text.replace(needle, '''guard let self = self,
@@ -102,7 +120,7 @@ def prepare(root):
             bundle_prefix=source['arms'][arm+'-simulator']['bundle_prefix'],
             archive_sha256=shared.sha(folder/'source.tar'), sdk=shared.tree(folder/'sdk'), client=shared.tree(client),
             project_audit=project_audit(folder),derivation=dict(installed_code_sha256=shared.sha(CODE),
-            observation_sha256=shared.sha(observation),human_sha256=shared.sha(human),
+            observation_sha256=shared.sha(observation),human_sha256=shared.sha(human),observer_cost=cost_mapping,
             changes=['pre-SDK installed-code receipt with exact run guard','hash-committed remote snapshot request',
                      'scoped public recognizers and actual-callback coordinator registration','independent native cleanup idle snapshot']))
     shared.save(root/'plan.json', plan, exclusive=True); verify(root)
@@ -113,7 +131,8 @@ def verify(root):
     root = Path(root).resolve(); plan = shared.read(root/'plan.json')
     require(plan['contract'] == original.contract(), 'physical source contract changed')
     require(plan['protected'] == original.protected(), 'protected workspace changed')
-    require(plan['helpers'] == helpers() == shared.tree(root/'helpers'), 'physical compiler helpers changed')
+    require(type(plan.get('observer_cost_partition',False)) is bool, 'physical cost overlay option changed')
+    require(plan['helpers'] == helpers(plan.get('observer_cost_partition',False)) == shared.tree(root/'helpers'), 'physical compiler helpers changed')
     require(plan['source_plan_sha256'] == shared.sha(root/'source-preparation/plan.json'), 'source derivation changed')
     for key, bound in plan['arms'].items():
         folder = root/key
