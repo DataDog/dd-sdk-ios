@@ -8,47 +8,25 @@ import SafariServices
 import UIKit
 
 internal final class SafariFixtureViewController: UIViewController, SFSafariViewControllerDelegate {
-    private var initialLoadContinuation: CheckedContinuation<Void, Error>?
+    private var completion: (() -> Void)?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
     }
 
-    func showSafari() async throws {
+    func showSafari(completion: @escaping () -> Void) {
+        self.completion = completion
+
         let safariViewController = SFSafariViewController(url: URL(string: "http://127.0.0.1")!)
         safariViewController.delegate = self
-
-        try await withThrowingTaskGroup { group in
-            group.addTask { @MainActor in
-                try Task.checkCancellation()
-                try await withCheckedThrowingContinuation { continuation in
-                    self.initialLoadContinuation = continuation
-                    self.present(safariViewController, animated: false)
-                }
-            }
-            group.addTask {
-                struct TimeoutError: Error {}
-                try await Task.sleep(nanoseconds: 10_000_000_000)
-                throw TimeoutError()
-            }
-            do {
-                try await group.next()
-                group.cancelAll()
-            } catch {
-                let continuation = initialLoadContinuation
-                initialLoadContinuation = nil
-                continuation?.resume(throwing: error)
-                group.cancelAll()
-                throw error
-            }
-        }
+        present(safariViewController, animated: false)
     }
 
     func safariViewController(_ controller: SFSafariViewController, didCompleteInitialLoad didLoadSuccessfully: Bool) {
         // A failed load is expected for the local URL and still means Safari is ready.
-        let continuation = initialLoadContinuation
-        initialLoadContinuation = nil
-        continuation?.resume()
+        let completion = self.completion
+        self.completion = nil
+        completion?()
     }
 }
