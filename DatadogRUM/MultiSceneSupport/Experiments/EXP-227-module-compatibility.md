@@ -136,3 +136,30 @@ snapshots preserve the consumed admission. Eight non-RUM schemes are qualified;
 Integration and the complete M01/F03 gates remain open. The next independent slice
 is the existing-public-client regression component of M02/M03, with no new scene
 API promotion or repeat of the stopped same-key experiment.
+
+EXP228's first Swift client natively qualifies the corrected inventory and full
+installed-product mechanism. The [clean continuation](../Results/EXP-227-clean-integration-definition.json)
+uses those exact function bodies and the saved Integration build on one newly
+created task-owned26.5 simulator. Actual returned UUID, runtime/model, clean app
+and data absence precede installation. Only that UUID may be deleted after worker
+quiescence; the old host and all prior verdicts remain untouched. All64 offline
+controls pass. Scoped review is required before the single native admission, with
+the original fixed02:35 UTC stage boundary and full creation/cell/deletion budget.
+
+The first clean simulator qualifies installation and full installed bytes, then
+stops on the class-only `RUMSessionTestsBase` discovery row. Its source contains
+fixture helpers and no test methods. All eight subclasses remain in the277-method
+inventory. Cleanup and task-simulator deletion pass; no assertions ran. A narrowly
+[defined correction](../Results/EXP-227-discovery-continuation-definition.json)
+binds that compiled source hash, retains the complete saved raw discovery and
+rejects any method underneath an allegedly empty class. It adds no test exclusion.
+All65 controls and scoped review pass before the one native continuation.
+
+That continuation stops earlier: the new simulator's installer reports
+`NSCocoaErrorDomain4097`, unable to communicate with its helper application.
+No selected discovery or assertions run. App/data absence, Shutdown and deletion
+of the actual task-created UUID pass. This is an environment failure, with no SDK
+regression or behavioral qualification. The native Integration path is stopped;
+no equivalent retry is admitted. Preserve the qualified build, saved raw inventory,
+source-bound classifier and all original invalid/cleanup records for a separately
+justified environment recovery. Eight non-RUM suites remain qualified.

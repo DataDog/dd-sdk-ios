@@ -6,7 +6,7 @@ owns finite gate status, owners, dependencies, tests and environments;
 [PLAN](PLAN.md) is generated. [The cursor](../../.continue-here.md) alone owns the
 current execution state and next action.
 
-The provisional S3 candidate qualifies all20 platform builds in [EXP-226](Results/EXP-226-platform-result.json), full RUM27/17.5, and eight further module suites in [EXP-227](Results/EXP-227-module-result.json). Core26.5 passes after three test-only corrections; original failures remain. Integration remains unexecuted after host/inventory checks; a pre-existing app was preserved and the native path is stopped. API approval and final review remain. Compilation and module tests do not replace outstanding runtime/human gates.
+The provisional S3 candidate qualifies all20 platform builds in [EXP-226](Results/EXP-226-platform-result.json), full RUM27/17.5, and eight further module suites in [EXP-227](Results/EXP-227-module-result.json). Core26.5 passes after three test-only corrections; original failures remain. Integration stays unexecuted: a fresh simulator installer cannot communicate with its helper. Both task simulators were removed; the prior app remains untouched. [EXP-228](Results/EXP-228-public-clients-result.json) qualifies all five existing-public-client configurations: Swift5/6 Debug/Release and Objective-C Release. An explicit Boolean fixture correction qualifies the latter with all API assertions and process/code checks unchanged; its original INVALID remains. All client cleanups pass. API approval, simultaneous scene ownership and final review remain. These results do not replace outstanding runtime/human gates.
 
 ## Release evidence boundaries
 

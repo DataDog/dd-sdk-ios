@@ -11,14 +11,19 @@ import module_inputs as inputs
 require = inputs.require
 
 
-def discovery(value, target, excluded, raw_reference=None, objc_identifiers=()):
+def discovery(value, target, excluded, raw_reference=None, objc_identifiers=(), non_case_identifiers=()):
     require(value.get('errors') == [] and len(value.get('values', [])) == 1, 'incomplete discovery')
     row = value['values'][0]
     enabled = [v['identifier'] for v in row['enabledTests']]
     disabled = [v['identifier'] for v in row.get('disabledTests', [])]
     union = enabled + disabled; helper = target + '/DDXCSkippedTestCase'
     require(union and len(union) == len(set(union)), 'empty or duplicate discovery')
-    methods = sorted(v for v in union if v != helper)
+    require(len(non_case_identifiers) == len(set(non_case_identifiers)) and all(
+            v.startswith(target + '/') and len(v.split('/')) == 2 and v != helper and v in union and
+            not any(method.startswith(v + '/') for method in union) for v in non_case_identifiers),
+            'unproven or executable non-case class')
+    non_cases = set(non_case_identifiers) | {helper}
+    methods = sorted(v for v in union if v not in non_cases)
     require(methods and all(v.startswith(target + '/') and len(v.split('/')) == 3 and
                            (v.endswith(')') or v in objc_identifiers) for v in methods),
             'unknown executable discovery shape')
@@ -26,12 +31,12 @@ def discovery(value, target, excluded, raw_reference=None, objc_identifiers=()):
     if raw_reference is None:
         require(not disabled and not excluded, 'full discovery has disabled entries')
     else:
-        require(sorted(union) == raw_reference and sorted(v for v in disabled if v != helper) == sorted(excluded),
+        require(sorted(union) == raw_reference and sorted(v for v in disabled if v not in non_cases) == sorted(excluded),
                 'changed raw inventory or exclusion partition')
-    selected = sorted(v for v in enabled if v != helper)
+    selected = sorted(v for v in enabled if v not in non_cases)
     require(selected == sorted(set(methods) - set(excluded)), 'selected inventory differs')
     return dict(raw=sorted(union), identifiers=selected, excluded=sorted(excluded),
-                non_cases=[dict(identifier=helper, enabled=helper in enabled)] if helper in union else [],
+                non_cases=[dict(identifier=v, enabled=v in enabled) for v in sorted(non_cases) if v in union],
                 raw_sha256=hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest())
 
 

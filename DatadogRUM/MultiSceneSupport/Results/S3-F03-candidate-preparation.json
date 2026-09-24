@@ -2,7 +2,7 @@
   "schema_version": 1,
   "gate": "S3:F03",
   "status": "PROVISIONAL_SOURCE_REUSE_ASSESSMENT",
-  "at": "2026-09-24T00:59:52.754301+00:00",
+  "at": "2026-09-24T01:51:32.607747+00:00",
   "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
   "release_approval": "F01 remains required for public promotion and final source-bound closure",
   "native_active": false,
@@ -305,15 +305,15 @@
   "cells": [
     {
       "id": "M01",
-      "disposition": "Full RUM27/17.5 remains qualified in EXP225; Core26.5 and seven other complete module suites qualify in EXP227 at unchanged SDK94842cc8. Three test-only corrections are separately committed; original failures remain. Integration is unexecuted after host/inventory preconditions; pre-existing app preserved and native path stopped. No full M01 closure or Replay content claim."
+      "disposition": "Full RUM27/17.5 and eight non-RUM suites qualify. Saved Integration build and empty-base discovery correction qualify offline, but fresh simulator installer helper fails before assertions. Cleanup/deletion PASS; no full M01 closure or equivalent retry."
     },
     {
       "id": "M02",
-      "disposition": "Reuse EXP225 local Swift deployment15/17.5 fallback and8/8 legacy comparison within experimental exposure. Swift5/6 Debug/Release normal public clients and concurrent same-key proof remain."
+      "disposition": "EXP228 qualifies Swift5/6 Debug/Release existing-public-client behavior at SDK94842cc8. Preserve EXP225 experimental fallback/legacy evidence. New scene public exposure and concurrent same-key proof remain."
     },
     {
       "id": "M03",
-      "disposition": "Reuse EXP225 optimized dedicated-condition Objective-C main/off-main/fallback evidence. Normal public header and actual concurrent same-key proof remain; first native setup failure is not an SDK finding."
+      "disposition": "EXP228 qualifies the existing Objective-C Release public client after an explicit Boolean fixture correction; four API assertions, compiler/link/installed/live-process/post-result checks and cleanup pass. Original INVALID remains. EXP225 experimental main/off-main/fallback evidence is preserved. Public scene header, F01 approval and concurrent same-key proof remain."
     },
     {
       "id": "M04",
@@ -354,7 +354,8 @@
     "Results/EXP-225-same-key-result.json",
     "Results/EXP-225-rum-suite-result.json",
     "Results/EXP-226-platform-result.json",
-    "Results/EXP-227-module-result.json"
+    "Results/EXP-227-module-result.json",
+    "Results/EXP-228-public-clients-result.json"
   ],
   "gate_closures": [],
   "unit_reuse_review": {
@@ -383,6 +384,12 @@
     "owner": "Results/EXP-227-module-result.json",
     "status": "PARTIAL",
     "qualified_non_rum_schemes": 8,
-    "remaining": "Integration host clean-install prerequisite and separate admission; no automatic retry."
+    "remaining": "Integration environment blocked: fresh simulator installer helper communication failed before assertions; owned cleanup/deletion PASS. No equivalent retry."
+  },
+  "public_client_qualification": {
+    "owner": "Results/EXP-228-public-clients-result.json",
+    "status": "PROVISIONAL_EXISTING_CLIENTS_PASS",
+    "qualified_cells": 5,
+    "remaining": "F01 approval, public scene exposure and actual concurrent same-key proof"
   }
 }

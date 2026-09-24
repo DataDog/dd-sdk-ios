@@ -158,6 +158,12 @@ clients without `@testable` are separate evidence. Prototype availability does n
 approve new public API. F01/F03 own nullable target construction, off-main ObjC
 safety, ordinary deployment-15 calls, older-system fallback and newer exact routing.
 
+Fixture result fields must preserve their declared JSON types. An Objective-C boxed
+comparison may serialize as integer1; use explicit Boolean values for Boolean
+fields. Keep the original invalid attempt and require fresh complete evidence after
+a fixture correction. Passing API assertions cannot replace skipped process/code
+checks at the required execution boundary.
+
 Use `make api-surface-verify` as the check; `make api-surface` mutates the baseline.
 If its hard-coded destination is absent, retain the failed preparation and freeze
 only a reviewed destination adaptation, preserving the full fixtures/dependencies,

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "experiment": "EXP-227",
-  "status": "PARTIAL_EIGHT_QUALIFIED_INTEGRATION_STOPPED",
+  "status": "PARTIAL_EIGHT_QUALIFIED_INTEGRATION_ENVIRONMENT_STOPPED",
   "source": "d23982a5d249c88b0bc9cd5a05be21ede72cae8d",
   "gate": "S3:F03:M01",
   "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration-host-k0mg_syr",
@@ -139,7 +139,7 @@
       "summary_sha256": "4ab295aed579dc280005b3127a1a2cb6346f21e62cfbd3097ea3a07cabba5cab"
     }
   ],
-  "remaining": "Integration remains unexecuted: saved OpenStep inventory also proves a pre-existing Example app. Native path stopped; preserve that app. F01, concurrent same-key ownership, existing public clients and final matrix remain separate.",
+  "remaining": "Integration native path stopped on installer service failure; no equivalent retry. Eight non-RUM suites and full RUM stay qualified. F01, public scene exposure, simultaneous ownership and final matrix remain.",
   "original_preparation": "Original six-control inputs preserved; reviewed closure/path/provenance corrections are separately frozen.",
   "signing_checkpoint": "b58750b3476fa44fe082894eb532b92abeca98c5 uses authorized local unsigned fallback after20-second signing timeout.",
   "scenario": "NOT_EXECUTED",
@@ -497,5 +497,45 @@
       }
     ]
   },
-  "native_active": false
+  "native_active": false,
+  "clean_integration": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-clean-integration-hw1yhu0q",
+    "status": "STOPPED_BEFORE_ASSERTIONS",
+    "plan_sha256": "4e9ae9520dd4e0a94a7f5ce71f24ea48328c1763ec62e261d2eafdff0a14524e",
+    "controls_sha256": "afb6bf5b798f5d34f68cd3abc31e8d9168df43628b683efb07387144bb4755ad",
+    "controls": 64,
+    "review_sha256": "59801183ea4000ec7db2c95b0dab3dd0ca2c6b123f790d1358cff4a30227d3bc",
+    "stage_sha256": "12d163fa9c4e2978fc99026c9871c364afa85f09c707c0001295d366fb0a2cb7",
+    "latest_completion": "2026-09-24T02:35:00Z",
+    "summary_sha256": "7856a62bef4ad373b537a728c4f517c1165be7c8fc6ee037005d8be3b98b23c7",
+    "deletion_sha256": "168143a5d084f42e95f766a52ee0d02b4b9532f0fea99c997d595128fb39a969",
+    "original_verdict": {
+      "scenario": "NOT_EXECUTED",
+      "evidence": "INCOMPLETE",
+      "cleanup": "PASS",
+      "overall": "INVALID",
+      "failure": "ValueError: unknown executable discovery shape"
+    },
+    "cell_summary_sha256": "a331ea7b3c39d96a5f4ed48f9a3bf1097d9b9d3f892736be36c2ee982b37be8e"
+  },
+  "discovery_continuation": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration-discovery-sym00xqd",
+    "status": "STOPPED_BEFORE_INSTALL_COMPLETES",
+    "plan_sha256": "2b721d2394420b9b3e1a1f0f9d173be2ede1547e0b1bf78372d87ba4831484fe",
+    "controls_sha256": "4d712c22bb9aec976dc133c6e565912ffd24c38a6dd24e4ea83f19daebb01f98",
+    "controls": 65,
+    "review_sha256": "602d8a585d254afe531bc126e38e9343cf4f9a67ee0660aadad025082ff00320",
+    "stage_sha256": "5a4d860c96e8cfc3d7063f92a839cf584356b26fd1e38066f8895d71c598c3ee",
+    "summary_sha256": "98d8c93e2d313e08b00aaa3f28fb788408e4317b77fa15a40aa10b79fe41c4fe",
+    "deletion_sha256": "4ca5b1ee602cd3654ce0d34caf067bd81f8d5097692416fc0299d88bc52b502e",
+    "original_verdict": {
+      "scenario": "NOT_EXECUTED",
+      "evidence": "INCOMPLETE",
+      "cleanup": "PASS",
+      "overall": "INVALID",
+      "failure": "ValueError: install failed or late"
+    },
+    "cause": "NSCocoaErrorDomain4097: simulator installer could not communicate with helper application; no assertion ran.",
+    "cell_summary_sha256": "3c6d1b8eec108c12decd29d639a547c356ea37f04733248b4cfe6ec38a2dbb69"
+  }
 }

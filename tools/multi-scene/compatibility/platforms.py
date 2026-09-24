@@ -172,15 +172,15 @@ def clang_invocation(line):
     return source, output, args
 
 
-def compiler_inventory(source, derived, configuration, modules, log, platform, packages=None):
+def compiler_inventory(source, derived, configuration, modules, log, platform, packages=None, additional_c_sources=()):
     """Every architecture retains all declared Swift sources and actual products."""
     swift = {}; clang = {}; resources = {}; flags = {}
     packages = packages or source.parent / 'packages'
     def selected_configuration(path):
         return '/' + configuration + '/' in str(path) or '/' + configuration + '-' in str(path)
-    target_suffix = {'ios': 'apple-ios15.0', 'tvos': 'apple-tvos15.0', 'watchos': 'apple-watchos9.0',
+    target_suffix = {'ios': 'apple-ios15.0', 'ios-simulator': 'apple-ios15.0-simulator', 'tvos': 'apple-tvos15.0', 'watchos': 'apple-watchos9.0',
                      'visionos': 'apple-xros1.0', 'catalyst': 'apple-ios15.0-macabi', 'macos': 'apple-macos12.6'}[platform]
-    sdk_name = {'ios': 'iPhoneOS', 'tvos': 'AppleTVOS', 'watchos': 'WatchOS', 'visionos': 'XROS',
+    sdk_name = {'ios': 'iPhoneOS', 'ios-simulator': 'iPhoneSimulator', 'tvos': 'AppleTVOS', 'watchos': 'WatchOS', 'visionos': 'XROS',
                 'catalyst': 'MacOSX', 'macos': 'MacOSX'}[platform]
     lines = log.read_text().splitlines()
     for line in lines:
@@ -230,7 +230,7 @@ def compiler_inventory(source, derived, configuration, modules, log, platform, p
         path, output, args = command
         require(output.is_relative_to(derived) and output.is_file() and path.is_file(), 'missing/foreign C object')
         generated = path.is_relative_to(derived) and (path.name.endswith('_vers.c') or path.name == 'resource_bundle_accessor.m')
-        require(path.is_relative_to(source) or path.is_relative_to(packages / 'checkouts') or generated,
+        require(path.is_relative_to(source) or path.is_relative_to(packages / 'checkouts') or generated or path in additional_c_sources,
                 'unclassified C compiler source')
         clang[str(output)] = dict(source=str(path), sha256=shared.sha(path), object_sha256=shared.sha(output), architecture=output.parent.name,
                                   compiler_argv=args)

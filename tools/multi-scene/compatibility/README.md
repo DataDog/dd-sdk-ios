@@ -76,3 +76,25 @@ bytes and decode with `plutil` into a separate artifact under the same deadline.
 Require keyed bundle identities before deciding absence. A pre-existing host is
 not owned by the new attempt; leave it untouched and stop the clean-install path.
 A decoder correction cannot retroactively qualify a failed native attempt.
+
+`clean_integration.py` admits only the saved, unexecuted Integration product on a
+new task-owned simulator. Freeze the creation inventory and bind the actual
+returned UUID, model/runtime/build and clean app/data absence. Cleanup deletes
+only that proven new UUID after worker quiescence. A later deletion cannot replace
+a failed cell cleanup verdict. Reserve creation, the entire cell and deletion
+before starting; never extend the fixed stage deadline.
+
+A class-only discovery row is not an executable test. Accept one only through an
+explicit compiled-source binding proving it has no test methods. Preserve its raw
+row, all concrete subclasses and the complete selected partition. Reject a method
+under a purported empty class, and never turn this classification into a test
+exclusion. Saved raw discovery may be reused by hash; selected discovery remains
+fresh before assertions.
+
+EXP228's `public_clients.py` runs five existing-public-API fixtures with complete
+compiler/source/private-link, installed-code and fresh result bindings. Objective-C
+compiler arguments may come from owned response files; preserve and hash those
+files while rejecting foreign, missing or cyclic inputs. Require exact result
+types, process identity and installed bytes after execution. API booleans alone do
+not qualify a full cell when later required checks were skipped. Preserve the
+original invalid run and admit any fixture correction separately.

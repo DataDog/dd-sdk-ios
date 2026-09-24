@@ -128,7 +128,7 @@ def environment(folder, spec, call):
     matches = [r for r in shared.read(folder / 'runtimes.log')['runtimes'] if r['identifier'] == spec['runtime']['identifier']]
     require(len(matches) == 1 and all(matches[0][k] == v for k, v in spec['runtime'].items()), 'runtime identity changed')
     return dict(architecture='arm64', deviceId=spec['device']['udid'], deviceName=spec['device']['name'],
-                modelName=spec['device']['name'], osBuildNumber=spec['runtime']['buildversion'], osVersion=spec['runtime']['version'], platform='iOS Simulator')
+                modelName=spec.get('model_name', spec['device']['name']), osBuildNumber=spec['runtime']['buildversion'], osVersion=spec['runtime']['version'], platform='iOS Simulator')
 
 
 def host_inventory(folder, device, bundle, name, call, deadline):
@@ -149,6 +149,16 @@ def verify_host(app, installed):
     expected = common.original.inventory(app)
     require(common.original.inventory(actual) == expected, 'installed host bytes differ')
     return dict(bundle=value['CFBundleIdentifier'], path=str(actual), files=expected)
+
+
+def missing_host_data(folder, device, bundle, name, call, deadline):
+    try: call(['xcrun', 'simctl', 'get_app_container', device, bundle, 'data'], name, deadline)
+    except ValueError:
+        receipt = shared.read(folder / (name + '-receipt.json')); text = (folder / (name + '.log')).read_text().lower()
+        require(receipt['returncode'] == 2 and receipt['cleanup_failure'] is None and
+                receipt['quiescence']['state'] == 'PASS' and receipt['finished_at'] < receipt['deadline'] and
+                'nsposixerrordomain' in text and 'no such file or directory' in text, 'host data absence not proven')
+    else: raise ValueError('host data container already exists')
 
 
 def verify_build(root, folder, frozen, cell):
@@ -173,9 +183,9 @@ def run_cell(root, cell, definition, base, frozen, stage, *, output_root=None, v
     spec = base['environments'][cell['runtime']]; device = spec['device']['udid']; derived = build_folder / 'DerivedData'
     result = dict(id=cell['id'], target=cell['target'], runtime=cell['runtime'], scenario='NOT_EXECUTED', evidence='INCOMPLETE',
                   cleanup='NOT_STARTED', overall='INVALID', started_at=started, cleanup_limit=limit)
-    workers = []; owned = False; installed_owned = False; initial = None; built = None
+    workers = []; owned = False; installed_owned = False; initial = None; built = None; command_cleanup = limit
     def call(argv, name, deadline):
-        return execution.command(argv, folder, name, deadline=min(deadline, limit - 30), cleanup_limit=limit,
+        return execution.command(argv, folder, name, deadline=min(deadline, command_cleanup - 5), cleanup_limit=command_cleanup,
                                  workers=workers, cwd=root / 'workspace')
     shared.save(folder / 'admission.json', dict(**result, stage_sha256=shared.sha(output_root / 'module-stage.json'),
                 plan_sha256=shared.sha(output_root / 'execution-plan.json')), exclusive=True)
@@ -209,6 +219,7 @@ def run_cell(root, cell, definition, base, frozen, stage, *, output_root=None, v
         app = derived / 'Build/Products/Debug-iphonesimulator/Example.app'
         if cell['host_bundle']:
             require(host_inventory(folder, device, cell['host_bundle'], 'host-before', call, time.time() + 30) is None, 'task host already installed')
+            if cell.get('require_clean_data'): missing_host_data(folder, device, cell['host_bundle'], 'data-before', call, time.time() + 30)
             installed_owned = True
             call(['xcrun', 'simctl', 'install', device, str(app)], 'install', time.time() + 60)
             value = host_inventory(folder, device, cell['host_bundle'], 'host-installed', call, time.time() + 30)
@@ -221,14 +232,15 @@ def run_cell(root, cell, definition, base, frozen, stage, *, output_root=None, v
                          '-test-enumeration-output-path', str(output)], name, min(time.time() + budgets['discovery'], limit - budgets['cleanup'] - 30))
             return shared.read(output)
         objc = definition.get('objc_identifiers', {}).get(cell['target'], [])
+        non_cases = [v['identifier'] for v in definition.get('discovery_non_cases', {}).get(cell['target'], [])]
         raw_value = shared.read(raw_discovery) if raw_discovery else discover(command, 'raw-discovery')
-        raw = oracle.discovery(raw_value, cell['target'], [], objc_identifiers=objc)
+        raw = oracle.discovery(raw_value, cell['target'], [], objc_identifiers=objc, non_case_identifiers=non_cases)
         if raw_discovery:
             shared.save(folder / 'reused-discovery.json', dict(path=str(raw_discovery), sha256=shared.sha(raw_discovery)), exclusive=True)
         excluded = [cell['target'] + '/' + v for v in cell['excluded_selectors']]
         filters = definition['skip_testing'].get(cell['id'], [])
         command += ['-skip-testing:' + cell['target'] + '/' + value for value in filters]
-        selection = oracle.discovery(discover(command, 'selected-discovery'), cell['target'], excluded, raw['raw'], objc) if filters else raw
+        selection = oracle.discovery(discover(command, 'selected-discovery'), cell['target'], excluded, raw['raw'], objc, non_cases) if filters else raw
         parameters = definition['parameters'].get(cell['target'], {})
         require(set(parameters) <= set(selection['identifiers']), 'parameterized method missing from selection')
         shared.save(folder / 'selection.json', selection, exclusive=True)
@@ -259,17 +271,18 @@ def run_cell(root, cell, definition, base, frozen, stage, *, output_root=None, v
     except Exception as error:
         result['failure'] = type(error).__name__ + ': ' + str(error)
     finally:
-        cleanup = min(limit, time.time() + budgets['cleanup']); result['cleanup_deadline'] = cleanup
+        cleanup = min(limit, time.time() + budgets['cleanup']); result['cleanup_deadline'] = cleanup; command_cleanup = cleanup
         try:
             execution.ensure_quiescent(workers, folder, cleanup - 30)
             if installed_owned:
                 call(['xcrun', 'simctl', 'uninstall', device, cell['host_bundle']], 'uninstall', cleanup - 45)
                 require(host_inventory(folder, device, cell['host_bundle'], 'host-removed', call, cleanup - 30) is None, 'task host remains')
+                if cell.get('require_clean_data'): missing_host_data(folder, device, cell['host_bundle'], 'data-removed', call, cleanup - 30)
             if owned: call(['xcrun', 'simctl', 'shutdown', device], 'shutdown', cleanup - 30)
             call(['xcrun', 'simctl', 'list', 'devices', 'available', '--json'], 'restored', cleanup - 30)
             states = [d['state'] for ds in shared.read(folder / 'restored.log')['devices'].values() for d in ds if d['udid'] == device]
             require(initial == 'Shutdown' and states == [initial], 'original simulator state not restored')
-            common.require_idle(folder, 'cleanup-workers', cleanup - 20, limit)
+            common.require_idle(folder, 'cleanup-workers', cleanup - 20, cleanup)
             verify_inputs(root)
             if built: verify_build(root, build_folder, frozen, cell)
             require(time.time() < cleanup, 'late cleanup verification')

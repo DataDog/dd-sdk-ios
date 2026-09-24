@@ -6,6 +6,25 @@ import platforms as suite
 
 
 class PlatformTests(unittest.TestCase):
+    def test_simulator_compiler_and_link_require_the_simulator_triple(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            source, derived, _, log = self.fixture(Path(tmp))
+            log.write_text(log.read_text().replace('apple-ios15.0', 'apple-ios15.0-simulator').replace('iPhoneOS', 'iPhoneSimulator'))
+            audit = lambda: suite.compiler_inventory(source, derived, 'Debug', ['DatadogCore'], log, 'ios-simulator')
+            self.assertEqual(audit()['swift']['DatadogCore'][0]['architecture'], 'arm64')
+            log.write_text(log.read_text().replace('apple-ios15.0-simulator', 'apple-ios15.0'))
+            with self.assertRaises(ValueError): audit()
+
+    def test_only_exact_declared_client_c_source_can_extend_package_inventory(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            source, derived, paths, log = self.fixture(Path(tmp))
+            client = Path(tmp) / 'Client.m'; client.write_text('client')
+            obj = derived / 'Client.o'; obj.write_text('object')
+            log.write_text(log.read_text() + '/usr/bin/clang -c ' + str(client) + ' -o ' + str(obj) + '\n')
+            with self.assertRaises(ValueError): suite.compiler_inventory(source, derived, 'Debug', ['DatadogCore'], log, 'ios')
+            self.assertIn(str(obj), suite.compiler_inventory(source, derived, 'Debug', ['DatadogCore'], log, 'ios', additional_c_sources={client})['clang'])
+            with self.assertRaises(ValueError): suite.compiler_inventory(source, derived, 'Debug', ['DatadogCore'], log, 'ios', additional_c_sources={client.with_name('Other.m')})
+
     def fixture(self, root):
         root = root.resolve()
         source = root / 'source'; derived = root / 'derived'; module = 'DatadogCore'

@@ -9,6 +9,21 @@ import module_tests as runner
 
 
 class ModuleRunnerTests(unittest.TestCase):
+    def test_clean_host_data_requires_exact_timely_missing_container_receipt(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp)
+            receipt = dict(returncode=2, cleanup_failure=None, quiescence=dict(state='PASS'), finished_at=1, deadline=2)
+            def missing(argv, name, deadline):
+                (folder / (name + '.log')).write_text('NSPOSIXErrorDomain: No such file or directory')
+                (folder / (name + '-receipt.json')).write_text(json.dumps(receipt))
+                raise ValueError('nonzero')
+            runner.missing_host_data(folder, 'device', 'bundle', 'before', missing, 2)
+            for key, value in [('returncode',1), ('cleanup_failure','late'), ('finished_at',3), ('quiescence',dict(state='INVALID'))]:
+                original = receipt[key]; receipt[key] = value
+                with self.assertRaises(ValueError): runner.missing_host_data(folder, 'device', 'bundle', 'before', missing, 2)
+                receipt[key] = original
+            with self.assertRaises(ValueError): runner.missing_host_data(folder, 'device', 'bundle', 'before', lambda *args: None, 2)
+
     def test_openstep_inventory_preserves_existing_host_and_raw_observation(self):
         with tempfile.TemporaryDirectory() as tmp:
             folder = Path(tmp)

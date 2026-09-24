@@ -1,0 +1,183 @@
+{
+  "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "archive_paths": [
+    "Package.swift",
+    "Makefile",
+    "TestUtilities/Sources",
+    "DatadogCore/Sources",
+    "DatadogCore/Private",
+    "DatadogCore/Resources",
+    "DatadogCore/Tests",
+    "DatadogInternal/Sources",
+    "DatadogInternal/Tests",
+    "DatadogLogs/Sources",
+    "DatadogLogs/Tests",
+    "DatadogTrace/Sources",
+    "DatadogTrace/Tests",
+    "DatadogRUM/Sources",
+    "DatadogRUM/Private",
+    "DatadogRUM/Resources",
+    "DatadogRUM/Tests",
+    "DatadogCrashReporting/Sources",
+    "DatadogCrashReporting/Resources",
+    "DatadogCrashReporting/Tests",
+    "DatadogWebViewTracking/Sources",
+    "DatadogWebViewTracking/Tests",
+    "DatadogSessionReplay/Sources",
+    "DatadogSessionReplay/Tests",
+    "DatadogProfiling/Sources",
+    "DatadogProfiling/Resources",
+    "DatadogProfiling/Tests",
+    "DatadogProfiling/Mach",
+    "DatadogFlags/Sources",
+    "DatadogFlags/Tests"
+  ],
+  "dependency_cache": "/Users/valentin.pertuisot/work/dd-sdk-ios/.build",
+  "dependency_pins": {
+    "originHash": "ce0deaadfb6650c48c848692976353ac41a005b8203a19162e5bda941833de64",
+    "pins": [
+      {
+        "identity": "kscrash",
+        "kind": "remoteSourceControl",
+        "location": "https://github.com/kstenerud/KSCrash.git",
+        "state": {
+          "revision": "3f77f379c2db001e0c261c2a51b7e2b115d31f91",
+          "version": "2.6.0"
+        }
+      },
+      {
+        "identity": "opentelemetry-swift-core",
+        "kind": "remoteSourceControl",
+        "location": "https://github.com/open-telemetry/opentelemetry-swift-core",
+        "state": {
+          "revision": "06f8a460a66f813758d22f09025d85df45450a63",
+          "version": "2.5.1"
+        }
+      },
+      {
+        "identity": "swift-atomics",
+        "kind": "remoteSourceControl",
+        "location": "https://github.com/apple/swift-atomics.git",
+        "state": {
+          "revision": "0442cb5a3f98ab802acb777929fdb446bda11a34",
+          "version": "1.3.1"
+        }
+      }
+    ],
+    "version": 3
+  },
+  "pins_sha256": "9ed57e1104d9609ffae1236306a7e9d9766134dc1052aa73124273bfff88efc0",
+  "schema_version": 1,
+  "experiment": "EXP-228",
+  "name": "Existing public client regression component",
+  "status": "DEFINED_BEFORE_IMPLEMENTATION",
+  "defined_at": "2026-09-24T01:06:26.234157+00:00",
+  "gates": [
+    "S3:F03:M02",
+    "S3:F03:M03"
+  ],
+  "owner": "SDK implementer",
+  "reviewer": "/root/c06_runtime_plan",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp228-public-clients-pw62dce6",
+  "scope": "Reuse the exact accepted existing-API assertions with normal shipping imports; qualify only regression behavior at changed SDK bytes. No new scene APIs, same-key experiment, F01 approval or whole M02/M03/F03 closure.",
+  "reference_fixture": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/platforms/clients",
+    "files": {
+      "ObjCClient.plist": "fc86f23bb34bf8bebf81c9695af2278f35a6398e4c456e4a713dd75ae20602ea",
+      "Swift6Client.plist": "cd352c1afbe1b3c5db3c3c572f679f4546044627b15d0821d40c57053190cbdd",
+      "project.json": "115775f8648def6c62dd1e992afea1dca27fb3bc5db60b91caf75875ad97741c",
+      "Swift5Client.plist": "8869b9ebac61e98dcf87ce1af42dbbe4e84a375dbe25105b76e4135e10f152aa",
+      "Swift/App.swift": "377eb085694e032b22e222481c1d0c73006a6dc9ed739e44766b0dacb153ad4d",
+      "Swift/SwiftClientFixture.swift": "310566bb519377aad908001599c49d54845b815fc13eac22438162e5c89dbed7",
+      "ObjC/ObjCClientFixture.h": "f0ed261d99e4c3ffcb26ebe6ffbe842bb8653902d88445e993f856a4653f1c04",
+      "ObjC/ObjCClientFixture.m": "923e077e1b970337816332537e6c5203b16cb738aa9e9618cee15f515ae0d833",
+      "ObjC/App.m": "0cc450cdc1e129ab8f4e4f214def95a1d2ca41c7bc131f19b5348be4990f7619"
+    },
+    "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/platforms/client-summary.json",
+    "summary_sha256": "8ac9586e1fc66054d38a2a1e6c3fe2501c17e091f8774a6165e5b4849368a15f"
+  },
+  "fixture_changes": {
+    "project_package_path": "../source",
+    "bundle_prefix": "com.datadoghq.exp228.",
+    "assertions": "Unchanged Swift/Objective-C source and plists; only package location and bundle identifiers change in project.json."
+  },
+  "xcode": "/Applications/Xcode_27.1.app/Contents/Developer",
+  "version": "Xcode 27.1\nBuild version 27A9269",
+  "environment": {
+    "runtime": {
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+      "version": "27.0",
+      "buildversion": "24A434",
+      "isAvailable": true
+    },
+    "device": {
+      "udid": "59A8E789-932A-48D0-9281-0F49DEB8E96D",
+      "name": "iPhone 18 Pro",
+      "state": "Shutdown",
+      "isAvailable": true
+    }
+  },
+  "cells": [
+    {
+      "id": "Swift5Client-Debug",
+      "target": "Swift5Client",
+      "language": "Swift5",
+      "configuration": "Debug"
+    },
+    {
+      "id": "Swift5Client-Release",
+      "target": "Swift5Client",
+      "language": "Swift5",
+      "configuration": "Release"
+    },
+    {
+      "id": "Swift6Client-Debug",
+      "target": "Swift6Client",
+      "language": "Swift6",
+      "configuration": "Debug"
+    },
+    {
+      "id": "Swift6Client-Release",
+      "target": "Swift6Client",
+      "language": "Swift6",
+      "configuration": "Release"
+    },
+    {
+      "id": "ObjCClient-Release",
+      "target": "ObjCClient",
+      "language": "Objective-C",
+      "configuration": "Release"
+    }
+  ],
+  "modules": [
+    "DatadogInternal",
+    "DatadogCore",
+    "DatadogRUM",
+    "DatadogTrace"
+  ],
+  "budgets_seconds": {
+    "preparation": 600,
+    "build": 600,
+    "boot": 180,
+    "command": 30,
+    "result": 45,
+    "cleanup": 120,
+    "cell": 1200
+  },
+  "stage_deadline": "2026-09-24T02:35:00+00:00",
+  "attempts": {
+    "per_cell": 1,
+    "stop_after_failure": true
+  },
+  "decisive_assertions": [
+    "Exact source/dependency/compiler/private-link/full-product identity for every client and actual Debug/Release flags; no test-only or SPI imports.",
+    "Deployment15 compiler and app metadata, fresh runtime27.0 build identity, actual complete source and generated project inventories.",
+    "Pre-existing apps are never removed; clean absent task bundle/container before install, complete installed bytes and fresh run ID before app work.",
+    "Exactly-once nil NOP session callback, nonnil configured callback, unchanged POST body and response, exactly-once normal/off-main completion after delegate invalidation.",
+    "All four fixture booleans true with exact runtime/configuration/language/run/manifest identity; no backend or RUM attribution claim.",
+    "Stop first failure; separate scenario/evidence/cleanup; task-only termination/removal, worker quiescence, Shutdown restoration and protected-path equality within frozen deadlines."
+  ],
+  "native_admitted": false,
+  "gate_closures": [],
+  "predefinition_stop": "Runtime version alone matched iOS/tvOS/visionOS27.0; no definition, extraction, install or test ran. Fresh inventory now requires the exact iOS runtime identifier as well as version and build."
+}

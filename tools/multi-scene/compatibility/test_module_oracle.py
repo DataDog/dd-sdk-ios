@@ -22,6 +22,20 @@ class ModuleOracleTests(unittest.TestCase):
         for value, exclusions, reference in values:
             with self.subTest(value=value), self.assertRaises(ValueError): oracle.discovery(value, 'Tests', exclusions, reference)
 
+    def test_source_bound_empty_class_is_preserved_without_hiding_methods(self):
+        raw = ['Tests/A/test()', 'Tests/B/test()', 'Tests/Empty']
+        result = oracle.discovery(self.discovery(raw), 'Tests', [], non_case_identifiers=['Tests/Empty'])
+        self.assertEqual(result['identifiers'], raw[:2])
+        self.assertEqual(result['non_cases'], [dict(identifier='Tests/Empty', enabled=True)])
+        selected = oracle.discovery(self.discovery([raw[0], raw[2]], [raw[1]]), 'Tests', [raw[1]], sorted(raw),
+                                    non_case_identifiers=['Tests/Empty'])
+        self.assertEqual(selected['identifiers'], [raw[0]])
+        for names, entries in [([], raw), (['Tests/Missing'], raw), (['Tests/Empty'] * 2, raw),
+                               (['Tests/A/test()'], raw), (['Foreign/Empty'], raw),
+                               (['Tests/Empty'], raw + ['Tests/Empty/test()'])]:
+            with self.subTest(names=names), self.assertRaises(ValueError):
+                oracle.discovery(self.discovery(entries), 'Tests', [], non_case_identifiers=names)
+
     def fixture(self):
         device = dict(architecture='arm64', deviceId='device', deviceName='phone', modelName='phone', osBuildNumber='build', osVersion='27.0', platform='iOS Simulator')
         configuration = {'configurationId': '1', 'configurationName': 'Test Scheme Action'}
