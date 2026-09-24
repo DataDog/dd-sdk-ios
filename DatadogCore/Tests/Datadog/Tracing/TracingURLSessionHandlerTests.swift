@@ -16,7 +16,9 @@ class TracingURLSessionHandlerTests: XCTestCase {
     var core: PassthroughCoreMock!
     var tracer: DatadogTracer!
     var handler: TracingURLSessionHandler!
-    var sessionSampling: RUMSessionSamplerProviderMock!
+    var sessionSampling: SessionSamplerMock!
+    /// Retained: `SessionSampler` holds its core weakly, so a released core silently yields no decision.
+    var samplingCore: FeatureRegistrationCoreMock!
     // swiftlint:enable implicitly_unwrapped_optional
 
     override func setUp() {
@@ -35,7 +37,9 @@ class TracingURLSessionHandlerTests: XCTestCase {
         )
 
         // No session by default: individual tests opt in by setting `sessionSampling.identity`.
-        sessionSampling = RUMSessionSamplerProviderMock()
+        sessionSampling = SessionSamplerMock()
+        samplingCore = FeatureRegistrationCoreMock()
+        try? samplingCore.register(feature: sessionSampling)
 
         handler = TracingURLSessionHandler(
             tracer: tracer,
@@ -46,7 +50,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
             ]),
             traceContextInjection: .all,
             telemetry: NOPTelemetry(),
-            sessionSampling: { [weak self] in self?.sessionSampling }
+            sessionSampler: samplingCore.sessionSampler
         )
     }
 
@@ -55,6 +59,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         tracer = nil
         handler = nil
         sessionSampling = nil
+        samplingCore = nil
         super.tearDown()
     }
 

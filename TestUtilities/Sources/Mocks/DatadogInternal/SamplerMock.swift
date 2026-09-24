@@ -37,12 +37,16 @@ extension DeterministicSampler {
     }
 }
 
-/// A `RUMSessionSamplerProvider` that returns a decision the test controls, without a RUM feature.
+/// A `SessionSampler` that returns a decision the test controls, without a RUM feature.
 ///
 /// Set `identity` to simulate an active session, or leave it `nil` to simulate RUM being enabled with
 /// no session. The decision is derived the same way `RUMSessionSamplingStore` derives it, so a test
 /// that asserts on a composed rate exercises the real composition.
-public final class RUMSessionSamplerProviderMock: RUMSessionSamplerProvider {
+public final class SessionSamplerMock: SessionSampler, DatadogFeature {
+    /// Registered under RUM's name so `core.sessionSampler` resolves this mock.
+    public static var name: String { Feature.rum }
+    public var messageReceiver: FeatureMessageReceiver { NOPFeatureMessageReceiver() }
+
     public struct Identity {
         public let sessionID: String
         public let sampler: DeterministicSampler
@@ -73,12 +77,12 @@ public final class RUMSessionSamplerProviderMock: RUMSessionSamplerProvider {
     /// `DeterministicSampler(seed: 0, samplingRate: 0)`, and both policies rebuild the sampler from
     /// its *seed* at the caller's rate, so the `0` rate is discarded and the mock would keep
     /// everything. Tests that need a dropped session must pin a real seed, as
-    /// `RUMSessionSamplerProviderMock(identity:)` allows.
-    public static func keepAll(sessionID: String = "session-id") -> RUMSessionSamplerProviderMock {
+    /// `SessionSamplerMock(identity:)` allows.
+    public static func keepAll(sessionID: String = "session-id") -> SessionSamplerMock {
         .init(identity: .init(sessionID: sessionID, sampler: .mockKeepAll()))
     }
 
-    public func sessionSamplingSnapshot(for policy: SamplingRatePolicy, rate: SampleRate) -> SessionSamplingSnapshot? {
+    public func decision(for policy: SamplingRatePolicy, rate: SampleRate) -> SessionSamplingDecision? {
         requests.append((policy: policy, rate: rate))
 
         guard let identity else {
@@ -93,6 +97,6 @@ public final class RUMSessionSamplerProviderMock: RUMSessionSamplerProvider {
             sampler = identity.sampler.combined(with: rate)
         }
 
-        return SessionSamplingSnapshot(sessionID: identity.sessionID, isSampled: sampler.isSampled)
+        return SessionSamplingDecision(sessionID: identity.sessionID, isSampled: sampler.isSampled)
     }
 }

@@ -152,8 +152,17 @@ class SamplerProviderTests: XCTestCase {
     private let sessionRate: SampleRate = 10
     private let traceRate: SampleRate = 20
 
-    private func makeSessionSampling() -> RUMSessionSamplerProviderMock {
-        RUMSessionSamplerProviderMock(
+    /// Cores are retained for the test's lifetime: `SessionSampler` holds its core weakly, so a
+    /// released core would silently report no session.
+    private var cores: [FeatureRegistrationCoreMock] = []
+
+    override func tearDown() {
+        cores = []
+        super.tearDown()
+    }
+
+    private func makeSessionSampling() -> SessionSamplerMock {
+        SessionSamplerMock(
             identity: .init(
                 sessionID: "a1b2c3d4-e5f6-7890-abcd-ceb01cf21171",
                 sampler: DeterministicSampler(uuid: sessionUUID, samplingRate: sessionRate)
@@ -161,10 +170,18 @@ class SamplerProviderTests: XCTestCase {
         )
     }
 
+    /// Wraps `provider` in a core so the subject resolves it exactly as production does.
+    private func sampler(for provider: SessionSamplerMock) -> SessionSampler {
+        let core = FeatureRegistrationCoreMock()
+        try? core.register(feature: provider)
+        cores.append(core)
+        return core.sessionSampler
+    }
+
     func testWhenARUMSessionIsActive_thenTheTraceRateIsNotComposedWithTheSessionRate() {
         // Given
         let sessionSampling = makeSessionSampling()
-        let provider = SamplerProvider(sampleRate: traceRate, sessionSampling: { sessionSampling })
+        let provider = SamplerProvider(sampleRate: traceRate, sessionSampler: sampler(for: sessionSampling))
 
         // When
         let sampler = provider.sampler
@@ -185,7 +202,7 @@ class SamplerProviderTests: XCTestCase {
     func testItAsksForTheFeatureRatePolicy() {
         // Given
         let sessionSampling = makeSessionSampling()
-        let provider = SamplerProvider(sampleRate: traceRate, sessionSampling: { sessionSampling })
+        let provider = SamplerProvider(sampleRate: traceRate, sessionSampler: sampler(for: sessionSampling))
 
         // When
         _ = provider.sampler
@@ -199,7 +216,7 @@ class SamplerProviderTests: XCTestCase {
     func testCustomSamplingRate_isAlsoSeededBySessionWithoutComposing() {
         // Given
         let sessionSampling = makeSessionSampling()
-        let provider = SamplerProvider(sampleRate: 0, sessionSampling: { sessionSampling })
+        let provider = SamplerProvider(sampleRate: 0, sessionSampler: sampler(for: sessionSampling))
 
         // When — a span asks for its own rate, unrelated to the feature's configured one
         let sampler = provider.makeSamplerFor(samplingRate: traceRate)
@@ -212,7 +229,7 @@ class SamplerProviderTests: XCTestCase {
     func testTheDecisionIsStableAcrossReads() {
         // Given
         let sessionSampling = makeSessionSampling()
-        let provider = SamplerProvider(sampleRate: 50, sessionSampling: { sessionSampling })
+        let provider = SamplerProvider(sampleRate: 50, sessionSampler: sampler(for: sessionSampling))
 
         // When — a rate that a random sampler would decide differently on nearly every call
         let decisions = (0..<50).map { _ in provider.sampler.sample() }
@@ -223,7 +240,7 @@ class SamplerProviderTests: XCTestCase {
 
     func testWhenNoRUMSessionIsActive_thenTheSamplerIsRandomAtTheTraceRate() {
         // Given — RUM enabled but between sessions, or RUM not enabled at all
-        let provider = SamplerProvider(sampleRate: 50, sessionSampling: { RUMSessionSamplerProviderMock() })
+        let provider = SamplerProvider(sampleRate: 50, sessionSampler: sampler(for: SessionSamplerMock()))
 
         // When
         let decisions = (0..<1_000).map { _ in provider.sampler.sample() }

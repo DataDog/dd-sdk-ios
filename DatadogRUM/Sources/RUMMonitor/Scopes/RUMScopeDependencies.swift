@@ -41,7 +41,7 @@ internal struct RUMScopeDependencies {
     let rumUUIDGenerator: RUMUUIDGenerator
     /// The session ID created synchronously in `RUM.enable()`, adopted by the initial session instead of
     /// generating a new one. This makes the session's deterministic sampler available through
-    /// `RUMSessionSamplerProvider` before `RUM.enable()` returns. `nil` restores the previous behaviour of
+    /// `SessionSampler` before `RUM.enable()` returns. `nil` restores the previous behaviour of
     /// generating it lazily.
     let initialSessionUUID: RUMUUID?
     let backtraceReporter: BacktraceReporting?

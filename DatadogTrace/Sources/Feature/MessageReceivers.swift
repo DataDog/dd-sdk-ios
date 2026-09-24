@@ -9,10 +9,7 @@ import DatadogInternal
 
 /// The slice of the core context Trace keeps between messages.
 ///
-/// The RUM session is deliberately NOT here. It used to be, and the sampling decision was taken from
-/// it, which is what made requests instrumented before the first `.context` message land fall back to
-/// random sampling. Sampling now reads ``RUMSessionSamplerProvider`` on the calling thread; do not
-/// re-introduce a bus-lagged copy of the RUM identity in this struct. See RUM-17921.
+/// Sampling does not read from here. It uses ``SessionSampler``, which resolves on the calling thread.
 internal struct CoreContext {
     /// Provides the history of app foreground / background states.
     var applicationStateHistory: AppStateHistory?

@@ -20,7 +20,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
     /// The sampler keeps everything except a 0% rate, which is what these tests previously got from
     /// `Sampler(samplingRate: .maxSampleRate)`.
     private static let testSessionID = "abcdef01-2345-6789-abcd-ef0123456789"
-    private lazy var testSessionSampling = RUMSessionSamplerProviderMock.keepAll(sessionID: Self.testSessionID)
+    private lazy var testSessionSampling = SessionSamplerMock.keepAll(sessionID: Self.testSessionID)
 
     /// A session ID that is deliberately NOT the one the store holds.
     ///
@@ -1168,7 +1168,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
     func testGivenSameSessionID_withDeterministicSampling_itProducesConsistentSamplingDecision() throws {
         // Given
         let sessionUUID: UUID = .mockWith("12345678-1234-4abc-9def-123456789abc")
-        let sessionSampling = RUMSessionSamplerProviderMock(
+        let sessionSampling = SessionSamplerMock(
             identity: .init(
                 sessionID: sessionUUID.uuidString.lowercased(),
                 sampler: DeterministicSampler(uuid: sessionUUID, samplingRate: .maxSampleRate)
@@ -1357,8 +1357,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
     private static let policyVectorUUID = UUID(uuidString: "a1b2c3d4-e5f6-7890-abcd-ceb01cf21171")!
     private static let policyVectorSessionID = "a1b2c3d4-e5f6-7890-abcd-ceb01cf21171"
 
-    private func makeSessionSampling(sessionRate: SampleRate = 10) -> RUMSessionSamplerProviderMock {
-        RUMSessionSamplerProviderMock(
+    private func makeSessionSampling(sessionRate: SampleRate = 10) -> SessionSamplerMock {
+        SessionSamplerMock(
             identity: .init(
                 sessionID: Self.policyVectorSessionID,
                 sampler: DeterministicSampler(uuid: Self.policyVectorUUID, samplingRate: sessionRate)
@@ -1368,7 +1368,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
     private func makeDistributedTracing(
         samplingRate: SampleRate,
-        sessionSampling: RUMSessionSamplerProvider?
+        sessionSampling: SessionSampler?
     ) -> DistributedTracing {
         .init(
             samplingRate: samplingRate,
@@ -1453,7 +1453,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         let handler = createHandler(
             distributedTracing: makeDistributedTracing(
                 samplingRate: .maxSampleRate,
-                sessionSampling: RUMSessionSamplerProviderMock()
+                sessionSampling: SessionSamplerMock()
             )
         )
 

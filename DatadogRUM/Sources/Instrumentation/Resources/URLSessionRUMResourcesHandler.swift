@@ -21,7 +21,7 @@ internal struct DistributedTracing {
     ///
     /// This holds RUM's sampling store, which is a leaf object owned by `RUMFeature`, so the strong
     /// reference does not create a cycle back to this handler.
-    let sessionSampling: RUMSessionSamplerProvider?
+    let sessionSampling: SessionSampler?
 
     init(
         samplingRate: SampleRate,
@@ -29,7 +29,7 @@ internal struct DistributedTracing {
         traceIDGenerator: TraceIDGenerator,
         spanIDGenerator: SpanIDGenerator,
         traceContextInjection: TraceContextInjection,
-        sessionSampling: RUMSessionSamplerProvider? = nil
+        sessionSampling: SessionSampler? = nil
     ) {
         self.samplingRate = samplingRate
         self.traceIDGenerator = traceIDGenerator
@@ -299,10 +299,10 @@ extension DistributedTracing {
         // rate is the product of the two: `.combinedWithSessionRate`. The snapshot carries the ID and
         // the session-derived decision together. A sampled active span still takes precedence below,
         // as required to preserve the parent trace's decision.
-        let sessionSnapshot = sessionSampling?.sessionSamplingSnapshot(for: .combinedWithSessionRate, rate: samplingRate)
+        let sessionDecision = sessionSampling?.decision(for: .combinedWithSessionRate, rate: samplingRate)
         // When no RUM session is active, fall back to a random decision at the tracing rate.
         let isSampled: () -> Bool = {
-            sessionSnapshot?.isSampled ?? Sampler(samplingRate: samplingRate).sample()
+            sessionDecision?.isSampled ?? Sampler(samplingRate: samplingRate).sample()
         }
         // In case there is, we use the same traceID so the backend can link the span generated from the RUM resource
         // with the trace.
@@ -328,7 +328,7 @@ extension DistributedTracing {
             sampleRate: activeSpanContext?.samplingRate ?? samplingRate,
             samplingPriority: samplingPriority,
             samplingDecisionMaker: samplingDecisionMaker,
-            rumSessionId: sessionSnapshot?.sessionID,
+            rumSessionId: sessionDecision?.sessionID,
             userId: networkContext?.userConfigurationContext?.id,
             accountId: networkContext?.accountConfigurationContext?.id,
             graphql: graphql

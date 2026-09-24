@@ -92,7 +92,7 @@ class RUMTests: XCTestCase {
         // WebViewTracking) get no decision at all. See RUM-17921.
         let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
         let snapshot = try XCTUnwrap(
-            rum.sessionSamplingSnapshot(for: .combinedWithSessionRate, rate: .maxSampleRate),
+            rum.decision(for: .combinedWithSessionRate, rate: .maxSampleRate),
             "The session sampling decision must be available synchronously, without waiting for the initial session"
         )
         XCTAssertEqual(snapshot.sessionID, RUMUUID(rawValue: sessionUUID).toRUMDataFormat)
@@ -112,7 +112,7 @@ class RUMTests: XCTestCase {
 
         // Then - `debugSDK` forces 100%, and the synchronous store must honour it like the session does
         let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
-        let snapshot = try XCTUnwrap(rum.sessionSamplingSnapshot(for: .combinedWithSessionRate, rate: .maxSampleRate))
+        let snapshot = try XCTUnwrap(rum.decision(for: .combinedWithSessionRate, rate: .maxSampleRate))
         XCTAssertEqual(snapshot.sessionID, RUMUUID(rawValue: sessionUUID).toRUMDataFormat)
         XCTAssertTrue(snapshot.isSampled, "A 0% configured rate must still be forced to 100% by `debugSDK`")
     }

@@ -12,57 +12,7 @@ import UIKit
 import AppKit
 #endif
 
-/// The RUM session identity, and the sampling decisions derived from it, readable synchronously.
-///
-/// RUM owns the session identity. Other features normally learn about it through the core context,
-/// which costs three asynchronous hops; the ones that mutate outgoing requests cannot afford them
-/// and read this instead. See ``RUMSessionSamplerProvider``.
-///
-/// This is a separate object from ``RUMFeature`` so the URLSession handler can hold it directly,
-/// and so `RUMFeature` has a single place to write the identity to.
-internal final class RUMSessionSamplingStore: RUMSessionSamplerProvider {
-    /// The session ID and its sampler, held together.
-    ///
-    /// They are stored as one value, under one lock, so a reader can never pair a session ID with a
-    /// decision that was made for a different session.
-    private struct Identity {
-        let sessionID: String
-        let sampler: DeterministicSampler
-    }
-
-    @ReadWriteLock
-    private var identity: Identity?
-
-    func sessionSamplingSnapshot(for policy: SamplingRatePolicy, rate: SampleRate) -> SessionSamplingSnapshot? {
-        // A single read of `identity` yields one consistent pair. Deriving the decision from it is
-        // pure, so a session change during this call cannot split the ID from the decision.
-        guard let identity else {
-            return nil
-        }
-
-        let sampler: DeterministicSampler
-        switch policy {
-        case .featureRate:
-            sampler = DeterministicSampler(seed: identity.sampler.seed, samplingRate: rate)
-        case .combinedWithSessionRate:
-            sampler = identity.sampler.combined(with: rate)
-        }
-
-        return SessionSamplingSnapshot(sessionID: identity.sessionID, isSampled: sampler.isSampled)
-    }
-
-    /// Records the session that is now current.
-    func setSession(id sessionID: String, sampler: DeterministicSampler) {
-        _identity.mutate { $0 = Identity(sessionID: sessionID, sampler: sampler) }
-    }
-
-    /// Clears the current session, so readers fall back to their own sampling.
-    func clearSession() {
-        _identity.mutate { $0 = nil }
-    }
-}
-
-internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider {
+internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
     static var name: String { Feature.rum }
 
     let requestBuilder: FeatureRequestBuilder
@@ -205,18 +155,12 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
         let sessionSampleRate = configuration.debugSDK ? 100 : configuration.sessionSampleRate
 
         // Create the initial session identity here, synchronously, while still on the main thread inside
-        // `RUM.enable()`. The session scope is still created asynchronously further down the line and adopts
-        // this ID, but recording the identity now means the store resolves by the time `RUM.enable()`
-        // returns instead of staying empty until the initial session is created. The URLSession handlers,
-        // Trace and WebViewTracking all read the store, so a request or WebView instrumented immediately
-        // after enable gets a decision consistent with the session rather than a random one.
+        // `RUM.enable()`. The session scope is created asynchronously further down the line and adopts this
+        // ID, so recording the identity now makes it readable as soon as `RUM.enable()` returns rather than
+        // once the initial session exists.
         //
-        // Profiling does NOT read this yet. It still resolves its RUM context through the message bus,
-        // which it can afford because it does not mutate outgoing requests. See RUM-17921.
-        //
-        // Note this derives the sampler in a second place: `RUMSessionScope` still derives its own for every
-        // other session, from the same UUID and sampling rate, so the two always agree. Moving the ownership
-        // of the session lifetime into the store removes the duplication, and is tracked separately.
+        // Note this derives the sampler in a second place: `RUMSessionScope` derives its own for every other
+        // session, from the same UUID and sampling rate, so the two always agree.
         let initialSessionUUID = configuration.uuidGenerator.generateUnique()
         sessionSamplingStore.setSession(
             id: initialSessionUUID.toRUMDataFormat,
@@ -564,10 +508,10 @@ private extension NextViewActionPredicate {
 }
 
 extension RUMFeature {
-    // MARK: - RUMSessionSamplerProvider
+    // MARK: - SessionSampler
 
-    func sessionSamplingSnapshot(for policy: SamplingRatePolicy, rate: SampleRate) -> SessionSamplingSnapshot? {
-        sessionSamplingStore.sessionSamplingSnapshot(for: policy, rate: rate)
+    func decision(for policy: SamplingRatePolicy, rate: SampleRate) -> SessionSamplingDecision? {
+        sessionSamplingStore.decision(for: policy, rate: rate)
     }
 }
 

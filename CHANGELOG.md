@@ -6,7 +6,7 @@
 - [IMPROVEMENT] Increase the maximum number of custom attributes per event from 256 to 1900 in RUM, Logs and Traces. In RUM the limit applies to `context`, `usr` and `account` independently; in Logs and Traces those attributes are encoded into a single JSON object, so they share one limit. Log `usr` and `account` extra attributes are now limited as well. See [#3198][]
 - [IMPROVEMENT] Require Swift tools version 6.2 (Xcode 26) to resolve the package with Swift Package Manager. See [#3231][]
 - [FIX] Report slow frame and freeze rates for RUM views when navigation starts a new view without calling `stopView()` on the previous one.
-- [FIX] Resolve the RUM session synchronously for trace sampling, instead of waiting for the RUM context to travel the message bus. Requests instrumented right after `RUM.enable()` now carry a sampling decision and a session ID consistent with the session rather than a random decision and no session ID, and manual spans from `Tracer.shared()` are seeded by the session from the same moment. See [#3221][]
+- [FIX] Traced requests and spans created immediately after the SDK is initialized now use the same sampling decision as the rest of the RUM session, and carry that session's ID. Previously they could be sampled independently of the session and sent without it. See [#3221][]
 
 # 3.18.0 / 21-09-2026
 

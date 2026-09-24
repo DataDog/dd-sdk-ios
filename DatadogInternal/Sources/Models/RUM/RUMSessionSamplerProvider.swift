@@ -6,38 +6,34 @@
 
 import Foundation
 
-/// How a feature's own sampling rate relates to the RUM session sampling rate.
+/// How a feature's own sampling rate combines with the session sampling rate.
 ///
-/// Both policies seed the sampler from the RUM session ID, so the decision is stable for the whole
-/// session. They differ in which rate they apply, and the difference is not cosmetic: picking the
-/// wrong one silently multiplies or fails to multiply the configured rate.
+/// Both policies seed the sampler from the session ID, so the decision is stable for the whole
+/// session. They differ only in which rate they apply, and that difference changes how much data a
+/// feature keeps.
 public enum SamplingRatePolicy: Sendable, Equatable {
-    /// Apply the feature's rate on its own, using the session only as the seed.
+    /// Apply the feature's rate on its own, taking only the seed from the session.
     ///
-    /// The configured rate is absolute. A feature set to 20% keeps 20% of sessions whether the RUM
-    /// session rate is 100% or 10%. Manual Trace spans use this, because
-    /// `Trace.Configuration.sampleRate` is documented as the trace sampling rate rather than a
-    /// share of RUM.
+    /// The rate is absolute: a feature configured at 20% keeps 20% whether the session rate is 100%
+    /// or 10%.
     case featureRate
 
-    /// Multiply the feature's rate with the RUM session rate, using the session as the seed.
+    /// Multiply the feature's rate with the session rate, taking the seed from the session.
     ///
-    /// The configured rate is a share of the sessions RUM already kept. A feature set to 20% inside
-    /// a 10% RUM session has an effective rate of 2%. The URLSession handlers and WebView tracking
-    /// use this, because their rate applies on top of a tracked session.
+    /// The rate is a share of what the session already keeps: 20% inside a 10% session is an
+    /// effective 2%.
     case combinedWithSessionRate
 }
 
-/// The RUM session identity together with the sampling decision derived from it.
+/// A session identity together with the sampling decision derived from it.
 ///
-/// The ID and the decision are returned as one value on purpose. A consumer that read them in two
-/// steps could pair an ID from one session with a decision made for another if the session rolled
-/// over in between, which produces events that look tracked but cannot be correlated.
-public struct SessionSamplingSnapshot: Sendable, Equatable {
-    /// The RUM session ID, in the format used on the wire.
+/// The ID and the decision are returned as one value on purpose. Reading them separately could pair
+/// an ID from one session with a decision made for another if the session changed in between.
+public struct SessionSamplingDecision: Sendable, Equatable {
+    /// The session ID, in the format used on the wire.
     public let sessionID: String
 
-    /// Whether the consumer should keep data for this session, under the requested policy and rate.
+    /// Whether the caller should keep data for this session, under the requested policy and rate.
     public let isSampled: Bool
 
     public init(sessionID: String, isSampled: Bool) {
@@ -46,39 +42,55 @@ public struct SessionSamplingSnapshot: Sendable, Equatable {
     }
 }
 
-/// Synchronous access to the RUM session sampling state, without going through the message bus.
+/// Synchronous access to the current session sampling state.
 ///
-/// RUM publishes its session through the core context, which reaches other features after three
-/// asynchronous hops. Features that only create events can wait for those hops, because events are
-/// written in order. Features that mutate an outgoing `URLRequest` cannot: by the time the context
-/// lands, the request is already on the wire, and the tracing headers it should have carried are
-/// missing for good. Those features read this instead, which resolves on the calling thread.
+/// The session identity is also published through the core context, which reaches other features
+/// after several asynchronous hops. Features that only create events can wait for those hops,
+/// because events are written in order. Features that mutate an outgoing `URLRequest` cannot: by the
+/// time the context lands, the request is already on the wire. Those features read this instead,
+/// which resolves on the calling thread.
 ///
-/// Obtain it through ``DatadogCoreProtocol/rumSessionSampling``. Resolve it per read rather than
-/// caching the result, since RUM can be enabled after the reading feature.
-public protocol RUMSessionSamplerProvider: AnyObject {
+/// Obtain it with ``DatadogCoreProtocol/sessionSampler``. It is safe to store, and it resolves the
+/// supplying feature on every call, so a feature can hold one from its own `enable()` even when the
+/// session owner is enabled later.
+public protocol SessionSampler {
     /// The current session identity, and the sampling decision for the given policy and rate.
     ///
-    /// The returned snapshot is derived from a single read of the session state, so the ID and the
-    /// decision always belong to the same session.
-    ///
     /// - Parameters:
-    ///   - policy: How `rate` relates to the RUM session sampling rate. See ``SamplingRatePolicy``.
-    ///   - rate: The consumer's own sampling rate, between `0.0` and `100.0`. Passing
+    ///   - policy: How `rate` combines with the session rate. See ``SamplingRatePolicy``.
+    ///   - rate: The caller's own sampling rate, between `0.0` and `100.0`. Passing
     ///     `SampleRate.maxSampleRate` with ``SamplingRatePolicy/combinedWithSessionRate`` yields the
     ///     session's own decision unchanged.
-    /// - Returns: The snapshot, or `nil` when no session is active, for example before RUM creates
-    ///   its first session or after `stopSession()`. Consumers fall back to their own sampling then.
-    func sessionSamplingSnapshot(for policy: SamplingRatePolicy, rate: SampleRate) -> SessionSamplingSnapshot?
+    /// - Returns: The decision, or `nil` when no session is available, in which case the caller
+    ///   decides for itself.
+    func decision(for policy: SamplingRatePolicy, rate: SampleRate) -> SessionSamplingDecision?
+}
+
+/// Resolves the session sampler registered on a core, per call.
+internal struct CoreSessionSampler: SessionSampler {
+    /// A weak core reference.
+    private weak var core: DatadogCoreProtocol?
+
+    /// Creates a session sampler associated with a core instance.
+    ///
+    /// The `CoreSessionSampler` keeps a weak reference to the provided core.
+    ///
+    /// - Parameter core: The core instance.
+    init(core: DatadogCoreProtocol) {
+        self.core = core
+    }
+
+    func decision(for policy: SamplingRatePolicy, rate: SampleRate) -> SessionSamplingDecision? {
+        core?
+            .feature(named: Feature.rum, type: SessionSampler.self)?
+            .decision(for: policy, rate: rate)
+    }
 }
 
 public extension DatadogCoreProtocol {
-    /// Synchronous access to the RUM session sampling state on this core, or `nil` when RUM is not
-    /// enabled on it.
+    /// Synchronous access to the session sampling state on this core.
     ///
-    /// Each core carries its own RUM session, so a feature must read this from the same core it was
-    /// registered in. Resolve it per read: RUM can be enabled after the reading feature.
-    var rumSessionSampling: RUMSessionSamplerProvider? {
-        feature(named: Feature.rum, type: RUMSessionSamplerProvider.self)
-    }
+    /// Each core carries its own session, so a feature must read this from the core it was
+    /// registered in. Returns decisions only while a session exists on that core.
+    var sessionSampler: SessionSampler { CoreSessionSampler(core: self) }
 }
