@@ -148,6 +148,11 @@ after controller graphs. The complete actual graph is retained before rejection.
 An SDK-header audit also found that presentation getters can inherit an ancestor's
 relationship. Native and SwiftUI selectors now require reciprocal public ownership
 before uniqueness, retaining the full inventory. All165 controls pass, including
-inherited aliases and multiple real presentations. Scoped source review passes; one new
-baseline build and frozen qualification review remain. No SDK regression, full capture
+inherited aliases and multiple real presentations. Source review, the baseline build
+and frozen-plan review pass. The bounded UIKit qualification stopped after the input
+worker's provider disconnected: one setup tap completed, but no transition gesture
+was issued before the next input deadline. Original INVALID/cleanup INCOMPLETE is
+retained. Worker quiescence, actual session absence, task-only removal and original
+Shutdown restoration are recorded separately as PASS. This does not validate the
+combined correction; automated qualification remains stopped. No SDK regression, full capture
 qualification or release gate is established; SwiftUI/candidate/human remain unrun.

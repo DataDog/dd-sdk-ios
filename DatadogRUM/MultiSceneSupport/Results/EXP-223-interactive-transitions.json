@@ -1730,7 +1730,7 @@
       "conclusion": "Complete and cancelled edge pops and completed sheet dismissal qualify. Cancelled sheet context also clears its transient container; unchanged request/endpoints and returning key-window/scene remain valid. Observer rejects only container identity/owner. No SDK regression or gate closure. Original INVALID is immutable; task removal, session end and original Shutdown PASS."
     },
     "terminal_presentation_lifetime": {
-      "state": "SOURCE_REVIEW_PASS_BUILD_PENDING",
+      "state": "STOPPED_PROVIDER_INTERRUPTION",
       "defined_at": 1790250327.029757,
       "prior_result": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/container-absence-native-result.json",
@@ -1802,6 +1802,36 @@
         },
         "controls_sha256": "a0cedb9252a03747d1355412eac0e708f19f33ce53cb4770b1d7a864eb4f6a75",
         "findings": []
+      },
+      "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/build-presentation-lifetime-6a98c025",
+      "qualification_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-presentation-lifetime",
+      "build_result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/build-presentation-lifetime-6a98c025/A-simulator/build-result.json",
+        "sha256": "87f3aae11911b295cb672145ce36a16f056bd5a039d44e7de076ea61dc1708c9"
+      },
+      "qualification_plan_sha256": "f876296485c4ea0841193f6264b9a5c2c3d91e15bca7b607f757a0ddd11c102d",
+      "qualification_controls_sha256": "43e2251eb8380c08d906a5a874c5894b62060af4db862960a8b55efbc881d51e",
+      "qualification_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-presentation-lifetime/review.json",
+        "sha256": "3c5c04165518c2b42185460b6d4913527fc323b5034ef4536a76f09d358c4cfd"
+      },
+      "active_framework": null,
+      "current_summary_path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-presentation-lifetime/cells/UIKit/summary.json",
+      "started_at": 1790251496.42476,
+      "native_deadline": 1790252396.42476,
+      "cleanup_deadline": 1790252696.42476,
+      "native_result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo/qualification-presentation-lifetime/result.json",
+        "sha256": "e4f2e1ecb2af080dc604d37daaf8e5e4d53e3cec5613ae9a0d1cc0b04fd21945"
+      },
+      "conclusion": "Input worker provider stream disconnected after one completed setup tap. pop.finish expired without any capture, dispatch intent or effect. No modal correction validation and no SDK finding. Original INVALID/cleanup INCOMPLETE is immutable; later task removal and original Shutdown restoration PASS. No SwiftUI, candidate or human run.",
+      "next_action": "Automated qualification stopped; do not repeat the consumed cell. Retain reviewed source/build/controls. Review remaining human capture safety and a materially changed prerequisite before any new admission; advance independent capture blockers meanwhile.",
+      "outcome_review": {
+        "state": "PASS_CLASSIFICATION_ONLY",
+        "reviewer": "/root/c06_runtime_plan",
+        "at": 1790252129.332394,
+        "decision": "Original INVALID/NOT_EXECUTED and failed primary cleanup are correct. Later restoration is independent. No native retry, observer/build change, SDK finding or qualification follows.",
+        "capture_safety": "Missing current-phase publication correctly defers teardown. A timeout or disconnected worker cannot substitute for provider-owned request-bound quiescence; preserve the fail-closed behavior."
       }
     }
   }
