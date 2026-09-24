@@ -5,6 +5,7 @@ import datetime
 import fnmatch
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import plistlib
@@ -14,6 +15,7 @@ import subprocess
 import sys
 import time
 import uuid
+from urllib.parse import unquote, urlsplit
 import build
 from contract import require, scenario, compare_abba
 from physical_contract import app_absence, display, ready_admission, returned
@@ -148,6 +150,79 @@ def verify(root):
     return plan
 
 
+
+def launch_process_identity(value, device, executable, application):
+    require(value.get('deviceIdentifier') == device, 'foreign launch device')
+    process = value.get('process', {})
+    pid, location = process.get('processIdentifier'), process.get('executable')
+    require(type(pid) is int and pid > 0 and type(location) is str, 'missing launch process identity')
+    url = urlsplit(location)
+    path = Path(unquote(url.path))
+    require(url.scheme == 'file' and not url.netloc and not url.query and not url.fragment
+            and url.path.startswith('/') and path.name == executable and path.parent.name == application,
+            'launch executable differs from installed product')
+    return dict(processIdentifier=pid, executable=location)
+
+
+def process_visibility(raw, device, expected):
+    value = returned(raw, device, 'devicectl.device.info.processes')
+    rows = value.get('runningProcesses')
+    require(value.get('deviceIdentifier') == device and type(rows) is list,
+            'foreign or incomplete process inventory')
+    require(all(type(row) is dict and type(row.get('processIdentifier')) is int
+                and row['processIdentifier'] > 0 and type(row.get('executable')) is str
+                and bool(row['executable']) for row in rows), 'malformed process inventory')
+    require(len({row['processIdentifier'] for row in rows}) == len(rows), 'duplicate process identity')
+    matches = [row for row in rows if row['processIdentifier'] == expected['processIdentifier']]
+    state = 'ABSENT' if not matches else ('PRESENT' if matches[0]['executable'] == expected['executable'] else 'REPLACED')
+    return dict(state=state, expected=expected, matching_pid=matches,
+                executable_pids=[row['processIdentifier'] for row in rows if row['executable'] == expected['executable']],
+                inventory_count=len(rows))
+
+
+def capture_process_visibility(device, expected, out, label, deadline, not_before):
+    result = dict(state='INVALID', deadline=deadline, expected=expected)
+    try:
+        require(time.time() < deadline, 'process visibility deadline expired')
+        raw, receipt = device.command(['device', 'info', 'processes'], label, deadline)
+        start, end = receipt.get('started_at'), receipt.get('finished_at')
+        require(all(type(t) in (int, float) and math.isfinite(t) for t in [start, end])
+                and not_before <= start <= end <= time.time() < deadline and receipt.get('returncode') == 0,
+                'stale, failed or late process visibility')
+        result.update(process_visibility(raw, device.identifier, expected), started_at=start, finished_at=end)
+        return result
+    except Exception as error:
+        result['reason'] = str(error)
+        raise
+    finally:
+        save(Path(out)/(label+'-verdict.json'), result)
+
+
+def require_recent_visibility(observation, expected, deadline):
+    # This is point-in-time visibility. The process can still disappear before
+    # attachment; only the recorder notification admits the workload.
+    now = time.time()
+    require(observation['state'] == 'PRESENT' and observation['expected'] == expected,
+            'launched process is absent or replaced before recorder attach')
+    require(observation['finished_at'] <= now < deadline and now-observation['finished_at'] <= 5,
+            'process visibility expired before recorder attach')
+
+
+def wait_recorder(notice, recorder, device, expected, out, ready_deadline, native_deadline):
+    try:
+        return notice.wait(ready_deadline, recorder)
+    except Exception:
+        # One diagnostic read before cleanup; it cannot repair recorder readiness
+        # or replace the original exception. No workload is admitted on this path.
+        now = time.time()
+        try:
+            capture_process_visibility(device, expected, out, 'process-after-attach-failure',
+                                       min(native_deadline, now+18), now)
+        except Exception:
+            pass  # The actual transport response and diagnostic verdict are retained.
+        raise
+
+
 def stop_recorder(proc,deadline):
     if proc is None:return
     if proc.poll() is None:
@@ -235,9 +310,10 @@ def cell(root,index):
         require(data.get('files')==[],'fresh Documents inventory is not empty or unsupported')
         environment={'IMPACT_RUN_ID':identity['run_id'],'IMPACT_NONCE':identity['nonce'],
             'MULTISCENE_CODE_IDENTITY_RUN_ID':identity['run_id'],'MULTISCENE_CODE_IDENTITY_REVISION':identity['source']}
-        raw,_=device.command(['device','process','launch','--environment-variables',json.dumps(environment),bundle],'launch',deadline)
-        launched=returned(raw,plan['device'],'devicectl.device.process.launch');pid=launched.get('process',{}).get('processIdentifier')
-        require(type(pid) is int and pid>0,'missing launched process identity');identity['pid']=pid
+        raw,launch_receipt=device.command(['device','process','launch','--environment-variables',json.dumps(environment),bundle],'launch',deadline)
+        launched=returned(raw,plan['device'],'devicectl.device.process.launch')
+        expected_process=launch_process_identity(launched,plan['device'],item['product']['executable'],Path(item['path']).name)
+        pid=expected_process['processIdentifier'];identity['pid']=pid
         ready_deadline=min(deadline-180,time.time()+50)
         require(time.time()<ready_deadline,'insufficient time for full workload and recorder stop')
         receipt=out/'installed-code.json'
@@ -256,12 +332,17 @@ def cell(root,index):
         before,_=device.command(['device','info','displays'],'display-before',ready_deadline);display(before,plan['device'])
         notification_name='com.datadoghq.exp224.recorder.'+identity['run_id'];notice=Notification(notification_name)
         options=out/'recording-options.json';save(options,{'Hangs':{'detectPriorityInversions':False,'hangsThreshold':250},'Points of Interest':{'excludeOSLogs':False}})
+        visibility=capture_process_visibility(device,expected_process,out,'process-before-attach',ready_deadline,launch_receipt['finished_at'])
         trace=out/'capture.trace';argv=['xcrun','xctrace','record','--device',plan['udid'],'--attach',str(pid),
             '--instrument','Core Animation FPS','--instrument','Hitches','--instrument','Hangs','--instrument','Points of Interest',
             '--time-limit',str(max(1,int(deadline-time.time())))+'s','--output',str(trace),'--notify-tracing-started',notification_name,'--no-prompt','--recording-options',str(options)]
-        save(out/'recorder-admission.json',dict(argv=argv,at=time.time(),deadline=deadline))
-        record_stream=(out/'recorder.log').open('xb');recorder=subprocess.Popen(argv,stdout=record_stream,stderr=subprocess.STDOUT,start_new_session=True,env=shared.environment())
-        notification=notice.wait(ready_deadline,recorder);save(out/'recorder-ready.json',notification)
+        require_recent_visibility(visibility,expected_process,ready_deadline)
+        save(out/'recorder-admission.json',dict(argv=argv,at=time.time(),deadline=deadline,process_visibility=visibility))
+        record_stream=(out/'recorder.log').open('xb')
+        require_recent_visibility(visibility,expected_process,ready_deadline)
+        recorder=subprocess.Popen(argv,stdout=record_stream,stderr=subprocess.STDOUT,start_new_session=True,env=shared.environment())
+        notification=wait_recorder(notice,recorder,device,expected_process,out,ready_deadline,deadline)
+        save(out/'recorder-ready.json',notification)
         publish_admission(device,bundle,identity,out,ready_deadline)
         # No recurring transfers during the measured 16+96+30-second workload.
         finish_after=time.time()+144

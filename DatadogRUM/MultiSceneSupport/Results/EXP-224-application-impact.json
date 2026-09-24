@@ -152,16 +152,16 @@
     "positive comparison and each decisive metric regression",
     "pair ordering and no noisy-baseline normalization"
   ],
-  "native_admitted": true,
+  "native_admitted": false,
   "gate_closures": [],
   "preparation_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw",
   "live_prerequisite": {
-    "physical_iphone": "Fresh physical inventory confirms the connected/unlocked iPhone16 Pro Max, iOS27.2, Developer Mode and DDI. An existing Apple Development identity and wildcard profile grant this exact device and all four task bundles; no provisioning change required.",
-    "physical_ipad": "Absent.",
-    "human_session": "User unavailable; S2 prepared human groups remain unadmitted.",
-    "inventory": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/physical-device-connected.json"
+    "physical_iphone": "Fresh inventory: disconnected; no native admission.",
+    "physical_ipad": "Fresh inventory: disconnected.",
+    "human_session": "No human gesture session admitted; shared capture qualification remains stopped.",
+    "inventory": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-process-binding-4f0mce4z/devices.raw.json"
   },
-  "next_action": "Capture remains stopped. Qualify a concrete changed recorder prerequisite before another bounded baseline, retaining exact process/executable liveness at attach. Preserve existing invalid attempts and passed cleanup. The17.5 C06/full-RUM obligations are already accepted and must not be rerun merely to resume.",
+  "next_action": "Await a connected/unlocked physical iPhone, then freshly qualify device/signing/product/runtime-helper prerequisites and separately review one bounded baseline admission for the new process-visibility discriminator. No old root or expired deadline may resume. No equivalent recorder retry, SDK change or performance claim is authorized by offline preparation alone.",
   "telemetry_mode": "Both arms initialize Core+RUM with granted consent, the same probe application and ios-s3-application-impact service. Default vitals/slow-frame settings remain enabled; normal upload uses the existing authorized local configuration. No external application data request. No alternate endpoint, stubbed upload or networking benchmark.",
   "trace_contract": "Required complete raw physical trace and six exported tables: process-info, os-signpost-interval, core-animation-fps-estimate, hitches-summary, hitches-render-interval, potential-hangs. Exact Workload warmup/active/idle messages bind run UUID and PID/process lifetime, with consistent native-to-trace clocks. FPS is display-level; retain all global hitches and never filter window-server renders by app PID. Require one unchanged physical internal display, native full-screen owned readiness before workload, complete FPS coverage, positive process proof, hang threshold exactly250ms, and no competing workload. Present empty hitch/hang tables differ from absent tables. First planned physical baseline qualifies actual exported formats and full capture; missing/ambiguous evidence is INVALID.",
   "preparation_review": {
@@ -174,7 +174,7 @@
     ],
     "disposition": "Definition now quantifies sampling/trend and trace joins. Builder will bind full fixture, dependency and product identities; no native admission follows from preparation."
   },
-  "updated_at": "2026-09-23T11:55:42.351762+00:00",
+  "updated_at": "2026-09-24T12:30:28.766664+00:00",
   "prior_preparation": {
     "candidate": "7fef86acad43b4eefeb7f62c84e3b6c12c7acbcf",
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-app-impact-rugffx2v",
@@ -430,6 +430,69 @@
       "gap": "Only post-cleanup process inventory was retained. An immediate pre-attach inventory can distinguish a lost or replaced app process from recorder-only visibility failure. No existing artifact proves that prerequisite at the failed attach.",
       "next_preparation": "Bind one current process inventory to the exact launch PID and executable URL immediately before recorder admission; retain a failed attach and a bounded post-failure inventory before cleanup. Preserve the existing readiness/workload clocks and stop before workload if recorder readiness is absent. This is preparation only; no native retry admitted.",
       "native_launches": 0
+    }
+  },
+  "capture_process_binding_preparation": {
+    "state": "REVIEWED_OFFLINE_PREPARATION",
+    "at": 1790252281.5994098,
+    "gate": "S3:P01",
+    "prior_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-api-candidate-3zfcmcnw/physical-wave-transport",
+    "discriminator": "Recorded launch PID38748 and pre-SDK installed code succeeded, but Instruments could not find that PID. No process inventory exists at attachment; post-cleanup inventory cannot distinguish app loss/replacement from recorder-only visibility.",
+    "scope": [
+      "tools/multi-scene/application-impact/physical.py",
+      "tools/multi-scene/application-impact/test_physical.py"
+    ],
+    "contract": "Preserve exact launch PID and executable file URL. Immediately before the one recorder launch, require a complete current CoreDevice inventory from the same device with exactly that PID/executable. Reject absent, replaced, duplicate, malformed, foreign or stale inventories before attaching. On recorder-start failure only, retain one bounded actual process inventory before cleanup without replacing the primary error. An exact post-failure match is diagnostic visibility, not continuous lifetime or recorder qualification. No observation changes workload, metrics, SDK or product bytes. Launch URL must also match the signed product app directory, rejecting a same-basename foreign app. The pre-attach inventory establishes visibility at its own timestamp only; disappearance/replacement before recorder attachment remains possible and must stop at recorder readiness. No continuous liveness is claimed.",
+    "limits": {
+      "native_admitted": false,
+      "builds": 0,
+      "device_mutations": 0,
+      "offline_control_seconds": 60,
+      "pre_attach_receipt_max_age_seconds": 5,
+      "inventory_seconds": 15,
+      "post_failure_seconds": 18,
+      "deadline_extension": false,
+      "retries": 0
+    },
+    "reviewer": "/root/c06_runtime_plan",
+    "gate_closures": [],
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-process-binding-4f0mce4z",
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-process-binding-4f0mce4z/controls-reviewed.json",
+      "sha256": "869d85f2f4b40554292672e2aa228e3761b44d33c3c5a010db6650575cb82f05"
+    },
+    "controls_count": 72,
+    "source_sha256": {
+      "tools/multi-scene/application-impact/physical.py": "85016591f63970d5b57450e0562e3078519c24f12c049c7f328ec04a8030bf6d",
+      "tools/multi-scene/application-impact/test_physical.py": "cfd2dbb046dc8b5ac4812ad38520625c8460f11bdc78687ef3a3c92986ff3f61"
+    },
+    "unchanged_products": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-process-binding-4f0mce4z/reuse-check.json",
+      "sha256": "f579ed6e625333fc2d054b3ce46ac13402e43c38b35d581d2f60443789105e9f"
+    },
+    "device_inventory": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-process-binding-4f0mce4z/device-summary.json",
+      "sha256": "92019382b39fb74440b767f203eda909719633de5befaabe2adbd4f644e784f6"
+    },
+    "review_followup": {
+      "at": 1790252859.772846,
+      "findings": [
+        "Executable basename alone does not reject a different app directory.",
+        "A pre-attach inventory does not establish continuous liveness through recorder attachment."
+      ],
+      "disposition": "Bind both app directory and executable to the signed product and retain existing full installed-code bundle/PID/run/source proof. Scope the one current inventory as a point-in-time observation; explicitly retain the unavoidable post-observation race and test visible-before, absent/replaced-after failure. Recorder readiness and subsequent trace lifetime remain required; no native admission."
+    },
+    "controls_prior": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-process-binding-4f0mce4z/controls.json",
+      "sha256": "dce630b7e23686c43557fd05d972c39a4c4015874a56b9f682ec86486c1378f1"
+    },
+    "retained_format_reviewed": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-process-binding-4f0mce4z/retained-format-reviewed.json",
+      "sha256": "97374d98148f81b584eda76ac7de41bb6e732e7d93e3751e7d198a07f44152a4"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp224-process-binding-4f0mce4z/review.json",
+      "sha256": "8ee34ba45ec642fc6977b2c355d50e7c7b32664748c8817c8f207471eac21cfa"
     }
   }
 }

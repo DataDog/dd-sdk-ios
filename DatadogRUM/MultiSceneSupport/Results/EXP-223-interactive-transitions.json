@@ -7,7 +7,7 @@
     "S2:H13",
     "S2:H14"
   ],
-  "status": "CAPTURE_CONTRACT_REPAIR",
+  "status": "CAPTURE_QUALIFICATION_PROVIDER_STOPPED",
   "defined_at": "2026-09-22T23:17:07.076784+00:00",
   "owner": "SDK implementer + device operator",
   "reviewer": "/root/c06_runtime_plan",
@@ -326,7 +326,7 @@
     }
   ],
   "gate_closures": [],
-  "next_action": "Review the captured null-container boundary, implement its narrow completed-dismissal handling and decisive negative controls, then obtain scoped review before the single baseline build/qualification. Input exchange is qualified for the reached six effects; preserve full mechanism/human/S3 limits.",
+  "next_action": "Read terminal_presentation_lifetime: corrected source/build/165 controls are reviewed; qualification stopped before gestures after provider interruption. No equivalent retry or human admission. Original failed cleanup and separate restoration remain immutable. Advance independent capture blockers while a materially changed interaction prerequisite is unavailable.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
@@ -397,7 +397,7 @@
       "scope": "Fixture/native and local paired oracle only. Full runtime, backend, adaptive geometry and physical execution remain unqualified."
     }
   },
-  "updated_at": "2026-09-24T11:10:53.598319+00:00",
+  "updated_at": "2026-09-24T12:25:25.110708+00:00",
   "live_environment": {
     "observed_at": "2026-09-23T19:45:47.121281+00:00",
     "xcode": "27.1 (27A9269)",
@@ -584,7 +584,7 @@
     "release_guard": "NATIVE_QUALIFIED_FOR_THIS_FAILED_CELL: actual reply, fresh same-owner zero-touch/no-coordinator snapshot, then task-only teardown."
   },
   "event_capture_correction": {
-    "state": "METADATA_CORRECTION_NATIVE_ADMITTED",
+    "state": "STOPPED_PROVIDER_INTERRUPTION",
     "defined_at": "2026-09-24T08:22:20.372735+00:00",
     "artifacts": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo",
     "objective": "Repair shared human-session capture before another operator session; unchanged S2/S3 release criteria.",

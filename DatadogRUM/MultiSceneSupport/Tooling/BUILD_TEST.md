@@ -213,4 +213,10 @@ correction leaves fixture/compiler/product bytes unchanged. Keep the original
 build plan and failed attempts. CoreDevice launch options must precede the bundle
 ID, after which tokens are app arguments. A clean install and matching pre-SDK
 receipt cannot substitute for recorder readiness; stop failed qualification before
-claiming workload or performance evidence. See the owner for current admission.
+claiming workload or performance evidence. Bind the launched PID and executable/app
+directory to the installed product, then retain one current process inventory just
+before attachment. This proves point-in-time visibility only; the process can still
+disappear before the recorder starts. On failed attachment, preserve the original
+error and one bounded process read before cleanup. Neither snapshot can substitute
+for recorder readiness or the trace's exact process lifetime. See the owner for
+current admission.

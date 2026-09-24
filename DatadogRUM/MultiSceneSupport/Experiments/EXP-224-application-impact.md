@@ -29,6 +29,14 @@ inventory is empty. Neither observation establishes process liveness during the
 failed attach or identifies an SDK defect. A future continuation requires a new
 capture prerequisite or discriminator; original deadlines cannot be reopened.
 
+The process-visibility follow-up is prepared offline with72 controls. It binds the
+launch PID and executable/app directory to the signed product, then requires a fresh
+same-device process inventory before attachment. One failure-only inventory keeps
+the recorder error and distinguishes missing/replaced processes from observed
+visibility. A snapshot is point-in-time evidence; recorder readiness and trace
+lifetime remain mandatory. Products are unchanged, both physical devices are now
+disconnected, and no native continuation is admitted.
+
 Core Animation FPS is a display-driver estimate. Global hitches are compared
 during the exact app Workload interval; Hangs, CPU and footprint bind to the app
 PID. Complete table schemas, process lifetimes, run/phase messages, native clocks
