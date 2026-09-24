@@ -373,3 +373,18 @@ The strict snapshot remains INVALID; diagnostic evidence is captured in37.2s and
 task-only removal/session end/Shutdown restoration pass within69.6s. The original
 headless failure stays immutable. Audit actual view ancestry separately from public
 accessibility-container exposure before changing the oracle; no release gate closes.
+
+
+The source-backed fixture repair derives UIView visibility from the actual owned
+view hierarchy and preserves every accessibility alias observation. Non-view path
+conflicts and missing/foreign/cyclic/changed ancestry still reject. Sixty-six
+compiled-traversal, host and predecessor controls pass review. Exact AST mapping
+preserves accepted UIKit rules; source/archive/layout equality proves no SDK change.
+
+One fresh build and reviewed zero-input snapshot qualify the33-object visual graph
+(29 views/four generic objects), retaining the original conflicting Home paths.
+Snapshot cost is36.966ms; this is one diagnostic sample, not a performance baseline.
+Cleanup/session end/Shutdown restoration pass within66.2s. Both exact fixture
+identifiers are still absent, so target qualification and every interactive gate
+remain open. Inspect the public identifier getter on generic accessibility objects;
+labels and matching frames cannot substitute for the missing identifiers.

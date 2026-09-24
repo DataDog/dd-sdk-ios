@@ -34,7 +34,8 @@ class NSObject: Foundation.NSObject {
     func accessibilityElement(at index: Int) -> Any? { missingChild ? nil : indexedElements?[index] }
 }
 class UIView: NSObject, UIAccessibilityIdentification {
-    var subviews: [UIView] = []
+    var subviews: [UIView] = [] { didSet { for child in subviews { child.superview = self } } }
+    weak var superview: UIView?
     weak var window: UIWindow?
     var bounds = CGRect(x: 0, y: 0, width: 300, height: 500)
     var isHidden = false
@@ -47,6 +48,15 @@ class UIWindow: UIView { let screen = Screen() }
 class UIAccessibilityElement: NSObject, UIAccessibilityIdentification {}
 class PublicContainer: NSObject {}
 class PublicIdentifiedObject: NSObject, UIAccessibilityIdentification {}
+class MutatingContainer: PublicContainer {
+    var target: UIView?
+    var changeParent = false
+    var changeAlpha = false
+    override func accessibilityElementCount() -> Int {
+        if changeParent { target?.superview = nil } else if changeAlpha { target?.alpha = .nan } else { target?.isHidden = true }
+        return 0
+    }
+}
 var releasedDuringWalk = 0
 class TemporaryLeaf: UIAccessibilityElement { deinit { releasedDuringWalk += 1 } }
 class TemporaryProducer: PublicContainer {
@@ -91,6 +101,29 @@ func inventory(_ scenario: String, framework: String = "SwiftUI") -> [[String: A
         let view = UIView(); view.window = root; view.accessibilityIdentifier = "screen.home"
         root.subviews = [view]; root.accessibilityElements = [view, next]
         root.indexedElements = [view]; root.automationElements = [view]
+    case "view_alias_visibility":
+        let view = UIView(); view.window = root; view.accessibilityIdentifier = "screen.home"; view.accessibilityLabel = "Home"
+        root.subviews = [view]
+        let hidden = PublicContainer(), visible = PublicContainer()
+        hidden.accessibilityElementsHidden = true; hidden.automationElements = [view]
+        visible.indexedElements = [view]; root.accessibilityElements = [hidden, visible, next]
+    case "real_hidden_alias", "real_transparent_alias":
+        let parent = UIView(), view = UIView(); parent.window = root; view.window = root
+        parent.isHidden = scenario == "real_hidden_alias"; parent.alpha = scenario == "real_transparent_alias" ? 0 : 1
+        view.accessibilityIdentifier = "screen.home"; parent.subviews = [view]; root.subviews = [parent]
+        root.accessibilityElements = [view, next]
+    case "missing_visual_parent":
+        let view = UIView(); view.window = root; view.accessibilityIdentifier = "screen.home"
+        root.accessibilityElements = [view, next]
+    case "changed_visual_state", "changed_visual_parent", "changed_visual_alpha":
+        let view = UIView(); view.window = root; view.accessibilityIdentifier = "screen.home"; root.subviews = [view]
+        let mutator = MutatingContainer(); mutator.target = view; mutator.changeParent = scenario == "changed_visual_parent"
+        mutator.changeAlpha = scenario == "changed_visual_alpha"
+        root.accessibilityElements = [view, mutator, next]
+    case "visual_cycle":
+        let parent = UIView(); parent.window = root; root.subviews = [parent]; parent.subviews = [root]
+    case "foreign_visual_parent":
+        let foreign = UIView(); root.subviews = [foreign]
     case "alpha_divergence":
         let parent = UIView(); parent.window = root; parent.alpha = 0.5
         parent.accessibilityElements = [marker]; root.subviews = [parent]
@@ -132,7 +165,9 @@ func inventory(_ scenario: String, framework: String = "SwiftUI") -> [[String: A
 }
 var results = [String: [[String: Any]]]()
 for name in ["direct", "indexed", "array", "automation", "generic", "duplicate_object", "cycle",
-             "all_view_paths", "alpha_divergence", "alpha_cycle", "temporary_children", "duplicate_identifier", "malformed", "missing_index", "negative_count", "child_limit", "array_limit",
+             "all_view_paths", "view_alias_visibility", "real_hidden_alias", "real_transparent_alias",
+             "missing_visual_parent", "changed_visual_state", "changed_visual_parent", "changed_visual_alpha", "visual_cycle", "foreign_visual_parent",
+             "alpha_divergence", "alpha_cycle", "temporary_children", "duplicate_identifier", "malformed", "missing_index", "negative_count", "child_limit", "array_limit",
              "inventory_limit", "foreign_view", "hidden", "transparent", "conflicting_visibility", "nonfinite_alpha"] {
     results[name] = inventory(name)
 }
@@ -187,7 +222,8 @@ class PublicInventory(unittest.TestCase):
 
     def test_malformed_missing_unbounded_and_foreign_children_fail_closed(self):
         for key in ['malformed','missing_index','negative_count','child_limit','array_limit','inventory_limit','foreign_view',
-                    'conflicting_visibility','alpha_divergence','alpha_cycle','nonfinite_alpha']:
+                    'conflicting_visibility','alpha_divergence','nonfinite_alpha','missing_visual_parent',
+                    'changed_visual_state','changed_visual_parent','changed_visual_alpha','visual_cycle','foreign_visual_parent']:
             with self.subTest(key=key):
                 self.assertEqual(len(self.rows[key]),1); self.assertIn('capture_error',self.rows[key][0])
 
@@ -201,7 +237,7 @@ class PublicInventory(unittest.TestCase):
 
     def test_rejected_visibility_paths_retain_exact_object_and_both_inputs(self):
         fields={'parent','edge','hidden','alpha','inherited_hidden','inherited_alpha'}
-        for name in ['conflicting_visibility','alpha_divergence','alpha_cycle']:
+        for name in ['conflicting_visibility','alpha_divergence']:
             with self.subTest(name=name):
                 row=self.rows[name][0];self.assertEqual(row['capture_error'],'conflicting public accessibility visibility paths')
                 conflict=row['conflict'];first=conflict['first_path'];current=conflict['current_path']
@@ -215,15 +251,11 @@ class PublicInventory(unittest.TestCase):
                 elif name=='alpha_divergence':
                     self.assertEqual({first['alpha'],current['alpha']},{0.5,1})
                     self.assertEqual(first['hidden'],current['hidden'])
-                else:
-                    self.assertEqual(first['alpha'],0.5);self.assertEqual(current['alpha'],0.25)
-                    self.assertEqual(current['parent'],conflict['object_id'])
-                    self.assertEqual(first['edge'],'subviews');self.assertEqual(current['edge'],'accessibilityElements')
 
     def test_conflict_diagnostics_remain_rejected_by_actual_target_entrypoint(self):
         from test_human_contract import NativeInputControls
         control=NativeInputControls();control.setUp()
-        for name in ['conflicting_visibility','alpha_divergence','alpha_cycle']:
+        for name in ['conflicting_visibility','alpha_divergence']:
             value=copy.deepcopy(control.topology);value['accessibility']=self.rows[name]
             with self.subTest(name=name),self.assertRaisesRegex(ValueError,'incomplete public accessibility inventory'):
                 human_contract.target({'payload':{'topology':value}},'screen.home',control.binding)
@@ -231,6 +263,63 @@ class PublicInventory(unittest.TestCase):
     def test_hidden_and_transparent_paths_cannot_produce_visible_targets(self):
         self.assertTrue(all(r['hidden'] for r in self.targets('hidden')))
         self.assertTrue(all(r['alpha']==0 for r in self.targets('transparent')))
+
+    def actual_target(self,rows):
+        root=next(r['id'] for r in rows if 'nil:owned-window' in r['container_edges'])
+        with patch.object(human_contract,'topology',return_value=(None,{'bounds':[0,0,300,500]})):
+            return human_contract.target({'payload':{'topology':{'accessibility':rows}}},'screen.home',{'window':root})
+
+    def test_actual_native_alias_shape_uses_physical_visibility_and_retains_both_paths(self):
+        rows=self.rows['view_alias_visibility'];target=self.actual_target(rows)
+        self.assertFalse(target['hidden']);self.assertEqual(target['alpha'],1)
+        self.assertEqual(target['visibility_basis'],'view-hierarchy')
+        paths={p['edge']:p for p in target['visibility_paths']}
+        self.assertFalse(paths['accessibilityElementAtIndex']['hidden'])
+        self.assertTrue(paths['automationElements']['hidden'])
+        self.assertEqual(target['view_state']['parent'],next(r['id'] for r in rows if 'nil:owned-window' in r['container_edges']))
+
+    def test_accessibility_alias_cannot_bypass_a_real_hidden_or_transparent_ancestor(self):
+        for name in ['real_hidden_alias','real_transparent_alias']:
+            with self.subTest(name=name),self.assertRaisesRegex(ValueError,'target not visible'):
+                self.actual_target(self.rows[name])
+
+    def test_accessibility_cycle_does_not_multiply_a_view_alpha_twice(self):
+        target=self.actual_target(self.rows['alpha_cycle']);self.assertEqual(target['alpha'],0.5)
+        parent=next(r for r in self.rows['alpha_cycle'] if r.get('view_state',{}).get('alpha')==0.5)
+        self.assertEqual(parent['alpha'],0.5)
+        self.assertIn(0.25,[p['alpha'] for p in parent['visibility_paths']])
+
+    def test_missing_forged_cyclic_or_changed_visual_proof_rejects(self):
+        changes=[lambda r:r.pop('view_state'),lambda r:r.pop('visibility_basis'),
+                 lambda r:r['view_state'].update(parent='missing'),lambda r:r['view_state'].update(parent=r['id']),
+                 lambda r:r['view_state'].update(window='foreign'),lambda r:r['view_state'].update(hidden=True),
+                 lambda r:r['view_state'].update(alpha=0),lambda r:r['view_state'].update(alpha=float('nan')),
+                 lambda r:r['view_state'].update(alpha=True),lambda r:r.update(hidden=True),
+                 lambda r:r.pop('visibility_paths'),lambda r:r['visibility_paths'].pop(),
+                 lambda r:r['visibility_paths'].append(copy.deepcopy(r['visibility_paths'][0])),
+                 lambda r:r['visibility_paths'][0].update(inherited_hidden=not r['visibility_paths'][0]['inherited_hidden']),
+                 lambda r:r['visibility_paths'][0].update(hidden=not r['visibility_paths'][0]['hidden']),
+                 lambda r:r['container_edges'].remove(next(e for e in r['container_edges'] if e.endswith(':subviews')))]
+        for change in changes:
+            rows=copy.deepcopy(self.rows['view_alias_visibility']);target=next(r for r in rows if r.get('identifier')=='screen.home');change(target)
+            with self.subTest(change=change),self.assertRaises(ValueError):self.actual_target(rows)
+
+    def test_changed_physical_ancestry_preserves_both_actual_observations(self):
+        for name,field in [('changed_visual_state','hidden'),('changed_visual_parent','parent'),('changed_visual_alpha','alpha')]:
+            with self.subTest(name=name):
+                failure=self.rows[name][0];self.assertIn('capture_error',failure)
+                self.assertEqual(failure['first_view']['id'],failure['current_view']['id'])
+                self.assertNotEqual(failure['first_view'][field],failure['current_view'][field])
+        self.assertIn('current_view',self.rows['missing_visual_parent'][0])
+        self.assertEqual(self.rows['changed_visual_alpha'][0]['current_view']['alpha'],'nan')
+
+    def test_new_capture_cannot_mix_complete_and_missing_visual_records(self):
+        rows=copy.deepcopy(self.rows['view_alias_visibility']);root=next(r for r in rows if 'nil:owned-window' in r['container_edges'])
+        for key in ['visibility_basis','visibility_paths','view_state','accessibility_elements_hidden']:root.pop(key,None)
+        with self.assertRaises(ValueError):self.actual_target(rows)
+
+    def test_duplicate_target_identifiers_remain_rejected(self):
+        with self.assertRaisesRegex(ValueError,'missing/duplicate actual target'):self.actual_target(self.rows['duplicate_identifier'])
 
     def test_original_uikit_branch_is_retained_without_new_automation_children(self):
         self.assertEqual(sorted(r['identifier'] for r in self.rows['legacy_direct']),['home.next','screen.home'])

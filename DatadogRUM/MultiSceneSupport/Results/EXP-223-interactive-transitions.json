@@ -2297,6 +2297,52 @@
                 "backend_queries": 0,
                 "cleanup": "PASS"
               }
+            },
+            "visual_ancestry_repair": {
+              "state": "VISUAL_GRAPH_QUALIFIED_TARGETS_MISSING",
+              "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-visibility-semantics-19l1uz0r",
+              "definition": {
+                "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-visibility-semantics-19l1uz0r/definition.json",
+                "sha256": "281e1e758548d3fd2e78cdde714ae13cbf866360bf07ddf8e6fe47ce4b3fc518"
+              },
+              "review": {
+                "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-visibility-semantics-19l1uz0r/source-review.json",
+                "sha256": "11e96b95db39262650238743ae59c8c849105f2e24987e718b1f178b16412046"
+              },
+              "controls": {
+                "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-visibility-semantics-19l1uz0r/controls-reviewed.json",
+                "sha256": "416ddc38bd6f714d9cd2e07837496ba0de362334cc0773802ebd4c54a621d1ab"
+              },
+              "controls_count": 66,
+              "source_mapping": {
+                "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-visibility-semantics-19l1uz0r/source-mapping.json",
+                "sha256": "68ae5d1064098eb4997af67280640a9ca9f4a821adcf60078baa11ffc00ab57b"
+              },
+              "build_definition": {
+                "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-visibility-semantics-19l1uz0r/build-definition.json",
+                "sha256": "eed7f29625b3b7da373a74cbf5df22ec7021e451ee140b0696c982e3661a949f"
+              },
+              "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-visibility-semantics-19l1uz0r/build",
+              "native_admitted": true,
+              "gate_closures": [],
+              "build_plan": {
+                "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-visibility-semantics-19l1uz0r/build/plan.json",
+                "sha256": "1c023782b41062445d6ea6aa921be1b09bc667858c16680dc6e4249624343648"
+              },
+              "build_receipt": {
+                "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-visibility-semantics-19l1uz0r/build/A-simulator/build-result.json",
+                "sha256": "f6f2fcab7e76787ed0ab5445b20b678a0e6d213a824ecacb947802ff0a810a1e"
+              },
+              "native_plan": {
+                "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-visibility-semantics-19l1uz0r/frontend/plan.json",
+                "sha256": "a8807dbff50105dfc2593e47dde017305f3e57c211ad804aba60ef765dd6c2e8"
+              },
+              "outcome": {
+                "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-visibility-semantics-19l1uz0r/frontend/outcome.json",
+                "sha256": "0a70556a3df8de1047af62504c65bb382795188ef0290a5b15c6a60f3a7b04d3"
+              },
+              "cleanup": "PASS",
+              "remaining": "Both required source-declared identifiers are absent. SwiftUI generic objects carry actual home/Open detail labels and geometry but formal UIAccessibilityIdentification cast yields no identifier. Labels cannot replace identifiers; inspect public getter contract before any correction."
             }
           }
         }

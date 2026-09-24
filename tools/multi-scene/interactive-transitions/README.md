@@ -182,5 +182,8 @@ identity and both public paths. Its first headless setup reports display state
 `unknown` and stops before install. The separately reviewed frontend continuation
 uses the actual Xcode start/end responses, requires `activeOn` before install,
 captures one initial snapshot without input, and restores the original Shutdown.
-Its Home UIView conflict remains invalid; it cannot admit another gesture run.
-Read the EXP223 owner for the source-supported visibility repair boundary.
+The repaired overlay derives UIView hidden/alpha from the owned physical hierarchy,
+retains every public alias path, and keeps non-view conflicts strict. Host assertions
+recompute that physical proof before accepting a target. The33-object native graph
+qualifies, but exact screen/action identifiers are absent on generic objects. That
+is still a stop before gestures; read the EXP223 owner for the public-getter audit.

@@ -129,6 +129,59 @@ def accessibility_owner(inventory,selected,window):
         if current in reachable:continue
         reachable.add(current);pending.extend(children[current]-reachable)
     require(reachable==ids and selected['id'] in reachable,'disconnected public accessibility ownership')
+    # Visual ancestry is independent of the aliases in an accessibility graph.
+    fields={'visibility_basis','visibility_paths','view_state','accessibility_elements_hidden'}
+    if not any(fields.intersection(row) for row in inventory):return
+    rows={row['id']:row for row in inventory}
+    def alpha(value):return type(value) in [int,float] and math.isfinite(value) and 0<=value<=1
+    for row in inventory:
+        is_view=row.get('kind')=='UIView'
+        require(row.get('visibility_basis')==('view-hierarchy' if is_view else 'container-path')
+                and type(row.get('hidden')) is bool and alpha(row.get('alpha'))
+                and type(row.get('accessibility_elements_hidden')) is bool,'incomplete public visibility record')
+        if is_view:
+            chain=[];seen=set();current=row
+            while True:
+                state=current.get('view_state')
+                require(current.get('kind')=='UIView' and current['id'] not in seen
+                        and type(state) is dict and set(state)=={'parent','window','hidden','alpha'}
+                        and state['window']==window and type(state['parent']) is str
+                        and type(state['hidden']) is bool and alpha(state['alpha']),'invalid physical view ancestry')
+                seen.add(current['id']);chain.append(state)
+                if current['id']==window:
+                    require(state['parent']=='nil','owned window has a visual parent');break
+                require(state['parent'] in rows and state['parent']+':subviews' in current['container_edges'],
+                        'missing physical view parent or subview edge')
+                current=rows[state['parent']]
+            effective_hidden=False;effective_alpha=1
+            for state in reversed(chain):
+                effective_hidden=effective_hidden or state['hidden'];effective_alpha*=state['alpha']
+            require(row['hidden']==effective_hidden and row['alpha']==effective_alpha,'physical view visibility differs')
+        else:
+            require('view_state' not in row,'non-view has fabricated physical ancestry')
+        paths=row.get('visibility_paths');keys=[]
+        require(type(paths) is list and paths,'missing actual public visibility paths')
+        for path in paths:
+            require(type(path) is dict and set(path)=={'parent','edge','inherited_hidden','inherited_alpha','hidden','alpha'}
+                    and type(path['parent']) is str and type(path['edge']) is str
+                    and type(path['inherited_hidden']) is bool and type(path['hidden']) is bool
+                    and alpha(path['inherited_alpha']) and alpha(path['alpha']),'invalid public visibility path')
+            key=path['parent']+':'+path['edge'];keys.append(key)
+            if key=='nil:owned-window':inherited_hidden=False;inherited_alpha=1
+            else:
+                require(path['parent'] in rows,'missing public visibility parent')
+                parent=rows[path['parent']]
+                require(type(parent.get('hidden')) is bool and type(parent.get('accessibility_elements_hidden')) is bool
+                        and alpha(parent.get('alpha')),'incomplete public visibility parent')
+                inherited_hidden=parent['hidden'] or parent['accessibility_elements_hidden'];inherited_alpha=parent['alpha']
+            require(path['inherited_hidden']==inherited_hidden and path['inherited_alpha']==inherited_alpha,
+                    'changed inherited public visibility')
+            expected_hidden=inherited_hidden or (row['view_state']['hidden'] if is_view else False)
+            expected_alpha=inherited_alpha*(row['view_state']['alpha'] if is_view else 1)
+            require(path['hidden']==expected_hidden and path['alpha']==expected_alpha,'changed public visibility observation')
+            if not is_view:
+                require(row['hidden']==path['hidden'] and row['alpha']==path['alpha'],'conflicting non-view visibility')
+        require(len(keys)==len(set(keys)) and set(keys)==set(row['container_edges']),'missing or duplicate public visibility edges')
 
 
 def target(before,identifier,binding):

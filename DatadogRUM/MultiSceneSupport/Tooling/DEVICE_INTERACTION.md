@@ -245,6 +245,9 @@ Do not infer extra presentations from inherited aliases or hardcode class names.
 An ordinary iPad can omit the Duo `active` field. Select its single lit primary
 integrated display with a scoped parser and preflight it before installation; do
 not invent response fields or relax the Duo fold parser.
+For public accessibility inventories, visual UIView ancestry and accessibility
+container paths are distinct evidence. Retain both; compute view hidden/alpha from
+its owned physical hierarchy, and require exact identifiers before target input.
 The separate simulator capture qualification retains complete current UI-tool
 returns plus their exact returned artifacts. It cannot promote a human, candidate
 or physical-device gate, and its cleanup must finish before a successor cell.
