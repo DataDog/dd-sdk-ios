@@ -212,3 +212,13 @@ handles failed setup with or without a session, preserving the original verdict.
 The actual session-end invocation binds its key, setup hash and times after worker
 quiescence. The owning `boot_readiness` record retains sources and controls; fresh
 UIKit-only preparation and admission remain separate from offline qualification.
+
+The fresh UIKit cell now qualifies the baseline capture mechanism: all11 exchanges,
+completed/cancelled navigation and sheet dismissal, local ownership assertions and
+cleanup pass. Both root and creating-context session-end calls report actual
+session absence, not graceful termination; original Shutdown was restored in time.
+The worker's verbose stdout was truncated after its complete evidence/proof files
+were written; compact readback verified both files and all11 requests. Six actual
+callback partitions remain below2ms (maximum1.711ms, dominated by topology). This
+does not explain the old3.096ms sample or grant performance/release credit. The next
+finite cell is SwiftUI with an immutable UIKit predecessor; no accepted UIKit rerun.

@@ -584,7 +584,7 @@
     "release_guard": "NATIVE_QUALIFIED_FOR_THIS_FAILED_CELL: actual reply, fresh same-owner zero-touch/no-coordinator snapshot, then task-only teardown."
   },
   "event_capture_correction": {
-    "state": "STOPPED_SESSION_READINESS",
+    "state": "BASELINE_UIKIT_CAPTURE_QUALIFIED",
     "defined_at": "2026-09-24T08:22:20.372735+00:00",
     "artifacts": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-event-capture-bxa_t3uo",
     "objective": "Repair shared human-session capture before another operator session; unchanged S2/S3 release criteria.",
@@ -1835,7 +1835,7 @@
       }
     },
     "phase_pump": {
-      "state": "QUALIFICATION_STOPPED_OBSERVER_COST",
+      "state": "UIKIT_QUALIFIED_AFTER_BOOT_READINESS",
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-phase-pump-5efyqf40",
       "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-phase-pump-5efyqf40/definition.json",
       "native_admitted": true,
@@ -1984,7 +1984,7 @@
         "native_launches": 0,
         "input_actions": 0,
         "boot_readiness": {
-          "state": "OFFLINE_REVIEWED",
+          "state": "BASELINE_UIKIT_CAPTURE_QUALIFIED",
           "definition": {
             "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-boot-readiness-_x2hlep7/definition.json",
             "sha256": "793d111e8e8f515fd2422dd2cf66e499a7b937aa8532163d2725186a18f832cd"
@@ -1999,10 +1999,49 @@
           },
           "tests": 34,
           "native_admitted": false,
-          "gate_closures": []
+          "gate_closures": [],
+          "checkpoint": "c1676336894abe7cfa6506118937974a3809c9ce",
+          "qualification_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-boot-readiness-_x2hlep7/qualification",
+          "plan_sha256": "2263e48cb6ac00fca416448baf36e0700f27cc2930853c3c01f4e1bbf9f23e4a",
+          "preparation_review": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-boot-readiness-_x2hlep7/qualification/preparation-review.json",
+            "sha256": "d1340e400153cab14d39c364c38c5f701a33d77a4aa2217328e0943148156241"
+          },
+          "native_review": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-boot-readiness-_x2hlep7/qualification/review.json",
+            "sha256": "cbac063fbe53cf832c1611433e8461c3a0e739288b0da4dd074cb2eb188c550a"
+          },
+          "worker_sha256": "1893502df6449d722c5e831cfeec05d60198368e9398c9bfc2803b66754a6137",
+          "admission_consumed": true,
+          "result": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-boot-readiness-_x2hlep7/qualification/cells/UIKit/summary.json",
+            "sha256": "587664bbbaeaf9ef55c431ce1377b6a0261e76759b239ba6c9cae0f9b4cef1b6"
+          },
+          "outcome_review": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-boot-readiness-_x2hlep7/qualification/outcome-review.json",
+            "sha256": "7851de3f4d73ab68d9a9e51170f877d33017620637b18087baa3f2a46c606f0c"
+          },
+          "callback_cost": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-boot-readiness-_x2hlep7/qualification/callback-cost-result.json",
+            "sha256": "edafcad15772f42de4e5182d18ca9ef2e9f79860b97b789dbb4c97a6421273c9"
+          },
+          "scenario": "PASS",
+          "evidence": "PASS",
+          "cleanup": "PASS",
+          "input_exchanges": 11,
+          "callback_samples": 6,
+          "max_callback_ns": 1710583,
+          "next_scope": "Fresh SwiftUI-only qualification with exact immutable UIKit predecessor binding; never mutate the UIKit plan or copy its result into a new cell.",
+          "checkpoint_signing": {
+            "state": "LOCAL_UNSIGNED_FALLBACK",
+            "refusal": {
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-boot-readiness-_x2hlep7/qualification/checkpoint-signing-refusal.json",
+              "sha256": "77f7c3343335dd0c40a486f4eecf43bb431ee0c4a450c9a442e0d22f70b33918"
+            }
+          }
         }
       }
     }
   },
-  "state": "CAPTURE_QUALIFICATION_PREFLIGHT_STOPPED"
+  "state": "BASELINE_UIKIT_CAPTURE_QUALIFIED"
 }
