@@ -21,6 +21,14 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
         )
     }
 
+    func testUIKitText() async throws {
+        try await takeLayerSnapshotFor(
+            TextFixtureViewController(),
+            with: TextAndInputPrivacyLevel.allCases,
+            shouldRecord: shouldRecord
+        )
+    }
+
     func testDrawingGroup() async throws {
         try await takeLayerSnapshotFor(
             DrawingGroupFixtureView(),
