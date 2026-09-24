@@ -214,11 +214,20 @@ quiescence. The owning `boot_readiness` record retains sources and controls; fre
 UIKit-only preparation and admission remain separate from offline qualification.
 
 The fresh UIKit cell now qualifies the baseline capture mechanism: all11 exchanges,
-completed/cancelled navigation and sheet dismissal, local ownership assertions and
-cleanup pass. Both root and creating-context session-end calls report actual
+completed/cancelled navigation and sheet dismissal, callback/source bindings and
+cleanup pass. Both cancellations satisfy their semantic ownership expectation. Both
+completions retain the baseline FAIL classification because the expected occurrence
+was not independently mapped before callback work, despite a matching fresh return
+and callback owner. Capture qualification does not close that ownership obligation. Both root and creating-context session-end calls report actual
 session absence, not graceful termination; original Shutdown was restored in time.
 The worker's verbose stdout was truncated after its complete evidence/proof files
 were written; compact readback verified both files and all11 requests. Six actual
 callback partitions remain below2ms (maximum1.711ms, dominated by topology). This
 does not explain the old3.096ms sample or grant performance/release credit. The next
 finite cell is SwiftUI with an immutable UIKit predecessor; no accepted UIKit rerun.
+
+The SwiftUI-only reuse adapter passes42 focused controls and scoped review. It binds
+13 immutable UIKit artifacts, source/build/products, helpers, device and restoration.
+All23 retained native functions compare unchanged, allowing only the prior-summary
+lookup. A fresh plan keeps the fixed budgets and no copied UIKit cell; native
+admission follows the frozen worker review. SDK and qualified products are unchanged.

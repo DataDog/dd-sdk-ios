@@ -14,6 +14,7 @@ import shutil
 import time
 import uuid
 import build
+import capture_predecessor
 import driver
 import physical_transition
 import physical_observer
@@ -67,7 +68,7 @@ def helpers():
     return {**runtime.helpers(), **{str(p.relative_to(shared.REPO)):shared.sha(p) for p in
         [Path(__file__).resolve(), *[Path(__file__).with_name(n).resolve() for n in
          ['test_capture_qualification.py', 'capture_input.py', 'capture_input.js', 'test_capture_input.py',
-          'capture_sequence.py', 'test_capture_sequence.py']]]}}
+          'capture_sequence.py', 'test_capture_sequence.py', 'test_capture_predecessor.py']]]}}
 
 
 def verify(root):
@@ -78,24 +79,27 @@ def verify(root):
     require(plan['build_plan'] == shared.sha(source/'plan.json') and
             plan['build_receipt'] == shared.sha(source/'A-simulator/build-result.json'), 'build receipt changed')
     product = runtime.product(source, 'A-simulator', compiled)
+    capture_predecessor.verify(plan, compiled, product)
     return plan, compiled, product
 
 
-def prepare(root, build_root, device, *, cells=None):
+def prepare(root, build_root, device, *, cells=None, predecessor=None):
     cells = ['UIKit', 'SwiftUI'] if cells is None else cells
-    require(cells in [['UIKit'], ['UIKit', 'SwiftUI']], 'unsupported qualification cell slice')
+    require((cells in [['UIKit'], ['UIKit', 'SwiftUI']] and predecessor is None)
+            or (cells == ['SwiftUI'] and predecessor is not None), 'unsupported qualification cell slice')
     require(not root.exists(), 'qualification directory consumed')
     compiled = build.verify(build_root)
     require(compiled['observer'] == 'actual-pan-callbacks' and list(compiled['arms']) == ['A-simulator'], 'wrong observer/source')
-    runtime.product(build_root, 'A-simulator', compiled)
+    product = runtime.product(build_root, 'A-simulator', compiled)
     target = device_state(device)
     require(target['state'] == 'Shutdown' and 'iPad' in target['deviceTypeIdentifier'] and target['runtime'].endswith('iOS-27-0'),
             'require a shutdown ordinary iPad27 simulator')
     root.mkdir(); (root/'cells').mkdir(); driver.transport.publication_preflight(root)
     members = helpers(); shared.freeze_helpers(root,members)
+    prior = capture_predecessor.bind(predecessor, build_root, compiled, product, target, members) if predecessor else None
     atomic(root/'plan.json',encoded(dict(schema_version=1,build_root=str(build_root),build_plan=shared.sha(build_root/'plan.json'),
         build_receipt=shared.sha(build_root/'A-simulator/build-result.json'),helpers=members,device=target,
-        cells=cells,native_seconds=900,cleanup_seconds=300,input_seconds=180,boot_seconds=60,
+        cells=cells,predecessor=prior,native_seconds=900,cleanup_seconds=300,input_seconds=180,boot_seconds=60,
         session_setup_seconds=120,session_freshness_seconds=60,
         max_attempts=1,release_acceptance=False,gate_closures=[])))
     verify(root)
@@ -189,7 +193,7 @@ def await_cell(root, framework):
     plan, _, _ = reviewed(root)
     require(framework in plan['cells'], 'undeclared qualification cell')
     if framework == 'SwiftUI':
-        require(shared.read(root/'cells/UIKit/summary.json')['state'] == 'PASS', 'prior qualification did not pass')
+        require(shared.read(capture_predecessor.summary_path(root, plan))['state'] == 'PASS', 'prior qualification did not pass')
     folder = root/'sessions'/framework;folder.mkdir(parents=True)
     started = time.time()
     setup = dict(request_id=str(uuid.uuid4()), plan_sha256=shared.sha(root/'plan.json'),
@@ -420,7 +424,7 @@ def cell(root, framework):
     plan,compiled,product = reviewed(root)
     require(framework in plan['cells'], 'undeclared qualification cell')
     if framework == 'SwiftUI':
-        require(shared.read(root/'cells/UIKit/summary.json')['state'] == 'PASS', 'prior qualification did not pass')
+        require(shared.read(capture_predecessor.summary_path(root, plan))['state'] == 'PASS', 'prior qualification did not pass')
     out=root/'cells'/framework;require(not out.exists(),'cell already consumed');out.mkdir();(out/'input').mkdir()
     start=time.time();deadline=start+plan['native_seconds'];cleanup=deadline+plan['cleanup_seconds']
     device=plan['device']['udid'];current=device_state(device)

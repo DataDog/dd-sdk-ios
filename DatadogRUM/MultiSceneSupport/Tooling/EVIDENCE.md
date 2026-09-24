@@ -154,6 +154,10 @@ Bind reuse to the original definition, source/build/oracle hashes, complete rece
 terminal state and scope. A changed commit ID with identical relevant bytes does
 not invalidate evidence; different source composition does not inherit a full-suite,
 Duo, backend or app pass. Retain accepted per-cell identities after host-only changes.
+A successor may reference an immutable completed predecessor in a fresh plan. Bind
+its source/products, reviewed helpers, verdicts, quiescence and restoration; never
+copy a result into an unexecuted cell or mutate the consumed plan. Preserve separate
+semantic failure classifications when reusing capture-mechanism qualification.
 
 Read the authoritative register's absolute path/hash and the intended
 `release_requirements.S1|S2|S3`. The experimental-reference status and an older

@@ -2038,7 +2038,44 @@
               "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-boot-readiness-_x2hlep7/qualification/checkpoint-signing-refusal.json",
               "sha256": "77f7c3343335dd0c40a486f4eecf43bb431ee0c4a450c9a442e0d22f70b33918"
             }
+          },
+          "semantic_scope": {
+            "record": {
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-boot-readiness-_x2hlep7/qualification/cells/UIKit/native-summary.json",
+              "sha256": "1a0522f044e2ae6bf15b0f4df5e564f87bbc558130fe02d2c765e646cafb4e5d"
+            },
+            "cancellations": "Both semantic expectations PASS with preserved owner",
+            "completions": "Both semantic expectations FAIL: expected occurrence was not independently mapped before callback work; actual fresh return and callback owner match",
+            "acceptance": "Capture-only qualification preserves baseline classifications; no SDK ownership or release acceptance"
           }
+        },
+        "swiftui_predecessor": {
+          "state": "PREPARED_REVIEWED",
+          "definition": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-swiftui-predecessor-vqc4kb0l/definition.json",
+            "sha256": "78654d8804e67102cbd0974cec97e33b20758a8ceb67d7ee68cb57e459a94257"
+          },
+          "controls": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-swiftui-predecessor-vqc4kb0l/controls-exact-mapping.json",
+            "sha256": "eaeddfb29d66e9d4aafdd07285e12ea2529c25f4ed3e10f02f409cbdbf3bbf27"
+          },
+          "controls_count": 42,
+          "review": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-swiftui-predecessor-vqc4kb0l/preparation-review.json",
+            "sha256": "0424a7dbf774c3992ed02d733c946c14455c0f7fd2c1d6e6f9f71ef5fb202592"
+          },
+          "predecessor": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-swiftui-predecessor-vqc4kb0l/predecessor-proposal.json",
+            "sha256": "241dc6e3aba936a8198ec318f17c39842eca5bdba02590cb2c92df6a37eb29b3"
+          },
+          "qualification_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-swiftui-predecessor-vqc4kb0l/qualification",
+          "plan": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-swiftui-predecessor-vqc4kb0l/qualification/plan.json",
+            "sha256": "8bfc9b2cfe9b4afdf07834167d362d615889e9fed9cf6dbfed5eabd778bbc92c"
+          },
+          "native_admitted": false,
+          "gate_closures": [],
+          "scope": "One fresh SwiftUI-only baseline capture using unchanged qualified products; no copied UIKit cell or rerun; worker freeze and admission remain"
         }
       }
     }
