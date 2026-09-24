@@ -426,3 +426,14 @@ selector reproduces its original rejection. UIKit, pop, callbacks, transport and
 cleanup remain unchanged. No native effect or gate closure follows. The next
 preparation maps only this host selector delta to unchanged products before any
 fresh qualification; the stopped attempt and semantic limitations stay immutable.
+
+
+The separately reviewed qualification reuses the unchanged products and maps the
+SwiftUI-only selector delta while preserving accepted UIKit evidence. All11 actual
+input exchanges and four native transition chains complete. Finished pop/dismissal
+retain their semantic timing FAIL; cancellations preserve their occurrence and PASS.
+All callback owners match. Task removal, worker quiescence and original Shutdown
+restoration pass before the fixed deadline; the actual session-end response is
+retained. This closes the ordinary-simulator capture prerequisite only. Physical,
+backend, candidate and release acceptance remain open. Next prepare the physical
+public-inventory/TTID witness overlay without changing SDK source or old verdicts.

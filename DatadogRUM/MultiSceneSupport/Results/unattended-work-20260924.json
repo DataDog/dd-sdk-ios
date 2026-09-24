@@ -15,7 +15,7 @@
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
   "human_work": "UNADMITTED_WHILE_OPERATOR_SLEEPS",
-  "checkpoint": "7c36cca9cc6a94adc31c71831e336b4375d50cb4",
+  "checkpoint": "0d43e8cd379f5009c535d152a33661a6a2d4861e",
   "tasks": [
     {
       "id": "capture-backend",
@@ -39,7 +39,11 @@
         "No explicit session.has_replay value in the saved reducer",
         "Home backend terminal is active with initial duration and old brightness",
         "Incidental TTID requires its independent dispatch witness; do not infer its exact ownership from mapper timing"
-      ]
+      ],
+      "next_preparation": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-witness-69uk3guu/definition.json",
+        "sha256": "d36cfcf1b751bd158bdc92a1cc333279c22b32ef53ce43b934b6570b8af4d6b2"
+      }
     },
     {
       "id": "capture-swiftui",
@@ -52,15 +56,14 @@
       "dependency": "Read the current EXP223 visibility diagnostic definition and reviewer disposition",
       "decisive_test": "Focused source/negative controls and at most the already justified native qualification if all new prerequisites and bounded review are satisfied",
       "environment": "Offline first; qualified simulator only when available without human input",
-      "state": "SHEET_OWNER_RUNTIME_PREPARED_UNADMITTED",
+      "state": "ORDINARY_SIMULATOR_CAPTURE_QUALIFIED",
       "result": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-sheet-owner-1quvrxj0/outcome.json",
-        "sha256": "3baf7e7cda12a6013ea46452d982a6d572904421b64d03958053a6da9427d6d5"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-sheet-owner-1quvrxj0/qualification/outcome.json",
+        "sha256": "088ca027597959f40532e01ade6ca109d99776ad8d5a05c934d5de624813f2cf"
       },
       "remaining": [
-        "Freeze and review the fresh input-worker bindings, then run at most one SwiftUI baseline capture qualification. No rebuild, UIKit rerun, candidate, backend, human input or gate closure.",
-        "Original full scenario INVALID and cleanup PASS preserved; baseline completion semantic timing FAIL remains",
-        "Physical/backend qualification and human readiness remain open"
+        "Completed transition semantic timing FAIL remains; cancellation PASS and cleanup PASS retained",
+        "Physical/backend qualification remains open; no candidate or release credit"
       ]
     },
     {
@@ -87,5 +90,5 @@
     "No Replay content, unrelated CI flakes, optional networking benchmarks or physical Duo acceptance"
   ],
   "gate_closures": [],
-  "updated_at": 1790290546.552578
+  "updated_at": 1790291774.98823
 }

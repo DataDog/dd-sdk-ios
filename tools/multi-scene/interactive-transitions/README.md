@@ -195,9 +195,11 @@ The full attempt remains INVALID with cleanup PASS; no equivalent retry is admit
 The reviewed host correction uses the unique reciprocal presented controller view
 and exact native identifier subtree. It retains all matching nested tool wrappers
 and their raw lines, rejecting sibling substitution and conflicting geometry. The
-existing products need no rebuild; fresh runtime mapping/review must bind this delta
-before one qualification. Baseline completion semantic timing remains a separate
-FAIL; no candidate, backend or release claim follows.
+reviewed qualification reuses existing products and completes all11 exchanges/four
+native transitions, with cleanup PASS and original Shutdown restored. Preserve that
+capture evidence through exact source mapping; do not rerun it merely to resume.
+Baseline completion semantic timing remains a separate FAIL, cancellation PASS;
+no candidate, physical, backend or release claim follows.
 
 
 Host-only SwiftUI sheet selection changes can reuse the accepted UIKit cell only

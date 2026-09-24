@@ -326,7 +326,7 @@
     }
   ],
   "gate_closures": [],
-  "next_action": "Freeze and review the fresh input-worker bindings, then run at most one SwiftUI baseline capture qualification. No rebuild, UIKit rerun, candidate, backend, human input or gate closure.",
+  "next_action": "Execute the one reviewed SwiftUI capture qualification, then prove input-worker quiescence and task-only cleanup/session end/Shutdown restoration. No retry.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
@@ -397,7 +397,7 @@
       "scope": "Fixture/native and local paired oracle only. Full runtime, backend, adaptive geometry and physical execution remain unqualified."
     }
   },
-  "updated_at": 1790290546.5510058,
+  "updated_at": 1790290975.808158,
   "live_environment": {
     "observed_at": "2026-09-23T19:45:47.121281+00:00",
     "xcode": "27.1 (27A9269)",
@@ -2406,7 +2406,7 @@
                 },
                 "sheet_owner_repair": {
                   "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-sheet-owner-1quvrxj0",
-                  "state": "OFFLINE_SHEET_OWNER_REPAIR_REVIEWED",
+                  "state": "ORDINARY_SIMULATOR_CAPTURE_QUALIFIED",
                   "definition": {
                     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-sheet-owner-1quvrxj0/definition.json",
                     "sha256": "345b53a6b383a9620f0a53985a1426fb63d6bc7a4c2bedd9e7d2157a75028874"
@@ -2424,12 +2424,12 @@
                     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-sheet-owner-1quvrxj0/source-review.json",
                     "sha256": "431386dad4039109258e591e3c7c3564132dea0d30aec7f1217049950c83d232"
                   },
-                  "native_operations": 0,
+                  "native_operations": 1,
                   "native_admitted": false,
                   "gate_closures": [],
-                  "next_action": "Freeze and review the fresh input-worker bindings, then run at most one SwiftUI baseline capture qualification. No rebuild, UIKit rerun, candidate, backend, human input or gate closure.",
+                  "next_action": "Prepare a fresh copied physical fixture with qualified public inventory and passive TTID dispatch witness. Keep original Home backend omissions/stale values unqualified; no candidate or human session tonight.",
                   "runtime_preparation": {
-                    "state": "PREPARED_UNADMITTED",
+                    "state": "COMPLETE_CAPTURE_PASS_CLEANUP_PASS",
                     "plan": {
                       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-sheet-owner-1quvrxj0/qualification/plan.json",
                       "sha256": "ead2deb50f00cf6bbc9e162ff4dff92288d659d53e68272f7557941392e71763"
@@ -2450,7 +2450,36 @@
                     "accepted_uikit_reused": true,
                     "max_native_cells": 1,
                     "retries": 0,
-                    "native_admitted": false
+                    "native_admitted": false,
+                    "source_checkpoint": "0d43e8cd379f5009c535d152a33661a6a2d4861e",
+                    "native_review": {
+                      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-sheet-owner-1quvrxj0/qualification/review.json",
+                      "sha256": "8e3d48bdb6e4282242481b1dca0d899d6d75fc952b5b2d2fe58e0ce6df87f50a"
+                    },
+                    "outcome": {
+                      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-sheet-owner-1quvrxj0/qualification/outcome.json",
+                      "sha256": "088ca027597959f40532e01ade6ca109d99776ad8d5a05c934d5de624813f2cf"
+                    },
+                    "outcome_review": {
+                      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-sheet-owner-1quvrxj0/qualification/outcome-review.json",
+                      "sha256": "2263d3b242985c285b6c2cace443ad43010341f4ec3452586e024723589c2835"
+                    },
+                    "phase_count": 11,
+                    "gate_closures": []
+                  },
+                  "physical_witness_preparation": {
+                    "state": "OFFLINE_PREPARATION_DEFINED",
+                    "definition": {
+                      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-witness-69uk3guu/definition.json",
+                      "sha256": "d36cfcf1b751bd158bdc92a1cc333279c22b32ef53ce43b934b6570b8af4d6b2"
+                    },
+                    "design_review": {
+                      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-witness-69uk3guu/design-review.json",
+                      "sha256": "3db4d40951ab6f807d1484efc73344e34afbbad5116c980b8695dc5aeca4c837"
+                    },
+                    "build_admitted": false,
+                    "native_admitted": false,
+                    "gate_closures": []
                   }
                 }
               }
