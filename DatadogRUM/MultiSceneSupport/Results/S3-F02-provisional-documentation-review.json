@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "gate": "S3:F02:M11",
+  "status": "SOURCE_REVIEWED_PROTECTED_EDITS_DEFERRED",
+  "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "reviewer": "/root/c06_runtime_plan",
+  "at": 1790205053.880183,
+  "feature_document_disposition": "Keep released feature documents unchanged before F01; no public support/API promotion is approved.",
+  "protected_status_corrections": [
+    {
+      "path": "DatadogRUM/MULTI_SCENE_SUPPORT.md",
+      "required_correction": "Replace implementation-pending/iOS27-only prototype status with the source-bound provisional EXP225 implementation; retain F01, public exposure and final matrix limits."
+    },
+    {
+      "path": "DatadogRUM/MultiSceneSupport/NAVIGATION_API.md",
+      "required_correction": "Replace implementation-pending/iOS27-only prototype status with the source-bound provisional EXP225 implementation; retain F01, public exposure and final matrix limits."
+    },
+    {
+      "path": "DatadogRUM/MultiSceneSupport/STABLE_API_REVIEW.md",
+      "required_correction": "Replace implementation-pending/iOS27-only prototype status with the source-bound provisional EXP225 implementation; retain F01, public exposure and final matrix limits."
+    },
+    {
+      "path": "DatadogRUM/MultiSceneSupport/OPERATIONS.md",
+      "required_correction": "Replace implementation-pending/iOS27-only prototype status with the source-bound provisional EXP225 implementation; retain F01, public exposure and final matrix limits."
+    },
+    {
+      "path": "DatadogRUM/MultiSceneSupport/SUPPORT_GUIDE.md",
+      "required_correction": "Replace implementation-pending/iOS27-only prototype status with the source-bound provisional EXP225 implementation; retain F01, public exposure and final matrix limits."
+    }
+  ],
+  "source_limits": [
+    "Swift scene overload declarations are iOS15; exact scene routing remains capability-gated and unsupported paths forward their existing family API once.",
+    "Target captures scene persistentIdentifier on main actor and retains no UIKit object.",
+    "Semantic SwiftUI host/destination/metadata remain iOS27; Observation requires compiler6.4.",
+    "Objective-C remains behind DEBUG or DD_SCENE_API_VALIDATION; off-main factory returns nil and targeted calls no-op.",
+    "Resources retain start ownership; Operations identity stays application-wide."
+  ],
+  "gate_closures": [],
+  "remaining": "Protected user documents cannot be edited in this checkpoint. F01-approved support examples/public feature integration and final source review remain required.",
+  "proposed_patch": {
+    "path": "DatadogRUM/MultiSceneSupport/Results/S3-F02-provisional-status.patch",
+    "sha256": "c40bd6ddadce561ff08394a0f256416fe8fa661b9cbfec3e7eff4bbf986b0da4",
+    "applies_to_current_user_bytes": true,
+    "applied": false,
+    "bindings": {
+      "DatadogRUM/MULTI_SCENE_SUPPORT.md": {
+        "before_sha256": "dce1ba9fddfb0277330b3348e995e3027860b3e96dfef7ac4ba077b8d9373cf5",
+        "proposed_sha256": "2299bb4eb5a2deadca824e65db61e192f4c1f0cb1362554859570e7b6917ab7c"
+      },
+      "DatadogRUM/MultiSceneSupport/NAVIGATION_API.md": {
+        "before_sha256": "51e2ed2901ef086ffc023eec07ca3d70573f94eeb27f87a94b05c619863ec717",
+        "proposed_sha256": "08f699c93986e9c46de94805f8c601863b7adc338bce017d21c2c692c944f2c6"
+      },
+      "DatadogRUM/MultiSceneSupport/STABLE_API_REVIEW.md": {
+        "before_sha256": "9f236e235833c5542dcb393ecc4f2c4f916313a034a7536014ca343c147b49ba",
+        "proposed_sha256": "b2d0a08acb05c16025d2bc81ddf1c10ea0479bc86191ce90e59422532c734081"
+      },
+      "DatadogRUM/MultiSceneSupport/OPERATIONS.md": {
+        "before_sha256": "8c22e9060ac4914711b8df1e888f8aeda9794035e3d5ecc613379e651b377b86",
+        "proposed_sha256": "252121d102052e0428467a1460f0efd6f324c1cfc5f37f9ef81099ce8b1b9b66"
+      },
+      "DatadogRUM/MultiSceneSupport/SUPPORT_GUIDE.md": {
+        "before_sha256": "f2364610a39df4401d582a038644df4d9da62600defe48a0e939c7a579084532",
+        "proposed_sha256": "f12e0e05fc646e19df581d50a6ede4f12e5d72037b39681b44c779332bea9d2b"
+      }
+    },
+    "scope": "Status/source corrections only; no API approval, public promotion, example validation or protected document mutation."
+  }
+}

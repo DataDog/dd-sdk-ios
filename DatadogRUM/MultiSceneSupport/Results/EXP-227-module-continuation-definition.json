@@ -1,0 +1,178 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-227",
+  "gate": "S3:F03:M01",
+  "status": "DEFINED_CONTINUATION_BEFORE_NATIVE",
+  "source": "d23982a5d249c88b0bc9cd5a05be21ede72cae8d",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-framework-closure-8_gzgk8b",
+  "original_inputs_sha256": "4a431072db1e454edcccc31b9c549a02e58352a17698880ded56bfa72d9bb177",
+  "carthage_reference": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-availability-kts5muog/plan.json",
+    "sha256": "f6eb7bc2fe288f07a1e520b09ccb0947972fbe37c74a1f0fda47238e23ef6c4a"
+  },
+  "source_discriminators": {
+    "workspace/DatadogCore/Tests/Datadog/DatadogCore/Context/CarrierInfoPublisherTests.swift": "23598645cd9b13a6d182af046edc1a4b6bfe33e1b32bdd37f5931cd9380c736b",
+    "workspace/DatadogCore/Tests/Datadog/DatadogCore/Context/NetworkConnectionInfoPublisherTests.swift": "2470cb5f18ca4de4bd5a9eb5b3bd12e6008b05675836b46a9d28df65a57d6dd9",
+    "workspace/DatadogCrashReporting/Tests/KSCrashIntegration/KSCrashBacktraceTests.swift": "44dc3a92b5ceec0bb86d201e15a71574fce8eed24d2c0c630f18cf46e9ac73ca",
+    "workspace/DatadogInternal/Tests/Models/UIViewSessionReplaySlotIDTests.swift": "c3e8c3abcf6f8f3849c60441de19156718c9fce19f42b4801a9e181327780c7f",
+    "workspace/DatadogWebViewTracking/Tests/WebViewTrackingTests.swift": "0ac5a9be04a5fea473a790a2e42b7cac8174d6658ac20393f690465e545433a1",
+    "workspace/Datadog/IntegrationUnitTests/SessionReplay/WebRecordIntegrationTests.swift": "5460c4b18a784cc38f03bde6256aa2d7726668ded5f8a6e50e739541d803206c",
+    "workspace/DatadogRUM/Tests/Utils/UIKitExtensionsTests.swift": "7286a946a6d3fc0ae1e83acc95406b780849ad8ca1ae063a1f8b6a45fe391891",
+    "SourcePackages/checkouts/dd-sdk-swift-testing/Sources/DatadogSDKTesting/XCTest/DDXCTestCase.swift": "6d0f01b2c8028b4622748687984358b7b9bff95c491ff900acfb6e3a69cbff40",
+    "workspace/Datadog/Example/ExampleAppDelegate.swift": "d2f039e6f37556750568a2a55888466371ee195874a5c1ba7a56150a1977af07",
+    "workspace/Datadog/TargetSupport/Example/Info.plist": "7d3e78bc2fba4e2057cd31f066e32d673a845834f28577666f1bf0ac2d17ca8d",
+    "workspace/tools/lint/sources.swiftlint.yml": "f6ab3664dad9f0c7157eba308cd6aae9c4e1fb8e085665b43143cc384da2efcb",
+    "workspace/tools/lint/run-cpp-linter.sh": "518d1337476015ad89331af402a8c6533e5bae0e32793a61fa307139cd926524",
+    "workspace/tools/lint/tests.swiftlint.yml": "0358714f5e1d657ffba27fffe9c7716c63e39fd49a97eee3a225cd5284fc15c5",
+    "workspace/tools/lint/run-linter.sh": "2b51c79f2a76e599a19cb87d3469e82aef0bb6bf36b2ac03b01d5aa63c98acd7",
+    "workspace/DatadogCore/Sources/Datadog.swift": "37e4c9333fd1203ace70b0806df1269f9a2bf039d62efba1e404f72307a747bf",
+    "workspace/DatadogCore/Sources/Datadog+objc.swift": "015219e317dba9b7ba43c529b2edd420bd500cf1e962c988e693614dae7821ca",
+    "workspace/DatadogCore/Tests/Objc/DDDatadogTests.swift": "a639163f7058811c6b51fefb8cec1cff0d333044aa0eef85d0ae6ea6385a81b7",
+    "workspace/DatadogCore/Sources/Core/Context/DatadogContextProvider.swift": "6e186baf590d10931bd46594af22d89326be889b9cf9616e2b9dc24791177461",
+    "workspace/TestUtilities/Sources/Proxies/DatadogCoreProxy.swift": "449d94c7563dc4f08aba45ecfb891aefcdac00dc876893bbcdaf032021e2b6dc",
+    "workspace/DatadogWebViewTracking/Sources/WebViewSessionRolloverHandler.swift": "99fc4512efd501a9de5581dca3429501eb6766461eefdde214b64e6c982bd906",
+    "workspace/DatadogCore/Tests/Datadog/RUM/Integrations/CrashReportReceiverTests.swift": "73e5e0d13a630aeeaf1f34539c170e6ffdb2da6d1e3ec4a371c1a16aaac3c040",
+    "workspace/DatadogCore/Tests/Datadog/Tracing/TracingURLSessionHandlerTests.swift": "05879670cd6023485f4d8c3dcbca97cbfc6138606396f058fe18456e5987d813",
+    "workspace/DatadogCore/Tests/Datadog/DatadogCore/Context/BrightnessLevelPublisherTests.swift": "755d48224d93cefe60b2eabe6767f70f14d926e241d4ac7d2e11af5706e29578",
+    "workspace/TestUtilities/Sources/Mocks/SystemFrameworks/UIKitMocks.swift": "e20c3d958567408c60950f36c4a5570dd2edf42cfd0c35b52de30c8693e93d4d",
+    "workspace/DatadogCore/Tests/Objc/ObjcAPITests/DDSessionReplay+apiTests.m": "5f702d1f565a139fa89448dbf5c35698715d750ee5aa9b4339a2c8aed104b4cf"
+  },
+  "parameters": {
+    "DatadogInternalTests": {
+      "DatadogInternalTests/UIKitExtensionsTests/expectedControlTypesInAlerts(numberOfActionButtons:numberOfTextFields:)": [
+        "1, 0",
+        "1, 1",
+        "1, 2",
+        "2, 0",
+        "2, 1",
+        "2, 2",
+        "3, 0",
+        "3, 1",
+        "3, 2",
+        "4, 0",
+        "4, 1",
+        "4, 2",
+        "5, 0",
+        "5, 1",
+        "5, 2"
+      ],
+      "DatadogInternalTests/UIKitExtensionsTests/expectedControlTypesInAlertsSwiftUI(numberOfActionButtons:numberOfTextFields:)": [
+        "1, 0",
+        "1, 1",
+        "1, 2",
+        "2, 0",
+        "2, 1",
+        "2, 2",
+        "3, 0",
+        "3, 1",
+        "3, 2",
+        "4, 0",
+        "4, 1",
+        "4, 2",
+        "5, 0",
+        "5, 1",
+        "5, 2"
+      ],
+      "DatadogInternalTests/UIKitExtensionsTests/expectedControlTypesInConfirmationDialogsSwiftUI(numberOfActionButtons:)": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "DatadogInternalTests/UIKitExtensionsTests/expectedControlTypesInDeprecatedActionSheetsSwiftUI(numberOfActionButtons:)": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    }
+  },
+  "allowed_skips": {
+    "DatadogCoreTests": {
+      "DatadogCoreTests/CarrierInfoPublisherTests/testGivenCellularServiceAvailable_itProvidesInitialValue()": "Test skipped - `CarrierInfo` is always nil on iOS 16+ \u2014 see testGivenIOS16OrAbove_itProvidesNoInitialValue",
+      "DatadogCoreTests/CarrierInfoPublisherTests/testGivenCellularServiceUnAvailable_itProvidesNoInitialValue()": "Test skipped - `CarrierInfo` is always nil on iOS 16+ \u2014 see testGivenIOS16OrAbove_itProvidesNoInitialValue",
+      "DatadogCoreTests/CarrierInfoPublisherTests/testGivenSubscribedInfoProvider_whenCarrierInfoChanges_itNotifiesSubscriber()": "Test skipped - `CarrierInfo` is always nil on iOS 16+ \u2014 see testGivenIOS16OrAbove_itNeverNotifiesSubscriber"
+    },
+    "DatadogCrashReportingTests": {
+      "DatadogCrashReportingTests/KSCrashBacktraceTests/testGenerateBacktraceReturnsNilOnWatchOS()": "Test skipped - This test verifies watchOS-specific behavior"
+    }
+  },
+  "skip_testing": {
+    "internal": [
+      "UIViewSessionReplaySlotIDTests"
+    ],
+    "webview": [
+      "WebViewTrackingTests/testSendingWebRecordEvent",
+      "WebViewTrackingTests/testItAddsUserScriptWithSessionReplay"
+    ],
+    "integration": [
+      "WebRecordIntegrationTests"
+    ],
+    "core": [
+      "DDSessionReplay_apiTests/testClearingOverride",
+      "DDSessionReplay_apiTests/testSettingAndGettingOverrides",
+      "DDSessionReplay_apiTests/testStartRecordingImmediately"
+    ]
+  },
+  "xcode_version": "Xcode 27.1\nBuild version 27A9269",
+  "latest_completion_epoch": 1790217300.0,
+  "scope": "Eight unexecuted independent module cells at unchangedd23982a5 test/source checkpoint and94842cc8 SDK bytes. Core27/26.5 failures remain open. No Core, RUM or platform rerun; no complete M01/F03/F01 claim.",
+  "legacy_host": {
+    "owner": "Results/EXP-178-view-attributes.json",
+    "limitation": "integration_27_limitation: UIKit no-scene-lifecycle trap before test connection. Example AppDelegate/Info bytes unchanged since accepted historical SDK1c6104cacb.",
+    "source_hashes": {
+      "Datadog/Example/ExampleAppDelegate.swift": "d2f039e6f37556750568a2a55888466371ee195874a5c1ba7a56150a1977af07",
+      "Datadog/TargetSupport/Example/Info.plist": "7d3e78bc2fba4e2057cd31f066e32d673a845834f28577666f1bf0ac2d17ca8d"
+    },
+    "runtime": "26.5",
+    "claim": "Cannot close legacy27/C03."
+  },
+  "sanitizer_disposition": "Preserve inherited scheme instrumentation and report_bugs=0; no clean Thread Sanitizer claim.",
+  "native_admitted": false,
+  "previous_attempt": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-core26-corrected-jhmkjhdt",
+    "summary_sha256": "173950cb5c15e7f6d0df856bb6e56a05205dfcc7c47b7e58c6bf4310c123f7a1",
+    "verdict": "Core26.5 FAIL with one changed-surface lifetime assertion; cleanup PASS",
+    "discriminator": "Independent unexecuted module targets only. Core failure remains open and is not retried or waived."
+  },
+  "test_configuration": {
+    "argument": "OTHER_SWIFT_FLAGS=$(inherited) -D DD_SDK_COMPILED_FOR_TESTING",
+    "reference": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-corrected-admission/core/build-test-command.json",
+      "sha256": "b89392a0b644a0d2472fc193561df41da47965d40bd1f6b41b917e59eba8178e"
+    },
+    "scope": "The inherited test condition exposes Core teardown wrappers and context replacement, enables proxy-context propagation, and exposes WebView rollover inspection. This matches qualified EXP217 test mode; no SDK source changes or production-mode claim."
+  },
+  "selected_sdk_source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "objc_identifiers": {},
+  "source_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-independent-modules-kbyht7oe",
+  "reuse_cell": "internal",
+  "reuse_environment": {
+    "architecture": "arm64",
+    "deviceId": "59A8E789-932A-48D0-9281-0F49DEB8E96D",
+    "deviceName": "iPhone 18 Pro",
+    "modelName": "iPhone 18 Pro",
+    "osBuildNumber": "24A434",
+    "osVersion": "27.0",
+    "platform": "iOS Simulator"
+  },
+  "objc_source": {},
+  "source_receipts": {
+    "inputs.json": "4a431072db1e454edcccc31b9c549a02e58352a17698880ded56bfa72d9bb177",
+    "execution-inputs.json": "4a431072db1e454edcccc31b9c549a02e58352a17698880ded56bfa72d9bb177",
+    "definition.json": "01f00b6d2caec0c9c6ca6c55d73a88007f22e3b20d00b6bde3ac899986db886d",
+    "execution-definition.json": "3a9bdd338c4ea2ca8be9d138c6e6b6f9552016f889b516a1bf19c5efdae595de",
+    "execution-plan.json": "912674289bd4bbb1ff6c650ce41881c9797974528bdc988e064432e942ade3c6",
+    "execution-controls.json": "cd5f09634b460ae97182a31dcbc510809c91f57c7043d5f3e0dcbe4466ab134e",
+    "execution-review.json": "13dea1dadd74a0a4b43bdd4da59248c7a08bfbbd71e6da4e5aa5d93816eb7088",
+    "module-summary.json": "82a13363434a7f2c2957eea08694869d07a6929d4a161e5a3c8bbe67cf7997bf",
+    "frozen-helpers.json": "28439b41d97bada118328bfc254bdefb517b9fb0c6823c39832ea228f1050eed",
+    "cells/internal/build-receipt.json": "719f9f72f486bfe2efd12493ad233d41d130beb4b100456aa5e093299d5b10ef",
+    "cells/internal/built.json": "99a6955b569aafff49e6a2106fe61ed47fe70809f8046e08803d296129a040ad",
+    "cells/internal/environment.json": "9fa3e63def97eadec9596602c00a632cce77c869bfc51092f29c40a11676ec4e",
+    "cells/internal/summary.json": "c605a13d643b30c4990ddc483dc45555335c660bd02b613eb1187c23df495873"
+  },
+  "discriminator": "The scheme enables implicit dependencies and its framework phase links TestUtilities. Derive that source-owned edge and complete recursive native closure; never widen expected targets to whatever happened to compile. Reuse the unchanged unexecuted Internal build."
+}

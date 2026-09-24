@@ -1,30 +1,15 @@
 {
   "schema_version": 1,
   "experiment": "EXP-227",
-  "name": "Complete the remaining full-module compatibility slice",
+  "name": "Qualify the corrected Core lifetime test on the supported26.5 runtime",
   "status": "DEFINED_BEFORE_IMPLEMENTATION",
-  "at": 1790207564.432489,
+  "at": 1790209054.673067,
   "gate": "S3:F03:M01",
   "owner": "SDK implementer",
   "reviewer": "/root/c06_runtime_plan",
-  "source": "d23982a5d249c88b0bc9cd5a05be21ede72cae8d",
-  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-independent-modules-kbyht7oe",
+  "source": "823508fd477a5d864367926c67ec2d7bfedbd6d2",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-core-lifetime-cqtjw_pl",
   "environments": {
-    "27.0": {
-      "device": {
-        "udid": "59A8E789-932A-48D0-9281-0F49DEB8E96D",
-        "name": "iPhone 18 Pro",
-        "state": "Shutdown",
-        "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro",
-        "isAvailable": true
-      },
-      "runtime": {
-        "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
-        "version": "27.0",
-        "buildversion": "24A434",
-        "isAvailable": true
-      }
-    },
     "26.5": {
       "device": {
         "udid": "551660C0-C850-4140-A994-320FE2ADEBE8",
@@ -42,85 +27,20 @@
     }
   },
   "inventory_sha256": {
-    "devices": "3a1c84fb2379e8fd951d906a30507b2fc976fc69bf8026fda55c6523300afef0",
-    "runtimes": "4dafb5a6142d7f595995f99873c3f888b8ff260160dbed37a3cf36dac9dd1a1c"
+    "devices": "ca50ca9bcff8ac3e3df462e0d0615ff327ab71d7cee6b16f26c92e1e28192ca5",
+    "runtimes": "a8cc1631bf29117cde74f26fe71ad308c673b1855a860dbea86912c8f29b0749"
   },
   "cells": [
     {
-      "id": "internal",
-      "scheme": "DatadogInternal",
-      "target": "DatadogInternalTests",
-      "runtime": "27.0",
-      "host_bundle": null,
-      "excluded_selectors": [
-        "UIViewSessionReplaySlotIDTests/slotIDIsNilByDefault()",
-        "UIViewSessionReplaySlotIDTests/slotIDIsStoredPerView()",
-        "UIViewSessionReplaySlotIDTests/settingSlotIDToNilClearsIt()",
-        "UIViewSessionReplaySlotIDTests/changingSlotIDMarksTheViewAsNeedingLayout()",
-        "UIViewSessionReplaySlotIDTests/settingSameSlotIDDoesNotMarkTheViewAsNeedingLayout()",
-        "UIViewSessionReplaySlotIDTests/clearingSlotIDMarksTheViewAsNeedingLayout()"
-      ]
-    },
-    {
-      "id": "logs",
-      "scheme": "DatadogLogs",
-      "target": "DatadogLogsTests",
-      "runtime": "27.0",
-      "host_bundle": null,
-      "excluded_selectors": []
-    },
-    {
-      "id": "trace",
-      "scheme": "DatadogTrace",
-      "target": "DatadogTraceTests",
-      "runtime": "27.0",
-      "host_bundle": null,
-      "excluded_selectors": []
-    },
-    {
-      "id": "crash",
-      "scheme": "DatadogCrashReporting",
-      "target": "DatadogCrashReportingTests",
-      "runtime": "27.0",
-      "host_bundle": null,
-      "excluded_selectors": []
-    },
-    {
-      "id": "webview",
-      "scheme": "DatadogWebViewTracking",
-      "target": "DatadogWebViewTrackingTests",
-      "runtime": "27.0",
-      "host_bundle": null,
-      "excluded_selectors": [
-        "WebViewTrackingTests/testSendingWebRecordEvent()",
-        "WebViewTrackingTests/testItAddsUserScriptWithSessionReplay()"
-      ]
-    },
-    {
-      "id": "flags",
-      "scheme": "DatadogFlags",
-      "target": "DatadogFlagsTests",
-      "runtime": "27.0",
-      "host_bundle": null,
-      "excluded_selectors": []
-    },
-    {
-      "id": "profiling",
-      "scheme": "DatadogProfiling",
-      "target": "DatadogProfilingTests",
-      "runtime": "27.0",
-      "host_bundle": null,
-      "excluded_selectors": []
-    },
-    {
-      "id": "integration",
-      "scheme": "DatadogIntegrationTests",
-      "target": "DatadogIntegrationTests",
+      "id": "core",
+      "scheme": "DatadogCore",
+      "target": "DatadogCoreTests",
       "runtime": "26.5",
-      "host_bundle": "com.datadogqh.Example",
+      "host_bundle": null,
       "excluded_selectors": [
-        "WebRecordIntegrationTests/testWebRecordIntegration()",
-        "WebRecordIntegrationTests/testWebRecordIntegrationWithNewSessionReplayConfigurationAPI()"
+        "DDSessionReplay_apiTests/testClearingOverride",
+        "DDSessionReplay_apiTests/testSettingAndGettingOverrides",
+        "DDSessionReplay_apiTests/testStartRecordingImmediately"
       ]
     }
   ],
@@ -144,7 +64,7 @@
     "no_retry_for_green": true
   },
   "decisive_assertions": [
-    "All nine schemes match the Makefile minus accepted RUM and excluded Replay.",
+    "One full Core26.5 scheme after the source-reviewed initialization barrier; all820 selected methods and3 source-bound OS skips remain.",
     "Complete source-phase/compiler membership and exact actual test-host/build/runtime identity.",
     "Full raw discovery then exact Replay exclusion partition; preserve the source-bound methodless framework helper separately. Freeze complete selection before assertions.",
     "Exact selected/executed identifiers, parameter identities/multiplicity, predeclared OS skips and owned diagnostics; no unexpected warning exemption.",
@@ -213,18 +133,11 @@
     ]
   },
   "pins_sha256": "358fd5be085dbd80252d1a2f5b55e5d413a54244cb63655495d1856d37ae5313",
-  "preparation_predecessor": {
-    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-complete-fixture-lsm9y7rn",
-    "summary_sha256": "720191f51320fc6d8986442f08cdbb15129209462bdd4a0daecf8f4551846d51",
-    "scenario": "NOT_EXECUTED",
-    "cleanup": "PASS",
-    "discriminator": "Restore the source-supported DD_SDK_COMPILED_FOR_TESTING condition used by qualified EXP217; assert actual compiler conditions for each Swift target."
-  },
   "selected_sdk_source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
   "previous_attempt": {
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-core26-corrected-jhmkjhdt",
     "summary_sha256": "173950cb5c15e7f6d0df856bb6e56a05205dfcc7c47b7e58c6bf4310c123f7a1",
-    "verdict": "Core26.5 FAIL with one changed-surface lifetime assertion; cleanup PASS",
-    "discriminator": "Independent unexecuted module targets only. Core failure remains open and is not retried or waived."
+    "verdict": "Core26.5 FAIL:816 pass,1 changed-surface lifetime assertion,3 expected skips; cleanup PASS",
+    "discriminator": "Test-only823508fd drains pre-existing asynchronous Core initialization before testing dispatch ownership; all weak-reference assertions remain. SDK94842cc8 unchanged. No accepted module rerun or Core27 retry."
   }
 }

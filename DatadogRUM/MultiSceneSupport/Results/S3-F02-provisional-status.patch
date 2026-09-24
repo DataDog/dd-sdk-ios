@@ -1,0 +1,125 @@
+--- a/DatadogRUM/MULTI_SCENE_SUPPORT.md
++++ b/DatadogRUM/MULTI_SCENE_SUPPORT.md
+@@ -181,9 +181,11 @@
+ older-iPad capability before enabling it, so the same customer call sites can
+ benefit from an SDK update without further instrumentation changes. This does
+ not broaden the semantic SwiftUI host: it remains iOS27+, with compiler>=6.4
+-also required for its Observation initializer. Current prototype declarations
+-remain iOS27 pending implementation and review; neither release qualification
+-nor S1/S2 admission follows from this documentation amendment.
++also required for its Observation initializer. The local
++[EXP-225 implementation](MultiSceneSupport/Results/EXP-225-api-availability.json)
++declares ordinary APIs at iOS15 and qualifies internal fallback and provisional
++clients. Experimental exposure, F01 review, public promotion and the final
++compatibility matrix remain separate; this does not change S1/S2 scope.
+ 
+ Product behavior is settled for this project. The concrete alternatives, call
+ sites, compatibility constraints, and required tests are consolidated in
+--- a/DatadogRUM/MultiSceneSupport/NAVIGATION_API.md
++++ b/DatadogRUM/MultiSceneSupport/NAVIGATION_API.md
+@@ -15,16 +15,18 @@
+ destination/metadata types and experimental navigation containers remain iOS27+;
+ the Observation initializer also requires compiler>=6.4. The
+ [stable API review](STABLE_API_REVIEW.md) owns the precise fallback and acceptance
+-requirements. This amendment awaits implementation and validation; iOS27 SPI
+-descriptions below record the existing prototype, not a reason to require
+-customer branches in the amended ordinary API.
++requirements. [EXP-225](Results/EXP-225-api-availability.json) implements ordinary
++iOS15 declarations, internal fallback and provisional clients locally. Public
++promotion and the final compatibility matrix remain pending; historical iOS27
++examples do not require customer branches for the amended ordinary API.
+ 
+ ## Status
+ 
+-The scene-targeted manual view proposal is implemented and exercised as an
+-iOS 27 experimental Swift SPI, with Debug-only Objective-C counterparts. The
+-prototype validates customer call sites, exact selectors, custom/NOP fallback,
+-and runtime usefulness before normal API and RFC review. `EXP-137` through
++The scene-targeted manual view proposal is implemented locally as an iOS15
++experimental Swift SPI. Objective-C counterparts remain exposed only in Debug
++or with the local DD_SCENE_API_VALIDATION flag. Provisional clients exercise
++call sites, selectors, custom/NOP fallback and runtime behavior; normal public
++exposure and RFC approval remain pending. `EXP-137` through
+ `EXP-140` cover automatic Home → manual/presentation → fresh Home using the
+ customer-shaped overloads. Do not promote these declarations to the supported
+ public API surface until review approves their names, availability, protocol
+--- a/DatadogRUM/MultiSceneSupport/STABLE_API_REVIEW.md
++++ b/DatadogRUM/MultiSceneSupport/STABLE_API_REVIEW.md
+@@ -3,8 +3,9 @@
+ Status: PROPOSED — F01 reviewer decision pending. No declaration is promoted and
+ no public API baseline is changed by this document.
+ 
+-Review source: 2baa06da0060bcc4ae3b54fe2f4cfc64be5b4cce. SDK production remains
+-04201edc7711361279d8487b385bc8b0ca9c63c7. The
++Original proposal source: 2baa06da0060bcc4ae3b54fe2f4cfc64be5b4cce. Local
++implementation: 94842cc8ad7b104c1394c236b98b95b6c24a0956, qualified provisionally
++in [EXP-225](Results/EXP-225-api-availability.json). The
+ [gate register](release-gates.json) owns F01 status; the
+ [approved contract](../MULTI_SCENE_SUPPORT.md) owns product behavior.
+ [Navigation](NAVIGATION_API.md) and [Operations](OPERATIONS.md) retain the semantic
+@@ -13,14 +14,15 @@
+ 
+ Availability amendment, 2026-09-21: the user requests ordinary scene-taking APIs
+ across the SDK's iOS15+ range, with platform checks inside the SDK. The inspected
+-experimental declarations still require iOS27; the amendment below is a proposal
+-for implementation and validation, not a claim that those declarations changed.
+-The semantic SwiftUI host retains its separate iOS27 requirement.
++local implementation now declares those ordinary APIs at iOS15 and qualifies
++internal fallback and provisional clients. Public exposure and final compatibility
++remain pending. The semantic SwiftUI host retains its separate iOS27 requirement.
+ 
+ ## Decision requested
+ 
+ Approve or amend these eight decisions as one bounded RFC direction. Record the
+-reviewer, date and approval reference before implementation. F01 closes when the
++reviewer, date and approval reference before public promotion. Local implementation
++and provisional qualification are authorized before that review. F01 closes when the
+ reviewed contract is implemented and verified, with an attributable disposition.
+ S3 F02 documentation, F03 final platform matrix and F06 freeze retain their own gates.
+ S1/S2 preserve existing APIs and do not wait for unrelated scene declarations. The
+--- a/DatadogRUM/MultiSceneSupport/OPERATIONS.md
++++ b/DatadogRUM/MultiSceneSupport/OPERATIONS.md
+@@ -97,16 +97,15 @@
+ conformer, the experimental prototype uses extension-only overloads backed by a
+ private targeting capability. A custom conformer or NOP monitor calls the
+ existing inferred method exactly once. The generalized Objective-C companion is
+-`DDRUMViewTarget` and likewise exposes only `currentInScene:` in Debug builds.
+-The additional inferred/key/controller factories remain outside the first
+-release. The current SPI still has the iOS27 boundary described in
+-[NAVIGATION_API.md](NAVIGATION_API.md). The September21 amendment proposes iOS15+
+-callability for the factory, its experimental alias, these overloads and their
+-Objective-C companions, with internal fallback. It awaits implementation and
+-validation; the separate semantic SwiftUI host remains iOS27+.
+-
+-The scene-targeted manual prerequisite is now implemented as an iOS 27 Swift SPI
+-with Debug-only Objective-C companions. `EXP-137` through `EXP-140` replace the
++`DDRUMViewTarget` and exposes only `currentInScene:` in Debug or local
++DD_SCENE_API_VALIDATION builds. The additional inferred/key/controller factories
++remain outside the first release. [EXP-225](Results/EXP-225-api-availability.json)
++implements ordinary iOS15 callability and internal fallback locally, preserving
++application-wide Operation identity. Public promotion and final qualification
++remain pending; the separate semantic SwiftUI host stays iOS27+.
++
++The scene-targeted manual prerequisite is now an iOS15 Swift SPI with provisional
++Objective-C exposure. Historical iOS27 `EXP-137` through `EXP-140` replace the
+ probe's internal-only calls with the customer-shaped overloads and validate
+ manual, nested, duplicate-start, Sheet, and full-screen-cover paths. The Operation
+ target needs only the existing scene/current-view lookup and exposes no internal
+--- a/DatadogRUM/MultiSceneSupport/SUPPORT_GUIDE.md
++++ b/DatadogRUM/MultiSceneSupport/SUPPORT_GUIDE.md
+@@ -57,10 +57,11 @@
+ These snippets show the September21 availability amendment: ordinary
+ scene-taking calls and RUMViewTarget are callable throughout the SDK's iOS15+
+ range, without a customer iOS27 branch. They show the intended normal import
+-after approved exposure. Current experimental declarations still require SPI
+-imports and iOS27; implementation and compiling-client checks remain pending.
+-After F01 approval, F02 must verify the approved imports, availability and
+-examples before publishing this guide as supported documentation.
++after approved exposure. The local prototype still requires SPI imports, but
++ordinary declarations now support iOS15. [EXP-225](Results/EXP-225-api-availability.json)
++records provisional compiled/runtime clients and their limits. F01 public
++promotion and F02 verification of approved imports, availability and examples
++remain required before publishing this guide as supported documentation.
+ 
+ The SDK checks OS, configuration and the qualified family capability internally.
+ Where enhanced scene behavior is unavailable, it calls the equivalent existing

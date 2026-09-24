@@ -1,0 +1,382 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-227",
+  "gate": "S3:F03:M01",
+  "status": "PREPARATION_REVIEW_REQUIRED",
+  "source": "823508fd477a5d864367926c67ec2d7bfedbd6d2",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-core-lifetime-cqtjw_pl",
+  "original_inputs_sha256": "97aba8d03df505f04cb2dad7d7ef26084ae7570ea196c870109c39a74810ade6",
+  "carthage_reference": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-availability-kts5muog/plan.json",
+    "sha256": "f6eb7bc2fe288f07a1e520b09ccb0947972fbe37c74a1f0fda47238e23ef6c4a"
+  },
+  "source_discriminators": {
+    "workspace/DatadogCore/Tests/Datadog/DatadogCore/Context/CarrierInfoPublisherTests.swift": "23598645cd9b13a6d182af046edc1a4b6bfe33e1b32bdd37f5931cd9380c736b",
+    "workspace/DatadogCore/Tests/Datadog/DatadogCore/Context/NetworkConnectionInfoPublisherTests.swift": "2470cb5f18ca4de4bd5a9eb5b3bd12e6008b05675836b46a9d28df65a57d6dd9",
+    "workspace/DatadogCrashReporting/Tests/KSCrashIntegration/KSCrashBacktraceTests.swift": "44dc3a92b5ceec0bb86d201e15a71574fce8eed24d2c0c630f18cf46e9ac73ca",
+    "workspace/DatadogInternal/Tests/Models/UIViewSessionReplaySlotIDTests.swift": "c3e8c3abcf6f8f3849c60441de19156718c9fce19f42b4801a9e181327780c7f",
+    "workspace/DatadogWebViewTracking/Tests/WebViewTrackingTests.swift": "0ac5a9be04a5fea473a790a2e42b7cac8174d6658ac20393f690465e545433a1",
+    "workspace/Datadog/IntegrationUnitTests/SessionReplay/WebRecordIntegrationTests.swift": "5460c4b18a784cc38f03bde6256aa2d7726668ded5f8a6e50e739541d803206c",
+    "workspace/DatadogRUM/Tests/Utils/UIKitExtensionsTests.swift": "7286a946a6d3fc0ae1e83acc95406b780849ad8ca1ae063a1f8b6a45fe391891",
+    "SourcePackages/checkouts/dd-sdk-swift-testing/Sources/DatadogSDKTesting/XCTest/DDXCTestCase.swift": "6d0f01b2c8028b4622748687984358b7b9bff95c491ff900acfb6e3a69cbff40",
+    "workspace/Datadog/Example/ExampleAppDelegate.swift": "d2f039e6f37556750568a2a55888466371ee195874a5c1ba7a56150a1977af07",
+    "workspace/Datadog/TargetSupport/Example/Info.plist": "7d3e78bc2fba4e2057cd31f066e32d673a845834f28577666f1bf0ac2d17ca8d",
+    "workspace/tools/lint/sources.swiftlint.yml": "f6ab3664dad9f0c7157eba308cd6aae9c4e1fb8e085665b43143cc384da2efcb",
+    "workspace/tools/lint/run-cpp-linter.sh": "518d1337476015ad89331af402a8c6533e5bae0e32793a61fa307139cd926524",
+    "workspace/tools/lint/tests.swiftlint.yml": "0358714f5e1d657ffba27fffe9c7716c63e39fd49a97eee3a225cd5284fc15c5",
+    "workspace/tools/lint/run-linter.sh": "2b51c79f2a76e599a19cb87d3469e82aef0bb6bf36b2ac03b01d5aa63c98acd7",
+    "workspace/DatadogCore/Sources/Datadog.swift": "37e4c9333fd1203ace70b0806df1269f9a2bf039d62efba1e404f72307a747bf",
+    "workspace/DatadogCore/Sources/Datadog+objc.swift": "015219e317dba9b7ba43c529b2edd420bd500cf1e962c988e693614dae7821ca",
+    "workspace/DatadogCore/Tests/Objc/DDDatadogTests.swift": "a639163f7058811c6b51fefb8cec1cff0d333044aa0eef85d0ae6ea6385a81b7",
+    "workspace/DatadogCore/Sources/Core/Context/DatadogContextProvider.swift": "6e186baf590d10931bd46594af22d89326be889b9cf9616e2b9dc24791177461",
+    "workspace/TestUtilities/Sources/Proxies/DatadogCoreProxy.swift": "449d94c7563dc4f08aba45ecfb891aefcdac00dc876893bbcdaf032021e2b6dc",
+    "workspace/DatadogWebViewTracking/Sources/WebViewSessionRolloverHandler.swift": "99fc4512efd501a9de5581dca3429501eb6766461eefdde214b64e6c982bd906",
+    "workspace/DatadogCore/Tests/Datadog/RUM/Integrations/CrashReportReceiverTests.swift": "73e5e0d13a630aeeaf1f34539c170e6ffdb2da6d1e3ec4a371c1a16aaac3c040",
+    "workspace/DatadogCore/Tests/Datadog/Tracing/TracingURLSessionHandlerTests.swift": "05879670cd6023485f4d8c3dcbca97cbfc6138606396f058fe18456e5987d813",
+    "workspace/DatadogCore/Tests/Datadog/DatadogCore/Context/BrightnessLevelPublisherTests.swift": "755d48224d93cefe60b2eabe6767f70f14d926e241d4ac7d2e11af5706e29578",
+    "workspace/TestUtilities/Sources/Mocks/SystemFrameworks/UIKitMocks.swift": "e20c3d958567408c60950f36c4a5570dd2edf42cfd0c35b52de30c8693e93d4d",
+    "workspace/DatadogCore/Tests/Objc/ObjcAPITests/DDSessionReplay+apiTests.m": "5f702d1f565a139fa89448dbf5c35698715d750ee5aa9b4339a2c8aed104b4cf",
+    "workspace/DatadogCore/Tests/Datadog/DatadogCore/DatadogCoreTests.swift": "e4cd90968c2e9c848509e40e80ce1a2c5a359d779e664343ab54ecaa7d0c19df",
+    "workspace/DatadogCore/Sources/Core/MessageBus.swift": "143b610bb7c4522063d603620bd97bc079f86700bd890c1aefaedb7b640f06b0",
+    "workspace/DatadogCore/Sources/Core/DatadogCore.swift": "4d5173fb7b4140e18c3a55b9b1a3b07098a5ee0a8fdee0ded7b8d9d55f6ceacb"
+  },
+  "parameters": {
+    "DatadogInternalTests": {
+      "DatadogInternalTests/UIKitExtensionsTests/expectedControlTypesInAlerts(numberOfActionButtons:numberOfTextFields:)": [
+        "1, 0",
+        "1, 1",
+        "1, 2",
+        "2, 0",
+        "2, 1",
+        "2, 2",
+        "3, 0",
+        "3, 1",
+        "3, 2",
+        "4, 0",
+        "4, 1",
+        "4, 2",
+        "5, 0",
+        "5, 1",
+        "5, 2"
+      ],
+      "DatadogInternalTests/UIKitExtensionsTests/expectedControlTypesInAlertsSwiftUI(numberOfActionButtons:numberOfTextFields:)": [
+        "1, 0",
+        "1, 1",
+        "1, 2",
+        "2, 0",
+        "2, 1",
+        "2, 2",
+        "3, 0",
+        "3, 1",
+        "3, 2",
+        "4, 0",
+        "4, 1",
+        "4, 2",
+        "5, 0",
+        "5, 1",
+        "5, 2"
+      ],
+      "DatadogInternalTests/UIKitExtensionsTests/expectedControlTypesInConfirmationDialogsSwiftUI(numberOfActionButtons:)": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "DatadogInternalTests/UIKitExtensionsTests/expectedControlTypesInDeprecatedActionSheetsSwiftUI(numberOfActionButtons:)": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    }
+  },
+  "allowed_skips": {
+    "DatadogCoreTests": {
+      "DatadogCoreTests/CarrierInfoPublisherTests/testGivenCellularServiceAvailable_itProvidesInitialValue()": "Test skipped - `CarrierInfo` is always nil on iOS 16+ \u2014 see testGivenIOS16OrAbove_itProvidesNoInitialValue",
+      "DatadogCoreTests/CarrierInfoPublisherTests/testGivenCellularServiceUnAvailable_itProvidesNoInitialValue()": "Test skipped - `CarrierInfo` is always nil on iOS 16+ \u2014 see testGivenIOS16OrAbove_itProvidesNoInitialValue",
+      "DatadogCoreTests/CarrierInfoPublisherTests/testGivenSubscribedInfoProvider_whenCarrierInfoChanges_itNotifiesSubscriber()": "Test skipped - `CarrierInfo` is always nil on iOS 16+ \u2014 see testGivenIOS16OrAbove_itNeverNotifiesSubscriber"
+    },
+    "DatadogCrashReportingTests": {
+      "DatadogCrashReportingTests/KSCrashBacktraceTests/testGenerateBacktraceReturnsNilOnWatchOS()": "Test skipped - This test verifies watchOS-specific behavior"
+    }
+  },
+  "skip_testing": {
+    "internal": [
+      "UIViewSessionReplaySlotIDTests"
+    ],
+    "webview": [
+      "WebViewTrackingTests/testSendingWebRecordEvent",
+      "WebViewTrackingTests/testItAddsUserScriptWithSessionReplay"
+    ],
+    "integration": [
+      "WebRecordIntegrationTests"
+    ],
+    "core": [
+      "DDSessionReplay_apiTests/testClearingOverride",
+      "DDSessionReplay_apiTests/testSettingAndGettingOverrides",
+      "DDSessionReplay_apiTests/testStartRecordingImmediately"
+    ]
+  },
+  "xcode_version": "Xcode 27.1\nBuild version 27A9269",
+  "latest_completion_epoch": 1790217300.0,
+  "scope": "One full Core26.5 qualification for the source-reviewed test-only initialization drain at823508fd. SDK94842cc8 unchanged; preserve both original failed Core runs and all accepted independent modules. No Core27 retry, RUM/platform rerun, API approval or full F03 closure.",
+  "legacy_host": {
+    "owner": "Results/EXP-178-view-attributes.json",
+    "limitation": "integration_27_limitation: UIKit no-scene-lifecycle trap before test connection. Example AppDelegate/Info bytes unchanged since accepted historical SDK1c6104cacb.",
+    "source_hashes": {
+      "Datadog/Example/ExampleAppDelegate.swift": "d2f039e6f37556750568a2a55888466371ee195874a5c1ba7a56150a1977af07",
+      "Datadog/TargetSupport/Example/Info.plist": "7d3e78bc2fba4e2057cd31f066e32d673a845834f28577666f1bf0ac2d17ca8d"
+    },
+    "runtime": "26.5",
+    "claim": "Cannot close legacy27/C03."
+  },
+  "sanitizer_disposition": "Preserve inherited scheme instrumentation and report_bugs=0; no clean Thread Sanitizer claim.",
+  "native_admitted": false,
+  "previous_attempt": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-core26-corrected-jhmkjhdt",
+    "summary_sha256": "173950cb5c15e7f6d0df856bb6e56a05205dfcc7c47b7e58c6bf4310c123f7a1",
+    "verdict": "Core26.5 FAIL:816 pass,1 changed-surface lifetime assertion,3 expected skips; cleanup PASS",
+    "discriminator": "Test-only823508fd drains pre-existing asynchronous Core initialization before testing dispatch ownership; all weak-reference assertions remain. SDK94842cc8 unchanged. No accepted module rerun or Core27 retry."
+  },
+  "test_configuration": {
+    "argument": "OTHER_SWIFT_FLAGS=$(inherited) -D DD_SDK_COMPILED_FOR_TESTING",
+    "reference": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-corrected-admission/core/build-test-command.json",
+      "sha256": "b89392a0b644a0d2472fc193561df41da47965d40bd1f6b41b917e59eba8178e"
+    },
+    "scope": "The inherited test condition exposes Core teardown wrappers and context replacement, enables proxy-context propagation, and exposes WebView rollover inspection. This matches qualified EXP217 test mode; no SDK source changes or production-mode claim."
+  },
+  "selected_sdk_source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "objc_identifiers": {
+    "DatadogCoreTests": [
+      "DatadogCoreTests/DDB3HTTPHeadersWriter_apiTests/testInitWithSamplingRate",
+      "DatadogCoreTests/DDConfiguration_apiTests/testDDBatchSizeAPI",
+      "DatadogCoreTests/DDConfiguration_apiTests/testDDConfigurationBuilderAPI",
+      "DatadogCoreTests/DDConfiguration_apiTests/testDDSiteAPI",
+      "DatadogCoreTests/DDConfiguration_apiTests/testDDUploadFrequencyAPI",
+      "DatadogCoreTests/DDConfiguration_apiTests/testDatadogCrashReporterAPI",
+      "DatadogCoreTests/DDCrossPlatformExtension_apiTests/testDDContextSharingExtensionAPI",
+      "DatadogCoreTests/DDDatadog_apiTests/testDDDatadog",
+      "DatadogCoreTests/DDDatadog_apiTests/testDDDatadogInstanceNameAPI",
+      "DatadogCoreTests/DDDatadog_apiTests/testDDTrackingConsentAPI",
+      "DatadogCoreTests/DDHTTPHeadersWriter_apiTests/testInitWithSamplingRate",
+      "DatadogCoreTests/DDInternalLogger_apiTests/testDDInternalLogger",
+      "DatadogCoreTests/DDLogs_apiTests/testDDLoggerAPI",
+      "DatadogCoreTests/DDLogs_apiTests/testDDLoggerConfigurationAPI",
+      "DatadogCoreTests/DDLogs_apiTests/testDDLoggerInstanceNameAPI",
+      "DatadogCoreTests/DDLogs_apiTests/testDDLogsAPI",
+      "DatadogCoreTests/DDLogs_apiTests/testDDLogsConfigurationAPI",
+      "DatadogCoreTests/DDLogs_apiTests/testDDLogsInstanceNameAPI",
+      "DatadogCoreTests/DDRUMMonitor_apiTests/testDDRUMActionAPI",
+      "DatadogCoreTests/DDRUMMonitor_apiTests/testDDRUMActionTypeAPI",
+      "DatadogCoreTests/DDRUMMonitor_apiTests/testDDRUMErrorSourceAPI",
+      "DatadogCoreTests/DDRUMMonitor_apiTests/testDDRUMFeatureOperationFailureReasonAPI",
+      "DatadogCoreTests/DDRUMMonitor_apiTests/testDDRUMMethodAPI",
+      "DatadogCoreTests/DDRUMMonitor_apiTests/testDDRUMMonitorAPI",
+      "DatadogCoreTests/DDRUMMonitor_apiTests/testDDRUMResourceTypeAPI",
+      "DatadogCoreTests/DDRUMMonitor_apiTests/testDDRUMViewAPI",
+      "DatadogCoreTests/DDRUM_apiTests/testDDRUMAPI",
+      "DatadogCoreTests/DDRUM_apiTests/testDDRUMConfigurationAPI",
+      "DatadogCoreTests/DDRUM_apiTests/testDDRUMInstanceNameAPI",
+      "DatadogCoreTests/DDSessionReplay_apiTests/testClearingOverride",
+      "DatadogCoreTests/DDSessionReplay_apiTests/testConfigurationWithNewApi",
+      "DatadogCoreTests/DDSessionReplay_apiTests/testSessionReplayInstanceNameAPI",
+      "DatadogCoreTests/DDSessionReplay_apiTests/testSettingAndGettingOverrides",
+      "DatadogCoreTests/DDSessionReplay_apiTests/testStartAndStopRecording",
+      "DatadogCoreTests/DDSessionReplay_apiTests/testStartRecordingImmediately",
+      "DatadogCoreTests/DDTrace_apiTests/testDDTraceAPI",
+      "DatadogCoreTests/DDTrace_apiTests/testDDTraceConfigurationAPI",
+      "DatadogCoreTests/DDTrace_apiTests/testDDTraceInstanceNameAPI",
+      "DatadogCoreTests/DDTrace_apiTests/testDDTracerAPI",
+      "DatadogCoreTests/DDURLSessionInstrumentationTests_apiTests/testURLSessionInstrumentationInstanceNameAPI",
+      "DatadogCoreTests/DDURLSessionInstrumentationTests_apiTests/testWorkflow",
+      "DatadogCoreTests/DDW3CHTTPHeadersWriter_apiTests/testInitWithSamplingRate",
+      "DatadogCoreTests/DDWebViewTracking_apiTests/testDDWebViewTrackingAPI",
+      "DatadogCoreTests/DDWebViewTracking_apiTests/testDDWebViewTrackingInstanceNameAPI"
+    ]
+  },
+  "objc_source": {
+    "DatadogCoreTests": {
+      "DatadogCoreTests/DDB3HTTPHeadersWriter_apiTests/testInitWithSamplingRate": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDB3HTTPHeadersWriter+apiTests.m",
+        "sha256": "9dfe72329d25dc7341defda3b2cbd38400b60a9a1387489645864bf7964e7e1c"
+      },
+      "DatadogCoreTests/DDConfiguration_apiTests/testDDSiteAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDConfiguration+apiTests.m",
+        "sha256": "72c2d4f85a8448c1174317c0aafa641840d027e9c55505adf70f059dda0b3b19"
+      },
+      "DatadogCoreTests/DDConfiguration_apiTests/testDDBatchSizeAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDConfiguration+apiTests.m",
+        "sha256": "72c2d4f85a8448c1174317c0aafa641840d027e9c55505adf70f059dda0b3b19"
+      },
+      "DatadogCoreTests/DDConfiguration_apiTests/testDDUploadFrequencyAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDConfiguration+apiTests.m",
+        "sha256": "72c2d4f85a8448c1174317c0aafa641840d027e9c55505adf70f059dda0b3b19"
+      },
+      "DatadogCoreTests/DDConfiguration_apiTests/testDDConfigurationBuilderAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDConfiguration+apiTests.m",
+        "sha256": "72c2d4f85a8448c1174317c0aafa641840d027e9c55505adf70f059dda0b3b19"
+      },
+      "DatadogCoreTests/DDConfiguration_apiTests/testDatadogCrashReporterAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDConfiguration+apiTests.m",
+        "sha256": "72c2d4f85a8448c1174317c0aafa641840d027e9c55505adf70f059dda0b3b19"
+      },
+      "DatadogCoreTests/DDCrossPlatformExtension_apiTests/testDDContextSharingExtensionAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDCrossPlatformExtension+apiTests.m",
+        "sha256": "d288a9f66c1952cd76cc48a336808dd489c66ab04f740ebbfbd44250c30e68d9"
+      },
+      "DatadogCoreTests/DDDatadog_apiTests/testDDTrackingConsentAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDDatadog+apiTests.m",
+        "sha256": "9f84a153d3032f575f77148ea79d0f00ad12164aba55c769113452a4ff370be4"
+      },
+      "DatadogCoreTests/DDDatadog_apiTests/testDDDatadog": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDDatadog+apiTests.m",
+        "sha256": "9f84a153d3032f575f77148ea79d0f00ad12164aba55c769113452a4ff370be4"
+      },
+      "DatadogCoreTests/DDDatadog_apiTests/testDDDatadogInstanceNameAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDDatadog+apiTests.m",
+        "sha256": "9f84a153d3032f575f77148ea79d0f00ad12164aba55c769113452a4ff370be4"
+      },
+      "DatadogCoreTests/DDHTTPHeadersWriter_apiTests/testInitWithSamplingRate": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDHTTPHeadersWriter+apiTests.m",
+        "sha256": "bdb22dc75f663857152d0d8328931cfa4b3c8d8ea54fc27f939405f9a3dd6e9b"
+      },
+      "DatadogCoreTests/DDInternalLogger_apiTests/testDDInternalLogger": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDInternalLogger+apiTests.m",
+        "sha256": "0cff2f65c8f1514a50398bf1f3a8c1c6adfba111e6b8e3427c48128bd5ca76cc"
+      },
+      "DatadogCoreTests/DDLogs_apiTests/testDDLogsAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDLogs+apiTests.m",
+        "sha256": "aae9d328dfbf9cb7d6188dfcf00627f7cf4d56565c6f9f5698145de1471a21be"
+      },
+      "DatadogCoreTests/DDLogs_apiTests/testDDLogsInstanceNameAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDLogs+apiTests.m",
+        "sha256": "aae9d328dfbf9cb7d6188dfcf00627f7cf4d56565c6f9f5698145de1471a21be"
+      },
+      "DatadogCoreTests/DDLogs_apiTests/testDDLoggerInstanceNameAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDLogs+apiTests.m",
+        "sha256": "aae9d328dfbf9cb7d6188dfcf00627f7cf4d56565c6f9f5698145de1471a21be"
+      },
+      "DatadogCoreTests/DDLogs_apiTests/testDDLogsConfigurationAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDLogs+apiTests.m",
+        "sha256": "aae9d328dfbf9cb7d6188dfcf00627f7cf4d56565c6f9f5698145de1471a21be"
+      },
+      "DatadogCoreTests/DDLogs_apiTests/testDDLoggerAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDLogs+apiTests.m",
+        "sha256": "aae9d328dfbf9cb7d6188dfcf00627f7cf4d56565c6f9f5698145de1471a21be"
+      },
+      "DatadogCoreTests/DDLogs_apiTests/testDDLoggerConfigurationAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDLogs+apiTests.m",
+        "sha256": "aae9d328dfbf9cb7d6188dfcf00627f7cf4d56565c6f9f5698145de1471a21be"
+      },
+      "DatadogCoreTests/DDRUM_apiTests/testDDRUMAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDRUM+apiTests.m",
+        "sha256": "0cc218d56ba19c803fbe9fbf991a1cacbfc744c8718ccfc15a441d54c3b9a420"
+      },
+      "DatadogCoreTests/DDRUM_apiTests/testDDRUMInstanceNameAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDRUM+apiTests.m",
+        "sha256": "0cc218d56ba19c803fbe9fbf991a1cacbfc744c8718ccfc15a441d54c3b9a420"
+      },
+      "DatadogCoreTests/DDRUM_apiTests/testDDRUMConfigurationAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDRUM+apiTests.m",
+        "sha256": "0cc218d56ba19c803fbe9fbf991a1cacbfc744c8718ccfc15a441d54c3b9a420"
+      },
+      "DatadogCoreTests/DDRUMMonitor_apiTests/testDDRUMViewAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDRUMMonitor+apiTests.m",
+        "sha256": "fdfd5c8a9cd69fce1e058482302fd90cd0add3323b97cfca16dfaec2b9cfe680"
+      },
+      "DatadogCoreTests/DDRUMMonitor_apiTests/testDDRUMActionAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDRUMMonitor+apiTests.m",
+        "sha256": "fdfd5c8a9cd69fce1e058482302fd90cd0add3323b97cfca16dfaec2b9cfe680"
+      },
+      "DatadogCoreTests/DDRUMMonitor_apiTests/testDDRUMErrorSourceAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDRUMMonitor+apiTests.m",
+        "sha256": "fdfd5c8a9cd69fce1e058482302fd90cd0add3323b97cfca16dfaec2b9cfe680"
+      },
+      "DatadogCoreTests/DDRUMMonitor_apiTests/testDDRUMActionTypeAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDRUMMonitor+apiTests.m",
+        "sha256": "fdfd5c8a9cd69fce1e058482302fd90cd0add3323b97cfca16dfaec2b9cfe680"
+      },
+      "DatadogCoreTests/DDRUMMonitor_apiTests/testDDRUMResourceTypeAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDRUMMonitor+apiTests.m",
+        "sha256": "fdfd5c8a9cd69fce1e058482302fd90cd0add3323b97cfca16dfaec2b9cfe680"
+      },
+      "DatadogCoreTests/DDRUMMonitor_apiTests/testDDRUMMethodAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDRUMMonitor+apiTests.m",
+        "sha256": "fdfd5c8a9cd69fce1e058482302fd90cd0add3323b97cfca16dfaec2b9cfe680"
+      },
+      "DatadogCoreTests/DDRUMMonitor_apiTests/testDDRUMFeatureOperationFailureReasonAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDRUMMonitor+apiTests.m",
+        "sha256": "fdfd5c8a9cd69fce1e058482302fd90cd0add3323b97cfca16dfaec2b9cfe680"
+      },
+      "DatadogCoreTests/DDRUMMonitor_apiTests/testDDRUMMonitorAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDRUMMonitor+apiTests.m",
+        "sha256": "fdfd5c8a9cd69fce1e058482302fd90cd0add3323b97cfca16dfaec2b9cfe680"
+      },
+      "DatadogCoreTests/DDSessionReplay_apiTests/testConfigurationWithNewApi": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDSessionReplay+apiTests.m",
+        "sha256": "5f702d1f565a139fa89448dbf5c35698715d750ee5aa9b4339a2c8aed104b4cf"
+      },
+      "DatadogCoreTests/DDSessionReplay_apiTests/testStartAndStopRecording": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDSessionReplay+apiTests.m",
+        "sha256": "5f702d1f565a139fa89448dbf5c35698715d750ee5aa9b4339a2c8aed104b4cf"
+      },
+      "DatadogCoreTests/DDSessionReplay_apiTests/testSessionReplayInstanceNameAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDSessionReplay+apiTests.m",
+        "sha256": "5f702d1f565a139fa89448dbf5c35698715d750ee5aa9b4339a2c8aed104b4cf"
+      },
+      "DatadogCoreTests/DDSessionReplay_apiTests/testStartRecordingImmediately": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDSessionReplay+apiTests.m",
+        "sha256": "5f702d1f565a139fa89448dbf5c35698715d750ee5aa9b4339a2c8aed104b4cf"
+      },
+      "DatadogCoreTests/DDSessionReplay_apiTests/testSettingAndGettingOverrides": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDSessionReplay+apiTests.m",
+        "sha256": "5f702d1f565a139fa89448dbf5c35698715d750ee5aa9b4339a2c8aed104b4cf"
+      },
+      "DatadogCoreTests/DDSessionReplay_apiTests/testClearingOverride": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDSessionReplay+apiTests.m",
+        "sha256": "5f702d1f565a139fa89448dbf5c35698715d750ee5aa9b4339a2c8aed104b4cf"
+      },
+      "DatadogCoreTests/DDTrace_apiTests/testDDTraceAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDTrace+apiTests.m",
+        "sha256": "78585102f75349a99c2d7568d22b46d9b31ce9b30b33da4ad8415b474f814c90"
+      },
+      "DatadogCoreTests/DDTrace_apiTests/testDDTraceInstanceNameAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDTrace+apiTests.m",
+        "sha256": "78585102f75349a99c2d7568d22b46d9b31ce9b30b33da4ad8415b474f814c90"
+      },
+      "DatadogCoreTests/DDTrace_apiTests/testDDTraceConfigurationAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDTrace+apiTests.m",
+        "sha256": "78585102f75349a99c2d7568d22b46d9b31ce9b30b33da4ad8415b474f814c90"
+      },
+      "DatadogCoreTests/DDTrace_apiTests/testDDTracerAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDTrace+apiTests.m",
+        "sha256": "78585102f75349a99c2d7568d22b46d9b31ce9b30b33da4ad8415b474f814c90"
+      },
+      "DatadogCoreTests/DDURLSessionInstrumentationTests_apiTests/testWorkflow": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDURLSessionInstrumentationTests+apiTests.m",
+        "sha256": "04e60f3710158249ba87868992f5690b840ab36d6fb4d63b97c57af5b61d042f"
+      },
+      "DatadogCoreTests/DDURLSessionInstrumentationTests_apiTests/testURLSessionInstrumentationInstanceNameAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDURLSessionInstrumentationTests+apiTests.m",
+        "sha256": "04e60f3710158249ba87868992f5690b840ab36d6fb4d63b97c57af5b61d042f"
+      },
+      "DatadogCoreTests/DDW3CHTTPHeadersWriter_apiTests/testInitWithSamplingRate": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDW3CHTTPHeadersWriter+apiTests.m",
+        "sha256": "e59347a34bd227c77b4f65b8f37188da8adc904f90e26045845e3ae5b0415a19"
+      },
+      "DatadogCoreTests/DDWebViewTracking_apiTests/testDDWebViewTrackingAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDWebViewTracking+apiTests.m",
+        "sha256": "1208c618492a4125066166bdefcb5adfe2ba5ce62a6958af013719f8c0101428"
+      },
+      "DatadogCoreTests/DDWebViewTracking_apiTests/testDDWebViewTrackingInstanceNameAPI": {
+        "path": "DatadogCore/Tests/Objc/ObjcAPITests/DDWebViewTracking+apiTests.m",
+        "sha256": "1208c618492a4125066166bdefcb5adfe2ba5ce62a6958af013719f8c0101428"
+      }
+    }
+  },
+  "base_definition": "Results/EXP-227-core-lifetime-definition.json",
+  "base_definition_sha256": "2d53127a68df8022f6cdd2f784f9b61636c9ee086575aacff6923e4d6576d489"
+}

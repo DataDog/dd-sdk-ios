@@ -6,7 +6,7 @@ owns finite gate status, owners, dependencies, tests and environments;
 [PLAN](PLAN.md) is generated. [The cursor](../../.continue-here.md) alone owns the
 current execution state and next action.
 
-The provisional S3 candidate now qualifies all20 platform builds in [EXP-226](Results/EXP-226-platform-result.json). Full RUM27/17.5 remains qualified; nine other M01 schemes, API approval and final release review remain. These compilation results do not replace the outstanding runtime/human gates.
+The provisional S3 candidate qualifies all20 platform builds in [EXP-226](Results/EXP-226-platform-result.json), full RUM27/17.5, and eight further module suites in [EXP-227](Results/EXP-227-module-result.json). Core26.5 passes after three test-only corrections; original failures remain. Integration remains unexecuted after host/inventory checks; a pre-existing app was preserved and the native path is stopped. API approval and final review remain. Compilation and module tests do not replace outstanding runtime/human gates.
 
 ## Release evidence boundaries
 

@@ -1,0 +1,501 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-227",
+  "status": "PARTIAL_EIGHT_QUALIFIED_INTEGRATION_STOPPED",
+  "source": "d23982a5d249c88b0bc9cd5a05be21ede72cae8d",
+  "gate": "S3:F03:M01",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration-host-k0mg_syr",
+  "original_inputs_sha256": "4a431072db1e454edcccc31b9c549a02e58352a17698880ded56bfa72d9bb177",
+  "execution_plan_sha256": "08c7932c9f3867f61cecec17d63d721b138e5d6873d4f4891d530ffb41d7e3cb",
+  "controls": {
+    "state": "PASS",
+    "count": 33,
+    "sha256": "1126ccad8f17d52e8dac819b8080aa87d62384e4b03c19708421559f7ec7f19a"
+  },
+  "review": {
+    "state": "PASS",
+    "reviewer": "/root/c06_runtime_plan",
+    "sha256": "9d9604380f81a368b4cbbd782f6d5de666b85ecea644394bac8b21808c24a93e"
+  },
+  "native_admitted": false,
+  "gate_closures": [],
+  "completed_cells": [
+    {
+      "id": "core",
+      "target": "DatadogCoreTests",
+      "runtime": "26.5",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "overall": "PASS",
+      "cases": 820,
+      "invocations": 820,
+      "passed": 817,
+      "skipped": [
+        "DatadogCoreTests/CarrierInfoPublisherTests/testGivenCellularServiceAvailable_itProvidesInitialValue()",
+        "DatadogCoreTests/CarrierInfoPublisherTests/testGivenCellularServiceUnAvailable_itProvidesNoInitialValue()",
+        "DatadogCoreTests/CarrierInfoPublisherTests/testGivenSubscribedInfoProvider_whenCarrierInfoChanges_itNotifiesSubscriber()"
+      ],
+      "summary_sha256": "4752ec94463f8d2ac6003f9df3cdd079b03671c756d09b4a968ad28d875e74fc"
+    },
+    {
+      "id": "internal",
+      "target": "DatadogInternalTests",
+      "runtime": "27.0",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "overall": "PASS",
+      "cases": 441,
+      "invocations": 477,
+      "passed": 441,
+      "skipped": [],
+      "summary_sha256": "cb4467c22eb74372ecc5edf04bd6bbf1e58058bca1038e90eb6cffea29b1e474"
+    },
+    {
+      "id": "logs",
+      "target": "DatadogLogsTests",
+      "runtime": "27.0",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "overall": "PASS",
+      "cases": 99,
+      "invocations": 99,
+      "passed": 99,
+      "skipped": [],
+      "summary_sha256": "2c0515accd05dd6f08421cf5f824974b7d43f54d3dcac7c5a96ba5ab1a056456"
+    },
+    {
+      "id": "trace",
+      "target": "DatadogTraceTests",
+      "runtime": "27.0",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "overall": "PASS",
+      "cases": 158,
+      "invocations": 158,
+      "passed": 158,
+      "skipped": [],
+      "summary_sha256": "5811a4a4d75def9d28dd750589a29ba611376c38a4b33e10bc63eb7bc43a4e1e"
+    },
+    {
+      "id": "crash",
+      "target": "DatadogCrashReportingTests",
+      "runtime": "27.0",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "overall": "PASS",
+      "cases": 69,
+      "invocations": 69,
+      "passed": 68,
+      "skipped": [
+        "DatadogCrashReportingTests/KSCrashBacktraceTests/testGenerateBacktraceReturnsNilOnWatchOS()"
+      ],
+      "summary_sha256": "46ffc19a3edb9c1f48c655a56d2e5d5db817a6c14be82e3bbed0097eecf17341"
+    },
+    {
+      "id": "webview",
+      "target": "DatadogWebViewTrackingTests",
+      "runtime": "27.0",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "overall": "PASS",
+      "cases": 30,
+      "invocations": 30,
+      "passed": 30,
+      "skipped": [],
+      "summary_sha256": "7f31a5abf9df71a4bf010d68f5a898b7817dbd2e0d1ee696c4d2c506e67c24c6"
+    },
+    {
+      "id": "flags",
+      "target": "DatadogFlagsTests",
+      "runtime": "27.0",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "overall": "PASS",
+      "cases": 138,
+      "invocations": 138,
+      "passed": 138,
+      "skipped": [],
+      "summary_sha256": "0bb8569e1d0eaa00d9584b7630beef8f6e3966f51ec01b580433b4158c140571"
+    },
+    {
+      "id": "profiling",
+      "target": "DatadogProfilingTests",
+      "runtime": "27.0",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "overall": "PASS",
+      "cases": 236,
+      "invocations": 236,
+      "passed": 236,
+      "skipped": [],
+      "summary_sha256": "4ab295aed579dc280005b3127a1a2cb6346f21e62cfbd3097ea3a07cabba5cab"
+    }
+  ],
+  "remaining": "Integration remains unexecuted: saved OpenStep inventory also proves a pre-existing Example app. Native path stopped; preserve that app. F01, concurrent same-key ownership, existing public clients and final matrix remain separate.",
+  "original_preparation": "Original six-control inputs preserved; reviewed closure/path/provenance corrections are separately frozen.",
+  "signing_checkpoint": "b58750b3476fa44fe082894eb532b92abeca98c5 uses authorized local unsigned fallback after20-second signing timeout.",
+  "scenario": "NOT_EXECUTED",
+  "evidence": "INCOMPLETE",
+  "cleanup": "PASS",
+  "original_attempts": [
+    {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-modules-zc7ndjbq",
+      "summary_sha256": "7521ad3589acabd500da4dea717b86260911da70ddc072188fd1a9bc39821148",
+      "scenario": "NOT_EXECUTED",
+      "evidence": "INCOMPLETE",
+      "cleanup": "PASS",
+      "overall": "INVALID",
+      "failure": "Core build phase cannot invoke missing tools/lint/run-linter.sh. No tests ran. SDK inputs unchanged; no regression finding."
+    },
+    {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-complete-fixture-lsm9y7rn",
+      "summary_sha256": "720191f51320fc6d8986442f08cdbb15129209462bdd4a0daecf8f4551846d51",
+      "scenario": "NOT_EXECUTED",
+      "evidence": "INCOMPLETE",
+      "cleanup": "PASS",
+      "overall": "INVALID",
+      "failure": "Core tests require the longstanding DD_SDK_COMPILED_FOR_TESTING guard used by the qualified EXP217 command. The new build omitted it; no tests ran."
+    },
+    {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-test-configuration-pzzxbxjv",
+      "summary_sha256": "10ce7e47444ac1b9f633233a8c2d0f2ab2011a22723b48f25d70251d299d98ae",
+      "scenario": "NOT_EXECUTED",
+      "evidence": "INCOMPLETE",
+      "cleanup": "PASS",
+      "overall": "INVALID",
+      "failure": "Swift-only decoder rejects44 existing Objective-C test identifiers without parentheses. Core build and discovery succeeded; no tests executed. Qualified build can be reused after exact source-bound selector classification."
+    },
+    {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-objc-selection-w5p3say1",
+      "summary_sha256": "bf351b5e11dbb09a71a4ac86103e8b71487984e8c7962ef6a348e9cc2b1c5b2f",
+      "scenario": "FAIL",
+      "evidence": "INCOMPLETE",
+      "cleanup": "PASS",
+      "overall": "INVALID",
+      "failure": "Core completed820 selected cases:814 pass,3 OS skips,3 failures. Saved parser rejected sourceLocation in failure diagnostics; raw failures and test-process restart retained. Attribution review pending; no equivalent rerun.",
+      "diagnostic": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-objc-selection-w5p3say1/failure-attribution/diagnostic.json",
+        "sha256": "3692b977bbe31607b0b5e8b36aaed31dadfc876cbd52123dc84142483860861d",
+        "state": "FAIL",
+        "original_invalid_preserved": true
+      }
+    },
+    {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-core26-corrected-jhmkjhdt",
+      "summary_sha256": "173950cb5c15e7f6d0df856bb6e56a05205dfcc7c47b7e58c6bf4310c123f7a1",
+      "scenario": "FAIL",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "overall": "INVALID",
+      "failure": "testHandoffOwner_andFeatureScopeDoNotRetainCoreAfterDispatch XCTAssertNil(core) at124; added changed-surface test under source review. No equivalent rerun. The two corrected assertions and brightness test pass.",
+      "counts": {
+        "total": 820,
+        "passed": 816,
+        "failed": 1,
+        "skipped": 3
+      }
+    },
+    {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-independent-modules-kbyht7oe",
+      "summary_sha256": "82a13363434a7f2c2957eea08694869d07a6929d4a161e5a3c8bbe67cf7997bf",
+      "scenario": "NOT_EXECUTED",
+      "evidence": "INCOMPLETE",
+      "cleanup": "PASS",
+      "overall": "INVALID",
+      "failure": "Internal buildPASS; compiler closure rejects source-linked TestUtilities and its dependencies because the collector followed only explicit PBXTargetDependency edges. No Internal assertions ran."
+    },
+    {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-framework-closure-8_gzgk8b",
+      "summary_sha256": "2ff5c55832db5e6ebc4391f755ef8430ce760b08dc7a567b838f71c6f7297e90",
+      "scenario": "INCOMPLETE",
+      "evidence": "INCOMPLETE",
+      "cleanup": "INVALID",
+      "overall": "INVALID",
+      "failure": "ValueError: stop after unsuccessful cell: integration",
+      "cells": [
+        {
+          "id": "internal",
+          "target": "DatadogInternalTests",
+          "runtime": "27.0",
+          "scenario": "PASS",
+          "evidence": "PASS",
+          "cleanup": "PASS",
+          "overall": "PASS",
+          "cases": 441,
+          "invocations": 477,
+          "passed": 441,
+          "skipped": [],
+          "summary_sha256": "cb4467c22eb74372ecc5edf04bd6bbf1e58058bca1038e90eb6cffea29b1e474"
+        },
+        {
+          "id": "logs",
+          "target": "DatadogLogsTests",
+          "runtime": "27.0",
+          "scenario": "PASS",
+          "evidence": "PASS",
+          "cleanup": "PASS",
+          "overall": "PASS",
+          "cases": 99,
+          "invocations": 99,
+          "passed": 99,
+          "skipped": [],
+          "summary_sha256": "2c0515accd05dd6f08421cf5f824974b7d43f54d3dcac7c5a96ba5ab1a056456"
+        },
+        {
+          "id": "trace",
+          "target": "DatadogTraceTests",
+          "runtime": "27.0",
+          "scenario": "PASS",
+          "evidence": "PASS",
+          "cleanup": "PASS",
+          "overall": "PASS",
+          "cases": 158,
+          "invocations": 158,
+          "passed": 158,
+          "skipped": [],
+          "summary_sha256": "5811a4a4d75def9d28dd750589a29ba611376c38a4b33e10bc63eb7bc43a4e1e"
+        },
+        {
+          "id": "crash",
+          "target": "DatadogCrashReportingTests",
+          "runtime": "27.0",
+          "scenario": "PASS",
+          "evidence": "PASS",
+          "cleanup": "PASS",
+          "overall": "PASS",
+          "cases": 69,
+          "invocations": 69,
+          "passed": 68,
+          "skipped": [
+            "DatadogCrashReportingTests/KSCrashBacktraceTests/testGenerateBacktraceReturnsNilOnWatchOS()"
+          ],
+          "summary_sha256": "46ffc19a3edb9c1f48c655a56d2e5d5db817a6c14be82e3bbed0097eecf17341"
+        },
+        {
+          "id": "webview",
+          "target": "DatadogWebViewTrackingTests",
+          "runtime": "27.0",
+          "scenario": "PASS",
+          "evidence": "PASS",
+          "cleanup": "PASS",
+          "overall": "PASS",
+          "cases": 30,
+          "invocations": 30,
+          "passed": 30,
+          "skipped": [],
+          "summary_sha256": "7f31a5abf9df71a4bf010d68f5a898b7817dbd2e0d1ee696c4d2c506e67c24c6"
+        },
+        {
+          "id": "flags",
+          "target": "DatadogFlagsTests",
+          "runtime": "27.0",
+          "scenario": "PASS",
+          "evidence": "PASS",
+          "cleanup": "PASS",
+          "overall": "PASS",
+          "cases": 138,
+          "invocations": 138,
+          "passed": 138,
+          "skipped": [],
+          "summary_sha256": "0bb8569e1d0eaa00d9584b7630beef8f6e3966f51ec01b580433b4158c140571"
+        },
+        {
+          "id": "profiling",
+          "target": "DatadogProfilingTests",
+          "runtime": "27.0",
+          "scenario": "PASS",
+          "evidence": "PASS",
+          "cleanup": "PASS",
+          "overall": "PASS",
+          "cases": 236,
+          "invocations": 236,
+          "passed": 236,
+          "skipped": [],
+          "summary_sha256": "4ab295aed579dc280005b3127a1a2cb6346f21e62cfbd3097ea3a07cabba5cab"
+        },
+        {
+          "id": "integration",
+          "target": "DatadogIntegrationTests",
+          "runtime": "26.5",
+          "scenario": "NOT_EXECUTED",
+          "evidence": "INCOMPLETE",
+          "cleanup": "INVALID",
+          "overall": "INVALID",
+          "failure": "ValueError: foreign Integration app host",
+          "summary_sha256": "e53aaa3fc1d3f86fd5c90a03f6511eb278bb9c12126b8cda2639d272bd5d39be"
+        }
+      ],
+      "separate_restoration": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-framework-closure-8_gzgk8b/restoration-owned-daemons/summary.json",
+        "sha256": "35122e24dec98d6520281ae208cddb5186df1d42d66b6309ae90d999575a36a2",
+        "state": "PASS",
+        "original_cleanup": "INVALID"
+      }
+    }
+  ],
+  "test_configuration": "DD_SDK_COMPILED_FOR_TESTING matches committed CI setup and prior qualification. Test-mode evidence; EXP225 no-flag RUM retains its original scope.",
+  "selected_sdk_source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "qualified_independent_cells": [
+    {
+      "id": "internal",
+      "target": "DatadogInternalTests",
+      "runtime": "27.0",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "overall": "PASS",
+      "cases": 441,
+      "invocations": 477,
+      "passed": 441,
+      "skipped": [],
+      "summary_sha256": "cb4467c22eb74372ecc5edf04bd6bbf1e58058bca1038e90eb6cffea29b1e474"
+    },
+    {
+      "id": "logs",
+      "target": "DatadogLogsTests",
+      "runtime": "27.0",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "overall": "PASS",
+      "cases": 99,
+      "invocations": 99,
+      "passed": 99,
+      "skipped": [],
+      "summary_sha256": "2c0515accd05dd6f08421cf5f824974b7d43f54d3dcac7c5a96ba5ab1a056456"
+    },
+    {
+      "id": "trace",
+      "target": "DatadogTraceTests",
+      "runtime": "27.0",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "overall": "PASS",
+      "cases": 158,
+      "invocations": 158,
+      "passed": 158,
+      "skipped": [],
+      "summary_sha256": "5811a4a4d75def9d28dd750589a29ba611376c38a4b33e10bc63eb7bc43a4e1e"
+    },
+    {
+      "id": "crash",
+      "target": "DatadogCrashReportingTests",
+      "runtime": "27.0",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "overall": "PASS",
+      "cases": 69,
+      "invocations": 69,
+      "passed": 68,
+      "skipped": [
+        "DatadogCrashReportingTests/KSCrashBacktraceTests/testGenerateBacktraceReturnsNilOnWatchOS()"
+      ],
+      "summary_sha256": "46ffc19a3edb9c1f48c655a56d2e5d5db817a6c14be82e3bbed0097eecf17341"
+    },
+    {
+      "id": "webview",
+      "target": "DatadogWebViewTrackingTests",
+      "runtime": "27.0",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "overall": "PASS",
+      "cases": 30,
+      "invocations": 30,
+      "passed": 30,
+      "skipped": [],
+      "summary_sha256": "7f31a5abf9df71a4bf010d68f5a898b7817dbd2e0d1ee696c4d2c506e67c24c6"
+    },
+    {
+      "id": "flags",
+      "target": "DatadogFlagsTests",
+      "runtime": "27.0",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "overall": "PASS",
+      "cases": 138,
+      "invocations": 138,
+      "passed": 138,
+      "skipped": [],
+      "summary_sha256": "0bb8569e1d0eaa00d9584b7630beef8f6e3966f51ec01b580433b4158c140571"
+    },
+    {
+      "id": "profiling",
+      "target": "DatadogProfilingTests",
+      "runtime": "27.0",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "overall": "PASS",
+      "cases": 236,
+      "invocations": 236,
+      "passed": 236,
+      "skipped": [],
+      "summary_sha256": "4ab295aed579dc280005b3127a1a2cb6346f21e62cfbd3097ea3a07cabba5cab"
+    }
+  ],
+  "integration_preparation": {
+    "status": "STOPPED_BEFORE_INSTALL",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration-host-k0mg_syr",
+    "plan_sha256": "08c7932c9f3867f61cecec17d63d721b138e5d6873d4f4891d530ffb41d7e3cb",
+    "controls_sha256": "1126ccad8f17d52e8dac819b8080aa87d62384e4b03c19708421559f7ec7f19a",
+    "controls": 33,
+    "original_build_reused": true,
+    "generated_source": "Actual resource generator, compiler output map, object and final link qualified; no extra source accepted by count.",
+    "host": "Exact app-bundle path plus hosted test bundle/executable/complete code inventory.",
+    "warning_reference": "Exact source-bound EXP217 multiset, or none; original raw records retained.",
+    "summary_sha256": "4132b04398091b4915384fac71ae762420713772000bb64c98e67ee8af0d25d4",
+    "cell_summary_sha256": "f05eefaa0a1413003ec2b5f4686e8e87b7c1cec6777cd8ec7224b1618d662194",
+    "original_verdict": {
+      "scenario": "NOT_EXECUTED",
+      "evidence": "INCOMPLETE",
+      "cleanup": "PASS",
+      "overall": "INVALID",
+      "failure": "InvalidFileException: Invalid file"
+    },
+    "offline_diagnosis": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration-host-k0mg_syr/offline-inventory-diagnosis/summary.json",
+      "sha256": "c36c9f132454f78c937558a84545b6acdb93eb33bb74fb8032eaf2139edcf2e3",
+      "controls": 35,
+      "native_retry_admitted": false
+    },
+    "preexisting_host": "com.datadogqh.Example"
+  },
+  "qualified_core": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-core-lifetime-cqtjw_pl",
+    "source": "823508fd477a5d864367926c67ec2d7bfedbd6d2",
+    "summary_sha256": "b11222f8d6c81fd07bab14c035ced82ecb89c30feb7a863e8fd2902023e2c4bc",
+    "cells": [
+      {
+        "id": "core",
+        "target": "DatadogCoreTests",
+        "runtime": "26.5",
+        "scenario": "PASS",
+        "evidence": "PASS",
+        "cleanup": "PASS",
+        "overall": "PASS",
+        "cases": 820,
+        "invocations": 820,
+        "passed": 817,
+        "skipped": [
+          "DatadogCoreTests/CarrierInfoPublisherTests/testGivenCellularServiceAvailable_itProvidesInitialValue()",
+          "DatadogCoreTests/CarrierInfoPublisherTests/testGivenCellularServiceUnAvailable_itProvidesNoInitialValue()",
+          "DatadogCoreTests/CarrierInfoPublisherTests/testGivenSubscribedInfoProvider_whenCarrierInfoChanges_itNotifiesSubscriber()"
+        ],
+        "summary_sha256": "4752ec94463f8d2ac6003f9df3cdd079b03671c756d09b4a968ad28d875e74fc"
+      }
+    ]
+  },
+  "native_active": false
+}

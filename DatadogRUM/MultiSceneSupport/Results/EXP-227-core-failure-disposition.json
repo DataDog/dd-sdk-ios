@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-227",
+  "gate": "S3:F03:M01",
+  "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "status": "RELEVANT_TEST_CORRECTIONS_QUALIFIED_CORE26_PASS",
+  "original_run": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-objc-selection-w5p3say1",
+  "original_verdict": "INVALID; full Core27 test result is FAIL",
+  "counts": {
+    "selected": 820,
+    "passed": 814,
+    "failed": 3,
+    "skipped": 3
+  },
+  "cleanup": "PASS",
+  "reviewer": "/root/c06_runtime_plan",
+  "findings": [
+    {
+      "test": "CrashReportReceiverTests/testReceiveCrashAndViewEvent()",
+      "attribution": "Candidate test changed crashCount:0 to random. Production deliberately refuses an already-crashed view, explaining all three failed assertions.",
+      "repair": "Restore the explicit zero crash-count precondition; preserve every existing assertion."
+    },
+    {
+      "test": "TracingURLSessionHandlerTests/testGivenAllTracingHeaderTypes_itUsesTheSameIds()",
+      "attribution": "Expected receiver-session baggage contradicts the accepted request-time ownership contract. The supplied NetworkContext RUM session is authoritative.",
+      "repair": "Name both different session IDs and expect captured session baggage; preserve every trace, parent, sampling and header assertion.",
+      "contract": "EXP-208-trace-ownership.json ownership_contract; current TracingURLSessionHandler.swift selects a present NetworkContext before receiver fallback."
+    },
+    {
+      "test": "BrightnessLevelPublisherTests/testMultipleBrightnessChanges()",
+      "attribution": "Saved crash PID54023 traps in -[UIScreen init] from the unchanged UIScreenMock initializer at test line30, before constructing the publisher. Frozen test/utility binary UUIDs match the crash. Xcode then restarts the test process.",
+      "repair": "None. Unrelated inherited test/runtime incompatibility remains failed on27. No skip, SDK repair or equivalent27 rerun.",
+      "bounded_continuation": "M01 permits a supported available iOS runtime. Use26.5 for one full Core cell with both relevant test corrections, including this test. No Core27 or single-process27 claim."
+    }
+  ],
+  "decoder": "Preserve optional sourceLocation on raw failed diagnostics; validate exact fields, absolute path and positive line. Never change the failed result.22 offline controls pass.",
+  "continuation": "Core26.5 is qualified. No further Core run is due; original Core27 fixture incompatibility remains preserved.",
+  "gate_closures": [],
+  "test_checkpoint": "d23982a5d249c88b0bc9cd5a05be21ede72cae8d",
+  "diagnostic": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-objc-selection-w5p3say1/failure-attribution/diagnostic.json",
+    "sha256": "3692b977bbe31607b0b5e8b36aaed31dadfc876cbd52123dc84142483860861d"
+  },
+  "preparation_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-core26-corrected-jhmkjhdt",
+  "core26_result": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-core26-corrected-jhmkjhdt",
+    "total": 820,
+    "passed": 816,
+    "failed": 1,
+    "skipped": 3,
+    "cleanup": "PASS",
+    "test": "DatadogCoreTests/testHandoffOwner_andFeatureScopeDoNotRetainCoreAfterDispatch()",
+    "line": 124,
+    "attribution": "Initialization queues bus.connect(core:) and temporarily retains the argument. The test drops Core before draining that queue; scope is weak and handoff Owner has no Core reference. No permanent SDK leak established.",
+    "planned_test_correction": "Call core?.flush() before entering the dispatch lifetime assertion. Preserve all weak-reference/current-owner assertions and do not call stop or weaken the oracle. Source-reviewed by /root/c06_runtime_plan; one-file strict lint passes.",
+    "source_review": {
+      "reviewer": "/root/c06_runtime_plan",
+      "queue": "DatadogCore/Sources/Core/MessageBus.swift:61",
+      "barrier": "DatadogCore/Sources/Core/DatadogCore.swift:619",
+      "scope": "DatadogCore/Sources/Core/DatadogCore.swift:443"
+    },
+    "test_correction_checkpoint": "823508fd477a5d864367926c67ec2d7bfedbd6d2",
+    "qualification": {
+      "state": "PASS",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-core-lifetime-cqtjw_pl",
+      "summary_sha256": "b11222f8d6c81fd07bab14c035ced82ecb89c30feb7a863e8fd2902023e2c4bc",
+      "selected": 820,
+      "passed": 817,
+      "expected_skips": 3,
+      "cleanup": "PASS",
+      "sdk_source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+      "test_checkpoint": "823508fd477a5d864367926c67ec2d7bfedbd6d2"
+    }
+  }
+}

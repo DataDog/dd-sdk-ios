@@ -2,7 +2,7 @@
   "schema_version": 1,
   "gate": "S3:F03",
   "status": "PROVISIONAL_SOURCE_REUSE_ASSESSMENT",
-  "at": "2026-09-23T22:43:37.192069+00:00",
+  "at": "2026-09-24T00:59:52.754301+00:00",
   "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
   "release_approval": "F01 remains required for public promotion and final source-bound closure",
   "native_active": false,
@@ -305,7 +305,7 @@
   "cells": [
     {
       "id": "M01",
-      "disposition": "Full RUM at94842cc8 qualifies on27 and17.5 in EXP-225-rum-suite-result.json. Test-only1522e835e runtime guard preserves SDK bytes;25/25 guarded tests pass on27, exact26 skips on17.5. Other complete module suites remain. No Replay capture/content suite or public promotion."
+      "disposition": "Full RUM27/17.5 remains qualified in EXP225; Core26.5 and seven other complete module suites qualify in EXP227 at unchanged SDK94842cc8. Three test-only corrections are separately committed; original failures remain. Integration is unexecuted after host/inventory preconditions; pre-existing app preserved and native path stopped. No full M01 closure or Replay content claim."
     },
     {
       "id": "M02",
@@ -345,7 +345,7 @@
     },
     {
       "id": "M11",
-      "disposition": "Candidate feature-document integration remains; protected user API documents must stay unchanged. No publication or F02 closure."
+      "disposition": "Results/S3-F02-provisional-documentation-review.json owns the source review and unapplied status patch. Protected API documents remain unchanged. Feature-document/public promotion and F02 closure await F01."
     }
   ],
   "reuse_owners": [
@@ -353,7 +353,8 @@
     "Results/EXP-225-legacy17-result.json",
     "Results/EXP-225-same-key-result.json",
     "Results/EXP-225-rum-suite-result.json",
-    "Results/EXP-226-platform-result.json"
+    "Results/EXP-226-platform-result.json",
+    "Results/EXP-227-module-result.json"
   ],
   "gate_closures": [],
   "unit_reuse_review": {
@@ -377,5 +378,11 @@
       "M09"
     ],
     "status": "PROVISIONAL_PASS"
+  },
+  "module_qualification": {
+    "owner": "Results/EXP-227-module-result.json",
+    "status": "PARTIAL",
+    "qualified_non_rum_schemes": 8,
+    "remaining": "Integration host clean-install prerequisite and separate admission; no automatic retry."
   }
 }
