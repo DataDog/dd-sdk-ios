@@ -16,7 +16,7 @@ def run(args):
     root=args.root.resolve();plan=runtime.reviewed(root);runtime.admit(root,args.key,plan)
     runtime.require(not (root/(args.key+'-driver.log')).exists(),'physical cell already consumed')
     operator.publish(root/'operator',dict(instruction='Preparing the physical app. Wait for the next ready step.'),context=args.key)
-    now=time.time();native=now+1800;execution=native+600;cleanup=execution+300
+    now=time.time();native=now+plan['native_seconds'];execution=native+plan['backend_seconds'];cleanup=execution+plan['cleanup_seconds']
     argv=[sys.executable,'-B',str(Path(runtime.__file__).resolve()),'cell','--root',str(root),'--key',args.key,
           '--native-deadline',str(native),'--execution-deadline',str(execution),'--cleanup-deadline',str(cleanup)]
     def message(value):

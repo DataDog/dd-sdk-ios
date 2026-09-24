@@ -7,7 +7,7 @@
     "S2:H13",
     "S2:H14"
   ],
-  "status": "UIKIT_QUALIFIED_SWIFTUI_READINESS_BLOCKED",
+  "status": "UIKIT_GESTURES_CAPTURED_PHYSICAL_FINALIZATION_INVALID",
   "defined_at": "2026-09-22T23:17:07.076784+00:00",
   "owner": "SDK implementer + device operator",
   "reviewer": "/root/c06_runtime_plan",
@@ -326,7 +326,7 @@
     }
   ],
   "gate_closures": [],
-  "next_action": "User available for a physical iPad session. Prepare and review the exact qualified UIKit observer/cost overlay in fresh physical products, then admit baseline only after device/backend/operator readiness. SwiftUI remains blocked; no reuse of old failed physical binaries.",
+  "next_action": "Repair fixture background finalization from captured source/evidence, qualify the isolated Home/checkpoint mechanism before another human transition pair. Preserve original INVALID and separate restoration PASS; candidate unrun, SwiftUI blocked.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
@@ -2267,9 +2267,9 @@
       }
     }
   },
-  "state": "SWIFTUI_CAPTURE_QUALIFICATION_STOPPED",
+  "state": "PHYSICAL_UIKIT_GESTURES_CAPTURED_FINALIZATION_BLOCKED",
   "physical_cost_mapping": {
-    "state": "BUILDING_FRESH_UIKIT_PAIR",
+    "state": "BASELINE_FINALIZATION_INVALID",
     "artifacts": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-ipad-cost-mapping-pddjbmwg",
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-ipad-cost-mapping-pddjbmwg/definition.json",
@@ -2290,9 +2290,96 @@
       "sha256": "50a8de8aca49830b32c773fd77f3f1313629dae1d2aa3d5787599eeece28e394"
     },
     "operator": "User available and confirmed unlocked/Home; actual fresh hardware, screenshot and task-app absence PASS",
-    "native_admitted": false,
+    "native_admitted": true,
+    "native_launches": 1,
+    "gate_closures": [],
+    "next_action": "Repair fixture background finalization from captured source/evidence, qualify the isolated Home/checkpoint mechanism before another human transition pair. Preserve original INVALID and separate restoration PASS; candidate unrun, SwiftUI blocked.",
+    "builds_qualified": 2,
+    "products_signed": 4,
+    "result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-ipad-cost-mapping-pddjbmwg/native-outcome.json",
+      "sha256": "82b99650246c38581228898269597b98b0739e8918e966b804e0deb591601c69"
+    },
+    "signed_products": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-ipad-cost-mapping-pddjbmwg/build/signed-qualified/plan.json",
+      "sha256": "fd222dabe5b053b5d6d2dcea08917e95fc427ed22410585eec0baa1ab6c6ace0"
+    },
+    "runtime_plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-ipad-cost-mapping-pddjbmwg/runtime-uikit/plan.json",
+      "sha256": "571eff322a84c25e046531b3ab2e8182902d462278f2e872852b4c4f4654f941"
+    },
+    "runtime_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-ipad-cost-mapping-pddjbmwg/runtime-uikit/review.json",
+      "sha256": "fe5d587ec4de059ebd7034f8f9988c27aa6020933a12c2acdc8611e69d4aef6a"
+    },
+    "restoration": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-ipad-cost-mapping-pddjbmwg/runtime-uikit/restoration-after-release/summary.json",
+      "sha256": "25cdcc2c701fe833eb3f8726684784ea56e7aafc9211419d2cbc66fbf779ceb7"
+    },
+    "candidate": "NOT_RUN"
+  },
+  "physical_background_finalization": {
+    "state": "OFFLINE_QUALIFIED_BUILDS_IN_PROGRESS",
+    "artifacts": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/definition.json",
+      "sha256": "8d2a2c57a1f241fa669198515670ad30810bdfc5fc613daf21f4916fafa89911"
+    },
+    "qualification_design": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/qualification-design.json",
+      "sha256": "a243aae5df5b32170f65e9250dbbb378a12d53ef183a7298f30f577084c0d288"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/controls-receipt-case.json",
+      "sha256": "423774f84f2c7a987dafa5cac285f2f200cdf21b53a48d849af7b23b2f1a0ad2",
+      "tests": 5,
+      "compiled_swift_scenarios": 7,
+      "state": "PASS",
+      "cross_language_receipt": true
+    },
+    "admission_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/admission-controls.log",
+      "sha256": "91ccea98a6ab98158174ba759efbbc97ef55df096add8d07fc1d4852791df1a5",
+      "tests": 3,
+      "state": "PASS"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/preparation-review.json",
+      "sha256": "ab9db8a05fa55b5c141ee8fb4e1c8c5c9e41ef2f40dc0e3e56d0cbd790eadff4"
+    },
+    "build_plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/build-receipt-case/plan.json",
+      "sha256": "90649d19f989c6d63df3f6f4ee124631f71fc2643f19782e70f16a25e7ee5835"
+    },
+    "scope": "Fixture-only five-second background lease, original 1.2-second settle, actual writer completion and required same-run/PID ended-lease receipt. No SDK or ownership-oracle change.",
     "native_launches": 0,
     "gate_closures": [],
-    "next_action": "Finish both physical builds/signing, review exact runtime/source mapping, then fresh operator/device/backend admission for UIKit baseline; candidate only after baseline qualifies. SwiftUI excluded."
+    "next_action": "Finish the two declared builds and signing; bind the reviewed one-cell Home-only UIKit runtime, refresh access and operator readiness, then qualify finalization before any full gesture pair.",
+    "limits": "Original physical INVALID and later restoration PASS remain separate. The uppercase UUID host mismatch was reproduced before any new native run; original two builds remain evidence, replaced by separately bound builds with unchanged generated Swift. No candidate, SwiftUI, equivalent retry or prior-run recovery.",
+    "original_preparation": {
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/controls-corrected.json",
+        "sha256": "ddfcf2f72ed6c4a8b5cd75ba79dc24a1720ef4df7d9af2d40a92deb412eb39d5",
+        "tests": 5,
+        "compiled_swift_scenarios": 7,
+        "state": "PASS"
+      },
+      "build_plan": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/build/plan.json",
+        "sha256": "66c4f9dbc56fd317258549b89f8322d7a5a70900e0af2886b6f87823f7007de8"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/preparation-review.json",
+        "sha256": "ab9db8a05fa55b5c141ee8fb4e1c8c5c9e41ef2f40dc0e3e56d0cbd790eadff4"
+      }
+    },
+    "receipt_case_correction": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/receipt-case-definition.json",
+      "sha256": "11e01069896b7748675a8a043023f422f812a840359f490abffefcec42019197"
+    },
+    "identical_generated_source": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/identical-generated-source.json",
+      "sha256": "9299b9a66148ea885b39dce3ad6f1590e5ddfda9e2655f0a21d3f8c44496317d"
+    }
   }
 }

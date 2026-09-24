@@ -10,6 +10,7 @@ import driver
 import physical_io as io
 import physical_release
 import physical_transition
+import physical_background
 from capture_io import atomic, encoded
 
 shared=io.shared
@@ -17,10 +18,12 @@ require=io.require
 
 
 class Collector(driver.Collector):
-    def __init__(self,*,remote,bundle,**kwargs):
+    def __init__(self,*,remote,bundle,require_finalization=False,**kwargs):
         super().__init__(device=remote.identifier,**kwargs)
         self.remote=remote;self.bundle=bundle;self.downloads=self.output.parent/'downloads';self.downloads.mkdir()
         self.transfer_sequence=0;self.last_process=None;self.process_checked=0;self.process_path=None
+        require(type(require_finalization) is bool, 'invalid physical finalization option')
+        self.require_finalization=require_finalization
         self.prompt_issued=False
     def fresh(self,label):
         self.transfer_sequence+=1
@@ -167,4 +170,10 @@ class Collector(driver.Collector):
             len(geometry[-1]['payload']['scenes'])==1 and geometry[-1]['payload']['scenes'][0]['id']==self.binding['scene'] and
             geometry[-1]['payload']['scenes'][0]['activation']!=0,'physical scene did not leave foreground')
         atomic(folder/'background-checkpoint.json',committed);atomic(folder/'background-events.jsonl',data[:receipt['byte_count']])
+        if self.require_finalization:
+            proof_name='background-finalization-background-'+str(event['sequence'])+'.json'
+            proof=self.wait(lambda:self.download(proof_name,deadline,optional=True),deadline)
+            physical_background.validate_receipt(json.loads(proof),run_id=self.run,pid=self.pid,
+                checkpoint='background-'+str(event['sequence']))
+            atomic(folder/'finalization-receipt.json',proof)
         self.evidence=rows;self.live(deadline);return rows

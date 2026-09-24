@@ -289,6 +289,32 @@ using the qualified actual-pan observer and cost overlay. SwiftUI stays blocked.
 The available iPad session now takes priority: an explicit physical build option
 applies the already-qualified callback-cost capture identically to baseline and
 candidate before the existing remote-publication and cleanup-idle overlays. Eleven
-focused controls and source-preparation review pass. Fresh physical builds are in
-progress; UIKit baseline admission remains separate, and SwiftUI is excluded.
+focused controls and source-preparation review pass. Both physical builds and four signed products qualified before the baseline below;
+SwiftUI remained excluded.
 The owner records the exact definition, helper hashes and device readiness.
+
+The fresh physical baseline captured all four UIKit callback chains. Both cancels
+meet the ownership expectation; both completions retain the previously observed
+pre-callback mapper-boundary limitation. Final Home produced background175 and
+geometry177, but the required delayed checkpoint remained absent until the step
+budget closed. The original run is INVALID and its release fence expired before
+the reply. Separate same-PID reactivation, fresh native idle and task-only removal
+pass; the original verdict is unchanged. Candidate remains unrun. Repair and
+qualify background finalization before requesting another transition sequence.
+
+The isolated finalization correction retains the1.2-second settle, captures actual
+background geometry synchronously, and uses a five-second fixture background task
+until writer completion. The host requires the exact run/PID/checkpoint and an ended
+lease receipt; denial, expiry, failed writes and late callbacks remain invalid. Five
+controls, including seven compiled Swift lease scenarios, and three admission guards
+pass scoped review. Two source-bound physical builds are in progress. Only a fresh
+UIKit Home/checkpoint qualification may follow; it cannot recover the old run or
+admit candidate/SwiftUI or another full gesture pair. See the owning result for
+the definition, original failed controls, corrected controls and review.
+
+Preflight found the host rejected Foundation's uppercase UUID token. The Python
+validator now accepts either canonical letter case without rewriting the receipt.
+The controls consume an actual compiled Swift success receipt and reject compact,
+braced and non-string tokens. All5 pass. Both original builds passed; replacement
+builds bind the corrected helper/control hashes to exactly unchanged SDK/client
+trees. No native run occurred during this correction.

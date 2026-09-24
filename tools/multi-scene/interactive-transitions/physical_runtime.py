@@ -60,13 +60,20 @@ def prepare(args):
     scope=original.definition();cells=[r for r in scope['matrix'] if r['environment']=='physical_ipad' and
         r['framework']==args.framework and r['tracking']==args.tracking and r['layout']=='stack']
     require(len(cells)==2 and [r['arm'] for r in cells]==['A','B'],'unknown physical stack pair')
+    finalization_only=getattr(args,'finalization_only',False)
+    require(type(finalization_only) is bool,'invalid finalization qualification option')
+    if finalization_only:
+        require(args.framework=='UIKit' and args.tracking=='automatic' and source.get('background_finalization') is True,
+            'finalization qualification requires the reviewed UIKit automatic fixture')
+        cells=cells[:1]
     root.mkdir();(root/'cells').mkdir();(root/'operator').mkdir();backend.common.transport.preflight(root)
     original.human_operator.publish(root/'operator',dict(instruction='Preparing physical iPad tests. No gesture requested yet.'))
     members=helpers();shared.freeze_helpers(root,members)
     plan=dict(state='PREPARED_NATIVE_UNADMITTED',definition=scope,cells=cells,build_root=str(build_root),
         build_plan_sha256=shared.sha(build_root/'plan.json'),signed_plan_sha256=shared.sha(build_root/'signed-qualified/plan.json'),
-        udid=signed['udid'],helpers=members,native_seconds=1800,backend_seconds=600,cleanup_seconds=300,
-        pair_seconds=5700,device=args.device,native_launches=0,gate_closures=[])
+        udid=signed['udid'],helpers=members,native_seconds=300 if finalization_only else 1800,backend_seconds=600,cleanup_seconds=300,
+        pair_seconds=1500 if finalization_only else 5700,device=args.device,native_launches=0,gate_closures=[],
+        scenario='background-finalization-only' if finalization_only else 'stack')
     atomic(root/'plan.json',encoded(plan));verify(root)
     print(json.dumps(dict(state=plan['state'],root=str(root),plan_sha256=shared.sha(root/'plan.json'))),flush=True)
 
@@ -96,7 +103,7 @@ def stage(args):
     for name in ['xcode_workspace','backend_auth','device_receipt','initial_home']:
         item=preflight[name];require(shared.sha(item['path'])==item['sha256'],'physical access receipt changed')
     atomic(root/'native-admission.json',encoded(dict(plan_sha256=shared.sha(root/'plan.json'),review_sha256=shared.sha(root/'review.json'),
-        issued_at=now,first_cell_deadline=now+300,execution_deadline=now+5400,cleanup_deadline=now+5700,
+        issued_at=now,first_cell_deadline=now+300,execution_deadline=now+plan['pair_seconds']-300,cleanup_deadline=now+plan['pair_seconds'],
         preflight_sha256=shared.sha(args.preflight),operator_sha256=shared.sha(args.operator),device=plan['device'])))
     print('PHYSICAL_PAIR_ADMITTED',flush=True)
 
@@ -112,7 +119,7 @@ def admit(root,key,plan):
         require(visual['state']=='PASS' and visual['summary_sha256']==shared.sha(root/'cells'/order[0]/'summary.json'),'physical Home restoration unreviewed')
         require(0<=time.time()-prior['finished_at']<300,'physical operator continuity expired')
     require(time.time()+plan['native_seconds']+plan['backend_seconds']<=admission['execution_deadline'] and
-            time.time()+2700<=admission['cleanup_deadline'],'full physical cell reservation does not fit')
+            time.time()+plan['native_seconds']+plan['backend_seconds']+plan['cleanup_seconds']<=admission['cleanup_deadline'],'full physical cell reservation does not fit')
     return plan['cells'][index],admission
 
 
@@ -176,7 +183,8 @@ def cell(args):
         pid=io.returned(launch,plan['device'],'devicectl.device.process.launch')['process']['processIdentifier']
         require(type(pid) is int and pid>0,'physical PID missing');identity['pid']=pid
         collector=capture.Collector(remote=remote,bundle=bundle,documents=out/'documents',output=out/'input',run=identity['run_id'],pid=pid,
-            framework=selected['framework'],deadline=native,budget=original.collector_budget(plan['definition']['budgets_seconds']))
+            framework=selected['framework'],deadline=native,budget=original.collector_budget(plan['definition']['budgets_seconds']),
+            require_finalization=source.get('background_finalization',False))
         ready=min(native,time.time()+60);receipt=collector.wait(lambda:collector.download(identity['run_id']+'.installed-code.json',ready,optional=True),ready)
         verified=installed_code.validate(json.loads(receipt),item['path'],identity['run_id'],identity['source'],pid)
         atomic(out/'installed-code-verified.json',encoded(verified))
@@ -188,7 +196,8 @@ def cell(args):
             if not sessions:return None
             sid=next(iter(sessions));require(sid not in known,'restored physical session before input');return sid
         initial_sid=collector.wait(first_session,min(native,time.time()+30))
-        rows=collector.stack();local=ownership.inventory(rows,identity);sid=local['session_id'];require(sid==initial_sid and sid not in known,'restored/replaced physical session')
+        rows=collector.home() if plan.get('scenario')=='background-finalization-only' else collector.stack()
+        local=ownership.inventory(rows,identity);sid=local['session_id'];require(sid==initial_sid and sid not in known,'restored/replaced physical session')
         require(time.time()<native,'late physical native scenario');summary['scenario']='PASS';summary['session_id']=sid
         version=(Path(plan['build_root'])/key/'sdk/DatadogCore/Sources/Versioning.swift').read_text()
         match=re.findall(r'internal let __sdkVersion = "([A-Za-z0-9.+_-]+)"',version);require(len(match)==1,'compiled SDK version missing')
@@ -221,7 +230,8 @@ def cell(args):
 
 
 def compare(root):
-    plan=verify(root);keys=[r['id'] for r in plan['cells']];records=[];inventories=[]
+    plan=verify(root);require(plan.get('scenario','stack')=='stack' and len(plan['cells'])==2,'Home-only qualification is not a release pair')
+    keys=[r['id'] for r in plan['cells']];records=[];inventories=[]
     for key in keys:
         original.qualification(root,key);folder=root/'cells'/key;record=shared.read(folder/'native-summary.json');records.append(record)
         inventories.append(ownership.inventory(original.human_contract.rows((folder/'sealed-events.jsonl').read_bytes(),record['identity']['run_id']),record['identity']))
@@ -236,7 +246,7 @@ def compare(root):
 if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('action',choices=['prepare','verify','stage','cell','compare'])
     parser.add_argument('--root',type=Path,required=True);parser.add_argument('--build-root',type=Path)
-    parser.add_argument('--device');parser.add_argument('--framework',default='UIKit',choices=['UIKit','SwiftUI'])
+    parser.add_argument('--finalization-only',action='store_true');parser.add_argument('--device');parser.add_argument('--framework',default='UIKit',choices=['UIKit','SwiftUI'])
     parser.add_argument('--tracking',default='automatic',choices=['automatic','manual']);parser.add_argument('--key')
     parser.add_argument('--preflight',type=Path);parser.add_argument('--operator',type=Path)
     for name in ['native','execution','cleanup']:parser.add_argument('--'+name+'-deadline',type=float)

@@ -263,6 +263,13 @@ CoreDevice7000/POSIX60 socket failure. Require the failed command's exact device
 binding, preserve each destination and response, and keep the original deadline.
 Any other failure or late response stops the read; cached bytes cannot replace it.
 
+A real background notification does not prove that a delayed writer ran before
+suspension. When finalization is required, the fixture must retain its existing
+settle interval inside a bounded background task, await actual writer completion
+and persist same-run/PID/checkpoint proof that the task ended. Missing or expired
+proof stays invalid. Qualify this Home-only mechanism before repeating operator
+gestures; later foreground activation or restoration cannot repair the old run.
+
 Export app JSONL, runner checkpoints/hierarchy/images, console and partial xcresult
 before uninstall. Bind each to this run and contiguous sequence. Preserve raw
 bytes even if parsing fails; ignore foreign receipts and reject symlinks. Cleanup

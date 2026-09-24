@@ -148,3 +148,15 @@ maps the qualified cost capture identically to both arms before the existing
 remote-publication and native-idle overlays, and binds the helper/control and
 before/after source hashes. Default preparation is unchanged. Fresh signed products
 and separate physical runtime admission are required; it does not admit SwiftUI.
+
+For the reviewed physical finalization correction, prepare with both
+`observer_cost_partition=True` and `background_finalization=True`. The copied fixture
+retains its1.2-second settle and requests a bounded UIKit background task before
+returning from the background notification. It ends that task after the actual
+checkpoint writer completes, then writes the exact run/PID/checkpoint receipt.
+The host rejects missing, denied, expired, late or still-active receipts.
+`physical_runtime.py prepare --finalization-only` selects one UIKit baseline and
+Home-only capture with300s native/600s backend/300s cleanup budgets; it cannot
+compare arms or admit the candidate. Bind fresh controls/review and operator
+readiness as for the stack runner. A pass qualifies only this mechanism, never
+repairs an earlier failed run or admits a full pair implicitly.
