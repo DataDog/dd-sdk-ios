@@ -326,7 +326,7 @@
     }
   ],
   "gate_closures": [],
-  "next_action": "See .continue-here.md: implement and review the explicit old/new source mapping, then prepare one fresh SwiftUI-only qualification. No accepted UIKit rerun or native admission follows from the build.",
+  "next_action": "See .continue-here.md: finish and review the fresh SwiftUI-only worker package, then separately admit the one qualified-source capture cell. No accepted UIKit rerun; old artifacts and semantic limits remain unchanged.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
@@ -2144,10 +2144,42 @@
             "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-inventory-build-2tsxd5xs/products/A-simulator/build-result.json",
             "sha256": "0958ac8107421e5f3e2684e7e3170dbdbbafb842efbf3cd006e2184433653aca"
           },
-          "fixture": "05b06dec322d9071851d990e221546361a88d8d87c5afc83d87922d6cd7567c9"
+          "fixture": "05b06dec322d9071851d990e221546361a88d8d87c5afc83d87922d6cd7567c9",
+          "reuse_preparation": {
+            "state": "PREPARED_NOT_ADMITTED",
+            "definition": {
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-inventory-reuse-49hkau4g/definition.json",
+              "sha256": "346f86b246726c71f05d82c38fb8cf50282661a34b4826f8eee0a460c377c02d"
+            },
+            "controls": {
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-inventory-reuse-49hkau4g/controls-assertion-order.json",
+              "sha256": "2326d499aa014068fe484575df6f67017d5b16bae31c47cb6acb46d5ba9064fd"
+            },
+            "controls_count": 50,
+            "review": {
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-inventory-reuse-49hkau4g/preparation-review.json",
+              "sha256": "b7195aada0b0c7f547b29a6764530585f5f0d8af5877770bbbc6fb935b6545d6"
+            },
+            "plan": {
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-inventory-reuse-49hkau4g/qualification-assertion-order/plan.json",
+              "sha256": "0d3cc52af79279e902736afc71e9e62f527294a6ea305d9ceb2582b4a7ebfcda"
+            },
+            "bound_controls": {
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-inventory-reuse-49hkau4g/qualification-assertion-order/controls.json",
+              "sha256": "2488822fc908a5cf4d678d5edf1fe49ec848ff35d8103cf454289c3f7baf8df8"
+            },
+            "superseded": {
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-inventory-reuse-49hkau4g/superseded-preparation.json",
+              "sha256": "5f34dbd532ec9f36b5317f10763521b8154d89b5396262b2dd46068b5558018a"
+            },
+            "qualification_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-public-inventory-reuse-49hkau4g/qualification-assertion-order",
+            "native_admitted": false,
+            "gate_closures": [],
+            "scope": "Full SDK/archive equality and exact overlay/client mapping; separate original/new compiler and products. Every other native/oracle statement remains unchanged. Old UIKit capture is referenced, never copied into an unexecuted cell. Original mock path-alias control failure is retained."
+          }
         }
       }
     }
   },
-  "state": "SWIFTUI_CAPTURE_REPAIR_BUILT"
+  "state": "SWIFTUI_CAPTURE_QUALIFICATION_PREPARED"
 }

@@ -1,6 +1,7 @@
 """Source-bound reuse controls; no native commands or accepted UIKit rerun."""
 import copy
 import json
+import plistlib
 from pathlib import Path
 import tempfile
 import unittest
@@ -132,6 +133,145 @@ class Predecessor(unittest.TestCase):
         for cells in [['UIKit'],['UIKit','SwiftUI'],['candidate'],[]]:
             with self.subTest(cells=cells),self.assertRaises(Rejected):p.verify(dict(self.plan,cells=cells,predecessor=receipt),self.compiled,self.products)
         with self.assertRaises(Rejected):p.verify(dict(self.plan,cells=['SwiftUI']),self.compiled,self.products)
+
+
+
+
+class SourceMappings(unittest.TestCase):
+    def test_oracle_mapping_preserves_entire_existing_module(self):
+        old = "CONSTANT = 1\ndef target(before,identifier,binding):\n    value=before['payload']['topology']\n    item=value['item']\n    validate(item)\n    return item\n"
+        call = "    accessibility_owner(value['accessibility'],item,binding['window'])\n"
+        new = "def accessibility_owner(inventory,selected,window):\n    check_graph(inventory)\n"+old.replace('    validate(item)\n',call+'    validate(item)\n')
+        p.source_mapping(old,new,'oracle')
+        for changed in [new.replace('validate(item)','skip(item)'),new.replace('CONSTANT = 1','CONSTANT = 2'),
+                        new.replace(call,''),new.replace(call,call+call),
+                        new.replace(call,'').replace('    return item\n','    return item\n'+call),
+                        new.replace(call,'').replace('    item=',call+'    item='),new+'\ndef extra_native(): pass\n']:
+            with self.subTest(source=changed),self.assertRaises(Rejected):p.source_mapping(old,changed,'oracle')
+
+    def test_builder_mapping_allows_only_preparation_function_change(self):
+        old='SCOPE = 1\ndef prepare(): pass\ndef build(): check_product()\n'
+        new=old.replace('def prepare(): pass','def prepare(flag=False): freeze(flag)')
+        p.source_mapping(old,new,'builder')
+        for changed in [new.replace('check_product()','skip_product()'),new.replace('SCOPE = 1','SCOPE = 2')]:
+            with self.subTest(source=changed),self.assertRaises(Rejected):p.source_mapping(old,changed,'builder')
+
+
+class BuildMappings(unittest.TestCase):
+    def setUp(self):
+        self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
+        self.base=Path(self.temp.name);self.oldroot=self.base/'old';self.newroot=self.base/'new';self.repo=self.base/'repo'
+        self.addCleanup(patch.stopall);patch.object(p.shared,'REPO',self.repo).start()
+        source=(Path(__file__).resolve().parents[1]/'automatic-coverage/HumanObservation.swift').read_bytes()
+        self.old=self.make(self.oldroot,source,False)
+        current=p.accessibility_capture.render_human(source,p.shared.sha(self.oldroot/'A-simulator/client/HumanObservation.swift'))
+        self.new=self.make(self.newroot,current,True)
+        self.oldproduct=p.shared.read(self.oldroot/'A-simulator/build-result.json')
+        self.newproduct=p.shared.read(self.newroot/'A-simulator/build-result.json')
+        self.prior=dict(build_root=str(self.oldroot),build_plan=p.shared.sha(self.oldroot/'plan.json'),
+                        build_receipt=p.shared.sha(self.oldroot/'A-simulator/build-result.json'))
+
+    def save(self,path,value):
+        path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(encoded(value))
+
+    def make(self,root,human,overlay):
+        folder=root/'A-simulator';client=folder/'client';client.mkdir(parents=True);sdk=folder/'sdk';sdk.mkdir()
+        (sdk/'SDK.swift').write_text('// identical SDK\n');(folder/'source.tar').write_bytes(b'identical SDK archive')
+        for name in ['UIKitApp.swift','SwiftUIApp.swift','Observation.swift','TransitionObservation.swift']:(client/name).write_text('// '+name+'\n')
+        (client/'HumanObservation.swift').write_bytes(human)
+        fixture=p.build.digest({f.name:p.shared.sha(f) for f in client.glob('*.swift')})
+        for name in ['UIKitTransitions.plist','SwiftUITransitions.plist']:(client/name).write_bytes(plistlib.dumps(dict(TransitionFixture=fixture,other='unchanged')))
+        helper_source={p.BUILDER:'def prepare(): pass\ndef verify(): check_source()\n',p.PREFIX+'common.py':'scope = True\n'}
+        if overlay:
+            helper_source[p.BUILDER]=helper_source[p.BUILDER].replace('def prepare(): pass','def prepare(flag=False): freeze(flag)')
+            helper_source[p.PREFIX+'accessibility_capture.py']=Path(p.accessibility_capture.__file__).read_text()
+            helper_source[p.PREFIX+'test_accessibility_capture.py']='# bound controls\n'
+        for name,text in helper_source.items():
+            f=root/'helpers'/name;f.parent.mkdir(parents=True,exist_ok=True);f.write_text(text)
+            f=self.repo/name;f.parent.mkdir(parents=True,exist_ok=True);f.write_text(text)
+        bound=dict(source=p.shared.ARMS['A'],archive_sha256=p.shared.sha(folder/'source.tar'),sdk=p.shared.tree(sdk),
+                   client=p.shared.tree(client),bundle_prefix='owned',fixture=fixture)
+        plan=dict(arms={'A-simulator':bound},native_admitted=False,helpers=p.shared.tree(root/'helpers'),contract='same',
+                  fixture_sources={'same':'source'},toolchain='same',observer='actual-pan-callbacks',observer_cost_partition=True)
+        if overlay:plan['public_accessibility_inventory']=True
+        self.save(root/'plan.json',plan);products={}
+        for framework in ['UIKit','SwiftUI']:
+            app=folder/'DerivedData/Build/Products/Release-iphonesimulator'/(framework+'Transitions.app');app.mkdir(parents=True)
+            (app/'Info.plist').write_bytes(plistlib.dumps(dict(TransitionSource=bound['source'],TransitionFixture=fixture,
+                DTSDKName='iphonesimulator27.1',MinimumOSVersion='18.0')));(app/framework).write_text(framework+'-'+fixture)
+            products[framework]=dict(path=str(app),bundle='owned.'+framework.lower(),product=self.product(app))
+        receipt=dict(state='QUALIFIED_BUILD_ONLY',key='A-simulator',source=bound['source'],plan_sha256=p.shared.sha(root/'plan.json'),
+                     finished_at=2,compiler={'membership':'frozen'},products=products)
+        self.save(folder/'build-result.json',receipt)
+        self.save(folder/'build-admission.json',dict(started_at=1,deadline=3,plan_sha256=p.shared.sha(root/'plan.json')))
+        return plan
+
+    @staticmethod
+    def product(app,**unused):return {'files':p.shared.tree(app)}
+
+    def actual(self,root):
+        with patch.object(p.build,'compiled',return_value={'membership':'frozen'}),patch.object(p.shared,'product',side_effect=self.product):
+            return p.verified_build(root)
+
+    def mapping(self,products=None):
+        def verified(root):return (self.old,self.oldproduct) if Path(root).resolve()==self.oldroot.resolve() else (self.new,self.newproduct)
+        with patch.object(p,'verified_build',side_effect=verified):
+            return p.mapped_build(self.prior,self.newroot,self.new,self.newproduct if products is None else products)
+
+    def test_original_and_new_build_artifacts_are_independently_checked(self):
+        self.actual(self.oldroot);self.actual(self.newroot)
+        for relative in ['source.tar','sdk/SDK.swift','client/UIKitApp.swift','helpers-ignored']:
+            if relative=='helpers-ignored':path=self.newroot/'helpers'/p.PREFIX/'common.py'
+            else:path=self.newroot/'A-simulator'/relative
+            raw=path.read_bytes();path.write_bytes(raw+b'changed')
+            try:
+                with self.subTest(path=relative),self.assertRaises(Rejected):self.actual(self.newroot)
+            finally:path.write_bytes(raw)
+        with patch.object(p.build,'compiled',return_value={'membership':'changed'}),self.assertRaises(Rejected):p.verified_build(self.oldroot)
+        path=Path(self.oldproduct['products']['UIKit']['path'])/'UIKit';path.write_text('changed')
+        with self.assertRaises(Rejected):self.actual(self.oldroot)
+
+    def test_exact_overlay_maps_distinct_fixtures_products_and_unchanged_sdk(self):
+        proof,old,products=self.mapping()
+        self.assertEqual(old,self.old);self.assertEqual(products,self.oldproduct)
+        self.assertNotEqual(proof['old_fixture'],proof['new_fixture'])
+        self.assertNotEqual(proof['old_products_sha256'],proof['new_products_sha256'])
+        self.assertFalse(proof['release_acceptance']);self.assertEqual(proof['gate_closures'],[])
+
+    def test_sdk_archive_source_observer_and_helper_mutations_reject(self):
+        changes=[lambda n:n['arms']['A-simulator']['sdk'].update(foreign='source'),
+                 lambda n:n['arms']['A-simulator'].update(archive_sha256='other'),
+                 lambda n:n['arms']['A-simulator'].update(source='candidate'),
+                 lambda n:n['arms']['A-simulator'].update(fixture=self.old['arms']['A-simulator']['fixture']),
+                 lambda n:n.update(observer='original-began'),lambda n:n.update(observer_cost_partition=False),
+                 lambda n:n.update(public_accessibility_inventory=False),lambda n:n['fixture_sources'].update(other='source'),
+                 lambda n:n['helpers'].update(extra='helper'),lambda n:n['helpers'].update({p.PREFIX+'common.py':'changed'})]
+        for change in changes:
+            saved=copy.deepcopy(self.new);change(self.new)
+            try:
+                with self.subTest(change=change),self.assertRaises(Rejected):self.mapping()
+            finally:self.new=saved
+
+    def test_copied_client_metadata_and_human_transformation_are_exact(self):
+        for name in ['HumanObservation.swift','SwiftUITransitions.plist']:
+            path=self.newroot/'A-simulator/client'/name;raw=path.read_bytes()
+            if name.endswith('.plist'):
+                value=plistlib.loads(raw);value['extra']='unreviewed';path.write_bytes(plistlib.dumps(value))
+            else:path.write_bytes(raw+b'// unreviewed\n')
+            try:
+                with self.subTest(name=name),self.assertRaises(Rejected):self.mapping()
+            finally:path.write_bytes(raw)
+        self.new['arms']['A-simulator']['client']['SwiftUIApp.swift']='changed'
+        with self.assertRaises(Rejected):self.mapping()
+
+    def test_old_binding_and_new_product_cannot_be_substituted(self):
+        with self.assertRaises(Rejected):self.mapping(products=self.oldproduct)
+        self.prior['build_receipt']='foreign'
+        with self.assertRaises(Rejected):self.mapping()
+
+    def test_reviewed_live_helpers_are_required(self):
+        path=self.repo/p.PREFIX/'accessibility_capture.py';path.write_text('changed')
+        with self.assertRaises(Rejected):self.mapping()
 
 
 if __name__=='__main__':unittest.main()

@@ -256,3 +256,14 @@ input remains unadmitted. The
 owner binds source, controls, review and separate build definition. New products
 need explicit source mapping before SwiftUI-only qualification; old UIKit evidence
 is retained with its original fixture and semantic limits.
+
+
+The explicit predecessor mapping passes50 focused controls and review against the
+real saved artifacts. It independently verifies both full SDK archives/trees,
+compiler membership/objects and products; only the exact HumanObservation overlay
+and fixture-ID plist updates differ in the copied client. The oracle mapping keeps
+all other statements and fixes the ownership assertion immediately after target
+selection. A test-double path-alias failure and the superseded unadmitted plan are
+preserved. The fresh SwiftUI-only plan retains its own fixture/products and original
+budgets; worker packaging and native admission remain. No accepted UIKit cell is
+copied or rerun, and its semantic failure classifications remain unchanged.
