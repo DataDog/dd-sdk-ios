@@ -357,3 +357,19 @@ and scoped review pass. The exact saved inventory still lacks a replay flag and
 retains stale Home activity/duration/brightness plus an unclassified TTID. The
 original verdict and deadline are unchanged. These rules remain offline-only;
 SwiftUI conflict capture preparation can progress independently of another pair.
+
+
+The unattended visibility diagnostic freezes one baseline build with all three
+capture overlays. Its first headless attempt stops before installation when the
+display reports `unknown`; that is not evidence of an inactive display. Cleanup
+PASS restores Shutdown. A separately reviewed frontend continuation reuses those
+exact products and starts an actual Xcode device session. Four offline binding and
+cleanup controls pass after correcting two test-only exception expectations.
+
+The continuation preserves snapshot13 and its exact conflicting object: the same
+UIView labelled Home, with no identifier, is visible through indexed accessibility
+and hidden through an automation container. No input or backend query occurs.
+The strict snapshot remains INVALID; diagnostic evidence is captured in37.2s and
+task-only removal/session end/Shutdown restoration pass within69.6s. The original
+headless failure stays immutable. Audit actual view ancestry separately from public
+accessibility-container exposure before changing the oracle; no release gate closes.

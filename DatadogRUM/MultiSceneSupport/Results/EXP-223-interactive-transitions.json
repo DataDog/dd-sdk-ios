@@ -397,7 +397,7 @@
       "scope": "Fixture/native and local paired oracle only. Full runtime, backend, adaptive geometry and physical execution remain unqualified."
     }
   },
-  "updated_at": 1790283490.8031209,
+  "updated_at": 1790284561.266968,
   "live_environment": {
     "observed_at": "2026-09-23T19:45:47.121281+00:00",
     "xcode": "27.1 (27A9269)",
@@ -2261,7 +2261,43 @@
             "native_runs": 0,
             "fixture_builds": 0,
             "gate_closures": [],
-            "limits": "Synthetic graph results cannot identify the actual native conflicting object or relax rejection. Physical UIKit preparation is independently selected by operator availability; SwiftUI remains blocked."
+            "limits": "Actual native conflict is preserved under the frontend continuation. Its complete snapshot is INVALID and no behavioral gate closes; investigate the source-supported distinction between visual ancestry and public accessibility container paths before changing the predicate.",
+            "native_diagnostic": {
+              "state": "STOPPED_BEFORE_INSTALL",
+              "definition": {
+                "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-visibility-native-u3r77lf5/definition.json",
+                "sha256": "62ae05e0d1c664bfc9aec4ee2dfc8567dd4f98aa13effaf36587f8d5623d1867"
+              },
+              "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-visibility-native-u3r77lf5",
+              "fixture_builds": 1,
+              "native_runs": 1,
+              "native_admitted": false,
+              "gate_closures": [],
+              "outcome": {
+                "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-visibility-native-u3r77lf5/outcome.json",
+                "sha256": "30c6a6b4a5b016f3b049cfa4a3ad3025798f68186a97365b65bed787528da7f4"
+              },
+              "app_launches": 0,
+              "cleanup": "PASS",
+              "frontend_continuation": {
+                "state": "CONFLICT_CAPTURED_CLEANUP_PASS",
+                "definition": {
+                  "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-visibility-native-u3r77lf5/frontend/definition.json",
+                  "sha256": "ee23a8cc1af3a186f998b07d21f4fb9b6d0735f521466230472bbda5ec5ccf51"
+                },
+                "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-visibility-native-u3r77lf5/frontend",
+                "native_admitted": true,
+                "gate_closures": [],
+                "outcome": {
+                  "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-visibility-native-u3r77lf5/frontend/outcome.json",
+                  "sha256": "db1bdc3cfa3fee94819370371427c217f06138d65ec39d0c834558f41320277e"
+                },
+                "app_launches": 1,
+                "input_calls": 0,
+                "backend_queries": 0,
+                "cleanup": "PASS"
+              }
+            }
           }
         }
       }

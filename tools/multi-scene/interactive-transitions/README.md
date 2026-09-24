@@ -175,3 +175,12 @@ hashes without renewing them. The generic runtime join stays unchanged. Only the
 three named empty view objects, independent reducer revisions, typed-equal session
 reducer witnesses and the explicit tablet/Tablet enum pair are classified. Missing
 reducer flags are never defaulted; all other differences remain UNQUALIFIED. This command never launches an app, queries Datadog or closes a gate.
+
+
+The current SwiftUI visibility diagnostic retains the conflicting object's actual
+identity and both public paths. Its first headless setup reports display state
+`unknown` and stops before install. The separately reviewed frontend continuation
+uses the actual Xcode start/end responses, requires `activeOn` before install,
+captures one initial snapshot without input, and restores the original Shutdown.
+Its Home UIView conflict remains invalid; it cannot admit another gesture run.
+Read the EXP223 owner for the source-supported visibility repair boundary.

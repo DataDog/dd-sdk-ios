@@ -15,7 +15,7 @@
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
   "human_work": "UNADMITTED_WHILE_OPERATOR_SLEEPS",
-  "checkpoint": "0127177f4cf7b91098fd1f0950cbc923f3ae8d36",
+  "checkpoint": "350e2ea6e5a43d5aea244a5183e23f4ad6f01a8d",
   "tasks": [
     {
       "id": "capture-backend",
@@ -52,7 +52,15 @@
       "dependency": "Read the current EXP223 visibility diagnostic definition and reviewer disposition",
       "decisive_test": "Focused source/negative controls and at most the already justified native qualification if all new prerequisites and bounded review are satisfied",
       "environment": "Offline first; qualified simulator only when available without human input",
-      "state": "IN_PROGRESS"
+      "state": "NATIVE_CONFLICT_PRESERVED_SOURCE_REPAIR_REVIEW",
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-visibility-native-u3r77lf5/frontend/outcome.json",
+        "sha256": "db1bdc3cfa3fee94819370371427c217f06138d65ec39d0c834558f41320277e"
+      },
+      "remaining": [
+        "Source-backed visual ancestry versus accessibility-container semantics",
+        "Focused negative controls and designated review before any new native admission"
+      ]
     },
     {
       "id": "automated-release-preparation",
@@ -78,5 +86,5 @@
     "No Replay content, unrelated CI flakes, optional networking benchmarks or physical Duo acceptance"
   ],
   "gate_closures": [],
-  "updated_at": 1790283490.806806
+  "updated_at": 1790285433.567589
 }
