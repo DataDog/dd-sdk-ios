@@ -1835,12 +1835,12 @@
       }
     },
     "phase_pump": {
-      "state": "PREFLIGHT_STOPPED_BEFORE_INSTALL",
+      "state": "QUALIFICATION_STOPPED_OBSERVER_COST",
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-phase-pump-5efyqf40",
       "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-phase-pump-5efyqf40/definition.json",
       "native_admitted": true,
       "reviewer": "/root/c06_runtime_plan",
-      "at": 1790258187.7756338,
+      "at": 1790260776.91774,
       "controls": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-phase-pump-5efyqf40/controls-final.json",
         "sha256": "773b37f9eb0309c158cc5e5b96b884e7c1db2773a8a8d69495b22d2f78401fbf"
@@ -1850,7 +1850,7 @@
         "sha256": "6dc71e9f68a65fa86d5564f5a72c741b14be8915e468a9dce80f4cf8e198e978"
       },
       "tests": 184,
-      "native_effects": 0,
+      "native_effects": 1,
       "builds": 0,
       "gate_closures": [],
       "preparation": {
@@ -1858,7 +1858,7 @@
         "sha256": "03dec431017d8f431cd886a5b26d8f77eb2b87cbe39cb13e381c915e5c615a48"
       },
       "review_resolution": "Existing per-prompt completion proof already fences teardown; pending now also rejects any cleanup state other than NOT_STARTED. No second lease protocol.",
-      "next": "Fresh native admission review required after proved cold-boot absence. Original cell remains consumed; no automatic retry.",
+      "next": "Offline source-bound observer cost diagnosis only; preserve all failed runs and unchanged limits. No equivalent native retry.",
       "qualification_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-phase-pump-5efyqf40/qualification",
       "qualification_plan_sha256": "e38b4900a02c6bc9a4f544afc821563d69c1188bca8a7cdb5feef4ce010b9a89",
       "qualification_review": {
@@ -1872,8 +1872,8 @@
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-phase-pump-5efyqf40/qualification/result.json",
         "sha256": "b90e55999efb5a5d0a61a7a337c5c7c039c099ef9e32ebd5b429897cf57e3c73"
       },
-      "native_launches": 0,
-      "phase_input_calls": 0,
+      "native_launches": 1,
+      "phase_input_calls": 1,
       "cleanup": "PASS",
       "environment_repair": {
         "state": "PASS",
@@ -1886,6 +1886,42 @@
           "sha256": "21e1f776fddd19d5fe8c017c29598809300acbf78514d62392a8900686982c42"
         },
         "scope": "One exact owned orphan registration removed through simctl; absence stable through cold boot; non-task apps unchanged; original Shutdown restored. Original failed qualification unchanged. No qualification credit."
+      },
+      "clean_install_qualification": {
+        "state": "INVALID_OBSERVER_COST",
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-phase-pump-5efyqf40/qualification-after-orphan-removal",
+        "plan_sha256": "4aee7d81b2fb2f95e3968155f5168264834618a3ee828e39fc04dd971181e278",
+        "review_sha256": "7d2b22727546ef65baaaae311bbd8300463a1b506dc3b959737aa16bab88ec05",
+        "changed_prerequisite": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-phase-pump-5efyqf40/orphan-registration-repair/result.json",
+          "sha256": "196989adba7253b482d71e4d250d6bc82e8aa2cf8add752b51034a3f39def6a2"
+        },
+        "framework": "UIKit",
+        "max_native_cells": 1,
+        "active_framework": null,
+        "retries": 0,
+        "gate_closures": [],
+        "worker_preparation": {
+          "state": "PROVIDER_PREPARATION_FAILED_BEFORE_NATIVE",
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-phase-pump-5efyqf40/qualification-after-orphan-removal/worker-preparation-failure.json",
+          "next": "Confirm a prepared input worker before starting any session/native deadline.",
+          "resolution": "Historical provider-preparation failures preserved separately; fresh worker completed one awaited pump invocation and stopped after one published setup exchange."
+        },
+        "native_launches": 1,
+        "phase_input_calls": 1,
+        "transition_gestures": 0,
+        "scenario": "NOT_EXECUTED",
+        "evidence": "INCOMPLETE",
+        "cleanup": "PASS",
+        "result": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-phase-pump-5efyqf40/qualification-after-orphan-removal/result.json",
+          "sha256": "3f7e27056391c447ac4fc25ac275fe8c0aa76d254a3e47c3e5b6c2492cd2edc9"
+        },
+        "outcome_review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-phase-pump-5efyqf40/qualification-after-orphan-removal/outcome-review.json",
+          "sha256": "5a0107d75d7152bdec5ce8fa337ac080010a46a633f8b0069a664f1f36dae7de"
+        },
+        "next": "Offline source-bound observer cost diagnosis only; preserve all failed runs and unchanged limits. No equivalent native retry."
       }
     }
   },

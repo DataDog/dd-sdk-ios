@@ -181,3 +181,13 @@ the exact owned orphan registration. App/container absence survived a cold boot;
 non-task inventory stayed unchanged and original Shutdown was restored. The original
 failed qualification is unchanged. This establishes a changed clean-install
 prerequisite, with no input-mechanism, SDK or release acceptance credit.
+
+The separately admitted clean-install cell reached one published setup tap, then
+stopped before any transition gesture. The decisive receipt is callback sequence
+17→18:3,095,625ns against the unchanged2,000,000ns limit. Snapshot costs remain
+within their separate100ms limit. The worker has no pending input; task removal,
+actual session absence and original Shutdown restoration complete cleanup PASS.
+The final scenario remains NOT_EXECUTED, evidence INCOMPLETE and overall INVALID.
+The owner retains the exact source, raw events and scoped outcome review. The next
+step is offline partitioning of the generated observer's synchronous work; no
+threshold relaxation, SwiftUI/human admission or equivalent native retry follows.

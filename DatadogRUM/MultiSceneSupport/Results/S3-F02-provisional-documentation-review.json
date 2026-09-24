@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "gate": "S3:F02:M11",
-  "status": "SOURCE_REVIEWED_PROTECTED_EDITS_DEFERRED",
+  "status": "STATUS_CORRECTIONS_INTEGRATED_IN_RESEARCH_RFC_PENDING",
   "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
   "reviewer": "/root/c06_runtime_plan",
   "at": 1790205053.880183,
@@ -36,7 +36,7 @@
     "Resources retain start ownership; Operations identity stays application-wide."
   ],
   "gate_closures": [],
-  "remaining": "Protected user documents cannot be edited in this checkpoint. F01-approved support examples/public feature integration and final source review remain required.",
+  "remaining": "The reviewed status corrections and documentation consolidation are integrated in the active research checkout. F01-approved support examples/public feature integration, adoption into the release source and final source review remain required.",
   "proposed_patch": {
     "path": "DatadogRUM/MultiSceneSupport/Results/S3-F02-provisional-status.patch",
     "sha256": "c40bd6ddadce561ff08394a0f256416fe8fa661b9cbfec3e7eff4bbf986b0da4",
@@ -65,5 +65,31 @@
       }
     },
     "scope": "Status/source corrections only; no API approval, public promotion, example validation or protected document mutation."
+  },
+  "original_review_status": "SOURCE_REVIEWED_PROTECTED_EDITS_DEFERRED",
+  "documentation_checkpoint": {
+    "reviewed_on": "2026-09-24",
+    "branch": "valpertui/multi-scene-doc-review-20260924-qk08",
+    "base": "5a9c72b0a9d9b3600b5487071ec98bffb77c764e",
+    "scope": "Apply the prepared status corrections, consolidate the declaration inventory in STABLE_API_REVIEW.md, split current navigation behavior from historical evidence, and link the preserved Guild executive summary and post-S3 checklist. No source implementation or release-gate change.",
+    "prepared_patch_applied_in_isolated_branch": true,
+    "original_patch_receipt": "Preserved above as the original unapplied proposal; its bindings describe that historical patch, not the complete documentation checkpoint.",
+    "public_promotion": false,
+    "gate_closures": [],
+    "validation": {
+      "release_checklist": "PASS; generated status unchanged",
+      "selected_document_links": 313,
+      "signature_inventory": "The canonical STABLE_API_REVIEW.md inventory matches 21 Swift overload signatures/defaults and 20 Objective-C selector names plus target factory at source 94842cc8ad7b104c1394c236b98b95b6c24a0956. The Guild review links to that inventory.",
+      "scope": "Documentation and source inspection only; no native qualification or release-gate closure."
+    },
+    "main_checkout_changed_by_this_review": false,
+    "consolidation": "Results/navigation-documentation-consolidation-20260924.json"
+  },
+  "main_integration": {
+    "source_commit": "6fd89e112ee79f25a7d36f744604a4b5f6eca0d4",
+    "evidence_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/documentation-integration-g5grdh1b",
+    "at": 1790260625.0376809,
+    "scope": "Approved documentation only; no API approval, source promotion or release-gate closure.",
+    "gate_closures": []
   }
 }

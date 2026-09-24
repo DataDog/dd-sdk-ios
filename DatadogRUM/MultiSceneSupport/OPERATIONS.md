@@ -5,7 +5,7 @@ duplicate-start behavior, the proposed public targeting API, customer guidance,
 or Operations tests. This is the authoritative home for the Operations contract;
 the [canonical overview](../MULTI_SCENE_SUPPORT.md) carries only its summary.
 
-Last updated: 2026-09-16
+Last updated: 2026-09-24
 
 ## RUM Operations contract and API review proposal
 
@@ -27,8 +27,8 @@ The implemented internal contract is:
 
 The internal routing and warning changes are implemented, and the scene-targeted
 manual-view prerequisite passes through customer-shaped Swift calls in `EXP-137`
-through `EXP-140`. `EXP-155` now implements and accepts the first bounded
-Operation escape hatch as an iOS 27 experimental/SPI surface. Its Swift and
+through `EXP-140`. `EXP-155` implemented and accepted the first bounded
+Operation escape hatch as an iOS27 experimental/SPI surface. Its Swift and
 Objective-C call sites, custom-conformer/NOP fallback, explicit-over-inferred
 precedence, unresolved-target fallback, and cross-scene runtime usefulness pass.
 It must not be promoted to the supported public API surface until normal review
@@ -36,21 +36,14 @@ approves the exact names and contracts. `EXP-158` then demonstrates that the
 same scene-current concept applies to one-shot actions, so the experimental
 value is now named `RUMViewTarget` rather than being Operation-specific. The
 earlier Swift `RUMOperationViewTarget` spelling remains an SPI type alias while
-review is pending. The longer-term value-type proposal, which never exposes
-internal RUM UUIDs, remains:
+review is pending. The amended first stable proposal exposes only the scene-
+current factory, callable across iOS15+. Internal RUM UUIDs remain private:
 
 ```swift
+@available(iOS 15.0, *)
 public struct RUMViewTarget {
-    public static let inferred: Self
-
     @MainActor
     public static func current(in scene: UIWindowScene) -> Self
-
-    @MainActor
-    public static func tracked(key: String, in scene: UIWindowScene) -> Self
-
-    @MainActor
-    public static func tracked(_ viewController: UIViewController) -> Self
 }
 ```
 
@@ -59,6 +52,7 @@ to `startOperation`, `succeedOperation`, and `failOperation`; any future public
 update or retry API must add the same targeting capability. For example:
 
 ```swift
+// Inside a MainActor-isolated UI integration, on iOS15+:
 rum.startOperation(
     name: "thread_open",
     operationKey: operationKey,
@@ -73,50 +67,50 @@ rum.succeedOperation(
 ```
 
 The `view` argument must remain required on these overloads so it does not become
-ambiguous with the existing convenience methods. The SDK should synchronously
-turn UIKit objects into opaque values before enqueueing the command: a scene's
-persistent identifier, a manual `ViewIdentifier.key`, or a controller's
-`ObjectIdentifier`. It must not retain UIKit objects on the RUM queue.
-`current(in:)` resolves the current tracked view in the given scene.
-`tracked(key:in:)` matches a manually tracked key inside that scene, and
-`tracked(_:)` matches the tracked controller instance.
+ambiguous with the existing convenience methods. The factory synchronously
+captures the scene's persistent identifier on the main actor; the RUM queue must
+not retain UIKit objects. On a qualified scene-aware route, `current(in:)`
+resolves the live current view in that scene when the command is processed.
 
-The first bounded SPI should expose only `current(in:)`. It is sufficient to
-exercise the approved cross-window customer workflow and does not pre-decide how
-manual keys or controller identity should be represented publicly. Existing
-source-less methods already provide inferred/default behavior, so the first SPI
-does not need a redundant `.inferred` value. API review can add
-`tracked(key:in:)`, `tracked(_:)`, and an explicit inferred spelling after the
-value type and Objective-C companion have real call-site evidence.
+The SDK selects the route internally using OS, configuration and the qualified
+Operation-targeting capability. Where that capability is unavailable, the new
+overload forwards to the equivalent existing Operation method exactly once,
+preserving identity, attributes, options and existing context resolution. It
+must not drop the Operation step or ask customers for an iOS27 fallback branch.
+Each step still resolves independently; passing a scene neither namespaces the
+Operation key nor promises exact scene attribution on the legacy path.
+
+Existing source-less methods already provide inferred/default behavior. An
+explicit `.inferred`, `tracked(key:in:)` and `tracked(_:)` are outside this first
+release; they are not additional deliverables of the availability amendment.
 
 The command must preserve the explicit target separately from its independently
 captured call-site inference. Collapsing both into the existing `command.target`
 would skip precedence level 2 whenever an explicit target cannot resolve. Session
 processing must resolve the explicit candidate first, then the inferred candidate;
 only a candidate that resolves to a live tracked view is trustworthy. The manager
-then applies its retained snapshot and process-representative fallbacks. Supporting
-the exact-view forms requires an internal logical target keyed by `ViewIdentifier`
-plus a scene where the identity is not globally unique, never a public RUM UUID.
+then applies its retained snapshot and process-representative fallbacks. This
+describes the qualified scene-aware path; legacy fallback preserves its existing
+Operation resolution rather than inventing exact ownership.
 
 To avoid making a new requirement on every external `RUMMonitorProtocol`
 conformer, the experimental prototype uses extension-only overloads backed by a
 private targeting capability. A custom conformer or NOP monitor calls the
 existing inferred method exactly once. The generalized Objective-C companion is
-`DDRUMViewTarget` and likewise exposes only `currentInScene:` in Debug builds.
-`inferred`,
-`trackedViewWithKey:inScene:`, and `trackedViewController:` remain API-review
-options rather than implemented claims. The SPI uses the same iOS 27 availability
-boundary as the scene-targeted manual-view prerequisite in
-[NAVIGATION_API.md](NAVIGATION_API.md). Stable review must choose whether to keep
-that boundary or expose broader legacy-compatible behavior.
+`DDRUMViewTarget` and exposes only `currentInScene:` in Debug or local
+DD_SCENE_API_VALIDATION builds. The additional inferred/key/controller factories
+remain outside the first release. [EXP-225](Results/EXP-225-api-availability.json)
+implements ordinary iOS15 callability and internal fallback locally, preserving
+application-wide Operation identity. Public promotion and final qualification
+remain pending; the separate semantic SwiftUI host stays iOS27+.
 
-The scene-targeted manual prerequisite is now implemented as an iOS 27 Swift SPI
-with Debug-only Objective-C companions. `EXP-137` through `EXP-140` replace the
+The scene-targeted manual prerequisite is now an iOS15 Swift SPI with provisional
+Objective-C exposure. Historical iOS27 `EXP-137` through `EXP-140` replace the
 probe's internal-only calls with the customer-shaped overloads and validate
-manual, nested, duplicate-start, Sheet, and full-screen-cover paths. The same-key
-A/B live discriminator remains hardware-gated, but no longer blocks implementing
-the Operation target: `.current(in:)` needs only the existing scene/current-view
-lookup and exposes no internal RUM UUID. The concrete manual-view evidence is in
+manual, nested, duplicate-start, Sheet, and full-screen-cover paths. The Operation
+target needs only the existing scene/current-view lookup and exposes no internal
+RUM UUID. Current topology qualification belongs to the
+[gate register](release-gates.json); the concrete manual-view evidence is in
 [NAVIGATION_API.md](NAVIGATION_API.md).
 
 Customer documentation shipped with that API must state that scenes do not
@@ -211,12 +205,13 @@ Required test coverage is tracked explicitly:
 | Closed origin with no new context uses snapshot | Manager vital/message retained-view assertions plus backend teardown run | Focused and backend pass |
 | Closed origin then explicit B completion uses B | Manager exact-view assertion | Internal pass; public-shaped close/re-target runtime remains a later target-form row |
 | Duplicate identity has corrected warning and no synthetic end | Manager warning plus exact `[start, start, end]` step sequence, with both a reused key and omitted key; `EXP-130` raw/reduced backend proof | Focused and live backend pass; earlier raw start is orphaned as specified |
-| Existing single-scene and source-less behavior | Representative-change and legacy no-view regressions | Focused pass; current full 1,255-test RUM suite passes with zero failures |
+| Existing single-scene and source-less behavior | Representative-change and legacy no-view regressions | Focused pass; the historical full 1,255-test RUM run passed at its recorded checkpoint |
 
 The [stable API review package](STABLE_API_REVIEW.md) proposes the concrete
-RUMViewTarget name, iOS27 availability, existing Swift/Objective-C signatures and
-extension-only fallback. Manual-key/controller factories are outside its proposed
-first release. Reviewer approval remains required before stable exposure;
+RUMViewTarget name, iOS15+ callability, existing Swift/Objective-C signatures and
+extension-only fallback with internal OS/capability checks. Manual-key/controller
+factories are outside its proposed first release. Reviewer approval remains
+required before stable exposure;
 accepted scene-current SPI evidence is unchanged. The requested
 application-wide identity means that scenes do not
 namespace an Operation; it does not add a new cross-session persistence contract.
@@ -225,3 +220,12 @@ starts follow the explicitly requested four-hour orphan-timeout warning. Any
 change to cross-session Operation semantics is separate backend/product work and
 does not block the multi-scene implementation. Emitted steps remain best-effort
 and are never rejected only because local tracking state is absent.
+
+EXP-225 provisionally qualifies iOS15-targeted Swift/Objective-C clients and
+exactly-once legacy parity on iPadOS17.5. Swift still uses SPI and Objective-C
+uses the validation flag; normal public clients remain required after F01.
+Before enabling optional exact Operation targeting on an older iPad system, qualify
+per-step A/B ownership and application-wide identity, including reverse-order
+completion. Existing evidence above applies to its recorded source and runtime;
+it does not establish exact older-system scene ownership. Later qualified behavior
+can use the same customer call sites without further instrumentation edits.

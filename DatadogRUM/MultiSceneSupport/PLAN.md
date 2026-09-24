@@ -299,6 +299,9 @@ does not substitute for runtime, hardware or final release gates.
 
 ## Deferred and explicitly out of scope
 
+- After S3 ships, [integrate reusable tooling and documentation](POST_S3_TOOLING_INTEGRATION.md)
+  so all repository contributors benefit from S1-S3 work. This follow-up owns its
+  integration checklist and does not add a release gate.
 - [Failed Resource visibility alongside its Error](E03_RESOURCE_COMPLETION_DECISION.md#deferred-follow-up-failed-resource-visibility-alongside-its-error) is a later product/SDK follow-up after E03. The current fix uses the existing Error resource fields; no extra Resource event or schema/API change is admitted.
 - Detailed URLSession timing/allocation benchmarking is an optional
   [testing-infrastructure follow-up](NETWORK_BENCHMARK_FOLLOWUP.md). E01 release

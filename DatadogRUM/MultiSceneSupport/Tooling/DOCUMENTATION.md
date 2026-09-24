@@ -10,6 +10,9 @@ experiment archive unless a specific old experiment is needed.
 | Document | Owns | Keep elsewhere |
 | --- | --- | --- |
 | [Overview](../../MULTI_SCENE_SUPPORT.md) | Stable product contract and documentation map | Current execution state and history |
+| [Navigation contract](../NAVIGATION_API.md) | Current manual-view and semantic-navigation behavior | Experiment narratives and declaration inventories |
+| [Stable API review](../STABLE_API_REVIEW.md) | Canonical Swift, Objective-C and semantic declarations; API approval record | Separate inventories in Guild presentations |
+| [Navigation history](../Experiments/NAVIGATION_API_HISTORY.md) | Earlier designs and original experiment observations | Present support status and execution instructions |
 | [Register](../release-gates.json) | Finite deliverables, owners, dependencies, decisive tests, environments, release-specific status and proof | Duplicate manually maintained totals |
 | [PLAN](../PLAN.md) and [progress](../Results/release-progress.json) | Generated checklist, stage views and priorities | Completed experiment narratives |
 | [Assessment](../ASSESSMENT.md) | Present support conclusions and evidence limits | Detailed run counts, command failures and PR chronology |

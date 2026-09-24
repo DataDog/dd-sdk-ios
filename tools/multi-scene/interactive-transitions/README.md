@@ -114,3 +114,10 @@ an orphan matches preserved prior task ownership, keep the failed cell immutable
 a separate bounded supported uninstall may clear only that bundle. Verify absence
 across a cold boot and unchanged non-task inventory before seeking fresh admission.
 Never substitute missing filesystem paths for the required inventory checks.
+
+Observer cost failures must name the operation and its bound event sequence.
+Snapshots retain the100ms limit; callbacks, appearance and scroll observations
+retain2ms. Inspect the generated source selected by the build manifest: the copied
+observer caches immutable bundle metadata and the writer serializes off-main.
+Partition remaining synchronous work offline before proposing a correction; a
+slow fixture callback is not an SDK regression or permission for a native retry.

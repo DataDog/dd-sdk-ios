@@ -345,7 +345,7 @@
     },
     {
       "id": "M11",
-      "disposition": "Results/S3-F02-provisional-documentation-review.json owns the source review and unapplied status patch. Protected API documents remain unchanged. Feature-document/public promotion and F02 closure await F01."
+      "disposition": "Results/S3-F02-provisional-documentation-review.json owns the source review and approved documentation consolidation, now integrated in the active research checkout. Adoption into the release source, feature-document/public promotion and F02 closure await their recorded prerequisites, including F01 approval."
     }
   ],
   "reuse_owners": [

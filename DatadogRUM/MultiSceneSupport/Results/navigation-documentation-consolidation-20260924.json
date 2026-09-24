@@ -1,0 +1,261 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-24",
+  "scope": "Consolidate duplicated API inventory and split the current navigation contract from historical design and experiment evidence. No release-gate or SDK change.",
+  "base": "5a9c72b0a9d9b3600b5487071ec98bffb77c764e",
+  "pre_consolidation": {
+    "navigation_sha256": "6852b2e2db0f3f24032b3b2af30175a7c92f11014b3cba06ffd726bccc9ca937",
+    "navigation_lines": 936,
+    "guild_review_sha256": "aa4c3d00b26ccf8fb34357a120ba669b53714ba6c953fa36c00a81b536279ccc",
+    "staged_git_blobs": {
+      "NAVIGATION_API.md": "a84d30fd1f7cf695663fee66d0b07ed5293a842e",
+      "STABLE_API_REVIEW.md": "ec58ba09943995ffc5cffdaa6643dc6c49ec625b",
+      "STABLE_API_REVIEW_GUILD.md": "df49e8b479f6344c6551df2c33106df5813deb31"
+    }
+  },
+  "canonical_inventory": "STABLE_API_REVIEW.md",
+  "inventory_routes": {
+    "swift": "STABLE_API_REVIEW.md#swift-target-surface",
+    "objective_c": "STABLE_API_REVIEW.md#objective-c-selector-inventory",
+    "semantic": "STABLE_API_REVIEW.md#stable-semantic-host-proposal"
+  },
+  "section_map": [
+    {
+      "old_section": "rum-multi-scene-navigation-api-proposal",
+      "old_line": 1,
+      "current_owner": "NAVIGATION_API.md#rum-multi-scene-navigation-api-proposal",
+      "historical_excerpt": null
+    },
+    {
+      "old_section": "status",
+      "old_line": 23,
+      "current_owner": "NAVIGATION_API.md#status",
+      "historical_excerpt": "Experiments/NAVIGATION_API_HISTORY.md#status"
+    },
+    {
+      "old_section": "existing-api-and-implementation-constraints",
+      "old_line": 108,
+      "current_owner": "NAVIGATION_API.md#existing-api-and-implementation-constraints",
+      "historical_excerpt": "Experiments/NAVIGATION_API_HISTORY.md#existing-api-and-implementation-constraints"
+    },
+    {
+      "old_section": "scene-aware-manual-views",
+      "old_line": 151,
+      "current_owner": "NAVIGATION_API.md#scene-aware-manual-views",
+      "historical_excerpt": null
+    },
+    {
+      "old_section": "recommended-swift-call-site",
+      "old_line": 153,
+      "current_owner": "NAVIGATION_API.md#recommended-swift-call-site",
+      "historical_excerpt": null
+    },
+    {
+      "old_section": "protocol-compatibility-recommendation",
+      "old_line": 211,
+      "current_owner": "NAVIGATION_API.md#protocol-compatibility-recommendation",
+      "historical_excerpt": "Experiments/NAVIGATION_API_HISTORY.md#protocol-compatibility-recommendation"
+    },
+    {
+      "old_section": "objective-c-companion",
+      "old_line": 261,
+      "current_owner": "NAVIGATION_API.md#objective-c-companion",
+      "historical_excerpt": null
+    },
+    {
+      "old_section": "automatic-tracking-coexistence-requirement",
+      "old_line": 291,
+      "current_owner": "NAVIGATION_API.md#automatic-tracking-coexistence-requirement",
+      "historical_excerpt": "Experiments/NAVIGATION_API_HISTORY.md#automatic-tracking-coexistence-requirement"
+    },
+    {
+      "old_section": "swiftui-semantic-navigation",
+      "old_line": 395,
+      "current_owner": "NAVIGATION_API.md#swiftui-semantic-navigation",
+      "historical_excerpt": null
+    },
+    {
+      "old_section": "customer-compatibility-and-engine-boundary",
+      "old_line": 397,
+      "current_owner": "NAVIGATION_API.md#customer-compatibility-and-engine-boundary",
+      "historical_excerpt": null
+    },
+    {
+      "old_section": "integration-inputs-and-precedence",
+      "old_line": 488,
+      "current_owner": "NAVIGATION_API.md#integration-inputs-and-precedence",
+      "historical_excerpt": "Experiments/NAVIGATION_API_HISTORY.md#integration-inputs-and-precedence"
+    },
+    {
+      "old_section": "native-convenience-proof",
+      "old_line": 650,
+      "current_owner": "NAVIGATION_API.md#native-convenience-proof",
+      "historical_excerpt": "Experiments/NAVIGATION_API_HISTORY.md#native-convenience-proof"
+    },
+    {
+      "old_section": "resolver-and-path-model",
+      "old_line": 720,
+      "current_owner": "NAVIGATION_API.md#resolver-and-path-model",
+      "historical_excerpt": null
+    },
+    {
+      "old_section": "authority-boundary",
+      "old_line": 751,
+      "current_owner": "NAVIGATION_API.md#authority-boundary",
+      "historical_excerpt": "Experiments/NAVIGATION_API_HISTORY.md#authority-boundary"
+    },
+    {
+      "old_section": "presentation-state",
+      "old_line": 775,
+      "current_owner": "NAVIGATION_API.md#presentation-state",
+      "historical_excerpt": "Experiments/NAVIGATION_API_HISTORY.md#presentation-state"
+    },
+    {
+      "old_section": "required-review-and-test-matrix",
+      "old_line": 844,
+      "current_owner": "NAVIGATION_API.md#required-review-and-test-matrix",
+      "historical_excerpt": null
+    },
+    {
+      "old_section": "api-review",
+      "old_line": 921,
+      "current_owner": "NAVIGATION_API.md#api-review",
+      "historical_excerpt": null
+    }
+  ],
+  "historical_excerpts": [
+    {
+      "source_lines": [
+        23,
+        74
+      ],
+      "section": "Status",
+      "destination": "Experiments/NAVIGATION_API_HISTORY.md#status",
+      "source_sha256": "a0c4376e166753320ea1b7b7194bd32914b0bd79766b7bede7a56a026803cd84",
+      "body_after_link_rebasing_sha256": "c31f8881b128883bf9a1f9c5d42f3073e1a7226aad8b94e26c65a3e5994a4101"
+    },
+    {
+      "source_lines": [
+        108,
+        149
+      ],
+      "section": "Existing API and implementation constraints",
+      "destination": "Experiments/NAVIGATION_API_HISTORY.md#existing-api-and-implementation-constraints",
+      "source_sha256": "e55e83ed2044108272bf319acab0f215bb51b58d6aafb455207fa0ea4a1fd507",
+      "body_after_link_rebasing_sha256": "052198e191f82228bca2dabeee6a63f8dad30429466522e8daebefe9bc3f45dc"
+    },
+    {
+      "source_lines": [
+        211,
+        260
+      ],
+      "section": "Protocol compatibility recommendation",
+      "destination": "Experiments/NAVIGATION_API_HISTORY.md#protocol-compatibility-recommendation",
+      "source_sha256": "405f7b96daacf72e10a179a50b311595501211e7484a90109e30e0944cd8d63e",
+      "body_after_link_rebasing_sha256": "5b0fda78451e34f5e67040de7a4bf6326565d7a637339b2bfb1b0cfd25a4cc7e"
+    },
+    {
+      "source_lines": [
+        291,
+        394
+      ],
+      "section": "Automatic-tracking coexistence requirement",
+      "destination": "Experiments/NAVIGATION_API_HISTORY.md#automatic-tracking-coexistence-requirement",
+      "source_sha256": "db2519594c0e93a5f5caf057b584f5785713a1f5d84b7bbe258641d135294379",
+      "body_after_link_rebasing_sha256": "fc546ebcb7ef167e947400e87d17c1c127fca4f2ab84c155963c527f7d612dd7"
+    },
+    {
+      "source_lines": [
+        474,
+        487
+      ],
+      "section": "Shared engine qualification",
+      "destination": "Experiments/NAVIGATION_API_HISTORY.md#shared-engine-qualification",
+      "source_sha256": "59bb7b64ec275e6a69dc8a0dfe0e7fe26f2c650a02f7ea653e9f99cd2e8306de",
+      "body_after_link_rebasing_sha256": "59bb7b64ec275e6a69dc8a0dfe0e7fe26f2c650a02f7ea653e9f99cd2e8306de"
+    },
+    {
+      "source_lines": [
+        488,
+        649
+      ],
+      "section": "Integration inputs and precedence",
+      "destination": "Experiments/NAVIGATION_API_HISTORY.md#integration-inputs-and-precedence",
+      "source_sha256": "407def767ca85aff8563df32ff8f44cd3d122db341276cadfc2c8dc91fb7e260",
+      "body_after_link_rebasing_sha256": "6c06df04b651c6bddcb5fd8361fa13aa00c361503960c504999763ba214e42ce"
+    },
+    {
+      "source_lines": [
+        650,
+        719
+      ],
+      "section": "Native convenience proof",
+      "destination": "Experiments/NAVIGATION_API_HISTORY.md#native-convenience-proof",
+      "source_sha256": "21178ac6d701a3fc55e17f7d62c13597a1f26cd886f057c2ce8c8c60cf9d7f2a",
+      "body_after_link_rebasing_sha256": "8e8761802bd960c9df217752fc51eac39f621d25676032d3235774d9a1d5dc44"
+    },
+    {
+      "source_lines": [
+        751,
+        774
+      ],
+      "section": "Authority boundary",
+      "destination": "Experiments/NAVIGATION_API_HISTORY.md#authority-boundary",
+      "source_sha256": "fdc68b7b3ca01f15aa1387e9d72284e9289a87bcd41163ee125ca9baaadbb064",
+      "body_after_link_rebasing_sha256": "75a4d85aff72f7bce54c01e9de7d1375b7640b0eb2ff1ae2e8fd6ef034068abb"
+    },
+    {
+      "source_lines": [
+        775,
+        843
+      ],
+      "section": "Presentation state",
+      "destination": "Experiments/NAVIGATION_API_HISTORY.md#presentation-state",
+      "source_sha256": "5646aa4cff96f6e885c9d8a1a54cd7f1cd7c617be84af55cbf5dffd14b5e3c2e",
+      "body_after_link_rebasing_sha256": "1dd02dd4b4fd94cf3a37a4e04522c304a32f0eb94084f38b47acb0c793762cbf"
+    }
+  ],
+  "preserved_acceptance_matrix_sha256": "e9e1d62383bcb6c8d91471cd5e37f0b4d3edbfd69d4a39bc17c5f91e99c66c18",
+  "protected_sha256": {
+    "release-gates.json": "dd908d863ea0e36f241953ec347244855e578a18e4fda2bf4bb9220a947cd2db",
+    "Results/release-progress.json": "76c3bdc0a52ce05c28648839bb56b8f1c104412357a92bec9759620629556c3f",
+    "Results/EXP-225-api-availability.json": "4f6872a492ada5e78734d8a7fd076653c94540d2144cc2cd6ee300f35a92aab7",
+    "Results/EXP-225-legacy17-result.json": "8299f13beae8d18ca74b08ded172730937f3ab3c06f3e4a8addc03d3655255aa",
+    "Results/EXP-228-public-clients-result.json": "18d7f2131bc26c9086dd18f5e22c1309df1fadd65b8589c01d402cf4820e906a",
+    "GUILD_EXECUTIVE_SUMMARY.md": "e366db9aa5f3dc655ebe98a8971876ce42d685d811e519b9c06f4d9d29b1080f",
+    "POST_S3_TOOLING_INTEGRATION.md": "6faa18c29952b6c5c1744761f4b41a9475a58d7e8b816694c811b5a8272ab69f"
+  },
+  "historical_line_links": "Unchanged historical records may cite lines in the old source. The pre-consolidation identities and section map preserve their meaning; no frozen record is rewritten.",
+  "counts": {
+    "navigation_before": 936,
+    "navigation_after": 371,
+    "history": 604,
+    "guild_review_before": 501,
+    "guild_review_after": 308
+  },
+  "gate_closures": [],
+  "validation": {
+    "release_checklist": "PASS; generated register views unchanged",
+    "selected_document_links": 313,
+    "original_heading_anchors_preserved": 17,
+    "historical_excerpt_hashes_verified": 9,
+    "acceptance_matrix": "Byte-for-byte preserved",
+    "protected_hashes_verified": 7,
+    "evidence_references": "All original experiment IDs, cited revisions and backend session IDs retained",
+    "canonical_inventory": "21 Swift overloads and 20 Objective-C selectors plus factory match source 94842cc8ad7b104c1394c236b98b95b6c24a0956; Guild inventory replaced by canonical links"
+  },
+  "main_integration": {
+    "source_commit": "6fd89e112ee79f25a7d36f744604a4b5f6eca0d4",
+    "research_head_before": "449f90645a5c1d2e5ae2e29da02aa3ac3c863a99",
+    "evidence_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/documentation-integration-g5grdh1b",
+    "at": 1790260625.046622,
+    "original_input_hashes_verified": 10,
+    "scope": "Apply the signed reviewed documents after native cleanup; reconcile F02/M11 incorporation status. No SDK or release-gate change.",
+    "remaining_protected_paths": [
+      "Datadog/Datadog.xcodeproj/project.pbxproj",
+      "xcconfigs/Datadog.local.xcconfig"
+    ],
+    "frozen_execution_records": "Original manifests remain immutable. Future execution must bind the authorized documentation transition and current protections; old exact workspace snapshots are not fresh admissions.",
+    "gate_closures": []
+  }
+}

@@ -167,6 +167,26 @@ customer workflow, and required tests live only in
 
 ## Open API-review questions
 
+**Availability amendment, September21.** The user requests ordinary scene-taking
+manual-view and telemetry calls, RUMViewTarget and its experimental alias, and
+their Objective-C companions to be callable across the SDK's iOS15+ range.
+Customers should not need an iOS27 guard around each call. The SDK selects
+qualified scene behavior internally; where unavailable, it invokes the equivalent
+existing RUM API exactly once, preserving the event, attributes, callbacks and
+family-specific pairing. Legacy fallback is not a promise of exact scene
+ownership or independent same-key A/B views on older systems.
+
+The [stable API proposal](MultiSceneSupport/STABLE_API_REVIEW.md) owns the amended
+surface and bounded implementation/acceptance requirements. Qualify each
+older-iPad capability before enabling it, so the same customer call sites can
+benefit from an SDK update without further instrumentation changes. This does
+not broaden the semantic SwiftUI host: it remains iOS27+, with compiler>=6.4
+also required for its Observation initializer. The local
+[EXP-225 implementation](MultiSceneSupport/Results/EXP-225-api-availability.json)
+declares ordinary APIs at iOS15 and qualifies internal fallback and provisional
+clients. Experimental exposure, F01 review, public promotion and the final
+compatibility matrix remain separate; this does not change S1/S2 scope.
+
 Product behavior is settled for this project. The concrete alternatives, call
 sites, compatibility constraints, and required tests are consolidated in
 [NAVIGATION_API.md](MultiSceneSupport/NAVIGATION_API.md). API review still needs
@@ -240,9 +260,11 @@ Duo27.1 matrix; no SDK or review checkpoint alone establishes them all.
 | What is supported and how strong is the proof? | [Assessment](MultiSceneSupport/ASSESSMENT.md). |
 | Where should work resume? | [.continue-here.md](../.continue-here.md), exclusively. |
 | How does an application integrate and attribute telemetry? | [Integration guide](MultiSceneSupport/SUPPORT_GUIDE.md), pending F01 approval and F02 publication checks. |
+| What should Guild reviewers read? | [Executive summary](MultiSceneSupport/GUILD_EXECUTIVE_SUMMARY.md), [navigation presentation](MultiSceneSupport/NAVIGATION_API_GUILD.md) and [API presentation](MultiSceneSupport/STABLE_API_REVIEW_GUILD.md). The [stable API review](MultiSceneSupport/STABLE_API_REVIEW.md) owns the approval record. |
+| What tooling work follows S3? | [Post-S3 tooling integration](MultiSceneSupport/POST_S3_TOOLING_INTEGRATION.md); a separate follow-up, not a release prerequisite. |
 | What executes the final compatibility gate? | [Finite matrix](MultiSceneSupport/FINAL_COMPATIBILITY.md), with results owned by F03. |
 | Where is an experiment? | [Compact index](MultiSceneSupport/EXPERIMENTS.md), then its exact detailed record; never load frozen history wholesale. |
 | How should a run be executed? | [Runbook](MultiSceneSupport/TOOLING_RUNBOOK.md) and [document update rules](MultiSceneSupport/TOOLING_RUNBOOK.md#documentation-reading-and-update-workflow). |
 | Which thresholds and lessons remain fixed? | [Baselines](MultiSceneSupport/BASELINES.md) and [rejected approaches](MultiSceneSupport/REJECTED_APPROACHES.md). |
 | What did reviews find and how were findings resolved? | [Safety review](MultiSceneSupport/PRODUCTION_SAFETY_REVIEW.md), [triage](MultiSceneSupport/REVIEW_TRIAGE.md), [component review](MultiSceneSupport/COMPONENT_REVIEW.md). |
-| Where did superseded prose move? | [Documentation checkpoint](MultiSceneSupport/Experiments/DOCUMENTATION_CHECKPOINT_EXP-178.md); history cannot direct execution. |
+| Where did superseded prose move? | [Navigation design and experiment history](MultiSceneSupport/Experiments/NAVIGATION_API_HISTORY.md) and the earlier [documentation checkpoint](MultiSceneSupport/Experiments/DOCUMENTATION_CHECKPOINT_EXP-178.md); history cannot direct execution. |

@@ -43,38 +43,50 @@ SwiftUI value reconstruction. Configuring an empty source does not suppress
 automatic tracking; semantic authority begins only after accepted materialization
 and remains local to that container.
 
+The semantic host and destination/metadata types remain iOS27+; the Observation
+form also needs compiler>=6.4. This is separate from the ordinary scene-taking
+monitor APIs proposed below across iOS15+.
+
 The first-release proposal keeps the low-level transitions/capability types and
 native `RUMNavigationStack` convenience experimental. Their detailed adapter
 contract remains in [NAVIGATION_API.md](NAVIGATION_API.md). Exact support does not
 require adopting a Datadog navigation container.
 
-## Experimental Swift call sites
+## Proposed Swift call sites
 
-These snippets use the current SPI deliberately. After F01 approval, F02 must
-verify the approved imports, availability and compiling examples before publishing
-this guide as supported documentation. The SDK deployment target remains iOS15;
-the new target and semantic APIs are iOS27+ and iOS-only. Below that range keep
-the existing inferred APIs; this is compatibility, not an exact multi-scene claim.
+These snippets show the September21 availability amendment: ordinary
+scene-taking calls and RUMViewTarget are callable throughout the SDK's iOS15+
+range, without a customer iOS27 branch. They show the intended normal import
+after approved exposure. The local prototype still requires SPI imports, but
+ordinary declarations now support iOS15. [EXP-225](Results/EXP-225-api-availability.json)
+records provisional compiled/runtime clients and their limits. F01 public
+promotion and F02 verification of approved imports, availability and examples
+remain required before publishing this guide as supported documentation.
+
+The SDK checks OS, configuration and the qualified family capability internally.
+Where enhanced scene behavior is unavailable, it calls the equivalent existing
+API exactly once with the same attributes and completion behavior. It skips
+only the extra targeting, not the telemetry itself. Legacy inferred/process
+ownership remains the fallback; API availability does not establish exact
+multi-scene behavior on every older system. Qualified older-iPad improvements
+can then ship in an SDK update without another customer instrumentation change.
 
 ~~~swift
 #if os(iOS)
 import UIKit
-@_spi(Experimental) import DatadogRUM
+import DatadogRUM
 
 @MainActor
-@available(iOS 27.0, *)
 func beginCompose(on monitor: any RUMMonitorProtocol, in scene: UIWindowScene) {
     monitor.startView(key: "compose", name: "Compose", in: scene)
 }
 
 @MainActor
-@available(iOS 27.0, *)
 func finishCompose(on monitor: any RUMMonitorProtocol, in scene: UIWindowScene) {
     monitor.stopView(key: "compose", in: scene)
 }
 
 @MainActor
-@available(iOS 27.0, *)
 func recordCheckoutFailure(
     on monitor: any RUMMonitorProtocol,
     in scene: UIWindowScene
@@ -86,30 +98,42 @@ func recordCheckoutFailure(
 #endif
 ~~~
 
-The same manual key may be active independently in A and B. Do not pair a
-scene-targeted start with a source-less stop. Distinct manual keys may nest;
+Use the same scene-taking overloads for start and stop on every OS; the SDK must
+keep their routing coherent. Legacy fallback does not promise independent
+same-key A/B views. On the qualified scene-aware path, the same manual key may
+be active independently in A and B. Do not pair a scene-targeted start with a
+source-less stop. Distinct manual keys may nest;
 stopping the top view reveals the latest committed underlying destination as a
 fresh occurrence. Re-starting an already active scene/key is instrumentation
 misuse; do not depend on additional lifecycle semantics for it.
 
-A target captures the scene identifier on main and resolves that scene's live
-current view when the command is processed. It neither freezes a view UUID nor
-retains UIKit objects. If no live target resolves, independent inference and the
+A target captures the scene identifier on main. On a qualified scene-aware
+route, it resolves that scene's live current view when the command is processed.
+It neither freezes a view UUID nor retains UIKit objects. If no live target
+resolves, independent inference and the
 family's existing fallback still apply. A target is not a way to mutate an ended
 view. Global monitor attributes remain process-wide.
 
 Custom monitor conformers keep their existing requirements. Target extensions
 forward once to their legacy method when the private built-in capability is
 absent; they cannot promise exact scene targeting for a custom implementation.
-NOP remains safe. Objective-C Release exposure, nullable factory behavior and
-off-main misuse handling await the explicit [F01 decision](STABLE_API_REVIEW.md#objective-c-safety-before-release-exposure).
-The Debug prototype is not a supported Release contract.
+NOP remains safe. The proposed Objective-C companions share iOS15+ callability
+and the same internal fallback. EXP-225 provisionally qualifies the nullable
+factory and off-main guards in optimized clients under `DD_SCENE_API_VALIDATION`.
+Approval of that safety contract and normal Objective-C Release exposure still
+await the explicit
+[F01 decision](STABLE_API_REVIEW.md#objective-c-safety-before-release-exposure).
+The Debug/validation-only declarations are not a supported Release contract.
 
 ## Telemetry ownership
 
 This table explains the fixed T01–T15 contracts. The
 [register](release-gates.json) owns completion modes, status and decisive evidence.
 No row implies simultaneous-device validation or adds a new telemetry family.
+Explicit scene behavior in this table applies where the family is qualified;
+otherwise the ordinary overload preserves its existing family's legacy
+semantics. In particular, fallback does not retarget a Resource at completion or
+turn an Operation's identity into scene-local state.
 
 | Gate / family | Ownership and integration rule | Limit that callers must understand |
 | --- | --- | --- |
@@ -165,12 +189,17 @@ cursor.
 ## Publication checklist within F02
 
 1. Apply the recorded F01 decision to names, availability and Objective-C guidance.
-2. Compile these examples and the approved semantic-host examples using normal
-   imports in the F03 external-client cell, with the supported older fallback.
-3. Ownership review complete for T01–T15 at unchanged SDK04201edc7;
-   [source and evidence audit](Results/F02-guide-ownership-audit.json) records the
-   exact files, clarified limits and accepted predecessors. Recheck affected rows
-   if F01 changes their implementation; this is not the final feature-doc audit.
+2. Compile ordinary scene-call examples without customer iOS27 guards in Swift
+   and Objective-C Release clients targeting iOS15. Keep the approved semantic
+   host's OS/compiler guards. Verify legacy parity on the available older
+   runtime and exact older-iPad behavior only for families explicitly qualified.
+3. The previous T01–T15 ownership review covers source `04201edc7`;
+   [source and evidence audit](Results/F02-guide-ownership-audit.json) records its
+   exact files, limits and accepted predecessors. The provisional availability
+   amendment at `94842cc8ad7b` has a separate
+   [source review](Results/S3-F02-provisional-documentation-review.json).
+   Recheck affected ownership rows against the approved release source before
+   publication; neither record is the final feature-document audit.
 4. Once the contract is ready to ship, update affected feature documentation
    through the repository's full feature-doc workflow, including cross-feature
    snippets and registries. Until then preserve the overview's separation from
