@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 authenticated app source/oracle preparation",
-  "status": "ACCOUNT_SETUP_IN_PROGRESS_SIGNED_IN_RUNNER_PENDING",
-  "at": "2026-09-25T19:14:17.652592+00:00",
+  "status": "FIXTURE_SIGNING_REPAIR_PENDING",
+  "at": "2026-09-25T19:34:47.338990+00:00",
   "owner": "SDK implementer",
   "reviewer": "existing /root/c06_runtime_plan",
   "scope": "Existing J02 service navigation, J03 dashboard correlation and J04 authenticated lifecycle only. No native execution, app or SDK edits, rebuild, login, publication or new experiment.",
@@ -182,7 +182,7 @@
     "partial cleanup relabeled as ordinary pass"
   ],
   "admission_limits": "This is source preparation only. No runtime/oracle pass, gate closure, new experiment or environment retry is implied. Existing J01, Duo and EXP220 automation stops remain closed; fresh execution needs materially changed environment and reviewed fixed admission.",
-  "next_action": "Finish the one-time mobile-integration consent and verify the real Services list. Keep the existing setup app installed/account state intact. Prepare and review an explicit signed-in smoke continuation with fresh capture/session IDs and unchanged downstream owner checks before any paired run.",
+  "next_action": "Repair standard simulator signing with fresh symmetric outputs; qualify source-declared entitlements before another account setup. Then finish the explicit signed-in continuation. Do not repeat QR login against the known deficient fixture.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/source-review.json",
     "sha256": "41f6a1f5348c383e8c11770dc50da59e45e9dc020559a49c2a60d8691815d6e9"
@@ -823,7 +823,7 @@
     }
   },
   "account_setup": {
-    "state": "LOGIN_OBSERVED_AFTER_HOME_CAUSE_PENDING",
+    "state": "USER_SIGNED_OUT_FIXTURE_KEYCHAIN_ENTITLEMENTS_MISSING",
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signed-in-qlnj8gi_",
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signed-in-qlnj8gi_/definition.json",
@@ -856,8 +856,32 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signed-in-qlnj8gi_/account-setup/qr-selection-_t9nxglu/qr-import-account-setup/result.json",
       "sha256": "a6d8248936997af845e1410925d6cbc0882810bc16442c999ceed55c084022c5"
     },
-    "observed_after_second_import": "CUA first observed app Home, later Log In. User clarification pending; no authenticated account or real Services readiness is claimed.",
+    "observed_after_second_import": "Home then Login observed; user confirms intentional sign-out. securityd independently confirms missing Keychain entitlements. Actual RBAC/consent deficiency is unproven.",
     "runner_implementation": "PENDING; normal smoke still requires login, so do not run it with this signed-in setup.",
     "gate_closures": []
+  },
+  "fixture_signing": {
+    "state": "CONFIRMED_FIXTURE_SIGNING_DEFECT",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signing-wfeu06du",
+    "finding": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signing-wfeu06du/finding.json",
+      "sha256": "d116c55c809c9a53dd2c0cc5e57a8273012ac1045d3161906e66e450cca336a2"
+    },
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signing-wfeu06du/definition.json",
+      "sha256": "c1ea0a81b126855d04dca99f599d6a6bbf403c7b952bf9e401e300f0dacbf20f"
+    },
+    "reviewer": "/root/c06_runtime_plan",
+    "builds": 0,
+    "native_runs": 0,
+    "gate_closures": []
+  },
+  "service_readiness": {
+    "state": "SOURCE_REVIEW_AND_OFFLINE_CONTROLS_PASS",
+    "receipt": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signing-wfeu06du/service-readiness-review-controls.json",
+      "sha256": "32eacce2d1bdc2011dd5af5fc54973c85dec9d95938deef7f8b0deb83389b552"
+    },
+    "native_positive_qualification": false
   }
 }

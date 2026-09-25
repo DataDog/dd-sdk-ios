@@ -38,6 +38,16 @@ inputs require fresh copies and admission. A checker correction can re-evaluate
 valid saved outputs without rebuilding or extending the original deadline.
 These helpers do not replace native, backend or cleanup verdicts.
 
+## Simulator signing prerequisite
+
+Authentication depends on the app’s source-declared Keychain access group. Do not
+build this fixture with `CODE_SIGNING_ALLOWED=NO`: the app can receive successful
+HTTP responses while Keychain rejects credentials/profile storage with `-34018`.
+A Services permission shell may therefore reflect missing local user state.
+Qualify Xcode’s resolved simulator entitlements and the installed product before
+account setup. Preserve original deficient products/results; use fresh build
+outputs and leave authentication code and SDK sources unchanged.
+
 ## Simulator QR login
 
 The user-requested image input adds **Choose QR Code Image** to the existing QR

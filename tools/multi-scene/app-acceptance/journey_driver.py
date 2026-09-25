@@ -71,7 +71,7 @@ class Driver:
             tree,folder=self.ax(label+'-'+str(index),end)
             if screen=='login' and not phases.login(tree,subdomain):time.sleep(.2);continue
             if screen=='detail' and not phases.matches(tree,self.selection['service_label']):time.sleep(.5);continue
-            if screen=='list' and not any(phases.matches(tree,label) for label in ['Services','List of Services']):time.sleep(.5);continue
+            if screen=='list' and not phases.service_list_loaded(tree,self.selection['service_label']):time.sleep(.5);continue
             if screen=='dashboard' and not phases.matches(tree,self.selection['dashboard_label']):time.sleep(.5);continue
             result,row,capture_folder=self.collector.snapshot(label+'-'+str(index),deadline=end)
             try:
@@ -138,6 +138,9 @@ class Driver:
                     require(old_web==new_web,'fresh readiness replaced the owned WebView')
                 ready=fresh;self.observations[original_label]=fresh
         self.live(end)
+        if ready['screen']=='list':
+            require(phases.service_list_loaded(ready['ax'],self.selection['service_label']),
+                    'selected service is not ready; a heading or permission shell is insufficient')
         self.validate_prompt_ready(ready,label)
         prompt=dict(kind='app-journey',phase=label,instruction=instruction,device=self.device,deadline=end,
                     screenshot=str(screenshot),screenshot_sha256=hashlib.sha256(screenshot.read_bytes()).hexdigest(),

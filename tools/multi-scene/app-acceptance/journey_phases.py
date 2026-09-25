@@ -19,6 +19,28 @@ def kind(value):return str(value.get('type', value.get('role', value.get('AXRole
 def matches(tree, text, role=None):return [n for n in nodes(tree) if label(n)==text and (role is None or kind(n)==role)]
 
 
+
+def service_list_loaded(tree, service):
+    """The title also exists on errors; require the source-defined service row."""
+    if not any(matches(tree, title) for title in ['Services', 'List of Services']):
+        return False
+    if any('Permission Required' in str(label(node)) for node in nodes(tree)):
+        return False
+    choices = []
+    for node in nodes(tree):
+        parts = str(label(node)).split(', ')
+        # APMServiceListCell combines exact service name, monitor status,
+        # favorite state and properties into one accessibility label.
+        if not parts or parts[0] != service or not {'favorited', 'not favorited'}.intersection(parts):
+            continue
+        frame = node.get('frame', node.get('AXFrame', {}))
+        if (node.get('enabled', True) is True and node.get('AXHidden', False) is False
+                and all(type(frame.get(key)) in (int, float) for key in ['x', 'y', 'width', 'height'])
+                and frame['width'] > 0 and frame['height'] > 0):
+            choices.append(node)
+    return len(choices) == 1
+
+
 def login(tree, subdomain=False):
     default=matches(tree,'Log In with Subdomain','button')
     title=matches(tree,'Enter Subdomain','statictext')
