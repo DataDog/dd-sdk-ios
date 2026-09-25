@@ -27,7 +27,7 @@ class Driver(JourneyDriver):
     def run(self):
         smoke_contract.definition(self.definition)
         ready=self.ready('login-initial','login')
-        ready=self.step(ready,'login-subdomain','Tap Log In with Subdomain once. Do not enter credentials.','login',subdomain=True)
+        ready=self.step(ready,'login-subdomain','Tap Log In with Subdomain once, then stop. Leave the text field untouched and do not type. Wait for the Back instruction.','login',subdomain=True)
         ready=self.step(ready,'login-returned','Tap the Back button beside Enter Subdomain once.','login')
         ready=self.step(ready,'service-list','Sign in to the frozen organization '+self.selection['organization']+
                         ', then open the Services list. Do not select a service yet.','list',authenticated_transition=True,seconds=600)

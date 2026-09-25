@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 authenticated app source/oracle preparation",
-  "status": "CORRECTNESS_COST_POLICY_PREPARATION",
+  "status": "SMOKE_INPUT_CLARIFIED",
   "at": "2026-09-21T21:30:08.556874+00:00",
   "owner": "SDK implementer",
   "reviewer": "existing /root/c06_runtime_plan",
@@ -182,7 +182,7 @@
     "partial cleanup relabeled as ordinary pass"
   ],
   "admission_limits": "This is source preparation only. No runtime/oracle pass, gate closure, new experiment or environment retry is implied. Existing J01, Duo and EXP220 automation stops remain closed; fresh execution needs materially changed environment and reviewed fixed admission.",
-  "next_action": "Prepare the fresh smoke plan using the reviewed host-helper transition, then resume the authorized paired journey with unchanged app products and fresh environment bindings.",
+  "next_action": "Prepare one fresh baseline with the clarified button-only instruction, preserving the reviewed oracle and unchanged app products; candidate remains conditional on complete baseline qualification.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/source-review.json",
     "sha256": "41f6a1f5348c383e8c11770dc50da59e45e9dc020559a49c2a60d8691815d6e9"
@@ -695,6 +695,23 @@
       "native_launches": 0,
       "new_builds": 0,
       "original_prepare_failure": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-correctness-cost-cc0k4tme/runtime-transition/original-prepare-failure.json"
+    },
+    "last_attempt": {
+      "summary": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-correctness-cost-cc0k4tme/runtime/cells/baseline/summary.json",
+        "sha256": "8ea57d4cb4b95c850983818ef1b4ded9ba2b55b5ba6a1ddd1578d9f9d3ce28ab"
+      },
+      "classification": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-correctness-cost-cc0k4tme/input-clarification/classification.json",
+        "sha256": "bebd5f9f79e81aeb3c3255b9df21d9a414b0de99c37a5f469708250f646d47df"
+      },
+      "state": "INVALID",
+      "reason": "Additional text-field focus and typing before Back prompt consumed readiness",
+      "cleanup": "PASS",
+      "candidate": "UNRUN",
+      "captured_named_action_owner": "Expected LoginView",
+      "runtime_oracle_changes": 0,
+      "gate_closures": []
     }
   }
 }
