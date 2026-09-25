@@ -12,9 +12,11 @@ public struct AttributesSanitizer {
         /// Maximum number of nested levels in attribute name. E.g. `person.address.street` has 3 levels.
         /// If attribute name exceeds this number, extra levels are escaped by using `_` character (`one.two.(...).nine.ten_eleven_twelve`).
         public static let maxNestedLevelsInAttributeName: Int = 10
-        /// Maximum number of attributes in log.
+        /// Maximum number of attributes in an event.
         /// If this number is exceeded, extra attributes will be ignored.
-        public static let maxNumberOfAttributes: Int = 256
+        /// The backend accepts up to 2048 properties per JSON node; 1900 leaves margin for the
+        /// reserved attributes (e.g. `usr.name`) that also count towards that limit.
+        public static let maxNumberOfAttributes: Int = 1_900
     }
 
     let featureName: String
