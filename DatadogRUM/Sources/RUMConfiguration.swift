@@ -880,7 +880,7 @@ extension RUM.Configuration {
         /// for a view, subsequent updates are sent as `RUMViewUpdateEvent` deltas containing only the
         /// fields that changed, instead of resending the full event. A full event is still sent every
         /// 5 updates so the view state can be reconstructed even if some deltas are lost in transit.
-        /// Defaults to `false`.
+        /// Defaults to `true`.
         case viewUpdates
     }
 }
@@ -889,14 +889,15 @@ extension RUM.Configuration.FeatureFlags {
     /// The defaults Feature Flags applied to RUM Configuration
     public static var defaults: Self {
         [
-            .trackScrollAndSwipeActions: true
+            .trackScrollAndSwipeActions: true,
+            .viewUpdates: true
         ]
     }
 
     /// Accesses the feature flag value.
     ///
-    /// Return:  false by default.
+    /// Falls back to the flag's entry in `.defaults` when not explicitly set, or `false` if it has no default.
     public subscript(flag: Key) -> Bool {
-        self[flag, default: false]
+        self[flag] ?? Self.defaults[flag, default: false]
     }
 }
