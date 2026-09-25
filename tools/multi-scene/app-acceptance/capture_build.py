@@ -209,7 +209,9 @@ def bind(root, arm=None):
         module.P.D["prepared_sources"][arm].update(app=paths["app"], sdk=paths["sdk"])
 
     def source_guard(arm, workspace_hash):
-        for relative, protected in preparation["protected_paths"].items():
+        from journey_builds import documentation_transition
+        protected_paths, transition = documentation_transition(module.P.REPO, preparation)
+        for relative, protected in protected_paths.items():
             path = module.P.REPO / relative
             if "sha256" in protected:
                 assert sha(path) == protected["sha256"], "Protected document changed: " + relative
@@ -258,9 +260,10 @@ def bind(root, arm=None):
             assert all(name.startswith(".build/") for name in unknown), "Foreign dependency source"
         assert found == {item["identity"] for item in pins}
         assert sha(module.P.D["swiftgen_binary"]) == module.P.D["swiftgen_sha256"]
-        return {"tracked_app_sources": len(manifest["app_tracked_files"]), "tracked_sdk_files": len(manifest["sdk_tracked_files"]), "pins": 64, "protected_unchanged": True}
+        return {"tracked_app_sources": len(manifest["app_tracked_files"]), "tracked_sdk_files": len(manifest["sdk_tracked_files"]), "pins": 64, "protected_unchanged": True, "workspace_transition": transition}
 
     module.source_guard = source_guard
+    module.has_documentation_transition = True
     return module, preparation
 
 

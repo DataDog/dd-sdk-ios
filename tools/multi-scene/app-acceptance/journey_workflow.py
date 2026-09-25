@@ -22,7 +22,7 @@ import browser_contract
 import journey_readiness
 from journey_driver import Driver, emit, home_observation
 from capture_io import atomic, encoded, bounded_read
-from capture_contract import loads, prefix, MAX_BYTES
+from capture_contract import loads, prefix, MAX_BYTES, encoder_setup
 from acceptance_common import require, Rejected
 import s2_hosting_workflow as shared
 from s2_webview_driver import display, cleanup_cell
@@ -32,7 +32,7 @@ HERE=Path(__file__).resolve().parent
 REPO=HERE.parents[2]
 LOCAL_HELPERS=['smoke-definition.json','smoke_contract.py','smoke_driver.py','smoke_runtime.py','journey-definition.json','journey_workflow.py','journey_builds.py','journey_driver.py','journey_phases.py','journey_readiness.py',
                'journey_contract.py','browser_contract.py','journey_transport.py','journey_connector.js','journey_session.py',
-               'capture_io.py','capture_contract.py','capture_build.py']
+               'capture_io.py','capture_contract.py','capture_build.py','ReleaseValidationCapture.swift']
 SHARED_HELPERS=['acceptance_common.py','app_journey_inventory.py','app_journey_transport.py','hosting_contract.py',
                 's2_hosting_workflow.py','s2_webview_driver.py','s2_webview_runtime.py','s2_webview_session.py',
                 's2_webview_contract.py','s2_webview_workflow.py','runtime_binding.py']
@@ -54,12 +54,16 @@ def scoped_definition(mode):
 
 
 def source_manifest(build_root, definition):
-    if definition.get('mode')!='smoke':return
     preparation=loads((Path(build_root)/'preparation.json').read_bytes())
+    recorder='Targets/Platform/DatadogObservability/ReleaseValidationCapture.swift'
+    current=builds.sha(HERE/'ReleaseValidationCapture.swift')
+    require(preparation['overlay_sha256'].get(recorder)==current,'compiled capture overlay differs from current recorder')
     for arm in builds.ARMS:
         app=Path(preparation['arms'][arm]['app'])
-        for name,digest in definition['source_manifest'].items():
-            require(builds.sha(app/name)==digest, 'source-defined smoke expectation changed')
+        require(builds.sha(app/recorder)==current,'compiled recorder source differs from current recorder')
+        if definition.get('mode')=='smoke':
+            for name,digest in definition['source_manifest'].items():
+                require(builds.sha(app/name)==digest, 'source-defined smoke expectation changed')
 
 
 def prepare(args):
@@ -108,10 +112,18 @@ def absence(device,bundle):
 
 def initial_session(driver, configuration, known):
     end=min(driver.deadline,time.time()+30)
+    setup_path=driver.collector.directory/'encoder-setup.json'
+    while not setup_path.exists():
+        driver.live(end);time.sleep(.05)
+    setup_raw=bounded_read(setup_path,16_384)
+    atomic(driver.out/'encoder-setup.json',setup_raw)
+    setup=encoder_setup(setup_raw,driver.collector.identity,driver.expected['pid'])
     for index in range(30):
         result,snapshot,folder=driver.collector.snapshot('process-session-binding-'+str(index),deadline=end)
         records=result['rows'];configured=contract.one([r for r in records if r['kind']=='configured'],'configured process')
         require(configured['fields']==configuration,'native process/product configuration differs')
+        encoder_setup(setup_raw,driver.collector.identity,driver.expected['pid'],configured)
+        require(all(r['capture_started_ns']>=setup['finished_ns'] for r in records),'observation precedes encoder setup')
         events=[loads(r['fields']['event_json']) for r in records if r['kind']=='mapper']
         sessions={contract.identifier(contract.field(e,'session.id')) for e in events}
         require(len(sessions)<=1,'initial captured session ambiguous')

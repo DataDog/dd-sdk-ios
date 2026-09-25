@@ -38,6 +38,26 @@ inputs require fresh copies and admission. A checker correction can re-evaluate
 valid saved outputs without rebuilding or extending the original deadline.
 These helpers do not replace native, backend or cleanup verdicts.
 
+## Recorder setup
+
+The validation recorder initializes JSON encoding with source-bound specimens of
+all five concrete SDK event types before wrapping the app's mappers. Specimens never
+enter RUM or the event stream. One run/process-bound setup receipt records the
+specimen hashes and timings separately. This prepares a correctness fixture; it
+cannot support a cold-launch or production-performance claim.
+
+Setup-file presence is not readiness. The existing serial writer must finish
+initialization, every observation and the exact request checkpoint before the host
+can publish a prompt. Missing, failed, foreign or incomplete setup remains invalid.
+All real events, including the first action, keep the original timing limits.
+Timed callbacks capture current controller identity and relationships; complete
+readiness snapshots additionally discover class/bundle provenance. No controller
+metadata cache or deferred event encoding is used.
+
+Preparation rejects products whose compiled recorder bytes differ from the current
+source. Recorder changes require fresh symmetric builds and a separately admitted
+baseline qualification. Earlier stopped attempts retain their original verdicts.
+
 ## Runtime journeys
 
 `journey_workflow.py prepare` binds the existing complete products to the finite

@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
   "work_item": "S2:A02 ordered single human-input session",
-  "status": "F08_RECORDER_CORRECTION_REQUIRED",
-  "updated_at": "2026-09-25T15:11:33.022537+00:00",
+  "status": "F08_RECORDER_REVIEWED_BUILDS_PREPARING",
+  "updated_at": "2026-09-25T15:45:13.931480+00:00",
   "owner": "Harness implementer",
   "user_role": "Only real gestures and any required interactive sign-in",
   "request_user_now": false,
-  "reason": "User confirmed app-route availability and selected account/service/dashboard. First F08 baseline stopped before human input on recorder costs; cleanup PASS, candidate UNRUN. No operator action is currently requested.",
+  "reason": "The user selected the app route. Recorder correction passes scoped review and 55 controls; fresh symmetric builds are being prepared. Original pre-input baseline remains INVALID with cleanup PASS. No operator action is requested until products and fresh readiness are bound.",
   "source_candidate": "c9faed816a1d4828d7d8c4b64acae01119425889",
   "ordered_groups": [
     {
@@ -235,7 +235,7 @@
     "gates_closed": []
   },
   "operator_readiness": {
-    "state": "PRIOR_AVAILABILITY_CONFIRMED_NO_ACTIVE_SESSION",
+    "state": "PRIOR_AVAILABILITY_REQUIRES_REFRESH_AFTER_BUILDS",
     "fixed_stage_started": false,
     "active_native": false,
     "latest_f08_attempt": "S2-F08-source-oracle.json:scoped_smoke_preparation.current_attempt"

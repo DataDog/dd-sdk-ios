@@ -2,6 +2,8 @@
 import hashlib
 import json
 import math
+import re
+from pathlib import Path
 import uuid
 
 MAX_BYTES = 67_108_864
@@ -38,6 +40,43 @@ def loads(data):
     def constant(value):
         raise ValueError('non-finite JSON number')
     return json.loads(data, object_pairs_hook=pairs, parse_constant=constant)
+
+
+
+def setup_specimens(source=None):
+    source = source or Path(__file__).with_name('ReleaseValidationCapture.swift')
+    text = Path(source).read_text()
+    block = text.split('static let specimens: [String: String] = [', 1)[1].split('\n    ]', 1)[0]
+    entries = re.findall(r'^        "([a-z_]+)": #"(.*)"#[,]?$', block, re.MULTILINE)
+    require(len(entries) == 5 and set(k for k, _ in entries) == MAPPER_FAMILIES, 'setup specimen inventory differs')
+    for family, value in entries:
+        require(loads(value).get('type') == family, 'setup specimen family differs')
+    return {family: hashlib.sha256(value.encode()).hexdigest() for family, value in entries}
+
+
+def encoder_setup(data, identity, pid, configured=None):
+    value = loads(data)
+    require(isinstance(value, dict) and set(value) == {'schema_version', 'policy', 'identity', 'pid', 'success',
+            'started_ns', 'finished_ns', 'families'}, 'setup receipt schema differs')
+    require(type(value['schema_version']) is int and value['schema_version'] == 1
+            and value['policy'] == 'concrete-event-encoding-v1', 'setup policy differs')
+    require(value['identity'] == identity and type(value['pid']) is int and value['pid'] == pid, 'foreign encoder setup')
+    require(value['success'] is True, 'encoder setup failed')
+    start, end = value['started_ns'], value['finished_ns']
+    require(integer(start, 1) and integer(end, start), 'setup clock differs')
+    families = value['families']; expected = setup_specimens()
+    require(isinstance(families, list) and len(families) == 5 and all(isinstance(v, dict) for v in families), 'setup families incomplete')
+    require([v.get('family') for v in families] == ['view', 'action', 'resource', 'error', 'long_task'], 'setup family order differs')
+    for item in families:
+        require(set(item) == {'family', 'specimen_sha256', 'encoded_bytes', 'duration_ns'} and
+                item['specimen_sha256'] == expected[item['family']], 'setup specimen source differs')
+        require(integer(item['encoded_bytes'], 1) and integer(item['duration_ns'], 1), 'setup encoding receipt invalid')
+    require(sum(v['duration_ns'] for v in families) <= end - start, 'setup durations exceed interval')
+    if configured is not None:
+        require(configured['kind'] == 'configured' and integer(configured['sequence'], 1) and configured['identity'] == identity
+                and configured['capture_started_ns'] >= end and configured['request_id'] is None
+                and configured['phase'] is None, 'setup did not precede instrumented behavior')
+    return value
 
 
 def prefix(data, receipt, identity):

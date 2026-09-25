@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 authenticated app source/oracle preparation",
-  "status": "SMOKE_BASELINE_CAPTURE_QUALIFICATION_STOPPED",
+  "status": "SMOKE_RECORDER_REVIEWED_BUILDS_RUNNING",
   "at": "2026-09-21T21:30:08.556874+00:00",
   "owner": "SDK implementer",
   "reviewer": "existing /root/c06_runtime_plan",
@@ -569,5 +569,60 @@
       "sha256": "7327e526235b7aa0e53e635f9ab1262c4d738e3f07dec5003163f41f9733a961"
     }
   },
-  "current_execution_mode": "scoped_smoke_preparation; the earlier J01-J04/retained-dashboard definitions remain historical and are not the selected S2 sequence"
+  "current_execution_mode": "scoped_smoke_preparation; the earlier J01-J04/retained-dashboard definitions remain historical and are not the selected S2 sequence",
+  "recorder_correction": {
+    "state": "BASELINE_BUILD_RUNNING_CANDIDATE_DEPENDENT",
+    "at": "2026-09-25T15:48:29.814843+00:00",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/definition.json",
+      "sha256": "4a62a2998cb7f7b8cd41063afd1a704ca30c56e15965a60e9f8504f4b1429b2f"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/review-final.json",
+      "sha256": "1f5c5ac6fec0fe30aa21a762153f60f1439794e48a25023ef0f7214eeec73f73"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/controls-reviewed/python.json",
+      "sha256": "bf0b627c1d3f9887913626211c7cfe690939d212c2d29adb59ccabaec1cc1b91"
+    },
+    "tests": 55,
+    "host_concrete_model_control": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/host-swift-source-specimens/assessment.json",
+      "sha256": "8b1d031a0914bec8687ee8d5b91d00c0376f8b344a5d821c58a7788af6959498"
+    },
+    "typecheck_inheritance": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/typecheck/name-clarification-inheritance.json",
+      "sha256": "05a2b3ca110e4a5aac9875971e9946c4b066be6ce07f2a641ede9267629d3e7f"
+    },
+    "writer_barrier_controls": [
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/writer-barrier-controls/delayed-initialization.json",
+        "sha256": "4f80db87f74dbfc90fe0420f319920f367ca970960909a7d27501c1803ae1403"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/writer-barrier-controls/failed-initialization.json",
+        "sha256": "4bc1d4d375e395fd4f13684193a82b2410ba6570ea751f7bac69354e353d0cd6"
+      }
+    ],
+    "source_scope": "Validation-only setup primes all five actual SDK Codable types before observation. Timed callbacks keep live relationships; snapshots retain class/bundle provenance. SDK code and mapper behavior unchanged.",
+    "limits": "Original first/subsequent callback, mapper and snapshot caps unchanged. Setup is separate; no synthetic telemetry or early readiness.",
+    "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/builds-isolated",
+    "preparation_failure": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/builds/preparation-failure.json",
+      "sha256": "fe294165bde74e21c0e66c4b1a98a6d0a63f285aa0f254c4cf212a8e82d2a615"
+    },
+    "preparation_correction": "Accepted sources use registered worktrees. Fresh copies receive independent local Git metadata without hardlinks or alternates; source worktrees unchanged.",
+    "native_launches": 0,
+    "gate_closures": [],
+    "next": "Freeze both app/SDK/compiler inputs, complete baseline then candidate build qualification, and refresh operator/environment readiness before any native admission.",
+    "source_preparation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/builds-isolated/preparation-completion.json",
+      "sha256": "00ff66cca039eba03096cd2e50db2f0c33bf190948532007908948a1c52648d9"
+    },
+    "build_admission": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/builds-isolated/execution-admission.json",
+      "sha256": "76ee455c7d23597c40877e96d41116a2e4d38c394d7ee414f00b1925f611c72d"
+    }
+  }
 }

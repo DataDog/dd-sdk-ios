@@ -109,13 +109,16 @@ def verify(build_root, arm, completion_sha256, *, installed=None):
     # Old receipts remain immutable. Only the authorized non-compiler document
     # guards change; the frozen guard still verifies both user files and every
     # original app, SDK, dependency and generated compiler input.
-    retained,transition=documentation_transition(guard.P.REPO,preparation)
-    original_protected=preparation['protected_paths']
-    try:
-        preparation['protected_paths']=retained
-        guard.source_guard(arm, freeze['workspace_sha256'])
-    finally:
-        preparation['protected_paths']=original_protected
+    if getattr(guard,'has_documentation_transition',False):
+        transition=guard.source_guard(arm, freeze['workspace_sha256'])['workspace_transition']
+    else:
+        retained,transition=documentation_transition(guard.P.REPO,preparation)
+        original_protected=preparation['protected_paths']
+        try:
+            preparation['protected_paths']=retained
+            guard.source_guard(arm, freeze['workspace_sha256'])
+        finally:
+            preparation['protected_paths']=original_protected
     paths = preparation['arms'][arm]
     require(guard.generated_inventory(Path(paths['app']),Path(paths['sdk'])) == freeze['generated']
             and guard.sdk_membership(Path(paths['sdk'])) == freeze['sdk_membership'], 'qualified compiler inputs changed')

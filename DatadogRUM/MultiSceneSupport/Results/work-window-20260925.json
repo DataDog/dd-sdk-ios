@@ -14,7 +14,7 @@
     "id": "rum-unattended-progress",
     "finding": "Update returned Automation does not exist; no replacement was created."
   },
-  "next_task": "Designated source-backed review of pre-input observer cost qualification; do not inflate thresholds or rewrite original failure.",
+  "next_task": "Complete the reviewed F08 symmetric recorder builds, then prepare a fresh source/product-bound smoke session.",
   "gate_closures": [
     "S2:H16",
     "S2:T10"
@@ -28,7 +28,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": "2026-09-25T15:00:13.619217+00:00",
+  "updated_at": "2026-09-25T15:48:29.814843+00:00",
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
@@ -87,7 +87,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/runtime-uikit/controls.json",
     "sha256": "b9ab5fb6d08b4266fd3d89a4d56485319f568e0099f9ac142e707b6ef1a0a52c"
   },
-  "native_admitted": true,
+  "native_admitted": false,
   "public_pop_correction": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/outcome.json",
     "sha256": "ca7740c91c918777ea8bfb80f1b6e69401cf97295e579b79a2730594547fa46f"
@@ -182,6 +182,15 @@
     "current_attempt": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/baseline-stop-assessment.json",
       "sha256": "5f7f4da36b0ece8cf0ef0b30817eedaf1bc218afbbeac7ee592bfa4224c9f044"
+    }
+  },
+  "s2_f08_recorder_correction": {
+    "owner": "Results/S2-F08-source-oracle.json:recorder_correction",
+    "state": "BASELINE_BUILD_RUNNING_CANDIDATE_DEPENDENT",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93",
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/review-final.json",
+      "sha256": "1f5c5ac6fec0fe30aa21a762153f60f1439794e48a25023ef0f7214eeec73f73"
     }
   }
 }
