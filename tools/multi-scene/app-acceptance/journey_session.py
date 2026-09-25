@@ -47,7 +47,7 @@ def run(args):
     root=args.root.resolve(strict=True);plan=workflow.verify(root)
     require(not (root/(args.arm+'-driver.log')).exists(),'consumed F08 arm; no input retry')
     # Both source/product checks finish before the fixed native clock begins.
-    workflow.builds.verify(plan['build_root'],args.arm,plan['completion_sha256'])
+    workflow.builds.verify(plan['build_root'],args.arm,plan['completion_sha256'],runtime_transition=plan.get('runtime_transition'))
     operator.publish(root/'operator',dict(instruction='Preparing the app. Wait for its ready step.'),context='F08 / '+args.arm)
     budget=plan['definition']['limits'];native=time.time()+budget['native_seconds_per_arm']
     execution=native+budget['backend_seconds_per_arm'];cleanup=execution+budget['cleanup_seconds']

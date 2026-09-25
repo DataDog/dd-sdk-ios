@@ -217,12 +217,12 @@ Session Replay acceptance concerns host-app crash safety and non-disruption to o
 SDK features. Captured-content correctness, full Replay capture suites and content-
 fixture waivers are outside current scope; retain their historical failures.
 
-Detailed network/per-dispatch benchmarking is optional. Object lifetime, correctness
-and attribution remain required. Included new semantic SwiftUI/multi-scene code
-requires representative application-visible frame rate, hitches/hangs, CPU and
-memory comparison, or a reviewed source exclusion establishing non-applicability.
-Historical [baseline thresholds](../BASELINES.md) remain unchanged; simulator numbers
-or missing warning frames cannot establish device performance or crash freedom.
+Detailed network/per-dispatch benchmarking and application-performance comparisons
+are optional diagnostics under the project measurement rule. Object lifetime,
+correctness and attribution remain required. Historical
+[baseline thresholds](../BASELINES.md) and their results remain unchanged; they do
+not impose a new timing prerequisite. Simulator numbers or missing warning frames
+cannot establish device performance or crash freedom.
 
 
 ## Asynchronous fixture persistence

@@ -1,4 +1,6 @@
 """Read-only reuse of the two qualified F08 capture products."""
+import ast
+import copy
 import datetime
 import importlib.util
 import hashlib
@@ -8,7 +10,9 @@ from pathlib import Path
 import plistlib
 import subprocess
 
+import capture_build
 from capture_build import sha
+from capture_contract import loads
 from journey_contract import require
 
 ARMS = dict(baseline='62f64d7b655bdc83f3036c4ad81090a270f6202b', candidate='c9faed816a1d4828d7d8c4b64acae01119425889')
@@ -90,7 +94,75 @@ def documentation_transition(repo, preparation):
     return guards,proof
 
 
-def verify(build_root, arm, completion_sha256, *, installed=None):
+# This transition is restricted to the reviewed host-only correctness policy and
+# its binding adapter. Compiler inputs, products and other helpers cannot vary.
+RUNTIME_TRANSITION_FILES = {
+    'smoke-definition.json', 'smoke_contract.py', 'smoke_driver.py', 'smoke_runtime.py',
+    'journey_workflow.py', 'journey_builds.py', 'journey_session.py', 'journey_driver.py', 'journey_readiness.py',
+    'journey_contract.py', 'capture_io.py', 'capture_contract.py', 'capture_build.py',
+}
+
+
+def binding_split(original, current):
+    before, after = ast.parse(original), ast.parse(current)
+    expected = copy.deepcopy(before)
+    binder = next(node for node in expected.body if isinstance(node, ast.FunctionDef) and node.name == 'bind')
+    split = ast.parse('def bind_sources(root, definition, preparation, arm=None):\n    pass\n').body[0]
+    split.body = binder.body[4:]
+    binder.body = binder.body[:4] + ast.parse('return bind_sources(root, definition, preparation, arm)').body
+    expected.body.insert(expected.body.index(binder) + 1, split)
+    require(ast.dump(expected) == ast.dump(after), 'source binder differs beyond the qualified function split')
+
+
+def runtime_helpers(original, current, changes, reviewed, allowed):
+    require(set(changes) == allowed and allowed <= set(original) and set(current) == set(original),
+            'runtime transition path inventory differs')
+    for name, previous in original.items():
+        if name in changes:
+            row = changes[name]
+            require(set(row) == {'before', 'after'} and row['before'] == previous
+                    and row['after'] == current[name] == reviewed.get(name) and previous != current[name],
+                    'runtime helper transition differs from reviewed source')
+        else:
+            require(current[name] == previous, 'non-transition helper changed')
+    return changes
+
+
+def transition_guard(root, original, definition, binding):
+    require(set(binding) == {'path', 'sha256'}, 'runtime transition binding differs')
+    path = Path(binding['path'])
+    require(path.is_absolute() and not path.is_symlink() and sha(path) == binding['sha256'],
+            'runtime transition manifest changed')
+    transition = loads(path.read_bytes())
+    require(transition['schema_version'] == 1 and transition['state'] == 'REVIEWED_HOST_ONLY_REUSE'
+            and transition['build_root'] == str(root)
+            and transition['definition_sha256'] == sha(root/'definition.json')
+            and transition['completion_sha256'] == sha(root/'completion.json'), 'runtime transition build differs')
+    review_path = Path(transition['review']['path'])
+    require(sha(review_path) == transition['review']['sha256'], 'runtime transition review changed')
+    review = loads(review_path.read_bytes())
+    require(review['state'] == 'PASS' and review['reviewer'] == '/root/c06_runtime_plan',
+            'runtime transition unreviewed')
+    controls_path = Path(review['controls']['path'])
+    require(sha(controls_path) == review['controls']['sha256'], 'runtime transition controls changed')
+    controls = loads(controls_path.read_bytes())
+    require(controls['state'] == 'PASS_OFFLINE_ONLY' and controls['source_sha256'] == review['source_sha256'],
+            'runtime transition review/control sources differ')
+    here = Path(__file__).resolve().parent
+    allowed = {str(here/name) for name in RUNTIME_TRANSITION_FILES}
+    current = {name:sha(name) for name in definition['qualified_helper_sha256']}
+    changes = runtime_helpers(definition['qualified_helper_sha256'], current, transition['changes'],
+                              review['source_sha256'], allowed)
+    require(review['changes_sha256'] == hashlib.sha256(
+        json.dumps(changes, sort_keys=True, separators=(',', ':')).encode()).hexdigest(),
+        'runtime transition review does not bind the changes')
+    binding_split(original.read_text(), Path(capture_build.__file__).read_text())
+    preparation = loads((root/'preparation.json').read_bytes())
+    guard, preparation = capture_build.bind_sources(root, definition, preparation)
+    return guard, preparation
+
+
+def verify(build_root, arm, completion_sha256, *, installed=None, runtime_transition=None):
     root = Path(build_root).resolve(strict=True)
     require(arm in ARMS and sha(root/'completion.json') == completion_sha256, 'unbound capture build completion')
     completion = json.loads((root/'completion.json').read_text())
@@ -104,7 +176,10 @@ def verify(build_root, arm, completion_sha256, *, installed=None):
     original = root/'capture-build-before-filelist-correction.py'
     definition = json.loads((root/'definition.json').read_text())
     require(sha(original) == definition['adapter_sha256'], 'original source guard changed')
-    guard, preparation = module(original).bind(root)
+    if runtime_transition is None:
+        guard, preparation = module(original).bind(root)
+    else:
+        guard, preparation = transition_guard(root, original, definition, runtime_transition)
     freeze = json.loads((root/arm/'build-input-freeze.json').read_text())
     # Old receipts remain immutable. Only the authorized non-compiler document
     # guards change; the frozen guard still verifies both user files and every
@@ -131,5 +206,8 @@ def verify(build_root, arm, completion_sha256, *, installed=None):
     manifest = json.loads((root/arm/'installed-bundle-freeze.json').read_text())
     require(manifest['source_revision'] == ARMS[arm], 'product source differs')
     identity = product(installed or manifest['app_path'], manifest)
+    if runtime_transition is not None:
+        transition_guard(root, original, definition, runtime_transition)
     return dict(state='SOURCE_AND_PRODUCT_REUSED', arm=arm, source=ARMS[arm], manifest=manifest,
-                identity=identity, application_path=manifest['app_path'], native_launches=0, workspace_transition=transition)
+                identity=identity, application_path=manifest['app_path'], native_launches=0, workspace_transition=transition,
+                runtime_transition=runtime_transition)

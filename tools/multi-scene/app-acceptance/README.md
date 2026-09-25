@@ -121,3 +121,9 @@ cost overrun alone does not block candidate comparison or F08 closure; complete
 paired native/backend evidence and source review must still resolve any concrete
 observer-induced ownership or capture ambiguity. Original stopped attempts retain
 their original invalid verdicts. No performance qualification is implied.
+
+A reviewed host-only policy change can reuse unchanged products with
+`prepare --runtime-transition <manifest.json>`. The manifest binds exact old/new
+helper hashes to the scoped review and controls. Compiler/recorder/app/SDK sources,
+dependencies and all product files remain exact. The legacy binder stays strict;
+new plans freeze the transition and revalidate it before execution and cleanup.

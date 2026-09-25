@@ -185,6 +185,10 @@ def bind(root, arm=None):
     for path, fingerprint in definition["qualified_helper_sha256"].items():
         assert sha(path) == fingerprint, "Qualified helper changed"
     assert sha(__file__) == definition["adapter_sha256"], "Build adapter changed"
+    return bind_sources(root, definition, preparation, arm)
+
+
+def bind_sources(root, definition, preparation, arm=None):
     reference = Path(preparation["accepted_build_root"])
     spec = importlib.util.spec_from_file_location("accepted_app_build", reference / "build.py")
     module = importlib.util.module_from_spec(spec)

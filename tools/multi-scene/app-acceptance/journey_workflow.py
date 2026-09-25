@@ -71,7 +71,9 @@ def prepare(args):
     mode=getattr(args,'mode','journeys');definition=scoped_definition(mode)
     require(definition['gate']=='S2:F08' and definition['limits']['retries']==0, 'wrong finite journey definition')
     build_root=args.build_root.resolve(strict=True);completion=builds.sha(build_root/'completion.json')
-    qualified={arm:builds.verify(build_root,arm,completion) for arm in builds.ARMS}
+    transition_path=getattr(args,'runtime_transition',None)
+    transition=None if transition_path is None else dict(path=str(transition_path.resolve(strict=True)),sha256=builds.sha(transition_path))
+    qualified={arm:builds.verify(build_root,arm,completion,runtime_transition=transition) for arm in builds.ARMS}
     source_manifest(build_root,definition)
     require(qualified['baseline']['identity']['bundle_id']==qualified['candidate']['identity']['bundle_id'], 'asymmetric task identity')
     root.mkdir(mode=0o700);(root/'cells').mkdir();(root/'operator').mkdir()
@@ -81,7 +83,7 @@ def prepare(args):
     plan=dict(schema_version=1,state='PREPARED_NATIVE_UNADMITTED',created_at=time.time(),definition=definition,mode=mode,
               build_root=str(build_root),completion_sha256=completion,helpers=helpers(),
               arms={arm:{k:value[k] for k in ['identity','source','application_path']} for arm,value in qualified.items()},
-              native_launches=0,gate_closures=[],workspace_transition={arm:value['workspace_transition'] for arm,value in qualified.items()})
+              native_launches=0,gate_closures=[],runtime_transition=transition,workspace_transition={arm:value['workspace_transition'] for arm,value in qualified.items()})
     atomic(root/'plan.json',encoded(plan))
     print(json.dumps(dict(state=plan['state'],root=str(root),plan_sha256=builds.sha(root/'plan.json'))))
 
@@ -91,6 +93,9 @@ def verify(root):
     require(plan['helpers']==helpers(),'frozen F08 runtime helper changed')
     require(plan['definition']==scoped_definition(plan.get('mode','journeys')),'frozen journey scope changed')
     source_manifest(plan['build_root'],plan['definition'])
+    transition=plan.get('runtime_transition')
+    if transition is not None:
+        require(builds.sha(transition['path'])==transition['sha256'],'frozen runtime transition changed')
     return plan
 
 
@@ -297,7 +302,7 @@ def cell(args):
             and admission['operator_ready'] is True and time.time()<admission['expires_at'], 'fresh operator/environment admission unavailable')
     selections=selection(loads((root/'selection.json').read_bytes()))
     require(admission['selection_sha256']==builds.sha(root/'selection.json'),'account/route selection changed')
-    qualified=builds.verify(plan['build_root'],arm,plan['completion_sha256']);info=qualified['identity'];bundle=info['bundle_id']
+    qualified=builds.verify(plan['build_root'],arm,plan['completion_sha256'],runtime_transition=plan.get('runtime_transition'));info=qualified['identity'];bundle=info['bundle_id']
     require(qualified['workspace_transition']==plan.get('workspace_transition',{}).get(arm), 'current protection transition differs from prepared plan')
     if arm=='candidate':
         baseline=loads((root/'cells/baseline/summary.json').read_bytes())
@@ -378,7 +383,7 @@ def cell(args):
             try:
                 errors=cleanup_cell(root,out,documents,identity,args.device,device,original,initial,pid,None,summary['scenario'],deadline,
                                     task_bundle=bundle,task_absent=lambda d:absence(d,bundle),
-                                    verify_source=lambda _:builds.verify(plan['build_root'],arm,plan['completion_sha256']))
+                                    verify_source=lambda _:builds.verify(plan['build_root'],arm,plan['completion_sha256'],runtime_transition=plan.get('runtime_transition')))
             except Exception as error:errors=['cleanup driver: '+str(error)]
         else:errors=['native workers not quiescent; task teardown deferred']
         if time.time()>=deadline:errors.append('cleanup completed after original deadline')
@@ -397,7 +402,7 @@ def cell(args):
 
 def main():
     parser=argparse.ArgumentParser();commands=parser.add_subparsers(dest='stage',required=True)
-    item=commands.add_parser('prepare');item.add_argument('--root',type=Path,required=True);item.add_argument('--build-root',type=Path,required=True);item.add_argument('--mode',choices=['journeys','smoke'],default='journeys')
+    item=commands.add_parser('prepare');item.add_argument('--root',type=Path,required=True);item.add_argument('--build-root',type=Path,required=True);item.add_argument('--mode',choices=['journeys','smoke'],default='journeys');item.add_argument('--runtime-transition',type=Path)
     item=commands.add_parser('cell');item.add_argument('--root',type=Path,required=True);item.add_argument('--arm',choices=builds.ARMS,required=True);item.add_argument('--device',required=True)
     for name in ['native','execution','cleanup']:item.add_argument('--'+name+'-deadline',type=float,required=True)
     args=parser.parse_args()

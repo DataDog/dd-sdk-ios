@@ -182,7 +182,7 @@
     "partial cleanup relabeled as ordinary pass"
   ],
   "admission_limits": "This is source preparation only. No runtime/oracle pass, gate closure, new experiment or environment retry is implied. Existing J01, Duo and EXP220 automation stops remain closed; fresh execution needs materially changed environment and reviewed fixed admission.",
-  "next_action": "Qualify and review the host-only correctness policy with existing app products, then resume the authorized guided paired smoke with fresh source/environment bindings.",
+  "next_action": "Prepare the fresh smoke plan using the reviewed host-helper transition, then resume the authorized paired journey with unchanged app products and fresh environment bindings.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/source-review.json",
     "sha256": "41f6a1f5348c383e8c11770dc50da59e45e9dc020559a49c2a60d8691815d6e9"
@@ -673,6 +673,28 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-correctness-cost-cc0k4tme/review.json",
       "sha256": "bbb56bbe88cdd68cb3dac129f96f37cfb367aab18fa1bed86ac898b4b77b0504"
     },
-    "tests": 87
+    "tests": 87,
+    "runtime_helper_transition": {
+      "state": "REVIEWED_PREPARATION_ONLY",
+      "manifest": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-correctness-cost-cc0k4tme/runtime-transition/manifest.json",
+        "sha256": "4343e4b56a48239bfb081d2b0b398ee88a81fe26ea56dd25ea38652154361cf9"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-correctness-cost-cc0k4tme/runtime-transition/review.json",
+        "sha256": "db6bf2d122c625ab0c01676a2bd1d2ce32c3314c72fedea6a68afe9c9f2c8fef"
+      },
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-correctness-cost-cc0k4tme/runtime-transition/controls-v2.json",
+        "sha256": "629c0d15c12417d187719c150d769f085a5f61d713d0c65424eb1738f7005908"
+      },
+      "changed_host_helpers": 13,
+      "tests": 27,
+      "original_guard_body": "AST-equivalent extraction; strict default preserved",
+      "app_sdk_recorder_compiler_product_changes": 0,
+      "native_launches": 0,
+      "new_builds": 0,
+      "original_prepare_failure": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-correctness-cost-cc0k4tme/runtime-transition/original-prepare-failure.json"
+    }
   }
 }
