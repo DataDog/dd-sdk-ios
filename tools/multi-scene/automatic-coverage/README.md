@@ -149,3 +149,20 @@ The existing comparison oracle retains occurrence owners and unchanged limitatio
 The comparison report closes no gate by itself and retains the regular27.0 versus
 Duo27.1 OS-patch confound. Input witnesses prove observed native effects, not
 independent human causality. Native qualification remains unexecuted.
+
+## Separate human sittings
+
+`human_sessions.py prepare --original BUILD_ROOT --root FRESH --series NEW_SERIES
+--pairs 1` prepares the first existing pair without building or running it. The
+owning result pins the canonical series before admission. Review and controls bind
+the new `FRESH/runtime` plan; existing `human_runtime.py stage/run --root FRESH`
+consume fresh environment/readiness and fixed sitting clocks. Only required devices
+are preflighted. The exact original frozen native oracle serves this fixture family.
+
+For a later sitting, use a new root plus `--previous COMPLETED_ROOT` and the same
+original build root. The runner validates completed predecessors in place and
+selects only the next untouched complete pairs. It never copies results into new
+cells or resets old clocks. Each cell has one append-only canonical admission claim;
+a failed/partial sitting or claim publication stops continuation. New operator
+readiness is required. First-baseline input qualification and final full-matrix
+source classification remain separate from this offline scheduling preparation.

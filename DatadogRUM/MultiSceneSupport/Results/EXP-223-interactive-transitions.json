@@ -326,7 +326,7 @@
     }
   ],
   "gate_closures": [],
-  "next_action": "Fresh workspace/device/backend and actual physical session preflight, then one planned UIKit automatic baseline. Candidate only after complete baseline; stop the automated path on failure without another equivalent diagnostic.",
+  "next_action": "Preserve reviewed physical preparation behind the locked-device prerequisite. Audit the captured completion timing against selected source while the operator sleeps; do not upgrade the original failures or repeat input diagnostics.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
@@ -2427,7 +2427,7 @@
                   "native_operations": 1,
                   "native_admitted": false,
                   "gate_closures": [],
-                  "next_action": "Fresh workspace/device/backend and actual physical session preflight, then one planned UIKit automatic baseline. Candidate only after complete baseline; stop the automated path on failure without another equivalent diagnostic.",
+                  "next_action": "Preserve reviewed physical preparation behind the locked-device prerequisite. Audit the captured completion timing against selected source while the operator sleeps; do not upgrade the original failures or repeat input diagnostics.",
                   "runtime_preparation": {
                     "state": "COMPLETE_CAPTURE_PASS_CLEANUP_PASS",
                     "plan": {
@@ -2524,7 +2524,11 @@
                     },
                     "native_admitted": false,
                     "gate_closures": [],
-                    "next_action": "Fresh workspace/device/backend and actual physical session preflight, then one planned UIKit automatic baseline. Candidate only after complete baseline; stop the automated path on failure without another equivalent diagnostic."
+                    "next_action": "Fresh unlocked physical iPad prerequisite remains; no device mutation or native admission occurred. No unlock request while the operator sleeps.",
+                    "latest_preflight": {
+                      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/preflight/outcome.json",
+                      "sha256": "9290787fe4b995e9436f7248ae3d7268e65d5fb2b3c6dab8a449286b3a75def0"
+                    }
                   }
                 }
               }

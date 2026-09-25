@@ -60,3 +60,10 @@ worker quiescence and task-only cleanup. Original synthetic supervisor failures 
 their repair controls remain in its receipt. First planned baseline qualification
 awaits the ordered human session; no stage is admitted. This preparation adds no
 SDK change, additional build or behavioral gate credit.
+
+The [session-splitting result](../Results/S2-input-session-preparation.json) now
+binds a reviewed scheduler with32 new and40 affected offline controls. Each sitting
+freezes complete adjacent pairs and fresh admission clocks. Later sittings refer to
+qualified predecessors in place; an append-only family ledger prevents a fresh
+output path from repeating a consumed cell. The first regular UIKit pair is prepared
+without a build or native action. Native qualification and all behavioral gates remain open.

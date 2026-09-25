@@ -771,6 +771,28 @@
       "operator": "Read-only loopback prompt page; exact returned screenshot generation/expiry, automatic native-effect progression, cleanup retires ordinary prompts.",
       "comparison": "120 finite view/action comparisons across source, genuine rebuild, device-plus-OS-patch and scene declaration. Source differences require classification; complete local capture does not itself close release gates.",
       "prior_offline_failures": "The controls receipt retains the two pre-repair EOF/exit synthetic failures; the specific EOF-before-exit and descendant controls now pass. No SDK or native regression finding."
+    },
+    "session_continuation": {
+      "state": "FINITE_SESSION_SCHEDULING_PREPARED",
+      "outcome": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-sessions-tx3elwxs/outcome.json",
+        "sha256": "56fa5cdb8431e78b736768fcfde374a6846fb1f8caca1f3c85b3c93d1f697107"
+      },
+      "series": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-sessions-tx3elwxs/series/series.json",
+        "sha256": "7f3f1c63a4892318d924d37d548f24ff4f5f4efb8db99d27d040d14ddabd1e9a"
+      },
+      "runtime_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-sessions-tx3elwxs/first-pair-series/runtime",
+      "plan": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-sessions-tx3elwxs/first-pair-series/runtime/runtime-plan.json",
+        "sha256": "11882010f5d1292dcae621f123e773b91972488d5193227d34425262cea5f874"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-sessions-tx3elwxs/first-pair-series/runtime/review.json",
+        "sha256": "cd507a0295dda2b358235aaf47d92933f81e1da27e16fb4412e992f24fe5a768"
+      },
+      "native_admitted": false,
+      "gate_closures": []
     }
   }
 }

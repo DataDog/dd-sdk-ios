@@ -2,11 +2,11 @@
   "schema_version": 1,
   "work_item": "S2:A02 ordered single human-input session",
   "status": "RUNNERS_PREPARED_OPERATOR_AND_ACCOUNT_PREREQUISITES_REMAIN",
-  "updated_at": "2026-09-23T13:38:54.447704+00:00",
+  "updated_at": "2026-09-25T01:14:18.672410+00:00",
   "owner": "Harness implementer",
   "user_role": "Only real gestures and any required interactive sign-in",
   "request_user_now": false,
-  "reason": "All simulator-family runner/build bindings are prepared. Operator readiness has been requested; no stage clock has started. F08 native account/control qualification and physical iPad prerequisites remain separate and do not block earlier simulator groups.",
+  "reason": "Simulator-family preparation is preserved. Operator is asleep during the authorized unattended window; no readiness or stage is inferred. Physical iPad is connected but locked; account/native qualification remains separate.",
   "source_candidate": "c9faed816a1d4828d7d8c4b64acae01119425889",
   "ordered_groups": [
     {
@@ -38,7 +38,11 @@
         "runtime_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-human-typed-build-bfh4vhwn/run/runtime",
         "runtime_plan_sha256": "e2e4ae5611a72045364222e0eff725343fc14a1fe3e318be3a60389136468ab8",
         "runtime_review_sha256": "b59754c84df2265b500524258944b8ce9a07e4f8d4b038c86fcd5e5266733705",
-        "remaining": "Fresh environment and operator readiness after the ordered session bindings are complete. First planned baseline qualifies the actual human mechanism; no native launch, retry or stage admitted."
+        "remaining": "Fresh environment and operator readiness after the ordered session bindings are complete. First planned baseline qualifies the actual human mechanism; no native launch, retry or stage admitted.",
+        "session_continuation": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-sessions-tx3elwxs/outcome.json",
+          "sha256": "56fa5cdb8431e78b736768fcfde374a6846fb1f8caca1f3c85b3c93d1f697107"
+        }
       }
     },
     {
@@ -207,7 +211,7 @@
       "H11-H14 reviewed eight-cell Duo runtime and four existing simulator products;67 offline controls, native qualification pending"
     ],
     "remaining_bindings": [
-      "Fresh shared operator/environment admission; readiness requested, no stage clock started",
+      "Fresh operator/environment admission after user availability; no stage clock started",
       "F08 native sign-in and first-baseline control qualification; see S2-F08-source-oracle.json",
       "Physical iPad availability, builds and runtime remain separate"
     ],
@@ -215,7 +219,7 @@
     "gates_closed": []
   },
   "operator_readiness": {
-    "state": "REQUESTED_AWAITING_RESPONSE",
+    "state": "UNADMITTED_OPERATOR_ASLEEP",
     "fixed_stage_started": false,
     "native_cells_started": 0
   },
@@ -224,8 +228,12 @@
     "requirement": "The ordered work does not require one uninterrupted sitting. Existing families have independent admissions and can be scheduled separately.",
     "ready_now": "Simulator-family preparation only, subject to fresh live/operator preflight. Physical iPad builds/runtime and F08 native sign-in remain prerequisites.",
     "safe_boundary": "Prefer a complete baseline/candidate pair with persisted evidence and verified cleanup. Never stop in the middle of a timing-sensitive gesture, delayed-event interval or same-process lifecycle sequence.",
-    "current_runner_limit": "Within-family cross-day continuation is not yet implemented. In particular, automatic coverage binds all40 cells and predecessor receipts to one immutable stage ID/deadline.",
+    "current_runner_limit": "Automatic coverage now has a reviewed finite-session scheduler with a canonical append-only attempt ledger. Each sitting freezes complete adjacent pairs, and a later sitting references only qualified immutable predecessors. Other families retain independent admissions; within-family continuation is not inferred for them.",
     "continuation_requirement": "Before splitting an unfinished family across sittings, prepare and review a finite continuation for only unexecuted cells, referencing qualified original receipts and unchanged source/build identities. Never overwrite an old stage, renew its clock, reuse consumed readiness or rerun qualified cells merely to resume.",
-    "estimated_duration": "Not measured; stage time limits are maximum budgets, not predictions of required user time."
+    "estimated_duration": "Not measured; stage time limits are maximum budgets, not predictions of required user time.",
+    "automatic_continuation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-sessions-tx3elwxs/outcome.json",
+      "sha256": "56fa5cdb8431e78b736768fcfde374a6846fb1f8caca1f3c85b3c93d1f697107"
+    }
   }
 }

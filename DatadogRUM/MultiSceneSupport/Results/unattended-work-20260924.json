@@ -15,7 +15,7 @@
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
   "human_work": "UNADMITTED_WHILE_OPERATOR_SLEEPS",
-  "checkpoint": "94d33415c885fdd9064b6d3eed429b0a92d90c15",
+  "checkpoint": "992055d202082d0924a71fd6529aabe836b9b241",
   "tasks": [
     {
       "id": "capture-backend",
@@ -30,7 +30,7 @@
       "dependency": "Saved EXP223 Home inventories and existing strict join",
       "decisive_test": "Complete offline mapping table and controls reject missing/stale terminal, wrong owners/counts, nonempty omission, late publication and forged request scopes; original run remains INVALID",
       "environment": "Source and saved evidence; no human/native/query retry",
-      "state": "AUTOMATED_PHYSICAL_INPUT_PREPARED",
+      "state": "PREPARED_DEVICE_LOCKED_BEFORE_NATIVE",
       "result": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/post-home-offline/source-audit/source-contract.json",
         "sha256": "9376249aadf3029c4c9ead2e0e29a0178bb54dcdafacf3f1f110309a018b21e5"
@@ -48,7 +48,7 @@
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-witness-69uk3guu/outcome.json",
         "sha256": "902e32e68714ccaaebca624af9898e346ab89af6dd1ed551f68a344a1b88c43b"
       },
-      "next_action": "Fresh workspace/device/backend and actual physical session preflight, then one planned UIKit automatic baseline. Candidate only after complete baseline; stop the automated path on failure without another equivalent diagnostic.",
+      "next_action": "Preserve prepared adapter and signed products; no physical admission or sleeping-user unlock request.",
       "rum_fields_contract": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-rum-gate-contract-v97_b59y/outcome.json",
         "sha256": "0a7b29a82a702c57c923eee0d53cc20e70aeb4dbfba25f7a76b5b18fb1a5cb9d"
@@ -60,6 +60,10 @@
       "physical_supported_input": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/outcome.json",
         "sha256": "edfa5e7bb53f526757122056d9a945b6e4de8df3eb47f006949fa7df3d94410a"
+      },
+      "latest_preflight": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/preflight/outcome.json",
+        "sha256": "9290787fe4b995e9436f7248ae3d7268e65d5fb2b3c6dab8a449286b3a75def0"
       }
     },
     {
@@ -96,6 +100,26 @@
       "decisive_test": "Complete a named existing deliverable or record a concrete prerequisite; builds/diagnostics alone cannot close behavior gates",
       "environment": "Source/offline or separately admitted unattended toolchain work",
       "state": "QUEUED"
+    },
+    {
+      "id": "finite-automatic-sessions",
+      "gates": [
+        "S2:A02",
+        "S2:C07",
+        "S2:C08",
+        "S2:C09",
+        "S2:C10"
+      ],
+      "deliverable": "Continue only unexecuted complete pairs across separate human sittings",
+      "dependency": "Reviewed original four builds and40-cell automatic matrix",
+      "decisive_test": "32 new and40 affected offline controls; source/product/oracle identity, attempt fence, predecessor integrity and fixed clocks",
+      "environment": "Offline preparation; fresh human/native prerequisites remain",
+      "state": "FINITE_SESSION_SCHEDULING_PREPARED",
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-sessions-tx3elwxs/outcome.json",
+        "sha256": "56fa5cdb8431e78b736768fcfde374a6846fb1f8caca1f3c85b3c93d1f697107"
+      },
+      "gate_closures": []
     }
   ],
   "scope_limits": [
@@ -107,5 +131,5 @@
     "No Replay content, unrelated CI flakes, optional networking benchmarks or physical Duo acceptance"
   ],
   "gate_closures": [],
-  "updated_at": 1790297106.33391
+  "updated_at": 1790298858.6769652
 }

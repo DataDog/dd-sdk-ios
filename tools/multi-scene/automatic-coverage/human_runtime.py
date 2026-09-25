@@ -23,6 +23,7 @@ import human_supervisor
 import human_processes
 import os
 import analyze
+import human_sessions
 from acceptance_common import require
 import s2_hosting_workflow as shared
 import s2_webview_driver as transport
@@ -115,7 +116,9 @@ def prepare(args):
 
 
 def verify(root):
-    root=Path(root).resolve();base=build.verify(root);runtime=root/'runtime';plan=shared.read(runtime/'runtime-plan.json')
+    root=Path(root).resolve();runtime=root/'runtime';plan=shared.read(runtime/'runtime-plan.json')
+    if plan.get('kind')==human_sessions.KIND:return human_sessions.verify(root,plan,sys.modules[__name__])
+    base=build.verify(root)
     definition=shared.read(build.OWNER)
     require(plan['build_plan_sha256']==shared.sha(root/'build-plan.json') and plan['contract']==definition['human_current_composition']['runtime_contract']
             and plan['matrix']==selected_matrix(definition),'runtime definition/build/matrix changed')
@@ -174,17 +177,20 @@ def stage(args):
             and preflight.get('backend')=='LOCAL_MAPPER_ONLY_NO_AUTH_REQUIRED','incorrect access scope')
     workspace=preflight['xcode_workspace_receipt']
     require(shared.sha(workspace['path'])==workspace['sha256'],'actual Xcode workspace receipt changed')
-    require(set(preflight['devices'])=={'regular','duo'},'missing required device')
+    expected_devices={row['device'] for row in plan['matrix']} if plan.get('kind')==human_sessions.KIND else {'regular','duo'}
+    require(set(preflight['devices'])==expected_devices,'missing or unrelated required device')
     for kind,bound in preflight['devices'].items():
         current=device_snapshot(bound['udid'],kind)
         require(all(current[k]==bound[k] for k in ['udid','state','runtime','deviceTypeIdentifier']),'preflight device changed')
     require(operator.get('kind')=='OPERATOR_READY' and operator.get('runtime_plan_sha256')==shared.sha(runtime/'runtime-plan.json')
             and operator.get('user_message_reference') and 0<=now-operator['at']<=300,'current human readiness required')
+    if plan.get('kind')==human_sessions.KIND:human_sessions.ready(root,plan,operator,sys.modules[__name__])
     record={'state':'ADMITTED','stage_id':str(uuid.uuid4()),'runtime_plan_sha256':shared.sha(runtime/'runtime-plan.json'),
         'review_sha256':review,'preflight_path':str(args.preflight.resolve()),'preflight_sha256':shared.sha(args.preflight),
         'operator_path':str(args.operator.resolve()),'operator_sha256':shared.sha(args.operator),'devices':preflight['devices'],
         'issued_at':now,'execution_deadline':now+plan['contract']['stage_execution_seconds']}
     record['cleanup_deadline']=record['execution_deadline']+plan['contract']['cleanup_seconds']
+    if plan.get('kind')==human_sessions.KIND:record['session_claims']=human_sessions.claim(root,plan,record,sys.modules[__name__])
     shared.save(runtime/'native-admission.json',record,exclusive=True)
     print(json.dumps({'state':'ADMITTED','stage':str(runtime/'native-admission.json'),'execution_deadline':record['execution_deadline']}))
 
@@ -194,6 +200,7 @@ def admit_cell(root,key,plan,review,execution_limit,cleanup_limit):
     require(stage['state']=='ADMITTED' and stage['runtime_plan_sha256']==shared.sha(runtime/'runtime-plan.json')
             and stage['review_sha256']==review and stage['issued_at']<=now<stage['execution_deadline'],'closed or stale native stage')
     for name in ['preflight','operator']:require(shared.sha(stage[name+'_path'])==stage[name+'_sha256'],'stage prerequisite changed')
+    if plan.get('kind')==human_sessions.KIND:human_sessions.child_admission(root,plan,stage,sys.modules[__name__])
     attempted=prior_cells(runtime,plan,stage)
     next_cell=next((row for row in plan['matrix'] if cell_key(row) not in attempted),None)
     require(next_cell is not None and cell_key(next_cell)==key,'out-of-order or already consumed cell')
@@ -219,7 +226,7 @@ def execute_cell(args):
             'task app/container already exists; no destructive install')
     out=runtime/'cells'/args.key;require(not out.exists(),'cell output already consumed');out.mkdir();(out/'input').mkdir()
     transport.publication_preflight(out)
-    identity={'run_id':str(uuid.uuid4()),'bundle':bundle,'cell':selected,'source':shared.read(root/'build-plan.json')['arms'][selected['build']]['revision']}
+    identity={'run_id':str(uuid.uuid4()),'bundle':bundle,'cell':selected,'source':shared.read(Path(plan.get('original_build_root',root))/'build-plan.json')['arms'][selected['build']]['revision']}
     summary={'state':'RUNNING','scenario':'UNQUALIFIED','evidence':'INCOMPLETE','cleanup':'NOT_RUN','identity':identity,
         'runtime_plan_sha256':stage['runtime_plan_sha256'],'stage_id':stage['stage_id'],'started_at':started,
         'execution_deadline':deadline,'cleanup_deadline':cleanup_deadline,'device':device,'input_workers':'NONE; human gestures only'}
@@ -317,9 +324,19 @@ def prior_cells(runtime,plan,stage):
 
 
 def compare_matrix(runtime,plan,stage):
-    attempted=prior_cells(runtime,plan,stage);accepted={key:shared.read(runtime/'cells'/key/'local-result.json') for key in attempted}
+    if plan.get('kind')==human_sessions.KIND:
+        result=human_sessions.compare(runtime,plan,stage,sys.modules[__name__])
+    else:
+        attempted=prior_cells(runtime,plan,stage)
+        accepted={key:shared.read(runtime/'cells'/key/'local-result.json') for key in attempted}
+        result=comparison_result(accepted,plan['matrix'],stage['runtime_plan_sha256'],stage['stage_id'])
+    shared.save(runtime/'comparison.json',result)
+    return result
+
+
+def comparison_result(accepted,matrix,plan_sha256,stage_id):
     comparisons=[]
-    for row in plan['matrix']:
+    for row in matrix:
         key=cell_key(row)
         if key not in accepted:continue
         source,sdk=row['build'].split('-');pairs=[]
@@ -334,13 +351,12 @@ def compare_matrix(runtime,plan,stage):
                 comparisons.append({'axis':axis,'family':family,'before':before_key,'after':key,
                     **analyze.compare(accepted[before_key],accepted[key],family,initial_only=axis=='device plus OS patch')})
     differences=[row for row in comparisons if row['status'] in ['REVIEW_REQUIRED','DIFFERENCE_REQUIRES_CLASSIFICATION']]
-    state='REVIEW_REQUIRED' if differences else 'COMPLETE_LOCAL_COMPARISON' if len(accepted)==len(plan['matrix']) else 'PARTIAL_LOCAL_COMPARISON'
-    result={'state':state,'runtime_plan_sha256':stage['runtime_plan_sha256'],'stage_id':stage['stage_id'],
-        'qualified_cells':len(accepted),'required_cells':len(plan['matrix']),'comparisons':comparisons,
+    state='REVIEW_REQUIRED' if differences else 'COMPLETE_LOCAL_COMPARISON' if len(accepted)==len(matrix) else 'PARTIAL_LOCAL_COMPARISON'
+    result={'state':state,'runtime_plan_sha256':plan_sha256,'stage_id':stage_id,
+        'qualified_cells':len(accepted),'required_cells':len(matrix),'comparisons':comparisons,
         'source_differences':sum(row['axis']=='SDK change' for row in differences),
         'boundary':'Local mapper, paced observation-equipped fixtures; regular27.0 versus Duo27.1 confounds device with OS patch. No backend, physical or production-overhead claim.',
         'gates_closed':[],'updated_at':time.time()}
-    shared.save(runtime/'comparison.json',result)
     return result
 
 
@@ -364,6 +380,7 @@ def final_cell(runtime,key,*,supervisor_error=None):
 def run_matrix(args):
     root=args.root.resolve();plan,review=reviewed(root);runtime=root/'runtime';stage=shared.read(runtime/'native-admission.json')
     require(stage['review_sha256']==review and time.time()<stage['execution_deadline'],'matrix stage is closed')
+    if plan.get('kind')==human_sessions.KIND:human_sessions.begin(root,plan,stage,sys.modules[__name__])
     attempted=prior_cells(runtime,plan,stage)
     for row in plan['matrix']:
         key=cell_key(row);summary=runtime/'cells'/key/'summary.json'
@@ -391,7 +408,11 @@ def run_matrix(args):
         if comparison['source_differences']:
             human_operator.publish(runtime/'operator',{'instruction':'The source pair differs. Stop input while the captured evidence is classified.'},context=context)
             return 1
-    human_operator.publish(runtime/'operator',{'instruction':'The automatic tracking matrix is captured. Input is complete; comparison and release review remain.'})
+    if plan.get('kind')==human_sessions.KIND:
+        human_sessions.finish(root,plan,stage,sys.modules[__name__])
+        instruction='This sitting is captured. Stop input; any later sitting needs fresh readiness. Full matrix and release review remain.'
+    else:instruction='The automatic tracking matrix is captured. Input is complete; comparison and release review remain.'
+    human_operator.publish(runtime/'operator',{'instruction':instruction})
     return 0
 
 def main():
