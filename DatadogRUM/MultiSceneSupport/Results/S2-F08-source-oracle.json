@@ -182,7 +182,7 @@
     "partial cleanup relabeled as ordinary pass"
   ],
   "admission_limits": "This is source preparation only. No runtime/oracle pass, gate closure, new experiment or environment retry is implied. Existing J01, Duo and EXP220 automation stops remain closed; fresh execution needs materially changed environment and reviewed fixed admission.",
-  "next_action": "Obtain a fresh login QR screenshot and import it into simulator Photos before fresh native readiness/admission. Both source-bound image-picker products and the normal smoke plan are prepared. First baseline qualifies native image selection and authentication; candidate requires complete baseline qualification.",
+  "next_action": "Complete fresh operator/environment readiness, launch the existing baseline smoke plan, and wait on the QR scanner. Arm the reviewed Desktop importer only for that live authentication prompt; request the fresh screenshot afterward and select it immediately in Photos. No chat round trip or rebuilding inside the 30-second QR validity window.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/source-review.json",
     "sha256": "41f6a1f5348c383e8c11770dc50da59e45e9dc020559a49c2a60d8691815d6e9"
@@ -778,6 +778,40 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-qr-image-smb3x2jv/runtime/plan.json",
       "sha256": "1bd8e3d22b85c73d3e5b9395febedccd4f19fa1538e0d4dcc45952174bd4454c"
     },
-    "remaining": "Fresh QR image and operator readiness; native picker/sign-in untested"
+    "remaining": "Fresh operator readiness and native sign-in qualification; take screenshot only after importer is armed on the QR screen.",
+    "handoff": {
+      "state": "REVIEWED_OFFLINE_QUALIFIED_NATIVE_UNRUN",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-qr-handoff-qqgyb1xz",
+      "user_reported_validity_seconds": 30,
+      "user_confirmed_directory": "Desktop",
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-qr-handoff-qqgyb1xz/definition.json",
+        "sha256": "26504b5a69fe9eb8f1f9d12f5cdb1c463daf2a3220928a7ebf01d6bae4bb6050"
+      },
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-qr-handoff-qqgyb1xz/controls-v2.json",
+        "sha256": "d5ca0b1f1f61f71507821cbce5d569ab6decc96037a51a5026ef41d1b853722f"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-qr-handoff-qqgyb1xz/review.json",
+        "sha256": "33a9d75b8cff43095e301a8b61da5619ac14b63d5ef138ec52aa13f054805504"
+      },
+      "plan_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-qr-image-smb3x2jv/runtime/review.json",
+        "sha256": "d4ec6c97575659c0b0489cbf2286bfa56c397262902850c6f585786f9c8bd0bd"
+      },
+      "environment": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-qr-handoff-qqgyb1xz/environment.json",
+        "sha256": "8eb0d81d266759033b915154fae035f82d24015b659fdfc80f98b8fabd55e7c5"
+      },
+      "tool_access": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-qr-handoff-qqgyb1xz/tool-access.json",
+        "sha256": "20f9fb66a42589d9b3357caff7a9fc71d86c75137563d2a8ae7c56990553e329"
+      },
+      "tests": 6,
+      "imports": 0,
+      "new_builds": 0,
+      "gate_closures": []
+    }
   }
 }

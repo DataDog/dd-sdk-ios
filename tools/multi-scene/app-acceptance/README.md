@@ -41,13 +41,24 @@ These helpers do not replace native, backend or cleanup verdicts.
 ## Simulator QR login
 
 The user-requested image input adds **Choose QR Code Image** to the existing QR
-scanner in both comparison builds. Save the login QR screenshot from the laptop,
-import that image into the selected simulator's Photos library, then choose it in
-the app. Prepare the image before the sign-in step; each arm needs a valid QR code.
+scanner in both comparison builds. The user reports a 30-second QR validity window.
+Finish build, recorder and session preparation first. During the live sign-in step,
+open the QR screen and arm `qr_image_import.py` for the confirmed screenshot folder
+(Desktop). Only then refresh the QR code and take one screenshot. The helper imports
+it directly into simulator Photos; open **Choose QR Code Image** and select it.
+No chat upload or model/tool round trip belongs inside that validity window.
+Each arm needs its own fresh QR code. This is an authentication prerequisite,
+not a timing measurement or SDK acceptance criterion.
 The system picker exposes only the selected image. A bounded, off-main decoder
 rejects unreadable images or multiple codes, then uses the existing URL login
 handler. Authentication validation is unchanged; image data and decoded credentials
 are never added to diagnostic messages. Cancellation submits no login.
+
+The importer binds the current authentication prompt, device, generation and
+deadline. It ignores pre-existing images, rejects ambiguity and changed/symlinked
+input, and stops when the prompt closes. There is one bounded import with no retry.
+The private transfer copy is removed; the user's original and imported Photos image
+remain. Offline controls and review precede the first planned baseline qualification.
 
 `qr_image_patch.py` changes an existing LoginUI source file; it adds no project
 member. `QRCodeImageDecoderControls.swift` checks synthetic screenshots, rotation,
