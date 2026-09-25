@@ -931,12 +931,13 @@ class WebViewTrackingTests: XCTestCase {
             hosts: [],
             hostsSanitizer: HostsSanitizerMock(),
             logsSampleRate: 100,
-            in: core
+            in: core,
+            usageSampleRate: .maxSampleRate
         )
 
         // Then
         let usage = try XCTUnwrap(capturedUsage, "Expected a usage telemetry event to be sent")
-        XCTAssertEqual(usage.sampleRate, UsageTelemetry.defaultSampleRate)
+        XCTAssertEqual(usage.sampleRate, .maxSampleRate)
         guard case .trackWebView = usage.event else {
             XCTFail("Expected .trackWebView usage event")
             return
@@ -965,7 +966,8 @@ class WebViewTrackingTests: XCTestCase {
                 hosts: [],
                 hostsSanitizer: HostsSanitizerMock(),
                 logsSampleRate: 100,
-                in: core
+                in: core,
+                usageSampleRate: .maxSampleRate
             )
         }
 
@@ -989,11 +991,25 @@ class WebViewTrackingTests: XCTestCase {
         let webview = WKWebView(frame: .zero, configuration: configuration)
 
         // When
-        WebViewTracking.enable(webView: webview, in: core)
+        try WebViewTracking.enableOrThrow(
+            tracking: webview,
+            hosts: [],
+            hostsSanitizer: HostsSanitizerMock(),
+            logsSampleRate: 100,
+            in: core,
+            usageSampleRate: .maxSampleRate
+        )
         XCTAssertEqual(trackWebViewUsageCount, 1)
 
         WebViewTracking.disable(webView: webview)
-        WebViewTracking.enable(webView: webview, in: core)
+        try WebViewTracking.enableOrThrow(
+            tracking: webview,
+            hosts: [],
+            hostsSanitizer: HostsSanitizerMock(),
+            logsSampleRate: 100,
+            in: core,
+            usageSampleRate: .maxSampleRate
+        )
 
         // Then - disable clears user scripts so the duplicate guard passes again on re-enable
         XCTAssertEqual(trackWebViewUsageCount, 2)
