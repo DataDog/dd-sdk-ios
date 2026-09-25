@@ -20,6 +20,8 @@ class Driver(JourneyDriver):
 
     def validate_prompt_ready(self, ready, label):
         if label=='dashboard-interaction':
+            if self.definition['mode']=='signed-in-smoke':
+                phases.dashboard_timeframe(ready,self.selection['browser_control_label'])
             require(phases.matches(ready['ax'],self.selection['browser_control_label'])
                     and not phases.matches(ready['ax'],self.selection['browser_result_label']),
                     'refreshed Browser control/effect readiness changed')
@@ -28,6 +30,9 @@ class Driver(JourneyDriver):
         smoke_contract.definition(self.definition)
         if self.definition['mode'] == 'signed-in-smoke':
             import signed_in_account
+            choice=self.definition['dashboard_interaction']
+            require(self.selection['browser_control_label']==choice['before']
+                    and self.selection['browser_result_label']==choice['after'], 'unqualified dashboard control selection')
             # Account setup is outside the comparison. This fresh launch still
             # proves its real Home owner before navigating to Services.
             entry=self.ready('signed-in-entry','account-home')
@@ -46,7 +51,7 @@ class Driver(JourneyDriver):
                             ': tap Scan QR Code, then Choose QR Code Image and select the login screenshot from Photos. '
                             'After sign-in, open the Services list. Do not select a service yet.','list',authenticated_transition=True,seconds=600)
         ready=self.step(ready,'service-detail','Open the existing service '+self.selection['service_label']+' once. Do not edit or favorite it.','detail')
-        ready=self.step(ready,'service-list-returned','Use Back once to return to the Services list.','list')
+        ready=self.step(ready,'service-list-returned','Use Back once to return to the Services list. If Search is open, tap Close to reveal the Services heading; do not tap Back again.','list')
         begin=self.step(ready,'dashboard-begin','Open the existing dashboard '+self.selection['dashboard_label']+'. Wait on its detail page.','dashboard')
         browser_contract.dashboard_attachment(self.current_rows(),begin['snapshot'],begin['owner'])
         browser_contract.local_inventory(self.current_rows(),self.expected)
@@ -54,16 +59,23 @@ class Driver(JourneyDriver):
         require(phases.matches(before['ax'],self.selection['browser_control_label'])
                 and not phases.matches(before['ax'],self.selection['browser_result_label']),
                 'Browser control/effect readiness not independently established')
-        end=self.prompt(before,'dashboard-interaction','Use the frozen read-only Browser control once: '+self.selection['browser_control_label'])
+        instruction='Use the frozen read-only Browser control once: '+self.selection['browser_control_label']
+        if self.definition['mode']=='signed-in-smoke':
+            instruction='Tap the dashboard time-range button '+choice['before']+', choose '+choice['menu_choice']+', then wait for '+choice['after']+'. Do not pin the time or edit the dashboard.'
+        end=self.prompt(before,'dashboard-interaction',instruction)
         observed=False
         for index in range(180):
             self.live(end);tree,_=self.ax('browser-effect-'+str(index),end)
-            if phases.matches(tree,self.selection['browser_result_label']):observed=True;break
+            role='button' if self.definition['mode']=='signed-in-smoke' else None
+            if (phases.matches(tree,self.selection['browser_result_label'],role)
+                    and not phases.matches(tree,self.selection['browser_control_label'],role)):observed=True;break
             time.sleep(.5)
         require(observed,'frozen Browser control effect missing')
         effect=self.out/'phases/browser-interaction-effect.json'
         atomic(effect,encoded(dict(observed_at=time.time(),ax=tree,prompt=self.inputs[-1],deadline=end)))
         after=self.ready('dashboard-after-input','dashboard',deadline=end)
+        if self.definition['mode']=='signed-in-smoke':
+            phases.dashboard_timeframe(after,choice['after'])
         # prompt() may refresh readiness; use its actual returned observation.
         before=self.observations['dashboard-before-input']
         interval=smoke_contract.dashboard_interval(self.current_rows(),begin['snapshot'],before['snapshot'],after['snapshot'],

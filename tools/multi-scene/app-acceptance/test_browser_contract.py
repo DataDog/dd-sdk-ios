@@ -22,6 +22,7 @@ def browser(family='view', version=1):
 
 def fixture(*,changed_clock=False):
     native=event('view',10);native['view']['name']='DashboardDetails';native['session']['has_replay']=True
+    native['usr']={'anonymous_id':uid(7)}
     ctx=dict(application_id=uid(1),session_id=uid(2),view_id=uid(10),view_name='DashboardDetails',view_path='native/10',
              has_replay=True,server_offset=.0105,view_server_offset=99)
     view=topology();view['controllers'].append(dict(id='dashboard',window='window',scene='scene',children=[],presented='nil',bundle='App'))
@@ -54,6 +55,51 @@ def backend(local,interval):
 
 
 class BrowserContractTests(unittest.TestCase):
+    def test_absent_anonymous_launch_prefix_is_not_a_browser_identity_change(self):
+        rows,bounds,owners=fixture();local=contract.local_inventory(rows,EXPECTED)
+        first=next(r['sequence'] for r in rows if r['kind']=='browser_message')
+        events=[dict(sequence=1,event={'usr':{}}),dict(sequence=first-1,event={'usr':{'anonymous_id':uid(7)}}),
+                dict(sequence=first+1,event={'usr':{'anonymous_id':uid(7)}})]
+        native={'accepted':{i:v for i,v in enumerate(events)}}
+        identity,proof=contract.anonymous_identity(rows,native)
+        self.assertEqual(identity,uid(7));self.assertEqual(proof['missing_prefix_events'],1)
+        for mode in ['late','changes','missing-after','absent-throughout']:
+            bad=copy.deepcopy(native)
+            if mode=='late':bad['accepted'][1]['sequence']=first+2
+            if mode=='changes':bad['accepted'][2]['event']['usr']['anonymous_id']=uid(8)
+            if mode=='missing-after':bad['accepted'][2]['event']['usr']={}
+            if mode=='absent-throughout':
+                for item in bad['accepted'].values():item['event']['usr']={}
+            with self.subTest(mode=mode),self.assertRaises(Rejected):contract.anonymous_identity(rows,bad)
+
+    def test_browser_vital_is_preserved_as_incidental_and_cannot_replace_coverage(self):
+        import smoke_contract
+        rows,bounds,owners=fixture()
+        raw=next(r for r in rows if r['kind']=='browser_message' and json.loads(r['fields']['event_json'])['type']=='action')
+        value=json.loads(raw['fields']['event_json']);value['type']='vital';value.pop('action')
+        value['vital']=dict(id=uid(88),type='duration',name='bootstrap.example',duration=12)
+        raw['fields']['event_json']=json.dumps(value)
+        local=contract.local_inventory(rows,EXPECTED);interval=contract.retained_interval(rows,*bounds,owners,EXPECTED)
+        self.assertEqual(len(local['incidental']),1);self.assertFalse(any(k[0]=='vital' for k in local['events']))
+        values=backend(local,interval)
+        smoke_interval=dict(interval,replay_eligible=True,container_coverage='ELIGIBLE')
+        # Unindexed incidental vitals cannot block ordinary view/event coverage.
+        smoke_contract.browser_backend(values,local,local,smoke_interval,EXPECTED)
+        with self.assertRaisesRegex(Rejected,'no post-wait'):contract.backend_join(values,local,interval,EXPECTED)
+        combined=dict(local,events={**local['events'],**local['incidental']})
+        values=backend(combined,interval)
+        result=smoke_contract.browser_backend(values,local,local,smoke_interval,EXPECTED)
+        self.assertEqual(len(result['incidental']),1)
+        index=next(i for i,r in enumerate(values) if r['attributes']['custom']['type']=='vital')
+        for mode in ['duplicate','owner','id','type','source']:
+            bad=copy.deepcopy(values);event=bad[index]['attributes']['custom']
+            if mode=='duplicate':bad.append(copy.deepcopy(bad[index]))
+            if mode=='owner':event['container']['view']['id']=uid(999)
+            if mode=='id':event['vital']['id']=uid(99)
+            if mode=='type':event['vital']['type']='different'
+            if mode=='source':event['service']='foreign'
+            with self.subTest(mode=mode),self.assertRaises(Rejected):smoke_contract.browser_backend(bad,local,local,smoke_interval,EXPECTED)
+
     def qualified(self,**options):
         rows,bounds,owners=fixture(**options)
         local=contract.local_inventory(rows,EXPECTED)
@@ -94,9 +140,9 @@ class BrowserContractTests(unittest.TestCase):
             with self.subTest(mode=mode),self.assertRaises(Rejected):contract.backend_join(rows,local,interval,EXPECTED)
     def test_unallowlisted_backend_additions_remain_explicitly_unqualified(self):
         _,local,interval=self.qualified();rows=backend(local,interval)
-        rows[0]['attributes']['custom']['usr']={'foreign_identifier':'unexpected'}
+        rows[0]['attributes']['custom']['usr']['foreign_identifier']='unexpected'
         result=contract.backend_join(rows,local,interval,EXPECTED)
-        self.assertEqual(result['backend_additions_requiring_classification'][0]['fields'],{'usr':{'foreign_identifier':'unexpected'}})
+        self.assertEqual(result['backend_additions_requiring_classification'][0]['fields'],{'usr.foreign_identifier':'unexpected'})
         self.assertFalse(result['runtime_acceptance'])
     def test_missing_terminal_or_nonview_does_not_pass(self):
         _,local,interval=self.qualified()

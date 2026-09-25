@@ -157,6 +157,7 @@ class SmokeRuntimeControls(unittest.TestCase):
 
     def test_refreshed_dashboard_cannot_accept_an_already_changed_control(self):
         driver=object.__new__(smoke_driver.Driver)
+        driver.definition=SPEC
         driver.selection=dict(browser_control_label='control',browser_result_label='result')
         driver.validate_prompt_ready({'ax':[{'AXLabel':'control'}]},'dashboard-interaction')
         for tree in [[{'AXLabel':'control'},{'AXLabel':'result'}],[{'AXLabel':'result'}],[]]:

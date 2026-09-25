@@ -14,7 +14,61 @@ def rows_for_phase():
     return rows,rows[-2]
 
 
+def dashboard_state():
+    state=topology();root=state['controllers'][0]['id'];state['controllers'][0]['children']=['navigation']
+    def node(identity, cls, parent, children, label=None):
+        return dict(id=identity,**{'class':cls},parent=parent,children=children,label=label,
+                    window='window',scene='scene',transition={},presented='nil',presenting='nil',bundle='App')
+    state['controllers'] += [node('navigation','UINavigationController',root,['wrapper']),
+        node('wrapper','UIViewController','navigation',['dashboard']),
+        node('dashboard','DatadogApp.DashboardDetailViewController','wrapper',['bottom'],'Dashboard Details'),
+        node('bottom','UIViewController','dashboard',['timer']),
+        node('timer','DatadogApp.TimeframeViewController','bottom',[])]
+    callback=dict(callback='didShow-exit',controller=copy.deepcopy(state['controllers'][2]),
+                  navigation='navigation',stack=['wrapper'])
+    return state,callback
+
+
 class JourneyPhaseTests(unittest.TestCase):
+    def test_dashboard_uses_only_source_defined_wrapper_and_latest_navigation(self):
+        state,callback=dashboard_state()
+        rows,_=payload([('owned_window',dict(window='window',scene='scene')),('navigation_callback',callback),('snapshot',dict(topology=state))])
+        snapshot=rows[-2];binding=phases.foreground_binding(rows,snapshot)
+        self.assertEqual(phases.visible(rows,snapshot,'dashboard',binding)['wrapper'],'wrapper')
+        for mode in ['class','duplicate','reciprocal','deeper','scene','window','transition','presented','stack','newer-callback']:
+            changed=copy.deepcopy(rows);snap=changed[-2];cs=snap['fields']['topology']['controllers'];wrapper=cs[2]
+            if mode=='class':cs[3]['class']='ForeignDashboard'
+            if mode=='duplicate':cs.append(copy.deepcopy(wrapper))
+            if mode=='reciprocal':wrapper['children']=[]
+            if mode=='deeper':wrapper['parent']='root'
+            if mode=='scene':wrapper['scene']='foreign'
+            if mode=='window':wrapper['window']='foreign'
+            if mode=='transition':wrapper['transition']={'interactive':True}
+            if mode=='presented':wrapper['presented']='sheet'
+            if mode=='stack':cs[1]['children']=['other','wrapper']
+            if mode=='newer-callback':
+                later=copy.deepcopy(changed[2]);later['sequence']=snap['sequence']-1
+                later['fields']['controller']['id']='other';later['fields']['callback']='willShow-enter';changed.insert(-2,later)
+            with self.subTest(mode=mode),self.assertRaises((Rejected,ValueError)):
+                phases.visible(changed,snap,'dashboard',binding)
+
+    def test_duration_button_requires_owned_hierarchy_unique_role_and_actual_process(self):
+        state,callback=dashboard_state();rows,_=payload([('navigation_callback',callback),('snapshot',dict(topology=state))])
+        button=dict(type='Button',AXLabel='1h',pid=EXPECTED['pid'],enabled=True,frame=dict(x=300,y=590,width=50,height=36))
+        ready=dict(snapshot=rows[-2],binding=dict(window='window',scene='scene'),visible={'controller':'dashboard'},
+                   ax=[dict(type='Application',pid=EXPECTED['pid'],frame=dict(x=0,y=0,width=466,height=678),children=[button])])
+        self.assertEqual(phases.dashboard_timeframe(ready,'1h')['controller'],'timer')
+        for mode in ['duplicate','wrong-role','foreign-pid','outside','disabled','parent','transition']:
+            bad=copy.deepcopy(ready);node=bad['ax'][0]['children'][0]
+            if mode=='duplicate':bad['ax'][0]['children'].append(copy.deepcopy(node))
+            if mode=='wrong-role':node['type']='StaticText'
+            if mode=='foreign-pid':node['pid']=999
+            if mode=='outside':node['frame']['x']=999
+            if mode=='disabled':node['enabled']=False
+            if mode=='parent':bad['snapshot']['fields']['topology']['controllers'][-1]['parent']='wrapper'
+            if mode=='transition':bad['snapshot']['fields']['topology']['controllers'][-1]['transition']={'interactive':True}
+            with self.subTest(mode=mode),self.assertRaises((Rejected,ValueError)):phases.dashboard_timeframe(bad,'1h')
+
     def test_label_alone_is_not_source_or_native_navigation_ownership(self):
         rows,snapshot=rows_for_phase();binding=phases.foreground_binding(rows,snapshot)
         value=phases.visible(rows,snapshot,'list',binding)

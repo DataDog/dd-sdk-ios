@@ -11,17 +11,31 @@ from capture_contract import loads
 from hosting_contract import sdk_milliseconds
 
 FAMILIES = {'view', 'action', 'resource', 'error', 'long_task'}
+INCIDENTAL_FAMILIES = {'vital'}
 
 
 def key(event):
     family = field(event, 'type')
-    require(family in FAMILIES, 'unqualified Browser family')
+    require(family in FAMILIES | INCIDENTAL_FAMILIES, 'unqualified Browser family')
     view = identifier(field(event, 'view.id'))
     if family == 'view':
         version = field(event, '_dd.document_version')
         require(type(version) is int and version > 0, 'invalid Browser document version')
         return family, view, version
     return family, view, identifier(field(event, family + '.id'))
+
+
+def anonymous_identity(rows, native):
+    """Keep launch initialization outside the later, stable Browser interval."""
+    first_browser=min(r['sequence'] for r in rows if r['kind']=='browser_message')
+    values=sorted((v['sequence'],field(v['event'],'usr.anonymous_id')) for v in native['accepted'].values())
+    present={value for _,value in values if value is not None}
+    require(len(present)==1, 'native anonymous identity absent or changed for Browser join')
+    value=next(iter(present));first_present=next(seq for seq,item in values if item is not None)
+    require(first_present<first_browser and all(item==value for seq,item in values if seq>=first_present),
+            'native anonymous identity not stable before Browser dispatch')
+    return value, dict(state='STABLE_BEFORE_BROWSER',first_native_sequence=first_present,
+                       first_browser_sequence=first_browser,missing_prefix_events=sum(seq<first_present for seq,_ in values))
 
 
 def tags(value):
@@ -51,17 +65,17 @@ def context(rows, row, expected):
 
 
 def local_inventory(rows, expected):
-    events, latest, cached, identities = {}, {}, {}, set()
+    events, incidental, latest, cached, identities = {}, {}, {}, {}, set()
     native = mapper_inventory(rows, expected)
-    anonymous = {field(v['event'], 'usr.anonymous_id') for v in native['accepted'].values()}
-    require(len(anonymous) == 1, 'native anonymous identity not stable for Browser join')
-    anonymous = next(iter(anonymous))
+    require(any(r['kind']=='browser_message' for r in rows), 'missing Browser messages')
+    anonymous, anonymous_proof = anonymous_identity(rows,native)
     for row in rows:
         if row['kind'] != 'browser_message':continue
         raw = loads(row['fields']['event_json'])
         require(raw.get('source') == 'browser' and type(raw.get('date')) is int, 'wrong raw Browser identity/date')
         event_key = key(raw)
-        require(event_key not in events, 'duplicate raw Browser event')
+        partition=incidental if event_key[0] in INCIDENTAL_FAMILIES else events
+        require(event_key not in partition, 'duplicate raw Browser event')
         dispatch = context(rows, row, expected)
         if event_key[1] not in cached:
             cached[event_key[1]] = dict(offset_ms=sdk_milliseconds(dispatch['server_offset']),
@@ -95,7 +109,7 @@ def local_inventory(rows, expected):
         # Container is checked independently below; a source-supplied container
         # cannot silently replace the native injection under test.
         require('container' not in raw, 'raw Browser container requires explicit source review')
-        events[event_key] = dict(sequence=row['sequence'], monotonic_ns=row['monotonic_ns'], raw=raw,
+        partition[event_key] = dict(sequence=row['sequence'], monotonic_ns=row['monotonic_ns'], raw=raw,
                                  expected=rewritten, tags=merged, context=dispatch)
         if event_key[0] == 'view':
             prior = latest.get(event_key[1])
@@ -106,8 +120,9 @@ def local_inventory(rows, expected):
                         'Browser occurrence identity changed')
             latest[event_key[1]] = event_key
     require(events and latest and len(identities) == 1, 'missing or multiple Browser source partitions')
-    require(set(k[1] for k in events) <= set(latest), 'Browser event missing raw view occurrence')
-    return dict(events=events, latest=latest, clocks=cached, source_identity=next(iter(identities)), native=native)
+    require(set(k[1] for k in events.keys() | incidental.keys()) <= set(latest), 'Browser event missing raw view occurrence')
+    return dict(events=events, incidental=incidental, latest=latest, clocks=cached,
+                source_identity=next(iter(identities)), native=native,anonymous_identity=anonymous_proof)
 
 
 def attached_dashboard(rows, snapshot, owner):
@@ -190,8 +205,9 @@ def backend_join(browser_rows, local, interval, expected, *, pending=True):
         require(event.get('source') == 'browser' and event.get('service') == service
                 and field(row['attributes'], 'tag.sdk_version') == version, 'foreign Browser source partition')
         event_key = key(event)
-        require(event_key in local['events'] and event_key not in actual, 'unmapped or duplicate persisted Browser event')
-        captured = local['events'][event_key]
+        partition=local.get('incidental',{}) if event_key[0] in INCIDENTAL_FAMILIES else local['events']
+        require(event_key in partition and event_key not in actual, 'unmapped or duplicate persisted Browser event')
+        captured = partition[event_key]
         required = copy.deepcopy(captured['expected'])
         app_version = required.pop('version', None)
         if app_version is not None:require(field(row['attributes'], 'tag.version') == app_version, 'Browser app version differs')
@@ -206,7 +222,7 @@ def backend_join(browser_rows, local, interval, expected, *, pending=True):
         if interval['begin'] < captured['sequence'] < interval['end']:
             require(field(event,'container.source') == 'ios' and container == interval['owner'], 'wrong retained dashboard container')
             require(event['date'] > interval['owner_date'], 'Browser date does not follow native start')
-            if captured['sequence'] > interval['before_input'] and event_key[0] != 'view':witnesses.append(event_key)
+            if captured['sequence'] > interval['before_input'] and event_key[0] in FAMILIES-{'view'}:witnesses.append(event_key)
         else:
             require(container is None or container in local['native']['views'], 'foreign native container outside retained interval')
             outside.append(dict(key=list(event_key), capture_sequence=captured['sequence'], container=container))

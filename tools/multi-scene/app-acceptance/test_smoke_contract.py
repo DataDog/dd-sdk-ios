@@ -12,6 +12,7 @@ from acceptance_common import Rejected
 from test_capture_contract import payload, encode, IDENTITY
 from test_journey_contract import event, mapped, uid, topology, display, backend, CONFIGURATION
 from test_browser_contract import fixture as browser_fixture, backend as browser_backend, EXPECTED
+from test_journey_phases import dashboard_state
 
 SPEC=json.loads((Path(__file__).parent/'smoke-definition.json').read_text())
 
@@ -38,7 +39,9 @@ def native_fixture(root):
             entries.append(mapped(action))
             entries.append(mapped(event('resource',91,resource=dict(id=uid(91),url='https://example.invalid/api/services',method='GET',status_code=200))))
         state=topology()
-        if screen!='login':
+        if screen=='dashboard':
+            state,callback=dashboard_state();entries.append(('navigation_callback',callback))
+        elif screen!='login':
             controller=screen+'-controller';state['controllers'][0]['children']=[controller]
             state['controllers'].append(dict(id=controller,window='window',scene='scene',label=phases.LABELS[screen],
                                              children=[],presented='nil',bundle='App',transition={}))

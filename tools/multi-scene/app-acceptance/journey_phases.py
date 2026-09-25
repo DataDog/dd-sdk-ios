@@ -90,6 +90,28 @@ def visible(rows, snapshot, phase, binding):
     controller=one([c for c in topology['controllers'] if c.get('label')==LABELS[phase]
                     and c.get('window')==binding['window'] and c.get('scene')==binding['scene']], 'attached phase controller')
     require(not controller.get('transition'), 'native transition still active')
+    if phase == 'dashboard':
+        # DashboardDetailCoordinator pushes its public UIViewController wrapper;
+        # the labelled DashboardDetailViewController is installed as one child.
+        wrapper=one([c for c in topology['controllers'] if c['id']==controller.get('parent')], 'dashboard wrapper')
+        navigation=one([c for c in topology['controllers'] if c['id']==wrapper.get('parent')], 'dashboard navigation')
+        require(controller.get('class')=='DatadogApp.DashboardDetailViewController'
+                and wrapper.get('class')=='UIViewController' and navigation.get('class')=='UINavigationController',
+                'source-defined dashboard containment differs')
+        require(wrapper.get('children')==[controller['id']]
+                and navigation.get('children',[])[-1:]==[wrapper['id']], 'dashboard containment is not reciprocal or topmost')
+        for node in [controller,wrapper,navigation]:
+            require(node.get('window')==binding['window'] and node.get('scene')==binding['scene']
+                    and not node.get('transition') and node.get('presented')=='nil', 'dashboard native owner unsettled')
+        callbacks=[r for r in rows if r['sequence']<snapshot['sequence'] and r['kind']=='navigation_callback'
+                   and r['fields'].get('navigation')==navigation['id']]
+        require(callbacks and callbacks[-1]['fields']['callback']=='didShow-exit', 'dashboard navigation has not finished')
+        latest=callbacks[-1];fields=latest['fields'];shown=fields['controller']
+        require(fields['stack']==navigation['children'] and shown['id']==wrapper['id']
+                and all(shown.get(k)==wrapper.get(k) for k in ['parent','children','scene','window']),
+                'latest dashboard navigation callback has a different owner')
+        return dict(controller=controller['id'],navigation_controller=navigation['id'],wrapper=wrapper['id'],
+                    native_callback_sequence=latest['sequence'],label=LABELS[phase])
     callbacks=[r for r in rows if r['sequence']<snapshot['sequence'] and r['kind']=='navigation_callback'
                and r['fields']['controller']['id']==controller['id']]
     require(callbacks and callbacks[-1]['fields']['callback']=='didShow-exit'
@@ -108,6 +130,31 @@ def foreground_binding(rows, snapshot, previous=None, *, authenticated_transitio
         require(all(current[k]==previous[k] for k in ['scene','window']), 'owned native scene/window replaced')
         require(authenticated_transition or current['root']==previous['root'], 'root changed outside authenticated transition')
     return current
+
+
+def dashboard_timeframe(ready, text):
+    """Bind the unique native duration button to the source-defined dashboard."""
+    topology=ready['snapshot']['fields']['topology'];binding=ready['binding'];controllers=topology['controllers']
+    timer=one([c for c in controllers if c.get('class')=='DatadogApp.TimeframeViewController'
+               and c.get('window')==binding['window']], 'owned dashboard timeframe controller')
+    bottom=one([c for c in controllers if c['id']==timer.get('parent')], 'dashboard bottom controller')
+    dashboard=one([c for c in controllers if c['id']==bottom.get('parent')], 'timeframe dashboard')
+    require(bottom.get('class')=='UIViewController' and bottom.get('children')==[timer['id']]
+            and dashboard['id']==ready['visible']['controller'] and dashboard.get('children')==[bottom['id']]
+            and dashboard.get('class')=='DatadogApp.DashboardDetailViewController', 'foreign timeframe containment')
+    require(all(c.get('scene')==binding['scene'] and c.get('window')==binding['window']
+                and not c.get('transition') for c in [timer,bottom,dashboard]), 'timeframe detached or transitioning')
+    tree=ready['ax'];require(isinstance(tree,list) and len(tree)==1 and kind(tree[0])=='application'
+                            and tree[0].get('pid')==topology['pid'], 'foreign timeframe accessibility process')
+    button=one(matches(tree,text,'button'), 'unique dashboard duration button')
+    frame=button.get('frame',{});screen=tree[0].get('frame',{})
+    require(button.get('pid')==topology['pid'] and button.get('enabled') is True
+            and button.get('AXHidden',False) is False
+            and all(type(f.get(k)) in (int,float) for f in [frame,screen] for k in ['x','y','width','height'])
+            and frame['width']>0 and frame['height']>0 and frame['x']>=screen['x'] and frame['y']>=screen['y']
+            and frame['x']+frame['width']<=screen['x']+screen['width']
+            and frame['y']+frame['height']<=screen['y']+screen['height'], 'timeframe button hidden or outside owned display')
+    return dict(controller=timer['id'],dashboard=dashboard['id'],label=text,frame=frame)
 
 
 def lifecycle(rows, start, end, scene, callback):

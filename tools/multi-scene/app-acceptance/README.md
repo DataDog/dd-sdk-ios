@@ -125,6 +125,27 @@ product, non-task app inventory and display state. Never use the ordinary uninst
 cleanup for this mode. Native admission follows focused controls, designated review,
 source/product reuse checks and fresh operator readiness.
 
+Dashboard navigation pushes a source-defined wrapper, with the labelled dashboard
+as its child. Require reciprocal current containment and the wrapper's latest
+completed navigation callback; never relax Services/detail navigation to arbitrary
+ancestors. The signed-in dashboard interaction changes its unique native duration
+button from `1h` to `15 minutes`. Its displayed `15m` follows the WebView-confirmed
+interval under the source's consistent-timeframe setting. Retain the same attached
+dashboard/WebView and exact telemetry owners; do not reuse labels from another widget.
+
+Browser duration vitals remain an incidental partition with typed identities and
+ownership checks. They neither supply required view/action/resource coverage nor
+introduce metric-quality acceptance. An absent anonymous ID is permitted only in
+the startup prefix before the first stable ID and before any Browser dispatch.
+
+After a failed prompted step, preserve the failed native prefix, request an explicit
+`Released` reply, then capture fresh same-PID owned foreground topology without an
+active transition before teardown. The separate cleanup request uses the original
+cleanup budget; it cannot renew the scenario. If release or idle proof is missing,
+leave the app retained and cleanup incomplete for separate restoration. This tap-only
+journey does not claim direct gesture-state capture. A late reply never retroactively
+authorizes an earlier teardown.
+
 ## Recorder setup
 
 The validation recorder initializes JSON encoding with source-bound specimens of

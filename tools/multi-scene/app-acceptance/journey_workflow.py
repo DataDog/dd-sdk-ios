@@ -32,7 +32,7 @@ from s2_webview_runtime import active_display, display_signature
 
 HERE=Path(__file__).resolve().parent
 REPO=HERE.parents[2]
-LOCAL_HELPERS=['signed-in-definition.json','signed_in_account.py','smoke-definition.json','smoke_contract.py','smoke_driver.py','smoke_runtime.py','journey-definition.json','journey_workflow.py','journey_builds.py','journey_driver.py','journey_phases.py','journey_readiness.py',
+LOCAL_HELPERS=['signed-in-definition.json','signed_in_account.py','journey_release.py','smoke-definition.json','smoke_contract.py','smoke_driver.py','smoke_runtime.py','journey-definition.json','journey_workflow.py','journey_builds.py','journey_driver.py','journey_phases.py','journey_readiness.py',
                'journey_contract.py','browser_contract.py','journey_transport.py','journey_connector.js','journey_session.py',
                'capture_io.py','capture_contract.py','capture_build.py','ReleaseValidationCapture.swift']
 SHARED_HELPERS=['acceptance_common.py','app_journey_inventory.py','app_journey_transport.py','hosting_contract.py',
@@ -427,6 +427,12 @@ def cell(args):
         atomic(out/'native-workers-before-cleanup.json',encoded(workers))
         if workers['state']=='PASS':
             try:
+                if summary.get('reason') is not None and driver is not None and driver.inputs:
+                    # Preserve failures before waiting; no timeout means fingers
+                    # were released. Missing fresh idle proof defers teardown.
+                    signed_in_account.preserve_capture(documents,out/'failure-native-preserved')
+                    import journey_release
+                    summary['operator_release']=journey_release.fence(driver,deadline,emit)
                 if retained:
                     errors=signed_in_account.retained_cleanup(out,documents,args.device,device,original,initial,pid,installed,qualified,
                         lambda:builds.verify(plan['build_root'],arm,plan['completion_sha256'],runtime_transition=plan.get('runtime_transition')),deadline)

@@ -136,11 +136,12 @@ cleanup. A fresh-session comparison needs a new identity; repeated disappearance
 is an environment blocker, not an SDK finding.
 
 For the controlled Datadog app, use the [F08 capture overlay](../../../tools/multi-scene/app-acceptance/README.md)
-in separately identified validation builds. Preserve custom predicates, controller
-classes and mapper filtering. Existing navigation callbacks, adjacent SwiftUI
-lifecycle, raw Browser payloads and asynchronous context receipts have separate
-meanings. Consume exact durable prefixes before readiness; root/subtree provenance
-must exclude unknown auxiliary app content. Accepted original builds stay unchanged.
+in identified validation builds, preserving predicates, controller classes and mapper
+filtering. Navigation, SwiftUI lifecycle, Browser payloads and asynchronous context
+receipts have separate meanings. Consume durable prefixes before readiness; exclude
+unknown auxiliary content. Preserve original builds. After failed human input, retain
+capture and require explicit release then fresh same-PID idle topology before teardown.
+Missing proof means incomplete cleanup; record later restoration separately.
 
 ## Duo display and input
 

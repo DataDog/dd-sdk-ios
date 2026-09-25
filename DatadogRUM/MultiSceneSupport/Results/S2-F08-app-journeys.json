@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 finite controlled app journeys",
-  "status": "SIGNED_IN_PAIR_PREPARED_AWAITING_OPERATOR",
+  "status": "OFFLINE_REPAIR_QUALIFIED_PAGINATION_OPEN",
   "recorded_at": "2026-09-21T16:37:35.872371+00:00",
   "owner": "SDK implementer",
   "application_revision": "6e33f1c18a52d04b0793e6954f456bdbc1affe2f",
@@ -141,7 +141,7 @@
     "review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-tf3_dxfy/review.json",
     "candidate": "UNRUN"
   },
-  "next_action": "Use the fresh prepared signed-in plan referenced by Results/S2-F08-source-oracle.json after operator readiness. Account setup is qualified and retained. No measured arm has launched; candidate follows complete baseline qualification.",
+  "next_action": "Reviewed host correction passed58 controls. Complete saved-session MCP pagination/projection at Results/S2-F08-source-oracle.json before another native admission. Original baseline INVALID, candidate UNRUN, retained account qualified.",
   "environment_readiness": "Results/S2-Duo-environment-readiness.json",
   "source_oracle": "Results/S2-F08-source-oracle.json",
   "source_preparation_status": "SOURCE_AND_OFFLINE_INVENTORY_PREPARATION_REVIEWED",
@@ -182,7 +182,7 @@
     "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-qualified-_wnijcda/terminal-summary.json",
     "summary_sha256": "ba211a0311a01d103535424c1a63a96d1e5b06fd544c95850ec1b656e8f44499"
   },
-  "updated_at": "2026-09-25T20:52:38.751906+00:00",
+  "updated_at": "2026-09-25T21:50:20.728831+00:00",
   "incremental_continuation": {
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-incremental-f8xss4f3",
     "status": "STOPPED_AFTER_ONE_TAP_NATIVE_OBSERVER",

@@ -28,6 +28,7 @@ FIELDS = {
                  'action.id', '_dd.trace_id', '_dd.span_id'],
     'error': ['error.id', 'error.source', 'error.type', 'error.is_crash', 'action.id', '_dd.trace_id', '_dd.span_id'],
     'long_task': ['long_task.id'],
+    'vital': ['vital.id', 'vital.type', 'vital.name', 'vital.duration'],
 }
 COMMON = ['type', 'date', 'source', 'application.id', 'session.id', 'view.id']
 
@@ -55,6 +56,9 @@ def definition(value):
     if value['mode'] == 'signed-in-smoke':
         require(value['limits']['authentication_seconds'] == 0 and set(value['account_contract']) == {'setup','capture','retention','cleanup'},
                 'signed-in account contract missing')
+        choice=value.get('dashboard_interaction',{})
+        require([choice.get(k) for k in ['kind','before','menu_choice','after']]
+                ==['native-dashboard-timeframe','1h','15 minutes','15m'], 'source-defined dashboard interaction differs')
     return value
 
 
@@ -205,15 +209,17 @@ def native_backend(rows, local, full, expected, *, pending=True):
 
 
 def browser_backend(rows, local, full, interval, expected, *, pending=True):
-    state = 'PENDING' if pending else 'INVALID';seen={};witness=[];outside=[];later=[]
+    state = 'PENDING' if pending else 'INVALID';seen={};witness=[];outside=[];later=[];incidental=[]
     service, version = local['source_identity']
     require(full['source_identity'] == local['source_identity'], 'Browser partition changed during delivery')
     for row in rows:
         event = contract.backend_event(row);key = browser.key(event)
         require(event['source'] == 'browser' and event['service'] == service
                 and contract.field(row['attributes'], 'tag.sdk_version') == version, 'foreign Browser source')
-        require(key in full['events'] and key not in seen, 'unmapped or duplicate Browser event')
-        captured = full['events'][key];required = captured['expected']
+        is_incidental=key[0] in browser.INCIDENTAL_FAMILIES
+        partition=full.get('incidental',{}) if is_incidental else full['events']
+        require(key in partition and key not in seen, 'unmapped or duplicate Browser event')
+        captured = partition[key];required = captured['expected']
         paths = COMMON + FIELDS[event['type']]
         # Browser resource/action keys include their independent Browser view ID.
         semantic_equal(event, required, paths)
@@ -223,11 +229,12 @@ def browser_backend(rows, local, full, interval, expected, *, pending=True):
         if interval['begin'] < captured['sequence'] < interval['end'] and event['date'] > interval['owner_date']:
             if interval['replay_eligible']:
                 require(container == interval['owner'], 'wrong eligible dashboard container')
-                witness.append(list(key))
+                if not is_incidental:witness.append(list(key))
             elif container is not None:
                 require(container == interval['owner'], 'wrong ineligible dashboard container')
         else:outside.append(dict(key=list(key), sequence=captured['sequence'], container=container))
-        if key not in local['events']:later.append(list(key))
+        if is_incidental:incidental.append(row)
+        elif key not in local['events']:later.append(list(key))
         seen[key]=row
     needed = {k for k in local['events'] if k[0] != 'view'}
     require(needed <= set(seen), 'behavior Browser event not yet delivered', state)
@@ -237,7 +244,7 @@ def browser_backend(rows, local, full, interval, expected, *, pending=True):
     return dict(source_identity=list(local['source_identity']), persisted_rows=len(seen),
                 container_witnesses=witness, container_coverage='PROVEN' if witness else 'UNAVAILABLE',
                 unavailable_reason=None if witness else interval['container_coverage'] if not interval['replay_eligible'] else 'NO_MESSAGE_IN_CAPTURED_INTERVAL',
-                outside_interval=outside, delivery_tail_keys=later, runtime_acceptance=False)
+                outside_interval=outside, delivery_tail_keys=later, incidental=incidental, runtime_acceptance=False)
 
 
 def joined(rows, native_rows, behavior_rows, full_rows, interval, expected, *, pending=True):

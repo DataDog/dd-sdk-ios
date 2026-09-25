@@ -13,7 +13,11 @@
     "Targets/DatadogApp/UI/App/Root/Signed In Root/Datadog Products/Dashboards/DashboardUserMonitoring.swift": "2384a2159959789d65aad209de152c173785e7846c88c63ca62f3631bcea14b1",
     "Targets/DatadogApp/UI/App/Root/Signed In Root/Datadog Products/Dashboards/Details/DashboardDetailViewController.swift": "9a0c79f6ce52ad6ef81099fb5905c6e722b616fd0e0509d11a5cd97c9e6f7252",
     "Targets/DatadogApp/Model/Authentication/OAuthSessionStateController.swift": "40941eca480e953d2ebb4481651d8301681811eb84c7255fc6f1ea344a00f383",
-    "Targets/Feature/Home/UI/HomeTabView.swift": "30483cd000198e7c65318b6f1d674990dc0c3e737d905db46a4d3e58ad9cd1d4"
+    "Targets/Feature/Home/UI/HomeTabView.swift": "30483cd000198e7c65318b6f1d674990dc0c3e737d905db46a4d3e58ad9cd1d4",
+    "Targets/DatadogApp/UI/App/Root/Signed In Root/Datadog Products/Dashboards/Details/DashboardDetailCoordinator.swift": "09c7b5c8e1daaaf55e937ee5c28d0726d387cf3e41c4b01de284eee0f285f44a",
+    "Targets/DatadogApp/UI/App/Root/Signed In Root/Datadog Products/Dashboards/Details/DashboardDetailViewModel.swift": "4664ae424647a798721dd007d0795ad2b25888fd1e90c09a3dfc2362082aa24c",
+    "Targets/DatadogApp/UI/App/Root/Signed In Root/Datadog Products/Dashboards/Details/DashboardDetailViewModel+DashboardDetailViewController.swift": "b40ea961ddf4e17e51af6ff2490b7c52ad2644077e29b243165529bcb09cc59a",
+    "Targets/DatadogApp/UI/Druids Design System/Controls/Timeframe/TimeframeView.swift": "771cf09987c4074bbc760eb81cf147a06374ba4b9d6c7fb77dbafba9b2a843fc"
   },
   "sequence": [
     "service-list",
@@ -99,6 +103,13 @@
     "setup": "Corrected signed baseline, same device/bundle/keychain group, observed selected organization/profile and real Services row; recorder disabled. No credential export.",
     "capture": "First planned baseline freezes typed non-null usr.id and usr.org_uuid as salted comparison digests at the first Services boundary; candidate must match before service-detail input.",
     "retention": "Only the exact task main process may be stopped. In-place install preserves account and data. Archive only recorder-owned files, retain unrelated Documents bytes, and never uninstall/reset the app.",
-    "cleanup": "Preserve current capture, prove task process/workers absent, retain the exact installed product, unchanged non-task app inventory and display. Retention PASS is required before candidate admission."
+    "cleanup": "Preserve current capture, prove task process/workers absent, retain the exact installed product, unchanged non-task app inventory and display. Retention PASS is required before candidate admission. After a failed prompted step, require actual Released acknowledgement and a fresh same-PID owned foreground topology without transitions before teardown. Missing proof defers cleanup; the original failed prefix stays preserved."
+  },
+  "dashboard_interaction": {
+    "kind": "native-dashboard-timeframe",
+    "before": "1h",
+    "menu_choice": "15 minutes",
+    "after": "15m",
+    "effect": "Dashboard TimeframeView uses consistent capability: the displayed duration follows the WebView-confirmed interval. Require unique source-bound button, same dashboard/WebView and captured RUM owners; no metric or precise timing claim."
   }
 }

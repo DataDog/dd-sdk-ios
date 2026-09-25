@@ -106,6 +106,8 @@ RUNTIME_TRANSITION_FILES = {
 SIGNED_IN_TRANSITION_FILES = {'smoke_contract.py','smoke_driver.py','smoke_runtime.py',
     'journey_workflow.py','journey_builds.py','journey_driver.py','journey_phases.py'}
 SIGNED_IN_ADDITIONS = {'signed-in-definition.json','signed_in_account.py'}
+DASHBOARD_TRANSITION_FILES = SIGNED_IN_TRANSITION_FILES | {'browser_contract.py','journey_session.py'}
+DASHBOARD_ADDITIONS = SIGNED_IN_ADDITIONS | {'journey_release.py'}
 
 
 def binding_split(original, current):
@@ -154,11 +156,12 @@ def transition_guard(root, original, definition, binding):
     require(controls['state'] == 'PASS_OFFLINE_ONLY' and controls['source_sha256'] == review['source_sha256'],
             'runtime transition review/control sources differ')
     here = Path(__file__).resolve().parent
-    signed_in=transition.get('scope')=='signed-in-smoke-v1'
-    allowed = {str(here/name) for name in (SIGNED_IN_TRANSITION_FILES if signed_in else RUNTIME_TRANSITION_FILES)}
+    dashboard=transition.get('scope')=='signed-in-dashboard-v2'
+    signed_in=dashboard or transition.get('scope')=='signed-in-smoke-v1'
+    allowed = {str(here/name) for name in (DASHBOARD_TRANSITION_FILES if dashboard else SIGNED_IN_TRANSITION_FILES if signed_in else RUNTIME_TRANSITION_FILES)}
     current = {name:sha(name) for name in definition['qualified_helper_sha256']}
     if signed_in:
-        added={str(here/name):sha(here/name) for name in SIGNED_IN_ADDITIONS}
+        added={str(here/name):sha(here/name) for name in (DASHBOARD_ADDITIONS if dashboard else SIGNED_IN_ADDITIONS)}
         require(transition.get('additions')==added and all(review['source_sha256'].get(k)==v for k,v in added.items()),
                 'signed-in added helpers differ from reviewed sources')
     changes = runtime_helpers(definition['qualified_helper_sha256'], current, transition['changes'],

@@ -57,7 +57,7 @@ def run(args):
         operator.forward(root/'operator',value,context='F08 / '+args.arm)
         # Backend requests are consumed by the existing tool orchestrator. All
         # human progress and response publication remain local to the harness.
-        if 'backend_request' in value or 'cell_phase' in value:print(json.dumps(value),flush=True)
+        if any(key in value for key in ['backend_request','cell_phase','human_release']):print(json.dumps(value),flush=True)
     problem=None
     try:code=supervisor.supervise(argv,root/(args.arm+'-driver.log'),message,execution,cleanup)
     except BaseException as error:problem=str(error);code=1

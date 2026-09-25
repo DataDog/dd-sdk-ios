@@ -12,6 +12,7 @@ from test_browser_contract import browser, EXPECTED
 
 def fixture(mode='refresh'):
     native=event('view',10);native['view']['name']='DashboardDetails';native['session']['has_replay']=True
+    native['usr']={'anonymous_id':uid(7)}
     context=dict(application_id=uid(1),session_id=uid(2),view_id=uid(10),view_name='DashboardDetails',
                  view_path='native/10',has_replay=True,server_offset=.0105)
     raw=lambda v:('browser_message',dict(scope='raw_browser_source_payload',event_json=json.dumps(v)))
