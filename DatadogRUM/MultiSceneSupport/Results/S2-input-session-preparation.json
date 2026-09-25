@@ -2,7 +2,7 @@
   "schema_version": 1,
   "work_item": "S2:A02 ordered single human-input session",
   "status": "RUNNERS_PREPARED_OPERATOR_AND_ACCOUNT_PREREQUISITES_REMAIN",
-  "updated_at": "2026-09-25T01:14:18.672410+00:00",
+  "updated_at": "2026-09-25T14:40:04.905448+00:00",
   "owner": "Harness implementer",
   "user_role": "Only real gestures and any required interactive sign-in",
   "request_user_now": false,
@@ -163,13 +163,13 @@
         "F08"
       ],
       "actions": [
-        "Logged out: Log In with Subdomain, Back, Home, reactivate same app",
+        "Logged out: Log In with Subdomain, then Back",
         "Complete interactive sign-in if required",
-        "Open service list, select one existing service, return",
-        "Open one accessible dashboard, wait for ready prompt, perform one declared read-only browser interaction",
-        "Return to service list, Home, reactivate same process"
+        "Open Services, select the frozen existing service, then Back",
+        "Open the frozen dashboard and perform one declared read-only Browser interaction",
+        "Return to Services, Home once, then reopen the same process; stay foreground for ordinary upload"
       ],
-      "automated_checks": "Preserve the accepted original app pair; qualify separate symmetric capture builds against the same J01-J04 source/ownership contract. Query Browser separately from native and prove same-process lifecycle.",
+      "automated_checks": "S2 smoke mode reuses both source-bound capture products. Capture actual native effects/owners and one lifecycle cycle; freeze the behavior prefix, retain later delivery separately and join exact event identities. T10 owns expiry coverage.",
       "build_owner": "S2-F08-app-preparation.json",
       "oracle_owner": "S2-F08-source-oracle.json",
       "remaining": "Desktop account/control candidate prepared at the source/oracle owner. Native sign-in, exact control qualification and fresh operator/environment admission remain.",
@@ -186,7 +186,19 @@
         "runtime_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-human-runtime-8rz7zcpe/run",
         "runtime_plan_sha256": "79cea5ba48c2f5781582c9e0cf87d2af5af29031d97a91b4da4f60c9ee55be80",
         "runtime_review_sha256": "8d1ab9a06cb85208ff1bef1818c10dc9dd51a475d5c1d9b2f8b9d766a9b464dd",
-        "runtime_controls_sha256": "306178c6f888e6f916df758a91fd7044b473e37392a024c7479f6d693ba35fd8"
+        "runtime_controls_sha256": "306178c6f888e6f916df758a91fd7044b473e37392a024c7479f6d693ba35fd8",
+        "selected_smoke_preparation": {
+          "state": "REVIEWED_NATIVE_UNADMITTED",
+          "owner": "S2-F08-source-oracle.json",
+          "plan": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/run-source-bound/plan.json",
+            "sha256": "fe8eb1ae294e11bb1535ecfb04f09013fe252e6a4e36674bca34222a60d1c060"
+          },
+          "review": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/run-source-bound/review.json",
+            "sha256": "ed1d90fbdb3f9e7073fafb0c8d25f72602702bdd481ba3405b30ff580bfb3dc9"
+          }
+        }
       }
     }
   ],

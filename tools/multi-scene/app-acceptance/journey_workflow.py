@@ -30,7 +30,7 @@ from s2_webview_runtime import active_display, display_signature
 
 HERE=Path(__file__).resolve().parent
 REPO=HERE.parents[2]
-LOCAL_HELPERS=['journey-definition.json','journey_workflow.py','journey_builds.py','journey_driver.py','journey_phases.py','journey_readiness.py',
+LOCAL_HELPERS=['smoke-definition.json','smoke_contract.py','smoke_driver.py','smoke_runtime.py','journey-definition.json','journey_workflow.py','journey_builds.py','journey_driver.py','journey_phases.py','journey_readiness.py',
                'journey_contract.py','browser_contract.py','journey_transport.py','journey_connector.js','journey_session.py',
                'capture_io.py','capture_contract.py','capture_build.py']
 SHARED_HELPERS=['acceptance_common.py','app_journey_inventory.py','app_journey_transport.py','hosting_contract.py',
@@ -44,21 +44,40 @@ def helpers():
     return {str(p):builds.sha(p) for p in paths}
 
 
+def scoped_definition(mode):
+    require(mode in ['journeys','smoke'], 'unknown F08 mode')
+    value=loads((HERE/('smoke-definition.json' if mode=='smoke' else 'journey-definition.json')).read_bytes())
+    if mode=='smoke':
+        import smoke_contract
+        smoke_contract.definition(value)
+    return value
+
+
+def source_manifest(build_root, definition):
+    if definition.get('mode')!='smoke':return
+    preparation=loads((Path(build_root)/'preparation.json').read_bytes())
+    for arm in builds.ARMS:
+        app=Path(preparation['arms'][arm]['app'])
+        for name,digest in definition['source_manifest'].items():
+            require(builds.sha(app/name)==digest, 'source-defined smoke expectation changed')
+
+
 def prepare(args):
     root=args.root.resolve();require(not root.exists(),'runtime output already consumed')
-    definition=loads((HERE/'journey-definition.json').read_bytes())
+    mode=getattr(args,'mode','journeys');definition=scoped_definition(mode)
     require(definition['gate']=='S2:F08' and definition['limits']['retries']==0, 'wrong finite journey definition')
     build_root=args.build_root.resolve(strict=True);completion=builds.sha(build_root/'completion.json')
     qualified={arm:builds.verify(build_root,arm,completion) for arm in builds.ARMS}
+    source_manifest(build_root,definition)
     require(qualified['baseline']['identity']['bundle_id']==qualified['candidate']['identity']['bundle_id'], 'asymmetric task identity')
     root.mkdir(mode=0o700);(root/'cells').mkdir();(root/'operator').mkdir()
     backend_transport.preflight(root)
     import journey_session
     journey_session.operator.publish(root/'operator',dict(instruction='Waiting for reviewed admission and operator readiness.'))
-    plan=dict(schema_version=1,state='PREPARED_NATIVE_UNADMITTED',created_at=time.time(),definition=definition,
+    plan=dict(schema_version=1,state='PREPARED_NATIVE_UNADMITTED',created_at=time.time(),definition=definition,mode=mode,
               build_root=str(build_root),completion_sha256=completion,helpers=helpers(),
               arms={arm:{k:value[k] for k in ['identity','source','application_path']} for arm,value in qualified.items()},
-              native_launches=0,gate_closures=[])
+              native_launches=0,gate_closures=[],workspace_transition={arm:value['workspace_transition'] for arm,value in qualified.items()})
     atomic(root/'plan.json',encoded(plan))
     print(json.dumps(dict(state=plan['state'],root=str(root),plan_sha256=builds.sha(root/'plan.json'))))
 
@@ -66,7 +85,8 @@ def prepare(args):
 def verify(root):
     root=Path(root).resolve(strict=True);plan=loads((root/'plan.json').read_bytes())
     require(plan['helpers']==helpers(),'frozen F08 runtime helper changed')
-    require(plan['definition']==loads((HERE/'journey-definition.json').read_bytes()),'frozen journey scope changed')
+    require(plan['definition']==scoped_definition(plan.get('mode','journeys')),'frozen journey scope changed')
+    source_manifest(plan['build_root'],plan['definition'])
     return plan
 
 
@@ -185,11 +205,11 @@ def mechanism(summary, joined, *, now):
     ready=(summary.get('scenario')=='PASS' and summary.get('cleanup')=='PASS'
            and summary.get('evidence')=='SOURCE_CLASSIFICATION_REQUIRED' and not summary.get('reason')
            and not summary.get('evidence_errors') and joined is not None
-           and joined.get('state')=='JOINED_FINAL_SOURCE_CLASSIFICATION_REQUIRED'
+           and joined.get('state')==('SMOKE_SEMANTICS_JOINED_SOURCE_CLASSIFICATION_REQUIRED' if summary.get('mode')=='smoke' else 'JOINED_FINAL_SOURCE_CLASSIFICATION_REQUIRED')
            and joined['completed_at']<joined['deadline']<=summary['execution_deadline']
            and now<summary['cleanup_details']['deadline']<=summary['cleanup_deadline'])
     return dict(state='PASS' if ready else 'UNQUALIFIED',
-                scope='Actual human input, complete capture/transport and protected J03 interval only',
+                scope='Actual human input and immutable smoke prefix with ordinary delivery' if summary.get('mode')=='smoke' else 'Actual human input, complete capture/transport and protected J03 interval only',
                 permits_planned_candidate=ready, release_acceptance=False)
 
 
@@ -222,6 +242,21 @@ def candidate_ready(summary, plan_sha, folder):
             and publication['published_at']<publication['deadline']==summary['cleanup_details']['deadline']
             and (folder/'summary-publication.json').stat().st_mtime<publication['deadline'],
             'baseline outcome publication late or changed')
+    if summary.get('mode')=='smoke':
+        proof=loads((folder/'smoke-evidence.json').read_bytes())
+        checkpoint=loads((folder/'behavior-checkpoint.json').read_bytes())
+        require(all(builds.sha(folder/name)==digest for name,digest in summary['artifacts'].items()),
+                'baseline smoke artifacts changed')
+        require(proof['manifest']==loads((folder/'native-summary.json').read_bytes())['manifest'],
+                'baseline smoke source manifest differs')
+        require(proof['state']=='SMOKE_BEHAVIOR_AND_DELIVERY_SEALED' and proof['mode']=='smoke'
+                and proof['identity']==summary['identity'] and proof['completed_at']<proof['deadline']
+                and proof['behavior_sha256']==builds.sha(folder/'behavior-prefix.jsonl')==checkpoint['sha256']
+                and proof['checkpoint_sha256']==builds.sha(folder/'behavior-checkpoint.json')
+                and proof['sealed_sha256']==builds.sha(folder/'sealed-events.jsonl')
+                and proof['backend_join_sha256']==builds.sha(folder/'backend-joined.json')
+                and summary['artifacts']['smoke-evidence.json']==builds.sha(folder/'smoke-evidence.json'),
+                'baseline smoke prefix, source manifest or final evidence changed')
     qualification=loads((folder.parent.parent/'baseline-qualification.json').read_bytes())
     require(not (folder.parent.parent/'baseline-late-qualification.json').exists()
             and qualification['state']=='PASS' and qualification['summary_sha256']==publication['summary_sha256']
@@ -247,6 +282,7 @@ def cell(args):
     selections=selection(loads((root/'selection.json').read_bytes()))
     require(admission['selection_sha256']==builds.sha(root/'selection.json'),'account/route selection changed')
     qualified=builds.verify(plan['build_root'],arm,plan['completion_sha256']);info=qualified['identity'];bundle=info['bundle_id']
+    require(qualified['workspace_transition']==plan.get('workspace_transition',{}).get(arm), 'current protection transition differs from prepared plan')
     if arm=='candidate':
         baseline=loads((root/'cells/baseline/summary.json').read_bytes())
         candidate_ready(baseline,builds.sha(root/'plan.json'),root/'cells/baseline')
@@ -262,7 +298,7 @@ def cell(args):
     execution_deadline=min(args.execution_deadline,native_deadline+budget['backend_seconds_per_arm'])
     cleanup_deadline=min(args.cleanup_deadline,execution_deadline+budget['cleanup_seconds'])
     require(started<native_deadline<execution_deadline<cleanup_deadline,'closed or unbounded supervised cell')
-    summary=dict(state='RUNNING',scenario='UNQUALIFIED',evidence='INCOMPLETE',cleanup='NOT_RUN',arm=arm,identity=identity,
+    summary=dict(state='RUNNING',scenario='UNQUALIFIED',evidence='INCOMPLETE',cleanup='NOT_RUN',arm=arm,identity=identity,mode=plan.get('mode','journeys'),
                  source=qualified['source'],device=device,started_at=started,native_deadline=native_deadline,
                  execution_deadline=execution_deadline,cleanup_deadline=cleanup_deadline,
                  plan_sha256=builds.sha(root/'plan.json'),selection_sha256=builds.sha(root/'selection.json'))
@@ -292,12 +328,18 @@ def cell(args):
                       compiled_sdk_version=info['sdk_version'],backend_sdk_version=info['sdk_version'].replace('+','_'),
                       app_version=info['app_version'],environment='rum-release-validation',trace_sample_rate=100)
         configuration=dict(pid=pid,bundle_id=bundle,sdk_version=info['sdk_version'],build_sdk='iphonesimulator27.1')
-        driver=Driver(documents,out,identity,expected,args.device,installed/info['executable'],native_deadline,initial,selections)
+        driver_type=Driver;capture_terminal=terminal_capture
+        if plan.get('mode')=='smoke':
+            from smoke_driver import Driver as SmokeDriver
+            from smoke_runtime import terminal_capture as smoke_terminal_capture
+            driver_type=SmokeDriver;capture_terminal=smoke_terminal_capture
+        driver=driver_type(documents,out,identity,expected,args.device,installed/info['executable'],native_deadline,initial,selections)
+        driver.definition=plan['definition']
         known=[loads(p.read_bytes())['session_id'] for p in (root/'cells').glob('*/native-summary.json')]
         sid=initial_session(driver,configuration,known);summary['session_id']=sid
         native=driver.run();native['session_id']=sid
         atomic(out/'native-summary.json',encoded(native));summary['scenario']='PASS'
-        joined=terminal_capture(driver,native,out,identity,configuration,expected,installed,qualified['manifest'],
+        joined=capture_terminal(driver,native,out,identity,configuration,expected,installed,qualified['manifest'],
                                 args.device,bundle,pid,started,execution_deadline,budget['backend_seconds_per_arm'])
         summary['backend_join_sha256']=builds.sha(out/'backend-joined.json')
         # Unknown outside-interval causality/incidental payloads and the paired
@@ -336,7 +378,7 @@ def cell(args):
 
 def main():
     parser=argparse.ArgumentParser();commands=parser.add_subparsers(dest='stage',required=True)
-    item=commands.add_parser('prepare');item.add_argument('--root',type=Path,required=True);item.add_argument('--build-root',type=Path,required=True)
+    item=commands.add_parser('prepare');item.add_argument('--root',type=Path,required=True);item.add_argument('--build-root',type=Path,required=True);item.add_argument('--mode',choices=['journeys','smoke'],default='journeys')
     item=commands.add_parser('cell');item.add_argument('--root',type=Path,required=True);item.add_argument('--arm',choices=builds.ARMS,required=True);item.add_argument('--device',required=True)
     for name in ['native','execution','cleanup']:item.add_argument('--'+name+'-deadline',type=float,required=True)
     args=parser.parse_args()

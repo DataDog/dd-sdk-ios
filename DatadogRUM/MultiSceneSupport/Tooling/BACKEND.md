@@ -227,15 +227,16 @@ and malformed-type controls live in the
 
 ## Controlled app journeys
 
-Use the [F08 runtime](../../../tools/multi-scene/app-acceptance/README.md#runtime-journeys)
-for the finite J01–J04 pair. Keep complete native and broad-session inventories,
-raw Browser identity, exact mapper revisions and the protected J03 owner distinct.
-The uploader remains alive through collection; termination follows complete raw
-exchange publication. Seal the final capture and rejoin only those saved responses.
-A changed tail or late publication invalidates the original attempt. Mechanism
-qualification permits only the planned pair; final source classification owns
-release acceptance. Current bindings belong to the
-[F08 record](../Results/S2-F08-source-oracle.json), not this procedure.
+Use the [S2 smoke mode](../../../tools/multi-scene/app-acceptance/README.md#s2-smoke-mode)
+for the ordinary app pair: one lifecycle cycle ends foreground on Services. Freeze
+its writer-backed behavior prefix; allow normal uploads and retain later bytes
+separately. Require complete broad/native queries, exact event IDs and owners, and
+independent Browser identity. Later captured view revisions may represent the same
+occurrence; later events cannot replace missing behavior. Keep incidental metadata
+and reducers for review. Native container claims need observed Replay eligibility.
+Seal after required evidence is retained; late publication or cleanup stays invalid.
+The README preserves full mechanics and the separate original J01–J04 contract.
+Bindings and final paired acceptance belong to the [F08 owner](../Results/S2-F08-source-oracle.json).
 
 ## Process, fatal and shared-vitals signals
 

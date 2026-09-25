@@ -64,3 +64,31 @@ A complete baseline mechanism can permit the planned candidate. Final occurrence
 Browser and incidental-event source classifications remain separate release work;
 mechanism qualification alone cannot close F08. All raw controlled-session data
 and account selections stay in private local artifacts.
+
+## S2 smoke mode
+
+Use `journey_workflow.py prepare --mode smoke` for the narrowed
+[smoke definition](smoke-definition.json). It revalidates and reuses both compiled
+capture products. The original journey definition and its historical results stay
+separate; preparation does not admit native execution.
+
+The sequence covers login/subdomain/Back, Services list/detail/Back, one actual
+read-only dashboard control, and one same-process background/foreground cycle.
+There is no extra Home drain or timed cache-expiry wait; T10 owns expiry coverage.
+Expected named views and the subdomain action are bound to app source before any
+baseline run. Native account and control readiness still qualify in the first
+planned baseline; a failed mechanism does not admit the candidate.
+
+The final foreground writer checkpoint freezes the behavior prefix. Leave the app
+on Services while its normal uploader runs. Complete backend queries must contain
+the captured event IDs and owners. A later captured revision may represent the same
+view; a different event with the same name cannot replace a missing event. Later
+capture bytes are retained separately and cannot expand the behavior prefix. No
+forced flush, tracking change, extra gesture or deadline extension is used.
+
+The smoke comparator preserves raw payloads and checks view/action/resource/browser
+identity, ownership, lifecycle and existing trace links. Incidental metadata and
+reducer updates remain available for review without requiring session closure or
+complete payload equality. Browser container claims require observed Replay
+eligibility; absent coverage is reported explicitly. There is no Replay-content
+check. Final paired source review still owns F08 closure.

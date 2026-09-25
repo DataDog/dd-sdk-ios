@@ -83,6 +83,12 @@ class Driver:
             return value
         require(False,'native phase did not settle: '+str(last_reason))
 
+    def dashboard_for_prompt(self, rows, snapshot, owner):
+        return browser_contract.attached_dashboard(rows, snapshot, owner)
+
+    def validate_prompt_ready(self, ready, label):
+        pass
+
     def prompt(self, ready, label, instruction, *, seconds=180):
         end=min(self.deadline,time.time()+seconds);self.live(end)
         original_label=ready['label'] if 'label' in ready else label
@@ -114,11 +120,12 @@ class Driver:
                 require(fresh['binding']==ready['binding'] and fresh['owner']['view_id']==ready['owner']['view_id'],
                         'fresh readiness changed the original native owner')
                 if ready['screen']=='dashboard':
-                    old_web=browser_contract.attached_dashboard(rows,ready['snapshot'],ready['owner'])
-                    new_web=browser_contract.attached_dashboard(self.current_rows(),fresh['snapshot'],fresh['owner'])
+                    old_web=self.dashboard_for_prompt(rows,ready['snapshot'],ready['owner'])
+                    new_web=self.dashboard_for_prompt(self.current_rows(),fresh['snapshot'],fresh['owner'])
                     require(old_web==new_web,'fresh readiness replaced the owned WebView')
                 ready=fresh;self.observations[original_label]=fresh
         self.live(end)
+        self.validate_prompt_ready(ready,label)
         prompt=dict(kind='app-journey',phase=label,instruction=instruction,device=self.device,deadline=end,
                     screenshot=str(screenshot),screenshot_sha256=hashlib.sha256(screenshot.read_bytes()).hexdigest(),
                     request_id=ready['snapshot']['request_id'],native_snapshot_sequence=ready['snapshot']['sequence'])

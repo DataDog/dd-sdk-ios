@@ -113,6 +113,11 @@ def local_inventory(rows, expected):
 def attached_dashboard(rows, snapshot, owner):
     require(owner['snapshot_sequence'] == snapshot['sequence'] and owner['has_replay'] is True,
             'dashboard lacks independent native Replay owner')
+    return dashboard_attachment(rows, snapshot, owner)
+
+
+def dashboard_attachment(rows, snapshot, owner):
+    require(owner['snapshot_sequence'] == snapshot['sequence'], 'dashboard snapshot owner differs')
     topology = snapshot['fields']['topology']
     web = one([w for w in topology.get('webviews', []) if w.get('window') == owner['native_window']],
               'attached dashboard WebView')
