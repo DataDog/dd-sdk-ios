@@ -14,7 +14,7 @@
     "id": "rum-unattended-progress",
     "finding": "Update returned Automation does not exist; no replacement was created."
   },
-  "next_task": "F08 smoke preparation is reviewed and both existing products qualify. Native app account/control and fresh operator readiness remain; continue independent finite work while these prerequisites are unavailable.",
+  "next_task": "Designated source-backed review of pre-input observer cost qualification; do not inflate thresholds or rewrite original failure.",
   "gate_closures": [
     "S2:H16",
     "S2:T10"
@@ -28,7 +28,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": "2026-09-25T14:40:04.905448+00:00",
+  "updated_at": "2026-09-25T15:00:13.619217+00:00",
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
@@ -163,21 +163,25 @@
     "sha256": "855e6e8717b2f42086f612d1915bb2e829493f6e1b66a333be75bc7d4f31f55e"
   },
   "s2_f08_smoke_preparation": {
-    "state": "REVIEWED_NATIVE_UNADMITTED",
+    "state": "FIRST_BASELINE_STOPPED_BEFORE_HUMAN_INPUT",
     "owner": "Results/S2-F08-source-oracle.json",
     "plan": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/run-source-bound/plan.json",
-      "sha256": "fe8eb1ae294e11bb1535ecfb04f09013fe252e6a4e36674bca34222a60d1c060"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/run-home-final/plan.json",
+      "sha256": "3d8a3dda2161820adf2920fc9f668f73235527eb6ad50c88810b3bd922b1ed70"
     },
-    "native_launches": 0,
+    "native_launches": 1,
     "review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/run-source-bound/review.json",
-      "sha256": "ed1d90fbdb3f9e7073fafb0c8d25f72602702bdd481ba3405b30ff580bfb3dc9"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/run-home-final/review.json",
+      "sha256": "393e9c3d7b11487adbc95b6ffbe2d35bfe26c267e2b0bbd9cbc3d684925e0793"
     },
     "controls": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/controls-source-bound.json",
       "sha256": "d2d3f36497ad829f44cea6eedb5b99bf83bb5fd208a96e24ed10a75396314dad"
     },
-    "tests": 37
+    "tests": 37,
+    "current_attempt": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/baseline-stop-assessment.json",
+      "sha256": "5f7f4da36b0ece8cf0ef0b30817eedaf1bc218afbbeac7ee592bfa4224c9f044"
+    }
   }
 }

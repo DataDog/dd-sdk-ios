@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
   "work_item": "S2:A02 ordered single human-input session",
-  "status": "RUNNERS_PREPARED_OPERATOR_AND_ACCOUNT_PREREQUISITES_REMAIN",
-  "updated_at": "2026-09-25T14:40:04.905448+00:00",
+  "status": "F08_RECORDER_CORRECTION_REQUIRED",
+  "updated_at": "2026-09-25T15:11:33.022537+00:00",
   "owner": "Harness implementer",
   "user_role": "Only real gestures and any required interactive sign-in",
   "request_user_now": false,
-  "reason": "Simulator-family preparation is preserved. Operator is asleep during the authorized unattended window; no readiness or stage is inferred. Physical iPad is connected but locked; account/native qualification remains separate.",
+  "reason": "User confirmed app-route availability and selected account/service/dashboard. First F08 baseline stopped before human input on recorder costs; cleanup PASS, candidate UNRUN. No operator action is currently requested.",
   "source_candidate": "c9faed816a1d4828d7d8c4b64acae01119425889",
   "ordered_groups": [
     {
@@ -172,10 +172,10 @@
       "automated_checks": "S2 smoke mode reuses both source-bound capture products. Capture actual native effects/owners and one lifecycle cycle; freeze the behavior prefix, retain later delivery separately and join exact event identities. T10 owns expiry coverage.",
       "build_owner": "S2-F08-app-preparation.json",
       "oracle_owner": "S2-F08-source-oracle.json",
-      "remaining": "Desktop account/control candidate prepared at the source/oracle owner. Native sign-in, exact control qualification and fresh operator/environment admission remain.",
+      "remaining": "Source-backed recorder correction and first-action controls, review and symmetric builds precede any new baseline; current native mechanism stopped.",
       "capture_binding": {
         "owner": "S2-F08-source-oracle.json",
-        "state": "REVIEWED_RUNTIME_AND_BOTH_PRODUCTS_PREPARED",
+        "state": "CURRENT_CAPTURE_MECHANISM_STOPPED",
         "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-reviewed-controls-32tvi0u8",
         "review_sha256": "ae252cf2d3656e9ad447e9b58e43b4e4e9e076664db25a2f7b352f494fca638c",
         "remaining": "No native admission. First planned baseline qualifies native account/control and capture; final paired source classification remains.",
@@ -188,15 +188,19 @@
         "runtime_review_sha256": "8d1ab9a06cb85208ff1bef1818c10dc9dd51a475d5c1d9b2f8b9d766a9b464dd",
         "runtime_controls_sha256": "306178c6f888e6f916df758a91fd7044b473e37392a024c7479f6d693ba35fd8",
         "selected_smoke_preparation": {
-          "state": "REVIEWED_NATIVE_UNADMITTED",
+          "state": "FIRST_BASELINE_STOPPED_BEFORE_HUMAN_INPUT",
           "owner": "S2-F08-source-oracle.json",
           "plan": {
-            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/run-source-bound/plan.json",
-            "sha256": "fe8eb1ae294e11bb1535ecfb04f09013fe252e6a4e36674bca34222a60d1c060"
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/run-home-final/plan.json",
+            "sha256": "3d8a3dda2161820adf2920fc9f668f73235527eb6ad50c88810b3bd922b1ed70"
           },
           "review": {
-            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/run-source-bound/review.json",
-            "sha256": "ed1d90fbdb3f9e7073fafb0c8d25f72602702bdd481ba3405b30ff580bfb3dc9"
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/run-home-final/review.json",
+            "sha256": "393e9c3d7b11487adbc95b6ffbe2d35bfe26c267e2b0bbd9cbc3d684925e0793"
+          },
+          "current_attempt": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/baseline-stop-assessment.json",
+            "sha256": "5f7f4da36b0ece8cf0ef0b30817eedaf1bc218afbbeac7ee592bfa4224c9f044"
           }
         }
       }
@@ -231,9 +235,10 @@
     "gates_closed": []
   },
   "operator_readiness": {
-    "state": "UNADMITTED_OPERATOR_ASLEEP",
+    "state": "PRIOR_AVAILABILITY_CONFIRMED_NO_ACTIVE_SESSION",
     "fixed_stage_started": false,
-    "native_cells_started": 0
+    "active_native": false,
+    "latest_f08_attempt": "S2-F08-source-oracle.json:scoped_smoke_preparation.current_attempt"
   },
   "session_splitting": {
     "user_question_at": "2026-09-23T13:38:54.447557+00:00",
@@ -253,5 +258,6 @@
     "contract": "release-gates.json: releases.S2.acceptance_contract/execution_packages",
     "effect": "Prospective S2 execution scope supersedes broader remaining-matrix and whole-payload prerequisites. Original definitions, admissions, attempts and verdicts remain unchanged. No native admission or gate closure.",
     "next": "Assess reusable actual observations against the scoped gate before any new native run; bind amended runner expectations and focused controls first."
-  }
+  },
+  "current_scope_owner": "S2-release-gate-review-20260925.json; earlier ordered_groups retain historical matrix bindings, not new admission"
 }

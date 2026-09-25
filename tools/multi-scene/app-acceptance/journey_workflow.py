@@ -20,7 +20,7 @@ import journey_contract as contract
 import journey_transport as backend_transport
 import browser_contract
 import journey_readiness
-from journey_driver import Driver, emit
+from journey_driver import Driver, emit, home_observation
 from capture_io import atomic, encoded, bounded_read
 from capture_contract import loads, prefix, MAX_BYTES
 from acceptance_common import require, Rejected
@@ -312,8 +312,7 @@ def cell(args):
         require(any(d.get('active') is not True and d['nativeSize'][0]*d['nativeSize'][1]>active['nativeSize'][0]*active['nativeSize'][1]
                     for d in loads(initial)['result']['displays']), 'initial Closed display unproven')
         shared.command(['/opt/homebrew/bin/axe','describe-ui','--udid',args.device],out,'initial-home',deadline=min(native_deadline,time.time()+15))
-        from journey_phases import home
-        require(home(loads((out/'initial-home.log').read_bytes())),'original Home readiness unavailable')
+        require(home_observation(loads((out/'initial-home.log').read_bytes()),out,native_deadline),'original Home readiness unavailable')
         shared.command(['xcrun','simctl','install',args.device,qualified['application_path']],out,'install',deadline=min(native_deadline,time.time()+60))
         installed=Path(shared.capture(['xcrun','simctl','get_app_container',args.device,bundle,'app']).stdout.decode().strip())
         builds.product(installed,qualified['manifest'])

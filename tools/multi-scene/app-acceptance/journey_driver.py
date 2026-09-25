@@ -24,6 +24,17 @@ from s2_webview_runtime import active_display, display_signature
 def emit(key, value):print(json.dumps({key:value}),flush=True)
 
 
+def home_observation(tree, folder, deadline):
+    if not isinstance(tree,list) or len(tree)!=1 or type(tree[0].get('pid'))!=int:return False
+    pid=tree[0]['pid']
+    shared.command(['ps','-p',str(pid),'-o','pid=,comm='],folder,'home-process',deadline=min(deadline,time.time()+15))
+    values=(folder/'home-process.log').read_text().strip().split(maxsplit=1)
+    if len(values)!=2 or not values[0].isdigit():return False
+    process=dict(pid=int(values[0]),executable=values[1])
+    atomic(folder/'home-process-identity.json',encoded(process))
+    return phases.home(tree,process)
+
+
 class Driver:
     def __init__(self, documents, out, identity, expected, device, executable, deadline, initial, selection):
         self.documents,self.out=Path(documents),Path(out)
@@ -164,8 +175,8 @@ class Driver:
                 require(event['kind']=='scene_callback' and event['fields']['callback']=='didEnterBackground-exit'
                         and event['fields']['scene']==self.binding['scene'] and event['fields']['app_state']==2
                         and checkpoint['request_id']=='background-'+str(callback), 'wrong background writer boundary')
-                tree,_=self.ax(label+'-home',end)
-                require(phases.home(tree),'Home not observed after background callback')
+                tree,home_folder=self.ax(label+'-home',end)
+                require(home_observation(tree,home_folder,end),'Home not observed after background callback')
                 value=dict(sequence=callback,checkpoint=checkpoint,checkpoint_path=str(folder/'writer-checkpoint.json'),
                            raw_path=str(folder/'events.jsonl'),at=time.time(),deadline=end,home=tree)
                 atomic(folder/'background.json',encoded(value));self.backgrounds.append(value)
@@ -177,7 +188,7 @@ class Driver:
     def reactivate(self, background, label, screen):
         end=min(self.deadline,time.time()+180);self.live(end)
         # This prompt is bound to actual Home plus the preserved background receipt.
-        tree,folder=self.ax(label+'-before-return',end);require(phases.home(tree),'Home readiness consumed')
+        tree,folder=self.ax(label+'-before-return',end);require(home_observation(tree,folder,end),'Home readiness consumed')
         actual=display(self.device,folder,'display',end)
         require(display_signature(active_display(loads(actual),self.device))==display_signature(active_display(loads(self.initial),self.device)), 'return display changed')
         instruction='Open the same Datadog app from Home once. Do not force quit or relaunch it from Xcode.'

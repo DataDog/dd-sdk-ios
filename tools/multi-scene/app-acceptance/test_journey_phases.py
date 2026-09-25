@@ -59,4 +59,39 @@ class JourneyPhaseTests(unittest.TestCase):
             with self.subTest(mode=mode),self.assertRaises(Rejected):phases.back_target(changed)
 
 
+    def test_home_process_identity_does_not_overwrite_command_receipt(self):
+        from pathlib import Path
+        import tempfile
+        from unittest.mock import patch
+        import journey_driver
+        with tempfile.TemporaryDirectory() as name:
+            folder=Path(name)
+            def command(argv,out,label,**kwargs):
+                (out/(label+'.json')).write_text('command receipt')
+                (out/(label+'.log')).write_text('7 /sim/RuntimeRoot/System/Library/CoreServices/SpringBoard.app/SpringBoard')
+            with patch.object(journey_driver.shared,'command',side_effect=command),patch.object(phases,'home',return_value=True):
+                self.assertTrue(journey_driver.home_observation([dict(pid=7)],folder,12345678900))
+            self.assertEqual((folder/'home-process.json').read_text(),'command receipt')
+            self.assertTrue((folder/'home-process-identity.json').is_file())
+
+    def test_home_requires_system_process_and_actual_active_screen_geometry(self):
+        frame=dict(x=0,y=0,width=466,height=678)
+        tree=[dict(type='Application',pid=7,frame=frame,children=[
+            dict(type='Group',pid=7,AXUniqueId='Home screen icons',enabled=True,frame=frame),
+            dict(type='Slider',pid=7,AXUniqueId='Page control',enabled=True,frame=dict(x=100,y=640,width=50,height=35))])]
+        process=dict(pid=7,executable='/sim/RuntimeRoot/System/Library/CoreServices/SpringBoard.app/SpringBoard')
+        self.assertTrue(phases.home(tree,process))
+        for mode in ['foreign-pid','app-process','mixed-pid','missing-icons','offscreen-page','wrong-display','missing-process','label-only']:
+            changed=copy.deepcopy(tree);observed=copy.deepcopy(process)
+            if mode=='foreign-pid':observed['pid']=8
+            if mode=='app-process':observed['executable']='/app/DatadogApp.app/DatadogApp'
+            if mode=='mixed-pid':changed[0]['children'][0]['pid']=8
+            if mode=='missing-icons':changed[0]['children'].pop(0)
+            if mode=='offscreen-page':changed[0]['children'][1]['frame']['x']=600
+            if mode=='wrong-display':changed[0]['children'][0]['frame']=dict(x=0,y=0,width=669,height=951)
+            if mode=='missing-process':observed=None
+            if mode=='label-only':changed=[dict(type='Button',AXLabel='Home')]
+            with self.subTest(mode=mode):self.assertFalse(phases.home(changed,observed))
+
+
 if __name__=='__main__':unittest.main()

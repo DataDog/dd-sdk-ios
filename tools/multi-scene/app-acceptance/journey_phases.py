@@ -42,8 +42,23 @@ def back_target(tree):
     return one(choices,'source-defined subdomain Back')
 
 
-def home(tree):
-    return not matches(tree,'Log In with Subdomain','button') and not matches(tree,'Enter Subdomain','statictext') and any(label(n) in ['Home','Home Screen','SpringBoard'] for n in nodes(tree))
+def home(tree, process=None):
+    if not isinstance(tree,list) or len(tree)!=1 or kind(tree[0])!='application' or not process:return False
+    root=tree[0];pid=root.get('pid');frame=root.get('frame',{})
+    if type(pid)!=int or pid<=0 or process.get('pid')!=pid:return False
+    if not process.get('executable','').endswith('/RuntimeRoot/System/Library/CoreServices/SpringBoard.app/SpringBoard'):return False
+    if {n['pid'] for n in nodes(tree) if n.get('pid') is not None}!={pid}:return False
+    if not all(type(frame.get(k)) in (int,float) for k in ['x','y','width','height']):return False
+    if frame['width']<=0 or frame['height']<=0:return False
+    def within(value, exact=False):
+        f=value.get('frame',{})
+        if not all(type(f.get(k)) in (int,float) for k in frame):return False
+        if exact:return all(abs(f[k]-frame[k])<.01 for k in frame)
+        return (f['width']>0 and f['height']>0 and f['x']>=frame['x'] and f['y']>=frame['y']
+                and f['x']+f['width']<=frame['x']+frame['width'] and f['y']+f['height']<=frame['y']+frame['height'])
+    icons=[n for n in nodes(tree) if n.get('AXUniqueId')=='Home screen icons' and n.get('enabled') is True and within(n,True)]
+    pages=[n for n in nodes(tree) if n.get('AXUniqueId')=='Page control' and kind(n)=='slider' and n.get('enabled') is True and within(n)]
+    return len(icons)==1 and len(pages)==1 and not matches(tree,'Log In with Subdomain','button') and not matches(tree,'Enter Subdomain','statictext')
 
 
 def visible(rows, snapshot, phase, binding):

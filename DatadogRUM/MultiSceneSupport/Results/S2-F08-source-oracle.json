@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 authenticated app source/oracle preparation",
-  "status": "SMOKE_RUNTIME_PREPARED_REVIEWED",
+  "status": "SMOKE_BASELINE_CAPTURE_QUALIFICATION_STOPPED",
   "at": "2026-09-21T21:30:08.556874+00:00",
   "owner": "SDK implementer",
   "reviewer": "existing /root/c06_runtime_plan",
@@ -182,7 +182,7 @@
     "partial cleanup relabeled as ordinary pass"
   ],
   "admission_limits": "This is source preparation only. No runtime/oracle pass, gate closure, new experiment or environment retry is implied. Existing J01, Duo and EXP220 automation stops remain closed; fresh execution needs materially changed environment and reviewed fixed admission.",
-  "next_action": "Fresh operator/account/control/environment admission for the planned baseline smoke run; preparation alone does not admit native execution or close F08.",
+  "next_action": "Prepare and review a bounded recorder cost correction, including first-action qualification, before symmetric builds or another native session; keep existing event-cost thresholds and original failure.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/source-review.json",
     "sha256": "41f6a1f5348c383e8c11770dc50da59e45e9dc020559a49c2a60d8691815d6e9"
@@ -478,7 +478,7 @@
     "next": "Assess reusable actual observations against the scoped gate before any new native run; bind amended runner expectations and focused controls first."
   },
   "scoped_smoke_preparation": {
-    "state": "REVIEWED_PREPARED_NATIVE_UNADMITTED",
+    "state": "FIRST_BASELINE_STOPPED_BEFORE_HUMAN_INPUT",
     "at": "2026-09-25T14:40:04.905448+00:00",
     "reviewer": "/root/c06_runtime_plan",
     "contract": "release-gates.json: releases.S2.acceptance_contract/execution_packages.app",
@@ -496,7 +496,7 @@
       "mach_o_per_arm": 71,
       "rebuilds": 0
     },
-    "native_launches": 0,
+    "native_launches": 1,
     "gate_closures": [],
     "remaining_prerequisite": "Native account and frozen Browser control readiness still require fresh qualification in the first planned baseline",
     "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse",
@@ -505,8 +505,8 @@
       "sha256": "2d5f49f54314e9d7df38b819c3f1b97e713d932eaa29022c45a19c741b6c8abe"
     },
     "plan": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/run-source-bound/plan.json",
-      "sha256": "fe8eb1ae294e11bb1535ecfb04f09013fe252e6a4e36674bca34222a60d1c060"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/run-home-final/plan.json",
+      "sha256": "3d8a3dda2161820adf2920fc9f668f73235527eb6ad50c88810b3bd922b1ed70"
     },
     "controls": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/controls-source-bound.json",
@@ -535,6 +535,38 @@
     "superseded_preparation": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/run/plan.json",
       "sha256": "58cb70641f5a29fa24ae50c441e425de75546b060373f96aa1de99b86376e687"
+    },
+    "initial_prepared_plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/run-source-bound/plan.json",
+      "sha256": "fe8eb1ae294e11bb1535ecfb04f09013fe252e6a4e36674bca34222a60d1c060"
+    },
+    "home_correction": {
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/home-correction/definition.json",
+        "sha256": "2e90e08a02ea8d8b2098bc0587de678569b807e48a4cdaf481b09638c273a131"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/run-home-final/review.json",
+        "sha256": "393e9c3d7b11487adbc95b6ffbe2d35bfe26c267e2b0bbd9cbc3d684925e0793"
+      },
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/home-correction/controls-final.json",
+        "sha256": "169458647f43796816d164798094d2beb729cb53e2125b24aaaf609fe6f216ef"
+      },
+      "saved_assessment": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/home-correction/saved-evidence-assessment/summary.json",
+        "sha256": "34dec6dd1e3dbed843f0f98a25f0eb97e5bcddceb80a40b696f20a51a584b6dc"
+      },
+      "native_home_qualified": true
+    },
+    "current_attempt": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/baseline-stop-assessment.json",
+      "sha256": "5f7f4da36b0ece8cf0ef0b30817eedaf1bc218afbbeac7ee592bfa4224c9f044"
+    },
+    "candidate": "UNRUN",
+    "cost_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/observer-cost-review.json",
+      "sha256": "7327e526235b7aa0e53e635f9ab1262c4d738e3f07dec5003163f41f9733a961"
     }
   },
   "current_execution_mode": "scoped_smoke_preparation; the earlier J01-J04/retained-dashboard definitions remain historical and are not the selected S2 sequence"
