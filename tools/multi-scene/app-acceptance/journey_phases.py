@@ -2,7 +2,7 @@
 from journey_contract import one, require, field, mapper_inventory
 
 NAMES = {'login':['LoginView'], 'list':['ServiceList','Services'], 'detail':['ServiceDetail','ServiceDetails'],
-         'dashboard':['DashboardDetails']}
+         'dashboard':['DashboardDetails'], 'account-home':['Home']}
 LABELS = {'list':'List of Services', 'detail':'Service Details', 'dashboard':'Dashboard Details'}
 
 

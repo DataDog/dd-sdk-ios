@@ -26,12 +26,25 @@ class Driver(JourneyDriver):
 
     def run(self):
         smoke_contract.definition(self.definition)
-        ready=self.ready('login-initial','login')
-        ready=self.step(ready,'login-subdomain','Tap Log In with Subdomain once, then stop. Leave the text field untouched and do not type. Wait for the Back instruction.','login',subdomain=True)
-        ready=self.step(ready,'login-returned','Tap the Back button beside Enter Subdomain once.','login')
-        ready=self.step(ready,'service-list','Use QR code login for '+self.selection['organization']+
-                        ': tap Scan QR Code, then Choose QR Code Image and select the login screenshot from Photos. '
-                        'After sign-in, open the Services list. Do not select a service yet.','list',authenticated_transition=True,seconds=600)
+        if self.definition['mode'] == 'signed-in-smoke':
+            import signed_in_account
+            # Account setup is outside the comparison. This fresh launch still
+            # proves its real Home owner before navigating to Services.
+            entry=self.ready('signed-in-entry','account-home')
+            ready=self.step(entry,'service-list','Open Services in '+self.selection['organization']+
+                            '. Do not select a service yet.','list',authenticated_transition=True)
+            self.account_binding=signed_in_account.subject(self.current_rows(),ready,self.expected['account_salt'])
+            if self.expected.get('baseline_account_binding') is not None:
+                require(self.account_binding['digests']==self.expected['baseline_account_binding']['digests'],
+                        'candidate account or organization differs from baseline')
+            atomic(self.out/'account-binding.json',encoded(self.account_binding))
+        else:
+            ready=self.ready('login-initial','login')
+            ready=self.step(ready,'login-subdomain','Tap Log In with Subdomain once, then stop. Leave the text field untouched and do not type. Wait for the Back instruction.','login',subdomain=True)
+            ready=self.step(ready,'login-returned','Tap the Back button beside Enter Subdomain once.','login')
+            ready=self.step(ready,'service-list','Use QR code login for '+self.selection['organization']+
+                            ': tap Scan QR Code, then Choose QR Code Image and select the login screenshot from Photos. '
+                            'After sign-in, open the Services list. Do not select a service yet.','list',authenticated_transition=True,seconds=600)
         ready=self.step(ready,'service-detail','Open the existing service '+self.selection['service_label']+' once. Do not edit or favorite it.','detail')
         ready=self.step(ready,'service-list-returned','Use Back once to return to the Services list.','list')
         begin=self.step(ready,'dashboard-begin','Open the existing dashboard '+self.selection['dashboard_label']+'. Wait on its detail page.','dashboard')
@@ -64,8 +77,9 @@ class Driver(JourneyDriver):
         frozen,result=smoke_contract.freeze(raw,checkpoint,self.identity)
         atomic(self.out/'behavior-prefix.jsonl',frozen)
         atomic(self.out/'behavior-checkpoint.json',encoded(checkpoint))
-        native=dict(mode='smoke',j03=interval,phases=self.observations,inputs=self.inputs,backgrounds=self.backgrounds,
+        native=dict(mode=self.definition['mode'],j03=interval,phases=self.observations,inputs=self.inputs,backgrounds=self.backgrounds,
                     terminal=dict(checkpoint=checkpoint,foreground=True),native_launches=1,process_id=self.expected['pid'],device=self.device)
+        if self.definition['mode']=='signed-in-smoke':native['account_binding']=self.account_binding
         native['manifest']=smoke_contract.native_manifest(result['rows'],native,self.expected,self.definition)
         emit('human_status',dict(instruction='The journey is captured. Leave the app on this Services screen without touching it while ordinary uploads finish.'))
         return native

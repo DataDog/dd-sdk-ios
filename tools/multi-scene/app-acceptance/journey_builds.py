@@ -103,6 +103,11 @@ RUNTIME_TRANSITION_FILES = {
 }
 
 
+SIGNED_IN_TRANSITION_FILES = {'smoke_contract.py','smoke_driver.py','smoke_runtime.py',
+    'journey_workflow.py','journey_builds.py','journey_driver.py','journey_phases.py'}
+SIGNED_IN_ADDITIONS = {'signed-in-definition.json','signed_in_account.py'}
+
+
 def binding_split(original, current):
     before, after = ast.parse(original), ast.parse(current)
     expected = copy.deepcopy(before)
@@ -149,14 +154,22 @@ def transition_guard(root, original, definition, binding):
     require(controls['state'] == 'PASS_OFFLINE_ONLY' and controls['source_sha256'] == review['source_sha256'],
             'runtime transition review/control sources differ')
     here = Path(__file__).resolve().parent
-    allowed = {str(here/name) for name in RUNTIME_TRANSITION_FILES}
+    signed_in=transition.get('scope')=='signed-in-smoke-v1'
+    allowed = {str(here/name) for name in (SIGNED_IN_TRANSITION_FILES if signed_in else RUNTIME_TRANSITION_FILES)}
     current = {name:sha(name) for name in definition['qualified_helper_sha256']}
+    if signed_in:
+        added={str(here/name):sha(here/name) for name in SIGNED_IN_ADDITIONS}
+        require(transition.get('additions')==added and all(review['source_sha256'].get(k)==v for k,v in added.items()),
+                'signed-in added helpers differ from reviewed sources')
     changes = runtime_helpers(definition['qualified_helper_sha256'], current, transition['changes'],
                               review['source_sha256'], allowed)
     require(review['changes_sha256'] == hashlib.sha256(
         json.dumps(changes, sort_keys=True, separators=(',', ':')).encode()).hexdigest(),
         'runtime transition review does not bind the changes')
-    binding_split(original.read_text(), Path(capture_build.__file__).read_text())
+    if signed_in:
+        require(ast.dump(ast.parse(original.read_text()))==ast.dump(ast.parse(Path(capture_build.__file__).read_text())),
+                'signed-in reuse changed the frozen source binder')
+    else:binding_split(original.read_text(), Path(capture_build.__file__).read_text())
     preparation = loads((root/'preparation.json').read_bytes())
     guard, preparation = capture_build.bind_sources(root, definition, preparation)
     return guard, preparation

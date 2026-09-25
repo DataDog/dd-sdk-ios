@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 authenticated app source/oracle preparation",
-  "status": "SIGNING_REPAIRED_ACCOUNT_SETUP_AND_SIGNED_IN_RUNNER_PENDING",
-  "at": "2026-09-25T20:07:22.318427+00:00",
+  "status": "SIGNED_ACCOUNT_AND_RUNNER_QUALIFIED_PAIR_PREPARATION_PENDING",
+  "at": "2026-09-25T20:35:07.665379+00:00",
   "owner": "SDK implementer",
   "reviewer": "existing /root/c06_runtime_plan",
   "scope": "Existing J02 service navigation, J03 dashboard correlation and J04 authenticated lifecycle only. No native execution, app or SDK edits, rebuild, login, publication or new experiment.",
@@ -182,7 +182,7 @@
     "partial cleanup relabeled as ordinary pass"
   ],
   "admission_limits": "This is source preparation only. No runtime/oracle pass, gate closure, new experiment or environment retry is implied. Existing J01, Duo and EXP220 automation stops remain closed; fresh execution needs materially changed environment and reviewed fixed admission.",
-  "next_action": "The corrected baseline is installed at Login. Await fresh QR account setup; verify real profile/organization and selected Services row. Finish the explicit signed-in runner independently; no measured session or importer is armed.",
+  "next_action": "Account setup is qualified on corrected signed baseline: selected organization/profile and real ios-benchmark service list observed. Finish signed-in runner review and offline preparation; then admit the first planned paired journey only with fresh operator/tool readiness. Keep the account installed; no login repetition or release-gate closure.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/source-review.json",
     "sha256": "41f6a1f5348c383e8c11770dc50da59e45e9dc020559a49c2a60d8691815d6e9"
@@ -861,7 +861,7 @@
     "gate_closures": []
   },
   "fixture_signing": {
-    "state": "SIGNING_REPAIRED_ACCOUNT_SETUP_REQUIRED",
+    "state": "SIGNING_REPAIRED_AUTHENTICATION_QUALIFIED",
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signing-wfeu06du",
     "finding": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signing-wfeu06du/finding.json",
@@ -887,7 +887,7 @@
     "source_edits": 0,
     "sdk_edits": 0,
     "required_entitlements_verified": true,
-    "account_setup_required": true,
+    "account_setup_required": false,
     "old_products_unchanged": true,
     "local_checkpoint_signing": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signing-wfeu06du/checkpoint-signing.json",
@@ -900,6 +900,47 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signing-wfeu06du/service-readiness-review-controls.json",
       "sha256": "32eacce2d1bdc2011dd5af5fc54973c85dec9d95938deef7f8b0deb83389b552"
     },
-    "native_positive_qualification": false
+    "native_positive_qualification": true,
+    "native_observation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signing-wfeu06du/account-setup-5f_fh9km/services-ready-ax.json",
+      "sha256": "33152f8d5e22cb92a16a7675c9e75e1c7f32ef5bd84f0540b7a2465201335216"
+    }
+  },
+  "signed_account_setup": {
+    "state": "QUALIFIED_ACCOUNT_PREREQUISITE_ONLY",
+    "receipt": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signing-wfeu06du/account-setup-5f_fh9km/setup-qualified.json",
+      "sha256": "8ff0b3166cd8d99bf38e298ca8d4ddc3acfa4379aea43762d4919f8a5e178982"
+    },
+    "first_new_import_attempt": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signing-wfeu06du/account-setup-8hwbogsv/qr-import-account-setup/result.json",
+      "sha256": "41631f858bba5b444a50befd7ba69f3559e55fe331ad3cf9cd61cc4aba3bfb21"
+    },
+    "user_report": "Loading works and service list is filled",
+    "retained": true,
+    "recording_enabled": false,
+    "gate_closures": [],
+    "signed_checkpoint": "d14d136e2ff15825470854ef586946dfde9976a2"
+  },
+  "signed_in_runner": {
+    "state": "REVIEWED_OFFLINE_PREPARATION_PASS",
+    "mode": "signed-in-smoke",
+    "definition": "../../../tools/multi-scene/app-acceptance/signed-in-definition.json",
+    "review_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signing-wfeu06du/signed-in-runner-m7u3bexf",
+    "tests": 36,
+    "native_runs": 0,
+    "gate_closures": [],
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signing-wfeu06du/signed-in-runner-m7u3bexf/review.json",
+      "sha256": "788ab0cc5f685060be523828c89f814f46ade47a70be8c6222cc72d8bccb879f"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signing-wfeu06du/signed-in-runner-m7u3bexf/controls-v2.json",
+      "sha256": "61a1bb2a1649729a300e7121814e0081e9af03c60f306237438d7976101ca9f1"
+    },
+    "runtime_transition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signing-wfeu06du/signed-in-runner-m7u3bexf/runtime-transition.json",
+      "sha256": "70aa1070402e697b081bd3358b9f2fb3f6b7218dec2d636437de696e85014424"
+    }
   }
 }

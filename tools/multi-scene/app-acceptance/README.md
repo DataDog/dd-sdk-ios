@@ -103,6 +103,28 @@ downsampling, corrupt/ambiguous input and cancellation. The compiler input chang
 requires fresh symmetric builds; the host-only product-reuse transition does not
 apply. The first planned baseline qualifies native selection and authentication.
 
+## Retained authenticated journeys
+
+Use the separately defined `signed-in-smoke` mode after corrected signed account
+setup proves the selected profile, organization and real Services row. Keep the
+ordinary `smoke` mode unchanged. Signed-in mode omits only its three login phases
+and subdomain-login action; the eight Services/dashboard/lifecycle boundaries and
+all telemetry ownership checks remain. Search may hide the Services title: finish
+search and close its field before the ready boundary; a heading alone never qualifies.
+
+The first planned baseline binds non-null user/organization IDs as salted comparison
+digests before service-detail input. Candidate identity must match. Raw capture stays
+private; plans, prompts and summaries never contain account credentials or raw user
+IDs. Setup without the recorder is not mistaken for captured RUM identity.
+
+Install the exact qualified products in place, after stopping only the known main
+process. Preserve Keychain/account data and unrelated Documents; archive only
+verified recorder-owned files. Each arm still gets a fresh run, nonce, process and
+RUM session. Cleanup seals capture, stops the owned process and proves retained
+product, non-task app inventory and display state. Never use the ordinary uninstall
+cleanup for this mode. Native admission follows focused controls, designated review,
+source/product reuse checks and fresh operator readiness.
+
 ## Recorder setup
 
 The validation recorder initializes JSON encoding with source-bound specimens of

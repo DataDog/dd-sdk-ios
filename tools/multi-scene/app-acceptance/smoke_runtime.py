@@ -53,7 +53,7 @@ def collected(out, identity, expected, behavior, frozen, checkpoint, driver, nat
 
 def terminal_capture(driver,native,out,identity,configuration,expected,installed,manifest,
                      device,bundle,pid,started,execution_deadline,backend_seconds):
-    require(native['mode']=='smoke' and native['terminal']['foreground'] is True,'wrong smoke terminal phase')
+    require(native['mode'] in smoke.MODES and native['terminal']['foreground'] is True,'wrong smoke terminal phase')
     checkpoint=loads((out/'behavior-checkpoint.json').read_bytes())
     require(checkpoint==native['terminal']['checkpoint'],'behavior checkpoint changed')
     frozen=bounded_read(out/'behavior-prefix.jsonl',MAX_BYTES)
@@ -76,7 +76,7 @@ def terminal_capture(driver,native,out,identity,configuration,expected,installed
     values=[transport.wait(Path(path)) for path in joined['inventory_requests']]
     final=smoke.joined(values[0],values[1],behavior,full['rows'],native['j03'],expected,pending=False)
     require(all(final[key]==joined[key] for key in final),'saved smoke backend result changed at final seal')
-    proof=dict(state='SMOKE_BEHAVIOR_AND_DELIVERY_SEALED',mode='smoke',identity=identity,expected=expected,
+    proof=dict(state='SMOKE_BEHAVIOR_AND_DELIVERY_SEALED',mode=native['mode'],identity=identity,expected=expected,
                behavior_sha256=checkpoint['sha256'],cutoff_sequence=checkpoint['sequence'],
                checkpoint_sha256=builds.sha(out/'behavior-checkpoint.json'),
                sealed_sha256=builds.sha(out/'sealed-events.jsonl'),backend_join_sha256=builds.sha(out/'backend-joined.json'),

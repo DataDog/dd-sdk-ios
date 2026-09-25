@@ -67,13 +67,12 @@ Both complete backend inventories contain9rows. Candidate scenario, evidence and
 cleanup pass; original baseline late-publication and first-candidate budget failures
 remain immutable. No further TTL run is needed for the controlled app smoke.
 
-[Controlled app builds](Results/S2-F08-app-preparation.json) are reusable by identity;
-[app journeys](Results/S2-F08-app-journeys.json) remain unqualified. The prebooted
-Duo baseline binds its fresh backend owner and completes subdomain/Back navigation.
-AXe Home input has no observed effect; two Xcode MCP sessions are missing before
-input. A separate ordinary-iPhone Home prerequisite stops before installation
-on an AXe automation-session timeout. Lifecycle and paired acceptance remain open.
-Cleanup passes; no SDK cause is established.
+[Controlled app preparation](Results/S2-F08-source-oracle.json) now qualifies signed
+baseline/candidate products and one-time account setup. Missing simulator Keychain
+entitlements caused the fixture's misleading permission shell; the corrected baseline
+loads the selected organization and Services. This resolves a fixture prerequisite,
+not an SDK regression. [Paired app journeys](Results/S2-F08-app-journeys.json) remain
+open; retain earlier input/backend failures and their separate cleanup outcomes.
 [Semantic Duo boot failures](Results/S2-Duo-environment-readiness.json) occur before
 app installation/assertions and have no established SDK cause. An equivalent retry
 requires materially changed conditions and separate admission.

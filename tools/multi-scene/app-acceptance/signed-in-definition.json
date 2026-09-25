@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "gate": "S2:F08",
+  "mode": "signed-in-smoke",
+  "state": "DEFINED_BEFORE_IMPLEMENTATION",
+  "defined_at": "2026-09-25T20:20:25.812097+00:00",
+  "scope": "Existing eight Services/dashboard/lifecycle boundaries with a retained authenticated account. Login is a separate prerequisite, not repeated inside either measured arm.",
+  "app_revision": "6e33f1c18a52d04b0793e6954f456bdbc1affe2f",
+  "source_manifest": {
+    "Targets/Feature/Login/UI/LoginUserMonitoring.swift": "b8cfa74ca7ccbd42bd8ad39855e9ceb74f1112d41c9577872a2527fc5c7fcae7",
+    "Targets/Platform/DatadogObservability/UserMonitorLive.swift": "96cf42ad791ac4bf10c3efaf5fa0af551c02665e76e70ffd0bb81268446baf79",
+    "Targets/DatadogApp/UI/App/Root/Signed In Root/Datadog Products/APM Services/APMServicesUserMonitoring.swift": "80299aeaa228800212c38e26e2a23d4cb01ef0a89dbe9d76083b14d5d57adfb4",
+    "Targets/DatadogApp/UI/App/Root/Signed In Root/Datadog Products/Dashboards/DashboardUserMonitoring.swift": "2384a2159959789d65aad209de152c173785e7846c88c63ca62f3631bcea14b1",
+    "Targets/DatadogApp/UI/App/Root/Signed In Root/Datadog Products/Dashboards/Details/DashboardDetailViewController.swift": "9a0c79f6ce52ad6ef81099fb5905c6e722b616fd0e0509d11a5cd97c9e6f7252",
+    "Targets/DatadogApp/Model/Authentication/OAuthSessionStateController.swift": "40941eca480e953d2ebb4481651d8301681811eb84c7255fc6f1ea344a00f383",
+    "Targets/Feature/Home/UI/HomeTabView.swift": "30483cd000198e7c65318b6f1d674990dc0c3e737d905db46a4d3e58ad9cd1d4"
+  },
+  "sequence": [
+    "service-list",
+    "service-detail",
+    "service-list-returned",
+    "dashboard-begin",
+    "dashboard-before-input",
+    "dashboard-after-input",
+    "service-list-after-dashboard",
+    "j04-home",
+    "service-list-reactivated"
+  ],
+  "expected": {
+    "phase_views": {
+      "service-list": [
+        "ServiceList",
+        "Services"
+      ],
+      "service-detail": [
+        "ServiceDetail",
+        "ServiceDetails"
+      ],
+      "service-list-returned": [
+        "ServiceList",
+        "Services"
+      ],
+      "dashboard-begin": [
+        "DashboardDetails"
+      ],
+      "dashboard-before-input": [
+        "DashboardDetails"
+      ],
+      "dashboard-after-input": [
+        "DashboardDetails"
+      ],
+      "service-list-after-dashboard": [
+        "ServiceList",
+        "Services"
+      ],
+      "service-list-reactivated": [
+        "ServiceList",
+        "Services"
+      ]
+    },
+    "named_actions": [],
+    "minimum_resources": 1,
+    "minimum_browser_views": 1
+  },
+  "limits": {
+    "initial_launches_per_arm": 1,
+    "journey_home_cycles_per_arm": 1,
+    "terminal_drains_per_arm": 0,
+    "dashboard_wait_seconds": 0,
+    "human_step_seconds": 180,
+    "authentication_seconds": 0,
+    "snapshot_seconds": 30,
+    "display_capture_seconds": 30,
+    "native_seconds_per_arm": 2400,
+    "backend_seconds_per_arm": 600,
+    "cleanup_seconds": 300,
+    "retries": 0,
+    "deadline_extension": false,
+    "backend_row_limit": 2000,
+    "backend_page_limit": 41,
+    "prompt_snapshot_reacquisitions": 3
+  },
+  "cutoff": "Freeze the writer-backed prefix at service-list-reactivated. Preserve its exact bytes and expected identities. Keep the same process foreground for ordinary upload; never flush, relaunch, add a Home step or change tracking configuration. Preserve and classify the later capture tail separately.",
+  "semantic_contract": [
+    "Signed-in entry preserves the eight source-defined Services/dashboard/lifecycle phases. It omits only the three login phases and LoginWithSubdomainTapped; the ordinary login mode remains unchanged.",
+    "Every view occurrence and mapper revision remains in raw local evidence; current backend view versions may supersede earlier versions.",
+    "Require each behavior-prefix action/resource/error/long-task identity and exact owner in backend; no same-name replacement.",
+    "Compare Browser/native application and session, separate Browser source/service/SDK/view identity, and exact eligible native container. Replay ineligible is explicit missing container coverage, not an SDK regression.",
+    "Keep incidental metadata, counters and reducer updates for inspection without requiring complete payload equality or session closure.",
+    "Post-cutoff events cannot supply missing behavior-prefix events. Same-process foreground uploader activity is allowed and separately classified.",
+    "Candidate admission requires complete baseline mechanism, frozen mode/source/product/helpers/cutoff and timely cleanup; final paired source review still owns F08 closure."
+  ],
+  "native_launches": 0,
+  "gate_closures": [],
+  "budget_basis": "Remove181second duplicate expiry wait and two excess Home steps from the old2700second mode. Preserve existing per-step180, authentication600, backend600 and cleanup300 bounds prospectively; no existing deadline changes.",
+  "capture_cost_policy": "f08-correctness-v1",
+  "recorder_cost_contract": "Preserve every cost and unchanged historical thresholds as separate diagnostics. A cost overrun alone does not invalidate correctness; missing or inconsistent capture, consumed readiness, deadline failure or unresolved semantic ambiguity still blocks acceptance. No performance claim.",
+  "account_contract": {
+    "setup": "Corrected signed baseline, same device/bundle/keychain group, observed selected organization/profile and real Services row; recorder disabled. No credential export.",
+    "capture": "First planned baseline freezes typed non-null usr.id and usr.org_uuid as salted comparison digests at the first Services boundary; candidate must match before service-detail input.",
+    "retention": "Only the exact task main process may be stopped. In-place install preserves account and data. Archive only recorder-owned files, retain unrelated Documents bytes, and never uninstall/reset the app.",
+    "cleanup": "Preserve current capture, prove task process/workers absent, retain the exact installed product, unchanged non-task app inventory and display. Retention PASS is required before candidate admission."
+  }
+}

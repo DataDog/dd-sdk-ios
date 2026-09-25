@@ -80,7 +80,7 @@ class Driver:
                 require(display_signature(active_display(loads(raw),self.device))==display_signature(active_display(loads(self.initial),self.device)),
                         'F08 display changed outside any admitted fold')
                 owner=contract.snapshot_owner(result['rows'],row,self.expected,binding,raw,self.device,names=phases.NAMES[screen])
-                visible=phases.visible(result['rows'],row,screen,binding) if screen!='login' else None
+                visible=phases.visible(result['rows'],row,screen,binding) if screen in phases.LABELS else None
                 if subdomain:phases.back_target(tree)
             except Rejected as error:
                 # Readiness observation can settle; no input is repeated. Every

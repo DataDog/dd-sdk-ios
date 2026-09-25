@@ -14,6 +14,13 @@ PHASES = ['login-initial', 'login-subdomain', 'login-returned', 'service-list',
           'service-detail', 'service-list-returned', 'dashboard-begin',
           'dashboard-before-input', 'dashboard-after-input',
           'service-list-after-dashboard', 'service-list-reactivated']
+MODES = {'smoke', 'signed-in-smoke'}
+
+
+def phase_names(spec):
+    return PHASES[3:] if spec['mode'] == 'signed-in-smoke' else PHASES
+
+
 FIELDS = {
     'view': ['view.name', 'view.url', 'view.is_active'],
     'action': ['action.id', 'action.type', 'action.target.name'],
@@ -26,23 +33,28 @@ COMMON = ['type', 'date', 'source', 'application.id', 'session.id', 'view.id']
 
 
 def definition(value):
-    require(value['gate'] == 'S2:F08' and value['mode'] == 'smoke', 'wrong smoke definition')
+    require(value['gate'] == 'S2:F08' and value['mode'] in MODES, 'wrong smoke definition')
     require(value.get('capture_cost_policy') == COST_POLICY, 'smoke observer cost policy differs')
     limits = value['limits']
     require((limits['journey_home_cycles_per_arm'], limits['terminal_drains_per_arm'],
              limits['dashboard_wait_seconds'], limits['retries'], limits['deadline_extension']) == (1, 0, 0, 0, False),
             'smoke adds a duplicate lifecycle, expiry wait or retry')
-    require(value['sequence'] == PHASES[:-1] + ['j04-home', PHASES[-1]], 'smoke sequence changed')
+    selected = phase_names(value)
+    require(value['sequence'] == selected[:-1] + ['j04-home', selected[-1]], 'smoke sequence changed')
     expected = value['expected']
-    require(set(expected['phase_views']) == set(PHASES) and expected['minimum_resources'] == 1
+    require(set(expected['phase_views']) == set(selected) and expected['minimum_resources'] == 1
             and expected['minimum_browser_views'] == 1, 'missing source-defined smoke coverage')
     for name, allowed in expected['phase_views'].items():
         screen = 'login' if name.startswith('login-') else 'detail' if name == 'service-detail' else 'dashboard' if name.startswith('dashboard-') else 'list'
         require(allowed == phases.NAMES[screen], 'source-defined view family changed')
-    require(expected['named_actions'] == [dict(name='LoginWithSubdomainTapped', owner_phase='login-initial', count=1)],
+    actions = [] if value['mode'] == 'signed-in-smoke' else [dict(name='LoginWithSubdomainTapped', owner_phase='login-initial', count=1)]
+    require(expected['named_actions'] == actions,
             'missing source-defined subdomain action')
     require(value['source_manifest'] and all(len(digest) == 64 for digest in value['source_manifest'].values()),
             'source manifest unavailable')
+    if value['mode'] == 'signed-in-smoke':
+        require(value['limits']['authentication_seconds'] == 0 and set(value['account_contract']) == {'setup','capture','retention','cleanup'},
+                'signed-in account contract missing')
     return value
 
 
@@ -99,14 +111,15 @@ def dashboard_interval(rows, begin, before, end, owners, expected):
 
 def native_manifest(rows, native, expected, spec):
     definition(spec)
+    selected = phase_names(spec)
     require(len(native['backgrounds']) == 1, 'smoke must contain exactly one Home cycle')
     observed = native['phases'];local = contract.mapper_inventory(rows, expected)
-    require(all(name in observed for name in PHASES), 'missing named smoke phase')
-    ordered = [observed[name]['snapshot']['sequence'] for name in PHASES]
+    require(all(name in observed for name in selected), 'missing named smoke phase')
+    ordered = [observed[name]['snapshot']['sequence'] for name in selected]
     require(ordered == sorted(set(ordered)), 'smoke phase order differs')
     owners = {};previous = None
     require(native['process_id'] == expected['pid'], 'native smoke process differs')
-    for name in PHASES:
+    for name in selected:
         phase = observed[name];vid = phase['owner']['view_id']
         require(phase['snapshot'] in rows and phase['snapshot']['fields']['topology']['pid'] == expected['pid'],
                 'foreign smoke phase or process')
@@ -122,7 +135,11 @@ def native_manifest(rows, native, expected, spec):
             require(phases.visible(rows,phase['snapshot'],phase['screen'],binding) == phase['visible'],
                     'recorded smoke controller differs')
         previous = binding;owners[name] = vid
-    require(len({owners[name] for name in PHASES[:3]}) == 1, 'subdomain navigation replaced login owner')
+    if spec['mode'] == 'smoke':
+        require(len({owners[name] for name in PHASES[:3]}) == 1, 'subdomain navigation replaced login owner')
+    else:
+        import signed_in_account
+        signed_in_account.verify_subject(rows, observed['service-list'], expected['account_salt'], native['account_binding'])
     actions = []
     for wanted in spec['expected']['named_actions']:
         values = [v['event'] for k,v in local['accepted'].items()
@@ -137,7 +154,7 @@ def native_manifest(rows, native, expected, spec):
     lifecycle = phases.j04(rows, observed, expected, native['backgrounds'][0])
     start, end = ordered[0], ordered[-1]
     for callback in ['willResignActive', 'didEnterBackground', 'willEnterForeground', 'didBecomeActive']:
-        phases.lifecycle(rows, start, end, observed[PHASES[0]]['binding']['scene'], callback)
+        phases.lifecycle(rows, start, end, observed[selected[0]]['binding']['scene'], callback)
     return dict(state='SMOKE_LOCAL_MANIFEST_QUALIFIED', phase_owners=owners,
                 named_action_keys=[list(k) for k in actions], lifecycle=lifecycle,
                 captured_view_occurrences=len(local['views']), captured_resource_events=sum(k[0] == 'resource' for k in local['accepted']),
@@ -172,7 +189,8 @@ def native_backend(rows, local, full, expected, *, pending=True):
         key = contract.event_key(event)
         require(key not in seen and key not in full['dropped'], 'duplicate or dropped event persisted')
         require(key in full['accepted'], 'backend event absent from complete captured stream')
-        semantic_equal(event, full['accepted'][key]['event'], COMMON + FIELDS[family])
+        semantic_equal(event, full['accepted'][key]['event'], COMMON + FIELDS[family] +
+                       (['usr.id', 'usr.org_uuid'] if 'account_salt' in expected else []))
         seen[key] = row
         if key not in local['accepted']:later.append(list(key))
     needed = {k for k in local['accepted'] if k[0] != 'view'}

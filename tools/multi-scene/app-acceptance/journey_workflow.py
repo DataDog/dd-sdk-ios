@@ -20,6 +20,8 @@ import journey_contract as contract
 import journey_transport as backend_transport
 import browser_contract
 import journey_readiness
+import smoke_contract
+import signed_in_account
 from journey_driver import Driver, emit, home_observation
 from capture_io import atomic, encoded, bounded_read
 from capture_contract import loads, prefix, MAX_BYTES, encoder_setup
@@ -30,7 +32,7 @@ from s2_webview_runtime import active_display, display_signature
 
 HERE=Path(__file__).resolve().parent
 REPO=HERE.parents[2]
-LOCAL_HELPERS=['smoke-definition.json','smoke_contract.py','smoke_driver.py','smoke_runtime.py','journey-definition.json','journey_workflow.py','journey_builds.py','journey_driver.py','journey_phases.py','journey_readiness.py',
+LOCAL_HELPERS=['signed-in-definition.json','signed_in_account.py','smoke-definition.json','smoke_contract.py','smoke_driver.py','smoke_runtime.py','journey-definition.json','journey_workflow.py','journey_builds.py','journey_driver.py','journey_phases.py','journey_readiness.py',
                'journey_contract.py','browser_contract.py','journey_transport.py','journey_connector.js','journey_session.py',
                'capture_io.py','capture_contract.py','capture_build.py','ReleaseValidationCapture.swift']
 SHARED_HELPERS=['acceptance_common.py','app_journey_inventory.py','app_journey_transport.py','hosting_contract.py',
@@ -45,10 +47,9 @@ def helpers():
 
 
 def scoped_definition(mode):
-    require(mode in ['journeys','smoke'], 'unknown F08 mode')
-    value=loads((HERE/('smoke-definition.json' if mode=='smoke' else 'journey-definition.json')).read_bytes())
-    if mode=='smoke':
-        import smoke_contract
+    require(mode in ['journeys',*smoke_contract.MODES], 'unknown F08 mode')
+    value=loads((HERE/('signed-in-definition.json' if mode==signed_in_account.MODE else 'smoke-definition.json' if mode=='smoke' else 'journey-definition.json')).read_bytes())
+    if mode in smoke_contract.MODES:
         smoke_contract.definition(value)
     return value
 
@@ -61,7 +62,7 @@ def source_manifest(build_root, definition):
     for arm in builds.ARMS:
         app=Path(preparation['arms'][arm]['app'])
         require(builds.sha(app/recorder)==current,'compiled recorder source differs from current recorder')
-        if definition.get('mode')=='smoke':
+        if definition.get('mode') in smoke_contract.MODES:
             for name,digest in definition['source_manifest'].items():
                 require(builds.sha(app/name)==digest, 'source-defined smoke expectation changed')
 
@@ -84,6 +85,11 @@ def prepare(args):
               build_root=str(build_root),completion_sha256=completion,helpers=helpers(),
               arms={arm:{k:value[k] for k in ['identity','source','application_path']} for arm,value in qualified.items()},
               native_launches=0,gate_closures=[],runtime_transition=transition,workspace_transition={arm:value['workspace_transition'] for arm,value in qualified.items()})
+    if mode==signed_in_account.MODE:
+        path=getattr(args,'account_setup',None)
+        require(path is not None,'signed-in preparation needs qualified account setup')
+        path=path.resolve(strict=True)
+        plan.update(account_setup=dict(path=str(path),sha256=builds.sha(path)),account_salt=str(uuid.uuid4()))
     atomic(root/'plan.json',encoded(plan))
     print(json.dumps(dict(state=plan['state'],root=str(root),plan_sha256=builds.sha(root/'plan.json'))))
 
@@ -222,11 +228,11 @@ def mechanism(summary, joined, *, now):
     ready=(summary.get('scenario')=='PASS' and summary.get('cleanup')=='PASS'
            and summary.get('evidence')=='SOURCE_CLASSIFICATION_REQUIRED' and not summary.get('reason')
            and not summary.get('evidence_errors') and joined is not None
-           and joined.get('state')==('SMOKE_SEMANTICS_JOINED_SOURCE_CLASSIFICATION_REQUIRED' if summary.get('mode')=='smoke' else 'JOINED_FINAL_SOURCE_CLASSIFICATION_REQUIRED')
+           and joined.get('state')==('SMOKE_SEMANTICS_JOINED_SOURCE_CLASSIFICATION_REQUIRED' if summary.get('mode') in smoke_contract.MODES else 'JOINED_FINAL_SOURCE_CLASSIFICATION_REQUIRED')
            and joined['completed_at']<joined['deadline']<=summary['execution_deadline']
            and now<summary['cleanup_details']['deadline']<=summary['cleanup_deadline'])
     return dict(state='PASS' if ready else 'UNQUALIFIED',
-                scope='Actual human input and immutable smoke prefix with ordinary delivery' if summary.get('mode')=='smoke' else 'Actual human input, complete capture/transport and protected J03 interval only',
+                scope='Actual human input and immutable smoke prefix with ordinary delivery' if summary.get('mode') in smoke_contract.MODES else 'Actual human input, complete capture/transport and protected J03 interval only',
                 permits_planned_candidate=ready, release_acceptance=False)
 
 
@@ -259,14 +265,14 @@ def candidate_ready(summary, plan_sha, folder):
             and publication['published_at']<publication['deadline']==summary['cleanup_details']['deadline']
             and (folder/'summary-publication.json').stat().st_mtime<publication['deadline'],
             'baseline outcome publication late or changed')
-    if summary.get('mode')=='smoke':
+    if summary.get('mode') in smoke_contract.MODES:
         proof=loads((folder/'smoke-evidence.json').read_bytes())
         checkpoint=loads((folder/'behavior-checkpoint.json').read_bytes())
         require(all(builds.sha(folder/name)==digest for name,digest in summary['artifacts'].items()),
                 'baseline smoke artifacts changed')
         require(proof['manifest']==loads((folder/'native-summary.json').read_bytes())['manifest'],
                 'baseline smoke source manifest differs')
-        require(proof['state']=='SMOKE_BEHAVIOR_AND_DELIVERY_SEALED' and proof['mode']=='smoke'
+        require(proof['state']=='SMOKE_BEHAVIOR_AND_DELIVERY_SEALED' and proof['mode']==summary['mode']
                 and proof['identity']==summary['identity'] and proof['completed_at']<proof['deadline']
                 and proof['behavior_sha256']==builds.sha(folder/'behavior-prefix.jsonl')==checkpoint['sha256']
                 and proof['checkpoint_sha256']==builds.sha(folder/'behavior-checkpoint.json')
@@ -278,6 +284,12 @@ def candidate_ready(summary, plan_sha, folder):
                 and proof.get('observer_cost') == loads((folder/'observer-cost.json').read_bytes())
                 and proof['observer_cost']['policy'] == 'f08-correctness-v1'
                 and proof.get('performance_acceptance') is False, 'baseline cost diagnostics missing or changed')
+    if summary.get('mode')==signed_in_account.MODE:
+        retention=loads((folder/'account-retention.json').read_bytes())
+        binding=loads((folder/'account-binding.json').read_bytes())
+        require(retention['state']=='PASS' and retention['uninstalls']==0 and retention['account_retained'] is True
+                and retention['finished_at']<retention['deadline'] and binding['state']=='AUTHENTICATED_CAPTURE_BOUND'
+                and summary['account_binding']==binding,'baseline signed-in retention or account binding missing')
     qualification=loads((folder.parent.parent/'baseline-qualification.json').read_bytes())
     require(not (folder.parent.parent/'baseline-late-qualification.json').exists()
             and qualification['state']=='PASS' and qualification['summary_sha256']==publication['summary_sha256']
@@ -311,7 +323,19 @@ def cell(args):
                 'baseline complete join changed')
     out=root/'cells'/arm;require(not out.exists(),'native cell already consumed')
     require(shutil.disk_usage(root).free>=10*1024**3,'insufficient durable capture space')
-    device=shared.devices(args.device);original=shared.apps(args.device);require(absence(args.device,bundle),'task app already present')
+    device=shared.devices(args.device);original=shared.apps(args.device)
+    retained=plan.get('mode')==signed_in_account.MODE
+    setup=None
+    if retained:
+        require(bundle in original,'retained task app missing')
+        completion=loads((Path(plan['build_root'])/'completion.json').read_bytes())
+        setup=signed_in_account.receipt(plan['account_setup'],device=args.device,bundle=bundle,
+            product_sha256=completion['arms']['baseline']['receipts']['installed-bundle-freeze.json'],
+            keychain_group=completion['arms']['baseline']['authentication_capabilities']['keychain_group'],
+            organization=selections['organization'])
+        require(all(completion['arms'][a]['authentication_capabilities']==completion['arms']['baseline']['authentication_capabilities'] for a in builds.ARMS),
+                'paired signing capabilities differ')
+    else:require(absence(args.device,bundle),'task app already present')
     out.mkdir(mode=0o700);backend_transport.preflight(out)
     identity=dict(run_id=str(uuid.uuid4()),nonce=str(uuid.uuid4()))
     budget=plan['definition']['limits'];started=time.time()
@@ -324,7 +348,7 @@ def cell(args):
                  execution_deadline=execution_deadline,cleanup_deadline=cleanup_deadline,
                  plan_sha256=builds.sha(root/'plan.json'),selection_sha256=builds.sha(root/'selection.json'))
     shared.save(out/'summary.json',summary);atomic(out/'initial-apps.json',encoded(original))
-    documents=pid=initial=None;driver=None;joined=None;qualified_outcome=False
+    documents=pid=initial=installed=None;driver=None;joined=None;qualified_outcome=False
     def interrupted(signum,frame):raise RuntimeError('Native owner interrupted; bounded task cleanup required')
     prior={s:signal.signal(s,interrupted) for s in [signal.SIGINT,signal.SIGTERM]}
     try:
@@ -332,24 +356,45 @@ def cell(args):
         active=active_display(loads(initial),args.device)
         require(any(d.get('active') is not True and d['nativeSize'][0]*d['nativeSize'][1]>active['nativeSize'][0]*active['nativeSize'][1]
                     for d in loads(initial)['result']['displays']), 'initial Closed display unproven')
-        shared.command(['/opt/homebrew/bin/axe','describe-ui','--udid',args.device],out,'initial-home',deadline=min(native_deadline,time.time()+15))
-        require(home_observation(loads((out/'initial-home.log').read_bytes()),out,native_deadline),'original Home readiness unavailable')
+        if retained:
+            previous=builds.verify(plan['build_root'],'baseline',plan['completion_sha256'],runtime_transition=plan.get('runtime_transition'))
+            installed=Path(shared.capture(['xcrun','simctl','get_app_container',args.device,bundle,'app']).stdout.decode().strip())
+            builds.product(installed,previous['manifest'])
+            previous_pid=setup['pid'] if arm=='baseline' else baseline['process_id']
+            stopped=signed_in_account.stop_exact(args.device,bundle,installed/info['executable'],out,'account-setup-stop',native_deadline,pid=previous_pid)
+            atomic(out/'previous-process-stop.json',encoded(stopped))
+            documents=Path(shared.capture(['xcrun','simctl','get_app_container',args.device,bundle,'data']).stdout.decode().strip())/'Documents'
+            signed_in_account.preserve_capture(documents,out/'prior-capture',move=True)
+            retained_documents=signed_in_account.inventory(documents)
+            atomic(out/'documents-before-install.json',encoded(retained_documents))
+        else:
+            shared.command(['/opt/homebrew/bin/axe','describe-ui','--udid',args.device],out,'initial-home',deadline=min(native_deadline,time.time()+15))
+            require(home_observation(loads((out/'initial-home.log').read_bytes()),out,native_deadline),'original Home readiness unavailable')
         shared.command(['xcrun','simctl','install',args.device,qualified['application_path']],out,'install',deadline=min(native_deadline,time.time()+60))
         installed=Path(shared.capture(['xcrun','simctl','get_app_container',args.device,bundle,'app']).stdout.decode().strip())
         builds.product(installed,qualified['manifest'])
         documents=Path(shared.capture(['xcrun','simctl','get_app_container',args.device,bundle,'data']).stdout.decode().strip())/'Documents'
-        documents.mkdir(exist_ok=True);require(not list(documents.iterdir()),'stale native capture documents')
+        documents.mkdir(exist_ok=True)
+        if retained:
+            require(signed_in_account.inventory(documents)==retained_documents,'in-place install changed retained Documents')
+            require(not (documents/('rum-release-capture-'+identity['run_id'])).exists()
+                    and not (documents/'release-capture-request.json').exists(),'stale signed-in capture identity')
+            atomic(out/'documents-after-install.json',encoded(retained_documents))
+        else:require(not list(documents.iterdir()),'stale native capture documents')
         backend_transport.preflight(documents)
         shared.command(['xcrun','simctl','launch',args.device,bundle,'--rum-release-validation','--capture-run-id',identity['run_id'],
                         '--capture-nonce',identity['nonce']],out,'launch',deadline=min(native_deadline,time.time()+60))
         match=re.fullmatch(re.escape(bundle)+r': ([1-9][0-9]*)\s*',(out/'launch.log').read_text())
-        require(match is not None,'launch PID unavailable');pid=int(match[1])
+        require(match is not None,'launch PID unavailable');pid=int(match[1]);summary['process_id']=pid
         expected=dict(application_id=info['application_id'],service='ios-app-rum-release-validation',pid=pid,
                       compiled_sdk_version=info['sdk_version'],backend_sdk_version=info['sdk_version'].replace('+','_'),
                       app_version=info['app_version'],environment='rum-release-validation',trace_sample_rate=100)
         configuration=dict(pid=pid,bundle_id=bundle,sdk_version=info['sdk_version'],build_sdk='iphonesimulator27.1')
+        if retained:
+            expected['account_salt']=plan['account_salt']
+            if arm=='candidate':expected['baseline_account_binding']=baseline['account_binding']
         driver_type=Driver;capture_terminal=terminal_capture
-        if plan.get('mode')=='smoke':
+        if plan.get('mode') in smoke_contract.MODES:
             from smoke_driver import Driver as SmokeDriver
             from smoke_runtime import terminal_capture as smoke_terminal_capture
             driver_type=SmokeDriver;capture_terminal=smoke_terminal_capture
@@ -358,11 +403,12 @@ def cell(args):
         known=[loads(p.read_bytes())['session_id'] for p in (root/'cells').glob('*/native-summary.json')]
         sid=initial_session(driver,configuration,known);summary['session_id']=sid
         native=driver.run();native['session_id']=sid
+        if retained:summary['account_binding']=native['account_binding']
         atomic(out/'native-summary.json',encoded(native));summary['scenario']='PASS'
         joined=capture_terminal(driver,native,out,identity,configuration,expected,installed,qualified['manifest'],
                                 args.device,bundle,pid,started,execution_deadline,budget['backend_seconds_per_arm'])
         summary['backend_join_sha256']=builds.sha(out/'backend-joined.json')
-        if plan.get('mode')=='smoke':
+        if plan.get('mode') in smoke_contract.MODES:
             summary['observer_cost']=loads((out/'observer-cost.json').read_bytes())
             summary['semantic_observation']='COMPLETE_REQUIRES_PAIRED_SOURCE_REVIEW'
             summary['performance_acceptance']=False
@@ -381,9 +427,13 @@ def cell(args):
         atomic(out/'native-workers-before-cleanup.json',encoded(workers))
         if workers['state']=='PASS':
             try:
-                errors=cleanup_cell(root,out,documents,identity,args.device,device,original,initial,pid,None,summary['scenario'],deadline,
-                                    task_bundle=bundle,task_absent=lambda d:absence(d,bundle),
-                                    verify_source=lambda _:builds.verify(plan['build_root'],arm,plan['completion_sha256'],runtime_transition=plan.get('runtime_transition')))
+                if retained:
+                    errors=signed_in_account.retained_cleanup(out,documents,args.device,device,original,initial,pid,installed,qualified,
+                        lambda:builds.verify(plan['build_root'],arm,plan['completion_sha256'],runtime_transition=plan.get('runtime_transition')),deadline)
+                else:
+                    errors=cleanup_cell(root,out,documents,identity,args.device,device,original,initial,pid,None,summary['scenario'],deadline,
+                                        task_bundle=bundle,task_absent=lambda d:absence(d,bundle),
+                                        verify_source=lambda _:builds.verify(plan['build_root'],arm,plan['completion_sha256'],runtime_transition=plan.get('runtime_transition')))
             except Exception as error:errors=['cleanup driver: '+str(error)]
         else:errors=['native workers not quiescent; task teardown deferred']
         if time.time()>=deadline:errors.append('cleanup completed after original deadline')
@@ -402,7 +452,7 @@ def cell(args):
 
 def main():
     parser=argparse.ArgumentParser();commands=parser.add_subparsers(dest='stage',required=True)
-    item=commands.add_parser('prepare');item.add_argument('--root',type=Path,required=True);item.add_argument('--build-root',type=Path,required=True);item.add_argument('--mode',choices=['journeys','smoke'],default='journeys');item.add_argument('--runtime-transition',type=Path)
+    item=commands.add_parser('prepare');item.add_argument('--root',type=Path,required=True);item.add_argument('--build-root',type=Path,required=True);item.add_argument('--mode',choices=['journeys',*smoke_contract.MODES],default='journeys');item.add_argument('--runtime-transition',type=Path);item.add_argument('--account-setup',type=Path)
     item=commands.add_parser('cell');item.add_argument('--root',type=Path,required=True);item.add_argument('--arm',choices=builds.ARMS,required=True);item.add_argument('--device',required=True)
     for name in ['native','execution','cleanup']:item.add_argument('--'+name+'-deadline',type=float,required=True)
     args=parser.parse_args()

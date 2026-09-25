@@ -2779,9 +2779,9 @@
             "S2:A01",
             "S2:F07"
           ],
-          "decisive_test": "One source-matched baseline/candidate normal-mode app journey: launch/login, Services list/detail/Back, one dashboard/browser interaction and one background/foreground. Check actual view/action/resource/browser ownership, successful UI and no new crash/hang. Reuse dedicated T10 for adversarial TTL cases. Dedicated fixture evidence owns adversarial Resource/Trace/TTL cases. Internal TestFlight is an optional separately authorized distribution follow-up.",
+          "decisive_test": "Qualify login/account once, then compare one source-matched baseline/candidate normal-mode signed-in journey: Services list/detail/Back, one dashboard/browser interaction and one background/foreground. Check actual view/action/resource/browser ownership, successful UI and no new crash/hang. Bind the retained account and fresh run/session identities. Reuse dedicated T10 for adversarial TTL cases. Internal TestFlight is an optional separately authorized distribution follow-up.",
           "environment": "Existing controlled app, accessible test account/data, isolated probe RUM app/service; Duo simulator preferred, ordinary host for non-Duo integration evidence",
-          "evidence": "Frozen app6e33f1c18 builds against baseline62f64/candidatec9fa remain reusable. Results/S2-F08-app-journeys.json owns all closed setup/transport/native attempts, reviewed collector/AX observers and the current input prerequisite. Native navigation is partial; no full baseline/candidate pair or gate credit. Results/S2-F08-source-oracle.json owns source/inventory preparation and finite J02-J04 expectations. Full paired journeys, account binding, mapper completeness and release evaluation remain open.",
+          "evidence": "Corrected signed app6e33f1c18 products bind baseline62f64/candidatec9fa; one-time account/profile/organization and real Services setup qualify. Results/S2-F08-source-oracle.json owns the signing finding, setup receipts and signed-in continuation. Results/S2-F08-app-journeys.json preserves earlier invalid attempts. No full paired journey or gate credit; exact account/telemetry ownership, mapper completeness and release evaluation remain open.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         },
