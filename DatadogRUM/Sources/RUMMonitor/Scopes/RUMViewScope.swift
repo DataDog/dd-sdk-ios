@@ -527,9 +527,7 @@ extension RUMViewScope {
         var interactionToNextViewTime = interactionToNextViewMetric?.value(for: viewUUID) ?? .failure(.disabled)
         var slowFramesRate: Double?
         var freezeRate: Double?
-        if let command = command as? RUMStopViewCommand,
-           command.identity == identity,
-           timeSpent >= Constants.minimumTimeSpentForRates {
+        if !isActiveView, timeSpent >= Constants.minimumTimeSpentForRates {
             if let totalHitchesDuration = viewHitchesReader?.dataModel.hitchesDuration {
                 slowFramesRate = totalHitchesDuration / timeSpent * Double(1.dd.toMilliseconds) // milliseconds/second
             }

@@ -3004,6 +3004,56 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(stopViewEvent?.view.slowFramesRate, 16)
     }
 
+    func testWhenViewIsReplacedByAnotherViewWithoutExplicitStop_theFinalUpdateEventHasSlowFramesRate() {
+        // Given
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        var hitches: [Hitch] = []
+        (0..<10).forEach {
+            hitches.append((start: TimeInterval($0).dd.toInt64Nanoseconds, duration: 0.016.dd.toInt64Nanoseconds))
+        }
+        let hitchesDuration = TimeInterval.ddFromNanoseconds( hitches.map { $0.duration }.reduce(0, +))
+        let viewHitchesReaderFactory = { ViewHitchesMock(hitchesDataModel: (hitches: hitches, hitchesDuration: hitchesDuration)) }
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockWith(viewHitchesReaderFactory: viewHitchesReaderFactory),
+            identity: .mockViewIdentifier(),
+            path: .mockRandom(),
+            name: .mockRandom(),
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: nil,
+            viewIndexInSession: .mockAny()
+        )
+
+        // When
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: currentTime, identity: scope.identity),
+            context: context,
+            writer: writer
+        )
+
+        currentTime.addTimeInterval(10)
+
+        // Simulate RN-style navigation: a new View starts without the previous one
+        // ever receiving an explicit `StopView` command (e.g. RN bridging losing it).
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+            context: context,
+            writer: writer
+        )
+
+        // Then
+        let viewEvents = writer.events(ofType: RUMViewEvent.self)
+
+        XCTAssertEqual(viewEvents.count, 2)
+        let finalViewUpdateEvent = viewEvents.last
+        XCTAssertEqual(finalViewUpdateEvent?.view.slowFrames?.count, hitches.count)
+        // The rate is calculated on the View's final update, even without an explicit Stop View
+        XCTAssertEqual(finalViewUpdateEvent?.view.slowFramesRate, 16)
+    }
+
     func testWhenThereAreAppHangs_theStopViewEventHasFreezeRate() {
         // Given
         var currentTime: Date = .mockDecember15th2019At10AMUTC()

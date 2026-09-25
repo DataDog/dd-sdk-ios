@@ -238,6 +238,36 @@ class MonitorTests: XCTestCase {
         XCTAssertTrue(lastView3.view.loadingTime! > old)
     }
 
+    // MARK: - Slow Frames Rate
+
+    func testWhenNavigatingWithoutStoppingPreviousView_bothViewsReportSlowFramesRate() throws {
+        // Given
+        let hitches: [Hitch] = (0..<10).map { (start: TimeInterval($0).dd.toInt64Nanoseconds, duration: 0.016.dd.toInt64Nanoseconds) }
+        let hitchesDuration = TimeInterval.ddFromNanoseconds(hitches.map { $0.duration }.reduce(0, +))
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(
+                featureScope: featureScope,
+                viewHitchesReaderFactory: { ViewHitchesMock(hitchesDataModel: (hitches: hitches, hitchesDuration: hitchesDuration)) }
+            ),
+            dateProvider: dateProvider
+        )
+
+        // When — mirrors React Navigation tracking: `startView` on each navigation, `stopView` only on background
+        monitor.startView(key: "ScreenA")
+        dateProvider.now.addTimeInterval(10)
+        monitor.startView(key: "ScreenB")
+        dateProvider.now.addTimeInterval(10)
+        monitor.stopView(key: "ScreenB")
+
+        // Then
+        let viewEvents = try XCTUnwrap((featureScope as? FeatureScopeMock)?.eventsWritten(ofType: RUMViewEvent.self))
+        let lastScreenA = try XCTUnwrap(viewEvents.last { $0.view.name == "ScreenA" })
+        let lastScreenB = try XCTUnwrap(viewEvents.last { $0.view.name == "ScreenB" })
+        XCTAssertEqual(lastScreenA.view.slowFramesRate, 16)
+        XCTAssertEqual(lastScreenB.view.slowFramesRate, 16)
+    }
+
     // MARK: - hasReplay snapshot
 
     func testHasReplaySnapshot_isGatedByTimeseriesCollectorAndResetOnNewSession() throws {
