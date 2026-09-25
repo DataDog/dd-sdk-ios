@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 authenticated app source/oracle preparation",
-  "status": "SMOKE_INPUT_CLARIFIED",
-  "at": "2026-09-21T21:30:08.556874+00:00",
+  "status": "QR_IMAGE_BUILDS_QUALIFIED_NATIVE_UNRUN",
+  "at": "2026-09-25T18:12:10.108759+00:00",
   "owner": "SDK implementer",
   "reviewer": "existing /root/c06_runtime_plan",
   "scope": "Existing J02 service navigation, J03 dashboard correlation and J04 authenticated lifecycle only. No native execution, app or SDK edits, rebuild, login, publication or new experiment.",
@@ -182,7 +182,7 @@
     "partial cleanup relabeled as ordinary pass"
   ],
   "admission_limits": "This is source preparation only. No runtime/oracle pass, gate closure, new experiment or environment retry is implied. Existing J01, Duo and EXP220 automation stops remain closed; fresh execution needs materially changed environment and reviewed fixed admission.",
-  "next_action": "Prepare one fresh baseline with the clarified button-only instruction, preserving the reviewed oracle and unchanged app products; candidate remains conditional on complete baseline qualification.",
+  "next_action": "Obtain a fresh login QR screenshot and import it into simulator Photos before fresh native readiness/admission. Both source-bound image-picker products and the normal smoke plan are prepared. First baseline qualifies native image selection and authentication; candidate requires complete baseline qualification.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/source-review.json",
     "sha256": "41f6a1f5348c383e8c11770dc50da59e45e9dc020559a49c2a60d8691815d6e9"
@@ -697,21 +697,87 @@
       "original_prepare_failure": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-correctness-cost-cc0k4tme/runtime-transition/original-prepare-failure.json"
     },
     "last_attempt": {
+      "state": "INVALID",
       "summary": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-correctness-cost-cc0k4tme/runtime/cells/baseline/summary.json",
-        "sha256": "8ea57d4cb4b95c850983818ef1b4ded9ba2b55b5ba6a1ddd1578d9f9d3ce28ab"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-correctness-cost-cc0k4tme/input-clarification/operator-return/cells/baseline/summary.json",
+        "sha256": "8a47a335b83a59bad5797ac61779fe1af6f2c1f9fe4a497226c4e8d5ae1a81a7"
       },
       "classification": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-correctness-cost-cc0k4tme/input-clarification/classification.json",
-        "sha256": "bebd5f9f79e81aeb3c3255b9df21d9a414b0de99c37a5f469708250f646d47df"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-qr-image-smb3x2jv/previous-attempt/classification.json",
+        "sha256": "a535246b47e708aeec7faf559d7acb64a3f3307626ae4b6c6004931bb57d9e89"
       },
-      "state": "INVALID",
-      "reason": "Additional text-field focus and typing before Back prompt consumed readiness",
       "cleanup": "PASS",
+      "captured": [
+        "Login subdomain action with expected owner",
+        "Back to Login"
+      ],
+      "reason": "Google SSO requires unavailable laptop YubiKey; camera-only QR input lacked image selection. Process later trapped in app debug notification method, before auth/native deadlines.",
       "candidate": "UNRUN",
-      "captured_named_action_owner": "Expected LoginView",
-      "runtime_oracle_changes": 0,
+      "sdk_regression_claim": false,
       "gate_closures": []
     }
+  },
+  "qr_image_input": {
+    "state": "BOTH_PRODUCTS_QUALIFIED_SMOKE_PREPARED",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-qr-image-smb3x2jv",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-qr-image-smb3x2jv/definition.json",
+      "sha256": "5e1c7e369aa15a0f021d7243339c770df8f123a5cbab1efcd8e25179044fb17f"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-qr-image-smb3x2jv/controls/receipt.json",
+      "sha256": "aafc21a4751772107e89bae78ebec98ac4b9d15b456c3f9fd99294321593e64f"
+    },
+    "decoder_cases": 8,
+    "overlay_cases": 3,
+    "overlay": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-qr-image-smb3x2jv/overlay/overlay.json",
+      "sha256": "3e294021873d9a042424feebbc625adb950664e195d050ebcdebc3b27278709c"
+    },
+    "scope": "Identical photo-library input in the existing QR login view for both arms; existing authentication handler and semantic oracle preserved. No SDK or recorder change.",
+    "original_afk_attempt": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-correctness-cost-cc0k4tme/input-clarification/afk-classification.json",
+      "sha256": "2abc9c8cffcb9bb388403e4c4d5be68dc71d0ba59fda046383f3ac34bd5e268e"
+    },
+    "operator_server": "STOPPED_QUIESCENT",
+    "operator_stop": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-qr-image-smb3x2jv/previous-attempt/operator-stop.json",
+      "sha256": "244f8f72fb894093ca665323d72e882fdb5da1e39ed7f0637ea845918a321f40"
+    },
+    "new_builds": 2,
+    "native_launches": 0,
+    "gate_closures": [],
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-qr-image-smb3x2jv/review-final.json",
+      "sha256": "716d1efd21da50f9fa05cc08315fb3d349f04f8d36a6375b0e3a852df5b0001c"
+    },
+    "preparation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-qr-image-smb3x2jv/builds-isolated/preparation-completion.json",
+      "sha256": "2ab43ca27237604e1e7240b21d49460297edf6deca1a3a23b92c5355ffa490dd"
+    },
+    "build_admission": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-qr-image-smb3x2jv/builds-isolated/execution-admission.json",
+      "sha256": "bba1c05af3912f27912da84408a1cff3934fe33feaf90cb6042c540543aefb48"
+    },
+    "builds_admitted": 2,
+    "build_completion": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-qr-image-smb3x2jv/builds-isolated/completion.json",
+      "sha256": "09c82f7f80088a24df5f411bc13e2f1411a464ad34ba43f751fcb847f42835bb"
+    },
+    "compiler_proofs": {
+      "baseline": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-qr-image-smb3x2jv/baseline-qr-compiler.json",
+        "sha256": "6b465180d2e5679a706a5046791bbffe408f8ccbdaa0ffc394959187c1dd0f09"
+      },
+      "candidate": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-qr-image-smb3x2jv/candidate-qr-compiler.json",
+        "sha256": "9b893153241bbdce017bdcbb55b7ccc7427112c8d1ed0e80e6061f8bd0bd2dcb"
+      }
+    },
+    "runtime_plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-qr-image-smb3x2jv/runtime/plan.json",
+      "sha256": "1bd8e3d22b85c73d3e5b9395febedccd4f19fa1538e0d4dcc45952174bd4454c"
+    },
+    "remaining": "Fresh QR image and operator readiness; native picker/sign-in untested"
   }
 }

@@ -2,6 +2,7 @@
 import hashlib
 import json
 from pathlib import Path
+import qr_image_patch
 
 HERE = Path(__file__).resolve().parent
 DEFINITION = json.loads((HERE / 'capture-definition.json').read_text())
@@ -89,12 +90,13 @@ def render(source):
 ''' % (callback, callback, callback, callback))
     text = replace(text, anchor, anchor + '\n\n' + '\n'.join(methods))
     result[DASHBOARD] = text
+    result[qr_image_patch.QR_VIEW] = qr_image_patch.render(original[qr_image_patch.QR_VIEW], replace)
     result[OBSERVABILITY + 'ReleaseValidationCapture.swift'] = (HERE / 'ReleaseValidationCapture.swift').read_text()
     return {relative: text.encode() for relative, text in result.items()}
 
 
 def stage(source, destination):
-    """Stage the seven-file overlay only, without copying configs or app products."""
+    """Stage the declared overlay only, without copying configs or app products."""
     files = render(source)
     destination = Path(destination)
     if destination.exists():

@@ -29,8 +29,9 @@ class Driver(JourneyDriver):
         ready=self.ready('login-initial','login')
         ready=self.step(ready,'login-subdomain','Tap Log In with Subdomain once, then stop. Leave the text field untouched and do not type. Wait for the Back instruction.','login',subdomain=True)
         ready=self.step(ready,'login-returned','Tap the Back button beside Enter Subdomain once.','login')
-        ready=self.step(ready,'service-list','Sign in to the frozen organization '+self.selection['organization']+
-                        ', then open the Services list. Do not select a service yet.','list',authenticated_transition=True,seconds=600)
+        ready=self.step(ready,'service-list','Use QR code login for '+self.selection['organization']+
+                        ': tap Scan QR Code, then Choose QR Code Image and select the login screenshot from Photos. '
+                        'After sign-in, open the Services list. Do not select a service yet.','list',authenticated_transition=True,seconds=600)
         ready=self.step(ready,'service-detail','Open the existing service '+self.selection['service_label']+' once. Do not edit or favorite it.','detail')
         ready=self.step(ready,'service-list-returned','Use Back once to return to the Services list.','list')
         begin=self.step(ready,'dashboard-begin','Open the existing dashboard '+self.selection['dashboard_label']+'. Wait on its detail page.','dashboard')

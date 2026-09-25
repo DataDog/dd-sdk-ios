@@ -2,7 +2,7 @@
 
 This validation-only patch serves the existing S2:F08 J01–J04 journeys. The
 [capture definition](capture-definition.json) freezes its scope before implementation.
-It adds no SDK changes, app routes, interactions or dependencies. Existing accepted
+It adds no SDK changes or dependencies. Existing accepted
 app builds and earlier failed Home runs keep their original verdicts.
 
 Capture uses the app’s existing navigation delegate and scene/window hooks. It
@@ -37,6 +37,23 @@ Every failed preparation and closed deadline remains immutable. Changed build
 inputs require fresh copies and admission. A checker correction can re-evaluate
 valid saved outputs without rebuilding or extending the original deadline.
 These helpers do not replace native, backend or cleanup verdicts.
+
+## Simulator QR login
+
+The user-requested image input adds **Choose QR Code Image** to the existing QR
+scanner in both comparison builds. Save the login QR screenshot from the laptop,
+import that image into the selected simulator's Photos library, then choose it in
+the app. Prepare the image before the sign-in step; each arm needs a valid QR code.
+The system picker exposes only the selected image. A bounded, off-main decoder
+rejects unreadable images or multiple codes, then uses the existing URL login
+handler. Authentication validation is unchanged; image data and decoded credentials
+are never added to diagnostic messages. Cancellation submits no login.
+
+`qr_image_patch.py` changes an existing LoginUI source file; it adds no project
+member. `QRCodeImageDecoderControls.swift` checks synthetic screenshots, rotation,
+downsampling, corrupt/ambiguous input and cancellation. The compiler input change
+requires fresh symmetric builds; the host-only product-reuse transition does not
+apply. The first planned baseline qualifies native selection and authentication.
 
 ## Recorder setup
 

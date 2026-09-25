@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "gate": "S2:F08",
-  "scope": "Validation-only observation for the existing J01-J04 app journeys; no new scenario or SDK change.",
+  "scope": "Validation-only observation and user-requested photo-library QR login for existing S2:F08 journeys; identical app overlay in both arms, existing authentication handler, no SDK change.",
   "defined_at": "2026-09-22T19:46:51.436399+00:00",
   "state": "DEFINED_BEFORE_IMPLEMENTATION",
   "app_revision": "6e33f1c18a52d04b0793e6954f456bdbc1affe2f",
@@ -13,7 +13,8 @@
     "Targets/DatadogApp/SceneDelegate.swift": "c402795a46697ce16fa7d6c5449f7cc850a53134091616795d2b6f701d43517b",
     "Targets/DatadogApp/WindowController.swift": "a32f5b658026861d2dc416791e36e9fefad2d59f52b540390ebfc5dceebff4c9",
     "Targets/DatadogApp/UI/App/Root/Signed In Root/SignedInRootCoordinator+UINavigationControllerDelegate.swift": "e7dd5786afba32f88a4bbd13210b2a0d82aa15e1c1ebc580d4321cde13327fe1",
-    "Targets/DatadogApp/UI/App/Root/Signed In Root/Datadog Products/Dashboards/Details/DashboardDetailViewController.swift": "168a063bf5e7fd041d6a30a8570705ce84f245602ff753f02df193eff4f99f52"
+    "Targets/DatadogApp/UI/App/Root/Signed In Root/Datadog Products/Dashboards/Details/DashboardDetailViewController.swift": "168a063bf5e7fd041d6a30a8570705ce84f245602ff753f02df193eff4f99f52",
+    "Targets/Feature/Login/UI/QRCode Login/QRCodeScannerView.swift": "8504e3be92f8aa393865c3f3fe1d82bb8323132def907d69fd16bf8a5bad0787"
   },
   "new_app_paths": [
     "Targets/Platform/DatadogObservability/ReleaseValidationCapture.swift"
