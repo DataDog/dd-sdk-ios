@@ -65,6 +65,63 @@ class TLVBlockTests: XCTestCase {
         }
     }
 
+    // MARK: - Serializing into a shared buffer
+
+    func testSerializeInto_appendsAtTheEndOfTheBuffer() throws {
+        // Given
+        var buffer = Data([0xFF, 0xFE])
+
+        // When
+        try Block(type: .one, data: Data([0xAA])).serialize(into: &buffer)
+        try Block(type: .two, data: Data([0xBB, 0xCC])).serialize(into: &buffer)
+
+        // Then
+        XCTAssertEqual(
+            buffer,
+            Data([0xFF, 0xFE])
+                + Data([0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0xAA])
+                + Data([0x02, 0x00, 0x02, 0x00, 0x00, 0x00, 0xBB, 0xCC])
+        )
+    }
+
+    func testSerializeInto_encodesMultiByteLength() throws {
+        // Given
+        var buffer = Data([0xFF])
+        let payload: Data = .mockRandom(ofSize: 0x0102)
+
+        // When
+        try Block(type: .three, data: payload).serialize(into: &buffer)
+
+        // Then
+        XCTAssertEqual(
+            buffer,
+            Data([0xFF])
+                + Data([0x03, 0x00, 0x02, 0x01, 0x00, 0x00])
+                //   ^   type  ^  ^    data size = 258  ^
+                + payload
+        )
+    }
+
+    func testSerializeInto_withLengthExceedingLimit_leavesBufferUnchanged() throws {
+        // Given
+        let maxDataLength = TLVBlockSize(100)
+        var buffer = Data()
+        try Block(type: .one, data: Data([0xAA])).serialize(into: &buffer, maxLength: maxDataLength)
+        let bufferBefore = buffer
+
+        // When
+        let exceedingData: Data = .mockRandom(ofSize: maxDataLength + 1)
+        XCTAssertThrowsError(try Block(type: .two, data: exceedingData).serialize(into: &buffer, maxLength: maxDataLength)) { error in
+            XCTAssertEqual(
+                (error as CustomStringConvertible).description,
+                TLVBlockError.bytesLengthExceedsLimit(length: maxDataLength + 1, limit: maxDataLength).description
+            )
+        }
+
+        // Then - no partial block was appended, so the buffer remains a valid TLV stream
+        XCTAssertEqual(buffer, bufferBefore)
+    }
+
     func testSanitizingReadOperationFailed_neverReportsRawStreamError() {
         // Given
         // `streamError`'s `userInfo` content depends on its domain - `NSCocoaErrorDomain` file errors,
