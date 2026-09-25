@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 authenticated app source/oracle preparation",
-  "status": "OFFLINE_REPAIR_QUALIFIED_PAGINATION_OPEN",
-  "at": "2026-09-25T21:50:20.728831+00:00",
+  "status": "HOST_TRANSPORT_REVIEWED_COMPLETE_INVENTORY_OPEN",
+  "at": "2026-09-25T22:26:29.673805+00:00",
   "owner": "SDK implementer",
   "reviewer": "existing /root/c06_runtime_plan",
   "scope": "Existing J02 service navigation, J03 dashboard correlation and J04 authenticated lifecycle only. No native execution, app or SDK edits, rebuild, login, publication or new experiment.",
@@ -182,7 +182,7 @@
     "partial cleanup relabeled as ordinary pass"
   ],
   "admission_limits": "This is source preparation only. No runtime/oracle pass, gate closure, new experiment or environment retry is implied. Existing J01, Duo and EXP220 automation stops remain closed; fresh execution needs materially changed environment and reviewed fixed admission.",
-  "next_action": "Qualify complete MCP pagination using its explicit next offset, count, full JSON rows and terminal empty page. One separately bounded source-backed saved-session retrieval may qualify the repaired transport; no human repetition until then.",
+  "next_action": "One fresh fixed1800-second read-only complete inventory and source-backed projection of the stopped session before another human/native admission. Retain original failed baseline and candidateUNRUN.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/source-review.json",
     "sha256": "41f6a1f5348c383e8c11770dc50da59e45e9dc020559a49c2a60d8691815d6e9"
@@ -967,6 +967,10 @@
     "offline_correction": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/offline-repair-summary.json",
       "sha256": "b44fee31f237a13fa42e25efaf29288fb6f9cd84eae37fd4025739929c4feebe"
+    },
+    "transport_preparation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/transport-preparation-summary.json",
+      "sha256": "8ea6e48ebe29f213ed3d465e0a390d35b69ae5592cbe82db325346ba1278f7f9"
     }
   }
 }

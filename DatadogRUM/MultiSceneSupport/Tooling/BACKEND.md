@@ -23,17 +23,17 @@ Query every view in a session to expose restored old run IDs, then group exact
 view/action/resource owners and compare raw events with reduced entities. Include
 errors, SDK telemetry and crashes as the scenario specifies.
 
-Use bounded polling, retain full raw payloads, counts and exhausted-page receipts,
-and reject explicit or textual truncation. A zero count with empty `JSON_DATA` can
-represent an empty exhausted inventory; require its count/provenance. Never accept
-only an owner-filtered subset, a lower-bound ingestion count or sampled details.
-Freeze decoders and all helper sources before collection; verify them before every
-projection/assembly. Persist fulfilled siblings even if another parallel read fails.
-Late raw data remains evidence without satisfying an earlier deadline.
+Use bounded polling and retain full raw payloads, counts and exhausted-page receipts.
+Reject truncation except the F08 decoder's exact, reviewed pagination notice: its
+complete JSON array, displayed count and next offset must match the requested page.
+An empty terminal `JSON_DATA` needs count/provenance. Owner-filtered subsets,
+ingestion counts and sampled details are insufficient. Freeze decoder/helper sources
+before collection and verify before projection. Persist fulfilled siblings on failure;
+late raw data never satisfies an earlier deadline.
 
 For raw MCP pagination, metadata `count` describes the full query, including an
 empty terminal page. Require a stable total on every page, contiguous offsets,
-terminal exhaustion and exact independent COUNT; a page-length check is wrong.
+terminal exhaustion and exact independent COUNT; receipts also bind requested offsets.
 Use [the transport decoder](../../../tools/multi-scene/acceptance/app_journey_transport.py).
 Freeze persisted SDK tags separately from compiled/installed versions: tag
 [normalization](https://docs.datadoghq.com/getting_started/tagging/) can replace `+`

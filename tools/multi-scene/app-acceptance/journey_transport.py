@@ -23,6 +23,7 @@ MAX_PART = 49_152
 MAX_RESPONSE = 2_097_152
 ROW_LIMIT = 2000
 PAGE_LIMIT = 41
+MAX_BUDGET_SECONDS = 1800
 
 
 def sha(raw):return hashlib.sha256(raw).hexdigest()
@@ -53,7 +54,7 @@ def begin(directory, identity, query, start, end, deadline, *, minimum_rows=0):
     require(all(d.tzinfo for d in dates) and dates[0] < dates[1], 'query interval is not fixed UTC dates')
     require(isinstance(query, str) and query and 0 <= minimum_rows <= ROW_LIMIT, 'invalid backend request')
     issued = time.time()
-    require(issued < deadline <= issued + 600, 'backend budget differs')
+    require(issued < deadline <= issued + MAX_BUDGET_SECONDS, 'backend budget differs')
     key = str(uuid.uuid4())
     path = directory / (key + '.request.json')
     spool = directory / key
@@ -96,6 +97,19 @@ def part(path, label, index, data):
     return dict(state='RESPONSE_PART_RETAINED', label=label, index=index, bytes=len(data), sha256=sha(data))
 
 
+def page_offset(folder, label):
+    """The request offset is derived only from earlier, already-sealed pages."""
+    offset=0
+    for index in range(int(label[4:])):
+        path=folder/('page'+str(index).zfill(3)+'.receipt.json')
+        require(path.is_file(), 'page sealed before its predecessor')
+        previous=loads(path.read_bytes())
+        require(previous['state']=='PAGE_CAPTURED' and previous['rows']>0, 'invalid or terminal predecessor page')
+        require(type(previous.get('start_at')) is int and previous['start_at']==offset, 'predecessor page offset changed')
+        offset+=previous['rows']
+    return offset
+
+
 def seal(path, label, parts, digest):
     bound, folder = binding(path)
     label_name(label)
@@ -117,9 +131,10 @@ def seal(path, label, parts, digest):
             require(count <= ROW_LIMIT, 'count exceeds frozen bound')
             receipt.update(state='COUNT_CAPTURED', count=count, pending=count < bound['minimum_rows'])
         else:
-            rows, total = raw_page(response)
+            offset=page_offset(folder,label)
+            rows, total = raw_page(response,allow_pagination=True,start_at=offset)
             require(total <= ROW_LIMIT and len(rows) <= ROW_LIMIT, 'page exceeds frozen bound')
-            receipt.update(state='PAGE_CAPTURED', rows=len(rows), total=total)
+            receipt.update(state='PAGE_CAPTURED', rows=len(rows), total=total,start_at=offset)
         live(bound)
     except Exception as error:
         receipt['reason'] = str(error)
@@ -148,6 +163,7 @@ def finish(path):
                 'foreign, changed or late response')
         if label != 'count':
             require(receipt['state'] == 'PAGE_CAPTURED', 'page not qualified')
+            require(type(receipt.get('start_at')) is int and receipt['start_at']==offset, 'page receipt offset changed')
             response['pages'].append(dict(start_at=offset, response=loads(raw)))
             offset += receipt['rows']
     if count_receipt['pending']:
@@ -157,7 +173,7 @@ def finish(path):
     try:
         live(bound)
         rows = pollable_inventory(response, bound['request'], row_limit=ROW_LIMIT, page_limit=PAGE_LIMIT,
-                                  minimum_rows=bound['minimum_rows'])
+                                  minimum_rows=bound['minimum_rows'],allow_pagination=True)
     except Rejected as error:
         if error.state != 'PENDING':raise
         response['pending'] = str(error)
@@ -188,7 +204,7 @@ def wait(path, *, process_live=lambda: True):
             and publication['published_at'] < bound['deadline'], 'stale or late inventory publication')
     response = loads(raw)
     return pollable_inventory(response, bound['request'], row_limit=ROW_LIMIT, page_limit=PAGE_LIMIT,
-                              minimum_rows=bound['minimum_rows'])
+                              minimum_rows=bound['minimum_rows'],allow_pagination=True)
 
 
 def main():

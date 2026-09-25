@@ -76,7 +76,7 @@
     "snapshot_seconds": 30,
     "display_capture_seconds": 30,
     "native_seconds_per_arm": 2400,
-    "backend_seconds_per_arm": 600,
+    "backend_seconds_per_arm": 1800,
     "cleanup_seconds": 300,
     "retries": 0,
     "deadline_extension": false,

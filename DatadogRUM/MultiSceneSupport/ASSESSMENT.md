@@ -73,8 +73,8 @@ entitlements caused the fixture's misleading permission shell; the corrected bas
 loads the selected organization and Services. This resolves a fixture prerequisite,
 not an SDK regression. [Paired app journeys](Results/S2-F08-app-journeys.json) remain
 open. The first signed-in baseline reached the dashboard but stopped on a harness
-container assumption; backend pagination also needs qualification. Neither is an
-SDK regression. Preserve failed attempts and their separate cleanup outcomes.
+container assumption. The host corrections are reviewed; full backend collection
+remains unqualified. Preserve failed attempts and their separate cleanup outcomes.
 [Semantic Duo boot failures](Results/S2-Duo-environment-readiness.json) occur before
 app installation/assertions and have no established SDK cause. An equivalent retry
 requires materially changed conditions and separate admission.

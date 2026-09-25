@@ -17,6 +17,12 @@ def page(rows, total, flag=""):
                     json.dumps(rows) if rows else "\n\n")
 
 
+def paginated(rows,total,next_at,displayed=None):
+    flags='<is_truncated>true</is_truncated><displayed_items>'+str(len(rows) if displayed is None else displayed)+'</displayed_items>'
+    flags+='<truncation_message>Response truncated. Call again with start_at='+str(next_at)+' to get the next batch, and/or increase max_tokens.</truncation_message>'
+    return page(rows,total,flags)
+
+
 def fixture():
     rows = [dict(id="event-" + str(i), attributes=dict(custom={"type": "view", "sdk_version": "3.17.0+example"}))
             for i in range(3)]
@@ -34,6 +40,41 @@ def collect(receipt, request):
 
 
 class TransportControls(unittest.TestCase):
+    def test_only_explicit_offset_pagination_can_opt_in(self):
+        request,receipt,rows=fixture();receipt['pages'][0]['response']=paginated(rows[:2],3,2)
+        with self.assertRaises(Rejected):collect(receipt,request)
+        self.assertEqual(transport.complete_inventory(receipt,request,row_limit=10,page_limit=4,allow_pagination=True),rows)
+        self.assertEqual(transport.pollable_inventory(receipt,request,row_limit=10,page_limit=4,allow_pagination=True),rows)
+
+    def test_pagination_never_accepts_cut_rows_missing_counts_or_wrong_offsets(self):
+        request,receipt,rows=fixture()
+        for mode in ['no-offset','wrong-offset','wrong-count','empty','cut-json','duplicate-key','outer-warning','unknown-notice','duplicate-metadata']:
+            value=paginated(rows[:2],3,2);start=0
+            if mode=='no-offset':start=None
+            if mode=='wrong-offset':start=1
+            if mode=='wrong-count':value=paginated(rows[:2],3,2,displayed=1)
+            if mode=='empty':value=paginated([],3,0)
+            text=value['content'][0]['text']
+            if mode=='cut-json':text=text.replace('</JSON_DATA>', '')
+            if mode=='duplicate-key':text=text.replace('"id": "event-0"','"id":"first","id":"second"')
+            if mode=='outer-warning':text+=' Response was truncated'
+            if mode=='unknown-notice':text=text.replace('Call again with start_at=2','Retry from 2')
+            if mode=='duplicate-metadata':text=text.replace('<displayed_items>2</displayed_items>','<displayed_items>2</displayed_items>'*2)
+            value['content'][0]['text']=text
+            with self.subTest(mode=mode),self.assertRaises((Rejected,ValueError)):
+                transport.raw_page(value,allow_pagination=True,start_at=start)
+
+    def test_paginated_inventories_still_need_all_unique_rows_and_empty_terminal(self):
+        request,receipt,rows=fixture();receipt['pages'][0]['response']=paginated(rows[:2],3,2)
+        for mode in ['missing-terminal','duplicate-row','foreign-request','bad-total']:
+            bad=copy.deepcopy(receipt)
+            if mode=='missing-terminal':bad['pages'].pop()
+            if mode=='duplicate-row':bad['pages'][1]['response']=paginated([rows[0]],3,3)
+            if mode=='foreign-request':bad['request']['nonce']='stale'
+            if mode=='bad-total':bad['pages'][-1]['response']=page([],4)
+            with self.subTest(mode=mode),self.assertRaises(Rejected):
+                transport.pollable_inventory(bad,request,row_limit=10,page_limit=4,allow_pagination=True)
+
     def test_query_total_on_partial_and_empty_terminal_pages(self):
         request, receipt, rows = fixture()
         self.assertEqual(collect(receipt, request), rows)

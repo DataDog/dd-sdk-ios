@@ -179,6 +179,15 @@ are required; `journey_connector.js` exchanges only a published backend request.
 The [owning record](../../../DatadogRUM/MultiSceneSupport/Results/S2-F08-source-oracle.json)
 contains current identities, controls and remaining prerequisites.
 
+The transport freezes absolute UTC dates for each broad/native query pair; later
+polls may see delayed uploads, but COUNT and every page keep the same query dates.
+F08 alone accepts the MCP's explicit next-offset pagination notice when the JSON
+array is complete and its displayed count/offset agree. Independent COUNT, stable
+totals, unique event IDs, sequential receipt offsets and an empty terminal page are
+still mandatory. Raw response parts are retained in batches of at most eight
+independent writes before sealing; every sibling result is inspected. A complete
+saved-session fetch qualifies transport only, never the stopped native scenario.
+
 The driver proves actual input effects, native attachment and mapper owners before
 each step. Complete refresh observations can trigger a fresh snapshot within the
 original prompt deadline; a refresh is never substituted for native readiness.

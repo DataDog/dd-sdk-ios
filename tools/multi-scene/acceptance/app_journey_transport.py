@@ -17,7 +17,10 @@ def _unique_keys(pairs):
     return result
 
 
-def _body(response, tag):
+PAGINATION_NOTICE = r'Response truncated\. Call again with start_at=([0-9]+) to get the next batch, and/or increase max_tokens\.'
+
+
+def _body(response, tag, *, allow_pagination=False):
     require(isinstance(response, dict) and not response.get("isError"), "MCP error")
     text = "\n".join(item["text"] for item in response["content"] if item["type"] == "text")
     metadata = re.findall(r"<METADATA>(.*?)</METADATA>", text, re.S)
@@ -25,12 +28,21 @@ def _body(response, tag):
     require(len(metadata) == len(payloads) == 1, "missing or ambiguous complete payload")
     payload = payloads[0]
     envelope = text[:payload.start()] + text[payload.end():]
-    require(not re.search(r"(?:output|response|data)\s+(?:was\s+)?truncated|truncated\s+(?:output|response)|truncation",
-                          envelope, re.I), "textual truncation")
     root = ET.fromstring("<METADATA>" + metadata[0] + "</METADATA>")
     flags = root.findall("is_truncated")
-    require(len(flags) <= 1 and all((flag.text or "").strip().lower() == "false" for flag in flags),
-            "truncated payload")
+    require(len(flags)<=1, 'ambiguous truncation flag')
+    paginated=bool(flags and (flags[0].text or '').strip().lower()=='true')
+    if paginated and allow_pagination and tag=='JSON_DATA':
+        notices=root.findall('truncation_message')
+        require(len(notices)==1 and re.fullmatch(PAGINATION_NOTICE,(notices[0].text or '').strip()),
+                'unrecognized pagination notice')
+        # Only this exact, offset-bearing notice is pagination. Every other
+        # outer truncation warning still invalidates the response.
+        envelope=re.sub(r'<truncation_message>.*?</truncation_message>','',envelope,count=1,flags=re.S)
+    else:
+        require(all((flag.text or '').strip().lower()=='false' for flag in flags), 'truncated payload')
+    require(not re.search(r"(?:output|response|data)\s+(?:was\s+)?truncated|truncated\s+(?:output|response)|truncation",
+                          envelope, re.I), "textual truncation")
     return root, payload.group(1)
 
 
@@ -40,9 +52,9 @@ def _integer(root, name):
     return int(matches[0].text.strip())
 
 
-def raw_page(response):
+def raw_page(response, *, allow_pagination=False, start_at=None):
     """MCP count is the query total, including on an empty terminal page."""
-    metadata, payload = _body(response, "JSON_DATA")
+    metadata, payload = _body(response, "JSON_DATA",allow_pagination=allow_pagination)
     rows = json.loads(payload, object_pairs_hook=_unique_keys) if payload.strip() else []
     require(isinstance(rows, list), "expected raw event list")
     require(all(isinstance(row, dict) and isinstance(row.get("id"), str) and
@@ -50,6 +62,11 @@ def raw_page(response):
             "projected or malformed raw rows")
     total = _integer(metadata, "count")
     require(total >= len(rows), "page exceeds query total")
+    if (metadata.findtext('is_truncated') or '').strip().lower()=='true':
+        require(type(start_at) is int and start_at>=0 and rows, 'pagination offset missing or empty truncated page')
+        require(_integer(metadata,'displayed_items')==len(rows), 'pagination row count differs')
+        next_offset=int(re.fullmatch(PAGINATION_NOTICE,metadata.findtext('truncation_message').strip())[1])
+        require(next_offset==start_at+len(rows)<=total, 'pagination next offset differs')
     return rows, total
 
 
@@ -62,19 +79,19 @@ def raw_count(response):
     return int(rows[1][0]) if len(rows) == 2 else 0
 
 
-def complete_inventory(receipt, request, *, row_limit, page_limit):
+def complete_inventory(receipt, request, *, row_limit, page_limit, allow_pagination=False):
     """Reconcile every page total, terminal exhaustion and independent COUNT."""
     require(not receipt.get("error"), "failed collector receipt")
     count = raw_count(receipt["count_response"])
     decoded = dict(request=receipt["request"], count=count, pages=[])
     for page in receipt["pages"]:
-        rows, total = raw_page(page["response"])
+        rows, total = raw_page(page["response"],allow_pagination=allow_pagination,start_at=page['start_at'])
         require(total == count, "page total disagrees with independent count")
         decoded["pages"].append(dict(start_at=page["start_at"], rows=rows, truncated=False))
     return inventory(decoded, request, row_limit=row_limit, page_limit=page_limit)
 
 
-def pollable_inventory(receipt, request, *, row_limit, page_limit, minimum_rows=0):
+def pollable_inventory(receipt, request, *, row_limit, page_limit, minimum_rows=0, allow_pagination=False):
     """A changing count may be polled again; it never yields an accepted inventory."""
     require(not receipt.get('error'), 'failed collector receipt')
     require(set(request) == {'run_id', 'nonce', 'query', 'from', 'to'} and
@@ -93,11 +110,11 @@ def pollable_inventory(receipt, request, *, row_limit, page_limit, minimum_rows=
     offset = 0; ids = []; totals = []
     for index, page in enumerate(pages):
         require(type(page.get('start_at')) is int and page['start_at'] == offset, 'page offset differs')
-        rows, total = raw_page(page['response'])
+        rows, total = raw_page(page['response'],allow_pagination=allow_pagination,start_at=offset)
         require(total <= row_limit, 'page total exceeds frozen limit')
         require(bool(rows) == (index < len(pages) - 1), 'missing empty terminal page')
         offset += len(rows); require(offset <= row_limit, 'inventory exceeds frozen limit')
         ids.extend(row['id'] for row in rows); totals.append(total)
     require(all(ids) and len(ids) == len(set(ids)), 'missing or duplicate raw ID')
     require(all(total == count for total in totals), 'inventory changed during collection', 'PENDING')
-    return complete_inventory(receipt, request, row_limit=row_limit, page_limit=page_limit)
+    return complete_inventory(receipt, request, row_limit=row_limit, page_limit=page_limit,allow_pagination=allow_pagination)

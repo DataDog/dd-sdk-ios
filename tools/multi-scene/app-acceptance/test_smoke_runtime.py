@@ -1,4 +1,5 @@
 import copy
+import datetime
 import json
 from pathlib import Path
 import tempfile
@@ -53,7 +54,7 @@ class SmokeRuntimeControls(unittest.TestCase):
 
     def test_fixed_deadline_collection_keeps_original_prefix_and_later_bytes_separate(self):
         with tempfile.TemporaryDirectory() as path:
-            root=Path(path);rows,bounds,owners=browser_fixture()
+            root=Path(path).resolve();rows,bounds,owners=browser_fixture()
             rows,_=payload([(r['kind'],r['fields']) for r in rows if r['kind']!='observer_cost'])
             bounds=[r for r in rows if r['kind']=='snapshot']
             interval=smoke_contract.dashboard_interval(rows,*bounds,owners,EXPECTED)
@@ -61,14 +62,19 @@ class SmokeRuntimeControls(unittest.TestCase):
             native=backend(journey_contract.mapper_inventory(rows,EXPECTED));browsers=browser_backend(browser_contract.local_inventory(rows,EXPECTED),interval)
             driver=SimpleNamespace(process_live=lambda:True,collector=SimpleNamespace(directory=root));requests=[]
             deadline=time.time()+30
-            def begin(out,identity,query,start,end,actual_deadline,minimum_rows):
-                self.assertEqual(actual_deadline,deadline);self.assertEqual(end,'now')
-                p=root/('request-'+str(len(requests))+'.json');p.write_bytes(encoded({'query':query}));requests.append(p);return p
-            with patch.object(smoke_runtime.transport,'begin',side_effect=begin), \
-                 patch.object(smoke_runtime.transport,'wait',side_effect=[native+browsers,native]),patch.object(smoke_runtime,'emit'):
+            def wait(path,**kwargs):
+                bound=json.loads(path.read_bytes());requests.append(bound)
+                self.assertEqual(bound['deadline'],deadline)
+                self.assertNotEqual(bound['request']['to'],'now')
+                return native+browsers if len(requests)==1 else native
+            with patch.object(smoke_runtime.transport,'wait',side_effect=wait),patch.object(smoke_runtime,'emit'):
                 result=smoke_runtime.collected(root,IDENTITY,EXPECTED,rows,raw,checkpoint,driver,{'j03':interval},time.time()-10,deadline)
             self.assertEqual(result['behavior_sha256'],checkpoint['sha256']);self.assertLess(result['completed_at'],deadline)
             self.assertEqual(len(requests),2);self.assertEqual((root/'delivery-0.jsonl').read_bytes(),raw)
+            self.assertEqual(requests[0]['request']['to'],requests[1]['request']['to'])
+            self.assertEqual(result['query_end'],requests[0]['request']['to'])
+            self.assertLessEqual(datetime.datetime.fromisoformat(result['query_end']).timestamp(),requests[0]['issued_at'])
+            self.assertEqual(len(list(root.glob('*.request.json'))),2)
             self.assertEqual(result['mode'],'smoke')
 
     def test_final_seal_allows_observed_tail_without_changing_behavior_or_querying_after_stop(self):

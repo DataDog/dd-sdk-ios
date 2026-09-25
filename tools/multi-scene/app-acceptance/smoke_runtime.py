@@ -22,15 +22,17 @@ def collected(out, identity, expected, behavior, frozen, checkpoint, driver, nat
     broad_min=native_min+len(browser['latest'])+sum(k[0]!='view' for k in browser['events'])
     require(broad_min<=transport.ROW_LIMIT,'frozen behavior exceeds backend inventory bound')
     start=datetime.datetime.fromtimestamp(started-120,datetime.timezone.utc).isoformat()
-    # Queries remain open to ordinary delivery; membership is fixed by the
-    # writer-backed behavior prefix, never by a later event that looks similar.
+    # Later polls can observe ordinary delayed delivery. Freeze one absolute end
+    # for each pair so COUNT and pagination cannot drift as they are collected.
+    # Behavioral membership remains fixed by the writer-backed prefix.
     query='@application.id:'+expected['application_id']+' @session.id:'+expected['session_id']
     for attempt in range(24):
         require(time.time()<deadline and driver.process_live(),'delivery deadline or original process lost')
         try:
             values=[];requests=[]
+            end=datetime.datetime.now(datetime.timezone.utc).isoformat()
             for selected,minimum in [(query,broad_min),(query+' service:'+expected['service']+' source:ios',native_min)]:
-                path=transport.begin(out,dict(run_id=identity['run_id'],nonce=str(uuid.uuid4())),selected,start,'now',deadline,minimum_rows=minimum)
+                path=transport.begin(out,dict(run_id=identity['run_id'],nonce=str(uuid.uuid4())),selected,start,end,deadline,minimum_rows=minimum)
                 requests.append(str(path));emit('backend_request',str(path))
                 values.append(transport.wait(path,process_live=driver.process_live))
             raw=bounded_read(driver.collector.directory/'events.jsonl',MAX_BYTES)
@@ -40,7 +42,7 @@ def collected(out, identity, expected, behavior, frozen, checkpoint, driver, nat
             result.update(completed_at=time.time(),deadline=deadline,inventory_requests=requests,
                           behavior_sha256=checkpoint['sha256'],cutoff_sequence=checkpoint['sequence'],
                           delivery_capture=str(out/('delivery-'+str(attempt)+'.jsonl')),delivery_sha256=captured['readback_sha256'],
-                          attempts=attempt+1,query_start=start)
+                          attempts=attempt+1,query_start=start,query_end=end)
             atomic(out/'backend-joined.json',encoded(result))
             require(time.time()<deadline,'smoke backend publication late')
             return result

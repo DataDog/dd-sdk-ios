@@ -58,9 +58,14 @@ async function persist(label, raw) {
   const payload=bytes(JSON.stringify(raw));
   if(payload.length>2097152) throw Error('Single tool response exceeds frozen limit');
   const parts=Math.ceil(payload.length/49152);
-  for(let i=0;i<parts;i++) {
-    await shell('python3 -B '+quote(script)+' part --request '+quote(requestPath)+' --label '+quote(label)+
-      ' --index '+i+' --payload '+quote(base64(payload.slice(i*49152,(i+1)*49152))),true);
+  for(let first=0;first<parts;first+=8) {
+    const results=await Promise.allSettled(Array.from({length:Math.min(8,parts-first)},(_,n)=> {
+      const i=first+n;
+      return shell('python3 -B '+quote(script)+' part --request '+quote(requestPath)+' --label '+quote(label)+
+        ' --index '+i+' --payload '+quote(base64(payload.slice(i*49152,(i+1)*49152))),true);
+    }));
+    const failures=results.filter(result=>result.status==='rejected');
+    if(failures.length) throw Error('Response part retention failed; all completed siblings retained; no seal');
   }
   return await shell('python3 -B '+quote(script)+' seal --request '+quote(requestPath)+' --label '+quote(label)+
     ' --parts '+parts+' --sha256 '+quote(sha256(payload)),true);
@@ -76,7 +81,7 @@ if(!count.pending) {
   for(let index=0;index<bound.page_limit;index++) {
     if(Date.now()/1000>=bound.deadline) throw Error('Original backend deadline expired');
     const actual=await tools.mcp__datadog__search_datadog_rum_events({query:request.query,from:request.from,to:request.to,
-      start_at:offset,detailed_output:true,max_tokens:50000,
+      start_at:offset,detailed_output:true,max_tokens:100000,
       telemetry:{intent:'Retain full native and Browser event payloads and exact ownership for the controlled app journey'}});
     const page=await persist('page'+String(index).padStart(3,'0'),actual);
     if(page.rows===0) {complete=true;break;}
