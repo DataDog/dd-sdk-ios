@@ -2,7 +2,7 @@
   "schema_version": 1,
   "work_item": "S2:T10 finite native/WebView preparation",
   "status": "BASELINE_BEHAVIOR_AND_SEPARATE_BACKEND_QUALIFIED_CANDIDATE_UNRUN",
-  "updated_at": "2026-09-25T12:38:58.976045+00:00",
+  "updated_at": "2026-09-25T12:43:44.248636+00:00",
   "owner": "SDK implementer",
   "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
   "candidate": "c9faed816a1d4828d7d8c4b64acae01119425889",
@@ -104,7 +104,7 @@
   "remaining_prerequisites": [
     "Preserve original baseline INVALID, scenario PASS, evidence INCOMPLETE and cleanup PASS; separate backend assessment now qualifies the saved complete session. Do not repeat baseline native work solely for the original transport deadline.",
     "Bind the separate baseline assessment into a reviewed candidate-only admission and post-behavior backend collection. Preserve actual callback clocks, source/product identity, complete inventories and task-only cleanup.",
-    "Candidate needs a fresh work window with the complete fixed reserve. Both source-bound builds remain reusable; T10 closes only after candidate native/backend/cleanup and paired review."
+    "Candidate needs fresh fixed per-cell admission and actual environment readiness. The caffeinate expiry is not a stop-work instruction. Both source-bound builds remain reusable; T10 closes only after candidate native/backend/cleanup and paired review."
   ],
   "gate_closures": [],
   "native_launches": 1,
@@ -322,7 +322,7 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automated-scope-rww2sb_g/webview-baseline-marker-assessment.json",
       "sha256": "b22d126a7a6718e5112fffcbe7c828a082df2ba03020d1abd14e05cfd38210f5"
     },
-    "candidate": "UNRUN; complete native reserve no longer fits current work window; future reviewed admission must bind separate baseline qualification",
+    "candidate": "UNRUN; reviewed admission must bind separate baseline qualification and fresh fixed clocks; no stop-work deadline is implied by caffeinate expiry",
     "verdicts": {
       "state": "INVALID",
       "scenario": "PASS",

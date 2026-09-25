@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "state": "ACTIVE",
-  "authority": "Actual user reply Start now; caffeinate 2 hours",
+  "state": "CONTINUING",
+  "authority": "Standing user instruction to continue autonomous plan execution until explicitly stopped; caffeinate has a separate finite duration",
   "started_at": 1790316486.131028,
-  "work_deadline_utc": "2026-09-25T12:42:56.993742+00:00",
+  "work_deadline_utc": null,
   "caffeinate": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/runtime-uikit/awake-window.json",
     "sha256": "7176d714d9d1335a060d92a114d415ff40b5a482b1d614f5e93a84d7557a696d"
@@ -14,7 +14,7 @@
     "id": "rum-unattended-progress",
     "finding": "Update returned Automation does not exist; no replacement was created."
   },
-  "next_task": "Review and bind separately qualified WebView baseline into candidate-only admission; no native reserve remains in this window. Reuse existing products, preserve original INVALID and do not repeat baseline native work.",
+  "next_task": "Bind separately qualified WebView baseline into reviewed candidate-only admission and post-behavior backend collection. Continue preparation and executable work under standing authorization; check actual native readiness without renewing old receipts.",
   "gate_closures": [
     "S2:H16"
   ],
@@ -27,7 +27,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": "2026-09-25T12:38:58.976045+00:00",
+  "updated_at": "2026-09-25T12:43:44.248636+00:00",
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
@@ -113,5 +113,12 @@
   "s2_webview_backend_followup": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automated-scope-rww2sb_g/webview-backend-continuation/summary.json",
     "sha256": "c67b680daecad3400c1ffc85ce8e56ba26629a167932e2b6f7cc0a687ab45543"
+  },
+  "awake_until_utc": "2026-09-25T12:42:56.993742+00:00",
+  "deadline_correction": {
+    "at": "2026-09-25T12:43:44.248636+00:00",
+    "previous_inferred_work_deadline_utc": "2026-09-25T12:42:56.993742+00:00",
+    "finding": "The two-hour caffeinate authorization was incorrectly treated as a stop-work deadline. It limits the awake assertion only.",
+    "limits": "Original native, backend, cleanup and admission deadlines are immutable; new work requires its own finite admission and actual environment readiness."
   }
 }
