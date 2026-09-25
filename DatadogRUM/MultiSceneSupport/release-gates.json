@@ -1174,14 +1174,14 @@
         },
         "S2": {
           "scope": "Single-scene active-work native/WebView correlation",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [
             "S2:A01",
             "S2:F07"
           ],
           "decisive_test": "One baseline/candidate real WKWebView journey: active native owner beyond cache TTL, navigate A-to-B, delayed A event before inactive expiry and after expiry, then detach/release. Assert native application/session, distinct browser ID and exact A-or-absent container; never B. Fold is already covered and is not a second critical mechanism here.",
           "environment": "Qualified iOS27 simulator with actual WKScriptMessage bridge, replay eligibility for container correlation, and authenticated backend",
-          "evidence": "Results/S2-T10-source-preparation.json: no-input baseline native scenario and cleanup PASS. Original INVALID from6.402s late marker publication remains. Separate reviewed retrieval qualifies all9 backend rows:3 native and4 Browser views with exact owners,1 TTID and1 reducer; no native retry. Candidate unrun; no whole-gate credit.",
+          "evidence": "Results/S2-T10-source-preparation.json: paired source-bound WKScriptMessage navigation/TTL accepted. Saved baseline backend qualifies9rows without native repeat; corrected candidate PASS/PASS/PASS/PASS with9rows. M1 active181.092s stays A; M2 stays B; delayed M3 within inactive retention stays A, M4 after181.042s has no container and never B. Detached WebView weak release passes; cleanup1.842s. Original A late-publication and first B phase-budget INVALID receipts remain immutable. Designated paired review PASS. No fold, physical Duo or S3 claim.",
           "required": true,
           "completion_mode": "Captured event-time native owner while cache-eligible; documented absent container after expiry; no foreign owner or new explicit target",
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"

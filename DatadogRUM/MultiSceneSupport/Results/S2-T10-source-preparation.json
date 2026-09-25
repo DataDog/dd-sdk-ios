@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "work_item": "S2:T10 finite native/WebView preparation",
-  "status": "CANDIDATE_STOPPED_POST_BEHAVIOR_PHASE_BUDGET_BACKEND_UNQUALIFIED",
-  "updated_at": "2026-09-25T13:42:01.546564+00:00",
+  "status": "ACCEPTED_S2_NAVIGATION_TTL_OWNERSHIP",
+  "updated_at": "2026-09-25T13:59:45.266364+00:00",
   "owner": "SDK implementer",
   "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
   "candidate": "c9faed816a1d4828d7d8c4b64acae01119425889",
@@ -101,12 +101,10 @@
     "Current source/offline reviews and both Release builds are bound in autonomous_navigation_ttl; older preparation below is historical.",
     "Normal SDK upload; raw Browser events bypass the native mapper. No forced flush, fold or human gesture in navigation-ttl mode."
   ],
-  "remaining_prerequisites": [
-    "Preserve original baseline INVALID, scenario PASS, evidence INCOMPLETE and cleanup PASS; separate backend assessment now qualifies the saved complete session. Do not repeat baseline native work solely for the original transport deadline.",
-    "Bind the separate baseline assessment into a reviewed candidate-only admission and post-behavior backend collection. Preserve actual callback clocks, source/product identity, complete inventories and task-only cleanup.",
-    "Candidate needs fresh fixed per-cell admission and actual environment readiness. The caffeinate expiry is not a stop-work instruction. Both source-bound builds remain reusable; T10 closes only after candidate native/backend/cleanup and paired review."
+  "remaining_prerequisites": [],
+  "gate_closures": [
+    "S2:T10"
   ],
-  "gate_closures": [],
   "native_launches": 1,
   "new_experiment_number": null,
   "timing_decision": "navigation-ttl mode: no fold; M3 callback before earliest inactive expiry, M4 emission after latest expiry; one backend exchange after release/B stop. Scenario, backend and cleanup remain separate; no original deadline changes.",
@@ -420,7 +418,7 @@
     }
   },
   "candidate_budget_repair": {
-    "state": "REVIEWED_NATIVE_NOT_YET_ADMITTED",
+    "state": "PASS",
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-budget-repair-k1qct79c/run",
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-budget-repair-k1qct79c/definition.json",
@@ -440,9 +438,121 @@
     },
     "unit_tests": 17,
     "captured_negative_controls": 8,
-    "native_launches": 0,
+    "native_launches": 1,
     "additional_builds": 0,
     "baseline_repeats": 0,
-    "remaining": "Fresh native preflight and one corrected B. If it fails, no equivalent retry is admitted."
+    "remaining": "None for the finite S2:T10 contract. No further native retry is admitted.",
+    "admission": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-budget-repair-k1qct79c/run/admission.json",
+      "sha256": "d74f7077eddef24e64a0a5ad7d9259bf70dc83e1644e8575c140f3345e52a927"
+    },
+    "summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-budget-repair-k1qct79c/run/cells/B/summary.json",
+      "sha256": "de3a983a7204b50656dffcf5467e4d0f103d48bbe144d5296677696046552f83"
+    },
+    "verdicts": {
+      "state": "PASS",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS"
+    }
+  },
+  "paired_acceptance": {
+    "state": "ACCEPTED",
+    "closure": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-budget-repair-k1qct79c/closure.json",
+      "sha256": "2ff69b1c61cffd5139b5976e9c4b36dd314328054febe874df721cb86ffdcf39"
+    },
+    "assessment": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-budget-repair-k1qct79c/paired-assessment.json",
+      "sha256": "7740829c1020cab53c59eb65a00570aaa5b18ec03987c1a595d268f340fbd5d4"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-budget-repair-k1qct79c/paired-review.json",
+      "sha256": "cc1d264480cc8a916e5037748a8735c9dc00ebdf7764b47247e445811eae831f"
+    },
+    "baseline_backend": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automated-scope-rww2sb_g/webview-backend-continuation/summary.json",
+      "sha256": "c67b680daecad3400c1ffc85ce8e56ba26629a167932e2b6f7cc0a687ab45543"
+    },
+    "candidate_summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-budget-repair-k1qct79c/run/cells/B/summary.json",
+      "sha256": "de3a983a7204b50656dffcf5467e4d0f103d48bbe144d5296677696046552f83"
+    },
+    "markers": {
+      "baseline": {
+        "M1": "A",
+        "M2": "B",
+        "M3": null,
+        "M4": null
+      },
+      "candidate": {
+        "M1": "A",
+        "M2": "B",
+        "M3": "A",
+        "M4": null
+      }
+    },
+    "decisive_evidence": {
+      "active_seconds": 181.092180375,
+      "delayed_before_expiry_seconds": 0.002786417,
+      "delayed_after_expiry_seconds": 181.042113542,
+      "weak_release": [
+        {
+          "is_nil": true,
+          "kind": "weak-release",
+          "monotonic_ns": 270660123283875,
+          "sequence": 40,
+          "wall_ms": 1790344391898,
+          "webview": "A"
+        }
+      ],
+      "complete_backend": {
+        "state": "BACKEND_QUALIFIED",
+        "raw_rows": 9,
+        "native_views": 3,
+        "browser_views": 4,
+        "session_id": "3f5d1304-ad7a-4544-923e-eca86aacdc7f",
+        "incidental": {
+          "vitals": 1,
+          "reducers": 1
+        }
+      },
+      "transport": [
+        {
+          "request": "final-0.request.json",
+          "duration_seconds": 8.210767984390259,
+          "deadline_margin_seconds": 284.9936189651489
+        },
+        {
+          "request": "preflight.request.json",
+          "duration_seconds": 5.662046909332275,
+          "deadline_margin_seconds": 108.22702217102051
+        },
+        {
+          "request": "10a9575c-5ed4-44a2-b1de-e6a66eb156dd/backend-1.request.json",
+          "duration_seconds": 9.891528844833374,
+          "deadline_margin_seconds": 148.21647119522095
+        },
+        {
+          "request": "10a9575c-5ed4-44a2-b1de-e6a66eb156dd/backend-0.request.json",
+          "duration_seconds": 8.505554914474487,
+          "deadline_margin_seconds": 170.02644515037537
+        }
+      ],
+      "cleanup_seconds": 1.8423731327056885,
+      "original_artifacts_revalidated": true
+    },
+    "limits": "Selected S2 single-scene WKScriptMessage active and inactive cache ownership, native navigation and detached release; no fold, physical Duo or S3 claim",
+    "preserved_failures": {
+      "baseline": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automated-scope-rww2sb_g/webview/cells/A/summary.json",
+        "sha256": "04216cf34f3f38ae95e26dfd45ab82eded4ca331e4c709fe95bfbfc1d104478d"
+      },
+      "candidate": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-candidate-reu8eou8/run/cells/B/summary.json",
+        "sha256": "956afe087d7e57ca9b8288341b8cf8b31452ea3f1dbafa0cf6adc6dd8b0cd99c"
+      }
+    }
   }
 }

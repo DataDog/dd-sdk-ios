@@ -14,9 +14,10 @@
     "id": "rum-unattended-progress",
     "finding": "Update returned Automation does not exist; no replacement was created."
   },
-  "next_task": "Admit the reviewed corrected T10 candidate after fresh preflight. Marker budget180 matches the compiled fixture; full inventory300. Original INVALID and successful cleanup remain immutable.",
+  "next_task": "Implement the reviewed F08 smoke mode offline: one lifecycle cycle, frozen behavior prefix, ordinary foreground delivery and semantic owner comparison. No human or native session admitted.",
   "gate_closures": [
-    "S2:H16"
+    "S2:H16",
+    "S2:T10"
   ],
   "limits": [
     "No expired deadline extension or equivalent stopped-mechanism retry",
@@ -27,7 +28,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": "2026-09-25T13:42:01.546564+00:00",
+  "updated_at": "2026-09-25T13:59:45.266364+00:00",
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
@@ -143,7 +144,19 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-budget-repair-k1qct79c/run/review.json",
       "sha256": "3873b20d3107bce7d396725ebe7d977f664187daaf0a0e1769ace191084a245c"
     },
-    "state": "REVIEWED_NATIVE_NOT_YET_ADMITTED"
+    "state": "PASS",
+    "admission": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-budget-repair-k1qct79c/run/admission.json",
+      "sha256": "d74f7077eddef24e64a0a5ad7d9259bf70dc83e1644e8575c140f3345e52a927"
+    },
+    "summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-budget-repair-k1qct79c/run/cells/B/summary.json",
+      "sha256": "de3a983a7204b50656dffcf5467e4d0f103d48bbe144d5296677696046552f83"
+    },
+    "paired_acceptance": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-budget-repair-k1qct79c/closure.json",
+      "sha256": "2ff69b1c61cffd5139b5976e9c4b36dd314328054febe874df721cb86ffdcf39"
+    }
   },
   "local_signing_fallback": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-budget-repair-k1qct79c/signing-fallback.json",

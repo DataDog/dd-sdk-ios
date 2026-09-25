@@ -59,11 +59,12 @@ preserved. This does not reproduce earlier variability or establish an SDK
 cause, complete automatic-tracking comparison or candidate gate closure.
 
 The reviewed automatic preparation now selects the12-cell Duo coverage package
-from existing products. The [WebView baseline](Results/S2-T10-source-preparation.json)
-qualifies the actual timed callbacks, detach/release and cleanup without human
-input. A separately bounded backend assessment qualifies all three native and four
-browser views with their expected owners. The original late-transport INVALID
-remains. Candidate comparison is still unrun; T10 remains open.
+from existing products. The [WebView pair](Results/S2-T10-source-preparation.json) closes S2:T10: the
+active native owner survives181seconds, delayed A events retain A within inactive
+retention and have no container after expiry, and the detached WebView releases.
+Both complete backend inventories contain9rows. Candidate scenario, evidence and
+cleanup pass; original baseline late-publication and first-candidate budget failures
+remain immutable. No further TTL run is needed for the controlled app smoke.
 
 [Controlled app builds](Results/S2-F08-app-preparation.json) are reusable by identity;
 [app journeys](Results/S2-F08-app-journeys.json) remain unqualified. The prebooted
