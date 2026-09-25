@@ -9,7 +9,7 @@ import DatadogInternal
 @testable import DatadogRUM
 @testable import TestUtilities
 
-/// Mirrors `RUMViewScopeTests` but with `featureFlags[.viewUpdates] = true`.
+/// Mirrors `RUMViewScopeTests` but exercises the default `featureFlags[.viewUpdates] = true` behavior.
 /// With this flag the first write per view produces a full `RUMViewEvent`; every
 /// subsequent write produces a `RUMViewUpdateEvent` (delta projection).
 class RUMViewScope_Tests: XCTestCase {
@@ -31,8 +31,6 @@ class RUMViewScope_Tests: XCTestCase {
     let writer = FileWriterMock()
     private let parent = RUMContextProviderMock()
 
-    private let ff: RUM.Configuration.FeatureFlags = [.viewUpdates: true]
-
     private var totalViewEventCount: Int {
         writer.events(ofType: RUMViewEvent.self).count
             + writer.events(ofType: RUMViewUpdateEvent.self).count
@@ -45,7 +43,7 @@ class RUMViewScope_Tests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(featureFlags: ff),
+            dependencies: .mockWith(),
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
@@ -131,7 +129,7 @@ class RUMViewScope_Tests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(ciTest: .init(testExecutionId: fakeCiTestId), featureFlags: ff),
+            dependencies: .mockWith(ciTest: .init(testExecutionId: fakeCiTestId)),
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
@@ -180,8 +178,7 @@ class RUMViewScope_Tests: XCTestCase {
             isInitialView: .mockRandom(),
             parent: parent,
             dependencies: .mockWith(
-                syntheticsTest: .init(injected: nil, resultId: fakeResultId, testId: fakeTestId, syntheticsInfo: [:]),
-                featureFlags: ff
+                syntheticsTest: .init(injected: nil, resultId: fakeResultId, testId: fakeTestId, syntheticsInfo: [:])
             ),
             identity: .mockViewIdentifier(),
             path: "UIViewController",
@@ -228,7 +225,7 @@ class RUMViewScope_Tests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(featureFlags: ff),
+            dependencies: .mockWith(),
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
@@ -278,7 +275,7 @@ class RUMViewScope_Tests: XCTestCase {
             RUMViewScope(
                 isInitialView: false,
                 parent: parent,
-                dependencies: .mockWith(featureFlags: ff),
+                dependencies: .mockWith(),
                 identity: .mockViewIdentifier(),
                 path: uri,
                 name: name,
@@ -324,7 +321,7 @@ class RUMViewScope_Tests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: true,
             parent: parent,
-            dependencies: .mockWith(featureFlags: ff),
+            dependencies: .mockWith(),
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
@@ -363,7 +360,7 @@ class RUMViewScope_Tests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(featureFlags: ff),
+            dependencies: .mockWith(),
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
@@ -399,7 +396,7 @@ class RUMViewScope_Tests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(featureFlags: ff),
+            dependencies: .mockWith(),
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
@@ -432,7 +429,7 @@ class RUMViewScope_Tests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(featureFlags: ff),
+            dependencies: .mockWith(),
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
@@ -502,7 +499,7 @@ class RUMViewScope_Tests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(featureFlags: ff),
+            dependencies: .mockWith(),
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
@@ -544,7 +541,7 @@ class RUMViewScope_Tests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(featureFlags: ff),
+            dependencies: .mockWith(),
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
@@ -583,7 +580,7 @@ class RUMViewScope_Tests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(featureFlags: ff),
+            dependencies: .mockWith(),
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
@@ -618,7 +615,7 @@ class RUMViewScope_Tests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(viewHitchesReaderFactory: viewHitchesReaderFactory, featureFlags: ff),
+            dependencies: .mockWith(viewHitchesReaderFactory: viewHitchesReaderFactory),
             identity: .mockViewIdentifier(),
             path: .mockRandom(),
             name: .mockRandom(),
@@ -660,7 +657,7 @@ class RUMViewScope_Tests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(viewHitchesReaderFactory: viewHitchesReaderFactory, featureFlags: ff),
+            dependencies: .mockWith(viewHitchesReaderFactory: viewHitchesReaderFactory),
             identity: .mockViewIdentifier(),
             path: .mockRandom(),
             name: .mockRandom(),
@@ -690,7 +687,7 @@ class RUMViewScope_Tests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(hasAppHangsEnabled: true, featureFlags: ff),
+            dependencies: .mockWith(hasAppHangsEnabled: true),
             identity: .mockViewIdentifier(),
             path: .mockRandom(),
             name: .mockRandom(),
@@ -741,7 +738,7 @@ class RUMViewScope_Tests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: true,
             parent: parent,
-            dependencies: .mockWith(eventBuilder: eventBuilder, featureFlags: ff),
+            dependencies: .mockWith(eventBuilder: eventBuilder),
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewController",
@@ -795,7 +792,7 @@ class RUMViewScope_Tests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(featureFlags: ff),
+            dependencies: .mockWith(),
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
@@ -836,7 +833,7 @@ class RUMViewScope_Tests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(featureScope: featureScope, fatalErrorContext: fatalErrorContext, featureFlags: ff),
+            dependencies: .mockWith(featureScope: featureScope, fatalErrorContext: fatalErrorContext),
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewController",
@@ -892,7 +889,7 @@ class RUMViewScope_Tests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: false,
             parent: parent,
-            dependencies: .mockWith(accessibilityReader: reader, featureFlags: ff),
+            dependencies: .mockWith(accessibilityReader: reader),
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "MyView",
@@ -970,7 +967,7 @@ class RUMViewScope_Tests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: false,
             parent: parent,
-            dependencies: .mockWith(accessibilityReader: reader, featureFlags: ff),
+            dependencies: .mockWith(accessibilityReader: reader),
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "MyView",
@@ -1003,7 +1000,7 @@ class RUMViewScope_Tests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: true,
             parent: parent,
-            dependencies: .mockWith(featureFlags: ff),
+            dependencies: .mockWith(),
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
@@ -1038,7 +1035,7 @@ class RUMViewScope_Tests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: false,
             parent: parent,
-            dependencies: .mockWith(featureFlags: ff),
+            dependencies: .mockWith(),
             identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
