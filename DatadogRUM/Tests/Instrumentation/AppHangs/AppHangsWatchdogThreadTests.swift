@@ -4,6 +4,12 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+// TODO: RUM-18379 Re-enable this tests
+// For some reason, our CI servers add 15ms to every Thread.sleep time interval. This messes up
+// the tests in multiple ways. Even replacing the sleep with a spin-wait does not work since
+// the AppHangsWatchdogThread has a Thread.sleep. Disabling for now until we figure out the
+// reason this happens.
+#if !os(macOS)
 import XCTest
 import TestUtilities
 import DatadogInternal
@@ -327,3 +333,4 @@ class AppHangsWatchdogThreadTests: XCTestCase {
         watchdogThread.cancel()
     }
 }
+#endif

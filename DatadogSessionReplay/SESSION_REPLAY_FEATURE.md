@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-09-08
-sdk_version: 3.17.0
-verified_against_commit: ac1c0a102
+last_updated: 2026-09-22
+sdk_version: 3.18.0
+verified_against_commit: 72b56e859
 tracked_files:
   - DatadogSessionReplay/Sources/SessionReplay.swift
   - DatadogSessionReplay/Sources/SessionReplayConfiguration.swift
@@ -183,7 +183,7 @@ Override global privacy for specific views:
 
 **UIKit:**
 ```swift
-view.dd.sessionReplayPrivacyOverrides.textAndInputPrivacy = .maskNone
+view.dd.sessionReplayPrivacyOverrides.textAndInputPrivacy = .maskSensitiveInputs  // Sensitive inputs stay masked.
 view.dd.sessionReplayPrivacyOverrides.imagePrivacy = .maskNone
 view.dd.sessionReplayPrivacyOverrides.touchPrivacy = .show
 view.dd.sessionReplayPrivacyOverrides.hide = true  // Completely hide view and subviews
@@ -192,7 +192,7 @@ view.dd.sessionReplayPrivacyOverrides.hide = true  // Completely hide view and s
 **SwiftUI (iOS 16+):**
 ```swift
 SessionReplayPrivacyView(
-    textAndInputPrivacy: .maskNone,
+    textAndInputPrivacy: .maskSensitiveInputs,
     imagePrivacy: .maskNone,
     touchPrivacy: .show,
     hide: false

@@ -51,6 +51,22 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer))
     }
 
+    @Test("Records remote content as unsupported and ignores sublayers")
+    func recordsRemoteContentAsUnsupportedAndIgnoresSublayers() throws {
+        // Given
+        let layerClass = try #require(NSClassFromString("CALayerHost") as? CALayer.Type)
+        let layer = layerClass.init()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(
+            semantics: .unsupported("Remote content"),
+            ignoresSublayers: true
+        ))
+    }
+
     @Test("Records linear gradient semantics")
     func recordsLinearGradientSemantics() throws {
         // Given
@@ -127,7 +143,7 @@ struct SemanticObservationTests {
     }
 
     @available(iOS 26.0, *)
-    @Test("Records scroll pockets with their rect edge and ignores sublayers")
+    @Test("Records scroll pockets without image snapshots")
     func recordsScrollPocketsWithTheirRectEdgeAndIgnoresSublayers() throws {
         // Given
         let viewController = UIHostingController(rootView: ScrollPocketFixture())
@@ -138,20 +154,17 @@ struct SemanticObservationTests {
         viewController.view.layoutIfNeeded()
         defer { window.isHidden = true }
 
-        let scrollPockets = try [UIRectEdge.top, .bottom].map { edge in
-            try #require(
-                window.layer.firstDescendant { layer in
-                    guard
-                        let delegate = layer.delegate as? NSObject,
-                        NSStringFromClass(type(of: delegate)) == "_UIScrollPocket",
-                        let value = delegate.value(forKey: "edge") as? NSNumber
-                    else {
-                        return false
-                    }
-                    return UIRectEdge(rawValue: value.uintValue) == edge
-                }
-            )
+        let scrollView = try #require(window.firstDescendant { $0 is UIScrollView } as? UIScrollView)
+        // Both pockets are visible away from the start and end of the content.
+        scrollView.contentOffset.y += 240
+        viewController.view.layoutIfNeeded()
+
+        let scrollPockets = window.allSubviewsMatching {
+            ["_UIScrollPocket", "UIKit.ScrollEdgeEffectView"].contains(NSStringFromClass(type(of: $0)))
         }
+            .sorted { $0.convert($0.bounds, to: window).minY < $1.convert($1.bounds, to: window).minY }
+            .map(\.layer)
+        try #require(scrollPockets.count == 2)
 
         // When
         let observations = scrollPockets.map {
@@ -163,6 +176,47 @@ struct SemanticObservationTests {
             .init(semantics: .visualEffect(.scrollPocket(.top)), ignoresSublayers: true),
             .init(semantics: .visualEffect(.scrollPocket(.bottom)), ignoresSublayers: true)
         ])
+        for layer in scrollPockets {
+            let snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny(imagePrivacyLevel: .maskNone)))
+            #expect(snapshot.sublayers.isEmpty)
+            #expect(snapshot.imageSnapshotRequests(for: .init(), cache: ImageSnapshotCache()).isEmpty)
+        }
+    }
+
+    @Test("Infers scroll pocket edges through offset wrappers and rejects ambiguous geometry")
+    func infersScrollPocketEdges() {
+        // Given
+        let scrollView = UIScrollView(frame: CGRect(x: 20, y: 30, width: 200, height: 400))
+        scrollView.bounds.origin = CGPoint(x: 11, y: 70)
+        let wrapper = UIView(frame: CGRect(x: 31, y: 53, width: 200, height: 400))
+        wrapper.bounds.origin = CGPoint(x: -7, y: 9)
+        scrollView.addSubview(wrapper)
+        let innerWrapper = UIView(frame: CGRect(x: 5, y: 17, width: 200, height: 400))
+        wrapper.addSubview(innerWrapper)
+        let effect = UIView()
+        innerWrapper.addSubview(effect)
+
+        let cases: [(frame: CGRect, edge: UIRectEdge?)] = [
+            (CGRect(x: 0, y: 0, width: 200, height: 30), .top),
+            (CGRect(x: 0, y: 370, width: 200, height: 30), .bottom),
+            (CGRect(x: 0, y: 0.1, width: 200, height: 30), .top),
+            (CGRect(x: 0, y: 150, width: 200, height: 30), nil),
+            (CGRect(x: 0, y: 0, width: 30, height: 400), nil),
+            (CGRect(x: 0, y: 0, width: 200, height: 400), nil)
+        ]
+
+        for testCase in cases {
+            effect.frame = innerWrapper.convert(
+                testCase.frame.offsetBy(dx: scrollView.bounds.minX, dy: scrollView.bounds.minY),
+                from: scrollView
+            )
+
+            // When / Then
+            #expect(effect.layer.scrollPocketEdge == testCase.edge)
+        }
+
+        effect.removeFromSuperview()
+        #expect(effect.layer.scrollPocketEdge == nil)
     }
 
     @available(iOS 26.0, *)
@@ -195,8 +249,8 @@ struct SemanticObservationTests {
     }
 
     @available(iOS 26.0, *)
-    @Test("Records tab bar platter as an automatic capsule and records sublayers")
-    func recordsTabBarPlatterAsAutomaticCapsuleAndRecordsSublayers() throws {
+    @Test("Records tab bar platter and selection backdrop semantics")
+    func recordsTabBarPlatterAndSelectionBackdropSemantics() throws {
         // Given
         let tabBarController = UITabBarController()
         tabBarController.viewControllers = (0..<3).map { index in
@@ -232,8 +286,8 @@ struct SemanticObservationTests {
     }
 
     @available(iOS 26.0, *)
-    @Test("Records platform glass interaction as an automatic capsule and records sublayers")
-    func recordsPlatformGlassInteractionAsAutomaticCapsuleAndRecordsSublayers() throws {
+    @Test("Records platform glass semantics and records sublayers")
+    func recordsPlatformGlassAndRecordsSublayers() throws {
         // Given
         let viewController = UIHostingController(rootView: ScrollPocketFixture())
 
@@ -259,7 +313,7 @@ struct SemanticObservationTests {
         )
 
         // Then
-        #expect(observation == .init(semantics: .visualEffect(.automaticCapsule)))
+        #expect(observation == .init(semantics: .visualEffect(.platformGlass)))
     }
 
     @available(iOS 26.0, *)

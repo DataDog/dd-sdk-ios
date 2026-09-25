@@ -266,7 +266,7 @@ extension RUMViewScope {
             }
         case let command as RUMRemoveViewAttributesCommand where isActiveView:
             command.keysToRemove.forEach { attributes.removeValue(forKey: $0) }
-        case let command as RUMStartViewCommand where identity == command.identity:
+        case let command as RUMStartViewCommand where identity == command.identity && isActiveView:
             if didReceiveStartCommand {
                 // This is the case of duplicated "start" command. We know that the Session scope has created another instance of
                 // the `RUMViewScope` for tracking this View, so we mark this one as inactive.
@@ -286,7 +286,7 @@ extension RUMViewScope {
             needsViewUpdate = true
             // View attributes are updated with the last snapshot of the global attributes
             attributes = command.globalAttributes.merging(self.attributes) { $1 }
-        case let command as RUMStopViewCommand where identity == command.identity:
+        case let command as RUMStopViewCommand where identity == command.identity && isActiveView:
             isActiveView = false
             needsViewUpdate = true
             // View attributes are updated with the last snapshot of the global attributes

@@ -47,13 +47,21 @@ class SwiftUIViewNameExtractorTests: XCTestCase {
         }
     }
 
+    private static var appFrameworkPrefix: String {
+        #if os(macOS)
+        "NS"
+        #else
+        "UI"
+        #endif
+    }
+
     func testFallbackViewNameExtraction() {
         let testCases: [(String, String)] = [
             // Format: (input, expectedExtractedName)
             // Hosting Controller cases
-            ("UIHostingController<HomeView>", "HomeView"),
-            ("UIHostingController<AnyView>", "UIHostingController<AnyView>"),
-            ("UIHostingController<ModifiedContent<ModifiedContent<Element, NavigationColumnModifier>, StyleContextWriter<SidebarStyleContext>>>", "AutoTracked_HostingController_Fallback"),
+            ("\(Self.appFrameworkPrefix)HostingController<HomeView>", "HomeView"),
+            ("\(Self.appFrameworkPrefix)HostingController<AnyView>", "\(Self.appFrameworkPrefix)HostingController<AnyView>"),
+            ("\(Self.appFrameworkPrefix)HostingController<ModifiedContent<ModifiedContent<Element, NavigationColumnModifier>, StyleContextWriter<SidebarStyleContext>>>", "AutoTracked_HostingController_Fallback"),
             // Navigation Stack Hosting Controller cases
             ("NavigationStackHostingController<DetailView>", "DetailView"),
             ("NavigationStackHostingController<AnyView>", "NavigationStackHostingController<AnyView>"),
@@ -107,11 +115,11 @@ class SwiftUIViewNameExtractorTests: XCTestCase {
         // Define test cases with controller, class name and expected controller type
         let testCases: [(String, ControllerType)] = [
             // Format: (controller, className, expectedType)
-            ("_TtGC7SwiftUI19UIHostingController", .hostingController),
-            ("SwiftUI.UIKitNavigationController", .navigationStackHostingController),
+            ("_TtGC7SwiftUI19\(Self.appFrameworkPrefix)HostingController", .hostingController),
+            ("SwiftUI.\(Self.appFrameworkPrefix)KitNavigationController", .navigationStackHostingController),
             ("NavigationStackHostingController", .navigationStackHostingController),
             ("_TtGC7SwiftUI29PresentationHostingController", .modal),
-            ("UIViewController", .unknown)
+            ("\(Self.appFrameworkPrefix)ViewController", .unknown)
         ]
 
         for (className, expectedType) in testCases {
@@ -119,6 +127,42 @@ class SwiftUIViewNameExtractorTests: XCTestCase {
         }
     }
 
+    #if os(macOS)
+    func testShouldSkipViewController() {
+        let mockViewController = NSViewController()
+
+        // Test cases with controller and class name
+        let testCases: [(NSViewController, String, Bool)] = [
+            // Format: (controller, className, expectedShouldSkipResult)
+            // TabBarController cases
+            (mockViewController, "SwiftUI.UIKitTabBarController", true),
+            (mockViewController, "SwiftUI.TabHostingController", true),
+            (mockViewController, "_TtGC7SwiftUI19UIHostingControllerVVS_7TabItem8RootView_", true),
+            // Other ViewControllers cases
+            (mockViewController, "SwiftUI.NotifyingMulticolumnSplitViewController", true),
+            (mockViewController, mockViewController.canonicalClassName, false),
+        ]
+
+        for (controller, className, expectedResult) in testCases {
+            let result = extractor.shouldSkipViewController(viewController: controller, className: className)
+            XCTAssertEqual(result, expectedResult, "Skip logic failed for \(className)")
+        }
+    }
+
+    func testExtractNameFilteringForAppKitControllers() {
+        let tabbar = NSTabViewController()
+        let pageViewController = NSPageController()
+        let splitViewController = NSSplitViewController()
+
+        // Should return nil for AppKit bundle controllers
+        XCTAssertNil(extractor.extractName(from: tabbar))
+        XCTAssertNil(extractor.extractName(from: pageViewController))
+        XCTAssertNil(extractor.extractName(from: splitViewController))
+
+        let hostingController = NSHostingController(rootView: EmptyView())
+        XCTAssertEqual(extractor.extractName(from: hostingController), "EmptyView")
+    }
+    #else
     func testShouldSkipViewController() {
         let navigationController = UINavigationController()
         let mockViewController = UIViewController()
@@ -156,6 +200,7 @@ class SwiftUIViewNameExtractorTests: XCTestCase {
         let hostingController = UIHostingController(rootView: EmptyView())
         XCTAssertNotNil(hostingController)
     }
+    #endif
 }
 
 #endif

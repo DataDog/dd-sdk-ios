@@ -5,7 +5,6 @@
  */
 
 import XCTest
-import UIKit
 import DatadogInternal
 @testable import DatadogRUM
 @testable import TestUtilities
@@ -2023,7 +2022,7 @@ class RUMViewScopeTests: XCTestCase {
         (0..<5).forEach { i in
             XCTAssertTrue(
                 scope.process(
-                    command: RUMAddUserActionCommand.mockWith(time: currentTime, actionType: .tap),
+                    command: RUMAddUserActionCommand.mockWith(time: currentTime, actionType: pointerActionType),
                     context: context,
                     writer: writer
                 )
@@ -2053,6 +2052,115 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.view.frustration?.count, 5)
     }
 
+    #if os(macOS)
+    func testWhenTwoClickActionsTrackedSequentially_thenHigherPriorityInstrumentationWins() throws {
+        func actionName(for instrumentationType: InstrumentationType) -> String {
+            switch instrumentationType {
+            case .manual: return "Manual action"
+            case .appkit: return "AppKit action"
+            case .swiftuiAutomatic: return "Automatic SwiftUI action"
+            case .swiftui: return "SwiftUI action"
+            case .crossPlatform(let value): return "\(value) action"
+            }
+        }
+
+        /// Simulates two consecutive click actions, triggered by different instrumentation types,
+        /// and asserts that the higher priority action is tracked.
+        /// - Parameters:
+        ///   - firstClick: The type of instrumentation that tracks the first click.
+        ///   - secondClick: The type of instrumentation that tracks the second click.
+        ///   - expectedActionName: The expected action name after the second click is processed.
+        func testClickActions(
+            firstClick: InstrumentationType, secondClick: InstrumentationType, expectedActionName: String
+        ) throws {
+            let firstActionName = actionName(for: firstClick)
+            let secondActionName = actionName(for: secondClick)
+
+            var currentTime = Date()
+            let scope = RUMViewScope(
+                isInitialView: false,
+                parent: parent,
+                dependencies: .mockAny(),
+                identity: .mockViewIdentifier(),
+                path: .mockAny(),
+                name: .mockAny(),
+                customTimings: [:],
+                startTime: currentTime,
+                serverTimeOffset: .zero,
+                interactionToNextViewMetric: INVMetricMock(),
+                viewIndexInSession: .mockAny()
+            )
+            _ = scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+
+            // Given: The first click action is tracked
+            _ = scope.process(
+                command: RUMAddUserActionCommand.mockWith(
+                    time: currentTime, instrumentation: firstClick, actionType: .click, name: firstActionName
+                ),
+                context: context,
+                writer: writer
+            )
+
+            // When: The second click action is tracked shortly after
+            currentTime.addTimeInterval(.mockRandom(min: 0, max: RUMUserActionScope.Constants.discreteActionTimeoutDuration))
+            _ = scope.process(
+                command: RUMAddUserActionCommand.mockWith(
+                    time: currentTime, instrumentation: secondClick, actionType: .click, name: secondActionName
+                ),
+                context: context,
+                writer: writer
+            )
+
+            // Then: Assert that the higher-priority action is the one being tracked
+            currentTime.addTimeInterval(RUMUserActionScope.Constants.discreteActionTimeoutDuration)
+            _ = scope.process(
+                command: RUMStopViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+
+            let viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+            let actionName = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last?.action.target?.name)
+            XCTAssertEqual(viewEvent.view.action.count, 1)
+            XCTAssertEqual(
+                actionName,
+                expectedActionName,
+                "When \(firstActionName) is followed by \(secondActionName) it should sent \(expectedActionName) not \(actionName)"
+            )
+        }
+
+        let crossPlatform = InstrumentationType.crossPlatform("Cross-platform")
+
+        try testClickActions(firstClick: .appkit, secondClick: .manual, expectedActionName: actionName(for: .manual))
+        try testClickActions(firstClick: .appkit, secondClick: .swiftuiAutomatic, expectedActionName: actionName(for: .swiftuiAutomatic))
+        try testClickActions(firstClick: .appkit, secondClick: .swiftui, expectedActionName: actionName(for: .swiftui))
+        try testClickActions(firstClick: .appkit, secondClick: crossPlatform, expectedActionName: actionName(for: crossPlatform))
+
+        try testClickActions(firstClick: .swiftuiAutomatic, secondClick: .appkit, expectedActionName: actionName(for: .swiftuiAutomatic))
+        try testClickActions(firstClick: .swiftuiAutomatic, secondClick: .manual, expectedActionName: actionName(for: .manual))
+        try testClickActions(firstClick: .swiftuiAutomatic, secondClick: .swiftui, expectedActionName: actionName(for: .swiftui))
+        try testClickActions(firstClick: .swiftuiAutomatic, secondClick: crossPlatform, expectedActionName: actionName(for: crossPlatform))
+
+        try testClickActions(firstClick: .swiftui, secondClick: .appkit, expectedActionName: actionName(for: .swiftui))
+        try testClickActions(firstClick: .swiftui, secondClick: .manual, expectedActionName: actionName(for: .manual))
+        try testClickActions(firstClick: .swiftui, secondClick: .swiftuiAutomatic, expectedActionName: actionName(for: .swiftui))
+        try testClickActions(firstClick: .swiftui, secondClick: crossPlatform, expectedActionName: actionName(for: crossPlatform))
+
+        try testClickActions(firstClick: .manual, secondClick: .appkit, expectedActionName: actionName(for: .manual))
+        try testClickActions(firstClick: .manual, secondClick: .swiftuiAutomatic, expectedActionName: actionName(for: .manual))
+        try testClickActions(firstClick: .manual, secondClick: .swiftui, expectedActionName: actionName(for: .manual))
+        try testClickActions(firstClick: .manual, secondClick: crossPlatform, expectedActionName: actionName(for: crossPlatform))
+
+        try testClickActions(firstClick: crossPlatform, secondClick: .appkit, expectedActionName: actionName(for: crossPlatform))
+        try testClickActions(firstClick: crossPlatform, secondClick: .swiftuiAutomatic, expectedActionName: actionName(for: crossPlatform))
+        try testClickActions(firstClick: crossPlatform, secondClick: .swiftui, expectedActionName: actionName(for: crossPlatform))
+        try testClickActions(firstClick: crossPlatform, secondClick: .manual, expectedActionName: actionName(for: crossPlatform))
+    }
+    #elseif !os(macOS)
     func testWhenTwoTapActionsTrackedSequentially_thenHigherPriorityInstrumentationWins() throws {
         func actionName(for instrumentationType: InstrumentationType) -> String {
             switch instrumentationType {
@@ -2143,6 +2251,7 @@ class RUMViewScopeTests: XCTestCase {
         try testTapActions(firstTap: .manual, secondTap: .swiftui, expectedActionName: actionName(for: .manual))
         try testTapActions(firstTap: .manual, secondTap: .swiftuiAutomatic, expectedActionName: actionName(for: .manual))
     }
+    #endif
 
     // MARK: - Error Tracking
 
@@ -4439,5 +4548,13 @@ class RUMViewScopeTests: XCTestCase {
         // Then
         let viewEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).first)
         XCTAssertNil(viewEvent.view.accessibility)
+    }
+
+    private var pointerActionType: RUMActionType {
+        #if os(macOS)
+        .click
+        #else
+        .tap
+        #endif
     }
 }

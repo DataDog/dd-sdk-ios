@@ -5,7 +5,7 @@
  */
 
 internal enum ProfilingOperation: String, CaseIterable {
-    case appLaunch = "launch"
+    case appLaunch = "application_launch"
     case continuousProfiling = "continuous"
     case customProfiling = "custom"
 }

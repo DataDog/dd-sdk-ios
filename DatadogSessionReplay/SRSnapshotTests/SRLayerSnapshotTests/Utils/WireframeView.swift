@@ -168,18 +168,14 @@ private final class ImageWireframeView: UIImageView {
 private final class PlaceholderWireframeView: UIView {
     init(_ wireframe: SRPlaceholderWireframe, frame: CGRect) {
         super.init(frame: frame)
-        backgroundColor = .clear
-        applyWireframeShapeStyle(
-            SRShapeStyle(backgroundColor: "#A9A9A9FF", cornerRadius: 0, opacity: 1),
-            border: SRShapeBorder(color: "#000000FF", width: 4)
-        )
+        backgroundColor = UIColor(hexString: "#D0D0D0FF")
 
         let label = UILabel(frame: bounds.insetBy(dx: 4, dy: 4))
         label.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         label.text = wireframe.label ?? "Placeholder"
         label.textAlignment = .center
-        label.textColor = .black
-        label.font = .systemFont(ofSize: 24)
+        label.textColor = UIColor(hexString: "#333333FF")
+        label.font = .systemFont(ofSize: 17)
         label.adjustsFontSizeToFitWidth = true
         label.minimumScaleFactor = 0.4
         addSubview(label)

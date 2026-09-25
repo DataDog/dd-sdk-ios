@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
+#if !os(watchOS) && canImport(UIKit)
 import UIKit
 import DatadogInternal
 
@@ -90,7 +90,7 @@ extension DefaultUIKitRUMActionsPredicate: UIPressRUMActionsPredicate {
     }
 }
 
-private extension UIView {
+private extension DDView {
     var swiftUIViewName: String {
         if typeDescription.hasPrefix("ViewBasedUIButton") {
             return "SwiftUI_Menu"

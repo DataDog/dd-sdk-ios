@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-09-08
-sdk_version: 3.17.0
-verified_against_commit: ac1c0a102
+last_updated: 2026-09-22
+sdk_version: 3.18.0
+verified_against_commit: 2ba55366e
 tracked_files:
   - DatadogTrace/Sources/Trace.swift
   - DatadogTrace/Sources/TraceConfiguration.swift
@@ -240,6 +240,7 @@ Set `urlSessionTracking` to connect Trace to the shared automatic `URLSession` n
 - **Status-code redaction**: `redactedStatusCodes` (default `[404]`) replaces the `resource.name` tag with the status code string for matching responses. Pass an empty set to disable.
 - **Duration breakdown**: For DNS / SSL / TTFB timing, also call `URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: YourURLSessionDelegate.self))` after `Trace.enable()`.
 - **Duration sanitation**: automatic URLSession spans clamp their finish time so it is never earlier than their start time before computing foreground/background tags or finishing the span.
+- **Application-state timing**: `foreground_duration` measures time in states where the process cannot be suspended. On iOS, background intervals are excluded. The internal macOS path excludes sleep intervals and sets `is_background` to `false`; this does not add official macOS support. Other platforms retain start/end background-state classification.
 
 > Note: Automatic `URLSession` network instrumentation involves swizzling `URLSession` and `URLSessionTask` methods.
 
@@ -247,7 +248,23 @@ Set `urlSessionTracking` to connect Trace to the shared automatic `URLSession` n
 - **Service**: `service` (default: SDK service value) — overrides the `service.name` tag.
 - **Global tags**: `tags: [String: OTTagValue]?` — applied to every span from the default tracer. `OTTagValue` is `Encodable & Sendable`; any custom tag type must conform to both.
 - **RUM bundling**: `bundleWithRumEnabled` (default: `true`) — adds `_dd.application.id`, `_dd.session.id`, `_dd.view.id`, `_dd.action.id` tags only when a RUM context exists and the RUM session is sampled in. Trace spans from sampled-out RUM sessions can still be sent according to Trace sampling, but they are not linked to RUM.
+- **RUM view name**: under the same conditions as the `_dd.*` tags above (a RUM context exists and the RUM session is sampled in), the current RUM view name is added as the `view.name` tag, searchable in APM as `@view.name`. Because it follows the RUM sampling decision, `@view.name` only matches spans from sampled-in RUM sessions. A `view.name` already present in the span's own tags is never overwritten, so apps can set it themselves (see below) and keep that value if they later enable RUM.
 - **Network info**: `networkInfoEnabled` (default: `false`) — adds reachability, connection type, mobile carrier, etc. to every span and span log. Mobile carrier info is only available on iOS versions below 16, since Apple deprecated the required Core Telephony APIs (`CTCarrier`) without a replacement.
+
+### Tagging Spans With a View Name
+
+When RUM is enabled in the same SDK core, `view.name` is added automatically (see **RUM view name** above). Apps that use Trace **without** RUM get no RUM context, so no view tags are added, including `_dd.view.id`. To make spans searchable by `@view.name` in that setup, set the tag on the span while the view is current:
+
+```swift
+let span = tracer.startSpan(operationName: "fetch-article")
+span.setTag(key: "view.name", value: routeName)
+```
+
+`Configuration.tags` is not a substitute: it is applied once when the feature starts, so it cannot follow navigation.
+
+Automatically instrumented `URLSession` spans have no call site to tag. Do **not** reach for `eventMapper` to fill the gap by reading a "current route" variable: the mapper runs when the span finishes, so a request that starts on one view and completes after navigation would be labelled with the view the user ended on. If you tag those spans from a mapper, resolve the route from `span.startTime` against a thread-safe route history rather than from the route that is current when the mapper runs.
+
+`view.name` makes spans searchable and groupable by view. It does not add the `_dd.*` RUM correlation tags, which are only set from a RUM context.
 
 ### Event Modification
 - **`eventMapper`** — `@Sendable (SpanEvent) -> SpanEvent`. Modify spans before upload (e.g. scrub sensitive data, override tags). Cannot drop spans — must return an event. Runs on a background thread; keep it fast and `Sendable`-safe.
@@ -312,4 +329,4 @@ Returned when `Datadog.initialize()` was not called or `Trace.enable()` was not 
 - The default tracer's `sampleRate` decides which spans are kept; manual `keepTrace()` / `dropTrace()` overrides that decision for the whole trace, and should be called on the root span right after creation so that propagation carries the correct sampling priority.
 - For the OpenTelemetry tracer provider, `instrumentationName`, `instrumentationVersion`, `schemaUrl` and `attributes` parameters are accepted for API compatibility but ignored — configure tags via `Trace.Configuration.tags`.
 - Automatic `URLSession` network instrumentation relies on swizzling; if your app already swizzles `URLSession` itself, validate behavior in integration tests.
-- Automatic URLSession spans sanitize inconsistent task timing by using `max(startTime, endTime)` for finish time, foreground duration ranges, and background-state lookup.
+- Automatic URLSession spans sanitize inconsistent task timing by using `max(startTime, endTime)` for finish time, non-suspended-duration ranges, and background-state lookup.
