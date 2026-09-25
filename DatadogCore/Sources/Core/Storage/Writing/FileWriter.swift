@@ -44,8 +44,7 @@ internal struct FileWriter: Writer {
         var encoded: Data = .init()
         if let metadata = metadata {
             do {
-                let encodedMetadata = try encode(value: metadata, blockType: .eventMetadata)
-                encoded.append(encodedMetadata)
+                try encode(value: metadata, blockType: .eventMetadata, into: &encoded)
             } catch {
                 DD.logger.error("(\(orchestrator.trackName)) Failed to encode metadata", error: error)
                 telemetry.error("(\(orchestrator.trackName)) Failed to encode metadata", error: error)
@@ -53,8 +52,7 @@ internal struct FileWriter: Writer {
         }
 
         do {
-            let encodedValue = try encode(value: value, blockType: .event)
-            encoded.append(encodedValue)
+            try encode(value: value, blockType: .event, into: &encoded)
         } catch {
             DD.logger.error("(\(orchestrator.trackName)) Failed to encode value", error: error)
             telemetry.error("(\(orchestrator.trackName)) Failed to encode value", error: error)
@@ -86,9 +84,10 @@ internal struct FileWriter: Writer {
         }
     }
 
-    /// Encodes the given encodable value and encrypt it if encryption is available.
+    /// Encodes the given encodable value, encrypts it if encryption is available, and appends it
+    /// to the given buffer.
     ///
-    /// The returned data format:
+    /// The appended data format:
     ///
     ///     +- 2 bytes -+-  4 bytes -+- n bytes  -|
     ///     |    0x00   | block size | block data |
@@ -97,14 +96,20 @@ internal struct FileWriter: Writer {
     /// Where the 2 first bytes represents the `block type` of
     /// an event.
     ///
-    /// - Parameter event: The value to encode.
-    /// - Returns: Data representation of the value.
-    private func encode<T: Encodable>(value: T, blockType: BatchBlockType) throws -> Data {
+    /// The value is encoded, encrypted and length-checked before any byte is appended, so a thrown
+    /// error leaves `buffer` unchanged — a partially appended block can never be written to disk.
+    ///
+    /// - Parameters:
+    ///   - value: The value to encode.
+    ///   - blockType: The type of the block to append.
+    ///   - buffer: The buffer to append the serialized block to.
+    private func encode<T: Encodable>(value: T, blockType: BatchBlockType, into buffer: inout Data) throws {
         let data = try jsonEncoder.dd.encodeWithAttributeRecovery(value)
-        return try BatchDataBlock(
+        try BatchDataBlock(
             type: blockType,
             data: encrypt(data: data)
         ).serialize(
+            into: &buffer,
             maxLength: orchestrator.performance.maxObjectSize
         )
     }

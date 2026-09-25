@@ -40,15 +40,31 @@ internal struct TLVBlock<BlockType> where BlockType: RawRepresentable, BlockType
     /// - Returns: a data block in TLV.
     func serialize(maxLength: TLVBlockSize = maxTLVDataLength) throws -> Data {
         var buffer = Data()
-        // T
-        withUnsafeBytes(of: type.rawValue) { buffer.append(contentsOf: $0) }
-        // L
+        try serialize(into: &buffer, maxLength: maxLength)
+        return buffer
+    }
+
+    /// Appends this block, in Type-Length-Value format, at the end of the given buffer.
+    ///
+    /// Appending in place avoids the intermediate `Data` allocation and the extra copy of the whole
+    /// payload that `serialize(maxLength:)` incurs when its result is appended to another buffer.
+    /// Callers accumulating several blocks should prefer this method.
+    ///
+    /// The block length is validated before any byte is appended, so a thrown error leaves `buffer`
+    /// unchanged and safe to keep using.
+    ///
+    /// - Parameters:
+    ///   - buffer: The buffer to append this block to.
+    ///   - maxLength: Maximum data length of a block.
+    func serialize(into buffer: inout Data, maxLength: TLVBlockSize = maxTLVDataLength) throws {
         guard let length = TLVBlockSize(exactly: data.count), length <= maxLength else {
             throw TLVBlockError.bytesLengthExceedsLimit(length: TLVBlockSize(exactly: data.count), limit: maxLength)
         }
+        // T
+        withUnsafeBytes(of: type.rawValue) { buffer.append(contentsOf: $0) }
+        // L
         withUnsafeBytes(of: length) { buffer.append(contentsOf: $0) }
         // V
         buffer += data
-        return buffer
     }
 }

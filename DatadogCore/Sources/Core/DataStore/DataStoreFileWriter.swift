@@ -40,12 +40,12 @@ internal struct DataStoreFileWriter {
 
         var encoded = Data()
         do {
-            try encoded.append(versionBlock.serialize(maxLength: TLVBlockSize(MemoryLayout<DataStoreKeyVersion>.size)))
+            try versionBlock.serialize(into: &encoded, maxLength: TLVBlockSize(MemoryLayout<DataStoreKeyVersion>.size))
         } catch let error {
             throw DataStoreFileWritingError.failedToEncodeVersion(error)
         }
         do {
-            try encoded.append(dataBlock.serialize(maxLength: maxDataStoreTLVDataLength))
+            try dataBlock.serialize(into: &encoded, maxLength: maxDataStoreTLVDataLength)
         } catch let error {
             throw DataStoreFileWritingError.failedToEncodeData(error)
         }
