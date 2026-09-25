@@ -480,3 +480,13 @@ asynchronous. The observed gap cannot establish internal ownership at the callba
 its cause. No oracle, source or original verdict changes, no native action and no gate
 closure follow. The owning result binds the reproducible audit and independent review;
 valid candidate and backend comparison remain required.
+
+After the user unlocked the physical iPad, repeated CoreDevice preflight passed.
+The single supported-input StartSession request returned an explicit device-selection
+error and listed only simulators. No key, initial capture, app launch, input or backend
+query occurred. The actual return and independently completed worker are retained;
+this is a tooling failure, not an SDK result or a verified session-absence claim.
+The automatic physical path is stopped without a selector retry. The already-planned
+human UIKit pair is rebound to current reviewed helpers and unchanged signed products;
+source-binding review passes using explicitly reused control receipts. Fresh
+operator/device readiness still precedes native admission.

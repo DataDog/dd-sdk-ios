@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "ACTIVE",
+  "state": "SUPERSEDED_BY_FRESH_USER_WORK_WINDOW",
   "started_at": 1790282662.456799,
   "work_deadline_utc": "2026-09-25T06:38:17Z",
   "window": {
@@ -177,5 +177,8 @@
     "No Replay content, unrelated CI flakes, optional networking benchmarks or physical Duo acceptance"
   ],
   "gate_closures": [],
-  "updated_at": 1790299977.932003
+  "updated_at": 1790299977.932003,
+  "closed_at": 1790316889.469279,
+  "next_window": "work-window-20260925.json",
+  "closure_reason": "User requested a fresh five-hour awake window and resumed work; original native-admission closure and attempt deadlines remain immutable."
 }

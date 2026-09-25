@@ -326,7 +326,7 @@
     }
   ],
   "gate_closures": [],
-  "next_action": "Preserve reviewed physical preparation behind the locked-device prerequisite. Saved baseline completion timing is source-classified without repairing original failures. Require a fresh valid planned baseline/candidate/backend run; no equivalent input diagnostic or human request while the operator sleeps.",
+  "next_action": "Physical supported-input setup is stopped: Xcode rejected the physical device before admission. Preserve its actual failure and worker completion. Use the already-planned human RUM-fields UIKit pair only after current helper-binding review and fresh operator/device readiness; no equivalent physical selector retry.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
@@ -397,7 +397,7 @@
       "scope": "Fixture/native and local paired oracle only. Full runtime, backend, adaptive geometry and physical execution remain unqualified."
     }
   },
-  "updated_at": 1790299977.930034,
+  "updated_at": 1790317544.34579,
   "live_environment": {
     "observed_at": "2026-09-23T19:45:47.121281+00:00",
     "xcode": "27.1 (27A9269)",
@@ -2748,5 +2748,35 @@
     "source_limit": "The fixture serializes before recording under its lock, and the selected SDK dispatch path is asynchronous. These artifacts cannot establish internal ownership at the native callback or the cause of each recorded gap.",
     "candidate_limit": "Nine selected dispatch/mapping files are identical between baseline and S2, but SessionScope/ViewCache change; candidate and backend qualification remain required.",
     "gate_closures": []
+  },
+  "physical_input_setup_result": {
+    "state": "PHYSICAL_SUPPORTED_INPUT_STOPPED_BEFORE_NATIVE_ADMISSION",
+    "outcome": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
+      "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
+    },
+    "native_admitted": false,
+    "native_launches": 0,
+    "sdk_attribution": false,
+    "gate_closures": []
+  },
+  "current_human_runtime": {
+    "state": "REVIEWED_PREPARATION_FRESH_OPERATOR_READINESS_REQUIRED",
+    "plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/plan.json",
+      "sha256": "aed8ac53b4b89720ec59c89f8678a549b373baa883f7f803aced73af1cd21b75"
+    },
+    "input_mode": "human",
+    "signed_products_unchanged": true,
+    "native_admitted": false,
+    "gate_closures": [],
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/review.json",
+      "sha256": "5609fe7bfc16056cd93430aa90022acaefdb64ef03b889d6028b94312ef2f026"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/controls.json",
+      "sha256": "8a0b442b689de02607388fa209289f98235a08cdba9edd7e0b45a0f629392b46"
+    }
   }
 }

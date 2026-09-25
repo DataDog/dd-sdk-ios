@@ -92,6 +92,9 @@ fail the independent mapping-before-callback assertion; cancellations pass.
 Source review shows that asynchronous dispatch and serialization before recording
 limit what the snapshot establishes about internal ownership at callback time.
 The cause and candidate behavior remain unproven, and original failures stay intact.
+The physical automatic session cannot select the connected, unlocked iPad; it
+stopped before app admission. This is a tooling limit with no SDK execution. The
+prepared human pair retains the same signed fixture and strict ownership contract.
 
 ## Immediate compatibility priority
 

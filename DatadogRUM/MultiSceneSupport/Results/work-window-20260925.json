@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "state": "ACTIVE",
+  "authority": "User requested caffeinate for 5 hours and resume work",
+  "started_at": 1790316486.131028,
+  "work_deadline_utc": "2026-09-25T11:08:06Z",
+  "caffeinate": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/awake-window.json",
+    "sha256": "25f740ad6ad8cf6536bc6d1412970857365c4f90aedd954514916a1fff3231d9"
+  },
+  "previous_window": "unattended-work-20260924.json",
+  "automation": {
+    "state": "ABSENT",
+    "id": "rum-unattended-progress",
+    "finding": "Update returned Automation does not exist; no replacement was created."
+  },
+  "next_task": "Reviewed human UIKit pair; fresh operator availability and device admission remain",
+  "runtime_plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/runtime-uikit/plan.json",
+    "sha256": "6befa9e8bf0ec2549702762b1f8cfce0663af345e735204ff4de59109a365e75"
+  },
+  "preflight": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/device-qualified/outcome.json",
+    "sha256": "b33499e61d2462dd7b1c3c92bed5023eaca685888ddb699c14644c4f5732bc6e"
+  },
+  "native_admitted": false,
+  "gate_closures": [],
+  "limits": [
+    "No expired deadline extension or equivalent stopped-mechanism retry",
+    "No push; explicit paths; sign when available with authorized local fallback",
+    "Preserve user-owned paths and original failed attempts separately from later restoration"
+  ],
+  "physical_setup_result": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
+    "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
+  },
+  "human_plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/plan.json",
+    "sha256": "aed8ac53b4b89720ec59c89f8678a549b373baa883f7f803aced73af1cd21b75"
+  },
+  "human_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/review.json",
+    "sha256": "5609fe7bfc16056cd93430aa90022acaefdb64ef03b889d6028b94312ef2f026"
+  },
+  "human_controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/controls.json",
+    "sha256": "8a0b442b689de02607388fa209289f98235a08cdba9edd7e0b45a0f629392b46"
+  },
+  "updated_at": 1790317544.347692
+}

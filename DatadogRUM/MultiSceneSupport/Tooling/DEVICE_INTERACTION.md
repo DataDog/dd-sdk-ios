@@ -18,6 +18,10 @@ and preserve each live parameter spelling (`interactionSessionKey` versus
 `interactSessionKey`). Do not start a replacement merely because a key looks
 human-readable. Confirm invalid/expired state through an actual call first.
 
+A physical CoreDevice/Xcode destination need not support tool interaction. If session
+setup rejects it and offers only simulators, preserve the error and stop that path.
+Use the prepared human contract; do not cycle selectors or infer session creation/absence.
+
 ## Clean installation and launch
 
 1. Resolve the exact target and probe bundle; qualify physical connection/signing
@@ -224,8 +228,7 @@ requires preserved preactivation bytes and actual same-PID/executable activation
 after release. Verify the prefix is unchanged and keep the later idle stream
 separate; no scenario/backend evidence may come from cleanup reactivation. Use the
 existing idle/cleanup deadline, with no extension or replacement process.
-That cleanup-only proof
-does not discard earlier failure rows or qualify the scenario. Expiry leaves the
+That cleanup-only proof does not discard earlier failure rows or qualify the scenario. Expiry leaves the
 app installed and cleanup incomplete; later restoration is a separate record.
 
 Interactive sheet pans can begin before a controller transition is observable.
@@ -262,8 +265,7 @@ boot completion again before installation-state reads. Failed boot must publish 
 input request; restore the owned boot state even if no session was created. Keep
 original setup failure and later restoration separate; successful boot alone does
 not explain or repair a failed capture.
-A failed empty capture may prove zero-action quiescence
-only with its complete return and explicit worker stop. Uncertain action delivery
+A failed empty capture may prove zero-action quiescence only with its complete return and explicit worker stop. Uncertain action delivery
 cannot authorize teardown.
 
 A physical evidence copy may recover once from the specifically qualified
