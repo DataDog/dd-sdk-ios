@@ -1,5 +1,6 @@
 # Unreleased
 
+- [IMPROVEMENT] Enable RUM view update (delta) events by default. Views that update often now send a smaller payload. See [#3233][]
 - [FIX] Release the RUM display-link observer and its frame readers when their owner is released.
 - [FIX] Pin KSCrash to exact version 2.5.1 via SPM to prevent silently resolving newer, unvetted releases.
 
@@ -1264,6 +1265,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3200]: https://github.com/DataDog/dd-sdk-ios/pull/3200
 [#3187]: https://github.com/DataDog/dd-sdk-ios/pull/3187
 [#3208]: https://github.com/DataDog/dd-sdk-ios/pull/3208
+[#3233]: https://github.com/DataDog/dd-sdk-ios/pull/3233
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
