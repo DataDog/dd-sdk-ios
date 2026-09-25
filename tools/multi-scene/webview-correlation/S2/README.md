@@ -56,3 +56,12 @@ Focused controls:
 python3 -B -m unittest discover -s tools/multi-scene/acceptance -p 'test_s2_webview_*.py'
 node --test tools/multi-scene/acceptance/test_hosting_connector.js
 ```
+
+The candidate-only continuation uses `s2_webview_candidate.py prepare` with the
+original build root and separately reviewed baseline backend result. It freezes a
+new root, rechecks original source/compiler/product and raw ownership evidence, and
+requires a fresh B admission. The original failed attempt remains immutable. A
+sibling claim prevents a second B launch through another output directory. This
+path uses the shared native executor, marker/session oracle and task-only cleanup;
+no baseline rerun or fixture rebuild is needed. Tool response and persistence clocks
+are checked against each newly admitted deadline. Caffeinate expiry is independent.

@@ -25,7 +25,7 @@ async function run(options={}) {
     mcp__datadog__aggregate_rum_events:async()=>{aggregateCalls++;return count;},
     mcp__datadog__search_datadog_rum_events:async()=>{searchCalls++;if(options.failedPage)throw Error('read failed');return pages[calls++];}
   };
-  const result=await new AsyncFunction('tools','notify','root','arm','mode','device','repo','family',source)(tools,value=>notifications.push(value),'/root',options.backendOnly?'backend-only':'A','automatic','device','/repo',options.family);
+  const result=await new AsyncFunction('tools','notify','root','arm','mode','device','repo','family',source)(tools,value=>notifications.push(value),'/root',options.backendOnly?'backend-only':options.family==='webview_candidate'?'B':'A','automatic','device','/repo',options.family);
   return {published,count,pages,aggregateCalls,searchCalls,waits,result,commands,notifications};
 }
 test('keeps exact raw count and actual returned pages',async()=>{const r=await run();assert.deepEqual(r.published.count_response,r.count);assert.deepEqual(r.published.pages.map(p=>p.response),r.pages);assert.deepEqual(r.published.pages.map(p=>p.start_at),[0,1]);});
@@ -42,3 +42,17 @@ test('WebView shares raw transport and exposes only ready human steps',async()=>
 test('human hosting cell uses the shared exact raw transport',async()=>{const r=await run({family:'hosting_paced',human:true});assert.match(r.commands[0],/s2_hosting_paced_workflow/);assert.doesNotMatch(r.commands[0],/--mode/);assert.deepEqual(r.published.pages.map(p=>p.response),r.pages);assert.equal(r.notifications.length,1);});
 
 test('large raw inventories use stdin without an oversized payload argument',async()=>{const r=await run({large:true});assert.deepEqual(r.published.pages.map(p=>p.response),r.pages);const command=r.commands.find(c=>c.includes('workflow.publish('));assert.match(command,/python3 -B - <</);assert.doesNotMatch(command,/--payload /);});
+
+
+test('candidate continuation uses shared executor transport and captures stage clocks',async()=>{
+  const r=await run({family:'webview_candidate'});
+  assert.match(r.commands[0],/s2_webview_candidate\.py' cell/);
+  const t=r.published.transport;
+  assert.deepEqual(t.stages.map(s=>s.name),['count','page-0','page-1']);
+  assert.ok(t.stages.every(s=>t.request_read_at<=s.started_at&&s.started_at<=s.finished_at&&s.finished_at<=t.publication_started_at));
+  assert.match(r.commands.find(c=>c.includes('workflow.publish(')),/persistence_finished_at/);
+});
+test('failed backend call keeps its timing and prior raw response',async()=>{
+  const r=await run({failedPage:true});assert.equal(r.published.transport.stages.length,2);
+  assert.ok(r.published.transport.stages[1].finished_at);assert.deepEqual(r.published.count_response,r.count);
+});

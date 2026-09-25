@@ -110,7 +110,12 @@ def build(args):
 
 
 def verify_build(root, arm):
-    plan=verify(root);folder=root/arm;frozen=plan['arms'][arm];result=shared.read(folder/'build-result.json');admission=shared.read(folder/'build-admission.json')
+    return verify_archived_build(root, arm, verify(root))
+
+
+def verify_archived_build(root, arm, plan):
+    """Check original compiler/product evidence against an independently verified frozen plan."""
+    folder=root/arm;frozen=plan['arms'][arm];result=shared.read(folder/'build-result.json');admission=shared.read(folder/'build-admission.json')
     require(result['state']=='QUALIFIED_BUILD_ONLY' and result['source']==frozen['revision'],'unqualified WebView build')
     require(admission['plan_sha256']==shared.sha(root/'plan.json') and admission['issued_at']<result['finished_at']<admission['deadline'],'original build not timely')
     require(shared.sha(folder/'source.tar')==frozen['archive_sha256'],'source archive changed')

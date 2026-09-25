@@ -244,7 +244,15 @@ def cell(args):
     out=root/'cells'/args.arm;require(not out.exists(),'cell already consumed')
     for p in (root/'cells').glob('*/summary.json'):require(shared.read(p)['state']=='PASS','prior cell stopped the matrix')
     if args.arm=='B':require(shared.read(root/'cells/A/summary.json')['state']=='PASS','baseline qualification required')
-    build=build_workflow.verify_build(root,args.arm);app=Path(build['app']);device=shared.devices(args.device);original_apps=shared.apps(args.device)
+    build=build_workflow.verify_build(root,args.arm)
+    return execute_cell(args,plan,budget,mode,admission,admission_path,build,
+                        build_receipt=root/args.arm/'build-result.json',verify_source=build_workflow.verify)
+
+
+def execute_cell(args, plan, budget, mode, admission, admission_path, build, *, build_receipt, verify_source, verify_transport=None):
+    """Execute one already admitted cell with the common native oracle and cleanup."""
+    root=args.root.resolve();out=root/'cells'/args.arm;require(not out.exists(),'cell already consumed')
+    app=Path(build['app']);device=shared.devices(args.device);original_apps=shared.apps(args.device)
     require(absent(args.device) and build_workflow.BUNDLE not in original_apps,'task app initially present')
     out.mkdir();(out/'folds').mkdir();publication_preflight(out);host_run=str(uuid.uuid4());identity={'run_id':str(uuid.uuid4()),'nonce':str(uuid.uuid4()),'arm':args.arm,'source':shared.ARMS[args.arm],'fixture':plan['arms'][args.arm]['fixture']}
     started=time.time();native_deadline=started+budget['native'];execution_deadline=native_deadline+budget['backend'];cleanup_deadline=execution_deadline+budget['cleanup']
@@ -253,7 +261,7 @@ def cell(args):
         native_deadline=admission['native_deadline'];execution_deadline=admission['execution_deadline'];cleanup_deadline=admission['cleanup_deadline']
     summary={'state':'RUNNING','scenario':'UNQUALIFIED','evidence':'INCOMPLETE','cleanup':'NOT_RUN','identity':identity,'host_run':host_run,'device':device,
         'started_at':started,'native_deadline':native_deadline,'execution_deadline':execution_deadline,'cleanup_deadline':cleanup_deadline,
-        'plan_sha256':shared.sha(root/'plan.json'),'build_sha256':shared.sha(root/args.arm/'build-result.json'),
+        'plan_sha256':shared.sha(root/'plan.json'),'build_sha256':shared.sha(build_receipt),
         'admission':{'path':str(admission_path),'sha256':shared.sha(admission_path)}}
     shared.save(out/'summary.json',summary);shared.save(out/'initial-apps.json',original_apps,exclusive=True)
     installed=False;documents=None;pid=None;initial=None;terminal=None
@@ -311,11 +319,13 @@ def cell(args):
         collect_session(out,identity,local,started,min(execution_deadline,time.time()+budget['backend']));summary['evidence']='PASS'
         sealed_evidence((documents/'evidence.json').read_bytes(),terminal,identity)
         require(shared.product(installed_app,bundle=build_workflow.BUNDLE)==build['product'],'installed product changed')
-        build_workflow.verify(root);require(time.time()<execution_deadline,'execution late');summary['state']='PASS'
+        verify_source(root)
+        if verify_transport is not None:verify_transport(out)
+        require(time.time()<execution_deadline,'execution late');summary['state']='PASS'
     except Exception as error:summary['state']='INVALID';summary['reason']=str(error)
     finally:
         cleanup_started=time.time();deadline=min(cleanup_deadline,cleanup_started+budget['cleanup']);errors=[]
-        errors=cleanup_cell(root,out,documents,identity,args.device,device,original_apps,initial,pid,terminal,summary['scenario'],deadline)
+        errors=cleanup_cell(root,out,documents,identity,args.device,device,original_apps,initial,pid,terminal,summary['scenario'],deadline,verify_source=verify_source)
         evidence_errors=[error for error in errors if error.startswith('terminal recapture:')]
         errors=[error for error in errors if not error.startswith('terminal recapture:')]
         if evidence_errors:summary['evidence']='INCOMPLETE';summary['evidence_errors']=evidence_errors;summary['state']='INVALID'
