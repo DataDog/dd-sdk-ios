@@ -14,7 +14,7 @@
     "id": "rum-unattended-progress",
     "finding": "Update returned Automation does not exist; no replacement was created."
   },
-  "next_task": "Finish signed S2 scope checkpoint; adapt only the minimal shared semantic comparison for the finite Duo coverage package before any native admission",
+  "next_task": "Review and bind separately qualified WebView baseline into candidate-only admission; no native reserve remains in this window. Reuse existing products, preserve original INVALID and do not repeat baseline native work.",
   "gate_closures": [
     "S2:H16"
   ],
@@ -27,7 +27,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": "2026-09-25T11:40:41.794740+00:00",
+  "updated_at": "2026-09-25T12:38:58.976045+00:00",
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
@@ -104,5 +104,14 @@
     "sha256": "a2f7af29b456373d7d1aab25757be42f232a2dbbeac4db8d733fe6199ac4975a"
   },
   "s2_acceptance_review": "Results/S2-release-gate-review-20260925.json",
-  "s2_hosting_assessment": "Results/S2-H16-scoped-assessment.json"
+  "s2_hosting_assessment": "Results/S2-H16-scoped-assessment.json",
+  "s2_automated_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automated-scope-rww2sb_g",
+  "s2_webview_baseline": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automated-scope-rww2sb_g/webview/cells/A/summary.json",
+    "sha256": "04216cf34f3f38ae95e26dfd45ab82eded4ca331e4c709fe95bfbfc1d104478d"
+  },
+  "s2_webview_backend_followup": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automated-scope-rww2sb_g/webview-backend-continuation/summary.json",
+    "sha256": "c67b680daecad3400c1ffc85ce8e56ba26629a167932e2b6f7cc0a687ab45543"
+  }
 }

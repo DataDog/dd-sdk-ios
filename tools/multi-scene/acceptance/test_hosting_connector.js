@@ -7,7 +7,7 @@ const source=fs.readFileSync(path.join(__dirname,'hosting_connector.js'),'utf8')
 async function run(options={}) {
   const bound={request:{run_id:'run',nonce:'nonce',query:'query',from:'now-15m',to:'now'},deadline:options.expired?0:Date.now()/1000+60,minimum_rows:options.notReady?2:0};
   const count={content:[{type:'text',text:'<METADATA><total_buckets>1</total_buckets></METADATA><TSV_DATA>events\n1</TSV_DATA>'}]};
-  const rows=options.tooMany?Array.from({length:101},(_,i)=>({id:String(i)})):[{id:'actual-return',value:'é'}];
+  const rows=options.tooMany?Array.from({length:101},(_,i)=>({id:String(i)})):[{id:'actual-return',value:options.large?'é'.repeat(300000):'é'}];
   const pages=[{content:[{type:'text',text:'<JSON_DATA>'+JSON.stringify(rows)+'</JSON_DATA>'}]},{content:[{type:'text',text:'<JSON_DATA>[]</JSON_DATA>'}]}];
   let calls=0,published,aggregateCalls=0,searchCalls=0,waits=0;const commands=[],notifications=[];
   const tools={
@@ -15,8 +15,8 @@ async function run(options={}) {
       commands.push(args.cmd);
       if(args.cmd.includes(' cell ')||args.cmd.includes(' backend-only '))return {session_id:1,output:(options.human?'{}\n{"human_input":{"phase":"open"}}\n':'')+'{"backend_request":"/fresh/request.request.json"}\n'};
       if(args.cmd.startsWith('cat '))return {exit_code:0,output:JSON.stringify(bound)};
-      if(args.cmd.includes(' publish ')){
-        const encoded=args.cmd.match(/--payload '([^']+)'/)[1];published=JSON.parse(Buffer.from(encoded,'base64').toString('utf8'));
+      if(args.cmd.includes('workflow.publish(')){
+        const encoded=args.cmd.match(/payload='([^']+)'/)[1];published=JSON.parse(Buffer.from(encoded,'base64').toString('utf8'));
         return options.yieldPublication?{session_id:2,output:''}:{exit_code:0,output:'published'};
       }
       throw Error('Unexpected command');
@@ -40,3 +40,5 @@ test('backend-only continuation uses the same response transport',async()=>{cons
 test('WebView shares raw transport and exposes only ready human steps',async()=>{const r=await run({family:'webview',human:true});assert.equal(r.result.exit_code,0);assert.match(r.commands[0],/s2_webview_workflow/);assert.doesNotMatch(r.commands[0],/--mode/);assert.deepEqual(r.notifications,[{human_input:{phase:'open'}}]);assert.deepEqual(r.published.count_response,r.count);});
 
 test('human hosting cell uses the shared exact raw transport',async()=>{const r=await run({family:'hosting_paced',human:true});assert.match(r.commands[0],/s2_hosting_paced_workflow/);assert.doesNotMatch(r.commands[0],/--mode/);assert.deepEqual(r.published.pages.map(p=>p.response),r.pages);assert.equal(r.notifications.length,1);});
+
+test('large raw inventories use stdin without an oversized payload argument',async()=>{const r=await run({large:true});assert.deepEqual(r.published.pages.map(p=>p.response),r.pages);const command=r.commands.find(c=>c.includes('workflow.publish('));assert.match(command,/python3 -B - <</);assert.doesNotMatch(command,/--payload /);});

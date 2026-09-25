@@ -45,6 +45,40 @@ class PreflightControls(unittest.TestCase):
         changed['runtime_preparation']['budgets_seconds']['native']+=1
         self.assertNotEqual(d.build_workflow.execution_contract(changed),original)
 
+
+class CellAdmissionControls(unittest.TestCase):
+    def setUp(self):
+        self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup);self.root=Path(self.temp.name)
+        (self.root/'admissions').mkdir();d.shared.save(self.root/'plan.json',{'frozen':'plan'})
+        self.plan={'arms':{'A':{'fixture':'f'},'B':{'fixture':'f'}}};self.budget={'native':780,'backend':180,'cleanup':120}
+        self.identity={'run_id':'10000000-0000-0000-0000-000000000001','nonce':'10000000-0000-0000-0000-000000000002',
+                       'arm':'A','source':d.shared.ARMS['A'],'fixture':'f'}
+        preflight=self.root/'preflight.json';d.shared.save(preflight,{'state':'PASS','at':90,'device':'device',
+            'plan_sha256':d.shared.sha(self.root/'plan.json'),'work_window_deadline':2000})
+        self.admission={'arm':'A','scenario':'navigation-ttl','identity':self.identity,'issued_at':100,'budgets':self.budget,
+            'native_deadline':880,'execution_deadline':1060,'cleanup_deadline':1180,'work_window_deadline':2000,
+            'preflight':{'path':str(preflight),'sha256':d.shared.sha(preflight)}}
+    def check(self,arm='A',now=110):
+        d.shared.save(self.root/'admissions'/(arm+'.json'),self.admission)
+        with patch.object(d.time,'time',return_value=now):return d.scoped_admission(self.root,arm,'device',self.plan,self.budget)
+    def test_fixed_admission_is_bound_to_its_arm_and_native_requests(self):
+        value,path=self.check();self.assertEqual(value['identity'],self.identity);self.assertEqual(path.name,'A.json')
+    def test_a_admission_cannot_launch_b(self):
+        with self.assertRaises(Rejected):self.check('B')
+    def test_old_admission_is_not_refreshed(self):
+        with self.assertRaises(Rejected):self.check(now=401)
+    def test_extended_deadline_or_missing_outer_reserve_rejected(self):
+        for key in ['native_deadline','execution_deadline','cleanup_deadline']:
+            original=self.admission[key];self.admission[key]+=1
+            with self.assertRaises(Rejected):self.check()
+            self.admission[key]=original
+        self.admission['work_window_deadline']=1000
+        with self.assertRaises(Rejected):self.check()
+    def test_changed_preflight_and_source_are_rejected(self):
+        self.identity['source']='foreign'
+        with self.assertRaises(Rejected):self.check()
+
+
 class CleanupControls(unittest.TestCase):
     def test_late_callback_does_not_skip_removal(self):
         with tempfile.TemporaryDirectory() as temp:

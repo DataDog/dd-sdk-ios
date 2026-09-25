@@ -35,6 +35,7 @@ def execution_contract(definition):
     result={key:definition[key] for key in keys}
     result['build']={key:value for key,value in definition['build_preparation'].items() if key not in ['result','parse_observation']}
     result['runtime']={key:definition['runtime_preparation'][key] for key in ['budgets_seconds','attempt_policy','clock_contract']}
+    result['runtime']['scenario']=definition['runtime_preparation'].get('scenario','fold')
     return result
 
 

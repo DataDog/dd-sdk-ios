@@ -15,6 +15,18 @@ class RuntimeBindingControls(unittest.TestCase):
     def test_existing_forty_cells_start_with_the_baseline_candidate_pair(self):
         rows=runtime.selected_matrix(self.definition());self.assertEqual(len(rows),40)
         self.assertEqual(rows[0],runtime.FIRST);self.assertEqual(rows[1],dict(runtime.FIRST,build='candidate-27.1'))
+    def test_s2_has_twelve_cells_with_separate_rebuild_and_sdk_axes(self):
+        register=runtime.shared.read(runtime.shared.REPO/'DatadogRUM/MultiSceneSupport/release-gates.json')
+        rows=runtime.s2_matrix(self.definition(),register)
+        self.assertEqual(len(rows),12)
+        for offset in range(0,12,3):
+            self.assertEqual([row['build'] for row in rows[offset:offset+3]],
+                             ['baseline-26.5','baseline-27.1','candidate-27.1'])
+        self.assertTrue(all(row['device']=='duo' and row['multiple_scenes'] is False for row in rows))
+    def test_s2_rejects_changed_source_pair(self):
+        register=runtime.shared.read(runtime.shared.REPO/'DatadogRUM/MultiSceneSupport/release-gates.json')
+        next(row for row in register['releases'] if row['id']=='S2')['acceptance_contract']['source_pair']['candidate']='unreviewed'
+        with self.assertRaises(Rejected):runtime.s2_matrix(self.definition(),register)
     def test_duplicate_cannot_replace_an_unrun_cell(self):
         definition=self.definition();definition['matrix']['inventory'][-1]=copy.deepcopy(definition['matrix']['inventory'][0])
         with self.assertRaises(Rejected):runtime.selected_matrix(definition)
@@ -38,6 +50,31 @@ class RuntimeBindingControls(unittest.TestCase):
         with patch.object(runtime.transport,'cleanup_cell',side_effect=RuntimeError('offline cleanup rejection')):
             with self.assertRaises(RuntimeError):runtime.cleanup(Path('/unused'),None,None,{'bundle':'fixture'},'fixture',{},[],None,None,'INVALID',1,'regular')
         self.assertIs(runtime.shared.devices,original)
+
+
+class S2PreparationControls(unittest.TestCase):
+    def test_explicit_preparation_selects_only_twelve_cells_and_rejects_expansion(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp)/'new';source=Path(temp)/'original';(source/'runtime').mkdir(parents=True)
+            runtime.shared.save(source/'runtime/runtime-plan.json',{'original':'immutable'})
+            contract='tools/multi-scene/automatic-coverage/human_contract.py'
+            frozen=source/'runtime/helpers'/contract;frozen.parent.mkdir(parents=True);frozen.write_text('# frozen native contract')
+            matrix=runtime.selected_matrix(json.loads(runtime.build.OWNER.read_text()))
+            products={r['build']+'-'+r['framework']+('-multi' if r['multiple_scenes'] else '-single'):{'identity':runtime.cell_key(r)} for r in matrix}
+            base={'helpers':{contract:runtime.shared.sha(frozen)},'contract':{'fixed':'original'},
+                  'build_plan_sha256':'original-build','build_receipts':{'original':'hash'},'products':products}
+            with patch.object(runtime.human_sessions,'original',return_value=base), \
+                 patch.object(runtime,'helper_members',return_value={contract:'later-live-contract'}), \
+                 patch.object(runtime.human_sessions,'activate_contract'):
+                runtime.prepare_s2(SimpleNamespace(root=root,original=source))
+                plan=runtime.verify(root)
+                self.assertEqual(plan['kind'],runtime.S2_KIND);self.assertEqual(len(plan['matrix']),12)
+                self.assertEqual(len(plan['products']),6);self.assertFalse(plan['native_admitted'])
+                plan['matrix'].append(dict(plan['matrix'][0],multiple_scenes=True))
+                runtime.shared.save(root/'runtime/runtime-plan.json',plan)
+                with self.assertRaises(Rejected):runtime.verify(root)
+            self.assertEqual(runtime.shared.read(source/'runtime/runtime-plan.json'),{'original':'immutable'})
+
 
 class AdmissionControls(unittest.TestCase):
     def setUp(self):

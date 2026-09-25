@@ -55,6 +55,81 @@ def selected_matrix(definition):
     require(ordered[0]==FIRST and len(ordered)==len(cells),'matrix ordering lost a cell');return ordered
 
 
+
+def s2_matrix(definition, register):
+    """Select the reviewed S2 slice without rewriting the frozen legacy matrix."""
+    release=next(row for row in register['releases'] if row['id']=='S2')
+    contract=release['acceptance_contract']
+    require(contract['version']=='s2-no-regression-v2' and contract['source_pair']==
+            {'baseline':shared.ARMS['A'],'candidate':shared.ARMS['B']},'unreviewed S2 source/contract')
+    require(next(row for row in release['execution_packages'] if row['id']=='coverage')['gates']==
+            ['C07','C08','C09','C10','H14'],'S2 coverage obligations changed')
+    legacy=selected_matrix(definition)
+    cells=[row for row in legacy if row['device']=='duo' and not row['multiple_scenes']
+           and row['build'] in ['baseline-26.5','baseline-27.1','candidate-27.1']]
+    expected=[{'build':source,'device':'duo','framework':framework,'layout':layout,'multiple_scenes':False}
+              for framework in ['UIKit','SwiftUI'] for layout in ['stack','split']
+              for source in ['baseline-26.5','baseline-27.1','candidate-27.1']]
+    require(len(cells)==12 and {cell_key(row) for row in cells}=={cell_key(row) for row in expected},
+            'incomplete or expanded S2 coverage matrix')
+    return expected
+
+
+
+S2_KIND='AUTOMATIC_S2_RUNTIME'
+REGISTER=shared.REPO/'DatadogRUM/MultiSceneSupport/release-gates.json'
+
+
+def s2_scope():
+    release=next(row for row in shared.read(REGISTER)['releases'] if row['id']=='S2')
+    return {'contract':release['acceptance_contract'],
+            'package':next(row for row in release['execution_packages'] if row['id']=='coverage')}
+
+
+def s2_helpers(base):
+    helpers=helper_members()
+    helpers[human_sessions.CONTRACT]=base['helpers'][human_sessions.CONTRACT]
+    return helpers
+
+
+def prepare_s2(args):
+    root=args.root.resolve();source=args.original.resolve()
+    require(not root.exists(),'S2 runtime output already consumed')
+    base=human_sessions.original(source,sys.modules[__name__])
+    matrix=s2_matrix(shared.read(build.OWNER),shared.read(REGISTER))
+    names={row['build']+'-'+row['framework']+'-single' for row in matrix}
+    runtime=root/'runtime';runtime.mkdir(parents=True)
+    for name in ['cells','operator','helpers']:(runtime/name).mkdir()
+    helpers=s2_helpers(base)
+    for name in helpers:
+        src=source/'runtime/helpers'/name if name==human_sessions.CONTRACT else shared.REPO/name
+        dest=runtime/'helpers'/name;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(src,dest)
+    plan={'schema_version':1,'kind':S2_KIND,'prepared_at':time.time(),'original_build_root':str(source),
+          'original_runtime_plan_sha256':shared.sha(source/'runtime/runtime-plan.json'),
+          'scope':s2_scope(),'build_plan_sha256':base['build_plan_sha256'],'build_receipts':base['build_receipts'],
+          'contract':base['contract'],'matrix':matrix,'helpers':helpers,
+          'products':{name:base['products'][name] for name in sorted(names)},
+          'publication':transport.publication_preflight(runtime),'native_admitted':False,'native_cells_executed':0}
+    human_operator.publish(runtime/'operator',{'instruction':'Waiting for scoped review and fresh operator readiness.'})
+    shared.save(runtime/'runtime-plan.json',plan,exclusive=True);verify(root)
+    print(json.dumps({'state':'S2_RUNTIME_PREPARED_NOT_ADMITTED','root':str(root),'matrix_cells':len(matrix),
+                     'runtime_plan_sha256':shared.sha(runtime/'runtime-plan.json'),'builds_added':0,'native_launches':0}))
+
+
+def verify_s2(root,plan):
+    source=Path(plan['original_build_root']);base=human_sessions.original(source,sys.modules[__name__])
+    require(plan['original_runtime_plan_sha256']==shared.sha(source/'runtime/runtime-plan.json') and
+            plan['scope']==s2_scope() and plan['matrix']==s2_matrix(shared.read(build.OWNER),shared.read(REGISTER)),
+            'S2 scope/source/matrix changed')
+    require(plan['build_plan_sha256']==base['build_plan_sha256'] and plan['build_receipts']==base['build_receipts']
+            and plan['contract']==base['contract'],'S2 changed original build or timing contract')
+    names={row['build']+'-'+row['framework']+'-single' for row in plan['matrix']}
+    require(plan['products']=={name:base['products'][name] for name in sorted(names)},'S2 product slice changed')
+    require(shared.tree(root/'runtime/helpers')==plan['helpers']==s2_helpers(base),'S2 helper closure changed')
+    human_sessions.activate_contract(source,base,sys.modules[__name__])
+    return plan
+
+
 def verify_build(root,key,plan):
     folder=root/key;bound=plan['arms'][key];pin=shared.read(build.OWNER)['human_current_composition']['build_results'][key]
     require(Path(pin['path'])==folder/'build-result.json' and shared.sha(pin['path'])==pin['sha256'],'original owning build receipt changed')
@@ -117,6 +192,7 @@ def prepare(args):
 
 def verify(root):
     root=Path(root).resolve();runtime=root/'runtime';plan=shared.read(runtime/'runtime-plan.json')
+    if plan.get('kind')==S2_KIND:return verify_s2(root,plan)
     if plan.get('kind')==human_sessions.KIND:return human_sessions.verify(root,plan,sys.modules[__name__])
     base=build.verify(root)
     definition=shared.read(build.OWNER)
@@ -177,7 +253,7 @@ def stage(args):
             and preflight.get('backend')=='LOCAL_MAPPER_ONLY_NO_AUTH_REQUIRED','incorrect access scope')
     workspace=preflight['xcode_workspace_receipt']
     require(shared.sha(workspace['path'])==workspace['sha256'],'actual Xcode workspace receipt changed')
-    expected_devices={row['device'] for row in plan['matrix']} if plan.get('kind')==human_sessions.KIND else {'regular','duo'}
+    expected_devices={row['device'] for row in plan['matrix']}
     require(set(preflight['devices'])==expected_devices,'missing or unrelated required device')
     for kind,bound in preflight['devices'].items():
         current=device_snapshot(bound['udid'],kind)
@@ -417,8 +493,9 @@ def run_matrix(args):
 
 def main():
     parser=argparse.ArgumentParser();sub=parser.add_subparsers(dest='action',required=True)
-    for action in ['prepare','verify','stage','cell','run']:
+    for action in ['prepare','prepare-s2','verify','stage','cell','run']:
         item=sub.add_parser(action);item.add_argument('--root',type=Path,required=True)
+        if action=='prepare-s2':item.add_argument('--original',type=Path,required=True)
         if action=='stage':item.add_argument('--preflight',type=Path,required=True);item.add_argument('--operator',type=Path,required=True)
         if action=='cell':
             item.add_argument('--key',required=True);item.add_argument('--execution-deadline',type=float,required=True)
@@ -429,6 +506,7 @@ def main():
         signal.signal(signal.SIGTERM,interrupted);signal.signal(signal.SIGINT,interrupted)
     if args.action=='verify':verify(args.root);print('AUTOMATIC_RUNTIME_PREPARATION_VERIFIED')
     elif args.action=='prepare':prepare(args)
+    elif args.action=='prepare-s2':prepare_s2(args)
     elif args.action=='stage':stage(args)
     elif args.action=='run':sys.exit(run_matrix(args))
     else:sys.exit(cell(args))

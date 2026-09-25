@@ -87,7 +87,7 @@ def prove_fold(request_path, documents, out, identity, device, host_run, initial
 
 def marker_exchange(request, documents, out, identity, started, deadline):
     callbacks=request['fields']['callbacks'];document=snapshot(documents,identity)
-    require(callbacks and len(callbacks)<=2 and all(c in document['records'] for c in callbacks),'unbound callback request')
+    require(callbacks and len(callbacks)<=4 and all(c in document['records'] for c in callbacks) and len({c['marker'] for c in callbacks})==len(callbacks),'unbound callback request')
     views,_,session=oracle.native_inventory(document)
     identifiers=[c['view_id'] for c in callbacks]
     for value in identifiers:oracle.identifier(value)
@@ -102,8 +102,25 @@ def marker_exchange(request, documents, out, identity, started, deadline):
     require(False,'marker polling bound exhausted')
 
 
-def prove_terminal(document, identity, out, initial, device, host_run):
+def prove_terminal(document, identity, out, initial, device, host_run, *, mode="fold", require_backend=True):
     scene=unique([r for r in document['records'] if r['kind']=='scene-connected'],'owned scene')
+    if mode=='navigation-ttl':
+        topology=[r for r in document['records'] if r['kind']=='topology']
+        require([r['phase'] for r in topology]==['A-ready','B-ready'],'missing/extra navigation topology')
+        actual=runtime.active_display(json.loads(initial),device)
+        starts={r['name']:r['controller'] for r in document['records'] if r['kind']=='native-start'}
+        for row,name in zip(topology,['NativeA','NativeB']):
+            runtime.owned_topology(row,scene,actual)
+            require(row['controller']==starts[name],'wrong owned visible controller')
+        shown=[r for r in document['records'] if r['kind']=='did-show']
+        ready=unique([r for r in document['records'] if r['kind']=='native-ready' and r['name']=='NativeB'],'B readiness')
+        require(any(r['controller']==starts['NativeB'] and r['sequence']<ready['sequence'] for r in shown),'B readiness precedes navigation')
+        requests=list(out.glob('*/request-*.json'))
+        require(not list((out/'folds').glob('*/request-*.json')),'scoped run contains fold request')
+        if require_backend:
+            require(len(requests)==1 and len([r for r in document['records'] if r['kind']=='host-response-consumed'])==1,'scoped exchange inventory differs')
+            request=requests[0];runtime.consumed_response(document,request.read_bytes(),(request.parent/'published-response.json').read_bytes())
+        return oracle.local_session(document,identity,scene,mode=mode,require_backend=require_backend)
     phases=['A-ready','before-open','after-open','B-ready','before-closed','after-closed']
     topology=[r for r in document['records'] if r['kind']=='topology'];require([r['phase'] for r in topology]==phases,'missing/extra topology boundary')
     displays={'initial':runtime.active_display(json.loads(initial),device)}
@@ -135,7 +152,7 @@ def prove_terminal(document, identity, out, initial, device, host_run):
 def collect_session(out, identity, local, started, deadline):
     query='@application.id:'+oracle.APP_ID+' @session.id:'+local['session_id']
     start=datetime.datetime.fromtimestamp(started-60,datetime.timezone.utc).isoformat()
-    minimum=len(local['views'])+len(local['browser_rows'])+len(local['starts'])+2
+    minimum=len(local['views'])+len(local['browser_rows'])+len(local['starts'])+(0 if local.get('mode')=='navigation-ttl' else 2)
     for attempt in range(24):
         try:
             rows=shared.request(out,identity,query,start,deadline,'final-'+str(attempt),minimum_rows=minimum)
@@ -183,9 +200,39 @@ def cleanup_cell(root, out, documents, identity, device_id, device, original_app
     return errors
 
 
+
+def scoped_admission(root, arm, device, plan, budget):
+    path=root/'admissions'/(arm+'.json');admission=shared.read(path);now=time.time()
+    require(not path.is_symlink() and admission.get('arm')==arm and admission.get('scenario')=='navigation-ttl'
+            and 0<=now-admission.get('issued_at',0)<=300,'fresh immutable cell admission required')
+    identity=admission.get('identity',{})
+    for key in ['run_id','nonce']:oracle.identifier(identity.get(key))
+    require(identity=={'run_id':identity['run_id'],'nonce':identity['nonce'],'arm':arm,
+            'source':shared.ARMS[arm],'fixture':plan['arms'][arm]['fixture']},'admission native identity differs')
+    require(admission.get('budgets')==budget,'cell budget changed')
+    native=admission['issued_at']+budget['native'];execution=native+budget['backend'];cleanup=execution+budget['cleanup']
+    require(admission.get('native_deadline')==native and admission.get('execution_deadline')==execution
+            and admission.get('cleanup_deadline')==cleanup<admission.get('work_window_deadline',0)
+            and now<native,'cell deadlines expired or exceed fixed work window')
+    preflight=admission['preflight'];require(shared.sha(preflight['path'])==preflight['sha256'],'preflight receipt changed')
+    observed=shared.read(preflight['path'])
+    require(observed.get('state')=='PASS' and observed.get('device')==device
+            and observed.get('plan_sha256')==shared.sha(root/'plan.json')
+            and observed.get('work_window_deadline')==admission['work_window_deadline']
+            and 0<=admission['issued_at']-observed['at']<=300,'foreign or stale scoped preflight')
+    if arm=='B':
+        previous=root/'cells/A/summary.json';result=shared.read(previous)
+        require(all(result.get(k)=='PASS' for k in ['state','scenario','evidence','cleanup'])
+                and result['finished_at']<admission['issued_at'] and admission.get('baseline_summary_sha256')==shared.sha(previous)
+                and all(result['identity'][key]!=identity[key] for key in ['run_id','nonce']),'candidate requires completed distinct baseline')
+    return admission,path
+
+
 def cell(args):
     root=args.root.resolve();plan=build_workflow.verify(root);definition=plan['definition'];budget=definition['runtime_preparation']['budgets_seconds']
-    admission=shared.read(root/'native-admission.json')
+    mode=definition['runtime_preparation'].get('scenario','fold');require(mode in ['fold','navigation-ttl'],'unknown WebView scenario')
+    if mode=='navigation-ttl':admission,admission_path=scoped_admission(root,args.arm,args.device,plan,budget)
+    else:admission_path=root/'native-admission.json';admission=shared.read(admission_path)
     require(admission['state']=='ADMITTED' and admission['plan_sha256']==shared.sha(root/'plan.json')
         and admission['builds']=={arm:shared.sha(root/arm/'build-result.json') for arm in shared.ARMS},'WebView runtime not admitted')
     review=shared.read(root/'review.json');controls=shared.read(root/'controls-qualification.json')
@@ -201,15 +248,19 @@ def cell(args):
     require(absent(args.device) and build_workflow.BUNDLE not in original_apps,'task app initially present')
     out.mkdir();(out/'folds').mkdir();publication_preflight(out);host_run=str(uuid.uuid4());identity={'run_id':str(uuid.uuid4()),'nonce':str(uuid.uuid4()),'arm':args.arm,'source':shared.ARMS[args.arm],'fixture':plan['arms'][args.arm]['fixture']}
     started=time.time();native_deadline=started+budget['native'];execution_deadline=native_deadline+budget['backend'];cleanup_deadline=execution_deadline+budget['cleanup']
+    if mode=='navigation-ttl':
+        identity=admission['identity']
+        native_deadline=admission['native_deadline'];execution_deadline=admission['execution_deadline'];cleanup_deadline=admission['cleanup_deadline']
     summary={'state':'RUNNING','scenario':'UNQUALIFIED','evidence':'INCOMPLETE','cleanup':'NOT_RUN','identity':identity,'host_run':host_run,'device':device,
         'started_at':started,'native_deadline':native_deadline,'execution_deadline':execution_deadline,'cleanup_deadline':cleanup_deadline,
-        'plan_sha256':shared.sha(root/'plan.json'),'build_sha256':shared.sha(root/args.arm/'build-result.json')}
+        'plan_sha256':shared.sha(root/'plan.json'),'build_sha256':shared.sha(root/args.arm/'build-result.json'),
+        'admission':{'path':str(admission_path),'sha256':shared.sha(admission_path)}}
     shared.save(out/'summary.json',summary);shared.save(out/'initial-apps.json',original_apps,exclusive=True)
     installed=False;documents=None;pid=None;initial=None;terminal=None
     try:
         initial=display(args.device,out,'initial-displays',native_deadline);previous=initial
         active=runtime.active_display(json.loads(initial),args.device);others=[d for d in json.loads(initial)['result']['displays'] if d.get('active') is not True]
-        require(any(d['nativeSize'][0]*d['nativeSize'][1]>active['nativeSize'][0]*active['nativeSize'][1] for d in others),'initial smaller Closed display not established')
+        if mode=='fold':require(any(d['nativeSize'][0]*d['nativeSize'][1]>active['nativeSize'][0]*active['nativeSize'][1] for d in others),'initial smaller Closed display not established')
         empty=shared.request(out,identity,'@application.id:'+oracle.APP_ID+' @context.probe.run_id:'+identity['run_id']+'-preflight','now-15m',min(native_deadline,time.time()+120),'preflight')
         require(not empty,'preflight contains stale data')
         shared.command(['xcrun','simctl','install',args.device,str(app)],out,'install',deadline=min(native_deadline,time.time()+60));installed=True
@@ -219,7 +270,7 @@ def cell(args):
         require(not documents.exists() or not list(documents.iterdir()),'stale native documents')
         shared.save(out/'native-publication-preflight.json',publication_preflight(documents),exclusive=True)
         shared.command(['xcrun','simctl','launch',args.device,build_workflow.BUNDLE,'--run-id',identity['run_id'],'--nonce',identity['nonce'],'--arm',args.arm,
-            '--device',args.device,'--host-run',host_run,'--budget-seconds',str(native_deadline-time.time()),
+            '--device',args.device,'--host-run',host_run,'--scenario',mode,'--budget-seconds',str(native_deadline-time.time()),
             '--fold-budget-seconds',str(budget['human_fold']),'--marker-budget-seconds',str(budget['marker_backend'])],out,'launch',deadline=min(native_deadline,time.time()+60))
         match=re.fullmatch(re.escape(build_workflow.BUNDLE)+r': ([1-9][0-9]*)\s*',(out/'launch.log').read_text());require(match is not None,'launch PID missing');pid=int(match[1])
         require(Path(shared.process(pid)).resolve()==(installed_app/build['product']['executable']).resolve(),'foreign running process')
@@ -236,18 +287,26 @@ def cell(args):
                 admission=runtime.admit_request(request_path.read_bytes(),observed_at=observed_at,phase_budget=phase_budget,overall_deadline=native_deadline)
                 deadline=admission['deadline_ms']/1000
                 if request['kind']=='human-fold':
+                    require(mode=='fold','fold request in autonomous scenario')
                     phase=request['fields']['phase'];require(phase==(['open','closed'][len(folds)] if len(folds)<2 else None),'repeated/out-of-order fold')
                     folder=out/'folds'/phase;folder.mkdir();shutil.copy2(request_path,folder/request_path.name)
                     shared.save(folder/'admission.json',admission,exclusive=True)
                     reply,previous=prove_fold(folder/request_path.name,documents,folder,identity,args.device,host_run,initial,previous,deadline);folds.append(phase)
                 else:
                     require(request['kind']=='backend-markers','unknown native request');folder=out/request['id'];folder.mkdir();shutil.copy2(request_path,folder/request_path.name)
-                    shared.save(folder/'admission.json',admission,exclusive=True);reply=marker_exchange(request,documents,folder,identity,started,deadline)
+                    shared.save(folder/'admission.json',admission,exclusive=True)
+                    if mode=='navigation-ttl':
+                        require([c['marker'] for c in request['fields']['callbacks']]==['M1','M2','M3','M4'],'scoped marker request differs')
+                        document=snapshot(documents,identity)
+                        local=prove_terminal(document,identity,out,initial,args.device,host_run,mode=mode,require_backend=False)
+                        shared.save(out/'behavior-evidence.json',document,exclusive=True)
+                        shared.save(out/'behavior-result.json',local,exclusive=True);summary['scenario']='PASS'
+                    reply=marker_exchange(request,documents,folder,identity,started,deadline)
                 published,receipt=publish_native(request_path,reply,documents/('response-'+request['id']+'.json'),deadline);shared.save(folder/'published-response.json',published,exclusive=True);shared.save(folder/'publication-receipt.json',receipt,exclusive=True)
             time.sleep(.1)
         require(time.time()<native_deadline,'late native terminal');terminal=shared.read(documents/'terminal.json');raw=(documents/'evidence.json').read_bytes()
         (out/'evidence.json').write_bytes(raw);shared.save(out/'native-terminal.json',terminal,exclusive=True)
-        document=sealed_evidence(raw,terminal,identity);local=prove_terminal(document,identity,out,initial,args.device,host_run)
+        document=sealed_evidence(raw,terminal,identity);local=prove_terminal(document,identity,out,initial,args.device,host_run,mode=mode)
         shared.save(out/'local-result.json',local,exclusive=True);summary['scenario']='PASS'
         collect_session(out,identity,local,started,min(execution_deadline,time.time()+budget['backend']));summary['evidence']='PASS'
         sealed_evidence((documents/'evidence.json').read_bytes(),terminal,identity)

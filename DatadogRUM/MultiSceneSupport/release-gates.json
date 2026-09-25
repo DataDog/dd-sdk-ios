@@ -277,7 +277,7 @@
           ],
           "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild at baseline SDK and baseline-to-candidate SDK at27.1 on Duo. Report UIKit views separately. No new loss, duplicate occurrence or wrong owner for the same actual journey; documented baseline limitations may remain. No40-cell cross-product or whole-payload backend equality.",
           "environment": "Xcode27.1 Duo27.1 simulator;12 shared stack/split cells plus at most4 ordinary baseline controls; reuse valid source-matched observations",
-          "evidence": "Historical EXP210 preparation owns the original40-slot definition, four genuine26.5/27.1 builds and its stopped/diagnostic attempts; no behavioral gate credit. The current execution obligation is only the12-cell Duo coverage package plus at most4 diagnostic ordinary baseline controls in releases.S2.execution_packages. Rebind reusable source/build observations to that contract; no duplicate40-cell run. Results/S2-release-gate-review-20260925.json preserves the former wording.",
+          "evidence": "Results/EXP-210-s2-automatic-coverage.json now binds reviewed prepare-s2 output: exact12 Duo single-scene cells, six products reused from four genuine compiler/source builds, unchanged native oracle and symmetric anomaly checks. No new builds or native coverage cells; human input prerequisite and historical stops remain. No gate credit.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
@@ -312,7 +312,7 @@
           ],
           "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild at baseline SDK and baseline-to-candidate SDK at27.1 on Duo. Report UIKit actions separately. No new loss, duplicate occurrence or wrong owner for the same actual journey; documented baseline limitations may remain. No40-cell cross-product or whole-payload backend equality.",
           "environment": "Xcode27.1 Duo27.1 simulator;12 shared stack/split cells plus at most4 ordinary baseline controls; reuse valid source-matched observations",
-          "evidence": "Historical EXP210 preparation owns the original40-slot definition, four genuine26.5/27.1 builds and its stopped/diagnostic attempts; no behavioral gate credit. The current execution obligation is only the12-cell Duo coverage package plus at most4 diagnostic ordinary baseline controls in releases.S2.execution_packages. Rebind reusable source/build observations to that contract; no duplicate40-cell run. Results/S2-release-gate-review-20260925.json preserves the former wording.",
+          "evidence": "Results/EXP-210-s2-automatic-coverage.json now binds reviewed prepare-s2 output: exact12 Duo single-scene cells, six products reused from four genuine compiler/source builds, unchanged native oracle and symmetric anomaly checks. No new builds or native coverage cells; human input prerequisite and historical stops remain. No gate credit.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
@@ -347,7 +347,7 @@
           ],
           "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild at baseline SDK and baseline-to-candidate SDK at27.1 on Duo. Report SwiftUI views separately. No new loss, duplicate occurrence or wrong owner for the same actual journey; documented baseline limitations may remain. No40-cell cross-product or whole-payload backend equality.",
           "environment": "Xcode27.1 Duo27.1 simulator;12 shared stack/split cells plus at most4 ordinary baseline controls; reuse valid source-matched observations",
-          "evidence": "Historical EXP210 preparation owns the original40-slot definition, four genuine26.5/27.1 builds and its stopped/diagnostic attempts; no behavioral gate credit. The current execution obligation is only the12-cell Duo coverage package plus at most4 diagnostic ordinary baseline controls in releases.S2.execution_packages. Rebind reusable source/build observations to that contract; no duplicate40-cell run. Results/S2-release-gate-review-20260925.json preserves the former wording.",
+          "evidence": "Results/EXP-210-s2-automatic-coverage.json now binds reviewed prepare-s2 output: exact12 Duo single-scene cells, six products reused from four genuine compiler/source builds, unchanged native oracle and symmetric anomaly checks. No new builds or native coverage cells; human input prerequisite and historical stops remain. No gate credit.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
@@ -382,7 +382,7 @@
           ],
           "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild at baseline SDK and baseline-to-candidate SDK at27.1 on Duo. Report SwiftUI actions separately. No new loss, duplicate occurrence or wrong owner for the same actual journey; documented baseline limitations may remain. No40-cell cross-product or whole-payload backend equality.",
           "environment": "Xcode27.1 Duo27.1 simulator;12 shared stack/split cells plus at most4 ordinary baseline controls; reuse valid source-matched observations",
-          "evidence": "Historical EXP210 preparation owns the original40-slot definition, four genuine26.5/27.1 builds and its stopped/diagnostic attempts; no behavioral gate credit. The current execution obligation is only the12-cell Duo coverage package plus at most4 diagnostic ordinary baseline controls in releases.S2.execution_packages. Rebind reusable source/build observations to that contract; no duplicate40-cell run. Results/S2-release-gate-review-20260925.json preserves the former wording.",
+          "evidence": "Results/EXP-210-s2-automatic-coverage.json now binds reviewed prepare-s2 output: exact12 Duo single-scene cells, six products reused from four genuine compiler/source builds, unchanged native oracle and symmetric anomaly checks. No new builds or native coverage cells; human input prerequisite and historical stops remain. No gate credit.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
@@ -1181,7 +1181,7 @@
           ],
           "decisive_test": "One baseline/candidate real WKWebView journey: active native owner beyond cache TTL, navigate A-to-B, delayed A event before inactive expiry and after expiry, then detach/release. Assert native application/session, distinct browser ID and exact A-or-absent container; never B. Fold is already covered and is not a second critical mechanism here.",
           "environment": "Qualified iOS27 simulator with actual WKScriptMessage bridge, replay eligibility for container correlation, and authenticated backend",
-          "evidence": "Reference evidence retained. Results/S2-T10-source-preparation.json freezes the four-marker source/ownership preparation; current candidate native/fold/app evidence remains open.",
+          "evidence": "Results/S2-T10-source-preparation.json: no-input baseline native scenario and cleanup PASS. Original INVALID from6.402s late marker publication remains. Separate reviewed retrieval qualifies all9 backend rows:3 native and4 Browser views with exact owners,1 TTID and1 reducer; no native retry. Candidate unrun; no whole-gate credit.",
           "required": true,
           "completion_mode": "Captured event-time native owner while cache-eligible; documented absent container after expiry; no foreign owner or new explicit target",
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
@@ -1740,7 +1740,7 @@
           ],
           "decisive_test": "Reuse the automatic coverage split journeys for actual Closed/Open display geometry, stable scene/window/controller ownership, selection continuity and no new view/action misattribution. No extra physical-iPad resize matrix or ideal semantic selection guarantee.",
           "environment": "Qualified Duo27.1 simulator; physical iPhone/iPad only for a specifically unsupported interaction mechanism, not a duplicate matrix",
-          "evidence": "Reference evidence retained; this release candidate is not qualified. Results/S2-remaining-gate-applicability.json reviews the F07 exclusion option: unchanged gesture/hosting implementations do not close the actual native lifecycle/owner contract through the changed E04 transition path. Gate remains open.",
+          "evidence": "The reviewed12-cell EXP210 preparation includes the required split journeys and original actual-display oracle. No native cell has run; original input stops remain. Preparation does not qualify resize/fold behavior.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }

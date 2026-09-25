@@ -87,6 +87,25 @@ class SessionControls(unittest.TestCase):
         event=json.loads(next(r['event_json'] for r in self.document['records'] if r['kind']=='native-view'));event['type']='error'
         self.document['records'].append({'kind':'native-error','event_json':json.dumps(event)})
         with self.assertRaises(Rejected):s.native_inventory(self.document)
+    def test_scoped_backend_does_not_require_incidental_ttid_or_reducer(self):
+        local=self.local();local['mode']='navigation-ttl'
+        rows=[r for r in backend(local) if r['attributes']['custom']['type'] not in ['vital','session']]
+        self.assertEqual(s.backend_session(rows,local)['state'],'BACKEND_QUALIFIED')
+    def test_scoped_backend_uses_event_identity_across_queries(self):
+        local=self.local();local['mode']='navigation-ttl';rows=backend(local)
+        for row in rows:row['id']='later-query-'+row['id']
+        self.assertEqual(s.backend_session(rows,local)['state'],'BACKEND_QUALIFIED')
+    def test_scoped_backend_still_requires_all_browser_and_native_views(self):
+        local=self.local();local['mode']='navigation-ttl'
+        for missing in [0,3]:
+            rows=backend(local);rows.pop(missing)
+            with self.assertRaises(Rejected):s.backend_session(rows,local)
+    def test_scoped_ttid_timing_is_incidental_but_owner_is_not(self):
+        local=self.local();local['mode']='navigation-ttl';rows=backend(local)
+        rows[-2]['attributes']['client_time']+=1;rows[-2]['attributes']['custom']['vital']['duration']+=1
+        self.assertEqual(s.backend_session(rows,local)['state'],'BACKEND_QUALIFIED')
+        rows[-2]['attributes']['custom']['view']['id']='foreign'
+        with self.assertRaises(Rejected):s.backend_session(rows,local)
     def test_raw_marker_exchange_uses_exact_callback_and_owner(self):
         local=self.local();callbacks=[r for r in self.document['records'] if r['kind']=='webkit-callback']
         result=s.acknowledge_markers(self.document,callbacks,local['browser_rows'],self.document['identity'])

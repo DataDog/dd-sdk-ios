@@ -56,8 +56,8 @@ def acknowledge_markers(document, callbacks, rows, identity):
     return acknowledgements
 
 
-def local_session(document, identity, scene):
-    markers=evaluate_markers(document,{'identity':identity,'application_id':APP_ID,'browser_service':BROWSER_SERVICE,'window':scene['window'],'scene':scene['scene']})
+def local_session(document, identity, scene, *, mode="fold", require_backend=True):
+    markers=evaluate_markers(document,{'identity':identity,'application_id':APP_ID,'browser_service':BROWSER_SERVICE,'window':scene['window'],'scene':scene['scene'],'mode':mode}, require_backend=require_backend)
     records=document['records'];views,starts,session=native_inventory(document)
     require(not any(r['kind'] in ['failure','encoding-failure','scene-disconnected','scene-background','ttid-observer-failure'] for r in records),'native continuity/persistence failure')
     require(len(views)==3 and sorted(e['view']['name'] for e in views.values())==['ApplicationLaunch','NativeA','NativeB'],'native view inventory differs')
@@ -82,13 +82,14 @@ def local_session(document, identity, scene):
     require(all(type(witness.get(key)) in (int,float) and math.isfinite(witness[key]) for key in ['raw_date_reference_seconds','raw_date_unix_seconds','server_time_offset_seconds']),'invalid TTID date')
     require(witness['raw_date_reference_seconds']+978307200==witness['raw_date_unix_seconds'],'inconsistent raw TTID Date')
     corrected=sdk_milliseconds(witness['raw_date_reference_seconds']+witness['server_time_offset_seconds']+978307200)
-    return {'state':'LOCAL_QUALIFIED','identity':identity,'views':views,'starts':starts,'session_id':session,'markers':markers,
+    return {'state':'LOCAL_QUALIFIED','mode':mode,'identity':identity,'views':views,'starts':starts,'session_id':session,'markers':markers,
             'ttid':{'owner':owner,'id':witness['vital_id'],'duration':witness['duration_ns'],'date':corrected},
             'browser_rows':[json.loads(r['event_json']) for r in records if r['kind']=='writer-ack']}
 
 
 def backend_session(rows, local, *, pending=True):
     state='PENDING' if pending else 'INVALID';native={};browser={};starts=[];vitals=[];reducers=[]
+    scoped=local.get('mode')=='navigation-ttl'
     session=local['session_id'];marker_rows={field(r['attributes']['custom'],'view.id'):r for r in local['browser_rows']}
     for row in rows:
         event=row['attributes']['custom'];kind=event['type']
@@ -99,7 +100,7 @@ def backend_session(rows, local, *, pending=True):
             expected=marker_rows[vid]
             actual_fields=backend_projection(json.dumps(row));prior_fields=backend_projection(json.dumps(expected))
             stable=['type','application.id','session.id','session.has_replay','source','service','date','view','container','context.probe','_dd.format_version','_dd.document_version']
-            require(row['id']==expected['id'] and all(field(actual_fields,key)==field(prior_fields,key) for key in stable),
+            require((scoped or row['id']==expected['id']) and all(field(actual_fields,key)==field(prior_fields,key) for key in stable),
                     'browser event changed after acknowledged boundary')
             browser[vid]=row;continue
         require(source(row)=='ios' and event['service']==NATIVE_SERVICE,'foreign native backend event')
@@ -110,7 +111,7 @@ def backend_session(rows, local, *, pending=True):
         elif kind=='action':require(field(event,'action.type')=='application_start','unexpected native action');starts.append(event)
         elif kind=='vital':
             witness=local['ttid'];require(vid==witness['owner'] and field(event,'vital.id')==witness['id']
-                and field(event,'vital.duration')==witness['duration'] and row['attributes']['client_time']==witness['date']
+                and (scoped or field(event,'vital.duration')==witness['duration'] and row['attributes']['client_time']==witness['date'])
                 and field(event,'vital.type')=='app_launch' and field(event,'vital.name')=='time_to_initial_display'
                 and field(event,'vital.app_launch_metric')=='ttid' and field(event,'view.name')==local['views'][vid]['view']['name']
                 and field(event,'view.url')==local['views'][vid]['view']['url'],'TTID differs from exact dispatch witness');vitals.append(event)
@@ -121,10 +122,10 @@ def backend_session(rows, local, *, pending=True):
         for path in ['view.name','view.url','view.is_active','view.time_spent','view.action.count','view.resource.count','view.error.count','view.long_task.count']:
             require(field(actual,path)==field(expected,path),'native terminal field not settled: '+path,state)
     require(len(starts)<=len(local['starts']) and len(vitals)<=1 and len(reducers)<=1,'duplicate incidental telemetry')
-    require(len(vitals)==1 and len(reducers)==1 and len(starts)==len(local['starts']),'incidental inventory incomplete',state)
+    require((scoped or len(vitals)==1 and len(reducers)==1) and len(starts)==len(local['starts']),'incidental inventory incomplete',state)
     require({field(e,'action.id'):field(e,'view.id') for e in starts}=={field(e,'action.id'):field(e,'view.id') for e in local['starts']},'application-start owner differs')
-    for name,wanted in [('view',len(local['views'])+len(marker_rows)),('action',len(starts)),('crash',0)]:
+    for name,wanted in ([] if scoped else [('view',len(local['views'])+len(marker_rows)),('action',len(starts)),('crash',0)]):
         count=field(reducers[0],'session.'+name+'.count')
         require(type(count) is int and 0<=count<=wanted,'unexpected aggregate '+name)
         require(count==wanted,'aggregate '+name+' not settled',state)
-    return {'state':'BACKEND_QUALIFIED','raw_rows':len(rows),'native_views':len(local['views']),'browser_views':len(browser),'session_id':session}
+    return {'state':'BACKEND_QUALIFIED','raw_rows':len(rows),'native_views':len(local['views']),'browser_views':len(browser),'session_id':session,'incidental':{'vitals':len(vitals),'reducers':len(reducers)}}

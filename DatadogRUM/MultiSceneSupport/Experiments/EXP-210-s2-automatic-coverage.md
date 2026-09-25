@@ -47,7 +47,7 @@ relocated executable attempt. Historical EXP-195 results and eight unresolved
 old-build Duo cells remain separate. No backend, performance, physical-Duo,
 active-work or semantic-API acceptance is claimed.
 
-## Current composition human preparation
+## Historical composition human preparation
 
 The owning result's `human_current_composition` retains the same40 slots and binds
 baseline62f64 against selectedc9faed81. Original input failures above are unchanged.
@@ -67,3 +67,17 @@ freezes complete adjacent pairs and fresh admission clocks. Later sittings refer
 qualified predecessors in place; an append-only family ledger prevents a fresh
 output path from repeating a consumed cell. The first regular UIKit pair is prepared
 without a build or native action. Native qualification and all behavioral gates remain open.
+
+## Revised S2 coverage preparation
+
+The owning result's `s2_scoped_preparation` now freezes exactly12 Duo single-scene
+cells: UIKit/SwiftUI stack/split, each baseline SDK26.5, baseline SDK27.1 and
+candidate SDK27.1. `prepare-s2` reuses six products from the four qualified builds;
+its reviewed runtime validates the original native oracle and compiler/product
+identities. No build or native coverage cell was added. Symmetric anomaly checks
+reject baseline/candidate duplicate IDs, unknown owners, unassigned actions and
+errors while ignoring incidental durations, brightness and cross-run UUID values.
+
+Coverage43, runtime24 and shared connector10 controls pass. The earlier40-cell
+preparation and input failures remain historical; they are not a new execution
+obligation. First human input qualification is still required. No gate closes.

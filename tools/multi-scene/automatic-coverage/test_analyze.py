@@ -68,6 +68,29 @@ class ComparisonTests(unittest.TestCase):
     def test_same_sample_is_unchanged(self):
         value=analyze.summarize(*self.sample())
         self.assertEqual(analyze.compare(value,value,"actions")["status"],"UNCHANGED_OBSERVED_COVERAGE")
+    def test_baseline_faults_cannot_be_hidden_by_a_clean_candidate(self):
+        clean=analyze.summarize(*self.sample())
+        for fault in ['duplicate_action_ids','unknown_action_owners','unassigned_actions','errors']:
+            with self.subTest(fault=fault):
+                before=copy.deepcopy(clean);before[fault]=['baseline-fault']
+                for family in ['views','actions']:
+                    result=analyze.compare(before,clean,family)
+                    self.assertEqual(result['status'],'REVIEW_REQUIRED')
+                    self.assertEqual(result['reasons']['before'],[fault])
+    def test_incidental_fields_and_cross_run_ids_do_not_change_coverage(self):
+        args=self.sample();before=analyze.summarize(*args)
+        for row in args[1]:
+            event=row['payload'];event['_dd']={'document_version':99}
+            event['device']={'brightness_level':0.4};event['view']['id']='new-'+event['view']['id']
+            event['view']['time_spent']=123456;event['view']['first_byte']=99
+            if event['type']=='action':event['action']['id']='other-tap'
+        after=analyze.summarize(*args)
+        for family in ['views','actions']:
+            self.assertEqual(analyze.compare(before,after,family)['status'],'UNCHANGED_OBSERVED_COVERAGE')
+    def test_duplicate_same_name_view_occurrence_requires_classification(self):
+        args=self.sample();before=analyze.summarize(*args)
+        extra=copy.deepcopy(args[1][0]);extra['payload']['view']['id']='second-home';args[1].append(extra)
+        self.assertEqual(analyze.compare(before,analyze.summarize(*args),'views')['status'],'DIFFERENCE_REQUIRES_CLASSIFICATION')
     def test_wrong_existing_owner_cannot_pass(self):
         args=self.sample();before=analyze.summarize(*args);args[1][2]["payload"]["view"]["id"]="detail"
         self.assertEqual(analyze.compare(before,analyze.summarize(*args),"actions")["status"],"DIFFERENCE_REQUIRES_CLASSIFICATION")

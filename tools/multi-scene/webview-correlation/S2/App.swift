@@ -23,6 +23,7 @@ private enum WebSettings {
     static let identity = ["run_id": argument("--run-id"), "nonce": argument("--nonce"), "arm": argument("--arm"),
         "source": Bundle.main.object(forInfoDictionaryKey: "WebSource") as? String ?? "",
         "fixture": Bundle.main.object(forInfoDictionaryKey: "WebFixture") as? String ?? ""]
+    static let scoped = argument("--scenario") == "navigation-ttl"
     static let device = argument("--device")
     static let hostRun = argument("--host-run")
     static let startedTick = DispatchTime.now().uptimeNanoseconds
@@ -146,6 +147,10 @@ private struct WebTTIDReceiver: FeatureMessageReceiver {
                     return view["name"] as? String == "NativeB" && view["is_active"] as? Bool == false
                 }
                 try await wait("TTID-witness") { evidence.matching("ttid-message").count == 1 }
+                if WebSettings.scoped {
+                    evidence.record("behavior-complete")
+                    try await acknowledge(["M1", "M2", "M3", "M4"])
+                }
                 RUMMonitor.shared().stopSession()
                 try await finish(state: "PASS")
             }
@@ -301,6 +306,7 @@ private struct WebTTIDReceiver: FeatureMessageReceiver {
     }
     private func run() async throws {
         guard WebSettings.deadline > DispatchTime.now().uptimeNanoseconds, let root, let nav = navigation else { throw WebFailure.invalid("admission") }
+        evidence.record("scenario", fields: ["mode": WebSettings.scoped ? "navigation-ttl" : "fold"])
         try await wait("A-ready") { readyDocuments.contains("A") && shownControllers.contains(key(root)) }
         // Replay eligibility is a context prerequisite; captured content is outside acceptance.
         var replay = false
@@ -316,10 +322,11 @@ private struct WebTTIDReceiver: FeatureMessageReceiver {
         try await wait("active-lifetime") { Date().timeIntervalSince(activeDate) > 181 && DispatchTime.now().uptimeNanoseconds - activeTick > 181_000_000_000 }
         guard let a = retainedA, let documentA = documents["A"] else { throw WebFailure.invalid("A-missing") }
         let first = try evidence.freeze(marker: "M1", service: WebSettings.browserService, documentID: documentA)
-        try await emit("M1", body: first, webView: a, ownerName: "NativeA"); try await acknowledge(["M1"])
+        try await emit("M1", body: first, webView: a, ownerName: "NativeA")
+        if !WebSettings.scoped { try await acknowledge(["M1"]) }
         let third = try evidence.freeze(marker: "M3", service: WebSettings.browserService, documentID: documentA)
         let fourth = try evidence.freeze(marker: "M4", service: WebSettings.browserService, documentID: documentA)
-        try await fold("open", controller: root)
+        if !WebSettings.scoped { try await fold("open", controller: root) }
         let bController = UIViewController(); bController.title = "Native B"; second = bController
         webB = makeWebView(label: "B", controller: bController)
         evidence.record("navigation-start", fields: ["controller": key(bController)])
@@ -339,10 +346,14 @@ private struct WebTTIDReceiver: FeatureMessageReceiver {
         try await emit("M2", body: secondEnvelope, webView: b, ownerName: "NativeB")
         a.removeFromSuperview(); evidence.record("detached", fields: ["webview": "A", "window": a.window.map(key) as Any? ?? NSNull()])
         try await emit("M3", body: third, webView: a, ownerName: "NativeB")
-        try await acknowledge(["M2", "M3"], deadline: deactivationEarliest + 180_000_000_000)
-        try await fold("closed", controller: bController)
+        guard DispatchTime.now().uptimeNanoseconds < deactivationEarliest + 180_000_000_000 else { throw WebFailure.invalid("M3-callback-late") }
+        if !WebSettings.scoped {
+            try await acknowledge(["M2", "M3"], deadline: deactivationEarliest + 180_000_000_000)
+            try await fold("closed", controller: bController)
+        }
         try await wait("inactive-lifetime") { Date().timeIntervalSince(deactivationLatest) > 181 && DispatchTime.now().uptimeNanoseconds - deactivationTick > 181_000_000_000 }
-        try await emit("M4", body: fourth, webView: a, ownerName: "NativeB"); try await acknowledge(["M4"])
+        try await emit("M4", body: fourth, webView: a, ownerName: "NativeB")
+        if !WebSettings.scoped { try await acknowledge(["M4"]) }
         releasedA = a
         WebViewTracking.disable(webView: a); a.navigationDelegate = nil
         evidence.record("tracking-disabled", fields: ["webview": "A"])

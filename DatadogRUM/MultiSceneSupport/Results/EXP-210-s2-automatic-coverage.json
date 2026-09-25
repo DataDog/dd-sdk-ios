@@ -511,7 +511,7 @@
     "sha256": "1e9f9c0b02d0ed0ef1331f53bddfdedef3fdd47d50f397fd6f5e179f6047fc10",
     "acceptance": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/host-review-acceptance.json"
   },
-  "updated_at": "2026-09-20T17:42:45.182777+00:00",
+  "updated_at": "2026-09-25T12:21:16.801290+00:00",
   "input_diagnostic_definition": {
     "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/D1-input-diagnostic-definition.json",
     "sha256": "e5c9a6f5743a120680de3e692837cbfff400fdfb2277dac8bed61b53dc8156a0",
@@ -800,5 +800,30 @@
     "contract": "release-gates.json: releases.S2.acceptance_contract/execution_packages",
     "effect": "Prospective S2 execution scope supersedes broader remaining-matrix and whole-payload prerequisites. Original definitions, admissions, attempts and verdicts remain unchanged. No native admission or gate closure.",
     "next": "Assess reusable actual observations against the scoped gate before any new native run; bind amended runner expectations and focused controls first."
+  },
+  "s2_scoped_preparation": {
+    "state": "REVIEWED_PREPARATION_ONLY",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automated-scope-rww2sb_g/definition.json",
+      "sha256": "72147284d3df661c8920b58b9468efea5ee2ae4b91c220c618ef02327f5f3191"
+    },
+    "runtime_plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automated-scope-rww2sb_g/coverage/runtime/runtime-plan.json",
+      "sha256": "9108e0dc0c4512aae3fb4925e14d958009fd7ae0f84744df35368f223c852804"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automated-scope-rww2sb_g/coverage/runtime/review.json",
+      "sha256": "239d5077885b5d533d5998526af31cda48f511eb42538c27389d8ec99aca02fc"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automated-scope-rww2sb_g/coverage/runtime/controls.json",
+      "sha256": "ac1cbb1cc48a1dd1f0734ea0590ef4048ac42fc0b31337ae6ce9fc654bc7fa61"
+    },
+    "cells": 12,
+    "products": 6,
+    "builds_added": 0,
+    "native_launches": 0,
+    "gate_closures": [],
+    "remaining": "Fresh operator readiness and first baseline input qualification; stopped automatic-input paths remain stopped. Original40-cell plans and failures remain immutable."
   }
 }

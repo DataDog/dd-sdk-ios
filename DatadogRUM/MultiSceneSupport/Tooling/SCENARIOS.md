@@ -185,6 +185,16 @@ selection, not merely reach a smaller display. Reserve each complete cell inside
 one immutable aggregate stage clock. Keep the uploader alive until backend capture
 is durable, then seal the stopped stream and rejoin saved responses only.
 
+## S2 native/WebView delayed ownership
+
+Use the [WebView fixture](../../../tools/multi-scene/webview-correlation/S2/README.md)
+`navigation-ttl` mode for the finite S2 contract. Capture actual callbacks and
+deactivation clocks before checking delayed-event ownership; collect backend
+evidence after native behavior. No fold or backend wait belongs inside the inactive
+cache interval. Per-cell admissions bind exact source/build and absolute deadlines.
+A late response remains diagnostic evidence and cannot rewrite the original result.
+Keep native behavior, complete backend inventory and cleanup verdicts separate.
+
 ## Specialized fixture entry points
 
 | Contract | Read only when needed | Preserve |

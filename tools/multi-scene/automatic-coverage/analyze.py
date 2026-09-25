@@ -147,8 +147,9 @@ def normalized(value, family, initial_only=False):
 
 
 def compare(before, after, family, initial_only=False):
-    faults = [k for k in ["duplicate_action_ids", "unknown_action_owners", "unassigned_actions", "errors"] if after[k]]
-    if faults: return {"status": "REVIEW_REQUIRED", "reasons": faults}
+    faults = {arm: [k for k in ["duplicate_action_ids", "unknown_action_owners", "unassigned_actions", "errors"] if value[k]]
+              for arm, value in [("before", before), ("after", after)]}
+    if any(faults.values()): return {"status": "REVIEW_REQUIRED", "reasons": faults}
     if normalized(before, family, initial_only) != normalized(after, family, initial_only):
         return {"status": "DIFFERENCE_REQUIRES_CLASSIFICATION", "before": normalized(before, family, initial_only), "after": normalized(after, family, initial_only)}
     limitation = bool(after["missing_action_phases"]) if family == "actions" else after["view_count"] == 0 or any("Fallback" in (v["name"] or "") for v in after["views"])

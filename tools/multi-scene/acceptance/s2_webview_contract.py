@@ -94,11 +94,14 @@ def sealed_evidence(raw, terminal, identity):
     return document
 
 
-def evaluate_markers(document, expected):
+def evaluate_markers(document, expected, *, require_backend=True):
     """Return marker evidence only; no build, topology, backend-inventory or gate claim."""
     require(document.get("identity") == expected["identity"], "stale fixture identity")
     require(document.get("persistence_failure") is False, "missing or failed evidence persistence")
     identity = expected["identity"]
+    scoped = expected.get("mode", "fold") == "navigation-ttl"
+    require(expected.get("mode", "fold") in ("fold", "navigation-ttl"), "unknown WebView scenario")
+    require(require_backend or scoped, "legacy contract requires backend acknowledgement")
     run = identifier(identity.get("run_id"), "run ID")
     identifier(identity.get("nonce"), "nonce")
     require(identity.get("arm") in ("A", "B"), "unqualified arm")
@@ -165,14 +168,18 @@ def evaluate_markers(document, expected):
             and inactive_event.get("application", {}).get("id") == expected["application_id"],
             "A inactive owner differs")
     before(b["start"], inactive_mapper); before(inactive_mapper, inactive); before(b["ready"], inactive)
-    open_pose, closed_pose = one("fold-complete", phase="open"), one("fold-complete", phase="closed")
-    before(a["ready"], open_pose)
-    before(open_pose, b["start"])
-    before(b["ready"], closed_pose)
-    # These references must be independently checked by the existing fold runner.
-    for pose in (open_pose, closed_pose):
-        require(isinstance(pose.get("proof_sha256"), str) and len(pose["proof_sha256"]) == 64,
-                "missing separately retained fold proof")
+    if scoped:
+        require(one("scenario").get("mode") == "navigation-ttl", "native scenario differs")
+        require(not any(r["kind"] == "fold-complete" or r["kind"] == "host-request-issued" and r.get("request_kind") == "human-fold" for r in records), "fold outside scoped contract")
+    else:
+        open_pose, closed_pose = one("fold-complete", phase="open"), one("fold-complete", phase="closed")
+        before(a["ready"], open_pose)
+        before(open_pose, b["start"])
+        before(b["ready"], closed_pose)
+        # These references must be independently checked by the existing fold runner.
+        for pose in (open_pose, closed_pose):
+            require(isinstance(pose.get("proof_sha256"), str) and len(pose["proof_sha256"]) == 64,
+                    "missing separately retained fold proof")
     frozen = {m: one("envelope-frozen", marker=m) for m in MARKERS}
     detached = one("detached", webview="A")
     require(detached.get("window") is None, "WebView A remains attached")
@@ -181,9 +188,10 @@ def evaluate_markers(document, expected):
     require([r.get("marker") for r in callbacks] == list(MARKERS), "callback inventory differs")
     browser, webviews = [], {}
     for marker, callback in zip(MARKERS, callbacks):
-        emission, ack = one("emit-before", marker=marker), one("writer-ack", marker=marker)
+        emission = one("emit-before", marker=marker)
+        ack = one("writer-ack", marker=marker) if require_backend else None
         before(emission, callback)
-        before(callback, ack)
+        if require_backend: before(callback, ack)
         event = body(callback.get("body_json"))
         before(frozen[marker], emission)
         require(callback["body_json"] == frozen[marker].get("body_json"), "payload was redated/replaced")
@@ -203,7 +211,7 @@ def evaluate_markers(document, expected):
                     for family in ("action", "resource", "error", "long_task")),
                 "Browser marker counters differ")
         vid = identifier(event.get("view", {}).get("id"), "Browser view ID")
-        require(callback.get("view_id") == emission.get("view_id") == ack.get("view_id") == vid,
+        require(callback.get("view_id") == emission.get("view_id") == vid and (not require_backend or ack.get("view_id") == vid),
                 "callback/emission/acknowledgement identity differs")
         require(event.get("context", {}).get("probe") == {"run_id": run, "marker": marker},
                 "stale callback run/marker")
@@ -227,21 +235,24 @@ def evaluate_markers(document, expected):
         require(emission.get("live_view_id") == live["id"], "pre-emission native owner changed")
         if marker == "M1":
             elapsed(frozen[marker], a["ready"], greater=True)
-            before(ack, open_pose)
+            if not scoped: before(ack, open_pose)
         elif marker == "M2":
             before(b["ready"], frozen[marker])
             before(callback, detached)
         else:
             before(a["ready"], frozen[marker])
-            before(frozen[marker], open_pose)
+            if not scoped: before(frozen[marker], open_pose)
             before(frozen[marker], b["start"])
             before(detached, emission)
             if marker == "M3":
-                elapsed(ack, b["start"], greater=False)
-                before(ack, closed_pose)
+                elapsed(callback if scoped else ack, b["start"], greater=False)
+                if not scoped: before(ack, closed_pose)
             else:
-                before(closed_pose, emission)
+                if not scoped: before(closed_pose, emission)
                 elapsed(emission, inactive, greater=True)
+        if not require_backend:
+            browser.append({"marker": marker, "view_id": vid})
+            continue
         raw = ack.get("event_json")
         require(isinstance(raw, str) and hashlib.sha256(raw.encode()).hexdigest() == ack.get("event_sha256"),
                 "backend acknowledgement is not bound to raw row")
@@ -274,8 +285,13 @@ def evaluate_markers(document, expected):
     require(len({r["view_id"] for r in browser}) == 4
             and not ({r["view_id"] for r in browser} & {a["id"], b["id"]}), "browser/native IDs alias")
     disabled, released = one("tracking-disabled", webview="A"), one("weak-release", webview="A")
-    before(one("writer-ack", marker="M4"), disabled)
+    before(one("webkit-callback", marker="M4") if scoped else one("writer-ack", marker="M4"), disabled)
+    if scoped:
+        complete = one("behavior-complete")
+        before(released, complete)
+        if require_backend:
+            for marker in MARKERS: before(complete, one("writer-ack", marker=marker))
     before(disabled, released)
     require(released.get("is_nil") is True, "detached WebView still retained", "FAIL")
     return {"state": "MARKERS_QUALIFIED", "session_id": session, "native_owners": {k: v["id"] for k, v in owner.items()},
-            "browser_markers": browser, "remaining": ["source/build binding", "independent fold proofs", "complete backend inventory", "cleanup"]}
+            "browser_markers": browser, "remaining": ["source/build binding", *([] if scoped else ["independent fold proofs"]), "complete backend inventory", "cleanup"]}

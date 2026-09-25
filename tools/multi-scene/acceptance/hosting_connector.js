@@ -47,7 +47,9 @@ async function exchange(path) {
   const bytes=Array.from(unescape(encodeURIComponent(JSON.stringify(response))),x=>x.charCodeAt(0));
   const alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';let payload='';
   for(let i=0;i<bytes.length;i+=3){const n=(bytes[i]<<16)|((bytes[i+1]||0)<<8)|(bytes[i+2]||0);payload+=alphabet[(n>>>18)&63]+alphabet[(n>>>12)&63]+(i+1<bytes.length?alphabet[(n>>>6)&63]:'=')+(i+2<bytes.length?alphabet[n&63]:'=');}
-  const done=await shell({cmd:'python3 -B '+quote(script)+' publish --request '+quote(path)+' --payload '+quote(payload),login:false,sandbox_permissions:'require_escalated',justification:'Persist exact Datadog tool responses and atomically publish the validated acceptance inventory within its original deadline.',max_output_tokens:1200});
+  // Send raw evidence through stdin; large complete inventories exceed macOS argv limits.
+  const publication="python3 -B - <<'S2_RAW_EVIDENCE'\nimport sys\nfrom pathlib import Path\nfrom types import SimpleNamespace\nsys.path.insert(0,"+JSON.stringify(repo+'/tools/multi-scene/acceptance')+")\nimport s2_hosting_workflow as workflow\nworkflow.publish(SimpleNamespace(request=Path("+JSON.stringify(path)+"),payload='"+payload+"'))\nS2_RAW_EVIDENCE";
+  const done=await shell({cmd:publication,login:false,sandbox_permissions:'require_escalated',justification:'Persist exact Datadog tool responses and atomically publish the validated acceptance inventory within its original deadline.',max_output_tokens:1200});
   if(done.exit_code!==0) throw Error('Evidence publication failed: '+done.output);
 }
 const invocation=arm==='backend-only'?' backend-only --root '+quote(root):' cell --root '+quote(root)+' --arm '+quote(arm)+(selectedFamily==='hosting'?' --mode '+quote(mode):'')+' --device '+quote(device);

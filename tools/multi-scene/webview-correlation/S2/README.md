@@ -1,5 +1,13 @@
 # Selected S2 native/WebView comparison
 
+The current S2 `navigation-ttl` mode runs automatically with no fold gestures.
+It captures A active beyond180seconds, actual A→B navigation, delayed A callbacks
+before/after inactive expiry, and A release. One four-marker backend exchange follows
+the sealed behavioral interval; it cannot determine the TTL timing. Local scenario,
+backend persistence and cleanup retain independent verdicts. Prior fold definitions,
+builds and attempts remain historical, with no deadline renewal.
+
+
 The [owning preparation](../../../../DatadogRUM/MultiSceneSupport/Results/S2-T10-source-preparation.json)
 freezes two cells and four Browser markers. This fixture uses normal SDK upload and
 the actual installed WebKit message handler. Browser and native partitions retain

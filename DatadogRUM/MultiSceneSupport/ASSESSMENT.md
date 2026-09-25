@@ -58,6 +58,13 @@ successful SDK-on/off callbacks on a regular iPhone27.0, with prior setup/host s
 preserved. This does not reproduce earlier variability or establish an SDK
 cause, complete automatic-tracking comparison or candidate gate closure.
 
+The reviewed automatic preparation now selects the12-cell Duo coverage package
+from existing products. The [WebView baseline](Results/S2-T10-source-preparation.json)
+qualifies the actual timed callbacks, detach/release and cleanup without human
+input. A separately bounded backend assessment qualifies all three native and four
+browser views with their expected owners. The original late-transport INVALID
+remains. Candidate comparison is still unrun; T10 remains open.
+
 [Controlled app builds](Results/S2-F08-app-preparation.json) are reusable by identity;
 [app journeys](Results/S2-F08-app-journeys.json) remain unqualified. The prebooted
 Duo baseline binds its fresh backend owner and completes subdomain/Back navigation.

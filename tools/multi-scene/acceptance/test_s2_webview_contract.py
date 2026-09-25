@@ -81,6 +81,67 @@ def fixture(arm="B"):
     return dict(identity=identity, records=records, persistence_failure=False, durable_sequence=len(records)), expected
 
 
+def navigation_fixture(arm="B", backend=True):
+    document, expected = fixture(arm)
+    expected['mode'] = 'navigation-ttl'
+    records = document['records']; acknowledgements = [r for r in records if r['kind']=='writer-ack']
+    records[:] = [r for r in records if r['kind'] not in ['writer-ack','fold-complete']]
+    first = records[0]
+    records.insert(0, {'kind':'scenario','mode':'navigation-ttl','wall_ms':first['wall_ms'],'monotonic_ns':first['monotonic_ns']})
+    last = records[-1]
+    complete = {'kind':'behavior-complete','wall_ms':last['wall_ms']+1,'monotonic_ns':last['monotonic_ns']+1_000_000}
+    records.append(complete)
+    if backend:
+        for i, row in enumerate(acknowledgements,1):
+            # Deliberately after the inactive TTL; backend latency is not SDK consumption timing.
+            row.update(wall_ms=complete['wall_ms']+i,monotonic_ns=complete['monotonic_ns']+i*1_000_000)
+            records.append(row)
+    mapping={r['sequence']:i for i,r in enumerate(records,1) if 'sequence' in r}
+    for i,row in enumerate(records,1):
+        if 'mapper_sequence' in row:row['mapper_sequence']=mapping[row['mapper_sequence']]
+        row['sequence']=i
+    document['durable_sequence']=len(records)
+    return document,expected
+
+
+class NavigationTTLControls(unittest.TestCase):
+    def test_both_sources_keep_exact_owners_with_late_backend_collection(self):
+        for arm in ['A','B']:
+            document,expected=navigation_fixture(arm)
+            result=evaluate_markers(document,expected)
+            self.assertEqual(len(result['browser_markers']),4)
+            self.assertNotIn('independent fold proofs',result['remaining'])
+    def test_local_behavior_does_not_need_backend_receipts(self):
+        document,expected=navigation_fixture(backend=False)
+        result=evaluate_markers(document,expected,require_backend=False)
+        self.assertEqual(len(result['browser_markers']),4)
+        with self.assertRaises(Rejected):evaluate_markers(document,expected)
+    def test_late_m3_callback_still_rejected(self):
+        document,expected=navigation_fixture()
+        row=next(r for r in document['records'] if r['kind']=='webkit-callback' and r['marker']=='M3')
+        start=next(r for r in document['records'] if r['kind']=='native-start' and r['name']=='NativeB')
+        row.update(wall_ms=start['wall_ms']+180001,monotonic_ns=start['monotonic_ns']+180001*1_000_000)
+        with self.assertRaisesRegex(Rejected,'TTL'):evaluate_markers(document,expected)
+    def test_no_implicit_conversion_of_old_fold_evidence(self):
+        document,expected=fixture();expected['mode']='navigation-ttl'
+        with self.assertRaises(Rejected):evaluate_markers(document,expected)
+    def test_wrong_container_remains_a_failure(self):
+        document,expected=navigation_fixture()
+        row=next(r for r in document['records'] if r['kind']=='writer-ack' and r['marker']=='M3')
+        raw=json.loads(row['event_json']);raw['attributes']['custom']['container']['view']['id']='40000000-0000-0000-0000-000000000002'
+        row['event_json']=json.dumps(raw);row['event_sha256']=hashlib.sha256(row['event_json'].encode()).hexdigest()
+        with self.assertRaises(Rejected):evaluate_markers(document,expected)
+    def test_native_completion_requires_release(self):
+        document,expected=navigation_fixture();next(r for r in document['records'] if r['kind']=='weak-release')['is_nil']=False
+        with self.assertRaises(Rejected):evaluate_markers(document,expected)
+    def test_no_fold_request_in_scoped_native_interval(self):
+        document,expected=navigation_fixture();row=document['records'][0].copy();row.update(kind='host-request-issued',request_kind='human-fold')
+        document['records'].insert(1,row)
+        for i,r in enumerate(document['records'],1):r['sequence']=i
+        document['durable_sequence']=len(document['records'])
+        with self.assertRaises(Rejected):evaluate_markers(document,expected)
+
+
 class MarkerControls(unittest.TestCase):
     def row(self, document, kind, marker=None):
         return next(r for r in document["records"] if r["kind"] == kind and

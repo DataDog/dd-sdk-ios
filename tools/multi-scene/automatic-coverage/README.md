@@ -1,5 +1,14 @@
 # Automatic tracking compatibility comparison
 
+The reviewed S2 slice uses `human_runtime.py prepare-s2 --original FROZEN_BUILD_ROOT
+--root NEW_OUTPUT_ROOT`:12 Duo cells across UIKit/SwiftUI stack/split, each with
+baseline26.5, baseline27.1 and candidate27.1. It reuses six existing single-scene
+products, preserves the original native oracle and freezes a separate runtime plan.
+Preparation admits no input. The legacy40-cell path and original attempts remain
+unchanged. Baseline as well as candidate telemetry anomalies require classification;
+incidental timing/brightness fields are not coverage comparisons.
+
+
 EXP-195 compares four existing-public-API tracking families under C07–C10.
 The owning definition is `DatadogRUM/MultiSceneSupport/Results/EXP-195-automatic-tracking.json`.
 No SDK implementation or local configuration is changed.
