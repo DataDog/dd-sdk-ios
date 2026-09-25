@@ -296,3 +296,9 @@ extension FlagsClient: FlagsClientInternal {
         trackEvaluation(key: key, assignment: assignment, context: context)
     }
 }
+
+extension FlagsClient: FlagsClientFlushable {
+    func flush() {
+        repository.flush()
+    }
+}

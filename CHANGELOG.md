@@ -1,5 +1,6 @@
 # Unreleased
 
+- [FIX] Avoid delaying `DatadogFlags` provider initialization on the initial cached flags read. See [#3078][]
 - [FIX] Release the RUM display-link observer and its frame readers when their owner is released.
 - [FIX] Pin KSCrash to exact version 2.5.1 via SPM to prevent silently resolving newer, unvetted releases.
 - [FIX] Keep attributes isolated when returning to a previously tracked RUM view while its earlier resources are still pending.
@@ -1244,6 +1245,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3066]: https://github.com/DataDog/dd-sdk-ios/pull/3066
 [#3073]: https://github.com/DataDog/dd-sdk-ios/pull/3073
 [#3087]: https://github.com/DataDog/dd-sdk-ios/pull/3087
+[#3078]: https://github.com/DataDog/dd-sdk-ios/pull/3078
 [#3089]: https://github.com/DataDog/dd-sdk-ios/pull/3089
 [#3092]: https://github.com/DataDog/dd-sdk-ios/pull/3092
 [#3098]: https://github.com/DataDog/dd-sdk-ios/pull/3098

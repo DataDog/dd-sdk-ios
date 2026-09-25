@@ -46,6 +46,7 @@ internal final class FlagsStateManager: FlagsStateObservable {
     /// Groups state and listeners for atomic access.
     private struct ManagerState {
         var clientState: FlagsClientState = .notReady
+        var version: UInt64 = 0
         var listeners: [WeakListener] = []
     }
 
@@ -73,8 +74,23 @@ internal final class FlagsStateManager: FlagsStateObservable {
         unlessCurrentStateIs excludedStates: [FlagsClientState],
         beforeNotifying: (() -> Void)? = nil
     ) -> Bool {
+        guard let notifyListeners = updateStateWithoutNotifying(newState, unlessCurrentStateIs: excludedStates) else {
+            return false
+        }
+        beforeNotifying?()
+        notifyListeners()
+        return true
+    }
+
+    /// Updates state immediately and returns listener delivery to run outside the caller's locks.
+    /// Returns `nil` when the transition is excluded; skips delivery if a later transition supersedes it.
+    func updateStateWithoutNotifying(
+        _ newState: FlagsClientState,
+        unlessCurrentStateIs excludedStates: [FlagsClientState] = []
+    ) -> (() -> Void)? {
         // Capture listeners under lock, then notify outside lock to prevent deadlock.
         var listenersToNotify: [WeakListener] = []
+        var version: UInt64 = 0
         var accepted = false
 
         _managerState.mutate { state in
@@ -86,18 +102,22 @@ internal final class FlagsStateManager: FlagsStateObservable {
                 return
             }
             state.clientState = newState
+            state.version += 1
+            version = state.version
             listenersToNotify = state.listeners
         }
 
         guard accepted else {
-            return false
+            return nil
         }
-        beforeNotifying?()
-
-        for weakListener in listenersToNotify {
-            weakListener.value?.flagsStateDidChange(newState)
+        return {
+            for weakListener in listenersToNotify {
+                guard self.managerState.version == version else {
+                    return
+                }
+                weakListener.value?.flagsStateDidChange(newState)
+            }
         }
-        return true
     }
 
     func addListener(_ listener: FlagsStateListener) {
