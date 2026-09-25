@@ -5,10 +5,10 @@
  */
 
 #if os(iOS)
-import TestUtilities
 import QuartzCore
 import SwiftUI
 import Testing
+import DatadogSDKTesting
 import UIKit
 
 @_spi(Internal)

@@ -3,6 +3,7 @@
 - [FIX] Release the RUM display-link observer and its frame readers when their owner is released.
 - [FIX] Pin KSCrash to exact version 2.5.1 via SPM to prevent silently resolving newer, unvetted releases.
 - [FIX] Keep attributes isolated when returning to a previously tracked RUM view while its earlier resources are still pending.
+- [IMPROVEMENT] Require Swift tools version 6.2 (Xcode 26) to resolve the package with Swift Package Manager. See [#3231][]
 
 # 3.18.0 / 21-09-2026
 
@@ -1265,6 +1266,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3200]: https://github.com/DataDog/dd-sdk-ios/pull/3200
 [#3187]: https://github.com/DataDog/dd-sdk-ios/pull/3187
 [#3208]: https://github.com/DataDog/dd-sdk-ios/pull/3208
+[#3231]: https://github.com/DataDog/dd-sdk-ios/pull/3231
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

@@ -6,11 +6,13 @@
 
 #if os(iOS)
 import Testing
+import DatadogSDKTesting
 import UIKit
 
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 @MainActor
 struct CompositionLayerBuilderTests {
     @Test("Build maps geometry and children")

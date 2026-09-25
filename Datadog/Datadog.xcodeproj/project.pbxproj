@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BB74C45B5EA5004A7B2144D6 /* DatadogSDKTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 67746D1020344D1CBB786813 /* DatadogSDKTesting */; };
+		5693EFD9C05526CEFF5F3EAB /* DatadogSDKTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 452D46E3175A8EC2702F3CF0 /* DatadogSDKTesting */; };
+		9FB99D2765538E82D342D08A /* DatadogSDKTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 13DB6E7CF3275DFF15C893D4 /* DatadogSDKTesting */; };
 		05B9B20299CF44BB97F4A7C8 /* HeatmapIdentifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 048E335C84F4B41E3ACA3B91 /* HeatmapIdentifierTests.swift */; };
 		0904F9F42EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */; };
 		0904F9F62EE1DA6800ED9A22 /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0904F9F32EE1DA6800ED9A22 /* UIKitExtensionsTests.swift */; };
@@ -917,7 +920,6 @@
 		A6DC5EA853D947FA9FEA4743 /* ProfilingConditionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E03E4DD559B4F63BD5A292E /* ProfilingConditionsTests.swift */; };
 		A70A82652A935F210072F5DC /* BackgroundTaskCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70A82642A935F210072F5DC /* BackgroundTaskCoordinator.swift */; };
 		A70ADCD22B583B1300321BC9 /* UIImageResource.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70ADCD12B583B1300321BC9 /* UIImageResource.swift */; };
-		A70E37DC9EA9338AE046FDA8 /* DatadogSDKTestingCompat.swift in Sources */ = {isa = PBXBuildFile; fileRef = C609BA2FA59D66E123B9CCEE /* DatadogSDKTestingCompat.swift */; };
 		A71013D62B178FAD00101E60 /* ResourcesWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71013D52B178FAD00101E60 /* ResourcesWriterTests.swift */; };
 		A727C4BB2BADB3AB00707DFD /* DDSessionReplay+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A795069D2B974CAA00AC4814 /* DDSessionReplay+apiTests.m */; };
 		A728ADB02934EB0900397996 /* DDW3CHTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAD2934EB0300397996 /* DDW3CHTTPHeadersWriter+apiTests.m */; };
@@ -3007,7 +3009,6 @@
 		BD6D5C2849404C4EAD7FF7E3 /* ProfilingHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingHandlerTests.swift; sourceTree = "<group>"; };
 		BDC44AD2847746ED69201F65 /* EvaluationLoggingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvaluationLoggingTests.swift; sourceTree = "<group>"; };
 		BDC78B982F5C5B87E754DF44 /* HeatmapIdentifierStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatmapIdentifierStoreTests.swift; sourceTree = "<group>"; };
-		C609BA2FA59D66E123B9CCEE /* DatadogSDKTestingCompat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogSDKTestingCompat.swift; sourceTree = "<group>"; };
 		C63A979F48771C3277A41396 /* EvaluationLogger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvaluationLogger.swift; sourceTree = "<group>"; };
 		C6C1B70A65975B9FEDEDA74E /* DatadogCoreProtocol+Heatmaps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DatadogCoreProtocol+Heatmaps.swift"; sourceTree = "<group>"; };
 		CD117A3F5E4EFA0335A8268F /* FlagsEvaluationFeature.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FlagsEvaluationFeature.swift; sourceTree = "<group>"; };
@@ -3429,6 +3430,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BB74C45B5EA5004A7B2144D6 /* DatadogSDKTesting in Frameworks */,
 				6133D2012A6EDB7700384BEF /* TestUtilities.framework in Frameworks */,
 				6133D20B2A6EDBC100384BEF /* DatadogSessionReplay.framework in Frameworks */,
 			);
@@ -3556,6 +3558,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5693EFD9C05526CEFF5F3EAB /* DatadogSDKTesting in Frameworks */,
 				D29A9FC129DDB58C005C54A4 /* TestUtilities.framework in Frameworks */,
 				D29A9F3C29DD84AB005C54A4 /* DatadogRUM.framework in Frameworks */,
 			);
@@ -3574,6 +3577,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9FB99D2765538E82D342D08A /* DatadogSDKTesting in Frameworks */,
 				118246CA2D90712D00E3D16F /* DatadogInternal.framework in Frameworks */,
 				118246C72D9070FA00E3D16F /* TestUtilities.framework in Frameworks */,
 			);
@@ -3733,7 +3737,6 @@
 				6119DDBC2DD2443B00DA80F9 /* DateAndTime.swift */,
 				862B0B262DEF2D8000F61E73 /* MockNotificationCenter.swift */,
 				1182F9BD2DA2F827007FE71A /* DDAssert.swift */,
-				C609BA2FA59D66E123B9CCEE /* DatadogSDKTestingCompat.swift */,
 				1182F9BE2DA2F827007FE71A /* Decompression.swift */,
 				1182F9BF2DA2F827007FE71A /* Encoding.swift */,
 				1182F9C02DA2F827007FE71A /* FuzzyHelpers.swift */,
@@ -7758,6 +7761,9 @@
 				6133D20A2A6EDBAE00384BEF /* PBXTargetDependency */,
 			);
 			name = DatadogSessionReplayTests;
+			packageProductDependencies = (
+				67746D1020344D1CBB786813 /* DatadogSDKTesting */,
+			);
 			productName = "DatadogWebViewTracking iOSTests";
 			productReference = D24446702F446B99006C2C72 /* DatadogSessionReplayTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -8005,6 +8011,9 @@
 				D29A9F3E29DD84AB005C54A4 /* PBXTargetDependency */,
 			);
 			name = DatadogRUMTests;
+			packageProductDependencies = (
+				452D46E3175A8EC2702F3CF0 /* DatadogSDKTesting */,
+			);
 			productName = DatadogRUMTests;
 			productReference = D244466E2F446B99006C2C72 /* DatadogRUMTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -8042,6 +8051,9 @@
 				118246CD2D90712D00E3D16F /* PBXTargetDependency */,
 			);
 			name = DatadogInternalTests;
+			packageProductDependencies = (
+				13DB6E7CF3275DFF15C893D4 /* DatadogSDKTesting */,
+			);
 			productName = DatadogInternalTests;
 			productReference = D244466A2F446B99006C2C72 /* DatadogInternalTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -9492,7 +9504,6 @@
 				1182FA592DA2F827007FE71A /* Mockable.swift in Sources */,
 				1182FA5A2DA2F827007FE71A /* HTTPClientMock.swift in Sources */,
 				1182FA5B2DA2F827007FE71A /* SwiftExtensions.swift in Sources */,
-				A70E37DC9EA9338AE046FDA8 /* DatadogSDKTestingCompat.swift in Sources */,
 				1182FA5C2DA2F827007FE71A /* Decompression.swift in Sources */,
 				1182FA5D2DA2F827007FE71A /* RUMFeatureMocks.swift in Sources */,
 				1182FA5F2DA2F827007FE71A /* DatadogContextProviderMock.swift in Sources */,
@@ -12704,7 +12715,7 @@
 			repositoryURL = "https://github.com/DataDog/dd-sdk-swift-testing.git";
 			requirement = {
 				kind = upToNextMinorVersion;
-				minimumVersion = 2.7.7;
+				minimumVersion = 2.7.11;
 			};
 		};
 		D22689B72EB12C3100875E44 /* XCRemoteSwiftPackageReference "KSCrash" */ = {
@@ -12718,6 +12729,21 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		67746D1020344D1CBB786813 /* DatadogSDKTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 09393F132FF520DD00CBDDF9 /* XCRemoteSwiftPackageReference "dd-sdk-swift-testing" */;
+			productName = DatadogSDKTesting;
+		};
+		452D46E3175A8EC2702F3CF0 /* DatadogSDKTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 09393F132FF520DD00CBDDF9 /* XCRemoteSwiftPackageReference "dd-sdk-swift-testing" */;
+			productName = DatadogSDKTesting;
+		};
+		13DB6E7CF3275DFF15C893D4 /* DatadogSDKTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 09393F132FF520DD00CBDDF9 /* XCRemoteSwiftPackageReference "dd-sdk-swift-testing" */;
+			productName = DatadogSDKTesting;
+		};
 		09393F142FF520F600CBDDF9 /* DatadogSDKTesting */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 09393F132FF520DD00CBDDF9 /* XCRemoteSwiftPackageReference "dd-sdk-swift-testing" */;
