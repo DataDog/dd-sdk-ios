@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 authenticated app source/oracle preparation",
-  "status": "SMOKE_REBUILT_RUNTIME_READY_OPERATOR_PENDING",
+  "status": "CORRECTNESS_COST_POLICY_PREPARATION",
   "at": "2026-09-21T21:30:08.556874+00:00",
   "owner": "SDK implementer",
   "reviewer": "existing /root/c06_runtime_plan",
@@ -182,7 +182,7 @@
     "partial cleanup relabeled as ordinary pass"
   ],
   "admission_limits": "This is source preparation only. No runtime/oracle pass, gate closure, new experiment or environment retry is implied. Existing J01, Duo and EXP220 automation stops remain closed; fresh execution needs materially changed environment and reviewed fixed admission.",
-  "next_action": "Prepare and review a bounded recorder cost correction, including first-action qualification, before symmetric builds or another native session; keep existing event-cost thresholds and original failure.",
+  "next_action": "Qualify and review the host-only correctness policy with existing app products, then resume the authorized guided paired smoke with fresh source/environment bindings.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/source-review.json",
     "sha256": "41f6a1f5348c383e8c11770dc50da59e45e9dc020559a49c2a60d8691815d6e9"
@@ -571,7 +571,7 @@
   },
   "current_execution_mode": "Corrected scoped smoke at recorder_correction.runtime_plan; earlier scoped attempt and J01-J04 definitions retain their original verdicts and deadlines.",
   "recorder_correction": {
-    "state": "BOTH_PRODUCTS_QUALIFIED_RUNTIME_REVIEWED",
+    "state": "BASELINE_STOPPED_BEFORE_HUMAN_INPUT",
     "at": "2026-09-25T16:03:32.800180+00:00",
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93",
     "definition": {
@@ -613,9 +613,9 @@
       "sha256": "fe294165bde74e21c0e66c4b1a98a6d0a63f285aa0f254c4cf212a8e82d2a615"
     },
     "preparation_correction": "Accepted sources use registered worktrees. Fresh copies receive independent local Git metadata without hardlinks or alternates; source worktrees unchanged.",
-    "native_launches": 0,
+    "native_launches": 1,
     "gate_closures": [],
-    "next": "Fresh operator reply and current device/backend readiness admit one baseline. Candidate requires baseline scenario, mechanism/backend and timely cleanup. No native clock started.",
+    "next": "No further encoder warmup/build cycle. Apply the project semantic measurement rule prospectively with immutable old failures.",
     "source_preparation": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/builds-isolated/preparation-completion.json",
       "sha256": "00ff66cca039eba03096cd2e50db2f0c33bf190948532007908948a1c52648d9"
@@ -648,6 +648,31 @@
       "files": 1815,
       "mach_o": 71,
       "sdk_archives": 13
+    },
+    "current_attempt": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/baseline-stop-assessment.json",
+      "sha256": "3f71b5bb5f0646c2b4511bac9c29208cb069bc3c52f813e7541d0e032c187574"
     }
+  },
+  "correctness_cost_policy": {
+    "state": "REVIEWED_HOST_CORRECTION_PRODUCTS_REUSABLE",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-correctness-cost-cc0k4tme",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-correctness-cost-cc0k4tme/definition.json",
+      "sha256": "697e15d691e3fa0aedf1e547ed18cc2a8bfc22165ed776751ef3fe3ee0d25fdd"
+    },
+    "user_rule": "All future measurement and testing sessions in this project validate event attribution, View capture, Navigation capture and Action capture. Strict timing measurements, recorder-cost caps and timing benchmarks are not acceptance prerequisites. Retained timings are diagnostic only. Operational timeouts bound execution, evidence collection and cleanup; a timeout alone is not an SDK regression. Missing or ambiguous capture/owners and actual scenario failures remain unresolved. Preserve original results and their limits.",
+    "native_launches": 0,
+    "new_builds": 0,
+    "gate_closures": [],
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-correctness-cost-cc0k4tme/controls.json",
+      "sha256": "73dd4b049000c8ea15a4150215f3e1fa1648198d9745e3c632f95029f3944778"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-correctness-cost-cc0k4tme/review.json",
+      "sha256": "bbb56bbe88cdd68cb3dac129f96f37cfb367aab18fa1bed86ac898b4b77b0504"
+    },
+    "tests": 87
   }
 }

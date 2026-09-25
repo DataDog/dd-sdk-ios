@@ -8,6 +8,8 @@ import uuid
 
 MAX_BYTES = 67_108_864
 MAX_RECORDS = 100_000
+STRICT_COST_POLICY = "strict-v1"
+CORRECTNESS_COST_POLICY = "f08-correctness-v1"
 MAPPER_FAMILIES = {'view', 'action', 'resource', 'error', 'long_task'}
 KINDS = {'configured', 'capture_failure', 'owned_window', 'scene_callback', 'navigation_callback',
          'controller_callback', 'swiftui_callback', 'predicate_result', 'owned_webview', 'manual_call',
@@ -79,7 +81,9 @@ def encoder_setup(data, identity, pid, configured=None):
     return value
 
 
-def prefix(data, receipt, identity):
+def prefix(data, receipt, identity, *, cost_policy=STRICT_COST_POLICY):
+    require(cost_policy in {STRICT_COST_POLICY, CORRECTNESS_COST_POLICY}, "unknown observer cost policy")
+    costs = []
     require(set(identity) == {'run_id', 'nonce'} and all(identifier(v) for v in identity.values()), 'invalid run identity')
     require(set(receipt) == {'schema_version', 'identity', 'request_id', 'sequence', 'success', 'byte_count', 'sha256'}, 'checkpoint schema differs')
     require(type(receipt['schema_version']) is int and receipt['schema_version'] == 1 and receipt['identity'] == identity,
@@ -130,14 +134,21 @@ def prefix(data, receipt, identity):
                     'missing or stale cost binding')
             duration = fields.get('duration_ns')
             limit = 100_000_000 if previous['kind'] == 'snapshot' else 10_000_000 if previous['kind'] in {'mapper', 'browser_message'} else 2_000_000
-            require(integer(duration) and duration <= limit, 'observer cost exceeds frozen limit')
+            require(integer(duration), 'observer cost invalid')
             require(duration >= previous['reservation_latency_ns'], 'observer cost omits reservation')
+            costs.append(dict(event_sequence=previous['sequence'], cost_sequence=row['sequence'],
+                              operation=previous['kind'], duration_ns=duration, limit_ns=limit))
+            if cost_policy == STRICT_COST_POLICY:
+                require(duration <= limit, 'observer cost exceeds frozen limit')
         else:
             require(previous is None or previous['kind'] == 'observer_cost', 'observation cost receipt missing')
         previous = row;last_clock = now
     require(rows[-1]['kind'] == 'observer_cost', 'last observation cost missing')
+    overruns = [cost for cost in costs if cost['duration_ns'] > cost['limit_ns']]
     return {'rows': rows, 'prefix_sha256': receipt['sha256'], 'prefix_bytes': count,
-            'unparsed_later_bytes': len(data) - count, 'runtime_acceptance': False}
+            'unparsed_later_bytes': len(data) - count, 'runtime_acceptance': False,
+            'observer_cost': {'policy': cost_policy, 'cost_status': 'UNQUALIFIED' if overruns else 'QUALIFIED',
+                              'samples': len(costs), 'overruns': overruns, 'performance_acceptance': False}}
 
 
 def snapshot(result, request, consumed=()):
@@ -163,11 +174,11 @@ def snapshot(result, request, consumed=()):
     return row
 
 
-def published_snapshot(data, receipt, request_bytes, consumed=()):
+def published_snapshot(data, receipt, request_bytes, consumed=(), *, cost_policy=STRICT_COST_POLICY):
     request = loads(request_bytes)
     identity = {key: request.get(key) for key in ('run_id', 'nonce')}
     require(receipt.get('request_id') == request.get('request_id'), 'checkpoint request differs')
-    result = prefix(data, receipt, identity)
+    result = prefix(data, receipt, identity, cost_policy=cost_policy)
     row = snapshot(result, request, consumed)
     require(row['fields'].get('request_sha256') == hashlib.sha256(request_bytes).hexdigest(), 'published request bytes differ')
     return result, row

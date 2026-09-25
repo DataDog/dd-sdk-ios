@@ -5,8 +5,8 @@
   "started_at": 1790316486.131028,
   "work_deadline_utc": null,
   "caffeinate": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/runtime-uikit/awake-window.json",
-    "sha256": "7176d714d9d1335a060d92a114d415ff40b5a482b1d614f5e93a84d7557a696d"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-two-hours-3dosajum/receipt.json",
+    "sha256": "9e9ea4f5f34bfe00e2c808b9b4e000b8a004e25db93cd866d413e65a02c84022"
   },
   "previous_window": "unattended-work-20260924.json",
   "automation": {
@@ -14,7 +14,7 @@
     "id": "rum-unattended-progress",
     "finding": "Update returned Automation does not exist; no replacement was created."
   },
-  "next_task": "Fresh operator reply admits the prepared corrected F08 baseline; continue independent work if unavailable.",
+  "next_task": "Finish the project-wide semantic measurement rule and host-only F08 correction, then resume the authorized paired app smoke. No new build.",
   "gate_closures": [
     "S2:H16",
     "S2:T10"
@@ -28,7 +28,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": "2026-09-25T16:03:32.800180+00:00",
+  "updated_at": "2026-09-25T16:28:37.818535+00:00",
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
@@ -115,7 +115,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automated-scope-rww2sb_g/webview-backend-continuation/summary.json",
     "sha256": "c67b680daecad3400c1ffc85ce8e56ba26629a167932e2b6f7cc0a687ab45543"
   },
-  "awake_until_utc": "2026-09-25T12:42:56.993742+00:00",
+  "awake_until_utc": "2026-09-25T18:12:03.951891+00:00",
   "deadline_correction": {
     "at": "2026-09-25T12:43:44.248636+00:00",
     "previous_inferred_work_deadline_utc": "2026-09-25T12:42:56.993742+00:00",
@@ -186,7 +186,7 @@
   },
   "s2_f08_recorder_correction": {
     "owner": "Results/S2-F08-source-oracle.json:recorder_correction",
-    "state": "BOTH_PRODUCTS_QUALIFIED_RUNTIME_REVIEWED_OPERATOR_PENDING",
+    "state": "BASELINE_STOPPED_BEFORE_INPUT_CLEANUP_PASS",
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93",
     "review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/review-final.json",
@@ -199,6 +199,15 @@
     "runtime": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/runtime/plan.json",
       "sha256": "72457ca36142144e3491bde0a32f501e4321e211da650374e3a8d0c236262227"
+    },
+    "current_attempt": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/baseline-stop-assessment.json",
+      "sha256": "3f71b5bb5f0646c2b4511bac9c29208cb069bc3c52f813e7541d0e032c187574"
     }
+  },
+  "s2_f08_correctness_cost_policy": {
+    "owner": "Results/S2-F08-source-oracle.json:correctness_cost_policy",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-correctness-cost-cc0k4tme",
+    "state": "PREPARING_HOST_ONLY_CORRECTION"
   }
 }

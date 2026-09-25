@@ -67,8 +67,9 @@ def terminal_capture(driver,native,out,identity,configuration,expected,installed
     shared.command(['xcrun','simctl','terminate',device,bundle],out,'terminal-stop',deadline=min(deadline,time.time()+30))
     require(not shared.process(pid),'task process did not exit at final seal')
     raw=bounded_read(driver.collector.directory/'events.jsonl',MAX_BYTES)
-    full=contract.sealed_stream(raw,checkpoint,identity,configuration,process_exited=True)
+    full=contract.sealed_stream(raw,checkpoint,identity,configuration,process_exited=True,cost_policy=smoke.COST_POLICY)
     tail=smoke.tail(raw,frozen,checkpoint,identity)
+    atomic(out/'observer-cost.json',encoded(full['observer_cost']))
     atomic(out/'sealed-events.jsonl',raw)
     atomic(out/'stream-seal.json',encoded({k:v for k,v in full.items() if k!='rows'}))
     # No backend call after termination; replay saved complete responses only.
@@ -79,7 +80,9 @@ def terminal_capture(driver,native,out,identity,configuration,expected,installed
                behavior_sha256=checkpoint['sha256'],cutoff_sequence=checkpoint['sequence'],
                checkpoint_sha256=builds.sha(out/'behavior-checkpoint.json'),
                sealed_sha256=builds.sha(out/'sealed-events.jsonl'),backend_join_sha256=builds.sha(out/'backend-joined.json'),
-               manifest=native['manifest'],later_record_count=len(tail['later']),
+               manifest=native['manifest'],observer_cost=full['observer_cost'],observer_cost_sha256=builds.sha(out/'observer-cost.json'),
+               semantic_observation='COMPLETE_REQUIRES_PAIRED_SOURCE_REVIEW',performance_acceptance=False,
+               later_record_count=len(tail['later']),
                later_kinds=sorted({r['kind'] for r in tail['later']}),
                completed_at=time.time(),deadline=deadline,queries_after_termination=0,forced_flushes=0,
                extra_home_steps=0,runtime_acceptance=False)

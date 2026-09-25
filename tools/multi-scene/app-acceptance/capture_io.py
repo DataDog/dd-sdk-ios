@@ -6,7 +6,7 @@ from pathlib import Path
 import time
 import uuid
 
-from capture_contract import prefix, MAX_BYTES, identifier, loads, published_snapshot, require
+from capture_contract import prefix, MAX_BYTES, identifier, loads, published_snapshot, require, STRICT_COST_POLICY, CORRECTNESS_COST_POLICY
 
 
 def atomic(path, data, *, exclusive=True):
@@ -41,7 +41,9 @@ def bounded_read(path, maximum):
 
 
 class Collector:
-    def __init__(self, documents, output, identity, pid, live_process, *, deadline, snapshot_seconds=30):
+    def __init__(self, documents, output, identity, pid, live_process, *, deadline, snapshot_seconds=30, cost_policy=STRICT_COST_POLICY):
+        require(cost_policy in {STRICT_COST_POLICY, CORRECTNESS_COST_POLICY}, "unknown observer cost policy")
+        self.cost_policy = cost_policy
         self.documents = Path(documents).resolve(strict=True)
         self.output = Path(output).resolve(strict=True)
         require(self.documents.is_dir() and self.output.is_dir() and not list(self.output.iterdir()), "collector output not fresh")
@@ -100,7 +102,7 @@ class Collector:
             atomic(folder / "writer-checkpoint.json", receipt_bytes)
             atomic(folder / "observed-events.jsonl", stream_bytes)
             receipt = loads(receipt_bytes)
-            result, row = published_snapshot(stream_bytes, receipt, raw_request, self.consumed)
+            result, row = published_snapshot(stream_bytes, receipt, raw_request, self.consumed, cost_policy=self.cost_policy)
             require(stream_bytes.startswith(self.last_prefix), "native durable prefix was replaced")
             require(row["sequence"] > self.last_sequence and row["fields"]["topology"]["pid"] == self.pid, "restored snapshot or wrong native process")
             self.live(end, monotonic_end)
@@ -112,7 +114,7 @@ class Collector:
                            native_snapshot_sequence=row["sequence"], prefix_sequence=receipt["sequence"],
                            prefix_sha256=receipt["sha256"], prefix_bytes=receipt["byte_count"],
                            request_sha256=hashlib.sha256(raw_request).hexdigest(),
-                           writer_receipt_sha256=hashlib.sha256(receipt_bytes).hexdigest())
+                           writer_receipt_sha256=hashlib.sha256(receipt_bytes).hexdigest(), observer_cost=result["observer_cost"])
             value = (result, row, folder)
         except Exception as error:
             outcome.update(reason=str(error), completed_at=time.time())
@@ -138,7 +140,7 @@ class Collector:
         readback = dict(schema_version=1, identity=self.identity, request_id=snapshot["request_id"],
                         sequence=len(raw.splitlines()), success=True, byte_count=len(raw),
                         sha256=hashlib.sha256(raw).hexdigest())
-        rows = prefix(raw, readback, self.identity)["rows"]
+        rows = prefix(raw, readback, self.identity, cost_policy=self.cost_policy)["rows"]
         later = [row for row in rows if row["sequence"] > snapshot["sequence"]]
         require(all(row.get("request_id") == snapshot["request_id"] and row.get("phase") == snapshot["phase"]
                     for row in later), "request or phase changed before prompt")
@@ -154,7 +156,8 @@ class Collector:
             require(original is not None and original.get("kind") == "context" and event.get("fields") == original["fields"], "context owner or clock changed before prompt")
             fields = cost.get("fields", {})
             require(fields.get("event_sequence") == event["sequence"] and fields.get("operation") == "context"
-                    and type(fields.get("duration_ns")) is int and 0 <= fields["duration_ns"] <= 2_000_000,
+                    and type(fields.get("duration_ns")) is int and 0 <= fields["duration_ns"]
+                    and (self.cost_policy == CORRECTNESS_COST_POLICY or fields["duration_ns"] <= 2_000_000),
                     "unqualified pending context cost")
         self.live(end, time.monotonic() + max(0, end - time.time()))
         return {"state": "READY_TO_PUBLISH_PROMPT", "checked_at": time.time(), "snapshot_sequence": snapshot["sequence"],

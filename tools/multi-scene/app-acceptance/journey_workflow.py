@@ -269,6 +269,10 @@ def candidate_ready(summary, plan_sha, folder):
                 and proof['backend_join_sha256']==builds.sha(folder/'backend-joined.json')
                 and summary['artifacts']['smoke-evidence.json']==builds.sha(folder/'smoke-evidence.json'),
                 'baseline smoke prefix, source manifest or final evidence changed')
+        require(proof.get('observer_cost_sha256') == builds.sha(folder/'observer-cost.json')
+                and proof.get('observer_cost') == loads((folder/'observer-cost.json').read_bytes())
+                and proof['observer_cost']['policy'] == 'f08-correctness-v1'
+                and proof.get('performance_acceptance') is False, 'baseline cost diagnostics missing or changed')
     qualification=loads((folder.parent.parent/'baseline-qualification.json').read_bytes())
     require(not (folder.parent.parent/'baseline-late-qualification.json').exists()
             and qualification['state']=='PASS' and qualification['summary_sha256']==publication['summary_sha256']
@@ -353,6 +357,10 @@ def cell(args):
         joined=capture_terminal(driver,native,out,identity,configuration,expected,installed,qualified['manifest'],
                                 args.device,bundle,pid,started,execution_deadline,budget['backend_seconds_per_arm'])
         summary['backend_join_sha256']=builds.sha(out/'backend-joined.json')
+        if plan.get('mode')=='smoke':
+            summary['observer_cost']=loads((out/'observer-cost.json').read_bytes())
+            summary['semantic_observation']='COMPLETE_REQUIRES_PAIRED_SOURCE_REVIEW'
+            summary['performance_acceptance']=False
         # Unknown outside-interval causality/incidental payloads and the paired
         # occurrence graph require the separately recorded final source review.
         # A successful capture cannot mark those obligations complete.

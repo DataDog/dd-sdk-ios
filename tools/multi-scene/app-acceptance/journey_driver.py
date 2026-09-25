@@ -10,7 +10,7 @@ import time
 import uuid
 
 from capture_io import Collector, atomic, encoded, bounded_read
-from capture_contract import prefix, MAX_BYTES, loads
+from capture_contract import prefix, MAX_BYTES, loads, STRICT_COST_POLICY
 import journey_contract as contract
 import journey_phases as phases
 import browser_contract
@@ -36,13 +36,15 @@ def home_observation(tree, folder, deadline):
 
 
 class Driver:
+    cost_policy = STRICT_COST_POLICY
+
     def __init__(self, documents, out, identity, expected, device, executable, deadline, initial, selection):
         self.documents,self.out=Path(documents),Path(out)
         self.identity,self.expected,self.device=identity,expected,device
         self.executable,self.deadline,self.initial=Path(executable),deadline,initial
         self.selection=selection
         (self.out/'capture').mkdir();(self.out/'phases').mkdir()
-        self.collector=Collector(documents,self.out/'capture',identity,expected['pid'],self.process_live,deadline=deadline)
+        self.collector=Collector(documents,self.out/'capture',identity,expected['pid'],self.process_live,deadline=deadline,cost_policy=self.cost_policy)
         self.binding=None;self.observations={};self.inputs=[];self.backgrounds=[];self.polls=0;self.last_result=None
         self.monotonic_deadline=time.monotonic()+max(0,deadline-time.time())
 
@@ -122,7 +124,7 @@ class Driver:
                 atomic(folder/'pending-observations.jsonl',observed)
                 require(observed.startswith(self.collector.last_prefix),'native prefix changed during prompt preparation')
                 writer=loads((Path(ready['capture_folder'])/'writer-checkpoint.json').read_bytes())
-                rows=journey_readiness.readback(observed,writer,self.identity)
+                rows=journey_readiness.readback(observed,writer,self.identity,cost_policy=self.cost_policy)
                 pending=journey_readiness.pending_refresh(rows,ready['snapshot'],self.expected)
                 atomic(folder/'pending-observations.json',encoded(pending))
                 require(attempt<3,'no quiet readiness within fixed prompt observation bound')
@@ -170,7 +172,7 @@ class Driver:
                 checkpoint_raw=bounded_read(path,16_384);raw=bounded_read(directory/'events.jsonl',MAX_BYTES)
                 folder=self.out/'phases'/(label+'-background');folder.mkdir()
                 atomic(folder/'writer-checkpoint.json',checkpoint_raw);atomic(folder/'events.jsonl',raw)
-                checkpoint=loads(checkpoint_raw);result=prefix(raw,checkpoint,self.identity)
+                checkpoint=loads(checkpoint_raw);result=prefix(raw,checkpoint,self.identity,cost_policy=self.cost_policy)
                 event=contract.one([r for r in result['rows'] if r['sequence']==callback],'background callback')
                 require(event['kind']=='scene_callback' and event['fields']['callback']=='didEnterBackground-exit'
                         and event['fields']['scene']==self.binding['scene'] and event['fields']['app_state']==2
@@ -256,4 +258,4 @@ class Driver:
             require(self.last_result is not None, 'actual writer-backed snapshot unavailable')
             return self.last_result['rows']
         raw=bounded_read(self.collector.directory/'events.jsonl',MAX_BYTES)
-        return prefix(raw,checkpoint,self.identity)['rows']
+        return prefix(raw,checkpoint,self.identity,cost_policy=self.cost_policy)['rows']

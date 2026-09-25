@@ -49,7 +49,10 @@ cannot support a cold-launch or production-performance claim.
 Setup-file presence is not readiness. The existing serial writer must finish
 initialization, every observation and the exact request checkpoint before the host
 can publish a prompt. Missing, failed, foreign or incomplete setup remains invalid.
-All real events, including the first action, keep the original timing limits.
+All real events retain their original timing observations. Future correctness smoke
+reports historical cost thresholds separately; strict timing is not an acceptance
+criterion under the project measurement rule. Structural capture, readiness, owners
+and bounded execution remain mandatory.
 Timed callbacks capture current controller identity and relationships; complete
 readiness snapshots additionally discover class/bundle provenance. No controller
 metadata cache or deferred event encoding is used.
@@ -112,3 +115,9 @@ reducer updates remain available for review without requiring session closure or
 complete payload equality. Browser container claims require observed Replay
 eligibility; absent coverage is reported explicitly. There is no Replay-content
 check. Final paired source review still owns F08 closure.
+
+The correctness smoke publishes separate semantic and recorder-cost verdicts. A
+cost overrun alone does not block candidate comparison or F08 closure; complete
+paired native/backend evidence and source review must still resolve any concrete
+observer-induced ownership or capture ambiguity. Original stopped attempts retain
+their original invalid verdicts. No performance qualification is implied.

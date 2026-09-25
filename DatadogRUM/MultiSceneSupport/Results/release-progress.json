@@ -546,7 +546,6 @@
               "S2:C04",
               "S2:C05",
               "S2:C06",
-              "S2:P01",
               "S2:P03",
               "S2:P04",
               "S2:A01",
@@ -612,7 +611,7 @@
       "deadline": null,
       "shipping_rule": "Complete exact scene APIs, full ownership/lifecycle/client/docs matrix, physical Duo F04 and S3:F06 after hardware release. Preserve all prior evidence boundaries.",
       "required": {
-        "count": 70,
+        "count": 69,
         "closed": 46,
         "remaining": [
           {
@@ -646,14 +645,6 @@
             "status": "ENVIRONMENT BLOCKED",
             "owner": "SDK implementer",
             "dependencies": []
-          },
-          {
-            "id": "S3:P01",
-            "status": "OPEN",
-            "owner": "SDK implementer",
-            "dependencies": [
-              "S3:C01"
-            ]
           },
           {
             "id": "S3:H02",
@@ -828,7 +819,6 @@
               "S3:C04",
               "S3:C05",
               "S3:C06",
-              "S3:P01",
               "S3:P03",
               "S3:P04",
               "S3:R01",
@@ -904,6 +894,14 @@
         ]
       },
       "optional_follow_ups": [
+        {
+          "id": "S3:P01",
+          "status": "OPEN",
+          "owner": "SDK implementer",
+          "dependencies": [
+            "S3:C01"
+          ]
+        },
         {
           "id": "S3:F08",
           "status": "OPEN",

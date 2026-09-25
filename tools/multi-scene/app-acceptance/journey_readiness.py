@@ -3,17 +3,17 @@ import hashlib
 
 import journey_contract as contract
 import browser_contract
-from capture_contract import prefix
+from capture_contract import prefix, STRICT_COST_POLICY
 from acceptance_common import require
 
 
-def readback(raw, checkpoint, identity):
+def readback(raw, checkpoint, identity, *, cost_policy=STRICT_COST_POLICY):
     """Validate all currently persisted bytes without calling them a writer seal."""
-    prefix(raw,checkpoint,identity)
+    prefix(raw,checkpoint,identity,cost_policy=cost_policy)
     require(raw.endswith(b'\n'),'partial persisted observation tail')
     receipt=dict(schema_version=1,identity=identity,request_id=checkpoint['request_id'],success=True,
                  sequence=len(raw.splitlines()),byte_count=len(raw),sha256=hashlib.sha256(raw).hexdigest())
-    return prefix(raw,receipt,identity)['rows']
+    return prefix(raw,receipt,identity,cost_policy=cost_policy)['rows']
 
 
 def pending_refresh(rows, snapshot, expected):

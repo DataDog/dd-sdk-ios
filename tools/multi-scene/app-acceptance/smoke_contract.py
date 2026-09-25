@@ -5,7 +5,9 @@ from pathlib import Path
 import journey_contract as contract
 import journey_phases as phases
 import browser_contract as browser
-from capture_contract import prefix, loads, MAPPER_FAMILIES
+from capture_contract import prefix, loads, MAPPER_FAMILIES, CORRECTNESS_COST_POLICY
+
+COST_POLICY = CORRECTNESS_COST_POLICY
 from acceptance_common import require
 
 PHASES = ['login-initial', 'login-subdomain', 'login-returned', 'service-list',
@@ -25,6 +27,7 @@ COMMON = ['type', 'date', 'source', 'application.id', 'session.id', 'view.id']
 
 def definition(value):
     require(value['gate'] == 'S2:F08' and value['mode'] == 'smoke', 'wrong smoke definition')
+    require(value.get('capture_cost_policy') == COST_POLICY, 'smoke observer cost policy differs')
     limits = value['limits']
     require((limits['journey_home_cycles_per_arm'], limits['terminal_drains_per_arm'],
              limits['dashboard_wait_seconds'], limits['retries'], limits['deadline_extension']) == (1, 0, 0, 0, False),
@@ -45,18 +48,18 @@ def definition(value):
 
 def freeze(raw, checkpoint, identity):
     """Only a real writer checkpoint defines behavior; later bytes stay outside it."""
-    result = prefix(raw, checkpoint, identity)
+    result = prefix(raw, checkpoint, identity, cost_policy=COST_POLICY)
     return raw[:result['prefix_bytes']], result
 
 
 def tail(raw, frozen, checkpoint, identity):
     require(raw.startswith(frozen), 'behavior prefix changed during ordinary delivery')
-    original = prefix(frozen, checkpoint, identity)
+    original = prefix(frozen, checkpoint, identity, cost_policy=COST_POLICY)
     require(len(frozen) == original['prefix_bytes'], 'behavior bytes extend past writer cutoff')
     require(raw.endswith(b'\n'), 'partial delivery tail', 'PENDING')
     receipt = dict(checkpoint, sequence=len(raw.splitlines()), byte_count=len(raw),
                    sha256=hashlib.sha256(raw).hexdigest())
-    full = prefix(raw, receipt, identity)
+    full = prefix(raw, receipt, identity, cost_policy=COST_POLICY)
     return dict(rows=full['rows'], later=full['rows'][len(original['rows']):],
                 cutoff_sequence=checkpoint['sequence'], prefix_sha256=checkpoint['sha256'],
                 readback_sha256=receipt['sha256'])

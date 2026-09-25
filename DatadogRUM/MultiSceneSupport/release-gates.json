@@ -402,15 +402,15 @@
       "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations. EXP-166 revalidates the same frozen dispatch/reentrancy budgets after D04.",
       "release_requirements": {
         "S3": {
-          "scope": "Representative application impact of semantic SwiftUI and multi-scene changes",
+          "scope": "Optional historical application-performance diagnosis",
           "status": "OPEN",
           "dependencies": [
             "S3:C01"
           ],
-          "decisive_test": "One bounded source/build-matched before/after application comparison for included new semantic SwiftUI or multi-scene behavior checks frame rate, hitches/hangs, CPU usage and sustained memory usage on representative ordinary journeys. Define the finite workload and visible-regression criteria before collection. If the shipped-source audit excludes both change families, qualify that exclusion instead of inventing a network benchmark. Expected low risk is not a measured pass.",
-          "environment": "Representative physical device such as iPhone15, Release baseline/candidate builds and relevant app journeys; qualified Duo simulator supports topology/correctness separately",
-          "evidence": "User acceptance-scope correction2026-09-20: only new SwiftUI semantic tracking and multi-scene changes require representative application-level performance comparison. Detailed network microbenchmarks and a replacement standalone network campaign are not release blockers; investigate networking performance only on concrete customer-visible evidence. Correctness, attribution and object lifetime remain required. NETWORK_BENCHMARK_FOLLOWUP.md Earlier evidence retained as historical diagnostics, not this application-impact qualification: EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations. EXP-166 revalidates the same frozen dispatch/reentrancy budgets after D04. EXP-224 binds four signed API-candidate/baseline clients and58 reviewed controls. Actual baseline install/launch/code identity passes; Instruments attachment fails before workload readiness. Capture is stopped; original invalid admissions and cleanup PASS remain in Results/EXP-224-application-impact.json. No metric result or gate closure.",
-          "required": true
+          "decisive_test": "No new performance or strict timing session is required. Preserve existing source-bound diagnostic evidence; future work qualifies event attribution and View/Navigation/Action capture under the project measurement rule.",
+          "environment": "No new measurement environment required",
+          "evidence": "September25 user rule removes this measurement prerequisite without qualifying performance. Original EXP224 recorder attachment failures, no-workload result and successful cleanup remain in Results/EXP-224-application-impact.json.",
+          "required": false
         },
         "S1": {
           "scope": "Optional network performance diagnosis on concrete customer-visible evidence",
@@ -424,13 +424,13 @@
           "required": false
         },
         "S2": {
-          "scope": "Representative application impact of semantic SwiftUI and multi-scene changes",
+          "scope": "Historical source-exclusion applicability assessment",
           "status": "CLOSED",
           "dependencies": [
             "S2:C01"
           ],
-          "decisive_test": "One bounded source/build-matched before/after application comparison for included new semantic SwiftUI or multi-scene behavior checks frame rate, hitches/hangs, CPU usage and sustained memory usage on representative ordinary journeys. Define the finite workload and visible-regression criteria before collection. If the shipped-source audit excludes both change families, qualify that exclusion instead of inventing a network benchmark. Expected low risk is not a measured pass.",
-          "environment": "Source exclusion under user-approved performance scope; no new runtime measurement",
+          "decisive_test": "Preserve the accepted source-exclusion assessment; no new timing or application-performance session is required under the September25 project rule.",
+          "environment": "Existing source applicability evidence only",
           "evidence": "EXP-216 independent source-aware review at productionc9faed81 / test head1aa71d7f. Full source audit proves both new semantic SwiftUI tracking and multi-scene implementation absent. Under approved scope, qualify exclusion; no reused microbenchmark budget or measured application performance claim. Results/EXP-216-s2-composition-promotion.json preserves exact prior evidence and review. No new build/native/backend result.",
           "required": true
         }
@@ -2435,7 +2435,6 @@
             "S3:C04",
             "S3:C05",
             "S3:C06",
-            "S3:P01",
             "S3:P03",
             "S3:P04",
             "S3:R01",
@@ -2499,9 +2498,9 @@
             "S3:C10",
             "S3:A02"
           ],
-          "decisive_test": "Require applicable correctness, View/Action information, Resource attribution, object-lifetime/reentrancy, privacy, crash/API and exact source/artifact checks plus attributable review. Included new semantic SwiftUI/multi-scene changes require the bounded P01 application comparison for frame rate, hitches/hangs, CPU and memory; source exclusion can qualify non-applicability. No detailed network or per-dispatch microbenchmark prerequisite. Signed outgoing history is required before any separately authorized push. Session Replay captured-content defects are not blockers; host-app crash safety and other-feature non-disruption remain required.",
+          "decisive_test": "Review exact source and applicable event attribution, View/Navigation/Action capture, ownership, lifetime, privacy, crash/API and compatibility evidence. No unresolved attributable regression or required evidence gap. Strict timing measurements and performance campaigns are not prerequisites under the September25 project rule. Signed outgoing history is required before separately authorized publication; Session Replay captured-content correctness remains excluded.",
           "environment": "Review + CI",
-          "evidence": "Pending; unchanged reference obligation. Latest scope supersedes earlier numeric/practical-network benchmarking prerequisites: User acceptance-scope correction2026-09-20: only new SwiftUI semantic tracking and multi-scene changes require representative application-level performance comparison. Detailed network microbenchmarks and a replacement standalone network campaign are not release blockers; investigate networking performance only on concrete customer-visible evidence. Correctness, attribution and object lifetime remain required. NETWORK_BENCHMARK_FOLLOWUP.md",
+          "evidence": "Pending required semantic and source review. The September25 project measurement rule supersedes earlier mandatory application-performance comparison; original diagnostic results remain unchanged.",
           "required": true
         },
         "S1": {
@@ -2539,7 +2538,6 @@
             "S2:C04",
             "S2:C05",
             "S2:C06",
-            "S2:P01",
             "S2:P03",
             "S2:P04",
             "S2:A01",
@@ -2870,7 +2868,8 @@
       "deadline": null,
       "shipping_rule": "Release each narrow fix independently after its candidate checks and F06. Required-gate counts here describe selected E01 only; the seven-unit [S1 delivery queue](S1_DELIVERY_PLAN.md) separately tracks H00, E01-E05 and DL01. E03 design/repair checkpoint precedes further S2/S3 expansion; other qualified packets proceed independently.",
       "selected_candidate": "E01",
-      "delivery_queue": "Results/S1-delivery-queue.json"
+      "delivery_queue": "Results/S1-delivery-queue.json",
+      "measurement_rule": "strategy_decision.project_measurement_rule"
     },
     {
       "id": "S2",
@@ -2979,7 +2978,8 @@
           "No new optional networking/per-dispatch benchmark or Session Replay content checks",
           "No new test family without a named S2 regression risk and decisive discriminator",
           "Preparation/build/control passes earn no product gate closure; A02 is an operational prerequisite, not a release outcome"
-        ]
+        ],
+        "measurement_rule": "All future measurement and testing sessions in this project validate event attribution, View capture, Navigation capture and Action capture. Strict timing measurements, recorder-cost caps and timing benchmarks are not acceptance prerequisites. Retained timings are diagnostic only. Operational timeouts bound execution, evidence collection and cleanup; a timeout alone is not an SDK regression. Missing or ambiguous capture/owners and actual scenario failures remain unresolved. Preserve original results and their limits."
       },
       "execution_packages": [
         {
@@ -3110,13 +3110,15 @@
           "budget": "One scoped final review; rerun only for changed source or reproduced regression",
           "evidence_owner": "release-gates.json"
         }
-      ]
+      ],
+      "measurement_rule": "strategy_decision.project_measurement_rule"
     },
     {
       "id": "S3",
       "name": "Full multi-scene support",
       "deadline": null,
-      "shipping_rule": "Complete exact scene APIs, full ownership/lifecycle/client/docs matrix, physical Duo F04 and S3:F06 after hardware release. Preserve all prior evidence boundaries."
+      "shipping_rule": "Complete exact scene APIs, full ownership/lifecycle/client/docs matrix, physical Duo F04 and S3:F06 after hardware release. Preserve all prior evidence boundaries.",
+      "measurement_rule": "strategy_decision.project_measurement_rule"
     }
   ],
   "strategy_decision": {
@@ -3217,7 +3219,8 @@
       "network_fix": "Prioritize correctness and no extra post-task retention, leaks or retain cycles. Per-task processing/allocation increases are acceptable without visible impact on a standard device; no replacement mandatory networking campaign.",
       "required_benchmark": "Bounded representative application before/after for new SwiftUI semantic tracking and multi-scene changes: frame rate, hitches/hangs, CPU and memory.",
       "expected_risk": "User expects regression to be unlikely; this expectation is not measured evidence.",
-      "saved_work": "NETWORK_BENCHMARK_FOLLOWUP.md and tools/multi-scene/network-benchmark-followup/ preserve optional harness and original results."
+      "saved_work": "NETWORK_BENCHMARK_FOLLOWUP.md and tools/multi-scene/network-benchmark-followup/ preserve optional harness and original results.",
+      "superseded_by": "project_measurement_rule"
     },
     "s1_delivery": {
       "date": "2026-09-20",
@@ -3232,6 +3235,13 @@
       "next_repair": "EXP214:E03-D compatibility and delivery before further S2/S3 expansion",
       "publication_authorized": false,
       "merge_authorized": false
+    },
+    "project_measurement_rule": {
+      "date": "2026-09-25",
+      "source": "Explicit user instruction: strict timing measurements are unnecessary; only event attribution, View capture, Navigation capture and Action capture.",
+      "rule": "All future measurement and testing sessions in this project validate event attribution, View capture, Navigation capture and Action capture. Strict timing measurements, recorder-cost caps and timing benchmarks are not acceptance prerequisites. Retained timings are diagnostic only. Operational timeouts bound execution, evidence collection and cleanup; a timeout alone is not an SDK regression. Missing or ambiguous capture/owners and actual scenario failures remain unresolved. Preserve original results and their limits.",
+      "owner": "MULTI_SCENE_SUPPORT.md#measurement-and-testing-rule",
+      "prior_results": "Unchanged; removing a prerequisite is not a measured pass or gate closure"
     }
   }
 }

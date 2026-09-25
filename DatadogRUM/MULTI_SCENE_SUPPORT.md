@@ -53,6 +53,22 @@ without compromise, but it is not a release requirement. The SDK must continue
 to build and behave normally on its iOS 15 deployment target even where semantic
 multi-scene support is not claimed.
 
+## Measurement and testing rule
+
+Approved by the user on September 25, 2026. All future measurement and testing
+sessions for this project focus on **event attribution, View capture, Navigation
+capture and Action capture**. Strict timing measurements, recorder-cost caps and
+timing benchmarks are not acceptance prerequisites. Keep available timings as
+diagnostics; do not rebuild, repeat a session or block a release solely for a
+timing overrun.
+
+Operational timeouts keep execution, evidence collection and cleanup bounded. A
+timeout alone is not an SDK regression. Missing or ambiguous events, owners,
+native outcomes or capture boundaries still leave the corresponding obligation
+unresolved. Preserve source identity, raw evidence, cleanup and original verdicts.
+This rule supersedes the earlier mandatory application-performance comparison;
+existing safety and compatibility evidence retains its original scope.
+
 ## Confirmed product decisions
 
 Status: approved for multi-window iPad and iPhone applications.

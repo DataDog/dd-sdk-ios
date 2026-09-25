@@ -27,8 +27,9 @@ automatic/manual pairs retain the five native outcomes and fresh RUM owners. Ori
 invalid attempts and the manual candidate backend gap remain; no gesture/fold claim.
 
 S2 contains six qualified production files and excludes deferred semantic/scene
-implementation. Source exclusion qualifies non-applicability of the scoped new-
-behavior application-performance comparison; it does not claim numeric performance.
+implementation. The earlier source-exclusion
+assessment remains valid; the [current testing rule](../MULTI_SCENE_SUPPORT.md#measurement-and-testing-rule)
+requires no strict timing or application-performance comparison.
 Its compatibility evidence retains predefined OS skips, Replay-content exclusions,
 Integration QoS warnings and original preparation stops. No blanket warning,
 sanitizer, crash-freedom or performance clearance follows.
@@ -101,7 +102,8 @@ and both simulators are restored. Other modules and final release approval remai
 four signed Release clients and reviewed sampler/trace controls to that API candidate.
 Physical baseline install, launch and code identity pass, but recorder attachment fails
 before workload readiness. Capture is stopped; cleanup passes. There is no performance
-result, SDK regression finding or gate closure.
+result or SDK regression finding. This optional diagnostic is no longer a release
+prerequisite under the September25 measurement rule; no further profiling run is due.
 
 [EXP223](Results/EXP-223-interactive-transitions.json) qualifies ordinary-simulator
 UIKit/SwiftUI capture; physical/backend qualification remains open. All eight saved
@@ -181,7 +183,7 @@ qualification rather than assumed from this table.
 | WebView bridge | Exact captured scene/date correlation, native navigation, detached omission, same-WebView rebind and peer teardown pass through two actual containers and complete backend inventory. Private scene metadata is removed. | [D11/EXP-165](Results/EXP-165-webview-correlation.json), [T10/EXP-183 acceptance](Results/EXP-183-webview-container-ownership.json) | T10 accepted within the serial controlled-payload contract. Receiver output is checked directly in backend; no Browser SDK or per-scene Replay certification. Physical F05 remains separate. |
 | Process signals and context | Source-less fatal/exported context and process signals use one representative; retained snapshots stay exact. Vitals/profiling preserve process semantics and existing view association. | [fatal context](Results/EXP-184-exported-fatal-context.json), [process signals](Results/EXP-185-process-signal-routing.json), [vitals](Results/EXP-186-shared-vitals.json), [physical profiling](Results/EXP-187-physical-profile-correlation.json) | Accepted within serial and representative-hardware contracts. False RUM profile-link flags remain recorded; no per-window measurement, UI-enrichment or simultaneous-window claim. |
 | Ordinary apps and supported systems | Reference automatic/manual/custom/NOP and genuine older-SDK legacy-host comparisons have bounded acceptance. Platform and caller-thread regressions have documented repairs. | [baselines](BASELINES.md), [safety dispositions](PRODUCTION_SAFETY_REVIEW.md), [legacy build-SDK evidence](Results/EXP-189-legacy-build-sdk.json) | Deployment15 remains supported; current executable minimum coverage starts at17, with15/16 runtime coverage explicitly unexecuted. Candidate-specific C06/F03 must use their own evidence. A newer-SDK mandatory scene-adoption trap is a separate platform boundary. |
-| Performance and retained state | Early reference dispatch/allocation/reentrancy/retained-state controls meet their frozen thresholds after repair. | [protocol and results](BASELINES.md), [handoff](Results/EXP-166-handoff-performance.json), [retention](Results/EXP-172-scene-retention.json) | Simulator microbenchmarks do not establish device-wide performance. Detailed network/per-dispatch benchmarking is optional; included semantic/multi-scene behavior still needs application-impact evidence or source exclusion. |
+| Performance and retained state | Early reference dispatch/allocation/reentrancy/retained-state controls meet their frozen thresholds after repair. | [protocol and results](BASELINES.md), [handoff](Results/EXP-166-handoff-performance.json), [retention](Results/EXP-172-scene-retention.json) | Historical simulator microbenchmarks retain their original limits. Future sessions qualify event attribution and View/Navigation/Action capture; strict timing and application-performance campaigns are not prerequisites. |
 | Session Replay | Native recording coexists through two actual scenes, navigation and teardown on physical iPad27.0. | [EXP-194 simulator](Results/EXP-194-replay-coexistence.json), [EXP-196 physical](Results/EXP-196-physical-ipad-suite.json) | F05 closed: four record-growth checkpoints, actual B disconnect, six exact backend views, zero stray Action/Resource/error/crash and verified code identities/cleanup. Original timing failure preserved; physical close-triggered return is checked separately. No simultaneous-visible, scene-correct Replay or Duo-hardware claim. |
 
 ## Limits on support claims
@@ -200,9 +202,9 @@ qualification rather than assumed from this table.
 - Session Replay captured-content correctness is outside scope. Host-app crash
   safety and non-disruption to other SDK features remain required. Historical
   Replay-content failures stay failures without creating a capture repair obligation.
-- Detailed network benchmarking is [optional](NETWORK_BENCHMARK_FOLLOWUP.md).
-  Lifetime/correctness/attribution remain required, and included new semantic/
-  multi-scene code needs representative application-impact proof or source exclusion.
+- Follow the [project measurement rule](../MULTI_SCENE_SUPPORT.md#measurement-and-testing-rule):
+  event attribution and View/Navigation/Action capture determine session acceptance.
+  Strict timing is diagnostic. Preserve existing lifetime and compatibility evidence.
 - Completed [safety](PRODUCTION_SAFETY_REVIEW.md) and [component](COMPONENT_REVIEW.md)
   reviews close bounded findings only. Stable API, support examples, final
   compatibility and independent delivery review remain governed by their gates.

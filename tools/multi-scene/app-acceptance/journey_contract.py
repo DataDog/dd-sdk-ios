@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "acceptance"))
 from acceptance_common import require
 from app_journey_inventory import field, identifier, source, native_partition
 from s2_webview_runtime import active_display
-from capture_contract import prefix, loads, native_owner, MAPPER_FAMILIES
+from capture_contract import prefix, loads, native_owner, MAPPER_FAMILIES, STRICT_COST_POLICY
 
 
 def one(values, label):
@@ -31,15 +31,15 @@ def event_key(event):
     return family, value
 
 
-def sealed_stream(raw, checkpoint, identity, configuration, *, process_exited):
+def sealed_stream(raw, checkpoint, identity, configuration, *, process_exited, cost_policy=STRICT_COST_POLICY):
     """Retain the actual writer prefix, then validate complete post-exit file bytes."""
     require(process_exited is True, "stream not sealed by observed process exit")
-    committed = prefix(raw, checkpoint, identity)
+    committed = prefix(raw, checkpoint, identity, cost_policy=cost_policy)
     require(raw.endswith(b"\n"), "partial native tail at process exit")
     readback = dict(schema_version=1, identity=identity, request_id=checkpoint["request_id"],
                     sequence=len(raw.splitlines()), success=True, byte_count=len(raw),
                     sha256=hashlib.sha256(raw).hexdigest())
-    full = prefix(raw, readback, identity)
+    full = prefix(raw, readback, identity, cost_policy=cost_policy)
     configured = one([r for r in full["rows"] if r["kind"] == "configured"], "configured process")
     require(configured["fields"] == configuration, "configured process/product differs")
     require(configuration["build_sdk"] == "iphonesimulator27.1" and

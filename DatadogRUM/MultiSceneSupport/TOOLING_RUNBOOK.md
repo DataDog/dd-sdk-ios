@@ -29,6 +29,11 @@ frozen archive to resume ordinary work.
 
 ## Common rules
 
+Apply the [project measurement rule](../MULTI_SCENE_SUPPORT.md#measurement-and-testing-rule)
+to every future session: event attribution and View/Navigation/Action capture are
+the acceptance targets. Strict timing measurements are diagnostic; operational
+timeouts bound work and cleanup without independently implying an SDK regression.
+
 1. **Preserve workspace state.** Verify actual branch, HEAD/signature and index/work
    tree. The cursor lists protected paths. Use explicit individual staging and
    commit paths, never `git commit -a`. Configuration use is authorized when needed;
@@ -107,10 +112,9 @@ count, console PASS or a not-run target cannot substitute.
 - Session Replay scope is host-app crash safety and non-disruption to other SDK
   features. Do not test or repair captured-content correctness or require a full
   Replay capture suite. Preserve historical failures without relabeling them.
-- Detailed network/per-dispatch benchmarking is optional. Correctness, ownership
-  and lifetime stay required. Included new semantic SwiftUI/multi-scene behavior
-  needs the admitted application-impact comparison or proven source exclusion.
-  Preserve historical [baseline thresholds](BASELINES.md).
+- Strict timing measurements and application-performance campaigns are not release
+  prerequisites. Focus sessions on event attribution and View/Navigation/Action
+  capture; preserve historical [baseline evidence](BASELINES.md) without requalification.
 - Current CI remains required. Repair flakes only when evidence links them to our
   changed surface or associated tests; check upstream fixes before duplicating work.
 - Deployment compatibility, runnable older-system coverage, Duo simulation and

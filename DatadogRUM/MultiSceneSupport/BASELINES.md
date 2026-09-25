@@ -2,20 +2,12 @@
 
 ## Current release scope
 
-The user revised performance acceptance on2026-09-20. Required benchmarking is a
-bounded representative application before/after comparison for new SwiftUI semantic
-tracking and multi-scene changes, covering frame rate, hitches/hangs, CPU and memory.
-Freeze the actual source/build, device, finite journeys and visible-regression
-criteria before measurement; an expected low risk is not a pass. If the shipped
-candidate excludes both change families, F07 must prove that exclusion.
-
-Preserving View/Action information and Resource-to-view attribution, preventing
-crashes/deadlocks, and releasing objects at the required lifecycle boundary remain
-correctness requirements. Network per-task processing, allocation counts or bytes
-do not independently block a correctness fix. No mandatory standalone network
-performance campaign replaces EXP-198; investigate a concrete visible problem if
-one is found. [The optional harness](NETWORK_BENCHMARK_FOLLOWUP.md) preserves that
-work. The register's S1/S2/S3 requirements own current acceptance.
+The [September 25 project rule](../MULTI_SCENE_SUPPORT.md#measurement-and-testing-rule)
+supersedes the earlier mandatory application-performance comparison. Future sessions
+validate event attribution and View/Navigation/Action capture. Strict timing and
+recorder-cost measurements are diagnostic, not release prerequisites. Operational
+timeouts still bound execution and cleanup. The historical protocols and results
+below retain their original meaning and do not require reruns.
 
 ## Historical EXP-160 protocol and evidence
 

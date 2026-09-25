@@ -13,6 +13,8 @@ from acceptance_common import require
 
 
 class Driver(JourneyDriver):
+    cost_policy = smoke_contract.COST_POLICY
+
     def dashboard_for_prompt(self, rows, snapshot, owner):
         return browser_contract.dashboard_attachment(rows, snapshot, owner)
 

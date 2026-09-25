@@ -614,5 +614,13 @@
     "compatibility_source": "https://developer.apple.com/xcode/system-requirements",
     "compatibility_limit": "Apple lists Xcode27.1 device support as iOS17 or later. This does not identify the cause of the recorder failure or establish that iOS27.2 is unsupported. No toolchain switch or speculative rebuild admitted.",
     "fixture_lifecycle": "Both fixtures create their scene/window, then start the asynchronous driver. awaitRecorder uses Task.sleep and yields the main actor; source does not support a blocking readiness-loop cause. No fixture or SDK change follows."
+  },
+  "current_measurement_scope": {
+    "at": "2026-09-25T16:31:04.360464+00:00",
+    "source": "Explicit September25 project-wide user rule",
+    "state": "OPTIONAL_NOT_A_RELEASE_PREREQUISITE",
+    "rule": "Future sessions validate event attribution and View/Navigation/Action capture. Strict timing and performance capture are not required.",
+    "next": "Preserve the original attachment failures and successful cleanup. No further performance session is due.",
+    "original_attempts_modified": false
   }
 }

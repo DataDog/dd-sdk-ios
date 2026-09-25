@@ -108,5 +108,7 @@
   ],
   "native_launches": 0,
   "gate_closures": [],
-  "budget_basis": "Remove181second duplicate expiry wait and two excess Home steps from the old2700second mode. Preserve existing per-step180, authentication600, backend600 and cleanup300 bounds prospectively; no existing deadline changes."
+  "budget_basis": "Remove181second duplicate expiry wait and two excess Home steps from the old2700second mode. Preserve existing per-step180, authentication600, backend600 and cleanup300 bounds prospectively; no existing deadline changes.",
+  "capture_cost_policy": "f08-correctness-v1",
+  "recorder_cost_contract": "Preserve every cost and unchanged historical thresholds as separate diagnostics. A cost overrun alone does not invalidate correctness; missing or inconsistent capture, consumed readiness, deadline failure or unresolved semantic ambiguity still blocks acceptance. No performance claim."
 }

@@ -97,7 +97,7 @@ class SmokeRuntimeControls(unittest.TestCase):
 
     def test_candidate_requires_immutable_smoke_prefix_and_bound_evidence(self):
         from test_journey_workflow import AdmissionControls
-        for mode in ['complete','changed-prefix','foreign-run','late-proof','changed-manifest']:
+        for mode in ['complete','cost-unqualified','changed-cost-policy','changed-prefix','foreign-run','late-proof','changed-manifest']:
             case=AdmissionControls();case.setUp()
             try:
                 root=case.folder;raw,checkpoint=encode(payload([('configured',CONFIGURATION)])[0])
@@ -106,7 +106,12 @@ class SmokeRuntimeControls(unittest.TestCase):
                 (root/'sealed-events.jsonl').write_bytes(raw)
                 (root/'backend-joined.json').write_bytes(encoded({}))
                 (root/'native-summary.json').write_bytes(encoded({'manifest':{'source':'bound'}}))
+                cost=dict(policy=smoke_contract.COST_POLICY, cost_status='UNQUALIFIED' if mode=='cost-unqualified' else 'QUALIFIED',
+                          samples=1, overruns=[], performance_acceptance=False)
+                if mode=='changed-cost-policy':cost['policy']='unbound'
+                (root/'observer-cost.json').write_bytes(encoded(cost))
                 proof=dict(state='SMOKE_BEHAVIOR_AND_DELIVERY_SEALED',mode='smoke',identity=IDENTITY,
+                    observer_cost=cost,observer_cost_sha256=journey_workflow.builds.sha(root/'observer-cost.json'),performance_acceptance=False,
                     completed_at=case.now-2,deadline=case.now+20,behavior_sha256=checkpoint['sha256'],
                     checkpoint_sha256=journey_workflow.builds.sha(root/'behavior-checkpoint.json'),
                     sealed_sha256=journey_workflow.builds.sha(root/'sealed-events.jsonl'),
@@ -119,7 +124,7 @@ class SmokeRuntimeControls(unittest.TestCase):
                 case.joined['state']='SMOKE_SEMANTICS_JOINED_SOURCE_CLASSIFICATION_REQUIRED'
                 result=case.finish()
                 if mode=='changed-prefix':(root/'behavior-prefix.jsonl').write_bytes(raw+b'changed')
-                if mode=='complete':journey_workflow.candidate_ready(result,case.plan_sha,root)
+                if mode in ['complete','cost-unqualified']:journey_workflow.candidate_ready(result,case.plan_sha,root)
                 else:
                     with self.subTest(mode=mode),self.assertRaises(Rejected):journey_workflow.candidate_ready(result,case.plan_sha,root)
             finally:case.tearDown()

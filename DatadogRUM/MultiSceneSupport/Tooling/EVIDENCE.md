@@ -4,6 +4,15 @@ Read when defining, interpreting or reusing a run. Exact inventories, thresholds
 phase deadlines and attempt limits live in the owning definition/fixture README.
 This page preserves common discriminators; it does not replace those contracts.
 
+## Measurement policy
+
+The [project-wide rule](../../MULTI_SCENE_SUPPORT.md#measurement-and-testing-rule)
+requires event attribution and View/Navigation/Action capture. Preserve recorder
+costs as diagnostics; numerical timing overruns alone do not invalidate correctness.
+Actual missing or inconsistent evidence, changed owners, consumed readiness and
+unresolved native outcomes still block the affected claim. Timeouts remain bounded
+operational safeguards, with scenario, evidence and cleanup verdicts kept separate.
+
 ## Admission and ownership
 
 Name an existing release gate or reproduced regression, the candidate/stage, one
