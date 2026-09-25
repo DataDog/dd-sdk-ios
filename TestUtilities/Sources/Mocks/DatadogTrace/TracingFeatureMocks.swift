@@ -156,7 +156,7 @@ extension TracingWithLoggingIntegration {
 
 extension ContextMessageReceiver {
     public static func mockAny() -> ContextMessageReceiver {
-        return ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny()))
+        return ContextMessageReceiver()
     }
 }
 

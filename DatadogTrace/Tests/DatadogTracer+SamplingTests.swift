@@ -139,3 +139,122 @@ extension FeatureScopeMock {
         return events.reduce([], { acc, next in acc + next.spans })
     }
 }
+
+/// Tests for the sampler `SamplerProvider` hands to manual tracing operations.
+///
+/// `Trace.Configuration.sampleRate` is an absolute trace sampling rate, so it must not be composed
+/// with the RUM session rate. The RUM session contributes the seed only, which keeps every span in a
+/// session on the same side of the decision without changing how many traces are kept.
+class SamplerProviderTests: XCTestCase {
+    /// A session UUID whose Knuth hash fraction is roughly 6.4%: kept at a 20% rate applied alone,
+    /// dropped at the 2% that composing 20% with a 10% session rate would produce.
+    private let sessionUUID = UUID(uuidString: "a1b2c3d4-e5f6-7890-abcd-ceb01cf21171")!
+    private let sessionRate: SampleRate = 10
+    private let traceRate: SampleRate = 20
+
+    /// Cores are retained for the test's lifetime: `RUMSessionSampler` holds its core weakly, so a
+    /// released core would silently report no session.
+    private var cores: [FeatureRegistrationCoreMock] = []
+
+    override func tearDown() {
+        cores = []
+        super.tearDown()
+    }
+
+    private func makeSessionSampling() -> RUMSessionSamplerProviderMock {
+        RUMSessionSamplerProviderMock(
+            identity: .init(
+                sessionID: "a1b2c3d4-e5f6-7890-abcd-ceb01cf21171",
+                sampler: DeterministicSampler(uuid: sessionUUID, samplingRate: sessionRate)
+            )
+        )
+    }
+
+    /// Wraps `provider` in a core so the subject resolves it exactly as production does.
+    private func sampler(for provider: RUMSessionSamplerProviderMock) -> RUMSessionSampler {
+        let core = FeatureRegistrationCoreMock()
+        try? core.register(feature: provider)
+        cores.append(core)
+        return core.rumSessionSampler
+    }
+
+    func testWhenARUMSessionIsActive_thenTheTraceRateIsNotComposedWithTheSessionRate() {
+        // Given
+        let sessionSampling = makeSessionSampling()
+        let provider = SamplerProvider(sampleRate: traceRate, rumSessionSampler: sampler(for: sessionSampling))
+
+        // When
+        let sampler = provider.sampler
+
+        // Then — the trace rate is reported and applied as configured
+        XCTAssertEqual(sampler.samplingRate, traceRate)
+        XCTAssertTrue(
+            sampler.sample(),
+            "A 20% trace rate must keep this session; composing it with the 10% session rate would drop it"
+        )
+        XCTAssertEqual(
+            sampler.sample(),
+            DeterministicSampler(uuid: sessionUUID, samplingRate: traceRate).isSampled,
+            "The decision must match the session seed at the trace rate"
+        )
+    }
+
+    func testItAsksForTheFeatureRatePolicy() {
+        // Given
+        let sessionSampling = makeSessionSampling()
+        let provider = SamplerProvider(sampleRate: traceRate, rumSessionSampler: sampler(for: sessionSampling))
+
+        // When
+        _ = provider.sampler
+        _ = provider.makeSamplerFor(samplingRate: 42)
+
+        // Then
+        XCTAssertEqual(sessionSampling.requests.map(\.policy), [.featureRate, .featureRate])
+        XCTAssertEqual(sessionSampling.requests.map(\.rate), [traceRate, 42])
+    }
+
+    func testCustomSamplingRate_isAlsoSeededBySessionWithoutComposing() {
+        // Given
+        let sessionSampling = makeSessionSampling()
+        let provider = SamplerProvider(sampleRate: 0, rumSessionSampler: sampler(for: sessionSampling))
+
+        // When — a span asks for its own rate, unrelated to the feature's configured one
+        let sampler = provider.makeSamplerFor(samplingRate: traceRate)
+
+        // Then
+        XCTAssertEqual(sampler.samplingRate, traceRate)
+        XCTAssertTrue(sampler.sample())
+    }
+
+    func testTheDecisionIsStableAcrossReads() {
+        // Given
+        let sessionSampling = makeSessionSampling()
+        let provider = SamplerProvider(sampleRate: 50, rumSessionSampler: sampler(for: sessionSampling))
+
+        // When — a rate that a random sampler would decide differently on nearly every call
+        let decisions = (0..<50).map { _ in provider.sampler.sample() }
+
+        // Then
+        XCTAssertEqual(Set(decisions).count, 1, "Every span in one session must land on the same side")
+    }
+
+    func testWhenNoRUMSessionIsActive_thenTheSamplerIsRandomAtTheTraceRate() {
+        // Given — RUM enabled but between sessions, or RUM not enabled at all
+        let provider = SamplerProvider(sampleRate: 50, rumSessionSampler: sampler(for: RUMSessionSamplerProviderMock()))
+
+        // When
+        let decisions = (0..<1_000).map { _ in provider.sampler.sample() }
+
+        // Then — nothing to be consistent with, so the decision is drawn per span
+        XCTAssertEqual(provider.sampler.samplingRate, 50)
+        XCTAssertTrue(decisions.contains(true))
+        XCTAssertTrue(decisions.contains(false))
+    }
+
+    func testByDefault_thereIsNoSessionAndTheSamplerIsRandom() {
+        // The default argument exists so tests and non-RUM setups keep the previous behaviour.
+        let provider = SamplerProvider(sampleRate: 100)
+        XCTAssertTrue(provider.sampler.sample())
+        XCTAssertEqual(provider.makeSamplerFor(samplingRate: 0).sample(), false)
+    }
+}
