@@ -470,3 +470,13 @@ worker completion precedes collection; failed input requires a separate cleanup-
 idle witness. Actual creator session closure remains mandatory. The first planned
 UIKit automatic pair is frozen without native admission; no gate closes. Unknown
 input preserves the app/evidence, and one failed qualification stops this path.
+
+The saved UIKit/SwiftUI baseline completion finding is now source-reviewed. All eight
+callback actions retain the exact expected owner; four completions keep their original
+mapping-before-callback FAIL and four cancellations PASS. Nine selected dispatch/mapping
+files are byte-identical in baseline and S2, while SessionScope/ViewCache do change.
+The recorder encodes mapper events before taking its append lock; SDK processing is
+asynchronous. The observed gap cannot establish internal ownership at the callback or
+its cause. No oracle, source or original verdict changes, no native action and no gate
+closure follow. The owning result binds the reproducible audit and independent review;
+valid candidate and backend comparison remain required.

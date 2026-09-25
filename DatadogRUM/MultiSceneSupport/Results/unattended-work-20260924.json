@@ -15,7 +15,7 @@
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
   "human_work": "UNADMITTED_WHILE_OPERATOR_SLEEPS",
-  "checkpoint": "992055d202082d0924a71fd6529aabe836b9b241",
+  "checkpoint": "2dfdc49db70a36feb9de495a8f5a60371b5a2b51",
   "tasks": [
     {
       "id": "capture-backend",
@@ -99,7 +99,29 @@
       "dependency": "Read each owning result; preserve accepted suites and stopped mechanisms",
       "decisive_test": "Complete a named existing deliverable or record a concrete prerequisite; builds/diagnostics alone cannot close behavior gates",
       "environment": "Source/offline or separately admitted unattended toolchain work",
-      "state": "QUEUED"
+      "state": "PREPARED_EXTERNAL_PREREQUISITES_REMAIN",
+      "dispositions": [
+        {
+          "gate": "S2:T10",
+          "owner": "S2-T10-source-preparation.json",
+          "remaining": "Both source-bound builds and human runtime are ready; actual fold/input and complete native/backend comparison require the prepared operator session."
+        },
+        {
+          "gate": "S2:F08",
+          "owner": "S2-F08-source-oracle.json",
+          "remaining": "J01-J04 runtime/products and desktop account/control candidate are prepared; native sign-in, route/control effect and paired ownership require the operator session."
+        },
+        {
+          "gate": "S3:F02",
+          "owner": "S3-F02-provisional-documentation-review.json",
+          "remaining": "Reviewed provisional documentation is integrated. Approved public feature/examples and release-source adoption require F01; released feature docs stay unchanged."
+        },
+        {
+          "gate": "S3:F03",
+          "owner": "S3-F03-candidate-preparation.json",
+          "remaining": "Accepted suites/platform/client evidence stays preserved. Integration needs a changed installer prerequisite; same-key proof needs concurrent topology; public API baseline and final source binding need F01."
+        }
+      ]
     },
     {
       "id": "finite-automatic-sessions",
@@ -120,6 +142,30 @@
         "sha256": "56fa5cdb8431e78b736768fcfde374a6846fb1f8caca1f3c85b3c93d1f697107"
       },
       "gate_closures": []
+    },
+    {
+      "id": "baseline-completion-source-classification",
+      "gates": [
+        "S2:H11",
+        "S2:H12",
+        "S2:H13",
+        "S2:A02",
+        "S3:A02"
+      ],
+      "deliverable": "Classify the saved completion-boundary finding using exact SDK and compiled fixture source",
+      "dependency": "Accepted ordinary-simulator UIKit/SwiftUI baseline captures",
+      "decisive_test": "Eight raw transition records and nine unchanged selected source files; independent review; original strict failures unchanged",
+      "environment": "Saved evidence and source only",
+      "state": "COMPLETE_SOURCE_AUDIT_ONLY",
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-completion-source-eqb367hk/outcome.json",
+        "sha256": "c8f650df048ab4caaa61a96826b426c6fddda63839d366f3f43069b9471eb826"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-completion-source-eqb367hk/review.json",
+        "sha256": "d5bed8ef0a7f62377d0e5108f72d9d2144107a2a89cd28272482a986abdfe640"
+      },
+      "gate_closures": []
     }
   ],
   "scope_limits": [
@@ -131,5 +177,5 @@
     "No Replay content, unrelated CI flakes, optional networking benchmarks or physical Duo acceptance"
   ],
   "gate_closures": [],
-  "updated_at": 1790298858.6769652
+  "updated_at": 1790299977.932003
 }

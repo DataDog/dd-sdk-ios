@@ -326,7 +326,7 @@
     }
   ],
   "gate_closures": [],
-  "next_action": "Preserve reviewed physical preparation behind the locked-device prerequisite. Audit the captured completion timing against selected source while the operator sleeps; do not upgrade the original failures or repeat input diagnostics.",
+  "next_action": "Preserve reviewed physical preparation behind the locked-device prerequisite. Saved baseline completion timing is source-classified without repairing original failures. Require a fresh valid planned baseline/candidate/backend run; no equivalent input diagnostic or human request while the operator sleeps.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
@@ -397,7 +397,7 @@
       "scope": "Fixture/native and local paired oracle only. Full runtime, backend, adaptive geometry and physical execution remain unqualified."
     }
   },
-  "updated_at": 1790294842.8171442,
+  "updated_at": 1790299977.930034,
   "live_environment": {
     "observed_at": "2026-09-23T19:45:47.121281+00:00",
     "xcode": "27.1 (27A9269)",
@@ -2733,5 +2733,20 @@
         "gate_closures": []
       }
     }
+  },
+  "completion_timing_source_audit": {
+    "state": "PASS_SOURCE_AUDIT_ONLY",
+    "outcome": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-completion-source-eqb367hk/outcome.json",
+      "sha256": "c8f650df048ab4caaa61a96826b426c6fddda63839d366f3f43069b9471eb826"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-completion-source-eqb367hk/review.json",
+      "sha256": "d5bed8ef0a7f62377d0e5108f72d9d2144107a2a89cd28272482a986abdfe640"
+    },
+    "finding": "All eight saved baseline callback actions have expected owners. Four completed transitions retain their original independent-mapping-before-callback FAIL; four cancellations PASS.",
+    "source_limit": "The fixture serializes before recording under its lock, and the selected SDK dispatch path is asynchronous. These artifacts cannot establish internal ownership at the native callback or the cause of each recorded gap.",
+    "candidate_limit": "Nine selected dispatch/mapping files are identical between baseline and S2, but SessionScope/ViewCache change; candidate and backend qualification remain required.",
+    "gate_closures": []
   }
 }

@@ -124,6 +124,12 @@ lock. A snapshot taken before asynchronous readiness work can become stale while
 retaining the correct view ID. Complete SDK callbacks and main-thread observations
 before that lock, and keep the latest-mapper oracle strict.
 
+The evidence lock orders recorded rows. If event serialization precedes that lock,
+a callback snapshot cannot establish mapper-entry or internal SDK command ordering.
+Preserve the missing-boundary verdict and examine the actual dispatch/recording path
+before attributing an SDK regression. A later correct action does not repair that
+boundary, and unchanged dispatch source does not qualify an unexecuted candidate.
+
 Decode primitive/ObjC-wrapped mapper values through the actual encoding path.
 `AttributeValue.dd.decode` casts the stored value; it does not construct an arbitrary
 Codable enum. Encode/decode declared evidence types when needed, test actual

@@ -85,11 +85,13 @@ Physical baseline install, launch and code identity pass, but recorder attachmen
 before workload readiness. Capture is stopped; cleanup passes. There is no performance
 result, SDK regression finding or gate closure.
 
-The shared human-session capture repair takes priority over further human runs.
-[EXP223](Results/EXP-223-interactive-transitions.json) preserves both failed physical
-qualifications. A callback-driven observer and exact-return transport pass offline
-controls; native mechanism qualification remains pending. This changes capture,
-not the selected SDK or the release criteria.
+[EXP223](Results/EXP-223-interactive-transitions.json) qualifies ordinary-simulator
+UIKit/SwiftUI capture; physical/backend qualification remains open. All eight saved
+baseline callback actions have the expected owners. Completed transitions still
+fail the independent mapping-before-callback assertion; cancellations pass.
+Source review shows that asynchronous dispatch and serialization before recording
+limit what the snapshot establishes about internal ownership at callback time.
+The cause and candidate behavior remain unproven, and original failures stay intact.
 
 ## Immediate compatibility priority
 
