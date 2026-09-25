@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
   "work_item": "S2:A02 ordered single human-input session",
-  "status": "F08_RECORDER_REVIEWED_BUILDS_PREPARING",
-  "updated_at": "2026-09-25T15:45:13.931480+00:00",
+  "status": "F08_REBUILT_RUNTIME_READY_OPERATOR_PENDING",
+  "updated_at": "2026-09-25T16:03:32.800180+00:00",
   "owner": "Harness implementer",
   "user_role": "Only real gestures and any required interactive sign-in",
-  "request_user_now": false,
-  "reason": "The user selected the app route. Recorder correction passes scoped review and 55 controls; fresh symmetric builds are being prepared. Original pre-input baseline remains INVALID with cleanup PASS. No operator action is requested until products and fresh readiness are bound.",
+  "request_user_now": true,
+  "reason": "Both corrected recorder products and source-bound smoke runtime qualify; live instruction page is ready. Fresh availability was requested after the builds. No test app is installed or running.",
   "source_candidate": "c9faed816a1d4828d7d8c4b64acae01119425889",
   "ordered_groups": [
     {
@@ -235,10 +235,11 @@
     "gates_closed": []
   },
   "operator_readiness": {
-    "state": "PRIOR_AVAILABILITY_REQUIRES_REFRESH_AFTER_BUILDS",
+    "state": "FRESH_READINESS_REQUEST_PENDING",
     "fixed_stage_started": false,
     "active_native": false,
-    "latest_f08_attempt": "S2-F08-source-oracle.json:scoped_smoke_preparation.current_attempt"
+    "latest_f08_attempt": "S2-F08-source-oracle.json:scoped_smoke_preparation.current_attempt",
+    "current_f08_plan": "S2-F08-source-oracle.json:recorder_correction.runtime_plan"
   },
   "session_splitting": {
     "user_question_at": "2026-09-23T13:38:54.447557+00:00",

@@ -14,7 +14,7 @@
     "id": "rum-unattended-progress",
     "finding": "Update returned Automation does not exist; no replacement was created."
   },
-  "next_task": "Complete the reviewed F08 symmetric recorder builds, then prepare a fresh source/product-bound smoke session.",
+  "next_task": "Fresh operator reply admits the prepared corrected F08 baseline; continue independent work if unavailable.",
   "gate_closures": [
     "S2:H16",
     "S2:T10"
@@ -28,7 +28,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": "2026-09-25T15:48:29.814843+00:00",
+  "updated_at": "2026-09-25T16:03:32.800180+00:00",
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
@@ -186,11 +186,19 @@
   },
   "s2_f08_recorder_correction": {
     "owner": "Results/S2-F08-source-oracle.json:recorder_correction",
-    "state": "BASELINE_BUILD_RUNNING_CANDIDATE_DEPENDENT",
+    "state": "BOTH_PRODUCTS_QUALIFIED_RUNTIME_REVIEWED_OPERATOR_PENDING",
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93",
     "review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/review-final.json",
       "sha256": "1f5c5ac6fec0fe30aa21a762153f60f1439794e48a25023ef0f7214eeec73f73"
+    },
+    "completion": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/builds-isolated/completion.json",
+      "sha256": "146c924f74f84456e0fd46121dea2e3dba6becd2a419964bbe6476e6cdfaeab1"
+    },
+    "runtime": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/runtime/plan.json",
+      "sha256": "72457ca36142144e3491bde0a32f501e4321e211da650374e3a8d0c236262227"
     }
   }
 }

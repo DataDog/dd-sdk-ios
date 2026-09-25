@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 authenticated app source/oracle preparation",
-  "status": "SMOKE_RECORDER_REVIEWED_BUILDS_RUNNING",
+  "status": "SMOKE_REBUILT_RUNTIME_READY_OPERATOR_PENDING",
   "at": "2026-09-21T21:30:08.556874+00:00",
   "owner": "SDK implementer",
   "reviewer": "existing /root/c06_runtime_plan",
@@ -569,10 +569,10 @@
       "sha256": "7327e526235b7aa0e53e635f9ab1262c4d738e3f07dec5003163f41f9733a961"
     }
   },
-  "current_execution_mode": "scoped_smoke_preparation; the earlier J01-J04/retained-dashboard definitions remain historical and are not the selected S2 sequence",
+  "current_execution_mode": "Corrected scoped smoke at recorder_correction.runtime_plan; earlier scoped attempt and J01-J04 definitions retain their original verdicts and deadlines.",
   "recorder_correction": {
-    "state": "BASELINE_BUILD_RUNNING_CANDIDATE_DEPENDENT",
-    "at": "2026-09-25T15:48:29.814843+00:00",
+    "state": "BOTH_PRODUCTS_QUALIFIED_RUNTIME_REVIEWED",
+    "at": "2026-09-25T16:03:32.800180+00:00",
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93",
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/definition.json",
@@ -615,7 +615,7 @@
     "preparation_correction": "Accepted sources use registered worktrees. Fresh copies receive independent local Git metadata without hardlinks or alternates; source worktrees unchanged.",
     "native_launches": 0,
     "gate_closures": [],
-    "next": "Freeze both app/SDK/compiler inputs, complete baseline then candidate build qualification, and refresh operator/environment readiness before any native admission.",
+    "next": "Fresh operator reply and current device/backend readiness admit one baseline. Candidate requires baseline scenario, mechanism/backend and timely cleanup. No native clock started.",
     "source_preparation": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/builds-isolated/preparation-completion.json",
       "sha256": "00ff66cca039eba03096cd2e50db2f0c33bf190948532007908948a1c52648d9"
@@ -623,6 +623,31 @@
     "build_admission": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/builds-isolated/execution-admission.json",
       "sha256": "76ee455c7d23597c40877e96d41116a2e4d38c394d7ee414f00b1925f611c72d"
+    },
+    "completion": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/builds-isolated/completion.json",
+      "sha256": "146c924f74f84456e0fd46121dea2e3dba6becd2a419964bbe6476e6cdfaeab1"
+    },
+    "runtime_plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/runtime/plan.json",
+      "sha256": "72457ca36142144e3491bde0a32f501e4321e211da650374e3a8d0c236262227"
+    },
+    "runtime_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/runtime/review.json",
+      "sha256": "6b1c786375c847b86f1509ead9eacf24eca71fde930292e0bab5863ff1ddcf28"
+    },
+    "environment_preflight": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/environment-before-operator/summary.json",
+      "sha256": "92ae85b16961db20d68668739d2f293cfcb99fdae2566a88d6fea55e154024b4"
+    },
+    "writer_warning": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-encoder-setup-wnybyi93/writer-warning-source-disposition.json",
+      "sha256": "e13c6e0fa8959f34ce35a707fedde6d5a30057c835b1bd4e54afb29aecad2133"
+    },
+    "product_counts_per_arm": {
+      "files": 1815,
+      "mach_o": 71,
+      "sdk_archives": 13
     }
   }
 }
