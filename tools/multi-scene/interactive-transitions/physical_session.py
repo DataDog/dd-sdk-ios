@@ -28,10 +28,12 @@ def run(args):
     try:code=supervisor.supervise(argv,root/(args.key+'-driver.log'),message,execution,cleanup)
     except BaseException as error:problem=str(error);code=1
     finally:human_processes.members=original
-    ready=journey_session.qualify(root,args.key,error=problem)
+    ready=runtime.qualify(root,args.key,plan,error=problem)
     operator.publish(root/'operator',dict(instruction='This cell is captured. Wait for review and the next app.' if ready else
         'The test stopped. Do not repeat gestures. Evidence and cleanup are being checked.'),context=args.key)
-    print(json.dumps(dict(state='MECHANISM_QUALIFIED' if ready else 'STOPPED',cell=args.key,release_acceptance=False)),flush=True)
+    scoped=dict(evidence_contract=runtime.rum_outcomes.mode(plan)) if runtime.rum_outcomes.mode(plan) is not None else {}
+    state=runtime.rum_outcomes.QUALIFIED if scoped and ready else 'MECHANISM_QUALIFIED' if ready else 'STOPPED'
+    print(json.dumps(dict(**scoped,state=state,cell=args.key,release_acceptance=False)),flush=True)
     return 0 if code==0 and ready else 1
 
 

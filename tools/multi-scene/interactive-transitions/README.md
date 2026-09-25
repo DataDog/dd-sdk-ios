@@ -232,3 +232,16 @@ projection verdict. An earlier view is pending only when its complete required b
 exactly matches a captured mapper revision; only the latest required body can qualify.
 Unknown mixtures fail immediately. `pending=False` makes incomplete ingestion invalid
 at the original final boundary. This module has no runtime or release authority.
+
+The physical runner accepts `prepare --rum-fields` only with the qualified cost,
+background, public-inventory and TTID build overlays. It freezes the exact contract
+in its plan. Each complete exchange retains its named assessment and full projection;
+only exact earlier payloads may wait within the original backend deadline. The final
+seal recomputes required fields from identical native bytes and the same hashed
+exchanges, with exact query scope and no post-termination query.
+
+Named RUM-fields joined, capture, supervisor and paired states cannot enter generic
+qualification. A successful mechanism still leaves overall/source/release acceptance
+INVALID. Candidate admission additionally requires unchanged complete artifacts,
+timely publication, supervisor quiescence and cleanup. Default full mode is unchanged.
+Neither preparation nor signing substitutes for fresh operator/input admission.

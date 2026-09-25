@@ -454,3 +454,10 @@ Pending requires an exact captured earlier body; unknown mixtures fail, and only
 the latest required body can qualify. Native TTID evidence is mandatory. The saved
 Home remains invalid; integration and physical qualification remain open. No gate
 closes. The owning result binds source hashes, controls and original test failures.
+
+The explicit physical RUM-fields mode is integrated and passes20 focused controls
+plus eight affected existing controls and scoped review. Its namespaced results
+cannot enter generic qualification; full projection remains visible and overall
+acceptance remains invalid pending source review. All four witness products are
+signed and the first UIKit automatic pair is frozen, without native admission.
+Original input, Home, backend and cleanup failures remain immutable. No gate closes.

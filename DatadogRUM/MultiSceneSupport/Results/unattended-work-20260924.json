@@ -15,7 +15,7 @@
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
   "human_work": "UNADMITTED_WHILE_OPERATOR_SLEEPS",
-  "checkpoint": "09606da39cd530bbf241600c8f4578e5e0a8d519",
+  "checkpoint": "2b3fcf9a02009f3c47a04de043a90c08e22e0329",
   "tasks": [
     {
       "id": "capture-backend",
@@ -30,15 +30,15 @@
       "dependency": "Saved EXP223 Home inventories and existing strict join",
       "decisive_test": "Complete offline mapping table and controls reject missing/stale terminal, wrong owners/counts, nonempty omission, late publication and forged request scopes; original run remains INVALID",
       "environment": "Source and saved evidence; no human/native/query retry",
-      "state": "OFFLINE_RUM_FIELDS_CONTRACT_QUALIFIED_RUNTIME_INTEGRATION_OPEN",
+      "state": "PHYSICAL_RUM_FIELDS_RUNNER_PREPARED",
       "result": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-background-finalization-l8w7mbvr/post-home-offline/source-audit/source-contract.json",
         "sha256": "9376249aadf3029c4c9ead2e0e29a0178bb54dcdafacf3f1f110309a018b21e5"
       },
       "remaining": [
-        "Future explicit runner integration and fixed-boundary controls",
-        "Physical TTID witness and terminal backend behavior remain unqualified; original failed Home unchanged",
-        "Human/candidate session unadmitted while operator sleeps"
+        "First planned physical baseline must qualify native/TTID/backend and cleanup together",
+        "No human readiness inferred; supported unattended input requires separate bounded qualification",
+        "Original failed Home and all prior semantic limitations remain unchanged"
       ],
       "next_preparation": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-witness-69uk3guu/definition.json",
@@ -48,10 +48,14 @@
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-witness-69uk3guu/outcome.json",
         "sha256": "902e32e68714ccaaebca624af9898e346ab89af6dd1ed551f68a344a1b88c43b"
       },
-      "next_action": "Review and integrate an explicit physical-runner RUM-fields mode with fixed polling/seal/cleanup boundaries; keep generic/full projection and original failures. No human or native admission tonight.",
+      "next_action": "Preserve reviewed runner and signed products. Assess supported unattended input for the first planned physical baseline; require a bounded worker/idle/cleanup contract and fresh admission. Never infer human readiness or repeat old Home/query runs.",
       "rum_fields_contract": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-rum-gate-contract-v97_b59y/outcome.json",
         "sha256": "0a7b29a82a702c57c923eee0d53cc20e70aeb4dbfba25f7a76b5b18fb1a5cb9d"
+      },
+      "runner": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-rum-runner-2ut0vqty/outcome.json",
+        "sha256": "5c7d181b1077a733c729f2fe95005e9a5e851df03c888969a963bc2f20e54ed0"
       }
     },
     {
@@ -99,5 +103,5 @@
     "No Replay content, unrelated CI flakes, optional networking benchmarks or physical Duo acceptance"
   ],
   "gate_closures": [],
-  "updated_at": 1790293789.1083531
+  "updated_at": 1790294842.818937
 }

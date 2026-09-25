@@ -326,7 +326,7 @@
     }
   ],
   "gate_closures": [],
-  "next_action": "Review and integrate an explicit physical-runner RUM-fields mode with fixed polling/seal/cleanup boundaries; keep generic/full projection and original failures. No human or native admission tonight.",
+  "next_action": "Preserve reviewed runner and signed products. Assess supported unattended input for the first planned physical baseline; require a bounded worker/idle/cleanup contract and fresh admission. Never infer human readiness or repeat old Home/query runs.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
@@ -397,7 +397,7 @@
       "scope": "Fixture/native and local paired oracle only. Full runtime, backend, adaptive geometry and physical execution remain unqualified."
     }
   },
-  "updated_at": 1790293789.106677,
+  "updated_at": 1790294842.8171442,
   "live_environment": {
     "observed_at": "2026-09-23T19:45:47.121281+00:00",
     "xcode": "27.1 (27A9269)",
@@ -2427,7 +2427,7 @@
                   "native_operations": 1,
                   "native_admitted": false,
                   "gate_closures": [],
-                  "next_action": "Review and integrate an explicit physical-runner RUM-fields mode with fixed polling/seal/cleanup boundaries; keep generic/full projection and original failures. No human or native admission tonight.",
+                  "next_action": "Preserve reviewed runner and signed products. Assess supported unattended input for the first planned physical baseline; require a bounded worker/idle/cleanup contract and fresh admission. Never infer human readiness or repeat old Home/query runs.",
                   "runtime_preparation": {
                     "state": "COMPLETE_CAPTURE_PASS_CLEANUP_PASS",
                     "plan": {
@@ -2505,6 +2505,16 @@
                     "native_admitted": false,
                     "gate_closures": [],
                     "next_action": "Review and integrate an explicit physical-runner RUM-fields mode with fixed polling/seal/cleanup boundaries; keep generic/full projection and original failures. No human or native admission tonight."
+                  },
+                  "rum_fields_runner": {
+                    "state": "PHYSICAL_RUM_FIELDS_RUNNER_PREPARED",
+                    "outcome": {
+                      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-rum-runner-2ut0vqty/outcome.json",
+                      "sha256": "5c7d181b1077a733c729f2fe95005e9a5e851df03c888969a963bc2f20e54ed0"
+                    },
+                    "native_admitted": false,
+                    "gate_closures": [],
+                    "next_action": "Preserve reviewed runner and signed products. Assess supported unattended input for the first planned physical baseline; require a bounded worker/idle/cleanup contract and fresh admission. Never infer human readiness or repeat old Home/query runs."
                   }
                 }
               }

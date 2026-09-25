@@ -16,6 +16,7 @@ import physical_io as io
 import physical_ownership as ownership
 import physical_backend as backend
 import physical_release
+import physical_rum_outcomes as rum_outcomes
 import runtime as original
 import installed_code
 from capture_io import atomic, encoded
@@ -66,10 +67,13 @@ def prepare(args):
         require(args.framework=='UIKit' and args.tracking=='automatic' and source.get('background_finalization') is True,
             'finalization qualification requires the reviewed UIKit automatic fixture')
         cells=cells[:1]
+    rum_fields=getattr(args,'rum_fields',False);require(type(rum_fields) is bool,'invalid physical RUM-fields option')
+    scoped=dict(evidence_contract=rum_outcomes.contract.CONTRACT) if rum_fields else {}
+    rum_outcomes.mode(scoped,source)
     root.mkdir();(root/'cells').mkdir();(root/'operator').mkdir();backend.common.transport.preflight(root)
     original.human_operator.publish(root/'operator',dict(instruction='Preparing physical iPad tests. No gesture requested yet.'))
     members=helpers();shared.freeze_helpers(root,members)
-    plan=dict(state='PREPARED_NATIVE_UNADMITTED',definition=scope,cells=cells,build_root=str(build_root),
+    plan=dict(**scoped,state='PREPARED_NATIVE_UNADMITTED',definition=scope,cells=cells,build_root=str(build_root),
         build_plan_sha256=shared.sha(build_root/'plan.json'),signed_plan_sha256=shared.sha(build_root/'signed-qualified/plan.json'),
         udid=signed['udid'],helpers=members,native_seconds=300 if finalization_only else 1800,backend_seconds=600,cleanup_seconds=300,
         pair_seconds=1500 if finalization_only else 5700,device=args.device,native_launches=0,gate_closures=[],
@@ -82,6 +86,7 @@ def verify(root):
     root=Path(root);plan=shared.read(root/'plan.json')
     require(plan['helpers']==helpers()==shared.tree(root/'helpers') and plan['definition']==original.definition(),'physical runtime binding changed')
     source,signed=signed_products(plan['build_root'])
+    rum_outcomes.mode(plan,source)
     require(shared.sha(Path(plan['build_root'])/'signed-qualified/plan.json')==plan['signed_plan_sha256'] and
             shared.sha(Path(plan['build_root'])/'plan.json')==plan['build_plan_sha256'],'physical build binding changed')
     return plan
@@ -115,7 +120,7 @@ def admit(root,key,plan):
     index=order.index(key);require({p.name for p in (root/'cells').iterdir()}==set(order[:index]),'physical cell consumed or out of order')
     if index==0:require(time.time()<admission['first_cell_deadline'],'physical readiness expired')
     else:
-        prior=original.qualification(root,order[0]);visual=shared.read(root/(order[0]+'-visual-state.json'))
+        prior=qualification(root,order[0],plan);visual=shared.read(root/(order[0]+'-visual-state.json'))
         require(visual['state']=='PASS' and visual['summary_sha256']==shared.sha(root/'cells'/order[0]/'summary.json'),'physical Home restoration unreviewed')
         require(0<=time.time()-prior['finished_at']<300,'physical operator continuity expired')
     require(time.time()+plan['native_seconds']+plan['backend_seconds']<=admission['execution_deadline'] and
@@ -165,6 +170,7 @@ def cell(args):
     summary=dict(state='RUNNING',scenario='UNQUALIFIED',evidence='INCOMPLETE',cleanup='NOT_RUN',identity=identity,
         cell=selected,plan_sha256=shared.sha(root/'plan.json'),started_at=started,native_deadline=native,
         execution_deadline=execution,cleanup_deadline=cleanup_deadline)
+    if rum_outcomes.mode(plan) is not None:summary['evidence_contract']=rum_outcomes.mode(plan)
     atomic(out/'summary.json',encoded(summary));remote=io.Device(plan['device'],out/'device');collector=initial=pid=joined=None;owned=False
     def interrupted(number,frame):raise InterruptedError('physical cell interrupted; stop input and preserve evidence')
     previous={sig:signal.signal(sig,interrupted) for sig in [signal.SIGINT,signal.SIGTERM]}
@@ -205,7 +211,7 @@ def cell(args):
             backend_sdk_version=match[0].replace('+','_'),environment='s2-transitions')
         atomic(out/'native-summary.json',encoded(dict(identity=identity,expected=expected,transitions=collector.transition_results,binding=collector.binding)))
         collector.deadline=execution
-        joined=backend.terminal(collector,out,identity,expected,started,execution)
+        joined=backend.terminal(collector,out,identity,expected,started,execution,evidence_contract=rum_outcomes.mode(plan))
         summary.update(evidence='SOURCE_CLASSIFICATION_REQUIRED',backend_join_sha256=shared.sha(out/'backend-joined.json'))
     except Exception as error:summary['reason']=str(error)
     finally:
@@ -223,29 +229,44 @@ def cell(args):
         if (out/'sealed-events.jsonl').exists() and (not (out/'native-preserved.jsonl').exists() or
             shared.sha(out/'sealed-events.jsonl')!=shared.sha(out/'native-preserved.jsonl')):
             summary['evidence']='INCOMPLETE';summary['evidence_errors'].append('physical final preserved stream differs')
-        qualified=original.outcomes.publish_outcome(out,summary,joined)
+        qualified=(rum_outcomes.publish(out,summary,joined,plan) if rum_outcomes.mode(plan) is not None
+                   else original.outcomes.publish_outcome(out,summary,joined))
         for sig,handler in previous.items():signal.signal(sig,handler)
         print(json.dumps({k:summary[k] for k in ['state','scenario','evidence','cleanup']}),flush=True)
     return 0 if qualified else 1
+
+
+def qualification(root,key,plan):
+    return (rum_outcomes.qualification(root,key,plan) if rum_outcomes.mode(plan) is not None
+            else original.qualification(root,key))
+
+
+def qualify(root,key,plan,*,error=None):
+    if rum_outcomes.mode(plan) is not None:return rum_outcomes.qualify(root,key,plan,error=error)
+    import journey_session
+    return journey_session.qualify(root,key,error=error)
 
 
 def compare(root):
     plan=verify(root);require(plan.get('scenario','stack')=='stack' and len(plan['cells'])==2,'Home-only qualification is not a release pair')
     keys=[r['id'] for r in plan['cells']];records=[];inventories=[]
     for key in keys:
-        original.qualification(root,key);folder=root/'cells'/key;record=shared.read(folder/'native-summary.json');records.append(record)
+        qualification(root,key,plan);folder=root/'cells'/key;record=shared.read(folder/'native-summary.json');records.append(record)
         inventories.append(ownership.inventory(original.human_contract.rows((folder/'sealed-events.jsonl').read_bytes(),record['identity']['run_id']),record['identity']))
     callbacks=[{phase:v['ownership'] for phase,v in r['transitions'].items()} for r in records]
     result=dict(state='PAIRED_COMPLETE_CAPTURE_REQUIRES_SOURCE_CLASSIFICATION',
         pattern=ownership.common.paired(*callbacks,tracking=plan['cells'][0]['tracking']),
         inventory=ownership.common.paired_inventory(*inventories,*callbacks,tracking=plan['cells'][0]['tracking'],layout='stack'),
         cells=keys,plan_sha256=shared.sha(root/'plan.json'),release_acceptance=False,gate_closures=[])
+    if rum_outcomes.mode(plan) is not None:
+        result.update(state='RUM_FIELDS_PAIRED_CAPTURE_SOURCE_CLASSIFICATION_REQUIRED',evidence_contract=rum_outcomes.mode(plan))
     atomic(root/'paired.json',encoded(result));return result
 
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('action',choices=['prepare','verify','stage','cell','compare'])
     parser.add_argument('--root',type=Path,required=True);parser.add_argument('--build-root',type=Path)
+    parser.add_argument('--rum-fields',action='store_true')
     parser.add_argument('--finalization-only',action='store_true');parser.add_argument('--device');parser.add_argument('--framework',default='UIKit',choices=['UIKit','SwiftUI'])
     parser.add_argument('--tracking',default='automatic',choices=['automatic','manual']);parser.add_argument('--key')
     parser.add_argument('--preflight',type=Path);parser.add_argument('--operator',type=Path)
