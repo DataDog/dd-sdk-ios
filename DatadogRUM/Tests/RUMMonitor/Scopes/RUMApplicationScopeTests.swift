@@ -154,7 +154,8 @@ class RUMApplicationScopeTests: XCTestCase {
         let currentTime = Date()
         let scope = createRUMApplicationScope(
             dependencies: .mockWith(
-                samplingRate: 100
+                samplingRate: 100,
+                featureFlags: [.viewUpdates: false]
             )
         )
 

@@ -38,6 +38,17 @@ class SessionReplayConfigurationTests: XCTestCase {
         XCTAssertFalse(config.featureFlags[.compositionTreeRecording])
     }
 
+    func testFeatureFlagsSubscriptFallsBackToDefaults() {
+        // When
+        let emptyFlags: SessionReplay.Configuration.FeatureFlags = [:]
+        let overriddenFlags: SessionReplay.Configuration.FeatureFlags = [.swiftui: true]
+
+        // Then
+        XCTAssertFalse(emptyFlags[.swiftui], "should fall back to `.defaults` when not set")
+        XCTAssertTrue(overriddenFlags[.swiftui], "should use the explicitly set value")
+        XCTAssertFalse(emptyFlags[.heatmaps], "should be `false` when the flag has no default")
+    }
+
     func testDefaultConfigurationWithNewApi() {
         // When
         let config = SessionReplay.Configuration(

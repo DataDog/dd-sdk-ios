@@ -292,7 +292,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 rumActionsPredicate: configuration.macOSActionsPredicate,
                 swiftUIRUMViewsPredicate: configuration.swiftUIViewsPredicate
             ),
-            trackScrollAndSwipeActions: configuration.featureFlags[.trackScrollAndSwipeActions, default: true],
+            trackScrollAndSwipeActions: configuration.featureFlags[.trackScrollAndSwipeActions],
             longTaskThreshold: configuration.longTaskThreshold,
             appHangThreshold: configuration.appHangThreshold,
             mainQueue: configuration.mainQueue,
@@ -346,7 +346,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 swiftUIRUMViewsPredicate: configuration.swiftUIViewsPredicate,
                 swiftUIRUMActionsPredicate: configuration.swiftUIActionsPredicate
             ),
-            trackScrollAndSwipeActions: configuration.featureFlags[.trackScrollAndSwipeActions, default: true],
+            trackScrollAndSwipeActions: configuration.featureFlags[.trackScrollAndSwipeActions],
             longTaskThreshold: configuration.longTaskThreshold,
             appHangThreshold: configuration.appHangThreshold,
             mainQueue: configuration.mainQueue,
