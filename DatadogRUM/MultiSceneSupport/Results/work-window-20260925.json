@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
   "state": "ACTIVE",
-  "authority": "User requested caffeinate for 5 hours and resume work",
+  "authority": "Actual user reply Start now; caffeinate 2 hours",
   "started_at": 1790316486.131028,
-  "work_deadline_utc": "2026-09-25T11:08:06Z",
+  "work_deadline_utc": "2026-09-25T12:42:56.993742+00:00",
   "caffeinate": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/awake-window.json",
-    "sha256": "25f740ad6ad8cf6536bc6d1412970857365c4f90aedd954514916a1fff3231d9"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/runtime-uikit/awake-window.json",
+    "sha256": "7176d714d9d1335a060d92a114d415ff40b5a482b1d614f5e93a84d7557a696d"
   },
   "previous_window": "unattended-work-20260924.json",
   "automation": {
@@ -14,7 +14,7 @@
     "id": "rum-unattended-progress",
     "finding": "Update returned Automation does not exist; no replacement was created."
   },
-  "next_task": "Reviewed physical UIKit preparation complete; fresh operator readiness and sufficient authorized window required before baseline admission",
+  "next_task": "Source review of bounded physical background delivery; no unchanged human retry",
   "gate_closures": [],
   "limits": [
     "No expired deadline extension or equivalent stopped-mechanism retry",
@@ -25,7 +25,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": 1790332855.850462,
+  "updated_at": 1790334345.8166049,
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
@@ -36,8 +36,8 @@
   },
   "active_native": false,
   "latest_human_result": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/runtime-uikit/physical-human-outcome.json",
-    "sha256": "981799f061231fde2a9001cf326a5a28321aedfb0bab4751f16a950e166d19c6"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/runtime-uikit/physical-human-outcome.json",
+    "sha256": "2e60998235dbbf010da4d0f2ab75ffb08548b844b18e48bb80a90e50a40e0406"
   },
   "prior_native_setup": {
     "runtime_plan": {
@@ -84,9 +84,21 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/runtime-uikit/controls.json",
     "sha256": "b9ab5fb6d08b4266fd3d89a4d56485319f568e0099f9ac142e707b6ef1a0a52c"
   },
-  "native_admitted": false,
+  "native_admitted": true,
   "public_pop_correction": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/outcome.json",
     "sha256": "ca7740c91c918777ea8bfb80f1b6e69401cf97295e579b79a2730594547fa46f"
+  },
+  "previous_awake_window": {
+    "work_deadline_utc": "2026-09-25T11:08:06Z",
+    "caffeinate": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/awake-window.json",
+      "sha256": "25f740ad6ad8cf6536bc6d1412970857365c4f90aedd954514916a1fff3231d9"
+    },
+    "authority": "User requested caffeinate for 5 hours and resume work"
+  },
+  "human_admission": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/runtime-uikit/native-admission.json",
+    "sha256": "a2f7af29b456373d7d1aab25757be42f232a2dbbeac4db8d733fe6199ac4975a"
   }
 }

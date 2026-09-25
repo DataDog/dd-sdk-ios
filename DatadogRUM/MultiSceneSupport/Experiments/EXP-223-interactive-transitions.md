@@ -531,3 +531,16 @@ designated review passes. Only the physical observer and fixture fingerprints
 changed in the clients; SDK source is unchanged. The owner binds the fresh reviewed
 UIKit pair. It is unadmitted pending current operator/device/backend readiness and
 a sufficient work window. This preparation closes no behavioral gate.
+
+The corrected physical baseline subsequently captured all11 inputs, all four callback
+chains and Home. Both pop chains used the prearmed edge recognizer; the content
+inventory was present without an exercised native content-pan callback. The backend
+aggregate stayed at20 against the21-record minimum. One separate exact-scope query
+before the original deadline found9 views,9 actions,1 Session and1 TTID vital;
+the final return-home action and Home view were missing. It is diagnostic only and
+does not replace acceptance. The original600-second backend boundary expired;
+overall INVALID, scenario PASS, evidence INCOMPLETE, cleanup PASS, candidate UNRUN.
+Actual release acknowledgement, native idle, removal, visual Home and host quiescence
+are bound by the owner. Source review now addresses the short fixture background
+lease and ordinary upload scheduling. Session expiry is not the missing prerequisite;
+no SDK regression or release-gate closure is established.

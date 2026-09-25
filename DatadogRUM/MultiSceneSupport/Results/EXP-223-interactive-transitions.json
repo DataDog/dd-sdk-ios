@@ -7,7 +7,7 @@
     "S2:H13",
     "S2:H14"
   ],
-  "status": "PHYSICAL_POP_CORRECTION_REVIEWED_NATIVE_UNADMITTED",
+  "status": "HUMAN_SCENARIO_PASS_BACKEND_INCOMPLETE_CLEANUP_PASS",
   "defined_at": "2026-09-22T23:17:07.076784+00:00",
   "owner": "SDK implementer + device operator",
   "reviewer": "/root/c06_runtime_plan",
@@ -326,7 +326,7 @@
     }
   ],
   "gate_closures": [],
-  "next_action": "Obtain fresh human readiness and a sufficient authorized work window for the reviewed physical UIKit pair, then refresh device/Home/Xcode/backend observations and admit the baseline once. Candidate remains conditional on baseline qualification. Preserve the earlier completed scenario and later pop timeout, original cleanup PASS, zero backend queries and unrun candidate; no unchanged retry or retroactive acceptance.",
+  "next_action": "Review the fixture background lifetime and source-backed postcritical upload capture before another human admission. The repaired baseline captured all11 inputs/four callbacks/Home, but final return-home action/Home view were absent from a before-deadline diagnostic inventory. Session exists; expiry is not required. Original600s backend timeout and cleanup PASS remain immutable; candidate UNRUN. Do not retry unchanged gestures.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
@@ -397,7 +397,7 @@
       "scope": "Fixture/native and local paired oracle only. Full runtime, backend, adaptive geometry and physical execution remain unqualified."
     }
   },
-  "updated_at": 1790332855.848615,
+  "updated_at": 1790334345.813706,
   "live_environment": {
     "observed_at": "2026-09-23T19:45:47.121281+00:00",
     "xcode": "27.1 (27A9269)",
@@ -2538,7 +2538,7 @@
       }
     }
   },
-  "state": "PHYSICAL_POP_CORRECTION_REVIEWED_NATIVE_UNADMITTED",
+  "state": "HUMAN_SCENARIO_PASS_BACKEND_INCOMPLETE_CLEANUP_PASS",
   "physical_cost_mapping": {
     "state": "BASELINE_FINALIZATION_INVALID",
     "artifacts": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-ipad-cost-mapping-pddjbmwg",
@@ -2761,7 +2761,7 @@
     "gate_closures": []
   },
   "current_human_runtime": {
-    "state": "PREPARED_REVIEWED_NATIVE_UNADMITTED",
+    "state": "STOPPED_BACKEND_INCOMPLETE_CLEANUP_PASS",
     "plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/runtime-uikit/plan.json",
       "sha256": "db8c07b690f437915d64056d4765a78bf7a0c7d47d25f0a495bdee5eff3fbf09"
@@ -2775,12 +2775,29 @@
       "sha256": "e8eff65fa3a2e207e3671f3ad2de57861db2c9b6e51df9b7feb5fa0606256ec0"
     },
     "input_mode": "human",
-    "native_admitted": false,
+    "native_admitted": true,
     "active_native": false,
     "gate_closures": [],
     "changed_prerequisite": "Public edge/content pop observer inventory and same-request destination status",
-    "candidate": "CONDITIONAL_UNRUN",
-    "pair_seconds": 5700
+    "candidate": "UNRUN",
+    "pair_seconds": 5700,
+    "admission": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/runtime-uikit/native-admission.json",
+      "sha256": "a2f7af29b456373d7d1aab25757be42f232a2dbbeac4db8d733fe6199ac4975a"
+    },
+    "preflight": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/runtime-uikit/human-preflight.json",
+      "sha256": "15c4d6150a78eb6fe9e19cc5176c3a790b5c8a28e321733be66aaf7a4fa76f50"
+    },
+    "operator": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/runtime-uikit/operator-ready.json",
+      "sha256": "0cb33aa5102b3e883fa57c4dc2587744e40c8159749212bdbdeb06aa211102f6"
+    },
+    "outcome": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/runtime-uikit/physical-human-outcome.json",
+      "sha256": "2e60998235dbbf010da4d0f2ab75ffb08548b844b18e48bb80a90e50a40e0406"
+    },
+    "run_id": "d0f910bb-f505-49e5-8bea-21d9ed1b8bd5"
   },
   "physical_human_capture_result": {
     "state": "HUMAN_BASELINE_SCENARIO_PASS_CAPTURE_INCOMPLETE",
@@ -2830,7 +2847,7 @@
     "sdk_change": false
   },
   "physical_pop_capture_correction": {
-    "state": "REVIEWED_PREPARATION_NATIVE_UNADMITTED",
+    "state": "NATIVE_CALLBACKS_CAPTURED_BACKEND_INCOMPLETE",
     "scope": [
       "Physical-only observer coverage for both documented public pop recognizers, with iOS26 availability guard and older edge fallback",
       "Informative host status after an observed navigation without the required callback; no synthetic completion or early cleanup"
@@ -2845,13 +2862,17 @@
       "Status-only handling never supplies a missing callback or relaxes the existing deadline/release fence"
     ],
     "required_environment": "Focused offline controls and compiler validation, designated scoped review, then one separately prepared baseline qualification; candidate remains conditional",
-    "native_admitted": false,
+    "native_admitted": true,
     "gate_closures": [],
     "outcome": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/outcome.json",
       "sha256": "ca7740c91c918777ea8bfb80f1b6e69401cf97295e579b79a2730594547fa46f"
     },
-    "focused_tests": 36
+    "focused_tests": 36,
+    "native_outcome": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/runtime-uikit/physical-human-outcome.json",
+      "sha256": "2e60998235dbbf010da4d0f2ab75ffb08548b844b18e48bb80a90e50a40e0406"
+    }
   },
   "physical_pop_capture_result": {
     "state": "STOPPED_CAPTURE_INCOMPLETE_CLEANUP_PASS",

@@ -98,9 +98,10 @@ human baseline completed every gesture and Home; cleanup passed. Action represen
 mismatches stopped backend collection. Their narrow projection correction passes
 offline controls/review, but the saved terminal Home revision remains incomplete.
 A same-binary follow-up navigated correctly but missed its pop callback chain; cleanup
-passed before any backend query. The physical-only public recognizer correction is
-reviewed and built; native qualification remains. The candidate is unrun and
-physical/backend acceptance stays open.
+passed before any backend query. The physical-only public recognizer correction captures all four callback
+chains in a subsequent baseline. Its final action/view did not reach the bounded
+backend inventory; cleanup passed. Delivery preparation remains, candidate is unrun
+and physical/backend acceptance stays open.
 
 ## Immediate compatibility priority
 
