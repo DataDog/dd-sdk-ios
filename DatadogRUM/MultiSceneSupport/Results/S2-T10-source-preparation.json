@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "work_item": "S2:T10 finite native/WebView preparation",
-  "status": "BASELINE_BEHAVIOR_AND_SEPARATE_BACKEND_QUALIFIED_CANDIDATE_UNRUN",
-  "updated_at": "2026-09-25T13:14:06.366049+00:00",
+  "status": "CANDIDATE_STOPPED_POST_BEHAVIOR_PHASE_BUDGET_BACKEND_UNQUALIFIED",
+  "updated_at": "2026-09-25T13:42:01.546564+00:00",
   "owner": "SDK implementer",
   "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
   "candidate": "c9faed816a1d4828d7d8c4b64acae01119425889",
@@ -360,7 +360,7 @@
     }
   },
   "candidate_continuation": {
-    "state": "REVIEWED_NATIVE_NOT_YET_ADMITTED",
+    "state": "STOPPED_INVALID_CLEANUP_PASS",
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-candidate-reu8eou8/run",
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-candidate-reu8eou8/definition.json",
@@ -374,7 +374,7 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-candidate-reu8eou8/run/controls.json",
       "sha256": "2f10aab8afada61b2fb6ab131aaba53a69aa5076a5a66de87b47ad761e918515"
     },
-    "native_launches": 0,
+    "native_launches": 1,
     "additional_builds": 0,
     "baseline_repeats": 0,
     "scope": "Append-only candidate root; original baseline artifacts untouched; same compiled fixture and exact native/backend ownership oracle; fresh per-cell deadlines independent of awake duration",
@@ -383,6 +383,66 @@
     "review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-candidate-reu8eou8/run/review.json",
       "sha256": "2f501658682d85dbff501f128787afd7239bd1de37b5e5632f85e5ce29fe1581"
+    },
+    "admission": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-candidate-reu8eou8/run/admission.json",
+      "sha256": "c86492e5a23cb5502e6068d611ca3b5e45323b259f882968a9e69f72a7efcb24"
+    },
+    "preflight": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-candidate-reu8eou8/run/preflight.json",
+      "sha256": "9d257310f7a911ec752634cc4e3d60c0360a5380f02c824adc52de60d91fddbc"
+    },
+    "summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-candidate-reu8eou8/run/cells/B/summary.json",
+      "sha256": "956afe087d7e57ca9b8288341b8cf8b31452ea3f1dbafa0cf6adc6dd8b0cd99c"
+    },
+    "native_evidence": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-candidate-reu8eou8/run/cells/B/evidence.json",
+      "sha256": "1a9e3f32aaee2764751262e7e16d6617964e9b9d4e74d838bcc788bb5342f7c0"
+    },
+    "verdicts": {
+      "state": "INVALID",
+      "scenario": "UNQUALIFIED",
+      "evidence": "INCOMPLETE",
+      "cleanup": "PASS"
+    },
+    "failure": {
+      "host_reason": "invalid terminal identity/state",
+      "native_reason": "invalid(\"phase-budget\")",
+      "cause": "Host marker_backend300 exceeds unchanged compiled WebSettings.phaseBudget backend-marker maximum180. Failure occurs after behavior-complete and before issuing backend exchange.",
+      "attribution": "Harness argument incompatibility; no SDK regression established",
+      "native_retries": 0,
+      "remaining": "Assess saved source-bound behavior and complete backend inventory before another native admission."
+    },
+    "saved_backend": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-saved-candidate-l2avkvgf/summary.json",
+      "sha256": "cf0a3f03131019c6a02b8d7eb744d70ac6259c62cb2aaf81860bdd798aeacbd4"
     }
+  },
+  "candidate_budget_repair": {
+    "state": "REVIEWED_NATIVE_NOT_YET_ADMITTED",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-budget-repair-k1qct79c/run",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-budget-repair-k1qct79c/definition.json",
+      "sha256": "3bcc291a79db335329d09e9e9376a655cbdb92e4f0cba49222ccd0c5060ac3e3"
+    },
+    "plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-budget-repair-k1qct79c/run/plan.json",
+      "sha256": "cd8d953ee5f902cee94282731e84cb7c818386bb12ac57376361aebc1d1b8728"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-budget-repair-k1qct79c/run/controls.json",
+      "sha256": "024438306b9a1a383b9f8894cc9d5f173eab363a94d8bc3459bbd06e9be45924"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-budget-repair-k1qct79c/run/review.json",
+      "sha256": "3873b20d3107bce7d396725ebe7d977f664187daaf0a0e1769ace191084a245c"
+    },
+    "unit_tests": 17,
+    "captured_negative_controls": 8,
+    "native_launches": 0,
+    "additional_builds": 0,
+    "baseline_repeats": 0,
+    "remaining": "Fresh native preflight and one corrected B. If it fails, no equivalent retry is admitted."
   }
 }

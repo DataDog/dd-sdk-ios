@@ -476,5 +476,23 @@
     "contract": "release-gates.json: releases.S2.acceptance_contract/execution_packages",
     "effect": "Prospective S2 execution scope supersedes broader remaining-matrix and whole-payload prerequisites. Original definitions, admissions, attempts and verdicts remain unchanged. No native admission or gate closure.",
     "next": "Assess reusable actual observations against the scoped gate before any new native run; bind amended runner expectations and focused controls first."
+  },
+  "scoped_smoke_preparation": {
+    "state": "DESIGN_REVIEWED_IMPLEMENTATION_REQUIRED",
+    "at": "2026-09-25T13:41:17.059030+00:00",
+    "reviewer": "/root/c06_runtime_plan",
+    "contract": "release-gates.json: releases.S2.acceptance_contract/execution_packages.app",
+    "mode": "New explicit smoke mode; retain the old J01-J04 contract and original results",
+    "required_changes": [
+      "One normal login/service/detail/Back/dashboard journey and one actual same-process background/foreground cycle",
+      "Remove the duplicate181-second cache interval and extra Home/terminal drain steps from this mode; dedicated T10 owns adversarial expiry",
+      "Freeze a writer-backed behavior prefix; ordinary foreground delivery may append a separately classified tail without changing that prefix",
+      "Use a source-bound named semantic manifest for views/actions/resources/browser identity and actual control effect; preserve raw incidental fields and reducer rows separately",
+      "Bind full baseline mechanism evidence, source/build/helpers/mode/cutoff and cleanup before candidate admission"
+    ],
+    "product_reuse": "Existing two capture products remain reusable only after exact source/fixture/compiler/full-product revalidation; no fixture change is proposed",
+    "native_launches": 0,
+    "gate_closures": [],
+    "remaining_prerequisite": "Native account and frozen Browser control readiness still require fresh qualification in the first planned baseline"
   }
 }

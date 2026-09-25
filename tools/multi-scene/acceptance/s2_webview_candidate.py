@@ -2,6 +2,8 @@
 """Candidate-only S2 WebView continuation; consumed baseline artifacts stay read-only."""
 import argparse
 import json
+import math
+import re
 from pathlib import Path
 import time
 from acceptance_common import require
@@ -13,7 +15,7 @@ import s2_webview_session as oracle
 
 KIND='S2_WEBVIEW_CANDIDATE_CONTINUATION'
 REVIEWER='/root/c06_runtime_plan'
-BUDGETS={'native':900,'marker_backend':300,'human_fold':300,'backend':300,'cleanup':120}
+BUDGETS={'native':900,'marker_backend':180,'human_fold':300,'backend':300,'cleanup':120}
 HELPERS=list(dict.fromkeys(builds.HELPERS+[str(Path(__file__).relative_to(shared.REPO))]))
 
 
@@ -94,16 +96,81 @@ def baseline_qualification(original, backend, plan):
             'backend_review':reference(backend/'review.json'),'backend':qualified}
 
 
+
+def native_budget_contract(client, budgets):
+    """Validate launch arguments against the exact source already compiled into the app."""
+    path=Path(client)/'App.swift';source=path.read_text()
+    native=re.findall(r'budgetSeconds <= ([0-9_]+)',source)
+    phases=re.findall(r'let maximum: Double = kind == "human-fold" \? ([0-9]+) : ([0-9]+)',source)
+    require(len(native)==1 and len(phases)==1,'compiled native budget limits not identified')
+    limits={'native':int(native[0].replace('_','')),'human_fold':int(phases[0][0]),'marker_backend':int(phases[0][1])}
+    for name,maximum in limits.items():
+        value=budgets.get(name)
+        require(type(value) in (int,float) and math.isfinite(value) and 0<value<=maximum,'launch budget exceeds compiled fixture: '+name)
+    return {'source':reference(path),'maximum_seconds':limits,'launch_seconds':{name:budgets[name] for name in limits}}
+
+
+def stopped_budget_attempt(previous, original, baseline):
+    """Only the preserved 300-versus-180 mismatch permits this one host correction."""
+    previous=Path(previous);out=previous/'cells/B';plan=shared.read(previous/'plan.json')
+    legacy=dict(BUDGETS,marker_backend=300)
+    require(plan['kind']==KIND and plan['original']==str(original) and plan['budgets']==legacy
+            and plan['baseline']==baseline,'not the original stopped budget attempt')
+    bound(plan['original_plan'],original/'plan.json');bound(plan['candidate_build'],original/'B/build-result.json')
+    require(shared.tree(previous/'helpers')==plan['helpers'],'stopped helper snapshot changed')
+    summary=shared.read(out/'summary.json')
+    require(all(summary.get(k)==v for k,v in {'state':'INVALID','scenario':'UNQUALIFIED','evidence':'INCOMPLETE','cleanup':'PASS',
+            'reason':'invalid terminal identity/state'}.items()) and summary['plan_sha256']==shared.sha(previous/'plan.json'),
+            'different stopped candidate outcome')
+    require(all(shared.sha(out/name)==value for name,value in summary['artifacts'].items()),'stopped artifacts changed')
+    admission=bound(summary['admission'],previous/'admission.json')
+    require(admission['budgets']==legacy and admission['identity']==summary['identity']
+            and admission['candidate_build']==plan['candidate_build'] and admission['baseline']==baseline,'stopped admission changed')
+    review=shared.read(previous/'review.json');controls=shared.read(previous/'controls.json')
+    require(review['state']=='PASS' and review['reviewer']==REVIEWER and review['plan_sha256']==shared.sha(previous/'plan.json')
+            and admission['review_sha256']==shared.sha(previous/'review.json') and review['controls_sha256']==shared.sha(previous/'controls.json')
+            and controls['state']=='PASS' and controls['helpers']==plan['helpers'],'stopped review changed')
+    identity=summary['identity'];frozen=shared.read(original/'plan.json')
+    require(identity['source']==shared.ARMS['B'] and identity['fixture']==frozen['arms']['B']['fixture']
+            and summary['build_sha256']==shared.sha(original/'B/build-result.json'),'stopped source/product differs')
+    document=shared.read(out/'evidence.json');terminal=shared.read(out/'native-terminal.json');records=document['records']
+    require(terminal['state']=='INVALID' and terminal['identity']==identity and document['identity']==identity
+            and terminal['evidence_sha256']==shared.sha(out/'evidence.json') and document['persistence_failure'] is False
+            and document['closed_sequence']==document['durable_sequence']==terminal['closed_sequence']==len(records),
+            'stopped native seal differs')
+    require([r['sequence'] for r in records]==list(range(1,len(records)+1))
+            and records[-3]['kind']=='behavior-complete' and records[-2]['kind']=='failure'
+            and records[-2]['reason']=='invalid("phase-budget")' and records[-1]['kind']=='terminal'
+            and records[-1]['state']=='INVALID' and not any(r['kind'] in ['failure','host-request-issued'] for r in records[:-2]),
+            'failure is not the post-behavior budget mismatch')
+    argv=shared.read(out/'launch.json')['argv']
+    require(argv.count('--marker-budget-seconds')==1 and argv[argv.index('--marker-budget-seconds')+1]=='300',
+            'wrong stopped launch argument')
+    claim=original.with_name(original.name+'-candidate-claim.json');claimed=shared.read(claim)
+    require(claimed['root']==str(previous) and claimed['plan_sha256']==shared.sha(previous/'plan.json')
+            and claimed['admission_sha256']==shared.sha(previous/'admission.json') and claimed['identity']==identity,
+            'stopped candidate claim differs')
+    require(summary['cleanup_details']['finished_at']<summary['cleanup_details']['deadline']<=summary['cleanup_deadline']
+            and not summary['cleanup_details']['errors'],'stopped cleanup incomplete or late')
+    return {'root':str(previous),'inputs':shared.tree(previous),'summary':reference(out/'summary.json'),'claim':reference(claim),'identity':identity}
+
+
 def prepare(args):
     root=args.root.resolve();original=args.original.resolve();backend=args.backend.resolve()
     require(not root.exists(),'continuation output already exists')
     require(not (original/'cells/B').exists() and not (original/'admissions/B.json').exists(),'candidate already consumed')
     plan=verify_original(original);baseline=baseline_qualification(original,backend,plan)
+    previous=getattr(args,'previous_candidate',None)
+    repair=stopped_budget_attempt(previous.resolve(),original,baseline) if previous else None
+    claim=original.with_name(original.name+('-candidate-budget-repair-claim.json' if repair else '-candidate-claim.json'))
+    require(not claim.exists(),'candidate attempt already consumed')
+    native_limits=native_budget_contract(original/'B/client',BUDGETS)
     root.mkdir(parents=True);(root/'cells').mkdir()
     value={'schema_version':1,'kind':KIND,'arm':'B','scenario':'navigation-ttl','created_at':time.time(),'original':str(original),'backend':str(backend),
            'original_inputs':original_inputs(original,backend),'original_plan':reference(original/'plan.json'),'baseline':baseline,
            'candidate_build':reference(original/'B/build-result.json'),'protected':shared.protected(),'budgets':BUDGETS,
-           'helpers':{name:shared.sha(shared.REPO/name) for name in HELPERS},'additional_builds':0,'additional_baselines':0}
+           'helpers':{name:shared.sha(shared.REPO/name) for name in HELPERS},'additional_builds':0,'additional_baselines':0,
+           'native_budget_contract':native_limits,'budget_repair':repair}
     shared.freeze_helpers(root,value['helpers']);shared.save(root/'plan.json',value,exclusive=True)
     verify(root)
     print(json.dumps({'state':'CANDIDATE_PREPARED','root':str(root),'plan_sha256':shared.sha(root/'plan.json'),'native_launches':0}),flush=True)
@@ -119,6 +186,10 @@ def verify(root):
     original_plan=verify_original(original)
     require(baseline_qualification(original,backend,original_plan)==plan['baseline'],'baseline qualification changed')
     bound(plan['original_plan'],original/'plan.json');bound(plan['candidate_build'],original/'B/build-result.json')
+    require(not (original/'cells/B').exists() and not (original/'admissions/B.json').exists(),'candidate consumed in original root')
+    require(native_budget_contract(original/'B/client',plan['budgets'])==plan['native_budget_contract'],'compiled budget contract changed')
+    if plan.get('budget_repair'):
+        require(stopped_budget_attempt(Path(plan['budget_repair']['root']),original,plan['baseline'])==plan['budget_repair'],'stopped budget evidence changed')
     return plan
 
 
@@ -134,11 +205,13 @@ def admission(root, plan, device):
     identity=value['identity'];prior=plan['baseline']['identity']
     for key in ['run_id','nonce']:
         oracle.identifier(identity[key]);require(identity[key]!=prior[key],'reused baseline identity')
+        if plan.get('budget_repair'):require(identity[key]!=plan['budget_repair']['identity'][key],'reused stopped candidate identity')
     frozen=shared.read(Path(plan['original'])/'plan.json')
     require(identity==dict(run_id=identity['run_id'],nonce=identity['nonce'],arm='B',source=shared.ARMS['B'],fixture=frozen['arms']['B']['fixture']), 'candidate identity differs')
     native=value['issued_at']+BUDGETS['native'];execution=native+BUDGETS['backend'];cleanup=execution+BUDGETS['cleanup']
     require(value['native_deadline']==native and value['execution_deadline']==execution and value['cleanup_deadline']==cleanup and now<native,'candidate deadlines changed')
     ready=bound(value['preflight'])
+    require(Path(value['preflight']['path']).parent==root,'preflight outside candidate root')
     require(ready['state']=='PASS' and ready['device']==device and ready['plan_sha256']==shared.sha(root/'plan.json')
             and 0<=value['issued_at']-ready['at']<=300,'candidate preflight foreign/stale')
     return value
@@ -165,7 +238,8 @@ def verify_transport(out):
 
 def claim_candidate(root, plan, value):
     """One candidate attempt across fresh continuation directories; outside consumed evidence."""
-    original=Path(plan['original']);path=original.with_name(original.name+'-candidate-claim.json')
+    original=Path(plan['original']);suffix='-candidate-budget-repair-claim.json' if plan.get('budget_repair') else '-candidate-claim.json'
+    path=original.with_name(original.name+suffix)
     shared.save(path,{'kind':KIND,'arm':'B','root':str(root),'plan_sha256':shared.sha(root/'plan.json'),
                       'admission_sha256':shared.sha(root/'admission.json'),'identity':value['identity'],'at':time.time()},exclusive=True)
     return path
@@ -184,7 +258,7 @@ def cell(args):
 
 def main():
     parser=argparse.ArgumentParser();sub=parser.add_subparsers(dest='stage',required=True)
-    p=sub.add_parser('prepare');p.add_argument('--root',type=Path,required=True);p.add_argument('--original',type=Path,required=True);p.add_argument('--backend',type=Path,required=True)
+    p=sub.add_parser('prepare');p.add_argument('--root',type=Path,required=True);p.add_argument('--original',type=Path,required=True);p.add_argument('--backend',type=Path,required=True);p.add_argument('--previous-candidate',type=Path)
     p=sub.add_parser('cell');p.add_argument('--root',type=Path,required=True);p.add_argument('--arm',choices=['B'],required=True);p.add_argument('--device',required=True)
     p=sub.add_parser('verify');p.add_argument('--root',type=Path,required=True)
     args=parser.parse_args()

@@ -14,7 +14,7 @@
     "id": "rum-unattended-progress",
     "finding": "Update returned Automation does not exist; no replacement was created."
   },
-  "next_task": "Bind separately qualified WebView baseline into reviewed candidate-only admission and post-behavior backend collection. Continue preparation and executable work under standing authorization; check actual native readiness without renewing old receipts.",
+  "next_task": "Admit the reviewed corrected T10 candidate after fresh preflight. Marker budget180 matches the compiled fixture; full inventory300. Original INVALID and successful cleanup remain immutable.",
   "gate_closures": [
     "S2:H16"
   ],
@@ -27,7 +27,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": "2026-09-25T12:43:44.248636+00:00",
+  "updated_at": "2026-09-25T13:42:01.546564+00:00",
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
@@ -120,5 +120,33 @@
     "previous_inferred_work_deadline_utc": "2026-09-25T12:42:56.993742+00:00",
     "finding": "The two-hour caffeinate authorization was incorrectly treated as a stop-work deadline. It limits the awake assertion only.",
     "limits": "Original native, backend, cleanup and admission deadlines are immutable; new work requires its own finite admission and actual environment readiness."
+  },
+  "s2_webview_candidate": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-candidate-reu8eou8/run",
+    "admission": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-candidate-reu8eou8/run/admission.json",
+      "sha256": "c86492e5a23cb5502e6068d611ca3b5e45323b259f882968a9e69f72a7efcb24"
+    },
+    "state": "STOPPED_INVALID_CLEANUP_PASS",
+    "summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-candidate-reu8eou8/run/cells/B/summary.json",
+      "sha256": "956afe087d7e57ca9b8288341b8cf8b31452ea3f1dbafa0cf6adc6dd8b0cd99c"
+    }
+  },
+  "s2_webview_budget_repair": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-budget-repair-k1qct79c/run",
+    "plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-budget-repair-k1qct79c/run/plan.json",
+      "sha256": "cd8d953ee5f902cee94282731e84cb7c818386bb12ac57376361aebc1d1b8728"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-budget-repair-k1qct79c/run/review.json",
+      "sha256": "3873b20d3107bce7d396725ebe7d977f664187daaf0a0e1769ace191084a245c"
+    },
+    "state": "REVIEWED_NATIVE_NOT_YET_ADMITTED"
+  },
+  "local_signing_fallback": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-budget-repair-k1qct79c/signing-fallback.json",
+    "sha256": "855e6e8717b2f42086f612d1915bb2e829493f6e1b66a333be75bc7d4f31f55e"
   }
 }

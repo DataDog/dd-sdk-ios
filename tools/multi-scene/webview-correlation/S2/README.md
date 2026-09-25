@@ -65,3 +65,11 @@ sibling claim prevents a second B launch through another output directory. This
 path uses the shared native executor, marker/session oracle and task-only cleanup;
 no baseline rerun or fixture rebuild is needed. Tool response and persistence clocks
 are checked against each newly admitted deadline. Caffeinate expiry is independent.
+
+Before admission, the candidate runner reads budget limits from the exact archived
+fixture source and checks every native launch argument against them. Host collection
+budgets do not raise a compiled native limit. An incompatible budget stops before
+installation. The one budget-repair continuation requires `--previous-candidate`
+pointing to the preserved post-behavior budget rejection, its original claim and
+complete cleanup. It uses a separate exclusive claim, fresh identity and fixed
+clocks; it cannot chain another corrected attempt or alter the old verdict.

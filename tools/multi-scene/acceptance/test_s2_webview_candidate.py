@@ -65,6 +65,42 @@ class CandidateAdmissionControls(unittest.TestCase):
         self.assertFalse((self.original/'candidate-claim.json').exists())
 
 
+    def test_corrected_attempt_cannot_reuse_stopped_candidate_identity(self):
+        self.plan['budget_repair']={'identity':copy.deepcopy(self.value['identity'])}
+        with self.assertRaises(Rejected):self.check()
+    def test_corrected_attempt_has_exactly_one_separate_claim(self):
+        self.check();original=c.claim_candidate(self.root,self.plan,self.value);before=original.read_bytes()
+        self.plan['budget_repair']={'identity':self.baseline['identity']}
+        correction=c.claim_candidate(self.root,self.plan,self.value)
+        self.assertNotEqual(correction,original)
+        with self.assertRaises(FileExistsError):c.claim_candidate(self.root,self.plan,self.value)
+        self.assertEqual(original.read_bytes(),before)
+    def test_foreign_preflight_path_is_rejected_even_if_fields_match(self):
+        folder=self.root/'foreign';folder.mkdir();path=folder/'ready.json';path.write_bytes((self.root/'ready.json').read_bytes())
+        self.value['preflight']=c.reference(path)
+        with self.assertRaises(Rejected):self.check()
+
+
+class NativeBudgetControls(unittest.TestCase):
+    def setUp(self):
+        self.client=c.shared.REPO/'tools/multi-scene/webview-correlation/S2'
+    def test_current_arguments_fit_actual_fixture_source(self):
+        result=c.native_budget_contract(self.client,c.BUDGETS)
+        self.assertEqual(result['maximum_seconds'],{'native':1800,'human_fold':300,'marker_backend':180})
+    def test_previous_300_second_marker_failure_is_rejected_before_launch(self):
+        with self.assertRaisesRegex(Rejected,'marker_backend'):
+            c.native_budget_contract(self.client,dict(c.BUDGETS,marker_backend=300))
+    def test_nonfinite_nonpositive_and_excessive_native_arguments_are_rejected(self):
+        for name in ['native','human_fold','marker_backend']:
+            for bad in [float('inf'),float('nan'),0,-1,True,1801]:
+                with self.subTest(name=name,value=bad),self.assertRaises(Rejected):
+                    c.native_budget_contract(self.client,dict(c.BUDGETS,**{name:bad}))
+    def test_unrecognized_compiled_guard_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path=Path(temp);(path/'App.swift').write_text((self.client/'App.swift').read_text().replace('let maximum: Double','let changedMaximum: Double'))
+            with self.assertRaises(Rejected):c.native_budget_contract(path,c.BUDGETS)
+
+
 class EvidenceReferences(unittest.TestCase):
     def test_foreign_changed_or_symlinked_evidence_is_rejected(self):
         with tempfile.TemporaryDirectory() as temp:
