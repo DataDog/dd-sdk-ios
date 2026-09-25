@@ -7,7 +7,7 @@
     "S2:H13",
     "S2:H14"
   ],
-  "status": "HOME_CHECKPOINT_PASS_BACKEND_AND_CLEANUP_INVALID",
+  "status": "HUMAN_SCENARIO_PASS_BACKEND_INCOMPLETE_CLEANUP_PASS",
   "defined_at": "2026-09-22T23:17:07.076784+00:00",
   "owner": "SDK implementer + device operator",
   "reviewer": "/root/c06_runtime_plan",
@@ -326,7 +326,7 @@
     }
   ],
   "gate_closures": [],
-  "next_action": "Physical supported-input setup is stopped: Xcode rejected the physical device before admission. Preserve its actual failure and worker completion. Use the already-planned human RUM-fields UIKit pair only after current helper-binding review and fresh operator/device readiness; no equivalent physical selector retry.",
+  "next_action": "Preserve the completed physical baseline and cleanup: all11 input steps/four transition chains/Home were captured, but action projection differences stopped backend collection and candidate stayed unrun. The reviewed action-only correction passes57 offline controls; saved terminal Home remains incomplete. Freeze/review a fresh pair with current helpers and fresh operator/device/backend readiness before admission; no old verdict, poll boundary or deadline may be reused.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
@@ -397,7 +397,7 @@
       "scope": "Fixture/native and local paired oracle only. Full runtime, backend, adaptive geometry and physical execution remain unqualified."
     }
   },
-  "updated_at": 1790317544.34579,
+  "updated_at": 1790326005.14183,
   "live_environment": {
     "observed_at": "2026-09-23T19:45:47.121281+00:00",
     "xcode": "27.1 (27A9269)",
@@ -2538,7 +2538,7 @@
       }
     }
   },
-  "state": "PHYSICAL_HOME_FINALIZED_CAPTURE_ACCEPTANCE_BLOCKED",
+  "state": "HUMAN_BASELINE_SCENARIO_PASS_CAPTURE_INCOMPLETE",
   "physical_cost_mapping": {
     "state": "BASELINE_FINALIZATION_INVALID",
     "artifacts": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-ipad-cost-mapping-pddjbmwg",
@@ -2761,22 +2761,57 @@
     "gate_closures": []
   },
   "current_human_runtime": {
-    "state": "REVIEWED_PREPARATION_FRESH_OPERATOR_READINESS_REQUIRED",
+    "state": "REVIEWED_PREPARATION_FRESH_READINESS_REQUIRED",
     "plan": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/plan.json",
-      "sha256": "aed8ac53b4b89720ec59c89f8678a549b373baa883f7f803aced73af1cd21b75"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/runtime-uikit/plan.json",
+      "sha256": "652715d21a101682387971822d32baf3e3ac70de1b9908db249862eb81cff275"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/runtime-uikit/controls.json",
+      "sha256": "e8217dd2d8f3529d8e222e48e644889f64bcd6fa0ac845da7df46478b2abe686"
     },
     "input_mode": "human",
     "signed_products_unchanged": true,
     "native_admitted": false,
     "gate_closures": [],
     "review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/review.json",
-      "sha256": "5609fe7bfc16056cd93430aa90022acaefdb64ef03b889d6028b94312ef2f026"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/runtime-uikit/review.json",
+      "sha256": "c23a69e7cd1527435eb3edf7afe068563d05a0ab45ea2abd3cbd26b5c9010c10"
+    }
+  },
+  "physical_human_capture_result": {
+    "state": "HUMAN_BASELINE_SCENARIO_PASS_CAPTURE_INCOMPLETE",
+    "outcome": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
+      "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
     },
-    "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/controls.json",
-      "sha256": "8a0b442b689de02607388fa209289f98235a08cdba9edd7e0b45a0f629392b46"
+    "original_plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/plan.json",
+      "sha256": "aed8ac53b4b89720ec59c89f8678a549b373baa883f7f803aced73af1cd21b75"
+    },
+    "scenario": "PASS",
+    "evidence": "INCOMPLETE",
+    "cleanup": "PASS",
+    "native_launches": 1,
+    "candidate": "UNRUN",
+    "gate_closures": [],
+    "projection_correction": {
+      "state": "REVIEWED_OFFLINE_CORRECTION",
+      "outcome": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/outcome.json",
+        "sha256": "58e09307850aca4535607bc72c3fb50ac288bc18580f47c0312b0000bdbd4f53"
+      },
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/controls.json",
+        "sha256": "a7fc6e274c6f45de93d1854df26d0e56dd18ad07ba4a5cf2e6bc92e25b26dbdc"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/review.json",
+        "sha256": "904779722079136b2dda96b413f57beb8dc19f07e84b0aca16002671858c0245"
+      },
+      "tests": 57,
+      "original_verdict_unchanged": true,
+      "remaining": "One exact earlier Home view revision; final boundary remains INVALID. No backend requery or native retry was used."
     }
   }
 }

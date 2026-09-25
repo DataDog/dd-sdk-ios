@@ -85,6 +85,11 @@ independent-revision, typed-equal session-reducer and explicit device-enum rules
 leave the runtime join unchanged. Missing flags, changed metadata and stale terminal
 values remain explicit; a classifier result
 cannot authorize a new native cell or rescue the old acceptance verdict.
+Scope projection rules by event family. Actions may classify only an absent
+top-level context submitted as exactly `{}` and the explicit `tablet`/`Tablet`
+device pair. Retain nonempty-context loss, malformed values and all other family
+mismatches. Include complete action inventories in offline controls before human
+admission; Home-only capture cannot exercise those rules.
 
 Generated launch/TTID records precede probe tags. Bind them by unique service and
 actual app/session/view/Vital identities plus a one-use startup exchange; preserve

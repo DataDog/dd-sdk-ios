@@ -40,14 +40,14 @@ def saved_inventory(path):
     return rows
 
 
-def differences(actual, submitted, *, view, path="", reducer=None):
+def differences(actual, submitted, *, view, path="", reducer=None, action=False):
     """Finite source-bound omissions only; retain types, presence and raw values."""
     result = []
     if isinstance(submitted, dict) and isinstance(actual, dict):
         for key, value in submitted.items():
             name = path + key
             if key not in actual:
-                allowed = view and name in EMPTY_VIEW_OBJECTS and type(value) is dict and value == {}
+                allowed = ((view and name in EMPTY_VIEW_OBJECTS) or (action and name == "context")) and type(value) is dict and value == {}
                 change = dict(path=name, disposition="EMPTY_OPTIONAL_OBJECT_OMITTED" if allowed else "UNRESOLVED_OMISSION",
                               submitted=copy.deepcopy(value), actual_present=False)
                 if view and name in SESSION_FIELDS and reducer is not None:
@@ -56,11 +56,11 @@ def differences(actual, submitted, *, view, path="", reducer=None):
                         change.update(disposition="SESSION_REDUCER_MATCHED", reducer_actual=copy.deepcopy(observed))
                 result.append(change)
             else:
-                result.extend(differences(actual[key], value, view=view, path=name + ".", reducer=reducer))
+                result.extend(differences(actual[key], value, view=view, path=name + ".", reducer=reducer, action=action))
     elif type(actual) is not type(submitted) or actual != submitted:
         name = path.rstrip(".")
         revisions = view and name == "_dd.document_version" and type(actual) is int and type(submitted) is int and min(actual, submitted) > 0
-        device = view and name == "device.type" and type(submitted) is str and type(actual) is str and DEVICE_TYPES.get(submitted) == actual
+        device = (view or action) and name == "device.type" and type(submitted) is str and type(actual) is str and DEVICE_TYPES.get(submitted) == actual
         disposition = "INDEPENDENT_REDUCER_REVISION" if revisions else "SOURCE_DEVICE_ENUM" if device else "UNRESOLVED_VALUE"
         result.append(dict(path=name, disposition=disposition,
                            submitted=copy.deepcopy(submitted), actual_present=True, actual=copy.deepcopy(actual)))
@@ -153,7 +153,8 @@ def assess(rows, native_rows, local, expected, *, native_evidence=None):
     for key, row, event in selected:
         submitted = copy.deepcopy(event)
         tags(row, submitted, expected)
-        changes = differences(contract.backend_event(row), submitted, view=key[0] == "view", reducer=reducer)
+        changes = differences(contract.backend_event(row), submitted, view=key[0] == "view",
+                              action=key[0] == "action", reducer=reducer)
         record = dict(event=list(key), raw_id=row["id"], differences=changes)
         if any(c["disposition"] == "SESSION_REDUCER_MATCHED" for c in changes):
             record["session_reducer_raw_id"] = reducers[0]["id"]

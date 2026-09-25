@@ -490,3 +490,21 @@ The automatic physical path is stopped without a selector retry. The already-pla
 human UIKit pair is rebound to current reviewed helpers and unchanged signed products;
 source-binding review passes using explicitly reused control receipts. Fresh
 operator/device readiness still precedes native admission.
+
+The subsequent human UIKit baseline completed all11 input exchanges, four recognized
+transition chains and Home. Both complete backend inventories contained22 rows, but
+collection stopped on10 action `device.type` representations (`tablet`/`Tablet`) and
+six omitted empty action contexts. The captured final Home row was also an exact
+earlier mapper revision. Scenario PASS, evidence INCOMPLETE and overall INVALID stay
+immutable; candidate was unrun. After the actual `Released` reply, native idle and
+same-process cleanup passed within the original deadline. The task app was removed,
+Home was visually verified and both runner and prompt server stopped.
+
+The action-only projection correction classifies the two exact representations;
+it retains raw values and leaves generic joins, nonempty context, other families,
+view reducers, ownership and terminal predicates strict. Two new controls reproduce
+the old failure; all57 focused controls pass after repair and scoped review passes.
+Reassessment of the saved inventories resolves all16 action differences but leaves
+Home PENDING and final-boundary INVALID. No requery, native retry or release claim
+was used. The owner binds original evidence, correction/control/review hashes and
+a fresh pair preparation; new readiness and a separate admission remain required.

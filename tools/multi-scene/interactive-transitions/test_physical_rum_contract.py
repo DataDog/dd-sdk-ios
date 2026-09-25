@@ -161,6 +161,53 @@ class RequiredRUMFields(unittest.TestCase):
         result=self.assess();self.assertEqual(result['state'],'INVALID')
         self.assertIn('device', {c['path'] for c in result['required_failures'][0]['required_differences']})
 
+    def action_projection(self):
+        for row in self.native:
+            if row['kind'] == 'rum' and row['payload']['type'] == 'action':
+                row['payload']['context'] = {}
+                row['payload']['device'] = dict(type='tablet', brightness_level=.5)
+        action = next(r['attributes']['custom'] for r in self.rows if r['attributes']['custom']['type'] == 'action')
+        action.pop('context', None)
+        action['device'] = dict(type='Tablet', brightness_level=.5)
+        return action
+
+    def test_empty_action_context_and_documented_device_value_preserve_actual_rows(self):
+        self.action_projection()
+        before = copy.deepcopy((self.rows, self.native))
+        result = self.assess(pending=False)
+        self.assertEqual(result['state'], 'RUM_FIELDS_QUALIFIED')
+        changes = next(c['differences'] for c in result['full_projection']['comparisons'] if c['event'][0] == 'action')
+        self.assertEqual({(c['path'], c['disposition']) for c in changes},
+                         {('context', 'EMPTY_OPTIONAL_OBJECT_OMITTED'), ('device.type', 'SOURCE_DEVICE_ENUM')})
+        self.assertEqual((self.rows, self.native), before)
+        self.assertFalse(result['runtime_acceptance']); self.assertFalse(result['release_acceptance'])
+        self.assertEqual(result['gate_closures'], [])
+
+    def test_action_projection_cannot_hide_lost_nonempty_context_or_malformed_values(self):
+        original = copy.deepcopy((self.rows, self.native))
+        for mode in ['nonempty-missing', 'null', 'false', 'list', 'brightness', 'device', 'required-context']:
+            self.rows, self.native = copy.deepcopy(original)
+            action = self.action_projection()
+            if mode == 'nonempty-missing':
+                for row in self.native:
+                    if row['kind'] == 'rum' and row['payload']['type'] == 'action':row['payload']['context'] = dict(owner='expected')
+            elif mode in ['null', 'false', 'list']:action['context'] = {'null':None, 'false':False, 'list':[]}[mode]
+            elif mode == 'brightness':action['device']['brightness_level'] = .6
+            elif mode == 'device':action['device']['type'] = 'TABLET'
+            else:
+                for row in self.native:
+                    if row['kind'] == 'rum' and row['payload']['type'] == 'action':row['payload']['action']['context'] = {}
+            with self.subTest(mode=mode):self.assertEqual(self.assess()['state'], 'INVALID')
+
+    def test_action_projection_cannot_qualify_a_pending_terminal_view(self):
+        self.action_projection(); self.earlier_view()
+        result = self.assess()
+        self.assertEqual(result['state'], 'PENDING')
+        self.assertEqual(result['required_failures'], [])
+        self.assertEqual(result['pending'][0]['kind'], 'EXACT_EARLIER_MAPPER_REVISION')
+        final = self.assess(pending=False)
+        self.assertEqual(final['state'], 'INVALID'); self.assertFalse(final['gate_payload_qualified'])
+
     def test_only_source_bound_projection_rules_apply(self):
         self.add_unassessed_replay()
         payload=self.view['attributes']['custom']

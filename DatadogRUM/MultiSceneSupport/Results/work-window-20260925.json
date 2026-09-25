@@ -14,7 +14,7 @@
     "id": "rum-unattended-progress",
     "finding": "Update returned Automation does not exist; no replacement was created."
   },
-  "next_task": "Reviewed human UIKit pair; fresh operator availability and device admission remain",
+  "next_task": "Complete fresh readiness for the reviewed human UIKit pair after the action projection correction; original baseline remains INVALID, cleanup PASS",
   "runtime_plan": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/runtime-uikit/plan.json",
     "sha256": "6befa9e8bf0ec2549702762b1f8cfce0663af345e735204ff4de59109a365e75"
@@ -35,16 +35,25 @@
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
   "human_plan": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/plan.json",
-    "sha256": "aed8ac53b4b89720ec59c89f8678a549b373baa883f7f803aced73af1cd21b75"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/runtime-uikit/plan.json",
+    "sha256": "652715d21a101682387971822d32baf3e3ac70de1b9908db249862eb81cff275"
   },
   "human_review": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/review.json",
-    "sha256": "5609fe7bfc16056cd93430aa90022acaefdb64ef03b889d6028b94312ef2f026"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/runtime-uikit/review.json",
+    "sha256": "c23a69e7cd1527435eb3edf7afe068563d05a0ab45ea2abd3cbd26b5c9010c10"
   },
   "human_controls": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/controls.json",
-    "sha256": "8a0b442b689de02607388fa209289f98235a08cdba9edd7e0b45a0f629392b46"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/runtime-uikit/controls.json",
+    "sha256": "e8217dd2d8f3529d8e222e48e644889f64bcd6fa0ac845da7df46478b2abe686"
   },
-  "updated_at": 1790317544.347692
+  "updated_at": 1790326005.144007,
+  "physical_human_result": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
+    "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
+  },
+  "projection_correction": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/outcome.json",
+    "sha256": "58e09307850aca4535607bc72c3fb50ac288bc18580f47c0312b0000bdbd4f53"
+  },
+  "active_native": false
 }

@@ -166,6 +166,18 @@ class Projection(unittest.TestCase):
                 self.assertEqual(change["disposition"], disposition)
                 self.assertEqual((change["actual"], change["submitted"]), (actual, submitted))
 
+    def test_action_rules_do_not_apply_view_reducer_revision_or_optional_object_rules(self):
+        submitted = {"context": {}, "feature_flags": {}, "session": {"is_active": True},
+                     "_dd": {"document_version": 1, "replay_stats": {}}}
+        actual = {"session": {}, "_dd": {"document_version": 2}}
+        changes = projection.differences(actual, submitted, view=False, action=True,
+                                         reducer={"session": {"is_active": True}})
+        classified = {c["path"] for c in changes if not c["disposition"].startswith("UNRESOLVED")}
+        self.assertEqual(classified, {"context"})
+        for view in [True, False]:
+            changes = projection.differences({}, {"context": {}}, view=view)
+            self.assertEqual(changes[0]["disposition"], "UNRESOLVED_OMISSION")
+
     def test_missing_views_events_reducer_and_wrong_reducer_counts_are_unqualified(self):
         for index in range(len(self.rows)):
             with self.subTest(index=index):

@@ -94,7 +94,10 @@ limit what the snapshot establishes about internal ownership at callback time.
 The cause and candidate behavior remain unproven, and original failures stay intact.
 The physical automatic session cannot select the connected, unlocked iPad; it
 stopped before app admission. This is a tooling limit with no SDK execution. The
-prepared human pair retains the same signed fixture and strict ownership contract.
+human baseline completed every gesture and Home; cleanup passed. Action representation
+mismatches stopped backend collection. Their narrow projection correction passes
+offline controls/review, but the saved terminal Home revision remains incomplete.
+The candidate is unrun and physical/backend acceptance stays open.
 
 ## Immediate compatibility priority
 
