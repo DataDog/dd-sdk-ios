@@ -25,6 +25,11 @@ def evidence(folder, plan, summary):
     require(mode(plan) == contract.CONTRACT and summary.get('evidence_contract') == contract.CONTRACT,
             'physical RUM-fields summary mode differs')
     require(summary['plan_sha256'] == shared.sha(folder.parent.parent/'plan.json'), 'physical plan hash differs')
+    if plan.get('input_mode') is not None:
+        import physical_automatic as automatic
+        automatic.mode(plan)
+        automatic.inputs.worker_quiescence(folder.parent.parent,folder.name,complete=True)
+        automatic.validate_end(folder.parent.parent,folder.name)
     joined = shared.read(folder/'backend-joined.json'); seal = shared.read(folder/'terminal-rejoin.json')
     require(joined.get('state') == JOINED and joined.get('evidence_contract') == contract.CONTRACT
             and seal.get('evidence_contract') == contract.CONTRACT, 'physical RUM-fields evidence mode differs')

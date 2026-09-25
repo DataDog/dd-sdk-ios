@@ -17,6 +17,7 @@ import physical_ownership as ownership
 import physical_backend as backend
 import physical_release
 import physical_rum_outcomes as rum_outcomes
+import physical_automatic as automatic
 import runtime as original
 import installed_code
 from capture_io import atomic, encoded
@@ -34,6 +35,7 @@ def helpers():
             path=Path(name).resolve()
             if path.is_relative_to(HERE.parent) and path.suffix=='.py' and not path.name.startswith('test_'):paths.add(path)
     paths.add(HERE.parent/'app-acceptance/journey_connector.js')
+    paths.add(HERE/'capture_input.js')
     return {str(p.relative_to(shared.REPO)):shared.sha(p) for p in sorted(paths)}
 
 
@@ -70,8 +72,16 @@ def prepare(args):
     rum_fields=getattr(args,'rum_fields',False);require(type(rum_fields) is bool,'invalid physical RUM-fields option')
     scoped=dict(evidence_contract=rum_outcomes.contract.CONTRACT) if rum_fields else {}
     rum_outcomes.mode(scoped,source)
-    root.mkdir();(root/'cells').mkdir();(root/'operator').mkdir();backend.common.transport.preflight(root)
-    original.human_operator.publish(root/'operator',dict(instruction='Preparing physical iPad tests. No gesture requested yet.'))
+    if getattr(args,'automated_input',False):
+        require(not finalization_only and rum_fields and args.framework=='UIKit' and args.tracking=='automatic',
+                'automated input is limited to the planned UIKit automatic RUM-fields pair')
+        scoped.update(input_mode=automatic.MODE)
+    root.mkdir();(root/'cells').mkdir();backend.common.transport.preflight(root)
+    if automatic.mode(scoped):
+        (root/'sessions').mkdir()
+    else:
+        (root/'operator').mkdir()
+        original.human_operator.publish(root/'operator',dict(instruction='Preparing physical iPad tests. No gesture requested yet.'))
     members=helpers();shared.freeze_helpers(root,members)
     plan=dict(**scoped,state='PREPARED_NATIVE_UNADMITTED',definition=scope,cells=cells,build_root=str(build_root),
         build_plan_sha256=shared.sha(build_root/'plan.json'),signed_plan_sha256=shared.sha(build_root/'signed-qualified/plan.json'),
@@ -86,7 +96,7 @@ def verify(root):
     root=Path(root);plan=shared.read(root/'plan.json')
     require(plan['helpers']==helpers()==shared.tree(root/'helpers') and plan['definition']==original.definition(),'physical runtime binding changed')
     source,signed=signed_products(plan['build_root'])
-    rum_outcomes.mode(plan,source)
+    rum_outcomes.mode(plan,source);automatic.mode(plan)
     require(shared.sha(Path(plan['build_root'])/'signed-qualified/plan.json')==plan['signed_plan_sha256'] and
             shared.sha(Path(plan['build_root'])/'plan.json')==plan['build_plan_sha256'],'physical build binding changed')
     return plan
@@ -101,7 +111,9 @@ def reviewed(root):
 
 
 def stage(args):
-    root=args.root.resolve();plan=reviewed(root);now=time.time();preflight=shared.read(args.preflight);operator=shared.read(args.operator)
+    root=args.root.resolve();plan=reviewed(root)
+    require(not automatic.mode(plan),'automated mode requires its own admission; no operator token is accepted')
+    now=time.time();preflight=shared.read(args.preflight);operator=shared.read(args.operator)
     for value in [preflight,operator]:require(value['plan_sha256']==shared.sha(root/'plan.json') and 0<=now-value['at']<300,'stale physical readiness')
     require(preflight['state']=='PASS' and preflight['device']==plan['device'] and operator['kind']=='OPERATOR_READY' and
         operator['user_message_reference'],'missing physical operator prerequisite')
@@ -118,11 +130,12 @@ def admit(root,key,plan):
     require(key in order and admission['plan_sha256']==shared.sha(root/'plan.json') and
             admission['review_sha256']==shared.sha(root/'review.json') and admission['device']==plan['device'],'unbound physical admission')
     index=order.index(key);require({p.name for p in (root/'cells').iterdir()}==set(order[:index]),'physical cell consumed or out of order')
+    if automatic.mode(plan):automatic.admit(root,key,plan,admission)
     if index==0:require(time.time()<admission['first_cell_deadline'],'physical readiness expired')
     else:
         prior=qualification(root,order[0],plan);visual=shared.read(root/(order[0]+'-visual-state.json'))
         require(visual['state']=='PASS' and visual['summary_sha256']==shared.sha(root/'cells'/order[0]/'summary.json'),'physical Home restoration unreviewed')
-        require(0<=time.time()-prior['finished_at']<300,'physical operator continuity expired')
+        if not automatic.mode(plan):require(0<=time.time()-prior['finished_at']<300,'physical operator continuity expired')
     require(time.time()+plan['native_seconds']+plan['backend_seconds']<=admission['execution_deadline'] and
             time.time()+plan['native_seconds']+plan['backend_seconds']+plan['cleanup_seconds']<=admission['cleanup_deadline'],'full physical cell reservation does not fit')
     return plan['cells'][index],admission
@@ -188,13 +201,17 @@ def cell(args):
             '--run-id',identity['run_id'],'--nonce',identity['nonce'],'--layout','stack','--tracking',selected['tracking']], 'launch',native,seconds=60)
         pid=io.returned(launch,plan['device'],'devicectl.device.process.launch')['process']['processIdentifier']
         require(type(pid) is int and pid>0,'physical PID missing');identity['pid']=pid
-        collector=capture.Collector(remote=remote,bundle=bundle,documents=out/'documents',output=out/'input',run=identity['run_id'],pid=pid,
+        collector_type=automatic.Collector if automatic.mode(plan) else capture.Collector
+        collector=collector_type(remote=remote,bundle=bundle,documents=out/'documents',output=out/'input',run=identity['run_id'],pid=pid,
             framework=selected['framework'],deadline=native,budget=original.collector_budget(plan['definition']['budgets_seconds']),
             require_finalization=source.get('background_finalization',False))
         ready=min(native,time.time()+60);receipt=collector.wait(lambda:collector.download(identity['run_id']+'.installed-code.json',ready,optional=True),ready)
         verified=installed_code.validate(json.loads(receipt),item['path'],identity['run_id'],identity['source'],pid)
         atomic(out/'installed-code-verified.json',encoded(verified))
         collector.snapshot('process-source-binding',native);ownership.launch_identity(collector.evidence,identity)
+        if automatic.mode(plan):
+            atomic(out/'summary.json',encoded(summary),exclusive=False)
+            collector.bind(root,selected['id'],identity,plan)
         known=[shared.read(p).get('session_id') for p in (root/'cells').glob('*/summary.json')]
         def first_session():
             sessions={r['payload']['session']['id'] for r in collector.pending() if r['kind']=='rum'}
@@ -203,6 +220,7 @@ def cell(args):
             sid=next(iter(sessions));require(sid not in known,'restored physical session before input');return sid
         initial_sid=collector.wait(first_session,min(native,time.time()+30))
         rows=collector.home() if plan.get('scenario')=='background-finalization-only' else collector.stack()
+        if automatic.mode(plan):collector.input_quiescence(min(native,time.time()+90),complete=True)
         local=ownership.inventory(rows,identity);sid=local['session_id'];require(sid==initial_sid and sid not in known,'restored/replaced physical session')
         require(time.time()<native,'late physical native scenario');summary['scenario']='PASS';summary['session_id']=sid
         version=(Path(plan['build_root'])/key/'sdk/DatadogCore/Sources/Versioning.swift').read_text()
@@ -219,13 +237,19 @@ def cell(args):
         print(json.dumps(dict(cell_phase=dict(phase='cleanup',at=began,execution_deadline=execution,cleanup_deadline=deadline))),flush=True)
         try:
             remote.quiescent(deadline)
-            if collector is not None and collector.prompt_issued and joined is None:
+            if automatic.mode(plan):
+                if collector is not None and collector.prompt_issued:
+                    collector.input_quiescence(min(deadline-90,time.time()+90),complete=joined is not None)
+                    if joined is None:collector.automated_cleanup_idle(identity,deadline-60)
+            elif collector is not None and collector.prompt_issued and joined is None:
                 physical_release.fence(collector,out,identity,deadline)
             errors=cleanup(remote,out,bundle,pid,owned,collector,initial,deadline)
+            if automatic.mode(plan):automatic.close_session(root,selected['id'],deadline,errors)
         except Exception as error:errors=['physical cleanup deferred: '+str(error)]
         summary.update(state='INVALID',cleanup='INVALID' if errors else 'PASS',evidence_errors=[],
             cleanup_details=dict(started_at=began,deadline=deadline,finished_at=time.time(),errors=errors,
-                input_workers='Host workers checked; failed prompted cells require operator release and native idle'))
+                input_workers=('Physical tool returns, delegated worker stop and native idle required' if automatic.mode(plan) else
+                               'Host workers checked; failed prompted cells require operator release and native idle')))
         if (out/'sealed-events.jsonl').exists() and (not (out/'native-preserved.jsonl').exists() or
             shared.sha(out/'sealed-events.jsonl')!=shared.sha(out/'native-preserved.jsonl')):
             summary['evidence']='INCOMPLETE';summary['evidence_errors'].append('physical final preserved stream differs')
@@ -267,6 +291,7 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('action',choices=['prepare','verify','stage','cell','compare'])
     parser.add_argument('--root',type=Path,required=True);parser.add_argument('--build-root',type=Path)
     parser.add_argument('--rum-fields',action='store_true')
+    parser.add_argument('--automated-input',action='store_true')
     parser.add_argument('--finalization-only',action='store_true');parser.add_argument('--device');parser.add_argument('--framework',default='UIKit',choices=['UIKit','SwiftUI'])
     parser.add_argument('--tracking',default='automatic',choices=['automatic','manual']);parser.add_argument('--key')
     parser.add_argument('--preflight',type=Path);parser.add_argument('--operator',type=Path)

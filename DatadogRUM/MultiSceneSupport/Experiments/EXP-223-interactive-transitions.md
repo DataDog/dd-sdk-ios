@@ -461,3 +461,12 @@ cannot enter generic qualification; full projection remains visible and overall
 acceptance remains invalid pending source review. All four witness products are
 signed and the first UIKit automatic pair is frozen, without native admission.
 Original input, Home, backend and cleanup failures remain immutable. No gate closes.
+
+The separate supported-input physical mode now passes64 offline controls and scoped
+review. It reuses the unchanged selectors and semantic/backend oracles, binds actual
+remote process and tool observations, and requires ten completed touch exchanges
+before pre-Home native idle and the exact contact-free Home command. Independent
+worker completion precedes collection; failed input requires a separate cleanup-only
+idle witness. Actual creator session closure remains mandatory. The first planned
+UIKit automatic pair is frozen without native admission; no gate closes. Unknown
+input preserves the app/evidence, and one failed qualification stops this path.

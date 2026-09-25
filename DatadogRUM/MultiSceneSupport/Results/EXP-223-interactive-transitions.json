@@ -326,7 +326,7 @@
     }
   ],
   "gate_closures": [],
-  "next_action": "Preserve reviewed runner and signed products. Assess supported unattended input for the first planned physical baseline; require a bounded worker/idle/cleanup contract and fresh admission. Never infer human readiness or repeat old Home/query runs.",
+  "next_action": "Fresh workspace/device/backend and actual physical session preflight, then one planned UIKit automatic baseline. Candidate only after complete baseline; stop the automated path on failure without another equivalent diagnostic.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
@@ -2427,7 +2427,7 @@
                   "native_operations": 1,
                   "native_admitted": false,
                   "gate_closures": [],
-                  "next_action": "Preserve reviewed runner and signed products. Assess supported unattended input for the first planned physical baseline; require a bounded worker/idle/cleanup contract and fresh admission. Never infer human readiness or repeat old Home/query runs.",
+                  "next_action": "Fresh workspace/device/backend and actual physical session preflight, then one planned UIKit automatic baseline. Candidate only after complete baseline; stop the automated path on failure without another equivalent diagnostic.",
                   "runtime_preparation": {
                     "state": "COMPLETE_CAPTURE_PASS_CLEANUP_PASS",
                     "plan": {
@@ -2515,6 +2515,16 @@
                     "native_admitted": false,
                     "gate_closures": [],
                     "next_action": "Preserve reviewed runner and signed products. Assess supported unattended input for the first planned physical baseline; require a bounded worker/idle/cleanup contract and fresh admission. Never infer human readiness or repeat old Home/query runs."
+                  },
+                  "physical_supported_input": {
+                    "state": "AUTOMATED_PHYSICAL_INPUT_PREPARED",
+                    "outcome": {
+                      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/outcome.json",
+                      "sha256": "edfa5e7bb53f526757122056d9a945b6e4de8df3eb47f006949fa7df3d94410a"
+                    },
+                    "native_admitted": false,
+                    "gate_closures": [],
+                    "next_action": "Fresh workspace/device/backend and actual physical session preflight, then one planned UIKit automatic baseline. Candidate only after complete baseline; stop the automated path on failure without another equivalent diagnostic."
                   }
                 }
               }

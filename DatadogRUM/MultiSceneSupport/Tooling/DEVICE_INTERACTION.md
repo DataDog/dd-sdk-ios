@@ -307,3 +307,10 @@ nonconforming object may expose the documented getter: verify selector support a
 object-return ABI before invoking it, then accept only an actual string. Labels,
 frames, private selectors and KVC cannot replace a missing fixture identifier.
 Fixture compilation and mock controls remain separate from native qualification.
+
+An explicitly reviewed physical supported-input mode uses remote PID/executable
+identity and actual device/session observations. Never reuse simulator process
+checks or invent operator readiness. Its [fixture procedure](../../../tools/multi-scene/interactive-transitions/README.md)
+binds every ordered effect and independently completed worker before collection.
+The final Home may follow native idle only as a contact-free command; failed input
+needs separate cleanup-only idle proof. Uncertain delivery defers teardown.

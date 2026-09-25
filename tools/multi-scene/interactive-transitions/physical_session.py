@@ -13,7 +13,9 @@ import journey_session
 
 
 def run(args):
-    root=args.root.resolve();plan=runtime.reviewed(root);runtime.admit(root,args.key,plan)
+    root=args.root.resolve();plan=runtime.reviewed(root)
+    runtime.require(not runtime.automatic.mode(plan),'automatic input requires physical_automatic.py; human supervisor is unavailable')
+    runtime.admit(root,args.key,plan)
     runtime.require(not (root/(args.key+'-driver.log')).exists(),'physical cell already consumed')
     operator.publish(root/'operator',dict(instruction='Preparing the physical app. Wait for the next ready step.'),context=args.key)
     now=time.time();native=now+plan['native_seconds'];execution=native+plan['backend_seconds'];cleanup=execution+plan['cleanup_seconds']

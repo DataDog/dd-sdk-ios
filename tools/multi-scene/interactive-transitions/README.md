@@ -245,3 +245,21 @@ qualification. A successful mechanism still leaves overall/source/release accept
 INVALID. Candidate admission additionally requires unchanged complete artifacts,
 timely publication, supervisor quiescence and cleanup. Default full mode is unchanged.
 Neither preparation nor signing substitutes for fresh operator/input admission.
+
+`physical_runtime.py prepare --rum-fields --automated-input` selects only the first
+UIKit automatic physical pair. `physical_automatic.py` owns session requests, fresh
+automated admission and supervision; the human stage/supervisor reject this mode.
+The input worker evaluates the existing finite connector with `physical_input.py`
+for both helpers and the actual cell ID as `framework`. Complete actual session and
+Home receipts precede admission. Each request binds the physical device/UDID, remote
+PID/executable, installed source/run/nonce and owned scene/window. Never use host
+process identity or simulator session predicates for this mode.
+
+Ten completed touch exchanges precede the native pre-Home idle snapshot; only exact
+`b h` may follow it. Persist the worker result, then an actual completed-agent
+observation containing that result hash before publishing worker quiescence. Missing
+or pending input blocks teardown. Failure-only cleanup preserves the native prefix
+and obtains same-process idle proof separately. The session creator consumes the
+close request and retains its exact EndSession return. Named qualification requires
+all these proofs as well as the original native/backend/cleanup contracts. A failed
+first planned baseline stops this input path; it cannot admit another diagnostic.
