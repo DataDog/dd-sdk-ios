@@ -48,6 +48,22 @@ Qualify Xcode’s resolved simulator entitlements and the installed product befo
 account setup. Preserve original deficient products/results; use fresh build
 outputs and leave authentication code and SDK sources unchanged.
 
+`simulator_signing.py` retains the qualified build guards and changes only Xcode’s
+signing flag. `signing_product.py` binds both the code-signature and simulated
+entitlement planes, including XML and DER in the actual launcher. Simulator
+capabilities may live in `__TEXT` while `codesign` reports empty entitlements.
+Require the resolved application identity, Keychain group and app group; reject
+undeclared capabilities. Verify source/compiler/archive identity and the full
+product, including executable and resource-bundle signatures. An offline checker
+reassessment keeps its first failed verdict and revalidates saved producer evidence;
+it does not rebuild or renew the original deadline.
+
+For in-place simulator updates, stop the exact main executable. OS-hosted app
+extensions are not input workers. The installer may refresh a data-container UUID;
+retain its actual migration evidence instead of treating path equality as data
+continuity. Do not claim byte-for-byte preservation without a before/after inventory.
+Neither successful signing nor a clean startup qualifies authenticated Services.
+
 ## Simulator QR login
 
 The user-requested image input adds **Choose QR Code Image** to the existing QR

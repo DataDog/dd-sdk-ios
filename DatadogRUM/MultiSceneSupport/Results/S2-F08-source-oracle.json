@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 authenticated app source/oracle preparation",
-  "status": "FIXTURE_SIGNING_REPAIR_PENDING",
-  "at": "2026-09-25T19:34:47.338990+00:00",
+  "status": "SIGNING_REPAIRED_ACCOUNT_SETUP_AND_SIGNED_IN_RUNNER_PENDING",
+  "at": "2026-09-25T20:07:22.318427+00:00",
   "owner": "SDK implementer",
   "reviewer": "existing /root/c06_runtime_plan",
   "scope": "Existing J02 service navigation, J03 dashboard correlation and J04 authenticated lifecycle only. No native execution, app or SDK edits, rebuild, login, publication or new experiment.",
@@ -182,7 +182,7 @@
     "partial cleanup relabeled as ordinary pass"
   ],
   "admission_limits": "This is source preparation only. No runtime/oracle pass, gate closure, new experiment or environment retry is implied. Existing J01, Duo and EXP220 automation stops remain closed; fresh execution needs materially changed environment and reviewed fixed admission.",
-  "next_action": "Repair standard simulator signing with fresh symmetric outputs; qualify source-declared entitlements before another account setup. Then finish the explicit signed-in continuation. Do not repeat QR login against the known deficient fixture.",
+  "next_action": "The corrected baseline is installed at Login. Await fresh QR account setup; verify real profile/organization and selected Services row. Finish the explicit signed-in runner independently; no measured session or importer is armed.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/source-review.json",
     "sha256": "41f6a1f5348c383e8c11770dc50da59e45e9dc020559a49c2a60d8691815d6e9"
@@ -823,7 +823,7 @@
     }
   },
   "account_setup": {
-    "state": "USER_SIGNED_OUT_FIXTURE_KEYCHAIN_ENTITLEMENTS_MISSING",
+    "state": "USER_SIGNED_OUT_OLD_FIXTURE_RETIRED",
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signed-in-qlnj8gi_",
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signed-in-qlnj8gi_/definition.json",
@@ -856,12 +856,12 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signed-in-qlnj8gi_/account-setup/qr-selection-_t9nxglu/qr-import-account-setup/result.json",
       "sha256": "a6d8248936997af845e1410925d6cbc0882810bc16442c999ceed55c084022c5"
     },
-    "observed_after_second_import": "Home then Login observed; user confirms intentional sign-out. securityd independently confirms missing Keychain entitlements. Actual RBAC/consent deficiency is unproven.",
+    "observed_after_second_import": "User confirms intentional sign-out. Subsequent diagnosis proves missing Keychain entitlements in both old products; actual RBAC/consent deficiency remains unproven. Corrected installation is owned by fixture_signing.",
     "runner_implementation": "PENDING; normal smoke still requires login, so do not run it with this signed-in setup.",
     "gate_closures": []
   },
   "fixture_signing": {
-    "state": "CONFIRMED_FIXTURE_SIGNING_DEFECT",
+    "state": "SIGNING_REPAIRED_ACCOUNT_SETUP_REQUIRED",
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signing-wfeu06du",
     "finding": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signing-wfeu06du/finding.json",
@@ -872,9 +872,27 @@
       "sha256": "c1ea0a81b126855d04dca99f599d6a6bbf403c7b952bf9e401e300f0dacbf20f"
     },
     "reviewer": "/root/c06_runtime_plan",
-    "builds": 0,
-    "native_runs": 0,
-    "gate_closures": []
+    "builds": 2,
+    "native_runs": 1,
+    "gate_closures": [],
+    "summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signing-wfeu06du/summary.json",
+      "sha256": "75171e3a6d999c3e63f020e48f687aa2ffcff8bb7f5653442d0cc6f67834988d"
+    },
+    "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signing-wfeu06du/builds",
+    "build_completion": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signing-wfeu06du/builds/completion.json",
+      "sha256": "622589f9dd9a4c2bc899ba1452d45e6268fc61dc981063ac636f91d2f423ff0a"
+    },
+    "source_edits": 0,
+    "sdk_edits": 0,
+    "required_entitlements_verified": true,
+    "account_setup_required": true,
+    "old_products_unchanged": true,
+    "local_checkpoint_signing": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-signing-wfeu06du/checkpoint-signing.json",
+      "sha256": "8320bbe8619f876de50177e4643d822a5561ecf16485ee6cfd03dd603c84eed1"
+    }
   },
   "service_readiness": {
     "state": "SOURCE_REVIEW_AND_OFFLINE_CONTROLS_PASS",
