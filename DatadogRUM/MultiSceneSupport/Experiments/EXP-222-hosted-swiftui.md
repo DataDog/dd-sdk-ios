@@ -37,3 +37,14 @@ callback pair was not independently observed. Preserve the strict occurrence
 controls. The ordered human session will supply the remaining paced manual
 candidate with attachment/mapper readiness before each transition and complete
 backend collection. No automatic retry or SDK change is justified.
+
+## S2 hosting scope assessment, September25
+
+[The separate saved-evidence assessment](../Results/S2-H16-scoped-assessment.json)
+closes only S2:H16 under the reviewed no-regression contract. Four original
+recordings prove the five native hosting outcomes and fresh RUM owners for both
+automatic/manual source pairs; hashes, cleanup and eight negative controls qualify.
+Original run verdicts and the manual candidate auxiliary callback difference stay
+unchanged. Existing automatic backend evidence supplies representative hosting View
+persistence; manual B backend, actions, gestures, fold, physical and S3 are unclaimed.
+No native run or backend query was needed.

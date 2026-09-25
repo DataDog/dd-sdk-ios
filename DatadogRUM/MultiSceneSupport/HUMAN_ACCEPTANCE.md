@@ -1,31 +1,54 @@
 # Prepared human acceptance
 
-A02 owns one prepared session per release boundary. The user accepts human input
-where automated input cannot qualify the real boundary. Do not ask for isolated
-repeated gestures while fixtures, builds or oracles are still changing. This is a
-plan for reviewable evidence; no TestFlight upload or release is authorized.
+A02 owns safe preparation for human input that authorized automation cannot supply.
+For S2 it is an operational prerequisite, not a separate product release gate.
+Separate short sessions are allowed; do not repeat a successful gesture solely to
+wait for backend ingestion. No TestFlight upload or release is authorized.
 
 ## S2 session contents
 
-| Case group | Prerequisite | Human action | Decisive evidence |
-| --- | --- | --- | --- |
-| C07–C10 old-build Duo | Eight fixed EXP-195 cells, exact genuine SDK26.5 app binaries, modern external evidence collector, fresh clean install/run ID | Follow the frozen UIKit/SwiftUI stack/split tap, switch, scroll, navigation and fold script | Native input effect and actual pose/scene inventory before markers; complete mapper/backend owners, names and counts; unchanged failures preserved |
-| H11/H12 ordinary navigation | Baseline/candidate fixtures frozen; independent visible edge and controller callback witnesses | Finish one edge pop, then cancel one on UIKit and SwiftUI routes | Actual interactive begin and completion/cancel, exact old/new view ownership and work; passing input collector alone is insufficient |
-| H13 ordinary presentation | Frozen sheet/cover routes and dismissal witness | Finish and cancel the declared presentation gestures | Accepted destination/occurrence, callback ordering, no duplicate or stray view/work |
-| H14 ordinary adaptive layout | One actual scene, native geometry/trait recorder | Fold/unfold and use the visible split-layout controls in the fixed script | Actual geometry transitions and native input effects; exact baseline/candidate owner/name differences |
-| H16 UIKit-hosted SwiftUI | Existing hybrid host, automatic tracking, no new navigation integration | Execute the fixed push/present/return script | Same automatic detection/count/owner contract; classify pre-existing omissions |
-| F08 Datadog app | Candidate/baseline app builds frozen; normal-mode telemetry enabled; probe-application configuration and distinct service | Logged-out login, Services list/detail/Back, dashboard WebView and same-process lifecycle using accessible test data | Native action receipts plus exact session/view/work ownership; only compare the integration actually present |
+[The register](release-gates.json) owns the finite execution packages and semantic
+acceptance contract; [the scope review](Results/S2-release-gate-review-20260925.json)
+explains the changes. The generated [PLAN](PLAN.md#s2-execution-packages) displays
+owners, dependencies, decisive evidence, environments and bounds.
 
-The [ordered S2 preparation](Results/S2-input-session-preparation.json) owns the fixed groups and remaining build/capture prerequisites. [WebView preparation](Results/S2-T10-source-preparation.json) proceeds independently of desktop input. The session is not ready to request until those prerequisites are complete.
+- Automatic UIKit/SwiftUI stack/split coverage uses genuine old-build, rebuilt
+  baseline and rebuilt candidate arms on Duo. Actual display geometry and native
+  input effects are required. The candidate old-build and manifest=true cross-product
+  is not part of S2. Reuse split fold observations for H14.
+- Navigation and sheet cancellation/completion share the same stack journeys where
+  possible. Require real transition witnesses and emitted event ownership; an
+  asynchronous mapper need not publish before a native callback. Keep automatic
+  coverage conclusions separate from custom callback-marker actions.
+- Reassess preserved UIKit-hosted SwiftUI outcomes before another human run. Missing
+  deferred SwiftUI callbacks alone do not establish a missing RUM occurrence.
+- Resource/Trace share one finite fold workload. Native/WebView expiry uses a
+  separate real-bridge journey without fold or backend polling in its TTL boundary.
+- The Datadog app uses one paired ordinary journey. Existing fixture checks own
+  adversarial timing and lifetime cases; no15-minute session-expiry wait is needed.
 
-Each group can contain dozens of predeclared steps. Before requesting the session,
-produce one ordered checklist with baseline/candidate source and build identities,
-clean-install receipts, exact expected native inputs, screenshots of each control,
-run-specific readiness signals, critical assertions and cleanup instructions.
-Save partial failures without reusing consumed readiness or restored run IDs.
-If an input lacks a native effect, stop that cell and continue independent cells.
-Do not substitute posted lifecycle notifications, synthetic transition controls,
-or terminal event totals for the intended boundary.
+The Duo simulator is the primary environment. A physical iPhone/iPad is useful only
+for a named interaction that the simulator cannot support or a supplemental hardware
+claim. Do not require both complete matrices, or use iPad geometry as Duo evidence.
+
+Before asking for input, freeze the selected scenario, source/build identities,
+expected native controls/effects, capture, behavioral cutoff and cleanup. Preserve
+all earlier failed attempts. Existing prepared runners retain their old contracts;
+new execution must bind the revised scope and focused controls explicitly. No old
+admission or expired deadline is renewed by the scope review.
+
+Home verifies actual background and the existing view stop. Delivery can use a
+predeclared ordinary foreground phase after the immutable behavioral cutoff; its
+new occurrences stay separate. Immediate background upload, synthetic Background
+view creation and session expiry are not gesture acceptance predicates. Local
+behavior and backend persistence keep separate verdicts. Missing required backend
+or cleanup evidence still prevents overall end-to-end acceptance, while independent
+valid comparisons can proceed. No forced SDK flush is planned.
+
+Stop a cell if an input has no native effect. Request release before unsafe cleanup;
+retain worker quiescence and original-state restoration. Do not substitute posted
+lifecycle notifications, synthetic completion or terminal counts for the intended
+boundary. No further human session is admitted by documentation changes alone.
 
 ## Datadog app limits
 

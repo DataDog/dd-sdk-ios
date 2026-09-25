@@ -544,3 +544,23 @@ Actual release acknowledgement, native idle, removal, visual Home and host quies
 are bound by the owner. Source review now addresses the short fixture background
 lease and ordinary upload scheduling. Session expiry is not the missing prerequisite;
 no SDK regression or release-gate closure is established.
+
+The user's later observation was verified through a separate current exact-ID query:
+both missing records exist. Home is inactive with9.031782985s spent, and both intake
+timestamps are11:00:01.952UTC,98.452s beyond the original collection deadline. Cleanup
+activated the same process at11:00:01.380UTC; its preserved stream retains the original
+180-row prefix and then starts a new Home occurrence. The timing strongly supports
+queued uploads resuming with foreground activation. These records are not lost.
+This current read answers the user and does not repair the original expired attempt.
+The next correction separates bounded test delivery from natural background upload
+behavior; it must preserve the native stopped-view boundary and ownership oracle.
+
+## S2 acceptance scope correction, September25
+
+The user requested a release-value review after the final Home records appeared
+upon foregrounding. The [S2 gate review](../Results/S2-release-gate-review-20260925.json)
+now owns the disposition: no forced flush implementation, no immediate background
+upload requirement, no duplicate physical matrix, and no synchronous mapper-order
+requirement. Exact native outcomes and emitted owners remain required. All original
+attempt verdicts, raw observations and cleanup evidence stay unchanged. The latest
+physical baseline has no candidate pair and closes no release gate.

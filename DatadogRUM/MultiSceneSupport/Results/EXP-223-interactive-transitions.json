@@ -326,7 +326,7 @@
     }
   ],
   "gate_closures": [],
-  "next_action": "Review the fixture background lifetime and source-backed postcritical upload capture before another human admission. The repaired baseline captured all11 inputs/four callbacks/Home, but final return-home action/Home view were absent from a before-deadline diagnostic inventory. Session exists; expiry is not required. Original600s backend timeout and cleanup PASS remain immutable; candidate UNRUN. Do not retry unchanged gestures.",
+  "next_action": "Apply the reviewed S2 semantic evidence contract to saved baseline/candidate observations. Keep the latest baseline original INVALID, distinguish valid local capture from delayed backend delivery, and do not repeat human gestures to qualify upload timing. No new native admission.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
@@ -397,7 +397,7 @@
       "scope": "Fixture/native and local paired oracle only. Full runtime, backend, adaptive geometry and physical execution remain unqualified."
     }
   },
-  "updated_at": 1790334345.813706,
+  "updated_at": 1790334950.043987,
   "live_environment": {
     "observed_at": "2026-09-23T19:45:47.121281+00:00",
     "xcode": "27.1 (27A9269)",
@@ -2797,7 +2797,11 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/runtime-uikit/physical-human-outcome.json",
       "sha256": "2e60998235dbbf010da4d0f2ab75ffb08548b844b18e48bb80a90e50a40e0406"
     },
-    "run_id": "d0f910bb-f505-49e5-8bea-21d9ed1b8bd5"
+    "run_id": "d0f910bb-f505-49e5-8bea-21d9ed1b8bd5",
+    "later_user_verification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/runtime-uikit/current-user-verification/result.json",
+      "sha256": "3f9583e226ec8e418ecff512b3a7e249b049fadf46abd262b777e2e7dfb49185"
+    }
   },
   "physical_human_capture_result": {
     "state": "HUMAN_BASELINE_SCENARIO_PASS_CAPTURE_INCOMPLETE",
@@ -2917,5 +2921,30 @@
     "active_native": false,
     "candidate": "UNRUN",
     "backend_queries": 0
+  },
+  "delivery_finding": {
+    "state": "HARNESS_ASSUMPTION_REQUIRES_CORRECTION",
+    "evidence": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/runtime-uikit/current-user-verification/result.json",
+      "sha256": "3f9583e226ec8e418ecff512b3a7e249b049fadf46abd262b777e2e7dfb49185"
+    },
+    "fixture_default_background_uploads": false,
+    "scope": "Gate ownership/lifecycle capture must not assume ordinary SDK batching completes while the host app remains backgrounded. No SDK upload change is warranted."
+  },
+  "postcritical_delivery_correction": {
+    "state": "STOPPED_BEFORE_IMPLEMENTATION",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/postcritical-delivery-taer8u4f/definition.json",
+      "sha256": "1a19eef7e7c25e6a2e8807f3e00896909c80d6db10f5a07f95c57f83fb41a7ff"
+    },
+    "native_admitted": false,
+    "gate_closures": [],
+    "disposition": "User-directed S2 scope review: no forced flush or delivery-specific background lease; definition retained as an unimplemented proposal."
+  },
+  "s2_acceptance_review": {
+    "owner": "Results/S2-release-gate-review-20260925.json",
+    "contract": "release-gates.json: releases.S2.acceptance_contract/execution_packages",
+    "effect": "Prospective S2 execution scope supersedes broader remaining-matrix and whole-payload prerequisites. Original definitions, admissions, attempts and verdicts remain unchanged. No native admission or gate closure.",
+    "next": "Assess reusable actual observations against the scoped gate before any new native run; bind amended runner expectations and focused controls first."
   }
 }

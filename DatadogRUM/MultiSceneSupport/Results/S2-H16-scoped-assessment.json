@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "gate": "S2:H16",
+  "state": "CLOSED_SCOPED_NATIVE_PARITY",
+  "at": "2026-09-25T11:40:41.794740+00:00",
+  "contract": "release-gates.json: releases.S2.acceptance_contract (s2-no-regression-v2)",
+  "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "candidate": "c9faed816a1d4828d7d8c4b64acae01119425889",
+  "assessment": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/s2-gate-review-thwzezsn/hosting-assessment/outcome.json",
+    "sha256": "2a36d16f63a548ef2931aebbe41994c4a421962f714e169564c54ed1e0a11d38"
+  },
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/s2-gate-review-thwzezsn/hosting-assessment/definition.json",
+    "sha256": "e68569bfd559d26de0f0a02c8d819d24686335c5b63e77f9155ce6b8fc1cbd0f"
+  },
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/s2-gate-review-thwzezsn/hosting-assessment/review.json",
+    "sha256": "522e32e8b9d53df7df6638866746c96d7ef1649613a44ffa1c4d0869830ea25f"
+  },
+  "preserved_backend_views": {
+    "A_automatic": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-hosting-acceptance-ugejbjwl/backend-version-reaudit.json",
+      "sha256": "9c9c19d30b90520a7ad99c025a73b51a9a729a927ddb79d273439c53bb60ea4a"
+    },
+    "B_automatic": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-candidate-backend-z20q6t56/run/backend-only/summary.json",
+      "sha256": "cf5f19b5d48ca3e2c9fdf8754232462aeae17a8aba69b70c925f09f62670d397"
+    }
+  },
+  "conclusion": "Automatic and existing manual UIKit-hosted SwiftUI preserve Root/Detail/Root/Modal/Root native outcomes and five fresh mapped owners, with stopped lifetimes and matching declared counters on Duo27.1. Every original artifact hash and cleanup receipt verifies.",
+  "qualification_limits": [
+    "Manual B has local native/mapper proof only; representative persisted hosting views come from the existing automatic pair.",
+    "The auxiliary SwiftUI callback traces differ; callback parity is not claimed.",
+    "No automatic actions, interactive gestures, fold, physical-device behavior or S3 acceptance.",
+    "Original INVALID run labels and deadlines remain immutable; this is a separate scoped assessment."
+  ],
+  "local_cells": 4,
+  "source_pairs": 2,
+  "negative_controls": 8,
+  "native_launches": 0,
+  "backend_queries": 0,
+  "sdk_tests_rerun": 0,
+  "gate_closures": [
+    "S2:H16"
+  ]
+}

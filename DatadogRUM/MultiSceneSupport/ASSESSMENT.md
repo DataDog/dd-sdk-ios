@@ -16,6 +16,16 @@ The provisional S3 candidate qualifies all20 platform builds in [EXP-226](Result
 | S2: single-scene SDK27 Duo readiness | Exact E01+DL01+E04 production `c9faed81`, documentation `7604da24`. [Composition/lifetime](Results/EXP-216-s2-composition-promotion.json), [documentation](Results/S2-F02-composition-documentation.json) and [compatibility](Results/EXP-217-s2-compatibility.json) qualify that source. | Current-candidate automatic Duo, native-input, controlled-app and final-release acceptance remain open. Historical reference results below cannot certify it. |
 | S3: full multi-scene support | Experimental scene/semantic behavior has the bounded reference evidence below. | Stable API/RFC, remaining physical topology/ordering and final release obligations remain. F01 proposals are not approval. |
 
+The [S2 scope review](Results/S2-release-gate-review-20260925.json) retains actual
+Duo behavior and exact required owners, while removing duplicate physical matrices,
+whole-payload backend parity and immediate background delivery as universal criteria.
+The latest iPad run proves only its baseline gestures; candidate comparison is still
+missing. Late Home delivery is not event loss. The proposed forced-flush extension
+is stopped before implementation. The separate
+[saved hosting assessment](Results/S2-H16-scoped-assessment.json) closes S2:H16: both
+automatic/manual pairs retain the five native outcomes and fresh RUM owners. Original
+invalid attempts and the manual candidate backend gap remain; no gesture/fold claim.
+
 S2 contains six qualified production files and excludes deferred semantic/scene
 implementation. Source exclusion qualifies non-applicability of the scoped new-
 behavior application-performance comparison; it does not claim numeric performance.
@@ -99,8 +109,9 @@ mismatches stopped backend collection. Their narrow projection correction passes
 offline controls/review, but the saved terminal Home revision remains incomplete.
 A same-binary follow-up navigated correctly but missed its pop callback chain; cleanup
 passed before any backend query. The physical-only public recognizer correction captures all four callback
-chains in a subsequent baseline. Its final action/view did not reach the bounded
-backend inventory; cleanup passed. Delivery preparation remains, candidate is unrun
+chains in a subsequent baseline. Its final action/view reached intake immediately after cleanup foreground
+activation, beyond the collection deadline. Home is inactive with the captured
+duration; no event loss is established. Delivery preparation remains, candidate is unrun
 and physical/backend acceptance stays open.
 
 ## Immediate compatibility priority

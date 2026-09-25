@@ -14,8 +14,10 @@
     "id": "rum-unattended-progress",
     "finding": "Update returned Automation does not exist; no replacement was created."
   },
-  "next_task": "Source review of bounded physical background delivery; no unchanged human retry",
-  "gate_closures": [],
+  "next_task": "Finish signed S2 scope checkpoint; adapt only the minimal shared semantic comparison for the finite Duo coverage package before any native admission",
+  "gate_closures": [
+    "S2:H16"
+  ],
   "limits": [
     "No expired deadline extension or equivalent stopped-mechanism retry",
     "No push; explicit paths; sign when available with authorized local fallback",
@@ -25,7 +27,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": 1790334345.8166049,
+  "updated_at": "2026-09-25T11:40:41.794740+00:00",
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
@@ -100,5 +102,7 @@
   "human_admission": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/runtime-uikit/native-admission.json",
     "sha256": "a2f7af29b456373d7d1aab25757be42f232a2dbbeac4db8d733fe6199ac4975a"
-  }
+  },
+  "s2_acceptance_review": "Results/S2-release-gate-review-20260925.json",
+  "s2_hosting_assessment": "Results/S2-H16-scoped-assessment.json"
 }

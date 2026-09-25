@@ -39,6 +39,22 @@ ownership. A posted scene notification is not OS disconnect; a weak controller
 check is not keyed SwiftUI registration/instrumentation teardown. Maintain separate
 native, mapper, backend, reduced entity, profile and cleanup verdicts.
 
+## S2 no-regression scope
+
+The [S2 register contract](../release-gates.json) selects the evidence required by
+that release. Exact ownership and actual native outcomes remain strict; complete
+raw backend field equality and ideal callback ordering are not universal gates.
+The [scope review](../Results/S2-release-gate-review-20260925.json) defines the finite
+packages and preserves earlier invalid attempts. It does not amend S1/S3 contracts.
+
+For a new S2 run, freeze a behavioral cutoff separately from delivery/collection.
+Ordinary foregrounding may upload queued data afterward; capture its new occurrences
+separately. Do not require immediate background upload or an inactive Session.
+Missing required backend evidence leaves that obligation incomplete, without erasing
+independently valid local behavior. Cleanup remains mandatory. A retrospective
+assessment must name its narrower claim and original artifacts; never rewrite the
+old overall verdict or synthesize a missing observation.
+
 ## Durable artifact contract
 
 Use a new output directory and run ID. Record source revision/signature, exact

@@ -235,5 +235,11 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-sessions-tx3elwxs/outcome.json",
       "sha256": "56fa5cdb8431e78b736768fcfde374a6846fb1f8caca1f3c85b3c93d1f697107"
     }
+  },
+  "s2_acceptance_review": {
+    "owner": "Results/S2-release-gate-review-20260925.json",
+    "contract": "release-gates.json: releases.S2.acceptance_contract/execution_packages",
+    "effect": "Prospective S2 execution scope supersedes broader remaining-matrix and whole-payload prerequisites. Original definitions, admissions, attempts and verdicts remain unchanged. No native admission or gate closure.",
+    "next": "Assess reusable actual observations against the scoped gate before any new native run; bind amended runner expectations and focused controls first."
   }
 }

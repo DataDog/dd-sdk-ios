@@ -313,5 +313,11 @@
     "backend_queries": 0,
     "gate_closures": []
   },
-  "input_session_preparation": "Results/S2-input-session-preparation.json"
+  "input_session_preparation": "Results/S2-input-session-preparation.json",
+  "s2_acceptance_review": {
+    "owner": "Results/S2-release-gate-review-20260925.json",
+    "contract": "release-gates.json: releases.S2.acceptance_contract/execution_packages",
+    "effect": "Prospective S2 execution scope supersedes broader remaining-matrix and whole-payload prerequisites. Original definitions, admissions, attempts and verdicts remain unchanged. No native admission or gate closure.",
+    "next": "Assess reusable actual observations against the scoped gate before any new native run; bind amended runner expectations and focused controls first."
+  }
 }

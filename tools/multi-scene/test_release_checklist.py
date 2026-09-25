@@ -158,6 +158,45 @@ class ReleaseChecklistTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "marker pair"):
             CHECKLIST.render_release_views("no markers", register, progress)
 
+    def package_register(self):
+        register = self.release_register()
+        register['releases'][1]['execution_packages'] = [{
+            'id': 'coverage', 'title': 'Automatic coverage', 'owner': 'Implementer',
+            'gates': ['C07'], 'dependencies': [], 'decisive_test': 'Compare actual owners',
+            'environment': 'Duo simulator', 'budget': 'One paired journey'}]
+        return register
+
+    def test_execution_packages_reject_missing_duplicate_optional_or_foreign_gate(self):
+        register = self.package_register()
+        CHECKLIST.validate(register)
+        for members in [['C99'], ['F09'], ['T01'], ['C07', 'C07']]:
+            invalid = copy.deepcopy(register)
+            invalid['releases'][1]['execution_packages'][0]['gates'] = members
+            with self.subTest(members=members), self.assertRaises(ValueError):
+                CHECKLIST.validate(invalid)
+        invalid = copy.deepcopy(register)
+        invalid['gates'][3]['release_requirements']['S2']['required'] = True
+        invalid['gates'][3]['id'] = 'C08'
+        with self.assertRaisesRegex(ValueError, 'missing from execution packages'):
+            CHECKLIST.validate(invalid)
+        invalid = copy.deepcopy(register)
+        invalid['releases'][1]['execution_packages'] *= 2
+        with self.assertRaisesRegex(ValueError, 'duplicate execution package'):
+            CHECKLIST.validate(invalid)
+
+    def test_execution_package_progress_is_derived_and_optional_work_is_not_credit(self):
+        register = self.package_register()
+        def render():
+            gates = CHECKLIST.validate(register)
+            return CHECKLIST.render_release_views(
+                '<!-- release-views:start --><!-- release-views:end -->', register,
+                CHECKLIST.progress_document(register, gates))
+        self.assertIn('| Automatic coverage (C07) | Implementer | None | Compare actual owners | Duo simulator | One paired journey | 1 |', render())
+        register['gates'][1]['release_requirements']['S2'].update(status='CLOSED', evidence='bounded proof')
+        rendered = render()
+        self.assertIn('| Automatic coverage (C07) | Implementer | None | Compare actual owners | Duo simulator | One paired journey | 0 |', rendered)
+        self.assertIn('follow-up · CONDITIONAL', rendered)
+
     def test_release_specific_f06_plan_row_replaces_only_the_legacy_dependency_summary(self):
         register = self.release_register()
         register["gates"].append({

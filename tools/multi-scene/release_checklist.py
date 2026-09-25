@@ -97,6 +97,41 @@ def _validate_release_requirements(gates, releases):
         visit(ident, set())
 
 
+def _validate_execution_packages(register):
+    """Keep a finite release queue complete without counting preparation as proof."""
+    gates = {gate['id']: gate for gate in register['gates']}
+    for release in register.get('releases', []):
+        if 'execution_packages' not in release:
+            continue
+        packages = release['execution_packages']
+        if not isinstance(packages, list) or not packages:
+            raise ValueError('execution packages must be a nonempty list')
+        seen_ids, assigned = set(), set()
+        for package in packages:
+            _require_nonempty(package, ['id', 'title', 'owner', 'decisive_test', 'environment', 'budget'])
+            if package['id'] in seen_ids:
+                raise ValueError('duplicate execution package')
+            seen_ids.add(package['id'])
+            members = package.get('gates')
+            if not isinstance(members, list) or not members:
+                raise ValueError('execution package must name its gates')
+            if not isinstance(package.get('dependencies'), list):
+                raise ValueError('execution package dependencies missing')
+            for ident in members + package['dependencies']:
+                requirement = gates.get(ident, {}).get('release_requirements', {}).get(release['id'])
+                if not requirement or not requirement['required']:
+                    raise ValueError('execution package references unknown or nonrequired gate')
+            for ident in members:
+                if ident in assigned:
+                    raise ValueError('gate assigned to multiple execution packages')
+                assigned.add(ident)
+        remaining = {ident for ident, gate in gates.items()
+                     if (requirement := gate.get('release_requirements', {}).get(release['id']))
+                     and requirement['required'] and requirement['status'] != 'CLOSED'}
+        if not remaining <= assigned:
+            raise ValueError('required open gates missing from execution packages')
+
+
 def validate(register):
     gates = register['gates']
     by_id = {g['id']: g for g in gates}
@@ -126,6 +161,7 @@ def validate(register):
     for ident in by_id:
         visit(ident, set())
     _validate_release_requirements(gates, _validate_releases(register))
+    _validate_execution_packages(register)
     return by_id
 
 
@@ -387,6 +423,19 @@ def render_release_views(text, register, progress):
             shipping_rule=release['shipping_rule'], count=summary['count'], closed=summary['closed'],
             remaining=len(summary['remaining'])))
     for release_id in ('S1', 'S2'):
+        release = next(value for value in releases if value['id'] == release_id)
+        if release.get('execution_packages'):
+            lines.extend(['', '### ' + release_id + ' execution packages', '',
+                          'These packages share runs; individual gate verdicts remain separate. Closed evidence is reused.', '',
+                          '| Package / gates | Owner | Dependencies | Decisive evidence | Environment | Bound | Gates still open |',
+                          '| --- | --- | --- | --- | --- | --- | ---: |'])
+            for package in release['execution_packages']:
+                remaining = sum(gates[ident]['release_requirements'][release_id]['status'] != 'CLOSED'
+                                for ident in package['gates'])
+                row = [package['title'] + ' (' + ', '.join(package['gates']) + ')', package['owner'],
+                       ', '.join(package['dependencies']) or 'None', package['decisive_test'],
+                       package['environment'], package['budget'], str(remaining)]
+                lines.append('| ' + ' | '.join(value.replace('|', '\\|') for value in row) + ' |')
         lines.extend([
             '',
             '### ' + release_id + ' release gates',

@@ -440,17 +440,17 @@
     "S2": {
       "name": "Single-scene iPhone Duo readiness",
       "deadline": "2026-10-16",
-      "shipping_rule": "No worse RUM after SDK27 rebuild without major application changes. Selected E01+DL01+E04 productionc9faed81 on develop62f64, documented through7604da24; EXP-216 binds exact source and lifetime evidence. Combined-source compatibility is qualified by EXP-217; Duo/app/backend and final release gates remain; no new scene API or physical-Duo prerequisite.",
+      "shipping_rule": "No worse RUM after SDK27 rebuild without major app changes, evaluated by the S2 semantic acceptance contract and six finite execution packages below. E01+DL01+E04 productionc9faed81 on62f64 retains qualified source/lifetime/compatibility evidence; Duo behavior, integrated ownership and final review remain open. No new scene API, duplicate physical matrix or immediate background-upload requirement.",
       "required": {
-        "count": 28,
-        "closed": 13,
+        "count": 27,
+        "closed": 14,
         "remaining": [
           {
             "id": "S2:C07",
             "status": "OPEN",
             "owner": "SDK implementer",
             "dependencies": [
-              "S2:A02",
+              "S2:A01",
               "S2:F07"
             ]
           },
@@ -459,7 +459,7 @@
             "status": "OPEN",
             "owner": "SDK implementer",
             "dependencies": [
-              "S2:A02",
+              "S2:A01",
               "S2:F07"
             ]
           },
@@ -468,7 +468,7 @@
             "status": "OPEN",
             "owner": "SDK implementer",
             "dependencies": [
-              "S2:A02",
+              "S2:A01",
               "S2:F07"
             ]
           },
@@ -477,7 +477,7 @@
             "status": "OPEN",
             "owner": "SDK implementer",
             "dependencies": [
-              "S2:A02",
+              "S2:A01",
               "S2:F07"
             ]
           },
@@ -513,7 +513,7 @@
             "status": "OPEN",
             "owner": "Device operator + SDK implementer",
             "dependencies": [
-              "S2:A02",
+              "S2:A01",
               "S2:F07"
             ]
           },
@@ -522,7 +522,7 @@
             "status": "OPEN",
             "owner": "Device operator + SDK implementer",
             "dependencies": [
-              "S2:A02",
+              "S2:A01",
               "S2:F07"
             ]
           },
@@ -531,7 +531,7 @@
             "status": "OPEN",
             "owner": "Device operator + SDK implementer",
             "dependencies": [
-              "S2:A02",
+              "S2:A01",
               "S2:F07"
             ]
           },
@@ -540,16 +540,7 @@
             "status": "OPEN",
             "owner": "Device operator + SDK implementer",
             "dependencies": [
-              "S2:A02",
-              "S2:F07"
-            ]
-          },
-          {
-            "id": "S2:H16",
-            "status": "OPEN",
-            "owner": "Device operator + SDK implementer",
-            "dependencies": [
-              "S2:A02",
+              "S2:A01",
               "S2:F07"
             ]
           },
@@ -583,23 +574,13 @@
               "S2:T03",
               "S2:T08",
               "S2:T10",
-              "S2:F08",
-              "S2:A02"
+              "S2:F08"
             ]
           },
           {
             "id": "S2:F08",
             "status": "OPEN",
             "owner": "SDK implementer + app owner",
-            "dependencies": [
-              "S2:A01",
-              "S2:F07"
-            ]
-          },
-          {
-            "id": "S2:A02",
-            "status": "OPEN",
-            "owner": "Harness implementer + user device operator",
             "dependencies": [
               "S2:A01",
               "S2:F07"
@@ -614,6 +595,15 @@
           "owner": "SDK implementer",
           "dependencies": [
             "S2:C01"
+          ]
+        },
+        {
+          "id": "S2:A02",
+          "status": "OPEN",
+          "owner": "Harness implementer + user device operator",
+          "dependencies": [
+            "S2:A01",
+            "S2:F07"
           ]
         },
         {

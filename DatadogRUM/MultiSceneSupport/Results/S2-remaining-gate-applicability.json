@@ -68,5 +68,12 @@
     "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift": "e59f10a3b3990c9b2c334e9168738aed2a57563bcd10f6f4cfa931a58051acda",
     "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift": "142961ec6c5ce10c61595b306e16f98ca34b1047694057bcaaf3d2d977a251ad",
     "DatadogRUM/Sources/Integrations/WebViewEventReceiver.swift": "14c7429d7eb7739dee6a84019ec8c5159da1339c05db9571baa0bdd89f1759b7"
+  },
+  "s2_acceptance_review": {
+    "owner": "Results/S2-release-gate-review-20260925.json",
+    "contract": "release-gates.json: releases.S2.acceptance_contract/execution_packages",
+    "effect": "Prospective S2 execution scope supersedes broader remaining-matrix and whole-payload prerequisites. Original definitions, admissions, attempts and verdicts remain unchanged. No native admission or gate closure.",
+    "next": "Assess reusable actual observations against the scoped gate before any new native run; bind amended runner expectations and focused controls first.",
+    "meaning": "Source findings remain valid; physical duplication and callback-order requirements in earlier decisive_remaining text are superseded by the current S2 register, without closing a gate."
   }
 }

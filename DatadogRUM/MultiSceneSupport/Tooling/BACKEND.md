@@ -1,9 +1,11 @@
 # Backend ownership and telemetry
 
-Read for authenticated collection or interpretation. The
-[evidence contract](EVIDENCE.md) applies to every family. Use the owning fixture's
-exact phase budgets, inventories and controls; historical numbers below its result
-are not defaults for another run.
+Read for authenticated collection and interpretation. Use the owning fixture's
+scoped fields, inventory and budgets under the [evidence contract](EVIDENCE.md).
+S2 checks [required semantic fields](../release-gates.json) and preserves raw extras.
+Home does not promise immediate upload. Predeclared foreground collection follows
+a frozen behavioral cutoff with new occurrences kept separate. Missing required
+evidence remains incomplete; original deadlines and verdicts stay unchanged.
 
 ## Access and query scope
 

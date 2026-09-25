@@ -272,13 +272,14 @@
           "scope": "UIKit automatic view non-regression after an iOS 27 rebuild",
           "status": "OPEN",
           "dependencies": [
-            "S2:A02",
+            "S2:A01",
             "S2:F07"
           ],
-          "decisive_test": "Keep both comparisons separate: old-build vs SDK27 rebuild, and current-vs-baseline RUM SDK on rebuilt apps. Complete eight unresolved old-build Duo cells through prepared human input; rerun only affected candidate cells after F07. No changed automatic detection/owner regression.",
-          "environment": "Xcode27.1 Duo simulator with preflighted frozen builds and one human session",
-          "evidence": "Results/EXP-210-s2-automatic-coverage.json owns the same40 current-source slots. Its human_current_composition binds62f64 versus c9faed81: reviewed passive observer,28 source/build controls and four genuine SDK26.5/27.1 arms qualify.14 capture controls pass, but whole-cell/fold/cleanup runtime and native qualification remain. Original input failures and historical source limits are preserved; no behavioral gate credit.",
-          "required": true
+          "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild at baseline SDK and baseline-to-candidate SDK at27.1 on Duo. Report UIKit views separately. No new loss, duplicate occurrence or wrong owner for the same actual journey; documented baseline limitations may remain. No40-cell cross-product or whole-payload backend equality.",
+          "environment": "Xcode27.1 Duo27.1 simulator;12 shared stack/split cells plus at most4 ordinary baseline controls; reuse valid source-matched observations",
+          "evidence": "Historical EXP210 preparation owns the original40-slot definition, four genuine26.5/27.1 builds and its stopped/diagnostic attempts; no behavioral gate credit. The current execution obligation is only the12-cell Duo coverage package plus at most4 diagnostic ordinary baseline controls in releases.S2.execution_packages. Rebind reusable source/build observations to that contract; no duplicate40-cell run. Results/S2-release-gate-review-20260925.json preserves the former wording.",
+          "required": true,
+          "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
       }
     },
@@ -306,13 +307,14 @@
           "scope": "UIKit automatic action non-regression after an iOS 27 rebuild",
           "status": "OPEN",
           "dependencies": [
-            "S2:A02",
+            "S2:A01",
             "S2:F07"
           ],
-          "decisive_test": "Keep both comparisons separate: old-build vs SDK27 rebuild, and current-vs-baseline RUM SDK on rebuilt apps. Complete eight unresolved old-build Duo cells through prepared human input; rerun only affected candidate cells after F07. No changed automatic detection/owner regression.",
-          "environment": "Xcode27.1 Duo simulator with preflighted frozen builds and one human session",
-          "evidence": "Results/EXP-210-s2-automatic-coverage.json owns the same40 current-source slots. Its human_current_composition binds62f64 versus c9faed81: reviewed passive observer,28 source/build controls and four genuine SDK26.5/27.1 arms qualify.14 capture controls pass, but whole-cell/fold/cleanup runtime and native qualification remain. Original input failures and historical source limits are preserved; no behavioral gate credit.",
-          "required": true
+          "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild at baseline SDK and baseline-to-candidate SDK at27.1 on Duo. Report UIKit actions separately. No new loss, duplicate occurrence or wrong owner for the same actual journey; documented baseline limitations may remain. No40-cell cross-product or whole-payload backend equality.",
+          "environment": "Xcode27.1 Duo27.1 simulator;12 shared stack/split cells plus at most4 ordinary baseline controls; reuse valid source-matched observations",
+          "evidence": "Historical EXP210 preparation owns the original40-slot definition, four genuine26.5/27.1 builds and its stopped/diagnostic attempts; no behavioral gate credit. The current execution obligation is only the12-cell Duo coverage package plus at most4 diagnostic ordinary baseline controls in releases.S2.execution_packages. Rebind reusable source/build observations to that contract; no duplicate40-cell run. Results/S2-release-gate-review-20260925.json preserves the former wording.",
+          "required": true,
+          "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
       }
     },
@@ -340,13 +342,14 @@
           "scope": "SwiftUI automatic view non-regression after an iOS 27 rebuild",
           "status": "OPEN",
           "dependencies": [
-            "S2:A02",
+            "S2:A01",
             "S2:F07"
           ],
-          "decisive_test": "Keep both comparisons separate: old-build vs SDK27 rebuild, and current-vs-baseline RUM SDK on rebuilt apps. Complete eight unresolved old-build Duo cells through prepared human input; rerun only affected candidate cells after F07. No changed automatic detection/owner regression.",
-          "environment": "Xcode27.1 Duo simulator with preflighted frozen builds and one human session",
-          "evidence": "Results/EXP-210-s2-automatic-coverage.json owns the same40 current-source slots. Its human_current_composition binds62f64 versus c9faed81: reviewed passive observer,28 source/build controls and four genuine SDK26.5/27.1 arms qualify.14 capture controls pass, but whole-cell/fold/cleanup runtime and native qualification remain. Original input failures and historical source limits are preserved; no behavioral gate credit.",
-          "required": true
+          "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild at baseline SDK and baseline-to-candidate SDK at27.1 on Duo. Report SwiftUI views separately. No new loss, duplicate occurrence or wrong owner for the same actual journey; documented baseline limitations may remain. No40-cell cross-product or whole-payload backend equality.",
+          "environment": "Xcode27.1 Duo27.1 simulator;12 shared stack/split cells plus at most4 ordinary baseline controls; reuse valid source-matched observations",
+          "evidence": "Historical EXP210 preparation owns the original40-slot definition, four genuine26.5/27.1 builds and its stopped/diagnostic attempts; no behavioral gate credit. The current execution obligation is only the12-cell Duo coverage package plus at most4 diagnostic ordinary baseline controls in releases.S2.execution_packages. Rebind reusable source/build observations to that contract; no duplicate40-cell run. Results/S2-release-gate-review-20260925.json preserves the former wording.",
+          "required": true,
+          "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
       }
     },
@@ -374,13 +377,14 @@
           "scope": "SwiftUI automatic action non-regression after an iOS 27 rebuild",
           "status": "OPEN",
           "dependencies": [
-            "S2:A02",
+            "S2:A01",
             "S2:F07"
           ],
-          "decisive_test": "Keep both comparisons separate: old-build vs SDK27 rebuild, and current-vs-baseline RUM SDK on rebuilt apps. Complete eight unresolved old-build Duo cells through prepared human input; rerun only affected candidate cells after F07. No changed automatic detection/owner regression.",
-          "environment": "Xcode27.1 Duo simulator with preflighted frozen builds and one human session",
-          "evidence": "Results/EXP-210-s2-automatic-coverage.json owns the same40 current-source slots. Its human_current_composition binds62f64 versus c9faed81: reviewed passive observer,28 source/build controls and four genuine SDK26.5/27.1 arms qualify.14 capture controls pass, but whole-cell/fold/cleanup runtime and native qualification remain. Original input failures and historical source limits are preserved; no behavioral gate credit.",
-          "required": true
+          "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild at baseline SDK and baseline-to-candidate SDK at27.1 on Duo. Report SwiftUI actions separately. No new loss, duplicate occurrence or wrong owner for the same actual journey; documented baseline limitations may remain. No40-cell cross-product or whole-payload backend equality.",
+          "environment": "Xcode27.1 Duo27.1 simulator;12 shared stack/split cells plus at most4 ordinary baseline controls; reuse valid source-matched observations",
+          "evidence": "Historical EXP210 preparation owns the original40-slot definition, four genuine26.5/27.1 builds and its stopped/diagnostic attempts; no behavioral gate credit. The current execution obligation is only the12-cell Duo coverage package plus at most4 diagnostic ordinary baseline controls in releases.S2.execution_packages. Rebind reusable source/build observations to that contract; no duplicate40-cell run. Results/S2-release-gate-review-20260925.json preserves the former wording.",
+          "required": true,
+          "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
       }
     },
@@ -879,8 +883,8 @@
             "S2:A01",
             "S2:F07"
           ],
-          "decisive_test": "Complete delayed work across navigation, session rollover and fold; exact Resource start-view/session, success/error and metrics behavior must match the frozen baseline contract. Require no new foreign action/error counts; retain the inherited EXP202 Resource/action count1/0 exception explicitly. E03 repair is excluded from this composition.",
-          "environment": "Candidate-vs-baseline native fixtures and Datadog app where integrated",
+          "decisive_test": "Preserve accepted navigation and rollover checks. Remaining fold workload must retain Resource start-view/session, success/error and metrics, with no new foreign action/error counts. Keep inherited EXP202 Resource/action count1/0 limitation; E03 is excluded. App-level Resource parity is checked once in F08.",
+          "environment": "Four shared Duo fold cells (baseline/candidate \u00d7 automatic/registered URLSession) with scoped RUM/APM joins; integrated app checked once by F08",
           "evidence": "EXP221 qualifies all four navigation cells; both selected-candidate rollover modes also pass strict native/backend/cleanup checks. Both rollover baselines remain INVALID on reviewed repeated-resume currentRequest baggage mutation; protocol-start carriers stayed old-owned. Results/EXP-221-s2-resource-trace.json and Results/EXP-221-session-rollover.json own the evidence and limits. Actual fold and integrated-app obligations remain open; E03/E05 limitations are unchanged.",
           "required": true,
           "completion_mode": "Captured Resource start ownership; inherited action-count limitation documented",
@@ -905,7 +909,8 @@
               "decisive_test": "Both candidate modes pass the unchanged strict two-session native oracle, 13 RUM rows, two independent 10-span inventories, nine full traces and cleanup. Both baseline failures remain invalid with source-attributed currentRequest baggage mutation; no backend or comparison pass is inferred for them.",
               "environment": "Existing Duo27.1 /24A94401, Xcode27.1 /27A9269, Release fixture and authenticated Datadog RUM/APM"
             }
-          ]
+          ],
+          "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
       }
     },
@@ -1058,8 +1063,8 @@
             "S2:A01",
             "S2:F07"
           ],
-          "decisive_test": "Across navigation/fold, preserve manual/parent span start ownership and existing automatic URLSession completion-time RUM correlation, with exact trace/parent IDs and unchanged headers/sampling. Retain the inherited EXP202 correlation limit; E05 request-time repair is excluded from this composition.",
-          "environment": "Candidate-vs-baseline native fixtures and Datadog app where integrated",
+          "decisive_test": "Use the same remaining fold workload as T03. Preserve manual span start ownership, existing automatic completion-time RUM correlation, exact within-run trace/parent IDs and unchanged carriers/sampling. Keep inherited EXP202 limit and intentional E01 fix; E05 is excluded.",
+          "environment": "Four shared Duo fold cells (baseline/candidate \u00d7 automatic/registered URLSession) with scoped RUM/APM joins; integrated app checked once by F08",
           "evidence": "EXP221 qualifies all four navigation cells; both selected-candidate rollover modes also pass strict native/backend/cleanup checks. Both rollover baselines remain INVALID on reviewed repeated-resume currentRequest baggage mutation; protocol-start carriers stayed old-owned. Results/EXP-221-s2-resource-trace.json and Results/EXP-221-session-rollover.json own the evidence and limits. Actual fold and integrated-app obligations remain open; E03/E05 limitations are unchanged.",
           "required": true,
           "completion_mode": "Captured manual span start ownership; documented existing process-context fallback for automatic URLSession completion",
@@ -1084,7 +1089,8 @@
               "decisive_test": "Both candidate modes pass the unchanged strict two-session native oracle, 13 RUM rows, two independent 10-span inventories, nine full traces and cleanup. Both baseline failures remain invalid with source-attributed currentRequest baggage mutation; no backend or comparison pass is inferred for them.",
               "environment": "Existing Duo27.1 /24A94401, Xcode27.1 /27A9269, Release fixture and authenticated Datadog RUM/APM"
             }
-          ]
+          ],
+          "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
       },
       "separate_header_policy_review": {
@@ -1173,10 +1179,12 @@
             "S2:A01",
             "S2:F07"
           ],
-          "decisive_test": "Long-lived native/WebView association and delayed web events survive navigation/fold then detach without stale ownership.",
-          "environment": "Candidate-vs-baseline native fixtures and Datadog app where integrated",
+          "decisive_test": "One baseline/candidate real WKWebView journey: active native owner beyond cache TTL, navigate A-to-B, delayed A event before inactive expiry and after expiry, then detach/release. Assert native application/session, distinct browser ID and exact A-or-absent container; never B. Fold is already covered and is not a second critical mechanism here.",
+          "environment": "Qualified iOS27 simulator with actual WKScriptMessage bridge, replay eligibility for container correlation, and authenticated backend",
           "evidence": "Reference evidence retained. Results/S2-T10-source-preparation.json freezes the four-marker source/ownership preparation; current candidate native/fold/app evidence remains open.",
-          "required": true
+          "required": true,
+          "completion_mode": "Captured event-time native owner while cache-eligible; documented absent container after expiry; no foreign owner or new explicit target",
+          "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
       }
     },
@@ -1608,13 +1616,14 @@
           "scope": "Ordinary single-scene UIKit interactive navigation",
           "status": "OPEN",
           "dependencies": [
-            "S2:A02",
+            "S2:A01",
             "S2:F07"
           ],
-          "decisive_test": "Recognized cancellation preserves outgoing owner; completion produces fresh return owner; baseline/candidate agree. Exclude unchanged paths only through F07 source evidence; full multi-scene combinations remain S3.",
-          "environment": "Qualified Duo simulator and relevant physical iPhone/iPad; prepared human native input as needed",
+          "decisive_test": "In the shared UIKit stack pair, prove real cancel/finish and resulting occurrence/action ownership. Preserve unchanged automatic limitations; compare emitted callback-work owners without requiring asynchronous mapper publication before the native callback.",
+          "environment": "Qualified Duo27.1 simulator; physical iPhone/iPad only for a specifically unsupported interaction mechanism, not a duplicate matrix",
           "evidence": "Reference evidence retained; this release candidate is not qualified. Results/S2-remaining-gate-applicability.json reviews the F07 exclusion option: unchanged gesture/hosting implementations do not close the actual native lifecycle/owner contract through the changed E04 transition path. Gate remains open.",
-          "required": true
+          "required": true,
+          "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
       }
     },
@@ -1646,13 +1655,14 @@
           "scope": "Ordinary single-scene SwiftUI interactive navigation",
           "status": "OPEN",
           "dependencies": [
-            "S2:A02",
+            "S2:A01",
             "S2:F07"
           ],
-          "decisive_test": "Recognized native cancellation/completion preserves documented automatic/manual coverage and exact changed-path ownership. Exclude unchanged paths only through F07 source evidence; full multi-scene combinations remain S3.",
-          "environment": "Qualified Duo simulator and relevant physical iPhone/iPad; prepared human native input as needed",
+          "decisive_test": "In the shared SwiftUI automatic/existing-manual stack pairs, prove real cancel/finish and emitted work/occurrence parity. No semantic S3 API, exact internal callback order or mapper-before-callback requirement.",
+          "environment": "Qualified Duo27.1 simulator; physical iPhone/iPad only for a specifically unsupported interaction mechanism, not a duplicate matrix",
           "evidence": "Reference evidence retained; this release candidate is not qualified. Results/S2-remaining-gate-applicability.json reviews the F07 exclusion option: unchanged gesture/hosting implementations do not close the actual native lifecycle/owner contract through the changed E04 transition path. Gate remains open.",
-          "required": true
+          "required": true,
+          "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
       }
     },
@@ -1686,13 +1696,14 @@
           "scope": "Ordinary single-scene presentation dismissal",
           "status": "OPEN",
           "dependencies": [
-            "S2:A02",
+            "S2:A01",
             "S2:F07"
           ],
-          "decisive_test": "Actual cancel/dismiss callbacks preserve outgoing/fresh return ownership and callback work; no synthetic completion. Exclude unchanged paths only through F07 source evidence; full multi-scene combinations remain S3.",
-          "environment": "Qualified Duo simulator and relevant physical iPhone/iPad; prepared human native input as needed",
+          "decisive_test": "Reuse the shared stack pairs for one real cancel and one completed sheet dismissal per declared tracking mode. Require recognized native outcome and baseline/candidate owner parity; no separate cover/device cross-product.",
+          "environment": "Qualified Duo27.1 simulator; physical iPhone/iPad only for a specifically unsupported interaction mechanism, not a duplicate matrix",
           "evidence": "Reference evidence retained; this release candidate is not qualified. Results/S2-remaining-gate-applicability.json reviews the F07 exclusion option: unchanged gesture/hosting implementations do not close the actual native lifecycle/owner contract through the changed E04 transition path. Gate remains open.",
-          "required": true
+          "required": true,
+          "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
       }
     },
@@ -1724,13 +1735,14 @@
           "scope": "Ordinary single-scene adaptive resize/fold",
           "status": "OPEN",
           "dependencies": [
-            "S2:A02",
+            "S2:A01",
             "S2:F07"
           ],
-          "decisive_test": "Measured geometry/selection/path and relevant automatic/manual owner behavior match baseline through resize/fold. Exclude unchanged paths only through F07 source evidence; full multi-scene combinations remain S3.",
-          "environment": "Qualified Duo simulator and relevant physical iPhone/iPad; prepared human native input as needed",
+          "decisive_test": "Reuse the automatic coverage split journeys for actual Closed/Open display geometry, stable scene/window/controller ownership, selection continuity and no new view/action misattribution. No extra physical-iPad resize matrix or ideal semantic selection guarantee.",
+          "environment": "Qualified Duo27.1 simulator; physical iPhone/iPad only for a specifically unsupported interaction mechanism, not a duplicate matrix",
           "evidence": "Reference evidence retained; this release candidate is not qualified. Results/S2-remaining-gate-applicability.json reviews the F07 exclusion option: unchanged gesture/hosting implementations do not close the actual native lifecycle/owner contract through the changed E04 transition path. Gate remains open.",
-          "required": true
+          "required": true,
+          "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
       }
     },
@@ -1786,15 +1798,16 @@
         },
         "S2": {
           "scope": "Ordinary UIKit-hosted SwiftUI tracking",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [
-            "S2:A02",
+            "S2:A01",
             "S2:F07"
           ],
-          "decisive_test": "Existing automatic/manual UIHostingController integration matches baseline on changed shipped paths, without adopting semantic scene APIs. Exclude unchanged paths only through F07 source evidence; full multi-scene combinations remain S3.",
-          "environment": "Qualified Duo simulator and relevant physical iPhone/iPad; prepared human native input as needed",
-          "evidence": "Reference evidence retained; this release candidate is not qualified. Results/S2-remaining-gate-applicability.json reviews the F07 exclusion option: unchanged gesture/hosting implementations do not close the actual native lifecycle/owner contract through the changed E04 transition path. Gate remains open.",
-          "required": true
+          "decisive_test": "Assess saved source-matched automatic/manual UIHostingController native transitions and emitted view occurrence/owner parity first. Deferred/coalesced SwiftUI callbacks do not alone fail S2. Run only a missing changed-path case; source evidence alone cannot replace a missing outcome.",
+          "environment": "Qualified Duo27.1 simulator; physical iPhone/iPad only for a specifically unsupported interaction mechanism, not a duplicate matrix",
+          "evidence": "Results/S2-H16-scoped-assessment.json independently reviews four immutable Duo27.1 recordings at62f64/c9faed81: automatic/manual pairs match five actual hosting transitions, fresh RUM occurrence owners, one session, stopped lifetimes and declared counters; original hashes/cleanup verify and8 negative controls reject semantic failures. Representative persisted hosting views reuse accepted automatic A/B joins. No B-manual backend, callback parity, action, gesture, fold, physical or S3 claim. Original INVALID labels are unchanged.",
+          "required": true,
+          "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
       }
     },
@@ -2545,13 +2558,13 @@
             "S2:T03",
             "S2:T08",
             "S2:T10",
-            "S2:F08",
-            "S2:A02"
+            "S2:F08"
           ],
-          "decisive_test": "Require applicable correctness, View/Action information, Resource attribution, object-lifetime/reentrancy, privacy, crash/API and exact source/artifact checks plus attributable review. Included new semantic SwiftUI/multi-scene changes require the bounded P01 application comparison for frame rate, hitches/hangs, CPU and memory; source exclusion can qualify non-applicability. No detailed network or per-dispatch microbenchmark prerequisite. Signed outgoing history is required before any separately authorized push. Session Replay captured-content defects are not blockers; host-app crash safety and other-feature non-disruption remain required.",
+          "decisive_test": "Review the exact selected source, accepted evidence, baseline limitations and remaining hardware uncertainty. No unresolved attributable regression, API/wire/privacy change or required evidence gap. Preserve qualified compatibility/lifetime checks; sign outgoing history before separately authorized publication. The S2 acceptance contract governs behavioral and delivery evidence separately; no immediate background upload, physical-Duo or optional performance prerequisite.",
           "environment": "Exact candidate; one host; no concurrent measurement contamination",
           "evidence": "Reference evidence retained; this release candidate is not qualified. Latest scope supersedes earlier numeric/practical-network benchmarking prerequisites: User acceptance-scope correction2026-09-20: only new SwiftUI semantic tracking and multi-scene changes require representative application-level performance comparison. Detailed network microbenchmarks and a replacement standalone network campaign are not release blockers; investigate networking performance only on concrete customer-visible evidence. Correctness, attribution and object lifetime remain required. NETWORK_BENCHMARK_FOLLOWUP.md",
-          "required": true
+          "required": true,
+          "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
       }
     },
@@ -2768,10 +2781,11 @@
             "S2:A01",
             "S2:F07"
           ],
-          "decisive_test": "Freeze app and SDK source/build identity; compare ordinary journeys and exact telemetry expectations, long sessions, resources and WebView correlation. Include internal TestFlight evaluation after separate distribution authorization.",
-          "environment": "Controlled normal-mode Datadog app; probe RUM application43cbc59b-0626-438b-a3d9-c6417a4545a3; service ios-app-rum-release-validation; simulator/physical host",
+          "decisive_test": "One source-matched baseline/candidate normal-mode app journey: launch/login, Services list/detail/Back, one dashboard/browser interaction and one background/foreground. Check actual view/action/resource/browser ownership, successful UI and no new crash/hang. Reuse dedicated T10 for adversarial TTL cases. Dedicated fixture evidence owns adversarial Resource/Trace/TTL cases. Internal TestFlight is an optional separately authorized distribution follow-up.",
+          "environment": "Existing controlled app, accessible test account/data, isolated probe RUM app/service; Duo simulator preferred, ordinary host for non-Duo integration evidence",
           "evidence": "Frozen app6e33f1c18 builds against baseline62f64/candidatec9fa remain reusable. Results/S2-F08-app-journeys.json owns all closed setup/transport/native attempts, reviewed collector/AX observers and the current input prerequisite. Native navigation is partial; no full baseline/candidate pair or gate credit. Results/S2-F08-source-oracle.json owns source/inventory preparation and finite J02-J04 expectations. Full paired journeys, account binding, mapper completeness and release evaluation remain open.",
-          "required": true
+          "required": true,
+          "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         },
         "S3": {
           "scope": "Bounded app multi-window readiness audit",
@@ -2796,16 +2810,17 @@
       "evidence": "",
       "release_requirements": {
         "S2": {
-          "scope": "Prepared blocked-input and app-journey session",
+          "scope": "Operational preparation for bounded input sessions",
           "status": "OPEN",
           "dependencies": [
             "S2:A01",
             "S2:F07"
           ],
-          "decisive_test": "Freeze ordered scenarios, automated reset/capture/assertions and source/input/topology proof before requesting one session. Preserve failed automation; no weaker oracle. Include eight unresolved old-build Duo cells and changed ordinary gestures/dismissal/resize/hosting; candidate app journeys and adversarial active-work folds. Freeze finite inventory before execution.",
-          "environment": "Single host; Duo simulator27.1 and connected eligible iPhone/iPad",
+          "decisive_test": "Prepare source-bound fixtures, current readiness, actual input/effect capture and safe cleanup for each needed package. This is execution readiness, not a product release gate; missing preparation blocks only that run. No duplicate hardware campaign or new telemetry requirement.",
+          "environment": "The environment needed by the selected package; separate short sessions are permitted",
           "evidence": "Results/S2-input-session-preparation.json owns the ordered groups. Hosting, WebView and Resource/Trace human runners are prepared; automatic builds qualify but their runtime, interactive-transition bindings and app capture/authentication remain. No native input acceptance credit.",
-          "required": true
+          "required": false,
+          "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         },
         "S3": {
           "scope": "Prepared residual multi-scene human session",
@@ -2861,7 +2876,7 @@
       "id": "S2",
       "name": "Single-scene iPhone Duo readiness",
       "deadline": "2026-10-16",
-      "shipping_rule": "No worse RUM after SDK27 rebuild without major application changes. Selected E01+DL01+E04 productionc9faed81 on develop62f64, documented through7604da24; EXP-216 binds exact source and lifetime evidence. Combined-source compatibility is qualified by EXP-217; Duo/app/backend and final release gates remain; no new scene API or physical-Duo prerequisite.",
+      "shipping_rule": "No worse RUM after SDK27 rebuild without major app changes, evaluated by the S2 semantic acceptance contract and six finite execution packages below. E01+DL01+E04 productionc9faed81 on62f64 retains qualified source/lifetime/compatibility evidence; Duo behavior, integrated ownership and final review remain open. No new scene API, duplicate physical matrix or immediate background-upload requirement.",
       "hardware_uncertainty": "No physical Duo validated. Targeted F09 follows when hardware is available; it is not pre-release readiness proof.",
       "selected_candidate": "E01 + DL01 + E04",
       "candidate_freeze": {
@@ -2919,6 +2934,181 @@
           },
           "superseded_by": "EXP-216",
           "reason": "Observed core/cache/native host lifetime obligations are qualified by the exact E01+DL01+E04 composition; no former E01-only result is relabeled."
+        }
+      ],
+      "acceptance_contract": {
+        "version": "s2-no-regression-v2",
+        "review": "Results/S2-release-gate-review-20260925.json",
+        "objective": "An existing single-scene app rebuilt with SDK27 on Duo preserves useful RUM View/Action information and Resource/native-WebView ownership without new crash, hang or lifetime defects. Existing automatic coverage limitations are acceptable when identified and unchanged.",
+        "source_pair": {
+          "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+          "candidate": "c9faed816a1d4828d7d8c4b64acae01119425889"
+        },
+        "blocking_regressions": [
+          "New missing or duplicate expected view/action occurrences for the same observed journey",
+          "Wrong within-run session/view/resource/browser/trace owner or lost required attributes",
+          "Candidate-only failure of a real navigation, dismissal, layout or lifecycle transition",
+          "New SDK-caused crash, deadlock, host-app disruption or post-work retention",
+          "Changed public API, wire format or privacy boundary without approval"
+        ],
+        "comparisons": [
+          "Keep rebuild impact (same SDK, genuine26.5 versus27.1 build) separate from SDK-change impact (baseline versus candidate, both built27.1).",
+          "Keep UIKit/SwiftUI views/actions as four conclusions. Match native destinations and relationships, not cross-run UUIDs, generated class spellings or elapsed durations.",
+          "Use actual native input effects and emitted event owners. Do not require an asynchronous mapper to publish before a UIKit/SwiftUI callback. Real cancel/complete witnesses remain required for interactive claims.",
+          "Preserve baseline omissions/coarse names and intentional E01/E04 fixes explicitly. A candidate-only difference needs disposition; a failed input or late receipt is not an SDK regression."
+        ],
+        "evidence": [
+          "Source/build/install/run identity, actual scenario boundaries and cleanup remain mandatory. Unexpected events and raw fields are retained and classified; no owner-by-name or event-dropping shortcut.",
+          "Local serialized mapper events decide native view/action emission and occurrence ownership. Backend evidence is mandatory for the scoped Resource/Trace/WebView and integrated-app persistence checks, plus one representative native View/Action join; it is not a complete raw-field equality prerequisite for every gesture.",
+          "A backend join checks required event identity, owner, type/name, declared attributes/counters, lifecycle state and presence/duplication. Session reducer totals, document version numbering, intake time, brightness, incidental TTID precision and Replay metadata are not universal S2 gesture criteria.",
+          "A missing required backend inventory leaves that backend obligation incomplete. Independently valid local comparisons may proceed and be reported; overall end-to-end acceptance stays incomplete until required evidence and cleanup pass.",
+          "Keep original run verdicts and deadlines immutable. A separately reviewed assessment may use preserved valid observations for a narrower explicitly named claim; it does not turn an old INVALID run into PASS."
+        ],
+        "delivery": [
+          "Home checks actual background and the existing view stop; no synthetic Background view, session expiry or immediate background upload is required.",
+          "Separate the immutable behavioral cutoff from a predeclared foreground delivery/collection phase. New foreground occurrences and post-cutoff work are captured separately and cannot alter the assessed old owners.",
+          "Use ordinary SDK batching. No forced flush, background-upload configuration change or delivery-specific fixture lease is required for S2. No deadline is extended or restarted on the same attempt."
+        ],
+        "environment": [
+          "Duo27.1 simulator under Xcode27.1 is the primary S2 fold/rebuild environment; actual display and owned scene/window/controller evidence are required.",
+          "A physical iPhone/iPad can qualify an otherwise unsupported interaction mechanism or supplemental ownership claim. It is not a second mandatory full matrix and cannot prove Duo geometry or hardware behavior.",
+          "Previously qualified deployment15/17.5 compatibility, source exclusion, lifetime and reentrancy evidence stays closed within its source bounds. Physical Duo remains F09 follow-up."
+        ],
+        "scope_limits": [
+          "No S3 semantic APIs, simultaneous scenes or manifest=true matrix",
+          "No new optional networking/per-dispatch benchmark or Session Replay content checks",
+          "No new test family without a named S2 regression risk and decisive discriminator",
+          "Preparation/build/control passes earn no product gate closure; A02 is an operational prerequisite, not a release outcome"
+        ]
+      },
+      "execution_packages": [
+        {
+          "id": "coverage",
+          "title": "Automatic coverage and rebuild comparison",
+          "gates": [
+            "C07",
+            "C08",
+            "C09",
+            "C10",
+            "H14"
+          ],
+          "owner": "SDK implementer; device operator only for unsupported input",
+          "dependencies": [
+            "A01",
+            "F07"
+          ],
+          "decisive_test": "Four UIKit/SwiftUI stack/split journeys on Duo: baseline SDK built26.5, same SDK built27.1, candidate built27.1 (12 cells). Reuse valid evidence; at most four ordinary-iPhone baseline controls. Separate view/action reports; actual Closed/Open geometry, navigation, tap/scroll ownership and no new omissions/duplicates. Reuse split fold for H14.",
+          "environment": "Xcode27.1 Duo27.1 simulator; genuine26.5 and27.1 frozen builds; ordinary iPhone simulator controls",
+          "budget": "12 Duo cells plus at most4 ordinary controls; no candidate26.5 or manifest=true cross-product",
+          "evidence_owner": "Results/EXP-210-s2-automatic-coverage.json"
+        },
+        {
+          "id": "transitions",
+          "title": "Interactive transitions and existing hosting",
+          "gates": [
+            "H11",
+            "H12",
+            "H13",
+            "H16"
+          ],
+          "owner": "SDK implementer; human operator only if native input is unavailable",
+          "dependencies": [
+            "A01",
+            "F07"
+          ],
+          "decisive_test": "Baseline/candidate pop cancel/finish and sheet cancel/dismiss for UIKit automatic, SwiftUI automatic and existing manual SwiftUI (six stack cells maximum, shared with coverage where possible). Native outcome and emitted callback-work owners must agree within documented baseline limits. Reassess saved four hosting cells before running any missing hosting case.",
+          "environment": "Duo simulator for ordinary outcomes; one eligible iPhone/iPad pair only as a scoped input fallback, with no Duo-hardware claim",
+          "budget": "Six stack cells maximum; reuse current-source hosting evidence and run only a missing changed-path case",
+          "evidence_owner": "Results/EXP-223-interactive-transitions.json; Results/EXP-222-hosted-swiftui.json"
+        },
+        {
+          "id": "network",
+          "title": "Resource and Trace during fold",
+          "gates": [
+            "T03",
+            "T08"
+          ],
+          "owner": "SDK implementer",
+          "dependencies": [
+            "A01",
+            "F07"
+          ],
+          "decisive_test": "Retain accepted navigation/rollover evidence. Four remaining fold cells: baseline/candidate \u00d7 automatic/registered URLSession. One shared workload checks Resource success/error/start owner and metrics plus trace/parent IDs, existing correlation and carriers. App resources are checked once in F08.",
+          "environment": "Duo27.1 simulator and authenticated RUM/APM collection after the behavioral boundary",
+          "budget": "Four fold cells; no navigation/rollover rerun or separate Trace campaign",
+          "evidence_owner": "Results/EXP-221-duo-fold.json"
+        },
+        {
+          "id": "webview",
+          "title": "Native/WebView lifetime and delayed events",
+          "gates": [
+            "T10"
+          ],
+          "owner": "SDK implementer",
+          "dependencies": [
+            "A01",
+            "F07"
+          ],
+          "decisive_test": "One baseline/candidate real WKWebView journey: active native owner beyond cache TTL, navigate A-to-B, delayed A event before inactive expiry and after expiry, then detach/release. Assert native application/session, distinct browser ID and exact A-or-absent container; never B. Fold is already covered and is not a second critical mechanism here.",
+          "environment": "Qualified iOS27 simulator with actual WKScriptMessage bridge, replay eligibility for container correlation, and authenticated backend",
+          "budget": "Two existing-source cells; backend acknowledgement is outside the inactive-TTL critical path",
+          "evidence_owner": "Results/S2-T10-source-preparation.json"
+        },
+        {
+          "id": "app",
+          "title": "Ordinary integrated Datadog app smoke",
+          "gates": [
+            "F08"
+          ],
+          "owner": "SDK implementer + app owner",
+          "dependencies": [
+            "A01",
+            "F07"
+          ],
+          "decisive_test": "One source-matched baseline/candidate normal-mode app journey: launch/login, Services list/detail/Back, one dashboard/browser interaction and one background/foreground. Check actual view/action/resource/browser ownership, successful UI and no new crash/hang. Reuse dedicated T10 for adversarial TTL cases.",
+          "environment": "Existing controlled app, accessible test account/data, isolated probe RUM app/service; Duo simulator preferred, ordinary host for non-Duo integration evidence",
+          "budget": "Two app journeys; no live-customer session access,15-minute session expiry or TestFlight distribution prerequisite",
+          "evidence_owner": "Results/S2-F08-app-journeys.json"
+        },
+        {
+          "id": "review",
+          "title": "Final source and release review",
+          "gates": [
+            "F06"
+          ],
+          "owner": "RUM maintainers + independent reviewer",
+          "dependencies": [
+            "C01",
+            "C02",
+            "C03",
+            "C04",
+            "C05",
+            "C06",
+            "P01",
+            "P03",
+            "P04",
+            "A01",
+            "F02",
+            "F03",
+            "F07",
+            "C07",
+            "C08",
+            "C09",
+            "C10",
+            "H11",
+            "H12",
+            "H13",
+            "H14",
+            "H16",
+            "T03",
+            "T08",
+            "T10",
+            "F08"
+          ],
+          "decisive_test": "Review the exact selected source, accepted evidence, baseline limitations and remaining hardware uncertainty. No unresolved attributable regression, API/wire/privacy change or required evidence gap. Preserve qualified compatibility/lifetime checks; sign outgoing history before separately authorized publication.",
+          "environment": "Frozen candidate and qualified artifacts; no new native campaign by default",
+          "budget": "One scoped final review; rerun only for changed source or reproduced regression",
+          "evidence_owner": "release-gates.json"
         }
       ]
     },
