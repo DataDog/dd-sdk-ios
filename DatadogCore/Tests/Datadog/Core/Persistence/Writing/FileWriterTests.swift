@@ -193,6 +193,55 @@ class FileWriterTests: XCTestCase {
         wait(for: [expectation], timeout: 0)
     }
 
+    func testGivenErrorVerbosity_whenMetadataExceedsMaxWriteSize_itWritesOnlyTheEvent() throws {
+        let expectation = expectation(description: "Writes complete")
+
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        let writer = FileWriter(
+            orchestrator: FilesOrchestrator(
+                directory: directory,
+                performance: StoragePerformanceMock(
+                    maxFileSize: .max,
+                    maxDirectorySize: .max,
+                    maxFileAgeForWrite: .distantFuture,
+                    minFileAgeForRead: .mockAny(),
+                    maxFileAgeForRead: .mockAny(),
+                    maxObjectsInFile: .max,
+                    maxObjectSize: 23 // 23 bytes is enough for TLV with {"key1":"value1"} JSON
+                ),
+                dateProvider: SystemDateProvider(),
+                telemetry: NOPTelemetry(),
+                metricsData: .init(
+                    trackName: "rum",
+                    consentLabel: .mockAny(),
+                    uploaderPerformance: UploadPerformanceMock.noOp,
+                    backgroundTasksEnabled: .mockAny()
+                )
+            ),
+            encryption: nil,
+            telemetry: NOPTelemetry()
+        )
+
+        writer.write(
+            value: ["key1": "value1"],
+            metadata: ["meta1": "metaValue1 that makes it exceed 23 bytes"],
+            completion: expectation.fulfill
+        )
+
+        // The rejected metadata must leave no bytes behind, so the file holds a single valid event block
+        XCTAssertEqual(try directory.files().count, 1)
+        let reader = try BatchDataBlockReader(input: directory.files()[0].stream())
+        let blocks = try XCTUnwrap(reader.all())
+        XCTAssertEqual(blocks.count, 1)
+        XCTAssertEqual(blocks[0].type, .event)
+        XCTAssertEqual(blocks[0].data, #"{"key1":"value1"}"#.utf8Data)
+        XCTAssertEqual(dd.logger.errorLog?.message, "(rum) Failed to encode metadata")
+
+        wait(for: [expectation], timeout: 0)
+    }
+
     func testGivenErrorVerbosity_whenDataCannotBeEncoded_itPrintsError() throws {
         let expectation = expectation(description: "Writes complete")
 

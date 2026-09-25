@@ -84,22 +84,22 @@ class TLVBlockTests: XCTestCase {
         )
     }
 
-    func testSerializeInto_producesSameBytesAsSerialize() throws {
+    func testSerializeInto_encodesMultiByteLength() throws {
         // Given
-        let blocks = [
-            Block(type: .one, data: Data()),
-            Block(type: .two, data: .mockRandom(ofSize: 1)),
-            Block(type: .three, data: .mockRandom(ofSize: 1_024)),
-            Block(type: .one, data: .mockRandom(ofSize: 512 * 1_024)),
-        ]
+        var buffer = Data([0xFF])
+        let payload: Data = .mockRandom(ofSize: 0x0102)
 
         // When
-        var buffer = Data()
-        try blocks.forEach { try $0.serialize(into: &buffer) }
+        try Block(type: .three, data: payload).serialize(into: &buffer)
 
         // Then
-        let expected = try blocks.reduce(into: Data()) { $0 += try $1.serialize() }
-        XCTAssertEqual(buffer, expected)
+        XCTAssertEqual(
+            buffer,
+            Data([0xFF])
+                + Data([0x03, 0x00, 0x02, 0x01, 0x00, 0x00])
+                //   ^   type  ^  ^    data size = 258  ^
+                + payload
+        )
     }
 
     func testSerializeInto_withLengthExceedingLimit_leavesBufferUnchanged() throws {
