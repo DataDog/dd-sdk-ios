@@ -112,6 +112,9 @@ class Release(unittest.TestCase):
 def ordered(cancelled=False, delayed=True):
     rows,before,after=sample(cancelled)
     armed=rows[0]['payload'];armed.update(expected_from='detail',expected_to='home')
+    sources=dict(edge='pan')
+    armed['pop_recognizer_sources']=sources
+    before['payload']['transition']['pop_recognizer_sources']=copy.deepcopy(sources)
     begin=next(r for r in rows if r['kind']=='transition_begin')['payload']
     begin.update(pan_began_uptime_ns=11,resolution_index=2 if delayed else 1,
                  resolution_probe='bound-probe',recognizer_state=2 if delayed else 1)
@@ -185,6 +188,8 @@ class ObserverOrdering(unittest.TestCase):
         rows,a,b=ordered();real=next(r for r in rows if r['kind']=='transition_pan_began')
         unrelated=copy.deepcopy(real);unrelated['payload']['recognizer']['id']='content-pan'
         a['payload']['transition']['armed'].append(unrelated['payload']['recognizer'])
+        a['payload']['transition']['pop_recognizer_sources']['content']='content-pan'
+        rows[0]['payload']['pop_recognizer_sources']['content']='content-pan'
         rows[0]['payload']['recognizers'].append(unrelated['payload']['recognizer'])
         probe=copy.deepcopy(next(r for r in rows if r['kind']=='transition_probe'))
         probe['payload'].update(probe_id='content-probe',recognizer=unrelated['payload']['recognizer'])
@@ -208,6 +213,66 @@ class ObserverOrdering(unittest.TestCase):
         self.assertIn('owner?.observed(self, recognizer: recognizer)',result)
         self.assertNotIn('var pending: [UIView] = [window]; var seen',result)
         with self.assertRaises(ValueError):physical_observer.render(raw+b'changed','old')
+
+
+class PublicPopSources(unittest.TestCase):
+    check = ObserverOrdering.check
+    def inventory(self, cancelled=False):
+        rows, before, after = ordered(cancelled)
+        original = copy.deepcopy(next(r for r in rows if r['kind']=='transition_begin')['payload']['recognizer'])
+        def content(value):
+            if isinstance(value, dict):
+                if value.get('id') == 'pan' and 'edges' in value:
+                    value['id'] = 'content-pan'; value.pop('edges')
+                for child in value.values():content(child)
+            elif isinstance(value, list):
+                for child in value:content(child)
+        content(rows)
+        closed = next(r for r in rows if r['kind']=='transition_closed')['payload']
+        inventories = [rows[0]['payload']['recognizers'], before['payload']['transition']['armed'],
+                       closed['recognizers'], closed['terminal_recognizers']]
+        seen = set()
+        for inventory in inventories:
+            if id(inventory) not in seen:inventory.append(copy.deepcopy(original)); seen.add(id(inventory))
+        sources = dict(edge='pan', content='content-pan')
+        rows[0]['payload']['pop_recognizer_sources'] = sources
+        before['payload']['transition']['pop_recognizer_sources'] = copy.deepcopy(sources)
+        return rows, before, after
+    def test_content_pop_finish_and_cancel_keep_full_callback_contract(self):
+        for cancelled in [False, True]:
+            rows, before, after = self.inventory(cancelled)
+            self.check((rows, before, after), cancelled)
+            rows.remove(next(r for r in rows if r['kind']=='transition_begin'))
+            with self.assertRaises(ValueError):self.check((rows, before, after), cancelled)
+    def test_unbound_missing_or_unknown_public_sources_reject(self):
+        for sources in [{}, dict(content='content-pan'), dict(edge='foreign', content='content-pan'),
+                        dict(edge='pan', content=12), dict(edge='pan', content='content-pan', private='pan')]:
+            rows, before, after = self.inventory()
+            rows[0]['payload']['pop_recognizer_sources'] = sources
+            before['payload']['transition']['pop_recognizer_sources'] = copy.deepcopy(sources)
+            with self.subTest(sources=sources), self.assertRaises(ValueError):self.check((rows, before, after))
+    def test_aliases_share_one_target_and_nil_content_retains_edge_fallback(self):
+        for sources in [dict(edge='pan'), dict(edge='pan', content='nil'), dict(edge='pan', content='pan')]:
+            rows, before, after = ordered()
+            rows[0]['payload']['pop_recognizer_sources'] = sources
+            before['payload']['transition']['pop_recognizer_sources'] = copy.deepcopy(sources)
+            self.check((rows, before, after))
+        rows, before, after = ordered()
+        rows[0]['payload']['recognizers'].append(copy.deepcopy(rows[0]['payload']['recognizers'][0]))
+        with self.assertRaises(ValueError):self.check((rows, before, after))
+    def test_source_inventory_cannot_change_between_arm_and_snapshot(self):
+        rows, before, after = self.inventory()
+        before['payload']['transition']['pop_recognizer_sources']['edge'] = 'content-pan'
+        with self.assertRaises(ValueError):self.check((rows, before, after))
+    def test_overlay_uses_available_public_content_property_without_policy_changes(self):
+        path=Path(__file__).with_name('TransitionObservation.swift');raw=path.read_bytes()
+        rendered=physical_observer.render(raw,hashlib.sha256(raw).hexdigest()).decode()
+        self.assertIn('if #available(iOS 26.0, *)',rendered)
+        self.assertIn('navigation.interactiveContentPopGestureRecognizer',rendered)
+        self.assertIn('popRecognizerSources',rendered)
+        for mutation in ['.delegate =', '.isEnabled =', '.require(toFail:', 'DispatchQueue.main.async']:
+            self.assertNotIn(mutation,rendered)
+        self.assertEqual(path.read_bytes(),raw)
 
 
 class TerminalContext(unittest.TestCase):

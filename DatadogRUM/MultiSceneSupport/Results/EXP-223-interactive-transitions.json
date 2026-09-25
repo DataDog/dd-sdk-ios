@@ -7,7 +7,7 @@
     "S2:H13",
     "S2:H14"
   ],
-  "status": "HUMAN_SCENARIO_PASS_BACKEND_INCOMPLETE_CLEANUP_PASS",
+  "status": "PHYSICAL_POP_CORRECTION_REVIEWED_NATIVE_UNADMITTED",
   "defined_at": "2026-09-22T23:17:07.076784+00:00",
   "owner": "SDK implementer + device operator",
   "reviewer": "/root/c06_runtime_plan",
@@ -326,7 +326,7 @@
     }
   ],
   "gate_closures": [],
-  "next_action": "Preserve the completed physical baseline and cleanup: all11 input steps/four transition chains/Home were captured, but action projection differences stopped backend collection and candidate stayed unrun. The reviewed action-only correction passes57 offline controls; saved terminal Home remains incomplete. Freeze/review a fresh pair with current helpers and fresh operator/device/backend readiness before admission; no old verdict, poll boundary or deadline may be reused.",
+  "next_action": "Obtain fresh human readiness and a sufficient authorized work window for the reviewed physical UIKit pair, then refresh device/Home/Xcode/backend observations and admit the baseline once. Candidate remains conditional on baseline qualification. Preserve the earlier completed scenario and later pop timeout, original cleanup PASS, zero backend queries and unrun candidate; no unchanged retry or retroactive acceptance.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
@@ -397,7 +397,7 @@
       "scope": "Fixture/native and local paired oracle only. Full runtime, backend, adaptive geometry and physical execution remain unqualified."
     }
   },
-  "updated_at": 1790326005.14183,
+  "updated_at": 1790332855.848615,
   "live_environment": {
     "observed_at": "2026-09-23T19:45:47.121281+00:00",
     "xcode": "27.1 (27A9269)",
@@ -2538,7 +2538,7 @@
       }
     }
   },
-  "state": "HUMAN_BASELINE_SCENARIO_PASS_CAPTURE_INCOMPLETE",
+  "state": "PHYSICAL_POP_CORRECTION_REVIEWED_NATIVE_UNADMITTED",
   "physical_cost_mapping": {
     "state": "BASELINE_FINALIZATION_INVALID",
     "artifacts": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-ipad-cost-mapping-pddjbmwg",
@@ -2761,23 +2761,26 @@
     "gate_closures": []
   },
   "current_human_runtime": {
-    "state": "REVIEWED_PREPARATION_FRESH_READINESS_REQUIRED",
+    "state": "PREPARED_REVIEWED_NATIVE_UNADMITTED",
     "plan": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/runtime-uikit/plan.json",
-      "sha256": "652715d21a101682387971822d32baf3e3ac70de1b9908db249862eb81cff275"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/runtime-uikit/plan.json",
+      "sha256": "db8c07b690f437915d64056d4765a78bf7a0c7d47d25f0a495bdee5eff3fbf09"
     },
     "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/runtime-uikit/controls.json",
-      "sha256": "e8217dd2d8f3529d8e222e48e644889f64bcd6fa0ac845da7df46478b2abe686"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/runtime-uikit/controls.json",
+      "sha256": "b9ab5fb6d08b4266fd3d89a4d56485319f568e0099f9ac142e707b6ef1a0a52c"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/runtime-uikit/review.json",
+      "sha256": "e8eff65fa3a2e207e3671f3ad2de57861db2c9b6e51df9b7feb5fa0606256ec0"
     },
     "input_mode": "human",
-    "signed_products_unchanged": true,
     "native_admitted": false,
+    "active_native": false,
     "gate_closures": [],
-    "review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/runtime-uikit/review.json",
-      "sha256": "c23a69e7cd1527435eb3edf7afe068563d05a0ab45ea2abd3cbd26b5c9010c10"
-    }
+    "changed_prerequisite": "Public edge/content pop observer inventory and same-request destination status",
+    "candidate": "CONDITIONAL_UNRUN",
+    "pair_seconds": 5700
   },
   "physical_human_capture_result": {
     "state": "HUMAN_BASELINE_SCENARIO_PASS_CAPTURE_INCOMPLETE",
@@ -2813,5 +2816,85 @@
       "original_verdict_unchanged": true,
       "remaining": "One exact earlier Home view revision; final boundary remains INVALID. No backend requery or native retry was used."
     }
+  },
+  "home_acceptance_contract": {
+    "clarified_by": "User messages on 2026-09-25",
+    "view": "Require the existing view explicit is_active:false update, captured natively and matched to the latest mapper revision in complete backend evidence. Inactivity-based backend view closure does not substitute.",
+    "session": "Backend session may remain active until 15 minutes after the last user-active event, such as a tap or view navigation. Session expiry is not required by Home acceptance.",
+    "background_view": "Synthetic Background view requires enabled Background Events Tracking and an eligible off-view event; Home alone does not require its creation.",
+    "implementation_verified": [
+      "physical_projection.py:138-148 requires stopped view fields",
+      "physical_projection.py:18 and differences preserve typed session state through its reducer",
+      "physical_rum_contract.py matches captured revisions without requiring inactive session"
+    ],
+    "sdk_change": false
+  },
+  "physical_pop_capture_correction": {
+    "state": "REVIEWED_PREPARATION_NATIVE_UNADMITTED",
+    "scope": [
+      "Physical-only observer coverage for both documented public pop recognizers, with iOS26 availability guard and older edge fallback",
+      "Informative host status after an observed navigation without the required callback; no synthetic completion or early cleanup"
+    ],
+    "trigger": "Latest same-binary baseline navigated to Home but emitted no observed pan/begin/completion for its armed edge recognizer. The earlier same-binary run captured all four chains.",
+    "attribution": "An unobserved content-pan path is a source-supported hypothesis, not a proven cause or SDK regression.",
+    "frozen_source_changes": "No SDK change; no change to the simulator observer or existing callback/ownership acceptance rules",
+    "decisive_controls": [
+      "Accept one actual content-pan chain from a unique prearmed public recognizer inventory",
+      "Retain edge-only and completed/cancelled callback cases",
+      "Reject unarmed/duplicate recognizers and missing/late callbacks",
+      "Status-only handling never supplies a missing callback or relaxes the existing deadline/release fence"
+    ],
+    "required_environment": "Focused offline controls and compiler validation, designated scoped review, then one separately prepared baseline qualification; candidate remains conditional",
+    "native_admitted": false,
+    "gate_closures": [],
+    "outcome": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/outcome.json",
+      "sha256": "ca7740c91c918777ea8bfb80f1b6e69401cf97295e579b79a2730594547fa46f"
+    },
+    "focused_tests": 36
+  },
+  "physical_pop_capture_result": {
+    "state": "STOPPED_CAPTURE_INCOMPLETE_CLEANUP_PASS",
+    "plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/runtime-uikit/plan.json",
+      "sha256": "652715d21a101682387971822d32baf3e3ac70de1b9908db249862eb81cff275"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/runtime-uikit/controls.json",
+      "sha256": "e8217dd2d8f3529d8e222e48e644889f64bcd6fa0ac845da7df46478b2abe686"
+    },
+    "input_mode": "human",
+    "signed_products_unchanged": true,
+    "native_admitted": true,
+    "gate_closures": [],
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/runtime-uikit/review.json",
+      "sha256": "c23a69e7cd1527435eb3edf7afe068563d05a0ab45ea2abd3cbd26b5c9010c10"
+    },
+    "admission": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/runtime-uikit/native-admission.json",
+      "sha256": "cf972232d05f875500c1a1ab4f796a23f1dfe4a13032102fec2a3a881afa25f0"
+    },
+    "preflight": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/runtime-uikit/human-preflight-ready.json",
+      "sha256": "6a180632d4bc07e43bb2bdbfa2c09ccf0f783cea0f65d79e020487b52d56984b"
+    },
+    "operator": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/runtime-uikit/operator-ready-refresh.json",
+      "sha256": "40f0add53c540bed4013d72d926b1140bc2b2e1248b7a32f84eca798f2022415"
+    },
+    "cell": "physical_ipad-UIKit-automatic-stack-A",
+    "run_id": "9d150cc9-8304-4f85-a5b0-414c1ca5b232",
+    "earlier_stage_failure": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/runtime-uikit/first-stage-failure.json",
+      "sha256": "5bc0d30a54b6f289400f26698820a908932b34f98f0b5a5ae3536b3c69f7b27d"
+    },
+    "outcome": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/runtime-uikit/physical-human-outcome.json",
+      "sha256": "981799f061231fde2a9001cf326a5a28321aedfb0bab4751f16a950e166d19c6"
+    },
+    "active_native": false,
+    "candidate": "UNRUN",
+    "backend_queries": 0
   }
 }

@@ -14,16 +14,7 @@
     "id": "rum-unattended-progress",
     "finding": "Update returned Automation does not exist; no replacement was created."
   },
-  "next_task": "Complete fresh readiness for the reviewed human UIKit pair after the action projection correction; original baseline remains INVALID, cleanup PASS",
-  "runtime_plan": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/runtime-uikit/plan.json",
-    "sha256": "6befa9e8bf0ec2549702762b1f8cfce0663af345e735204ff4de59109a365e75"
-  },
-  "preflight": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/device-qualified/outcome.json",
-    "sha256": "b33499e61d2462dd7b1c3c92bed5023eaca685888ddb699c14644c4f5732bc6e"
-  },
-  "native_admitted": false,
+  "next_task": "Reviewed physical UIKit preparation complete; fresh operator readiness and sufficient authorized window required before baseline admission",
   "gate_closures": [],
   "limits": [
     "No expired deadline extension or equivalent stopped-mechanism retry",
@@ -34,19 +25,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "human_plan": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/runtime-uikit/plan.json",
-    "sha256": "652715d21a101682387971822d32baf3e3ac70de1b9908db249862eb81cff275"
-  },
-  "human_review": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/runtime-uikit/review.json",
-    "sha256": "c23a69e7cd1527435eb3edf7afe068563d05a0ab45ea2abd3cbd26b5c9010c10"
-  },
-  "human_controls": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/runtime-uikit/controls.json",
-    "sha256": "e8217dd2d8f3529d8e222e48e644889f64bcd6fa0ac845da7df46478b2abe686"
-  },
-  "updated_at": 1790326005.144007,
+  "updated_at": 1790332855.850462,
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
@@ -55,5 +34,59 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/outcome.json",
     "sha256": "58e09307850aca4535607bc72c3fb50ac288bc18580f47c0312b0000bdbd4f53"
   },
-  "active_native": false
+  "active_native": false,
+  "latest_human_result": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/runtime-uikit/physical-human-outcome.json",
+    "sha256": "981799f061231fde2a9001cf326a5a28321aedfb0bab4751f16a950e166d19c6"
+  },
+  "prior_native_setup": {
+    "runtime_plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/runtime-uikit/plan.json",
+      "sha256": "6befa9e8bf0ec2549702762b1f8cfce0663af345e735204ff4de59109a365e75"
+    },
+    "preflight": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/device-qualified/outcome.json",
+      "sha256": "b33499e61d2462dd7b1c3c92bed5023eaca685888ddb699c14644c4f5732bc6e"
+    },
+    "native_admitted": true
+  },
+  "previous_human_runtime": {
+    "human_plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/runtime-uikit/plan.json",
+      "sha256": "652715d21a101682387971822d32baf3e3ac70de1b9908db249862eb81cff275"
+    },
+    "human_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/runtime-uikit/review.json",
+      "sha256": "c23a69e7cd1527435eb3edf7afe068563d05a0ab45ea2abd3cbd26b5c9010c10"
+    },
+    "human_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/runtime-uikit/controls.json",
+      "sha256": "e8217dd2d8f3529d8e222e48e644889f64bcd6fa0ac845da7df46478b2abe686"
+    },
+    "human_admission": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/runtime-uikit/native-admission.json",
+      "sha256": "cf972232d05f875500c1a1ab4f796a23f1dfe4a13032102fec2a3a881afa25f0"
+    }
+  },
+  "runtime_plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/runtime-uikit/plan.json",
+    "sha256": "db8c07b690f437915d64056d4765a78bf7a0c7d47d25f0a495bdee5eff3fbf09"
+  },
+  "human_plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/runtime-uikit/plan.json",
+    "sha256": "db8c07b690f437915d64056d4765a78bf7a0c7d47d25f0a495bdee5eff3fbf09"
+  },
+  "human_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/runtime-uikit/review.json",
+    "sha256": "e8eff65fa3a2e207e3671f3ad2de57861db2c9b6e51df9b7feb5fa0606256ec0"
+  },
+  "human_controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/runtime-uikit/controls.json",
+    "sha256": "b9ab5fb6d08b4266fd3d89a4d56485319f568e0099f9ac142e707b6ef1a0a52c"
+  },
+  "native_admitted": false,
+  "public_pop_correction": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/outcome.json",
+    "sha256": "ca7740c91c918777ea8bfb80f1b6e69401cf97295e579b79a2730594547fa46f"
+  }
 }

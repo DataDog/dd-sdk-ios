@@ -125,6 +125,38 @@ class Admission(unittest.TestCase):
             self.assertTrue(capture.driver.consumed([dict(sequence=2,kind=kind)],dict(sequence=1)))
 
 
+class InteractiveProgress(unittest.TestCase):
+    def setUp(self):
+        self.before = dict(sequence=33, payload=dict(request_id='current'))
+    def row(self, kind, *, sequence=35, request='current', screen='home'):
+        return dict(sequence=sequence, kind=kind, payload=dict(request_id=request, screen=screen))
+    def test_navigation_is_status_only_without_callback(self):
+        rows = [self.row('native_disappear'), self.row('human_appearance', sequence=36),
+                self.row('native_appear', sequence=38)]
+        self.assertEqual(capture.interactive_progress(rows, self.before, expected_screen='home'), (None, True))
+    def test_old_or_foreign_appearance_cannot_publish_progress(self):
+        for row in [self.row('human_appearance', sequence=32), self.row('human_appearance', request='old'),
+                    self.row('rum'), self.row('native_appear')]:
+            with self.subTest(row=row):
+                self.assertEqual(capture.interactive_progress([row], self.before, expected_screen='home'), (None, False))
+    def test_wrong_screen_is_not_expected_navigation_progress(self):
+        for screen in ['detail', 'sheet', None]:
+            row = self.row('human_appearance', screen=screen)
+            self.assertEqual(capture.interactive_progress([row], self.before, expected_screen='home'), (None, False))
+
+    def test_appearance_before_legitimate_callback_does_not_fail(self):
+        appearance = self.row('human_appearance'); completed = self.row('transition_complete', sequence=40)
+        rows = [appearance, completed]
+        original = copy.deepcopy(rows)
+        self.assertEqual(capture.interactive_progress(rows, self.before, expected_screen='home'), (completed, True))
+        self.assertEqual(rows, original)
+    def test_duplicate_callback_is_rejected_and_stale_callback_cannot_advance(self):
+        completed = self.row('transition_complete')
+        with self.assertRaises(Rejected):capture.interactive_progress([completed, copy.deepcopy(completed)], self.before, expected_screen='home')
+        for row in [self.row('transition_complete', sequence=32), self.row('transition_complete', request='old')]:
+            self.assertEqual(capture.interactive_progress([row], self.before, expected_screen='home'), (None, False))
+
+
 class PhysicalCostMapping(unittest.TestCase):
     def setUp(self):
         import physical_build

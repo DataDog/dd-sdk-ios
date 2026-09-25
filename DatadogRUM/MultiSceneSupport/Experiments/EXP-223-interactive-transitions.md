@@ -508,3 +508,26 @@ Reassessment of the saved inventories resolves all16 action differences but leav
 Home PENDING and final-boundary INVALID. No requery, native retry or release claim
 was used. The owner binds original evidence, correction/control/review hashes and
 a fresh pair preparation; new readiness and a separate admission remain required.
+
+The separately admitted follow-up used the exact same installed executable as the
+full-scenario baseline. Detail opened; the requested pop returned to Home and RUM
+stopped Detail/started Home. The armed edge recognizer emitted no pan/begin/completion
+chain, so the collector expired. Backend collection never started and candidate
+remained unrun. Release acknowledgement, native idle, app removal, original display,
+visual Home and supervisor quiescence passed within the original cleanup budget.
+The owner preserves both this failure and the earlier successful callback evidence.
+UIKit exposes a separate public content-pop recognizer from iOS26; the physical
+overlay observes only the edge property. That coverage gap is a repair candidate,
+not proof of which recognizer handled this gesture. No unchanged native retry is due.
+
+The physical overlay now binds both public pop properties under the iOS26 guard,
+records their aliases and observes each unique recognizer once. The older edge
+fallback remains. The oracle requires the same source/identity inventory before
+input and at capture; callback, owner and deadline checks remain strict. Actual
+same-request destination appearance now updates the instruction page while waiting
+for callbacks; it cannot supply missing evidence or initiate cleanup. All36 focused
+controls pass, both source-paired builds compile, four products are signed, and the
+designated review passes. Only the physical observer and fixture fingerprints
+changed in the clients; SDK source is unchanged. The owner binds the fresh reviewed
+UIKit pair. It is unadmitted pending current operator/device/backend readiness and
+a sufficient work window. This preparation closes no behavioral gate.

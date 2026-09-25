@@ -33,6 +33,16 @@ def transition(rows, before, after, *, cancelled, binding):
             'readiness recognizer inventory changed')
     require(armed['payload']['recognizers'] and len({x['id'] for x in armed['payload']['recognizers']})
             == len(armed['payload']['recognizers']), 'empty or duplicate recognizer registration')
+    if phase.startswith('pop.'):
+        sources = armed['payload'].get('pop_recognizer_sources')
+        require(type(sources) is dict and set(sources) in [{'edge'}, {'edge', 'content'}]
+                and sources == before['payload']['transition'].get('pop_recognizer_sources'),
+                'missing or changed public pop source inventory')
+        require(all(type(value) is str and value for value in sources.values()) and sources['edge'] != 'nil',
+                'invalid public pop recognizer identity')
+        require({value for value in sources.values() if value != 'nil'} ==
+                {value['id'] for value in armed['payload']['recognizers']},
+                'public pop sources do not match the unique armed targets')
     first = start['payload']
     pans = [r for r in selected if r['kind'] == 'transition_pan_began']
     pan = one([r for r in pans if r['payload']['recognizer'] == first['recognizer']], 'bound native pan began')

@@ -18,6 +18,17 @@ shared=io.shared
 require=io.require
 
 
+def interactive_progress(rows, before, *, expected_screen):
+    """Report actual appearance separately; only a callback advances collection."""
+    selected = [row for row in rows if row['sequence'] > before['sequence'] and
+                row['payload'].get('request_id') == before['payload']['request_id']]
+    completed = [row for row in selected if row['kind'] == 'transition_complete']
+    require(len(completed) <= 1, 'duplicate physical completion')
+    appeared = any(row['kind'] == 'human_appearance' and row['payload'].get('screen') == expected_screen
+                   for row in selected)
+    return (completed[0] if completed else None), appeared
+
+
 class Collector(driver.Collector):
     def __init__(self,*,remote,bundle,require_finalization=False,**kwargs):
         super().__init__(device=remote.identifier,**kwargs)
@@ -143,9 +154,15 @@ class Collector(driver.Collector):
                       '; continue across/down far enough and release to complete it.')
         instruction+=' Perform one gesture, then wait. Do not use Back or Dismiss.'
         actual=self.prompt(phase,instruction,folder,deadline,before)
+        progress_reported = False
         def finished():
-            values=[r for r in self.pending() if r['kind']=='transition_complete' and r['payload']['request_id']==before['payload']['request_id']]
-            require(len(values)<=1,'duplicate physical completion');return values[0] if values else None
+            nonlocal progress_reported
+            completed, appeared = interactive_progress(self.pending(), before, expected_screen=after_screen)
+            if appeared and completed is None and not progress_reported:
+                print(json.dumps(dict(human_status=dict(instruction=
+                    'View appearance captured. Waiting for transition callback evidence; do not repeat the gesture.'))), flush=True)
+                progress_reported = True
+            return completed
         self.wait(finished,deadline);print(json.dumps(dict(human_status=dict(instruction='Gesture observed. Wait while its ownership is captured.'))),flush=True)
         require(time.time()+self.budget['settle_seconds']<deadline,'no effect capture reserve');time.sleep(self.budget['settle_seconds'])
         after,after_folder=self.snapshot(phase+'.effect',deadline);driver.journey.visible(after,after_screen,self.binding)

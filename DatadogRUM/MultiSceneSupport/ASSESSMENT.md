@@ -97,7 +97,10 @@ stopped before app admission. This is a tooling limit with no SDK execution. The
 human baseline completed every gesture and Home; cleanup passed. Action representation
 mismatches stopped backend collection. Their narrow projection correction passes
 offline controls/review, but the saved terminal Home revision remains incomplete.
-The candidate is unrun and physical/backend acceptance stays open.
+A same-binary follow-up navigated correctly but missed its pop callback chain; cleanup
+passed before any backend query. The physical-only public recognizer correction is
+reviewed and built; native qualification remains. The candidate is unrun and
+physical/backend acceptance stays open.
 
 ## Immediate compatibility priority
 

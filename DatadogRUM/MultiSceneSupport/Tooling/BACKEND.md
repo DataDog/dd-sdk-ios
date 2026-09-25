@@ -78,6 +78,14 @@ versions can differ from mapper input; compare other terminal fields exactly and
 record both. Where exact SDK revisions matter, preserve an explicit mapper witness
 rather than substituting the backend search counter.
 
+For Home acceptance, require the existing view's explicit `view.is_active:false`
+update and exact latest captured revision. Backend inactivity closure is not a
+substitute. A session may remain active until 15 minutes after its last user-active
+event (for example, a tap or view navigation); do not require session expiry or
+`session.is_active:false` at Home. These backend timing rules were clarified by the
+project owner. Synthetic Background view creation separately requires enabled
+Background Events Tracking and an eligible off-view event; Home alone requires none.
+
 For stopped physical captures, `interactive-transitions/physical_projection.py`
 assesses exact saved broad/native exchanges offline. It verifies their original
 publication hashes/deadlines and preserves every mismatch. Finite empty-object,

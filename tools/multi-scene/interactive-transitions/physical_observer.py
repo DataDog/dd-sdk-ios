@@ -11,7 +11,8 @@ def render(raw, fingerprint):
     private weak var expectedFrom: UIViewController?
     private weak var expectedTo: UIViewController?
     private var panBegins: [ObjectIdentifier: UInt64] = [:]
-    private var probeIndex = 0''')
+    private var probeIndex = 0
+    private var popRecognizerSources: [String: String] = [:]''')
     start = value.index('        var pending: [UIView] = [window]')
     end = value.index('        guard !witnesses.isEmpty', start)
     value = value[:start] + '''        let graph = controllers()
@@ -26,7 +27,21 @@ def render(raw, fingerprint):
             }
             expectedFrom = navigation.viewControllers.last
             expectedTo = navigation.viewControllers[navigation.viewControllers.count - 2]
-            pans = [pan]
+            var sources: [(String, UIGestureRecognizer?)] = [("edge", pan)]
+            if #available(iOS 26.0, *) {
+                sources.append(("content", navigation.interactiveContentPopGestureRecognizer))
+            }
+            var seen = Set<ObjectIdentifier>(); var result = [UIPanGestureRecognizer]()
+            for (source, recognizer) in sources {
+                popRecognizerSources[source] = Self.key(recognizer)
+                guard let recognizer = recognizer else { continue }
+                guard let candidate = recognizer as? UIPanGestureRecognizer,
+                      candidate.view === navigation.view, candidate.view?.window === window else {
+                    fail("foreign or unsupported public pop recognizer"); return
+                }
+                if seen.insert(ObjectIdentifier(candidate)).inserted { result.append(candidate) }
+            }
+            pans = result
         } else {
             let presented = graph.filter {
                 $0.presentingViewController?.presentedViewController === $0
@@ -59,7 +74,8 @@ def render(raw, fingerprint):
 ''' + value[end:]
     value = replace_once(value, '"recognizers": witnesses.map(\\.initial), "uptime_ns": DispatchTime.now().uptimeNanoseconds])',
         '''"recognizers": witnesses.map(\\.initial), "uptime_ns": DispatchTime.now().uptimeNanoseconds,
-            "expected_from": Self.key(expectedFrom), "expected_to": Self.key(expectedTo)])''')
+            "expected_from": Self.key(expectedFrom), "expected_to": Self.key(expectedTo),
+            "pop_recognizer_sources": popRecognizerSources])''')
     start = value.index('    fileprivate func began(')
     end = value.index('        let record = ActiveTransition(', start)
     value = value[:start] + EVENT_RESOLUTION + value[end:]
@@ -68,7 +84,9 @@ def render(raw, fingerprint):
     value = replace_once(value, '        if recognizer.state == .began { owner?.began(self, recognizer: recognizer) }',
         '        owner?.observed(self, recognizer: recognizer)')
     value = replace_once(value, '        self.requestID = requestID; self.phase = phase',
-        '        self.requestID = requestID; self.phase = phase; panBegins.removeAll(); probeIndex = 0')
+        '        self.requestID = requestID; self.phase = phase; panBegins.removeAll(); probeIndex = 0; popRecognizerSources.removeAll()')
+    value = replace_once(value, '"armed": witnesses.map(\\.initial), "active_transition":',
+        '"armed": witnesses.map(\\.initial), "pop_recognizer_sources": popRecognizerSources, "active_transition":')
     value = replace_once(value, '    let from: String; let to: String; let window: String; let scene: String',
         '    let from: String; let to: String; let window: String; let scene: String; let container: String')
     value = replace_once(value, '        self.coordinator = coordinator; self.request = request; self.phase = phase; self.recognizer = recognizer',
