@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import plistlib
 import stat
 import subprocess
 import time
@@ -63,6 +64,31 @@ def live_prompt(root, arm, device, generation=None):
     return state
 
 
+def account_setup(root, arm, device, generation=None):
+    admission = read(root / 'admission.json')
+    state = read(root / 'qr-ready.json')
+    require(admission['state'] == 'ACCOUNT_SETUP_ONLY' and admission['capture_enabled'] is False
+            and admission['device'] == device and state['device'] == device
+            and state['scope'] == 'ACCOUNT_SETUP_ONLY' and state['ready'] is True
+            and state.get('cleanup_started') is False
+            and state['deadline'] > time.time() + 10, 'Account setup is not ready')
+    require(generation is None or state['generation'] == generation, 'Account setup changed')
+    require(state['admission_sha256'] == hashlib.sha256((root / 'admission.json').read_bytes()).hexdigest(),
+            'Account setup admission changed')
+    expected = Path(admission['application_path']).name
+    info = plistlib.loads((Path(admission['application_path']) / 'Info.plist').read_bytes())
+    require(state['executable'].endswith('/' + expected + '/' + info['CFBundleExecutable']), 'Foreign setup executable')
+    process = subprocess.check_output(['ps', '-p', str(state['pid']), '-o', 'comm='], timeout=5).decode().strip()
+    require(process == state['executable'], 'Original account setup process exited or changed')
+    screen = Path(state['screenshot'])
+    require(screen.is_absolute() and screen.resolve().is_relative_to(root.resolve())
+            and not any(p.is_symlink() for p in [screen, *screen.parents])
+            and stat.S_ISREG(screen.lstat().st_mode), 'Foreign or symlinked setup screenshot')
+    require(hashlib.sha256(screen.read_bytes()).hexdigest() == state['screenshot_sha256'],
+            'Account setup screen observation changed')
+    return state
+
+
 def bounded_copy(source, destination, expected):
     descriptor = os.open(source, os.O_RDONLY | os.O_NOFOLLOW)
     try:
@@ -85,34 +111,38 @@ def bounded_copy(source, destination, expected):
 def run(args):
     root = args.root.resolve(strict=True)
     directory = args.directory.resolve(strict=True)
-    plan = read(root / 'plan.json')
-    require(plan['mode'] == 'smoke' and plan['definition']['gate'] == 'S2:F08', 'Wrong journey plan')
-    state = live_prompt(root, args.arm, args.device)
+    setup = getattr(args, 'account_setup', False)
+    refresh = account_setup if setup else live_prompt
+    binding = root / ('admission.json' if setup else 'plan.json')
+    if not setup:
+        plan = read(binding)
+        require(plan['mode'] == 'smoke' and plan['definition']['gate'] == 'S2:F08', 'Wrong journey plan')
+    state = refresh(root, args.arm, args.device)
     devices = json.loads(subprocess.check_output(['xcrun', 'simctl', 'list', 'devices', 'booted', '-j'], timeout=10))
     require(any(d['udid'] == args.device and d['state'] == 'Booted' and d.get('isAvailable')
                 for group in devices['devices'].values() for d in group), 'Selected simulator is not booted')
-    output = root / ('qr-import-' + args.arm)
+    output = root / ('qr-import-account-setup' if setup else 'qr-import-' + args.arm)
     output.mkdir(mode=0o700)
     before = inventory(directory)
     armed_ns = time.time_ns()
     end = time.monotonic() + min(300, state['deadline'] - time.time() - 10)
     save(output / 'armed.json', dict(state='ARMED', at=time.time(), directory=str(directory), device=args.device,
          generation=state['generation'], deadline=state['deadline'], helper_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-         plan_sha256=hashlib.sha256((root / 'plan.json').read_bytes()).hexdigest()))
+         binding_sha256=hashlib.sha256(binding.read_bytes()).hexdigest(), scope='ACCOUNT_SETUP_ONLY' if setup else 'F08_JOURNEY'))
     print('ARMED: take one fresh QR screenshot; import requires no chat reply.', flush=True)
     previous = None
     copied = None
     result = dict(state='STOPPED_WITHOUT_IMPORT', import_attempts=0)
     try:
         while time.monotonic() < end:
-            live_prompt(root, args.arm, args.device, state['generation'])
+            refresh(root, args.arm, args.device, state['generation'])
             selected = candidate(before, inventory(directory), armed_ns, time.time_ns())
             if selected is not None and selected == previous:
                 name, info = selected
                 require(time.time_ns() - info[2] < 10_000_000_000, 'Screenshot is already stale')
                 copied = output / ('input' + Path(name).suffix.lower())
                 digest = bounded_copy(directory / name, copied, info)
-                live_prompt(root, args.arm, args.device, state['generation'])
+                refresh(root, args.arm, args.device, state['generation'])
                 result.update(state='IMPORT_OUTCOME_UNCERTAIN', import_attempts=1, source_sha256=digest,
                               saved_at_ns=info[2], started_at=time.time())
                 completed = subprocess.run(['xcrun', 'simctl', 'addmedia', args.device, str(copied)],
@@ -137,6 +167,7 @@ def run(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, required=True)
+    parser.add_argument('--account-setup', action='store_true', help='Use an actual QR-screen setup receipt outside a test session')
     parser.add_argument('--arm', choices=['baseline', 'candidate'], required=True)
     parser.add_argument('--device', required=True)
     parser.add_argument('--directory', type=Path, required=True)

@@ -47,8 +47,9 @@ open the QR screen and arm `qr_image_import.py` for the confirmed screenshot fol
 (Desktop). Only then refresh the QR code and take one screenshot. The helper imports
 it directly into simulator Photos; open **Choose QR Code Image** and select it.
 No chat upload or model/tool round trip belongs inside that validity window.
-Each arm needs its own fresh QR code. This is an authentication prerequisite,
-not a timing measurement or SDK acceptance criterion.
+A fresh QR code is needed only when authentication is required. Account setup is
+separate from measured navigation and should be reused once qualified. It is not a
+timing measurement or SDK acceptance criterion.
 The system picker exposes only the selected image. A bounded, off-main decoder
 rejects unreadable images or multiple codes, then uses the existing URL login
 handler. Authentication validation is unchanged; image data and decoded credentials
@@ -59,6 +60,16 @@ deadline. It ignores pre-existing images, rejects ambiguity and changed/symlinke
 input, and stops when the prompt closes. There is one bounded import with no retry.
 The private transfer copy is removed; the user's original and imported Photos image
 remain. Offline controls and review precede the first planned baseline qualification.
+
+For one-time setup outside a journey, use `--account-setup` with its separate
+admission and actual QR-screen receipt. The guard requires the original live app
+process, owned screenshot/hash, fresh generation and no cleanup. The same one-shot
+transfer rules apply; setup cannot grant test evidence or release credit. Let the
+user enable the needed Services/APM and dashboard read permissions in consent.
+A permission-error shell is not a loaded list. Retain the installed app/account
+when requested; never export credentials. A signed-in journey requires its own
+reviewed mode and fresh capture/session identity. The existing login mode cannot
+be repurposed by skipping steps or reusing an expired plan.
 
 `qr_image_patch.py` changes an existing LoginUI source file; it adds no project
 member. `QRCodeImageDecoderControls.swift` checks synthetic screenshots, rotation,
