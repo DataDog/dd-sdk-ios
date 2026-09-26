@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 authenticated app source/oracle preparation",
-  "status": "REVIEWED_OFFLINE_PROJECTION_READY_FOR_COMMITTED_PREPARATION",
+  "status": "REVIEWED_SIGNED_IN_PAIR_OPERATOR_PENDING",
   "at": "2026-09-26T21:41:09.354729+00:00",
   "owner": "SDK implementer",
   "reviewer": "existing /root/c06_runtime_plan",
@@ -182,7 +182,7 @@
     "partial cleanup relabeled as ordinary pass"
   ],
   "admission_limits": "This is source preparation only. No runtime/oracle pass, gate closure, new experiment or environment retry is implied. Existing J01, Duo and EXP220 automation stops remain closed; fresh execution needs materially changed environment and reviewed fixed admission.",
-  "next_action": "Commit the reviewed host/documentation checkpoint, then prepare the final source-bound signed-in pair using runtime-transition-stable-projection.json. Reuse qualified products/account; no new query, rebuild or login. Fresh operator/environment readiness is still required before native admission.",
+  "next_action": "Confirm operator availability, then capture fresh device/environment admission and run the reviewed baseline. Candidate only after baseline mechanism qualification. Retain account; no login or rebuild required. No active awake assertion.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/source-review.json",
     "sha256": "41f6a1f5348c383e8c11770dc50da59e45e9dc020559a49c2a60d8691815d6e9"
@@ -977,7 +977,7 @@
       "sha256": "675862d8225e6812bbe16c6754cf9a93de055095920c41c490f76901351c1773"
     },
     "projection_correction": {
-      "state": "REVIEWED_OFFLINE_PROJECTION_READY_FOR_COMMITTED_PREPARATION",
+      "state": "REVIEWED_SIGNED_IN_PAIR_OPERATOR_PENDING",
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz",
       "controls": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/projection-bound-controls-v3.json",
@@ -1000,6 +1000,10 @@
       "summary": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/projection-offline-summary.json",
         "sha256": "0ef71580d93594c901775d75d386fd1a9be561de8ac5d442104c2323cc09d1a4"
+      },
+      "prepared_pair": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/stable-projection-preparation-summary.json",
+        "sha256": "eace8a54d43bdee74a84b1ac7006c88512cffaff89c140df4fbeddc12e4040fb"
       }
     }
   }

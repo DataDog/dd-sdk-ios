@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 finite controlled app journeys",
-  "status": "REVIEWED_OFFLINE_PROJECTION_READY_FOR_COMMITTED_PREPARATION",
+  "status": "REVIEWED_SIGNED_IN_PAIR_OPERATOR_PENDING",
   "recorded_at": "2026-09-21T16:37:35.872371+00:00",
   "owner": "SDK implementer",
   "application_revision": "6e33f1c18a52d04b0793e6954f456bdbc1affe2f",
@@ -141,10 +141,10 @@
     "review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-tf3_dxfy/review.json",
     "candidate": "UNRUN"
   },
-  "next_action": "The F08 source/oracle owner holds the reviewed45-control projection and immutable996-row reassessment. Commit the documentation checkpoint and prepare the final source-bound pair before fresh human/environment admission. Preserve the original baseline INVALID/cleanup PASS and unrun candidate.",
+  "next_action": "Confirm operator availability, then capture fresh device/environment admission and run the reviewed baseline. Candidate only after baseline mechanism qualification. Retain account; no login or rebuild required. No active awake assertion.",
   "environment_readiness": "Results/S2-Duo-environment-readiness.json",
   "source_oracle": "Results/S2-F08-source-oracle.json",
-  "source_preparation_status": "REVIEWED_OFFLINE_PROJECTION_READY_FOR_COMMITTED_PREPARATION",
+  "source_preparation_status": "REVIEWED_SIGNED_IN_PAIR_OPERATOR_PENDING",
   "source_prepared_at": "2026-09-21T21:39:37.351271+00:00",
   "prebooted_continuation": {
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-prebooted-0ux7kfit",
