@@ -133,6 +133,11 @@ button from `1h` to `15 minutes`. Its displayed `15m` follows the WebView-confir
 interval under the source's consistent-timeframe setting. Retain the same attached
 dashboard/WebView and exact telemetry owners; do not reuse labels from another widget.
 
+Native dashboard appearance can precede WebView URL assignment and Browser startup.
+Wait for the source-owned attachment, loaded URL and valid preceding Browser inventory
+inside the original readiness deadline. Preserve each pending snapshot; wrong ownership
+or malformed evidence is invalid. A later cleanup snapshot cannot repair a missed boundary.
+
 Browser duration vitals remain an incidental partition with typed identities and
 ownership checks. They neither supply required view/action/resource coverage nor
 introduce metric-quality acceptance. An absent anonymous ID is permitted only in

@@ -18,6 +18,16 @@ class Driver(JourneyDriver):
     def dashboard_for_prompt(self, rows, snapshot, owner):
         return browser_contract.dashboard_attachment(rows, snapshot, owner)
 
+    def validate_phase_ready(self, rows, snapshot, owner, visible, screen):
+        if screen != 'dashboard':return
+        webs=[w for w in snapshot['fields']['topology'].get('webviews',[]) if w.get('window')==owner['native_window']]
+        require(len(webs)==1 and webs[0].get('controller')==visible['controller'],
+                'dashboard WebView has a different visible owner')
+        browser_contract.dashboard_attachment(rows,snapshot,owner,pending=True)
+        before=[r for r in rows if r['sequence']<snapshot['sequence']]
+        require(any(r['kind']=='browser_message' for r in before), 'dashboard Browser messages not ready', 'PENDING')
+        browser_contract.local_inventory(before,self.expected)
+
     def validate_prompt_ready(self, ready, label):
         if label=='dashboard-interaction':
             if self.definition['mode']=='signed-in-smoke':

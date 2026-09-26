@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 authenticated app source/oracle preparation",
-  "status": "REVIEWED_SIGNED_IN_PAIR_OPERATOR_PENDING",
-  "at": "2026-09-26T21:41:09.354729+00:00",
+  "status": "DASHBOARD_READINESS_REVIEWED_PREPARATION_PENDING",
+  "at": "2026-09-26T22:16:53.233696+00:00",
   "owner": "SDK implementer",
   "reviewer": "existing /root/c06_runtime_plan",
   "scope": "Existing J02 service navigation, J03 dashboard correlation and J04 authenticated lifecycle only. No native execution, app or SDK edits, rebuild, login, publication or new experiment.",
@@ -182,7 +182,7 @@
     "partial cleanup relabeled as ordinary pass"
   ],
   "admission_limits": "This is source preparation only. No runtime/oracle pass, gate closure, new experiment or environment retry is implied. Existing J01, Duo and EXP220 automation stops remain closed; fresh execution needs materially changed environment and reviewed fixed admission.",
-  "next_action": "Confirm operator availability, then capture fresh device/environment admission and run the reviewed baseline. Candidate only after baseline mechanism qualification. Retain account; no login or rebuild required. No active awake assertion.",
+  "next_action": "Prepare a fresh source-bound baseline/candidate plan using the reviewed dashboard readiness repair, then obtain fresh human/device readiness. Original baseline INVALID and cleanup PASS remain; candidate UNRUN. Retain account and products; no login or rebuild.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/source-review.json",
     "sha256": "41f6a1f5348c383e8c11770dc50da59e45e9dc020559a49c2a60d8691815d6e9"
@@ -961,8 +961,8 @@
       "sha256": "d5ab1b67cda01d69020fce255a4d385807a5f18c450d59639803874aef9a0098"
     },
     "latest_attempt": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/stopped-assessment.json",
-      "sha256": "c8fa59cd55d26db0024bda960dae59ae5fb047b0e1c106fd0d71e52b99d019d8"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/dashboard-readiness-stopped.json",
+      "sha256": "77589213a930431db7bfb9a38e87a2bd5b33d14b1f89d81f4a2972c13df7ab6d"
     },
     "offline_correction": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/offline-repair-summary.json",
@@ -977,7 +977,7 @@
       "sha256": "675862d8225e6812bbe16c6754cf9a93de055095920c41c490f76901351c1773"
     },
     "projection_correction": {
-      "state": "REVIEWED_SIGNED_IN_PAIR_OPERATOR_PENDING",
+      "state": "REVIEWED_OFFLINE_BASELINE_STOPPED_BEFORE_BACKEND",
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz",
       "controls": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/projection-bound-controls-v3.json",
@@ -1004,6 +1004,45 @@
       "prepared_pair": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/stable-projection-preparation-summary.json",
         "sha256": "eace8a54d43bdee74a84b1ac7006c88512cffaff89c140df4fbeddc12e4040fb"
+      }
+    },
+    "dashboard_container_attempt": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/stopped-assessment.json",
+      "sha256": "c8fa59cd55d26db0024bda960dae59ae5fb047b0e1c106fd0d71e52b99d019d8"
+    },
+    "dashboard_readiness": {
+      "state": "DASHBOARD_READINESS_REVIEWED_PREPARATION_PENDING",
+      "assessment": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/dashboard-readiness-stopped.json",
+        "sha256": "77589213a930431db7bfb9a38e87a2bd5b33d14b1f89d81f4a2972c13df7ab6d"
+      },
+      "proposal": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/dashboard-readiness-proposal.json",
+        "sha256": "fc92f624db5d7bd613474e29a4bbb8bf7f06ff190b08760b472a3c237ce274cc"
+      },
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/dashboard-readiness-controls.json",
+        "sha256": "c7df6a2c5a6dc2c3138ba3797f99dc6c189ac37dca0a90a9971ce23da31e0ca3"
+      },
+      "saved_replay": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/dashboard-readiness-saved-replay.json",
+        "sha256": "4f1619b8dc1dc0c636bf1e12f5825f2f4919d51be82ccc75b06b4fd62f811d2d"
+      },
+      "native_runs": 0,
+      "candidate": "UNRUN",
+      "gate_closures": [],
+      "scope": "Source-owned WebView readiness under the original deadline. Later released-state snapshot is diagnostic only; original verdicts stay immutable.",
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/dashboard-readiness-review.json",
+        "sha256": "a4dc51823240554c1ec90b6f5c9f1e8ce6f6347dbc5e335ef78982e5547c9763"
+      },
+      "bound_controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/dashboard-readiness-bound-controls.json",
+        "sha256": "23a80f56a8322932b7a97ba33c8403f34fac9f532c6fe91d21ab27106b10542b"
+      },
+      "runtime_transition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/runtime-transition-dashboard-readiness.json",
+        "sha256": "1dd2f4a630c9d7c844504eb3712ea5c6bb53ed56578f7bc2a0cbaef2cdf1e1ea"
       }
     }
   }

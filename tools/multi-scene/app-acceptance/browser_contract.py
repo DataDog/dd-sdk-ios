@@ -131,14 +131,11 @@ def attached_dashboard(rows, snapshot, owner):
     return dashboard_attachment(rows, snapshot, owner)
 
 
-def dashboard_attachment(rows, snapshot, owner):
+def dashboard_attachment(rows, snapshot, owner, *, pending=False):
     require(owner['snapshot_sequence'] == snapshot['sequence'], 'dashboard snapshot owner differs')
     topology = snapshot['fields']['topology']
     web = one([w for w in topology.get('webviews', []) if w.get('window') == owner['native_window']],
               'attached dashboard WebView')
-    require(web.get('loading') is False and isinstance(web.get('host'), str) and web['host']
-            and isinstance(web.get('bounds'), list) and len(web['bounds']) == 4 and all(v > 0 for v in web['bounds'][2:]),
-            'dashboard WebView not ready')
     binding = one([r for r in rows if r['sequence'] < snapshot['sequence'] and r['kind'] == 'owned_webview'
                    and r['fields']['webview'] == web['id'] and r['fields']['controller'] == web['controller']],
                   'source-owned dashboard WebView binding')
@@ -148,6 +145,14 @@ def dashboard_attachment(rows, snapshot, owner):
     appearances = [r for r in rows if r['sequence'] < snapshot['sequence'] and r['kind'] == 'controller_callback'
                    and r['fields']['controller']['id'] == controller['id']]
     require(appearances and appearances[-1]['fields']['callback'] == 'viewDidAppear-exit', 'dashboard appearance not settled')
+    require(type(web.get('loading')) is bool
+            and (web.get('host') is None or isinstance(web['host'], str) and bool(web['host']))
+            and (web.get('path') is None or isinstance(web['path'], str))
+            and isinstance(web.get('bounds'), list) and len(web['bounds']) == 4
+            and all(type(v) in (int, float) and math.isfinite(v) for v in web['bounds'])
+            and all(v > 0 for v in web['bounds'][2:]), 'invalid dashboard WebView state')
+    require(web['loading'] is False and web.get('host') is not None and web.get('path') is not None,
+            'dashboard WebView not ready', 'PENDING' if pending else 'INVALID')
     return dict(webview=web['id'], controller=controller['id'], binding_sequence=binding['sequence'],
                 host=web['host'], path=web['path'], window=owner['native_window'])
 

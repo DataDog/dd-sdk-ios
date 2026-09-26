@@ -17,7 +17,7 @@ class PromptControls(unittest.TestCase):
         self.value=driver.Driver.__new__(driver.Driver)
         self.value.deadline=time.time()+30;self.value.initial=display();self.value.device='device'
         self.value.inputs=[];self.value.collector=Mock(spec=driver.Collector);self.value.live=Mock()
-        self.ready=dict(folder=str(self.root),snapshot=dict(request_id='fresh-request',sequence=17))
+        self.ready=dict(folder=str(self.root),screen='login',snapshot=dict(request_id='fresh-request',sequence=17))
         self.value.collector.assert_ready.return_value=dict(state='READY_TO_PUBLISH_PROMPT',snapshot_sequence=17)
     def tearDown(self):self.temporary.cleanup()
     def screenshot(self,args,*unused,**kwargs):
