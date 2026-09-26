@@ -133,6 +133,22 @@ button from `1h` to `15 minutes`. Its displayed `15m` follows the WebView-confir
 interval under the source's consistent-timeframe setting. Retain the same attached
 dashboard/WebView and exact telemetry owners; do not reuse labels from another widget.
 
+The native one-hour initializer does not guarantee the ready dashboard range:
+WebView-confirmed intervals replace it, and a retained account can reopen at `15m`.
+For signed-in mode, `prepare_dashboard` leaves a source-owned `1h` control alone or
+requests one captured `15m` → `1 hour` setup. Unknown or ambiguous values stop before
+input. The setup must preserve the actual refreshed prompt, writer snapshots,
+owned controller/view/WebView and confirmed `1h` effect before the unchanged
+`1h` → `15 minutes` comparison. Preserve setup telemetry in the complete inventory
+and identify that extra input in the final paired review; it cannot replace the
+measured interaction or close a gate by itself.
+
+After a stopped candidate, verify its installed candidate manifest and process
+absence before restoring the frozen baseline product in place without launch.
+Preserve account, Documents, unrelated apps/display and the failed capture. The
+ordinary candidate installation guard still expects the verified baseline product;
+never validate the installed candidate against a baseline manifest.
+
 Native dashboard appearance can precede WebView URL assignment and Browser startup.
 Wait for the source-owned attachment, loaded URL and valid preceding Browser inventory
 inside the original readiness deadline. Preserve each pending snapshot; wrong ownership

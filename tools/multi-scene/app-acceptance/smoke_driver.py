@@ -29,12 +29,46 @@ class Driver(JourneyDriver):
         browser_contract.local_inventory(before,self.expected)
 
     def validate_prompt_ready(self, ready, label):
+        if label=='dashboard-setup':
+            require(smoke_contract.dashboard_setup_needed(ready),
+                    'refreshed dashboard no longer needs the frozen setup')
         if label=='dashboard-interaction':
             if self.definition['mode']=='signed-in-smoke':
                 phases.dashboard_timeframe(ready,self.selection['browser_control_label'])
             require(phases.matches(ready['ax'],self.selection['browser_control_label'])
                     and not phases.matches(ready['ax'],self.selection['browser_result_label']),
                     'refreshed Browser control/effect readiness changed')
+
+    def prepare_dashboard(self, begin):
+        if self.definition['mode']!='signed-in-smoke' or not smoke_contract.dashboard_setup_needed(begin):
+            return None
+        require(not any(p['phase']=='dashboard-setup' for p in self.inputs), 'dashboard setup already consumed')
+        end=self.prompt(begin,'dashboard-setup',
+            'The dashboard retained 15m. Tap 15m, choose 1 hour, then wait for the next instruction. '
+            'This prepares the same starting range as the baseline; do not pin or edit the dashboard.')
+        # prompt() can refresh readiness; retain the observation it actually used.
+        before=self.observations['dashboard-begin']
+        observed=False
+        for index in range(180):
+            self.live(end);tree,_=self.ax('dashboard-setup-effect-'+str(index),end)
+            if phases.matches(tree,'1h','button') and not phases.matches(tree,'15m','button'):
+                observed=True;break
+            time.sleep(.5)
+        require(observed,'dashboard setup effect missing')
+        effect=self.out/'phases/dashboard-timeframe-setup-effect.json'
+        atomic(effect,encoded(dict(observed_at=time.time(),ax=tree,prompt=self.inputs[-1],deadline=end)))
+        after=self.ready('dashboard-setup-complete','dashboard',deadline=end)
+        phases.dashboard_timeframe(after,'1h')
+        require(before['owner']['view_id']==after['owner']['view_id'] and before['binding']==after['binding'],
+                'dashboard setup replaced the owned view')
+        require(browser_contract.dashboard_attachment(self.current_rows(),before['snapshot'],before['owner'])
+                ==browser_contract.dashboard_attachment(self.current_rows(),after['snapshot'],after['owner']),
+                'dashboard setup replaced the owned WebView')
+        setup=dict(before_phase='dashboard-begin',after_phase='dashboard-setup-complete',
+                   effect_path=str(effect),effect_sha256=hashlib.sha256(effect.read_bytes()).hexdigest())
+        smoke_contract.dashboard_setup(self.current_rows(),dict(mode=self.definition['mode'],
+            phases=self.observations,inputs=self.inputs,dashboard_setup=setup))
+        return setup
 
     def run(self):
         smoke_contract.definition(self.definition)
@@ -65,6 +99,8 @@ class Driver(JourneyDriver):
         begin=self.step(ready,'dashboard-begin','Open the existing dashboard '+self.selection['dashboard_label']+'. Wait on its detail page.','dashboard')
         browser_contract.dashboard_attachment(self.current_rows(),begin['snapshot'],begin['owner'])
         browser_contract.local_inventory(self.current_rows(),self.expected)
+        setup=self.prepare_dashboard(begin)
+        begin=self.observations['dashboard-begin']
         before=self.ready('dashboard-before-input','dashboard')
         require(phases.matches(before['ax'],self.selection['browser_control_label'])
                 and not phases.matches(before['ax'],self.selection['browser_result_label']),
@@ -101,6 +137,7 @@ class Driver(JourneyDriver):
         atomic(self.out/'behavior-checkpoint.json',encoded(checkpoint))
         native=dict(mode=self.definition['mode'],j03=interval,phases=self.observations,inputs=self.inputs,backgrounds=self.backgrounds,
                     terminal=dict(checkpoint=checkpoint,foreground=True),native_launches=1,process_id=self.expected['pid'],device=self.device)
+        if setup is not None:native['dashboard_setup']=setup
         if self.definition['mode']=='signed-in-smoke':native['account_binding']=self.account_binding
         native['manifest']=smoke_contract.native_manifest(result['rows'],native,self.expected,self.definition)
         emit('human_status',dict(instruction='The journey is captured. Leave the app on this Services screen without touching it while ordinary uploads finish.'))

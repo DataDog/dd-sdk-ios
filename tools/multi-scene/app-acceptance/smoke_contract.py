@@ -114,27 +114,87 @@ def dashboard_interval(rows, begin, before, end, owners, expected):
                 ttl_claim=False, browser_causality_claim=False)
 
 
+def dashboard_setup_needed(ready):
+    """WebView-confirmed state overrides TimeframeView's native initializer."""
+    labels=[label for label in ['1h','15m'] if phases.matches(ready['ax'],label,'button')]
+    require(len(labels)==1, 'dashboard setup range is unknown or ambiguous')
+    phases.dashboard_timeframe(ready,labels[0])
+    return labels[0]=='15m'
+
+
+def dashboard_setup(rows, native):
+    setup=native.get('dashboard_setup')
+    prompts=[p for p in native.get('inputs',[]) if p['phase']=='dashboard-setup']
+    observed=native['phases']
+    require(bool(setup)==bool(prompts)==('dashboard-setup-complete' in observed),
+            'dashboard setup capture or prompt missing')
+    if setup is None:return None
+    require(native['mode']=='signed-in-smoke' and len(prompts)==1
+            and set(setup)=={'before_phase','after_phase','effect_path','effect_sha256'}
+            and (setup['before_phase'],setup['after_phase'])==('dashboard-begin','dashboard-setup-complete'),
+            'dashboard setup repeated or outside its defined scope')
+    before=observed['dashboard-begin'];after=observed['dashboard-setup-complete']
+    require(dashboard_setup_needed(before) and not dashboard_setup_needed(after), 'dashboard setup did not change 15m to 1h')
+    require(before['snapshot'] in rows and after['snapshot'] in rows
+            and before['snapshot']['sequence']<after['snapshot']['sequence']
+            and before['owner']['view_id']==after['owner']['view_id'] and before['binding']==after['binding'],
+            'dashboard setup has stale snapshots or a different owner')
+    if 'dashboard-before-input' in observed:
+        require(after['snapshot']['sequence']<observed['dashboard-before-input']['snapshot']['sequence'],
+                'dashboard setup occurs after the comparison boundary')
+    require(browser.dashboard_attachment(rows,before['snapshot'],before['owner'])
+            ==browser.dashboard_attachment(rows,after['snapshot'],after['owner']), 'dashboard setup WebView changed')
+    prompt=prompts[0]
+    require(prompt['native_snapshot_sequence']==before['snapshot']['sequence']
+            and prompt['request_id']==before['snapshot']['request_id'], 'dashboard setup prompt used different readiness')
+    publication=loads((Path(before['folder'])/'prompt.json').read_bytes())
+    readiness=publication['readiness']
+    require(publication['prompt']==prompt and readiness['state']=='READY_TO_PUBLISH_PROMPT'
+            and readiness['snapshot_sequence']==before['snapshot']['sequence']
+            and readiness['observed_sequence']>=before['snapshot']['sequence']+1
+            and before['captured_at']<=readiness['checked_at']<=publication['published_at']<prompt['deadline'],
+            'dashboard setup prompt publication or readiness differs')
+    path=Path(setup['effect_path'])
+    require(path==Path(before['folder']).parent/'dashboard-timeframe-setup-effect.json'
+            and not path.is_symlink() and hashlib.sha256(path.read_bytes()).hexdigest()==setup['effect_sha256'],
+            'dashboard setup effect receipt changed')
+    effect=loads(path.read_bytes())
+    require(effect['prompt']==prompt and effect['deadline']==prompt['deadline']
+            and publication['published_at']<=effect['observed_at']<=after['captured_at']<prompt['deadline']
+            and path.stat().st_mtime<prompt['deadline'], 'dashboard setup effect is late or belongs to another prompt')
+    phases.dashboard_timeframe(dict(after,ax=effect['ax']),'1h')
+    require(not phases.matches(effect['ax'],'15m','button'), 'dashboard setup old range remains')
+    return dict(state='DASHBOARD_RANGE_PREPARED',from_label='15m',to_label='1h',
+                before_sequence=before['snapshot']['sequence'],after_sequence=after['snapshot']['sequence'],
+                owner=before['owner']['view_id'],effect_sha256=setup['effect_sha256'],
+                scope='Setup only; the following 1h to 15m comparison and all captured events remain required.')
+
+
 def native_manifest(rows, native, expected, spec):
     definition(spec)
     selected = phase_names(spec)
     require(len(native['backgrounds']) == 1, 'smoke must contain exactly one Home cycle')
     observed = native['phases'];local = contract.mapper_inventory(rows, expected)
     require(all(name in observed for name in selected), 'missing named smoke phase')
-    ordered = [observed[name]['snapshot']['sequence'] for name in selected]
+    setup=dashboard_setup(rows,native)
+    validation_names=list(selected)
+    if setup is not None:validation_names.insert(validation_names.index('dashboard-before-input'),'dashboard-setup-complete')
+    ordered = [observed[name]['snapshot']['sequence'] for name in validation_names]
     require(ordered == sorted(set(ordered)), 'smoke phase order differs')
     owners = {};previous = None
     require(native['process_id'] == expected['pid'], 'native smoke process differs')
-    for name in selected:
+    for name in validation_names:
         phase = observed[name];vid = phase['owner']['view_id']
+        allowed=spec['expected']['phase_views']['dashboard-before-input' if name=='dashboard-setup-complete' else name]
         require(phase['snapshot'] in rows and phase['snapshot']['fields']['topology']['pid'] == expected['pid'],
                 'foreign smoke phase or process')
-        require(vid in local['views'] and contract.field(local['views'][vid]['event'], 'view.name') in spec['expected']['phase_views'][name],
+        require(vid in local['views'] and contract.field(local['views'][vid]['event'], 'view.name') in allowed,
                 'missing or wrong named smoke owner')
         binding = phases.foreground_binding(rows, phase['snapshot'], previous, authenticated_transition=name == 'service-list')
         require(binding == phase['binding'], 'recorded smoke scene/window/root binding differs')
         actual = (Path(phase['folder'])/'display.raw.json').read_bytes()
         owner = contract.snapshot_owner(rows, phase['snapshot'], expected, binding, actual, native['device'],
-                                        names=spec['expected']['phase_views'][name])
+                                        names=allowed)
         require(owner == phase['owner'], 'recorded smoke native owner differs')
         if phase['screen'] != 'login':
             require(phases.visible(rows,phase['snapshot'],phase['screen'],binding) == phase['visible'],
@@ -159,10 +219,12 @@ def native_manifest(rows, native, expected, spec):
     lifecycle = phases.j04(rows, observed, expected, native['backgrounds'][0])
     start, end = ordered[0], ordered[-1]
     phases.lifecycle_cycle(rows, start, end, observed[selected[0]]['binding']['scene'])
-    return dict(state='SMOKE_LOCAL_MANIFEST_QUALIFIED', phase_owners=owners,
+    result=dict(state='SMOKE_LOCAL_MANIFEST_QUALIFIED', phase_owners={name:owners[name] for name in selected},
                 named_action_keys=[list(k) for k in actions], lifecycle=lifecycle,
                 captured_view_occurrences=len(local['views']), captured_resource_events=sum(k[0] == 'resource' for k in local['accepted']),
                 source_manifest=spec['source_manifest'], runtime_acceptance=False)
+    if setup is not None:result['dashboard_setup']=setup
+    return result
 
 
 def semantic_equal(actual, captured, paths):
