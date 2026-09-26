@@ -3065,7 +3065,7 @@
             "A01",
             "F07"
           ],
-          "decisive_test": "One source-matched baseline/candidate normal-mode app journey: launch/login, Services list/detail/Back, one dashboard/browser interaction and one background/foreground. Check actual view/action/resource/browser ownership, successful UI and no new crash/hang. Reuse dedicated T10 for adversarial TTL cases.",
+          "decisive_test": "Qualify login/account once, then compare one source-matched baseline/candidate normal-mode signed-in journey: Services list/detail/Back, one dashboard/browser interaction and one background/foreground. Check actual view/action/resource/browser ownership, successful UI and no new crash/hang. Reuse dedicated T10 for adversarial TTL cases.",
           "environment": "Existing controlled app, accessible test account/data, isolated probe RUM app/service; Duo simulator preferred, ordinary host for non-Duo integration evidence",
           "budget": "Two app journeys; no live-customer session access,15-minute session expiry or TestFlight distribution prerequisite",
           "evidence_owner": "Results/S2-F08-app-journeys.json"

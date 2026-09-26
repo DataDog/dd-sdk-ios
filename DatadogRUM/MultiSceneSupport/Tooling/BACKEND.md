@@ -228,14 +228,14 @@ and malformed-type controls live in the
 ## Controlled app journeys
 
 Use the [S2 smoke mode](../../../tools/multi-scene/app-acceptance/README.md#s2-smoke-mode)
-for the ordinary app pair: one lifecycle cycle ends foreground on Services. Freeze
-its writer-backed behavior prefix; allow normal uploads and retain later bytes
-separately. Require complete broad/native queries, exact event IDs and owners, and
-independent Browser identity. Later captured view revisions may represent the same
-occurrence; later events cannot replace missing behavior. Keep incidental metadata
-and reducers for review. Native container claims need observed Replay eligibility.
-Seal after required evidence is retained; late publication or cleanup stays invalid.
-The README preserves full mechanics and the separate original J01–J04 contract.
+for the ordinary pair: one lifecycle ends foreground on Services. Freeze the writer
+prefix; allow normal uploads and keep later bytes separate. Require complete broad/
+native queries and exact event/owner identities. Reduced views match occurrence ID,
+date, name and URL; local capture owns lifecycle, and later revisions cannot move
+frozen witnesses. Incidental metrics never supply coverage. The README defines
+operation links, session-scoped batches and the separate original J01–J04 contract.
+Native container claims need Replay eligibility and a captured interval. Seal only
+after required evidence is retained; late publication or cleanup stays invalid.
 Bindings and final paired acceptance belong to the [F08 owner](../Results/S2-F08-source-oracle.json).
 
 ## Process, fatal and shared-vitals signals

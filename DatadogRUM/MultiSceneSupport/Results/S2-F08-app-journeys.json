@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 finite controlled app journeys",
-  "status": "HOST_TRANSPORT_REVIEWED_COMPLETE_INVENTORY_OPEN",
+  "status": "REVIEWED_OFFLINE_PROJECTION_READY_FOR_COMMITTED_PREPARATION",
   "recorded_at": "2026-09-21T16:37:35.872371+00:00",
   "owner": "SDK implementer",
   "application_revision": "6e33f1c18a52d04b0793e6954f456bdbc1affe2f",
@@ -141,10 +141,10 @@
     "review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-tf3_dxfy/review.json",
     "candidate": "UNRUN"
   },
-  "next_action": "Complete the reviewed saved-session pagination/projection qualification at Results/S2-F08-source-oracle.json before another native admission. Original baseline INVALID, candidate UNRUN, account retained; no login repeat.",
+  "next_action": "The F08 source/oracle owner holds the reviewed45-control projection and immutable996-row reassessment. Commit the documentation checkpoint and prepare the final source-bound pair before fresh human/environment admission. Preserve the original baseline INVALID/cleanup PASS and unrun candidate.",
   "environment_readiness": "Results/S2-Duo-environment-readiness.json",
   "source_oracle": "Results/S2-F08-source-oracle.json",
-  "source_preparation_status": "SOURCE_AND_OFFLINE_INVENTORY_PREPARATION_REVIEWED",
+  "source_preparation_status": "REVIEWED_OFFLINE_PROJECTION_READY_FOR_COMMITTED_PREPARATION",
   "source_prepared_at": "2026-09-21T21:39:37.351271+00:00",
   "prebooted_continuation": {
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-prebooted-0ux7kfit",
@@ -182,7 +182,7 @@
     "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-qualified-_wnijcda/terminal-summary.json",
     "summary_sha256": "ba211a0311a01d103535424c1a63a96d1e5b06fd544c95850ec1b656e8f44499"
   },
-  "updated_at": "2026-09-25T22:26:29.674753+00:00",
+  "updated_at": "2026-09-26T21:41:09.354729+00:00",
   "incremental_continuation": {
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-incremental-f8xss4f3",
     "status": "STOPPED_AFTER_ONE_TAP_NATIVE_OBSERVER",

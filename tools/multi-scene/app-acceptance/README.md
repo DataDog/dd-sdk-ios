@@ -233,6 +233,16 @@ complete payload equality. Browser container claims require observed Replay
 eligibility; absent coverage is reported explicitly. There is no Replay-content
 check. Final paired source review still owns F08 closure.
 
+Backend view reducers match the captured occurrence's ID, date, name and URL.
+Their document version, activity and user enrichment are retained separately;
+local capture owns lifecycle and revision history. Reducer witnesses use the frozen
+behavior capture, or the first capture of a delivery-only occurrence, so later
+updates cannot change the final join. Native operations cross-check indexed start/
+end vital IDs, names and owners; this is backend consistency, not independent native
+step capture. Browser operations bind a captured start. CPU/memory batches
+are session-scoped; vitals retain their captured owner where required by source.
+These incidental families never satisfy ordinary event, view or container coverage.
+
 The correctness smoke publishes separate semantic and recorder-cost verdicts. A
 cost overrun alone does not block candidate comparison or F08 closure; complete
 paired native/backend evidence and source review must still resolve any concrete

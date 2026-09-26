@@ -73,6 +73,41 @@ def joined_fixture():
     return rows,interval,native_rows,browser_rows
 
 
+def native_incidental(family):
+    value=event(family,300);value['_dd']={'origin':'reducer'}
+    if family=='operation':
+        value.pop('view');value['vital']={'id':uid(301)}
+        value['operation'].update(name='load',start_view={'id':uid(10)},end_view={'id':uid(10)})
+    elif family=='vital':
+        value['vital'].update(id=uid(301),type='operation_step',step_type='start',name='load');value['operation']={'id':uid(300)}
+    elif family=='timeseries':
+        value.pop('view');value['_dd']['origin']='sdk'
+        value['timeseries'].update(name='cpu',schema='object-v2',data={'timestamps':[1,2],'values':{'cpu_usage':[0.1,0.2]}})
+    return dict(id='incidental-'+family,attributes=dict(custom=value,client_time=value['date'],source='ios',
+                tag={'sdk_version':EXPECTED['backend_sdk_version']}))
+
+
+def native_operation_rows():
+    start=native_incidental('vital');end=copy.deepcopy(start)
+    end['id']='operation-end';end['attributes']['custom']['vital'].update(id=uid(303),step_type='end')
+    return [native_incidental('operation'),start,end]
+
+
+def browser_operation_fixture():
+    rows,interval,native,browsers=joined_fixture()
+    entries=[(r['kind'],r['fields']) for r in rows if r['kind']!='observer_cost']
+    raw=json.loads(next(r['fields']['event_json'] for r in rows if r['kind']=='browser_message'))
+    raw.update(type='vital',vital={'id':uid(301),'type':'operation_step','step_type':'start','name':'dashboard_load'})
+    entries.append(('browser_message',{'scope':'raw_browser_source_payload','event_json':json.dumps(raw)}))
+    rows,_=payload(entries);local=browser_contract.local_inventory(rows,EXPECTED)
+    anchor=next(iter(local['incidental'].values()))
+    value=copy.deepcopy(anchor['expected']);value.update(type='operation',vital={'id':uid(301)},_dd={'origin':'reducer'},
+        operation={'id':uid(302),'name':'dashboard_load','start_view':{'id':uid(80)},'end_view':{'id':uid(80)}})
+    value.pop('view');value['container']={'source':'ios','view':{'id':uid(10)}}
+    row=dict(id='browser-operation',attributes=dict(custom=value,source='browser',client_time=value['date'],tag={'sdk_version':'6.0.0'}))
+    return rows,interval,native,browsers,row,local
+
+
 class SmokeControls(unittest.TestCase):
     def test_source_expectations_do_not_come_from_baseline_success(self):
         smoke.definition(json.loads(json.dumps(SPEC,sort_keys=True)))
@@ -187,6 +222,180 @@ class SmokeControls(unittest.TestCase):
     def test_independent_native_partition_must_contain_all_behavior(self):
         rows,interval,native,browsers=joined_fixture()
         with self.assertRaisesRegex(Rejected,'behavior view'):smoke.joined(native+browsers,native[1:],rows,rows,interval,EXPECTED)
+
+
+class BackendProjectionControls(unittest.TestCase):
+    def test_later_browser_revisions_cannot_move_reducer_witnesses_at_final_seal(self):
+        for delivery_only in [False,True]:
+            rows,interval,native,browsers=joined_fixture();local=browser_contract.local_inventory(rows,EXPECTED)
+            entries=[(r['kind'],r['fields']) for r in rows if r['kind']!='observer_cost']
+            value=copy.deepcopy(local['events'][local['latest'][uid(80)]]['raw'])
+            if delivery_only:
+                value['view']['id']=uid(90);value['_dd']['document_version']=1
+                entries.append(('browser_message',{'scope':'raw_browser_source_payload','event_json':json.dumps(value)}))
+            first,_=payload(entries);full=browser_contract.local_inventory(first,EXPECTED)
+            browsers=browser_backend(full,interval)
+            for row in browsers:
+                if row['attributes']['custom']['type']=='view':row['attributes']['custom']['_dd'].update(origin='reducer',document_version=99)
+            before=smoke.browser_backend(browsers,local,full,interval,EXPECTED)
+            later=copy.deepcopy(value);later['_dd']['document_version']+=1
+            entries.append(('browser_message',{'scope':'raw_browser_source_payload','event_json':json.dumps(later)}));full,_=payload(entries)
+            after=smoke.browser_backend(browsers,local,browser_contract.local_inventory(full,EXPECTED),interval,EXPECTED)
+            with self.subTest(delivery_only=delivery_only):self.assertEqual(before,after)
+
+    def test_reduced_views_match_occurrences_independently_of_revision_activity_and_user(self):
+        for version in [1,59]:
+            rows,interval,native,browsers=joined_fixture()
+            entries=[(r['kind'],r['fields']) for r in rows if r['kind']!='observer_cost']
+            value=copy.deepcopy(contract.mapper_inventory(rows,EXPECTED)['views'][uid(10)]['event'])
+            value['_dd']['document_version']=2;entries.append(mapped(value));rows,_=payload(entries)
+            native=backend(contract.mapper_inventory(rows,EXPECTED))
+            for row in native+browsers:
+                value=row['attributes']['custom']
+                if value['type']!='view':continue
+                value['_dd'].update(origin='reducer',document_version=version)
+                value['view']['is_active']=False;value['usr']={'id':'enriched','org_uuid':'enriched'}
+            with self.subTest(version=version):
+                result=smoke.joined(native+browsers,native,rows,rows,interval,dict(EXPECTED,account_salt='bound'))
+                self.assertEqual(len(result['reduced_native_views']),1)
+                self.assertEqual(len(result['browser']['reduced_views']),1)
+                self.assertEqual(result['later_native_keys'],[])
+                self.assertEqual(result['browser']['delivery_tail_keys'],[])
+
+    def test_reducer_metadata_does_not_authorize_foreign_occurrences_or_malformed_values(self):
+        for source in ['ios','browser']:
+            for change in ['view','date','name','url','source','session','application','sdk','version','activity','duplicate']:
+                rows,interval,native,browsers=joined_fixture()
+                target=next(r for r in (native if source=='ios' else browsers) if r['attributes']['custom']['type']=='view')
+                value=target['attributes']['custom'];value['_dd'].update(origin='reducer',document_version=59)
+                if change=='view':value['view']['id']=uid(99)
+                if change=='date':target['attributes']['client_time']+=1
+                if change in ['name','url']:value['view'][change]='foreign'
+                if change=='source':target['attributes']['source']='android'
+                if change in ['session','application']:value[change]['id']=uid(99)
+                if change=='sdk':target['attributes']['tag']['sdk_version']='foreign'
+                if change=='version':value['_dd']['document_version']=True
+                if change=='activity':value['view']['is_active']='false'
+                if change=='duplicate':(native if source=='ios' else browsers).append(copy.deepcopy(target))
+                with self.subTest(source=source,change=change),self.assertRaises(Rejected):
+                    smoke.joined(native+browsers,native,rows,rows,interval,EXPECTED)
+
+    def test_incidental_native_families_are_classified_without_view_or_metric_credit(self):
+        rows,interval,native,browsers=joined_fixture()
+        extra=native_operation_rows()+[native_incidental('timeseries')]
+        launch=copy.deepcopy(extra[1]);launch['attributes']['custom']['vital'].update(id=uid(305),type='app_launch')
+        launch['attributes']['custom']['_dd']['origin']='sdk';extra.append(launch)
+        native+=extra
+        result=smoke.joined(native+browsers,native,rows,rows,interval,EXPECTED)
+        self.assertEqual(len(result['incidental']),5);self.assertEqual(result['native_required_events'],0)
+        self.assertEqual(result['native_required_views'],1)
+        without_view=[r for r in native if r['attributes']['custom']['type']!='view']
+        with self.assertRaisesRegex(Rejected,'behavior view'):
+            smoke.joined(without_view+browsers,without_view,rows,rows,interval,EXPECTED)
+
+    def test_incidental_native_source_and_owner_errors_cannot_be_hidden(self):
+        for family in ['operation','vital','timeseries']:
+            for change in ['application','session','source','sdk','id','origin','view','duplicate']:
+                rows,interval,native,browsers=joined_fixture();row=native_incidental(family);value=row['attributes']['custom']
+                if change in ['application','session']:value[change]['id']=uid(99)
+                if change=='source':value['source']='android';row['attributes']['source']='android'
+                if change=='sdk':row['attributes']['tag']['sdk_version']='foreign'
+                if change=='id':value[family]['id']='not-a-uuid'
+                if change=='origin':value['_dd']['origin']='other'
+                if change=='view':value['view']={'id':uid(99)}
+                native.append(row)
+                if change=='duplicate':native.append(copy.deepcopy(row))
+                with self.subTest(family=family,change=change),self.assertRaises(Rejected):
+                    smoke.joined(native+browsers,native,rows,rows,interval,EXPECTED)
+
+    def test_operation_endpoints_and_vital_owners_remain_exact(self):
+        for change in ['start','end','no-endpoints','vital-id','missing-vital-owner','vital-type']:
+            rows,interval,native,browsers=joined_fixture();row=native_incidental('vital' if change.startswith('vital-') or change=='missing-vital-owner' else 'operation')
+            value=row['attributes']['custom']
+            if change in ['start','end']:value['operation'][change+'_view']['id']=uid(99)
+            if change=='no-endpoints':
+                value['operation'].pop('start_view');value['operation'].pop('end_view')
+            if change=='vital-id':value['vital']['id']='invalid'
+            if change=='missing-vital-owner':value.pop('view')
+            if change=='vital-type':value['vital']['type']='unqualified'
+            native.append(row)
+            with self.subTest(change=change),self.assertRaises(Rejected):smoke.joined(native+browsers,native,rows,rows,interval,EXPECTED)
+
+    def test_timeseries_shape_is_checked_without_performance_thresholds(self):
+        for change in ['schema','name','empty','timestamp-type','values-length','values-type','columns']:
+            rows,interval,native,browsers=joined_fixture();row=native_incidental('timeseries');value=row['attributes']['custom']['timeseries']
+            if change in ['schema','name']:value[change]='unqualified'
+            if change=='empty':value['data']['timestamps']=[]
+            if change=='timestamp-type':value['data']['timestamps'][0]=True
+            if change=='values-length':value['data']['values']['cpu_usage'].pop()
+            if change=='values-type':value['data']['values']['cpu_usage'][0]=False
+            if change=='columns':value['data']['values']['unqualified']=[1,2]
+            native.append(row)
+            with self.subTest(change=change),self.assertRaises(Rejected):smoke.joined(native+browsers,native,rows,rows,interval,EXPECTED)
+
+    def test_native_operations_require_consistent_indexed_step_identities_and_endpoints(self):
+        for change in ['foreign-vital-id','foreign-operation-id','start-type','start-name','start-owner','end-name','end-owner','missing-start','missing-end','duplicate-start','duplicate-end','duplicate-operation']:
+            rows,interval,native,browsers=joined_fixture();extra=native_operation_rows()
+            operation,start,end=[r['attributes']['custom'] for r in extra]
+            if change=='foreign-vital-id':operation['vital']['id']=uid(999)
+            if change=='foreign-operation-id':operation['operation']['id']=uid(999)
+            if change=='start-type':start['vital']['step_type']='end'
+            if change=='start-name':start['vital']['name']='different'
+            if change=='start-owner':operation['operation'].pop('start_view')
+            if change=='end-name':end['vital']['name']='different'
+            if change=='end-owner':operation['operation']['end_view']['id']=uid(99)
+            if change=='missing-start':extra.pop(1)
+            if change=='missing-end':extra.pop(2)
+            if change.startswith('duplicate-'):extra.append(copy.deepcopy(extra[{'duplicate-start':1,'duplicate-end':2,'duplicate-operation':0}[change]]))
+            native+=extra
+            with self.subTest(change=change),self.assertRaises(Rejected):smoke.joined(native+browsers,native,rows,rows,interval,EXPECTED)
+
+    def test_known_but_swapped_operation_endpoint_rejects_and_extra_starts_stay_incidental(self):
+        rows,interval,native,browsers=joined_fixture()
+        entries=[(r['kind'],r['fields']) for r in rows if r['kind']!='observer_cost']
+        entries.append(mapped(event('view',11,usr={'anonymous_id':uid(7)})));rows,_=payload(entries)
+        native=backend(contract.mapper_inventory(rows,EXPECTED));extra=native_operation_rows()
+        extra[0]['attributes']['custom']['operation']['end_view']['id']=uid(11)
+        extra[2]['attributes']['custom']['view']['id']=uid(11)
+        orphan=native_incidental('vital');orphan['attributes']['custom']['vital']['id']=uid(304)
+        orphan['attributes']['custom']['operation']['id']=uid(305);extra.append(orphan)
+        valid=native+extra
+        result=smoke.joined(valid+browsers,valid,rows,rows,interval,EXPECTED)
+        self.assertEqual(result['native_operation_consistency'],dict(operations=1,linked_steps=2,unlinked_steps=[uid(304)],independent_native_step_capture=False))
+        extra[0]['attributes']['custom']['operation']['end_view']['id']=uid(10)
+        with self.assertRaisesRegex(Rejected,'differs from indexed end'):
+            smoke.joined(valid+browsers,valid,rows,rows,interval,EXPECTED)
+
+    def test_incidental_identity_cannot_replace_a_missing_native_resource(self):
+        rows,interval,native,browsers=joined_fixture()
+        entries=[(r['kind'],r['fields']) for r in rows if r['kind']!='observer_cost']
+        entries.append(mapped(event('resource',300,resource={'id':uid(300),'url':'https://example.invalid/required','method':'GET'})))
+        rows,_=payload(entries);native+=native_operation_rows()
+        with self.assertRaisesRegex(Rejected,'behavior event'):
+            smoke.joined(native+browsers,native,rows,rows,interval,EXPECTED)
+
+    def test_browser_operation_is_bound_to_captured_start_and_never_a_witness(self):
+        rows,interval,native,browsers,operation,local=browser_operation_fixture()
+        anchor=next(iter(local['incidental'].values()));interval=dict(interval,begin=anchor['sequence']-1,end=anchor['sequence']+1)
+        result=smoke.browser_backend(browsers+[operation],local,local,interval,EXPECTED)
+        self.assertEqual(len(result['incidental']),1);self.assertEqual(result['container_witnesses'],[])
+        self.assertEqual(result['container_coverage'],'UNAVAILABLE')
+        missing=[r for r in browsers if r['attributes']['custom']['type']!='action']
+        with self.assertRaisesRegex(Rejected,'behavior Browser event'):
+            smoke.browser_backend(missing+[operation],local,local,interval,EXPECTED)
+
+    def test_browser_operation_cannot_borrow_an_unrelated_anchor_or_owner(self):
+        for change in ['vital-id','operation-id','name','start','end','origin','container','duplicate']:
+            rows,interval,native,browsers,operation,local=browser_operation_fixture();value=operation['attributes']['custom']
+            if change=='vital-id':value['vital']['id']=uid(999)
+            if change=='operation-id':value['operation']['id']='not-a-uuid'
+            if change=='name':value['operation']['name']='foreign'
+            if change in ['start','end']:value['operation'][change+'_view']['id']=uid(99)
+            if change=='origin':value['_dd']['origin']='sdk'
+            if change=='container':value['container']['view']['id']=uid(99)
+            browsers.append(operation)
+            if change=='duplicate':browsers.append(copy.deepcopy(operation))
+            with self.subTest(change=change),self.assertRaises(Rejected):smoke.browser_backend(browsers,local,local,interval,EXPECTED)
 
 
 if __name__=='__main__':unittest.main()

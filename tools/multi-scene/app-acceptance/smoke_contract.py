@@ -1,5 +1,6 @@
 """Finite F08 smoke semantics; raw capture and backend metadata remain separate."""
 import hashlib
+import math
 from pathlib import Path
 
 import journey_contract as contract
@@ -170,10 +171,116 @@ def semantic_equal(actual, captured, paths):
             'persisted semantic identity or owner differs')
 
 
+def reduced_view(event, captured):
+    """Reducers identify occurrences; raw capture owns activity and revision history."""
+    require(contract.field(event, '_dd.origin') == 'reducer', 'unknown view projection')
+    version = contract.field(event, '_dd.document_version')
+    require(type(version) is int and version > 0 and type(contract.field(event, 'view.is_active')) is bool,
+            'malformed reduced view metadata')
+    semantic_equal(event, captured, COMMON + ['view.name', 'view.url'])
+
+
+def incidental_view(event, path, views, *, required=False):
+    value = contract.field(event, path)
+    if value is None:
+        require(not required, 'incidental view owner missing')
+        return None
+    require(isinstance(value, dict), 'malformed incidental view reference')
+    owner = contract.identifier(value.get('id'))
+    require(owner in views, 'foreign incidental view owner')
+    return owner
+
+
+def operation_identity(event, views):
+    require(contract.field(event, '_dd.origin') == 'reducer', 'unknown operation projection')
+    operation = contract.identifier(contract.field(event, 'operation.id'))
+    vital = contract.identifier(contract.field(event, 'vital.id'))
+    require(isinstance(contract.field(event, 'operation.name'), str)
+            and contract.field(event, 'operation.name'), 'operation name missing')
+    endpoints = [incidental_view(event, 'operation.' + edge, views) for edge in ['start_view', 'end_view']]
+    require(any(endpoints), 'operation has no captured endpoint')
+    incidental_view(event, 'view', views)
+    return ('operation', operation), vital
+
+
+def native_incidental(event, views):
+    """Direct SDK metrics and backend operations never satisfy mapper coverage."""
+    family = event['type'];origin = contract.field(event, '_dd.origin')
+    require(type(event.get('date')) is int, 'incidental date missing')
+    if family == 'operation':
+        return operation_identity(event, views)[0]
+    identity = contract.identifier(contract.field(event, family + '.id'))
+    if family == 'vital':
+        kind = contract.field(event, 'vital.type')
+        require((kind, origin) in {('operation_step', 'reducer'), ('app_launch', 'sdk')},
+                'unclassified incidental vital')
+        incidental_view(event, 'view', views, required=True)
+        if kind == 'operation_step':contract.identifier(contract.field(event, 'operation.id'))
+    elif family == 'timeseries':
+        # TimeseriesSessionCollector writes CPU/memory batches directly with a
+        # session identity, outside the five public mappers and without a view.
+        require(origin == 'sdk' and 'view' not in event, 'unknown timeseries ownership')
+        require(contract.field(event, 'timeseries.schema') == 'object-v2', 'unknown timeseries schema')
+        name = contract.field(event, 'timeseries.name')
+        columns = {'cpu': {'cpu_usage'}, 'memory': {'memory_footprint', 'memory_percent'}}
+        timestamps = contract.field(event, 'timeseries.data.timestamps')
+        values = contract.field(event, 'timeseries.data.values')
+        require(name in columns and isinstance(timestamps, list) and timestamps
+                and all(type(t) is int for t in timestamps)
+                and isinstance(values, dict) and set(values) == columns[name], 'malformed timeseries data')
+        require(all(isinstance(v, list) and len(v) == len(timestamps)
+                    and all(type(n) in (int, float) and math.isfinite(n) for n in v) for v in values.values()),
+                'malformed timeseries values')
+    else:
+        require(False, 'unclassified incidental family')
+    return family, identity
+
+
+def browser_operation(event, full):
+    key, vital = operation_identity(event, full['latest'])
+    anchor = contract.one([value for k, value in full.get('incidental', {}).items() if k[-1] == vital],
+                          'captured Browser operation anchor')
+    require(contract.field(anchor['expected'], 'vital.type') == 'operation_step'
+            and contract.field(anchor['expected'], 'vital.step_type') == 'start'
+            and contract.field(anchor['expected'], 'vital.name') == contract.field(event, 'operation.name')
+            and contract.field(anchor['expected'], 'view.id') == contract.field(event, 'operation.start_view.id'),
+            'Browser operation differs from captured start')
+    return key, anchor
+
+
+def native_operation_links(rows, *, pending):
+    """Cross-check backend aggregates; native operation steps have no public mapper."""
+    events = [contract.backend_event(row) for row in rows]
+    steps = [e for e in events if e['type'] == 'vital' and contract.field(e, 'vital.type') == 'operation_step']
+    linked = set();operations = 0
+    for event in events:
+        if event['type'] != 'operation':continue
+        operations += 1
+        starts = [e for e in steps if contract.field(e, 'vital.id') == contract.field(event, 'vital.id')]
+        require(len(starts) == 1, 'native operation start not yet indexed', 'PENDING' if pending else 'INVALID')
+        start = starts[0]
+        semantic_equal(start, event, ['application.id', 'session.id', 'source', 'operation.id'])
+        require(contract.field(start, 'vital.step_type') == 'start'
+                and contract.field(start, 'vital.name') == contract.field(event, 'operation.name')
+                and contract.field(start, 'view.id') == contract.field(event, 'operation.start_view.id'),
+                'native operation differs from indexed start')
+        ends = [e for e in steps if contract.field(e, 'operation.id') == contract.field(event, 'operation.id')
+                and contract.field(e, 'vital.step_type') == 'end']
+        require(len(ends) == 1, 'native operation end not yet indexed', 'PENDING' if pending else 'INVALID')
+        end = ends[0]
+        require(contract.field(end, 'vital.name') == contract.field(event, 'operation.name')
+                and contract.field(end, 'view.id') == contract.field(event, 'operation.end_view.id'),
+                'native operation differs from indexed end')
+        linked.update([contract.field(start, 'vital.id'), contract.field(end, 'vital.id')])
+    return dict(operations=operations, linked_steps=len(linked),
+                unlinked_steps=[contract.field(e, 'vital.id') for e in steps if contract.field(e, 'vital.id') not in linked],
+                independent_native_step_capture=False)
+
+
 def native_backend(rows, local, full, expected, *, pending=True):
-    """A later known view revision may represent an earlier frozen occurrence."""
+    """Raw revisions and explicit reducers independently represent known occurrences."""
     state = 'PENDING' if pending else 'INVALID'
-    seen = {};incidental=[];browser_rows=[];reducers=[];later=[]
+    seen = {};incidental=[];incidental_keys=set();browser_rows=[];reducers=[];later=[];reduced={}
     for row in rows:
         event = contract.backend_event(row);family = event['type']
         require(contract.field(event, 'application.id') == expected['application_id']
@@ -187,42 +294,66 @@ def native_backend(rows, local, full, expected, *, pending=True):
                 'foreign persisted native source')
         require(contract.field(event, 'error.is_crash', False) is False, 'persisted crash')
         if family not in MAPPER_FAMILIES:
-            require(family in {'vital', 'operation'} and contract.field(event, 'view.id') in full['views'],
-                    'unclassified incidental owner')
+            key = native_incidental(event, full['views'])
+            require(key not in incidental_keys, 'duplicate incidental event')
+            incidental_keys.add(key)
             incidental.append(row);continue
         key = contract.event_key(event)
         require(key not in seen and key not in full['dropped'], 'duplicate or dropped event persisted')
-        require(key in full['accepted'], 'backend event absent from complete captured stream')
-        semantic_equal(event, full['accepted'][key]['event'], COMMON + FIELDS[family] +
-                       (['usr.id', 'usr.org_uuid'] if 'account_salt' in expected else []))
+        if family == 'view' and contract.field(event, '_dd.origin') == 'reducer':
+            require(key[1] in full['views'], 'reduced view absent from complete captured stream')
+            reduced_view(event, full['views'][key[1]]['event'])
+            reduced[key] = row
+        else:
+            require(key in full['accepted'], 'backend event absent from complete captured stream')
+            semantic_equal(event, full['accepted'][key]['event'], COMMON + FIELDS[family] +
+                           (['usr.id', 'usr.org_uuid'] if 'account_salt' in expected else []))
+            if key not in local['accepted']:later.append(list(key))
         seen[key] = row
-        if key not in local['accepted']:later.append(list(key))
+    operation_consistency = native_operation_links(incidental, pending=pending)
     needed = {k for k in local['accepted'] if k[0] != 'view'}
     require(needed <= set(seen), 'behavior event not yet delivered', state)
     for vid, value in local['views'].items():
         minimum = value['event']['_dd']['document_version']
-        require(any(k[0] == 'view' and k[1] == vid and k[2] >= minimum for k in seen),
+        require(any(k[0] == 'view' and k[1] == vid and (k in reduced or k[2] >= minimum) for k in seen),
                 'behavior view not yet delivered', state)
     return dict(keys=set(seen), required_non_view=needed, browser=browser_rows,
-                incidental=incidental, reducers=reducers, delivery_tail_keys=later,
+                incidental=incidental, reducers=reducers, reduced_views=list(reduced.values()), delivery_tail_keys=later,
+                operation_consistency=operation_consistency,
                 view_ids={k[1] for k in seen if k[0] == 'view'})
 
 
 def browser_backend(rows, local, full, interval, expected, *, pending=True):
-    state = 'PENDING' if pending else 'INVALID';seen={};witness=[];outside=[];later=[];incidental=[]
+    state = 'PENDING' if pending else 'INVALID';seen={};witness=[];outside=[];later=[];incidental=[];reduced={}
     service, version = local['source_identity']
     require(full['source_identity'] == local['source_identity'], 'Browser partition changed during delivery')
     for row in rows:
-        event = contract.backend_event(row);key = browser.key(event)
+        event = contract.backend_event(row)
+        require(contract.field(event, 'application.id') == expected['application_id']
+                and contract.field(event, 'session.id') == expected['session_id'], 'foreign persisted Browser identity')
         require(event['source'] == 'browser' and event['service'] == service
                 and contract.field(row['attributes'], 'tag.sdk_version') == version, 'foreign Browser source')
-        is_incidental=key[0] in browser.INCIDENTAL_FAMILIES
-        partition=full.get('incidental',{}) if is_incidental else full['events']
-        require(key in partition and key not in seen, 'unmapped or duplicate Browser event')
-        captured = partition[key];required = captured['expected']
-        paths = COMMON + FIELDS[event['type']]
-        # Browser resource/action keys include their independent Browser view ID.
-        semantic_equal(event, required, paths)
+        if event['type'] == 'operation':
+            key, captured = browser_operation(event, full)
+            is_incidental = True
+        else:
+            key = browser.key(event);is_incidental=key[0] in browser.INCIDENTAL_FAMILIES
+            if key[0] == 'view' and contract.field(event, '_dd.origin') == 'reducer':
+                require(key[1] in full['latest'], 'unmapped reduced Browser view')
+                # Ordinary upload can append more revisions before final seal.
+                # It must not move an occurrence across the frozen input boundary.
+                frozen_key = local['latest'].get(key[1])
+                captured = (local['events'][frozen_key] if frozen_key else
+                            min((v for k, v in full['events'].items() if k[0] == 'view' and k[1] == key[1]),
+                                key=lambda v: v['sequence']))
+                reduced_view(event, captured['expected']);reduced[key] = row
+            else:
+                partition=full.get('incidental',{}) if is_incidental else full['events']
+                require(key in partition, 'unmapped Browser event')
+                captured = partition[key]
+                # Browser resource/action keys include their independent Browser view ID.
+                semantic_equal(event, captured['expected'], COMMON + FIELDS[event['type']])
+        require(key not in seen, 'duplicate Browser event')
         container = contract.field(event, 'container.view.id')
         require(container is None or (contract.field(event, 'container.source') == 'ios'
                 and container in full['native']['views']), 'foreign Browser native container')
@@ -234,17 +365,18 @@ def browser_backend(rows, local, full, interval, expected, *, pending=True):
                 require(container == interval['owner'], 'wrong ineligible dashboard container')
         else:outside.append(dict(key=list(key), sequence=captured['sequence'], container=container))
         if is_incidental:incidental.append(row)
-        elif key not in local['events']:later.append(list(key))
+        elif key not in local['events'] and key not in reduced:later.append(list(key))
         seen[key]=row
     needed = {k for k in local['events'] if k[0] != 'view'}
     require(needed <= set(seen), 'behavior Browser event not yet delivered', state)
     for vid, key in local['latest'].items():
-        require(any(k[0] == 'view' and k[1] == vid and k[2] >= key[2] for k in seen),
+        require(any(k[0] == 'view' and k[1] == vid and (k in reduced or k[2] >= key[2]) for k in seen),
                 'behavior Browser view not yet delivered', state)
     return dict(source_identity=list(local['source_identity']), persisted_rows=len(seen),
                 container_witnesses=witness, container_coverage='PROVEN' if witness else 'UNAVAILABLE',
                 unavailable_reason=None if witness else interval['container_coverage'] if not interval['replay_eligible'] else 'NO_MESSAGE_IN_CAPTURED_INTERVAL',
-                outside_interval=outside, delivery_tail_keys=later, incidental=incidental, runtime_acceptance=False)
+                outside_interval=outside, delivery_tail_keys=later, incidental=incidental,
+                reduced_views=list(reduced.values()), runtime_acceptance=False)
 
 
 def joined(rows, native_rows, behavior_rows, full_rows, interval, expected, *, pending=True):
@@ -261,4 +393,6 @@ def joined(rows, native_rows, behavior_rows, full_rows, interval, expected, *, p
     return dict(state='SMOKE_SEMANTICS_JOINED_SOURCE_CLASSIFICATION_REQUIRED',
                 native_required_events=len(native['required_non_view']), native_required_views=len(local['views']),
                 browser=browser_join, incidental=native['incidental'], reducers=native['reducers'],
+                reduced_native_views=native['reduced_views'],
+                native_operation_consistency=native['operation_consistency'],
                 later_native_keys=native['delivery_tail_keys'], mode='smoke', runtime_acceptance=False)

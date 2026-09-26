@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 authenticated app source/oracle preparation",
-  "status": "HOST_TRANSPORT_REVIEWED_COMPLETE_INVENTORY_OPEN",
-  "at": "2026-09-25T22:26:29.673805+00:00",
+  "status": "REVIEWED_OFFLINE_PROJECTION_READY_FOR_COMMITTED_PREPARATION",
+  "at": "2026-09-26T21:41:09.354729+00:00",
   "owner": "SDK implementer",
   "reviewer": "existing /root/c06_runtime_plan",
   "scope": "Existing J02 service navigation, J03 dashboard correlation and J04 authenticated lifecycle only. No native execution, app or SDK edits, rebuild, login, publication or new experiment.",
@@ -182,7 +182,7 @@
     "partial cleanup relabeled as ordinary pass"
   ],
   "admission_limits": "This is source preparation only. No runtime/oracle pass, gate closure, new experiment or environment retry is implied. Existing J01, Duo and EXP220 automation stops remain closed; fresh execution needs materially changed environment and reviewed fixed admission.",
-  "next_action": "One fresh fixed1800-second read-only complete inventory and source-backed projection of the stopped session before another human/native admission. Retain original failed baseline and candidateUNRUN.",
+  "next_action": "Commit the reviewed host/documentation checkpoint, then prepare the final source-bound signed-in pair using runtime-transition-stable-projection.json. Reuse qualified products/account; no new query, rebuild or login. Fresh operator/environment readiness is still required before native admission.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/source-review.json",
     "sha256": "41f6a1f5348c383e8c11770dc50da59e45e9dc020559a49c2a60d8691815d6e9"
@@ -971,6 +971,36 @@
     "transport_preparation": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/transport-preparation-summary.json",
       "sha256": "8ea6e48ebe29f213ed3d465e0a390d35b69ae5592cbe82db325346ba1278f7f9"
+    },
+    "complete_transport": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/complete-transport-summary.json",
+      "sha256": "675862d8225e6812bbe16c6754cf9a93de055095920c41c490f76901351c1773"
+    },
+    "projection_correction": {
+      "state": "REVIEWED_OFFLINE_PROJECTION_READY_FOR_COMMITTED_PREPARATION",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz",
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/projection-bound-controls-v3.json",
+        "sha256": "227a9111687fe1feb3070171dca92a835a1483ab8ee09ba5c435d8a064b6fe2e"
+      },
+      "reassessment": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/saved-projection-reassessment-v3.json",
+        "sha256": "9c705732e4c00acc653996ca64736870ff2b0b350866e927b34a0a5904d40975"
+      },
+      "native_step_scope": "Backend aggregate consistency only:18 operations link36 steps; two extra starts remain incidental. No independent native operation-step capture is claimed.",
+      "timeseries_scope": "Session identity and data shape only; no metric-quality or timing acceptance.",
+      "original_verdict": "INVALID",
+      "original_cleanup": "PASS",
+      "native_runs": 0,
+      "gate_closures": [],
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/projection-cutoff-review.json",
+        "sha256": "8c33b56551af89f877ef0e95b3767a404371cae3a8303daee29399ed0253310a"
+      },
+      "summary": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/projection-offline-summary.json",
+        "sha256": "0ef71580d93594c901775d75d386fd1a9be561de8ac5d442104c2323cc09d1a4"
+      }
     }
   }
 }
