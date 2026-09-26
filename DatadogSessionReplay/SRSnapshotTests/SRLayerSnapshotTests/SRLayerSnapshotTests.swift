@@ -45,6 +45,19 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
         )
     }
 
+    func testSafari() async throws {
+        let fixture = SafariFixtureViewController()
+        let ready = XCTestExpectation(description: "Safari initial load")
+        try await takeLayerSnapshotFor(
+            fixture,
+            beforeSnapshot: {
+                fixture.showSafari { ready.fulfill() }
+                await self.fulfillment(of: [ready], timeout: 10)
+            },
+            shouldRecord: shouldRecord
+        )
+    }
+
     func testShareSheet() async throws {
         let fixture = ShareSheetFixtureViewController()
         try await takeLayerSnapshotFor(
