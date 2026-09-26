@@ -32,7 +32,7 @@ from s2_webview_runtime import active_display, display_signature
 
 HERE=Path(__file__).resolve().parent
 REPO=HERE.parents[2]
-LOCAL_HELPERS=['signed-in-definition.json','signed_in_account.py','journey_release.py','smoke-definition.json','smoke_contract.py','smoke_driver.py','smoke_runtime.py','journey-definition.json','journey_workflow.py','journey_builds.py','journey_driver.py','journey_phases.py','journey_readiness.py',
+LOCAL_HELPERS=['signed-in-definition.json','signed_in_account.py','saved_baseline.py','journey_release.py','smoke-definition.json','smoke_contract.py','smoke_driver.py','smoke_runtime.py','journey-definition.json','journey_workflow.py','journey_builds.py','journey_driver.py','journey_phases.py','journey_readiness.py',
                'journey_contract.py','browser_contract.py','journey_transport.py','journey_connector.js','journey_session.py',
                'capture_io.py','capture_contract.py','capture_build.py','ReleaseValidationCapture.swift']
 SHARED_HELPERS=['acceptance_common.py','app_journey_inventory.py','app_journey_transport.py','hosting_contract.py',
@@ -90,6 +90,18 @@ def prepare(args):
         require(path is not None,'signed-in preparation needs qualified account setup')
         path=path.resolve(strict=True)
         plan.update(account_setup=dict(path=str(path),sha256=builds.sha(path)),account_salt=str(uuid.uuid4()))
+    saved=getattr(args,'baseline_reassessment',None);review=getattr(args,'baseline_review',None)
+    contract_transition=getattr(args,'baseline_contract_transition',None)
+    require((saved is None)==(review is None)==(contract_transition is None),'saved baseline, transition and review must be provided together')
+    if saved is not None:
+        import saved_baseline
+        require(mode==signed_in_account.MODE,'saved baseline requires signed-in smoke')
+        plan['baseline_reassessment']=dict(path=str(saved.resolve(strict=True)),sha256=builds.sha(saved),
+                                          review=dict(path=str(review.resolve(strict=True)),sha256=builds.sha(review)),
+                                          contract_transition=dict(path=str(contract_transition.resolve(strict=True)),sha256=builds.sha(contract_transition)))
+        basis=saved_baseline.verify(plan['baseline_reassessment'])
+        plan['account_salt']=basis['original_plan']['account_salt']
+        saved_baseline.verify(plan['baseline_reassessment'],plan)
     atomic(root/'plan.json',encoded(plan))
     print(json.dumps(dict(state=plan['state'],root=str(root),plan_sha256=builds.sha(root/'plan.json'))))
 
@@ -320,14 +332,19 @@ def validate_native_admission(root, device):
 
 def cell(args):
     root=args.root.resolve(strict=True);plan=verify(root);arm=args.arm
+    import saved_baseline
+    saved_baseline.arm(plan,arm)
     selections=validate_native_admission(root,args.device)
+    if arm=='candidate':
+        if plan.get('baseline_reassessment'):
+            baseline=saved_baseline.verify(plan['baseline_reassessment'],plan,choices=selections,device=args.device)
+        else:
+            baseline=loads((root/'cells/baseline/summary.json').read_bytes())
+            candidate_ready(baseline,builds.sha(root/'plan.json'),root/'cells/baseline')
+            require(builds.sha(root/'cells/baseline/backend-joined.json')==baseline['backend_join_sha256'],
+                    'baseline complete join changed')
     qualified=builds.verify(plan['build_root'],arm,plan['completion_sha256'],runtime_transition=plan.get('runtime_transition'));info=qualified['identity'];bundle=info['bundle_id']
     require(qualified['workspace_transition']==plan.get('workspace_transition',{}).get(arm), 'current protection transition differs from prepared plan')
-    if arm=='candidate':
-        baseline=loads((root/'cells/baseline/summary.json').read_bytes())
-        candidate_ready(baseline,builds.sha(root/'plan.json'),root/'cells/baseline')
-        require(builds.sha(root/'cells/baseline/backend-joined.json')==baseline['backend_join_sha256'],
-                'baseline complete join changed')
     out=root/'cells'/arm;require(not out.exists(),'native cell already consumed')
     require(shutil.disk_usage(root).free>=10*1024**3,'insufficient durable capture space')
     device=shared.devices(args.device);original=shared.apps(args.device)
@@ -345,6 +362,7 @@ def cell(args):
     else:require(absence(args.device,bundle),'task app already present')
     out.mkdir(mode=0o700);backend_transport.preflight(out)
     identity=dict(run_id=str(uuid.uuid4()),nonce=str(uuid.uuid4()))
+    if arm=='candidate' and plan.get('baseline_reassessment'):saved_baseline.fresh(baseline,identity)
     budget=plan['definition']['limits'];started=time.time()
     native_deadline=min(args.native_deadline,started+budget['native_seconds_per_arm'])
     execution_deadline=min(args.execution_deadline,native_deadline+budget['backend_seconds_per_arm'])
@@ -354,6 +372,7 @@ def cell(args):
                  source=qualified['source'],device=device,started_at=started,native_deadline=native_deadline,
                  execution_deadline=execution_deadline,cleanup_deadline=cleanup_deadline,
                  plan_sha256=builds.sha(root/'plan.json'),selection_sha256=builds.sha(root/'selection.json'))
+    if plan.get('baseline_reassessment'):summary['baseline_predecessor']=plan['baseline_reassessment']
     shared.save(out/'summary.json',summary);atomic(out/'initial-apps.json',encoded(original))
     documents=pid=initial=installed=None;driver=None;joined=None;qualified_outcome=False
     def interrupted(signum,frame):raise RuntimeError('Native owner interrupted; bounded task cleanup required')
@@ -393,6 +412,7 @@ def cell(args):
                         '--capture-nonce',identity['nonce']],out,'launch',deadline=min(native_deadline,time.time()+60))
         match=re.fullmatch(re.escape(bundle)+r': ([1-9][0-9]*)\s*',(out/'launch.log').read_text())
         require(match is not None,'launch PID unavailable');pid=int(match[1]);summary['process_id']=pid
+        if arm=='candidate' and plan.get('baseline_reassessment'):saved_baseline.fresh(baseline,identity,pid=pid)
         expected=dict(application_id=info['application_id'],service='ios-app-rum-release-validation',pid=pid,
                       compiled_sdk_version=info['sdk_version'],backend_sdk_version=info['sdk_version'].replace('+','_'),
                       app_version=info['app_version'],environment='rum-release-validation',trace_sample_rate=100)
@@ -408,7 +428,9 @@ def cell(args):
         driver=driver_type(documents,out,identity,expected,args.device,installed/info['executable'],native_deadline,initial,selections)
         driver.definition=plan['definition']
         known=[loads(p.read_bytes())['session_id'] for p in (root/'cells').glob('*/native-summary.json')]
+        if arm=='candidate' and plan.get('baseline_reassessment'):known.append(baseline['session_id'])
         sid=initial_session(driver,configuration,known);summary['session_id']=sid
+        if arm=='candidate' and plan.get('baseline_reassessment'):saved_baseline.fresh(baseline,identity,pid=pid,session=sid)
         native=driver.run();native['session_id']=sid
         if retained:summary['account_binding']=native['account_binding']
         atomic(out/'native-summary.json',encoded(native));summary['scenario']='PASS'
@@ -465,7 +487,7 @@ def cell(args):
 
 def main():
     parser=argparse.ArgumentParser();commands=parser.add_subparsers(dest='stage',required=True)
-    item=commands.add_parser('prepare');item.add_argument('--root',type=Path,required=True);item.add_argument('--build-root',type=Path,required=True);item.add_argument('--mode',choices=['journeys',*smoke_contract.MODES],default='journeys');item.add_argument('--runtime-transition',type=Path);item.add_argument('--account-setup',type=Path)
+    item=commands.add_parser('prepare');item.add_argument('--root',type=Path,required=True);item.add_argument('--build-root',type=Path,required=True);item.add_argument('--mode',choices=['journeys',*smoke_contract.MODES],default='journeys');item.add_argument('--runtime-transition',type=Path);item.add_argument('--account-setup',type=Path);item.add_argument('--baseline-reassessment',type=Path);item.add_argument('--baseline-review',type=Path);item.add_argument('--baseline-contract-transition',type=Path)
     item=commands.add_parser('cell');item.add_argument('--root',type=Path,required=True);item.add_argument('--arm',choices=builds.ARMS,required=True);item.add_argument('--device',required=True)
     for name in ['native','execution','cleanup']:item.add_argument('--'+name+'-deadline',type=float,required=True)
     args=parser.parse_args()

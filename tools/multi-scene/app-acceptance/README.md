@@ -145,6 +145,14 @@ checked against the producer source. A separate saved-evidence reassessment may
 correct an oracle error without changing the original failed run or its deadlines.
 Validate reviewed native admission before consuming output or starting the supervisor.
 
+For a completed baseline stopped by that oracle error, `saved_baseline.py` can bind
+separately reviewed local/backend evidence as the predecessor of one candidate-only
+plan. It preserves the original failed summary and requires its timely cleanup,
+quiescent workers, retained account, exact products and selected journey. An explicit
+reviewed receipt binds any host-helper or authorized documentation transition.
+The candidate gets fresh run/process/session identities and fresh operator admission;
+the saved packet never becomes a synthetic baseline pass or closes a release gate.
+
 Browser duration vitals remain an incidental partition with typed identities and
 ownership checks. They neither supply required view/action/resource coverage nor
 introduce metric-quality acceptance. An absent anonymous ID is permitted only in

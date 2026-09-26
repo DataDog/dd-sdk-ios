@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 authenticated app source/oracle preparation",
-  "status": "SAVED_BASELINE_PROOF_COMPLETE_CANDIDATE_CONTINUATION_PREPARATION",
+  "status": "CANDIDATE_ONLY_SOURCE_REVIEWED_PRODUCTS_REUSED",
   "at": "2026-09-26T22:29:24.095728+00:00",
   "owner": "SDK implementer",
   "reviewer": "existing /root/c06_runtime_plan",
@@ -182,7 +182,7 @@
     "partial cleanup relabeled as ordinary pass"
   ],
   "admission_limits": "This is source preparation only. No runtime/oracle pass, gate closure, new experiment or environment retry is implied. Existing J01, Duo and EXP220 automation stops remain closed; fresh execution needs materially changed environment and reviewed fixed admission.",
-  "next_action": "Review the complete saved baseline proof and implement the defined candidate-only continuation. Preserve original INVALID/cleanup PASS; no native app/runner/server is running. Candidate remains UNRUN; do not repeat the baseline gestures.",
+  "next_action": "Complete mechanical review of the exact saved-predecessor transition and prepare the candidate-only plan. Both signed products were reused without builds. Fresh operator/native admission remains required; baseline gestures must not repeat. Original INVALID/cleanup PASS stays unchanged.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/source-review.json",
     "sha256": "41f6a1f5348c383e8c11770dc50da59e45e9dc020559a49c2a60d8691815d6e9"
@@ -1108,8 +1108,35 @@
         "sha256": "15e72fec8c68655b171011472355129081cef3d34928cf593a956ee5be6a82d7"
       },
       "candidate_continuation": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/candidate-continuation-proposal.json",
-        "sha256": "7c845d9decb4965a21bdaeaef47832575533b753d6ce000922067333c3c349e0"
+        "state": "SOURCE_REVIEWED_PRODUCT_REUSE_QUALIFIED",
+        "proposal": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/candidate-continuation-proposal.json",
+          "sha256": "7c845d9decb4965a21bdaeaef47832575533b753d6ce000922067333c3c349e0"
+        },
+        "source_review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/candidate-continuation-source-review.json",
+          "sha256": "52e87eb602c73a6dd33ef3e2faf33aefca1c3b2e902def2a7213e000073c5eea"
+        },
+        "controls": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/candidate-continuation-bound-controls-v2.json",
+          "sha256": "c0f06f9f03826bb0fb976694abfbba858ef30884a698e8c4fe8525e6d0535ddb"
+        },
+        "saved_predecessor": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/saved-baseline-predecessor.json",
+          "sha256": "4e2c92ed079a6cefd0a371429d84587ffd8728248fcd7e974cb7d51804440dfb"
+        },
+        "contract_transition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/candidate-contract-transition.json",
+          "sha256": "a17073b950ed2abf4eaa9096b228e2723eff7f0c62413f4303583a70a9b4427c"
+        },
+        "product_reuse": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/candidate-product-reuse.json",
+          "sha256": "9866a5995bc3c22908e44c3bd1f58b1270d2333487baea7508c23420ee19f2f9"
+        },
+        "original_verdict": "INVALID",
+        "candidate": "UNRUN",
+        "native_runs": 0,
+        "gate_closures": []
       },
       "original_verdict": "INVALID",
       "original_cleanup": "PASS",
@@ -1120,5 +1147,6 @@
         "sha256": "3b5a8e6e265a5cd210201a1665c712a49288a29b7c227bb0be78f983e103706d"
       }
     }
-  }
+  },
+  "updated_at": "2026-09-26T23:17:23.735495+00:00"
 }

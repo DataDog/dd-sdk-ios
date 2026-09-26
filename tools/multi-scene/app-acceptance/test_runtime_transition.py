@@ -143,12 +143,50 @@ class RuntimeTransitionControls(unittest.TestCase):
             plan=dict(build_root='/build',completion_sha256='completion',runtime_transition=binding,
                       definition={'limits':dict(native_seconds_per_arm=2400,backend_seconds_per_arm=600,cleanup_seconds=300)})
             with patch.object(session.workflow,'verify',return_value=plan), \
+                 patch.object(session.workflow,'validate_native_admission',return_value={}), \
                  patch.object(session.workflow.builds,'verify') as verify, \
                  patch.object(session.operator,'publish'), \
                  patch.object(session.supervisor,'supervise',return_value=1), \
                  patch.object(session,'qualify',return_value=False):
                 session.run(SimpleNamespace(root=root,arm='baseline',device='not-used'))
                 verify.assert_called_once_with('/build','baseline','completion',runtime_transition=binding)
+
+    def test_saved_baseline_addition_requires_its_own_reviewed_scope_and_hash(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp).resolve();here=root/'app-acceptance';here.mkdir();(root/'acceptance').mkdir()
+            allowed={str(here/name) for name in builds.PAGINATION_TRANSITION_FILES}
+            allowed.add(str(root/'acceptance/app_journey_transport.py'))
+            additions={str(here/name) for name in builds.SAVED_BASELINE_ADDITIONS}
+            for path in allowed|additions:Path(path).write_text('pass\n')
+            original={name:'old-'+Path(name).name for name in allowed}
+            current={name:builds.sha(name) for name in allowed|additions}
+            changes={name:dict(before=original[name],after=current[name]) for name in allowed}
+            definition={'qualified_helper_sha256':original}
+            for name in ['definition.json','completion.json','preparation.json']:(root/name).write_text('{}')
+            binder=root/'adapter.py';binder.write_text('pass\n');(here/'capture_build.py').write_text('pass\n')
+            controls=root/'controls.json';controls.write_text(json.dumps(dict(state='PASS_OFFLINE_ONLY',source_sha256=current)))
+            review=root/'review.json';review.write_text(json.dumps(dict(state='PASS',reviewer='/root/c06_runtime_plan',
+                controls=dict(path=str(controls),sha256=builds.sha(controls)),source_sha256=current,
+                changes_sha256=hashlib.sha256(json.dumps(changes,sort_keys=True,separators=(',',':')).encode()).hexdigest())))
+            value=dict(schema_version=1,state='REVIEWED_HOST_ONLY_REUSE',scope='signed-in-saved-baseline-v4',
+                       build_root=str(root),definition_sha256=builds.sha(root/'definition.json'),completion_sha256=builds.sha(root/'completion.json'),
+                       review=dict(path=str(review),sha256=builds.sha(review)),changes=changes,
+                       additions={name:current[name] for name in additions})
+            manifest=root/'transition.json'
+            with patch.object(builds,'__file__',str(here/'journey_builds.py')), \
+                 patch.object(capture_build,'__file__',str(here/'capture_build.py')), \
+                 patch.object(capture_build,'bind_sources',return_value=('guard','preparation')) as bind:
+                manifest.write_text(json.dumps(value))
+                self.assertEqual(builds.transition_guard(root,binder,definition,dict(path=str(manifest),sha256=builds.sha(manifest))),('guard','preparation'))
+                for mode in ['missing','changed','foreign-scope']:
+                    changed=copy.deepcopy(value);key=str(here/'saved_baseline.py')
+                    if mode=='missing':changed['additions'].pop(key)
+                    if mode=='changed':changed['additions'][key]='foreign'
+                    if mode=='foreign-scope':changed['scope']='signed-in-pagination-v3'
+                    manifest.write_text(json.dumps(changed));bind.reset_mock()
+                    with self.subTest(mode=mode),self.assertRaises(Rejected):
+                        builds.transition_guard(root,binder,definition,dict(path=str(manifest),sha256=builds.sha(manifest)))
+                    bind.assert_not_called()
 
     def test_transition_cannot_bypass_original_completion_or_build_receipts(self):
         with tempfile.TemporaryDirectory() as tmp:
