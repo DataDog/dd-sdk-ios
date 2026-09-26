@@ -304,16 +304,23 @@ def candidate_ready(summary, plan_sha, folder):
             'baseline owned worker absence missing or late')
 
 
-def cell(args):
-    root=args.root.resolve(strict=True);plan=verify(root);arm=args.arm
+def validate_native_admission(root, device):
+    """Reject missing/stale admission before consuming an output or native arm."""
+    root=Path(root)
     review=loads((root/'review.json').read_bytes());admission=loads((root/'native-admission.json').read_bytes())
     require(review['state']=='PASS' and review['reviewer']=='/root/c06_runtime_plan' and review['plan_sha256']==builds.sha(root/'plan.json'),
             'F08 runtime review missing or stale')
     require(admission['state']=='ADMITTED' and admission['plan_sha256']==builds.sha(root/'plan.json')
-            and admission['review_sha256']==builds.sha(root/'review.json') and admission['device']==args.device
+            and admission['review_sha256']==builds.sha(root/'review.json') and admission['device']==device
             and admission['operator_ready'] is True and time.time()<admission['expires_at'], 'fresh operator/environment admission unavailable')
     selections=selection(loads((root/'selection.json').read_bytes()))
     require(admission['selection_sha256']==builds.sha(root/'selection.json'),'account/route selection changed')
+    return selections
+
+
+def cell(args):
+    root=args.root.resolve(strict=True);plan=verify(root);arm=args.arm
+    selections=validate_native_admission(root,args.device)
     qualified=builds.verify(plan['build_root'],arm,plan['completion_sha256'],runtime_transition=plan.get('runtime_transition'));info=qualified['identity'];bundle=info['bundle_id']
     require(qualified['workspace_transition']==plan.get('workspace_transition',{}).get(arm), 'current protection transition differs from prepared plan')
     if arm=='candidate':

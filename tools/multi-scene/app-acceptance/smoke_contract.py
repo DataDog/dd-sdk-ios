@@ -158,8 +158,7 @@ def native_manifest(rows, native, expected, spec):
     require(active == owners['service-list-reactivated'], 'final foreground owner differs')
     lifecycle = phases.j04(rows, observed, expected, native['backgrounds'][0])
     start, end = ordered[0], ordered[-1]
-    for callback in ['willResignActive', 'didEnterBackground', 'willEnterForeground', 'didBecomeActive']:
-        phases.lifecycle(rows, start, end, observed[selected[0]]['binding']['scene'], callback)
+    phases.lifecycle_cycle(rows, start, end, observed[selected[0]]['binding']['scene'])
     return dict(state='SMOKE_LOCAL_MANIFEST_QUALIFIED', phase_owners=owners,
                 named_action_keys=[list(k) for k in actions], lifecycle=lifecycle,
                 captured_view_occurrences=len(local['views']), captured_resource_events=sum(k[0] == 'resource' for k in local['accepted']),

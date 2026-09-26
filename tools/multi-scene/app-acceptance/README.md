@@ -138,6 +138,13 @@ Wait for the source-owned attachment, loaded URL and valid preceding Browser inv
 inside the original readiness deadline. Preserve each pending snapshot; wrong ownership
 or malformed evidence is invalid. A later cleanup snapshot cannot repair a missed boundary.
 
+The fixture records resign-active, background and become-active callback pairs.
+Require those exact ordered pairs and bind Home to the recorded background exit;
+do not require an uninstrumented foreground callback. Keep the oracle inventory
+checked against the producer source. A separate saved-evidence reassessment may
+correct an oracle error without changing the original failed run or its deadlines.
+Validate reviewed native admission before consuming output or starting the supervisor.
+
 Browser duration vitals remain an incidental partition with typed identities and
 ownership checks. They neither supply required view/action/resource coverage nor
 introduce metric-quality acceptance. An absent anonymous ID is permitted only in

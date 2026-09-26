@@ -24,7 +24,7 @@ def native_fixture(root):
     screens=['login','login','login','list','detail','list','dashboard','dashboard','dashboard','list','list']
     for name,number,screen in zip(smoke.PHASES,ids,screens):
         if name=='service-list-reactivated':
-            for callback in ['willResignActive','didEnterBackground','willEnterForeground','didBecomeActive']:
+            for callback in ['willResignActive','didEnterBackground','didBecomeActive']:
                 for edge in ['enter','exit']:
                     entries.append(('scene_callback',dict(callback=callback+'-'+edge,scene='scene')))
                     if callback=='didEnterBackground' and edge=='exit':background=(len(entries)*2-1)

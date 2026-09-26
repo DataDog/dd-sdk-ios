@@ -157,13 +157,24 @@ def dashboard_timeframe(ready, text):
     return dict(controller=timer['id'],dashboard=dashboard['id'],label=text,frame=frame)
 
 
+CAPTURED_LIFECYCLE_CALLBACKS = ('willResignActive', 'didEnterBackground', 'didBecomeActive')
+
+
 def lifecycle(rows, start, end, scene, callback):
     names=[callback+'-enter',callback+'-exit']
     selected=[r for r in rows if start<r['sequence']<=end and r['kind']=='scene_callback'
               and r['fields']['callback'] in names]
     require([r['fields']['callback'] for r in selected]==names and all(r['fields']['scene']==scene for r in selected),
-            'missing, repeated or foreign lifecycle boundary')
+            callback + ': missing, repeated or foreign lifecycle boundary')
     return [r['sequence'] for r in selected]
+
+
+def lifecycle_cycle(rows, start, end, scene):
+    """Require the callback pairs emitted by the source-bound scene recorder."""
+    callbacks={name:lifecycle(rows,start,end,scene,name) for name in CAPTURED_LIFECYCLE_CALLBACKS}
+    ordered=[sequence for pair in callbacks.values() for sequence in pair]
+    require(ordered==sorted(ordered), 'lifecycle callback order differs')
+    return callbacks
 
 
 def j01(rows, phases, expected, background):
@@ -177,8 +188,8 @@ def j01(rows, phases, expected, background):
     first,last=(phases[n]['snapshot']['sequence'] for n in ['login-returned','login-reactivated'])
     scene=phases['login-returned']['binding']['scene']
     require(first<background['sequence']<last, 'Home evidence outside journey')
-    for callback in ['willResignActive','didEnterBackground','willEnterForeground','didBecomeActive']:
-        lifecycle(rows,first,last,scene,callback)
+    callbacks=lifecycle_cycle(rows,first,last,scene)
+    require(background['sequence']==callbacks['didEnterBackground'][-1], 'Home checkpoint is not the captured background exit')
     require(field(local['views'][owners[0]]['event'],'view.is_active') is False, 'previous login owner never stopped')
     return dict(state='J01_LOCAL_BOUNDARIES_JOINED', old_view=owners[0], new_view=owners[3], action_count=1)
 
@@ -191,8 +202,8 @@ def j04(rows, observations, expected, background):
             'authenticated list native instance changed')
     start,end=before['snapshot']['sequence'],after['snapshot']['sequence']
     require(start<background['sequence']<end, 'authenticated Home evidence outside journey')
-    for callback in ['willResignActive','didEnterBackground','willEnterForeground','didBecomeActive']:
-        lifecycle(rows,start,end,before['binding']['scene'],callback)
+    callbacks=lifecycle_cycle(rows,start,end,before['binding']['scene'])
+    require(background['sequence']==callbacks['didEnterBackground'][-1], 'Home checkpoint is not the captured background exit')
     local=mapper_inventory(rows,expected)
     require(field(local['views'][old]['event'],'view.is_active') is False
             and field(local['views'][new]['event'],'view.is_active') is True, 'authenticated view lifetime differs')

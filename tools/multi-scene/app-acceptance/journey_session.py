@@ -45,6 +45,7 @@ def qualify(root, arm, *, error=None):
 
 def run(args):
     root=args.root.resolve(strict=True);plan=workflow.verify(root)
+    workflow.validate_native_admission(root,args.device)
     require(not (root/(args.arm+'-driver.log')).exists(),'consumed F08 arm; no input retry')
     # Both source/product checks finish before the fixed native clock begins.
     workflow.builds.verify(plan['build_root'],args.arm,plan['completion_sha256'],runtime_transition=plan.get('runtime_transition'))

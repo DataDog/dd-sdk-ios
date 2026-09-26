@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 authenticated app source/oracle preparation",
-  "status": "DASHBOARD_READINESS_REVIEWED_PREPARATION_PENDING",
-  "at": "2026-09-26T22:16:53.233696+00:00",
+  "status": "SAVED_BASELINE_PROOF_COMPLETE_CANDIDATE_CONTINUATION_PREPARATION",
+  "at": "2026-09-26T22:29:24.095728+00:00",
   "owner": "SDK implementer",
   "reviewer": "existing /root/c06_runtime_plan",
   "scope": "Existing J02 service navigation, J03 dashboard correlation and J04 authenticated lifecycle only. No native execution, app or SDK edits, rebuild, login, publication or new experiment.",
@@ -182,7 +182,7 @@
     "partial cleanup relabeled as ordinary pass"
   ],
   "admission_limits": "This is source preparation only. No runtime/oracle pass, gate closure, new experiment or environment retry is implied. Existing J01, Duo and EXP220 automation stops remain closed; fresh execution needs materially changed environment and reviewed fixed admission.",
-  "next_action": "Prepare a fresh source-bound baseline/candidate plan using the reviewed dashboard readiness repair, then obtain fresh human/device readiness. Original baseline INVALID and cleanup PASS remain; candidate UNRUN. Retain account and products; no login or rebuild.",
+  "next_action": "Review the complete saved baseline proof and implement the defined candidate-only continuation. Preserve original INVALID/cleanup PASS; no native app/runner/server is running. Candidate remains UNRUN; do not repeat the baseline gestures.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/source-review.json",
     "sha256": "41f6a1f5348c383e8c11770dc50da59e45e9dc020559a49c2a60d8691815d6e9"
@@ -961,8 +961,8 @@
       "sha256": "d5ab1b67cda01d69020fce255a4d385807a5f18c450d59639803874aef9a0098"
     },
     "latest_attempt": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/dashboard-readiness-stopped.json",
-      "sha256": "77589213a930431db7bfb9a38e87a2bd5b33d14b1f89d81f4a2972c13df7ab6d"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/lifecycle-oracle-stopped.json",
+      "sha256": "de7e175bdeac1cf64110485b0314bba46bb58db7623b29f2a448d22513ddd6df"
     },
     "offline_correction": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/offline-repair-summary.json",
@@ -1011,7 +1011,7 @@
       "sha256": "c8fa59cd55d26db0024bda960dae59ae5fb047b0e1c106fd0d71e52b99d019d8"
     },
     "dashboard_readiness": {
-      "state": "DASHBOARD_READINESS_REVIEWED_PREPARATION_PENDING",
+      "state": "NATIVE_DASHBOARD_READINESS_QUALIFIED_LOCAL_MANIFEST_STOPPED",
       "assessment": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/dashboard-readiness-stopped.json",
         "sha256": "77589213a930431db7bfb9a38e87a2bd5b33d14b1f89d81f4a2972c13df7ab6d"
@@ -1043,6 +1043,81 @@
       "runtime_transition": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/runtime-transition-dashboard-readiness.json",
         "sha256": "1dd2f4a630c9d7c844504eb3712ea5c6bb53ed56578f7bc2a0cbaef2cdf1e1ea"
+      },
+      "prepared_pair": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/dashboard-readiness-preparation-summary.json",
+        "sha256": "db9b54b771b21f6cc9d6a1ab319d3360bc81f1047d1de26aa9f7c3753e49b4b0"
+      },
+      "pre_admission_stop": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/dashboard-readiness-admission-stop.json",
+        "sha256": "b5d9a91996add3463c1c1c9dcc92822c653c59fbc979396ebfb3023a378c4130"
+      },
+      "current_attempt": {
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/prepared-dashboard-admission-pair",
+        "state": "INVALID_CLEANUP_PASS",
+        "native_admission": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/prepared-dashboard-admission-pair/native-admission.json",
+          "sha256": "f01119e43757fdceb69832a5673b809d3ac1d0cc9f295182075114c6c4a1bb13"
+        },
+        "plan": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/prepared-dashboard-admission-pair/plan.json",
+          "sha256": "0b3b2773652ac35ba1f7cee120ec6affa0a27842b3710eed16b0eddc2723c46c"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/prepared-dashboard-admission-pair/review.json",
+          "sha256": "022b0deeb820d840ee78bd227860990d72d0896a0374494dec7d970acf942093"
+        },
+        "summary_live_path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/prepared-dashboard-admission-pair/cells/baseline/summary.json",
+        "original_invalid_unchanged": true,
+        "candidate": "UNRUN",
+        "summary": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/prepared-dashboard-admission-pair/cells/baseline/summary.json",
+          "sha256": "c60f821933fa5953142116d594a0d2abb42f8ad11f3d55dedccad9e6480b0508"
+        }
+      }
+    },
+    "lifecycle_oracle": {
+      "state": "REVIEWED_CORRECTION_SAVED_BEHAVIOR_AND_BACKEND_COMPLETE",
+      "assessment": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/lifecycle-oracle-stopped.json",
+        "sha256": "de7e175bdeac1cf64110485b0314bba46bb58db7623b29f2a448d22513ddd6df"
+      },
+      "proposal": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/lifecycle-oracle-proposal.json",
+        "sha256": "75fbc556a0cbf0f0eb075bf99a5d388a0c92abb112b0732b8667e00de7929852"
+      },
+      "backend_request": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/lifecycle-saved-backend/8eb7842a-7249-4b32-8c20-2a46b3ad8f88.request.json",
+        "sha256": "454a4bbd749d3f0cb3b5ec98c117323f599c0543b152330dce8041a676a479f9"
+      },
+      "gate_closures": [],
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/lifecycle-admission-controls.json",
+        "sha256": "dd82d29436ba2a78c963c8d14beca67b77044b27216d07f2b84c72793874b9dc"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/lifecycle-admission-review.json",
+        "sha256": "75d3fb55facab54aa496c7a9814dafa7dbbf90a8396af3559082874652d65ae7"
+      },
+      "saved_behavior": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/lifecycle-saved-reassessment/assessment.json",
+        "sha256": "8d5c80f39b572bfe0489737104f8298d8eb94a9eafa86f1bd5a20e1acb72ccda"
+      },
+      "saved_backend": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/lifecycle-backend-reassessment/assessment.json",
+        "sha256": "15e72fec8c68655b171011472355129081cef3d34928cf593a956ee5be6a82d7"
+      },
+      "candidate_continuation": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/candidate-continuation-proposal.json",
+        "sha256": "7c845d9decb4965a21bdaeaef47832575533b753d6ce000922067333c3c349e0"
+      },
+      "original_verdict": "INVALID",
+      "original_cleanup": "PASS",
+      "candidate": "UNRUN",
+      "native_runs": 0,
+      "native_backend_request": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/lifecycle-saved-native-backend/9e7700f0-1ebe-486d-b04e-c6bafd8cb962.request.json",
+        "sha256": "3b5a8e6e265a5cd210201a1665c712a49288a29b7c227bb0be78f983e103706d"
       }
     }
   }
