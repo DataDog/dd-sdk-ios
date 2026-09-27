@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "CONTINUING",
+  "state": "SAFE_CHECKPOINT_WAITING_FOR_OPERATOR_PREREQUISITES",
   "authority": "Standing user instruction to continue autonomous plan execution until explicitly stopped; caffeinate has a separate finite duration",
   "started_at": 1790316486.131028,
   "work_deadline_utc": null,
@@ -10,16 +10,19 @@
   },
   "previous_window": "unattended-work-20260924.json",
   "automation": {
-    "state": "ACTIVE",
+    "state": "REMOVED",
     "id": "rum-autonomous-release-progress",
     "kind": "heartbeat",
     "minimum_work_until_utc": "2026-09-27T06:00:00+00:00",
-    "instruction": "Continue without human input; remove heartbeat after safe morning checkpoint. This is not a native admission or deadline extension."
+    "instruction": "Continue without human input; remove heartbeat after safe morning checkpoint. This is not a native admission or deadline extension.",
+    "removed_at": "2026-09-27T06:00:55.094691+00:00"
   },
-  "next_task": "S2:F08 closed; checkpoint, repair rejected-inventory failure publication offline, then close executable S2/S3 gates using accepted evidence and finite missing slices. C06 gap review active; no native runner.",
+  "next_task": "One prepared physical UIKit candidate when the operator is ready; then remaining automatic coverage and Resource/Trace fold packages. S3 window setup passes controls/build only and needs separate human/device admission.",
   "gate_closures": [
     "S2:H16",
-    "S2:T10"
+    "S2:T10",
+    "S2:F08",
+    "S2:H12"
   ],
   "limits": [
     "No expired deadline extension or equivalent stopped-mechanism retry",
@@ -30,7 +33,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": "2026-09-27T01:09:39.769152+00:00",
+  "updated_at": "2026-09-27T06:00:55.094691+00:00",
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
@@ -39,7 +42,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/action-projection-hg9qmeep/outcome.json",
     "sha256": "58e09307850aca4535607bc72c3fb50ac288bc18580f47c0312b0000bdbd4f53"
   },
-  "active_native": null,
+  "active_native": false,
   "latest_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/public-pop-ouu_g0rk/runtime-uikit/physical-human-outcome.json",
     "sha256": "2e60998235dbbf010da4d0f2ab75ffb08548b844b18e48bb80a90e50a40e0406"
@@ -249,7 +252,16 @@
     "pid": 28468,
     "authorized_seconds": 17522,
     "awake_until_utc": "2026-09-27T05:59:59.745012+00:00",
-    "work_deadline": null
+    "work_deadline": null,
+    "state": "STOPPED_AFTER_AUTHORIZED_WINDOW",
+    "verified_at": "2026-09-27T06:00:55.094691+00:00",
+    "process_present": false,
+    "stop": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/caffeinate-stop.json",
+      "sha256": "83585077e78d091710fa78e2d914598823a1cd6f50a0c5c5bf59be9cf039b0fa"
+    }
   },
-  "minimum_autonomous_work_until_utc": "2026-09-27T06:00:00+00:00"
+  "minimum_autonomous_work_until_utc": "2026-09-27T06:00:00+00:00",
+  "latest_autonomous_checkpoint": "Results/autonomous-progress-20260927.json",
+  "historical_entries_note": "Earlier attempt/preparation fields retain historical state. The restart cursor and latest_autonomous_checkpoint own current work; they do not renew old admissions."
 }

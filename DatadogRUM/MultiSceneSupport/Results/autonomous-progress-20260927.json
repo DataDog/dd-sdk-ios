@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "work_item": "Autonomous S2/S3 checkpoint through 08:00 Paris on 2026-09-27",
+  "state": "SAFE_CHECKPOINT_WAITING_FOR_OPERATOR_PREREQUISITES",
+  "minimum_until_utc": "2026-09-27T06:00:00+00:00",
+  "source": {
+    "S2": "c9faed816a1d4828d7d8c4b64acae01119425889",
+    "S3": "94842cc8ad7b104c1394c236b98b95b6c24a0956"
+  },
+  "gate_closures": [
+    {
+      "id": "S2:F08",
+      "owner": "Results/S2-F08-candidate-comparison.json",
+      "result": "Paired Datadog app journey ownership and durable backend inventories qualify; original invalid attempts remain."
+    },
+    {
+      "id": "S2:H12",
+      "owner": "Results/S2-H12-H13-swiftui-duo.json",
+      "result": "Automatic15Views/10actions and existing-manual12Views/10actions match across all four real Duo foreground transitions. Two inherited manual limitations remain unchanged."
+    }
+  ],
+  "partial": {
+    "gate": "S2:H13",
+    "result": "SwiftUI dismissal portions qualify; only physical UIKit candidate remains."
+  },
+  "counts": {
+    "S2": {
+      "required": 27,
+      "closed": 17,
+      "open": 10
+    },
+    "S3": {
+      "required": 69,
+      "closed": 46,
+      "remaining": 23
+    }
+  },
+  "remaining_owner": "Results/S2-input-session-preparation.json",
+  "remaining_S2": [
+    "12 shared automatic-coverage Duo cells, also supplying resize evidence.",
+    "One physical UIKit candidate gesture cell; baseline and SwiftUI pairs reused.",
+    "Four shared Resource/Trace fold cells.",
+    "Final source/evidence review after those behavioral predicates qualify."
+  ],
+  "S3_preparation": {
+    "owner": "Results/EXP-225-human-setup-preparation.json",
+    "result": "Reviewed human setup barrier,62 offline controls and one optimized simulator build pass; native launches0 and no S3 gate closure."
+  },
+  "preflight": {
+    "owner": "Results/S2-H11-H13-local-continuation.json",
+    "result": "Coverage/fold manifests verify. The unrun physical candidate has reviewed refreshed helper bindings and unchanged signed products."
+  },
+  "integrity": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/checkpoint-integrity.json",
+    "sha256": "ce18700d5c50369ff8d37c2727b9745614b9a55a02655660fdbebb3aee82768c"
+  },
+  "checkpoints": [
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/s3-human-setup/checkpoint.json",
+      "sha256": "cd44296fba7192c64d282976bda78f96268ca90ad576dbd0ac933a04336ae4f1"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/remaining-preflight/checkpoint.json",
+      "sha256": "6ec2aa99ca67f225d2a0b043d0bf0c1a60bedcd1f05c0310d415b8d649cf29fe"
+    }
+  ],
+  "signing": "Signing attempted; current local fallback checkpoints are unsigned after agent timeout. Sign outgoing history before separately authorized publication.",
+  "pushed": false,
+  "protected_files_unchanged": true,
+  "next": "Wait for fresh operator/device readiness for the remaining finite S2 packages; S3 human/device admission needs a separate review. Do not rerun accepted suites, app journeys, SwiftUI cells or stopped native mechanisms.",
+  "accepted_evidence_repeat_due": false,
+  "recommended_first_session": {
+    "package": "transitions",
+    "cells": 1,
+    "gates": [
+      "S2:H11",
+      "S2:H13"
+    ],
+    "owner": "Results/S2-H11-H13-local-continuation.json",
+    "reason": "Smallest remaining source-bound candidate cell; reuses the accepted physical UIKit baseline and completed SwiftUI pairs.",
+    "prerequisites": [
+      "Fresh connected unlocked matching iPad",
+      "Operator available for four gestures and Home",
+      "Current frozen product/helper and release/idle cleanup checks"
+    ]
+  },
+  "completed_at": "2026-09-27T06:00:55.094691+00:00",
+  "quiescence": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/morning-quiescence.json",
+    "sha256": "a8dbaf3ffba231cf63e2efd4b3daba144251e873d77de61281b00f7b94ea8779"
+  },
+  "minimum_window_complete": true,
+  "automation_removed": true,
+  "caffeinate_expired": true,
+  "caffeinate_stopped": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/caffeinate-stop.json",
+    "sha256": "83585077e78d091710fa78e2d914598823a1cd6f50a0c5c5bf59be9cf039b0fa"
+  }
+}

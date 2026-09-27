@@ -114,8 +114,12 @@ retained UIKit objects or duplicate callback/event is acceptable.
 The17.5 lane qualifies that fallback when exact routing is disabled. Enabling any
 older-iPad family requires its own bounded A/B ownership and fallback cells before
 the capability is enabled; older exact semantics remain optional. The required27
-same-key case is automated and distinct from A02 gestures/dismissals and physical
-H gates. EXP129 is inconclusive; serial evidence cannot prove simultaneous owners.
+same-key API calls and assertions are automated. The original activation attempt
+backgrounded A, so the [human setup preparation](Results/EXP-225-human-setup-preparation.json)
+separates window arrangement from API execution and binds fresh native topology
+before starting. Its controls/build pass; native ownership remains unqualified.
+This is distinct from A02 gestures/dismissals and physical H gates. EXP129 remains
+inconclusive; serial evidence cannot prove simultaneous owners.
 
 ## Durable result contract
 
