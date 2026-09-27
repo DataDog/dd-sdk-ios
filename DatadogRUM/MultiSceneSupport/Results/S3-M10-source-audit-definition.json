@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "gate": "S3:F03:M10",
+  "status": "DEFINED_BEFORE_EXECUTION",
+  "owner": "SDK implementer",
+  "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "fixture_commit": "fac0b546498fb6a978861b07183491c34d56ee90",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-m10-source-audit-7h2a6jnh",
+  "workspace": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-fixture-qualification-qj5mlyn3/workspace",
+  "scope": "Strict lint of the complete current SDK Swift source inventory and selected non-Replay test/fixture inventory. Existing public API extraction is preparation only until its exact tool/compiler-input reuse is reviewed. No API promotion, SDK edit, content test or accepted suite rerun.",
+  "counts": {
+    "sources": 662,
+    "tests": 474
+  },
+  "configs": {
+    "sources": {
+      "path": "tools/lint/sources.swiftlint.yml",
+      "sha256": "f6ab3664dad9f0c7157eba308cd6aae9c4e1fb8e085665b43143cc384da2efcb"
+    },
+    "tests": {
+      "path": "tools/lint/tests.swiftlint.yml",
+      "sha256": "0358714f5e1d657ffba27fffe9c7716c63e39fd49a97eee3a225cd5284fc15c5"
+    }
+  },
+  "budgets_seconds": {
+    "command": 600,
+    "cleanup": 60
+  },
+  "attempts": {
+    "lint_commands": 2,
+    "sdk_builds": 0,
+    "native_apps": 0
+  },
+  "acceptance": "Each declared Swift file is checked with the existing sources/tests rule set, strict mode, no-cache, no automatic fixes; retain complete violations and exit status. Source/config/tool fingerprints and protected user paths remain unchanged. No whole M10/F03 closure before approved API comparison.",
+  "gate_closures": []
+}

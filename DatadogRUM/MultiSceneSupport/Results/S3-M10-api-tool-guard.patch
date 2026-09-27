@@ -1,0 +1,130 @@
+--- a/Sources/APISurfaceCore/APISurface.swift
++++ b/Sources/APISurfaceCore/APISurface.swift
+@@ -71,9 +71,43 @@
+ 
+     /// Reconstructs the module from its name and compiler arguments and parses it. No build is performed here; it
+     /// relies on the build artifacts already produced into the shared derived data path by the parent process.
+-    init(moduleName: String, compilerArguments: [String]) {
++    private let inventory: SourceInventoryReceipt
++
++    init(moduleName: String, compilerArguments: [String]) throws {
++        let environment = ProcessInfo.processInfo.environment
++        guard let manifestPath = environment["DD_API_SOURCE_MANIFEST"] else {
++            throw APISurfaceError(description: "Missing frozen source manifest.")
++        }
++        let expected = try JSONDecoder().decode(
++            SourceInventoryManifest.self,
++            from: Data(contentsOf: URL(fileURLWithPath: manifestPath))
++        )
++        guard expected.module == moduleName && expected.compilerArguments == compilerArguments else {
++            throw APISurfaceError(description: "Module or compiler arguments differ from the frozen manifest.")
++        }
+         let module = Module(name: moduleName, compilerArguments: compilerArguments)
+-        self.docs = module.docs
++        try SourceInventory.validate(expected: expected.sources, actual: module.sourceFiles)
++        let docs = module.docs
++        let documentedSources = docs.compactMap { $0.file.path }
++        guard documentedSources.count == docs.count else {
++            throw APISurfaceError(description: "Documentation has no source path.")
++        }
++        try SourceInventory.validate(expected: expected.sources, actual: documentedSources)
++        self.docs = docs
++        self.inventory = SourceInventoryReceipt(
++            module: moduleName,
++            expectedSources: expected.sources,
++            moduleSources: module.sourceFiles,
++            documentedSources: documentedSources
++        )
++    }
++
++    func writeInventoryReceipt() throws {
++        guard let path = ProcessInfo.processInfo.environment["DD_API_PARSE_RECEIPT"],
++              !FileManager.default.fileExists(atPath: path) else {
++            throw APISurfaceError(description: "Missing or consumed parse receipt path.")
++        }
++        try JSONEncoder().encode(inventory).write(to: URL(fileURLWithPath: path), options: .atomic)
+     }
+ 
+     /// Prints the API surface for the given language from the already-parsed module documentation.
+--- a/Sources/APISurfaceCore/Commands.swift
++++ b/Sources/APISurfaceCore/Commands.swift
+@@ -39,12 +39,13 @@
+         let data = try Data(contentsOf: URL(fileURLWithPath: compilerArgsFile))
+         let compilerArguments = try JSONDecoder().decode([String].self, from: data)
+ 
+-        let parsed = ParsedAPISurface(moduleName: name, compilerArguments: compilerArguments)
++        let parsed = try ParsedAPISurface(moduleName: name, compilerArguments: compilerArguments)
+ 
+         for output in outputs {
+             let body = try parsed.print(language: output.language)
+             try body.write(toFile: output.outputFile, atomically: true, encoding: .utf8)
+         }
++        try parsed.writeInventoryReceipt()
+     }
+ }
+ 
+@@ -250,7 +251,7 @@
+     languages: [Language]
+ ) throws -> [[Language: String]] {
+     try surfaces.map { surface in
+-        let parsed = ParsedAPISurface(moduleName: surface.moduleName, compilerArguments: surface.compilerArguments)
++        let parsed = try ParsedAPISurface(moduleName: surface.moduleName, compilerArguments: surface.compilerArguments)
+         var bodies: [Language: String] = [:]
+         for language in languages where bodies[language] == nil {
+             bodies[language] = try parsed.print(language: language)
+--- /dev/null
++++ b/Sources/APISurfaceCore/SourceInventory.swift
+@@ -0,0 +1,27 @@
++import Foundation
++
++struct SourceInventoryManifest: Decodable {
++    let module: String
++    let compilerArguments: [String]
++    let sources: [String]
++}
++
++struct SourceInventoryReceipt: Encodable {
++    let module: String
++    let expectedSources: [String]
++    let moduleSources: [String]
++    let documentedSources: [String]
++}
++
++enum SourceInventory {
++    static func validate(expected: [String], actual: [String]) throws {
++        let expected = expected.map { URL(fileURLWithPath: $0).resolvingSymlinksInPath().path }
++        let actual = actual.map { URL(fileURLWithPath: $0).resolvingSymlinksInPath().path }
++        guard !expected.isEmpty,
++              Set(expected).count == expected.count,
++              Set(actual).count == actual.count,
++              expected.sorted() == actual.sorted() else {
++            throw APISurfaceError(description: "Missing, duplicate or unexpected parsed source file.")
++        }
++    }
++}
+--- /dev/null
++++ b/Tests/APISurfaceCoreTests/SourceInventoryTests.swift
+@@ -0,0 +1,23 @@
++import XCTest
++@testable import APISurfaceCore
++
++final class SourceInventoryTests: XCTestCase {
++    func testExactInventory() throws {
++        try SourceInventory.validate(expected: ["/a.swift", "/b.swift"], actual: ["/b.swift", "/a.swift"])
++    }
++    func testMissingSource() {
++        XCTAssertThrowsError(try SourceInventory.validate(expected: ["/a.swift", "/b.swift"], actual: ["/a.swift"]))
++    }
++    func testDuplicateSource() {
++        XCTAssertThrowsError(try SourceInventory.validate(expected: ["/a.swift", "/b.swift"], actual: ["/a.swift", "/a.swift"]))
++    }
++    func testUnexpectedSource() {
++        XCTAssertThrowsError(try SourceInventory.validate(expected: ["/a.swift"], actual: ["/b.swift"]))
++    }
++    func testEmptyInventory() {
++        XCTAssertThrowsError(try SourceInventory.validate(expected: [], actual: []))
++    }
++    func testDuplicateExpectedSource() {
++        XCTAssertThrowsError(try SourceInventory.validate(expected: ["/a.swift", "/a.swift"], actual: ["/a.swift", "/a.swift"]))
++    }
++}

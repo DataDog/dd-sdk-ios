@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "gate": "S3:F03:M10",
+  "status": "DEFINED_BEFORE_API_EXECUTION",
+  "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-m10-source-audit-7h2a6jnh",
+  "modules": [
+    "DatadogCore",
+    "DatadogLogs",
+    "DatadogTrace",
+    "DatadogRUM",
+    "DatadogCrashReporting",
+    "DatadogWebViewTracking",
+    "DatadogSessionReplay",
+    "DatadogFlags",
+    "DatadogProfiling"
+  ],
+  "languages": [
+    "swift",
+    "objc"
+  ],
+  "scope": "Existing Debug/SourceKit API inventory from accepted EXP226 iOS compiler inputs. Preserve baseline differences without updating approved APIs. An isolated tool-only completeness guard requires exact expected, Module.sourceFiles and returned SwiftDocs inventories before language filtering.",
+  "attempts": {
+    "tool_build_and_focused_controls": 1,
+    "parse_children": 9,
+    "sdk_builds": 0,
+    "native_apps": 0
+  },
+  "budgets_seconds": {
+    "tool_build": 1200,
+    "parse_each": 600,
+    "total": 7200,
+    "cleanup": 120
+  },
+  "tool_source": {
+    "tool_source_commit": "41b1b7c517873665e67a8e5d4be7e820a2fab2d6",
+    "files": {
+      "tools/api-surface/Package.swift": "9a27f89c7f6a0b2fea269b29234c075ea022613cb96ab5673e8c516e33c0d79e",
+      "tools/api-surface/Package.resolved": "a656e52d3e33debc701e06a2e204d6934b3a3c5ec7ce34bd20e50398f48c414a",
+      "tools/api-surface/Sources/APISurfaceCore/APISurface.swift": "35b089ff52fd1cbaa0d207dab9eb55597a331ac497ce023b3d266a7498c91545",
+      "tools/api-surface/Sources/APISurfaceCore/Commands.swift": "2289f674e735bc4d37766cdce3a6d6eac25bd5d3d376389ad11695862602f74a",
+      "tools/api-surface/Sources/APISurfaceCore/Generator.swift": "8270c16cdcc5e939bb754cb68f9a8485b036cb0bea790a51afb16ad86f23db66",
+      "tools/api-surface/Sources/APISurfaceCore/Language+Utils.swift": "4d9cfdd127d0c1bfb1a6cc67f5d5a428655eff64e06155365819a041645331b0",
+      "tools/api-surface/Sources/APISurfaceCore/Printer.swift": "b324859243c62c77b50e60442b1dbc97d594fb2c191357af75b5bc600b5c455b",
+      "tools/api-surface/Sources/api-surface/main.swift": "f6a69ad85280bee1facb63c0158af79c02a4f22068b050987d8ec4d571c6a1dd"
+    },
+    "dependencies": {
+      "sourcekitten": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/api-surface/.build/checkouts/SourceKitten",
+        "revision": "731ffe6a35344a19bab00cdca1c952d5b4fee4d8"
+      },
+      "swift-argument-parser": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/api-surface/.build/checkouts/swift-argument-parser",
+        "revision": "6a52f3251125d74daf04fcbd5e6f08a75d074382"
+      },
+      "swxmlhash": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/api-surface/.build/checkouts/SWXMLHash",
+        "revision": "a853604c9e9a83ad9954c7e3d2a565273982471f"
+      },
+      "yams": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/api-surface/.build/checkouts/Yams",
+        "revision": "a27b21e0c81c5bf42049b897a62aaf387e80f279"
+      }
+    }
+  },
+  "reuse_receipt": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-m10-source-audit-7h2a6jnh/api-build-reuse.json",
+    "sha256": "9d3a36adc1244457062d4fca255cfbd4c0b08320a6bb8c2b1be6738da45151b0"
+  },
+  "baselines": {
+    "api-surface-swift": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/api-surface-swift",
+      "sha256": "b5aeefad328a6385664c4448d16077b4f0e82e1cd12085c2d6909f9eab4dbd1a"
+    },
+    "api-surface-objc": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/api-surface-objc",
+      "sha256": "62cf6bcfd06a6c4757551927f9a2d71ce8d2bb38b50f92c85f8762dcb3287a9a"
+    }
+  },
+  "acceptance": [
+    "Exact frozen compiler/source/product/dependency inputs before and after parsing.",
+    "Only SourceKitten normalization and explicitly recorded cache relocation alter compiler arguments.",
+    "Exact nonempty unique source/doc inventories; nine sections per language; preserve full byte differences.",
+    "All owned children exited with complete output and cleanup receipts.",
+    "No F01 approval, experimental API promotion, Release visibility claim or whole F03 closure."
+  ],
+  "guard_controls": [
+    "exact inventory",
+    "missing source",
+    "duplicate source",
+    "unexpected source",
+    "empty inventory",
+    "duplicate expected"
+  ],
+  "native_active": false,
+  "gate_closures": []
+}

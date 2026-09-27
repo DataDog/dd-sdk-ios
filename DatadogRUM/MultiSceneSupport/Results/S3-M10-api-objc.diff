@@ -1,0 +1,66 @@
+--- api-surface-objc
++++ observed-objc
+@@ -3996,6 +3996,8 @@
+ public class objc_RUM: NSObject
+     public static func enable(with configuration: objc_RUMConfiguration)
+     public static func enable(with configuration: objc_RUMConfiguration, instanceName: String?)
++public final class objc_RUMViewTarget: NSObject
++    public static func current(in scene: UIWindowScene) -> objc_RUMViewTarget?
+ public class objc_RUMMonitor: NSObject
+     public static func shared() -> objc_RUMMonitor
+     public static func shared(instanceName: String?) -> objc_RUMMonitor
+@@ -4006,17 +4008,30 @@
+     public func addViewAttributes(_ attributes: [String: Any])
+     public func removeViewAttribute(forKey key: String)
+     public func removeViewAttributes(forKeys keys: [String])
++    public func addViewAttribute(forKey key: String, value: Any, view: objc_RUMViewTarget)
++    public func addViewAttributes(_ attributes: [String: Any], view: objc_RUMViewTarget)
++    public func removeViewAttribute(forKey key: String, view: objc_RUMViewTarget)
++    public func removeViewAttributes(forKeys keys: [String], view: objc_RUMViewTarget)
++    public func addTiming(name: String, view: objc_RUMViewTarget)
++    public func addViewLoadingTime(overwrite: Bool, view: objc_RUMViewTarget)
+     public func startView(viewController: UIViewController,name: String?,attributes: [String: Any])
+     public func stopView(viewController: UIViewController,attributes: [String: Any])
+     public func startView(key: String,name: String?,attributes: [String: Any])
+     public func stopView(key: String,attributes: [String: Any])
++    public func startView(key: String,name: String?,in scene: UIWindowScene,attributes: [String: Any])
++    public func stopView(key: String,in scene: UIWindowScene,attributes: [String: Any])
+     public func addViewLoadingTime(overwrite: Bool)
+     public func addTiming(name: String)
+     public func addError(message: String,stack: String?,source: objc_RUMErrorSource,attributes: [String: Any])
+     public func addError(error: Error,source: objc_RUMErrorSource,attributes: [String: Any])
++    public func addError(message: String,stack: String?,source: objc_RUMErrorSource,view: objc_RUMViewTarget,attributes: [String: Any])
++    public func addError(error: Error,source: objc_RUMErrorSource,view: objc_RUMViewTarget,attributes: [String: Any])
+     public func startResource(resourceKey: String,request: URLRequest,attributes: [String: Any])
+     public func startResource(resourceKey: String,url: URL,attributes: [String: Any])
+     public func startResource(resourceKey: String,httpMethod: objc_RUMMethod,urlString: String,attributes: [String: Any])
++    public func startResource(resourceKey: String,request: URLRequest,view: objc_RUMViewTarget,attributes: [String: Any])
++    public func startResource(resourceKey: String,url: URL,view: objc_RUMViewTarget,attributes: [String: Any])
++    public func startResource(resourceKey: String,httpMethod: objc_RUMMethod,urlString: String,view: objc_RUMViewTarget,attributes: [String: Any])
+     public func addResourceMetrics(resourceKey: String,metrics: URLSessionTaskMetrics,attributes: [String: Any])
+     public func stopResource(resourceKey: String,response: URLResponse,size: NSNumber?,attributes: [String: Any])
+     public func stopResource(resourceKey: String,statusCode: NSNumber?,kind: objc_ResourceType,size: NSNumber?,attributes: [String: Any])
+@@ -4025,16 +4040,23 @@
+     public func startAction(type: objc_RUMActionType,name: String,attributes: [String: Any])
+     public func stopAction(type: objc_RUMActionType,name: String?,attributes: [String: Any])
+     public func addAction(type: objc_RUMActionType,name: String,attributes: [String: Any])
++    public func addAction(type: objc_RUMActionType,name: String,view: objc_RUMViewTarget,attributes: [String: Any])
++    public func startAction(type: objc_RUMActionType,name: String,view: objc_RUMViewTarget,attributes: [String: Any])
++    public func stopAction(type: objc_RUMActionType,name: String?,view: objc_RUMViewTarget,attributes: [String: Any])
+     public func addAttribute(forKey key: String,value: Any)
+     public func addAttributes(_ attributes: [String: Any])
+     public func removeAttribute(forKey key: String)
+     public func removeAttributes(forKeys keys: [String])
+     public func addFeatureFlagEvaluation(name: String, value: Any)
++    public func addFeatureFlagEvaluation(name: String, value: Any, view: objc_RUMViewTarget)
+     public func startOperation(name: String,operationKey: String?,attributes: [String: Any],options: objc_OperationOptions?)
+     public func startFeatureOperation(name: String,operationKey: String?,attributes: [String: Any])
+     public func succeedOperation(name: String,operationKey: String?,attributes: [String: Any])
+     public func succeedFeatureOperation(name: String,operationKey: String?,attributes: [String: Any])
+     public func failOperation(name: String,operationKey: String?,reason: objc_RUMFeatureOperationFailureReason,attributes: [String: Any])
++    public func startOperation(name: String,operationKey: String?,view: objc_RUMViewTarget,attributes: [String: Any],options: objc_OperationOptions?)
++    public func succeedOperation(name: String,operationKey: String?,view: objc_RUMViewTarget,attributes: [String: Any])
++    public func failOperation(name: String,operationKey: String?,reason: objc_RUMFeatureOperationFailureReason,view: objc_RUMViewTarget,attributes: [String: Any])
+     public func failFeatureOperation(name: String,operationKey: String?,reason: objc_RUMFeatureOperationFailureReason,attributes: [String: Any])
+     public var debug: Bool
+ [?] extension objc_RUMMonitor

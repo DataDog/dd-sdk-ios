@@ -1943,7 +1943,7 @@
           ],
           "decisive_test": "All11 FINAL_COMPATIBILITY cells pass at the frozen F01-approved S3 candidate: unguarded ordinary Swift/ObjC deployment15 clients and17.5 fallback, qualified27 exact same-key routing, ObjC Release off-main safety, full affected modules/platforms, lint/API/docs. Replay scope remains crash-free coexistence and non-disruption only.",
           "environment": "CI + supported SDK toolchains",
-          "evidence": "Provisional SDK94842cc8 qualifies full RUM27/17.5, all nine non-RUM M01 schemes,20 platform builds and five existing-public-client configurations. Results/EXP-227-integration-fixture-result.json closes the final Integration component with280/280, exact source/compiler identity and cleanup/deletionPASS; original failures and8runtime warnings remain. EXP225 human setup controls/build are prepared; actual concurrent ownership, F01 approval, public scene exposure, remaining M10/M11 integration and final source promotion remain. F03 stays OPEN.",
+          "evidence": "Provisional SDK94842cc8 qualifies full RUM27/17.5, all nine non-RUM M01 schemes,20 platform builds and five existing-public-client configurations. Results/EXP-227-integration-fixture-result.json closes the final Integration component with280/280 and cleanup/deletionPASS; original failures remain. Results/S3-M10-source-audit.json adds strict lint and complete current API extraction: existing declarations retained, only provisional RUM additions, approved baselines unchanged. Actual concurrent ownership, F01 approval, approved API/public exposure comparison, M11 integration and final source promotion remain. F03 stays OPEN.",
           "required": true
         },
         "S1": {

@@ -187,6 +187,21 @@ parser/comparator and API baseline. Feature-document verified SHAs must exist in
 final outgoing ancestry after a rebase/amend/squash; rerun that documentation check
 before publication without repeating unchanged native evidence.
 
+When reusing accepted products for an API source audit, bind all compiler arguments,
+response-file members, source/dependency bytes and emitted products. Preserve the
+repository parser/formatter and record any cache-only relocation. Require exact
+expected, discovered and returned documentation inventories before filtering by
+language: a SourceKitten “Parsing” line precedes optional parsing and is not proof
+that documentation was returned. Retain every module section and baseline diff.
+SourceKit output can include SPI/Debug declarations while omitting their annotations;
+it cannot establish ordinary Release exposure or approve a new API baseline.
+
+If a host-tool test run omits its requested XML report, retain that collector failure.
+A separate assessment may reuse the immutable exit/quiescence receipt and complete
+raw test log only with exact case start/pass pairs, nested suite closure, counts,
+no unknown/failure/skip lines and negative decoder controls. Do not rerun successful
+tests solely to obtain the missing report or relabel the original attempt.
+
 Optimized reentrancy requires actual `-O` compiler jobs and
 `ENABLE_TESTABILITY=YES`, exact selectors and the admitted workload. A Debug result
 is not Release evidence. Functional reentrancy and numeric performance are separate

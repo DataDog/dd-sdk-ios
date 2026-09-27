@@ -16,7 +16,7 @@ Active records use stable section anchors. Do not edit or load the frozen archiv
 wholesale. [Lookup rules](Archive/README.md) and [rejected lessons](REJECTED_APPROACHES.md)
 remain available for a specific question.
 
-Post-publication follow-ups retain their existing release-gate ownership: [Resource review](Results/S1-resource-completion-review.json), [hitch assertions](Results/S1-hitch-review.json), and [current CI](Results/S1-ci-followup.json). They do not allocate additional numbered experiments. The [E01 test witness](Results/S1-resume-witness-review.json) and [Duo environment readiness](Results/S2-Duo-environment-readiness.json) stay within those existing release gates. The completed local timeseries checks are retained in the CI record; upstream PR3196 owns that fix. Unattributed CI-flake repairs are out of scope under the latest user instruction.
+Post-publication follow-ups retain their existing release-gate ownership: [Resource review](Results/S1-resource-completion-review.json), [hitch assertions](Results/S1-hitch-review.json), and [current CI](Results/S1-ci-followup.json). They do not allocate additional numbered experiments. The [E01 test witness](Results/S1-resume-witness-review.json) and [Duo environment readiness](Results/S2-Duo-environment-readiness.json) stay within those existing release gates. The completed local timeseries checks are retained in the CI record; upstream PR3196 owns that fix. Unattributed CI-flake repairs are out of scope under the latest user instruction. The [M10 source audit](Results/S3-M10-source-audit.json) records lint and API comparison under F03 without allocating another experiment.
 
 | Experiment | Related gates | Bounded outcome | Decisive conclusion | Detailed record |
 | --- | --- | --- | --- | --- |

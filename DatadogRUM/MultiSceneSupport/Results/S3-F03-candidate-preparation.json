@@ -343,7 +343,7 @@
     },
     {
       "id": "M10",
-      "disposition": "Preserve scoped changed-file lint and shipping-header exclusion evidence. Approved API baseline/public exposure comparison awaits F01."
+      "disposition": "Results/S3-M10-source-audit.json qualifies strict lint of662 SDK Swift sources and474 selected test/fixture files, plus complete current API extraction for9 modules/509 source entries. All existing declarations remain; only Experimental/Debug RUM additions differ. Baselines stay unchanged. Scoped source review PASS; F01-approved API comparison/public exposure and source promotion remain separate."
     },
     {
       "id": "M11",
@@ -400,5 +400,6 @@
     "owner": "Results/EXP-225-human-setup-preparation.json",
     "status": "CONTROLS_AND_BUILD_PASS_NATIVE_UNADMITTED",
     "remaining": "Separate reviewed human/device session with actual concurrent topology, Swift then Objective-C; original automatic activation path stays stopped."
-  }
+  },
+  "source_audit": "Results/S3-M10-source-audit.json"
 }

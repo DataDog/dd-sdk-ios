@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "gate": "S3:F03:M10",
+  "status": "LINT_PASS_EXISTING_API_RETAINED_APPROVAL_PENDING",
+  "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "fixture_commit": "fac0b546498fb6a978861b07183491c34d56ee90",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-m10-source-audit-7h2a6jnh",
+  "definition": "Results/S3-M10-source-audit-definition.json",
+  "lint": {
+    "state": "PASS",
+    "source_files": 662,
+    "test_fixture_files": 474,
+    "violations": 0,
+    "strict": true,
+    "automatic_fixes": false,
+    "summary_sha256": "eb645eeed1b636d15e65f96da153a2338ccb31f018be1a26e078a5c85d988fb8",
+    "files_sha256": "26a21241e07df74980e26a6d790278ca5bc0466d8ce8e3b0c61c8aea82958ed9",
+    "admission_sha256": "14788e40284355904c864fedc491037e29c40d868054b33d7ba2afd39ce32f1f"
+  },
+  "api": {
+    "state": "PASS_CURRENT_SOURCE_AUDIT",
+    "definition": "Results/S3-M10-api-audit-definition.json",
+    "guard_patch": "Results/S3-M10-api-tool-guard.patch",
+    "raw_verdict": "DIFFERENCES_RETAINED",
+    "scenario": "PASS",
+    "evidence": "PASS",
+    "cleanup": "PASS",
+    "modules": 9,
+    "source_entries": 509,
+    "existing_declarations_removed_or_changed": 0,
+    "exact_matching_modules": [
+      "DatadogCore",
+      "DatadogLogs",
+      "DatadogTrace",
+      "DatadogCrashReporting",
+      "DatadogWebViewTracking",
+      "DatadogSessionReplay",
+      "DatadogFlags",
+      "DatadogProfiling"
+    ],
+    "rum_added_lines": {
+      "swift": 61,
+      "objc": 22
+    },
+    "source_disposition": {
+      "swift_semantic": "New navigation declarations carry @_spi(Experimental) and iOS27 availability in SwiftUIViewModifier.swift.",
+      "swift_ordinary": "View target/alias and targeted overloads carry @_spi(Experimental) and iOS15 availability in RUMMonitorProtocol+Convenience.swift.",
+      "objc": "Target/factory and20 selectors are within os(iOS) && (DEBUG || DD_SCENE_API_VALIDATION) blocks in RUM+objc.swift. Current Debug/SourceKit extraction includes them.",
+      "baseline_changes": "None. Generator omits availability/SPI annotations; observed additions are not normal public exposure or approval."
+    },
+    "diffs": {
+      "swift": "Results/S3-M10-api-swift.diff",
+      "objc": "Results/S3-M10-api-objc.diff"
+    },
+    "tool_controls": 6,
+    "raw_log_decoder_controls": 8,
+    "tool_builds": 1,
+    "sdk_builds": 0,
+    "native_apps": 0,
+    "parse_warning_count": 3,
+    "parse_warnings": [
+      {
+        "module": "DatadogRUM",
+        "diagnostic": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp226-isolated-platforms-9bhuuha3/source/DatadogRUM/Sources/Instrumentation/Actions/UIKit/UIScrollViewDelegateProxy.swift:16:26: warning: safely use '@_implementationOnly' without library evolution by setting '-enable-experimental-feature CheckImplementationOnly' for 'DatadogRUM' [#ImplementationOnlyDeprecated]",
+        "disposition": "SourceKit compiler warning at an unchanged implementation-only import; preserved, no source or flag change."
+      },
+      {
+        "module": "DatadogCrashReporting",
+        "diagnostic": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp226-isolated-platforms-9bhuuha3/source/DatadogCrashReporting/Sources/KSCrashIntegration/DatadogCrashReportFilter.swift:16:22: warning: safely use '@_implementationOnly' without library evolution by setting '-enable-experimental-feature CheckImplementationOnly' for 'DatadogCrashReporting' [#ImplementationOnlyDeprecated]",
+        "disposition": "SourceKit compiler warning at an unchanged implementation-only import; preserved, no source or flag change."
+      },
+      {
+        "module": "DatadogProfiling",
+        "diagnostic": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp226-isolated-platforms-9bhuuha3/source/DatadogProfiling/Sources/Profiling.swift:16:22: warning: safely use '@_implementationOnly' without library evolution by setting '-enable-experimental-feature CheckImplementationOnly' for 'DatadogProfiling' [#ImplementationOnlyDeprecated]",
+        "disposition": "SourceKit compiler warning at an unchanged implementation-only import; preserved, no source or flag change."
+      }
+    ],
+    "baseline_equality": false,
+    "approved_baselines_changed": false,
+    "release_header_evidence": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-api-availability-c4wpspx_/default-release/exposure.json",
+      "sha256": "1a59424ef35a57cdca482d6208469484b81068e13c277731ccf6a756e6154e06"
+    },
+    "source_files": {
+      "DatadogRUM/Sources/Instrumentation/Views/SwiftUI/SwiftUIViewModifier.swift": "82541ee0f2b4111baaa5c3a4d88f7f3564d86a70c6a0af3be10b6a69b18d9ae8",
+      "DatadogRUM/Sources/RUMMonitorProtocol+Convenience.swift": "d9712a5d8e3d93801ec90a304d535048addb0830b271ec9ad8c879888edfedb2",
+      "DatadogRUM/Sources/RUM+objc.swift": "6660045c09091885f999e973928ac8839281871654bc5e21875adc4af0a6127b"
+    },
+    "artifact_hashes": {
+      "api-definition.json": "88460334e65628f5274d7bf77920ccb65b14ddbb60058d53bf21dc8fc862c957",
+      "api-plan.json": "bcf712a59864b5ea9a3e1913ea08e63f6abc3448dd7aff1ca74e281c140e8e3b",
+      "api-execution-plan.json": "ce9e39a7fd7b352322e230f2cf4176fdaaef1dd55c78d4405da5f086e83e7cb4",
+      "api-review.json": "6a957493a0b744f9746860a5e59715d6148981292f9158b7d675c025fa5f3971",
+      "api-control-qualification.json": "2cc74751cb235f2ec2403d2b9bf45071ce70e84e3b23b2983377621dca579240",
+      "api-continuation-definition.json": "01f92433b115135e14330ccd3867b92585c4c4fd62d2b0dd4357ba80495027d2",
+      "api-continuation-plan.json": "53072111491c43d7da29cef3898305261b9adf88528ec9d69710a3337dbc0af0",
+      "api-continuation-review.json": "ec2f8f4b535105fd75542a6e7e7d4bb46ae72173c17fb7b76b7bf8b1a6ea4588",
+      "api-continuation-summary.json": "ab8729905eb44beba5d44492bbaf235546555d95aaae1438919ae1b13ab1bac1",
+      "api-difference-assessment.json": "991455afd97e8f9ce7a2c9579fee51f6d553b650d97572dbf08155a5d3d17bce",
+      "original-caches-after.json": "42f93399f1920a79d939d6e68b8ced73b7e05649295d53efbfbb58c5492371ca",
+      "api_audit.py": "04f60b8b68a82eadd192e1c4de44a853d2b6e24af4129308d79294127132e67f",
+      "api_continuation.py": "a9737d8855da6812d5b4486df9b8dafa6758aa09ed86b1a064e115e7bec3535e",
+      "api-final-review.json": "9020d282ff66101cc1e92978055e20e2e93de1af18f3d116f4d5d937b98700b7"
+    },
+    "preserved_attempts": [
+      {
+        "receipt": "api-preparation-correction.json",
+        "state": "PREPARATION_FAILED_BEFORE_EXECUTION",
+        "cause": "Tracked dependency directory symlink initially treated as a regular file; existing symlink-aware inventory reused."
+      },
+      {
+        "receipt": "api-summary.json",
+        "sha256": "de3b7a912753e62080d7471b753db84a0043d3a8522c1dbb2c982d3f56eef4e2",
+        "state": "INVALID",
+        "cleanup": "PASS",
+        "cause": "SwiftPM produced no requested XML report after six passing controls; exact raw test log qualified separately, with no build/test rerun."
+      }
+    ],
+    "limits": [
+      "All nine modules have exact complete source/documentation receipts; this is source API comparison, not ABI or runtime proof.",
+      "Current raw baselines differ; standard baseline equality is not claimed.",
+      "M10 approved-new-API comparison remains after F01 and source promotion; whole F03 remains OPEN."
+    ],
+    "final_review": {
+      "state": "PASS_CURRENT_SURFACE_AUDIT_ONLY",
+      "reviewer": "/root/c06_runtime_plan",
+      "summary_sha256": "ab8729905eb44beba5d44492bbaf235546555d95aaae1438919ae1b13ab1bac1",
+      "assessment_sha256": "991455afd97e8f9ce7a2c9579fee51f6d553b650d97572dbf08155a5d3d17bce",
+      "swift_diff_sha256": "28052572c4031d24d63f67a2586cd65a4435c253979cfc7857a32dcc8e2b00f1",
+      "objc_diff_sha256": "904a37f41cd2bac521c02f6819619ff9e2c7a5a1cf54d9cc8fc4d0dad2b56631",
+      "original_caches_after_sha256": "42f93399f1920a79d939d6e68b8ced73b7e05649295d53efbfbb58c5492371ca",
+      "scope": "All nine modules/509 sources complete. Eight modules identical; only provisional RUM additions; no removals/replacements. No API approval, Release visibility, ABI/runtime, F01, public promotion or whole F03 closure."
+    }
+  },
+  "gate_closures": [],
+  "native_active": false,
+  "remaining": "F01 approval, approved new-API baseline/public exposure comparison and final source binding; M10/F03 are not closed by this provisional source audit."
+}
