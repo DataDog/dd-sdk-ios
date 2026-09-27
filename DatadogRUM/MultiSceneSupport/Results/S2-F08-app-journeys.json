@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 finite controlled app journeys",
-  "status": "DASHBOARD_CONTROL_READINESS_REVIEWED_PREPARATION_PENDING",
+  "status": "CLOSED_S2_F08",
   "recorded_at": "2026-09-21T16:37:35.872371+00:00",
   "owner": "SDK implementer",
   "application_revision": "6e33f1c18a52d04b0793e6954f456bdbc1affe2f",
@@ -129,7 +129,9 @@
     "No copied credentials, source edits, rebuilds, input retries, TestFlight upload or Replay-content qualification",
     "Broad application/session inventory must include Browser rows with their own service/SDK version; reconcile the separately queried native partition. Preserve available backend revisions without claiming complete mapper updates."
   ],
-  "gate_closures": [],
+  "gate_closures": [
+    "S2:F08"
+  ],
   "runtime_definition": {
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-tf3_dxfy",
     "status": "STOPPED_PRE_ASSERTION_ENVIRONMENT",
@@ -141,10 +143,10 @@
     "review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-tf3_dxfy/review.json",
     "candidate": "UNRUN"
   },
-  "next_action": "Restore only the frozen baseline task product without launch, prepare the reviewed candidate-only continuation and obtain fresh operator/native readiness. The source-backed hook retains absent control observations under the original deadline. Preserve all original INVALID/cleanup PASS results and unchanged baseline proof; no SDK regression or gate closure.",
+  "next_action": "No further F08 native session is due. Finish the bounded rejected-inventory publication repair offline, then continue the remaining S2 coverage and fold packages.",
   "environment_readiness": "Results/S2-Duo-environment-readiness.json",
   "source_oracle": "Results/S2-F08-source-oracle.json",
-  "source_preparation_status": "DASHBOARD_CONTROL_READINESS_REVIEWED_PREPARATION_PENDING",
+  "source_preparation_status": "CLOSED_S2_F08",
   "source_prepared_at": "2026-09-21T21:39:37.351271+00:00",
   "prebooted_continuation": {
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-prebooted-0ux7kfit",
@@ -182,7 +184,7 @@
     "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-qualified-_wnijcda/terminal-summary.json",
     "summary_sha256": "ba211a0311a01d103535424c1a63a96d1e5b06fd544c95850ec1b656e8f44499"
   },
-  "updated_at": "2026-09-27T00:17:36.314375+00:00",
+  "updated_at": "2026-09-27T01:06:00.848034+00:00",
   "incremental_continuation": {
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-incremental-f8xss4f3",
     "status": "STOPPED_AFTER_ONE_TAP_NATIVE_OBSERVER",
@@ -319,5 +321,6 @@
     "contract": "release-gates.json: releases.S2.acceptance_contract/execution_packages",
     "effect": "Prospective S2 execution scope supersedes broader remaining-matrix and whole-payload prerequisites. Original definitions, admissions, attempts and verdicts remain unchanged. No native admission or gate closure.",
     "next": "Assess reusable actual observations against the scoped gate before any new native run; bind amended runner expectations and focused controls first."
-  }
+  },
+  "candidate_comparison": "S2-F08-candidate-comparison.json"
 }

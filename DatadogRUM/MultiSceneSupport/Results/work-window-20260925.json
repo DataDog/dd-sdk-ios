@@ -5,16 +5,18 @@
   "started_at": 1790316486.131028,
   "work_deadline_utc": null,
   "caffeinate": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/caffeinate-3h.json",
-    "sha256": "eff183c6cf55fa788207dc2567c96802b02112a2d5672f4c4c6aafeffd2feb24"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/caffeinate.json",
+    "sha256": "a2544ea3603f16950666b80f6ad6cd49a36ddc7a008cce60056b04aa1427430b"
   },
   "previous_window": "unattended-work-20260924.json",
   "automation": {
-    "state": "ABSENT",
-    "id": "rum-unattended-progress",
-    "finding": "Update returned Automation does not exist; no replacement was created."
+    "state": "ACTIVE",
+    "id": "rum-autonomous-release-progress",
+    "kind": "heartbeat",
+    "minimum_work_until_utc": "2026-09-27T06:00:00+00:00",
+    "instruction": "Continue without human input; remove heartbeat after safe morning checkpoint. This is not a native admission or deadline extension."
   },
-  "next_task": "S2:F08 saved-session transport/projection qualification; see Results/S2-F08-source-oracle.json. No native runner active.",
+  "next_task": "S2:F08 closed; checkpoint, repair rejected-inventory failure publication offline, then close executable S2/S3 gates using accepted evidence and finite missing slices. C06 gap review active; no native runner.",
   "gate_closures": [
     "S2:H16",
     "S2:T10"
@@ -28,7 +30,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": "2026-09-27T00:07:58.401304+00:00",
+  "updated_at": "2026-09-27T01:09:39.769152+00:00",
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
@@ -115,7 +117,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automated-scope-rww2sb_g/webview-backend-continuation/summary.json",
     "sha256": "c67b680daecad3400c1ffc85ce8e56ba26629a167932e2b6f7cc0a687ab45543"
   },
-  "awake_until_utc": "2026-09-27T02:07:22.963539+00:00",
+  "awake_until_utc": "2026-09-27T05:59:59.745012+00:00",
   "deadline_correction": {
     "at": "2026-09-25T12:43:44.248636+00:00",
     "previous_inferred_work_deadline_utc": "2026-09-25T12:42:56.993742+00:00",
@@ -227,16 +229,27 @@
       "authorized_seconds": 10800,
       "awake_until_utc": "2026-09-27T00:54:54.897692+00:00",
       "work_deadline": null
+    },
+    {
+      "receipt": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/prepared-dashboard-setup-candidate/caffeinate.json",
+        "sha256": "c618645edf2164b12dcf34bdefe298360b5af2346357ce9e86b9139bc263617c"
+      },
+      "pid": 65588,
+      "authorized_seconds": 7200,
+      "awake_until_utc": "2026-09-27T02:07:22.963539+00:00",
+      "work_deadline": null
     }
   ],
   "current_awake": {
     "receipt": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/prepared-dashboard-setup-candidate/caffeinate.json",
-      "sha256": "c618645edf2164b12dcf34bdefe298360b5af2346357ce9e86b9139bc263617c"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/caffeinate.json",
+      "sha256": "a2544ea3603f16950666b80f6ad6cd49a36ddc7a008cce60056b04aa1427430b"
     },
-    "pid": 65588,
-    "authorized_seconds": 7200,
-    "awake_until_utc": "2026-09-27T02:07:22.963539+00:00",
+    "pid": 28468,
+    "authorized_seconds": 17522,
+    "awake_until_utc": "2026-09-27T05:59:59.745012+00:00",
     "work_deadline": null
-  }
+  },
+  "minimum_autonomous_work_until_utc": "2026-09-27T06:00:00+00:00"
 }

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 authenticated app source/oracle preparation",
-  "status": "DASHBOARD_CONTROL_READINESS_REVIEWED_PREPARATION_PENDING",
+  "status": "CLOSED_S2_F08",
   "at": "2026-09-26T22:29:24.095728+00:00",
   "owner": "SDK implementer",
   "reviewer": "existing /root/c06_runtime_plan",
@@ -44,7 +44,9 @@
     }
   },
   "builds_reused_by_reference": "Results/S2-F08-app-preparation.json",
-  "gate_closures": [],
+  "gate_closures": [
+    "S2:F08"
+  ],
   "findings": [
     {
       "id": "O01",
@@ -182,7 +184,7 @@
     "partial cleanup relabeled as ordinary pass"
   ],
   "admission_limits": "This is source preparation only. No runtime/oracle pass, gate closure, new experiment or environment retry is implied. Existing J01, Duo and EXP220 automation stops remain closed; fresh execution needs materially changed environment and reviewed fixed admission.",
-  "next_action": "Restore only the frozen baseline task product without launch, prepare the reviewed candidate-only continuation and obtain fresh operator/native readiness. The source-backed hook retains absent control observations under the original deadline. Preserve all original INVALID/cleanup PASS results and unchanged baseline proof; no SDK regression or gate closure.",
+  "next_action": "No further F08 native session is due. Finish the bounded rejected-inventory publication repair offline, then continue the remaining S2 coverage and fold packages.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/source-review.json",
     "sha256": "41f6a1f5348c383e8c11770dc50da59e45e9dc020559a49c2a60d8691815d6e9"
@@ -1229,7 +1231,7 @@
           },
           "instruction_server_state": "STOPPED",
           "control_readiness": {
-            "state": "REVIEWED_FRESH_PREPARATION_PENDING",
+            "state": "NATIVE_CORRECTION_QUALIFIED_F08_CLOSED_BY_COMPOSED_REVIEW",
             "proposal": {
               "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/dashboard-control-readiness-proposal.json",
               "sha256": "23ba9d748a48348c42125ad4bbe6e812d2cab6e4ae970ee08fb9878593b20951"
@@ -1261,6 +1263,32 @@
             "contract_transition": {
               "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/dashboard-control-readiness-contract-transition.json",
               "sha256": "80857a4054e0142ccf07e08d084d5076575617fb2a014e4a7bffe5e6aea7a024"
+            },
+            "prepared_plan": {
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/prepared-control-ready-candidate/plan.json",
+              "sha256": "67f318aa0ba17a6992a6e4fd11b68df3978622a7a82051c7838c71d64d90722e"
+            },
+            "preparation": {
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/control-ready-candidate-preparation.json",
+              "sha256": "8a34e50e7f66cbf1cba3291e0c7d9ad87da7293173343bde8c19e0738b721ff0"
+            },
+            "restoration": {
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/control-ready-baseline-restoration/summary.json",
+              "sha256": "b21d4ed097ec850f00629557ca6956bce77267c87ddf846319df348844d75ee2"
+            },
+            "instruction_server": {
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/prepared-control-ready-candidate/operator-server.json",
+              "sha256": "e5b70af9a3008eb368263c11a8be81df00f223dfce711a8647bee7981747a680"
+            },
+            "source_checkpoint": "cda195e9b750e5511e5c741f5064f7f1f219b446",
+            "source_signature": "G",
+            "plan_review": {
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/prepared-control-ready-candidate/review.json",
+              "sha256": "0261343104701d960a9c26994234af9b1e79def2a015345981e82726eb642e79"
+            },
+            "admission": {
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/prepared-control-ready-candidate/native-admission.json",
+              "sha256": "1dcb0b74dd552e53a8e697371ccb11901a31ecd70b0c9726a458d11e9cf7df3e"
             }
           }
         }
@@ -1275,5 +1303,6 @@
       }
     }
   },
-  "updated_at": "2026-09-27T00:17:36.314375+00:00"
+  "updated_at": "2026-09-27T01:06:00.848034+00:00",
+  "candidate_comparison": "S2-F08-candidate-comparison.json"
 }

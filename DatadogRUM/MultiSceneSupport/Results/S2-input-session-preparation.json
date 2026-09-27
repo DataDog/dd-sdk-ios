@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
   "work_item": "S2:A02 ordered single human-input session",
-  "status": "F08_CORRECTNESS_POLICY_PREPARATION",
-  "updated_at": "2026-09-25T16:28:37.818535+00:00",
+  "status": "REMAINING_S2_INPUT_PACKAGES_PREPARED",
+  "updated_at": "2026-09-27T01:06:00.848034+00:00",
   "owner": "Harness implementer",
   "user_role": "Only real gestures and any required interactive sign-in",
   "request_user_now": false,
-  "reason": "The authorized baseline stopped before input on one10.598ms recorder cost; cleanup PASS. User explicitly removes strict timing acceptance project-wide. Preparing the reviewed host-only policy with existing products; no new build or repeated gesture.",
+  "reason": "F08, H16 and T10 are closed under their scoped assessments. Remaining input packages are automatic coverage/adaptive layout, interactive transitions and Resource/Trace fold. Earlier ordered_groups retain historical bindings and do not admit new work.",
   "source_candidate": "c9faed816a1d4828d7d8c4b64acae01119425889",
   "ordered_groups": [
     {
@@ -219,32 +219,31 @@
   },
   "preparation_progress": {
     "ready_families": [
-      "C07-C10 reviewed human runtime and four current-source build arms; native qualification pending",
-      "H16 remaining paced manual candidate",
-      "T10 WebView baseline/candidate",
-      "T03/T08 Resource/Trace four human-fold cells with unchanged build reuse",
-      "F08 reviewed J01-J04 runtime and both capture products; desktop control candidate prepared, native account/control qualification pending",
-      "H11-H14 reviewed eight-cell Duo runtime and four existing simulator products;67 offline controls, native qualification pending"
+      "C07-C10/H14: reviewed12-cell EXP210 preparation reuses existing products; first planned baseline still qualifies human input.",
+      "H11-H13: apply current scoped contract and saved capture lessons before fresh pair admission.",
+      "T03/T08: four reviewed Resource/Trace fold cells; fresh environment/operator readiness required."
     ],
+    "completed_families": [
+      "S2:H16",
+      "S2:T10",
+      "S2:F08"
+    ],
+    "native_admission": false,
     "remaining_bindings": [
-      "Fresh operator/environment admission after user availability; no stage clock started",
-      "F08 native sign-in and first-baseline control qualification; see S2-F08-source-oracle.json",
-      "Physical iPad availability, builds and runtime remain separate"
-    ],
-    "native_cells_executed": 0,
-    "gates_closed": []
+      "Scope-specific source/control review and fresh environment/operator readiness; no stopped automatic-input retry."
+    ]
   },
   "operator_readiness": {
-    "state": "USER_START_NOW_AUTHORIZED_POLICY_PREPARATION",
-    "fixed_stage_started": false,
+    "state": "NO_ACTIVE_NATIVE_SESSION",
     "active_native": false,
-    "latest_f08_attempt": "S2-F08-source-oracle.json:recorder_correction.current_attempt",
-    "current_f08_plan": "S2-F08-source-oracle.json:correctness_cost_policy"
+    "fixed_stage_started": false,
+    "last_session": "S2-F08-candidate-comparison.json",
+    "fresh_readiness_required": true
   },
   "session_splitting": {
     "user_question_at": "2026-09-23T13:38:54.447557+00:00",
     "requirement": "The ordered work does not require one uninterrupted sitting. Existing families have independent admissions and can be scheduled separately.",
-    "ready_now": "Simulator-family preparation only, subject to fresh live/operator preflight. Physical iPad builds/runtime and F08 native sign-in remain prerequisites.",
+    "ready_now": "Coverage preparation reuses the reviewed12-cell matrix; fresh environment/operator readiness remains. F08 login and journeys, T10 and H16 require no repeat.",
     "safe_boundary": "Prefer a complete baseline/candidate pair with persisted evidence and verified cleanup. Never stop in the middle of a timing-sensitive gesture, delayed-event interval or same-process lifecycle sequence.",
     "current_runner_limit": "Automatic coverage now has a reviewed finite-session scheduler with a canonical append-only attempt ledger. Each sitting freezes complete adjacent pairs, and a later sitting references only qualified immutable predecessors. Other families retain independent admissions; within-family continuation is not inferred for them.",
     "continuation_requirement": "Before splitting an unfinished family across sittings, prepare and review a finite continuation for only unexecuted cells, referencing qualified original receipts and unchanged source/build identities. Never overwrite an old stage, renew its clock, reuse consumed readiness or rerun qualified cells merely to resume.",

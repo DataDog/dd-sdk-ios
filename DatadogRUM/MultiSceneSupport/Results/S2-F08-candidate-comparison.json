@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "gate": "S2:F08",
+  "status": "CLOSED_S2_F08",
+  "owner": "root",
+  "reviewer": "/root/c06_runtime_plan",
+  "updated_at": "2026-09-27T01:06:00.848034+00:00",
+  "scope": "Paired Datadog app Services, dashboard action and ordinary Home/return; source-bound delayed persistence assessment. No automatic-only, physical Duo or performance claim.",
+  "candidate": {
+    "summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/prepared-control-ready-candidate/cells/candidate/summary.json",
+      "sha256": "b6150b7261857c83fc6e9241a59c5e2e38bb4e913be74b98baaf86b966ad4436"
+    },
+    "native_summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/prepared-control-ready-candidate/cells/candidate/native-summary.json",
+      "sha256": "d2b8e3d7515bf6376fd091b62a8addab9c754324762818217e66121d07331bd3"
+    },
+    "publication": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/prepared-control-ready-candidate/cells/candidate/summary-publication.json",
+      "sha256": "d898d97b0881ccd54b67c99a32f026252cc71bb5e3b23542c7eb7146ee35af67"
+    },
+    "supervisor": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/prepared-control-ready-candidate/candidate-driver.supervisor.json",
+      "sha256": "73c2d6ad90d5099786cb1f27bf86e15823ee48cc0805f5956c4082e140e628e5"
+    },
+    "assessment": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/candidate-saved-assessment/assessment.json",
+      "sha256": "17b1c37f9062012dc12daa382aee24be590447f17f0425f9236bca7b68c7db8a"
+    },
+    "original_verdict": "INVALID",
+    "scenario": "PASS",
+    "evidence": "INCOMPLETE",
+    "cleanup": "PASS",
+    "account_retained": true,
+    "task_process_stopped": true,
+    "instruction_server_stopped": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/prepared-control-ready-candidate/operator-server-stopped.json",
+      "sha256": "caae68215e4335ba5d5403eb479faa4047f4bc120d35499f51ea06a8f3299c94"
+    },
+    "artifacts_verified": 753
+  },
+  "collection_failure": {
+    "request": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/prepared-control-ready-candidate/cells/candidate/c8ffbe31-e29d-4d75-a00b-00cb70a63212.request.json",
+      "sha256": "76db354989ba77d2886f8391aaf80d799b95c014d63e36fdb43dbd608ec2b779"
+    },
+    "publication": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/prepared-control-ready-candidate/cells/candidate/c8ffbe31-e29d-4d75-a00b-00cb70a63212/publication.json",
+      "sha256": "16cf267f33d072276736610a58dd0c9de680146b8084714c3da2a0ef96320fbe"
+    },
+    "reason": "missing or duplicate raw ID",
+    "count": 871,
+    "page_totals": [
+      871,
+      878,
+      880
+    ],
+    "captured_rows": 880,
+    "unique_raw_ids": 871,
+    "duplicate_occurrences": 9,
+    "empty_terminal": true,
+    "sdk_regression_evidence": false,
+    "deduplicated": false,
+    "original_deadline_changed": false
+  },
+  "backend_only_continuation": {
+    "state": "SAVED_CANDIDATE_BEHAVIOR_AND_BACKEND_QUALIFIED_FOR_REVIEW",
+    "plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/candidate-saved-backend/plan.json",
+      "sha256": "c869a446b7ee2047aa9f93ba7e4f52083d9778c3d2ab1bf70a02a6fc3ef39481"
+    },
+    "native_runs": 0,
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/candidate-saved-backend/review.json",
+      "sha256": "4366d58625f5baf30ddbd1d2665f501b9713938bde38c04cea7de3b87127e511"
+    },
+    "admission": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/candidate-saved-backend/admission.json",
+      "sha256": "279fd87a848f97b196ebbbc8e82e05e8bd32d1dbe406ad6f8e71a4acab2458fd"
+    },
+    "assessment": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/candidate-backend-assessment/assessment.json",
+      "sha256": "b83a90a6916e8ffd2a78e72675ddc40e41fe32fb6eb35a8a0cbe8d6158024d0b"
+    },
+    "joined": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/candidate-backend-assessment/joined.json",
+      "sha256": "bed4fee0ae2374eb57e62fbcd0cbe05ab4fa9ef225872fe698937e23adaf50fd"
+    },
+    "requests": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/candidate-saved-backend/requests.json",
+      "sha256": "b57a876e224d8e614985bb638d273410edb170f5cf21fc08cdec8c0d8550159a"
+    },
+    "backend_rows": 880,
+    "independent_native_rows": 163,
+    "native_required_events": 106,
+    "native_required_views": 19,
+    "browser_persisted_rows": 717,
+    "dashboard_container_witnesses": 7
+  },
+  "gate_closures": [
+    "S2:F08"
+  ],
+  "next_action": "No further F08 native session is due. Finish the bounded rejected-inventory publication repair offline, then continue the remaining S2 coverage and fold packages.",
+  "baseline": {
+    "assessment": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/dashboard-control-readiness-saved-replay/lifecycle-backend-reassessment/assessment.json",
+      "sha256": "ee604ad68d4f39494e0e021f40fb9d34c8e425855160be26cf94f60577d22ce0"
+    },
+    "joined": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/dashboard-control-readiness-saved-replay/lifecycle-backend-reassessment/joined.json",
+      "sha256": "062c93422facc8e66ffd5185ab3a25dd5fe432e28e35305627dbe93ea21d7aec"
+    },
+    "native_required_events": 106,
+    "native_required_views": 19
+  },
+  "paired_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/paired-source-review.json",
+    "sha256": "3dd850914aa10f844de7a3a6634aff8be3b93b9858da72b9179817bd9ecb7e8e"
+  },
+  "acceptance": {
+    "scope": "Finite revised S2 signed-in Services/detail/Back, one dashboard action and Home/background/foreground ownership.",
+    "original_verdicts_unchanged": true,
+    "findings": [
+      "Both source-bound pairs capture eight required phases,106 required native events and19 view occurrences with exact within-run ownership; account and fresh run/session/process bindings qualify.",
+      "Candidate880 broad/163 native rows and baseline962 broad/164 native rows are independently complete. Candidate717 Browser rows and7 dashboard-container witnesses versus baseline798/344 satisfy required ownership, not full Browser payload equality.",
+      "Both contain72 native resources and two non-crash Home logger errors with the same NSURLErrorDomain -1011 cause. No candidate-only crash, hang or expected-navigation failure is observed.",
+      "Candidate18 versus baseline15 actions include exactly three retained15m-to1h setup actions; the primary1h-to15m comparison remains separate. Long-task counts14 versus17 are incidental.",
+      "Native operation consistency qualifies, with one incidental unlinked start in candidate versus two baseline; independent raw operation-step capture is not claimed.",
+      "Both original overall run verdicts remain INVALID, with cleanupPASS. Separate immutable backend assessments provide the missing persistence proof."
+    ],
+    "exclusions": [
+      "automatic-only C07-C10",
+      "interactive H11-H14",
+      "Resource/Trace fold",
+      "physical Duo",
+      "timing/performance",
+      "Replay content",
+      "T10 TTL duplication",
+      "S1 or S3 app qualification"
+    ]
+  },
+  "transport_follow_up": {
+    "state": "PROPOSED_NOT_APPLIED",
+    "proposal": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/failed-inventory-publication-proposal.json",
+      "sha256": "087ebc37a74fbbe4918aeb98a2c15f8574d206e6c7ea7a647aa0b16907057059"
+    },
+    "scope": "Publish actual rejected exchange before rethrowing so cleanup begins promptly; no acceptance relaxation or native requalification."
+  }
+}

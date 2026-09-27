@@ -885,7 +885,7 @@
           ],
           "decisive_test": "Preserve accepted navigation and rollover checks. Remaining fold workload must retain Resource start-view/session, success/error and metrics, with no new foreign action/error counts. Keep inherited EXP202 Resource/action count1/0 limitation; E03 is excluded. App-level Resource parity is checked once in F08.",
           "environment": "Four shared Duo fold cells (baseline/candidate \u00d7 automatic/registered URLSession) with scoped RUM/APM joins; integrated app checked once by F08",
-          "evidence": "EXP221 qualifies all four navigation cells; both selected-candidate rollover modes also pass strict native/backend/cleanup checks. Both rollover baselines remain INVALID on reviewed repeated-resume currentRequest baggage mutation; protocol-start carriers stayed old-owned. Results/EXP-221-s2-resource-trace.json and Results/EXP-221-session-rollover.json own the evidence and limits. Actual fold and integrated-app obligations remain open; E03/E05 limitations are unchanged.",
+          "evidence": "EXP221 qualifies all four navigation cells; both selected-candidate rollover modes also pass strict native/backend/cleanup checks. Both rollover baselines remain INVALID on reviewed repeated-resume currentRequest baggage mutation; protocol-start carriers stayed old-owned. Results/EXP-221-s2-resource-trace.json and Results/EXP-221-session-rollover.json own the evidence and limits. Actual fold remains open. S2:F08 closes the shared integrated-app journey obligation with72 source-bound Resources per arm and reviewed native operation consistency; it adds no APM-span inventory claim. E03/E05 limitations are unchanged.",
           "required": true,
           "completion_mode": "Captured Resource start ownership; inherited action-count limitation documented",
           "completed_checks": [
@@ -1065,7 +1065,7 @@
           ],
           "decisive_test": "Use the same remaining fold workload as T03. Preserve manual span start ownership, existing automatic completion-time RUM correlation, exact within-run trace/parent IDs and unchanged carriers/sampling. Keep inherited EXP202 limit and intentional E01 fix; E05 is excluded.",
           "environment": "Four shared Duo fold cells (baseline/candidate \u00d7 automatic/registered URLSession) with scoped RUM/APM joins; integrated app checked once by F08",
-          "evidence": "EXP221 qualifies all four navigation cells; both selected-candidate rollover modes also pass strict native/backend/cleanup checks. Both rollover baselines remain INVALID on reviewed repeated-resume currentRequest baggage mutation; protocol-start carriers stayed old-owned. Results/EXP-221-s2-resource-trace.json and Results/EXP-221-session-rollover.json own the evidence and limits. Actual fold and integrated-app obligations remain open; E03/E05 limitations are unchanged.",
+          "evidence": "EXP221 qualifies all four navigation cells; both selected-candidate rollover modes also pass strict native/backend/cleanup checks. Both rollover baselines remain INVALID on reviewed repeated-resume currentRequest baggage mutation; protocol-start carriers stayed old-owned. Results/EXP-221-s2-resource-trace.json and Results/EXP-221-session-rollover.json own the evidence and limits. Actual fold remains open. S2:F08 closes the shared integrated-app journey obligation with72 source-bound Resources per arm and reviewed native operation consistency; it adds no APM-span inventory claim. E03/E05 limitations are unchanged.",
           "required": true,
           "completion_mode": "Captured manual span start ownership; documented existing process-context fallback for automatic URLSession completion",
           "completed_checks": [
@@ -2774,14 +2774,14 @@
         },
         "S2": {
           "scope": "Existing single-scene Datadog app evaluation",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [
             "S2:A01",
             "S2:F07"
           ],
           "decisive_test": "Qualify login/account once, then compare one source-matched baseline/candidate normal-mode signed-in journey: Services list/detail/Back, one dashboard/browser interaction and one background/foreground. Check actual view/action/resource/browser ownership, successful UI and no new crash/hang. Bind the retained account and fresh run/session identities. Reuse dedicated T10 for adversarial TTL cases. Internal TestFlight is an optional separately authorized distribution follow-up.",
           "environment": "Existing controlled app, accessible test account/data, isolated probe RUM app/service; Duo simulator preferred, ordinary host for non-Duo integration evidence",
-          "evidence": "Corrected signed app6e33f1c18 products bind baseline62f64/candidatec9fa; one-time account/profile/organization and real Services setup qualify. Results/S2-F08-source-oracle.json owns the signing finding, setup receipts and signed-in continuation. Results/S2-F08-app-journeys.json preserves earlier invalid attempts. No full paired journey or gate credit; exact account/telemetry ownership, mapper completeness and release evaluation remain open.",
+          "evidence": "Results/S2-F08-candidate-comparison.json closes the finite scope by designated paired review at app6e33f1c18 / baseline62f64 / candidatec9fa on Duo27.1: eight phases,106 required native events and19 view occurrences each,72 Resources each, complete broad/native inventories and exact dashboard/native ownership. Candidate setup actions and incidental Browser/long-task differences are classified. Original INVALID run verdicts and cleanup PASS remain; separate backend assessments supply persistence proof. No automatic-only, physical-Duo, performance, S1/S3 or full Browser-payload parity claim.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         },

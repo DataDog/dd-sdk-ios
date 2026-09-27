@@ -13,7 +13,7 @@ The provisional S3 candidate qualifies all20 platform builds in [EXP-226](Result
 | Stage | Qualified scope | Remaining limit |
 | --- | --- | --- |
 | S1: existing-customer reliability | Seven independently prepared packets with source-matched evidence; publication and follow-up history live in the [delivery queue](Results/S1-delivery-queue.json). | Current-head CI, maintainer review and final delivery remain separate from local qualification. Only H00 → E01 is an established merge dependency. |
-| S2: single-scene SDK27 Duo readiness | Exact E01+DL01+E04 production `c9faed81`, documentation `7604da24`. [Composition/lifetime](Results/EXP-216-s2-composition-promotion.json), [documentation](Results/S2-F02-composition-documentation.json) and [compatibility](Results/EXP-217-s2-compatibility.json) qualify that source. | Current-candidate automatic Duo, native-input, controlled-app and final-release acceptance remain open. Historical reference results below cannot certify it. |
+| S2: single-scene SDK27 Duo readiness | Exact E01+DL01+E04 production `c9faed81`, documentation `7604da24`. [Composition/lifetime](Results/EXP-216-s2-composition-promotion.json), [documentation](Results/S2-F02-composition-documentation.json), [compatibility](Results/EXP-217-s2-compatibility.json) and the [controlled app comparison](Results/S2-F08-candidate-comparison.json) qualify their finite scopes. | Automatic Duo coverage, interactive transitions, Resource/Trace fold and final-release acceptance remain open. Historical reference results below cannot certify them. |
 | S3: full multi-scene support | Experimental scene/semantic behavior has the bounded reference evidence below. | Stable API/RFC, remaining physical topology/ordering and final release obligations remain. F01 proposals are not approval. |
 
 The [S2 scope review](Results/S2-release-gate-review-20260925.json) retains actual
@@ -46,8 +46,8 @@ window stayed in the same scene. It does not classify the earlier ambiguous
 callback or establish a candidate result. Current geometry and all-window topology
 must be captured together before further acceptance. The probe is removed and the
 original device state restored; both invalid run verdicts remain.
-Integrated-app and automatic view/action tracking
-acceptance also remain open.
+The controlled-app obligation is qualified by F08 below; automatic view/action
+tracking remains separate.
 
 The current-source automatic comparison has unresolved native-input variability.
 [EXP-210](Results/EXP-210-s2-automatic-coverage.json) includes SDK-on switch failures
@@ -67,16 +67,15 @@ Both complete backend inventories contain9rows. Candidate scenario, evidence and
 cleanup pass; original baseline late-publication and first-candidate budget failures
 remain immutable. No further TTL run is needed for the controlled app smoke.
 
-[Controlled app preparation](Results/S2-F08-source-oracle.json) now qualifies signed
-baseline/candidate products and one-time account setup. Missing simulator Keychain
-entitlements caused the fixture's misleading permission shell; the corrected baseline
-loads the selected organization and Services. This resolves a fixture prerequisite,
-not an SDK regression. [Paired app journeys](Results/S2-F08-app-journeys.json) remain
-open. The first signed-in baseline reached the dashboard but stopped on a harness
-container assumption. Its complete saved backend inventory now resolves the transport
-and projection questions: captured native identities and owners match. The original
-journey remains incomplete, and the corrected paired journey has not run. Preserve
-failed attempts and their separate cleanup outcomes.
+The [controlled app comparison](Results/S2-F08-candidate-comparison.json) closes
+S2:F08 for signed-in Services/detail/Back, one dashboard interaction and Home/return
+on Duo27.1. Both source-bound captures retain the required view/action/resource and
+Browser owners, with complete independent backend inventories and successful cleanup.
+The candidate's extra range-setup actions are classified separately. No new crash,
+hang or navigation failure was observed. Incidental Browser totals and timing are
+not parity claims. Original harness/transport INVALID verdicts remain unchanged;
+separate saved-evidence assessments and paired review support this finite closure.
+The app uses custom/explicit tracking, so it does not close automatic-only C07–C10.
 [Semantic Duo boot failures](Results/S2-Duo-environment-readiness.json) occur before
 app installation/assertions and have no established SDK cause. An equivalent retry
 requires materially changed conditions and separate admission.
