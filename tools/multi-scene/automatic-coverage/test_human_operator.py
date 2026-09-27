@@ -61,7 +61,7 @@ class OperatorControls(unittest.TestCase):
         script=operator.PAGE.decode().split('<script>')[1].split('</script>')[0]
         harness=r'''
 const vm=require('vm'),assert=require('assert');
-let queued=[],state;const elements={};for(const name of ['instruction','context','clock','image'])elements[name]={hidden:true,removeAttribute(){}};
+let queued=[],state;const elements={};for(const name of ['instruction','context','clock','image','released'])elements[name]={hidden:true,removeAttribute(){}};
 const sandbox={document:{getElementById:n=>elements[n]},fetch:async()=>({ok:true,json:async()=>state}),setTimeout:f=>queued.push(f),Date};
 async function tick(){await new Promise(setImmediate);}
 (async()=>{state={generation:'old',instruction:'Old',ready:true,has_image:true,deadline:Date.now()/1000+60};vm.runInNewContext(SCRIPT,sandbox);await tick();const stale=elements.image.onload;state={generation:'new',instruction:'New',ready:true,has_image:true,deadline:Date.now()/1000+60};queued.shift()();await tick();stale();assert.equal(elements.image.hidden,true);elements.image.onload();assert.equal(elements.image.hidden,false);state={generation:'wait',instruction:'Wait',ready:false,has_image:false};queued.shift()();await tick();stale();assert.equal(elements.image.hidden,true);})().catch(e=>{console.error(e);process.exit(1)});

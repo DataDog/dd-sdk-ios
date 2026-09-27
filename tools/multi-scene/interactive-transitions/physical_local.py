@@ -189,9 +189,10 @@ def verify(root, plan, runner):
     return plan
 
 
-def assess_capture(folder, identity, capture, *, device):
+def assess_capture(folder, identity, capture, *, device, raw=None):
     import driver
-    raw = (folder/'sealed-events.jsonl').read_bytes(); rows = capture.rows(raw, identity['run_id'])
+    raw = (folder/'sealed-events.jsonl').read_bytes() if raw is None else raw
+    rows = capture.rows(raw, identity['run_id'])
     native = shared.read(folder/'native-summary.json'); require(native['identity'] == identity, 'local native identity changed')
     local = ownership.inventory(rows, identity); snapshots = {}; qualified = {}
     require(set(native['transitions']) == contract.PHASES, 'incomplete native transition set')
@@ -256,19 +257,38 @@ def terminal(collector, out, identity, deadline):
     import driver
     require(time.time() < deadline, 'local collection deadline expired')
     raw = collector.download('events.jsonl', deadline); atomic(out/'terminal-before-collection.jsonl', raw)
-    atomic(out/'sealed-events.jsonl', raw)
-    result = assess_capture(out, identity, driver.capture_contract, device=collector.device)
+    assess_capture(out, identity, driver.capture_contract, device=collector.device, raw=raw)
     require(collector.process_live() and time.time() < deadline, 'local source process ended before seal')
     collector.remote.command(['device','process','terminate','--pid',str(identity['pid'])], 'terminal-stop', deadline)
     require(not any(p['processIdentifier'] == identity['pid'] for p in collector.remote.processes('terminal-process-absence', deadline)),
             'local source process remains')
-    sealed = collector.download('events.jsonl', deadline); require(sealed == raw, 'local evidence changed during stop')
+    atomic(out/'terminal-stop.json',encoded(dict(state='OWNED_PROCESS_STOPPED',identity=identity,
+        before_sha256=shared.sha(out/'terminal-before-collection.jsonl'),finished_at=time.time(),deadline=deadline)))
+    sealed = collector.download('events.jsonl', deadline)
+    require(sealed.startswith(raw), 'local evidence rewrote collected bytes during stop')
+    atomic(out/'sealed-events.jsonl', sealed)
+    # Assess the actual final stream, including legitimate mapper tail rows.
+    # Native activity after Home and wrong owners remain rejected by the oracle.
+    result = assess_capture(out, identity, driver.capture_contract, device=collector.device, raw=sealed)
     joined = dict(state=JOINED, evidence_contract=contract.CONTRACT, assessment=result, completed_at=time.time(), deadline=deadline,
                   stream_sha256=shared.sha(out/'sealed-events.jsonl'), backend_queries=0, release_acceptance=False)
     atomic(out/'local-joined.json', encoded(joined))
     atomic(out/'terminal-rejoin.json', encoded(dict(state='SEALED_LOCAL_STREAM', stream_sha256=joined['stream_sha256'],
         local_join_sha256=shared.sha(out/'local-joined.json'), finished_at=time.time(), deadline=deadline, backend_queries=0, release_acceptance=False)))
     require(time.time() < deadline, 'late local evidence publication'); return joined
+
+
+def stopped_source(out,identity,remote,deadline):
+    """A failed final seal must not ask for gestures in an already stopped app."""
+    path=out/'terminal-stop.json'
+    if not path.exists():return False
+    record=shared.read(path)
+    require(record['state']=='OWNED_PROCESS_STOPPED' and record['identity']==identity
+        and record['before_sha256']==shared.sha(out/'terminal-before-collection.jsonl')
+        and record['finished_at']<record['deadline'],'unqualified local process-stop receipt')
+    require(not any(p['processIdentifier']==identity['pid'] for p in remote.processes('cleanup-terminal-absence',deadline)),
+        'source process reappeared; defer teardown')
+    return True
 
 
 def evidence(folder, plan, summary):
@@ -295,6 +315,6 @@ def evidence(folder, plan, summary):
     require(joined['completed_at'] <= seal['finished_at'] < seal['deadline'] == joined['deadline'] <= summary['execution_deadline']
             and shared.sha(folder/'local-joined.json') == seal['local_join_sha256'] == summary['local_join_sha256']
             and shared.sha(folder/'sealed-events.jsonl') == joined['stream_sha256'] == seal['stream_sha256']
-            and (folder/'sealed-events.jsonl').read_bytes() == (folder/'terminal-before-collection.jsonl').read_bytes(), 'local evidence seal differs')
+            and (folder/'sealed-events.jsonl').read_bytes().startswith((folder/'terminal-before-collection.jsonl').read_bytes()), 'local evidence seal differs')
     require(assess_capture(folder, summary['identity'], driver.capture_contract, device=plan['device']) == joined['assessment'], 'local assessment changed')
     return joined

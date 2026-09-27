@@ -16,6 +16,8 @@ from acceptance_common import require
 import s2_hosting_workflow as shared
 import s2_webview_driver as transport
 import s2_webview_runtime as displays
+import local_event_collection
+import human_release
 
 
 def pending_rows(raw,run):
@@ -45,15 +47,24 @@ def initial_ready(rows,framework):
 
 
 class Collector:
-    def __init__(self, *, documents, output, run, device, pid, framework, deadline, budget):
+    def __init__(self, *, documents, output, run, device, pid, framework, deadline, budget, local_process=True):
         self.documents=Path(documents);self.output=Path(output);self.run=run
         self.device=device;self.pid=pid;self.framework=framework;self.deadline=deadline;self.budget=budget
-        self.phases=set();self.binding=None;self.receipts=[];self.evidence=[]
+        self.phases=set();self.binding=None;self.receipts=[];self.evidence=[];self.prompt_issued=False
+        self.process_identity=human_release.process_identity(pid) if local_process else None
         require(self.output.is_dir() and self.documents.is_dir(),'collector directories not preflighted')
         require(set(budget)>={'human_step_seconds','snapshot_seconds','settle_seconds'},'collector limits absent')
     def live(self,deadline):
         require(time.time()<min(deadline,self.deadline),'original collector deadline expired')
         require(bool(shared.process(self.pid)),'original app process ended')
+        require(self.process_identity and human_release.process_identity(self.pid)==self.process_identity,'original app process replaced')
+    def pending_for_cleanup(self):
+        raw=(self.documents/'events.jsonl').read_bytes()
+        rows=[json.loads(line) for line in raw[:raw.rfind(b'\n')+1].splitlines()]
+        require(all(r['run_id']==self.run for r in rows),'foreign cleanup run')
+        return rows
+    def cleanup_idle(self,folder,identity,deadline):
+        return human_release.capture_idle(self,folder,identity,deadline)
     def wait(self,condition,deadline):
         while True:
             self.live(deadline)
@@ -101,6 +112,7 @@ class Collector:
             'screenshot':str(folder/'ready.png'),'screenshot_sha256':shared.sha(folder/'ready.png'),
             'native_before_sequence':before['sequence']}
         shared.save(folder/'prompt.json',prompt,exclusive=True)
+        self.prompt_issued=True
         print(json.dumps({'human_input':prompt}),flush=True)
         return actual
     def ensure_root(self,layout,prefix):
@@ -215,8 +227,22 @@ class Collector:
                 and geometry[-1]['payload']['scenes'][0]['activation']!=0,'actual scene did not leave foreground')
         (folder/'background-events.jsonl').write_bytes(raw[:json.loads(checkpoint)['byte_count']])
         (folder/'background-checkpoint.json').write_bytes(checkpoint)
-        self.evidence=rows;self.live(deadline)
+        prefix=raw[:json.loads(checkpoint)['byte_count']]
+        collection_deadline=min(self.deadline,time.time()+self.budget.get('event_collection_seconds',120))
+        def complete():
+            observed=(self.documents/'events.jsonl').read_bytes()
+            result=local_event_collection.terminal_rows(observed,run_id=self.run,prefix=prefix)
+            if result is not None:
+                (folder/'background-collected-events.jsonl').write_bytes(observed)
+            return result
+        self.evidence=self.wait(complete,collection_deadline);self.live(collection_deadline)
+        proof_path=self.documents/('home-input-idle-'+before['payload']['request_id']+'.json')
+        self.wait(lambda:True if proof_path.exists() else None,collection_deadline)
+        shared.save(folder/'home-idle-proof.json',human_release.home_idle(self),exclusive=True)
+        shared.save(folder/'collection.json',{'state':'LOCAL_HOME_INVENTORY_COLLECTED',
+            'prefix_sha256':hashlib.sha256(prefix).hexdigest(),'sequence':self.evidence[-1]['sequence'],
+            'deadline':collection_deadline,'finished_at':time.time()},exclusive=True)
         self.receipts.append({'run_id':self.run,'phase':'background.effect','timestamp':event['timestamp'],'payload':{'native_sequence':event['sequence']}})
-        self.receipts.append({'run_id':self.run,'phase':'complete','timestamp':time.time(),'payload':{'proof':'DURABLE_LOCAL_MAPPER_PREFIX'}})
+        self.receipts.append({'run_id':self.run,'phase':'complete','timestamp':event['timestamp'],'payload':{'proof':'LOCAL_HOME_INVENTORY_COLLECTED'}})
         shared.save(self.output/'receipts.json',self.receipts,exclusive=True)
-        return rows
+        return self.evidence

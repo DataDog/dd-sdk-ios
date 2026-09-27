@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "work_item": "Review, repair and re-review future human-session harnesses",
+  "status": "COMPLETE_REVIEWED_OFFLINE_NATIVE_UNADMITTED",
+  "owner": "Root",
+  "reviewer": "/root/c06_runtime_plan",
+  "starting_head": "955263a9706cd3ddc61508bf56533c5bd92c44cc",
+  "original_review": "Results/human-session-review-20260927.json",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi",
+  "scope": [
+    "HUMAN-01",
+    "HUMAN-02",
+    "HUMAN-03",
+    "HUMAN-04",
+    "HUMAN-05",
+    "Resource fold prompt delivery",
+    "S3 explicit human setup wrapper"
+  ],
+  "cycles": [
+    {
+      "cycle": 1,
+      "state": "REPAIRED",
+      "scope": "Five reproduced findings, direct prompt binding and explicit S3 human wrapper."
+    },
+    {
+      "cycle": 2,
+      "state": "REPAIRED",
+      "scope": "Actual-runner cleanup fences, immutable final tail, complete-cell sitting controls and background native idle sidecar."
+    },
+    {
+      "cycle": 3,
+      "state": "PREPARATION_PASS_LATER_SUPERSEDED_FOR_COLLECTION",
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/final-review.json",
+        "sha256": "087b7da2299f85c45b891a91ea6372eed392ce66b5567a236c7fef7821bf0d03"
+      },
+      "scope": "260 controls and three fixture builds; saved capture subsequently exposed overly broad metadata equality."
+    },
+    {
+      "cycle": 4,
+      "state": "PASS_NO_ACTIONABLE_FINDINGS",
+      "regression": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/cycle-4-real-capture-regression.json",
+        "sha256": "d97e1bc1ebddf733763d595b9604207f02c5044aba5f8aeee300b50f28818b91"
+      },
+      "replay": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/cycle-4-saved-capture-replay.json",
+        "sha256": "cd66a0dc50275a788c6058af302a1984f56078cf8c2df9acb50979d3b7dac3b8"
+      },
+      "scope": "Compare common stable View/Action ownership fields; preserve View date/revision and Home/action/callback invariants. 13 focused controls and actual saved capture pass."
+    }
+  ],
+  "native_runs": 0,
+  "builds": 3,
+  "sdk_changes": false,
+  "gate_closures": [],
+  "accepted_evidence_reopened": false,
+  "next": "Use the current S2 input index. Fresh prerequisites and a visible bound operator page precede the first needed native cell; do not repeat accepted cells or reopen stopped automatic mechanisms. Residual S3 gestures remain unprepared.",
+  "updated_at": "2026-09-27T12:15:36.917117+00:00",
+  "controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/reviewed-controls.json",
+    "sha256": "5321297c93eff5c9ecc8cc55c6a3b3e6776520ba32342abb313d41f4987b0a91"
+  },
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/review-complete.json",
+    "sha256": "be0e03e8c001f89a9eafbb0d37531ac6684221b9c1b08a845b1c71410435f4a3"
+  },
+  "prior_owner_records": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/owners-before-completion.json",
+    "sha256": "5689f96cac0632c852d50b820023dd78346f9002ae4b0d2e7e7b36c01b96ed8e"
+  },
+  "result": {
+    "unique_offline_controls": 262,
+    "fixture_builds": 3,
+    "refreshed_products": 6,
+    "sdk_test_runs": 0,
+    "native_runs": 0,
+    "backend_queries": 0,
+    "saved_capture": {
+      "rows": 180,
+      "view_occurrences": 10,
+      "actions": 10,
+      "callbacks": 4,
+      "full_native_oracle": "PASS"
+    },
+    "actionable_review_findings": 0
+  },
+  "preparations": {
+    "coverage_master": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/coverage-master-v2/runtime/runtime-plan.json",
+      "sha256": "dedf36d78f8f6c7d1b9a3bfd2841f7ba035b939c61e9023438dda8ea8df1fc72"
+    },
+    "coverage_first_sitting": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/coverage-sitting-01-v2/runtime/runtime-plan.json",
+      "sha256": "d6a4ff08f2b6e588bdbcb4baa63a7dea53bbc3c113d9f3aee537147621354098"
+    },
+    "coverage_series": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/coverage-series-v2/series.json",
+      "sha256": "e1b180fd2f9a09aec081f76c7759b7edc02e38e4263ac836d1d0157867a14083"
+    },
+    "physical_candidate": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/physical-candidate-v2/plan.json",
+      "sha256": "2cc665739b6f44314ac93448d713429806d9392335de95a153cf57dd575c61e1"
+    },
+    "resource_fold": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/resource-fold/runtime-plan.json",
+      "sha256": "3b6bb06a95b4cf8313280039c75780339c1b47c088df42dd9beeb1b6aa4b7d1e"
+    },
+    "same_key": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/same-key/execution-plan.json",
+      "sha256": "cf9b966706809dd4416fc39013d91d60430056b3f3c950058eb94b40d69cce08"
+    }
+  },
+  "build_receipts": [
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/coverage-observer/baseline-26.5/build-result.json",
+      "sha256": "a0ee0b8eb669e92b8ab5c63b54f517511cff1669616e6d252796ce891e6e1e1a"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/coverage-observer/baseline-27.1/build-result.json",
+      "sha256": "7dcf374e46ed308bda9aabaee9b0253fe35ca319c2b303f6c4516c211dec9af7"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/coverage-observer/candidate-27.1/build-result.json",
+      "sha256": "812ce0a5ebd0e5626d21aa6c50fa3b0f0556c14c559eeaadb519955f9e9c6ff9"
+    }
+  ],
+  "limits": [
+    "Offline controls/builds are preparation evidence only; no release gate closed.",
+    "No full SDK suite, native interaction or backend query ran.",
+    "Cycle-3 full-object metadata comparison falsely rejected saved data; original PASS/rejection artifacts and superseded unused plans remain immutable.",
+    "Failed input needs request-bound release and native idle. Success cleanup uses native Home-idle proof, not a file prefix or quiet period as a substitute.",
+    "Timing is diagnostic; fixed operational/cleanup clocks are unchanged once issued."
+  ],
+  "preparations_verified": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/preparations-verified.json",
+    "sha256": "3cbe4f3a9466addc72843975cb37dd470289bbd924d334d22bf23613b5cc2aa8"
+  },
+  "checkpoint_validation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/precommit-validation.json",
+    "sha256": "bc269aaba24099f423f88ca66e9326054921622751638806f44cd94814f3b0a5"
+  },
+  "documentation_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/documentation-review.json",
+    "sha256": "855e0cd1428f49246e14a7ab13e79d735ff5313b73bcc17e9b6e2fcdcaa4dd63"
+  }
+}

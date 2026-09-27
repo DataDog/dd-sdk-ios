@@ -20,7 +20,7 @@ from test_same_key import fixtures, native
 
 
 class Runner(unittest.TestCase):
-    def exercise(self, *, human, background_peer=False, cleanup_failure=False):
+    def exercise(self, *, human, background_peer=False, cleanup_failure=False,late_checkpoint=False):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp); product=root/'simulator'; product.mkdir()
             app=root/'built.app';app.mkdir()
@@ -28,6 +28,7 @@ class Runner(unittest.TestCase):
             location=root/'installed.app';container=root/'data';documents=container/'Documents'
             plan=dict(source='source',protected={},multiple_scenes=True)
             installed=False; stopped=threading.Event(); errors=[]; work=[]; commands=[]; client=None
+            real_time=time.time;clock_offset=[0]
             def command(argv, **kwargs):
                 nonlocal installed,client
                 commands.append(list(argv))
@@ -75,9 +76,20 @@ class Runner(unittest.TestCase):
                                         n=actual(i);n['setup_admission']=admitted or {}
                                         events=sample['events']
                                         if events[prefix:]:request('/rum',b'\n'.join(json.dumps(e).encode() for e in events[prefix:]))
-                                        prefix=len(events);ack=request('/checkpoint',n);checkpoints.append(ack);work.append(n['phase'])
+                                        prefix=len(events)
+                                        if late_checkpoint and i==0:
+                                            clock_offset[0]=301
+                                            try:request('/checkpoint',n)
+                                            except urllib.error.HTTPError as error:
+                                                try:
+                                                    if error.code!=409:raise
+                                                finally:error.close()
+                                            else:raise AssertionError('late checkpoint accepted')
+                                            setup.publish(documents/'result.json',dict(phase='failed'));complete=True;break
+                                        ack=request('/checkpoint',n);checkpoints.append(ack);work.append(n['phase'])
                                     final=actual(3);final.update(phase='complete',acknowledgments=checkpoints,setup_admission=admitted or {})
-                                    setup.publish(documents/'result.json',final);complete=True
+                                    if not late_checkpoint:setup.publish(documents/'result.json',final)
+                                    complete=True
                                 cleanup=documents/'cleanup-request.json'
                                 if cleanup.exists() and not idle_sent:
                                     req=setup.read(cleanup);n=actual(3 if complete else 0)
@@ -99,6 +111,7 @@ class Runner(unittest.TestCase):
                 return SimpleNamespace(stdout=stdout,stderr=stderr,returncode=code)
             with patch.object(preparation,'verify',return_value={}),patch.object(runner.build,'verify',return_value=plan),patch.object(runner.build,'protected',return_value={}),\
                  patch.object(runner.shared,'product',return_value={'fixed':True}),patch.object(runner.shared,'capture',side_effect=command),\
+                 patch.object(time,'time',side_effect=lambda:real_time()+clock_offset[0]),\
                  patch('builtins.print'),\
                  (patch.object(setup.Barrier,'cleanup',side_effect=ValueError('forced fence failure')) if cleanup_failure else nullcontext()):
                 try:passed=runner.run(root,'device','27.0','swift',qualification=contract,human_setup=human)
@@ -120,7 +133,12 @@ class Runner(unittest.TestCase):
                 return
             self.assertFalse(installed)
             self.assertEqual(summary['cleanup'],'PASS')
-            if background_peer:
+            if late_checkpoint:
+                self.assertFalse(passed);self.assertEqual(work,[])
+                self.assertTrue((folder/'checkpoint-0.bin').exists())
+                self.assertFalse((folder/'checkpoint-0.json').exists())
+                self.assertEqual(summary['execution_deadline']-summary['execution_started_at'],300)
+            elif background_peer:
                 self.assertFalse(passed);self.assertEqual(work,[])
                 self.assertIsNone(summary['execution_deadline'])
                 self.assertFalse((folder/'human-setup/api-admission.json').exists())
@@ -139,6 +157,7 @@ class Runner(unittest.TestCase):
     def test_default_automatic_runner_has_no_human_barrier(self):self.exercise(human=False)
     def test_failed_cleanup_after_complete_api_preserves_app(self):self.exercise(human=True,cleanup_failure=True)
     def test_failed_cleanup_after_setup_rejection_preserves_app(self):self.exercise(human=True,background_peer=True,cleanup_failure=True)
+    def test_late_checkpoint_preserves_raw_rejects_evidence_and_still_requires_safe_cleanup(self):self.exercise(human=True,late_checkpoint=True)
 
 
 if __name__=='__main__':unittest.main()

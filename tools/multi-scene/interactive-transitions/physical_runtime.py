@@ -251,7 +251,8 @@ def cell(args):
                     collector.input_quiescence(min(deadline-90,time.time()+90),complete=joined is not None)
                     if joined is None:collector.automated_cleanup_idle(identity,deadline-60)
             elif collector is not None and collector.prompt_issued and joined is None:
-                physical_release.fence(collector,out,identity,deadline)
+                if not (local.mode(plan) and local.stopped_source(out,identity,remote,deadline)):
+                    physical_release.fence(collector,out,identity,deadline)
             errors=cleanup(remote,out,bundle,pid,owned,collector,initial,deadline)
             if automatic.mode(plan):automatic.close_session(root,selected['id'],deadline,errors)
         except Exception as error:errors=['physical cleanup deferred: '+str(error)]

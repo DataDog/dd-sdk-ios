@@ -1,15 +1,29 @@
 # Automatic tracking compatibility comparison
 
-The reviewed S2 slice uses `human_runtime.py prepare-s2 --original FROZEN_BUILD_ROOT
---root NEW_OUTPUT_ROOT`:12 Duo cells across UIKit/SwiftUI stack/split, each with
-baseline26.5, baseline27.1 and candidate27.1. It reuses six existing single-scene
-products and derives a separate oracle from the frozen original by removing only
-recorder-duration upper bounds. Malformed/missing receipts, native order and ownership
-still reject. The plan binds both oracle hashes and the sole noncompiled backend
-decoder drift allowed for build reuse; unrelated helper drift rejects.
-Preparation admits no input. The legacy40-cell path and original attempts remain
-unchanged. Baseline as well as candidate telemetry anomalies require classification;
-incidental timing/brightness fields are not coverage comparisons.
+The current [S2 preparation](../../../DatadogRUM/MultiSceneSupport/Results/S2-capture-contract-preparation.json)
+selects12 Duo cells across UIKit/SwiftUI stack/split, each with baseline26.5,
+baseline27.1 and candidate27.1. It binds six refreshed products: only the passive
+observer changed in copies of the three original source/compiler pairs. Ordinary
+UI, RUM configuration and SDK bytes are unchanged. Existing refreshed builds need
+no repeat. Preparation admits no input; the first planned baseline qualifies it.
+
+To prepare a changed observer, use `human_fixture_refresh.py prepare --original
+FROZEN_BUILD_ROOT --root NEW_REFRESH_ROOT`, then its `build` action once for each
+key: `baseline-26.5`, `baseline-27.1`, `candidate-27.1`. Runtime preparation uses
+`human_runtime.py prepare-s2 --original FROZEN_BUILD_ROOT --refresh-builds
+QUALIFIED_REFRESH_ROOT --root NEW_MASTER_ROOT`. The master cannot be staged directly.
+Use `human_sessions.py prepare-s2 --original MASTER_ROOT --root NEW_SITTING_ROOT
+--series NEW_SERIES --cells 1` for the first complete cell. The owner pins that
+series; reviewed later sittings select one to three cells with `--previous
+COMPLETED_SITTING_ROOT`. A failed or incomplete predecessor cannot continue.
+
+The frozen native oracle removes only recorder-duration upper bounds. The collector
+preserves Home's committed prefix, then collects inactive View revisions and exact
+Action counts/owners; it does not equate a writer checkpoint with end of SDK work.
+Successful cleanup requires request-bound native Home/input-idle proof. Failure
+requires Released acknowledgement and fresh native idle before task-app removal.
+Original attempts and verdicts remain. Baseline and candidate telemetry differences
+require classification; incidental timing/brightness fields are not coverage criteria.
 
 
 EXP-195 compares four existing-public-API tracking families under C07–C10.
@@ -145,8 +159,10 @@ copies. It performs no build or native work. Full runtime review and controls mu
 bind the resulting plan before `stage` can consume fresh environment and operator
 readiness receipts. A stage and every child have fixed execution/cleanup clocks.
 
-`human_operator.py --directory RUNTIME/operator --seconds SECONDS` serves a local,
-read-only prompt page. It cannot supply input, readiness or acceptance. Each actual
+`human_operator.py --directory RUNTIME/operator --seconds SECONDS` serves a local
+prompt page. Its request-bound Ready/Released buttons acknowledge human setup or
+release; they never synthesize native input or acceptance. Fresh session readiness
+also binds the live page instance, plan, device and user message. Each actual
 screenshot belongs to the current unexpired prompt; old generations cannot be
 shown after the step changes. The runner captures native effects and advances the
 page itself. It preserves child output before parsing and keeps cleanup prompts
@@ -162,7 +178,10 @@ The comparison report closes no gate by itself and retains the regular27.0 versu
 Duo27.1 OS-patch confound. Input witnesses prove observed native effects, not
 independent human causality. Native qualification remains unexecuted.
 
-## Separate human sittings
+## Legacy pair sittings
+
+The current S2 triplets use `prepare-s2 --cells` above. The commands in this section
+retain the earlier pair matrix only; they do not select the current S2 release slice.
 
 `human_sessions.py prepare --original BUILD_ROOT --root FRESH --series NEW_SERIES
 --pairs 1` prepares the first existing pair without building or running it. The

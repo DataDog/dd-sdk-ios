@@ -25,6 +25,7 @@ import human_processes
 import os
 import analyze
 import human_sessions
+import human_fixture_refresh
 from acceptance_common import require
 import s2_hosting_workflow as shared
 import s2_webview_driver as transport
@@ -108,8 +109,12 @@ def s2_helpers(measurement):
 
 def prepare_s2(args):
     root=args.root.resolve();source=args.original.resolve()
+    refresh=getattr(args,'refresh_builds',None)
+    require(refresh is not None,'reviewed passive cleanup observer products required for new S2 preparation')
+    refresh=refresh.resolve()
     require(not root.exists(),'S2 runtime output already consumed')
-    base=human_sessions.original(source,sys.modules[__name__],allow_backend_decoder_update=True)
+    base=human_sessions.original(source,sys.modules[__name__],allow_backend_decoder_update=True,allow_fixture_refresh=True)
+    refreshed=human_fixture_refresh.products(refresh)
     oracle,measurement=s2_oracle(source,base)
     matrix=s2_matrix(shared.read(build.OWNER),shared.read(REGISTER))
     names={row['build']+'-'+row['framework']+'-single' for row in matrix}
@@ -123,11 +128,12 @@ def prepare_s2(args):
     plan={'schema_version':1,'kind':S2_KIND,'prepared_at':time.time(),'original_build_root':str(source),
           'original_runtime_plan_sha256':shared.sha(source/'runtime/runtime-plan.json'),
           'scope':s2_scope(),'build_plan_sha256':base['build_plan_sha256'],'build_receipts':base['build_receipts'],
-          'contract':base['contract'],'measurement':measurement,'matrix':matrix,'helpers':helpers,
+          'contract':dict(base['contract'],event_collection_seconds=120,cleanup_seconds=600),'measurement':measurement,'matrix':matrix,'helpers':helpers,
+          'observer_refresh':human_sessions.reference(refresh/'refresh-plan.json',shared),
           'build_helper_reuse':{'path':human_sessions.BACKEND_DECODER,
               'original_sha256':base['helpers'][human_sessions.BACKEND_DECODER],
               'current_sha256':helpers[human_sessions.BACKEND_DECODER]},
-          'products':{name:base['products'][name] for name in sorted(names)},
+          'products':{name:refreshed[name] for name in sorted(names)},
           'publication':transport.publication_preflight(runtime),'native_admitted':False,'native_cells_executed':0}
     human_operator.publish(runtime/'operator',{'instruction':'Waiting for scoped review and fresh operator readiness.'})
     shared.save(runtime/'runtime-plan.json',plan,exclusive=True);verify(root)
@@ -136,15 +142,21 @@ def prepare_s2(args):
 
 
 def verify_s2(root,plan):
-    source=Path(plan['original_build_root']);base=human_sessions.original(source,sys.modules[__name__],allow_backend_decoder_update=True)
+    refresh=plan.get('observer_refresh')
+    source=Path(plan['original_build_root']);base=human_sessions.original(source,sys.modules[__name__],allow_backend_decoder_update=True,allow_fixture_refresh=refresh is not None)
     _,measurement=s2_oracle(source,base)
     require(plan['original_runtime_plan_sha256']==shared.sha(source/'runtime/runtime-plan.json') and
             plan['scope']==s2_scope() and plan['matrix']==s2_matrix(shared.read(build.OWNER),shared.read(REGISTER)),
             'S2 scope/source/matrix changed')
+    expected_contract=dict(base['contract'],event_collection_seconds=120,cleanup_seconds=600) if refresh else base['contract']
     require(plan['build_plan_sha256']==base['build_plan_sha256'] and plan['build_receipts']==base['build_receipts']
-            and plan['contract']==base['contract'],'S2 changed original build or timing contract')
+            and plan['contract']==expected_contract,'S2 changed original build or collection contract')
     names={row['build']+'-'+row['framework']+'-single' for row in plan['matrix']}
-    require(plan['products']=={name:base['products'][name] for name in sorted(names)},'S2 product slice changed')
+    if refresh:
+        human_sessions.read_reference(refresh,shared)
+        products=human_fixture_refresh.products(Path(refresh['path']).parent)
+    else:products=base['products']
+    require(plan['products']=={name:products[name] for name in sorted(names)},'S2 product slice changed')
     require(plan.get('measurement')==measurement,'S2 observer measurement rule changed')
     require(shared.tree(root/'runtime/helpers')==plan['helpers']==s2_helpers(measurement),'S2 helper closure changed')
     require(plan.get('build_helper_reuse')=={'path':human_sessions.BACKEND_DECODER,
@@ -218,7 +230,7 @@ def prepare(args):
 def verify(root):
     root=Path(root).resolve();runtime=root/'runtime';plan=shared.read(runtime/'runtime-plan.json')
     if plan.get('kind')==S2_KIND:return verify_s2(root,plan)
-    if plan.get('kind')==human_sessions.KIND:return human_sessions.verify(root,plan,sys.modules[__name__])
+    if human_sessions.is_session(plan):return human_sessions.verify(root,plan,sys.modules[__name__])
     base=build.verify(root)
     definition=shared.read(build.OWNER)
     require(plan['build_plan_sha256']==shared.sha(root/'build-plan.json') and plan['contract']==definition['human_current_composition']['runtime_contract']
@@ -255,7 +267,7 @@ def cleanup(root,out,documents,identity,device_id,device,original,initial,pid,sc
         bundle=identity['bundle']
         absent=lambda identifier:shared.capture(['xcrun','simctl','get_app_container',identifier,bundle,'data'],check=False).returncode!=0
         return transport.cleanup_cell(root,out,documents,identity,device_id,device,original,initial,pid,None,scenario,deadline,
-            task_bundle=bundle,task_absent=absent,verify_source=verify)
+            task_bundle=bundle,task_absent=absent,verify_source=verify,preserve_after_stop=True)
     finally:shared.devices=prior
 
 
@@ -271,6 +283,7 @@ def reviewed(root):
 
 def stage(args):
     root=args.root.resolve();runtime=root/'runtime';plan,review=reviewed(root)
+    require(plan.get('kind')!=S2_KIND,'prepare a finite S2 sitting before native admission')
     preflight=shared.read(args.preflight);operator=shared.read(args.operator);now=time.time()
     require(preflight.get('state')=='PASS' and preflight.get('runtime_plan_sha256')==shared.sha(runtime/'runtime-plan.json')
             and 0<=now-preflight['completed_at']<=300,'fresh exact runtime preflight required')
@@ -285,13 +298,15 @@ def stage(args):
         require(all(current[k]==bound[k] for k in ['udid','state','runtime','deviceTypeIdentifier']),'preflight device changed')
     require(operator.get('kind')=='OPERATOR_READY' and operator.get('runtime_plan_sha256')==shared.sha(runtime/'runtime-plan.json')
             and operator.get('user_message_reference') and 0<=now-operator['at']<=300,'current human readiness required')
-    if plan.get('kind')==human_sessions.KIND:human_sessions.ready(root,plan,operator,sys.modules[__name__])
+    if plan.get('kind')==human_sessions.S2_KIND:
+        require(operator.get('device')==preflight['devices']['duo']['udid'],'operator readiness belongs to another device')
+    if human_sessions.is_session(plan):human_sessions.ready(root,plan,operator,sys.modules[__name__])
     record={'state':'ADMITTED','stage_id':str(uuid.uuid4()),'runtime_plan_sha256':shared.sha(runtime/'runtime-plan.json'),
         'review_sha256':review,'preflight_path':str(args.preflight.resolve()),'preflight_sha256':shared.sha(args.preflight),
         'operator_path':str(args.operator.resolve()),'operator_sha256':shared.sha(args.operator),'devices':preflight['devices'],
         'issued_at':now,'execution_deadline':now+plan['contract']['stage_execution_seconds']}
     record['cleanup_deadline']=record['execution_deadline']+plan['contract']['cleanup_seconds']
-    if plan.get('kind')==human_sessions.KIND:record['session_claims']=human_sessions.claim(root,plan,record,sys.modules[__name__])
+    if human_sessions.is_session(plan):record['session_claims']=human_sessions.claim(root,plan,record,sys.modules[__name__])
     shared.save(runtime/'native-admission.json',record,exclusive=True)
     print(json.dumps({'state':'ADMITTED','stage':str(runtime/'native-admission.json'),'execution_deadline':record['execution_deadline']}))
 
@@ -301,7 +316,7 @@ def admit_cell(root,key,plan,review,execution_limit,cleanup_limit):
     require(stage['state']=='ADMITTED' and stage['runtime_plan_sha256']==shared.sha(runtime/'runtime-plan.json')
             and stage['review_sha256']==review and stage['issued_at']<=now<stage['execution_deadline'],'closed or stale native stage')
     for name in ['preflight','operator']:require(shared.sha(stage[name+'_path'])==stage[name+'_sha256'],'stage prerequisite changed')
-    if plan.get('kind')==human_sessions.KIND:human_sessions.child_admission(root,plan,stage,sys.modules[__name__])
+    if human_sessions.is_session(plan):human_sessions.child_admission(root,plan,stage,sys.modules[__name__])
     attempted=prior_cells(runtime,plan,stage)
     next_cell=next((row for row in plan['matrix'] if cell_key(row) not in attempted),None)
     require(next_cell is not None and cell_key(next_cell)==key,'out-of-order or already consumed cell')
@@ -364,8 +379,8 @@ def execute_cell(args):
             if row['kind']=='geometry' and row['sequence']>binding_row['sequence']:
                 scenes=row['payload']['scenes'];require(len(scenes)==1 and scenes[0]['id']==collector.binding['scene'],'native scene inventory changed')
         require(shared.product(installed,bundle=bundle)==product['product'],'installed code changed during scenario')
-        terminal_bytes=(out/'input/background.before/background-events.jsonl').read_bytes()
-        require((documents/'events.jsonl').read_bytes()==terminal_bytes,'writer appended outside the qualified terminal prefix')
+        terminal_bytes=(out/'input/background.before/background-collected-events.jsonl').read_bytes()
+        require((documents/'events.jsonl').read_bytes().startswith(terminal_bytes),'writer rewrote the collected Home prefix')
         (out/'events.jsonl').write_bytes(terminal_bytes);shared.save(out/'receipts.json',collector.receipts,exclusive=True)
         summary['scenario']='PASS'
         run={'run_id':identity['run_id'],**selected};local=analyze.summarize(run,rows,collector.receipts)
@@ -381,13 +396,30 @@ def execute_cell(args):
             workers=human_processes.quiesce(os.getpgrp(),fixed,exempt=[os.getpid()])
             shared.save(out/'native-workers-before-cleanup.json',workers,exclusive=True)
             require(workers['state']=='PASS','native workers not quiescent before cleanup')
+            if collector is not None and collector.prompt_issued:
+                home_idle=None
+                if summary['state']=='PASS':
+                    try:home_idle=capture.human_release.home_idle(collector)
+                    except Exception as error:
+                        shared.save(out/'home-idle-unavailable.json',{'reason':str(error)},exclusive=True)
+                if home_idle is None:capture.human_release.guard(collector,out,identity,fixed)
+                else:shared.save(out/'cleanup-home-idle.json',home_idle,exclusive=True)
             errors=cleanup(root,out,documents,identity,device_id,device,original,initial,pid,summary['scenario'],fixed,kind)
         except Exception as error:errors=['cleanup driver: '+str(error)]
         evidence_errors=[e for e in errors if e.startswith(('terminal recapture:','preserve native evidence:'))]
         cleanup_errors=[e for e in errors if e not in evidence_errors]
         if terminal_bytes is not None:
             preserved=out/'native-preserved/events.jsonl'
-            if not preserved.exists() or preserved.read_bytes()!=terminal_bytes:evidence_errors.append('terminal prefix differs from preserved native EOF')
+            try:
+                raw=preserved.read_bytes();require(raw.startswith(terminal_bytes),'terminal prefix differs from preserved native stream')
+                final_rows=capture.local_event_collection.terminal_rows(raw,run_id=identity['run_id'],
+                    prefix=(out/'input/background.before/background-events.jsonl').read_bytes())
+                require(final_rows is not None,'final local View/Action inventory incomplete')
+                local=analyze.summarize({'run_id':identity['run_id'],**selected},final_rows,collector.receipts)
+                require(not any(local[k] for k in ['duplicate_action_ids','unknown_action_owners','unassigned_actions','errors']),
+                        'final local telemetry requires attribution')
+                (out/'events.jsonl').write_bytes(raw);shared.save(out/'local-result.json',local)
+            except Exception as error:evidence_errors.append('terminal collection: '+str(error))
         if evidence_errors:summary.update(state='INVALID',evidence='INCOMPLETE',evidence_errors=evidence_errors)
         if time.time()>fixed:cleanup_errors.append('cleanup completed after original deadline')
         summary['cleanup']='INVALID' if cleanup_errors else 'PASS'
@@ -425,7 +457,7 @@ def prior_cells(runtime,plan,stage):
 
 
 def compare_matrix(runtime,plan,stage):
-    if plan.get('kind')==human_sessions.KIND:
+    if human_sessions.is_session(plan):
         result=human_sessions.compare(runtime,plan,stage,sys.modules[__name__])
     else:
         attempted=prior_cells(runtime,plan,stage)
@@ -481,7 +513,8 @@ def final_cell(runtime,key,*,supervisor_error=None):
 def run_matrix(args):
     root=args.root.resolve();plan,review=reviewed(root);runtime=root/'runtime';stage=shared.read(runtime/'native-admission.json')
     require(stage['review_sha256']==review and time.time()<stage['execution_deadline'],'matrix stage is closed')
-    if plan.get('kind')==human_sessions.KIND:human_sessions.begin(root,plan,stage,sys.modules[__name__])
+    require(plan.get('kind')!=S2_KIND,'full S2 matrix cannot bypass sitting admission')
+    if human_sessions.is_session(plan):human_sessions.begin(root,plan,stage,sys.modules[__name__])
     attempted=prior_cells(runtime,plan,stage)
     for row in plan['matrix']:
         key=cell_key(row);summary=runtime/'cells'/key/'summary.json'
@@ -509,7 +542,7 @@ def run_matrix(args):
         if comparison['source_differences']:
             human_operator.publish(runtime/'operator',{'instruction':'The source pair differs. Stop input while the captured evidence is classified.'},context=context)
             return 1
-    if plan.get('kind')==human_sessions.KIND:
+    if human_sessions.is_session(plan):
         human_sessions.finish(root,plan,stage,sys.modules[__name__])
         instruction='This sitting is captured. Stop input; any later sitting needs fresh readiness. Full matrix and release review remain.'
     else:instruction='The automatic tracking matrix is captured. Input is complete; comparison and release review remain.'
@@ -520,7 +553,8 @@ def main():
     parser=argparse.ArgumentParser();sub=parser.add_subparsers(dest='action',required=True)
     for action in ['prepare','prepare-s2','verify','stage','cell','run']:
         item=sub.add_parser(action);item.add_argument('--root',type=Path,required=True)
-        if action=='prepare-s2':item.add_argument('--original',type=Path,required=True)
+        if action=='prepare-s2':
+            item.add_argument('--original',type=Path,required=True);item.add_argument('--refresh-builds',type=Path,required=True)
         if action=='stage':item.add_argument('--preflight',type=Path,required=True);item.add_argument('--operator',type=Path,required=True)
         if action=='cell':
             item.add_argument('--key',required=True);item.add_argument('--execution-deadline',type=float,required=True)

@@ -170,7 +170,16 @@ The original automatic same-key path is stopped because opening B backgrounded A
 bytes. Its CLI permits only `prepare`, `verify` and `build`, with `--root <root>`;
 preparation also requires `--definition <reviewed-definition>`. This procedure does
 not admit native execution. Read the [preparation owner](../../../DatadogRUM/MultiSceneSupport/Results/EXP-225-human-setup-preparation.json)
-before scheduling a separately reviewed session and discovering its destination.
+for the existing qualified product and reviewed explicit execution wrapper.
+
+`same_key_execution.py prepare --original QUALIFIED_HUMAN_BUILD --root FRESH`
+freezes the current host helpers without rebuilding that product. Review and
+controls bind `execution-plan.json`. Start its local operator page, then supply
+fresh page/device/mode readiness to `same_key_execution.py run --root FRESH
+--device DISCOVERED_ID --os VERSION --mode swift --readiness RECEIPT`. This selects
+`human_setup=True` and `same_key_contract` explicitly. ObjC requires a qualified
+Swift predecessor on the same device/runtime. The automatic activation CLI remains
+stopped. The wrapper does not prepare the residual S3 gesture matrix.
 
 The optional fixture mode waits while the operator arranges both windows. A fresh
 release reply triggers native capture of both scene/window/controller chains and

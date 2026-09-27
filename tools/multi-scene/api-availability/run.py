@@ -18,14 +18,16 @@ import contract
 shared=build.shared
 
 
-def run(root, udid, os_version, mode, attempt=None, *, qualification=None, human_setup=False):
+def run(root, udid, os_version, mode, attempt=None, *, qualification=None, human_setup=False,
+        human_verify=None, prompt_channel=None, output_root=None):
     contract.require(type(human_setup) is bool and (not human_setup or qualification is not None), 'invalid human setup mode')
     if human_setup:
         import same_key_human as human_preparation
-        human_preparation.verify(root)
+        verify_human=human_verify or (lambda:human_preparation.verify(root))
+        verify_human()
     plan=build.verify(root); built=shared.read(root/'simulator/product.json')
     app=Path(built['path']); contract.require(shared.product(app,build.BUNDLE)==built['product'],'changed product')
-    cells=root/'cells'; cells.mkdir(exist_ok=True)
+    cells=(output_root or root)/'cells'; cells.mkdir(exist_ok=True)
     contract.require(attempt is None or re.fullmatch(r'[a-z0-9][a-z0-9-]{0,31}',attempt), 'invalid attempt label')
     folder=cells/(os_version+'-'+mode+('-'+attempt if attempt else '')); folder.mkdir()
     run_id=str(uuid.uuid4()); started=time.time(); deadline=started+(1800 if human_setup else 300)
@@ -124,7 +126,7 @@ def run(root, udid, os_version, mode, attempt=None, *, qualification=None, human
     barrier=None; human_idle=False; release_attempted=False; cleanup_deadline=None; launch_attempted=False
     def admit_api(record):
         nonlocal deadline
-        human_preparation.verify(root)
+        verify_human()
         contract.require(human_setup and summary['execution_deadline'] is None and time.time()<summary['setup_deadline'],
                          'human API admission is consumed or late')
         deadline=record['execution_deadline']
@@ -182,7 +184,7 @@ def run(root, udid, os_version, mode, attempt=None, *, qualification=None, human
         pid=int(match[1]);summary['pid']=pid;launch_published.set()
         if human_setup:
             barrier=same_key_setup.Barrier(folder, container/'Documents',
-                dict(run_id=run_id, source=plan['source'], pid=pid), summary['setup_deadline'])
+                dict(run_id=run_id, source=plan['source'], pid=pid), summary['setup_deadline'], prompt_channel=prompt_channel)
         while not output.exists():
             if human_setup:barrier.poll(admit_api)
             contract.require(time.time()<deadline,'result receipt deadline expired')
@@ -243,7 +245,7 @@ def run(root, udid, os_version, mode, attempt=None, *, qualification=None, human
             contract.require(build.protected()==plan['protected'],'protected workspace changed')
             contract.require({n:shared.sha(Path(__file__).parent/n) for n in helpers}==helpers,'runner/oracle changed during cell')
             build.verify(root)
-            if human_setup:human_preparation.verify(root)
+            if human_setup:verify_human()
             close_server(cleanup_deadline)
             summary['cleanup']='PASS'
         except Exception as error: summary['cleanup']='FAILED';summary['cleanup_failure']=type(error).__name__+': '+str(error)

@@ -455,6 +455,16 @@ It proves a human-observed display transition after the prompt; it does not prov
 the precise Device Hub gesture or its timestamp. No automated input worker runs.
 Backend requests stream directly to the existing connector and retain their first
 published clock; raw responses, validation, publication and cleanup stay bounded.
+Changing COUNT/search inventories are retained as separate complete attempts and
+repolled only within that original clock. The connector never deduplicates rows to
+make counts pass. Malformed/truncated data and duplicate or foreign ownership still
+reject; valid native behavior remains available for separate collection assessment.
+
+Run the local `human_operator.py` page for `RUNTIME/operator`. The runner publishes
+actual prompts and waiting states directly, with request-bound release controls.
+Before each cell, `operator-ready-ARM-MODE.json` must bind that live page, exact plan,
+device, `ARM-MODE` and fresh user readiness. Missing readiness stops before the
+cell reservation. Backend/authentication preflight precedes the human invitation.
 
 Prepare and review before execution. `verify --runtime-root PATH --plan-sha256 SHA`
 checks the runtime identity. Only after live environment/authentication preflight

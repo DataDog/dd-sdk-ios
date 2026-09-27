@@ -62,11 +62,11 @@ def native_idle(data, checkpoint, request_bytes, identity, binding):
         sequence=values[0]['sequence'],checkpoint_sha256=hashlib.sha256(encoded(checkpoint)).hexdigest())
 
 
-def fence(collector, out, identity, deadline):
+def fence(collector, out, identity, deadline, *, device_label='iPad'):
     folder=Path(out)/'human-release';folder.mkdir();limit=min(deadline-45,time.time()+180)
     require(time.time()+1<limit,'no budget for operator release; defer teardown')
     request=dict(kind='HUMAN_RELEASE_REQUIRED',request_id=str(uuid.uuid4()),run_id=identity['run_id'],
-        issued_at=time.time(),deadline=limit,instruction='The test stopped. Release all fingers from the iPad, stop interacting, and reply Released in this conversation. The app will remain open until release is verified.')
+        issued_at=time.time(),deadline=limit,instruction='The test stopped. Release all fingers from the '+device_label+', stop interacting, and reply Released in this conversation. The app will remain open until release is verified.')
     path=folder/'request.json';raw=encoded(request);atomic(path,raw)
     print(json.dumps(dict(human_release=dict(request_path=str(path),**request))),flush=True)
     reply_path=folder/'operator-released.json'

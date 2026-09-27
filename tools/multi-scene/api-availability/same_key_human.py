@@ -39,7 +39,7 @@ def members():
     return {str(path.relative_to(build.shared.REPO)): build.shared.sha(path) for path in sorted(paths)}
 
 
-def verify(root):
+def verify(root, *, frozen_only=False):
     build.protected = protected
     bound = build.shared.read(root/'human-inputs.json')
     definition = bound['definition']
@@ -53,7 +53,9 @@ def verify(root):
     build.require(result['automatic_path'] == 'STOPPED_NO_EQUIVALENT_RETRY' and result['cleanup']['verdict'] == 'PASS',
                   'original native path not stopped/clean')
     build.require(bound['workspace_transition'] == reference(build.shared.REPO/TRANSITION)
-                  and bound['helpers'] == members() == build.shared.tree(root/'helpers'), 'human preparation helpers changed')
+                  and bound['helpers'] == build.shared.tree(root/'helpers'), 'human preparation helpers changed')
+    if not frozen_only:
+        build.require(bound['helpers'] == members(), 'current human preparation helpers changed')
     plan = build.verify(root)
     build.require(plan['source'] == same_key.SOURCE and plan['multiple_scenes'] is True
                   and plan['native_admitted'] is False, 'human source/mode differs')

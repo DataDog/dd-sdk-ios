@@ -4,8 +4,10 @@ import json
 from pathlib import Path
 from types import SimpleNamespace
 import tempfile
+import contextlib
+import time
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 import human_runtime as runtime
 from acceptance_common import Rejected
 
@@ -95,10 +97,12 @@ class S2PreparationControls(unittest.TestCase):
             products={r['build']+'-'+r['framework']+('-multi' if r['multiple_scenes'] else '-single'):{'identity':runtime.cell_key(r)} for r in matrix}
             base={'helpers':{contract:runtime.shared.sha(frozen),decoder:'original decoder'},'contract':{'fixed':'original'},
                   'build_plan_sha256':'original-build','build_receipts':{'original':'hash'},'products':products}
+            refresh=Path(temp)/'refresh';refresh.mkdir();runtime.shared.save(refresh/'refresh-plan.json',{'immutable':'passive observer refresh'})
             with patch.object(runtime.human_sessions,'original',return_value=base), \
+                 patch.object(runtime.human_fixture_refresh,'products',return_value=products), \
                  patch.object(runtime,'helper_members',return_value={contract:'later-live-contract',decoder:runtime.shared.sha(runtime.shared.REPO/decoder)}), \
                  patch.object(runtime.human_sessions,'activate_contract_file') as activate:
-                runtime.prepare_s2(SimpleNamespace(root=root,original=source))
+                runtime.prepare_s2(SimpleNamespace(root=root,original=source,refresh_builds=refresh))
                 plan=runtime.verify(root)
                 self.assertEqual(plan['kind'],runtime.S2_KIND);self.assertEqual(len(plan['matrix']),12)
                 self.assertEqual(len(plan['products']),6);self.assertFalse(plan['native_admitted'])
@@ -216,6 +220,47 @@ class FinalVerdictControls(unittest.TestCase):
     def test_descendant_reaped_after_teardown_does_not_retroactively_qualify_cleanup(self):
         runtime.shared.save(self.root/'cell-driver.supervisor.json',{'state':'PASS','remaining':[],'before':[1234]})
         self.assertEqual(self.final()['cleanup'],'INVALID')
+
+
+class FailedInputRunner(unittest.TestCase):
+    def exercise(self,released):
+        with tempfile.TemporaryDirectory() as temp,contextlib.ExitStack() as stack:
+            root=Path(temp);(root/'runtime/cells').mkdir(parents=True);installed=root/'app';installed.mkdir();documents=root/'data/Documents';documents.mkdir(parents=True)
+            selected=runtime.FIRST;key=runtime.cell_key(selected);now=time.time()
+            stage=dict(runtime_plan_sha256='plan',stage_id='stage',devices={'regular':{'udid':'device'}})
+            product=dict(path=str(installed),bundle='task.app',product={'executable':'Fixture'})
+            plan=dict(products={'baseline-27.1-UIKit-single':product},contract={'cleanup_seconds':600})
+            runtime.shared.save(root/'build-plan.json',{'arms':{'baseline-27.1':{'revision':runtime.shared.ARMS['A']}}})
+            stack.enter_context(patch.object(runtime,'reviewed',return_value=(plan,'review')))
+            stack.enter_context(patch.object(runtime,'admit_cell',return_value=(selected,stage,now,now+600,now+1200)))
+            stack.enter_context(patch.object(runtime,'device_snapshot',return_value={'udid':'device'}))
+            stack.enter_context(patch.object(runtime.shared,'apps',return_value={}))
+            stack.enter_context(patch.object(runtime.transport,'display',return_value=b'actual display'))
+            stack.enter_context(patch.object(runtime.shared,'product',return_value=product['product']))
+            stack.enter_context(patch.object(runtime.shared,'process',return_value=str(installed/'Fixture')))
+            responses=[SimpleNamespace(returncode=1),SimpleNamespace(stdout=str(installed).encode()),SimpleNamespace(stdout=str(documents.parent).encode())]
+            stack.enter_context(patch.object(runtime.shared,'capture',side_effect=responses))
+            def command(argv,out,label,**kwargs):
+                if label=='launch':(out/'launch.log').write_text('task.app: 42\n')
+            stack.enter_context(patch.object(runtime.shared,'command',side_effect=command))
+            collector=Mock();collector.prompt_issued=True;collector.perform.side_effect=ValueError('native effect never completed')
+            stack.enter_context(patch.object(runtime.capture,'Collector',return_value=collector))
+            stack.enter_context(patch.object(runtime.journey,'steps',return_value=[dict(kind='tap',phase='one')]))
+            stack.enter_context(patch.object(runtime.human_processes,'quiesce',return_value={'state':'PASS','remaining':[]}))
+            order=[]
+            def guard(*args):
+                order.append('release-and-native-idle')
+                if not released:raise ValueError('release unconfirmed; preserve app')
+            stack.enter_context(patch.object(runtime.capture.human_release,'guard',side_effect=guard))
+            cleanup=stack.enter_context(patch.object(runtime,'cleanup',side_effect=lambda *args:order.append('teardown') or []))
+            stack.enter_context(patch('builtins.print'))
+            self.assertEqual(runtime.execute_cell(SimpleNamespace(root=root,key=key,execution_deadline=now+600,cleanup_deadline=now+1200)),1)
+            result=runtime.shared.read(root/'runtime/cells'/key/'cell-result.json')
+            self.assertEqual(result['scenario'],'UNQUALIFIED');self.assertEqual(result['state'],'INVALID')
+            if released:self.assertEqual(order,['release-and-native-idle','teardown']);self.assertEqual(result['cleanup'],'PASS')
+            else:cleanup.assert_not_called();self.assertEqual(result['cleanup'],'INVALID')
+    def test_unconfirmed_human_input_preserves_app_through_actual_cell_finally(self):self.exercise(False)
+    def test_confirmed_native_idle_allows_cleanup_without_repairing_scenario(self):self.exercise(True)
 
 
 if __name__=='__main__':unittest.main()

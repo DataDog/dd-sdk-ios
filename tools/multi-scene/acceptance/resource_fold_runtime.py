@@ -18,6 +18,8 @@ import resource_fold_reuse as reuse
 import resource_fold_runtime_variant as variant
 import s2_hosting_workflow as shared
 import resource_fold_scope as scoped
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'automatic-coverage'))
+import human_operator as operator
 
 STAGE='human-observed-resource-fold'
 CELLS=['A-automatic','A-registered','B-automatic','B-registered']
@@ -71,6 +73,8 @@ def helper_closure():
     # Generated code imports these helpers even though the generator uses text anchors.
     for name in ['resource_fold_human.py','s2_webview_runtime.py','s2_webview_contract.py','app_journey_inventory.py','app_journey_transport.py','acceptance_common.py']:
         path=folder/name;found[str(path.relative_to(shared.REPO))]=shared.sha(path)
+    path=folder/'resource_fold_gather.js';found[str(path.relative_to(shared.REPO))]=shared.sha(path)
+    path=Path(operator.__file__);found[str(path.relative_to(shared.REPO))]=shared.sha(path)
     return found
 
 
@@ -117,7 +121,8 @@ def prepare(args):
     scope_path=getattr(args,'scope_definition',None)
     scope=shared.read(scope_path) if scope_path else None
     if scope is not None:scoped.validate(scope,definition)
-    root.mkdir(parents=True);(root/'generated').mkdir();(root/'cells').mkdir()
+    root.mkdir(parents=True);(root/'generated').mkdir();(root/'cells').mkdir();(root/'operator').mkdir()
+    operator.publish(root/'operator',{'instruction':'Waiting for reviewed Resource/Trace admission and fresh readiness.'})
     helpers=helper_closure();shared.freeze_helpers(root,helpers)
     for name in GENERATED:
         original=source/'host'/name
@@ -214,17 +219,29 @@ def cleanup_allowed(cell,phase='pose'):
 
 
 class Tee:
-    def __init__(self,console,artifact):self.console=console;self.artifact=artifact
-    def write(self,text):self.artifact.write(text);self.artifact.flush();return self.console.write(text)
+    def __init__(self,console,artifact,sink=None):self.console=console;self.artifact=artifact;self.sink=sink;self.pending=''
+    def write(self,text):
+        self.artifact.write(text);self.artifact.flush()
+        if self.sink:
+            self.pending+=text
+            while '\n' in self.pending:
+                line,self.pending=self.pending.split('\n',1)
+                try:message=json.loads(line)
+                except ValueError:continue
+                if isinstance(message,dict):self.sink(message)
+        return self.console.write(text)
     def flush(self):self.artifact.flush();self.console.flush()
 
 
 def cell(args):
     root=args.runtime_root.resolve();plan=verify_runtime(root,args.plan_sha256,deep=True)
+    name=args.arm+'-'+args.mode
+    readiness=shared.read(root/('operator-ready-'+name+'.json'))
+    operator.ready(root/'operator',readiness,root/'runtime-plan.json',device=args.device,mode=name)
     origin=Path(plan['contract']['original_root']);matrix=origin/'matrix'
     prefix=root/'cells'/(args.arm+'-'+args.mode);receipt={'started_at':time.time(),'exit_code':1}
     with prefix.with_suffix('.driver.stdout.log').open('x') as out,prefix.with_suffix('.driver.stderr.log').open('x') as err:
-        with contextlib.redirect_stdout(Tee(sys.stdout,out)),contextlib.redirect_stderr(Tee(sys.stderr,err)):
+        with contextlib.redirect_stdout(Tee(sys.stdout,out,lambda value:operator.forward(root/'operator',value,context='Resource/Trace '+name))),contextlib.redirect_stderr(Tee(sys.stderr,err)):
             try:
                 path,admission=reserve(root,args.arm,args.mode,args.device,args.stage_sha256)
                 receipt.update(admission=ref(path),plan_sha256=args.plan_sha256)
@@ -239,6 +256,7 @@ def cell(args):
             except BaseException as error:receipt['failure']=str(error);traceback.print_exc()
             finally:
                 receipt['finished_at']=time.time();save(prefix.with_suffix('.driver-receipt.json'),receipt)
+                operator.publish(root/'operator',{'instruction':'This Resource/Trace cell has stopped. Do not repeat input; evidence and cleanup are being assessed.'})
     return receipt['exit_code']
 
 

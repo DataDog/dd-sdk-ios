@@ -80,6 +80,28 @@ class CellAdmissionControls(unittest.TestCase):
 
 
 class CleanupControls(unittest.TestCase):
+    def test_coverage_final_copy_contains_mapper_tail_written_before_stop(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);out=root/'out';out.mkdir();documents=root/'Documents';documents.mkdir();path=documents/'events.jsonl';path.write_text('prefix\n')
+            device=dict(udid='device',state='Booted',runtime='27.1',deviceTypeIdentifier='Duo');commands=[]
+            def command(argv,**kwargs):
+                commands.append(argv)
+                if argv[2]=='terminate':path.write_text('prefix\nlast mapper row\n')
+            with patch.object(d.shared,'capture',side_effect=command),patch.object(d.shared,'process',return_value=''), \
+                 patch.object(d.shared,'apps',return_value={}),patch.object(d.shared,'devices',return_value=device):
+                errors=d.cleanup_cell(root,out,documents,{},'device',device,{},None,42,None,'PASS',time.time()+60,
+                    preserve_after_stop=True,task_absent=lambda _:True,verify_source=lambda _:None)
+            self.assertEqual(errors,[])
+            self.assertEqual((out/'native-before-stop/events.jsonl').read_text(),'prefix\n')
+            self.assertEqual((out/'native-preserved/events.jsonl').read_text(),'prefix\nlast mapper row\n')
+            self.assertEqual([argv[2] for argv in commands],['terminate','uninstall'])
+    def test_coverage_failed_final_copy_retains_task_container(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);documents=root/'Documents';documents.mkdir();out=root/'out';out.mkdir()
+            with patch.object(d.shutil,'copytree',side_effect=OSError('copy failed')),patch.object(d.shared,'capture') as command, \
+                 patch.object(d.shared,'process',return_value=''):
+                errors=d.cleanup_cell(root,out,documents,{},'device',{}, {},None,42,None,'INVALID',time.time()+60,preserve_after_stop=True)
+            self.assertTrue(errors);self.assertEqual([call.args[0][2] for call in command.call_args_list],['terminate'])
     def test_late_callback_does_not_skip_removal(self):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp);out=root/'out';out.mkdir();documents=root/'Documents';documents.mkdir();(documents/'evidence.json').write_text('late callback')

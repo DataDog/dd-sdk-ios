@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
   "work_item": "S2 finite input preparation",
-  "status": "THREE_REMAINING_PACKAGES; HARNESS_REPAIRS_REQUIRED; NO_ACTIVE_SESSION",
-  "updated_at": "2026-09-27T10:46:35.422711+00:00",
+  "status": "THREE_REMAINING_PACKAGES; HARNESS_REVIEW_COMPLETE; NATIVE_UNADMITTED",
+  "updated_at": "2026-09-27T12:15:36.917117+00:00",
   "owner": "Harness implementer; root owns native lane",
   "scope_owner": "Results/S2-release-gate-review-20260925.json; release-gates.json releases.S2.execution_packages",
   "source_pair": {
@@ -30,9 +30,9 @@
       "evidence_owner": "Results/S2-capture-contract-preparation.json",
       "remaining": "12 Duo cells: UIKit/SwiftUI stack/split for baseline built26.5, baseline built27.1 and candidate built27.1. At most4 ordinary controls only if needed; no extra manual split or physical resize matrix.",
       "decisive_test": "Actual control/navigation/fold effect and exact view/action owner parity. Split journeys supply H14. Existing naming/control limitations remain explicit.",
-      "environment": "Xcode27.1 Duo27.1; six existing products from four genuine source/compiler builds",
-      "preparation": "Existing products and recorder controls remain preparation evidence. The actual S2 plan is not supported by the older pair-only sitting scheduler.",
-      "blocker": "HUMAN-01/03/05: safe failure cleanup, asynchronous Home collection and actual S2 sitting support; then fresh operator/Duo readiness."
+      "environment": "Xcode27.1 Duo27.1; six refreshed passive-observer products from three original source/compiler pairs (26.5 and27.1).",
+      "preparation": "Reviewed actual S2 sitting support: one to three complete cells, exact predecessor/series claims, passive input-idle witness, delayed Home inventory and guarded cleanup. First sitting selects one baseline cell.",
+      "blocker": "Fresh Duo/operator readiness and first planned baseline native qualification."
     },
     {
       "id": "transitions",
@@ -47,8 +47,9 @@
       "environment": "Duo27.1 preferred; one eligible physical UIKit pair is the scoped unsupported-input fallback, with no Duo-hardware claim.",
       "qualified_baseline": "Results/S2-H11-H13-local-baseline.json; no UIKit baseline repeat due",
       "prepared_continuation": "Results/S2-H11-H13-local-continuation.json; one reviewed physical B cell using existing signed products",
-      "blocker": "HUMAN-02/03: delayed callback-work and Home event collection must qualify before fresh iPad/operator readiness for the one candidate. Saved baseline and completed SwiftUI pairs remain accepted.",
-      "swiftui_preparation": "Results/S2-H12-H13-swiftui-duo.json"
+      "blocker": "Fresh connected/unlocked physical iPad and operator readiness for the one UIKit candidate.",
+      "swiftui_preparation": "Results/S2-H12-H13-swiftui-duo.json",
+      "preparation": "Reviewed delayed callback/Home collection, actual saved-capture replay and immutable post-stop evidence. Existing signed products reused."
     },
     {
       "id": "network",
@@ -61,8 +62,8 @@
       "remaining": "Four cells: baseline/candidate crossed with automatic/registered URLSession. Navigation, rollover and integrated-app Resources already have their own accepted evidence.",
       "decisive_test": "Held work crosses actual Closed/Open/Closed display changes with exact Resource/Error start owners, registered metrics, Trace IDs/carriers/correlation, complete RUM/APM inventory and cleanup.",
       "environment": "Xcode27.1 Duo27.1 and authenticated RUM/APM; both original products requalified without rebuilding",
-      "preparation": "Reviewed current timing/workspace scope and request-clock correction;49 Python/6 connector controls.",
-      "blocker": "HUMAN-04: changing-index collection and direct operator prompt/readiness binding must qualify before fresh Duo/RUM/APM/operator readiness. Reuse navigation/rollover; no equivalent diagnostics."
+      "preparation": "Reviewed bounded full-inventory collection, actual adapter controls and direct operator prompt/readiness binding. Existing products unchanged.",
+      "blocker": "Fresh Duo and authenticated RUM/APM readiness, then per-cell operator readiness; four cells remain."
     }
   ],
   "completed_packages": [
@@ -116,13 +117,13 @@
   "session_splitting": {
     "allowed": true,
     "safe_boundary": "A complete qualified cell or pair with durable evidence and verified cleanup; never mid-gesture.",
-    "coverage": "Not yet implemented for AUTOMATIC_S2_RUNTIME: the older pair-only scheduler rejects the S2 triplets and is bypassed by the current run kind. Close HUMAN-05 before promising split sittings.",
+    "coverage": "Implemented AUTOMATIC_S2_SESSION: one to three untouched complete cells in the fixed triplet order. A verified completed predecessor carries accepted cells; consumed claims/readiness cannot repeat. First sitting contains one cell (33 planned prompts, plus any required Sidebar reveal/display restoration).",
     "transitions": "Reviewed physical candidate-only continuation reuses its saved baseline; other continuations require explicit source-bound preparation.",
     "network": "Current four-cell stage is fixed. Splitting it requires a reviewed continuation for only missing cells; never renew the old clock.",
     "duration": "Budgets are operational maxima, not forecasts of user time."
   },
   "operator_readiness": {
-    "state": "HOLD_FOR_PACKAGE_HARNESS_REPAIRS",
+    "state": "FRESH_PACKAGE_READINESS_REQUIRED",
     "active_native": false,
     "fixed_stage_started": false,
     "fresh_readiness_required": true
@@ -135,7 +136,8 @@
     "network": "Existing fresh-process entrypoint PASS.",
     "transitions": "Reviewed helper refresh PASS; only two helper hashes changed. Default human/Home and source/product/cleanup contract preserved.",
     "native_runs": 0,
-    "limit": "Historical entrypoint/hash checks only; these do not exercise the delayed-event, failed-human-input or S2 sitting paths found by the admission review."
+    "limit": "Earlier entrypoint checks remain historical. The repair loop owns actual-runner controls, three passive-observer builds and fresh helper-bound preparations; none establish native acceptance."
   },
-  "admission_review": "Results/human-session-review-20260927.json"
+  "admission_review": "Results/human-session-review-20260927.json",
+  "repair_loop": "Results/human-harness-repair-loop-20260927.json"
 }

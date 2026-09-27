@@ -162,7 +162,7 @@ def collect_session(out, identity, local, started, deadline):
     require(False,'session polling bound exhausted')
 
 
-def cleanup_cell(root, out, documents, identity, device_id, device, original_apps, initial, pid, terminal, scenario, deadline, *, task_bundle=None, task_absent=None, verify_source=None, recapture=None):
+def cleanup_cell(root, out, documents, identity, device_id, device, original_apps, initial, pid, terminal, scenario, deadline, *, task_bundle=None, task_absent=None, verify_source=None, recapture=None, preserve_after_stop=False):
     bundle=task_bundle or build_workflow.BUNDLE
     absent_check=task_absent or absent
     verify_check=verify_source or build_workflow.verify
@@ -173,11 +173,19 @@ def cleanup_cell(root, out, documents, identity, device_id, device, original_app
             require(time.time()<deadline,'cleanup deadline expired');return action()
         except Exception as error:errors.append(label+': '+str(error));return None
     if documents and documents.exists():
-        attempt('preserve native evidence',lambda:shutil.copytree(documents,out/'native-preserved'))
+        attempt('preserve native evidence',lambda:shutil.copytree(documents,out/('native-before-stop' if preserve_after_stop else 'native-preserved')))
         if terminal is not None and scenario=='PASS':
             attempt('terminal recapture',lambda:recapture_check((documents/'evidence.json').read_bytes(),terminal,identity))
     # Evidence failures must not skip task-only termination and removal.
     attempt('terminate task',lambda:shared.capture(['xcrun','simctl','terminate',device_id,bundle],timeout=min(30,deadline-time.time()),check=False))
+    if preserve_after_stop and documents and documents.exists():
+        def preserve_stopped():
+            require(pid is None or not shared.process(pid),'task still running before final evidence preservation')
+            shutil.copytree(documents,out/'native-preserved')
+        attempt('preserve native evidence',preserve_stopped)
+        # Do not destroy the only surviving evidence if the final copy failed.
+        if not (out/'native-preserved').is_dir() or any(e.startswith('preserve native evidence:') for e in errors):
+            return errors or ['preserve native evidence: final stopped copy unavailable']
     attempt('remove task',lambda:shared.capture(['xcrun','simctl','uninstall',device_id,bundle],timeout=min(30,deadline-time.time()),check=False))
     attempt('task absence',lambda:require(absent_check(device_id) and (pid is None or not shared.process(pid)),'task app/process remains'))
     attempt('app inventory',lambda:require(shared.apps(device_id)==original_apps,'original app inventory changed'))

@@ -12,6 +12,7 @@ import physical_release
 import physical_transition
 import physical_background
 import physical_cleanup
+import local_event_collection
 from capture_io import atomic, encoded
 
 shared=io.shared
@@ -31,7 +32,7 @@ def interactive_progress(rows, before, *, expected_screen):
 
 class Collector(driver.Collector):
     def __init__(self,*,remote,bundle,require_finalization=False,**kwargs):
-        super().__init__(device=remote.identifier,**kwargs)
+        super().__init__(device=remote.identifier,local_process=False,**kwargs)
         self.remote=remote;self.bundle=bundle;self.downloads=self.output.parent/'downloads';self.downloads.mkdir()
         self.transfer_sequence=0;self.last_process=None;self.process_checked=0;self.process_path=None
         require(type(require_finalization) is bool, 'invalid physical finalization option')
@@ -163,8 +164,20 @@ class Collector(driver.Collector):
                     'View appearance captured. Waiting for transition callback evidence; do not repeat the gesture.'))), flush=True)
                 progress_reported = True
             return completed
-        self.wait(finished,deadline);print(json.dumps(dict(human_status=dict(instruction='Gesture observed. Wait while its ownership is captured.'))),flush=True)
-        require(time.time()+self.budget['settle_seconds']<deadline,'no effect capture reserve');time.sleep(self.budget['settle_seconds'])
+        completion=self.wait(finished,deadline)
+        print(json.dumps(dict(human_status=dict(instruction='Gesture observed. Wait while its ownership is captured.'))),flush=True)
+        # The native completion is already retained. Mapper serialization can
+        # arrive later; no additional gesture or fixed settling delay is needed.
+        deadline=min(self.deadline,time.time()+self.budget.get('event_collection_seconds',120))
+        def callback_ready():
+            rows=self.pending()
+            values=[r for r in rows if r['kind']=='rum' and r['payload'].get('type')=='action'
+                    and r['payload'].get('context',{}).get('transition_callback')==completion['payload']['callback_id']]
+            require(len(values)<=1,'duplicate mapped callback action')
+            if not values:return None
+            return driver.ownership.native.callback_work(rows,dict(callback_id=completion['payload']['callback_id'],
+                completion_sequence=completion['sequence']))
+        self.wait(callback_ready,deadline)
         after,after_folder=self.snapshot(phase+'.effect',deadline);driver.journey.visible(after,after_screen,self.binding)
         require(not any(r['kind'] in ['human_callback','native_input','native_background'] for r in self.evidence
             if before['sequence']<r['sequence']<after['sequence']),'unplanned input inside interactive boundary')
@@ -197,4 +210,16 @@ class Collector(driver.Collector):
             physical_background.validate_receipt(json.loads(proof),run_id=self.run,pid=self.pid,
                 checkpoint='background-'+str(event['sequence']))
             atomic(folder/'finalization-receipt.json',proof)
-        self.evidence=rows;self.live(deadline);return rows
+        # A background writer checkpoint binds native Home, not SDK queue drain.
+        # View stops and their counted Actions can be appended after that prefix.
+        prefix=data[:receipt['byte_count']]
+        collection_deadline=min(self.deadline,time.time()+self.budget.get('event_collection_seconds',120))
+        callbacks=[r['native']['callback_id'] for r in self.transition_results.values()]
+        def complete():
+            observed=self.download('events.jsonl',collection_deadline)
+            return local_event_collection.terminal_rows(observed,run_id=self.run,prefix=prefix,callbacks=callbacks)
+        self.evidence=self.wait(complete,collection_deadline)
+        atomic(folder/'collection.json',encoded(dict(state='LOCAL_HOME_INVENTORY_COLLECTED',
+            prefix_sha256=hashlib.sha256(prefix).hexdigest(),sequence=self.evidence[-1]['sequence'],
+            deadline=collection_deadline,finished_at=time.time())))
+        self.live(collection_deadline);return self.evidence

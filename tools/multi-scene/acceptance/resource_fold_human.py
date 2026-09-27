@@ -81,7 +81,9 @@ def observe(request_path, *, host, rules, display):
             'input_started_at':prompt['issued_at'],'input_finished_at':finished,'input_returned_at':finished,
             'terminal':ref(terminal),'human_before_display':current,'human_after_display':observed,'human_prompt':ref(prompt_path),
             'human_before_command':ref(folder/'human-before.json'),'human_after_command':ref(folder/('human-observed-'+str(index-1)+'.json'))}
-        path=folder/'human-input-proof.json';host.save(path,value);return path
+        path=folder/'human-input-proof.json';host.save(path,value)
+        print(json.dumps({'human_status':{'instruction':'Display change captured. Wait while ownership evidence is collected.'}}),flush=True)
+        return path
     raise ValueError('human fold effect missing at original deadline')
 
 

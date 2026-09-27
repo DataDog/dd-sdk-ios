@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+import io
+from types import SimpleNamespace
 from unittest.mock import patch
 from acceptance_common import Rejected
 import resource_fold_runtime as r
@@ -100,5 +102,21 @@ class ProjectionControls(unittest.TestCase):
             with self.subTest(key=key),self.assertRaises(Rejected):r.validate_contract(changed)
         changed=copy.deepcopy(contract);changed['runtime_stage']['total_seconds']+=1
         with self.assertRaises(Rejected):r.validate_contract(changed)
+
+
+class PromptDelivery(unittest.TestCase):
+    def test_fragmented_actual_runner_output_publishes_once_and_retains_original_bytes(self):
+        console=io.StringIO();artifact=io.StringIO();observed=[];stream=r.Tee(console,artifact,observed.append)
+        raw=json.dumps({'human_input':{'instruction':'Open once','deadline':100}})+'\n'
+        stream.write(raw[:12]);self.assertEqual(observed,[])
+        stream.write(raw[12:]);self.assertEqual(observed,[json.loads(raw)])
+        self.assertEqual(artifact.getvalue(),raw);self.assertEqual(console.getvalue(),raw)
+    def test_missing_operator_page_stops_actual_entrypoint_before_reservation(self):
+        with tempfile.TemporaryDirectory() as temp,patch.object(r,'verify_runtime',return_value={}), \
+             patch.object(r,'reserve') as native,patch.object(r.operator,'ready',side_effect=Rejected('page unavailable')):
+            root=Path(temp);r.save(root/'operator-ready-A-automatic.json',{})
+            with self.assertRaisesRegex(Rejected,'page unavailable'):
+                r.cell(SimpleNamespace(runtime_root=root,plan_sha256='plan',arm='A',mode='automatic',device='device'))
+            native.assert_not_called()
 
 if __name__=='__main__':unittest.main()

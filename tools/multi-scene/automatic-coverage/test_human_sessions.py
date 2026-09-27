@@ -32,6 +32,60 @@ class SelectionControls(unittest.TestCase):
         self.assertEqual(sessions.budget(self.matrix[:2], contract, runner), 4200)
         with self.assertRaises(Rejected): sessions.budget(self.matrix, contract, runner)
 
+    def test_actual_s2_triplets_can_pause_after_each_cell_without_repetition(self):
+        matrix=runner.s2_matrix(s.read(runner.build.OWNER),s.read(runner.REGISTER));done={}
+        for expected in matrix:
+            self.assertEqual(sessions.select_s2(matrix,done,1,runner),[expected])
+            done[runner.cell_key(expected)]={}
+        self.assertEqual(len(done),12)
+        with self.assertRaises(Rejected):sessions.select_s2(matrix,done,1,runner)
+    def test_s2_triplets_preserve_both_compiler_and_source_axes(self):
+        matrix=runner.s2_matrix(s.read(runner.build.OWNER),s.read(runner.REGISTER))
+        self.assertEqual([r['build'] for r in sessions.select_s2(matrix,{},3,runner)],['baseline-26.5','baseline-27.1','candidate-27.1'])
+        for done in [{runner.cell_key(matrix[1]):{}},{runner.cell_key(matrix[1]):{},runner.cell_key(matrix[0]):{}}]:
+            with self.assertRaises(Rejected):sessions.select_s2(matrix,done,1,runner)
+        for count in [0,4,True]:
+            with self.assertRaises(Rejected):sessions.select_s2(matrix,{},count,runner)
+
+    def test_master_runtime_cannot_admit_native_work_or_consume_readiness(self):
+        with tempfile.TemporaryDirectory() as temp,patch.object(runner,'reviewed',return_value=({'kind':runner.S2_KIND},'review')), \
+             patch.object(runner,'device_snapshot') as native:
+            with self.assertRaisesRegex(Rejected,'finite S2 sitting'):
+                runner.stage(SimpleNamespace(root=Path(temp)))
+            native.assert_not_called()
+
+
+class S2Preparation(unittest.TestCase):
+    def test_actual_prepare_freezes_one_cell_and_continuation_preserves_the_prefix(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp).resolve();master=root/'master';(master/'runtime/helpers').mkdir(parents=True)
+            matrix=runner.s2_matrix(s.read(runner.build.OWNER),s.read(runner.REGISTER))
+            base=dict(kind=runner.S2_KIND,matrix=matrix,helpers={},observer_refresh={'frozen':'builds'},
+                original_build_root='source',products={'unchanged':'products'},build_plan_sha256='build',build_receipts={},scope={},measurement={},
+                contract=dict(duo_cell_seconds=3600,regular_cell_seconds=1800,cleanup_seconds=600,stage_execution_seconds=14400))
+            s.save(master/'runtime/runtime-plan.json',base)
+            first=root/'first';series=root/'series'
+            with patch.object(runner,'verify',return_value=base),patch('builtins.print'):
+                sessions.prepare_s2(SimpleNamespace(root=first,original=master,previous=None,series=series,cells=1),runner)
+                plan=s.read(first/'runtime/runtime-plan.json')
+                self.assertEqual(plan['matrix'],matrix[:1]);self.assertEqual(plan['contract']['stage_execution_seconds'],4200)
+                sessions.verify(first,plan,runner)
+                altered=copy.deepcopy(plan);altered['products']={}
+                with self.assertRaises(Rejected):sessions.verify(first,altered,runner)
+                s.save(first/'runtime/session-complete.json',{'mock':'qualified cell receipt'})
+                accepted={runner.cell_key(matrix[0]):{'root':str(first)}}
+                second=root/'second'
+                # Predecessor validation itself has complete verdict/raw/claim
+                # controls below; this check exercises the actual S2 selector,
+                # preparation, helper freeze and inherited-prefix binding.
+                with patch.object(sessions,'completed',return_value=accepted):
+                    sessions.prepare_s2(SimpleNamespace(root=second,original=master,previous=first,series=None,cells=1),runner)
+                    following=s.read(second/'runtime/runtime-plan.json')
+                    self.assertEqual(following['matrix'],matrix[1:2]);self.assertEqual(following['inherited'],accepted)
+                    self.assertEqual(following['series'],plan['series']);sessions.verify(second,following,runner)
+                    wrong=copy.deepcopy(following);wrong['matrix']=matrix[:1]
+                    with self.assertRaises(Rejected):sessions.verify(second,wrong,runner)
+
 
 class SessionFixture(unittest.TestCase):
     def setUp(self):

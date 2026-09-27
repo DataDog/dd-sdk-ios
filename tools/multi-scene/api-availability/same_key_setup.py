@@ -63,12 +63,13 @@ def capture(raw, request_raw, identity, *, phase, owners=None):
 
 class Barrier:
     """The root runner owns calls; the input observer never changes deadlines."""
-    def __init__(self, folder, documents, identity, setup_deadline, api_seconds=300):
+    def __init__(self, folder, documents, identity, setup_deadline, api_seconds=300, *, prompt_channel=None):
         self.folder = Path(folder) / 'human-setup'; self.folder.mkdir()
         self.documents = Path(documents)
         self.identity = identity
         self.setup_deadline = setup_deadline
         self.api_seconds = api_seconds
+        self.prompt_channel = prompt_channel
         self.ready = None; self.start = None; self.owners = None
         self.setup_request = None
         self.operator_request = self.ask('setup', setup_deadline,
@@ -81,7 +82,9 @@ class Barrier:
                        run_id=self.identity['run_id'], issued_at=time.time(), deadline=deadline,
                        instruction=instruction)
         path = folder / 'request.json'; publish(path, request)
-        print(json.dumps(dict(human_setup=dict(phase=phase, request_path=str(path), **request))), flush=True)
+        message=dict(human_setup=dict(phase=phase, request_path=str(path), **request))
+        if self.prompt_channel is not None:self.prompt_channel(message)
+        print(json.dumps(message), flush=True)
         return path
 
     @staticmethod
@@ -123,6 +126,8 @@ class Barrier:
         admit(record)
         self.start = start
         publish(self.documents / 'setup-start.json', start)
+        if self.prompt_channel is not None:
+            self.prompt_channel({'human_status':{'instruction':'Both windows are captured. API ownership checks are running; do not interact.'}})
 
     def validate(self, native):
         contract.require(self.start is not None, 'API work before setup admission')

@@ -511,7 +511,7 @@
     "sha256": "1e9f9c0b02d0ed0ef1331f53bddfdedef3fdd47d50f397fd6f5e179f6047fc10",
     "acceptance": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/host-review-acceptance.json"
   },
-  "updated_at": "2026-09-25T12:21:16.801290+00:00",
+  "updated_at": "2026-09-27T12:15:36.917117+00:00",
   "input_diagnostic_definition": {
     "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/D1-input-diagnostic-definition.json",
     "sha256": "e5c9a6f5743a120680de3e692837cbfff400fdfb2277dac8bed61b53dc8156a0",
@@ -793,6 +793,40 @@
       },
       "native_admitted": false,
       "gate_closures": []
+    },
+    "s2_session_continuation": {
+      "state": "REVIEWED_FINITE_S2_SITTING_NATIVE_UNADMITTED",
+      "series": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/coverage-series-v2/series.json",
+        "sha256": "e1b180fd2f9a09aec081f76c7759b7edc02e38e4263ac836d1d0157867a14083"
+      },
+      "runtime_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/coverage-sitting-01-v2/runtime",
+      "plan": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/coverage-sitting-01-v2/runtime/runtime-plan.json",
+        "sha256": "d6a4ff08f2b6e588bdbcb4baa63a7dea53bbc3c113d9f3aee537147621354098"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/coverage-sitting-01-v2/runtime/review.json",
+        "sha256": "f5602e4fdc6601aa3ee5524ad94ef50cdac17b78587ed3e98d34a9ca853dc509"
+      },
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/coverage-sitting-01-v2/runtime/controls.json",
+        "sha256": "3e68940d2ee49924309f987d46e69c4fbe94c12d3f9fd03308f3d84f63c6b7f9"
+      },
+      "master_plan": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/coverage-master-v2/runtime/runtime-plan.json",
+        "sha256": "dedf36d78f8f6c7d1b9a3bfd2841f7ba035b939c61e9023438dda8ea8df1fc72"
+      },
+      "observer_refresh": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/coverage-observer/refresh-plan.json",
+        "sha256": "8d8cd7df96cee3b97883ba5f952fe9e2e89db2faea80d7f7206e40e58b8fce22"
+      },
+      "cells": 1,
+      "remaining_universe": 12,
+      "max_cells_per_sitting": 3,
+      "native_admitted": false,
+      "repair_loop": "Results/human-harness-repair-loop-20260927.json",
+      "gate_closures": []
     }
   },
   "s2_acceptance_review": {
@@ -827,9 +861,10 @@
     "remaining": "Fresh operator readiness and first baseline input qualification; stopped automatic-input paths remain stopped. Original40-cell plans and failures remain immutable."
   },
   "current_capture_contract": {
-    "state": "REVIEWED_PREPARATION_ONLY",
+    "state": "REVIEWED_HARNESS_AND_OBSERVER_BUILDS_NATIVE_UNADMITTED",
     "owner_record": "Results/S2-capture-contract-preparation.json",
-    "scope": "Recorder durations are diagnostic; exact ownership/order and malformed/missing receipt rejection remain strict. Original attempts and legacy runtime plans remain immutable.",
+    "repair_loop": "Results/human-harness-repair-loop-20260927.json",
+    "scope": "Recorder timing is diagnostic. Exact stable ownership, native order, finite View/Action inventory and released native input remain required. Original attempts and legacy runtime plans are immutable.",
     "native_runs": 0,
     "gate_closures": []
   }

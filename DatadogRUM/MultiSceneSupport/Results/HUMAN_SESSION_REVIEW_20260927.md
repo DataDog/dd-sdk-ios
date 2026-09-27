@@ -1,10 +1,18 @@
 # Future human-session review
 
-**Hold the three prepared S2 human packages until the harness findings below are repaired.**
-The scenarios address the remaining release risks, but the current preparations
-can still reject valid captures or end an app while the operator is interacting.
-S3 same-key setup remains preparation only; its native wrapper is not yet bound.
-These are harness/readiness findings, not evidence of an SDK regression.
+**The scoped repair loop is complete; native qualification is still pending.**
+The [repair record](human-harness-repair-loop-20260927.json) owns the four review
+cycles,262 offline controls, three passive-observer builds and successful replay of
+the saved physical capture. No actionable scoped finding remains. The
+[input index](S2-input-session-preparation.json) routes to the current preparations;
+fresh package prerequisites precede the first needed native cell. No SDK gate closed.
+
+The findings below describe the original reviewed state. Their reproductions and
+all original verdicts are preserved. A later full-object metadata comparison also
+rejected valid View/Action schema differences; the repaired collector compares
+shared stable ownership fields. S3 now has an explicit reviewed human-setup wrapper;
+the residual S3 gesture matrix remains unprepared. These were harness findings,
+not evidence of an SDK regression.
 
 Reviewed at SDK workspace `621b7f12`, using the exact frozen coverage, physical
 candidate and Resource/Trace runners named in the

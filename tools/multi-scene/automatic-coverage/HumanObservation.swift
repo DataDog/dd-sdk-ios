@@ -16,6 +16,9 @@ import SwiftUI
     private var boundSceneID: String?
     private let scrollWitnesses = NSMapTable<UIScrollView, ScrollWitness>(keyOptions: .weakMemory, valueOptions: .strongMemory)
     private(set) var currentRequestID: String?
+    private var currentPhase: String?
+    private var currentRequestHash: String?
+    private var backgroundObserver: NSObjectProtocol?
 
     static func identity(_ object: AnyObject?) -> String {
         guard let object = object else { return "nil" }
@@ -69,6 +72,11 @@ import SwiftUI
         }
     }
     func start() {
+        backgroundObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in self?.recordHomeIdle() }
+        }
         requests.start { [weak self] requestID, phase, fingerprint, error in
             Task { @MainActor in
                 guard let self = self else { return }
@@ -84,8 +92,11 @@ import SwiftUI
             fail("native content window was not bound before snapshot", fingerprint: fingerprint); return
         }
         currentRequestID = requestID
-        let event = ObservationStore.shared.append("human_snapshot", ["request_id": requestID, "request_sha256": fingerprint,
-            "phase": phase, "uptime_ns": DispatchTime.now().uptimeNanoseconds, "topology": topology(includeControls: true)])
+        currentPhase = phase; currentRequestHash = fingerprint
+        var payload: [String: Any] = ["request_id": requestID, "request_sha256": fingerprint,
+            "phase": phase, "uptime_ns": DispatchTime.now().uptimeNanoseconds, "topology": topology(includeControls: true)]
+        if phase == "cleanup.idle" { payload["input_state"] = cleanupInputState() }
+        let event = ObservationStore.shared.append("human_snapshot", payload)
         cost("snapshot", started: started, event: event)
         ObservationStore.shared.checkpoint(requestID)
     }
@@ -97,6 +108,54 @@ import SwiftUI
     private func fail(_ message: String, fingerprint: String) {
         guard !failureRecorded else { return }; failureRecorded = true
         ObservationStore.shared.append("human_failure", ["reason": message, "request_sha256": fingerprint])
+    }
+
+    private func cleanupInputState() -> [String: Any] {
+        var result: [String: Any] = ["valid": false, "window": boundWindowID ?? "nil",
+            "root": boundRootID ?? "nil", "scene": boundSceneID ?? "nil"]
+        guard let window = ownedWindow, let root = ownedRoot,
+              window.rootViewController === root, root.viewIfLoaded?.window === window,
+              window.windowScene?.session.persistentIdentifier == boundSceneID else { return result }
+        var pending = [UIView](arrayLiteral: window), seen = Set<ObjectIdentifier>()
+        var gestures = [[String: Any]](), controls = [[String: Any]](), scrolls = [[String: Any]]()
+        var gestureIDs = Set<ObjectIdentifier>()
+        while let view = pending.popLast() {
+            guard seen.insert(ObjectIdentifier(view)).inserted else { continue }
+            guard seen.count <= 4096 else { return result }
+            pending.append(contentsOf: view.subviews)
+            for gesture in view.gestureRecognizers ?? [] where gestureIDs.insert(ObjectIdentifier(gesture)).inserted {
+                gestures.append(["id": Self.identity(gesture), "state": gesture.state.rawValue, "touches": gesture.numberOfTouches])
+            }
+            if let control = view as? UIControl { controls.append(["id": Self.identity(control), "tracking": control.isTracking]) }
+            if let scroll = view as? UIScrollView {
+                scrolls.append(["id": Self.identity(scroll), "tracking": scroll.isTracking,
+                    "dragging": scroll.isDragging, "decelerating": scroll.isDecelerating])
+            }
+        }
+        var controllers = [root], visited = Set<ObjectIdentifier>(), coordinators = [String]()
+        while let controller = controllers.popLast() {
+            guard visited.insert(ObjectIdentifier(controller)).inserted else { continue }
+            guard visited.count <= 256 else { return result }
+            controllers.append(contentsOf: controller.children)
+            if let presented = controller.presentedViewController { controllers.append(presented) }
+            if let coordinator = controller.transitionCoordinator { coordinators.append(Self.identity(coordinator)) }
+        }
+        result.merge(["valid": true, "view_count": seen.count, "controller_count": visited.count,
+            "gestures": gestures, "controls": controls, "scrolls": scrolls, "coordinators": coordinators]) { _, value in value }
+        return result
+    }
+    private func recordHomeIdle() {
+        guard currentPhase == "background.before", let request = currentRequestID,
+              let fingerprint = currentRequestHash else { return }
+        let payload: [String: Any] = ["schema_version": 1, "run_id": Settings.runID,
+            "request_id": request, "request_sha256": fingerprint,
+            "pid": ProcessInfo.processInfo.processIdentifier,
+            "notification": "UIApplication.didEnterBackgroundNotification",
+            "topology": topology(includeControls: false), "input_state": cleanupInputState()]
+        guard let bytes = try? JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys]) else { return }
+        let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("home-input-idle-" + request + ".json")
+        DispatchQueue.global(qos: .utility).async { try? bytes.write(to: url, options: .atomic) }
     }
     func input(_ target: String) {
         let started = DispatchTime.now().uptimeNanoseconds

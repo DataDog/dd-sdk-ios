@@ -1,5 +1,6 @@
 """Project the frozen Resource runner onto a separate human-input runtime stage."""
 import hashlib
+from pathlib import Path
 from acceptance_common import require
 from resource_fold_variant import replace_once, render as human_render
 
@@ -30,8 +31,9 @@ def render(name, original, expected_sha256, *, semantic=False):
         text=original.decode()
         text=replace_once(text,'admissionRequestSHA256})','runtimeRoot, runtimePlanSHA256, runtimeStageSHA256, runtimeScript})')
         text=replace_once(text,'  await verify();','  await verify();\n  await shell("python3 -B "+quote(runtimeScript)+" verify --runtime-root "+quote(runtimeRoot)+" --plan-sha256 "+quote(runtimePlanSHA256));')
-        text=replace_once(text,'const gatherStarted=Date.now(),deadline=gatherStarted+budget,aggregateDeadline=deadline-10000;',
-            'const gatherStarted=request.gather_started_ms,deadline=gatherStarted+budget,aggregateDeadline=deadline-10000;\n    if(!Number.isSafeInteger(gatherStarted)||gatherStarted>Date.now()) throw Error("Invalid original request clock");')
+        start=text.index('  const gather = async (request, requestPath) => {')
+        end=text.index('  const execution=await tools.exec_command(',start)
+        text=text[:start]+Path(__file__).with_name('resource_fold_gather.js').read_text()+text[end:]
         start=text.index('  const execution=await tools.exec_command(')
         end=text.index('  const readFinal',start)
         text=text[:start]+'''  const execution=await tools.exec_command({cmd:"python3 -B "+quote(runtimeScript)+" cell --runtime-root "+quote(runtimeRoot)+" --plan-sha256 "+quote(runtimePlanSHA256)+" --stage-sha256 "+quote(runtimeStageSHA256)+" --arm "+quote(arm)+" --mode "+quote(mode)+" --device "+quote(device),login:false,workdir:host,sandbox_permissions:"require_escalated",justification:"Run one defined human-input Resource/Trace acceptance cell with immutable build reuse, fixed clocks and task-only cleanup.",yield_time_ms:1000,max_output_tokens:1500});

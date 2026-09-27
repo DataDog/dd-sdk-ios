@@ -2,8 +2,8 @@
   "schema_version": 1,
   "experiment": "EXP-225",
   "work_item": "Human setup barrier for concurrent same-key API ownership",
-  "status": "PREPARED_BUILD_PASS_NATIVE_UNADMITTED",
-  "updated_at": "2026-09-27T10:46:35.422711+00:00",
+  "status": "REVIEWED_HUMAN_EXECUTION_WRAPPER_NATIVE_UNADMITTED",
+  "updated_at": "2026-09-27T12:15:36.917117+00:00",
   "owner": "Root; designated reviewer /root/c06_runtime_plan",
   "gates": [
     "S3:F03:M02",
@@ -97,11 +97,36 @@
     "Native human mode requires iOS26+ resize observation; ordinary automatic fixture keeps deployment15 behavior.",
     "This does not establish concurrent ownership, public API exposure, F01 approval, physical co-visibility or any release gate closure."
   ],
-  "next": "Prepare and review the actual human_setup/same_key_contract native wrapper and prompt delivery before an invitation; bind current product/device readiness. Preserve the stopped automatic path. Concurrent topology and released input must precede API work; native acceptance remains unrun.",
+  "next": "Fresh native destination/operator readiness, then explicit same_key_execution.py Swift human-setup cell. ObjC requires qualified same-device/runtime Swift. Original automatic activation remains stopped; residual S3 gesture matrix is unprepared.",
   "admission_review": {
-    "owner": "Results/human-session-review-20260927.json",
-    "state": "PREPARATION_ONLY_NATIVE_WRAPPER_UNBOUND",
-    "remaining": "Bind human_setup=True and qualification=same_key_contract with exact product/device and operator prompt delivery. Exercise late checkpoint and cleanup handling in the actual wrapper before native admission.",
-    "preserved": "The 62 offline controls and optimized build remain qualified; the automatic API budget starts after validated setup readiness. No SDK regression or native qualification is inferred."
+    "owner": "Results/human-harness-repair-loop-20260927.json",
+    "state": "REVIEWED_OFFLINE",
+    "remaining": "Actual concurrent topology, released input and native API ownership; native admission is separate.",
+    "preserved": "Original 62 controls and optimized product remain unchanged. New wrapper has 23 controls including actual HTTP late-checkpoint cleanup. No gate closure."
+  },
+  "repair_loop": "Results/human-harness-repair-loop-20260927.json",
+  "execution": {
+    "plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/same-key/execution-plan.json",
+      "sha256": "cf9b966706809dd4416fc39013d91d60430056b3f3c950058eb94b40d69cce08"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/same-key/controls.json",
+      "sha256": "14c290a0ad5b1136a56f6475130d309d77a8eccf1197cb3bd1a674aaa02ffa4d"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/same-key/review.json",
+      "sha256": "c5a593d8789619e5c51e2586583626a8ce31cdf5b828c85766e5f8010e43ac02"
+    },
+    "cross_package_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/review-complete.json",
+      "sha256": "be0e03e8c001f89a9eafbb0d37531ac6684221b9c1b08a845b1c71410435f4a3"
+    },
+    "modes": [
+      "swift",
+      "objc"
+    ],
+    "native_launches": 0,
+    "product_rebuilt": false
   }
 }

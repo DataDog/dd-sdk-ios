@@ -50,8 +50,22 @@ between COUNT and search, retain raw exchanges and retry the complete inventory
 within the original collection budget. Reject conflicting/foreign/malformed rows.
 Do not repeat valid gestures merely for delayed delivery. Failed human input needs
 fresh release and native idle proof before teardown; host-worker exit is insufficient.
-The [human-session review](../Results/HUMAN_SESSION_REVIEW_20260927.md) owns the current
-repair findings; mocked rehearsal establishes preparation, not native acceptance.
+The [human-session review](../Results/HUMAN_SESSION_REVIEW_20260927.md) links findings
+to their repair evidence; mocked rehearsal establishes preparation, not native acceptance.
+
+Replay at least one real accepted capture through a changed oracle before calling
+the repair complete. View and Action schemas differ: compare their shared owner
+fields, not entire application/session objects. For the finite View/Action fixture,
+collect inactive revisions for every owner active through Home, exact counted
+Actions and callback identities. This is not proof that all SDK queues are drained.
+Retain and assess the final file after stopping the owned process and before removal.
+
+Successful Home cleanup needs request-bound native background/input-idle proof;
+failed input needs fresh Released acknowledgement and native idle. Neither elapsed
+time nor a quiet event file proves release. Publish current prompts directly on the
+bound page, with a waiting state after capture. Split the S2 triplets into one to
+three complete cells per sitting; preserve exact predecessor claims and fresh
+readiness. The fixture READMEs own entrypoints and package-specific limits.
 
 ## Evidence levels
 

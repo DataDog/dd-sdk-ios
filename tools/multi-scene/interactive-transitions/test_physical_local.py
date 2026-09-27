@@ -60,9 +60,30 @@ class Terminal(unittest.TestCase):
         self.assertFalse((self.out/'local-joined.json').exists())
 
     def test_changed_stream_after_stop_cannot_publish_evidence(self):
-        self.collector.download.side_effect = [self.raw, self.raw+b'changed']
+        self.collector.download.side_effect = [self.raw, b'changed'+self.raw]
         with self.assertRaises(Rejected): self.terminal()
         self.assertFalse((self.out/'local-joined.json').exists())
+
+    def test_appended_tail_is_assessed_again_before_publication(self):
+        final = self.raw+b'late mapper rows\n'
+        self.collector.download.side_effect = [self.raw, final]
+        self.terminal()
+        self.assertEqual(self.assess.call_count, 2)
+        self.assertEqual(self.assess.call_args.kwargs['raw'], final)
+        self.assertEqual((self.out/'terminal-before-collection.jsonl').read_bytes(), self.raw)
+        self.assertEqual((self.out/'sealed-events.jsonl').read_bytes(), final)
+
+    def test_invalid_tail_cannot_publish_evidence(self):
+        self.collector.download.side_effect = [self.raw, self.raw+b'malformed tail']
+        self.assess.side_effect = [{'state':'LOCAL'}, Rejected('malformed tail')]
+        with self.assertRaises(Rejected): self.terminal()
+        self.assertFalse((self.out/'local-joined.json').exists())
+        self.assertTrue(local.stopped_source(self.out,self.identity,self.collector.remote,self.deadline))
+
+    def test_missing_or_reappeared_stopped_source_cannot_waive_failed_capture_release(self):
+        self.assertFalse(local.stopped_source(self.out,self.identity,self.collector.remote,self.deadline))
+        self.terminal();self.collector.remote.processes.return_value=[dict(processIdentifier=42)]
+        with self.assertRaises(Rejected):local.stopped_source(self.out,self.identity,self.collector.remote,self.deadline)
 
     def test_expiry_during_assessment_never_terminates(self):
         def slow(*args, **kwargs):

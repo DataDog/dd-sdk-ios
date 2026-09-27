@@ -14,11 +14,26 @@ import sys
 import time
 
 KIND = 'AUTOMATIC_HUMAN_SESSION'
+S2_KIND = 'AUTOMATIC_S2_SESSION'
 CONTRACT = 'tools/multi-scene/automatic-coverage/human_contract.py'
 BACKEND_DECODER = 'tools/multi-scene/acceptance/app_journey_transport.py'
 RUNTIME = 'tools/multi-scene/automatic-coverage/human_runtime.py'
 PROTECTED = ['Datadog/Datadog.xcodeproj/project.pbxproj', 'xcconfigs/Datadog.local.xcconfig']
 TRANSITION = 'DatadogRUM/MultiSceneSupport/Results/navigation-documentation-consolidation-20260924.json'
+
+
+def is_session(plan):return plan.get('kind') in [KIND,S2_KIND]
+
+
+def select_s2(matrix, completed, count, runner):
+    runner.require(type(count) is int and 1<=count<=3,'S2 sitting requires one to three complete cells')
+    expected=runner.s2_matrix(runner.shared.read(runner.build.OWNER),runner.shared.read(runner.REGISTER))
+    runner.require(matrix==expected,'finite S2 triplet matrix changed')
+    keys=[runner.cell_key(row) for row in matrix]
+    runner.require(list(completed)==keys[:len(completed)],'S2 predecessor prefix is incomplete or reordered')
+    rows=matrix[len(completed):len(completed)+count]
+    runner.require(len(rows)==count,'S2 sitting exceeds remaining cells')
+    return rows
 
 
 def reference(path, shared):
@@ -40,7 +55,7 @@ def verify_build_helpers(expected, runner, *, allow_backend_decoder_update=False
                        for p, h in expected.items()), 'original build helper source changed')
 
 
-def original(root, runner, *, allow_backend_decoder_update=False):
+def original(root, runner, *, allow_backend_decoder_update=False, allow_fixture_refresh=False):
     """Revalidate unchanged build inputs without the obsolete dirty-doc snapshot."""
     s = runner.shared; root = Path(root); owner = s.read(runner.build.OWNER)['human_current_composition']
     s.require(root == Path(owner['build_root']), 'foreign original automatic build root')
@@ -66,8 +81,8 @@ def original(root, runner, *, allow_backend_decoder_update=False):
     s.require(s.tree(root / 'helpers') == base['helpers'] and
               s.tree(runtime / 'helpers') == plan['helpers'], 'original frozen helper/build source changed')
     verify_build_helpers(base['helpers'], runner, allow_backend_decoder_update=allow_backend_decoder_update)
-    s.require({n: s.sha(runner.build.HERE / n) for n in runner.build.FIXTURES} == base['fixture_sources'],
-              'original fixture changed')
+    s.require(all(s.sha(runner.build.HERE/n)==h for n,h in base['fixture_sources'].items()
+                  if not (allow_fixture_refresh and n=='HumanObservation.swift')), 'original fixture changed')
     for key, arm in base['arms'].items():
         folder = root / key
         s.require(s.sha(folder / 'source.tar') == arm['archive_sha256'] and s.tree(folder / 'sdk') == arm['sdk'] and
@@ -184,6 +199,7 @@ def inherited(plan, runner, seen=()):
 def verify(root, plan, runner, seen=()):
     root = Path(root).resolve(); s = runner.shared
     s.require(str(root) not in seen, 'session cycle'); seen = (*seen, str(root))
+    if plan.get('kind')==S2_KIND:return verify_s2(root,plan,runner,seen)
     source = Path(plan['original_build_root']); base = original(source, runner)
     s.require(plan['kind'] == KIND and plan['original_runtime_plan_sha256'] == s.sha(source / 'runtime/runtime-plan.json') and
               plan['workspace_transition'] == reference(s.REPO / TRANSITION, s), 'original runtime/workspace identity changed')
@@ -243,8 +259,12 @@ def compare(folder, plan, stage, runner):
 
 def ready(root, plan, operator, runner):
     folder = root / 'runtime'; s = runner.shared
-    authorized_series = s.read(runner.build.OWNER)['human_current_composition'].get('session_continuation', {}).get('series')
+    owner_key='s2_session_continuation' if plan.get('kind')==S2_KIND else 'session_continuation'
+    authorized_series = s.read(runner.build.OWNER)['human_current_composition'].get(owner_key, {}).get('series')
     s.require(authorized_series == plan['series'], 'session series lacks owning-record admission authority')
+    if plan.get('kind')==S2_KIND:
+        runner.human_operator.ready(folder/'operator',dict(operator,plan_sha256=operator['runtime_plan_sha256']),
+            folder/'runtime-plan.json',device=operator['device'],mode='coverage')
     s.require(not (folder / 'session-run.json').exists() and not (folder / 'session-complete.json').exists() and
               not list((folder / 'cells').iterdir()), 'session already consumed')
     for prior in ancestors(plan, s):
@@ -353,14 +373,63 @@ def prepare(args, runner):
         'preserved_cells': len(accepted), 'plan_sha256': s.sha(folder / 'runtime-plan.json'), 'builds': 0, 'native_launches': 0}))
 
 
+def verify_s2(root,plan,runner,seen=()):
+    s=runner.shared;source=Path(plan['source_runtime_root']);base=runner.verify(source)
+    s.require(base['kind']==runner.S2_KIND and base.get('observer_refresh')
+        and plan['source_runtime']==reference(source/'runtime/runtime-plan.json',s),'S2 source preparation changed')
+    s.require(plan['helpers']==base['helpers']==s.tree(root/'runtime/helpers'),'S2 sitting helpers changed')
+    accepted=inherited(plan,runner,seen);series=read_reference(plan['series'],s)
+    s.require(series['source_runtime']==plan['source_runtime'] and series['universe']==base['matrix']
+        and series['helpers']==plan['helpers'],'S2 sitting series changed')
+    s.require(plan['universe']==base['matrix'] and plan['inherited']==accepted
+        and plan['matrix']==select_s2(base['matrix'],accepted,plan['cell_count'],runner),'S2 sitting selection changed')
+    for key in ['original_build_root','products','observer_refresh','build_plan_sha256','build_receipts','scope','measurement']:
+        s.require(plan[key]==base[key],'S2 sitting changed '+key)
+    s.require(plan['contract']==dict(base['contract'],stage_execution_seconds=budget(plan['matrix'],base['contract'],runner)),
+        'S2 sitting clocks changed')
+    return plan
+
+
+def prepare_s2(args,runner):
+    s=runner.shared;root=args.root.resolve();source=args.original.resolve();base=runner.verify(source)
+    s.require(base['kind']==runner.S2_KIND and base.get('observer_refresh'),'qualified S2 observer refresh required')
+    s.require(not root.exists(),'S2 sitting output already exists')
+    previous=args.previous.resolve() if args.previous else None
+    accepted=completed(previous,runner) if previous else {}
+    matrix=select_s2(base['matrix'],accepted,args.cells,runner)
+    source_ref=reference(source/'runtime/runtime-plan.json',s)
+    if previous:
+        series=s.read(previous/'runtime/runtime-plan.json')['series']
+        s.require(args.series is None or args.series.resolve()==Path(series['path']).parent,'continuation changed canonical series')
+    else:
+        s.require(args.series is not None and not args.series.exists(),'new canonical S2 series required')
+        args.series.mkdir();(args.series/'claims').mkdir()
+        s.save(args.series/'series.json',dict(source_runtime=source_ref,universe=base['matrix'],helpers=base['helpers'],native_attempts_per_cell=1),exclusive=True)
+        series=reference(args.series/'series.json',s)
+    folder=root/'runtime';folder.mkdir(parents=True)
+    for name in ['cells','operator']:(folder/name).mkdir()
+    shutil.copytree(source/'runtime/helpers',folder/'helpers')
+    plan={**{k:base[k] for k in ['original_build_root','products','observer_refresh','build_plan_sha256','build_receipts','scope','measurement','helpers']},
+        'kind':S2_KIND,'prepared_at':time.time(),'source_runtime_root':str(source),'source_runtime':source_ref,
+        'cell_count':args.cells,'matrix':matrix,'universe':base['matrix'],'inherited':accepted,'series':series,
+        'contract':dict(base['contract'],stage_execution_seconds=budget(matrix,base['contract'],runner)),
+        'previous':{'root':str(previous),**{n+'_sha256':s.sha(previous/'runtime'/(n+'.json')) for n in ['runtime-plan','session-complete']}} if previous else None,
+        'publication':runner.transport.publication_preflight(folder),'native_admitted':False,'gates_closed':[]}
+    runner.human_operator.publish(folder/'operator',{'instruction':'Waiting for review and fresh readiness for this finite sitting.'})
+    s.save(folder/'runtime-plan.json',plan,exclusive=True);verify(root,plan,runner)
+    print(json.dumps(dict(state='S2_SITTING_PREPARED_NOT_ADMITTED',root=str(root),cells=len(matrix),preserved_cells=len(accepted),native_launches=0)))
+
+
 def main():
     import human_runtime as runner
-    parser = argparse.ArgumentParser(); parser.add_argument('action', choices=['prepare', 'verify'])
+    parser = argparse.ArgumentParser(); parser.add_argument('action', choices=['prepare', 'prepare-s2', 'verify'])
     parser.add_argument('--root', type=Path, required=True); parser.add_argument('--original', type=Path)
     parser.add_argument('--series', type=Path); parser.add_argument('--previous', type=Path); parser.add_argument('--pairs', type=int, default=1)
+    parser.add_argument('--cells',type=int,default=1)
     args = parser.parse_args()
-    if args.action == 'prepare':
-        runner.require(args.original is not None, 'original reviewed build root required'); prepare(args, runner)
+    if args.action in ['prepare','prepare-s2']:
+        runner.require(args.original is not None, 'original reviewed build root required')
+        (prepare_s2 if args.action=='prepare-s2' else prepare)(args, runner)
     else:
         verify(args.root.resolve(), runner.shared.read(args.root / 'runtime/runtime-plan.json'), runner)
         print('AUTOMATIC_SESSION_PREPARATION_VERIFIED')

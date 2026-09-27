@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "work_item": "Future human-session scenarios and harness review",
-  "status": "HOLD_S2_HUMAN_ADMISSION_PENDING_HARNESS_REPAIRS",
-  "updated_at": "2026-09-27T10:48:25.571785+00:00",
+  "status": "FINDINGS_REPAIRED_AND_REVIEWED_OFFLINE_NATIVE_QUALIFICATION_PENDING",
+  "updated_at": "2026-09-27T12:15:36.917117+00:00",
   "owner": "Root",
   "reviewer": "/root/c06_runtime_plan",
   "head": "621b7f12037154455b58ec342114667563738304",
@@ -19,36 +19,41 @@
       "id": "HUMAN-01",
       "priority": "P1",
       "family": "coverage",
-      "status": "OPEN",
-      "repair": "Request-bound operator release and fresh native idle before failed-cell teardown"
+      "status": "REPAIRED_REVIEWED_OFFLINE",
+      "repair": "Request-bound operator release and fresh native idle before failed-cell teardown",
+      "resolution": "Results/human-harness-repair-loop-20260927.json"
     },
     {
       "id": "HUMAN-02",
       "priority": "P1",
       "family": "physical UIKit",
-      "status": "OPEN",
-      "repair": "Collect exact delayed callback work after the immutable native-effect boundary"
+      "status": "REPAIRED_REVIEWED_OFFLINE",
+      "repair": "Collect exact delayed callback work after the immutable native-effect boundary",
+      "resolution": "Results/human-harness-repair-loop-20260927.json"
     },
     {
       "id": "HUMAN-03",
       "priority": "P1",
       "family": "coverage and physical UIKit",
-      "status": "OPEN",
-      "repair": "Separate native Home cutoff from required local event collection and sealing"
+      "status": "REPAIRED_REVIEWED_OFFLINE",
+      "repair": "Separate native Home cutoff from required local event collection and sealing",
+      "resolution": "Results/human-harness-repair-loop-20260927.json"
     },
     {
       "id": "HUMAN-04",
       "priority": "P2",
       "family": "Resource/Trace fold",
-      "status": "OPEN",
-      "repair": "Bounded full-inventory repoll on changing backend indexing; saved behavioral reuse"
+      "status": "REPAIRED_REVIEWED_OFFLINE",
+      "repair": "Bounded full-inventory repoll on changing backend indexing; saved behavioral reuse",
+      "resolution": "Results/human-harness-repair-loop-20260927.json"
     },
     {
       "id": "HUMAN-05",
       "priority": "P2",
       "family": "coverage",
-      "status": "OPEN",
-      "repair": "Execute the actual12-cell S2 matrix through finite sittings and verified continuation"
+      "status": "REPAIRED_REVIEWED_OFFLINE",
+      "repair": "Execute the actual12-cell S2 matrix through finite sittings and verified continuation",
+      "resolution": "Results/human-harness-repair-loop-20260927.json"
     }
   ],
   "controls": [
@@ -79,8 +84,8 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-session-review-20260927-ryppdtl0/checkpoint.json",
     "sha256": "f7439103ebcaa5a2b7681b0ffd5699b4b7d45e6cebb93a575d2482d0d61bab40"
   },
-  "s3_disposition": "Offline/build preparation remains qualified; actual human_setup plus same_key_contract native wrapper and bound prompt delivery remain unprepared. No supported native admission yet.",
-  "prompt_delivery": "Resource fold currently emits tool notifications; bind direct operator page/readiness before native invitation.",
+  "s3_disposition": "Explicit reviewed human_setup/same_key_contract wrapper and prompt delivery prepared. Actual concurrent native topology remains unrun; residual S3 gesture matrix remains unprepared.",
+  "prompt_delivery": "Resource fold and S3 now publish directly to the bound local operator page; live page/readiness checks precede native work.",
   "native_runs": 0,
   "builds": 0,
   "sdk_test_runs": 0,
@@ -90,7 +95,7 @@
   "gate_closures": [],
   "accepted_evidence_reopened": false,
   "original_results_unchanged": true,
-  "next": "Repair the named harness prerequisites and review actual end-to-end runner controls before another human invitation; preserve accepted cells and use only a needed native cell for qualification.",
+  "next": "Use the finite package preparation after fresh prerequisites; first needed native cell qualifies the mechanism. No accepted cell repeat.",
   "independent_review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-session-review-20260927-ryppdtl0/review.json",
     "sha256": "0759a7846b11f3405017ec24b26c67e82d71b89a6ccea96d4690e9ab0f2db101"
@@ -102,5 +107,6 @@
   "validation": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-session-review-20260927-ryppdtl0/validation.json",
     "sha256": "4aebfcb90405527359af1e9f9d3b9237b152cc574191b18d9e9f888f060cf005"
-  }
+  },
+  "repair_loop": "Results/human-harness-repair-loop-20260927.json"
 }

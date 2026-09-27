@@ -3,7 +3,7 @@
   "experiment": "EXP-221",
   "stage": "duo-fold-one-session",
   "status": "AUTOMATED_PATH_STOPPED_LATER_RESTORATION_PASS",
-  "updated_at": "2026-09-22T12:42:13.978240+00:00",
+  "updated_at": "2026-09-27T12:15:36.917117+00:00",
   "owner": "SDK implementer; root owns sole build/native lane",
   "gates": [
     "S2:T03",
@@ -31,7 +31,7 @@
   "builds": 8,
   "native_launches": 5,
   "gate_closures": [],
-  "next_action": "Prepare the already-planned one human-input session with automated capture, complete assertions and cleanup.",
+  "next_action": "Fresh Duo and RUM/APM authentication/query readiness, then operator-visible page and readiness for each remaining cell. First needed baseline qualifies input. Keep accepted navigation/rollover and original verdicts.",
   "implementation_inputs": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/implementation-inputs-v2.json",
     "sha256": "27acb5ef0b30945980ab98c7e922f508e6e6593bfe5dbbe75cbd8df6708dbaee"
@@ -657,23 +657,23 @@
   "current_preparation": {
     "schema_version": 1,
     "work_item": "S2:T03/T08 current Resource/Trace fold preparation",
-    "state": "PREPARATION_PRESERVED_HUMAN_ADMISSION_HELD",
-    "updated_at": "2026-09-27T10:46:35.422711+00:00",
+    "state": "REVIEWED_HARNESS_NATIVE_UNADMITTED",
+    "updated_at": "2026-09-27T12:15:36.917117+00:00",
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/resource-fold/definition.json",
       "sha256": "1e3855d9a4c191457d2568a79f418af3b7f8f21acee6a9eead06a71d28056ed4"
     },
     "runtime_plan": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/resource-fold/runtime/runtime-plan.json",
-      "sha256": "37e850b799482468b31d3852b24e810b07a36ecdae201668fe98c1a71384fc44"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/resource-fold/runtime-plan.json",
+      "sha256": "3b6bb06a95b4cf8313280039c75780339c1b47c088df42dd9beeb1b6aa4b7d1e"
     },
     "review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/resource-fold/runtime/runtime-review.json",
-      "sha256": "996fd7be3a9cf4eaa335a815b42ff23cf5ecfeb1d49bf89b7a12bfc50b0b11a3"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/resource-fold/runtime-review.json",
+      "sha256": "b315e98f0dfd6b66a91b3426d9b84796a00a11a848fc84e25beed1a1b73bd1bf"
     },
     "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/resource-fold/runtime/runtime-controls.json",
-      "sha256": "9dcbf6c309c5dfcb2fc8b2210154e0f9ba0677e02833ce93e168b86466fb54f0"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/resource-fold/runtime-controls.json",
+      "sha256": "57d79c1e29fd00e7323af8b1e600da54662f579844c27c3a7f0b075096bd4cb9"
     },
     "build_reuse": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/resource-fold/build-reuse.json",
@@ -682,7 +682,9 @@
     "changes": [
       "Diagnostic capture/automatic elapsed/TTID duration checks; exact registered metric provenance retained.",
       "Request gather_started_ms accepted and exactly bound to response phase clock.",
-      "Authorized documentation transition replaces stale documentation protections; both user-owned paths remain exact."
+      "Authorized documentation transition replaces stale documentation protections; both user-owned paths remain exact.",
+      "Retain each raw COUNT/search attempt; retry a complete changing-index inventory only inside the original clock, without deduplication.",
+      "Publish exact prompts directly; bind live operator page and fresh per-cell readiness before reservation."
     ],
     "cells": [
       "A-automatic",
@@ -703,20 +705,28 @@
     "additional_builds": 0,
     "backend_requests": 0,
     "gate_closures": [],
-    "remaining": "Repair changing-index collection and bind prompt delivery before inviting input; review the actual frozen runner with complete-inventory controls. Then rediscover Duo/RUM/APM readiness. First needed baseline qualifies native input; reuse accepted navigation/rollover and preserve all original verdicts.",
+    "remaining": "Fresh Duo and RUM/APM authentication/query readiness, then operator-visible page and readiness for each remaining cell. First needed baseline qualifies input. Keep accepted navigation/rollover and original verdicts.",
     "source_pair": {
       "A": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
       "B": "c9faed816a1d4828d7d8c4b64acae01119425889"
     },
     "original_result_policy": "Original failed scenarios, cleanup verdicts and later successful restoration remain unchanged.",
     "admission_review": {
-      "owner": "Results/human-session-review-20260927.json",
-      "state": "HOLD_BEFORE_HUMAN_INVITATION",
+      "owner": "Results/human-harness-repair-loop-20260927.json",
+      "state": "REVIEWED_OFFLINE",
       "findings": [
         "HUMAN-04"
       ],
-      "original_preparation_receipts": "Preserved unchanged; earlier controls establish only their recorded preparation scope.",
-      "additional_prerequisite": "Bind direct operator prompt delivery/readiness; tool notifications alone are not the operator page."
+      "additional_prerequisite": "Live environment/backend and exact page readiness before native admission."
+    },
+    "prior_preparation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/owners-before-completion.json",
+      "sha256": "5689f96cac0632c852d50b820023dd78346f9002ae4b0d2e7e7b36c01b96ed8e"
+    },
+    "repair_loop": "Results/human-harness-repair-loop-20260927.json",
+    "cross_package_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/review-complete.json",
+      "sha256": "be0e03e8c001f89a9eafbb0d37531ac6684221b9c1b08a845b1c71410435f4a3"
     }
   }
 }

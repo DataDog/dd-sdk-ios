@@ -7,10 +7,13 @@ and the shared human-session prerequisites are complete.
 
 For current S2 work, start from the
 [finite input index](../../../DatadogRUM/MultiSceneSupport/Results/S2-input-session-preparation.json).
-Its six-stack-cell maximum supersedes the original eight Duo/twelve physical
-matrix described below. The saved physical UIKit baseline needs no repeat; one
-candidate continuation is reviewed. Four Duo SwiftUI automatic/manual stack cells
-still need scoped preparation. H14 reuses automatic split coverage; H16 is closed.
+Only the physical UIKit candidate remains. The saved baseline and all four Duo
+SwiftUI automatic/manual stack cells qualify for reuse. H14 uses automatic split
+coverage; H16 is closed. The candidate collector preserves native effect boundaries
+and collects delayed callback work by exact identity. Home is a durable prefix;
+required inactive View/Action evidence may follow it. The final post-stop file is
+preserved and assessed before task-app removal. Failed input still requires fresh
+release and native idle. No immediate backend upload or gesture timing is required.
 Older full-runtime instructions retain historical scope and do not admit new runs.
 
 UIKit uses genuine navigation/split controllers and page sheets. SwiftUI uses a

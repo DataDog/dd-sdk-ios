@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "state": "PREPARATION_PRESERVED_HUMAN_ADMISSION_HELD",
-  "updated_at": "2026-09-27T10:46:35.422711+00:00",
+  "state": "REVIEWED_HARNESS_AND_OBSERVER_BUILDS_NATIVE_UNADMITTED",
+  "updated_at": "2026-09-27T12:15:36.917117+00:00",
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
   "gates": [
@@ -21,20 +21,20 @@
     "sha256": "0d512fd7b745bd102cb8af786962dd891e4562838c84bac28db3c59890eade51"
   },
   "controls": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/capture-contract/prepared-coverage/runtime/controls.json",
-    "sha256": "00c090df9a2009e3bf9c9743819e5cbf25046ae77556468ee3493c5abecc3af0"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/coverage-sitting-01-v2/runtime/controls.json",
+    "sha256": "3e68940d2ee49924309f987d46e69c4fbe94c12d3f9fd03308f3d84f63c6b7f9"
   },
   "review": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/capture-contract/prepared-coverage/runtime/review.json",
-    "sha256": "2b9e831061d053b215ec83bd488c0ed3b7f232a880420e966f788e33352ad480"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/coverage-sitting-01-v2/runtime/review.json",
+    "sha256": "f5602e4fdc6601aa3ee5524ad94ef50cdac17b78587ed3e98d34a9ca853dc509"
   },
   "preparation": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/capture-contract/prepare-result.json",
-    "sha256": "80be9dc530e9e5c0ccbfbb32a74cda6ca5a26187f9ac3c96e5f2d3edec163c70"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/prepare-sitting-v2.log",
+    "sha256": "215db2b553b56d023d63cd35cb5e7a34b646758aa3838ef2bbe68da72f41d41e"
   },
   "runtime_plan": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/capture-contract/prepared-coverage/runtime/runtime-plan.json",
-    "sha256": "e13f65bad3f2f952f8e3731b314ed7d8b98e24d644fc7116fb4ad2d6ea1ac476"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/coverage-sitting-01-v2/runtime/runtime-plan.json",
+    "sha256": "d6a4ff08f2b6e588bdbcb4baa63a7dea53bbc3c113d9f3aee537147621354098"
   },
   "measurement": {
     "policy": "diagnostic-observer-timing-v1",
@@ -48,31 +48,54 @@
     "current_sha256": "bef9e2347fdab755cafd953f07246ebb58b4afa23c38d38f05a1d37f2c8d431e"
   },
   "result": {
-    "focused_tests": 125,
-    "cells_prepared": 12,
-    "existing_products": 6,
-    "existing_builds": 4,
-    "builds_added": 0,
+    "offline_controls": 262,
+    "total_cells": 12,
+    "first_sitting_cells": 1,
+    "qualified_refreshed_products": 6,
+    "observer_builds_added": 3,
     "native_runs": 0,
     "backend_queries": 0,
     "gate_closures": []
   },
   "preserved": [
-    "SDK and compiled Swift fixtures",
-    "complete original build/product/helper inventories",
-    "native effects, ownership, order and cleanup assertions",
-    "all original attempts, operational deadlines and verdicts"
+    "Exact original SDK and ordinary fixture behavior/configuration",
+    "All original source/build/runtime receipts and verdicts",
+    "Native effects, stable ownership, ordering and cleanup assertions"
   ],
-  "limits": "Preparation only. The current policy changes numeric recorder-cost acceptance, not native semantics. The first baseline still qualifies input; no stopped automated path is reopened.",
-  "next_action": "Repair and review the actual prepared runner paths named by the admission review before inviting input. Preserve products and original controls; qualify the mechanism with the first needed baseline only.",
+  "limits": "Only HumanObservation.swift changed in copied fixtures: passive public input-idle inventory and request-bound Home idle sidecar. Three original source/compiler pairs rebuilt; six products qualified. No native behavior or gate is yet qualified.",
+  "next_action": "Fresh Duo/operator readiness for the one-cell baseline sitting. Stop on unqualified mechanism; no equivalent diagnostics. Continue with verified completed-cell prefixes, one to three cells per sitting.",
   "admission_review": {
-    "owner": "Results/human-session-review-20260927.json",
-    "state": "HOLD_BEFORE_HUMAN_INVITATION",
-    "findings": [
-      "HUMAN-01",
-      "HUMAN-03",
-      "HUMAN-05"
-    ],
-    "original_preparation_receipts": "Preserved unchanged; earlier controls establish only their recorded preparation scope."
-  }
+    "owner": "Results/human-harness-repair-loop-20260927.json",
+    "state": "REVIEWED_OFFLINE",
+    "native_qualification": "First needed baseline cell",
+    "original_preparation_receipts": "Preserved unchanged in the prior preparation snapshot and original artifact roots."
+  },
+  "prior_preparation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/owners-before-completion.json",
+    "sha256": "5689f96cac0632c852d50b820023dd78346f9002ae4b0d2e7e7b36c01b96ed8e"
+  },
+  "repair_loop": "Results/human-harness-repair-loop-20260927.json",
+  "master_plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/coverage-master-v2/runtime/runtime-plan.json",
+    "sha256": "dedf36d78f8f6c7d1b9a3bfd2841f7ba035b939c61e9023438dda8ea8df1fc72"
+  },
+  "observer_refresh": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/coverage-observer/refresh-plan.json",
+    "sha256": "8d8cd7df96cee3b97883ba5f952fe9e2e89db2faea80d7f7206e40e58b8fce22"
+  },
+  "observer_builds": [
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/coverage-observer/baseline-26.5/build-result.json",
+      "sha256": "a0ee0b8eb669e92b8ab5c63b54f517511cff1669616e6d252796ce891e6e1e1a"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/coverage-observer/baseline-27.1/build-result.json",
+      "sha256": "7dcf374e46ed308bda9aabaee9b0253fe35ca319c2b303f6c4516c211dec9af7"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/coverage-observer/candidate-27.1/build-result.json",
+      "sha256": "812ce0a5ebd0e5626d21aa6c50fa3b0f0556c14c559eeaadb519955f9e9c6ff9"
+    }
+  ],
+  "native_settling_limit": "Ordinary input retains the existing 1.2-second settled snapshot after an observed native callback/scroll end/destination appearance. A later native UI effect can fail qualification conservatively; no SDK regression or timing failure follows. Review found no reproduced pending-native defect. The first required baseline qualifies this remaining mechanism limit."
 }
