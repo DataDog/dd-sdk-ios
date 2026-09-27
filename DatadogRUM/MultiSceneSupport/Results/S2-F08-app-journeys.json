@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 finite controlled app journeys",
-  "status": "DASHBOARD_SETUP_REVIEWED_FRESH_CANDIDATE_PENDING",
+  "status": "DASHBOARD_CONTROL_READINESS_REVIEWED_PREPARATION_PENDING",
   "recorded_at": "2026-09-21T16:37:35.872371+00:00",
   "owner": "SDK implementer",
   "application_revision": "6e33f1c18a52d04b0793e6954f456bdbc1affe2f",
@@ -141,10 +141,10 @@
     "review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-tf3_dxfy/review.json",
     "candidate": "UNRUN"
   },
-  "next_action": "Bind the refreshed reviewed predecessor and fresh candidate-only plan. Verify stopped candidate product/process, restore only frozen baseline task product in place without launch, then obtain fresh operator/native readiness. The normalization handles observed 15m; the comparison remains 1h-to-15m. Original failures and unchanged baseline proof remain; no SDK regression or gate closure.",
+  "next_action": "Restore only the frozen baseline task product without launch, prepare the reviewed candidate-only continuation and obtain fresh operator/native readiness. The source-backed hook retains absent control observations under the original deadline. Preserve all original INVALID/cleanup PASS results and unchanged baseline proof; no SDK regression or gate closure.",
   "environment_readiness": "Results/S2-Duo-environment-readiness.json",
   "source_oracle": "Results/S2-F08-source-oracle.json",
-  "source_preparation_status": "DASHBOARD_SETUP_REVIEWED_FRESH_CANDIDATE_PENDING",
+  "source_preparation_status": "DASHBOARD_CONTROL_READINESS_REVIEWED_PREPARATION_PENDING",
   "source_prepared_at": "2026-09-21T21:39:37.351271+00:00",
   "prebooted_continuation": {
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-prebooted-0ux7kfit",
@@ -182,7 +182,7 @@
     "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-qualified-_wnijcda/terminal-summary.json",
     "summary_sha256": "ba211a0311a01d103535424c1a63a96d1e5b06fd544c95850ec1b656e8f44499"
   },
-  "updated_at": "2026-09-26T23:50:07.082474+00:00",
+  "updated_at": "2026-09-27T00:17:36.314375+00:00",
   "incremental_continuation": {
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-incremental-f8xss4f3",
     "status": "STOPPED_AFTER_ONE_TAP_NATIVE_OBSERVER",

@@ -39,6 +39,15 @@ class Driver(JourneyDriver):
                     and not phases.matches(ready['ax'],self.selection['browser_result_label']),
                     'refreshed Browser control/effect readiness changed')
 
+    def validate_observation_ready(self, ready):
+        if ready['screen']!='dashboard' or self.definition['mode']!='signed-in-smoke':return
+        # The app hides the timeframe bar until intervalConfirmed arrives.
+        # Loaded WebView content alone cannot qualify the next human input.
+        phases.dashboard_timeframe_owner(ready)
+        require(any(phases.matches(ready['ax'],label,'button') for label in ['1h','15m']),
+                'dashboard native time-range control not ready', 'PENDING')
+        smoke_contract.dashboard_setup_needed(ready)
+
     def prepare_dashboard(self, begin):
         if self.definition['mode']!='signed-in-smoke' or not smoke_contract.dashboard_setup_needed(begin):
             return None

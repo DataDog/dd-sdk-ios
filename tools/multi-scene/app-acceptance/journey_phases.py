@@ -132,8 +132,8 @@ def foreground_binding(rows, snapshot, previous=None, *, authenticated_transitio
     return current
 
 
-def dashboard_timeframe(ready, text):
-    """Bind the unique native duration button to the source-defined dashboard."""
+def dashboard_timeframe_owner(ready):
+    """Check native containment before waiting for the asynchronous time control."""
     topology=ready['snapshot']['fields']['topology'];binding=ready['binding'];controllers=topology['controllers']
     timer=one([c for c in controllers if c.get('class')=='DatadogApp.TimeframeViewController'
                and c.get('window')==binding['window']], 'owned dashboard timeframe controller')
@@ -146,6 +146,13 @@ def dashboard_timeframe(ready, text):
                 and not c.get('transition') for c in [timer,bottom,dashboard]), 'timeframe detached or transitioning')
     tree=ready['ax'];require(isinstance(tree,list) and len(tree)==1 and kind(tree[0])=='application'
                             and tree[0].get('pid')==topology['pid'], 'foreign timeframe accessibility process')
+    return dict(controller=timer['id'],dashboard=dashboard['id'])
+
+
+def dashboard_timeframe(ready, text):
+    """Bind the unique native duration button to the source-defined dashboard."""
+    owner=dashboard_timeframe_owner(ready)
+    tree=ready['ax'];topology=ready['snapshot']['fields']['topology']
     button=one(matches(tree,text,'button'), 'unique dashboard duration button')
     frame=button.get('frame',{});screen=tree[0].get('frame',{})
     require(button.get('pid')==topology['pid'] and button.get('enabled') is True
@@ -154,7 +161,7 @@ def dashboard_timeframe(ready, text):
             and frame['width']>0 and frame['height']>0 and frame['x']>=screen['x'] and frame['y']>=screen['y']
             and frame['x']+frame['width']<=screen['x']+screen['width']
             and frame['y']+frame['height']<=screen['y']+screen['height'], 'timeframe button hidden or outside owned display')
-    return dict(controller=timer['id'],dashboard=dashboard['id'],label=text,frame=frame)
+    return dict(**owner,label=text,frame=frame)
 
 
 CAPTURED_LIFECYCLE_CALLBACKS = ('willResignActive', 'didEnterBackground', 'didBecomeActive')

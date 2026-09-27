@@ -19,6 +19,7 @@ class DashboardReadinessControls(unittest.TestCase):
         self.rows,self.bounds,self.owners=fixture()
         self.driver=object.__new__(smoke_driver.Driver)
         self.driver.expected=EXPECTED
+        self.driver.definition={'mode':'smoke'}
 
     def check(self, rows=None, snapshot=None, owner=None, visible=None):
         return self.driver.validate_phase_ready(

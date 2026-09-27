@@ -88,16 +88,17 @@ class Driver:
                 last_reason=str(error)
                 atomic(folder/'not-ready.json',encoded(dict(reason=last_reason,at=time.time(),deadline=end)))
                 time.sleep(.2);continue
+            value=dict(label=label,screen=screen,snapshot=row,owner=owner,binding=binding,visible=visible,
+                       subdomain=subdomain,ax=tree,folder=str(folder),capture_folder=str(capture_folder),captured_at=time.time())
             try:
                 self.validate_phase_ready(result['rows'],row,owner,visible,screen)
+                self.validate_observation_ready(value)
             except Rejected as error:
                 if error.state != 'PENDING':raise
                 last_reason=str(error)
                 atomic(folder/'not-ready.json',encoded(dict(reason=last_reason,state=error.state,at=time.time(),deadline=end)))
                 time.sleep(.2);continue
             self.binding=binding;self.last_result=result
-            value=dict(label=label,screen=screen,snapshot=row,owner=owner,binding=binding,visible=visible,
-                       subdomain=subdomain,ax=tree,folder=str(folder),capture_folder=str(capture_folder),captured_at=time.time())
             atomic(folder/'ready.json',encoded(value))
             self.observations[label]=value
             return value
@@ -107,6 +108,9 @@ class Driver:
         return browser_contract.attached_dashboard(rows, snapshot, owner)
 
     def validate_phase_ready(self, rows, snapshot, owner, visible, screen):
+        pass
+
+    def validate_observation_ready(self, ready):
         pass
 
     def validate_prompt_ready(self, ready, label):

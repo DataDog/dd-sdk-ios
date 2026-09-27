@@ -133,6 +133,14 @@ button from `1h` to `15 minutes`. Its displayed `15m` follows the WebView-confir
 interval under the source's consistent-timeframe setting. Retain the same attached
 dashboard/WebView and exact telemetry owners; do not reuse labels from another widget.
 
+Loaded dashboard content and Browser telemetry can precede the native time-range
+bar: the app reveals that bar only after its separate `intervalConfirmed` callback.
+Signed-in dashboard readiness therefore requires the actual owned duration button.
+An absent supported control remains pending within the original step deadline;
+every observation is retained and no prompt is published. Ambiguous controls or
+incorrect ownership, visibility or display geometry remain invalid. The later
+ready snapshot must supply its own complete native and accessibility evidence.
+
 The native one-hour initializer does not guarantee the ready dashboard range:
 WebView-confirmed intervals replace it, and a retained account can reopen at `15m`.
 For signed-in mode, `prepare_dashboard` leaves a source-owned `1h` control alone or

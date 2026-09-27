@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 authenticated app source/oracle preparation",
-  "status": "DASHBOARD_SETUP_REVIEWED_FRESH_CANDIDATE_PENDING",
+  "status": "DASHBOARD_CONTROL_READINESS_REVIEWED_PREPARATION_PENDING",
   "at": "2026-09-26T22:29:24.095728+00:00",
   "owner": "SDK implementer",
   "reviewer": "existing /root/c06_runtime_plan",
@@ -182,7 +182,7 @@
     "partial cleanup relabeled as ordinary pass"
   ],
   "admission_limits": "This is source preparation only. No runtime/oracle pass, gate closure, new experiment or environment retry is implied. Existing J01, Duo and EXP220 automation stops remain closed; fresh execution needs materially changed environment and reviewed fixed admission.",
-  "next_action": "Bind the refreshed reviewed predecessor and fresh candidate-only plan. Verify stopped candidate product/process, restore only frozen baseline task product in place without launch, then obtain fresh operator/native readiness. The normalization handles observed 15m; the comparison remains 1h-to-15m. Original failures and unchanged baseline proof remain; no SDK regression or gate closure.",
+  "next_action": "Restore only the frozen baseline task product without launch, prepare the reviewed candidate-only continuation and obtain fresh operator/native readiness. The source-backed hook retains absent control observations under the original deadline. Preserve all original INVALID/cleanup PASS results and unchanged baseline proof; no SDK regression or gate closure.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/source-review.json",
     "sha256": "41f6a1f5348c383e8c11770dc50da59e45e9dc020559a49c2a60d8691815d6e9"
@@ -1172,7 +1172,7 @@
         },
         "instruction_server_state": "STOPPED",
         "dashboard_setup": {
-          "state": "SOURCE_REVIEWED_OFFLINE_QUALIFIED",
+          "state": "CANDIDATE_CONTROL_UNREADY_CLEANUP_PASS",
           "tests": 53,
           "controls": {
             "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/dashboard-setup-bound-controls.json",
@@ -1198,9 +1198,71 @@
             "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/dashboard-setup-contract-transition.json",
             "sha256": "7db39faa526782b5ff9cc2d66b30828ff0045a18c8e380b87c077875c1ef7c70"
           },
-          "native_runs": 0,
+          "native_runs": 1,
           "backend_queries": 0,
-          "gate_closures": []
+          "gate_closures": [],
+          "prepared_plan": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/prepared-dashboard-setup-candidate/plan.json",
+            "sha256": "523b23a7247b397047f5929fc91d143cdbb2176a417e88659adbb9fbcbb2965d"
+          },
+          "plan_review": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/prepared-dashboard-setup-candidate/review.json",
+            "sha256": "661a6ba7c35f031aee224367e98eaf2c92cc995534b9cef9b47c4919493e5ebe"
+          },
+          "predecessor_review": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/dashboard-setup-predecessor-review.json",
+            "sha256": "36bfce9312254f69ca7cbb12495343a8dd1fb4bbbe9b420d699b7ffc1aaf0bb1"
+          },
+          "restoration": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/candidate-baseline-restoration/restoration-current-state.json",
+            "sha256": "0a29ccd87efe47c6a2938096924b7b6274ec960d6f4fa4f830a0176329d9fcc5"
+          },
+          "instruction_server": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/prepared-dashboard-setup-candidate/operator-server.json",
+            "sha256": "8c05e0c413017a77b9b825cc1c1ad023047deeefc574d1762980526fdbc03252"
+          },
+          "source_checkpoint": "282af04aaede86e231f05f0ad7d70ca84abd8b78",
+          "source_signature": "G",
+          "attempt": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/dashboard-control-readiness-stopped.json",
+            "sha256": "f5e57083dfd2f774f6650f6aa72bcdc24ca0008bcc2acbf3ea83e4a999fdc313"
+          },
+          "instruction_server_state": "STOPPED",
+          "control_readiness": {
+            "state": "REVIEWED_FRESH_PREPARATION_PENDING",
+            "proposal": {
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/dashboard-control-readiness-proposal.json",
+              "sha256": "23ba9d748a48348c42125ad4bbe6e812d2cab6e4ae970ee08fb9878593b20951"
+            },
+            "controls": {
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/dashboard-control-readiness-bound-controls.json",
+              "sha256": "da8367b7a451b778b3d33af12bb882c7fc2343ae75afb9b47b7ddd4d3c1680dc"
+            },
+            "saved_replay": {
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/dashboard-control-readiness-saved-replay/summary.json",
+              "sha256": "3fdda73cabab38546a282b475f0563a53204a36bfa633f0290cdcb2811ec8c71"
+            },
+            "tests": 68,
+            "native_runs": 0,
+            "backend_queries": 0,
+            "gate_closures": [],
+            "review": {
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/dashboard-control-readiness-review.json",
+              "sha256": "1af448dbdea002b472bb411640b2316f07beea61ab089f11651b4f8579927b86"
+            },
+            "runtime_transition": {
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/runtime-transition-dashboard-control-readiness.json",
+              "sha256": "fbd117bba4d00ae108048f2e2cfb5942f8e4be835bb00fefe73ef63fc10effa1"
+            },
+            "predecessor": {
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/dashboard-control-readiness-predecessor.json",
+              "sha256": "4728048deedf91ee9906e7605accd6cad6e800fcaffbe2ba3fbf648b1f4abf9d"
+            },
+            "contract_transition": {
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/dashboard-control-readiness-contract-transition.json",
+              "sha256": "80857a4054e0142ccf07e08d084d5076575617fb2a014e4a7bffe5e6aea7a024"
+            }
+          }
         }
       },
       "original_verdict": "INVALID",
@@ -1213,5 +1275,5 @@
       }
     }
   },
-  "updated_at": "2026-09-26T23:50:07.080350+00:00"
+  "updated_at": "2026-09-27T00:17:36.314375+00:00"
 }
