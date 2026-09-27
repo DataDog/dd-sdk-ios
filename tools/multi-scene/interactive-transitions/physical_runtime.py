@@ -17,6 +17,7 @@ import physical_ownership as ownership
 import physical_backend as backend
 import physical_release
 import physical_rum_outcomes as rum_outcomes
+import physical_local as local
 import physical_automatic as automatic
 import runtime as original
 import installed_code
@@ -94,6 +95,7 @@ def prepare(args):
 
 def verify(root):
     root=Path(root);plan=shared.read(root/'plan.json')
+    if local.mode(plan):return local.verify(root,plan,sys.modules[__name__])
     require(plan['helpers']==helpers()==shared.tree(root/'helpers') and plan['definition']==original.definition(),'physical runtime binding changed')
     source,signed=signed_products(plan['build_root'])
     rum_outcomes.mode(plan,source);automatic.mode(plan)
@@ -117,7 +119,8 @@ def stage(args):
     for value in [preflight,operator]:require(value['plan_sha256']==shared.sha(root/'plan.json') and 0<=now-value['at']<300,'stale physical readiness')
     require(preflight['state']=='PASS' and preflight['device']==plan['device'] and operator['kind']=='OPERATOR_READY' and
         operator['user_message_reference'],'missing physical operator prerequisite')
-    for name in ['xcode_workspace','backend_auth','device_receipt','initial_home']:
+    if local.mode(plan):require(preflight.get('backend')=='LOCAL_ONLY_NO_BACKEND_QUERY','wrong local backend scope')
+    for name in ['xcode_workspace','device_receipt','initial_home']+([] if local.mode(plan) else ['backend_auth']):
         item=preflight[name];require(shared.sha(item['path'])==item['sha256'],'physical access receipt changed')
     atomic(root/'native-admission.json',encoded(dict(plan_sha256=shared.sha(root/'plan.json'),review_sha256=shared.sha(root/'review.json'),
         issued_at=now,first_cell_deadline=now+300,execution_deadline=now+plan['pair_seconds']-300,cleanup_deadline=now+plan['pair_seconds'],
@@ -174,7 +177,8 @@ def cleanup(remote,out,bundle,pid,owned,collector,initial,deadline):
 def cell(args):
     root=args.root.resolve();plan=reviewed(root);selected,admission=admit(root,args.key,plan)
     out=root/'cells'/args.key;out.mkdir();(out/'input').mkdir();(out/'documents').mkdir();backend.common.transport.preflight(out)
-    source,signed=signed_products(plan['build_root']);key=selected['arm']+'-device';bound=source['arms'][key]
+    source,signed=(local.products(plan) if local.mode(plan) else signed_products(plan['build_root']))
+    key=selected['arm']+'-device';bound=source['arms'][key]
     item=signed['products'][key+'-'+selected['framework']];bundle=item['bundle'];started=time.time()
     native=args.native_deadline;execution=args.execution_deadline;cleanup_deadline=args.cleanup_deadline
     require(started<native<execution<cleanup_deadline<=admission['cleanup_deadline'] and execution<=admission['execution_deadline'],'closed physical reservation')
@@ -189,6 +193,7 @@ def cell(args):
     previous={sig:signal.signal(sig,interrupted) for sig in [signal.SIGINT,signal.SIGTERM]}
     try:
         device=io.hardware(remote,plan['udid'],out,native);identity['os']=device['os']
+        if local.mode(plan):require(identity['os']==plan['required_os'],'physical OS differs from reviewed local baseline')
         raw,_=remote.command(['device','info','displays'],'initial-display',native);initial=io.display(raw,plan['device'])
         remote.absence(bundle,'preinstall-app-absence',native)
         remote.command(['device','info','files','--domain-type','appDataContainer','--domain-identifier',bundle],'preinstall-container',native,check=False)
@@ -221,7 +226,7 @@ def cell(args):
         initial_sid=collector.wait(first_session,min(native,time.time()+30))
         rows=collector.home() if plan.get('scenario')=='background-finalization-only' else collector.stack()
         if automatic.mode(plan):collector.input_quiescence(min(native,time.time()+90),complete=True)
-        local=ownership.inventory(rows,identity);sid=local['session_id'];require(sid==initial_sid and sid not in known,'restored/replaced physical session')
+        inventory=ownership.inventory(rows,identity);sid=inventory['session_id'];require(sid==initial_sid and sid not in known,'restored/replaced physical session')
         require(time.time()<native,'late physical native scenario');summary['scenario']='PASS';summary['session_id']=sid
         version=(Path(plan['build_root'])/key/'sdk/DatadogCore/Sources/Versioning.swift').read_text()
         match=re.findall(r'internal let __sdkVersion = "([A-Za-z0-9.+_-]+)"',version);require(len(match)==1,'compiled SDK version missing')
@@ -229,8 +234,12 @@ def cell(args):
             backend_sdk_version=match[0].replace('+','_'),environment='s2-transitions')
         atomic(out/'native-summary.json',encoded(dict(identity=identity,expected=expected,transitions=collector.transition_results,binding=collector.binding)))
         collector.deadline=execution
-        joined=backend.terminal(collector,out,identity,expected,started,execution,evidence_contract=rum_outcomes.mode(plan))
-        summary.update(evidence='SOURCE_CLASSIFICATION_REQUIRED',backend_join_sha256=shared.sha(out/'backend-joined.json'))
+        if local.mode(plan):
+            joined=local.terminal(collector,out,identity,execution)
+            summary.update(evidence='SOURCE_CLASSIFICATION_REQUIRED',local_join_sha256=shared.sha(out/'local-joined.json'))
+        else:
+            joined=backend.terminal(collector,out,identity,expected,started,execution,evidence_contract=rum_outcomes.mode(plan))
+            summary.update(evidence='SOURCE_CLASSIFICATION_REQUIRED',backend_join_sha256=shared.sha(out/'backend-joined.json'))
     except Exception as error:summary['reason']=str(error)
     finally:
         began=time.time();deadline=min(cleanup_deadline,began+plan['cleanup_seconds'])
@@ -272,7 +281,17 @@ def qualify(root,key,plan,*,error=None):
 
 
 def compare(root):
-    plan=verify(root);require(plan.get('scenario','stack')=='stack' and len(plan['cells'])==2,'Home-only qualification is not a release pair')
+    plan=verify(root)
+    if local.mode(plan):
+        key=plan['cells'][0]['id'];qualification(root,key,plan)
+        baseline=local.predecessor(plan['predecessor'])['assessment']
+        candidate=shared.read(root/'cells'/key/'local-joined.json')['assessment']
+        result=dict(state='PAIRED_LOCAL_CAPTURE_REQUIRES_SOURCE_CLASSIFICATION',
+            pattern=local.contract.paired(baseline['projection'],candidate['projection']),
+            baseline_observations=baseline['transitions'],candidate_observations=candidate['transitions'],
+            plan_sha256=shared.sha(root/'plan.json'),release_acceptance=False,gate_closures=[])
+        atomic(root/'paired.json',encoded(result));return result
+    require(plan.get('scenario','stack')=='stack' and len(plan['cells'])==2,'Home-only qualification is not a release pair')
     keys=[r['id'] for r in plan['cells']];records=[];inventories=[]
     for key in keys:
         qualification(root,key,plan);folder=root/'cells'/key;record=shared.read(folder/'native-summary.json');records.append(record)
@@ -288,16 +307,19 @@ def compare(root):
 
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser();parser.add_argument('action',choices=['prepare','verify','stage','cell','compare'])
+    parser=argparse.ArgumentParser();parser.add_argument('action',choices=['prepare','prepare-local','verify','stage','cell','compare'])
     parser.add_argument('--root',type=Path,required=True);parser.add_argument('--build-root',type=Path)
     parser.add_argument('--rum-fields',action='store_true')
+    parser.add_argument('--local-baseline',type=Path)
+    parser.add_argument('--local-definition',type=Path)
     parser.add_argument('--automated-input',action='store_true')
     parser.add_argument('--finalization-only',action='store_true');parser.add_argument('--device');parser.add_argument('--framework',default='UIKit',choices=['UIKit','SwiftUI'])
     parser.add_argument('--tracking',default='automatic',choices=['automatic','manual']);parser.add_argument('--key')
     parser.add_argument('--preflight',type=Path);parser.add_argument('--operator',type=Path)
     for name in ['native','execution','cleanup']:parser.add_argument('--'+name+'-deadline',type=float)
     args=parser.parse_args()
-    if args.action=='prepare':prepare(args)
+    if args.action=='prepare-local':local.prepare(args,sys.modules[__name__])
+    elif args.action=='prepare':prepare(args)
     elif args.action=='verify':verify(args.root)
     elif args.action=='stage':stage(args)
     elif args.action=='compare':print(json.dumps(compare(args.root)))

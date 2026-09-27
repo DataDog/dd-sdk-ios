@@ -3,6 +3,7 @@ from pathlib import Path
 import time
 import physical_rum_contract as contract
 import physical_backend as backend
+import physical_local as local
 from capture_io import atomic, encoded
 from acceptance_common import require
 
@@ -13,15 +14,20 @@ QUALIFIED = 'RUM_FIELDS_CAPTURE_QUALIFIED'
 
 def mode(plan, source=None):
     selected = plan.get('evidence_contract')
-    require(selected is None or selected == contract.CONTRACT, 'unknown physical evidence contract')
+    require(selected is None or selected in [contract.CONTRACT,local.contract.CONTRACT], 'unknown physical evidence contract')
     if selected is not None and source is not None:
         require(all(source.get(k) is True for k in ['observer_cost_partition', 'background_finalization',
                     'public_accessibility_inventory', 'ttid_witness']), 'RUM-fields fixture prerequisites absent')
     return selected
 
 
+def qualified_state(plan):
+    return local.QUALIFIED if local.mode(plan) else QUALIFIED
+
+
 def evidence(folder, plan, summary):
     """Recompute from actual saved exchanges and the immutable sealed native stream."""
+    if local.mode(plan):return local.evidence(folder,plan,summary)
     require(mode(plan) == contract.CONTRACT and summary.get('evidence_contract') == contract.CONTRACT,
             'physical RUM-fields summary mode differs')
     require(summary['plan_sha256'] == shared.sha(folder.parent.parent/'plan.json'), 'physical plan hash differs')
@@ -77,14 +83,15 @@ def publish(folder, summary, joined, plan):
     except Exception as error:
         summary['qualification_error'] = str(error)
     summary.update(state='INVALID',release_acceptance=False,gate_closures=[],finished_at=time.time(),
-        mechanism=dict(state=QUALIFIED if ready else 'UNQUALIFIED', evidence_contract=contract.CONTRACT,
-            scope='Physical capture and required RUM payloads; full projection/source review remains separate',
+        mechanism=dict(state=qualified_state(plan) if ready else 'UNQUALIFIED', evidence_contract=mode(plan),
+            scope=('Local capture only; original baseline/backend verdicts and source review remain separate' if local.mode(plan) else
+                   'Physical capture and required RUM payloads; full projection/source review remains separate'),
             permits_planned_candidate=ready,release_acceptance=False))
     summary['artifacts'] = {str(p.relative_to(folder)):shared.sha(p) for p in folder.rglob('*')
                            if p.is_file() and p != folder/'summary.json'}
     atomic(folder/'summary.json',encoded(summary),exclusive=False)
     receipt = dict(summary_sha256=shared.sha(folder/'summary.json'),published_at=time.time(),
-        deadline=summary['cleanup_details']['deadline'],evidence_contract=contract.CONTRACT,release_acceptance=False)
+        deadline=summary['cleanup_details']['deadline'],evidence_contract=mode(plan),release_acceptance=False)
     atomic(folder/'summary-publication.json',encoded(receipt))
     timely = time.time() < receipt['deadline']
     if not timely:atomic(folder/'late-summary-publication.json',encoded(dict(state='INVALID',observed_at=time.time(),**receipt)))
@@ -94,19 +101,20 @@ def publish(folder, summary, joined, plan):
 def summary_record(root, key, plan):
     folder = root/'cells'/key; summary = shared.read(folder/'summary.json')
     receipt = shared.read(folder/'summary-publication.json')
-    require(summary['mechanism']['state'] == QUALIFIED and summary['mechanism']['evidence_contract'] == contract.CONTRACT
+    require(summary['mechanism']['state'] == qualified_state(plan) and summary['mechanism']['evidence_contract'] == mode(plan)
             and summary['mechanism']['permits_planned_candidate'] is True and summary['mechanism']['release_acceptance'] is False
             and summary['state'] == 'INVALID' and summary['release_acceptance'] is False and summary['gate_closures'] == []
             and summary['scenario'] == summary['cleanup'] == 'PASS' and summary['evidence'] == 'SOURCE_CLASSIFICATION_REQUIRED'
             and not summary.get('reason') and not summary.get('evidence_errors') and not summary.get('qualification_error'),
             'physical RUM-fields mechanism not qualified')
-    require(receipt.get('evidence_contract') == contract.CONTRACT and receipt['release_acceptance'] is False
+    require(receipt.get('evidence_contract') == mode(plan) and receipt['release_acceptance'] is False
             and receipt['summary_sha256'] == shared.sha(folder/'summary.json')
             and summary['finished_at'] <= receipt['published_at'] < receipt['deadline'] == summary['cleanup_details']['deadline'] <= summary['cleanup_deadline']
             and (folder/'summary-publication.json').stat().st_mtime < receipt['deadline']
             and not (folder/'late-summary-publication.json').exists(), 'physical RUM-fields publication changed or late')
     artifacts = summary['artifacts']
-    require({'backend-joined.json','terminal-rejoin.json','sealed-events.jsonl','native-summary.json'} <= set(artifacts)
+    required={'local-joined.json' if local.mode(plan) else 'backend-joined.json','terminal-rejoin.json','sealed-events.jsonl','native-summary.json'}
+    require(required <= set(artifacts)
             and {str(p.relative_to(folder)) for p in folder.rglob('*') if p.is_file()} == set(artifacts)|{'summary.json','summary-publication.json'}
             and all(shared.sha(folder/name) == digest for name,digest in artifacts.items()), 'physical evidence inventory changed')
     evidence(folder, plan, summary)
@@ -123,8 +131,8 @@ def qualify(root, key, plan, *, error=None):
                 and worker['finished_at'] < time.time() < summary['cleanup_deadline'], 'physical supervisor not quiescent or late')
         ready = True
     except Exception as failure:error = str(failure)
-    record = dict(state=QUALIFIED if ready else 'UNQUALIFIED',arm=key,finished_at=time.time(),
-        evidence_contract=contract.CONTRACT,plan_sha256=shared.sha(root/'plan.json'),
+    record = dict(state=qualified_state(plan) if ready else 'UNQUALIFIED',arm=key,finished_at=time.time(),
+        evidence_contract=mode(plan),plan_sha256=shared.sha(root/'plan.json'),
         summary_sha256=shared.sha(folder/'summary.json') if (folder/'summary.json').exists() else None,
         publication_sha256=shared.sha(folder/'summary-publication.json') if (folder/'summary-publication.json').exists() else None,
         supervisor=dict(path=str(worker_path),sha256=shared.sha(worker_path)) if worker_path.exists() else None,
@@ -140,7 +148,7 @@ def qualification(root, key, plan):
     summary = summary_record(root,key,plan); folder = root/'cells'/key
     result = shared.read(root/(key+'-qualification.json')); worker_path = root/(key+'-driver.supervisor.json')
     worker = shared.read(worker_path)
-    require(result['state'] == QUALIFIED and result.get('evidence_contract') == contract.CONTRACT
+    require(result['state'] == qualified_state(plan) and result.get('evidence_contract') == mode(plan)
             and result['plan_sha256'] == shared.sha(root/'plan.json')
             and result['summary_sha256'] == shared.sha(folder/'summary.json')
             and result['publication_sha256'] == shared.sha(folder/'summary-publication.json')

@@ -34,7 +34,7 @@ def run(args):
     operator.publish(root/'operator',dict(instruction='This cell is captured. Wait for review and the next app.' if ready else
         'The test stopped. Do not repeat gestures. Evidence and cleanup are being checked.'),context=args.key)
     scoped=dict(evidence_contract=runtime.rum_outcomes.mode(plan)) if runtime.rum_outcomes.mode(plan) is not None else {}
-    state=runtime.rum_outcomes.QUALIFIED if scoped and ready else 'MECHANISM_QUALIFIED' if ready else 'STOPPED'
+    state=runtime.rum_outcomes.qualified_state(plan) if scoped and ready else 'MECHANISM_QUALIFIED' if ready else 'STOPPED'
     print(json.dumps(dict(**scoped,state=state,cell=args.key,release_acceptance=False)),flush=True)
     return 0 if code==0 and ready else 1
 

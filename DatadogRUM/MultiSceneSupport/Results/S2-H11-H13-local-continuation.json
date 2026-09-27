@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "state": "REVIEWED_CANDIDATE_ONLY_NATIVE_UNADMITTED",
+  "updated_at": "2026-09-27T02:18:22.271614+00:00",
+  "owner": "root",
+  "reviewer": "/root/c06_runtime_plan",
+  "gates": [
+    "S2:H11",
+    "S2:H13"
+  ],
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/physical-candidate/definition.json",
+    "sha256": "cc534f0d29f1f649954167a003d420bbac9bb8823ac6f4b97217f0c3319653d5"
+  },
+  "predecessor": "Results/S2-H11-H13-local-baseline.json",
+  "preparation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/physical-candidate/preparation.json",
+    "sha256": "b23dc9ca0eca33c362ea4ecf442dbcf118c4fa4930103d7a442da36c98442e3a"
+  },
+  "runtime_plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/physical-candidate/runtime/plan.json",
+    "sha256": "a13c58470c51ff4253948fe595b6a68828c3520067a1fd17a6a76d31b7bf0b1f"
+  },
+  "controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/physical-candidate/runtime/controls.json",
+    "sha256": "b057bae7f637bac4183b017242ee1da79dc12d7f93fb6baefa108ad779d14110"
+  },
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/physical-candidate/runtime/review.json",
+    "sha256": "1048d3175b1adb72c4d2baeb8e12682d3d3366ff033335d8b3f88681e178e051"
+  },
+  "source_pair": {
+    "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "candidate": "c9faed816a1d4828d7d8c4b64acae01119425889"
+  },
+  "result": {
+    "candidate_cells": 1,
+    "existing_signed_products": "REVERIFIED",
+    "builds": 0,
+    "native_runs": 0,
+    "backend_queries": 0,
+    "unit_tests": 101,
+    "captured_evidence_controls": 14
+  },
+  "contract": "s2-local-transitions-v1",
+  "scope": "Only the missing physical UIKit automatic candidate. Exact actual transition/owner, View/Action and Home stop inventory; actual display and installed binary bound. Recorder duration and mapper-before-callback timing remain diagnostic. Complete backend delivery is separately owned.",
+  "original_verdicts": "Immutable INVALID / evidence INCOMPLETE / cleanup PASS; no old admission renewed",
+  "release_acceptance": false,
+  "gate_closures": [],
+  "next_action": "Use the existing supervised human runner for this one candidate only after fresh matching physical iPad and operator readiness. Preserve release/native-idle cleanup on failure. Compare the full local inventory with the reviewed saved baseline and obtain paired source classification before any H11/H13 closure. While human input is unavailable, assess remaining source-matched saved evidence; do not repeat stopped input diagnostics."
+}

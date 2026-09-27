@@ -572,3 +572,9 @@ views/10actions, Home stop and cleanup were reverified. Four emitted callback ac
 have the expected owner. The finish chains retain their original asynchronous mapper
 snapshot failures. Fourteen captured-evidence controls, six unit tests and designated
 review pass. Candidate remains unrun; no gate closes and no original verdict changes.
+
+The [candidate-only continuation](../Results/S2-H11-H13-local-continuation.json)
+now binds the missing UIKit arm to that reviewed baseline and the existing signed
+products. Its local View/Action contract retains actual display/transition/owner
+checks and cleanup, with no backend query. Preparation and review pass; fresh
+physical/operator readiness and a real candidate result remain required.

@@ -270,3 +270,26 @@ and obtains same-process idle proof separately. The session creator consumes the
 close request and retains its exact EndSession return. Named qualification requires
 all these proofs as well as the original native/backend/cleanup contracts. A failed
 first planned baseline stops this input path; it cannot admit another diagnostic.
+
+For the reviewed S2 local baseline reuse, `physical_runtime.py prepare-local` takes
+`--root`, `--local-baseline` and `--local-definition`. It prepares exactly the missing
+UIKit automatic B cell from the original source pair and signed products. The plan
+binds the saved baseline assessment, review, original artifacts, compiler/install
+identity and authorized workspace transition. Only recorder duration bounds are
+removed from the copied original oracle; durations remain recorded. No build or
+device launch is part of preparation.
+
+This explicit local mode captures the ordered setup taps, four real interactive
+transitions and Home. Actual display geometry, callback ownership, occurrence
+identity and cancellation relations remain required. Later inactive Home revisions
+may extend the writer checkpoint; later native input cannot. The complete local
+stream is sealed across process termination and independently recomputed. It makes
+no backend query or immediate-upload claim. The existing release/native-idle fence,
+fresh operator/device readiness, fixed operational deadlines, cleanup and supervisor
+qualification still apply. Default backend modes retain their existing contracts.
+
+The named local result retains the baseline's original semantic observations and
+compares complete normalized local inventories. It cannot close a release gate or
+rewrite the original INVALID result; paired source/environment review is separate.
+The [continuation record](../../../DatadogRUM/MultiSceneSupport/Results/S2-H11-H13-local-continuation.json)
+owns the frozen preparation and remaining prerequisites.
