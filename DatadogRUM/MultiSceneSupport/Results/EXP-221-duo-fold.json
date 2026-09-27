@@ -653,5 +653,61 @@
     "contract": "release-gates.json: releases.S2.acceptance_contract/execution_packages",
     "effect": "Prospective S2 execution scope supersedes broader remaining-matrix and whole-payload prerequisites. Original definitions, admissions, attempts and verdicts remain unchanged. No native admission or gate closure.",
     "next": "Assess reusable actual observations against the scoped gate before any new native run; bind amended runner expectations and focused controls first."
+  },
+  "current_preparation": {
+    "schema_version": 1,
+    "work_item": "S2:T03/T08 current Resource/Trace fold preparation",
+    "state": "REVIEWED_NATIVE_UNADMITTED",
+    "updated_at": "2026-09-27T02:39:58.001398+00:00",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/resource-fold/definition.json",
+      "sha256": "1e3855d9a4c191457d2568a79f418af3b7f8f21acee6a9eead06a71d28056ed4"
+    },
+    "runtime_plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/resource-fold/runtime/runtime-plan.json",
+      "sha256": "37e850b799482468b31d3852b24e810b07a36ecdae201668fe98c1a71384fc44"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/resource-fold/runtime/runtime-review.json",
+      "sha256": "996fd7be3a9cf4eaa335a815b42ff23cf5ecfeb1d49bf89b7a12bfc50b0b11a3"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/resource-fold/runtime/runtime-controls.json",
+      "sha256": "9dcbf6c309c5dfcb2fc8b2210154e0f9ba0677e02833ce93e168b86466fb54f0"
+    },
+    "build_reuse": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/resource-fold/build-reuse.json",
+      "sha256": "18a3d96a38714fec61ced8c3edad339af21f20b15545aac1bccdd164d940c77f"
+    },
+    "changes": [
+      "Diagnostic capture/automatic elapsed/TTID duration checks; exact registered metric provenance retained.",
+      "Request gather_started_ms accepted and exactly bound to response phase clock.",
+      "Authorized documentation transition replaces stale documentation protections; both user-owned paths remain exact."
+    ],
+    "cells": [
+      "A-automatic",
+      "A-registered",
+      "B-automatic",
+      "B-registered"
+    ],
+    "compiler_reuse": {
+      "sources_per_arm": 619,
+      "lists_per_arm": 12,
+      "objects_per_arm": 1258,
+      "arms": [
+        "A",
+        "B"
+      ]
+    },
+    "native_launches": 0,
+    "additional_builds": 0,
+    "backend_requests": 0,
+    "gate_closures": [],
+    "remaining": "Fresh Xcode/Duo/runtime and RUM/APM access plus operator readiness before new stage admission. First planned A-automatic cell qualifies the mechanism; no extra diagnostics or accepted-navigation/rollover repeats.",
+    "source_pair": {
+      "A": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "B": "c9faed816a1d4828d7d8c4b64acae01119425889"
+    },
+    "original_result_policy": "Original failed scenarios, cleanup verdicts and later successful restoration remain unchanged."
   }
 }

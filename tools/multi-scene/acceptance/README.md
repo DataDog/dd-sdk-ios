@@ -464,3 +464,12 @@ admission. Its SHA is required by `cell --arm A|B --mode automatic|registered
 responses while the cell requests human input. The four ordered cells have zero
 retries; the first baseline qualifies the mechanism. Missing effect, evidence or
 cleanup stops this path. Original deadlines are never reopened.
+
+For the current S2 contract, prepare with `--scope-definition` pointing to the
+reviewed definition in the fold owner's `current_preparation`. This opt-in binds
+the approved documentation consolidation and preserves both user-owned paths.
+Its copied oracle keeps capture duration, automatic elapsed brackets and incidental
+TTID duration as diagnostics. Exact registered metrics, ownership, ordering, full
+inventories and actual display/scene/window proofs remain required. The request's
+first `gather_started_ms` must equal the response's phase clock; transport and cleanup
+deadlines remain fixed. Original helpers, attempts and verdicts are untouched.

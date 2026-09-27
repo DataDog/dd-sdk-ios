@@ -9,11 +9,12 @@ import subprocess
 import time
 from acceptance_common import require
 import s2_hosting_workflow as shared
+import resource_fold_scope as scoped
 
 OWNER=shared.REPO/'DatadogRUM/MultiSceneSupport/Results/EXP-221-duo-fold.json'
 
 
-def verify():
+def verify(scope=None):
     definition=shared.read(OWNER)['human_preparation'];root=Path(definition['original_root']);matrix=root/'matrix'
     require(all(shared.sha(root/name)==value for name,value in definition['original_inputs'].items()),'original fold inputs changed')
     plan=shared.read(matrix/'plan.json');manifest=shared.read(matrix/'helper-manifest.json')
@@ -22,8 +23,11 @@ def verify():
     spec=importlib.util.spec_from_file_location('resource_build_origin',manifest['host.py']['path'])
     origin=importlib.util.module_from_spec(spec);spec.loader.exec_module(origin)
     protected=shared.read(root/'source-contract.json')
-    require(origin.protected_state(plan['protected_repository'])==protected['main_protected_state']
-            and all(shared.sha(Path(plan['protected_repository'])/name)==value for name,value in protected['side_documents'].items()),'protected files changed')
+    require(origin.protected_state(plan['protected_repository'])==protected['main_protected_state'],'protected user files changed')
+    if scope is None:
+        require(all(shared.sha(Path(plan['protected_repository'])/name)==value for name,value in protected['side_documents'].items()),'protected documents changed')
+    else:
+        require(scoped.validate(scope,definition)==protected,'historical source contract differs')
     result={}
     for arm,bound in definition['reused_builds'].items():
         folder=matrix/arm;qualification=shared.read(bound['path']);build=shared.read(folder/'build-result.json')

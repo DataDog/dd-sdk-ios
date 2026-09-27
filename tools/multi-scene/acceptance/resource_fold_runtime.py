@@ -17,6 +17,7 @@ from acceptance_common import require
 import resource_fold_reuse as reuse
 import resource_fold_runtime_variant as variant
 import s2_hosting_workflow as shared
+import resource_fold_scope as scoped
 
 STAGE='human-observed-resource-fold'
 CELLS=['A-automatic','A-registered','B-automatic','B-registered']
@@ -73,6 +74,14 @@ def helper_closure():
     return found
 
 
+def verify_workspace(root):
+    plan=shared.read(Path(root)/'runtime-plan.json')
+    if 'semantic_scope' in plan:
+        scoped.validate(shared.read(bound(plan['semantic_scope'])),plan['contract'])
+        require(scoped.protected()==plan['protected'],'protected user workspace changed')
+    else:require(shared.protected()==plan['protected'],'protected workspace changed')
+
+
 def verify_runtime(root, expected_sha=None, deep=False):
     root=Path(root).resolve();plan=shared.read(root/'runtime-plan.json')
     require(not (root/'runtime-plan.json').is_symlink() and (expected_sha is None or shared.sha(root/'runtime-plan.json')==expected_sha),'runtime plan changed')
@@ -81,7 +90,7 @@ def verify_runtime(root, expected_sha=None, deep=False):
     require(contract(shared.read(OWNER)['human_preparation'])==plan['contract'],'human execution contract changed')
     require(shared.tree(root/'helpers')==plan['helpers'] and all(shared.sha(shared.REPO/name)==sha for name,sha in plan['helpers'].items()),'runtime helpers changed')
     require(shared.tree(root/'generated')==plan['generated'],'generated runner changed')
-    require(shared.protected()==plan['protected'],'protected workspace changed')
+    verify_workspace(root)
     origin=Path(plan['contract']['original_root']);matrix=origin/'matrix'
     require(all(shared.sha(origin/name)==sha for name,sha in plan['contract']['original_inputs'].items()),'original fold inputs changed')
     manifest=shared.read(bound(plan['original_manifest']))
@@ -89,7 +98,8 @@ def verify_runtime(root, expected_sha=None, deep=False):
     for key in ['build_reuse','proof_review','preparation']:bound(plan[key])
     for value in plan['contract']['reused_builds'].values():bound(value)
     if deep:
-        actual=reuse.verify();record=shared.read(plan['build_reuse']['path'])
+        scope=shared.read(bound(plan['semantic_scope'])) if 'semantic_scope' in plan else None
+        actual=reuse.verify(scope);record=shared.read(plan['build_reuse']['path'])
         require(actual['arms']==record['arms'] and actual['original_plan_sha256']==record['original_plan_sha256']
                 and actual['original_helpers_sha256']==record['original_helpers_sha256'],'full compiler/product reuse changed')
     return plan
@@ -104,15 +114,22 @@ def prepare(args):
     require(reuse_record['state']=='QUALIFIED_REUSE_ONLY','unqualified build reuse')
     proof=shared.read(bound(definition['review']));require(proof['state']=='CONDITIONAL_PASS_OFFLINE_PREPARATION'
             and proof['reviewer']=='/root/c06_runtime_plan','human proof not reviewed')
+    scope_path=getattr(args,'scope_definition',None)
+    scope=shared.read(scope_path) if scope_path else None
+    if scope is not None:scoped.validate(scope,definition)
     root.mkdir(parents=True);(root/'generated').mkdir();(root/'cells').mkdir()
     helpers=helper_closure();shared.freeze_helpers(root,helpers)
     for name in GENERATED:
         original=source/'host'/name
-        (root/'generated'/name).write_bytes(variant.render(name,original.read_bytes(),definition['original_inputs']['host/'+name]))
+        (root/'generated'/name).write_bytes(variant.render(name,original.read_bytes(),definition['original_inputs']['host/'+name],semantic=scope is not None))
+    if scope is not None:
+        original=shared.read(source/'matrix/helper-manifest.json')['oracle']
+        (root/'generated/scoped_oracle.py').write_bytes(scoped.render_oracle(bound({'path':original['path'],'sha256':original['sha256']}).read_bytes(),original['sha256']))
     plan={'schema_version':1,'stage':STAGE,'root':str(root),'prepared_at':time.time(),'contract':contract(definition),
           'original_manifest':ref(source/'matrix/helper-manifest.json'),'build_reuse':definition['build_reuse'],
           'proof_review':definition['review'],'preparation':definition['preparation'],'helpers':helpers,
-          'generated':shared.tree(root/'generated'),'protected':shared.protected(),'native_admitted':False}
+          'generated':shared.tree(root/'generated'),'protected':scoped.protected() if scope is not None else shared.protected(),'native_admitted':False}
+    if scope is not None:plan['semantic_scope']=ref(scope_path)
     save(root/'runtime-plan.json',plan);verify_runtime(root)
     print(json.dumps({'state':'PREPARED_RUNTIME_ONLY','root':str(root),'plan_sha256':shared.sha(root/'runtime-plan.json'),'native_launches':0,'additional_builds':0}))
 
@@ -236,6 +253,7 @@ def main():
     parser=argparse.ArgumentParser();sub=parser.add_subparsers(dest='operation',required=True)
     for name in ['prepare','verify','stage','cell']:
         item=sub.add_parser(name);item.add_argument('--runtime-root',type=Path,required=True)
+        if name=='prepare':item.add_argument('--scope-definition',type=Path)
         if name!='prepare':item.add_argument('--plan-sha256',required=True)
         if name=='cell':
             for key in ['arm','mode','device','stage-sha256']:item.add_argument('--'+key,required=True)

@@ -269,7 +269,7 @@ conclusions belong in [ASSESSMENT.md](ASSESSMENT.md).
 
 | <a id="exp-220"></a>EXP-220 | A02, C07, C08 | DIAGNOSTIC PAIR COLLECTED | Baseline SDK-on/off callbacks succeed on regular iPhone27.0; SDK-on qualified offline after a preserved stale-path host stop. No SDK cause, candidate/Duo acceptance or gate credit. | [record](Experiments/EXP-220-native-input-callback.md#exp-220--observe-selector-callback-ownership-during-native-uikit-input) |
 
-| <a id="exp-221"></a>EXP-221 | T03, T08 | FOLD TRANSPORT STOPPED; LATER RESTORATION PASS | Late Closed receipt invalidates the Date continuation; original cleanup remains INVALID and separate restoration passes. Human runner and unchanged build reuse qualify; four human cells remain. Accepted navigation/rollover retained. | [record](Experiments/EXP-221-s2-resource-trace.md#exp-221--compare-active-work-ownership-on-the-selected-s2-composition) |
+| <a id="exp-221"></a>EXP-221 | T03, T08 | FOLD PREPARATION REVIEWED; NATIVE UNADMITTED | Current timing/workspace rules and request-clock schema qualify49 Python/6 connector controls with original products. Four human fold cells remain. Original INVALID and separate restoration PASS retained; navigation/rollover accepted. | [record](Experiments/EXP-221-s2-resource-trace.md#exp-221--compare-active-work-ownership-on-the-selected-s2-composition) |
 
 | <a id="exp-222"></a>EXP-222 | H16 | S2:H16 CLOSED; original attempts retained | Separate reviewed assessment of four saved recordings qualifies automatic/manual native hosting parity; no new run. Auxiliary callback difference and manual B backend gap remain. | [record](Experiments/EXP-222-hosted-swiftui.md#exp-222--qualify-ordinary-hosting-on-the-selected-s2-composition) |
 

@@ -121,3 +121,16 @@ A budget review caught inherited120second cleanup clocks before admission; all
 new contract/build inputs now reserve2400seconds execution and300seconds cleanup
 per cell, with a13200second complete two-build/four-cell ledger. The owner retains
 the scoped review and fixed budgets. No SDK cause is established.
+
+The subsequent Date-bound attempt and failed cleanup remain INVALID; its separate
+restoration passes. Automated fold input is stopped. September27 preparation applies
+the current measurement rule to the already planned four human fold cells: recorder
+and automatic elapsed-time bounds are diagnostic, while exact owners, native
+ordering, registered metrics, full backend inventory and cleanup remain mandatory.
+It also fixes the request timestamp/schema mismatch and binds the approved
+documentation transition. All49 Python and6 connector controls pass, both original
+compiler/product inventories match, and the designated review passes. The
+[fold owner](../Results/EXP-221-duo-fold.json) holds the new frozen preparation;
+no build, native launch or backend query occurred. Fresh operator/access readiness
+is still required. F08 separately closes the integrated-app obligation; T03/T08
+await these four fold cells.

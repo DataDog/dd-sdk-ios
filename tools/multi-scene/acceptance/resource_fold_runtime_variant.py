@@ -4,7 +4,7 @@ from acceptance_common import require
 from resource_fold_variant import replace_once, render as human_render
 
 
-def render(name, original, expected_sha256):
+def render(name, original, expected_sha256, *, semantic=False):
     require(hashlib.sha256(original).hexdigest()==expected_sha256,'original runtime source changed')
     if name in ['fold_host.py','fold_oracle.py']:
         text=human_render(name,original,expected_sha256).decode()
@@ -61,4 +61,14 @@ def render(name, original, expected_sha256):
 '''
         return text.encode()
     else:require(False,'unadmitted runtime projection')
+    if semantic and name=='fold_oracle.py':
+        from resource_fold_scope import render_fold
+        return render_fold(text.encode())
+    if semantic and name=='cell.py':
+        require(text.count('safety.protected(root)')==2,'protected boundary count changed')
+        text=text.replace('safety.protected(root)','stage.verify_workspace(args.runtime_root)')
+        text=replace_once(text,"spec_from_file_location('oracle',args.oracle)",
+                         "spec_from_file_location('oracle',args.runtime_root/'generated/scoped_oracle.py')")
+        text=replace_once(text,"    def update(state):",
+                         "    summary['scoped_oracle_sha256']=digest(args.runtime_root/'generated/scoped_oracle.py')\n    def update(state):")
     compile(text,name,'exec');return text.encode()
