@@ -2965,5 +2965,11 @@
     "owner_record": "Results/S2-H11-H13-local-continuation.json",
     "candidate": "PREPARED_UNRUN",
     "gate_closures": []
+  },
+  "s2_swiftui_duo_continuation": {
+    "state": "REVIEWED_NATIVE_UNADMITTED",
+    "owner_record": "Results/S2-H12-H13-swiftui-duo.json",
+    "native_runs": 0,
+    "gate_closures": []
   }
 }

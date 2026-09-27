@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "work_item": "S2 SwiftUI stack transition comparisons",
+  "status": "REVIEWED_NATIVE_UNADMITTED",
+  "updated_at": "2026-09-27T03:28:27.914896+00:00",
+  "gates": [
+    "S2:H12",
+    "S2:H13"
+  ],
+  "owner": "SDK implementer; root owns native lane",
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/swiftui-duo/definition.json",
+    "sha256": "79c20562af135b3be4d3626d6036605dc046082385923063cc429b51fadcf498"
+  },
+  "build_plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/swiftui-duo/build-reviewed/plan.json",
+    "sha256": "227f4f7752bdd9cf420a14328d31f79fa94ec689a3f5a9a952eafc4189eac729"
+  },
+  "candidate_build": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/swiftui-duo/build-reviewed/B-simulator/build-result.json",
+    "sha256": "f2ac8ac9a64d892726de47aca960208d1ed5eb1310471331007d3318cbefa283"
+  },
+  "matrix": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/swiftui-duo/runtime-reviewed/matrix.json",
+    "sha256": "5c16766bb85d5ce047ea71619f2eb6b6eb9ab3809a1497fcdb1164c9c68331a3"
+  },
+  "controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/swiftui-duo/runtime-reviewed/controls.json",
+    "sha256": "131f744891cb3205b42bcec5d89b545196cb8d9ad883ec3c5d5cf80d52ae37ac"
+  },
+  "cells": [
+    "SwiftUI-automatic-A",
+    "SwiftUI-automatic-B",
+    "SwiftUI-manual-A",
+    "SwiftUI-manual-B"
+  ],
+  "baseline_builds": 0,
+  "candidate_builds": 1,
+  "native_launches": 0,
+  "native_admitted": false,
+  "gate_closures": [],
+  "source_pair": {
+    "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "candidate": "c9faed816a1d4828d7d8c4b64acae01119425889"
+  },
+  "fixture": "Five source files copied byte-for-byte from the qualified ordinary-simulator capture build; original A product reused. No SDK or original build/helper/attempt mutation.",
+  "decisive_test": "Each source/mode proves actual pop finish/cancel and sheet finish/cancel, callback-work owners, complete local View/Action occurrence inventory, actual Closed display and source-owned topology, Home stop and task-only cleanup. Compare A/B per mode; source/environment review remains separate.",
+  "qualification": "The previous ordinary-simulator capture supplies mechanism evidence only. First planned Duo automatic A qualifies actual Duo effects; one attempt per cell, any decisive failure stops the remaining matrix.",
+  "timing": "Positive measured durations are diagnostic. Original setup/native/input/collection/cleanup budgets stay fixed; no immediate upload or synchronous mapper-order predicate.",
+  "cleanup": "Stop and attest the exact native child and input sequence before ending its session; bind complete actual tool returns. Preserve evidence, remove only the task app and verify unchanged other apps, original display/state and protected files.",
+  "prerequisite": "Fresh Xcode/Duo/Home/task absence and source identity at first planned baseline; no gestures or authentication requested during unattended work.",
+  "sdk_changes": false,
+  "original_failures_unchanged": true,
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/swiftui-duo/runtime-reviewed/review.json",
+    "sha256": "c866042f4f3fb06bcd231ad9dcbcdb4e133f034d1d414660e22c3a3fc704bf3c"
+  },
+  "worker_controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/swiftui-duo/worker/validation.json",
+    "sha256": "67fef6b37528ae4a632752352d346b7e96b7377fb45b71a62466507f9d2bac8f"
+  }
+}

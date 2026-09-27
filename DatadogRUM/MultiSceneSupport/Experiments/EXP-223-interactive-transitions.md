@@ -578,3 +578,14 @@ now binds the missing UIKit arm to that reviewed baseline and the existing signe
 products. Its local View/Action contract retains actual display/transition/owner
 checks and cleanup, with no backend query. Preparation and review pass; fresh
 physical/operator readiness and a real candidate result remain required.
+
+
+## Scoped Duo SwiftUI continuation, September27
+
+[Four missing SwiftUI stack cells](../Results/S2-H12-H13-swiftui-duo.json) now
+reuse the qualified ordinary-simulator fixture and original baseline executable.
+One candidate build passed with the exact five fixture files; SDK source is unchanged.
+The finite automatic/existing-manual pairs preserve actual transition and callback
+owners, complete local View/Action inventories, real display geometry and cleanup.
+The first planned Duo baseline qualifies the input mechanism; a failure stops this
+automated path. No native result or gate closure is claimed by preparation.

@@ -301,3 +301,21 @@ compares complete normalized local inventories. It cannot close a release gate o
 rewrite the original INVALID result; paired source/environment review is separate.
 The [continuation record](../../../DatadogRUM/MultiSceneSupport/Results/S2-H11-H13-local-continuation.json)
 owns the frozen preparation and remaining prerequisites.
+
+
+`swiftui_duo_build.py` prepares only the four missing S2 SwiftUI stack cells. It
+reuses the original baseline product and copies its five qualified fixture files
+exactly into a new candidate source container. Archive, compiler membership, local
+package boundaries and executable receipts must match before reuse. Only one
+candidate simulator build is admitted; the ordinary capture is not Duo acceptance.
+
+`swiftui_duo_runtime.py prepare` freezes both products, the original semantic
+transition oracle (duration ceiling diagnostic), current helpers and finite budgets.
+Each cell uses a fresh supported Xcode session and `swiftui_duo_input.py` to bind
+the unchanged input pump to its source/mode. Actual returned observations are kept.
+Root records child start/terminal identity; cleanup requires worker quiescence and
+all published input completions. The task app is removed only after evidence
+preservation. Compare complete final local inventories per mode, then review
+source/environment applicability separately. A first-cell input failure stops the
+path; no equivalent diagnostic retry is admitted. The [owning record](../../../DatadogRUM/MultiSceneSupport/Results/S2-H12-H13-swiftui-duo.json)
+contains current plans, controls, outcomes and remaining prerequisites.
