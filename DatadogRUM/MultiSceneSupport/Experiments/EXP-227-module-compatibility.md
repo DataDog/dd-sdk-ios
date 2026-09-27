@@ -163,3 +163,12 @@ regression or behavioral qualification. The native Integration path is stopped;
 no equivalent retry is admitted. Preserve the qualified build, saved raw inventory,
 source-bound classifier and all original invalid/cleanup records for a separately
 justified environment recovery. Eight non-RUM suites remain qualified.
+
+The [September27 prerequisite audit](../Results/EXP-227-integration-preflight.json)
+finds identical linker-signature diagnostics on the stopped and accepted EXP217
+products; signing is not an installer discriminator. All256 saved products remain
+unchanged. An explicit approved-document transition repairs the current source
+preflight without rewriting the old snapshots. The [17.5 definition](../Results/EXP-227-integration17-definition.json)
+selects one fresh iPad runtime backed by EXP217's launch precedent, with275 current
+tests and the two unchanged Replay exclusions. Offline controls pass60/60;
+native admission and current-source qualification remain separate.

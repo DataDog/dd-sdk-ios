@@ -16,10 +16,34 @@ require = common.require
 execution = common.execution
 DEFINITION = shared.REPO / 'DatadogRUM/MultiSceneSupport/Results/EXP-227-modules-definition.json'
 PROJECT = Path('Datadog/Datadog.xcodeproj/project.pbxproj')
+USER_PATHS = ['Datadog/Datadog.xcodeproj/project.pbxproj', 'xcconfigs/Datadog.local.xcconfig']
+DOCUMENT_TRANSITION = 'DatadogRUM/MultiSceneSupport/Results/navigation-documentation-consolidation-20260924.json'
 
 
 def helpers():
     return {**common.helpers(), **{str(p): shared.sha(p) for p in [Path(__file__).resolve(), Path(__file__).with_name('test_module_inputs.py').resolve()]}}
+
+
+def verify_workspace_protection(original, current, transition=None):
+    if transition is None:
+        require(current == original, 'protected user files changed')
+        return
+    require(set(transition) == {'authority', 'original_documents'}, 'unknown workspace transition')
+
+    def bound(value, expected):
+        require(set(value) == {'path', 'sha256'} and Path(value['path']) == expected
+                and expected.is_file() and not expected.is_symlink()
+                and shared.sha(expected) == value['sha256'], 'workspace transition reference changed')
+        return shared.read(expected)
+
+    authority = bound(transition['authority'], shared.REPO / DOCUMENT_TRANSITION)['main_integration']
+    require(authority['source_commit'] == '6fd89e112ee79f25a7d36f744604a4b5f6eca0d4'
+            and authority['remaining_protected_paths'] == USER_PATHS, 'workspace transition authority differs')
+    approved = bound(transition['original_documents'], Path(authority['evidence_root']) / 'original-input-manifest.json')['paths']
+    require(len(approved) == 10 and set(original) == set(current) == set(USER_PATHS) | set(approved)
+            and all(original[name].get('sha256') == digest for name, digest in approved.items()),
+            'historical protected documents are not the approved originals')
+    require(all(current[name] == original[name] for name in USER_PATHS), 'protected user files changed')
 
 
 def project_members(workspace, include_dependencies=False, empty_entries=None, asset_target=None):
@@ -173,7 +197,7 @@ def verify(root, input_name='inputs.json'):
     require(common.original.inventory(packages / 'repositories') == plan['repositories'] and
             common.alternate_inventory(packages) == plan['alternates'], 'module dependency object store changed')
     require(common.original.inventory(packages / 'artifacts') == plan['artifacts'] and package_registry(packages) == plan['artifact_registry'], 'module binary dependency changed')
-    require(common.original.build.protected() == plan['protected'], 'protected user files changed')
+    verify_workspace_protection(plan['protected'], common.original.build.protected(), plan.get('workspace_transition'))
     return definition, plan
 
 

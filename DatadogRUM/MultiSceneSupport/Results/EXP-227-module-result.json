@@ -537,5 +537,17 @@
     },
     "cause": "NSCocoaErrorDomain4097: simulator installer could not communicate with helper application; no assertion ran.",
     "cell_summary_sha256": "3c6d1b8eec108c12decd29d639a547c356ea37f04733248b4cfe6ec38a2dbb69"
+  },
+  "integration17_preparation": {
+    "owner": "Results/EXP-227-integration-preflight.json",
+    "state": "PREPARED_NATIVE_UNADMITTED",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified",
+    "source_unchanged": true,
+    "tests_selected": 275,
+    "controls": 60,
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/review.json",
+      "sha256": "9966dba910e53ff86b332f548b9520fe661ff03167c76893ac42fd974c1f9996"
+    }
   }
 }

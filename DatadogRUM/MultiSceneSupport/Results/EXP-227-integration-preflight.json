@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-227",
+  "gate": "S3:F03:M01",
+  "status": "OFFLINE_QUALIFIED_NATIVE_ADMISSION_READY",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-installer-preflight-cqmm18lo",
+  "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "scope": "Qualify current input preparation after the approved documentation consolidation. Preserve the stopped Integration26.5 attempt and all accepted suites. No native retry is admitted by this record.",
+  "findings": [
+    "All256 saved build products and21 execution helpers still match their frozen inventories.",
+    "The strict codesign resource-seal failure also occurs on the accepted EXP217 Integration product: same Xcode27.1, SDK27.1, deployment15 and linker-generated ad hoc signature. It is not a recovery discriminator.",
+    "Historical installer logs remain inaccessible through the OS log store; no installer root cause is established.",
+    "The existing input verifier stops on the ten formerly protected documentation paths changed by the approved September24 consolidation. The two remaining user paths are unchanged."
+  ],
+  "implementation": {
+    "owner": "SDK implementer",
+    "paths": [
+      "tools/multi-scene/compatibility/module_inputs.py",
+      "tools/multi-scene/compatibility/test_module_inputs.py",
+      "tools/multi-scene/compatibility/clean_integration.py",
+      "tools/multi-scene/compatibility/test_clean_integration.py"
+    ],
+    "change": "Add an explicit optional transition binding to fresh continuation inputs. Verify the approved consolidation receipt, exact original ten-document manifest, unchanged historical snapshot and current two user paths. Historical admissions without the binding keep their existing strict behavior.",
+    "decisive_controls": [
+      "Approved document transition passes without modifying old receipts.",
+      "Missing, changed or foreign authority/manifest fails.",
+      "Unapproved document identity, omitted historical path or changed user metadata/index/hash fails.",
+      "Existing unamended admission behavior is unchanged.",
+      "Current saved source/build preparation verifies offline with the explicit binding."
+    ],
+    "reviewer": "/root/c06_runtime_plan"
+  },
+  "limits": {
+    "sdk_changes": 0,
+    "builds": 0,
+    "native_launches": 0,
+    "installs": 0,
+    "accepted_suite_reruns": 0,
+    "gate_closures": []
+  },
+  "next_native_boundary": "One reviewed17.5 admission may proceed after live worker/device/runtime/clean-state checks using EXP-227-integration17-definition.json. Any failed install/discovery/test/cleanup stops this path with no retry.",
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-installer-preflight-cqmm18lo/preparation-definition.json",
+    "sha256": "46c82c30ed235aa5ffa484087981cfc3087ae1803cedf26e88aa3b686a7ab4a1"
+  },
+  "qualification": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified",
+    "plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/execution-plan.json",
+      "sha256": "e9066507b114eced4f3ba6fb198df39590d50f528f512332dbfd6eeb1fd4714e"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/controls.json",
+      "sha256": "b812e2983aeb25942c1ffdfe744d6dfbd7cdc7644bd450dd6c90656122246458"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/review.json",
+      "sha256": "9966dba910e53ff86b332f548b9520fe661ff03167c76893ac42fd974c1f9996"
+    },
+    "tests": 60,
+    "native_admitted": false,
+    "current_selected_tests": 275,
+    "current_raw_tests": 277,
+    "excluded_replay_tests": 2,
+    "builds": 0
+  }
+}

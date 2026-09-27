@@ -22,11 +22,15 @@ def helpers():
             [Path(__file__).resolve(), Path(__file__).with_name('test_clean_integration.py').resolve()]}}
 
 
-def amended(original, current, changes):
+def amended(original, current, changes, workspace_transition=None):
     before = original['helpers']
     require(set(before) == set(current) and {p for p in before if before[p] != current[p]} == set(changes), 'unadmitted source-helper change')
     require(all(changes[p] == dict(before=before[p], after=current[p]) for p in changes), 'source-helper fingerprint differs')
-    return dict(original, helpers=current)
+    result = dict(original, helpers=current)
+    if workspace_transition is not None:
+        require('workspace_transition' not in original, 'original workspace transition already consumed')
+        result['workspace_transition'] = workspace_transition
+    return result
 
 
 def function_hash(path, name):
@@ -40,7 +44,8 @@ def verify(root):
     require(plan['definition'] == shared.sha(DEFINITION) == shared.sha(root / 'definition.json') and plan['helpers'] == helpers(), 'clean admission changed')
     source = Path(definition['source_root']); build_root = Path(definition['build_root'])
     require(shared.read(root / 'source-inputs.json') == amended(shared.read(source / 'execution-inputs.json'), runner.inputs.helpers(),
-            definition['source_helper_changes']) and shared.sha(root / 'source-inputs.json') == plan['source_inputs'], 'source amendment differs')
+            definition['source_helper_changes'], definition.get('workspace_transition'))
+            and shared.sha(root / 'source-inputs.json') == plan['source_inputs'], 'source amendment differs')
     runner.inputs.DEFINITION = source / 'definition.json'
     base, frozen = runner.inputs.verify(source, str(root / 'source-inputs.json'))
     for name, digest in definition['source_receipts'].items(): require(shared.sha(source / name) == digest, 'source receipt changed')
@@ -75,8 +80,31 @@ def verify(root):
             for row in rows:
                 path = source / 'workspace' / row['source']
                 require(row['source'] in frozen['project_members'][target] and shared.sha(path) == row['sha256'], 'empty-base source changed')
-        runner.oracle.discovery(shared.read(prior / 'cells/integration/raw-discovery.json'), selected[0]['target'], [],
-                                non_case_identifiers=[v['identifier'] for v in definition['discovery_non_cases'][selected[0]['target']]])
+        raw = runner.oracle.discovery(shared.read(prior / 'cells/integration/raw-discovery.json'), selected[0]['target'], [],
+                                      non_case_identifiers=[v['identifier'] for v in definition['discovery_non_cases'][selected[0]['target']]])
+        if 'expected_selection' in definition:
+            reference = definition['expected_selection']; path = Path(reference['path'])
+            require(shared.sha(path) == reference['sha256'], 'expected Integration selection changed')
+            expected = shared.read(path)
+            excluded = [selected[0]['target'] + '/' + v for v in selected[0]['excluded_selectors']]
+            identifiers = [v for v in raw['identifiers'] if v not in excluded]
+            require(expected['identifiers'] == identifiers and expected['excluded'] == excluded
+                    and expected['raw'] == reference['raw_count'] == len(raw['identifiers'])
+                    and expected['selected'] == reference['selected_count'] == len(identifiers), 'expected Integration inventory differs')
+    if definition['clean_simulator']['runtime_version'] == '17.5':
+        reference = definition['runtime_precedent']['summary']; path = Path(reference['path'])
+        require(shared.sha(path) == reference['sha256'], 'runtime precedent changed')
+        precedent = shared.read(path)
+        devices = precedent['devicesAndConfigurations']
+        require(precedent['result'] == 'Passed' and precedent['failedTests'] == 0 and len(devices) == 1
+                and devices[0]['device']['osVersion'] == '17.5' and devices[0]['device']['osBuildNumber'] == '21F79'
+                and devices[0]['device']['modelName'] == definition['clean_simulator']['result_model_name'],
+                'alternate Integration runtime lacks qualified precedent')
+        reference = definition['original_installer_stop']['summary']; path = Path(reference['path'])
+        require(shared.sha(path) == reference['sha256'], 'original installer failure changed')
+        stopped = shared.read(path)
+        require(stopped['state'] == 'STOPPED' and stopped['cleanup'] == 'PASS'
+                and stopped['cells'][0]['scenario'] == 'NOT_EXECUTED', 'original installer stop changed')
     return definition, dict(base, cells=selected), frozen
 
 
@@ -84,7 +112,7 @@ def prepare(root):
     definition = shared.read(DEFINITION); source = Path(definition['source_root'])
     shared.save(root / 'definition.json', definition, exclusive=True)
     shared.save(root / 'source-inputs.json', amended(shared.read(source / 'execution-inputs.json'), runner.inputs.helpers(),
-                definition['source_helper_changes']), exclusive=True)
+                definition['source_helper_changes'], definition.get('workspace_transition')), exclusive=True)
     shared.save(root / 'execution-plan.json', dict(definition=shared.sha(DEFINITION), helpers=helpers(),
                 source_inputs=shared.sha(root / 'source-inputs.json')), exclusive=True)
     verify(root); print(json.dumps(dict(state='PREPARED_WITHOUT_REBUILD', root=str(root))), flush=True)
@@ -123,7 +151,8 @@ def create(root, definition, limit):
     call(['xcrun', 'simctl', 'list', 'devices', 'available', '--json'], 'devices-after-create')
     device = created_identity(shared.read(root / 'devices-before-create.log'), shared.read(root / 'devices-after-create.log'),
                               (root / 'create-device.log').read_text(), name, spec)
-    result = dict(device=device, runtime={k: rows[0][k] for k in ['identifier', 'version', 'buildversion', 'isAvailable']}, model_name=spec['model_name'])
+    result = dict(device=device, runtime={k: rows[0][k] for k in ['identifier', 'version', 'buildversion', 'isAvailable']},
+                  model_name=spec.get('result_model_name', spec['model_name']))
     shared.save(root / 'created-device.json', result, exclusive=True)
     require(time.time() < deadline, 'late creation identity'); return result
 
@@ -141,6 +170,18 @@ def remove(root, definition, created, limit):
     shared.save(root / 'deletion.json', dict(state='PASS', udid=identifier, deadline=deadline, finished_at=time.time()), exclusive=True)
 
 
+def runtime_cell(base, created):
+    runtime = created['runtime']['version']
+    require(runtime in ['17.5', '26.5'] and created['runtime']['identifier'] ==
+            'com.apple.CoreSimulator.SimRuntime.iOS-' + runtime.replace('.', '-'), 'unsupported Integration runtime')
+    require(len(base['cells']) == 1 and base['cells'][0]['id'] == 'integration', 'foreign Integration selection')
+    fresh = copy.deepcopy(base)
+    fresh['environments'] = {runtime: created}
+    cell = dict(fresh['cells'][0], runtime=runtime, require_clean_data=True)
+    fresh['cells'] = [cell]
+    return fresh, cell
+
+
 def run(root):
     definition, base, frozen = verify(root); review = shared.read(root / 'review.json'); controls = shared.read(root / 'controls.json')
     require(review['state'] == controls['state'] == 'PASS' and review['reviewer'] == '/root/c06_runtime_plan' and
@@ -156,8 +197,7 @@ def run(root):
     try:
         created = create(root, definition, deadline)
         result['created_device'] = created; save()
-        fresh = copy.deepcopy(base); fresh['environments']['26.5'] = created
-        cell = dict(fresh['cells'][0], require_clean_data=True)
+        fresh, cell = runtime_cell(base, created)
         row = runner.run_cell(Path(definition['source_root']), cell, definition, fresh, frozen, stage, output_root=root,
                               verify_inputs=lambda _: verify(root), reuse_folder=Path(definition['build_root']) / 'cells/integration',
                               raw_discovery=Path(definition['discovery_reference']['root']) / 'cells/integration/raw-discovery.json'

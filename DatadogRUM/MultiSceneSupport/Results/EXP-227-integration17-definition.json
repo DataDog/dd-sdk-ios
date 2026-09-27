@@ -1,0 +1,376 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-227",
+  "gate": "S3:F03:M01",
+  "status": "DEFINED_BEFORE_IMPLEMENTATION",
+  "source": "d23982a5d249c88b0bc9cd5a05be21ede72cae8d",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified",
+  "original_inputs_sha256": "4a431072db1e454edcccc31b9c549a02e58352a17698880ded56bfa72d9bb177",
+  "carthage_reference": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp225-rum-availability-kts5muog/plan.json",
+    "sha256": "f6eb7bc2fe288f07a1e520b09ccb0947972fbe37c74a1f0fda47238e23ef6c4a"
+  },
+  "source_discriminators": {
+    "workspace/DatadogCore/Tests/Datadog/DatadogCore/Context/CarrierInfoPublisherTests.swift": "23598645cd9b13a6d182af046edc1a4b6bfe33e1b32bdd37f5931cd9380c736b",
+    "workspace/DatadogCore/Tests/Datadog/DatadogCore/Context/NetworkConnectionInfoPublisherTests.swift": "2470cb5f18ca4de4bd5a9eb5b3bd12e6008b05675836b46a9d28df65a57d6dd9",
+    "workspace/DatadogCrashReporting/Tests/KSCrashIntegration/KSCrashBacktraceTests.swift": "44dc3a92b5ceec0bb86d201e15a71574fce8eed24d2c0c630f18cf46e9ac73ca",
+    "workspace/DatadogInternal/Tests/Models/UIViewSessionReplaySlotIDTests.swift": "c3e8c3abcf6f8f3849c60441de19156718c9fce19f42b4801a9e181327780c7f",
+    "workspace/DatadogWebViewTracking/Tests/WebViewTrackingTests.swift": "0ac5a9be04a5fea473a790a2e42b7cac8174d6658ac20393f690465e545433a1",
+    "workspace/Datadog/IntegrationUnitTests/SessionReplay/WebRecordIntegrationTests.swift": "5460c4b18a784cc38f03bde6256aa2d7726668ded5f8a6e50e739541d803206c",
+    "workspace/DatadogRUM/Tests/Utils/UIKitExtensionsTests.swift": "7286a946a6d3fc0ae1e83acc95406b780849ad8ca1ae063a1f8b6a45fe391891",
+    "SourcePackages/checkouts/dd-sdk-swift-testing/Sources/DatadogSDKTesting/XCTest/DDXCTestCase.swift": "6d0f01b2c8028b4622748687984358b7b9bff95c491ff900acfb6e3a69cbff40",
+    "workspace/Datadog/Example/ExampleAppDelegate.swift": "d2f039e6f37556750568a2a55888466371ee195874a5c1ba7a56150a1977af07",
+    "workspace/Datadog/TargetSupport/Example/Info.plist": "7d3e78bc2fba4e2057cd31f066e32d673a845834f28577666f1bf0ac2d17ca8d",
+    "workspace/tools/lint/sources.swiftlint.yml": "f6ab3664dad9f0c7157eba308cd6aae9c4e1fb8e085665b43143cc384da2efcb",
+    "workspace/tools/lint/run-cpp-linter.sh": "518d1337476015ad89331af402a8c6533e5bae0e32793a61fa307139cd926524",
+    "workspace/tools/lint/tests.swiftlint.yml": "0358714f5e1d657ffba27fffe9c7716c63e39fd49a97eee3a225cd5284fc15c5",
+    "workspace/tools/lint/run-linter.sh": "2b51c79f2a76e599a19cb87d3469e82aef0bb6bf36b2ac03b01d5aa63c98acd7",
+    "workspace/DatadogCore/Sources/Datadog.swift": "37e4c9333fd1203ace70b0806df1269f9a2bf039d62efba1e404f72307a747bf",
+    "workspace/DatadogCore/Sources/Datadog+objc.swift": "015219e317dba9b7ba43c529b2edd420bd500cf1e962c988e693614dae7821ca",
+    "workspace/DatadogCore/Tests/Objc/DDDatadogTests.swift": "a639163f7058811c6b51fefb8cec1cff0d333044aa0eef85d0ae6ea6385a81b7",
+    "workspace/DatadogCore/Sources/Core/Context/DatadogContextProvider.swift": "6e186baf590d10931bd46594af22d89326be889b9cf9616e2b9dc24791177461",
+    "workspace/TestUtilities/Sources/Proxies/DatadogCoreProxy.swift": "449d94c7563dc4f08aba45ecfb891aefcdac00dc876893bbcdaf032021e2b6dc",
+    "workspace/DatadogWebViewTracking/Sources/WebViewSessionRolloverHandler.swift": "99fc4512efd501a9de5581dca3429501eb6766461eefdde214b64e6c982bd906",
+    "workspace/DatadogCore/Tests/Datadog/RUM/Integrations/CrashReportReceiverTests.swift": "73e5e0d13a630aeeaf1f34539c170e6ffdb2da6d1e3ec4a371c1a16aaac3c040",
+    "workspace/DatadogCore/Tests/Datadog/Tracing/TracingURLSessionHandlerTests.swift": "05879670cd6023485f4d8c3dcbca97cbfc6138606396f058fe18456e5987d813",
+    "workspace/DatadogCore/Tests/Datadog/DatadogCore/Context/BrightnessLevelPublisherTests.swift": "755d48224d93cefe60b2eabe6767f70f14d926e241d4ac7d2e11af5706e29578",
+    "workspace/TestUtilities/Sources/Mocks/SystemFrameworks/UIKitMocks.swift": "e20c3d958567408c60950f36c4a5570dd2edf42cfd0c35b52de30c8693e93d4d",
+    "workspace/DatadogCore/Tests/Objc/ObjcAPITests/DDSessionReplay+apiTests.m": "5f702d1f565a139fa89448dbf5c35698715d750ee5aa9b4339a2c8aed104b4cf"
+  },
+  "parameters": {
+    "DatadogInternalTests": {
+      "DatadogInternalTests/UIKitExtensionsTests/expectedControlTypesInAlerts(numberOfActionButtons:numberOfTextFields:)": [
+        "1, 0",
+        "1, 1",
+        "1, 2",
+        "2, 0",
+        "2, 1",
+        "2, 2",
+        "3, 0",
+        "3, 1",
+        "3, 2",
+        "4, 0",
+        "4, 1",
+        "4, 2",
+        "5, 0",
+        "5, 1",
+        "5, 2"
+      ],
+      "DatadogInternalTests/UIKitExtensionsTests/expectedControlTypesInAlertsSwiftUI(numberOfActionButtons:numberOfTextFields:)": [
+        "1, 0",
+        "1, 1",
+        "1, 2",
+        "2, 0",
+        "2, 1",
+        "2, 2",
+        "3, 0",
+        "3, 1",
+        "3, 2",
+        "4, 0",
+        "4, 1",
+        "4, 2",
+        "5, 0",
+        "5, 1",
+        "5, 2"
+      ],
+      "DatadogInternalTests/UIKitExtensionsTests/expectedControlTypesInConfirmationDialogsSwiftUI(numberOfActionButtons:)": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "DatadogInternalTests/UIKitExtensionsTests/expectedControlTypesInDeprecatedActionSheetsSwiftUI(numberOfActionButtons:)": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    }
+  },
+  "allowed_skips": {
+    "DatadogCoreTests": {
+      "DatadogCoreTests/CarrierInfoPublisherTests/testGivenCellularServiceAvailable_itProvidesInitialValue()": "Test skipped - `CarrierInfo` is always nil on iOS 16+ \u2014 see testGivenIOS16OrAbove_itProvidesNoInitialValue",
+      "DatadogCoreTests/CarrierInfoPublisherTests/testGivenCellularServiceUnAvailable_itProvidesNoInitialValue()": "Test skipped - `CarrierInfo` is always nil on iOS 16+ \u2014 see testGivenIOS16OrAbove_itProvidesNoInitialValue",
+      "DatadogCoreTests/CarrierInfoPublisherTests/testGivenSubscribedInfoProvider_whenCarrierInfoChanges_itNotifiesSubscriber()": "Test skipped - `CarrierInfo` is always nil on iOS 16+ \u2014 see testGivenIOS16OrAbove_itNeverNotifiesSubscriber"
+    },
+    "DatadogCrashReportingTests": {
+      "DatadogCrashReportingTests/KSCrashBacktraceTests/testGenerateBacktraceReturnsNilOnWatchOS()": "Test skipped - This test verifies watchOS-specific behavior"
+    }
+  },
+  "skip_testing": {
+    "internal": [
+      "UIViewSessionReplaySlotIDTests"
+    ],
+    "webview": [
+      "WebViewTrackingTests/testSendingWebRecordEvent",
+      "WebViewTrackingTests/testItAddsUserScriptWithSessionReplay"
+    ],
+    "integration": [
+      "WebRecordIntegrationTests"
+    ],
+    "core": [
+      "DDSessionReplay_apiTests/testClearingOverride",
+      "DDSessionReplay_apiTests/testSettingAndGettingOverrides",
+      "DDSessionReplay_apiTests/testStartRecordingImmediately"
+    ]
+  },
+  "xcode_version": "Xcode 27.1\nBuild version 27A9269",
+  "latest_completion_epoch": 1790503200.0,
+  "scope": "One unexecuted Integration suite on a fresh task-owned iPad17.5(21F79), using the exact saved SDK94842cc8 products. Preserve stopped26.5 attempts and accepted suites. No rebuild, SDK change, 26.5 retry or API promotion.",
+  "legacy_host": {
+    "owner": "Results/EXP-178-view-attributes.json",
+    "limitation": "integration_27_limitation: UIKit no-scene-lifecycle trap before test connection. Example AppDelegate/Info bytes unchanged since accepted historical SDK1c6104cacb.",
+    "source_hashes": {
+      "Datadog/Example/ExampleAppDelegate.swift": "d2f039e6f37556750568a2a55888466371ee195874a5c1ba7a56150a1977af07",
+      "Datadog/TargetSupport/Example/Info.plist": "7d3e78bc2fba4e2057cd31f066e32d673a845834f28577666f1bf0ac2d17ca8d"
+    },
+    "runtime": "17.5",
+    "claim": "Only current-candidate M01 Integration compatibility on17.5; no legacy27/C03 or installer26.5 recovery claim."
+  },
+  "sanitizer_disposition": "Preserve inherited scheme instrumentation and report_bugs=0; no clean Thread Sanitizer claim.",
+  "native_admitted": false,
+  "previous_attempt": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-core26-corrected-jhmkjhdt",
+    "summary_sha256": "173950cb5c15e7f6d0df856bb6e56a05205dfcc7c47b7e58c6bf4310c123f7a1",
+    "verdict": "Core26.5 FAIL with one changed-surface lifetime assertion; cleanup PASS",
+    "discriminator": "Independent unexecuted module targets only. Core failure remains open and is not retried or waived."
+  },
+  "test_configuration": {
+    "argument": "OTHER_SWIFT_FLAGS=$(inherited) -D DD_SDK_COMPILED_FOR_TESTING",
+    "reference": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-corrected-admission/core/build-test-command.json",
+      "sha256": "b89392a0b644a0d2472fc193561df41da47965d40bd1f6b41b917e59eba8178e"
+    },
+    "scope": "The inherited test condition exposes Core teardown wrappers and context replacement, enables proxy-context propagation, and exposes WebView rollover inspection. This matches qualified EXP217 test mode; no SDK source changes or production-mode claim."
+  },
+  "selected_sdk_source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "objc_identifiers": {},
+  "source_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-independent-modules-kbyht7oe",
+  "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-framework-closure-8_gzgk8b",
+  "reuse_cell": "integration",
+  "cell_ids": [
+    "integration"
+  ],
+  "objc_source": {},
+  "discriminator": "Generated host path is the exact Example.app bundle, with its executable independently identified by the frozen Info.plist and native product inventory; full source/selection/installed-code proof remains required.",
+  "source_receipts": {
+    "inputs.json": "4a431072db1e454edcccc31b9c549a02e58352a17698880ded56bfa72d9bb177",
+    "execution-inputs.json": "4a431072db1e454edcccc31b9c549a02e58352a17698880ded56bfa72d9bb177",
+    "definition.json": "01f00b6d2caec0c9c6ca6c55d73a88007f22e3b20d00b6bde3ac899986db886d",
+    "execution-definition.json": "3a9bdd338c4ea2ca8be9d138c6e6b6f9552016f889b516a1bf19c5efdae595de",
+    "execution-plan.json": "912674289bd4bbb1ff6c650ce41881c9797974528bdc988e064432e942ade3c6"
+  },
+  "build_receipts": {
+    "module-summary.json": "2ff5c55832db5e6ebc4391f755ef8430ce760b08dc7a567b838f71c6f7297e90",
+    "execution-plan.json": "8a971d89abc29b1ebe76abdeb631f367f5fe2982fea3430351573f9c1950b1ce",
+    "frozen-helpers.json": "ec676cde72545cc1aa661a5134920aa72d9f0ada7c8ac7196371a4a46d5bc75d",
+    "cells/integration/summary.json": "e53aaa3fc1d3f86fd5c90a03f6511eb278bb9c12126b8cda2639d272bd5d39be",
+    "cells/integration/build-receipt.json": "eb12a24081bd7639c1fb97e7ee930c48c24d2112eb7df1f49d44f02d8507879d",
+    "cells/integration/build.log": "1305a8b35b8e3046b9d616ef38243d0d9371db48fa9141d51d238255ea1d1b50",
+    "cells/integration/environment.json": "c0ab854608b0c1974f36a89ebd7d2e27988746bd1fd576c3a16e7e16e610f87b",
+    "restoration-owned-daemons/summary.json": "35122e24dec98d6520281ae208cddb5186df1d42d66b6309ae90d999575a36a2",
+    "restoration-owned-daemons/workers.log": "c7cf1c17fe62531fadb8f9879237b95fd3c51e6bf363727f150846e41aff576a",
+    "restoration-owned-daemons/devices.log": "10ac850e74fa9ea5de4ff7876d899f5cc1040e46e1940af0dee12d345ddaa323",
+    "cells/integration/built.json": "27f3ae7c4e075772f06383e78f5479a2b968f89468a7271a5329f77a8f121fe2"
+  },
+  "restoration": "restoration-owned-daemons/summary.json",
+  "reuse_environment": {
+    "architecture": "arm64",
+    "deviceId": "551660C0-C850-4140-A994-320FE2ADEBE8",
+    "deviceName": "iPhone 17 Pro",
+    "modelName": "iPhone 17 Pro",
+    "osBuildNumber": "23F77",
+    "osVersion": "26.5",
+    "platform": "iOS Simulator"
+  },
+  "allowed_source_helper_changes": [
+    "module_inputs.py",
+    "test_module_inputs.py"
+  ],
+  "warning_reference": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope/integration/summary.json",
+    "sha256": "9c7ffb02c2338ecb7dc97749ac535c585b1c3a8f0157b83556e8bfed947ec077",
+    "source_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/s2-rum-lifetime",
+    "source_sha256": {
+      "DatadogRUM/Sources/Instrumentation/AppHangs/AppHangsWatchdogThread.swift": "c879f749c93749cd5b45a2e72ae79440fb30e8f328400c96b1cbaa7128491f5d",
+      "Datadog/IntegrationUnitTests/CrashReporting/GeneratingBacktraceTests.swift": "baacf0e8b58b140fa880800e02e2a045c27d916ac53a426fc70ecd0577ea5c34"
+    },
+    "policy": "No warnings, or the entire exact eight-record source-mapped multiset. Any other nonempty inventory fails; preserve raw observations and no clean-warning claim for eight."
+  },
+  "allowed_runtime_warnings": {
+    "DatadogIntegrationTests": [
+      {
+        "issueType": "Runtime Warning",
+        "message": "Thread running at User-initiated quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions"
+      },
+      {
+        "issueType": "Runtime Warning",
+        "message": "Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+        "sourceURL": "file:///Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-independent-modules-kbyht7oe/workspace/DatadogRUM/Sources/Instrumentation/AppHangs/AppHangsWatchdogThread.swift"
+      },
+      {
+        "issueType": "Runtime Warning",
+        "message": "Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+        "sourceURL": "file:///Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-independent-modules-kbyht7oe/workspace/DatadogRUM/Sources/Instrumentation/AppHangs/AppHangsWatchdogThread.swift"
+      },
+      {
+        "issueType": "Runtime Warning",
+        "message": "Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+        "sourceURL": "file:///Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-independent-modules-kbyht7oe/workspace/DatadogRUM/Sources/Instrumentation/AppHangs/AppHangsWatchdogThread.swift"
+      },
+      {
+        "issueType": "Runtime Warning",
+        "message": "Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+        "sourceURL": "file:///Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-independent-modules-kbyht7oe/workspace/DatadogRUM/Sources/Instrumentation/AppHangs/AppHangsWatchdogThread.swift"
+      },
+      {
+        "issueType": "Runtime Warning",
+        "message": "Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+        "sourceURL": "file:///Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-independent-modules-kbyht7oe/workspace/DatadogRUM/Sources/Instrumentation/AppHangs/AppHangsWatchdogThread.swift"
+      },
+      {
+        "issueType": "Runtime Warning",
+        "message": "Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+        "sourceURL": "file:///Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-independent-modules-kbyht7oe/workspace/DatadogRUM/Sources/Instrumentation/AppHangs/AppHangsWatchdogThread.swift"
+      },
+      {
+        "issueType": "Runtime Warning",
+        "message": "Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+        "sourceURL": "file:///Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-independent-modules-kbyht7oe/workspace/Datadog/IntegrationUnitTests/CrashReporting/GeneratingBacktraceTests.swift"
+      }
+    ]
+  },
+  "host_contract": {
+    "test_host_path": "__TESTROOT__/Debug-iphonesimulator/Example.app",
+    "test_bundle_path": "__TESTHOST__/PlugIns/DatadogIntegrationTests.xctest",
+    "bundle": "com.datadogqh.Example",
+    "executable": "Example",
+    "info_sha256": "9da652f3de1bb12ad375d96a3a43597899e448763a4575b053f15515c67efdf1",
+    "xctestrun_sha256": "839dd1994cdef4fd1fb8a414e75b16686a1dbd9a3cd7531008d42e6d8899852c"
+  },
+  "generated_source_contract": "Single Example asset-symbol source binds declared catalog, actool output, actual Swift output map and linked object; app executor binds recorded generator, exact toolchain archive and complete linked debug dylib.",
+  "name": "Integration oldest-supported-runtime continuation",
+  "defined_at": 1790494812.35903,
+  "clean_simulator": {
+    "device_type": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-M4-16GB",
+    "model_name": "iPad Pro 11-inch (M4) (16GB)",
+    "runtime_identifier": "com.apple.CoreSimulator.SimRuntime.iOS-17-5",
+    "runtime_version": "17.5",
+    "runtime_build": "21F79",
+    "name_prefix": "EXP227 Integration17 ",
+    "creation_budget_seconds": 120,
+    "deletion_budget_seconds": 90,
+    "scope": "Create one new task-owned ordinary simulator; never erase/reuse/delete the prior host. Bind actual returned UUID, model/runtime/build, clean app and data absence; delete only that UUID after owned work is quiescent.",
+    "result_model_name": "iPad Pro 11-inch (M4)"
+  },
+  "prior_inventory_stop": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration-host-k0mg_syr",
+    "summary_sha256": "4132b04398091b4915384fac71ae762420713772000bb64c98e67ee8af0d25d4",
+    "inventory_sha256": "d0823973e407cccf055e2fb603c2c44811c04e87d0a89c91c799905c47f295e5",
+    "diagnosis_sha256": "c36c9f132454f78c937558a84545b6acdb93eb33bb74fb8032eaf2139edcf2e3",
+    "status": "NOT_EXECUTED/INVALID; cleanup PASS; pre-existing com.datadogqh.Example untouched"
+  },
+  "gate_closures": [],
+  "continuation_discriminator": "FINAL_COMPATIBILITY M01 permits a launchable supported host. The accepted EXP217 Integration app passed280 tests on this17.5 iPad model with the same Xcode27.1/SDK27.1/min15 unsigned configuration. This separately qualifies the current untouched build on that runtime; it does not repeat or recover the stopped26.5 installer path. Current selected inventory must derive from EXP227 raw discovery and exact exclusions, never EXP217 counts.",
+  "source_helper_changes": {
+    "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/compatibility/platforms.py": {
+      "before": "612ac8f353c75cdccc33d74fe55382b06c124ab9d95bd76d79f2ff2e1cca82c1",
+      "after": "d6264c240c1d96716fc22139ff448562c3e2a928031f533820c98414e9d52751"
+    },
+    "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/compatibility/test_platforms.py": {
+      "before": "3c05929f89681e303a1434e9402d0df2e4ea6f88047dcc2eb861f3f2a690becc",
+      "after": "b75e4b3f2e2a6d7270667fb9f2600687f2c55149e27418f6f3db8ac5d499f511"
+    },
+    "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/compatibility/module_inputs.py": {
+      "before": "c25cb76b72dde3209cb134cf3d608b5099d99986544840c9d1d1038a3570d09f",
+      "after": "5460f75944105c199e3db625577bf7077ce6fd1fa058319ba7b6f3b5b142b601"
+    },
+    "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/compatibility/test_module_inputs.py": {
+      "before": "6e87888a330ae1e3cd157c0b49c0cec7d6ea3765397f359788bb890acbb6a8b6",
+      "after": "1642cd3cd8bd6af962b79b4eaed4cd3528fc66972d00c34a3a803a4c8643e8ab"
+    }
+  },
+  "qualified_inventory_mechanism": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp228-public-clients-pw62dce6",
+    "summary_sha256": "39656f1b38c9564914b834933e591d95cc8385cd321390f3950d72f6c255a1bb",
+    "snapshot": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp228-public-clients-pw62dce6/frozen-helpers/13-module_tests.py",
+    "functions": {
+      "host_inventory": "709d4da4ab05aef057b493a5271defeee28cd216f1f958e933cd210bb33dac24",
+      "verify_host": "6830702a736abd45f773eeea79309eb335773e2e4c9b75271f75feaee3b9de7a"
+    }
+  },
+  "discovery_non_cases": {
+    "DatadogIntegrationTests": [
+      {
+        "identifier": "DatadogIntegrationTests/RUMSessionTestsBase",
+        "source": "Datadog/IntegrationUnitTests/RUM/RUMSessionTestsBase.swift",
+        "sha256": "1e45133fb2e295ce205dfdebd8cad86202872407fd4ec359e040428744d53369",
+        "reason": "Compiled XCTestCase subclass contains fixture helpers only, no executable test methods; all eight subclasses remain in native discovery."
+      }
+    ]
+  },
+  "discovery_reference": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-clean-integration-hw1yhu0q",
+    "raw_sha256": "86de9e9060ac850a5596a761c31b934b2d7371460ff782cb686b4ff8b3f846f8",
+    "summary_sha256": "7856a62bef4ad373b537a728c4f517c1165be7c8fc6ee037005d8be3b98b23c7",
+    "deletion_sha256": "168143a5d084f42e95f766a52ee0d02b4b9532f0fea99c997d595128fb39a969",
+    "original_verdict": "NOT_EXECUTED/INCOMPLETE/INVALID; cleanup PASS and owned simulator deletion PASS"
+  },
+  "remaining_native_attempts": 1,
+  "workspace_transition": {
+    "authority": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/navigation-documentation-consolidation-20260924.json",
+      "sha256": "0c87c78515b9cfef0da2e8b399ba8082490232679feb8922190428d6a5c7300d"
+    },
+    "original_documents": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/documentation-integration-g5grdh1b/original-input-manifest.json",
+      "sha256": "a3d4afa0f350d1e72abb14a3a861cc3d4b5147840e9307085c41159515089a51"
+    }
+  },
+  "original_installer_stop": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration-discovery-sym00xqd",
+    "summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration-discovery-sym00xqd/module-summary.json",
+      "sha256": "98d8c93e2d313e08b00aaa3f28fb788408e4317b77fa15a40aa10b79fe41c4fe"
+    },
+    "verdict": "NOT_EXECUTED/INCOMPLETE/INVALID; cleanup/deletion PASS; error4097"
+  },
+  "preflight": {
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-installer-preflight-cqmm18lo/preparation-definition.json",
+      "sha256": "46c82c30ed235aa5ffa484087981cfc3087ae1803cedf26e88aa3b686a7ab4a1"
+    },
+    "reuse_audit": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-installer-preflight-cqmm18lo/reuse-audit.json",
+      "sha256": "2fc0e9fa36b95775e872c96a608f024263c868485bc56163a3fe9b890ea40860"
+    },
+    "source_verification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-installer-preflight-cqmm18lo/current-source-verification.json",
+      "sha256": "51967fd64ad3bd7bc077374b0d24756fbc209d99929717f672a5c4130a649ee2"
+    }
+  },
+  "runtime_precedent": {
+    "scope": "Runtime/install precedent only; not current-source evidence",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope/integration",
+    "summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope/integration/summary.json",
+      "sha256": "9c7ffb02c2338ecb7dc97749ac535c585b1c3a8f0157b83556e8bfed947ec077"
+    }
+  },
+  "implementation_scope": [
+    "Explicit approved-document transition without rewriting historical snapshots",
+    "Bind runtime labels and actual destination to the newly created17.5 simulator; retain26.5 default for historical definitions"
+  ],
+  "expected_selection": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/expected-selection.json",
+    "sha256": "aa3fb562f22430be80a31242872052771dcb631f388f4a29b34ed3ad50499f75",
+    "raw_count": 277,
+    "selected_count": 275
+  },
+  "preparation_correction": {
+    "original_plan_sha256": "7cf0d106018341cb92509ef0fa769e275c01a9bd3d6b0a76f70b620c762d332c",
+    "scope": "Bind CoreSimulator device-type display name and xcresult modelName separately using accepted runtime precedent; no native execution occurred."
+  }
+}

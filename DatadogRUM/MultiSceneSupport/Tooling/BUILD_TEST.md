@@ -77,6 +77,12 @@ offline correction may use complete saved identity/process/result evidence while
 preserving the original host failure; do not repeat a valid native arm to repair
 a path classifier.
 
+An old workspace snapshot can include documents later released from user protection.
+Bind the explicit consolidation receipt and its exact original document manifest in
+new inputs; retain the old snapshot and exact current checks on the remaining user
+paths. For an admitted alternate runtime, distinguish CoreSimulator's device-type
+display name from xcresult's model name and bind both before installation.
+
 When current sources add/remove tests, reconcile every changed method against the
 frozen source before another invocation. Retain the original pre-assertion stop.
 A historical suite count cannot silently omit a newer failure.

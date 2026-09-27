@@ -1,3 +1,4 @@
+import copy
 import json
 from pathlib import Path
 import tempfile
@@ -7,6 +8,65 @@ import module_inputs as suite
 
 
 class ModuleInputTests(unittest.TestCase):
+    def transition(self, root):
+        originals = {f'DatadogRUM/MultiSceneSupport/doc-{i}.md': f'digest-{i}' for i in range(10)}
+        authority = root / suite.DOCUMENT_TRANSITION; authority.parent.mkdir(parents=True)
+        manifest = root / 'evidence/original-input-manifest.json'; manifest.parent.mkdir()
+        authority.write_text(json.dumps({'main_integration': {
+            'source_commit': '6fd89e112ee79f25a7d36f744604a4b5f6eca0d4',
+            'remaining_protected_paths': suite.USER_PATHS, 'evidence_root': str(manifest.parent)}}))
+        manifest.write_text(json.dumps({'paths': originals}))
+        reference = lambda p: dict(path=str(p), sha256=suite.shared.sha(p))
+        transition = dict(authority=reference(authority), original_documents=reference(manifest))
+        original = {name: dict(sha256=digest) for name, digest in originals.items()}
+        original.update({name: dict(size=1, mtime_ns=2, ctime_ns=3, inode=4, index='entry') for name in suite.USER_PATHS})
+        original[suite.USER_PATHS[0]]['sha256'] = 'project-hash'
+        current = copy.deepcopy(original)
+        for name in originals: current[name]['sha256'] = 'approved-replacement'
+        return original, current, transition
+
+    def test_workspace_transition_preserves_original_and_exact_user_checks(self):
+        with tempfile.TemporaryDirectory() as tmp, patch.object(suite.shared, 'REPO', Path(tmp).resolve()):
+            original, current, transition = self.transition(Path(tmp).resolve())
+            before = copy.deepcopy(original)
+            suite.verify_workspace_protection(original, current, transition)
+            self.assertEqual(original, before)
+            suite.verify_workspace_protection(original, original)
+            with self.assertRaises(ValueError): suite.verify_workspace_protection(original, current)
+            for name in suite.USER_PATHS:
+                for key in original[name]:
+                    changed = copy.deepcopy(current); changed[name][key] = 'different'
+                    with self.subTest(name=name, key=key), self.assertRaises(ValueError):
+                        suite.verify_workspace_protection(original, changed, transition)
+
+    def test_workspace_transition_rejects_foreign_missing_or_changed_bindings(self):
+        with tempfile.TemporaryDirectory() as tmp, patch.object(suite.shared, 'REPO', Path(tmp).resolve()):
+            original, current, transition = self.transition(Path(tmp).resolve())
+            for key in transition:
+                for field in ['path', 'sha256']:
+                    changed = copy.deepcopy(transition); changed[key][field] = 'foreign'
+                    with self.subTest(key=key, field=field), self.assertRaises(ValueError):
+                        suite.verify_workspace_protection(original, current, changed)
+                changed = copy.deepcopy(transition); del changed[key]
+                with self.assertRaises(ValueError): suite.verify_workspace_protection(original, current, changed)
+            path = Path(transition['authority']['path']); value = json.loads(path.read_text())
+            value['main_integration']['source_commit'] = 'unapproved'; path.write_text(json.dumps(value))
+            transition['authority']['sha256'] = suite.shared.sha(path)
+            with self.assertRaises(ValueError): suite.verify_workspace_protection(original, current, transition)
+
+    def test_workspace_transition_rejects_missing_or_unapproved_historical_paths(self):
+        with tempfile.TemporaryDirectory() as tmp, patch.object(suite.shared, 'REPO', Path(tmp).resolve()):
+            original, current, transition = self.transition(Path(tmp).resolve())
+            doc = next(name for name in original if name not in suite.USER_PATHS)
+            for kind in ['missing-original', 'missing-current', 'changed-original', 'extra-original']:
+                old = copy.deepcopy(original); new = copy.deepcopy(current)
+                if kind == 'missing-original': del old[doc]
+                elif kind == 'missing-current': del new[doc]
+                elif kind == 'changed-original': old[doc]['sha256'] = 'foreign'
+                else: old['foreign'] = dict(sha256='foreign')
+                with self.subTest(kind=kind), self.assertRaises(ValueError):
+                    suite.verify_workspace_protection(old, new, transition)
+
     def project(self, root):
         project = root / suite.PROJECT; project.parent.mkdir(parents=True)
         source = root / 'Datadog/File.swift'; source.write_text('source')
