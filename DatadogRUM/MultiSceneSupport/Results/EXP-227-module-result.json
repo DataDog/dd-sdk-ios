@@ -558,5 +558,6 @@
       "sha256": "2d2b521ba95ac3b4700d7698942940dacee2e1c56b6b425524809746bf8e4205"
     }
   },
-  "integration_failure_disposition": "Results/EXP-227-integration-failure-disposition.json"
+  "integration_failure_disposition": "Results/EXP-227-integration-failure-disposition.json",
+  "integration_lifecycle_attribution": "Results/EXP-227-lifecycle-attribution.json"
 }

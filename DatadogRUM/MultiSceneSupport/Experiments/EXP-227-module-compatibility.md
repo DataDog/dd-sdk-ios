@@ -186,6 +186,13 @@ test-process restart. The hitch case lacks the already-reviewed S1 delta oracle
 correction. The [three-case diagnostic](../Results/EXP-227-lifecycle-attribution-definition.json)
 adds only opt-in AppRunner observations: actual mock-window scene ownership,
 application notification boundaries, first-frame injection and recorded events.
-Scoped source review passes. One isolated diagnostic build/cell requires separate
-frozen-input review; non-main topology stays unresolved. No SDK behavior/assertion
-change, full-suite retry or gate credit is admitted by this preparation.
+The reviewed [diagnostic result](../Results/EXP-227-lifecycle-attribution.json)
+captures42 AppRunner instances in three methods: two launch methods pass, while
+the timeout method fails only in its three scene-attached variants. Its three
+detached variants restore correctly. All nine assertions join the attached runs;
+the fixture sends no scene foreground notification. Review supports a correction
+at the fixture's existing boundaries using only its actual owned scene. Original
+TTID failures remain unresolved; no SDK defect or gate closure follows. App/data
+removal and Shutdown pass, but two lingering `ibtoold` processes invalidate the
+original cleanup check. Fresh quiescence and task-device deletion pass separately.
+Keep both verdicts and define/review the fixture repair before qualification.

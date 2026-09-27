@@ -34,9 +34,9 @@
         "DatadogIntegrationTests/RUMSessionTimeOutTests/testGivenUserSession_whenItTimesOut_andEntersBackground_andNextEventIsTrackedInForeground()",
         "DatadogIntegrationTests/RUMSessionTrackingTests/testGivenUserLaunch_whenTrackingUserSession()"
       ],
-      "status": "SOURCE_AND_FIXTURE_ATTRIBUTION_REQUIRED",
+      "status": "FIXTURE_MISMATCH_REPRODUCED_FOR_FOREGROUND_RESTORATION",
       "finding": "Seven cases expose missing TTID, absent restarted session/view, or logical start/duration mismatch. Three test bodies match accepted S2, but AppRunner/lifecycle and SDK sources differ. No blanket production-regression or flaky-test conclusion.",
-      "next": "Compare simulated process/scene notification ordering, first-frame delivery and restored owners before choosing a narrow deterministic correction or validation."
+      "next": "Use the reviewed three-case observation to define a test-only owned-scene lifecycle repair; retain the two original TTID failures as unresolved, not SDK regressions. No full-suite retry is yet admitted."
     },
     {
       "category": "tracking_assertion_crash",
@@ -129,5 +129,6 @@
   "native_active": false,
   "native_retry_admitted": false,
   "gate_closures": [],
-  "next": "Complete source/fixture attribution before a narrowly reviewed follow-up; no broad or equivalent retry, no SDK edit admitted by this record."
+  "next": "Results/EXP-227-lifecycle-attribution.json owns the diagnostic and separate restoration. Define and review the fixture-only repair before qualification; no second equivalent diagnostic or SDK change.",
+  "lifecycle_attribution": "Results/EXP-227-lifecycle-attribution.json"
 }

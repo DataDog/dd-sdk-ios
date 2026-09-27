@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-227",
+  "gate": "S3:F03:M01",
+  "status": "DIAGNOSTIC_COMPLETE_FIXTURE_MISMATCH_REPRODUCED",
+  "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "fixture_commit": "75a0b55a5dae94eba864b3d906393ac23ae2bf50",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-lifecycle-attribution-8xc_5j3k",
+  "original_verdict": {
+    "scenario": "FAIL",
+    "evidence": "PASS",
+    "cleanup": "INVALID",
+    "overall": "INVALID"
+  },
+  "counts": {
+    "cases": 3,
+    "passed": 2,
+    "failed": 1,
+    "runner_instances": 42,
+    "failure_messages": 9,
+    "offline_controls": 7
+  },
+  "finding": "The timeout test contains three unattached automatic-controller runs and three scene-attached runs. All records are on main. Unattached runs restore on application foreground and pass; scene-attached runs receive no scene foreground and resume only at the subsequent event, producing all nine assertions. The shared mock window replaces its root while the scenarios are constructed. This is concrete lifecycle-fixture mismatch evidence, not an SDK restoration regression.",
+  "ttid": "Both selected launch methods pass across24 AppRunner instances with unchanged assertions. The two original TTID failures remain unexplained/intermittent; instrumentation and subset ordering can affect scheduling. No original failure is erased.",
+  "cleanup": {
+    "original": "INVALID",
+    "cause": "Two ibtoold processes remain during the immediate global workload check. Owned build/test groups are quiescent; app/data removal and Shutdown pass.",
+    "restoration": "PASS",
+    "deleted_task_simulator": "5664319B-0DF5-4A5F-BF35-2AF0E704ABC0",
+    "scope": "Separate fresh quiescence/deletion receipt; no original deadline or verdict changed."
+  },
+  "next": "Review and define a fixture-only lifecycle correction using the actual owned scene and nil-scene legacy path; preserve original assertions. Keep the helper crash, known hitch oracle correction and unresolved TTID evidence separate. No second equivalent diagnostic or SDK edit is admitted.",
+  "native_active": false,
+  "native_retry_admitted": false,
+  "gate_closures": [],
+  "artifacts": {
+    "diagnostic-plan.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-lifecycle-attribution-8xc_5j3k/diagnostic-plan.json",
+      "sha256": "a940bbc3a0d9d20cf77aba138fd60b0eb6340c3301b3989d0e24699ad00df7c9"
+    },
+    "diagnostic-controls.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-lifecycle-attribution-8xc_5j3k/diagnostic-controls.json",
+      "sha256": "4c5d2e02389f6093c43e05bd912be6fe1ea3f02aa7facd366b35896dc3498f3f"
+    },
+    "diagnostic-review.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-lifecycle-attribution-8xc_5j3k/diagnostic-review.json",
+      "sha256": "ff0e2e8b559d5a7067614ddd4508b0bcf1820c651f4951796da063dd4e81fa9f"
+    },
+    "module-summary.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-lifecycle-attribution-8xc_5j3k/module-summary.json",
+      "sha256": "1aed1241e5859c3534f74495f8809a79545138bc946ba2db7ab35d3951276de0"
+    },
+    "observations.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-lifecycle-attribution-8xc_5j3k/observations.json",
+      "sha256": "52a32c785f0408fe501abae72d97ea80121d95127baaf120e38f45406d13a60b"
+    },
+    "attribution.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-lifecycle-attribution-8xc_5j3k/attribution.json",
+      "sha256": "f8b48ffecde85ebd597f5edd5af17158f153c8766cc4a63a6b36e045e9074cb0"
+    },
+    "cells/integration/summary.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-lifecycle-attribution-8xc_5j3k/cells/integration/summary.json",
+      "sha256": "db7b985bf3017a1be45f1755cc4758cf9a3a8a16a6ce6c7dc68253eb24ee7933"
+    },
+    "cells/integration/decoded.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-lifecycle-attribution-8xc_5j3k/cells/integration/decoded.json",
+      "sha256": "94dfe55ddcaa29bd760d9605aa5b117a2920df49c459eb2ccc7ade6bfbdcf239"
+    },
+    "restoration/summary.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-lifecycle-attribution-8xc_5j3k/restoration/summary.json",
+      "sha256": "19fa00ba70671cfca79ad674e9bde477fb3c25746d04f52ebe36def8842dcb60"
+    },
+    "restoration/deletion.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-lifecycle-attribution-8xc_5j3k/restoration/deletion.json",
+      "sha256": "7ccebccfade098531f3137003f317f7e8e747966d9da3c2b1733ed03a2d7688a"
+    }
+  }
+}

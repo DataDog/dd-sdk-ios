@@ -387,7 +387,7 @@
     "owner": "Results/EXP-227-module-result.json",
     "status": "PARTIAL",
     "qualified_non_rum_schemes": 8,
-    "remaining": "Integration17.5 has266passed9failed; source/fixture attribution is required before another qualification. OriginalINVALID and cleanup/deletionPASS remain. Results/EXP-227-integration-failure-disposition.json owns the failures; no equivalent retry."
+    "remaining": "Integration17.5 retains266passed9failed. The three-case observation reproduces missing owned-scene lifecycle in the fixture; two launch methods pass without resolving their original TTID failures. Results/EXP-227-lifecycle-attribution.json owns2PASS/1FAIL and original cleanupINVALID with separate restorationPASS. Review the fixture-only correction before qualification; no full or equivalent retry admitted."
   },
   "public_client_qualification": {
     "owner": "Results/EXP-228-public-clients-result.json",

@@ -99,6 +99,14 @@ not create extra parameter invocations or justify broad skip exclusions. When
 warning nodes are present, their message/source multiset must match the summary.
 An offline decoder repair may classify saved failures; it never rewrites the run.
 
+A lifecycle fixture may attach its shared mock window to a real scene. Observe the
+actual controller/window/scene at appearance and lifecycle boundaries before
+classifying a missing foreground view as an SDK regression. Process-only posts do
+not exercise scene restoration. Keep test-only diagnostics opt-in, bind their
+compiler condition and source uses, and join ordered records to native test cases.
+No topology read off main or diagnostic subset qualifies the full suite. Preserve
+a failed cleanup verdict when a later quiescence/deletion check restores the device.
+
 Prepare source, selection, output paths and the oracle before starting Xcode.
 Use the repository test skill and commands with the smallest relevant target.
 The Objective-C monitor API class is `DatadogCoreTests/DDRUMMonitor_apiTests`.
