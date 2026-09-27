@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-225",
+  "work_item": "Human setup barrier for concurrent same-key API ownership",
+  "status": "PREPARED_BUILD_PASS_NATIVE_UNADMITTED",
+  "updated_at": "2026-09-27T05:42:32.427783+00:00",
+  "owner": "Root; designated reviewer /root/c06_runtime_plan",
+  "gates": [
+    "S3:F03:M02",
+    "S3:F03:M03"
+  ],
+  "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "sdk_changes": false,
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/s3-human-setup/definition.json",
+    "sha256": "b16bb903b8f516a9d6e78f919a1542c47500afc876323d325977220654c67c89"
+  },
+  "inputs": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/s3-human-setup/reviewed/human-inputs.json",
+    "sha256": "2fd27515101cbea37441d383a9356615644bc3cc4bff9a518b1b9a070fba7712"
+  },
+  "plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/s3-human-setup/reviewed/plan.json",
+    "sha256": "6c96c3fc4cb226dd99e5c901d9507d25394ee3712e9a760857d7162ce07288be"
+  },
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/s3-human-setup/reviewed/review.json",
+    "sha256": "602e9033c1c44181485bcf13b854dd4d2876099741419e4ffa6b7113baa3172c"
+  },
+  "controls": {
+    "receipt": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/s3-human-setup/controls-failed-fence.json",
+      "sha256": "b17c8c55cdad262e781d485a5b71be3be65b863f12fe2fb8e70212c9624d2d7f"
+    },
+    "passed": 62,
+    "native_calls": 0,
+    "scope": "Pure barrier/oracle controls plus real local HTTP runner with an explicit in-process device double."
+  },
+  "build": {
+    "state": "PASS",
+    "maximum_attempts": 1,
+    "platform": "iOS Simulator",
+    "configuration": "Release",
+    "minimum_os": "15.0",
+    "attempts": 1,
+    "command": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/s3-human-setup/build-command.json",
+      "sha256": "faa06885986d2eb742afd5aeeac307abe716f3574fb9c9dde4f770ef4861ae92"
+    },
+    "product": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/s3-human-setup/reviewed/simulator/product.json",
+      "sha256": "e11c88dd7c78b327c15ec54307ef80bd9ac870747d529d6e0f44ba54cc622eb8"
+    },
+    "architectures": [
+      "arm64",
+      "x86_64"
+    ],
+    "swift_compiler_lists": 8,
+    "clang_objects": 16,
+    "source": "d6f6967e5ebd0e87ea639505b5e5d62e44becfcf698ee767cf304b8aa661e6fc",
+    "testability": false
+  },
+  "native_admitted": false,
+  "native_launches": 0,
+  "gate_closures": [],
+  "original_result": "Results/EXP-225-same-key-result.json",
+  "original_automatic_path": "STOPPED_NO_EQUIVALENT_RETRY",
+  "behavior": [
+    "Human window arrangement precedes the fixed API stage; fresh operator release and native identity/topology/input-idle evidence authorize a one-use start.",
+    "Exact original same-key operations, four wire checkpoints and Swift-before-Objective-C order remain.",
+    "A separate operator release and native idle capture precede task teardown; unproved cleanup preserves the app.",
+    "Current prepared source/helper identity is verified before launch, API admission and final cleanup."
+  ],
+  "failures_preserved": [
+    {
+      "receipt": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/s3-human-setup/controls-first.json",
+        "sha256": "ba3b931bbfe9a1cec553ea85ec6e7edbeb3dd7dd911abf136987e96f65b60a20"
+      },
+      "cause": "Negative test expected ValueError; shared release validator correctly raised Rejected. Test expectation corrected."
+    },
+    {
+      "receipt": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/s3-human-setup/controls.json",
+        "sha256": "507d5a6c0634110d3198f14a761cbf0a42990c7f500672783b2841ddaf120797"
+      },
+      "cause": "Path-based release import shadowed the API build module. Corrected with an explicit uniquely named module import."
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/s3-human-setup/prepared",
+      "disposition": "Earlier frozen preparation remains; superseded by fresh reviewed inputs after source revalidation and idle checks changed."
+    }
+  ],
+  "review_resolution": "Initial review questioned teardown after a failed release fence. Source exception scope and two actual-runner negative controls prove terminate/uninstall/shutdown are skipped; designated final review accepts offline/build scope.",
+  "limits": [
+    "No install, launch, native input, system preference or human request in this preparation.",
+    "Native human mode requires iOS26+ resize observation; ordinary automatic fixture keeps deployment15 behavior.",
+    "This does not establish concurrent ownership, public API exposure, F01 approval, physical co-visibility or any release gate closure."
+  ],
+  "next": "Before native work, define and review the actual human/device session, discover current readiness and bind this product. Arrange two concurrent windows, release input and capture fresh native topology before starting APIs. Preserve original automatic failure; do not repeat it."
+}

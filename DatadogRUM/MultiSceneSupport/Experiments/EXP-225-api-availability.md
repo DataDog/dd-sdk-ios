@@ -133,6 +133,24 @@ pass on27. The complete17.5 target passes1,381 cases with exactly26 predefined s
 result remains reused. Strict lint finds no violations; its deprecated rule-name
 warning is retained. The RUM matrix slice is complete, without closing broader F03.
 
+## Human concurrent-window preparation
+
+The [human setup preparation](../Results/EXP-225-human-setup-preparation.json)
+separates arranging the windows from API execution at unchanged SDK94842cc8.
+Fresh operator release, native input idle and exact scene/window/controller
+ownership precede a one-use API start. The four existing wire checkpoints and
+ownership assertions remain. Cleanup requires a new release and native idle proof;
+otherwise the runner preserves the app and records failed cleanup.
+
+All62 focused controls pass, including actual local HTTP runner paths with an
+explicit device double. Failed post-API and setup-rejection cleanup controls prove
+no terminate, uninstall or shutdown command is sent. The scoped review accepts
+offline preparation and one build only. The optimized deployment15 simulator build
+passes for arm64/x86_64, including Swift/Objective-C compiler membership and product
+identity. Native launches remain zero. Earlier control failures, the original
+automatic topology failure and the superseded preparation remain preserved.
+Actual human/device admission and concurrent ownership are still unqualified.
+
 ## Remaining boundary
 
 No release gate closes. Local SPI/header validation is not normal public API

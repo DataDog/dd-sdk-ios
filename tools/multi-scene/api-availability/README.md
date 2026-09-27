@@ -163,6 +163,30 @@ scene activation has one30-second readiness interval; no accepted source or prio
 runtime cells are rerun. `test_same_key.py` owns the focused positive/negative
 controls for this phase oracle and transport identity.
 
+### Human window setup preparation
+
+The original automatic same-key path is stopped because opening B backgrounded A.
+`same_key_human.py` prepares a separate human-assisted continuation at the same SDK
+bytes. Its CLI permits only `prepare`, `verify` and `build`, with `--root <root>`;
+preparation also requires `--definition <reviewed-definition>`. This procedure does
+not admit native execution. Read the [preparation owner](../../../DatadogRUM/MultiSceneSupport/Results/EXP-225-human-setup-preparation.json)
+before scheduling a separately reviewed session and discovering its destination.
+
+The optional fixture mode waits while the operator arranges both windows. A fresh
+release reply triggers native capture of both scene/window/controller chains and
+input state. A one-use request/ready/start exchange binds the exact run, source,
+PID and captured topology before the 300-second API stage starts. Window setup has
+its own 1,800-second operational budget. Existing ownership assertions and all four
+wire checkpoints remain unchanged; input idle is checked before each API operation.
+The human mode requires the iOS26 resize observation API and conservatively refuses
+readiness on older systems; the ordinary client retains its deployment15 behavior.
+
+Cleanup has a separate 300-second reserve and requires another operator release
+plus a fresh native idle capture. If either is missing or invalid, the runner
+preserves the app and reports failed cleanup instead of terminating or uninstalling
+it. The offline runner controls cover these failure paths using a device double;
+they do not qualify native gestures or concurrent scene ownership.
+
 ## Full RUM module compatibility
 
 `rum_suite.py` owns EXP225's finite RUM portion of the provisional F03 matrix.

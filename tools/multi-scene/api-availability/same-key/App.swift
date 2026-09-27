@@ -1,4 +1,5 @@
 import UIKit
+import CryptoKit
 @_spi(Internal) import DatadogCore
 @_spi(Experimental) import DatadogRUM
 
@@ -22,7 +23,41 @@ import UIKit
 
 final class FixtureScreen: UIViewController {
     private(set) var appeared = false
+    let touchInventory = FixtureTouches()
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        if Fixture.humanSetup {
+            view.addGestureRecognizer(touchInventory)
+            let label = UILabel()
+            label.text = "Same-key API check\nArrange both windows, then follow the host instructions."
+            label.numberOfLines = 0
+            label.textAlignment = .center
+            label.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(label)
+            NSLayoutConstraint.activate([
+                label.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                label.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+                label.widthAnchor.constraint(lessThanOrEqualTo: view.widthAnchor, multiplier: 0.9)
+            ])
+        }
+    }
     override func viewDidAppear(_ animated: Bool) { super.viewDidAppear(animated); appeared = true }
+}
+
+final class FixtureTouches: UIGestureRecognizer {
+    private(set) var active = Set<ObjectIdentifier>()
+    init() {
+        super.init(target: nil, action: nil)
+        cancelsTouchesInView = false
+        delaysTouchesBegan = false
+        delaysTouchesEnded = false
+    }
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) { active.formUnion(touches.map(ObjectIdentifier.init)) }
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent) {}
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent) { active.subtract(touches.map(ObjectIdentifier.init)) }
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent) { active.subtract(touches.map(ObjectIdentifier.init)) }
+    override func canPrevent(_ other: UIGestureRecognizer) -> Bool { false }
+    override func canBePrevented(by other: UIGestureRecognizer) -> Bool { false }
 }
 
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
@@ -47,7 +82,9 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     static var activitiesByScene: [String: [[String: String]]] = [:]
     static var activationRequested = false
     static var activationError: String?
+    static var setupAdmission: [String: String] = [:]
     static let key = "shared-key"
+    static var humanSetup: Bool { ProcessInfo.processInfo.arguments.contains("--human-setup") }
     static var language: String { argument("--language") }
     static func argument(_ name: String) -> String {
         let args = ProcessInfo.processInfo.arguments
@@ -82,6 +119,9 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
     static func ready(_ count: Int) -> Bool {
         windows.count == count && UIApplication.shared.connectedScenes.count == count && UIApplication.shared.applicationState == .active &&
+        (!humanSetup || inputState().allSatisfy {
+            ($0["touches"] as? Int) == 0 && ($0["transitioning"] as? Bool) == false && ($0["resizing"] as? Bool) == false
+        }) &&
         windows.allSatisfy { window in
             window.windowScene?.activationState == .foregroundActive && window.isKeyWindow && !window.isHidden &&
             window.alpha > 0 && window.bounds.width > 0 && window.bounds.height > 0 &&
@@ -100,7 +140,60 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
          "activation_requested": activationRequested, "activation_error": activationError as Any? ?? NSNull(),
          "phase": phase, "at": Date().timeIntervalSince1970, "uptime": ProcessInfo.processInfo.systemUptime,
          "application_active": UIApplication.shared.applicationState == .active, "topology": topology(),
-         "operations": operations, "key": key]
+         "operations": operations, "key": key, "setup_admission": setupAdmission]
+    }
+    static var documents: URL { FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0] }
+    static func sha(_ data: Data) -> String { SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined() }
+    static func inputState() -> [[String: Any]] {
+        windows.map { window in
+            let controller = window.rootViewController as? FixtureScreen
+            let resizing: Bool
+            if #available(iOS 26.0, *) { resizing = window.windowScene?.effectiveGeometry.isInteractivelyResizing ?? true }
+            else { resizing = true }
+            return ["window": identity(window), "controller": controller.map(identity) as Any? ?? NSNull(),
+                    "scene": window.windowScene?.session.persistentIdentifier as Any? ?? NSNull(),
+                    "touches": controller?.touchInventory.active.count as Any? ?? NSNull(),
+                    "transitioning": controller?.transitionCoordinator != nil, "resizing": resizing]
+        }
+    }
+    static func control(_ name: String) -> (Data, [String: Any])? {
+        guard let data = try? Data(contentsOf: documents.appendingPathComponent(name)),
+              let value = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              value["run_id"] as? String == argument("--run-id"),
+              value["pid"] as? Int == Int(ProcessInfo.processInfo.processIdentifier),
+              value["source"] as? String == Bundle.main.object(forInfoDictionaryKey: "FixtureSource") as? String else { return nil }
+        return (data, value)
+    }
+    static func saveControl(_ name: String, value: [String: Any]) throws -> String {
+        let data = try JSONSerialization.data(withJSONObject: value, options: [.sortedKeys])
+        try data.write(to: documents.appendingPathComponent(name), options: [.atomic])
+        return sha(data)
+    }
+    static func awaitHumanSetup() async throws {
+        while control("setup-request.json") == nil {
+            if control("cleanup-request.json") != nil { throw NSError(domain: "setup-cancelled", code: 1) }
+            try await Task.sleep(nanoseconds: 200_000_000)
+        }
+        guard let (raw, request) = control("setup-request.json"), request["kind"] as? String == "SETUP_CAPTURE",
+              let nonce = request["nonce"] as? String else { throw NSError(domain: "setup-request", code: 1) }
+        var evidence = native("setup-ready")
+        evidence["request_sha256"] = sha(raw); evidence["nonce"] = nonce; evidence["input"] = inputState()
+        let readyHash = try saveControl("setup-ready.json", value: evidence)
+        while control("setup-start.json") == nil {
+            if control("cleanup-request.json") != nil { throw NSError(domain: "setup-cancelled", code: 1) }
+            try await Task.sleep(nanoseconds: 200_000_000)
+        }
+        guard let (_, start) = control("setup-start.json"), start["kind"] as? String == "START_API",
+              start["ready_sha256"] as? String == readyHash, let startNonce = start["nonce"] as? String,
+              ready(2) else { throw NSError(domain: "setup-start", code: 1) }
+        setupAdmission = ["ready_sha256": readyHash, "nonce": startNonce]
+    }
+    static func observeCleanup() async {
+        while control("cleanup-request.json") == nil { try? await Task.sleep(nanoseconds: 200_000_000) }
+        guard let (raw, request) = control("cleanup-request.json"), request["kind"] as? String == "CLEANUP_CAPTURE" else { return }
+        var evidence = native("cleanup-idle")
+        evidence["request_sha256"] = sha(raw); evidence["nonce"] = request["nonce"]; evidence["input"] = inputState()
+        _ = try? saveControl("cleanup-idle.json", value: evidence)
     }
     static func checkpoint(_ phase: String) async throws {
         guard ready(2), activationError == nil else { throw NSError(domain: "topology-or-activation", code: 1) }
@@ -157,7 +250,10 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             UIApplication.shared.requestSceneSessionActivation(nil, userActivity: activity, options: nil) { _ in
                 activationError = "ordinary scene activation rejected"
             }
-            guard await waitReady(2, deadline: deadline) else { throw NSError(domain: activationError ?? "concurrent-scene-readiness", code: 1) }
+            if humanSetup { try await awaitHumanSetup() }
+            else {
+                guard await waitReady(2, deadline: deadline) else { throw NSError(domain: activationError ?? "concurrent-scene-readiness", code: 1) }
+            }
             try await checkpoint("ready")
             try invoke("start", owner: "A"); try invoke("start", owner: "B")
             try invoke("work", owner: "A"); try invoke("work", owner: "B")
@@ -173,6 +269,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             var result = native("failed"); result["failure"] = (error as NSError).domain
             result["acknowledgments"] = acknowledgments; write(result)
         }
+        if humanSetup { await observeCleanup() }
     }
     static func write(_ value: [String: Any]) {
         let output = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("result.json")

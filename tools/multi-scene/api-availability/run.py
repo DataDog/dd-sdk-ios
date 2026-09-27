@@ -18,20 +18,30 @@ import contract
 shared=build.shared
 
 
-def run(root, udid, os_version, mode, attempt=None, *, qualification=None):
+def run(root, udid, os_version, mode, attempt=None, *, qualification=None, human_setup=False):
+    contract.require(type(human_setup) is bool and (not human_setup or qualification is not None), 'invalid human setup mode')
+    if human_setup:
+        import same_key_human as human_preparation
+        human_preparation.verify(root)
     plan=build.verify(root); built=shared.read(root/'simulator/product.json')
     app=Path(built['path']); contract.require(shared.product(app,build.BUNDLE)==built['product'],'changed product')
     cells=root/'cells'; cells.mkdir(exist_ok=True)
     contract.require(attempt is None or re.fullmatch(r'[a-z0-9][a-z0-9-]{0,31}',attempt), 'invalid attempt label')
     folder=cells/(os_version+'-'+mode+('-'+attempt if attempt else '')); folder.mkdir()
-    run_id=str(uuid.uuid4()); started=time.time(); deadline=started+300
+    run_id=str(uuid.uuid4()); started=time.time(); deadline=started+(1800 if human_setup else 300)
     summary=dict(attempt=attempt,run_id=run_id,source=plan['source'],device=udid,runtime=os_version,automatic=mode,started_at=started,
                  execution_deadline=deadline,scenario='NOT_EXECUTED',evidence='INCOMPLETE',cleanup='NOT_STARTED',overall='INVALID')
+    if human_setup:
+        summary.update(setup_deadline=deadline, execution_deadline=None, input_mode='human-same-key-setup')
     helpers={n:shared.sha(Path(__file__).parent/n) for n in ['build.py','run.py','contract.py']}
     checkpoints=[]; launch_published=threading.Event()
     if qualification is not None:
         contract.require(plan.get('multiple_scenes') is True and mode in ['swift','objc'], 'incorrect same-key admission')
         for name in ['same_key.py','same_key_contract.py']:
+            helpers[name]=shared.sha(Path(__file__).parent/name)
+    if human_setup:
+        import same_key_setup
+        for name in ['same_key_setup.py', '../interactive-transitions/physical_release.py', '../app-acceptance/capture_io.py']:
             helpers[name]=shared.sha(Path(__file__).parent/name)
     shared.save(folder/'admission.json',dict(**summary,helpers=helpers,product_sha256=shared.sha(root/'simulator/product.json')),exclusive=True)
     events=[]; http_errors=[]; lock=threading.Lock(); requests_count=0; sealed=False; boundary=None
@@ -67,6 +77,9 @@ def run(root, udid, os_version, mode, attempt=None, *, qualification=None):
                         contract.require(not sealed and time.time()<deadline, 'late checkpoint')
                         native=json.loads(body)
                         qualification.validate_envelope(native,run_id,plan['source'],mode,pid,os_version)
+                        if human_setup:
+                            contract.require(barrier is not None, 'human setup identity unavailable')
+                            barrier.validate(native)
                         accepted=qualification.validate_checkpoint(native,list(events),checkpoints)
                         ack=dict(run_id=run_id,phase=native['phase'],nonce=str(uuid.uuid4()),event_count=len(events),at=time.time())
                         checkpoints.append(dict(native=native,events=list(events),ack=ack,assertions=accepted))
@@ -108,6 +121,14 @@ def run(root, udid, os_version, mode, attempt=None, *, qualification=None):
     worker=threading.Thread(target=server.serve_forever);worker.start()
     port=server.server_port
     installed=False; stopped=False; pid=None; location=None; container=None; server_closed=False
+    barrier=None; human_idle=False; release_attempted=False; cleanup_deadline=None; launch_attempted=False
+    def admit_api(record):
+        nonlocal deadline
+        human_preparation.verify(root)
+        contract.require(human_setup and summary['execution_deadline'] is None and time.time()<summary['setup_deadline'],
+                         'human API admission is consumed or late')
+        deadline=record['execution_deadline']
+        summary.update(execution_started_at=record['started_at'], execution_deadline=deadline)
     sequence=0
     def command(args, *, check=True, limit=None):
         nonlocal sequence
@@ -155,17 +176,29 @@ def run(root, udid, os_version, mode, attempt=None, *, qualification=None):
         contract.require(installed_product==built['product'],'installed code differs')
         container=Path(command(['xcrun','simctl','get_app_container',udid,build.BUNDLE,'data']).stdout.decode().strip())
         output=container/'Documents/result.json';contract.require(not output.exists(),'stale fixture output')
-        launched=command(['xcrun','simctl','launch',udid,build.BUNDLE,'--run-id',run_id,'--endpoint','http://127.0.0.1:'+str(port)+'/rum',('--language' if qualification is not None else '--automatic'),mode])
+        launch_attempted=True
+        launched=command(['xcrun','simctl','launch',udid,build.BUNDLE,'--run-id',run_id,'--endpoint','http://127.0.0.1:'+str(port)+'/rum',('--language' if qualification is not None else '--automatic'),mode]+(['--human-setup'] if human_setup else []))
         match=re.fullmatch(re.escape(build.BUNDLE)+r': (\d+)\s*',launched.stdout.decode());contract.require(match,'launch PID missing')
         pid=int(match[1]);summary['pid']=pid;launch_published.set()
+        if human_setup:
+            barrier=same_key_setup.Barrier(folder, container/'Documents',
+                dict(run_id=run_id, source=plan['source'], pid=pid), summary['setup_deadline'])
         while not output.exists():
+            if human_setup:barrier.poll(admit_api)
             contract.require(time.time()<deadline,'result receipt deadline expired')
             time.sleep(.2)
         (folder/'result.json').write_bytes(output.read_bytes())
         receipt=shared.read(folder/'result.json')
-        command(['xcrun','simctl','terminate',udid,build.BUNDLE]);stopped=True
-        prove_absence(deadline)
-        close_server(deadline)
+        contract.require(time.time()<deadline,'late native result')
+        terminal_limit=deadline
+        if human_setup:
+            barrier.validate(receipt)
+            summary['api_finished_at']=time.time()
+            cleanup_deadline=time.time()+300; terminal_limit=cleanup_deadline
+            release_attempted=True;barrier.cleanup(cleanup_deadline);human_idle=True
+        command(['xcrun','simctl','terminate',udid,build.BUNDLE],limit=terminal_limit);stopped=True
+        prove_absence(terminal_limit)
+        close_server(terminal_limit)
         with lock:
             sealed=True;captured=list(events);errors=list(http_errors)
         shared.save(folder/'events.json',captured,exclusive=True);shared.save(folder/'intake-errors.json',errors,exclusive=True)
@@ -178,15 +211,20 @@ def run(root, udid, os_version, mode, attempt=None, *, qualification=None):
         else:
             summary['assertions']=qualification.validate(receipt,captured,checkpoints,run_id,plan['source'],mode,pid,os_version)
         summary['scenario']='PASS'
-        contract.require(time.time()<deadline,'late final assertion')
+        contract.require(time.time()<terminal_limit,'late final assertion')
     except Exception as error:
         summary['failure']=type(error).__name__+': '+str(error)
         summary['scenario']='ASSERTION_OR_HARNESS_FAILURE'
     finally:
-        summary['execution_finished_at']=time.time(); cleanup_deadline=time.time()+180
+        summary['execution_finished_at']=time.time()
+        if cleanup_deadline is None:cleanup_deadline=time.time()+(300 if human_setup else 180)
         summary['cleanup_deadline']=cleanup_deadline
         try:
             if installed:
+                if human_setup and launch_attempted and not human_idle:
+                    contract.require(barrier is not None and not release_attempted,
+                                     'human release/native idle unproved; preserve task app')
+                    release_attempted=True;barrier.cleanup(cleanup_deadline);human_idle=True
                 if not stopped:command(['xcrun','simctl','terminate',udid,build.BUNDLE],check=False,limit=cleanup_deadline)
                 prove_absence(cleanup_deadline)
                 command(['xcrun','simctl','uninstall',udid,build.BUNDLE],limit=cleanup_deadline)
@@ -205,6 +243,7 @@ def run(root, udid, os_version, mode, attempt=None, *, qualification=None):
             contract.require(build.protected()==plan['protected'],'protected workspace changed')
             contract.require({n:shared.sha(Path(__file__).parent/n) for n in helpers}==helpers,'runner/oracle changed during cell')
             build.verify(root)
+            if human_setup:human_preparation.verify(root)
             close_server(cleanup_deadline)
             summary['cleanup']='PASS'
         except Exception as error: summary['cleanup']='FAILED';summary['cleanup_failure']=type(error).__name__+': '+str(error)

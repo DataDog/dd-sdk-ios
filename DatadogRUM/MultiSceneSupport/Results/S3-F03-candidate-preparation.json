@@ -309,11 +309,13 @@
     },
     {
       "id": "M02",
-      "disposition": "EXP228 qualifies Swift5/6 Debug/Release existing-public-client behavior at SDK94842cc8. Preserve EXP225 experimental fallback/legacy evidence. New scene public exposure and concurrent same-key proof remain."
+      "disposition": "EXP228 qualifies Swift5/6 Debug/Release existing-public-client behavior at SDK94842cc8. Preserve EXP225 experimental fallback/legacy evidence. New scene public exposure and concurrent same-key proof remain.",
+      "human_setup_preparation": "Results/EXP-225-human-setup-preparation.json"
     },
     {
       "id": "M03",
-      "disposition": "EXP228 qualifies the existing Objective-C Release public client after an explicit Boolean fixture correction; four API assertions, compiler/link/installed/live-process/post-result checks and cleanup pass. Original INVALID remains. EXP225 experimental main/off-main/fallback evidence is preserved. Public scene header, F01 approval and concurrent same-key proof remain."
+      "disposition": "EXP228 qualifies the existing Objective-C Release public client after an explicit Boolean fixture correction; four API assertions, compiler/link/installed/live-process/post-result checks and cleanup pass. Original INVALID remains. EXP225 experimental main/off-main/fallback evidence is preserved. Public scene header, F01 approval and concurrent same-key proof remain.",
+      "human_setup_preparation": "Results/EXP-225-human-setup-preparation.json"
     },
     {
       "id": "M04",
@@ -355,7 +357,8 @@
     "Results/EXP-225-rum-suite-result.json",
     "Results/EXP-226-platform-result.json",
     "Results/EXP-227-module-result.json",
-    "Results/EXP-228-public-clients-result.json"
+    "Results/EXP-228-public-clients-result.json",
+    "Results/EXP-225-human-setup-preparation.json"
   ],
   "gate_closures": [],
   "unit_reuse_review": {
@@ -391,5 +394,10 @@
     "status": "PROVISIONAL_EXISTING_CLIENTS_PASS",
     "qualified_cells": 5,
     "remaining": "F01 approval, public scene exposure and actual concurrent same-key proof"
+  },
+  "concurrent_api_preparation": {
+    "owner": "Results/EXP-225-human-setup-preparation.json",
+    "status": "CONTROLS_AND_BUILD_PASS_NATIVE_UNADMITTED",
+    "remaining": "Separate reviewed human/device session with actual concurrent topology, Swift then Objective-C; original automatic activation path stays stopped."
   }
 }
