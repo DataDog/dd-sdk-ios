@@ -183,5 +183,9 @@ Seven session cases require SDK and fixture attribution: identical assertions do
 not imply identical AppRunner/lifecycle setup. The tracking assertion helper traps
 on a missing restored view and contaminates the subsequent watchdog case after a
 test-process restart. The hitch case lacks the already-reviewed S1 delta oracle
-correction. Complete that attribution before defining any narrow follow-up; no
-equivalent native retry or accepted-suite repeat is admitted.
+correction. The [three-case diagnostic](../Results/EXP-227-lifecycle-attribution-definition.json)
+adds only opt-in AppRunner observations: actual mock-window scene ownership,
+application notification boundaries, first-frame injection and recorded events.
+Scoped source review passes. One isolated diagnostic build/cell requires separate
+frozen-input review; non-main topology stays unresolved. No SDK behavior/assertion
+change, full-suite retry or gate credit is admitted by this preparation.

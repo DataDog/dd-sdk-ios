@@ -13,6 +13,15 @@ import TestUtilities
 /// A [Test Harness](https://en.wikipedia.org/wiki/Test_harness) that simulates the iOS app environment and manages SDK lifecycle.
 /// Used for testing how the SDK responds to different app states and events.
 internal class AppRunner {
+    #if DD_RUM_LIFECYCLE_DIAGNOSTICS
+    private let diagnosticsEnabled = true
+    #else
+    private let diagnosticsEnabled = false
+    #endif
+    private let diagnosticID = UUID().uuidString
+    private let diagnosticLock = NSLock()
+    private var diagnosticSequence = 0
+
     /// Describes how the app process was launched.
     struct ProcessLaunchType {
         /// The current process’s task policy role (`task_role_t`), indicating how the process was launched (e.g., by user or system prewarming).
@@ -123,6 +132,7 @@ internal class AppRunner {
 
     /// Cleans up and resets the test environment.
     func tearDown() {
+        recordDiagnostic("teardown")
         appStateObservers.forEach { notificationCenter.removeObserver($0) }
         appStateObservers = []
 
@@ -188,24 +198,31 @@ internal class AppRunner {
                 self?.appStateProvider.current = .inactive
             }
         ]
+        recordDiagnostic("launch", values: ["launchType": launchType.description])
     }
 
     /// Simulates transition to the active state.
     func transitionToActive() {
         precondition(currentState != .active, "The app is already ACTIVE")
+        recordDiagnostic("beforeActive")
         if currentState != .inactive { // apps do not send "will enter foreground" when in INACTIVE
             notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+            recordDiagnostic("afterWillEnterForeground")
         }
         notificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
+        recordDiagnostic("afterDidBecomeActive")
     }
 
     /// Simulates transition to the background state.
     func transitionToBackground() {
         precondition(currentState != .background, "The app is already in BACKGROUND")
+        recordDiagnostic("beforeBackground")
         if currentState != .inactive { // apps do not send "will resign active" when in INACTIVE
             notificationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
+            recordDiagnostic("afterWillResignActive")
         }
         notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
+        recordDiagnostic("afterDidEnterBackground")
     }
 
     /// Returns the current simulated app state.
@@ -222,7 +239,9 @@ internal class AppRunner {
     /// Simulates the first frame of an app launch.
     func displayFirstFrame(after interval: TimeInterval) {
         #if !os(watchOS)
+        recordDiagnostic("beforeFirstFrame", values: ["providerPresent": frameInfoProvider != nil])
         self.frameInfoProvider.triggerCallback(interval: interval)
+        recordDiagnostic("afterFirstFrame")
         #endif
     }
 
@@ -235,16 +254,20 @@ internal class AppRunner {
         if let lastAppearedViewController {
             viewDidDisappear(vc: lastAppearedViewController)
         }
+        recordViewDiagnostic("beforeViewDidAppear", viewController: vc)
         vc.viewDidAppear(true)
         lastAppearedViewController = vc
+        recordViewDiagnostic("afterViewDidAppear", viewController: vc)
     }
 
     /// Simulates `viewDidDisappear()` for a given view controller.
     func viewDidDisappear(vc: UIViewController) {
+        recordViewDiagnostic("beforeViewDidDisappear", viewController: vc)
         vc.viewDidDisappear(true)
         if lastAppearedViewController === vc {
             lastAppearedViewController = nil
         }
+        recordViewDiagnostic("afterViewDidDisappear", viewController: vc)
     }
     #endif
 
@@ -293,6 +316,11 @@ internal class AppRunner {
         #endif
         rumSetup(&config)
         RUM.enable(with: config, in: core)
+        #if !os(watchOS)
+        recordDiagnostic("rumEnabled", values: ["automaticViews": config.uiKitViewsPredicate != nil])
+        #else
+        recordDiagnostic("rumEnabled")
+        #endif
     }
 
     /// Provides convenient access to the current `RUMMonitor`.
@@ -308,6 +336,74 @@ internal class AppRunner {
     /// Returns grouped RUM sessions recorded during the test.
     /// - Returns: An array of `RUMSessionMatcher` grouped by `session.id`.
     func recordedRUMSessions() throws -> [RUMSessionMatcher] {
-        return try RUMSessionMatcher.groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
+        let sessions = try RUMSessionMatcher.groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
+        if diagnosticsEnabled {
+            let values = sessions.map { session -> [String: Any] in
+                return [
+                    "id": session.sessionID,
+                    "hasTTID": session.ttidEvent != nil,
+                    "views": session.views.map { view in
+                        var values: [String: Any] = ["id": view.viewID, "name": view.name]
+                        if let duration = view.duration {
+                            values["duration"] = duration
+                        }
+                        return values
+                    }
+                ]
+            }
+            recordDiagnostic("result", values: ["sessions": values])
+        }
+        return sessions
     }
+
+    // These opt-in test records observe the fixture without posting notifications,
+    // draining SDK queues or replacing the command subscriber.
+    private func recordDiagnostic(_ phase: String, values: [String: Any] = [:]) {
+        guard diagnosticsEnabled else {
+            return
+        }
+        var record = values
+        record["phase"] = phase
+        record["run"] = diagnosticID
+        record["mainThread"] = Thread.isMainThread
+        if let time = dateProvider?.now.timeIntervalSince1970 {
+            record["time"] = time
+        }
+        if let state = appStateProvider?.current {
+            record["state"] = String(describing: state)
+        }
+        #if !os(watchOS)
+        if Thread.isMainThread, let viewController = lastAppearedViewController {
+            record["lastView"] = viewDiagnostic(viewController)
+        }
+        #endif
+        diagnosticLock.lock()
+        defer { diagnosticLock.unlock() }
+        diagnosticSequence += 1
+        record["sequence"] = diagnosticSequence
+        do {
+            let data = try JSONSerialization.data(withJSONObject: record, options: [.sortedKeys])
+            print("RUM_INTEGRATION_LIFECYCLE " + String(decoding: data, as: UTF8.self))
+        } catch {
+            XCTFail("Could not encode lifecycle diagnostic")
+        }
+    }
+
+    #if !os(watchOS)
+    private func recordViewDiagnostic(_ phase: String, viewController: UIViewController) {
+        guard diagnosticsEnabled else {
+            return
+        }
+        recordDiagnostic(phase, values: Thread.isMainThread ? ["view": viewDiagnostic(viewController)] : [:])
+    }
+
+    private func viewDiagnostic(_ viewController: UIViewController) -> [String: Any] {
+        let window = viewController.viewIfLoaded?.window
+        return [
+            "controller": String(describing: ObjectIdentifier(viewController)),
+            "window": window.map { String(describing: ObjectIdentifier($0)) } ?? "none",
+            "scene": window?.windowScene?.session.persistentIdentifier ?? "none"
+        ]
+    }
+    #endif
 }

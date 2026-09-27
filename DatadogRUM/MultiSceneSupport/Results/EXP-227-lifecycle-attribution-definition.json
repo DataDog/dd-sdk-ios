@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-227",
+  "gate": "S3:F03:M01",
+  "status": "DEFINED_BEFORE_IMPLEMENTATION",
+  "owner": "SDK implementer",
+  "reviewer": "/root/c06_runtime_plan",
+  "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "prior": "Results/EXP-227-integration-failure-disposition.json",
+  "scope": "One test-only observation of three failed Integration cases. Distinguish real mock-window scene ownership and delivered process notifications from SDK session restoration before choosing a repair. No SDK behavior or existing assertion changes.",
+  "paths": ["Datadog/IntegrationUnitTests/AppRunner/AppRunner.swift"],
+  "diagnostic_switch": "Test build condition -D DD_RUM_LIFECYCLE_DIAGNOSTICS; require the actual DatadogIntegrationTests compiler invocation to contain it before native execution.",
+  "selected": [
+    "DatadogIntegrationTests/RUMSessionStartInForeground_Tests/testGivenUserLaunch_whenAutomaticViewIsTracked()",
+    "DatadogIntegrationTests/RUMSessionStartInForeground_Tests/testGivenOSPrewarmLaunch_whenManualViewIsTracked()",
+    "DatadogIntegrationTests/RUMSessionTimeOutTests/testGivenUserSession_whenItEntersBackground_andTimesOut_andNextEventIsTrackedInForeground()"
+  ],
+  "required_evidence": [
+    "Each AppRunner instance has a fresh identifier and ordered diagnostic records, including its launch model and virtual clock.",
+    "Before and after lifecycle posts and appearance callbacks: actual thread, simulated application state, owned controller/window/scene identities. No UIKit reads off the main thread. A non-main record without topology is UNRESOLVED, never evidence of an unattached window.",
+    "First-frame injection records provider presence and virtual time; final SDK events retain actual session and view ownership.",
+    "All existing test assertions and production sources are byte-identical; warnings, failures and uncertainty are preserved.",
+    "Exact raw discovery and three selected cases, current built/installed identity, worker quiescence and owned-app/simulator cleanup."
+  ],
+  "environment": "Xcode27.1, fresh task-owned iPad17.5; rediscover actual availability before admission.",
+  "limits": {
+    "builds": 1,
+    "native_cells": 1,
+    "full_suite_retries": 0,
+    "sdk_edits": 0,
+    "human_input": false,
+    "gate_closures": []
+  },
+  "stop_rules": [
+    "No native work until exact fixture/build/runner bindings and designated review are complete.",
+    "No second equivalent diagnostic run. Missing topology or delivery evidence stays unresolved.",
+    "A passing diagnostic subset is not the full M01 gate. Preserve the original275-case run and all prior deadlines."
+  ]
+}
