@@ -1,0 +1,263 @@
+{
+  "schema_version": 1,
+  "work_item": "S2:A02 ordered single human-input session",
+  "status": "REMAINING_S2_INPUT_PACKAGES_PREPARED",
+  "updated_at": "2026-09-27T01:06:00.848034+00:00",
+  "owner": "Harness implementer",
+  "user_role": "Only real gestures and any required interactive sign-in",
+  "request_user_now": false,
+  "reason": "F08, H16 and T10 are closed under their scoped assessments. Remaining input packages are automatic coverage/adaptive layout, interactive transitions and Resource/Trace fold. Earlier ordered_groups retain historical bindings and do not admit new work.",
+  "source_candidate": "c9faed816a1d4828d7d8c4b64acae01119425889",
+  "ordered_groups": [
+    {
+      "order": 1,
+      "gates": [
+        "C07",
+        "C08",
+        "C09",
+        "C10"
+      ],
+      "actions": [
+        "Follow each frozen stack/split tap, switch, scroll and navigation script",
+        "Use one actual Closed-to-Open-to-Closed transition when requested"
+      ],
+      "automated_checks": "Exact native control effects and local mapper occurrence owners/counts; fresh actual display and owned native geometry before dependent work. This family has no backend claim.",
+      "binding_limit": "Four genuine current-source build arms and the complete human runner are reviewed and frozen. Native qualification remains the first planned baseline; historical reference results do not certify this composition.",
+      "matrix": {
+        "owner": "EXP-210-s2-automatic-coverage.json",
+        "section": "matrix.inventory with human_current_composition source/build binding",
+        "cells": 40,
+        "source_baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+        "source_candidate": "c9faed816a1d4828d7d8c4b64acae01119425889",
+        "native_admitted": false
+      },
+      "current_binding": {
+        "owner": "EXP-210-s2-automatic-coverage.json",
+        "state": "REVIEWED_RUNTIME_AND_BUILDS_PREPARED_FOR_SINGLE_HUMAN_SESSION",
+        "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-human-typed-build-bfh4vhwn/run",
+        "runtime_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-human-typed-build-bfh4vhwn/run/runtime",
+        "runtime_plan_sha256": "e2e4ae5611a72045364222e0eff725343fc14a1fe3e318be3a60389136468ab8",
+        "runtime_review_sha256": "b59754c84df2265b500524258944b8ce9a07e4f8d4b038c86fcd5e5266733705",
+        "remaining": "Fresh environment and operator readiness after the ordered session bindings are complete. First planned baseline qualifies the actual human mechanism; no native launch, retry or stage admitted.",
+        "session_continuation": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-sessions-tx3elwxs/outcome.json",
+          "sha256": "56fa5cdb8431e78b736768fcfde374a6846fb1f8caca1f3c85b3c93d1f697107"
+        }
+      }
+    },
+    {
+      "order": 2,
+      "gates": [
+        "H11",
+        "H12",
+        "H13",
+        "H14",
+        "H16"
+      ],
+      "source_pairs": [
+        "baseline62f64",
+        "candidatec9faed81"
+      ],
+      "actions": [
+        "UIKit: complete one edge pop, return to Detail, cancel one edge pop",
+        "SwiftUI: complete one edge pop, return to Detail, cancel one edge pop",
+        "Presentation: complete dismissal, re-present, cancel dismissal",
+        "Adaptive layout: Closed-to-Open-to-Closed while preserving selection/path",
+        "UIKit-hosted SwiftUI: only remaining manual candidate, human-paced push/pop/present/dismiss, with actual attachment and SwiftUI/mapper readiness captured before each transition"
+      ],
+      "automated_checks": "Recognized native transition begin/cancel/completion, actual geometry and independently mapped exact occurrence owner before callback work; inherited omissions kept separate from new regression.",
+      "remaining": "H11-H14 Duo workflow is reviewed and frozen; fresh operator/environment admission, native comparison and physical iPad remain. H16 prepared binding is retained.",
+      "hosting_evidence": "EXP-222 preserves three complete bound cells and candidate manual native portion/cleanup. Its missing Root SwiftUI lifecycle pair remains INVALID; no additional automatic retry. Human-paced candidate requires a separately frozen fixture/admission.",
+      "hosting_binding": {
+        "owner": "EXP-222-hosted-swiftui.json",
+        "state": "REVIEWED_RUNNER_AND_BUILD_QUALIFIED",
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-human-paced-vps5pwqv/run",
+        "plan_sha256": "df550104fc66afbd8617f0618382829075d4645ab45b5e50c13ee9d94843edb7",
+        "runtime_review_sha256": "4e931ff0573701d6d92cf5ccfc59cd6484fcbc926b95337a55e865fb3fba232d",
+        "remaining_cells": [
+          "B-manual"
+        ],
+        "native_admitted": false
+      },
+      "adaptive_reuse": {
+        "owner": "EXP-210-s2-automatic-coverage.json",
+        "state": "MAPPED_FUTURE_EVIDENCE_NOT_YET_EXECUTED",
+        "source_scope": "Genuine UIKit UISplitViewController and SwiftUI NavigationSplitView automatic cells on both selected revisions",
+        "qualified_phases_when_passed": [
+          "Detail selected before close",
+          "Detail still selected after reopen"
+        ],
+        "initial_open": "Root-state evidence only",
+        "evidence_limit": "Native topology, geometry, selected path and local mapper occurrence owners only; dummy-token fixture has no backend inventory",
+        "remaining": [
+          "Manual SwiftUI split tracking",
+          "H11-H13 native cancellation and completion",
+          "Relevant physical and backend obligations"
+        ],
+        "reviewer": "existing /root/c06_runtime_plan"
+      },
+      "transition_binding": {
+        "owner": "EXP-223-interactive-transitions.json",
+        "state": "REVIEWED_DUO_RUNTIME_AND_BUILDS_PREPARED_NATIVE_UNADMITTED",
+        "duo_cells": 8,
+        "physical_ipad_cells": 12,
+        "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-transition-build-nvt_f6jx/run",
+        "build_plan_sha256": "9863378a92cde9547fb4cfc8ab9c5f9847005aa44d11e9e847305e59b83b17a8",
+        "offline_controls": 67,
+        "native_admitted": false,
+        "remaining": [
+          "Fresh operator/environment admission and actual Duo comparisons",
+          "Live physical iPad/signing/build prerequisites and twelve required cells",
+          "Final paired backend/source classifications"
+        ],
+        "runtime_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-human-runtime-ov_vev9r/run",
+        "runtime_plan_sha256": "c27099dc870820b8387a90e109aa00df8f5036cc416090eacdcc68c0b675571d",
+        "runtime_review_sha256": "1b7fb473523f7744eceef97eb83ad6a9dbeec110b533145aad78d05c76326855"
+      }
+    },
+    {
+      "order": 3,
+      "gates": [
+        "T03",
+        "T08",
+        "T10"
+      ],
+      "conditional": "Required for Resource/Trace and WebView fold steps: automated fold transport is stopped.",
+      "actions": [
+        "Follow Open then Closed prompts for each admitted Resource/Trace cell",
+        "Follow fold prompts during the two WebView long-lived/delayed-event cells"
+      ],
+      "automated_checks": "Existing strict Resource/Trace evidence and S2-T10-source-preparation.json; waiting, backend collection and cleanup automated.",
+      "webview_binding": {
+        "owner": "S2-T10-source-preparation.json",
+        "state": "REVIEWED_RUNNER_AND_BUILDS_QUALIFIED",
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-clock-build-5zkoighg/run",
+        "plan_sha256": "914149e5ba7ad9c864510064a999616b33ae7cd546ea58036e63c62eb398ac10",
+        "review_sha256": "a398e3683de97f721166368d32566123d7c739b2b7035a92ad69af3d53732fb6",
+        "native_admitted": false,
+        "limit": "Two cells, four real human fold gestures; all marker/backend capture and task-only cleanup automated. Native qualification and integrated J03 still required.",
+        "runtime_review_sha256": "61e65356b9659b4749b1f5b04c474f01381a560a21fbe3c1fef4e30fed885939"
+      },
+      "resource_trace_binding": {
+        "owner": "EXP-221-duo-fold.json",
+        "state": "REVIEWED_RUNTIME_AND_BUILD_REUSE_READY_FOR_SINGLE_HUMAN_SESSION",
+        "preparation_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-human-fold-reviewed-34w4abag",
+        "review_sha256": "d4b6eb64c223437ab322536bf439a865a5d39b5607a806dfebae572b63a6e9f9",
+        "build_reuse_sha256": "43f9965543ed2b9a83c6f30bd11523e3f0b1ff124f02aa999e12c5b33ac262bd",
+        "remaining_cells": [
+          "A-automatic",
+          "A-registered",
+          "B-automatic",
+          "B-registered"
+        ],
+        "native_admitted": false,
+        "remaining": "Live access preflight and human-session readiness; no native admission yet.",
+        "runtime_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-human-runtime-0k379oyz/run",
+        "runtime_plan_sha256": "81d5910397004cde5dae90573f37c190139ce692cc162ae34ef68df157ef03d4",
+        "runtime_review_sha256": "ba14bfcbaaa18c47d0a8b23b1ee11ec66a68d122566da56cf65996ade005e3ae"
+      }
+    },
+    {
+      "order": 4,
+      "gates": [
+        "F08"
+      ],
+      "actions": [
+        "Logged out: Log In with Subdomain, then Back",
+        "Complete interactive sign-in if required",
+        "Open Services, select the frozen existing service, then Back",
+        "Open the frozen dashboard and perform one declared read-only Browser interaction",
+        "Return to Services, Home once, then reopen the same process; stay foreground for ordinary upload"
+      ],
+      "automated_checks": "S2 smoke mode reuses both source-bound capture products. Capture actual native effects/owners and one lifecycle cycle; freeze the behavior prefix, retain later delivery separately and join exact event identities. T10 owns expiry coverage.",
+      "build_owner": "S2-F08-app-preparation.json",
+      "oracle_owner": "S2-F08-source-oracle.json",
+      "remaining": "Source-backed recorder correction and first-action controls, review and symmetric builds precede any new baseline; current native mechanism stopped.",
+      "capture_binding": {
+        "owner": "S2-F08-source-oracle.json",
+        "state": "CURRENT_CAPTURE_MECHANISM_STOPPED",
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-reviewed-controls-32tvi0u8",
+        "review_sha256": "ae252cf2d3656e9ad447e9b58e43b4e4e9e076664db25a2f7b352f494fca638c",
+        "remaining": "No native admission. First planned baseline qualifies native account/control and capture; final paired source classification remains.",
+        "build_preparation_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-build-h670kgc1",
+        "corrected_build_preparation_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-relocated-e35i8m4l",
+        "context_compatible_build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-context-wwea5ijl",
+        "build_completion_sha256": "9ac2d2fd925701e019a829a20a08f8df2ce9a844592f82e80f4e9d07de3ab765",
+        "runtime_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-human-runtime-8rz7zcpe/run",
+        "runtime_plan_sha256": "79cea5ba48c2f5781582c9e0cf87d2af5af29031d97a91b4da4f60c9ee55be80",
+        "runtime_review_sha256": "8d1ab9a06cb85208ff1bef1818c10dc9dd51a475d5c1d9b2f8b9d766a9b464dd",
+        "runtime_controls_sha256": "306178c6f888e6f916df758a91fd7044b473e37392a024c7479f6d693ba35fd8",
+        "selected_smoke_preparation": {
+          "state": "FIRST_BASELINE_STOPPED_BEFORE_HUMAN_INPUT",
+          "owner": "S2-F08-source-oracle.json",
+          "plan": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/run-home-final/plan.json",
+            "sha256": "3d8a3dda2161820adf2920fc9f668f73235527eb6ad50c88810b3bd922b1ed70"
+          },
+          "review": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/run-home-final/review.json",
+            "sha256": "393e9c3d7b11487adbc95b6ffbe2d35bfe26c267e2b0bbd9cbc3d684925e0793"
+          },
+          "current_attempt": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-smoke-j5q2rjse/baseline-stop-assessment.json",
+            "sha256": "5f7f4da36b0ece8cf0ef0b30817eedaf1bc218afbbeac7ee592bfa4224c9f044"
+          }
+        }
+      }
+    }
+  ],
+  "operator_contract": [
+    "One prompt per ready step, with a screenshot of the actual control; never reuse consumed readiness.",
+    "No effect or missed boundary stops that cell; preserve evidence and continue independent cells.",
+    "Runner owns fresh reset/install, clocks, snapshots, full backend assertions and cleanup; user does not inspect raw logs.",
+    "No new S3 API, physical-Duo, unrelated CI, optional networking or Replay-content work."
+  ],
+  "gate_closures": [],
+  "fold_transport_stop": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-date-bound-igwfrusu/stage-stop.json",
+    "sha256": "10557f7803f21383617bbdd994f25415d30a34cc331802e6f73d8ccf75abc93e"
+  },
+  "preparation_progress": {
+    "ready_families": [
+      "C07-C10/H14: reviewed12-cell EXP210 preparation reuses existing products; first planned baseline still qualifies human input.",
+      "H11-H13: apply current scoped contract and saved capture lessons before fresh pair admission.",
+      "T03/T08: four reviewed Resource/Trace fold cells; fresh environment/operator readiness required."
+    ],
+    "completed_families": [
+      "S2:H16",
+      "S2:T10",
+      "S2:F08"
+    ],
+    "native_admission": false,
+    "remaining_bindings": [
+      "Scope-specific source/control review and fresh environment/operator readiness; no stopped automatic-input retry."
+    ]
+  },
+  "operator_readiness": {
+    "state": "NO_ACTIVE_NATIVE_SESSION",
+    "active_native": false,
+    "fixed_stage_started": false,
+    "last_session": "S2-F08-candidate-comparison.json",
+    "fresh_readiness_required": true
+  },
+  "session_splitting": {
+    "user_question_at": "2026-09-23T13:38:54.447557+00:00",
+    "requirement": "The ordered work does not require one uninterrupted sitting. Existing families have independent admissions and can be scheduled separately.",
+    "ready_now": "Coverage preparation reuses the reviewed12-cell matrix; fresh environment/operator readiness remains. F08 login and journeys, T10 and H16 require no repeat.",
+    "safe_boundary": "Prefer a complete baseline/candidate pair with persisted evidence and verified cleanup. Never stop in the middle of a timing-sensitive gesture, delayed-event interval or same-process lifecycle sequence.",
+    "current_runner_limit": "Automatic coverage now has a reviewed finite-session scheduler with a canonical append-only attempt ledger. Each sitting freezes complete adjacent pairs, and a later sitting references only qualified immutable predecessors. Other families retain independent admissions; within-family continuation is not inferred for them.",
+    "continuation_requirement": "Before splitting an unfinished family across sittings, prepare and review a finite continuation for only unexecuted cells, referencing qualified original receipts and unchanged source/build identities. Never overwrite an old stage, renew its clock, reuse consumed readiness or rerun qualified cells merely to resume.",
+    "estimated_duration": "Not measured; stage time limits are maximum budgets, not predictions of required user time.",
+    "automatic_continuation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-sessions-tx3elwxs/outcome.json",
+      "sha256": "56fa5cdb8431e78b736768fcfde374a6846fb1f8caca1f3c85b3c93d1f697107"
+    }
+  },
+  "s2_acceptance_review": {
+    "owner": "Results/S2-release-gate-review-20260925.json",
+    "contract": "release-gates.json: releases.S2.acceptance_contract/execution_packages",
+    "effect": "Prospective S2 execution scope supersedes broader remaining-matrix and whole-payload prerequisites. Original definitions, admissions, attempts and verdicts remain unchanged. No native admission or gate closure.",
+    "next": "Assess reusable actual observations against the scoped gate before any new native run; bind amended runner expectations and focused controls first."
+  },
+  "current_scope_owner": "S2-release-gate-review-20260925.json; earlier ordered_groups retain historical matrix bindings, not new admission"
+}

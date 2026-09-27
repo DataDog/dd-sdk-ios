@@ -5,6 +5,14 @@ owns the finite source pairs, environment matrix, budgets and required controls.
 This fixture is not admitted for native execution until the runtime/build review
 and the shared human-session prerequisites are complete.
 
+For current S2 work, start from the
+[finite input index](../../../DatadogRUM/MultiSceneSupport/Results/S2-input-session-preparation.json).
+Its six-stack-cell maximum supersedes the original eight Duo/twelve physical
+matrix described below. The saved physical UIKit baseline needs no repeat; one
+candidate continuation is reviewed. Four Duo SwiftUI automatic/manual stack cells
+still need scoped preparation. H14 reuses automatic split coverage; H16 is closed.
+Older full-runtime instructions retain historical scope and do not admit new runs.
+
 UIKit uses genuine navigation/split controllers and page sheets. SwiftUI uses a
 bound NavigationStack, NavigationSplitView selection and native sheets. Automatic
 and existing manual modifier modes stay separate. The observer adds no view or

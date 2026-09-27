@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "scope": "Current input index only; preserve exact prior record, remove superseded40/20-cell matrices and completed-family prompts from active preparation. No SDK, helper, admission, gate-status or evidence change.",
+  "source_sha256": "f7f7a749750927f649f79b9161f80f5f9a26acd2d98f853f7cdd3cdcf3f23208",
+  "history_path": "DatadogRUM/MultiSceneSupport/Results/History/S2-input-session-preparation-20260927.json",
+  "current_path": "DatadogRUM/MultiSceneSupport/Results/S2-input-session-preparation.json",
+  "current_lines": 122,
+  "history_lines": 263,
+  "closed_families": [
+    "H16",
+    "T10",
+    "F08"
+  ],
+  "required_native_packages": [
+    "coverage",
+    "transitions",
+    "network"
+  ],
+  "gate_statuses_unchanged": true
+}
