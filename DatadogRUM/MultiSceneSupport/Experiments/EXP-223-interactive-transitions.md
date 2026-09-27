@@ -594,4 +594,14 @@ separate assessment keeps the final View active exactly as captured and preserve
 the asynchronous mapper-order diagnostic. The finite foreground continuation uses
 only automatic B and existing-manual A/B; no A gestures or Home input are repeated.
 Its59 focused controls and worker publication controls pass. Designated review passes;
-native comparison remains; this assessment supplies no gate, backend or Home claim.
+The automatic candidate now passes scenario/evidence/cleanup and matches all15 View
+occurrences,10 actions and four emitted callback owners. No Home claim follows.
+
+The existing-manual baseline completed all ten input phases and cleanup. Its strict
+assessment is INVALID: cancelled pop creates a fresh Detail and the callback belongs
+to intermediate Home; completed sheet dismissal keeps the callback on outgoing Sheet.
+The fixture and existing modifier are identical across A/B. A separate defined
+comparison retains both limitations, all12 Views/10 actions and actual native outcomes.
+Its69 controls pass, including rejection of additional owners, incomplete inventory
+and reuse; mapper snapshot ordering remains diagnostic. Only the unrun manual B may
+proceed after designated review. The old strict failure and stopped matrix are immutable.

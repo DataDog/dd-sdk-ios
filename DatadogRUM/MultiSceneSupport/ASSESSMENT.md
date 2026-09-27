@@ -112,8 +112,14 @@ capture and a [reviewed physical UIKit baseline](Results/S2-H11-H13-local-baseli
 Its actual cancel/finish chains and emitted action owners qualify for local reuse;
 source, installed code, durable observations and cleanup have been reverified.
 The original finish mapper-order failures and backend timeout remain unchanged.
-Delayed Home upload establishes no event loss. Candidate behavior is still untested,
-so the paired gates remain open; no baseline gesture repeat is required.
+Delayed Home upload establishes no event loss. The physical UIKit candidate remains
+untested; no baseline gesture repeat is required. On Duo, the [automatic SwiftUI
+pair](Results/S2-H12-H13-swiftui-duo.json) matches15 View occurrences,10 actions and
+all four foreground transitions. The existing-manual baseline captures12 Views and
+10 actions but restarts Detail after a cancelled pop and attributes its callback to
+intermediate Home; completed sheet dismissal attributes its callback to the outgoing
+Sheet. These strict failures and successful cleanup remain recorded. The candidate
+must match the complete observed inventory before S2 parity can be accepted.
 
 ## Immediate compatibility priority
 

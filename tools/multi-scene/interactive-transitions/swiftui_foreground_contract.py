@@ -52,10 +52,16 @@ def inventory(rows, identity, active):
     return dict(accepted=accepted, views=views, occurrence_order=order, session_id=next(iter(sessions)))
 
 
-def projection(events, transitions, *, identity, active):
+def projection(events, transitions, *, identity, active, profile='strict'):
+    require(profile in ['strict', 'existing-manual'], 'unknown foreground profile')
+    transition_contract, transition_state = local.CONTRACT, 'LOCAL_TRANSITION_QUALIFIED'
+    if profile == 'existing-manual':
+        import swiftui_manual_contract as manual
+        require(identity['tracking'] == 'manual', 'manual comparison used for automatic tracking')
+        transition_contract, transition_state = manual.CONTRACT, manual.STATE
     require(identity['tracking'] in ['automatic', 'manual'] and set(transitions) == local.PHASES,
             'unknown mode or incomplete transitions')
-    require(all(x['contract'] == local.CONTRACT and x['state'] == 'LOCAL_TRANSITION_QUALIFIED'
+    require(all(x['contract'] == transition_contract and x['state'] == transition_state
                 for x in transitions.values()), 'unqualified transition')
     observed = {phase: value['original_observation'] for phase, value in transitions.items()}
     callbacks = {value['callback_id']: phase for phase, value in observed.items()}
@@ -89,14 +95,21 @@ def projection(events, transitions, *, identity, active):
     owners = {phase: dict(relation=x['relation'], callback_expected_side=x['callback_expected_side'],
               before=[rank[v['id']] for v in x['before']], after=[rank[v['id']] for v in x['after']],
               callback=rank[x['callback']['view']]) for phase, x in observed.items()}
-    return dict(contract=CONTRACT, state='FOREGROUND_INVENTORY_QUALIFIED', tracking=identity['tracking'],
+    if profile == 'existing-manual':
+        for phase, value in observed.items():
+            owners[phase].update(expected_relation=value['expected_relation'],
+                callback_owner_matches=value['callback_owner_matches'])
+    return dict(contract=CONTRACT if profile == 'strict' else transition_contract,
+        state='FOREGROUND_INVENTORY_QUALIFIED' if profile == 'strict' else 'EXISTING_MANUAL_INVENTORY_OBSERVED', tracking=identity['tracking'],
         views=views, actions=sorted(actions, key=lambda row: json.dumps(row, sort_keys=True)),
         transitions=owners, current=rank[active['id']], release_acceptance=False)
 
 
-def assess(folder, identity, oracle, *, device, raw, cutoff, binding):
+def assess(folder, identity, oracle, *, device, raw, cutoff, binding, profile='strict'):
     """Recompute saved native effects and current ownership from an exact prefix."""
     require(cutoff in ['background.before', 'foreground.end'], 'unknown foreground cutoff')
+    require(profile in ['strict', 'existing-manual'] and
+            (profile == 'strict' or identity['tracking'] == 'manual'), 'invalid foreground profile')
     capture = driver.capture_contract; rows = capture.rows(raw, identity['run_id'])
     require(all(r['kind'] in NATIVE_KINDS for r in rows), 'unexpected foreground native/control row')
     order = ['process-source-binding', 'initial.root.readiness'] + [s[0]+suffix for s in runtime.STEPS
@@ -131,7 +144,11 @@ def assess(folder, identity, oracle, *, device, raw, cutoff, binding):
         result = oracle.transition(rows, before, after, cancelled=phase.endswith('cancel'), binding=binding)
         require(result == saved['native'] and driver.geometry.visible_transition(before, after, binding, result) == saved['foremost'],
                 'saved native transition or foremost controller differs')
-        qualified[phase] = local.transition(rows, before, after, result)
+        if profile == 'existing-manual':
+            import swiftui_manual_contract as manual
+            qualified[phase] = manual.transition(rows, before, after, result, phase=phase)
+        else:
+            qualified[phase] = local.transition(rows, before, after, result)
         require(qualified[phase]['original_observation'] == saved['ownership'], 'saved callback owner differs')
         proofs[phase] = saved
     final = snapshots[cutoff]; payload = final['payload']; model = payload['transition']['model']
@@ -146,7 +163,8 @@ def assess(folder, identity, oracle, *, device, raw, cutoff, binding):
     events = inventory(rows, identity, active)
     if 'session_id' in identity:
         require(identity['session_id'] == events['session_id'], 'declared foreground session differs')
-    return dict(state='FOREGROUND_TRANSITIONS_QUALIFIED', projection=projection(events, qualified, identity=identity, active=active),
+    return dict(state='FOREGROUND_TRANSITIONS_QUALIFIED' if profile == 'strict' else 'EXISTING_MANUAL_BASELINE_PATTERN_OBSERVED',
+        projection=projection(events, qualified, identity=identity, active=active, profile=profile),
         transitions=qualified, native_proofs=proofs, native_rows=len(rows), session_id=events['session_id'],
         cutoff_sequence=final['sequence'], current_owner=active, home_background_acceptance=False, gate_closures=[])
 

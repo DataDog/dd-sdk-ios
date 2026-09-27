@@ -2967,9 +2967,9 @@
     "gate_closures": []
   },
   "s2_swiftui_duo_continuation": {
-    "state": "ORIGINAL_STOPPED; FOREGROUND_REVIEWED_UNADMITTED",
+    "state": "AUTOMATIC_PAIR_MATCH; MANUAL_BASELINE_CLASSIFIED; CANDIDATE_REVIEW_PENDING",
     "owner_record": "Results/S2-H12-H13-swiftui-duo.json",
-    "native_runs": 1,
+    "native_runs": 3,
     "gate_closures": []
   }
 }

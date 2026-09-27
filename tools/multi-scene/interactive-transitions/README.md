@@ -331,3 +331,12 @@ occurrences must be stopped. Exact callback owners, native cancellation and scen
 window/controller identities remain required. Worker completion, native idle and
 task-only cleanup are independent. No Home, backend or gate closure follows from
 the foreground helper alone; paired source/environment review is still required.
+
+`swiftui_manual_runtime.py` handles the separately defined comparison for the existing
+`.trackRUMView(name:)` baseline. It revalidates the completed baseline's raw artifacts,
+failed strict semantics, successful cleanup and frozen source before admitting only
+the unrun candidate. The named profile records two inherited failures: fresh Detail
+after cancelled pop with callback on intermediate Home, and completed dismissal with
+callback on outgoing Sheet. Full View/Action inventories and emitted owners must match;
+callback-time mapper snapshots remain diagnostic. `s2_local_contract.py` stays strict.
+The observed-pattern verdict never claims corrected semantics or S3 acceptance.

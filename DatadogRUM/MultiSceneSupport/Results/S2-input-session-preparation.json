@@ -2,7 +2,7 @@
   "schema_version": 2,
   "work_item": "S2 finite input preparation",
   "status": "THREE_REMAINING_PACKAGES; NO_ACTIVE_SESSION",
-  "updated_at": "2026-09-27T04:12:41.471703+00:00",
+  "updated_at": "2026-09-27T04:44:27.967467+00:00",
   "owner": "Harness implementer; root owns native lane",
   "scope_owner": "Results/S2-release-gate-review-20260925.json; release-gates.json releases.S2.execution_packages",
   "source_pair": {
@@ -43,12 +43,12 @@
       ],
       "owner": "SDK implementer; human operator for gestures",
       "evidence_owner": "Results/EXP-223-interactive-transitions.json",
-      "remaining": "One physical UIKit automatic candidate plus three foreground Duo SwiftUI cells: automatic B and existing-manual A/B. Saved automatic A captures all four transitions; its failed Home verdict is retained separately.",
+      "remaining": "One physical UIKit automatic candidate and one existing-manual Duo SwiftUI candidate. Automatic SwiftUI pair matches15views/10actions; manual baseline captures12views/10actions with two explicit inherited limitations. No baseline repeat.",
       "decisive_test": "Real pop cancel/finish and sheet cancel/dismiss; emitted callback-work owners and complete local occurrence/action parity. Async mapper timing and immediate background upload are not universal prerequisites.",
       "environment": "Duo27.1 preferred; one eligible physical UIKit pair is the scoped unsupported-input fallback, with no Duo-hardware claim.",
       "qualified_baseline": "Results/S2-H11-H13-local-baseline.json; no UIKit baseline repeat due",
       "prepared_continuation": "Results/S2-H11-H13-local-continuation.json; one reviewed physical B cell using existing signed products",
-      "blocker": "UIKit requires fresh physical iPad/operator readiness. Three foreground SwiftUI cells are reviewed; run automatic B first, then manual A/B only after the automatic pair qualifies. No baseline or Home repeat.",
+      "blocker": "UIKit requires fresh physical iPad/operator readiness. Manual SwiftUI B has a separate finite preparation under designated review; original strict manual baseline INVALID/cleanup PASS remains. No Home or build repeat.",
       "swiftui_preparation": "Results/S2-H12-H13-swiftui-duo.json"
     },
     {

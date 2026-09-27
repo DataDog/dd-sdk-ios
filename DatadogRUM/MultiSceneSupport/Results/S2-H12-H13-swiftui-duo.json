@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "work_item": "S2 SwiftUI stack transition comparisons",
-  "status": "ORIGINAL_STOPPED; FOREGROUND_REVIEWED_UNADMITTED",
-  "updated_at": "2026-09-27T04:12:41.468096+00:00",
+  "status": "AUTOMATIC_PAIR_MATCH; MANUAL_CANDIDATE_REVIEWED_UNRUN",
+  "updated_at": "2026-09-27T04:44:27.962895+00:00",
   "gates": [
     "S2:H12",
     "S2:H13"
@@ -36,7 +36,7 @@
   ],
   "baseline_builds": 0,
   "candidate_builds": 1,
-  "native_launches": 1,
+  "native_launches": 3,
   "native_admitted": false,
   "gate_closures": [],
   "source_pair": {
@@ -77,7 +77,7 @@
     "restoration": "PASS; actual returned worker quiescence and native idle verified; task app removed; original verdict unchanged"
   },
   "foreground_continuation": {
-    "state": "REVIEWED_NATIVE_UNADMITTED",
+    "state": "AUTOMATIC_PAIR_PASS; MANUAL_A_STRICT_INVALID_CLEANUP_PASS; ORIGINAL_MATRIX_STOPPED",
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/swiftui-duo/foreground-scope/definition.json",
       "sha256": "a70d0e3c6f74ca8f000cb68c877b6907f5117b95842ac9af8510c6a5018f4332"
@@ -105,7 +105,7 @@
     ],
     "baseline_repeat": false,
     "home_input": false,
-    "native_launches": 0,
+    "native_launches": 2,
     "gate_closures": [],
     "rejected_preparation": {
       "matrix": {
@@ -125,6 +125,61 @@
     "review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/swiftui-duo/foreground-scope/runtime-bound/review.json",
       "sha256": "96225abfdd179e4a85244e43018e5d10bfbf07acd1d331f94a2be1f7e8fffbc9"
+    },
+    "active_cell": null,
+    "automatic_pair": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/swiftui-duo/foreground-scope/runtime-bound/automatic-paired.json",
+      "sha256": "0a47f15556893ae529e9494f39e18b00b30bbd39a63ce4299c148e42562318db"
+    },
+    "automatic_candidate": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/swiftui-duo/foreground-scope/runtime-bound/runs/SwiftUI-automatic-B/cells/SwiftUI/summary.json",
+      "sha256": "97aecbc9f5ee40e6b27274a1c30c4e00eeade88abcb05f7993fe3f4d4d40f6a6"
+    },
+    "manual_baseline_original": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/swiftui-duo/foreground-scope/runtime-bound/runs/SwiftUI-manual-A/cells/SwiftUI/summary.json",
+      "sha256": "11902b55679a3fa991df08479a558eab03c847102842b99acf85a94ff025813a"
+    }
+  },
+  "manual_parity": {
+    "state": "REVIEWED_CANDIDATE_UNRUN",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/swiftui-duo/manual-baseline-parity/definition.json",
+      "sha256": "6ab497b1aa9cdebcf7e35ae1eed8b110b29fea3f6e39ef78274687ba44ec1746"
+    },
+    "baseline": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/swiftui-duo/manual-baseline-parity/reviewed-baseline/baseline-assessment.json",
+      "sha256": "8466fefd6b615284abac1b5848aafbbdf4f5f9b7c2cc77b29ccda7b75b108583"
+    },
+    "source_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/swiftui-duo/manual-baseline-parity/source-review.json",
+      "sha256": "c3183a19f6c21a6cdd24913179a8c9d02f14074ee6de1320dadf1bad597ec607"
+    },
+    "matrix": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/swiftui-duo/manual-baseline-parity/reviewed-runtime/matrix.json",
+      "sha256": "4d892e3c27e8dcc789a3e38b8d23bd6969f1de281f4efe2157cab326bb68d114"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/swiftui-duo/manual-baseline-parity/reviewed-runtime/controls.json",
+      "sha256": "7eaa37a83a2bd28125ee62d083a62a7aca44eb7424f29f4a808e27662bf80b76"
+    },
+    "cells": [
+      "SwiftUI-manual-B"
+    ],
+    "native_launches": 0,
+    "gate_closures": [],
+    "inherited_limitations": [
+      "pop.cancel: fresh detail; callback intermediate home",
+      "dismiss.finish: callback outgoing sheet"
+    ],
+    "original_strict_verdict": "INVALID; scenario PASS, evidence INCOMPLETE, cleanup PASS",
+    "baseline_counts": {
+      "views": 12,
+      "actions": 10
+    },
+    "remaining": "One candidate-only exact observed-inventory comparison after designated review; no baseline, Home or build repeat.",
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/swiftui-duo/manual-baseline-parity/reviewed-runtime/review.json",
+      "sha256": "b1feb595462907d73553c6e6298cfc73e512d43af8bc6e32b14dd105413b2665"
     }
   }
 }

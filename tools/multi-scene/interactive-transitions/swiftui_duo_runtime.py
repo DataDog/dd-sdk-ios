@@ -32,7 +32,8 @@ def helpers():
     members = q.helpers()
     for name in ['swiftui_duo_runtime.py', 'swiftui_duo_input.py', 'test_swiftui_duo_runtime.py',
                  'swiftui_duo_build.py', 'test_swiftui_duo_build.py', 's2_local_contract.py',
-                 'swiftui_foreground_contract.py', 'swiftui_foreground_runtime.py', 'test_swiftui_foreground.py']:
+                 'swiftui_foreground_contract.py', 'swiftui_foreground_runtime.py', 'test_swiftui_foreground.py',
+                 'swiftui_manual_contract.py', 'swiftui_manual_runtime.py', 'test_swiftui_manual.py']:
         path = Path(__file__).with_name(name); members[str(path.relative_to(shared.REPO))] = shared.sha(path)
     return members
 
@@ -111,6 +112,9 @@ def prepare(root, build_root):
 
 def verify_matrix(root):
     matrix = shared.read(root/'matrix.json')
+    if matrix['kind'] == 'S2_SWIFTUI_EXISTING_MANUAL_PARITY':
+        import swiftui_manual_runtime as manual
+        return manual.verify_matrix(root)
     if matrix['kind'] == 'S2_SWIFTUI_DUO_FOREGROUND':
         import swiftui_foreground_runtime as foreground
         return foreground.verify_matrix(root)
@@ -144,6 +148,9 @@ def reviewed(root):
 
 
 def predecessor(root, plan, matrix):
+    if matrix['kind'] == 'S2_SWIFTUI_EXISTING_MANUAL_PARITY':
+        import swiftui_manual_runtime as manual
+        return manual.predecessor(root, plan, matrix)
     if matrix['kind'] == 'S2_SWIFTUI_DUO_FOREGROUND':
         import swiftui_foreground_runtime as foreground
         return foreground.predecessor(root, plan, matrix)
@@ -184,15 +191,17 @@ def session_ready(setup, begun, probe, *, now):
     return value
 
 
-def assess(folder, identity, oracle, *, device, stream='sealed-events.jsonl', foreground=False):
+def assess(folder, identity, oracle, *, device, stream='sealed-events.jsonl', foreground=False, manual_parity=False):
     require(stream in ['sealed-events.jsonl', 'final-events.jsonl'], 'unknown local stream')
+    require(not manual_parity or foreground, 'manual parity requires foreground scope')
     raw = (folder/stream).read_bytes(); capture = driver.capture_contract
     rows = capture.rows(raw, identity['run_id']); native = shared.read(folder/'native-summary.json')
     require(native['identity'] == identity and set(native['transitions']) == local.PHASES, 'native summary identity/set differs')
     if foreground:
         import swiftui_foreground_contract as contract
         return contract.assess(folder, identity, oracle, device=device, raw=raw,
-                               cutoff='foreground.end', binding=native['binding'])
+                               cutoff='foreground.end', binding=native['binding'],
+                               profile='existing-manual' if manual_parity else 'strict')
     inventory = driver.ownership.inventory(rows, identity); snapshots = {}
     for path in (folder/'input').iterdir():
         if not path.is_dir(): continue
@@ -300,7 +309,8 @@ def cell(root, plan, matrix, setup):
         atomic(out/'native-summary.json', encoded(dict(identity=identity, binding=collector.binding, transitions=collector.transition_results)))
         raw = (documents/'events.jsonl').read_bytes(); atomic(out/'sealed-events.jsonl', raw)
         assessment = assess(out, identity, collector.transition_oracle, device=device,
-                            foreground=plan.get('scope') == 'swiftui-foreground')
+                            foreground=plan.get('scope') == 'swiftui-foreground',
+                            manual_parity=matrix['kind'] == 'S2_SWIFTUI_EXISTING_MANUAL_PARITY')
         require(time.time() < setup['collection_deadline'], 'local evidence publication late')
         atomic(out/'local-assessment.json', encoded(assessment)); summary['evidence'] = 'PASS'
         if plan.get('scope') == 'swiftui-foreground': summary['session_id'] = assessment['session_id']
@@ -402,7 +412,8 @@ def finish(root, worker_path, end_path):
                 atomic(out/'final-events.jsonl', final)
                 try:
                     result = assess(out, identity, load_oracle(builds.bound_file(matrix['oracle'])), device=device, stream='final-events.jsonl',
-                                    foreground=plan.get('scope') == 'swiftui-foreground')
+                                    foreground=plan.get('scope') == 'swiftui-foreground',
+                                    manual_parity=matrix['kind'] == 'S2_SWIFTUI_EXISTING_MANUAL_PARITY')
                     if plan.get('scope') == 'swiftui-foreground':
                         require(result['session_id'] == summary['session_id'], 'foreground summary session changed')
                     atomic(out/'final-assessment.json', encoded(result)); summary['evidence'] = 'PASS'
