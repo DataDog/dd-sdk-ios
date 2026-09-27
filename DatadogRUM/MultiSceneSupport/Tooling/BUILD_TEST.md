@@ -93,9 +93,11 @@ An availability annotation on an XCTest class does not prevent selector discover
 on an older runtime. Tests of a newer-only surface need a runtime setup guard that
 does not rely on a redundant availability branch inside the annotated class.
 Declare exact skipped IDs/reasons before execution and prove the class still runs
-on its supported OS. Treat result-tree failure/skip messages as diagnostics owned
+on its supported OS. Treat result-tree failure/skip/runtime-warning nodes as diagnostics owned
 by the case or argument; preserve their raw nodes and all failure results. They do
-not create extra parameter invocations or justify broad skip exclusions.
+not create extra parameter invocations or justify broad skip exclusions. When
+warning nodes are present, their message/source multiset must match the summary.
+An offline decoder repair may classify saved failures; it never rewrites the run.
 
 Prepare source, selection, output paths and the oracle before starting Xcode.
 Use the repository test skill and commands with the smallest relevant target.

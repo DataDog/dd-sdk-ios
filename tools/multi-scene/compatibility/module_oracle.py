@@ -46,8 +46,10 @@ def decode(tree, target, parameters):
         children = []
         for child in node.get('children', []):
             kind = child['nodeType']
-            if kind in ['Skip Message', 'Failure Message']:
-                require(node.get('result') == ('Skipped' if kind == 'Skip Message' else 'Failed') and
+            if kind in ['Skip Message', 'Failure Message', 'Runtime Warning']:
+                expected_results = {'Skip Message': ['Skipped'], 'Failure Message': ['Failed'],
+                                    'Runtime Warning': ['Passed', 'Failed', 'Skipped']}
+                require(node.get('result') in expected_results[kind] and
                         set(child) in [{'nodeType', 'name'}, {'nodeType', 'name', 'sourceLocation'}] and
                         isinstance(child['name'], str) and child['name'].strip(),
                         'contradictory or unknown diagnostic')
@@ -114,5 +116,14 @@ def assess(selected, tree, summary, target, parameters, reasons, expected_device
     require(isinstance(warnings, list) and (not warnings or
             Counter(json.dumps(v, sort_keys=True) for v in warnings) ==
             Counter(json.dumps(v, sort_keys=True) for v in allowed_warnings)), 'unclassified runtime warning')
+    tree_warnings = []
+    for message in messages:
+        if message['kind'] == 'Runtime Warning':
+            warning = dict(issueType=message['kind'], message=message['message'])
+            if 'sourceLocation' in message['node']:
+                warning['sourceURL'] = Path(message['node']['sourceLocation']['filePath']).as_uri()
+            tree_warnings.append(warning)
+    require(not tree_warnings or Counter(json.dumps(v, sort_keys=True) for v in tree_warnings) ==
+            Counter(json.dumps(v, sort_keys=True) for v in warnings), 'runtime warning tree/summary mismatch')
     return dict(cases=len(cases), invocations=len(invocations), passed=len(cases) - len(skipped), skipped=skipped,
                 parameter_multiplicities=expected, messages=messages, runtime_warnings=warnings)

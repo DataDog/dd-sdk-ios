@@ -172,3 +172,16 @@ preflight without rewriting the old snapshots. The [17.5 definition](../Results/
 selects one fresh iPad runtime backed by EXP217's launch precedent, with275 current
 tests and the two unchanged Replay exclusions. Offline controls pass60/60;
 native admission and current-source qualification remain separate.
+
+The sole17.5 continuation installs and executes the complete275-case selection:
+266 pass and9 fail. The original collector reports INVALID because runtime-warning
+children were misclassified as parameter executions; cleanup and task-device deletion
+pass. The [failure disposition](../Results/EXP-227-integration-failure-disposition.json)
+preserves that verdict and the reviewed offline decode:14 controls,275 exact
+invocations,25 failure messages and8 source-bound warnings. No suite is rescued.
+Seven session cases require SDK and fixture attribution: identical assertions do
+not imply identical AppRunner/lifecycle setup. The tracking assertion helper traps
+on a missing restored view and contaminates the subsequent watchdog case after a
+test-process restart. The hitch case lacks the already-reviewed S1 delta oracle
+correction. Complete that attribution before defining any narrow follow-up; no
+equivalent native retry or accepted-suite repeat is admitted.

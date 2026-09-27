@@ -305,7 +305,7 @@
   "cells": [
     {
       "id": "M01",
-      "disposition": "Full RUM27/17.5 and eight non-RUM suites qualify. Saved Integration build and empty-base discovery correction qualify offline, but fresh simulator installer helper fails before assertions. Cleanup/deletion PASS; no full M01 closure or equivalent retry."
+      "disposition": "Full RUM27/17.5 and eight non-RUM suites qualify. Integration17.5 has266passed9failed; source/fixture attribution is required before another qualification. OriginalINVALID and cleanup/deletionPASS remain. Results/EXP-227-integration-failure-disposition.json owns the failures; no equivalent retry."
     },
     {
       "id": "M02",
@@ -387,7 +387,7 @@
     "owner": "Results/EXP-227-module-result.json",
     "status": "PARTIAL",
     "qualified_non_rum_schemes": 8,
-    "remaining": "Integration environment blocked: fresh simulator installer helper communication failed before assertions; owned cleanup/deletion PASS. No equivalent retry."
+    "remaining": "Integration17.5 has266passed9failed; source/fixture attribution is required before another qualification. OriginalINVALID and cleanup/deletionPASS remain. Results/EXP-227-integration-failure-disposition.json owns the failures; no equivalent retry."
   },
   "public_client_qualification": {
     "owner": "Results/EXP-228-public-clients-result.json",

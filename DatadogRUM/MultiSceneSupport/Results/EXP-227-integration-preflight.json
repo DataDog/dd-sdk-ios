@@ -2,7 +2,7 @@
   "schema_version": 1,
   "experiment": "EXP-227",
   "gate": "S3:F03:M01",
-  "status": "OFFLINE_QUALIFIED_NATIVE_ADMISSION_READY",
+  "status": "NATIVE_STOPPED_OFFLINE_ATTRIBUTION",
   "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-installer-preflight-cqmm18lo",
   "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
   "scope": "Qualify current input preparation after the approved documentation consolidation. Preserve the stopped Integration26.5 attempt and all accepted suites. No native retry is admitted by this record.",
@@ -38,7 +38,7 @@
     "accepted_suite_reruns": 0,
     "gate_closures": []
   },
-  "next_native_boundary": "One reviewed17.5 admission may proceed after live worker/device/runtime/clean-state checks using EXP-227-integration17-definition.json. Any failed install/discovery/test/cleanup stops this path with no retry.",
+  "next_native_boundary": "STOPPED. No retry. Attribute saved failures to source or test preconditions before defining any further qualification.",
   "definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-installer-preflight-cqmm18lo/preparation-definition.json",
     "sha256": "46c82c30ed235aa5ffa484087981cfc3087ae1803cedf26e88aa3b686a7ab4a1"
@@ -58,10 +58,46 @@
       "sha256": "9966dba910e53ff86b332f548b9520fe661ff03167c76893ac42fd974c1f9996"
     },
     "tests": 60,
-    "native_admitted": false,
+    "native_admitted": true,
     "current_selected_tests": 275,
     "current_raw_tests": 277,
     "excluded_replay_tests": 2,
-    "builds": 0
+    "builds": 0,
+    "admitted_at": 1790495321.319892,
+    "deadline": 1790503200.0,
+    "native_active": false
+  },
+  "current_summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/module-summary.json",
+  "result": {
+    "summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/module-summary.json",
+      "sha256": "38d700bf55825ad8c08bb3de91e1bf4b400ff943fc1dbb6fb83f68a92de93a92"
+    },
+    "deletion": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/deletion.json",
+      "sha256": "2d2b521ba95ac3b4700d7698942940dacee2e1c56b6b425524809746bf8e4205"
+    },
+    "original_verdict": {
+      "scenario": "INCOMPLETE",
+      "evidence": "INCOMPLETE",
+      "cleanup": "PASS",
+      "overall": "INVALID",
+      "failure": "ValueError: unexpected parameterized case"
+    },
+    "raw_counts": {
+      "totalTestCount": 275,
+      "passedTests": 266,
+      "failedTests": 9,
+      "skippedTests": 0
+    },
+    "analysis_definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/failure-analysis/definition.json",
+      "sha256": "5d7dcd42922b627992e9f64e81bebf1e45f6aced3fc6322a154c63129d8cb260"
+    },
+    "disposition": "Results/EXP-227-integration-failure-disposition.json",
+    "offline_decoder": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/failure-analysis/decoder-assessment.json",
+      "sha256": "7932e91e5ff8c8a1fb12e4a32019c1ce3504042b9fa15d026ec3863c3275b373"
+    }
   }
 }

@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-227",
+  "gate": "S3:F03:M01",
+  "status": "NATIVE_FAILURES_OFFLINE_ATTRIBUTION",
+  "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/failure-analysis",
+  "original_verdict": "INVALID",
+  "original_cleanup": "PASS",
+  "task_simulator_deletion": "PASS",
+  "counts": {
+    "cases": 275,
+    "invocations": 275,
+    "passed": 266,
+    "failed": 9,
+    "skipped": 0,
+    "failure_messages": 25,
+    "runtime_warnings": 8
+  },
+  "decoder": {
+    "status": "QUALIFIED_OFFLINE_ONLY",
+    "controls": 14,
+    "reviewer": "/root/c06_runtime_plan"
+  },
+  "failure_groups": [
+    {
+      "category": "session_launch_restore",
+      "cases": [
+        "DatadogIntegrationTests/RUMSessionStartInForeground_Tests/testGivenOSPrewarmLaunch_whenManualViewIsTracked()",
+        "DatadogIntegrationTests/RUMSessionStartInForeground_Tests/testGivenUserLaunch_whenAutomaticViewIsTracked()",
+        "DatadogIntegrationTests/RUMSessionStopTests/testGivenUserSession_whenItIsStoppedBeforeOrAfterEnteringBackground_andActionIsTrackedInForeground()",
+        "DatadogIntegrationTests/RUMSessionStopTests/testGivenUserSession_whenItIsStoppedBeforeOrAfterEnteringBackground_andOtherEventsAreTrackedInForeground()",
+        "DatadogIntegrationTests/RUMSessionTimeOutTests/testGivenUserSession_whenItEntersBackground_andTimesOut_andNextEventIsTrackedInForeground()",
+        "DatadogIntegrationTests/RUMSessionTimeOutTests/testGivenUserSession_whenItTimesOut_andEntersBackground_andNextEventIsTrackedInForeground()",
+        "DatadogIntegrationTests/RUMSessionTrackingTests/testGivenUserLaunch_whenTrackingUserSession()"
+      ],
+      "status": "SOURCE_AND_FIXTURE_ATTRIBUTION_REQUIRED",
+      "finding": "Seven cases expose missing TTID, absent restarted session/view, or logical start/duration mismatch. Three test bodies match accepted S2, but AppRunner/lifecycle and SDK sources differ. No blanket production-regression or flaky-test conclusion.",
+      "next": "Compare simulated process/scene notification ordering, first-frame delivery and restored owners before choosing a narrow deterministic correction or validation."
+    },
+    {
+      "category": "tracking_assertion_crash",
+      "status": "TEST_HELPER_CRASH_CONFIRMED",
+      "finding": "SIGTRAP in RUMSessionTrackingTests.assertUserSession at line107: removeFirst on an empty view array. Missing expected restored view remains part of the session investigation.",
+      "binary_uuid": "1502f484-14a0-3807-b084-0022312ae023",
+      "next": "Guard expected view inventory before positional assertions, preserving the failure and preventing contamination in future qualification."
+    },
+    {
+      "category": "watchdog_after_restart",
+      "cases": [
+        "DatadogIntegrationTests/WatchdogTerminationsMonitoringTests/testGivenRUMAndCrashReportingEnabled_whenWatchdogTerminatesTheApp_thenWatchdogTerminationEventIsReported()"
+      ],
+      "status": "CONTAMINATED_BY_PRECEDING_TEST_CRASH",
+      "finding": "Saved log records test-process restart. Watchdog case receives Application crash: SIGTRAP/exception from ApplicationLaunch instead of its simulated watchdog event. This does not establish a watchdog SDK regression.",
+      "next": "Retain original failure; qualify unchanged watchdog assertions only after the assertion-helper crash is prevented."
+    },
+    {
+      "category": "hitch_delta_oracle",
+      "cases": [
+        "DatadogIntegrationTests/RUMViewHitchesIntegration_Tests/testViewHitchesCollected_whenFeatureFlagIsEnabled()"
+      ],
+      "status": "KNOWN_ASSERTION_CORRECTION_ABSENT",
+      "finding": "Tested source reads slowFrames only from the final delta. Reviewed S1 correction reconstructs ordered full/delta documents and preserves explicit empty/disabled controls; no current native hitch qualification follows.",
+      "correction": "0deff4750a172309c79bcc916e99f575ccc37f8d",
+      "owner": "Results/S1-hitch-review.json",
+      "next": "Reuse the reviewed test-only correction in a separately defined current-source qualification; do not weaken assertions or repair unrelated CI."
+    }
+  ],
+  "artifacts": {
+    "definition.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/failure-analysis/definition.json",
+      "sha256": "5d7dcd42922b627992e9f64e81bebf1e45f6aced3fc6322a154c63129d8cb260"
+    },
+    "controls.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/failure-analysis/controls.json",
+      "sha256": "01e07af940a69f32b2d091c31ae7cf942b91e243654a8ca6f648fd65c980b7d0"
+    },
+    "decoder-assessment.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/failure-analysis/decoder-assessment.json",
+      "sha256": "7932e91e5ff8c8a1fb12e4a32019c1ce3504042b9fa15d026ec3863c3275b373"
+    },
+    "decoder-review.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/failure-analysis/decoder-review.json",
+      "sha256": "dde566a294ebef8d408aba810e71d8ee7614b735e08acc95cb7d6f7757af295d"
+    },
+    "source-comparison.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/failure-analysis/source-comparison.json",
+      "sha256": "9edea96bb8ad9aa318db4a30b6af7dede04f99ffc3e630b02408ec3b764714a4"
+    },
+    "Example.ips": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/failure-analysis/Example.ips",
+      "sha256": "345dfef607ded419d0c9114df8e8c09fb54415598520b4928c1c453c772d7e99"
+    },
+    "test-binary-uuid.log": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/failure-analysis/test-binary-uuid.log",
+      "sha256": "18a4ede8fbb91d26748f59e6f4b674975c71277edcda28b883505c8bd276526c"
+    }
+  },
+  "originals": {
+    "module-summary.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/module-summary.json",
+      "sha256": "38d700bf55825ad8c08bb3de91e1bf4b400ff943fc1dbb6fb83f68a92de93a92"
+    },
+    "deletion.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/deletion.json",
+      "sha256": "2d2b521ba95ac3b4700d7698942940dacee2e1c56b6b425524809746bf8e4205"
+    },
+    "native-exit.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/native-exit.json",
+      "sha256": "1e346dbb3ecc54cbf57ad22d4e885cfd87498016bb9d434c7012d07c1f2c0572"
+    },
+    "cells/integration/summary.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/cells/integration/summary.json",
+      "sha256": "18f73684bd847db6f3c2b56eb221ecee10482fb733429e6ecb34078ab25da9b6"
+    },
+    "cells/integration/result-tests.log": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/cells/integration/result-tests.log",
+      "sha256": "ed73bb223f106b2f4e4e69713a768ec47ca211b267e1d7c16de76a162f47b1af"
+    },
+    "cells/integration/result-summary.log": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/cells/integration/result-summary.log",
+      "sha256": "146afa67e157b8211b60dbac39a7321e3258f1a43a53dfe0b5c1cae00d2557af"
+    },
+    "cells/integration/execute.log": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/cells/integration/execute.log",
+      "sha256": "aaca9a072296bb2ea1f9bc1a1bfd1adf57ab13b437a0bb9820b090e9b96d7f4c"
+    }
+  },
+  "native_active": false,
+  "native_retry_admitted": false,
+  "gate_closures": [],
+  "next": "Complete source/fixture attribution before a narrowly reviewed follow-up; no broad or equivalent retry, no SDK edit admitted by this record."
+}

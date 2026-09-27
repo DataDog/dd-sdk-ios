@@ -112,6 +112,66 @@ class ModuleOracleTests(unittest.TestCase):
             else: tree['testPlanConfigurations'] = []
             with self.subTest(kind=kind), self.assertRaises(ValueError): oracle.assess(selected, tree, summary, 'Tests', {}, {}, device)
 
+    def test_runtime_warnings_keep_owner_source_and_failed_result_without_extra_invocations(self):
+        for result in ['Passed', 'Failed']:
+            case, tree, summary, device = self.fixture()
+            warning = {'nodeType': 'Runtime Warning', 'name': 'known warning',
+                       'sourceLocation': {'filePath': '/fixture/A.swift', 'lineNumber': 51}}
+            case.update(result=result, children=[warning])
+            if result == 'Failed':
+                case['children'].append({'nodeType': 'Failure Message', 'name': 'failed assertion'})
+                summary.update(passedTests=0, failedTests=1, result='Failed')
+                summary['devicesAndConfigurations'][0].update(passedTests=0, failedTests=1)
+            before = copy.deepcopy(tree)
+            cases, invocations, messages = oracle.decode(tree, 'Tests', {})
+            self.assertEqual(cases, {'Tests/A/test()': result})
+            self.assertEqual(invocations, [('Tests/A/test()', None, result)])
+            self.assertEqual(messages[0], dict(identifier='Tests/A/test()', argument=None,
+                                             kind='Runtime Warning', message='known warning', node=warning))
+            self.assertEqual(tree, before)
+            expected = [dict(issueType='Runtime Warning', message='known warning', sourceURL='file:///fixture/A.swift')]
+            summary['runtimeWarnings'] = expected
+            if result == 'Failed':
+                self.assertEqual(messages[1]['kind'], 'Failure Message')
+                with self.assertRaisesRegex(ValueError, 'test assertion failure'):
+                    oracle.assess(['Tests/A/test()'], tree, summary, 'Tests', {}, {}, device, expected)
+            else:
+                self.assertEqual(oracle.assess(['Tests/A/test()'], tree, summary, 'Tests', {}, {}, device, expected)['invocations'], 1)
+
+    def test_runtime_warning_tree_cannot_hide_or_change_summary_warnings(self):
+        case, tree, summary, device = self.fixture()
+        warning = {'nodeType': 'Runtime Warning', 'name': 'known warning'}
+        case['children'] = [warning]
+        expected = [dict(issueType='Runtime Warning', message='known warning')]
+        summary['runtimeWarnings'] = expected
+        self.assertEqual(oracle.assess(['Tests/A/test()'], tree, summary, 'Tests', {}, {}, device, expected)['cases'], 1)
+        for children, warnings in [([warning], []), ([warning, warning], expected),
+                                   ([{**warning, 'name': 'new warning'}], expected),
+                                   ([{**warning, 'sourceLocation': {'filePath': '/foreign/A.swift', 'lineNumber': 1}}], expected)]:
+            case['children'] = children; summary['runtimeWarnings'] = warnings
+            with self.subTest(children=children, warnings=warnings), self.assertRaisesRegex(ValueError, 'runtime warning tree/summary mismatch'):
+                oracle.assess(['Tests/A/test()'], tree, summary, 'Tests', {}, {}, device, expected)
+
+    def test_malformed_or_unknown_runtime_warning_nodes_fail(self):
+        warning = {'nodeType': 'Runtime Warning', 'name': 'known warning'}
+        invalid = [{**warning, 'unknown': True}, {**warning, 'name': ''},
+                   {**warning, 'nodeType': 'Unknown Warning'},
+                   {**warning, 'sourceLocation': {'filePath': 'relative.swift', 'lineNumber': 1}},
+                   {**warning, 'sourceLocation': {'filePath': '/fixture/A.swift', 'lineNumber': 0}}]
+        for child in invalid:
+            case, tree, _, _ = self.fixture(); case['children'] = [child]
+            with self.subTest(child=child), self.assertRaises(ValueError): oracle.decode(tree, 'Tests', {})
+
+    def test_parameter_runtime_warning_keeps_argument_identity(self):
+        case, tree, _, _ = self.fixture(); identifier = 'Tests/A/test()'
+        url = 'test://com.apple.xcode/Project/' + identifier + '?args=' + '1' * 64
+        warning = {'nodeType': 'Runtime Warning', 'name': 'known warning'}
+        case['children'] = [dict(nodeType='Arguments', name='1', result='Passed', nodeIdentifierURL=url, children=[warning])]
+        _, invocations, messages = oracle.decode(tree, 'Tests', {identifier: ['1']})
+        self.assertEqual(invocations, [(identifier, '1' * 64, 'Passed')])
+        self.assertEqual(messages[0]['argument'], url)
+        self.assertEqual(messages[0]['node'], warning)
+
     def test_known_warnings_require_the_entire_exact_multiset(self):
         _, tree, summary, device = self.fixture()
         expected = [{'issueType': 'Runtime Warning', 'message': 'known', 'sourceURL': 'file:///fixture/A.swift'}] * 2

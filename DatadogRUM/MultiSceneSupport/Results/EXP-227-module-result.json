@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "experiment": "EXP-227",
-  "status": "PARTIAL_EIGHT_QUALIFIED_INTEGRATION_ENVIRONMENT_STOPPED",
+  "status": "PARTIAL_EIGHT_QUALIFIED_INTEGRATION_FAILURES",
   "source": "d23982a5d249c88b0bc9cd5a05be21ede72cae8d",
   "gate": "S3:F03:M01",
   "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration-host-k0mg_syr",
@@ -139,7 +139,7 @@
       "summary_sha256": "4ab295aed579dc280005b3127a1a2cb6346f21e62cfbd3097ea3a07cabba5cab"
     }
   ],
-  "remaining": "Integration native path stopped on installer service failure; no equivalent retry. Eight non-RUM suites and full RUM stay qualified. F01, public scene exposure, simultaneous ownership and final matrix remain.",
+  "remaining": "Integration17.5 executes275 cases:266passed9failed, with seven session cases under source/fixture attribution, a test-helper crash and secondary watchdog contamination, plus an older hitch-delta assertion. OriginalINVALID and cleanup/deletionPASS remain; reviewed offline decoding preserves all25 failure messages and8warnings. No native retry; eight other non-RUM suites and full RUM remain qualified.",
   "original_preparation": "Original six-control inputs preserved; reviewed closure/path/provenance corrections are separately frozen.",
   "signing_checkpoint": "b58750b3476fa44fe082894eb532b92abeca98c5 uses authorized local unsigned fallback after20-second signing timeout.",
   "scenario": "NOT_EXECUTED",
@@ -540,7 +540,7 @@
   },
   "integration17_preparation": {
     "owner": "Results/EXP-227-integration-preflight.json",
-    "state": "PREPARED_NATIVE_UNADMITTED",
+    "state": "STOPPED_WITH_TEST_FAILURES",
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified",
     "source_unchanged": true,
     "tests_selected": 275,
@@ -548,6 +548,15 @@
     "review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/review.json",
       "sha256": "9966dba910e53ff86b332f548b9520fe661ff03167c76893ac42fd974c1f9996"
+    },
+    "summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/module-summary.json",
+      "sha256": "38d700bf55825ad8c08bb3de91e1bf4b400ff943fc1dbb6fb83f68a92de93a92"
+    },
+    "deletion": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration17-o3dal4y5/qualified/deletion.json",
+      "sha256": "2d2b521ba95ac3b4700d7698942940dacee2e1c56b6b425524809746bf8e4205"
     }
-  }
+  },
+  "integration_failure_disposition": "Results/EXP-227-integration-failure-disposition.json"
 }
