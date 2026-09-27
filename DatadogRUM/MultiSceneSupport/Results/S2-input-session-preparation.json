@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
   "work_item": "S2 finite input preparation",
-  "status": "THREE_REMAINING_PACKAGES; NO_ACTIVE_SESSION",
-  "updated_at": "2026-09-27T05:09:26.454403+00:00",
+  "status": "THREE_REMAINING_PACKAGES; HARNESS_REPAIRS_REQUIRED; NO_ACTIVE_SESSION",
+  "updated_at": "2026-09-27T10:46:35.422711+00:00",
   "owner": "Harness implementer; root owns native lane",
   "scope_owner": "Results/S2-release-gate-review-20260925.json; release-gates.json releases.S2.execution_packages",
   "source_pair": {
@@ -31,8 +31,8 @@
       "remaining": "12 Duo cells: UIKit/SwiftUI stack/split for baseline built26.5, baseline built27.1 and candidate built27.1. At most4 ordinary controls only if needed; no extra manual split or physical resize matrix.",
       "decisive_test": "Actual control/navigation/fold effect and exact view/action owner parity. Split journeys supply H14. Existing naming/control limitations remain explicit.",
       "environment": "Xcode27.1 Duo27.1; six existing products from four genuine source/compiler builds",
-      "preparation": "Reviewed current recorder contract and finite-session scheduler; first planned baseline qualifies human input.",
-      "blocker": "Fresh operator and Duo readiness; native comparison unrun."
+      "preparation": "Existing products and recorder controls remain preparation evidence. The actual S2 plan is not supported by the older pair-only sitting scheduler.",
+      "blocker": "HUMAN-01/03/05: safe failure cleanup, asynchronous Home collection and actual S2 sitting support; then fresh operator/Duo readiness."
     },
     {
       "id": "transitions",
@@ -47,7 +47,7 @@
       "environment": "Duo27.1 preferred; one eligible physical UIKit pair is the scoped unsupported-input fallback, with no Duo-hardware claim.",
       "qualified_baseline": "Results/S2-H11-H13-local-baseline.json; no UIKit baseline repeat due",
       "prepared_continuation": "Results/S2-H11-H13-local-continuation.json; one reviewed physical B cell using existing signed products",
-      "blocker": "Fresh physical iPad/operator readiness before the single prepared UIKit candidate. Current helper manifest and unchanged signed products verify; no SwiftUI input remains.",
+      "blocker": "HUMAN-02/03: delayed callback-work and Home event collection must qualify before fresh iPad/operator readiness for the one candidate. Saved baseline and completed SwiftUI pairs remain accepted.",
       "swiftui_preparation": "Results/S2-H12-H13-swiftui-duo.json"
     },
     {
@@ -62,7 +62,7 @@
       "decisive_test": "Held work crosses actual Closed/Open/Closed display changes with exact Resource/Error start owners, registered metrics, Trace IDs/carriers/correlation, complete RUM/APM inventory and cleanup.",
       "environment": "Xcode27.1 Duo27.1 and authenticated RUM/APM; both original products requalified without rebuilding",
       "preparation": "Reviewed current timing/workspace scope and request-clock correction;49 Python/6 connector controls.",
-      "blocker": "Fresh operator, Duo and RUM/APM readiness before the separate stage. First planned baseline qualifies the mechanism; no equivalent diagnostic retry."
+      "blocker": "HUMAN-04: changing-index collection and direct operator prompt/readiness binding must qualify before fresh Duo/RUM/APM/operator readiness. Reuse navigation/rollover; no equivalent diagnostics."
     }
   ],
   "completed_packages": [
@@ -116,13 +116,13 @@
   "session_splitting": {
     "allowed": true,
     "safe_boundary": "A complete qualified cell or pair with durable evidence and verified cleanup; never mid-gesture.",
-    "coverage": "Reviewed finite-session scheduler retains qualified immutable predecessors across sittings.",
+    "coverage": "Not yet implemented for AUTOMATIC_S2_RUNTIME: the older pair-only scheduler rejects the S2 triplets and is bypassed by the current run kind. Close HUMAN-05 before promising split sittings.",
     "transitions": "Reviewed physical candidate-only continuation reuses its saved baseline; other continuations require explicit source-bound preparation.",
     "network": "Current four-cell stage is fixed. Splitting it requires a reviewed continuation for only missing cells; never renew the old clock.",
     "duration": "Budgets are operational maxima, not forecasts of user time."
   },
   "operator_readiness": {
-    "state": "NO_ACTIVE_NATIVE_SESSION",
+    "state": "HOLD_FOR_PACKAGE_HARNESS_REPAIRS",
     "active_native": false,
     "fixed_stage_started": false,
     "fresh_readiness_required": true
@@ -134,6 +134,8 @@
     "coverage": "Existing fresh-process entrypoint PASS; frozen rendered oracle intentionally retained.",
     "network": "Existing fresh-process entrypoint PASS.",
     "transitions": "Reviewed helper refresh PASS; only two helper hashes changed. Default human/Home and source/product/cleanup contract preserved.",
-    "native_runs": 0
-  }
+    "native_runs": 0,
+    "limit": "Historical entrypoint/hash checks only; these do not exercise the delayed-event, failed-human-input or S2 sitting paths found by the admission review."
+  },
+  "admission_review": "Results/human-session-review-20260927.json"
 }

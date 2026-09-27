@@ -33,6 +33,26 @@ An amended input/oracle does not overwrite an earlier verdict or reset its deadl
 Preserve failures, define the changed boundary and admit only the needed continuation.
 No metadata-only change, reconnection or restart requires repeating accepted tests.
 
+## Human-session rehearsal
+
+Before inviting input, exercise the actual prepared entrypoint through prompt
+publication, one gesture, delayed mapper work, Home, collection and failure cleanup
+using native/backend doubles. Check its real plan kind and cell ordering through
+pause and continuation; a helper-only test does not qualify the full sitting.
+Publish the operator page and verify visibility before starting the input stage.
+After capture, show a waiting state and release the operator from backend polling.
+
+Keep native effect boundaries separate from asynchronous event collection. Match
+callback work by exact identity and captured owner, not a fixed settling delay.
+A Home writer checkpoint proves a durable prefix, not complete SDK serialization;
+classify later rows before sealing the required finite inventory. If indexing grows
+between COUNT and search, retain raw exchanges and retry the complete inventory
+within the original collection budget. Reject conflicting/foreign/malformed rows.
+Do not repeat valid gestures merely for delayed delivery. Failed human input needs
+fresh release and native idle proof before teardown; host-worker exit is insufficient.
+The [human-session review](../Results/HUMAN_SESSION_REVIEW_20260927.md) owns the current
+repair findings; mocked rehearsal establishes preparation, not native acceptance.
+
 ## Evidence levels
 
 | Evidence | Establishes | Does not establish |

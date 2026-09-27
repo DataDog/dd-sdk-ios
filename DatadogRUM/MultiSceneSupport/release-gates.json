@@ -2816,7 +2816,7 @@
           ],
           "decisive_test": "Prepare source-bound fixtures, current readiness, actual input/effect capture and safe cleanup for each needed package. This is execution readiness, not a product release gate; missing preparation blocks only that run. No duplicate hardware campaign or new telemetry requirement.",
           "environment": "The environment needed by the selected package; separate short sessions are permitted",
-          "evidence": "Results/S2-input-session-preparation.json owns the three remaining packages: reviewed12-cell automatic coverage, one physical UIKit candidate with refreshed helpers, and four-cell Resource/Trace fold preparation. Actual entrypoint verification passes for all three. H12/H16/T10/F08 are closed and require no repeated input. Fresh operator/environment readiness still precedes admission; no preparation-only behavioral credit.",
+          "evidence": "Results/human-session-review-20260927.json holds the three remaining input packages for five reproduced harness gaps: failed-input cleanup, delayed callback/Home collection, changing backend indexing and S2 sitting selection. Results/S2-input-session-preparation.json owns package-specific prerequisites. Prior builds/controls and closed H12/H16/T10/F08 evidence remain accepted; fresh operator readiness alone does not admit these runners.",
           "required": false,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         },
@@ -2828,7 +2828,7 @@
           ],
           "decisive_test": "Freeze only residual ordered gestures/dismissals and scene combinations with automated reset/capture/assertions plus input/topology proof. Preserve failed automation and exact ownership oracle; F03 deterministic same-key API qualification is separate. Request one prepared human session; Duo hardware follows availability.",
           "environment": "Single host; Duo simulator27.1 and connected eligible iPhone/iPad",
-          "evidence": "Results/S3-api-availability-plan.json preserves the split: EXP129 is inconclusive; EXP196 H01 physical PASS and H05 serial evidence cannot certify simultaneous same-key routing or remaining gestures. No human-session or deterministic API gate closes.",
+          "evidence": "Results/S3-api-availability-plan.json preserves the residual gesture/topology split. Results/human-session-review-20260927.json finds no complete frozen residual session; the prepared EXP225 same-key setup still needs its native wrapper/prompt binding and belongs separately to F03. Prior serial/physical evidence cannot certify missing simultaneous routing or gestures; no gate closes.",
           "required": true
         }
       }

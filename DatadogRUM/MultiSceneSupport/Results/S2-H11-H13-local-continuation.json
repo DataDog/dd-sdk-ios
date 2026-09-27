@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "state": "REVIEWED_CANDIDATE_ONLY_NATIVE_UNADMITTED",
-  "updated_at": "2026-09-27T05:09:26.453149+00:00",
+  "state": "CANDIDATE_PREPARATION_PRESERVED_HUMAN_ADMISSION_HELD",
+  "updated_at": "2026-09-27T10:46:35.422711+00:00",
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
   "gates": [
@@ -48,7 +48,7 @@
   "original_verdicts": "Immutable INVALID / evidence INCOMPLETE / cleanup PASS; no old admission renewed",
   "release_acceptance": false,
   "gate_closures": [],
-  "next_action": "Use this refreshed one-cell plan after fresh matching physical iPad and operator readiness. No native admission or input has occurred. Retain release/native-idle cleanup on failure, compare full local inventory with the reviewed saved baseline and obtain paired source classification before H11/H13 closure. Do not repeat the UIKit baseline or the completed SwiftUI pairs.",
+  "next_action": "Repair delayed callback and Home collection before inviting the one physical UIKit candidate. Keep the release/native-idle guard, saved baseline and completed SwiftUI evidence. Refresh changed helper bindings and review actual-runner controls, then obtain fresh device/operator readiness; no baseline or SwiftUI repeat.",
   "superseded_preparation": {
     "runtime_plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/physical-candidate/runtime/plan.json",
@@ -68,5 +68,14 @@
   "helper_refresh": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/remaining-preflight/physical-helper-refresh.json",
     "sha256": "468e72a984843d70623e1c70a9fa8ff111738ec36507945c4d6344b5811916d7"
+  },
+  "admission_review": {
+    "owner": "Results/human-session-review-20260927.json",
+    "state": "HOLD_BEFORE_HUMAN_INVITATION",
+    "findings": [
+      "HUMAN-02",
+      "HUMAN-03"
+    ],
+    "original_preparation_receipts": "Preserved unchanged; earlier controls establish only their recorded preparation scope."
   }
 }

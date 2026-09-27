@@ -3,7 +3,7 @@
   "experiment": "EXP-225",
   "work_item": "Human setup barrier for concurrent same-key API ownership",
   "status": "PREPARED_BUILD_PASS_NATIVE_UNADMITTED",
-  "updated_at": "2026-09-27T05:42:32.427783+00:00",
+  "updated_at": "2026-09-27T10:46:35.422711+00:00",
   "owner": "Root; designated reviewer /root/c06_runtime_plan",
   "gates": [
     "S3:F03:M02",
@@ -97,5 +97,11 @@
     "Native human mode requires iOS26+ resize observation; ordinary automatic fixture keeps deployment15 behavior.",
     "This does not establish concurrent ownership, public API exposure, F01 approval, physical co-visibility or any release gate closure."
   ],
-  "next": "Before native work, define and review the actual human/device session, discover current readiness and bind this product. Arrange two concurrent windows, release input and capture fresh native topology before starting APIs. Preserve original automatic failure; do not repeat it."
+  "next": "Prepare and review the actual human_setup/same_key_contract native wrapper and prompt delivery before an invitation; bind current product/device readiness. Preserve the stopped automatic path. Concurrent topology and released input must precede API work; native acceptance remains unrun.",
+  "admission_review": {
+    "owner": "Results/human-session-review-20260927.json",
+    "state": "PREPARATION_ONLY_NATIVE_WRAPPER_UNBOUND",
+    "remaining": "Bind human_setup=True and qualification=same_key_contract with exact product/device and operator prompt delivery. Exercise late checkpoint and cleanup handling in the actual wrapper before native admission.",
+    "preserved": "The 62 offline controls and optimized build remain qualified; the automatic API budget starts after validated setup readiness. No SDK regression or native qualification is inferred."
+  }
 }

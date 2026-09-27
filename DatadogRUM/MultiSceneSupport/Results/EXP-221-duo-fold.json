@@ -657,8 +657,8 @@
   "current_preparation": {
     "schema_version": 1,
     "work_item": "S2:T03/T08 current Resource/Trace fold preparation",
-    "state": "REVIEWED_NATIVE_UNADMITTED",
-    "updated_at": "2026-09-27T02:39:58.001398+00:00",
+    "state": "PREPARATION_PRESERVED_HUMAN_ADMISSION_HELD",
+    "updated_at": "2026-09-27T10:46:35.422711+00:00",
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/resource-fold/definition.json",
       "sha256": "1e3855d9a4c191457d2568a79f418af3b7f8f21acee6a9eead06a71d28056ed4"
@@ -703,11 +703,20 @@
     "additional_builds": 0,
     "backend_requests": 0,
     "gate_closures": [],
-    "remaining": "Fresh Xcode/Duo/runtime and RUM/APM access plus operator readiness before new stage admission. First planned A-automatic cell qualifies the mechanism; no extra diagnostics or accepted-navigation/rollover repeats.",
+    "remaining": "Repair changing-index collection and bind prompt delivery before inviting input; review the actual frozen runner with complete-inventory controls. Then rediscover Duo/RUM/APM readiness. First needed baseline qualifies native input; reuse accepted navigation/rollover and preserve all original verdicts.",
     "source_pair": {
       "A": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
       "B": "c9faed816a1d4828d7d8c4b64acae01119425889"
     },
-    "original_result_policy": "Original failed scenarios, cleanup verdicts and later successful restoration remain unchanged."
+    "original_result_policy": "Original failed scenarios, cleanup verdicts and later successful restoration remain unchanged.",
+    "admission_review": {
+      "owner": "Results/human-session-review-20260927.json",
+      "state": "HOLD_BEFORE_HUMAN_INVITATION",
+      "findings": [
+        "HUMAN-04"
+      ],
+      "original_preparation_receipts": "Preserved unchanged; earlier controls establish only their recorded preparation scope.",
+      "additional_prerequisite": "Bind direct operator prompt delivery/readiness; tool notifications alone are not the operator page."
+    }
   }
 }
