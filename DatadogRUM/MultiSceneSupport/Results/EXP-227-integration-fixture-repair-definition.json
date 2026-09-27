@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-227",
+  "gate": "S3:F03:M01",
+  "status": "DEFINED_BEFORE_IMPLEMENTATION",
+  "owner": "SDK implementer",
+  "reviewer": "/root/c06_runtime_plan",
+  "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "evidence": "Results/EXP-227-lifecycle-attribution.json",
+  "changes": [
+    {
+      "path": "Datadog/IntegrationUnitTests/AppRunner/AppRunner.swift",
+      "contract": "At the existing background/foreground boundaries, post the matching UIScene notification only for the last appeared controller's actual windowScene. Read UIKit only on main; fail the fixture on a wrong-thread call. Preserve application posts and nil-scene fallback. Foreground: application willEnterForeground, owned scene willEnterForeground, application didBecomeActive. Background: application willResignActive, owned scene didEnterBackground, application didEnterBackground. No connectedScenes broadcast, fake scene, SDK queue drain or subscriber substitution."
+    },
+    {
+      "path": "Datadog/IntegrationUnitTests/RUM/RUMSessionTrackingTests.swift",
+      "contract": "Assert and guard the complete expected view count before removeFirst. Preserve all existing ownership, event and virtual-time assertions; report a missing view without crashing the test host or contaminating the next watchdog case."
+    },
+    {
+      "path": "Datadog/IntegrationUnitTests/RUM/RUMViewHitchesIntegration_Tests.swift",
+      "contract": "Use the exact reviewed test-only full/delta oracle from commit0deff4750a172309c79bcc916e99f575ccc37f8d. Preserve disabled, missing-payload, explicit-empty and recurring/terminal-full controls. No timing threshold or SDK change."
+    },
+    {
+      "path": "Datadog/IntegrationUnitTests/RUM/RUMSessionTimeOutTests.swift",
+      "contract": "Four fixture controls exercise exact notification order/scene object, detached fallback, cleared former controller and off-main rejection before UIKit access. No existing method or assertion is altered."
+    }
+  ],
+  "qualification": {
+    "scope": "One fresh Integration17.5 build and full current non-Replay selection, expected280 methods after one reviewed hitch control and four owned-scene fixture controls. Reuse all other accepted module results. Diagnostics compile disabled; SDK94842 sources remain exact. A full target is necessary for the existing M01 compatibility obligation and for detecting contamination between cases.",
+    "prerequisites": [
+      "Scoped source and frozen-runner review",
+      "Strict lint",
+      "Exact current discovery and existing Replay exclusion partition",
+      "Fresh task-owned17.5 simulator and frozen product/dependency/compiler identities"
+    ],
+    "acceptance": "All280 cases pass with no missing/excluded failure or process restart; exact source-bound warning disposition, finalized xcresult, own app/data removal, worker quiescence, Shutdown and task-device deletion. Native runtime warning or unresolved TTID failure remains a failure, not a waiver.",
+    "limits": {
+      "builds": 1,
+      "native_cells": 1,
+      "sdk_edits": 0,
+      "human_input": false
+    },
+    "stop": "No repeated diagnostic. If the repaired full target fails, preserve every failure and finish cleanup; investigate only a concrete changed-surface cause. No retry for green or gate closure from subset/build success."
+  },
+  "native_admitted": false,
+  "gate_closures": [],
+  "cleanup_discriminator": {
+    "evidence": "The diagnostic app/data and simulator shutdown completed, but ibtoold remained at the immediate global idle check; a later fresh inventory proved exit and separate deletion passed.",
+    "change": "During future cleanup only, allow repeated fresh process inventories while the only detected processes are ibtoold. Preserve each observation and the original passed-in deadline. Reject real build/test workers immediately, retain strict preflight, never kill helpers, and require an empty competing-worker set before success.",
+    "paths": [
+      "tools/multi-scene/compatibility/platforms.py",
+      "tools/multi-scene/compatibility/test_platforms.py",
+      "tools/multi-scene/compatibility/module_tests.py",
+      "tools/multi-scene/compatibility/clean_integration.py"
+    ],
+    "controls": [
+      "helper exits within original deadline",
+      "default preflight still stops",
+      "active build/test still stops",
+      "helper past original deadline still fails"
+    ]
+  },
+  "preparation": {
+    "status": "IMPLEMENTED_AWAITING_FROZEN_QUALIFICATION_REVIEW",
+    "controls": {
+      "lifecycle": 12,
+      "platforms": 20,
+      "module_runner": 8,
+      "clean_integration": 4
+    },
+    "strict_swift_lint": "PASS: four changed fixture files, zero violations",
+    "admission": "Fresh mode-bound qualification plan, controls and designated review must identify all280 methods, disabled diagnostics, and all four fixture hashes in project and compiler membership. Consumed diagnostic roots are immutable evidence only; no replay or receipt migration is supported.",
+    "gate_closures": []
+  }
+}

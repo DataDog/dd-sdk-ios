@@ -282,7 +282,7 @@ def run_cell(root, cell, definition, base, frozen, stage, *, output_root=None, v
             call(['xcrun', 'simctl', 'list', 'devices', 'available', '--json'], 'restored', cleanup - 30)
             states = [d['state'] for ds in shared.read(folder / 'restored.log')['devices'].values() for d in ds if d['udid'] == device]
             require(initial == 'Shutdown' and states == [initial], 'original simulator state not restored')
-            common.require_idle(folder, 'cleanup-workers', cleanup - 20, cleanup)
+            common.require_idle(folder, 'cleanup-workers', cleanup - 20, cleanup, settle_helpers=True)
             verify_inputs(root)
             if built: verify_build(root, build_folder, frozen, cell)
             require(time.time() < cleanup, 'late cleanup verification')

@@ -196,3 +196,14 @@ TTID failures remain unresolved; no SDK defect or gate closure follows. App/data
 removal and Shutdown pass, but two lingering `ibtoold` processes invalidate the
 original cleanup check. Fresh quiescence and task-device deletion pass separately.
 Keep both verdicts and define/review the fixture repair before qualification.
+
+The [fixture repair](../Results/EXP-227-integration-fixture-repair-definition.json)
+preserves all SDK sources and defines one full280-case qualification. Four controls
+cover actual scene identity/order, detached fallback, cleared ownership and off-main
+rejection. The assertion helper now fails without trapping; the hitch oracle matches
+the reviewed S1 correction exactly. Forty-four affected runner controls and strict
+lint pass. Fresh qualification receipts must bind mode, selection and all four
+compiled fixture hashes. Consumed diagnostic roots stay immutable evidence, never
+executable admissions. Cleanup may wait only for lingering ibtoold within its fixed
+future budget and must observe an empty worker set; no old verdict is rewritten.
+Native admission awaits frozen input review; no compatibility gate is closed.

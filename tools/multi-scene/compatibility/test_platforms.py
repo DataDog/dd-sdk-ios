@@ -2,6 +2,7 @@ from pathlib import Path
 import shlex
 import tempfile
 import unittest
+from unittest.mock import patch
 import platforms as suite
 
 
@@ -171,6 +172,42 @@ class PlatformTests(unittest.TestCase):
         for name in ['swift-driver', 'swiftc', 'ld', 'ld64', 'libtool', 'codesign', 'ibtool', 'actool', 'metal', 'lipo']:
             with self.subTest(name=name): self.assertTrue(suite.competing_workers([['1', '1', '/usr/bin/' + name]]))
         self.assertFalse(suite.competing_workers([['1', '1', '/usr/bin/caffeinate'], ['2', '2', '/bin/launchd']]))
+
+    def idle_sequence(self, workers, *, settle, deadline=10):
+        clock = [0]; calls = []; sleeps = []
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp)
+            def command(argv, output, name, **budgets):
+                index = min(len(calls), len(workers) - 1)
+                rows = '1 1 /sbin/launchd\n' + ''.join(f'{i + 2} {i + 2} /usr/bin/{v}\n' for i, v in enumerate(workers[index]))
+                (output / (name + '.log')).write_text(rows)
+                calls.append((name, budgets))
+            def sleep(seconds):
+                sleeps.append(seconds); clock[0] += seconds
+            with patch.object(suite.execution, 'command', side_effect=command), \
+                    patch.object(suite.time, 'time', side_effect=lambda: clock[0]), \
+                    patch.object(suite.time, 'sleep', side_effect=sleep):
+                suite.require_idle(folder, 'workers', deadline, 12, settle_helpers=settle)
+        return calls, sleeps
+
+    def test_cleanup_can_observe_helper_exit_without_changing_deadlines(self):
+        calls, sleeps = self.idle_sequence([['ibtoold'], ['ibtoold'], []], settle=True)
+        self.assertEqual([c[0] for c in calls], ['workers', 'workers-settle-1', 'workers-settle-2'])
+        self.assertTrue(all(c[1] == {'deadline': 10, 'cleanup_limit': 12} for c in calls))
+        self.assertEqual(sleeps, [2, 2])
+
+    def test_preflight_never_accepts_or_waits_for_helpers(self):
+        with self.assertRaisesRegex(ValueError, 'competing'):
+            self.idle_sequence([['ibtoold'], []], settle=False)
+
+    def test_cleanup_still_rejects_competing_builds_and_tests(self):
+        for workers in [['xcodebuild'], ['ibtoold', 'swiftc'], ['xctest']]:
+            with self.subTest(workers=workers), self.assertRaisesRegex(ValueError, 'competing'):
+                self.idle_sequence([workers, []], settle=True)
+
+    def test_helper_that_never_exits_cannot_pass_cleanup(self):
+        with self.assertRaisesRegex(ValueError, 'cleanup deadline'):
+            self.idle_sequence([['ibtoold']], settle=True, deadline=5)
 
 
 if __name__ == '__main__': unittest.main()

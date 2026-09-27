@@ -13,6 +13,7 @@ import TestUtilities
 /// A [Test Harness](https://en.wikipedia.org/wiki/Test_harness) that simulates the iOS app environment and manages SDK lifecycle.
 /// Used for testing how the SDK responds to different app states and events.
 internal class AppRunner {
+    private let reportSceneFailure: (String) -> Void
     #if DD_RUM_LIFECYCLE_DIAGNOSTICS
     private let diagnosticsEnabled = true
     #else
@@ -21,6 +22,10 @@ internal class AppRunner {
     private let diagnosticID = UUID().uuidString
     private let diagnosticLock = NSLock()
     private var diagnosticSequence = 0
+
+    init(reportSceneFailure: @escaping (String) -> Void = { XCTFail($0) }) {
+        self.reportSceneFailure = reportSceneFailure
+    }
 
     /// Describes how the app process was launched.
     struct ProcessLaunchType {
@@ -150,7 +155,7 @@ internal class AppRunner {
     // swiftlint:disable implicitly_unwrapped_optional
     private var appDirectory: (() -> Directory)!
     private var processInfo: ProcessInfoMock!
-    private var notificationCenter: NotificationCenter!
+    private(set) var notificationCenter: NotificationCenter!
     private var dateProvider: DateProviderMock!
     private var appStateProvider: AppStateProviderMock!
     private var appLaunchHandler: AppLaunchHandlerMock!
@@ -208,6 +213,9 @@ internal class AppRunner {
         if currentState != .inactive { // apps do not send "will enter foreground" when in INACTIVE
             notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
             recordDiagnostic("afterWillEnterForeground")
+            #if !os(watchOS)
+            postOwnedSceneNotification(UIScene.willEnterForegroundNotification)
+            #endif
         }
         notificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
         recordDiagnostic("afterDidBecomeActive")
@@ -221,6 +229,9 @@ internal class AppRunner {
             notificationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
             recordDiagnostic("afterWillResignActive")
         }
+        #if !os(watchOS)
+        postOwnedSceneNotification(UIScene.didEnterBackgroundNotification)
+        #endif
         notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
         recordDiagnostic("afterDidEnterBackground")
     }
@@ -247,6 +258,18 @@ internal class AppRunner {
 
     #if !os(watchOS)
     private var lastAppearedViewController: UIViewController?
+
+    func postOwnedSceneNotification(_ name: Notification.Name) {
+        guard Thread.isMainThread else {
+            reportSceneFailure("Scene lifecycle simulation requires the main thread")
+            return
+        }
+        // The shared mock window can attach to the host's real scene. Only that
+        // participating scene receives lifecycle events; detached views stay legacy.
+        if let scene = lastAppearedViewController?.viewIfLoaded?.window?.windowScene {
+            notificationCenter.post(name: name, object: scene)
+        }
+    }
 
     /// Simulates `viewDidAppear()` for a given view controller.
     /// If another view controller had previously appeared, it will automatically simulate `viewDidDisappear()` for it.

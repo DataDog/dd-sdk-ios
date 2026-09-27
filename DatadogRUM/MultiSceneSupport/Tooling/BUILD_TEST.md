@@ -236,3 +236,14 @@ disappear before the recorder starts. On failed attachment, preserve the origina
 error and one bounded process read before cleanup. Neither snapshot can substitute
 for recorder readiness or the trace's exact process lifetime. See the owner for
 current admission.
+
+## Integration lifecycle qualification
+
+The [EXP227 fixture repair](../Results/EXP-227-integration-fixture-repair-definition.json)
+uses a fresh qualification plan, controls and review bound to the exact full-target
+selection. Require the four changed fixtures in both project and actual compiler
+membership, with diagnostics disabled. Consumed diagnostic roots remain immutable
+evidence and cannot be replayed or supply a qualification admission. During future
+cleanup only, lingering ibtoold may settle within the original budget; preserve each
+actual process inventory and require an empty worker set. Active builds/tests and
+preflight still stop immediately.

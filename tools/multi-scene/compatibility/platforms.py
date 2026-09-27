@@ -300,12 +300,20 @@ def reviewed(root):
     return definition, plan
 
 
-def require_idle(folder, name, deadline, cleanup):
-    execution.command(['/bin/ps', '-axo', 'pid=,pgid=,comm='], folder, name, deadline=deadline, cleanup_limit=cleanup)
-    rows = [line.split(None, 2) for line in (folder / (name + '.log')).read_text().splitlines()]
-    require(rows and all(len(row) == 3 for row in rows), 'incomplete workload inventory')
-    busy = competing_workers(rows)
-    require(not busy, 'competing native/compiler workload')
+def require_idle(folder, name, deadline, cleanup, *, settle_helpers=False):
+    attempt = 0
+    while True:
+        require(time.time() < deadline, 'workload quiescence deadline expired')
+        sample = name if attempt == 0 else name + '-settle-' + str(attempt)
+        execution.command(['/bin/ps', '-axo', 'pid=,pgid=,comm='], folder, sample, deadline=deadline, cleanup_limit=cleanup)
+        rows = [line.split(None, 2) for line in (folder / (sample + '.log')).read_text().splitlines()]
+        require(rows and all(len(row) == 3 for row in rows), 'incomplete workload inventory')
+        busy = competing_workers(rows)
+        if not busy: return
+        require(settle_helpers and all(Path(row[2]).name == 'ibtoold' for row in busy), 'competing native/compiler workload')
+        require(time.time() + 2 < deadline, 'compiler helper remains at cleanup deadline')
+        time.sleep(2)
+        attempt += 1
 
 
 def competing_workers(rows):

@@ -73,6 +73,11 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
         DDAssertEqual(session.duration, timeToSDKInit + 4 * dt + timeToAppBecomeActive + 18 * dt, accuracy: accuracy)
         XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
 
+        let expectedViewCount = expectBackgroundView ? 5 : 4
+        XCTAssertEqual(session.views.count, expectedViewCount)
+        guard session.views.count == expectedViewCount else {
+            return
+        }
         var views = session.views
         var nextView = views.removeFirst()
         XCTAssertEqual(nextView.name, applicationLaunchViewName)

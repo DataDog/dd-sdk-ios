@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Observe three failed Integration cases without changing their acceptance oracle."""
+"""Run the bounded Integration diagnostic or its defined fixture qualification."""
 import argparse
 import json
 from pathlib import Path
@@ -13,6 +13,8 @@ shared = runner.shared
 require = runner.require
 FLAG = 'DD_RUM_LIFECYCLE_DIAGNOSTICS'
 FIXTURE = 'Datadog/IntegrationUnitTests/AppRunner/AppRunner.swift'
+QUALIFICATION_FIXTURES = {FIXTURE, *['Datadog/IntegrationUnitTests/RUM/' + name for name in [
+    'RUMSessionTimeOutTests.swift', 'RUMSessionTrackingTests.swift', 'RUMViewHitchesIntegration_Tests.swift']]}
 MARKER = 'RUM_INTEGRATION_LIFECYCLE '
 
 
@@ -29,6 +31,51 @@ def activation(built, reference, fixture):
     uses = {(target, path) for target, row in built['compiler']['swift'].items() for path in row['inputs']
             if FLAG in Path(path).read_text()}
     require(uses == {('DatadogIntegrationTests', str(fixture))}, 'diagnostic flag affects foreign compiled source')
+
+
+def qualification_activation(built, reference):
+    observed = built['compiler_conditions']
+    require(set(observed) == set(reference), 'qualification compiler target inventory differs')
+    for target, row in observed.items():
+        require(FLAG not in row['conditions'] and row['conditions'] == reference[target]['conditions'],
+                'qualification compiler conditions changed or diagnostics enabled')
+
+
+def selected_scope(definition, base):
+    mode = definition.get('mode', 'lifecycle_diagnostic')
+    require(mode in ['lifecycle_diagnostic', 'fixture_qualification'], 'unknown Integration continuation mode')
+    spec = definition['diagnostic'] if mode == 'lifecycle_diagnostic' else definition['qualification']
+    expected = 3 if mode == 'lifecycle_diagnostic' else 280
+    require(len(base['cells']) == 1 and base['cells'][0]['id'] == 'integration'
+            and len(spec['selected']) == len(set(spec['selected'])) == expected, 'expanded or duplicate Integration scope')
+    return mode, spec
+
+
+def artifact_prefix(mode):
+    require(mode in ['lifecycle_diagnostic', 'fixture_qualification'], 'unknown Integration continuation mode')
+    return 'diagnostic' if mode == 'lifecycle_diagnostic' else 'qualification'
+
+
+def qualification_sources(root, spec, frozen, built=None):
+    sources = spec['fixture_sources']
+    require(set(sources) == QUALIFICATION_FIXTURES, 'qualification fixture inventory differs')
+    members = frozen['project_members']['DatadogIntegrationTests']
+    for relative, fingerprint in sources.items():
+        path = root / 'workspace' / relative
+        require(relative in members and shared.sha(path) == fingerprint, 'repaired fixture missing or changed')
+        if built is not None:
+            require(built['compiler']['swift']['DatadogIntegrationTests']['inputs'].get(str(path)) == fingerprint,
+                    'repaired fixture not compiled into Integration target')
+
+
+def validate_receipts(mode, selected, binding, review, controls, plan_hash, controls_hash, current_helpers):
+    require(binding.get('mode') == review.get('mode') == controls.get('mode') == mode
+            and binding.get('selected') == review.get('selected') == controls.get('selected') == sorted(selected),
+            'Integration receipt mode or selection differs')
+    require(review['state'] == controls['state'] == 'PASS' and review['reviewer'] == '/root/c06_runtime_plan'
+            and review['plan_sha256'] == controls['plan_sha256'] == plan_hash
+            and review['controls_sha256'] == controls_hash and controls['helpers'] == current_helpers,
+            'unreviewed Integration admission')
 
 
 def observations(text, selected):
@@ -73,36 +120,45 @@ def verify(root):
     runner.inputs.DEFINITION = root / 'input-definition.json'
     runner.DEFINITION = root / 'execution-input-definition.json'
     definition, base, frozen = runner.verify(root)
-    binding = shared.read(root / 'diagnostic-plan.json')
+    mode, spec = selected_scope(definition, base)
+    binding = shared.read(root / (artifact_prefix(mode) + '-plan.json'))
     require(binding['helpers'] == helpers() and binding['execution_plan'] == shared.sha(root / 'execution-plan.json'),
-            'diagnostic binding changed')
+            'Integration binding changed')
+    require(binding['mode'] == mode and binding['selected'] == sorted(spec['selected']), 'Integration plan scope differs')
     for path, digest in binding['references'].items():
         require(shared.sha(Path(path)) == digest, 'diagnostic source/reference changed')
-    spec = definition['diagnostic']
-    require(len(base['cells']) == 1 and base['cells'][0]['id'] == 'integration' and len(spec['selected']) == 3,
-            'expanded diagnostic cell scope')
+    if mode == 'fixture_qualification': qualification_sources(root, spec, frozen)
     for row in definition['discovery_non_cases']['DatadogIntegrationTests']:
         require(shared.sha(root / 'workspace' / row['source']) == row['sha256'], 'discovery helper source changed')
     folder = root / 'cells/integration'
     if (folder / 'built.json').exists():
-        activation(shared.read(folder / 'built.json'), spec['reference_compiler_conditions'], root / 'workspace' / FIXTURE)
+        built = shared.read(folder / 'built.json')
+        if mode == 'lifecycle_diagnostic':
+            activation(built, spec['reference_compiler_conditions'], root / 'workspace' / FIXTURE)
+        else:
+            qualification_activation(built, spec['reference_compiler_conditions'])
+            qualification_sources(root, spec, frozen, built)
     if (folder / 'selection.json').exists():
         require(shared.read(folder / 'selection.json')['identifiers'] == sorted(spec['selected']), 'diagnostic selection differs')
     return definition, base, frozen
 
 
 def run(root):
+    # Historical attempts are immutable evidence, never executable admissions.
+    require(not (root / 'module-stage.json').exists() and not (root / 'module-summary.json').exists(),
+            'Integration continuation already consumed')
     definition, base, frozen = verify(root)
-    review = shared.read(root / 'diagnostic-review.json'); controls = shared.read(root / 'diagnostic-controls.json')
-    require(review['state'] == controls['state'] == 'PASS' and review['reviewer'] == '/root/c06_runtime_plan'
-            and review['plan_sha256'] == controls['plan_sha256'] == shared.sha(root / 'diagnostic-plan.json')
-            and review['controls_sha256'] == shared.sha(root / 'diagnostic-controls.json')
-            and controls['helpers'] == helpers(), 'unreviewed diagnostic admission')
+    mode, selection_spec = selected_scope(definition, base)
+    prefix = artifact_prefix(mode)
+    binding = shared.read(root / (prefix + '-plan.json'))
+    review = shared.read(root / (prefix + '-review.json')); controls = shared.read(root / (prefix + '-controls.json'))
+    validate_receipts(mode, selection_spec['selected'], binding, review, controls,
+                      shared.sha(root / (prefix + '-plan.json')), shared.sha(root / (prefix + '-controls.json')), helpers())
     now = time.time(); limit = definition['latest_completion_epoch']; spec = definition['clean_simulator']
     require(now + base['budgets_seconds']['cell'] + spec['creation_budget_seconds'] + spec['deletion_budget_seconds'] < limit,
             'whole diagnostic reservation does not fit')
     stage = dict(at=now, deadline=limit, plan_sha256=shared.sha(root / 'execution-plan.json'),
-                 review_sha256=shared.sha(root / 'diagnostic-review.json'))
+                 mode=mode, review_sha256=shared.sha(root / (prefix + '-review.json')))
     shared.save(root / 'module-stage.json', stage, exclusive=True)
     result = dict(state='RUNNING', cells=[], observation='INCOMPLETE', cleanup='NOT_STARTED', gate_closures=[])
     created = None
@@ -111,16 +167,21 @@ def run(root):
     try:
         created = clean.create(root, definition, limit)
         fresh, cell = clean.runtime_cell(base, created)
-        runner.TEST_BUILD_FLAGS += ' -D ' + FLAG
+        if mode == 'lifecycle_diagnostic': runner.TEST_BUILD_FLAGS += ' -D ' + FLAG
         row = runner.run_cell(root, cell, definition, fresh, frozen, stage, verify_inputs=verify)
         result['cells'].append(row); save()
         folder = root / 'cells/integration'
         require((folder / 'decoded.json').exists() and row['evidence'] == 'PASS', 'missing exact executed evidence')
-        cases = observations((folder / 'execute.log').read_text(), definition['diagnostic']['selected'])
-        decoded = shared.read(folder / 'decoded.json')
-        require(sorted(decoded['cases']) == sorted(cases), 'diagnostic cases differ from xcresult')
-        shared.save(root / 'observations.json', cases, exclusive=True)
-        result.update(state='OBSERVED', observation='COMPLETE', observations_sha256=shared.sha(root / 'observations.json'))
+        if mode == 'lifecycle_diagnostic':
+            cases = observations((folder / 'execute.log').read_text(), selection_spec['selected'])
+            decoded = shared.read(folder / 'decoded.json')
+            require(sorted(decoded['cases']) == sorted(cases), 'diagnostic cases differ from xcresult')
+            shared.save(root / 'observations.json', cases, exclusive=True)
+            result.update(state='OBSERVED', observation='COMPLETE', observations_sha256=shared.sha(root / 'observations.json'))
+        else:
+            require(MARKER not in (folder / 'execute.log').read_text(), 'diagnostics active in qualification')
+            require(row['overall'] == 'PASS', 'repaired Integration target did not qualify')
+            result.update(state='PASS', observation='DISABLED_FOR_QUALIFICATION')
     except Exception as error: result.update(state='STOPPED', failure=type(error).__name__ + ': ' + str(error))
     finally:
         try:

@@ -159,7 +159,7 @@ def create(root, definition, limit):
 
 def remove(root, definition, created, limit):
     deadline = min(time.time() + definition['clean_simulator']['deletion_budget_seconds'], limit)
-    runner.common.require_idle(root, 'delete-workers', min(time.time() + 30, deadline - 30), deadline)
+    runner.common.require_idle(root, 'delete-workers', deadline - 30, deadline, settle_helpers=True)
     spec = definition['clean_simulator']; name = shared.read(root / 'creation-admission.json')['name']
     require(created['device'] == created_identity(shared.read(root / 'devices-before-create.log'), shared.read(root / 'devices-after-create.log'),
             (root / 'create-device.log').read_text(), name, spec), 'refuse unowned simulator deletion')

@@ -129,6 +129,7 @@
   "native_active": false,
   "native_retry_admitted": false,
   "gate_closures": [],
-  "next": "Results/EXP-227-lifecycle-attribution.json owns the diagnostic and separate restoration. Define and review the fixture-only repair before qualification; no second equivalent diagnostic or SDK change.",
-  "lifecycle_attribution": "Results/EXP-227-lifecycle-attribution.json"
+  "next": "Results/EXP-227-integration-fixture-repair-definition.json owns the implemented fixture repair and one full280-case qualification. Freeze and obtain a distinct mode-bound review before native admission. Original failures and diagnostic restoration remain unchanged; no equivalent diagnostic or SDK change.",
+  "lifecycle_attribution": "Results/EXP-227-lifecycle-attribution.json",
+  "fixture_repair": "Results/EXP-227-integration-fixture-repair-definition.json"
 }
