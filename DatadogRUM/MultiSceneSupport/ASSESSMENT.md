@@ -119,7 +119,10 @@ all four foreground transitions. The existing-manual baseline captures12 Views a
 10 actions but restarts Detail after a cancelled pop and attributes its callback to
 intermediate Home; completed sheet dismissal attributes its callback to the outgoing
 Sheet. These strict failures and successful cleanup remain recorded. The candidate
-must match the complete observed inventory before S2 parity can be accepted.
+matches the complete manual inventory and both inherited limitations; all four native
+outcomes match in both tracking modes. Independent review closes S2:H12 and qualifies
+the SwiftUI portion of H13. The physical UIKit candidate remains required for H13;
+no automatic-only, S3 semantic, Home or physical Duo claim follows.
 
 ## Immediate compatibility priority
 

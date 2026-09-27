@@ -1653,14 +1653,14 @@
         },
         "S2": {
           "scope": "Ordinary single-scene SwiftUI interactive navigation",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [
             "S2:A01",
             "S2:F07"
           ],
           "decisive_test": "In the shared SwiftUI automatic/existing-manual stack pairs, prove real cancel/finish and emitted work/occurrence parity. No semantic S3 API, exact internal callback order or mapper-before-callback requirement.",
           "environment": "Qualified Duo27.1 simulator; physical iPhone/iPad only for a specifically unsupported interaction mechanism, not a duplicate matrix",
-          "evidence": "Reference evidence retained; this release candidate is not qualified. Results/S2-remaining-gate-applicability.json reviews the F07 exclusion option: unchanged gesture/hosting implementations do not close the actual native lifecycle/owner contract through the changed E04 transition path. Gate remains open.",
+          "evidence": "Results/S2-H12-H13-swiftui-duo.json closes the source-bound ordinary SwiftUI automatic/existing-manual comparison on Duo27.1. Both real pop outcomes and complete View/Action inventories match: automatic15Views/10actions, manual12Views/10actions. Manual cancelled-pop fresh Detail/intermediate Home callback and completed-dismissal outgoing Sheet callback remain inherited limitations. Both B scenario/evidence/cleanup PASS; original A Home and strict-manual INVALID receipts remain. Independent paired review passes. No S3, physical Duo, Home or automatic-only coverage claim.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
@@ -1701,7 +1701,7 @@
           ],
           "decisive_test": "Reuse the shared stack pairs for one real cancel and one completed sheet dismissal per declared tracking mode. Require recognized native outcome and baseline/candidate owner parity; no separate cover/device cross-product.",
           "environment": "Qualified Duo27.1 simulator; physical iPhone/iPad only for a specifically unsupported interaction mechanism, not a duplicate matrix",
-          "evidence": "Results/S2-H11-H13-local-baseline.json qualifies the saved physical UIKit automatic baseline as local evidence: original source/compiler/signed-installed identity,7349 artifact hashes, four native cancel/finish chains,10 terminal views/10actions, Home stop and cleanup. All emitted callback owners match. Original asynchronous mapper-before-callback FAIL and INVALID/backend INCOMPLETE remain. No baseline repeat is due; candidate is unrun and paired gates remain open. H13 also requires the declared SwiftUI modes. Results/S2-H11-H13-local-continuation.json binds one reviewed candidate-only physical continuation, existing signed products,101 runner controls and14 saved-evidence controls. Fresh device/operator readiness remains; no native execution or gate credit.",
+          "evidence": "Results/S2-H12-H13-swiftui-duo.json qualifies real SwiftUI automatic/existing-manual sheet cancel/dismiss and exact paired local inventories; inherited existing-manual outgoing-Sheet callback remains explicit. Both candidates and cleanup pass. Results/S2-H11-H13-local-baseline.json preserves the reusable physical UIKit baseline, original INVALID/backend and mapper-order failures. H13 remains OPEN for its single prepared UIKit B cell in Results/S2-H11-H13-local-continuation.json; no baseline/SwiftUI repeat or duplicate device matrix.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }

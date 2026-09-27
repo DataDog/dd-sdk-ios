@@ -603,5 +603,10 @@ to intermediate Home; completed sheet dismissal keeps the callback on outgoing S
 The fixture and existing modifier are identical across A/B. A separate defined
 comparison retains both limitations, all12 Views/10 actions and actual native outcomes.
 Its69 controls pass, including rejection of additional owners, incomplete inventory
-and reuse; mapper snapshot ordering remains diagnostic. Only the unrun manual B may
-proceed after designated review. The old strict failure and stopped matrix are immutable.
+and reuse; mapper snapshot ordering remains diagnostic. The single manual B now passes
+scenario/evidence/cleanup and matches the complete12View/10action inventory, including
+both inherited limitations. The combined saved-evidence assessment revalidates both
+tracking pairs, source/products, worker/session end and complete artifact inventories.
+Independent review closes only S2:H12 and supplies the SwiftUI portion of H13. Physical
+UIKit B remains unrun; no more SwiftUI or baseline gestures are due. The old strict
+failure and stopped matrix remain immutable; no S3 or physical Duo claim follows.

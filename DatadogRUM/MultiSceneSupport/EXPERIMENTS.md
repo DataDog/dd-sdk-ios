@@ -273,7 +273,7 @@ conclusions belong in [ASSESSMENT.md](ASSESSMENT.md).
 
 | <a id="exp-222"></a>EXP-222 | H16 | S2:H16 CLOSED; original attempts retained | Separate reviewed assessment of four saved recordings qualifies automatic/manual native hosting parity; no new run. Auxiliary callback difference and manual B backend gap remain. | [record](Experiments/EXP-222-hosted-swiftui.md#exp-222--qualify-ordinary-hosting-on-the-selected-s2-composition) |
 
-| <a id="exp-223"></a>EXP-223 | H11, H12, H13, H14 | PARTIAL · automatic SwiftUI parity | Saved UIKit baseline is reusable. Duo automatic pair matches15Views/10actions. Manual baseline retains two inherited attribution limitations and cleanup PASS; one candidate-only comparison is reviewed. No baseline repeat or gate closure. | [record](Experiments/EXP-223-interactive-transitions.md#exp-223--compare-recognized-navigation-dismissal-and-resize-ownership) |
+| <a id="exp-223"></a>EXP-223 | H11, H12, H13, H14 | PASS S2:H12 · H13 partial | Duo automatic15Views/10actions and existing-manual12Views/10actions match, including two inherited manual attribution limitations. Both candidate cleanups pass. Physical UIKit B remains; no SwiftUI or baseline repeat. | [record](Experiments/EXP-223-interactive-transitions.md#exp-223--compare-recognized-navigation-dismissal-and-resize-ownership) |
 
 | <a id="exp-224"></a>EXP-224 | P01 | INVALID · recorder attachment | PID and unique-name attachment fail while exact app process is visible before/after. No workload or metrics; cleanup PASS, seven cells unrun. Name variant frozen, repository restored; tooling prerequisite unresolved. | [record](Experiments/EXP-224-application-impact.md#exp-224--measure-the-application-impact-of-the-s3-prototype) |
 

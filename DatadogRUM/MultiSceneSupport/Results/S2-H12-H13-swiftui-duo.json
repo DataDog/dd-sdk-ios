@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "work_item": "S2 SwiftUI stack transition comparisons",
-  "status": "AUTOMATIC_PAIR_MATCH; MANUAL_CANDIDATE_REVIEWED_UNRUN",
-  "updated_at": "2026-09-27T04:44:27.962895+00:00",
+  "status": "CLOSED_S2_H12; H13_SWIFTUI_PORTION_COMPLETE",
+  "updated_at": "2026-09-27T04:58:12.681642+00:00",
   "gates": [
     "S2:H12",
     "S2:H13"
@@ -36,9 +36,11 @@
   ],
   "baseline_builds": 0,
   "candidate_builds": 1,
-  "native_launches": 3,
+  "native_launches": 4,
   "native_admitted": false,
-  "gate_closures": [],
+  "gate_closures": [
+    "S2:H12"
+  ],
   "source_pair": {
     "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
     "candidate": "c9faed816a1d4828d7d8c4b64acae01119425889"
@@ -141,7 +143,7 @@
     }
   },
   "manual_parity": {
-    "state": "REVIEWED_CANDIDATE_UNRUN",
+    "state": "PAIR_MATCH; INHERITED_LIMITATIONS_UNCHANGED",
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/swiftui-duo/manual-baseline-parity/definition.json",
       "sha256": "6ab497b1aa9cdebcf7e35ae1eed8b110b29fea3f6e39ef78274687ba44ec1746"
@@ -165,7 +167,7 @@
     "cells": [
       "SwiftUI-manual-B"
     ],
-    "native_launches": 0,
+    "native_launches": 1,
     "gate_closures": [],
     "inherited_limitations": [
       "pop.cancel: fresh detail; callback intermediate home",
@@ -176,10 +178,47 @@
       "views": 12,
       "actions": 10
     },
-    "remaining": "One candidate-only exact observed-inventory comparison after designated review; no baseline, Home or build repeat.",
+    "remaining": "No SwiftUI repeat is due. S2:H13 still requires the prepared physical UIKit B.",
     "review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/swiftui-duo/manual-baseline-parity/reviewed-runtime/review.json",
       "sha256": "b1feb595462907d73553c6e6298cfc73e512d43af8bc6e32b14dd105413b2665"
+    },
+    "active_cell": null,
+    "candidate": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/swiftui-duo/manual-baseline-parity/reviewed-runtime/runs/SwiftUI-manual-B/cells/SwiftUI/summary.json",
+      "sha256": "447e7c3e33724671e5538158159a660ec01d613d88416d15d79d146c5f481aaf"
+    },
+    "final_assessment": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/swiftui-duo/manual-baseline-parity/reviewed-runtime/runs/SwiftUI-manual-B/cells/SwiftUI/final-assessment.json",
+      "sha256": "1dfa0621dfd115658e3d5a32d2466a3130ee436d55073d22baa37152ebf4305d"
+    },
+    "pair": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/swiftui-duo/manual-baseline-parity/reviewed-runtime/manual-paired.json",
+      "sha256": "859bf2b78256c6842e87673ca5241d78a490ee51556d9e815dd26ebb6b33534e"
     }
+  },
+  "active_native": false,
+  "release_assessment": {
+    "assessment": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/swiftui-duo/paired-release-assessment/assessment.json",
+      "sha256": "ccfb1ade0c1f3998652186a8a7065cb782b3ea19da7032b1459ac77683cee0c5"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/swiftui-duo/paired-release-assessment/release-review.json",
+      "sha256": "f5cc95b45083844b87ce018fe03d072cc513f4da7ee5697e77177974255969a0"
+    },
+    "scope": "S2 ordinary single-scene SwiftUI pop cancel/finish and SwiftUI portion of sheet dismissal. Automatic and existing-manual complete local event inventories match.",
+    "gate_closures": [
+      "S2:H12"
+    ],
+    "partial": [
+      "S2:H13 SwiftUI modes qualified; physical UIKit candidate pending"
+    ],
+    "limits": [
+      "Existing-manual attribution failures remain unfixed",
+      "Original Home/strict-manual INVALID receipts remain unchanged",
+      "No Home, new backend, automatic-only coverage, S3 or physical Duo claim"
+    ],
+    "cleanup": "All task apps, workers and interaction sessions stopped; original Booted/Closed Duo state and both user-owned files preserved."
   }
 }

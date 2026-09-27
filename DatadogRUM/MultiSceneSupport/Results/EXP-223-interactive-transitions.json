@@ -2967,9 +2967,11 @@
     "gate_closures": []
   },
   "s2_swiftui_duo_continuation": {
-    "state": "AUTOMATIC_PAIR_MATCH; MANUAL_BASELINE_CLASSIFIED; CANDIDATE_REVIEW_PENDING",
+    "state": "CLOSED_S2_H12; H13_SWIFTUI_PORTION_COMPLETE",
     "owner_record": "Results/S2-H12-H13-swiftui-duo.json",
-    "native_runs": 3,
-    "gate_closures": []
+    "native_runs": 4,
+    "gate_closures": [
+      "S2:H12"
+    ]
   }
 }
