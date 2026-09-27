@@ -2816,7 +2816,7 @@
           ],
           "decisive_test": "Prepare source-bound fixtures, current readiness, actual input/effect capture and safe cleanup for each needed package. This is execution readiness, not a product release gate; missing preparation blocks only that run. No duplicate hardware campaign or new telemetry requirement.",
           "environment": "The environment needed by the selected package; separate short sessions are permitted",
-          "evidence": "Results/S2-input-session-preparation.json is the current three-package index: reviewed12-cell automatic coverage, reviewed one-cell physical UIKit continuation and four-cell Resource/Trace fold preparation. Four Duo SwiftUI stack cells still need scoped preparation. H16/T10/F08 are closed and require no repeated input. Historical broader matrices are preserved separately. No native input acceptance credit.",
+          "evidence": "Results/S2-input-session-preparation.json owns the three remaining packages: reviewed12-cell automatic coverage, one physical UIKit candidate with refreshed helpers, and four-cell Resource/Trace fold preparation. Actual entrypoint verification passes for all three. H12/H16/T10/F08 are closed and require no repeated input. Fresh operator/environment readiness still precedes admission; no preparation-only behavioral credit.",
           "required": false,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         },
