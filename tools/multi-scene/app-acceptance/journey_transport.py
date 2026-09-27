@@ -170,22 +170,30 @@ def finish(path):
         require(not labels, 'pages collected after pending count')
         response['count_pending'] = True
     state = 'COMPLETE_INVENTORY'
+    failure = None
+    live(bound)
     try:
-        live(bound)
         rows = pollable_inventory(response, bound['request'], row_limit=ROW_LIMIT, page_limit=PAGE_LIMIT,
                                   minimum_rows=bound['minimum_rows'],allow_pagination=True)
     except Rejected as error:
-        if error.state != 'PENDING':raise
-        response['pending'] = str(error)
         rows = []
-        state = 'PENDING'
+        if error.state == 'PENDING':
+            response['pending'] = str(error)
+            state = 'PENDING'
+        else:
+            failure = error
+            state = 'INVALID'
     destination = Path(path).with_name(Path(path).name.replace('.request.json', '.response.json'))
     atomic(destination, encoded(response))
     live(bound)
     receipt = dict(state=state, rows=len(rows), published_at=time.time(), deadline=bound['deadline'],
                    response_sha256=sha(destination.read_bytes()), request_sha256=sha(Path(path).read_bytes()))
+    if failure is not None:
+        receipt['reason'] = str(failure)
     atomic(folder / 'publication.json', encoded(receipt))
     live(bound)
+    if failure is not None:
+        raise failure
     return receipt
 
 

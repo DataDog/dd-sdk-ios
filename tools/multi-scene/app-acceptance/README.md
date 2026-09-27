@@ -231,6 +231,11 @@ totals, unique event IDs, sequential receipt offsets and an empty terminal page 
 still mandatory. Raw response parts are retained in batches of at most eight
 independent writes before sealing; every sibling result is inspected. A complete
 saved-session fetch qualifies transport only, never the stopped native scenario.
+For a final inventory rejection, `journey_transport.finish()` publishes the exact
+assembled response and an INVALID receipt, then rethrows the original rejection.
+The waiting runner rejects those same bytes and enters its existing cleanup path.
+This prevents a known backend failure from becoming an unexplained wait timeout;
+it adds no accepted rows, deduplication, retry or deadline extension.
 
 The driver proves actual input effects, native attachment and mapper owners before
 each step. Complete refresh observations can trigger a fresh snapshot within the

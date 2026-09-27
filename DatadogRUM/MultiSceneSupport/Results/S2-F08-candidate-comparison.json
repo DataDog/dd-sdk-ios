@@ -4,7 +4,7 @@
   "status": "CLOSED_S2_F08",
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
-  "updated_at": "2026-09-27T01:06:00.848034+00:00",
+  "updated_at": "2026-09-27T01:23:05.634913+00:00",
   "scope": "Paired Datadog app Services, dashboard action and ordinary Home/return; source-bound delayed persistence assessment. No automatic-only, physical Duo or performance claim.",
   "candidate": {
     "summary": {
@@ -100,7 +100,7 @@
   "gate_closures": [
     "S2:F08"
   ],
-  "next_action": "No further F08 native session is due. Finish the bounded rejected-inventory publication repair offline, then continue the remaining S2 coverage and fold packages.",
+  "next_action": "No further F08 native session is due. The rejected-inventory publication repair is qualified offline. Continue remaining S2 coverage, interaction and fold preparation; fresh operator readiness still precedes human execution.",
   "baseline": {
     "assessment": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/dashboard-control-readiness-saved-replay/lifecycle-backend-reassessment/assessment.json",
@@ -140,11 +140,31 @@
     ]
   },
   "transport_follow_up": {
-    "state": "PROPOSED_NOT_APPLIED",
+    "state": "QUALIFIED_OFFLINE",
     "proposal": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-dashboard-contract-t7of0ttz/failed-inventory-publication-proposal.json",
       "sha256": "087ebc37a74fbbe4918aeb98a2c15f8574d206e6c7ea7a647aa0b16907057059"
     },
-    "scope": "Publish actual rejected exchange before rethrowing so cleanup begins promptly; no acceptance relaxation or native requalification."
+    "scope": "Publish actual rejected exchange before rethrowing so cleanup begins promptly; no acceptance relaxation or native requalification.",
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/transport-controls.json",
+      "sha256": "e97de482ffd0287920bc984cb4909b3bd2ef1847ae21844a2bc0db59926823e6"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/transport-source-review.json",
+      "sha256": "cb4a6dc009311f4ad43f7ea42082f8120603c86af9afd43342757c11337cf7e3"
+    },
+    "saved_replay": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/transport-saved-replay/result.json",
+      "sha256": "1edb30f414c926ef7a558c303ac5f4b242eb85b70a1d01a0b22611762e0f4682"
+    },
+    "red_control": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/transport-red-control.json",
+      "sha256": "8341361ee55137b25c1a62c61e821967205fad24f519c760db74b8d23f9f8c79"
+    },
+    "native_runs": 0,
+    "backend_queries": 0,
+    "gate_closures": [],
+    "sdk_changed": false
   }
 }

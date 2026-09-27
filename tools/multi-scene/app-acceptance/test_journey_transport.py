@@ -1,7 +1,9 @@
 import hashlib
 import json
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import tempfile
+from threading import Event
 import time
 import unittest
 from unittest.mock import patch
@@ -83,6 +85,61 @@ class JourneyTransportTests(unittest.TestCase):
         self.assertEqual(result['state'],'PENDING');self.assertEqual(before,self.path.read_bytes())
         with self.assertRaises(Rejected) as caught:transport.wait(self.path)
         self.assertEqual(caught.exception.state,'PENDING')
+    def test_duplicate_inventory_wakes_waiter_with_original_rejection(self):
+        row=dict(id='event',attributes={'custom':{'type':'view'}})
+        self.retain('count',count(1));self.retain('page000',page([row],1))
+        self.retain('page001',page([row],2));self.retain('page002',page([],2))
+        folder=transport.binding(self.path)[1];original_request=self.path.read_bytes()
+        raw={p.name:p.read_bytes() for p in folder.glob('*.raw.json')}
+        waiting=Event();stop=Event()
+        def process_live():
+            waiting.set()
+            return not stop.is_set()
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            waiter=pool.submit(transport.wait,self.path,process_live=process_live)
+            try:
+                self.assertTrue(waiting.wait(2),'consumer never began waiting')
+                with self.assertRaisesRegex(Rejected,'missing or duplicate raw ID'):
+                    transport.finish(self.path)
+                with self.assertRaisesRegex(Rejected,'missing or duplicate raw ID'):
+                    waiter.result(timeout=2)
+            finally:
+                stop.set()
+        publication=json.loads((folder/'publication.json').read_bytes())
+        self.assertEqual(publication['state'],'INVALID');self.assertEqual(publication['rows'],0)
+        self.assertEqual(publication['reason'],'missing or duplicate raw ID')
+        response=json.loads(self.path.with_name(self.path.name.replace('.request.json','.response.json')).read_bytes())
+        self.assertEqual(response['count_response'],json.loads(raw['count.raw.json']))
+        self.assertEqual([p['response'] for p in response['pages']],
+                         [json.loads(raw['page'+str(i).zfill(3)+'.raw.json']) for i in range(3)])
+        self.assertEqual(self.path.read_bytes(),original_request)
+        self.assertEqual({p.name:p.read_bytes() for p in folder.glob('*.raw.json')},raw)
+    def test_expired_complete_inventory_never_publishes_a_verdict(self):
+        self.complete();bound,folder=transport.binding(self.path)
+        with patch.object(transport.time,'time',return_value=bound['deadline']):
+            with self.assertRaisesRegex(Rejected,'expired'):transport.finish(self.path)
+        self.assertFalse((folder/'publication.json').exists())
+    def test_invalid_inventory_expiring_during_publication_is_never_accepted(self):
+        row=dict(id='event',attributes={'custom':{'type':'view'}})
+        self.retain('count',count(1));self.retain('page000',page([row],1))
+        self.retain('page001',page([row],2));self.retain('page002',page([],2))
+        bound,folder=transport.binding(self.path);original_request=self.path.read_bytes()
+        raw={p.name:p.read_bytes() for p in folder.glob('*.raw.json')}
+        expired=False;write=transport.atomic
+        def crossing_boundary(path,value):
+            nonlocal expired
+            write(path,value)
+            if path.name=='publication.json':expired=True
+        with patch.object(transport.time,'time',side_effect=lambda:bound['deadline'] if expired else bound['deadline']-1), \
+             patch.object(transport,'atomic',side_effect=crossing_boundary):
+            with self.assertRaisesRegex(Rejected,'expired'):transport.finish(self.path)
+            with self.assertRaisesRegex(Rejected,'expired'):transport.wait(self.path)
+        publication=json.loads((folder/'publication.json').read_bytes())
+        self.assertEqual(publication['state'],'INVALID');self.assertEqual(publication['rows'],0)
+        self.assertEqual(publication['reason'],'missing or duplicate raw ID')
+        self.assertTrue(self.path.with_name(self.path.name.replace('.request.json','.response.json')).exists())
+        self.assertEqual(self.path.read_bytes(),original_request)
+        self.assertEqual({p.name:p.read_bytes() for p in folder.glob('*.raw.json')},raw)
     def test_response_publication_digest_prevents_substitution(self):
         self.complete();transport.finish(self.path)
         response=self.path.with_name(self.path.name.replace('.request.json','.response.json'))

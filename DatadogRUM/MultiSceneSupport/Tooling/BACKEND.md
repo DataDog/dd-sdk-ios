@@ -40,17 +40,17 @@ Freeze persisted SDK tags separately from compiled/installed versions: tag
 with `_`. Compare each exact expected representation; never relax binary identity.
 Publish initial readiness only after the complete capture validates; partial pages
 must remain a separate file that cannot release native input.
-A native-derived minimum event count can delay raw paging until the known families
-are indexed; count-only readiness accepts no rows. Retain each actual count. For a
-count/page-total race, validate identity, schemas, bounds, contiguous offsets,
-terminal exhaustion and unique raw IDs before classifying it as pending. Retry the
-whole inventory only inside the original budget. Duplicate or malformed pages stay
-invalid even when counts also changed.
+A native-derived minimum count may delay paging; retain each count, accepting no
+rows. Before classifying a count race as pending, validate identity, schemas, bounds,
+offsets, terminal exhaustion and unique IDs. Retry only within the original budget;
+duplicate or malformed pages remain invalid even when counts changed.
+Publish an assembled rejection's exact bytes and INVALID receipt before rethrowing
+so cleanup can proceed. The [transport contract](../../../tools/multi-scene/app-acceptance/README.md#runtime-journeys)
+preserves independent validation, zero accepted rows and original deadlines.
 Persist each fulfilled raw response once, then assemble the complete receipt locally.
 Guard each append with the prior receipt hash, request/native identity and page cursor;
 include persistence in the deadline. Repeated transmission of accumulated payloads
 can consume the phase budget without collecting additional evidence.
-
 For native/WebView app journeys, keep Browser service and SDK version separate from
 native values. The bridge replaces application/session IDs, not those Browser fields.
 Inventory the full application/session without native service/version filters, then
