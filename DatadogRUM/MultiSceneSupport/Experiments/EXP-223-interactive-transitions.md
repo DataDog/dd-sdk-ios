@@ -564,3 +564,11 @@ upload requirement, no duplicate physical matrix, and no synchronous mapper-orde
 requirement. Exact native outcomes and emitted owners remain required. All original
 attempt verdicts, raw observations and cleanup evidence stay unchanged. The latest
 physical baseline has no candidate pair and closes no release gate.
+
+The [separate saved-baseline assessment](../Results/S2-H11-H13-local-baseline.json)
+now qualifies its local UIKit evidence for reuse. Original source, compiled and
+installed code, all7349 artifact hashes, four native callback chains,10 terminal
+views/10actions, Home stop and cleanup were reverified. Four emitted callback actions
+have the expected owner. The finish chains retain their original asynchronous mapper
+snapshot failures. Fourteen captured-evidence controls, six unit tests and designated
+review pass. Candidate remains unrun; no gate closes and no original verdict changes.

@@ -277,7 +277,7 @@
           ],
           "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild at baseline SDK and baseline-to-candidate SDK at27.1 on Duo. Report UIKit views separately. No new loss, duplicate occurrence or wrong owner for the same actual journey; documented baseline limitations may remain. No40-cell cross-product or whole-payload backend equality.",
           "environment": "Xcode27.1 Duo27.1 simulator;12 shared stack/split cells plus at most4 ordinary baseline controls; reuse valid source-matched observations",
-          "evidence": "Results/EXP-210-s2-automatic-coverage.json now binds reviewed prepare-s2 output: exact12 Duo single-scene cells, six products reused from four genuine compiler/source builds, unchanged native oracle and symmetric anomaly checks. No new builds or native coverage cells; human input prerequisite and historical stops remain. No gate credit.",
+          "evidence": "Results/S2-capture-contract-preparation.json binds the reviewed12-cell EXP210 preparation: six products/four genuine source/compiler builds reused, exact native ownership/order checks retained and recorder timing diagnostic.125 focused controls and scoped helper-reuse review pass. Fresh operator readiness and first native qualification remain; original stopped input mechanisms stay stopped. No behavioral gate credit.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
@@ -312,7 +312,7 @@
           ],
           "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild at baseline SDK and baseline-to-candidate SDK at27.1 on Duo. Report UIKit actions separately. No new loss, duplicate occurrence or wrong owner for the same actual journey; documented baseline limitations may remain. No40-cell cross-product or whole-payload backend equality.",
           "environment": "Xcode27.1 Duo27.1 simulator;12 shared stack/split cells plus at most4 ordinary baseline controls; reuse valid source-matched observations",
-          "evidence": "Results/EXP-210-s2-automatic-coverage.json now binds reviewed prepare-s2 output: exact12 Duo single-scene cells, six products reused from four genuine compiler/source builds, unchanged native oracle and symmetric anomaly checks. No new builds or native coverage cells; human input prerequisite and historical stops remain. No gate credit.",
+          "evidence": "Results/S2-capture-contract-preparation.json binds the reviewed12-cell EXP210 preparation: six products/four genuine source/compiler builds reused, exact native ownership/order checks retained and recorder timing diagnostic.125 focused controls and scoped helper-reuse review pass. Fresh operator readiness and first native qualification remain; original stopped input mechanisms stay stopped. No behavioral gate credit.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
@@ -347,7 +347,7 @@
           ],
           "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild at baseline SDK and baseline-to-candidate SDK at27.1 on Duo. Report SwiftUI views separately. No new loss, duplicate occurrence or wrong owner for the same actual journey; documented baseline limitations may remain. No40-cell cross-product or whole-payload backend equality.",
           "environment": "Xcode27.1 Duo27.1 simulator;12 shared stack/split cells plus at most4 ordinary baseline controls; reuse valid source-matched observations",
-          "evidence": "Results/EXP-210-s2-automatic-coverage.json now binds reviewed prepare-s2 output: exact12 Duo single-scene cells, six products reused from four genuine compiler/source builds, unchanged native oracle and symmetric anomaly checks. No new builds or native coverage cells; human input prerequisite and historical stops remain. No gate credit.",
+          "evidence": "Results/S2-capture-contract-preparation.json binds the reviewed12-cell EXP210 preparation: six products/four genuine source/compiler builds reused, exact native ownership/order checks retained and recorder timing diagnostic.125 focused controls and scoped helper-reuse review pass. Fresh operator readiness and first native qualification remain; original stopped input mechanisms stay stopped. No behavioral gate credit.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
@@ -382,7 +382,7 @@
           ],
           "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild at baseline SDK and baseline-to-candidate SDK at27.1 on Duo. Report SwiftUI actions separately. No new loss, duplicate occurrence or wrong owner for the same actual journey; documented baseline limitations may remain. No40-cell cross-product or whole-payload backend equality.",
           "environment": "Xcode27.1 Duo27.1 simulator;12 shared stack/split cells plus at most4 ordinary baseline controls; reuse valid source-matched observations",
-          "evidence": "Results/EXP-210-s2-automatic-coverage.json now binds reviewed prepare-s2 output: exact12 Duo single-scene cells, six products reused from four genuine compiler/source builds, unchanged native oracle and symmetric anomaly checks. No new builds or native coverage cells; human input prerequisite and historical stops remain. No gate credit.",
+          "evidence": "Results/S2-capture-contract-preparation.json binds the reviewed12-cell EXP210 preparation: six products/four genuine source/compiler builds reused, exact native ownership/order checks retained and recorder timing diagnostic.125 focused controls and scoped helper-reuse review pass. Fresh operator readiness and first native qualification remain; original stopped input mechanisms stay stopped. No behavioral gate credit.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
@@ -1621,7 +1621,7 @@
           ],
           "decisive_test": "In the shared UIKit stack pair, prove real cancel/finish and resulting occurrence/action ownership. Preserve unchanged automatic limitations; compare emitted callback-work owners without requiring asynchronous mapper publication before the native callback.",
           "environment": "Qualified Duo27.1 simulator; physical iPhone/iPad only for a specifically unsupported interaction mechanism, not a duplicate matrix",
-          "evidence": "Reference evidence retained; this release candidate is not qualified. Results/S2-remaining-gate-applicability.json reviews the F07 exclusion option: unchanged gesture/hosting implementations do not close the actual native lifecycle/owner contract through the changed E04 transition path. Gate remains open.",
+          "evidence": "Results/S2-H11-H13-local-baseline.json qualifies the saved physical UIKit automatic baseline as local evidence: original source/compiler/signed-installed identity,7349 artifact hashes, four native cancel/finish chains,10 terminal views/10actions, Home stop and cleanup. All emitted callback owners match. Original asynchronous mapper-before-callback FAIL and INVALID/backend INCOMPLETE remain. No baseline repeat is due; candidate is unrun and paired gates remain open. H13 also requires the declared SwiftUI modes.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
@@ -1701,7 +1701,7 @@
           ],
           "decisive_test": "Reuse the shared stack pairs for one real cancel and one completed sheet dismissal per declared tracking mode. Require recognized native outcome and baseline/candidate owner parity; no separate cover/device cross-product.",
           "environment": "Qualified Duo27.1 simulator; physical iPhone/iPad only for a specifically unsupported interaction mechanism, not a duplicate matrix",
-          "evidence": "Reference evidence retained; this release candidate is not qualified. Results/S2-remaining-gate-applicability.json reviews the F07 exclusion option: unchanged gesture/hosting implementations do not close the actual native lifecycle/owner contract through the changed E04 transition path. Gate remains open.",
+          "evidence": "Results/S2-H11-H13-local-baseline.json qualifies the saved physical UIKit automatic baseline as local evidence: original source/compiler/signed-installed identity,7349 artifact hashes, four native cancel/finish chains,10 terminal views/10actions, Home stop and cleanup. All emitted callback owners match. Original asynchronous mapper-before-callback FAIL and INVALID/backend INCOMPLETE remain. No baseline repeat is due; candidate is unrun and paired gates remain open. H13 also requires the declared SwiftUI modes.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
@@ -1740,7 +1740,7 @@
           ],
           "decisive_test": "Reuse the automatic coverage split journeys for actual Closed/Open display geometry, stable scene/window/controller ownership, selection continuity and no new view/action misattribution. No extra physical-iPad resize matrix or ideal semantic selection guarantee.",
           "environment": "Qualified Duo27.1 simulator; physical iPhone/iPad only for a specifically unsupported interaction mechanism, not a duplicate matrix",
-          "evidence": "The reviewed12-cell EXP210 preparation includes the required split journeys and original actual-display oracle. No native cell has run; original input stops remain. Preparation does not qualify resize/fold behavior.",
+          "evidence": "Results/S2-capture-contract-preparation.json binds the reviewed12-cell EXP210 preparation: six products/four genuine source/compiler builds reused, exact native ownership/order checks retained and recorder timing diagnostic.125 focused controls and scoped helper-reuse review pass. Fresh operator readiness and first native qualification remain; original stopped input mechanisms stay stopped. No behavioral gate credit.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }

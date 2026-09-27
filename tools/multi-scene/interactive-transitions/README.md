@@ -133,6 +133,14 @@ transition order, native effects and owners remain mandatory. Historical100ms/2m
 diagnostic counters do not decide acceptance. Preserve original failed verdicts;
 a slow fixture callback is not an SDK regression or permission for a native retry.
 
+`s2_local_contract.py` projects the scoped S2 View/Action and transition ownership
+contract. It retains every occurrence and action while treating mapper publication
+before a UIKit callback as a diagnostic. Actual emitted callback owner and native
+cancel/finish relations remain required. A saved-baseline assessment must separately
+verify source/build/install identity, durable native boundaries, full artifact hashes
+and cleanup. Keep original failed observations and backend verdicts. The projection
+cannot admit a candidate, replace backend obligations or close a release gate.
+
 `observer_cost.render_human` prepares a copied callback timing overlay with exact
 source binding. It retains full elapsed time, reports disjoint topology/append
 intervals and labels the remainder as guard/instrumentation work. Its decoder never

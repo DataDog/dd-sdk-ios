@@ -326,7 +326,7 @@
     }
   ],
   "gate_closures": [],
-  "next_action": "Apply the reviewed S2 semantic evidence contract to saved baseline/candidate observations. Keep the latest baseline original INVALID, distinguish valid local capture from delayed backend delivery, and do not repeat human gestures to qualify upload timing. No new native admission.",
+  "next_action": "Prepare a separate candidate-only local capture continuation with exact predecessor and source/product bindings. Require fresh physical device and human readiness; do not repeat the baseline or renew its expired admission. Representative backend proof remains separately owned; no full backend claim follows from this baseline.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
@@ -397,7 +397,7 @@
       "scope": "Fixture/native and local paired oracle only. Full runtime, backend, adaptive geometry and physical execution remain unqualified."
     }
   },
-  "updated_at": 1790334950.043987,
+  "updated_at": "2026-09-27T01:54:35.818467+00:00",
   "live_environment": {
     "observed_at": "2026-09-23T19:45:47.121281+00:00",
     "xcode": "27.1 (27A9269)",
@@ -2952,6 +2952,12 @@
     "owner_record": "Results/S2-capture-contract-preparation.json",
     "scope": "Recorder durations are diagnostic; exact ownership/order and malformed/missing receipt rejection remain strict. Original attempts and legacy runtime plans remain immutable.",
     "native_runs": 0,
+    "gate_closures": []
+  },
+  "s2_local_baseline": {
+    "state": "REVIEWED_LOCAL_BASELINE_REUSE",
+    "owner_record": "Results/S2-H11-H13-local-baseline.json",
+    "candidate": "UNRUN",
     "gate_closures": []
   }
 }

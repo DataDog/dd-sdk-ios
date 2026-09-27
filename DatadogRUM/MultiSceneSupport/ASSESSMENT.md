@@ -107,24 +107,13 @@ before workload readiness. Capture is stopped; cleanup passes. There is no perfo
 result or SDK regression finding. This optional diagnostic is no longer a release
 prerequisite under the September25 measurement rule; no further profiling run is due.
 
-[EXP223](Results/EXP-223-interactive-transitions.json) qualifies ordinary-simulator
-UIKit/SwiftUI capture; physical/backend qualification remains open. All eight saved
-baseline callback actions have the expected owners. Completed transitions still
-fail the independent mapping-before-callback assertion; cancellations pass.
-Source review shows that asynchronous dispatch and serialization before recording
-limit what the snapshot establishes about internal ownership at callback time.
-The cause and candidate behavior remain unproven, and original failures stay intact.
-The physical automatic session cannot select the connected, unlocked iPad; it
-stopped before app admission. This is a tooling limit with no SDK execution. The
-human baseline completed every gesture and Home; cleanup passed. Action representation
-mismatches stopped backend collection. Their narrow projection correction passes
-offline controls/review, but the saved terminal Home revision remains incomplete.
-A same-binary follow-up navigated correctly but missed its pop callback chain; cleanup
-passed before any backend query. The physical-only public recognizer correction captures all four callback
-chains in a subsequent baseline. Its final action/view reached intake immediately after cleanup foreground
-activation, beyond the collection deadline. Home is inactive with the captured
-duration; no event loss is established. Delivery preparation remains, candidate is unrun
-and physical/backend acceptance stays open.
+[EXP223](Results/EXP-223-interactive-transitions.json) retains ordinary-simulator
+capture and a [reviewed physical UIKit baseline](Results/S2-H11-H13-local-baseline.json).
+Its actual cancel/finish chains and emitted action owners qualify for local reuse;
+source, installed code, durable observations and cleanup have been reverified.
+The original finish mapper-order failures and backend timeout remain unchanged.
+Delayed Home upload establishes no event loss. Candidate behavior is still untested,
+so the paired gates remain open; no baseline gesture repeat is required.
 
 ## Immediate compatibility priority
 

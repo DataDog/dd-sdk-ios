@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "state": "REVIEWED_LOCAL_BASELINE_REUSE",
+  "updated_at": "2026-09-27T01:54:35.818467+00:00",
+  "owner": "root",
+  "gates": [
+    "S2:H11",
+    "S2:H13"
+  ],
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/physical-baseline/definition.json",
+    "sha256": "385d3e13b5a6b01c2c5c3e1e90083429665be7e28a18f96506ce5838120f6ae9"
+  },
+  "inputs": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/physical-baseline/inputs.json",
+    "sha256": "02815425d47087afbeeb6c6dca2f41db0ab6ecc84da617204acc1f45af55ce7c"
+  },
+  "assessment": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/physical-baseline/assessment.json",
+    "sha256": "a21e7005872d93fd8042837240b9aef8689ba9706d4d0c26a6fc82354dff2013"
+  },
+  "reproducer": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/physical-baseline/assess.py",
+    "sha256": "e124820d31588465abf1b983b628303d8019a04cd99b5dcc7628d7dcd44c144b"
+  },
+  "controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/physical-baseline/controls.json",
+    "sha256": "4c3edd0403e8c203b46e2a33f8b95ca804e98f8388a663ccd6835098e3196a9a"
+  },
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/physical-baseline/review.json",
+    "sha256": "f4f6d20c96bd871dbe181b764b4bb44af519ca7b94eee3aaf426db10fc8b58aa"
+  },
+  "source": {
+    "bundle": "com.datadoghq.s2.transitions.a.uikit",
+    "fixture": "2888aade9f882e66e94f933b547f541eab853b58ce5305e801a3b39eb209ebfe",
+    "framework": "UIKit",
+    "layout": "stack",
+    "nonce": "ef4a1d8d-8ea3-43df-90f7-0ba53ed7f3ca",
+    "os": "27.0",
+    "pid": 17435,
+    "run_id": "d0f910bb-f505-49e5-8bea-21d9ed1b8bd5",
+    "source": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "tracking": "automatic"
+  },
+  "result": {
+    "artifact_hashes_verified": 7349,
+    "native_rows": 180,
+    "mapper_rows": 34,
+    "terminal_views": 10,
+    "actions": 10,
+    "transitions": 4,
+    "home_stop": "PASS",
+    "source_build_install": "REVERIFIED",
+    "cleanup": "PASS",
+    "captured_evidence_controls": 14,
+    "unit_tests": 6
+  },
+  "original": {
+    "state": "INVALID",
+    "evidence": "INCOMPLETE",
+    "cleanup": "PASS"
+  },
+  "classification": "Actual callback actions have the expected outgoing/return owner and cancellation relation. Original finish mapper-before-callback FAIL observations remain visible but do not establish a wrong emitted owner under s2-no-regression-v2.",
+  "candidate": "UNRUN",
+  "native_runs": 0,
+  "backend_queries": 0,
+  "gate_closures": [],
+  "release_acceptance": false,
+  "next_action": "Prepare a separate candidate-only local capture continuation with exact predecessor and source/product bindings. Require fresh physical device and human readiness; do not repeat the baseline or renew its expired admission. Representative backend proof remains separately owned; no full backend claim follows from this baseline."
+}
