@@ -79,7 +79,10 @@ async function sequence(stage, payload) {
 }
 try {
     bound = await sequence('bind', {});
-    if (bound.state !== 'BOUND' || bound.phase_count !== 11) throw new Error('Invalid canonical sequence binding');
+    const foreground = settings.scope === 'swiftui-foreground';
+    if (bound.state !== 'BOUND' || bound.phase_count !== (foreground ? 10 : 11)
+        || (foreground ? bound.scope !== settings.scope : bound.scope !== undefined))
+        throw new Error('Invalid canonical sequence binding');
     while (Date.now()/1000 < bound.native_deadline) {
         const binding = {binding_sha256: bound.binding_sha256, index};
         const next = await sequence('next', binding);

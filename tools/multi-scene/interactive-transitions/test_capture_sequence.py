@@ -190,7 +190,8 @@ const fs=require('fs');const source=fs.readFileSync(process.argv[1],'utf8');
 async function run(mode) {
  let index=0, dispatched=0, events=[], saved=[], clock=Date.now(), stopCalls=0;
  const original=Date.now;Date.now=()=>clock;
- const bound={state:'BOUND',binding_sha256:'bound',session_key:'live',phase_count:11,native_deadline:clock/1000+60,cleanup_deadline:clock/1000+90};
+ const count=mode==='foreground'?10:11;
+ const bound={state:'BOUND',binding_sha256:'bound',session_key:'live',phase_count:count,...(mode==='foreground'?{scope:'swiftui-foreground'}:{}),native_deadline:clock/1000+60,cleanup_deadline:clock/1000+90};
  function reply(value){return {exit_code:0,output:JSON.stringify(value)};}
  const tools={exec_command:async x=>{
   const stage=x.cmd.match(/'\/sequence' (\w+)/)?.[1];
@@ -198,7 +199,7 @@ async function run(mode) {
    const payload=JSON.parse(x.cmd.split("<<'CAPTURE_SEQUENCE_JSON'\n")[1].split('\nCAPTURE_SEQUENCE_JSON')[0]);
    events.push(stage);
    if(stage==='bind')return reply(bound);
-   if(stage==='next')return reply(index===11?{state:'TERMINAL',completed:11,cleanup:'PENDING'}:
+   if(stage==='next')return reply(index===count?{state:'TERMINAL',completed:count,cleanup:'PENDING'}:
      {state:'REQUEST',index,phase:'phase'+index,request:'/request',session_key:'live',deadline:bound.native_deadline});
    if(stage==='record'){
     saved.push(payload);if(payload.index!==index)throw Error('skipped record');
@@ -222,11 +223,11 @@ async function run(mode) {
  }};
  try {
   const result=await new Function('tools','settings','return (async()=>{'+source+'})()')(tools,
-   {helper:'/phase',sequenceHelper:'/sequence',sequenceRoot:'/root',framework:'UIKit'});
-  if(mode==='pass'){
-   if(result.state!=='TERMINAL'||index!==11||dispatched!==11||stopCalls!==1)throw Error(JSON.stringify({mode,result,index,dispatched}));
-   for(let i=0;i<11;i++)if(!saved[i].result.before.actual_return||!saved[i].result.action.actual_return)throw Error('raw lost');
-   if(events.filter(x=>x==='record').length!==11)throw Error('missing persistence');
+   {helper:'/phase',sequenceHelper:'/sequence',sequenceRoot:'/root',framework:mode==='foreground'?'SwiftUI':'UIKit',...(mode==='foreground'?{scope:'swiftui-foreground'}:{})});
+  if(['pass','foreground'].includes(mode)){
+   if(result.state!=='TERMINAL'||index!==count||dispatched!==count||stopCalls!==1)throw Error(JSON.stringify({mode,result,index,dispatched}));
+   for(let i=0;i<count;i++)if(!saved[i].result.before.actual_return||!saved[i].result.action.actual_return)throw Error('raw lost');
+   if(events.filter(x=>x==='record').length!==count)throw Error('missing persistence');
    for(let i=0;i<events.length;i++)if(events[i]==='record'&&events[i+1]!=='next')throw Error('order differs');
   }else{
    if(result.state!=='STOP'||dispatched!==1||saved.length!==1)throw Error(JSON.stringify({mode,result,dispatched}));
@@ -236,7 +237,7 @@ async function run(mode) {
   }
  } finally {Date.now=original;}
 }
-(async()=>{for(const mode of ['pass','disconnect','persist-fail','late-preserve'])await run(mode)})();
+(async()=>{for(const mode of ['pass','foreground','disconnect','persist-fail','late-preserve'])await run(mode)})();
 '''
         result=subprocess.run(['node','-e',script,str(Path(s.c.__file__).with_suffix('.js'))],capture_output=True,text=True,timeout=20)
         self.assertEqual(result.returncode,0,result.stderr)

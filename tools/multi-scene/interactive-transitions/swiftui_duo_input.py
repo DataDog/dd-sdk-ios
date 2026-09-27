@@ -32,6 +32,8 @@ def start(root, framework):
         device=plan['device']['udid'], process_identity=process, session_key=session['interactionSessionKey'],
         session_sha256=shared.sha(session_path), plan_sha256=shared.sha(root/'plan.json'),
         native_deadline=summary['native_deadline'], cleanup_deadline=summary['cleanup_deadline'], phase_count=len(sequence.PHASES))
+    if plan.get('scope') == 'swiftui-foreground':
+        binding.update(scope=plan['scope'], phase_count=10)
     atomic(folder/'binding.json', encoded(binding))
     return dict(state='BOUND', binding_sha256=shared.sha(folder/'binding.json'), **binding)
 

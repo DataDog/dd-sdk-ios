@@ -15,6 +15,15 @@ PHASES = ('setup.detail', 'pop.finish', 'setup.detail-again', 'pop.cancel',
           'return.dismiss', 'return.home', 'background')
 
 
+def phases(binding):
+    if binding.get('scope') == 'swiftui-foreground':
+        require(binding['framework'] == 'SwiftUI' and binding['phase_count'] == 10,
+                'invalid foreground input binding')
+        return PHASES[:-1]
+    require(binding.get('scope') is None and binding['phase_count'] == len(PHASES), 'unknown input scope')
+    return PHASES
+
+
 def locations(root, framework):
     require(framework in ('UIKit', 'SwiftUI'), 'foreign sequence framework')
     root = Path(root).resolve(strict=True)
@@ -52,7 +61,7 @@ def binding_for(root, framework, payload, *, current=True):
     binding = q.shared.read(folder/'binding.json')
     require(payload.get('binding_sha256') == q.shared.sha(folder/'binding.json')
             and binding['root'] == str(Path(root).resolve()) and binding['framework'] == framework
-            and binding['phase_count'] == len(PHASES), 'foreign sequence binding')
+            and binding['phase_count'] == len(phases(binding)), 'foreign sequence binding')
     if current:
         require(q.shared.sha(Path(root)/'plan.json') == binding['plan_sha256']
                 and q.shared.sha(folder.parent/'start.json') == binding['session_sha256'], 'sequence plan or session changed')
@@ -68,14 +77,15 @@ def request_at(cell, phase):
 
 
 def progress(cell, folder, binding):
+    selected = phases(binding)
     paths = sorted((folder/'exchanges').glob('*.json'))
-    require(len(paths) <= len(PHASES) and {p.name for p in paths} == {str(i)+'.json' for i in range(len(paths))},
+    require(len(paths) <= len(selected) and {p.name for p in paths} == {str(i)+'.json' for i in range(len(paths))},
             'skipped or duplicate sequence exchange')
     for index in range(len(paths)):
         row = q.shared.read(folder/'exchanges'/(str(index)+'.json'))
-        require(row['index'] == index and row['phase'] == PHASES[index]
+        require(row['index'] == index and row['phase'] == selected[index]
                 and row['binding_sha256'] == q.shared.sha(folder/'binding.json'), 'reordered or foreign sequence exchange')
-        result = row['result']; request = request_at(cell, PHASES[index])
+        result = row['result']; request = request_at(cell, selected[index])
         require(result.get('state') == 'PUBLISHED' and result.get('dispatch_attempted') is True
                 and result.get('local_pending') is None, 'prior sequence exchange incomplete or uncertain')
         require(result.get('before') == q.shared.read(request.with_name('worker-before.json'))
@@ -88,6 +98,7 @@ def progress(cell, folder, binding):
 
 def next_request(root, framework, payload):
     cell, folder, binding = binding_for(root, framework, payload)
+    selected = phases(binding)
     require(not (folder/'stop.json').exists(), 'input sequence already stopped')
     index = progress(cell, folder, binding)
     require(type(payload.get('index')) is int and payload['index'] == index, 'skipped or replayed sequence index')
@@ -104,8 +115,8 @@ def next_request(root, framework, payload):
         require(q.driver.process_identity(binding['identity']['pid']) == binding['process_identity'], 'sequence process replaced')
         requests = [(p, q.shared.read(p)) for p in (cell/'input').glob('*/prompt.json')]
         require(len({v['phase'] for _,v in requests}) == len(requests), 'duplicate native input phase')
-        require(all(v['phase'] in PHASES[:min(index+1, len(PHASES))] for _,v in requests), 'skipped or reordered native input phase')
-        current = [(p,v) for p,v in requests if index < len(PHASES) and v['phase'] == PHASES[index]]
+        require(all(v['phase'] in selected[:min(index+1, len(selected))] for _,v in requests), 'skipped or reordered native input phase')
+        current = [(p,v) for p,v in requests if index < len(selected) and v['phase'] == selected[index]]
         if current:
             path, request = current[0]
             require(request['run_id'] == binding['identity']['run_id'] and request['app_pid'] == binding['identity']['pid']
@@ -114,7 +125,7 @@ def next_request(root, framework, payload):
                     and c.session_key(path) == binding['session_key'], 'foreign sequence request owner')
             require(request['deadline'] <= binding['native_deadline'], 'input deadline extends original native bound')
             c.pending(path, time.time())
-            return dict(state='REQUEST', index=index, phase=PHASES[index], request=str(path),
+            return dict(state='REQUEST', index=index, phase=selected[index], request=str(path),
                         deadline=request['deadline'], session_key=binding['session_key'])
         if time.time() >= poll_end:
             return dict(state='WAIT', index=index)
@@ -137,11 +148,12 @@ def record(root, framework, payload):
     atomic(receipt, encoded(dict(at=time.time(), payload=payload)))
     try:
         cell, folder, binding = binding_for(root, framework, payload)
+        selected = phases(binding)
         index = payload.get('index')
-        require(type(index) is int and 0 <= index < len(PHASES), 'invalid sequence result index')
+        require(type(index) is int and 0 <= index < len(selected), 'invalid sequence result index')
         require(not (folder/'stop.json').exists(), 'sequence result after stop')
         require(progress(cell, folder, binding) == index, 'skipped or replayed result index')
-        row = dict(payload, phase=PHASES[index], recorded_at=time.time(), receipt=str(receipt))
+        row = dict(payload, phase=selected[index], recorded_at=time.time(), receipt=str(receipt))
         atomic(folder/'exchanges'/(str(index)+'.json'), encoded(row))
         require(progress(cell, folder, binding) == index+1, 'unpublished preceding exchange')
         return dict(state='RECORDED', next_index=index+1, receipt=str(receipt))

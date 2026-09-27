@@ -319,3 +319,15 @@ preservation. Compare complete final local inventories per mode, then review
 source/environment applicability separately. A first-cell input failure stops the
 path; no equivalent diagnostic retry is admitted. The [owning record](../../../DatadogRUM/MultiSceneSupport/Results/S2-H12-H13-swiftui-duo.json)
 contains current plans, controls, outcomes and remaining prerequisites.
+
+`swiftui_foreground_runtime.py` supplies an explicitly scoped continuation when a
+complete foreground prefix is reusable but the separate Home step failed. Its
+baseline verifier seals the original failed verdict, later restoration, products,
+writer prefixes and entire artifact inventory. Only the three missing source/mode
+cells are admitted; the automatic baseline and stopped Home input are not repeated.
+The ten in-app phases end with a fresh native snapshot and actual display capture.
+The complete inventory preserves the one observed current active View; all prior
+occurrences must be stopped. Exact callback owners, native cancellation and scene/
+window/controller identities remain required. Worker completion, native idle and
+task-only cleanup are independent. No Home, backend or gate closure follows from
+the foreground helper alone; paired source/environment review is still required.

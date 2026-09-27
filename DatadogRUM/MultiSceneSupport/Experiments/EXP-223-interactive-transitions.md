@@ -582,10 +582,16 @@ physical/operator readiness and a real candidate result remain required.
 
 ## Scoped Duo SwiftUI continuation, September27
 
-[Four missing SwiftUI stack cells](../Results/S2-H12-H13-swiftui-duo.json) now
-reuse the qualified ordinary-simulator fixture and original baseline executable.
-One candidate build passed with the exact five fixture files; SDK source is unchanged.
-The finite automatic/existing-manual pairs preserve actual transition and callback
-owners, complete local View/Action inventories, real display geometry and cleanup.
-The first planned Duo baseline qualifies the input mechanism; a failure stops this
-automated path. No native result or gate closure is claimed by preparation.
+[The owning result](../Results/S2-H12-H13-swiftui-duo.json) binds the unchanged
+fixture and compiled A/B products. Automatic A captured all four real foreground
+transitions with expected callback owners. The final Home command returned without
+its native effect; the original eleven-phase attempt and remaining matrix stopped.
+Original scenario/evidence/cleanup verdicts remain unchanged. Separate restoration
+verified returned input, native idle, app removal and the original Duo state.
+
+The source-bound pre-Home prefix contains15 view occurrences and10 actions. A
+separate assessment keeps the final View active exactly as captured and preserves
+the asynchronous mapper-order diagnostic. The finite foreground continuation uses
+only automatic B and existing-manual A/B; no A gestures or Home input are repeated.
+Its59 focused controls and worker publication controls pass. Designated review passes;
+native comparison remains; this assessment supplies no gate, backend or Home claim.

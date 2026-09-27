@@ -65,7 +65,8 @@ class WorkerCleanup(unittest.TestCase):
         (self.root/'plan.json').write_text('{}'); (self.root/'cells/SwiftUI/input').mkdir(parents=True)
         self.summary = dict(scenario='PASS', identity={'pid': 1})
         binding = dict(root=str(self.root), framework='SwiftUI', session_key='fresh', device='duo',
-            process_identity={'pid': 1, 'start': 'now'}, identity=self.summary['identity'], plan_sha256=runtime.shared.sha(self.root/'plan.json'))
+            process_identity={'pid': 1, 'start': 'now'}, identity=self.summary['identity'], phase_count=11,
+            plan_sha256=runtime.shared.sha(self.root/'plan.json'))
         path = self.root/'sessions/SwiftUI/sequence/binding.json'; path.parent.mkdir(parents=True); path.write_text(json.dumps(binding))
         started = dict(root=str(self.root), plan_sha256=binding['plan_sha256'], matrix_sha256='matrix', pid=2,
             process_identity={'pid': 2, 'start': 'now'}, argv=['runner'], log_path='/log', started_at=1)
@@ -120,7 +121,7 @@ class MatrixStop(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(); self.addCleanup(self.temp.cleanup); self.root = Path(self.temp.name)
         self.plan = dict(cell='SwiftUI-automatic-B', matrix={'path':str(self.root/'matrix.json')})
-        self.matrix = dict(cells=runtime.builds.CELLS)
+        self.matrix = dict(kind='S2_SWIFTUI_DUO_STACKS', cells=runtime.builds.CELLS)
         self.prior = self.root/'runs/SwiftUI-automatic-A/cells/SwiftUI'; self.prior.mkdir(parents=True)
         self.summary = dict(state='PASS', scenario='PASS', evidence='PASS', cleanup='PASS'); self.write()
         self.target = self.root/'runs/SwiftUI-automatic-B'; self.target.mkdir()

@@ -31,7 +31,8 @@ POLICY = dict(setup=120, native=900, input=180, collection=120, cleanup=300)
 def helpers():
     members = q.helpers()
     for name in ['swiftui_duo_runtime.py', 'swiftui_duo_input.py', 'test_swiftui_duo_runtime.py',
-                 'swiftui_duo_build.py', 'test_swiftui_duo_build.py', 's2_local_contract.py']:
+                 'swiftui_duo_build.py', 'test_swiftui_duo_build.py', 's2_local_contract.py',
+                 'swiftui_foreground_contract.py', 'swiftui_foreground_runtime.py', 'test_swiftui_foreground.py']:
         path = Path(__file__).with_name(name); members[str(path.relative_to(shared.REPO))] = shared.sha(path)
     return members
 
@@ -110,6 +111,9 @@ def prepare(root, build_root):
 
 def verify_matrix(root):
     matrix = shared.read(root/'matrix.json')
+    if matrix['kind'] == 'S2_SWIFTUI_DUO_FOREGROUND':
+        import swiftui_foreground_runtime as foreground
+        return foreground.verify_matrix(root)
     require(matrix['cells'] == builds.CELLS and matrix['budgets'] == POLICY and matrix['attempts_per_cell'] == 1
             and matrix['native_admitted'] is False, 'finite runtime scope changed')
     require(matrix['protected'] == protected() and matrix['helpers'] == helpers() == shared.tree(root/'helpers'),
@@ -129,6 +133,7 @@ def reviewed(root):
             and review['controls_sha256'] == shared.sha(matrix_root/'controls.json')
             and controls['helpers'] == matrix['helpers'], 'review or controls missing')
     require(plan['cell'] in matrix['cells'] and root == matrix_root/'runs'/plan['cell']
+            and plan.get('scope') == matrix.get('scope')
             and plan['helpers'] == matrix['helpers'] and plan['budgets'] == POLICY
             and plan['product'] == matrix['products'][plan['arm']]['products']['SwiftUI']
             and plan['source'] == shared.ARMS[plan['arm']] and plan['framework'] == 'SwiftUI'
@@ -139,6 +144,9 @@ def reviewed(root):
 
 
 def predecessor(root, plan, matrix):
+    if matrix['kind'] == 'S2_SWIFTUI_DUO_FOREGROUND':
+        import swiftui_foreground_runtime as foreground
+        return foreground.predecessor(root, plan, matrix)
     matrix_root = Path(plan['matrix']['path']).parent; index = matrix['cells'].index(plan['cell'])
     for key in matrix['cells'][:index]:
         prior = matrix_root/'runs'/key/'cells/SwiftUI'; summary = shared.read(prior/'summary.json')
@@ -176,11 +184,15 @@ def session_ready(setup, begun, probe, *, now):
     return value
 
 
-def assess(folder, identity, oracle, *, device, stream='sealed-events.jsonl'):
+def assess(folder, identity, oracle, *, device, stream='sealed-events.jsonl', foreground=False):
     require(stream in ['sealed-events.jsonl', 'final-events.jsonl'], 'unknown local stream')
     raw = (folder/stream).read_bytes(); capture = driver.capture_contract
     rows = capture.rows(raw, identity['run_id']); native = shared.read(folder/'native-summary.json')
     require(native['identity'] == identity and set(native['transitions']) == local.PHASES, 'native summary identity/set differs')
+    if foreground:
+        import swiftui_foreground_contract as contract
+        return contract.assess(folder, identity, oracle, device=device, raw=raw,
+                               cutoff='foreground.end', binding=native['binding'])
     inventory = driver.ownership.inventory(rows, identity); snapshots = {}
     for path in (folder/'input').iterdir():
         if not path.is_dir(): continue
@@ -272,7 +284,11 @@ def cell(root, plan, matrix, setup):
             '--layout', 'stack', '--tracking', plan['tracking']], out, 'launch', deadline=min(deadline, time.time()+60))
         match = re.fullmatch(re.escape(bundle)+r': ([1-9][0-9]*)\s*', (out/'launch.log').read_text())
         require(match is not None, 'launch PID absent'); identity['pid'] = int(match[1])
-        collector = Collector(documents=documents, output=out/'input', run=identity['run_id'], device=device, pid=identity['pid'],
+        collector_type = Collector
+        if plan.get('scope') == 'swiftui-foreground':
+            import swiftui_foreground_runtime as foreground
+            collector_type = foreground.Collector
+        collector = collector_type(documents=documents, output=out/'input', run=identity['run_id'], device=device, pid=identity['pid'],
             framework='SwiftUI', deadline=deadline, budget=dict(human_step_seconds=POLICY['input'], snapshot_seconds=30, settle_seconds=1.2))
         collector.bundle = bundle; collector.executable = (installed/item['product']['executable']).resolve()
         collector.process_started = driver.process_identity(identity['pid']); summary['process_identity'] = collector.process_started
@@ -283,9 +299,11 @@ def cell(root, plan, matrix, setup):
         collector.stack(); summary['scenario'] = 'PASS'
         atomic(out/'native-summary.json', encoded(dict(identity=identity, binding=collector.binding, transitions=collector.transition_results)))
         raw = (documents/'events.jsonl').read_bytes(); atomic(out/'sealed-events.jsonl', raw)
-        assessment = assess(out, identity, collector.transition_oracle, device=device)
+        assessment = assess(out, identity, collector.transition_oracle, device=device,
+                            foreground=plan.get('scope') == 'swiftui-foreground')
         require(time.time() < setup['collection_deadline'], 'local evidence publication late')
         atomic(out/'local-assessment.json', encoded(assessment)); summary['evidence'] = 'PASS'
+        if plan.get('scope') == 'swiftui-foreground': summary['session_id'] = assessment['session_id']
     except Exception as error:
         summary['reason'] = type(error).__name__+': '+str(error)
     finally:
@@ -320,8 +338,8 @@ def worker_quiet(root, summary, worker):
     require(result['state'] in ['TERMINAL', 'STOP'] and result.get('local_pending') is None, 'input transport still pending')
     for prompt_path in (root/'cells/SwiftUI/input').glob('*/prompt.json'): q.completed_input(prompt_path)
     if summary['scenario'] == 'PASS':
-        require(result['state'] == 'TERMINAL' and result['completed'] == len(sequence.PHASES)
-                and sequence.progress(root/'cells/SwiftUI', binding_path.parent, binding) == len(sequence.PHASES),
+        require(result['state'] == 'TERMINAL' and result['completed'] == len(sequence.phases(binding))
+                and sequence.progress(root/'cells/SwiftUI', binding_path.parent, binding) == len(sequence.phases(binding)),
                 'successful input sequence incomplete')
     return result
 
@@ -331,7 +349,7 @@ def cleanup_idle(out, summary, deadline):
     identity = summary['identity']; documents = Path(summary['documents']); folder = out/'cleanup-proof'; folder.mkdir()
     request = dict(schema_version=1, run_id=identity['run_id'], request_id=str(uuid.uuid4()), phase='cleanup.idle')
     raw_request = encoded(request); atomic(folder/'request.json', raw_request)
-    shared.save(documents/'human-snapshot-request.json', request)
+    atomic(documents/'human-snapshot-request.json', raw_request, exclusive=False)
     marker = documents/('events-checkpoint-'+request['request_id']+'.json')
     limit = min(deadline, time.time()+30)
     while not marker.exists():
@@ -374,7 +392,7 @@ def finish(root, worker_path, end_path):
         pid = identity.get('pid')
         if pid and shared.process(pid):
             require(driver.process_identity(pid) == summary['process_identity'], 'task PID was replaced')
-            if summary['scenario'] != 'PASS': cleanup_idle(out, summary, deadline)
+            if summary['scenario'] != 'PASS' or plan.get('scope') == 'swiftui-foreground': cleanup_idle(out, summary, deadline)
             shared.command(['xcrun', 'simctl', 'terminate', device, identity['bundle']], out, 'terminate', deadline=deadline)
         if documents and documents.exists():
             shutil.copytree(documents, out/'native-preserved')
@@ -383,7 +401,10 @@ def finish(root, worker_path, end_path):
                 require(final.startswith((out/'sealed-events.jsonl').read_bytes()), 'sealed native stream was replaced')
                 atomic(out/'final-events.jsonl', final)
                 try:
-                    result = assess(out, identity, load_oracle(builds.bound_file(matrix['oracle'])), device=device, stream='final-events.jsonl')
+                    result = assess(out, identity, load_oracle(builds.bound_file(matrix['oracle'])), device=device, stream='final-events.jsonl',
+                                    foreground=plan.get('scope') == 'swiftui-foreground')
+                    if plan.get('scope') == 'swiftui-foreground':
+                        require(result['session_id'] == summary['session_id'], 'foreground summary session changed')
                     atomic(out/'final-assessment.json', encoded(result)); summary['evidence'] = 'PASS'
                 except Exception as error:
                     summary.update(evidence='INCOMPLETE', evidence_error=type(error).__name__+': '+str(error))
