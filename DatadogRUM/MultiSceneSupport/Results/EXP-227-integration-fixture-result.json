@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-227",
+  "gate": "S3:F03:M01",
+  "status": "QUALIFIED_INTEGRATION_COMPONENT",
+  "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "fixture_commit": "fac0b546498fb6a978861b07183491c34d56ee90",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-fixture-qualification-qj5mlyn3",
+  "verdict": {
+    "scenario": "PASS",
+    "evidence": "PASS",
+    "cleanup": "PASS",
+    "overall": "PASS"
+  },
+  "counts": {
+    "discovered": 282,
+    "selected": 280,
+    "invoked": 280,
+    "passed": 280,
+    "failed": 0,
+    "skipped": 0,
+    "excluded_replay": 2,
+    "runtime_warnings": 8,
+    "offline_controls": 44
+  },
+  "changes": [
+    "Actual owned-scene lifecycle notifications with four controls; process notifications and detached fallback preserved.",
+    "View-count assertion guard avoids test-host trap while preserving assertions.",
+    "Exact previously reviewed full/delta hitch oracle."
+  ],
+  "source_identity": {
+    "sdk_unchanged": true,
+    "compiler_targets": 13,
+    "diagnostics_enabled": false,
+    "compiled_fixture_paths": [
+      "Datadog/IntegrationUnitTests/AppRunner/AppRunner.swift",
+      "Datadog/IntegrationUnitTests/RUM/RUMSessionTimeOutTests.swift",
+      "Datadog/IntegrationUnitTests/RUM/RUMSessionTrackingTests.swift",
+      "Datadog/IntegrationUnitTests/RUM/RUMViewHitchesIntegration_Tests.swift"
+    ]
+  },
+  "cleanup": {
+    "state": "PASS",
+    "task_simulator_deleted": "D8A3EF07-E511-4317-BE70-218920870C47",
+    "original_deadlines_preserved": true,
+    "helper_settling": "Fresh empty process inventory after ibtoold exit within the fixed180-second cleanup budget; no process killed or deadline extended."
+  },
+  "originals": {
+    "failures": "Results/EXP-227-integration-failure-disposition.json",
+    "diagnostic": "Results/EXP-227-lifecycle-attribution.json",
+    "ttid": "Original root cause remains unproven; both diagnostic and full qualification pass with all assertions retained. No original failure is rewritten."
+  },
+  "completed_components": [
+    "S3:F03:M01 Integration"
+  ],
+  "gate_closures": [],
+  "native_active": false,
+  "remaining": "Reuse this qualification. Whole F03, F01 approval, public scene exposure, actual concurrent ownership and final source promotion remain separate.",
+  "artifacts": {
+    "qualification-plan.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-fixture-qualification-qj5mlyn3/qualification-plan.json",
+      "sha256": "d152c334ea4b05fdaa81d7d4f9cb40bdb7d67e88aa9428a131515e55f011c121"
+    },
+    "qualification-controls.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-fixture-qualification-qj5mlyn3/qualification-controls.json",
+      "sha256": "c2d8bd08c511fdeb66bf5f4bbfba86cb1c8697d0a0dbffc312196a6a73c2000f"
+    },
+    "qualification-review.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-fixture-qualification-qj5mlyn3/qualification-review.json",
+      "sha256": "dc088a310af5699cf322ae79dfc7427e456ecd1e0e768255e6f55efcb9f2d9af"
+    },
+    "qualification-result-review.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-fixture-qualification-qj5mlyn3/qualification-result-review.json",
+      "sha256": "a38340f73d51c21511f22f9999a3dafea35309aa47d9479f43b0d4c415ca4bd6"
+    },
+    "module-summary.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-fixture-qualification-qj5mlyn3/module-summary.json",
+      "sha256": "c7cbb3026a2ffd8275a2dcafe2427e67e443ff72935eb9d5376f14ff8ead2025"
+    },
+    "deletion.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-fixture-qualification-qj5mlyn3/deletion.json",
+      "sha256": "b58bd42d5665c8dea9d8b45815522eff602aca60f69cbda59e4c07a13430607e"
+    },
+    "execution-inputs.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-fixture-qualification-qj5mlyn3/execution-inputs.json",
+      "sha256": "cd0de9ab43f11dd019f242e9554f7a0d0483684cd1c8be031ac298ccd386f147"
+    },
+    "cells/integration/built.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-fixture-qualification-qj5mlyn3/cells/integration/built.json",
+      "sha256": "1607ed3fe0466594377a12d0308290a2144983097388453dcdbc34079e9a428c"
+    },
+    "cells/integration/selection.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-fixture-qualification-qj5mlyn3/cells/integration/selection.json",
+      "sha256": "1ed28bece9faab69ec71186470d13594984acd20dff3732b58593f780e49bca6"
+    },
+    "cells/integration/decoded.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-fixture-qualification-qj5mlyn3/cells/integration/decoded.json",
+      "sha256": "e17c15b507f66b00b0dd3e66fdfbad9f2e60676e0817953fb102c84f7fee1ae0"
+    },
+    "cells/integration/summary.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-fixture-qualification-qj5mlyn3/cells/integration/summary.json",
+      "sha256": "9039f8144f830ed5df5dd4bc884b0d8b4080aac13b3dc191327c1ecd43324942"
+    },
+    "cells/integration/result-summary.log": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-fixture-qualification-qj5mlyn3/cells/integration/result-summary.log",
+      "sha256": "6d9eb61ccb71e65e6e74affd929fd5b4be8da628180ff1771f2a7a01e600e3a8"
+    },
+    "cells/integration/result-tests.log": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-fixture-qualification-qj5mlyn3/cells/integration/result-tests.log",
+      "sha256": "3e239cf433bdf41a091d14a33b819fce2785c954f0cccfb4516a3b513c39fd19"
+    },
+    "cells/integration/execute-receipt.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-fixture-qualification-qj5mlyn3/cells/integration/execute-receipt.json",
+      "sha256": "323379af202604d4dfb739d8db042e47c051800a313964d5361774a8f27a15ee"
+    }
+  }
+}

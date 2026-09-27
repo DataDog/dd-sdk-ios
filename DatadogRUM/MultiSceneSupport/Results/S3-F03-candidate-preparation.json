@@ -305,7 +305,7 @@
   "cells": [
     {
       "id": "M01",
-      "disposition": "Full RUM27/17.5 and eight non-RUM suites qualify. Integration17.5 has266passed9failed; source/fixture attribution is required before another qualification. OriginalINVALID and cleanup/deletionPASS remain. Results/EXP-227-integration-failure-disposition.json owns the failures; no equivalent retry."
+      "disposition": "Provisional M01 complete: full RUM27/17.5 and all nine non-RUM schemes qualify at SDK94842cc8. The reviewed fixture-only Integration correction passes280/280 with exact inventory, source/compiler identity and cleanup/deletion. Results/EXP-227-integration-fixture-result.json owns the final component; no rerun is due."
     },
     {
       "id": "M02",
@@ -358,7 +358,8 @@
     "Results/EXP-226-platform-result.json",
     "Results/EXP-227-module-result.json",
     "Results/EXP-228-public-clients-result.json",
-    "Results/EXP-225-human-setup-preparation.json"
+    "Results/EXP-225-human-setup-preparation.json",
+    "Results/EXP-227-integration-fixture-result.json"
   ],
   "gate_closures": [],
   "unit_reuse_review": {
@@ -385,9 +386,9 @@
   },
   "module_qualification": {
     "owner": "Results/EXP-227-module-result.json",
-    "status": "PARTIAL",
-    "qualified_non_rum_schemes": 8,
-    "remaining": "Integration17.5 retains266passed9failed. The three-case observation reproduces missing owned-scene lifecycle in the fixture; two launch methods pass without resolving their original TTID failures. Results/EXP-227-lifecycle-attribution.json owns2PASS/1FAIL and original cleanupINVALID with separate restorationPASS. Review the fixture-only correction before qualification; no full or equivalent retry admitted."
+    "status": "PROVISIONAL_M01_PASS",
+    "qualified_non_rum_schemes": 9,
+    "remaining": "No module-suite repeat is due. Full RUM27/17.5 and all nine other schemes qualify at unchanged SDK94842cc8. Integration280/280 and cleanup/deletionPASS; original failures retained. F01/public promotion and remaining M10/M11 obligations stay separate."
   },
   "public_client_qualification": {
     "owner": "Results/EXP-228-public-clients-result.json",

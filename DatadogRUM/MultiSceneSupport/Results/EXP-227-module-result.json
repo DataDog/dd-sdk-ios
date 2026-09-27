@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "experiment": "EXP-227",
-  "status": "PARTIAL_EIGHT_QUALIFIED_INTEGRATION_FAILURES",
+  "status": "QUALIFIED_NINE_NON_RUM_SCHEMES",
   "source": "d23982a5d249c88b0bc9cd5a05be21ede72cae8d",
   "gate": "S3:F03:M01",
   "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-integration-host-k0mg_syr",
@@ -137,9 +137,23 @@
       "passed": 236,
       "skipped": [],
       "summary_sha256": "4ab295aed579dc280005b3127a1a2cb6346f21e62cfbd3097ea3a07cabba5cab"
+    },
+    {
+      "id": "integration",
+      "target": "DatadogIntegrationTests",
+      "runtime": "17.5",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "overall": "PASS",
+      "cases": 280,
+      "invocations": 280,
+      "passed": 280,
+      "skipped": [],
+      "summary_sha256": "9039f8144f830ed5df5dd4bc884b0d8b4080aac13b3dc191327c1ecd43324942"
     }
   ],
-  "remaining": "Integration17.5 executes275 cases:266passed9failed, with seven session cases under source/fixture attribution, a test-helper crash and secondary watchdog contamination, plus an older hitch-delta assertion. OriginalINVALID and cleanup/deletionPASS remain; reviewed offline decoding preserves all25 failure messages and8warnings. No native retry; eight other non-RUM suites and full RUM remain qualified.",
+  "remaining": "All nine non-RUM M01 schemes now qualify at unchanged SDK94842cc8; reuse the separately qualified full RUM27/17.5 component. No suite rerun is due. F03 still requires API/source approval and remaining finite obligations.",
   "original_preparation": "Original six-control inputs preserved; reviewed closure/path/provenance corrections are separately frozen.",
   "signing_checkpoint": "b58750b3476fa44fe082894eb532b92abeca98c5 uses authorized local unsigned fallback after20-second signing timeout.",
   "scenario": "NOT_EXECUTED",
@@ -559,5 +573,12 @@
     }
   },
   "integration_failure_disposition": "Results/EXP-227-integration-failure-disposition.json",
-  "integration_lifecycle_attribution": "Results/EXP-227-lifecycle-attribution.json"
+  "integration_lifecycle_attribution": "Results/EXP-227-lifecycle-attribution.json",
+  "integration_qualification": {
+    "owner": "Results/EXP-227-integration-fixture-result.json",
+    "status": "PASS",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp227-fixture-qualification-qj5mlyn3",
+    "source": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+    "fixture_commit": "fac0b546498fb6a978861b07183491c34d56ee90"
+  }
 }

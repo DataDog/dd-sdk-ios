@@ -207,3 +207,13 @@ compiled fixture hashes. Consumed diagnostic roots stay immutable evidence, neve
 executable admissions. Cleanup may wait only for lingering ibtoold within its fixed
 future budget and must observe an empty worker set; no old verdict is rewritten.
 Native admission awaits frozen input review; no compatibility gate is closed.
+
+The single [full fixture qualification](../Results/EXP-227-integration-fixture-result.json)
+passes all280 selected methods/280 invocations with zero failures/skips. Raw282
+methods retain the two Replay exclusions. All13 compiler targets and four repaired
+fixtures match; diagnostics are disabled and SDK94842cc8 is unchanged. Eight
+source/message-matched warnings remain. Cleanup observes ibtoold exit within its
+original budget, then deletes only the task simulator. Independent review accepts
+the Integration M01 component. All nine non-RUM schemes now qualify alongside the
+accepted full RUM results. Preserve every prior failure; the initial TTID cause is
+unproven. No suite repeat or whole-F03 closure follows.
