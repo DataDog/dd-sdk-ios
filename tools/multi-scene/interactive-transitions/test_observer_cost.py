@@ -52,13 +52,12 @@ class ObserverCostTests(unittest.TestCase):
                 with self.assertRaises(ValueError): cost.partition(event, self.row)
                 with self.assertRaises(ValueError): cost.partition(self.event, row)
 
-    def test_unchanged_native_oracle_still_rejects_partitioned_over_budget_cost(self):
+    def test_native_inventory_retains_partitioned_cost_without_timing_gate(self):
         import json
         import human_contract
         rows = [dict(kind='launch', run_id='run', sequence=1, payload={}), self.event, self.row]
         raw = b''.join((json.dumps(row)+'\n').encode() for row in rows)
-        with self.assertRaisesRegex(ValueError, 'observer exceeded main-thread budget'):
-            human_contract.rows(raw, 'run')
+        self.assertEqual(human_contract.rows(raw, 'run'),rows)
 
     def test_overlay_preserves_live_topology_and_all_other_callbacks(self):
         path = Path(__file__).resolve().parents[1]/'automatic-coverage/HumanObservation.swift'

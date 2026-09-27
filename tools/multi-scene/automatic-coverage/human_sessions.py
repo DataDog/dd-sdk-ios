@@ -15,6 +15,7 @@ import time
 
 KIND = 'AUTOMATIC_HUMAN_SESSION'
 CONTRACT = 'tools/multi-scene/automatic-coverage/human_contract.py'
+BACKEND_DECODER = 'tools/multi-scene/acceptance/app_journey_transport.py'
 RUNTIME = 'tools/multi-scene/automatic-coverage/human_runtime.py'
 PROTECTED = ['Datadog/Datadog.xcodeproj/project.pbxproj', 'xcconfigs/Datadog.local.xcconfig']
 TRANSITION = 'DatadogRUM/MultiSceneSupport/Results/navigation-documentation-consolidation-20260924.json'
@@ -31,7 +32,15 @@ def read_reference(row, shared):
     return shared.read(path)
 
 
-def original(root, runner):
+def verify_build_helpers(expected, runner, *, allow_backend_decoder_update=False):
+    # The decoder is imported by the common harness, but is not compiled into an
+    # app or called by this build. New runtime plans bind its current bytes.
+    allowed = {BACKEND_DECODER} if allow_backend_decoder_update else set()
+    runner.require(all(p in allowed or runner.shared.sha(runner.shared.REPO / p) == h
+                       for p, h in expected.items()), 'original build helper source changed')
+
+
+def original(root, runner, *, allow_backend_decoder_update=False):
     """Revalidate unchanged build inputs without the obsolete dirty-doc snapshot."""
     s = runner.shared; root = Path(root); owner = s.read(runner.build.OWNER)['human_current_composition']
     s.require(root == Path(owner['build_root']), 'foreign original automatic build root')
@@ -55,8 +64,8 @@ def original(root, runner):
     s.require({p: current[p] for p in PROTECTED} == {p: base['protected'][p] for p in PROTECTED},
               'protected project or configuration changed')
     s.require(s.tree(root / 'helpers') == base['helpers'] and
-              all(s.sha(s.REPO / p) == h for p, h in base['helpers'].items()) and
               s.tree(runtime / 'helpers') == plan['helpers'], 'original frozen helper/build source changed')
+    verify_build_helpers(base['helpers'], runner, allow_backend_decoder_update=allow_backend_decoder_update)
     s.require({n: s.sha(runner.build.HERE / n) for n in runner.build.FIXTURES} == base['fixture_sources'],
               'original fixture changed')
     for key, arm in base['arms'].items():
@@ -73,7 +82,11 @@ def original(root, runner):
 def activate_contract(original_root, plan, runner):
     """Execute the exact previously reviewed contract, not a later shared variant."""
     path = Path(original_root) / 'runtime/helpers' / CONTRACT
-    runner.require(runner.shared.sha(path) == plan['helpers'][CONTRACT], 'frozen native oracle changed')
+    activate_contract_file(path, plan['helpers'][CONTRACT], runner)
+
+
+def activate_contract_file(path, expected_sha256, runner):
+    runner.require(runner.shared.sha(path) == expected_sha256, 'frozen native oracle changed')
     spec = importlib.util.spec_from_file_location('automatic_session_original_contract', path)
     module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
     runner.capture.oracle = module; runner.journey.h = module; runner.human_fold.h = module

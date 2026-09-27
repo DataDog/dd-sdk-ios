@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "state": "REVIEWED_PREPARATION_ONLY",
+  "updated_at": "2026-09-27T01:41:28.186062+00:00",
+  "owner": "root",
+  "reviewer": "/root/c06_runtime_plan",
+  "gates": [
+    "S2:C07",
+    "S2:C08",
+    "S2:C09",
+    "S2:C10",
+    "S2:H11",
+    "S2:H12",
+    "S2:H13",
+    "S2:H14",
+    "S3:A02"
+  ],
+  "authority": "September25 semantic measurement rule; autonomous capture-blocker correction.",
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/capture-contract/proposal.json",
+    "sha256": "0d512fd7b745bd102cb8af786962dd891e4562838c84bac28db3c59890eade51"
+  },
+  "controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/capture-contract/prepared-coverage/runtime/controls.json",
+    "sha256": "00c090df9a2009e3bf9c9743819e5cbf25046ae77556468ee3493c5abecc3af0"
+  },
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/capture-contract/prepared-coverage/runtime/review.json",
+    "sha256": "2b9e831061d053b215ec83bd488c0ed3b7f232a880420e966f788e33352ad480"
+  },
+  "preparation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/capture-contract/prepare-result.json",
+    "sha256": "80be9dc530e9e5c0ccbfbb32a74cda6ca5a26187f9ac3c96e5f2d3edec163c70"
+  },
+  "runtime_plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/capture-contract/prepared-coverage/runtime/runtime-plan.json",
+    "sha256": "e13f65bad3f2f952f8e3731b314ed7d8b98e24d644fc7116fb4ad2d6ea1ac476"
+  },
+  "measurement": {
+    "policy": "diagnostic-observer-timing-v1",
+    "original_sha256": "52b9e7a14d7cd2e23d13fc13ae90fc29e989cd65c1d4eb916256a7d3a49b697e",
+    "rendered_sha256": "1c37b93eda35e54b6098235912a7db6243a8d36a3a1dec1be04051ee4fa28776",
+    "scope": "Recorder duration upper bounds only; native ownership/order and operational deadlines unchanged."
+  },
+  "build_helper_reuse": {
+    "path": "tools/multi-scene/acceptance/app_journey_transport.py",
+    "original_sha256": "9d2f792aa0a9c06f85db90063c7b9bbd1ef2a459cf5d177603ff6dc237183f05",
+    "current_sha256": "bef9e2347fdab755cafd953f07246ebb58b4afa23c38d38f05a1d37f2c8d431e"
+  },
+  "result": {
+    "focused_tests": 125,
+    "cells_prepared": 12,
+    "existing_products": 6,
+    "existing_builds": 4,
+    "builds_added": 0,
+    "native_runs": 0,
+    "backend_queries": 0,
+    "gate_closures": []
+  },
+  "preserved": [
+    "SDK and compiled Swift fixtures",
+    "complete original build/product/helper inventories",
+    "native effects, ownership, order and cleanup assertions",
+    "all original attempts, operational deadlines and verdicts"
+  ],
+  "limits": "Preparation only. The current policy changes numeric recorder-cost acceptance, not native semantics. The first baseline still qualifies input; no stopped automated path is reopened.",
+  "next_action": "Use this reviewed scoped plan only after fresh operator readiness and environment checks; assess saved physical baseline semantics independently meanwhile."
+}

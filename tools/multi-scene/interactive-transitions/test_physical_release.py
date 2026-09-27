@@ -144,6 +144,15 @@ def ordered(cancelled=False, delayed=True):
 class ObserverOrdering(unittest.TestCase):
     def check(self,values,cancelled=False):
         return physical_transition.transition(*values,cancelled=cancelled,binding=dict(window='window',scene='scene'))
+    def test_registration_duration_is_diagnostic_without_relaxing_native_order(self):
+        for cancelled in [False,True]:
+            rows,a,b=ordered(cancelled)
+            registered=next(r for r in rows if r['kind']=='transition_registered')
+            registered['payload']['duration_ns']=100_000_001
+            self.assertEqual(self.check((rows,a,b),cancelled)['cancelled'],cancelled)
+            for value in [None,True,-1,1.5]:
+                registered['payload']['duration_ns']=value
+                with self.subTest(value=value),self.assertRaises(ValueError):self.check((rows,a,b),cancelled)
     def test_native_pan_then_still_interactive_resolution_and_completion(self):
         for cancelled in [False,True]:
             for delayed in [False,True]:self.check(ordered(cancelled,delayed),cancelled)

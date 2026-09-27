@@ -825,5 +825,12 @@
     "native_launches": 0,
     "gate_closures": [],
     "remaining": "Fresh operator readiness and first baseline input qualification; stopped automatic-input paths remain stopped. Original40-cell plans and failures remain immutable."
+  },
+  "current_capture_contract": {
+    "state": "REVIEWED_PREPARATION_ONLY",
+    "owner_record": "Results/S2-capture-contract-preparation.json",
+    "scope": "Recorder durations are diagnostic; exact ownership/order and malformed/missing receipt rejection remain strict. Original attempts and legacy runtime plans remain immutable.",
+    "native_runs": 0,
+    "gate_closures": []
   }
 }

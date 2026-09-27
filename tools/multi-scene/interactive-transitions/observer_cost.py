@@ -1,4 +1,4 @@
-"""Partition a copied fixture callback's cost without changing its acceptance limit.
+"""Partition a copied fixture callback's cost for diagnostics only.
 
 This preparation helper never builds or runs an app. Its output needs separate
 source/build admission; host mocks do not qualify UIKit or an interactive capture.
@@ -61,7 +61,7 @@ CLOCKS = ('started_ns', 'topology_started_ns', 'topology_finished_ns',
 
 
 def partition(event, cost):
-    """Explain a callback cost, including a rejected one; never grant acceptance."""
+    """Retain comparison with the historical cap; never decide acceptance."""
     require(type(event) is dict and type(cost) is dict, 'malformed event record')
     require(event.get('kind') == 'human_callback' and cost.get('kind') == 'human_observer_cost',
             'wrong event family')

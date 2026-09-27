@@ -53,23 +53,66 @@ class RuntimeBindingControls(unittest.TestCase):
 
 
 class S2PreparationControls(unittest.TestCase):
+    LEGACY_RULE=b"        limit=100_000_000 if cost['operation']=='snapshot' else 2_000_000\n        require(type(cost.get('duration_ns')) is int and 0<=cost['duration_ns']<=limit,'observer exceeded main-thread budget')"
+    def frozen_oracle(self,source):
+        path=source/'runtime/helpers'/runtime.human_sessions.CONTRACT;path.parent.mkdir(parents=True)
+        path.write_bytes(b'def observe(cost):\n    if cost:\n'+self.LEGACY_RULE+b'\n        require(cost["owner"]=="original", "foreign owner")\n')
+        return path
+    def test_timing_migration_retains_every_other_original_oracle_byte(self):
+        with tempfile.TemporaryDirectory() as temp:
+            source=Path(temp);path=self.frozen_oracle(source);original=path.read_bytes()
+            base={'helpers':{runtime.human_sessions.CONTRACT:runtime.shared.sha(path)}}
+            raw,measurement=runtime.s2_oracle(source,base)
+            self.assertEqual(measurement['policy'],'diagnostic-observer-timing-v1')
+            self.assertEqual(raw,original.replace(self.LEGACY_RULE,
+                b"        require(type(cost.get('duration_ns')) is int and cost['duration_ns']>=0,'invalid observer duration')"))
+            self.assertEqual(path.read_bytes(),original)
+            path.write_bytes(original+b'# unexpected change')
+            with self.assertRaises(Rejected):runtime.s2_oracle(source,base)
+            path.write_bytes(original.replace(b'2_000_000',b'3_000_000'))
+            base['helpers'][runtime.human_sessions.CONTRACT]=runtime.shared.sha(path)
+            with self.assertRaises(Rejected):runtime.s2_oracle(source,base)
+    def test_build_reuse_exception_is_only_for_the_noncompiled_backend_decoder(self):
+        with tempfile.TemporaryDirectory() as temp:
+            repo=Path(temp);decoder=repo/runtime.human_sessions.BACKEND_DECODER
+            decoder.parent.mkdir(parents=True);decoder.write_text('original decoder')
+            builder=repo/'builder.py';builder.write_text('original builder')
+            expected={str(p.relative_to(repo)):runtime.shared.sha(p) for p in [decoder,builder]}
+            stub=SimpleNamespace(require=runtime.require,shared=SimpleNamespace(REPO=repo,sha=runtime.shared.sha))
+            decoder.write_text('reviewed runtime decoder')
+            with self.assertRaises(Rejected):runtime.human_sessions.verify_build_helpers(expected,stub)
+            runtime.human_sessions.verify_build_helpers(expected,stub,allow_backend_decoder_update=True)
+            builder.write_text('changed builder')
+            with self.assertRaises(Rejected):runtime.human_sessions.verify_build_helpers(expected,stub,allow_backend_decoder_update=True)
     def test_explicit_preparation_selects_only_twelve_cells_and_rejects_expansion(self):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp)/'new';source=Path(temp)/'original';(source/'runtime').mkdir(parents=True)
             runtime.shared.save(source/'runtime/runtime-plan.json',{'original':'immutable'})
             contract='tools/multi-scene/automatic-coverage/human_contract.py'
-            frozen=source/'runtime/helpers'/contract;frozen.parent.mkdir(parents=True);frozen.write_text('# frozen native contract')
+            frozen=self.frozen_oracle(source);original=frozen.read_bytes()
+            decoder=runtime.human_sessions.BACKEND_DECODER
             matrix=runtime.selected_matrix(json.loads(runtime.build.OWNER.read_text()))
             products={r['build']+'-'+r['framework']+('-multi' if r['multiple_scenes'] else '-single'):{'identity':runtime.cell_key(r)} for r in matrix}
-            base={'helpers':{contract:runtime.shared.sha(frozen)},'contract':{'fixed':'original'},
+            base={'helpers':{contract:runtime.shared.sha(frozen),decoder:'original decoder'},'contract':{'fixed':'original'},
                   'build_plan_sha256':'original-build','build_receipts':{'original':'hash'},'products':products}
             with patch.object(runtime.human_sessions,'original',return_value=base), \
-                 patch.object(runtime,'helper_members',return_value={contract:'later-live-contract'}), \
-                 patch.object(runtime.human_sessions,'activate_contract'):
+                 patch.object(runtime,'helper_members',return_value={contract:'later-live-contract',decoder:runtime.shared.sha(runtime.shared.REPO/decoder)}), \
+                 patch.object(runtime.human_sessions,'activate_contract_file') as activate:
                 runtime.prepare_s2(SimpleNamespace(root=root,original=source))
                 plan=runtime.verify(root)
                 self.assertEqual(plan['kind'],runtime.S2_KIND);self.assertEqual(len(plan['matrix']),12)
                 self.assertEqual(len(plan['products']),6);self.assertFalse(plan['native_admitted'])
+                self.assertEqual(plan['measurement']['policy'],'diagnostic-observer-timing-v1')
+                self.assertEqual(activate.call_args.args[:2],(root.resolve()/'runtime/helpers'/contract,plan['helpers'][contract]))
+                self.assertEqual(frozen.read_bytes(),original)
+                for key in ['measurement','build_helper_reuse']:
+                    changed=copy.deepcopy(plan);changed[key]={'unreviewed':'policy'}
+                    runtime.shared.save(root/'runtime/runtime-plan.json',changed)
+                    with self.subTest(key=key),self.assertRaises(Rejected):runtime.verify(root)
+                runtime.shared.save(root/'runtime/runtime-plan.json',plan)
+                selected=root/'runtime/helpers'/contract;saved=selected.read_bytes();selected.write_bytes(saved+b'# change')
+                with self.assertRaises(Rejected):runtime.verify(root)
+                selected.write_bytes(saved)
                 plan['matrix'].append(dict(plan['matrix'][0],multiple_scenes=True))
                 runtime.shared.save(root/'runtime/runtime-plan.json',plan)
                 with self.assertRaises(Rejected):runtime.verify(root)

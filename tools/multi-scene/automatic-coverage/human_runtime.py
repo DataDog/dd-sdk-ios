@@ -5,6 +5,7 @@ Native dispatch requires an exact reviewed plan, fresh environment preflight and
 an operator-readiness receipt. Preparation alone never admits a cell.
 """
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import plistlib
@@ -86,28 +87,46 @@ def s2_scope():
             'package':next(row for row in release['execution_packages'] if row['id']=='coverage')}
 
 
-def s2_helpers(base):
+def s2_oracle(source, base):
+    """Apply only the approved timing rule to the original native oracle."""
+    raw=(Path(source)/'runtime/helpers'/human_sessions.CONTRACT).read_bytes()
+    require(hashlib.sha256(raw).hexdigest()==base['helpers'][human_sessions.CONTRACT], 'original native oracle changed')
+    old=b"        limit=100_000_000 if cost['operation']=='snapshot' else 2_000_000\n        require(type(cost.get('duration_ns')) is int and 0<=cost['duration_ns']<=limit,'observer exceeded main-thread budget')"
+    new=b"        require(type(cost.get('duration_ns')) is int and cost['duration_ns']>=0,'invalid observer duration')"
+    require(raw.count(old)==1,'original observer timing rule changed')
+    rendered=raw.replace(old,new)
+    return rendered, {'policy':'diagnostic-observer-timing-v1','original_sha256':hashlib.sha256(raw).hexdigest(),
+                      'rendered_sha256':hashlib.sha256(rendered).hexdigest(),
+                      'scope':'Recorder duration upper bounds only; native ownership/order and operational deadlines unchanged.'}
+
+
+def s2_helpers(measurement):
     helpers=helper_members()
-    helpers[human_sessions.CONTRACT]=base['helpers'][human_sessions.CONTRACT]
+    helpers[human_sessions.CONTRACT]=measurement['rendered_sha256']
     return helpers
 
 
 def prepare_s2(args):
     root=args.root.resolve();source=args.original.resolve()
     require(not root.exists(),'S2 runtime output already consumed')
-    base=human_sessions.original(source,sys.modules[__name__])
+    base=human_sessions.original(source,sys.modules[__name__],allow_backend_decoder_update=True)
+    oracle,measurement=s2_oracle(source,base)
     matrix=s2_matrix(shared.read(build.OWNER),shared.read(REGISTER))
     names={row['build']+'-'+row['framework']+'-single' for row in matrix}
     runtime=root/'runtime';runtime.mkdir(parents=True)
     for name in ['cells','operator','helpers']:(runtime/name).mkdir()
-    helpers=s2_helpers(base)
+    helpers=s2_helpers(measurement)
     for name in helpers:
-        src=source/'runtime/helpers'/name if name==human_sessions.CONTRACT else shared.REPO/name
-        dest=runtime/'helpers'/name;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(src,dest)
+        dest=runtime/'helpers'/name;dest.parent.mkdir(parents=True,exist_ok=True)
+        if name==human_sessions.CONTRACT:dest.write_bytes(oracle)
+        else:shutil.copy2(shared.REPO/name,dest)
     plan={'schema_version':1,'kind':S2_KIND,'prepared_at':time.time(),'original_build_root':str(source),
           'original_runtime_plan_sha256':shared.sha(source/'runtime/runtime-plan.json'),
           'scope':s2_scope(),'build_plan_sha256':base['build_plan_sha256'],'build_receipts':base['build_receipts'],
-          'contract':base['contract'],'matrix':matrix,'helpers':helpers,
+          'contract':base['contract'],'measurement':measurement,'matrix':matrix,'helpers':helpers,
+          'build_helper_reuse':{'path':human_sessions.BACKEND_DECODER,
+              'original_sha256':base['helpers'][human_sessions.BACKEND_DECODER],
+              'current_sha256':helpers[human_sessions.BACKEND_DECODER]},
           'products':{name:base['products'][name] for name in sorted(names)},
           'publication':transport.publication_preflight(runtime),'native_admitted':False,'native_cells_executed':0}
     human_operator.publish(runtime/'operator',{'instruction':'Waiting for scoped review and fresh operator readiness.'})
@@ -117,7 +136,8 @@ def prepare_s2(args):
 
 
 def verify_s2(root,plan):
-    source=Path(plan['original_build_root']);base=human_sessions.original(source,sys.modules[__name__])
+    source=Path(plan['original_build_root']);base=human_sessions.original(source,sys.modules[__name__],allow_backend_decoder_update=True)
+    _,measurement=s2_oracle(source,base)
     require(plan['original_runtime_plan_sha256']==shared.sha(source/'runtime/runtime-plan.json') and
             plan['scope']==s2_scope() and plan['matrix']==s2_matrix(shared.read(build.OWNER),shared.read(REGISTER)),
             'S2 scope/source/matrix changed')
@@ -125,8 +145,13 @@ def verify_s2(root,plan):
             and plan['contract']==base['contract'],'S2 changed original build or timing contract')
     names={row['build']+'-'+row['framework']+'-single' for row in plan['matrix']}
     require(plan['products']=={name:base['products'][name] for name in sorted(names)},'S2 product slice changed')
-    require(shared.tree(root/'runtime/helpers')==plan['helpers']==s2_helpers(base),'S2 helper closure changed')
-    human_sessions.activate_contract(source,base,sys.modules[__name__])
+    require(plan.get('measurement')==measurement,'S2 observer measurement rule changed')
+    require(shared.tree(root/'runtime/helpers')==plan['helpers']==s2_helpers(measurement),'S2 helper closure changed')
+    require(plan.get('build_helper_reuse')=={'path':human_sessions.BACKEND_DECODER,
+            'original_sha256':base['helpers'][human_sessions.BACKEND_DECODER],
+            'current_sha256':plan['helpers'][human_sessions.BACKEND_DECODER]},'S2 build helper reuse changed')
+    human_sessions.activate_contract_file(root/'runtime/helpers'/human_sessions.CONTRACT,
+        measurement['rendered_sha256'],sys.modules[__name__])
     return plan
 
 

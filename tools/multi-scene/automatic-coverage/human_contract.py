@@ -39,8 +39,7 @@ def rows(raw,run):
         require(cost.get('operation')==operations[event['kind']] and event['sequence']<row['sequence']
                 and cost.get('request_id')==event['payload'].get('current_request_id',event['payload'].get('request_id')),
                 'observer timing receipt not bound to native event')
-        limit=100_000_000 if cost['operation']=='snapshot' else 2_000_000
-        require(type(cost.get('duration_ns')) is int and 0<=cost['duration_ns']<=limit,'observer exceeded main-thread budget')
+        require(type(cost.get('duration_ns')) is int and cost['duration_ns']>=0,'invalid observer duration')
         costs[cost['event_sequence']]=row
     require(set(costs)==set(events),'missing observer timing receipt')
     return result

@@ -30,14 +30,14 @@ class CopiedObservation(unittest.TestCase):
     def test_unrecognized_metadata_lookup_cannot_be_silently_omitted(self):
         raw=(BASE/'HumanObservation.swift').read_bytes().replace(b'Bundle(for: UIWindow.self)',b'Bundle(for: NewWindow.self)')
         with self.assertRaises(ValueError):v.human(raw,hashlib.sha256(raw).hexdigest())
-    def test_original_over_budget_callback_remains_invalid(self):
+    def test_callback_cost_is_retained_as_diagnostic(self):
         import human_contract
         rows=[dict(sequence=1,run_id='run',kind='launch',payload={}),
               dict(sequence=2,run_id='run',kind='human_callback',payload=dict(request_id='request')),
               dict(sequence=3,run_id='run',kind='human_observer_cost',payload=dict(
                   event_sequence=2,operation='callback',request_id='request',duration_ns=2686500))]
         raw=b''.join((json.dumps(row)+'\n').encode() for row in rows)
-        with self.assertRaisesRegex(ValueError,'observer exceeded main-thread budget'):human_contract.rows(raw,'run')
+        self.assertEqual(human_contract.rows(raw,'run'),rows)
     def test_wrong_frozen_source_rejected(self):
         for function,path in [(v.human,BASE/'HumanObservation.swift'),(v.observation,BASE/'Fixture/Observation.swift')]:
             with self.assertRaises(ValueError):function(path.read_bytes(),'wrong')

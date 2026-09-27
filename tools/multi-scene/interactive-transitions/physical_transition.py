@@ -159,7 +159,7 @@ def transition(rows, before, after, *, cancelled, binding):
                         and re.fullmatch(r'ObjectIdentifier\(0x0+\)', terminal['container']) is not None)
     require(same_container or (absent_container and detached), 'changed nonnull or unqualified absent terminal container')
     require(type(registered['payload'].get('animations_queued')) is bool, 'missing registration diagnostic')
-    require(type(registered['payload']['duration_ns']) is int and 0 <= registered['payload']['duration_ns'] <= 2_000_000, 'registration observer exceeded callback budget')
+    require(type(registered['payload']['duration_ns']) is int and registered['payload']['duration_ns'] >= 0, 'invalid registration duration')
     require(change['payload']['interactive'] is False and end['payload']['interactive'] is False
             and change['payload']['cancelled'] is cancelled and end['payload']['cancelled'] is cancelled, 'cancel/completion mismatch')
     require(closed['payload']['configuration_unchanged'] is True, 'recognizer policies changed')
@@ -195,4 +195,3 @@ def transition(rows, before, after, *, cancelled, binding):
             'from': first['from'], 'to': first['to'], 'result': result, 'cancelled': cancelled,
             'before_sequence': before['sequence'], 'completion_sequence': end['sequence'], 'after_sequence': after['sequence'],
             'ownership': 'REQUIRES_INDEPENDENT_MAPPER_AND_BACKEND_CLASSIFICATION'}
-

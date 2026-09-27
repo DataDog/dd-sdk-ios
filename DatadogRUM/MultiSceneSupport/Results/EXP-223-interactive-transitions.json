@@ -2946,5 +2946,12 @@
     "contract": "release-gates.json: releases.S2.acceptance_contract/execution_packages",
     "effect": "Prospective S2 execution scope supersedes broader remaining-matrix and whole-payload prerequisites. Original definitions, admissions, attempts and verdicts remain unchanged. No native admission or gate closure.",
     "next": "Assess reusable actual observations against the scoped gate before any new native run; bind amended runner expectations and focused controls first."
+  },
+  "current_capture_contract": {
+    "state": "REVIEWED_PREPARATION_ONLY",
+    "owner_record": "Results/S2-capture-contract-preparation.json",
+    "scope": "Recorder durations are diagnostic; exact ownership/order and malformed/missing receipt rejection remain strict. Original attempts and legacy runtime plans remain immutable.",
+    "native_runs": 0,
+    "gate_closures": []
   }
 }

@@ -127,12 +127,11 @@ a separate bounded supported uninstall may clear only that bundle. Verify absenc
 across a cold boot and unchanged non-task inventory before seeking fresh admission.
 Never substitute missing filesystem paths for the required inventory checks.
 
-Observer cost failures must name the operation and its bound event sequence.
-Snapshots retain the100ms limit; callbacks, appearance and scroll observations
-retain2ms. Inspect the generated source selected by the build manifest: the copied
-observer caches immutable bundle metadata and the writer serializes off-main.
-Partition remaining synchronous work offline before proposing a correction; a
-slow fixture callback is not an SDK regression or permission for a native retry.
+Recorder durations are diagnostic under the September25 measurement rule. Receipts
+still require nonnegative integer durations and exact event/request bindings;
+transition order, native effects and owners remain mandatory. Historical100ms/2ms
+diagnostic counters do not decide acceptance. Preserve original failed verdicts;
+a slow fixture callback is not an SDK regression or permission for a native retry.
 
 `observer_cost.render_human` prepares a copied callback timing overlay with exact
 source binding. It retains full elapsed time, reports disjoint topology/append

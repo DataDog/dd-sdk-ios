@@ -3,7 +3,10 @@
 The reviewed S2 slice uses `human_runtime.py prepare-s2 --original FROZEN_BUILD_ROOT
 --root NEW_OUTPUT_ROOT`:12 Duo cells across UIKit/SwiftUI stack/split, each with
 baseline26.5, baseline27.1 and candidate27.1. It reuses six existing single-scene
-products, preserves the original native oracle and freezes a separate runtime plan.
+products and derives a separate oracle from the frozen original by removing only
+recorder-duration upper bounds. Malformed/missing receipts, native order and ownership
+still reject. The plan binds both oracle hashes and the sole noncompiled backend
+decoder drift allowed for build reuse; unrelated helper drift rejects.
 Preparation admits no input. The legacy40-cell path and original attempts remain
 unchanged. Baseline as well as candidate telemetry anomalies require classification;
 incidental timing/brightness fields are not coverage comparisons.
@@ -129,8 +132,8 @@ never installs or launches an app. Keep rejected and corrected builds separate.
 The copied observer preserves the original UIKit/SwiftUI UI and RUM configuration.
 It adds passive callbacks, existing-pan observations and requested public window/
 accessibility snapshots. Requests and ordered file writes run off-main. Each
-snapshot/callback has a bound measured-cost receipt; missing or excessive cost
-invalidates the comparison. Exact sequence/byte-count/hash checkpoints establish
+snapshot/callback has a bound measured-cost receipt; missing or malformed receipts
+invalidate the comparison, while duration is diagnostic. Exact sequence/byte-count/hash checkpoints establish
 persisted prefixes before readiness is consumed. This is a paced fixture comparison,
 not an uninstrumented production performance measurement.
 

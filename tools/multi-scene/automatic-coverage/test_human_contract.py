@@ -102,10 +102,15 @@ class NativeInputControls(unittest.TestCase):
         topology['scene_inventory'][0]['windows'][0]['root_bundle']='runtime/SwiftUI';h.topology(topology,self.binding)
         topology['framework']='UIKit'
         with self.assertRaises(ValueError):h.topology(topology,self.binding)
-    def test_excess_observer_callback_cost_invalidates_input(self):
+    def test_observer_durations_are_retained_without_timing_acceptance_caps(self):
         rows=self.measured_rows()
-        next(r for r in rows if r['kind']=='human_observer_cost' and r['payload']['operation']=='callback')['payload']['duration_ns']=2_000_001
-        with self.assertRaises(ValueError):self.validate_rows(rows)
+        for row in rows:
+            if row['kind']=='human_observer_cost':row['payload']['duration_ns']=100_000_001
+        self.assertEqual(self.validate_rows(rows),rows)
+    def test_malformed_observer_duration_still_invalidates_capture(self):
+        for value in [None,True,-1,1.5,'2000001']:
+            rows=self.measured_rows();rows[3]['payload']['duration_ns']=value
+            with self.subTest(value=value),self.assertRaises(ValueError):self.validate_rows(rows)
     def test_missing_timing_receipt_rejected(self):
         rows=self.measured_rows();rows.pop(3)
         for i,row in enumerate(rows,1):row['sequence']=i

@@ -65,10 +65,14 @@ class NativeTransitions(unittest.TestCase):
         with self.assertRaises(ValueError):self.check(rows,a,b,True)
         rows,a,b=sample();rows[5]['payload']['cancelled']=True
         with self.assertRaises(ValueError):self.check(rows,a,b)
-    def test_clock_and_observer_cost_rejected(self):
-        for key,value,index in [('uptime_ns',9,4),('uptime_ns',100,5),('duration_ns',2_000_001,3)]:
+    def test_clock_boundary_and_malformed_duration_rejected(self):
+        for key,value,index in [('uptime_ns',9,4),('uptime_ns',100,5),('duration_ns',-1,3),('duration_ns',True,3),('duration_ns',None,3)]:
             rows,a,b=sample();rows[index]['payload'][key]=value
             with self.subTest(key=key,value=value),self.assertRaises(ValueError):self.check(rows,a,b)
+    def test_registration_duration_is_diagnostic_for_both_native_outcomes(self):
+        for cancelled in [False,True]:
+            rows,a,b=sample(cancelled);rows[3]['payload']['duration_ns']=100_000_001
+            self.assertEqual(self.check(rows,a,b,cancelled)['cancelled'],cancelled)
     def test_no_late_callback_or_missing_removal(self):
         rows,a,b=sample();rows.append(dict(sequence=10,kind='transition_observer_rejected',payload={}))
         with self.assertRaises(ValueError):self.check(rows,a,b)

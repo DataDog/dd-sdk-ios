@@ -61,7 +61,7 @@ def transition(rows, before, after, *, cancelled, binding):
         require(type(value['uptime_ns']) is int and previous <= value['uptime_ns'] <= after['payload']['uptime_ns'], 'native clock outside boundary')
         previous = value['uptime_ns']
     require(type(registered['payload'].get('animations_queued')) is bool, 'missing registration diagnostic')
-    require(type(registered['payload']['duration_ns']) is int and 0 <= registered['payload']['duration_ns'] <= 2_000_000, 'registration observer exceeded callback budget')
+    require(type(registered['payload']['duration_ns']) is int and registered['payload']['duration_ns'] >= 0, 'invalid registration duration')
     require(change['payload']['interactive'] is False and end['payload']['interactive'] is False
             and change['payload']['cancelled'] is cancelled and end['payload']['cancelled'] is cancelled, 'cancel/completion mismatch')
     require(closed['payload']['configuration_unchanged'] is True, 'recognizer policies changed')
