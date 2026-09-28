@@ -146,7 +146,7 @@
     "untouched_cells": 7,
     "incomplete_cells": 1
   },
-  "next_action": "Implement and review one opt-in UIKit split foreground/ownership comparison using the saved SDK27.1 profile and SDK26.5 reference. Preserve the Home limitation and require independent cleanup; no baseline repeat. Seven cells are untouched.",
+  "next_action": "Integrate the reviewed opt-in split evaluator into one candidate-only sitting, retaining both saved baselines, the separate Home limitation and independent cleanup. Review integration and affected controls before fresh readiness; seven cells remain untouched.",
   "review_loop": {
     "rounds": 2,
     "final_findings": 0,
@@ -228,5 +228,28 @@
   "checkpoint_review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-02-assessment/checkpoint-review.json",
     "sha256": "3ef438d1418b6fa686471be57ac178ac815932cb5ca7f0c3e94a26fb1fb278e4"
+  },
+  "offline_profile": {
+    "state": "REVIEWED_OFFLINE_ONLY",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-profile-x9mrhy19/definition.json",
+      "sha256": "fd984a41e22973ceea750548db98c995d817200e1212e24bfbc7a392d8db3a75"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-profile-x9mrhy19/controls-r4.json",
+      "sha256": "a811efcef48f82e0318536ddfb5fea6107dc38e0e11bf0f9b9091627c94a347f"
+    },
+    "replay": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-profile-x9mrhy19/saved-replay-r4.json",
+      "sha256": "84c2846b20c36922ab0b277ab428b6d4d142e1323d8ca29eba1a92a5dfe10834"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-profile-x9mrhy19/review.json",
+      "sha256": "2bc2c4fe7073ec69769fea8725d586280e1751463fe314b657c2dca747430286"
+    },
+    "tests": 15,
+    "new_builds": 0,
+    "new_native_runs": 0,
+    "gate_closures": []
   }
 }

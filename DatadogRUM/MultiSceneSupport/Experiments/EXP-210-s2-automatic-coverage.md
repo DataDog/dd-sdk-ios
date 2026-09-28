@@ -149,6 +149,9 @@ classification, not matching event counts. Saved-phase replay revalidates29 nati
 effects and three folds;26Actions reconcile with21View identities, with the same
 four switch omissions. The delayed final action predates Home, while the new
 action-free Sidebar remains active in a background scene. This is scoped offline
-ownership evidence, not full Home or native-baseline qualification. Implement and
-review the opt-in candidate comparison; neither baseline needs repeating. Seven
-cells are untouched, no new build/control run occurred, and no whole gate closes.
+ownership evidence, not full Home or native-baseline qualification. The opt-in evaluator passes15 focused controls and designated review, including
+View inventory, Action target/owner, asynchronous tail and geometry counterexamples.
+It preserves the complete post-Home observations and grants neither lifecycle nor
+cleanup acceptance. Candidate runner integration and its review remain; neither
+baseline needs repeating. Seven cells are untouched, no build/native run was added,
+and no whole gate closes.
