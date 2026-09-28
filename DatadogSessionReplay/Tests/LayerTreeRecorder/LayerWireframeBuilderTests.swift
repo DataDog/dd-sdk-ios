@@ -8,11 +8,13 @@
 import DatadogInternal
 import QuartzCore
 import Testing
+import DatadogSDKTesting
 import UIKit
 
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 @MainActor
 struct LayerWireframeBuilderTests {
     @Test("Build creates shape wireframe for layer appearance")

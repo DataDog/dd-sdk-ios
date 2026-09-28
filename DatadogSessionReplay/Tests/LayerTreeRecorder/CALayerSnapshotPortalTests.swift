@@ -8,9 +8,11 @@
 import Foundation
 import QuartzCore
 import Testing
+import DatadogSDKTesting
 
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 @MainActor
 struct CALayerSnapshotPortalTests {
     @Test("Resolves a position-matched portal and removes the original source subtree")

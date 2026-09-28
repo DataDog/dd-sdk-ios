@@ -6,6 +6,7 @@
 
 #if os(iOS)
 import Testing
+import DatadogSDKTesting
 import UIKit
 
 @_spi(Internal)

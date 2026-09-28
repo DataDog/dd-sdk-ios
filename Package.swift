@@ -1,4 +1,4 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 6.2
 
 import PackageDescription
 import Foundation
@@ -56,6 +56,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/kstenerud/KSCrash.git", exact: "2.5.1"),
         .package(url: "https://github.com/open-telemetry/opentelemetry-swift-core", .upToNextMinor(from: "2.5.0")),
+        .package(url: "https://github.com/DataDog/dd-sdk-swift-testing.git", .upToNextMinor(from: "2.7.11")),
     ],
     targets: [
         .target(
@@ -86,6 +87,7 @@ let package = Package(
             dependencies: [
                 .target(name: "DatadogInternal"),
                 .target(name: "TestUtilities"),
+                .product(name: "DatadogSDKTesting", package: "dd-sdk-swift-testing"),
             ],
             path: "DatadogInternal/Tests"
         ),
@@ -151,6 +153,7 @@ let package = Package(
             dependencies: [
                 .target(name: "DatadogRUM"),
                 .target(name: "TestUtilities"),
+                .product(name: "DatadogSDKTesting", package: "dd-sdk-swift-testing"),
             ],
             path: "DatadogRUM/Tests"
         ),
@@ -203,6 +206,7 @@ let package = Package(
             dependencies: [
                 .target(name: "DatadogSessionReplay"),
                 .target(name: "TestUtilities"),
+                .product(name: "DatadogSDKTesting", package: "dd-sdk-swift-testing"),
             ],
             path: "DatadogSessionReplay/Tests",
             resources: [
