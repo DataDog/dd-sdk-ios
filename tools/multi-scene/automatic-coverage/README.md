@@ -28,6 +28,15 @@ claims stay consumed. Neither reference populates native inheritance; its separa
 `candidate-complete.json` records candidate capture and comparisons with no automatic
 release credit. The standard selector and completed-predecessor rules stay intact.
 
+`human_remaining.py --original NEW_MASTER --excluded REVIEWED_STACK_REFERENCE
+--root NEW_SITTING --series NEW_SERIES --cells 1` prepares only the nine untouched
+UIKit split and SwiftUI stack/split cells. The owner pins one canonical series.
+Later sittings use `--previous COMPLETED_SITTING` and one to three cells; both
+same-family baselines must complete before their candidate starts. The excluded
+stack references retain their distinct evidence classes and never become native
+predecessors. This reuses the six Home-qualified products and existing capture,
+Home and cleanup paths; it does not admit native work.
+
 The frozen native oracle removes only recorder-duration upper bounds. The collector
 preserves Home's committed prefix, then collects inactive View revisions and exact
 Action counts/owners; it does not equate a writer checkpoint with end of SDK work.

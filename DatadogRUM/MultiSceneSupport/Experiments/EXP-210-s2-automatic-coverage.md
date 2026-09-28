@@ -129,3 +129,10 @@ observed in this case. The original SDK27.1 INVALID remains offline-only. Task a
 and workers are stopped and Closed is restored. Nine untouched coverage cells
 remain; no whole gate closes and none of these three source/compiler journeys needs
 a repeat. Exact evidence and review belong to the Home collection record.
+
+The [remaining preparation](../Results/S2-coverage-remaining-preparation.json) now
+binds the exact nine untouched cells and their first one-cell UIKit split sitting.
+Two review rounds and64 offline controls pass. Completed stack evidence retains
+three distinct classes and contributes no inherited native credit. The existing
+six Home-qualified products, native effects, oracle and cleanup are reused; no
+build or native run was added. Fresh operator/device readiness remains required.

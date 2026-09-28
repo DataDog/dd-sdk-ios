@@ -2,7 +2,7 @@
   "schema_version": 2,
   "work_item": "S2 finite input preparation",
   "status": "TWO_REMAINING_INPUT_PACKAGES",
-  "updated_at": "2026-09-28T16:35:00.087516+00:00",
+  "updated_at": "2026-09-28T21:17:53.399972+00:00",
   "owner": "Harness implementer; root owns native lane",
   "scope_owner": "Results/S2-release-gate-review-20260925.json; release-gates.json releases.S2.execution_packages",
   "source_pair": {
@@ -27,12 +27,12 @@
         "S2:H14"
       ],
       "owner": "SDK implementer; human operator for input",
-      "evidence_owner": "Results/S2-capture-contract-preparation.json",
+      "evidence_owner": "Results/S2-coverage-remaining-preparation.json",
       "remaining": "Nine untouched cells: UIKit split and SwiftUI stack/split triplets. UIKit stack candidate/local comparison passes with its accepted SDK26.5 and separately reviewed offline SDK27.1 references; no baseline or candidate repeat. No whole coverage gate closes.",
       "decisive_test": "Actual control/navigation/fold effect and exact view/action owner parity. Split journeys supply H14. Existing naming/control limitations remain explicit.",
       "environment": "Xcode27.1 Duo27.1; six refreshed passive-observer products from three original source/compiler pairs (26.5 and27.1).",
-      "preparation": "Six refreshed products remain qualified. The one-cell candidate continuation is consumed and complete; source-bound result/review belong to the Home collection record.",
-      "blocker": "Prepare a separately reviewed finite continuation for untouched cells, then fresh Duo/Xcode/live-page readiness. Original failed claims and offline-only evidence classes remain unchanged."
+      "preparation": "Reviewed exact nine-cell continuation; 64 offline controls and actual historical source/product/evidence verification pass. First sitting: one UIKit split baseline26.5. Six Home-qualified products reused, no build or native launch.",
+      "blocker": "Fresh Duo/Xcode/live-page readiness and human input. Typed completed stack references remain excluded; no repeated baseline or candidate."
     },
     {
       "id": "transitions",
@@ -113,7 +113,7 @@
   "session_splitting": {
     "allowed": true,
     "safe_boundary": "A complete qualified cell or pair with durable evidence and verified cleanup; never mid-gesture.",
-    "coverage": "Implemented AUTOMATIC_S2_SESSION: one to three untouched complete cells in the fixed triplet order. A verified completed predecessor carries accepted cells; consumed claims/readiness cannot repeat. First sitting contains one cell (33 planned prompts, plus any required Sidebar reveal/display restoration).",
+    "coverage": "Reviewed AUTOMATIC_S2_REMAINING_SESSION selects one to three untouched cells from the nine-cell matrix. Typed UIKit-stack references are excluded, with no inherited native credit. Fresh canonical claims, completed same-family baselines and new page/readiness are required; the first sitting is one UIKit split SDK26.5 baseline.",
     "transitions": "Reviewed physical candidate-only continuation reuses its saved baseline; other continuations require explicit source-bound preparation.",
     "network": "Complete. Four captured cells and separately assessed registered persistence qualify; no repeat is due.",
     "duration": "Budgets are operational maxima, not forecasts of user time."
@@ -138,5 +138,6 @@
   "admission_review": "Results/human-session-review-20260927.json",
   "repair_loop": "Results/human-harness-repair-loop-20260927.json",
   "current_capture_repair": "Results/S2-coverage-counter-observation-20260928.json",
-  "current_home_capture_review": "Results/S2-coverage-home-collection-20260928.json"
+  "current_home_capture_review": "Results/S2-coverage-home-collection-20260928.json",
+  "current_remaining_coverage_preparation": "Results/S2-coverage-remaining-preparation.json"
 }

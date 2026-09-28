@@ -231,6 +231,9 @@ A successor may reference an immutable completed predecessor in a fresh plan. Bi
 its source/products, reviewed helpers, verdicts, quiescence and restoration; never
 copy a result into an unexecuted cell or mutate the consumed plan. Preserve separate
 semantic failure classifications when reusing capture-mechanism qualification.
+A reviewed excluded prefix can retain native, offline and candidate-only evidence
+classes without populating native inheritance. Bind its exact cells and hashes,
+then schedule only untouched cells with canonical claims and completed predecessors.
 
 Read the authoritative register's absolute path/hash and the intended
 `release_requirements.S1|S2|S3`. The experimental-reference status and an older

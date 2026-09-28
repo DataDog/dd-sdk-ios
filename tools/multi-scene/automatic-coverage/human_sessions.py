@@ -22,7 +22,7 @@ PROTECTED = ['Datadog/Datadog.xcodeproj/project.pbxproj', 'xcconfigs/Datadog.loc
 TRANSITION = 'DatadogRUM/MultiSceneSupport/Results/navigation-documentation-consolidation-20260924.json'
 
 
-def is_session(plan):return plan.get('kind') in [KIND,S2_KIND,'S2_CANDIDATE_CONTINUATION']
+def is_session(plan):return plan.get('kind') in [KIND,S2_KIND,'S2_CANDIDATE_CONTINUATION','AUTOMATIC_S2_REMAINING_SESSION']
 
 
 def select_s2(matrix, completed, count, runner):
@@ -203,6 +203,9 @@ def verify(root, plan, runner, seen=()):
     root = Path(root).resolve(); s = runner.shared
     s.require(str(root) not in seen, 'session cycle'); seen = (*seen, str(root))
     if plan.get('kind')==S2_KIND:return verify_s2(root,plan,runner,seen)
+    if plan.get('kind')=='AUTOMATIC_S2_REMAINING_SESSION':
+        import human_remaining
+        return human_remaining.verify(root,plan,runner,seen)
     source = Path(plan['original_build_root']); base = original(source, runner)
     s.require(plan['kind'] == KIND and plan['original_runtime_plan_sha256'] == s.sha(source / 'runtime/runtime-plan.json') and
               plan['workspace_transition'] == reference(s.REPO / TRANSITION, s), 'original runtime/workspace identity changed')

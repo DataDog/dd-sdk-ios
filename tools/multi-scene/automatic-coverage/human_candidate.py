@@ -105,6 +105,13 @@ def verify(root,plan,runner):
     series=sessions.read_reference(plan['series'],s)
     expected={k:plan[k] for k in ['source_runtime','accepted_baseline_reference','offline_comparison_reference','home_qualification','home_provenance','helpers','universe']}
     check(series==dict(expected,kind=KIND,native_attempts_per_cell=1),'series or reference classes changed',runner)
+    verify_home(plan,base,runner)
+    reference_inputs(plan,base,runner)
+    return plan
+
+
+def verify_home(plan,base,runner):
+    s=runner.shared
     home=sessions.read_reference(plan['home_qualification'],s)
     nested_references(plan['home_provenance'],s)
     provenance={k:sessions.read_reference(value,s) for k,value in plan['home_provenance'].items()}
@@ -123,8 +130,6 @@ def verify(root,plan,runner):
         check(s.sha(s.REPO/path)==definition['helpers'].get(path, s.read(Path(base['observer_refresh']['path']))['observer_sha256'] if name=='HumanObservation.swift' else None),
             'qualified Home mechanism changed',runner)
     check(s.read(q/'post-exit.json')['processes_absent'] is True,'Home qualification has active workers',runner)
-    reference_inputs(plan,base,runner)
-    return plan
 
 
 def prepare(args,runner):

@@ -27,6 +27,7 @@ import analyze
 import human_sessions
 import human_fixture_refresh
 import human_candidate
+import human_remaining
 from acceptance_common import require
 import s2_hosting_workflow as shared
 import s2_webview_driver as transport
@@ -232,6 +233,7 @@ def verify(root):
     root=Path(root).resolve();runtime=root/'runtime';plan=shared.read(runtime/'runtime-plan.json')
     if plan.get('kind')==S2_KIND:return verify_s2(root,plan)
     if plan.get('kind')==human_candidate.KIND:return human_candidate.verify(root,plan,sys.modules[__name__])
+    if plan.get('kind')==human_remaining.KIND:return human_remaining.verify(root,plan,sys.modules[__name__])
     if human_sessions.is_session(plan):return human_sessions.verify(root,plan,sys.modules[__name__])
     base=build.verify(root)
     definition=shared.read(build.OWNER)
@@ -300,16 +302,18 @@ def stage(args):
         require(all(current[k]==bound[k] for k in ['udid','state','runtime','deviceTypeIdentifier']),'preflight device changed')
     require(operator.get('kind')=='OPERATOR_READY' and operator.get('runtime_plan_sha256')==shared.sha(runtime/'runtime-plan.json')
             and operator.get('user_message_reference') and 0<=now-operator['at']<=300,'current human readiness required')
-    if plan.get('kind') in [human_sessions.S2_KIND,human_candidate.KIND]:
+    if plan.get('kind') in [human_sessions.S2_KIND,human_candidate.KIND,human_remaining.KIND]:
         require(operator.get('device')==preflight['devices']['duo']['udid'],'operator readiness belongs to another device')
     if plan.get('kind')==human_candidate.KIND:human_candidate.ready(root,plan,operator,sys.modules[__name__])
+    elif plan.get('kind')==human_remaining.KIND:human_remaining.ready(root,plan,operator,sys.modules[__name__])
     elif human_sessions.is_session(plan):human_sessions.ready(root,plan,operator,sys.modules[__name__])
     record={'state':'ADMITTED','stage_id':str(uuid.uuid4()),'runtime_plan_sha256':shared.sha(runtime/'runtime-plan.json'),
         'review_sha256':review,'preflight_path':str(args.preflight.resolve()),'preflight_sha256':shared.sha(args.preflight),
         'operator_path':str(args.operator.resolve()),'operator_sha256':shared.sha(args.operator),'devices':preflight['devices'],
         'issued_at':now,'execution_deadline':now+plan['contract']['stage_execution_seconds']}
     record['cleanup_deadline']=record['execution_deadline']+plan['contract']['cleanup_seconds']
-    if human_sessions.is_session(plan):record['session_claims']=human_sessions.claim(root,plan,record,sys.modules[__name__])
+    if plan.get('kind')==human_remaining.KIND:record['session_claims']=human_remaining.claim(root,plan,record,sys.modules[__name__])
+    elif human_sessions.is_session(plan):record['session_claims']=human_sessions.claim(root,plan,record,sys.modules[__name__])
     shared.save(runtime/'native-admission.json',record,exclusive=True)
     print(json.dumps({'state':'ADMITTED','stage':str(runtime/'native-admission.json'),'execution_deadline':record['execution_deadline']}))
 
@@ -323,6 +327,7 @@ def admit_cell(root,key,plan,review,execution_limit,cleanup_limit):
     attempted=prior_cells(runtime,plan,stage)
     next_cell=next((row for row in plan['matrix'] if cell_key(row) not in attempted),None)
     require(next_cell is not None and cell_key(next_cell)==key,'out-of-order or already consumed cell')
+    if plan.get('kind')==human_remaining.KIND:human_remaining.predecessors(next_cell,set(plan['inherited'])|set(attempted),sys.modules[__name__])
     seconds=plan['contract']['duo_cell_seconds' if next_cell['device']=='duo' else 'regular_cell_seconds']
     native=min(now+seconds,stage['execution_deadline'],execution_limit)
     cleanup=min(native+plan['contract']['cleanup_seconds'],stage['cleanup_deadline'],cleanup_limit)

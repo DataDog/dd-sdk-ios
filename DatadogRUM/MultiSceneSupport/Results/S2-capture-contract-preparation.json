@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "state": "UIKIT_STACK_CANDIDATE_COMPLETE",
-  "updated_at": "2026-09-28T14:14:25.792808+00:00",
+  "updated_at": "2026-09-28T21:17:53.399972+00:00",
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
   "gates": [
@@ -66,7 +66,7 @@
     "Native effects, stable ownership, ordering and cleanup assertions"
   ],
   "limits": "The first SDK26.5 cell is accepted by the matrix scheduler. The completed candidate has a separate typed continuation; SDK27.1 saved parity stays offline-only with original INVALID. The automatic Home-only qualification adds no matrix credit. UIKit stack comparison passes within those evidence classes; nine untouched cells and whole coverage gates remain.",
-  "next_action": "The reviewed candidate-only UIKit stack comparison is complete. Preserve both baseline evidence classes and original failed verdicts. Prepare a bounded continuation for only the nine untouched coverage cells; no repeat of this candidate or its baselines.",
+  "next_action": "Fresh Xcode27.1/Duo27.1 inventory, live operator page and user readiness for the first UIKit split baseline. Continue one to three untouched cells only from a completed predecessor in this canonical series. Physical UIKit candidate remains separate.",
   "admission_review": {
     "owner": "Results/S2-coverage-counter-observation-20260928.json",
     "state": "FIRST_BASELINE_NATIVE_QUALIFIED",
@@ -123,5 +123,6 @@
       "sha256": "23e77d566611fc556c19bcafb7f3146dcad25e5b4334e118cc0150b571a6c7ac"
     }
   },
-  "current_candidate_comparison": "Results/S2-coverage-home-collection-20260928.json"
+  "current_candidate_comparison": "Results/S2-coverage-home-collection-20260928.json",
+  "remaining_preparation": "Results/S2-coverage-remaining-preparation.json"
 }
