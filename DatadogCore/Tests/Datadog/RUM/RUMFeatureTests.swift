@@ -208,8 +208,11 @@ class RUMFeatureTests: XCTestCase {
         let eventMatchers = try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(payload)
         let viewMatchers = eventMatchers.filterRUMEvents(ofType: RUMViewEvent.self)
         XCTAssertEqual(viewMatchers.count, 1, "It should keep only one view event")
-        try viewMatchers[0].model(ofType: RUMViewEvent.self) { event in
-            XCTAssertEqual(event.view.error.count, 3, "It should track 3 errors")
+
+        let viewUpdateMatchers = eventMatchers.filterRUMEvents(ofType: RUMViewUpdateEvent.self)
+        let lastViewUpdateMatcher = try XCTUnwrap(viewUpdateMatchers.last)
+        try lastViewUpdateMatcher.model(ofType: RUMViewUpdateEvent.self) { event in
+            XCTAssertEqual(event.view.error?.count, 3, "It should track 3 errors")
         }
     }
 }
