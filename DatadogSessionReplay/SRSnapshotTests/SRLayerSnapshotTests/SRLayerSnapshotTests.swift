@@ -45,6 +45,14 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
         )
     }
 
+    func testVideoPlayer() async throws {
+        try await takeLayerSnapshotFor(
+            VideoPlayerFixtureView(),
+            waitTime: 1.0,
+            shouldRecord: shouldRecord
+        )
+    }
+
     func testSafari() async throws {
         func containsVisibleHost(_ layer: CALayer) -> Bool {
             guard let layerClass = NSClassFromString("CALayerHost"), !layer.isHidden, layer.opacity > 0 else {
