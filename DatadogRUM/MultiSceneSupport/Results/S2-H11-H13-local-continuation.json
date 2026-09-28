@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "state": "REVIEWED_CANDIDATE_HARNESS_NATIVE_UNADMITTED",
-  "updated_at": "2026-09-28T11:39:47.685805+00:00",
+  "updated_at": "2026-09-28T12:27:38.737700+00:00",
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
   "gates": [
@@ -115,5 +115,11 @@
     "builds": 0,
     "native_runs": 0,
     "existing_controls": "Reused; no new physical suite or capture replay."
+  },
+  "shared_helper_rebind_required": {
+    "changed": "tools/multi-scene/automatic-coverage/human_release.py",
+    "source_sha256": "0ee9bdcd233c85fac857764b85652743991cc6d221db4df2333cbdf56189b1b2",
+    "owner": "Results/S2-coverage-home-collection-20260928.json",
+    "reason": "Reviewed cleanup pending-state correction; old plan remains immutable, source hash now differs. Rebind before admission; no product or baseline rerun."
   }
 }

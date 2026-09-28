@@ -287,11 +287,11 @@ bytes even if parsing fails; ignore foreign receipts and reject symlinks. Cleanu
 must run after attempted boot/install, including preparation failures, and retain
 capture errors alongside the primary failure.
 
-Terminate only matched app/runner/process groups, reap children before checking
-absence, uninstall only task bundles, verify app/data/process absence and restore
-owned simulator boot state. A failed cleanup receipt stays failed; later absence
-proof is separately timestamped. Preserve original errors and stable runtime/device
-identity; only declared usage/size inventory fields may vary.
+Reap matched task processes, remove only task bundles, prove absence and restore
+owned state. Keep failed cleanup and later restoration separate. During cleanup
+reactivation, a same-owner inactive snapshot stays pending within the fixed budget;
+only active topology plus native-input idle permits teardown, never Home credit.
+Preserve errors and stable identity; only declared inventory usage/size may vary.
 
 After reconnecting a physical device, resolve its installed bundle and fresh PID.
 A reused PID alone does not identify the old run. Verify a different process before

@@ -107,3 +107,11 @@ baseline; their comparison remains open. Closed/Open/Closed/Open display
 transitions and Home were captured, the task app was removed and Closed restored.
 The accepted cell is inherited by the next two-cell SDK27.1 baseline/candidate
 sitting. One of12 required cells is complete; no release gate closes yet.
+
+The SDK27.1 baseline then captured every gesture and Home, but its deferred
+background writer receipt did not arrive before collection stopped. The
+[Home collection record](../Results/S2-coverage-home-collection-20260928.json)
+preserves original INVALID/cleanup INVALID, separate restoration PASS and the
+unlaunched candidate. Its329 pre-cleanup rows already contain11 inactive Views
+and25 actions with balanced owners. Source-backed reuse and the host capture/
+cleanup correction are under review; no later activation can repair the old run.

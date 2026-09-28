@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "work_item": "Use durable Home capture without relying on suspended receipt publication",
+  "status": "CLEANUP_REPAIR_REVIEWED_HOME_PUBLICATION_REPAIR_PENDING",
+  "defined_at": "2026-09-28T12:20:42.481892+00:00",
+  "defined_before_implementation": true,
+  "owner": "root",
+  "reviewer": "/root/c06_runtime_plan",
+  "gates": [
+    "S2:C07",
+    "S2:C08",
+    "S2:C09",
+    "S2:C10",
+    "S2:H14"
+  ],
+  "source_head": "52435f1d5698ceeac5d9ec1de74849088ea240fe",
+  "failed_attempt": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-02",
+    "run_id": "60ca6c97-0418-4bb4-b841-14c4509a96a0",
+    "summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-02/runtime/cells/baseline-27.1-duo-UIKit-stack-single/summary.json",
+      "sha256": "e78a13962c00bbdabafbbef6ff8d235bb29d19c0d750c35aa3377835815aebf4"
+    },
+    "cell_result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-02/runtime/cells/baseline-27.1-duo-UIKit-stack-single/cell-result.json",
+      "sha256": "8654188070122122508170cddef5ba49962a3c6b6e8d955303a203a5594b4671"
+    },
+    "scenario": "UNQUALIFIED",
+    "evidence": "INCOMPLETE",
+    "cleanup": "INVALID",
+    "reason": "original collector deadline expired",
+    "cleanup_error": [
+      "cleanup driver: automatic human input: fixture not attached and active"
+    ],
+    "supervisor": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-02/runtime/baseline-27.1-duo-UIKit-stack-single-driver.supervisor.json",
+      "sha256": "cb3930e77c7f5d9338222e6eefbc67239b4ebb5e45b9bca61b0f22025d218290"
+    },
+    "operator_release": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-02/runtime/cells/baseline-27.1-duo-UIKit-stack-single/human-release/operator-released.json",
+      "sha256": "fe42ec160a31b025184c2f69a78f43c6adb5af5e78cc5fa37333644f98ec0310"
+    },
+    "candidate": "NOT_LAUNCHED; sitting claim remains consumed"
+  },
+  "separate_restoration": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/sitting-02-restoration/result.json",
+    "sha256": "6bde1e422b72d816373cae0173bc1609e916d950181ea5f7f05f046a10596e9c"
+  },
+  "pre_cleanup_evidence": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-02/runtime/cells/baseline-27.1-duo-UIKit-stack-single/before-release-events.jsonl",
+    "sha256": "6d351624a232c305c3968a75f3068132654c29423d47836f30812d7429a4a18a",
+    "rows": 329,
+    "home_sequence": 326,
+    "final_action_sequence": 327,
+    "final_inactive_view_sequence": 328,
+    "background_geometry_sequence": 329,
+    "view_count": 11,
+    "action_count": 25,
+    "all_latest_views_inactive": true,
+    "per_view_action_counts_balanced": true,
+    "qualification": "Observed inventory only; scoped source/effect/comparison assessment is pending. No old verdict changed."
+  },
+  "bounded_repair_proposal": {
+    "home_collection": "Validate the actual persisted same-run native Home/background geometry prefix against the pre-Home request, writer prefix and owned scene/window. Persist a distinctly labeled host observation; never synthesize a native writer checkpoint. Require the full local finite View/Action inventory.",
+    "cleanup": "Retain release plus fresh same-process/native-input idle. Treat an observed foreground-inactive reactivation snapshot as pending while retaining ownership and fixed restoration bounds; no assumption that simctl launch means active.",
+    "saved_baseline": "Assess only the immutable329-row pre-cleanup stream and original native inputs. Preserve original INVALID and separate restoration; reject any reliance on post-reactivation events. Review explicit reuse before candidate admission.",
+    "scope": "Host capture, cleanup and finite continuation only if justified by source review. Existing SDK and app products unchanged; no new builds or native retries admitted.",
+    "controls": [
+      "Missing/foreign/stale Home, request, owner or geometry cannot qualify.",
+      "Partial, reordered or post-Home native activity cannot satisfy finite inventory.",
+      "Missing/duplicate/foreign Action or incomplete/inconsistent inactive View inventory rejects.",
+      "Foreground-inactive cleanup is pending; foreign identity, active input or incomplete inventories cannot prove idle.",
+      "Saved original pre-cleanup capture must replay without injected observations; original failed artifacts remain unchanged."
+    ]
+  },
+  "next_action": "Keep the cleanup fix and original restoration checkpoint. Complete the separately named offline parity assessment, then design/review deterministic native Home persistence before future human admission. Rebind affected runtime helpers without rerunning accepted evidence.",
+  "native_runs_added": 0,
+  "gate_closures": [],
+  "updated_at": "2026-09-28T12:27:38.737700+00:00",
+  "cleanup_controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/cleanup-reactivation-controls.json",
+    "sha256": "845b7194de00ba9003eeda2b95612cec80a2f07560d651d56d19837211be3ffc"
+  },
+  "cleanup_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/cleanup-reactivation-review.json",
+    "sha256": "e08d1ce2e8f8a606cfe09ab30af4dc396e9ff482ca757f731154cd752084f72b"
+  },
+  "home_review": {
+    "state": "OFFLINE_PARITY_ONLY",
+    "reviewer": "/root/c06_runtime_plan",
+    "decision": "The329-row prefix is suitable for separately named offline parity. Preserve missing original writer receipt and every restoration row separately; do not relabel the original INVALID. Future native qualification still requires a deterministic writer boundary.",
+    "source_cause": "human_variant.STORE queues a checkpoint1.2s after native_background; suspension can postpone it until cleanup reactivation. The SDK has already emitted its complete local inventory."
+  }
+}

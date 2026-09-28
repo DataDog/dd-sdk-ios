@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "state": "FIRST_BASELINE_NATIVE_QUALIFIED_COMPARISONS_PENDING",
-  "updated_at": "2026-09-28T11:59:30.329409+00:00",
+  "state": "FIRST_BASELINE_QUALIFIED_NEXT_BASELINE_HOME_RECEIPT_BLOCKED",
+  "updated_at": "2026-09-28T12:20:42.481892+00:00",
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
   "gates": [
@@ -56,7 +56,7 @@
     "new_observer_builds": 3,
     "prior_native_attempts": 1,
     "qualified_native_cells": 1,
-    "replacement_native_runs": 1,
+    "replacement_native_runs": 2,
     "backend_queries": 0,
     "gate_closures": []
   },
@@ -66,7 +66,7 @@
     "Native effects, stable ownership, ordering and cleanup assertions"
   ],
   "limits": "Counter correction qualified in one genuine SDK26.5 UIKit baseline on Duo27.1. Local mapper capture and cleanup PASS; four switch phases have no automatic actions in this baseline. Rebuild and source parity are untested. Original failed attempt remains invalid and consumed.",
-  "next_action": "Fresh page-visible readiness for the reviewed two-cell SDK27.1 UIKit stack baseline/candidate sitting. Reuse the accepted SDK26.5 baseline. Eleven of twelve cells remain.",
+  "next_action": "Follow Results/S2-coverage-home-collection-20260928.json. No repeat of captured gestures; review the saved original prefix, repair the receipt dependency and cleanup reactivation race before candidate admission.",
   "admission_review": {
     "owner": "Results/S2-coverage-counter-observation-20260928.json",
     "state": "FIRST_BASELINE_NATIVE_QUALIFIED",
@@ -100,7 +100,7 @@
     }
   ],
   "native_settling_limit": "Ordinary input retains the existing 1.2-second settled snapshot after an observed native callback/scroll end/destination appearance. A later native UI effect can fail qualification conservatively; no SDK regression or timing failure follows. Review found no reproduced pending-native defect. The first required baseline qualifies this remaining mechanism limit.",
-  "current_attempt": "Results/S2-coverage-counter-observation-20260928.json",
+  "current_attempt": "Results/S2-coverage-home-collection-20260928.json",
   "native_qualification": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/sitting-01-assessment.json",
     "sha256": "f43232785068aa4aab59aee59be56e166ffd34e702987ab64f402bc865f045c1"

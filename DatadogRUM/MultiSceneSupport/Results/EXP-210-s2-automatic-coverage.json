@@ -2,7 +2,7 @@
   "schema_version": 1,
   "experiment": "EXP-210",
   "title": "Qualify the frozen E01 S2 automatic UIKit and SwiftUI coverage",
-  "status": "PARTIAL: ONE OF TWELVE S2 CELLS QUALIFIED; COMPARISONS PENDING",
+  "status": "PARTIAL: ONE QUALIFIED CELL; SECOND BASELINE HOME HARNESS FAILURE UNDER REVIEW",
   "defined_at": "2026-09-20T16:41:07.286869+00:00",
   "defined_before_implementation": true,
   "owner": "root",
@@ -511,7 +511,7 @@
     "sha256": "1e9f9c0b02d0ed0ef1331f53bddfdedef3fdd47d50f397fd6f5e179f6047fc10",
     "acceptance": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/host-review-acceptance.json"
   },
-  "updated_at": "2026-09-28T11:59:30.329409+00:00",
+  "updated_at": "2026-09-28T12:20:42.481892+00:00",
   "input_diagnostic_definition": {
     "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/D1-input-diagnostic-definition.json",
     "sha256": "e5c9a6f5743a120680de3e692837cbfff400fdfb2277dac8bed61b53dc8156a0",
@@ -795,7 +795,7 @@
       "gate_closures": []
     },
     "s2_session_continuation": {
-      "state": "ONE_QUALIFIED_CELL_NEXT_TWO_CELL_SITTING_REVIEWED",
+      "state": "STOPPED_HOME_RECEIPT_ORIGINAL_CLEANUP_INVALID_SEPARATE_RESTORATION_PASS",
       "series": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-series/series.json",
         "sha256": "10fffcee74b48e163876c5b7e6d253b698547b6795b52fb66a1d4a1d9cde6d87"
@@ -824,16 +824,25 @@
       "cells": 2,
       "remaining_universe": 11,
       "max_cells_per_sitting": 3,
-      "native_admitted": false,
+      "native_admitted": true,
       "repair_owner": "Results/S2-coverage-counter-observation-20260928.json",
       "gate_closures": [],
-      "native_cells_executed": 0,
+      "native_cells_executed": 1,
       "native_cells_qualified": 1,
       "session_complete": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-01/runtime/session-complete.json",
         "sha256": "bc68be28c583a37de6fc2a2437ce88483e3220d4ad97809c22937fe7655a4364"
       },
-      "inherited_cells": 1
+      "inherited_cells": 1,
+      "failed_cell": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-02/runtime/cells/baseline-27.1-duo-UIKit-stack-single/summary.json",
+        "sha256": "e78a13962c00bbdabafbbef6ff8d235bb29d19c0d750c35aa3377835815aebf4"
+      },
+      "separate_restoration": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/sitting-02-restoration/result.json",
+        "sha256": "6bde1e422b72d816373cae0173bc1609e916d950181ea5f7f05f046a10596e9c"
+      },
+      "candidate": "NOT_LAUNCHED"
     }
   },
   "s2_acceptance_review": {
@@ -960,5 +969,6 @@
         "sha256": "bc68be28c583a37de6fc2a2437ce88483e3220d4ad97809c22937fe7655a4364"
       }
     }
-  ]
+  ],
+  "current_home_capture_review": "Results/S2-coverage-home-collection-20260928.json"
 }

@@ -42,6 +42,27 @@ class NativeIdle(unittest.TestCase):
         with self.assertRaises((ValueError,Rejected)):self.check()
         self.snapshot['payload']['request_sha256']=hashlib.sha256(self.request_bytes).hexdigest();self.state['window']='foreign'
         with self.assertRaises((ValueError,Rejected)):self.check()
+    def test_reactivation_is_pending_until_the_same_owner_becomes_active(self):
+        topology=self.snapshot['payload']['topology']
+        topology['app_state']=1;topology['scene_inventory'][0]['activation']=1
+        self.assertIsNone(self.check())
+        topology['app_state']=0;topology['scene_inventory'][0]['activation']=0
+        self.assertEqual(self.check()['state'],'NATIVE_INPUT_IDLE')
+    def test_inactive_state_never_hides_a_foreign_owner_or_incomplete_inventory(self):
+        original=copy.deepcopy(self.snapshot['payload']['topology'])
+        for mode in ['binding','scene','window','inventory']:
+            topology=copy.deepcopy(original);topology['app_state']=1;topology['scene_inventory'][0]['activation']=1
+            self.snapshot['payload']['topology']=topology
+            if mode=='binding':topology['bound_root']='foreign'
+            if mode=='scene':topology['scene_inventory'][0]['id']='foreign'
+            if mode=='window':topology['scene_inventory'][0]['windows'][0]['root']='foreign'
+            if mode=='inventory':self.state['valid']=False
+            with self.subTest(mode=mode),self.assertRaises((ValueError,Rejected)):self.check()
+            self.state['valid']=True
+    def test_background_snapshot_cannot_be_used_as_foreground_cleanup_idle(self):
+        topology=self.snapshot['payload']['topology']
+        topology['app_state']=2;topology['scene_inventory'][0]['activation']=2
+        with self.assertRaises((ValueError,Rejected)):self.check()
     def test_absent_native_inventory_cannot_be_replaced_by_topology(self):
         self.state['valid']=False
         with self.assertRaises((ValueError,Rejected)):self.check()

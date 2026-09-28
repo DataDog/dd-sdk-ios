@@ -35,8 +35,25 @@ def idle(raw, receipt, request_bytes, run, binding, original_prefix):
     value=snapshots[0]['payload']
     require(request['run_id']==run and request['phase']==value['phase']=='cleanup.idle'
         and value['request_sha256']==hashlib.sha256(request_bytes).hexdigest(),'stale cleanup snapshot')
-    oracle.topology(value['topology'],binding)
-    state=value['input_state']
+    topology=value['topology'];state=value['input_state']
+    if type(topology['app_state']) is int and topology['app_state']==1:
+        # Launch can return before foreground activation. This observation can
+        # only keep cleanup pending; it never authorizes task teardown.
+        require(topology['window_alive'] is True and topology['root_alive'] is True
+            and topology['bound_root_unchanged'] is True
+            and all(topology['bound_'+k]==binding[k] for k in ['window','root','scene']),
+            'reactivating fixture owner changed')
+        scene=oracle.one(topology['scene_inventory'],'reactivating scene')
+        require(scene['id']==binding['scene'] and scene['activation']==1,'reactivating scene changed')
+        windows=scene['windows']
+        require(windows and len({w['id'] for w in windows})==len(windows),'incomplete reactivating windows')
+        owned=oracle.one([w for w in windows if w.get('owned') is True],'reactivating content window')
+        require(owned['id']==binding['window'] and owned['root']==binding['root']
+            and owned['root_attached'] is True and not any(w['key'] for w in windows if w is not owned),
+            'reactivating window owner changed')
+        input_idle(state,binding)
+        return None
+    oracle.topology(topology,binding)
     if not input_idle(state,binding):return None
     return dict(state='NATIVE_INPUT_IDLE',run_id=run,request_id=request['request_id'],sequence=snapshots[0]['sequence'],
                 checkpoint_sha256=hashlib.sha256(json.dumps(receipt,sort_keys=True).encode()).hexdigest())
