@@ -48,6 +48,12 @@ def initial_ready(rows,framework):
 
 
 class Collector:
+    home_completion_scope=None
+    home_collection_state='LOCAL_HOME_INVENTORY_COLLECTED'
+
+    def terminal_rows(self,raw,*,prefix):
+        return local_event_collection.terminal_rows(raw,run_id=self.run,prefix=prefix)
+
     def __init__(self, *, documents, output, run, device, pid, framework, deadline, budget, local_process=True):
         self.documents=Path(documents);self.output=Path(output);self.run=run
         self.device=device;self.pid=pid;self.framework=framework;self.deadline=deadline;self.budget=budget
@@ -233,7 +239,7 @@ class Collector:
         collection_deadline=min(self.deadline,time.time()+self.budget.get('event_collection_seconds',120))
         def complete():
             observed=(self.documents/'events.jsonl').read_bytes()
-            result=local_event_collection.terminal_rows(observed,run_id=self.run,prefix=prefix)
+            result=self.terminal_rows(observed,prefix=prefix)
             if result is not None:
                 (folder/'background-collected-events.jsonl').write_bytes(observed)
             return result
@@ -241,11 +247,12 @@ class Collector:
         proof_path=self.documents/('home-input-idle-'+before['payload']['request_id']+'.json')
         self.wait(lambda:True if proof_path.exists() else None,collection_deadline)
         shared.save(folder/'home-idle-proof.json',human_release.home_idle(self),exclusive=True)
-        self.evidence=human_home.finish(self,folder,self.evidence,collection_deadline)
-        shared.save(folder/'collection.json',{'state':'LOCAL_HOME_INVENTORY_COLLECTED',
+        self.evidence=human_home.finish(self,folder,self.evidence,collection_deadline,
+            terminal=self.terminal_rows,completion_scope=self.home_completion_scope)
+        shared.save(folder/'collection.json',{'state':self.home_collection_state,
             'prefix_sha256':hashlib.sha256(prefix).hexdigest(),'sequence':self.evidence[-1]['sequence'],
             'deadline':collection_deadline,'finished_at':time.time()},exclusive=True)
         self.receipts.append({'run_id':self.run,'phase':'background.effect','timestamp':event['timestamp'],'payload':{'native_sequence':event['sequence']}})
-        self.receipts.append({'run_id':self.run,'phase':'complete','timestamp':event['timestamp'],'payload':{'proof':'LOCAL_HOME_INVENTORY_COLLECTED'}})
+        self.receipts.append({'run_id':self.run,'phase':'complete','timestamp':event['timestamp'],'payload':{'proof':self.home_collection_state}})
         shared.save(self.output/'receipts.json',self.receipts,exclusive=True)
         return self.evidence

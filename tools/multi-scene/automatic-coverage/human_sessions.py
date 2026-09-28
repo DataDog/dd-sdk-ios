@@ -22,7 +22,7 @@ PROTECTED = ['Datadog/Datadog.xcodeproj/project.pbxproj', 'xcconfigs/Datadog.loc
 TRANSITION = 'DatadogRUM/MultiSceneSupport/Results/navigation-documentation-consolidation-20260924.json'
 
 
-def is_session(plan):return plan.get('kind') in [KIND,S2_KIND,'S2_CANDIDATE_CONTINUATION','AUTOMATIC_S2_REMAINING_SESSION']
+def is_session(plan):return plan.get('kind') in [KIND,S2_KIND,'S2_CANDIDATE_CONTINUATION','AUTOMATIC_S2_REMAINING_SESSION','S2_SPLIT_CANDIDATE']
 
 
 def select_s2(matrix, completed, count, runner):

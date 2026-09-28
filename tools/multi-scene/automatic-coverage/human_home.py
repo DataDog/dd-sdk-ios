@@ -56,12 +56,14 @@ def await_ready(collector,folder,identifier,deadline):
     collector.wait(published,deadline)
 
 
-def finish(collector,folder,rows,deadline):
+def finish(collector,folder,rows,deadline,*,terminal=None,completion_scope=None):
+    if terminal is None:
+        terminal=lambda raw,*,prefix:local_event_collection.terminal_rows(raw,run_id=collector.run,prefix=prefix)
     before=(folder/'request.json').read_bytes();request=json.loads(before)
     first=(folder/'background-checkpoint.json').read_bytes()
     prefix=(folder/'background-events.jsonl').read_bytes()
     initial=(folder/'background-collected-events.jsonl').read_bytes()
-    require(local_event_collection.terminal_rows(initial,run_id=collector.run,prefix=prefix)==rows,
+    require(terminal(initial,prefix=prefix)==rows,
         'Home finish requires the complete original terminal inventory')
     idle=(folder/'home-input-idle.json').read_bytes()
     ack={'schema_version':1,'run_id':collector.run,'request_id':str(uuid.uuid4()),'phase':'background.finish',
@@ -83,12 +85,13 @@ def finish(collector,folder,rows,deadline):
     final_rows=oracle.checkpoint(raw,final_receipt,collector.run,'home-finish-'+ack['request_id'])
     require(raw.startswith(initial),'Home finalization changed the first terminal inventory')
     require(len(final_rows)>=len(rows),'Home final checkpoint predates the first terminal inventory')
-    result=local_event_collection.terminal_rows(raw,run_id=collector.run,prefix=prefix)
+    result=terminal(raw,prefix=prefix)
     require(result is not None,'Home inventory became incomplete after the first terminal check')
     collector.live(deadline)
     (folder/'home-task.json').write_bytes(end);(folder/'home-final-checkpoint.json').write_bytes(final)
     (folder/'home-final-events.jsonl').write_bytes(raw)
     shared.save(folder/'home-completion.json',dict(state='FINAL_INVENTORY_REVALIDATED',run_id=collector.run,
         task_state='END_REQUESTED',before_request_sha256=digest(before),finish_request_sha256=digest(ack_bytes),
-        initial_inventory_sha256=digest(initial),final_inventory_sha256=digest(raw),final_sequence=result[-1]['sequence']),exclusive=True)
+        initial_inventory_sha256=digest(initial),final_inventory_sha256=digest(raw),final_sequence=result[-1]['sequence'],
+        **(completion_scope or {})),exclusive=True)
     return result

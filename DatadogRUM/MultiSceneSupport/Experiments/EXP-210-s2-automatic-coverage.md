@@ -152,6 +152,9 @@ action-free Sidebar remains active in a background scene. This is scoped offline
 ownership evidence, not full Home or native-baseline qualification. The opt-in evaluator passes15 focused controls and designated review, including
 View inventory, Action target/owner, asynchronous tail and geometry counterexamples.
 It preserves the complete post-Home observations and grants neither lifecycle nor
-cleanup acceptance. Candidate runner integration and its review remain; neither
-baseline needs repeating. Seven cells are untouched, no build/native run was added,
-and no whole gate closes.
+cleanup acceptance. The candidate-only runner is now frozen and reviewed:70 affected controls,84
+session/runtime controls and9 final dispatch/tail controls pass. It seals the
+compared prefix before requiring release and fresh native idle; cleanup rows stay
+separate. Strict default Home checks are unchanged. Fresh operator/environment
+readiness is required; neither baseline needs repeating. Seven cells are untouched,
+no build/native run was added, and no whole gate closes.

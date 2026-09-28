@@ -150,6 +150,9 @@ across compilers. Retain unknown/foreign/duplicate-owner checks and classify
 inherited single-current-view limitations. General tab/split capture redesign is
 out of scope. Assess a complete foreground prefix separately from an incomplete
 Home boundary; never discard later rows or promote restoration to scenario proof.
+An opt-in comparison may seal its foreground prefix before cleanup, preserving the
+complete later stream separately. It must still prove release and fresh native
+idle; a comparison cutoff cannot authorize removal or qualify Home lifecycle.
 
 Observe callbacks/value changes independently of RUM. End pending actions with a
 qualified real background boundary, not termination. Freeze pre-pose geometry and

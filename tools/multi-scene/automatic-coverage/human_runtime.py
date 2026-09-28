@@ -28,6 +28,7 @@ import human_sessions
 import human_fixture_refresh
 import human_candidate
 import human_remaining
+import human_split
 from acceptance_common import require
 import s2_hosting_workflow as shared
 import s2_webview_driver as transport
@@ -232,6 +233,7 @@ def prepare(args):
 def verify(root):
     root=Path(root).resolve();runtime=root/'runtime';plan=shared.read(runtime/'runtime-plan.json')
     if plan.get('kind')==S2_KIND:return verify_s2(root,plan)
+    if plan.get('kind')==human_split.KIND:return human_split.verify(root,plan,sys.modules[__name__])
     if plan.get('kind')==human_candidate.KIND:return human_candidate.verify(root,plan,sys.modules[__name__])
     if plan.get('kind')==human_remaining.KIND:return human_remaining.verify(root,plan,sys.modules[__name__])
     if human_sessions.is_session(plan):return human_sessions.verify(root,plan,sys.modules[__name__])
@@ -302,9 +304,10 @@ def stage(args):
         require(all(current[k]==bound[k] for k in ['udid','state','runtime','deviceTypeIdentifier']),'preflight device changed')
     require(operator.get('kind')=='OPERATOR_READY' and operator.get('runtime_plan_sha256')==shared.sha(runtime/'runtime-plan.json')
             and operator.get('user_message_reference') and 0<=now-operator['at']<=300,'current human readiness required')
-    if plan.get('kind') in [human_sessions.S2_KIND,human_candidate.KIND,human_remaining.KIND]:
+    if plan.get('kind') in [human_sessions.S2_KIND,human_candidate.KIND,human_remaining.KIND,human_split.KIND]:
         require(operator.get('device')==preflight['devices']['duo']['udid'],'operator readiness belongs to another device')
-    if plan.get('kind')==human_candidate.KIND:human_candidate.ready(root,plan,operator,sys.modules[__name__])
+    if plan.get('kind')==human_split.KIND:human_split.ready(root,plan,operator,sys.modules[__name__])
+    elif plan.get('kind')==human_candidate.KIND:human_candidate.ready(root,plan,operator,sys.modules[__name__])
     elif plan.get('kind')==human_remaining.KIND:human_remaining.ready(root,plan,operator,sys.modules[__name__])
     elif human_sessions.is_session(plan):human_sessions.ready(root,plan,operator,sys.modules[__name__])
     record={'state':'ADMITTED','stage_id':str(uuid.uuid4()),'runtime_plan_sha256':shared.sha(runtime/'runtime-plan.json'),
@@ -369,8 +372,10 @@ def execute_cell(args):
             out,'launch',deadline=min(deadline,time.time()+60))
         match=re.fullmatch(re.escape(bundle)+r': ([1-9][0-9]*)\s*',(out/'launch.log').read_text());require(match is not None,'missing exact launch PID');pid=int(match[1])
         require(Path(shared.process(pid)).resolve()==(installed/product['product']['executable']).resolve(),'wrong native executable')
-        collector=capture.Collector(documents=documents,output=out/'input',run=identity['run_id'],device=device_id,pid=pid,
+        collector_args=dict(documents=documents,output=out/'input',run=identity['run_id'],device=device_id,pid=pid,
             framework=selected['framework'],deadline=deadline,budget=plan['contract'])
+        collector=(human_split.collector(plan,identity,sys.modules[__name__],**collector_args)
+                   if plan.get('kind')==human_split.KIND else capture.Collector(**collector_args))
         for step in journey.steps(selected['layout'],kind=='duo'):
             if step['kind']=='home':collector.home()
             elif step['kind']=='fold':collector.fold(step['phase'],selected['build'].split('-')[1])
@@ -391,42 +396,55 @@ def execute_cell(args):
         require((documents/'events.jsonl').read_bytes().startswith(terminal_bytes),'writer rewrote the collected Home prefix')
         (out/'events.jsonl').write_bytes(terminal_bytes);shared.save(out/'receipts.json',collector.receipts,exclusive=True)
         summary['scenario']='PASS'
-        run={'run_id':identity['run_id'],**selected};local=analyze.summarize(run,rows,collector.receipts)
+        run={'run_id':identity['run_id'],**selected}
+        local=collector.local_result(run) if plan.get('kind')==human_split.KIND else analyze.summarize(run,rows,collector.receipts)
+        if plan.get('kind')==human_split.KIND:
+            summary.update(scenario_scope='FOREGROUND_VIEW_ACTION_OWNERSHIP',home_lifecycle_qualified=False)
         require(not any(local[k] for k in ['duplicate_action_ids','unknown_action_owners','unassigned_actions','errors']),
                 'local telemetry has duplicate, foreign, unassigned or error rows requiring attribution')
         shared.save(out/'local-result.json',local,exclusive=True);summary['evidence']='PASS'
         verify(root);require(time.time()<deadline,'acceptance completed after original deadline');summary['state']='PASS'
     except Exception as error:summary.update(state='INVALID',reason=str(error))
     finally:
+        cutoff_errors=[]
         cleanup_started=time.time();fixed=min(cleanup_deadline,cleanup_started+plan['contract']['cleanup_seconds'])
         print(json.dumps({'cell_phase':{'phase':'cleanup','at':cleanup_started,'execution_deadline':deadline,'cleanup_deadline':fixed}}),flush=True)
         try:
             workers=human_processes.quiesce(os.getpgrp(),fixed,exempt=[os.getpid()])
             shared.save(out/'native-workers-before-cleanup.json',workers,exclusive=True)
             require(workers['state']=='PASS','native workers not quiescent before cleanup')
+            if collector is not None and plan.get('kind')==human_split.KIND and terminal_bytes is not None:
+                try:terminal_bytes=collector.seal(out,{'run_id':identity['run_id'],**selected})
+                except Exception as error:cutoff_errors.append('terminal collection cutoff: '+str(error))
             if collector is not None and collector.prompt_issued:
                 home_idle=None
-                if summary['state']=='PASS':
+                if summary['state']=='PASS' and plan.get('kind')!=human_split.KIND:
                     try:home_idle=capture.human_release.home_idle(collector)
                     except Exception as error:
                         shared.save(out/'home-idle-unavailable.json',{'reason':str(error)},exclusive=True)
-                if home_idle is None:capture.human_release.guard(collector,out,identity,fixed)
+                if home_idle is None:
+                    if plan.get('kind')==human_split.KIND and summary['state']=='PASS':
+                        print(json.dumps({'human_status':{'instruction':'The comparison is captured. Confirm release at the next prompt so fresh idle can authorize cleanup.'}}),flush=True)
+                    capture.human_release.guard(collector,out,identity,fixed)
                 else:shared.save(out/'cleanup-home-idle.json',home_idle,exclusive=True)
             errors=cleanup(root,out,documents,identity,device_id,device,original,initial,pid,summary['scenario'],fixed,kind)
         except Exception as error:errors=['cleanup driver: '+str(error)]
-        evidence_errors=[e for e in errors if e.startswith(('terminal recapture:','preserve native evidence:'))]
+        evidence_errors=cutoff_errors+[e for e in errors if e.startswith(('terminal recapture:','preserve native evidence:'))]
         cleanup_errors=[e for e in errors if e not in evidence_errors]
         if terminal_bytes is not None:
             preserved=out/'native-preserved/events.jsonl'
             try:
                 raw=preserved.read_bytes();require(raw.startswith(terminal_bytes),'terminal prefix differs from preserved native stream')
-                final_rows=capture.local_event_collection.terminal_rows(raw,run_id=identity['run_id'],
-                    prefix=(out/'input/background.before/background-events.jsonl').read_bytes())
-                require(final_rows is not None,'final local View/Action inventory incomplete')
-                local=analyze.summarize({'run_id':identity['run_id'],**selected},final_rows,collector.receipts)
-                require(not any(local[k] for k in ['duplicate_action_ids','unknown_action_owners','unassigned_actions','errors']),
-                        'final local telemetry requires attribution')
-                (out/'events.jsonl').write_bytes(raw);shared.save(out/'local-result.json',local)
+                if plan.get('kind')==human_split.KIND:
+                    collector.preserved(out,raw)
+                else:
+                    final_rows=capture.local_event_collection.terminal_rows(raw,run_id=identity['run_id'],
+                        prefix=(out/'input/background.before/background-events.jsonl').read_bytes())
+                    require(final_rows is not None,'final local View/Action inventory incomplete')
+                    local=analyze.summarize({'run_id':identity['run_id'],**selected},final_rows,collector.receipts)
+                    require(not any(local[k] for k in ['duplicate_action_ids','unknown_action_owners','unassigned_actions','errors']),
+                            'final local telemetry requires attribution')
+                    (out/'events.jsonl').write_bytes(raw);shared.save(out/'local-result.json',local)
             except Exception as error:evidence_errors.append('terminal collection: '+str(error))
         if evidence_errors:summary.update(state='INVALID',evidence='INCOMPLETE',evidence_errors=evidence_errors)
         if time.time()>fixed:cleanup_errors.append('cleanup completed after original deadline')
@@ -465,7 +483,9 @@ def prior_cells(runtime,plan,stage):
 
 
 def compare_matrix(runtime,plan,stage):
-    if plan.get('kind')==human_candidate.KIND:
+    if plan.get('kind')==human_split.KIND:
+        result=human_split.comparison(runtime,plan,stage,sys.modules[__name__])
+    elif plan.get('kind')==human_candidate.KIND:
         result=human_candidate.comparison(runtime,plan,stage,sys.modules[__name__])
     elif human_sessions.is_session(plan):
         result=human_sessions.compare(runtime,plan,stage,sys.modules[__name__])
@@ -553,7 +573,8 @@ def run_matrix(args):
             human_operator.publish(runtime/'operator',{'instruction':'The source pair differs. Stop input while the captured evidence is classified.'},context=context)
             return 1
     if human_sessions.is_session(plan):
-        if plan.get('kind')==human_candidate.KIND:human_candidate.finish(root,plan,stage,sys.modules[__name__])
+        if plan.get('kind')==human_split.KIND:human_split.finish(root,plan,stage,sys.modules[__name__])
+        elif plan.get('kind')==human_candidate.KIND:human_candidate.finish(root,plan,stage,sys.modules[__name__])
         else:human_sessions.finish(root,plan,stage,sys.modules[__name__])
         instruction='This sitting is captured. Stop input; any later sitting needs fresh readiness. Full matrix and release review remain.'
     else:instruction='The automatic tracking matrix is captured. Input is complete; comparison and release review remain.'
