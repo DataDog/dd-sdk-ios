@@ -2,7 +2,7 @@
   "schema_version": 1,
   "experiment": "EXP-210",
   "title": "Qualify the frozen E01 S2 automatic UIKit and SwiftUI coverage",
-  "status": "PARTIAL: ONE NATIVE CELL; OFFLINE BASELINE REFERENCE; CANDIDATE-ONLY CONTINUATION REVIEWED",
+  "status": "PARTIAL: UIKIT STACK LOCAL COMPARISON PASS; NINE COVERAGE CELLS REMAIN",
   "defined_at": "2026-09-20T16:41:07.286869+00:00",
   "defined_before_implementation": true,
   "owner": "root",
@@ -511,7 +511,7 @@
     "sha256": "1e9f9c0b02d0ed0ef1331f53bddfdedef3fdd47d50f397fd6f5e179f6047fc10",
     "acceptance": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/host-review-acceptance.json"
   },
-  "updated_at": "2026-09-28T13:28:57.342907+00:00",
+  "updated_at": "2026-09-28T14:14:25.792808+00:00",
   "input_diagnostic_definition": {
     "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/D1-input-diagnostic-definition.json",
     "sha256": "e5c9a6f5743a120680de3e692837cbfff400fdfb2277dac8bed61b53dc8156a0",
@@ -970,5 +970,18 @@
       }
     }
   ],
-  "current_home_capture_review": "Results/S2-coverage-home-collection-20260928.json"
+  "current_home_capture_review": "Results/S2-coverage-home-collection-20260928.json",
+  "current_candidate_comparison": {
+    "owner": "Results/S2-coverage-home-collection-20260928.json",
+    "assessment": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/candidate-assessment.json",
+      "sha256": "7e5ec20876333246cbcaf6371f72fc060edcfc79e13545c6a8f3f8a05af5e443"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/candidate-outcome-review.json",
+      "sha256": "1ebd3a5471e9161e85a56313336999a2a39cc25c2fc9b24001436e1cf593e697"
+    },
+    "state": "PASS_SCOPED_PROGRESS",
+    "gates_closed": []
+  }
 }

@@ -277,7 +277,7 @@
           ],
           "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild at baseline SDK and baseline-to-candidate SDK at27.1 on Duo. Report UIKit views separately. No new loss, duplicate occurrence or wrong owner for the same actual journey; documented baseline limitations may remain. No40-cell cross-product or whole-payload backend equality.",
           "environment": "Xcode27.1 Duo27.1 simulator;12 shared stack/split cells plus at most4 ordinary baseline controls; reuse valid source-matched observations",
-          "evidence": "Results/S2-capture-contract-preparation.json binds the reviewed12-cell EXP210 preparation: six products/four genuine source/compiler builds reused, exact native ownership/order checks retained and recorder timing diagnostic.125 focused controls and scoped helper-reuse review pass. Fresh operator readiness and first native qualification remain; original stopped input mechanisms stay stopped. No behavioral gate credit.",
+          "evidence": "Results/S2-coverage-home-collection-20260928.json qualifies the current candidate UIKit stack local comparison:11 Views/25 Actions,29 native effects,three actual folds and Home/cleanup PASS. Both the accepted SDK26.5 baseline and separately reviewed offline SDK27.1 reference match; four switch-action omissions are inherited. Original SDK27.1 INVALID/cleanup INVALID remains. UIKit split still required, so this gate stays OPEN. No backend, physical-Duo or full-matrix claim; no baseline/candidate repeat.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
@@ -312,7 +312,7 @@
           ],
           "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild at baseline SDK and baseline-to-candidate SDK at27.1 on Duo. Report UIKit actions separately. No new loss, duplicate occurrence or wrong owner for the same actual journey; documented baseline limitations may remain. No40-cell cross-product or whole-payload backend equality.",
           "environment": "Xcode27.1 Duo27.1 simulator;12 shared stack/split cells plus at most4 ordinary baseline controls; reuse valid source-matched observations",
-          "evidence": "Results/S2-capture-contract-preparation.json binds the reviewed12-cell EXP210 preparation: six products/four genuine source/compiler builds reused, exact native ownership/order checks retained and recorder timing diagnostic.125 focused controls and scoped helper-reuse review pass. Fresh operator readiness and first native qualification remain; original stopped input mechanisms stay stopped. No behavioral gate credit.",
+          "evidence": "Results/S2-coverage-home-collection-20260928.json qualifies the current candidate UIKit stack local comparison:11 Views/25 Actions,29 native effects,three actual folds and Home/cleanup PASS. Both the accepted SDK26.5 baseline and separately reviewed offline SDK27.1 reference match; four switch-action omissions are inherited. Original SDK27.1 INVALID/cleanup INVALID remains. UIKit split still required, so this gate stays OPEN. No backend, physical-Duo or full-matrix claim; no baseline/candidate repeat.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }

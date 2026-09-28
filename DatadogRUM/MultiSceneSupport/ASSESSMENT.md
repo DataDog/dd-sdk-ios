@@ -59,8 +59,12 @@ successful SDK-on/off callbacks on a regular iPhone27.0, with prior setup/host s
 preserved. This does not reproduce earlier variability or establish an SDK
 cause, complete automatic-tracking comparison or candidate gate closure.
 
-The reviewed automatic preparation now selects the12-cell Duo coverage package
-from existing products. The [WebView pair](Results/S2-T10-source-preparation.json) closes S2:T10: the
+The [current UIKit stack comparison](Results/S2-coverage-home-collection-20260928.json)
+qualifies one of the four Duo coverage journeys: current candidate view/action
+coverage matches both preserved baseline references, including the existing switch
+action omission. Native input, fold geometry, Home capture and cleanup pass. The
+SDK27.1 baseline remains a reviewed offline reference with its original INVALID
+verdict. UIKit split and both SwiftUI shapes remain; C07–C10 are open. The [WebView pair](Results/S2-T10-source-preparation.json) closes S2:T10: the
 active native owner survives181seconds, delayed A events retain A within inactive
 retention and have no container after expiry, and the detached WebView releases.
 Both complete backend inventories contain9rows. Candidate scenario, evidence and

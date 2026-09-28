@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
   "work_item": "S2 finite input preparation",
-  "status": "THREE_REMAINING_PACKAGES; CANDIDATE_COVERAGE_AWAITING_FRESH_PAGE",
-  "updated_at": "2026-09-28T13:40:52.570685+00:00",
+  "status": "THREE_REMAINING_PACKAGES; UIKIT_STACK_COMPARISON_COMPLETE",
+  "updated_at": "2026-09-28T14:14:25.792808+00:00",
   "owner": "Harness implementer; root owns native lane",
   "scope_owner": "Results/S2-release-gate-review-20260925.json; release-gates.json releases.S2.execution_packages",
   "source_pair": {
@@ -28,11 +28,11 @@
       ],
       "owner": "SDK implementer; human operator for input",
       "evidence_owner": "Results/S2-capture-contract-preparation.json",
-      "remaining": "One of12 native cells accepted; SDK27.1 UIKit stack has a separate reviewed offline parity reference. Candidate then nine other stack/split cells remain executable after preparation. No baseline gesture repeat solely for a late receipt; at most4 ordinary controls only if needed.",
+      "remaining": "Nine untouched cells: UIKit split and SwiftUI stack/split triplets. UIKit stack candidate/local comparison passes with its accepted SDK26.5 and separately reviewed offline SDK27.1 references; no baseline or candidate repeat. No whole coverage gate closes.",
       "decisive_test": "Actual control/navigation/fold effect and exact view/action owner parity. Split journeys supply H14. Existing naming/control limitations remain explicit.",
       "environment": "Xcode27.1 Duo27.1; six refreshed passive-observer products from three original source/compiler pairs (26.5 and27.1).",
-      "preparation": "Home mechanism and all six refreshed products qualify. Reviewed candidate-only mode binds the accepted SDK26.5 and offline SDK27.1 references separately; no baseline repeat or inherited native credit.",
-      "blocker": "User returned. Checkpoint, fresh Duo/Xcode and visible live operator page precede candidate-only admission; no baseline repeat."
+      "preparation": "Six refreshed products remain qualified. The one-cell candidate continuation is consumed and complete; source-bound result/review belong to the Home collection record.",
+      "blocker": "Prepare a separately reviewed finite continuation for untouched cells, then fresh Duo/Xcode/live-page readiness. Original failed claims and offline-only evidence classes remain unchanged."
     },
     {
       "id": "transitions",
@@ -123,7 +123,7 @@
     "duration": "Budgets are operational maxima, not forecasts of user time."
   },
   "operator_readiness": {
-    "state": "AVAILABLE_AWAITING_FRESH_PAGE",
+    "state": "SESSION_COMPLETE",
     "active_native": false,
     "fixed_stage_started": false,
     "fresh_readiness_required": true,

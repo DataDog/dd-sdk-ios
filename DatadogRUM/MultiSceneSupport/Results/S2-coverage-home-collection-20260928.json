@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "Use durable Home capture without relying on suspended receipt publication",
-  "status": "CANDIDATE_ONLY_REVIEWED_AWAITING_FRESH_PAGE",
+  "status": "CANDIDATE_CAPTURE_AND_LOCAL_COMPARISON_PASS",
   "defined_at": "2026-09-28T12:20:42.481892+00:00",
   "defined_before_implementation": true,
   "owner": "root",
@@ -74,10 +74,10 @@
     ],
     "disposition": "Initial scope retained for provenance; reviewed native_home_repair below supersedes its no-build proposal after source identified suspension of the delayed writer."
   },
-  "next_action": "User has returned for the candidate-only UIKit sitting. Checkpoint preparation, then rediscover Duo/Xcode and start a fresh operator page. Admit only after the page is visible. No baseline repeat or inherited native credit.",
-  "native_runs_added": 1,
+  "next_action": "Do not repeat the completed UIKit stack candidate or either baseline. Nine cells remain: UIKit split and SwiftUI stack/split triplets. Prepare a separately reviewed finite continuation; preserve the offline-only SDK27.1 baseline class and original INVALID/cleanup INVALID. Physical UIKit candidate and Resource/Trace fold have separate prepared owners.",
+  "native_runs_added": 2,
   "gate_closures": [],
-  "updated_at": "2026-09-28T13:40:52.570685+00:00",
+  "updated_at": "2026-09-28T14:14:25.792808+00:00",
   "cleanup_controls": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/cleanup-reactivation-controls.json",
     "sha256": "845b7194de00ba9003eeda2b95612cec80a2f07560d651d56d19837211be3ffc"
@@ -200,7 +200,7 @@
     "native_admitted": false
   },
   "continuation_preparation": {
-    "state": "PREPARED_REVIEWED_NOT_ADMITTED",
+    "state": "CONSUMED_CAPTURE_COMPLETE",
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/candidate-continuation-sq50pppt/candidate",
     "plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/candidate-continuation-sq50pppt/candidate/runtime/runtime-plan.json",
@@ -226,7 +226,7 @@
       "ACCEPTED_BASELINE_26_5",
       "OFFLINE_COMPARISON_27_1"
     ],
-    "native_admitted": false,
+    "native_admitted": true,
     "native_cells_credited": 0,
     "gates_closed": [],
     "retained_preparation_failure": {
@@ -235,10 +235,11 @@
     }
   },
   "operator_availability": {
-    "state": "AVAILABLE_AWAITING_FRESH_PAGE",
+    "state": "SESSION_COMPLETE",
     "user_reply": "I'm ready for the previously skipped Human testing session, perform a safe checkpoint then we do the testing session please.",
-    "native_launched": false,
-    "fresh_readiness_required": true
+    "native_launched": true,
+    "fresh_readiness_required": true,
+    "server": "STOPPED"
   },
   "previous_operator_unavailability": {
     "state": "UNAVAILABLE",
@@ -249,5 +250,27 @@
     },
     "native_launched": false,
     "server": "STOPPED"
+  },
+  "candidate_execution": {
+    "state": "PASS_SCOPED_UIKIT_STACK_COMPARISON",
+    "assessment": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/candidate-assessment.json",
+      "sha256": "7e5ec20876333246cbcaf6371f72fc060edcfc79e13545c6a8f3f8a05af5e443"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/candidate-outcome-review.json",
+      "sha256": "1ebd3a5471e9161e85a56313336999a2a39cc25c2fc9b24001436e1cf593e697"
+    },
+    "scenario": "PASS",
+    "evidence": "PASS",
+    "cleanup": "PASS",
+    "scope": "One UIKit stack candidate compared with the accepted SDK26.5 and offline-only SDK27.1 baselines. Eleven Views/25 Actions and four inherited toggle omissions match; 29 native effects/three folds/Home qualify. No whole gate or inherited native credit.",
+    "remaining_cells": 9,
+    "gates_closed": []
+  },
+  "native_run_accounting": {
+    "automatic_home_qualification": 1,
+    "candidate_only_UIKit_stack": 1,
+    "baseline_repeats": 0
   }
 }

@@ -118,4 +118,14 @@ and25 actions with balanced owners. Reviewed offline parity matches SDK26.5's
 The fixture Home correction subsequently passes one automatic capture and cleanup
 qualification, without matrix credit. Original INVALID remains. All six refreshed
 products and a separate candidate-only continuation are reviewed. Its baseline
-references never populate native inheritance; fresh operator readiness is pending.
+references never populate native inheritance.
+
+The candidate-only UIKit stack sitting subsequently passes scenario, local evidence,
+Home collection, worker quiescence and cleanup. Scoped review confirms11 Views and
+25 Actions (21tap/4swipe),29 native effects and three actual display transitions.
+All11 final Views are inactive with balanced action owners. View coverage and the
+four missing switch actions match both baseline references; no new regression is
+observed in this case. The original SDK27.1 INVALID remains offline-only. Task app
+and workers are stopped and Closed is restored. Nine untouched coverage cells
+remain; no whole gate closes and none of these three source/compiler journeys needs
+a repeat. Exact evidence and review belong to the Home collection record.
