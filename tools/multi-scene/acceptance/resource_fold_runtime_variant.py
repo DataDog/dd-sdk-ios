@@ -67,6 +67,9 @@ def render(name, original, expected_sha256, *, semantic=False):
         from resource_fold_scope import render_fold
         return render_fold(text.encode())
     if semantic and name=='cell.py':
+        text=replace_once(text,
+            "    summary={'experiment':'EXP-221'",
+            "    expected['fixture_contract']=stage.scoped.verify_fixture_configuration(root)\n    summary={'experiment':'EXP-221'")
         require(text.count('safety.protected(root)')==2,'protected boundary count changed')
         text=text.replace('safety.protected(root)','stage.verify_workspace(args.runtime_root)')
         text=replace_once(text,"spec_from_file_location('oracle',args.oracle)",

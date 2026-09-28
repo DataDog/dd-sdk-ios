@@ -134,3 +134,12 @@ compiler/product inventories match, and the designated review passes. The
 no build, native launch or backend query occurred. Fresh operator/access readiness
 is still required. F08 separately closes the integrated-app obligation; T03/T08
 await these four fold cells.
+
+September28 human baseline captured both real fold transitions and all256 native
+records. The source and contract configure660 seconds, while the inherited checker
+still expected480. Original scenario/evidence remain UNQUALIFIED/INCOMPLETE and
+cleanup PASS; no deadline expired. The corrected source-bound oracle passes the
+complete saved capture and47 focused controls. Separate backend retrieval found
+only the early parent/rum-ok spans and6RUM rows, so it cannot qualify persistence.
+The owning result retains this failed run, separate replay, repair review and fresh
+preparation. Neither the remaining three original cells nor a candidate fold ran.

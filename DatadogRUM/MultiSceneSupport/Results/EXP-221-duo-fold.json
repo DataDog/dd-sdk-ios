@@ -2,8 +2,8 @@
   "schema_version": 1,
   "experiment": "EXP-221",
   "stage": "duo-fold-one-session",
-  "status": "AUTOMATED_PATH_STOPPED_LATER_RESTORATION_PASS",
-  "updated_at": "2026-09-27T12:15:36.917117+00:00",
+  "status": "HUMAN_BASELINE_STOPPED_ORACLE_REPAIRED",
+  "updated_at": "2026-09-28T15:34:28.650116+00:00",
   "owner": "SDK implementer; root owns sole build/native lane",
   "gates": [
     "S2:T03",
@@ -29,9 +29,9 @@
     "retries": 0
   },
   "builds": 8,
-  "native_launches": 5,
+  "native_launches": 6,
   "gate_closures": [],
-  "next_action": "Fresh Duo and RUM/APM authentication/query readiness, then operator-visible page and readiness for each remaining cell. First needed baseline qualifies input. Keep accepted navigation/rollover and original verdicts.",
+  "next_action": "Signed checkpoint, then fresh page-visible readiness and new admission for the corrected four-cell comparison. Original stopped baseline has incomplete persistence; original stage remains unusable.",
   "implementation_inputs": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/implementation-inputs-v2.json",
     "sha256": "27acb5ef0b30945980ab98c7e922f508e6e6593bfe5dbbe75cbd8df6708dbaee"
@@ -48,7 +48,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/access-preflight.json",
     "sha256": "06d8ba547de8fa6a54d0b4ccede906ad7801040b48321d6713654873ca9593fe"
   },
-  "scope_limit": "Closed gesture returned before deadline but receipt publication was late; no SDK regression inference. The new Date duration discriminator was not evaluated.",
+  "scope_limit": "Original automated failures and separate restoration remain unchanged. Human baseline local evidence qualifies only in separate corrected replay; final backend inventory is incomplete. No candidate fold, SDK regression or gate closure.",
   "implementation_review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/implementation-review-final.json",
     "sha256": "34dadbad2d16daac6cb4b585706d7cf332007252612d2379f5b9a4fa2b5e7beb"
@@ -337,7 +337,7 @@
     ],
     "startup_rum_rows": 3
   },
-  "count_scope": "Cumulative fold fixtures: original2 builds/1 launch; owner-boundary2/1; window diagnostic1/1; atomic topology1/1; Date continuation2/1. No candidate fold launch; no gate closure.",
+  "count_scope": "Cumulative fold fixtures: original2 builds/1 launch; owner-boundary2/1; window diagnostic1/1; atomic topology1/1; Date continuation2/1. No candidate fold launch; no gate closure. Human September28 adds one baseline automatic launch with both folds captured; original INVALID/cleanup PASS. No additional build or candidate fold launch.",
   "window_inventory_diagnostic": {
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-window-inventory-uyqyhqlz",
     "status": "DIAGNOSTIC_COLLECTED_ORIGINAL_CLEANUP_INVALID_LATER_STATE_RESTORED",
@@ -657,23 +657,19 @@
   "current_preparation": {
     "schema_version": 1,
     "work_item": "S2:T03/T08 current Resource/Trace fold preparation",
-    "state": "REVIEWED_HARNESS_NATIVE_UNADMITTED",
-    "updated_at": "2026-09-27T12:15:36.917117+00:00",
+    "state": "REPAIRED_RUNTIME_REVIEWED_NATIVE_UNADMITTED",
+    "updated_at": "2026-09-28T15:35:35.745567+00:00",
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/resource-fold/definition.json",
       "sha256": "1e3855d9a4c191457d2568a79f418af3b7f8f21acee6a9eead06a71d28056ed4"
     },
     "runtime_plan": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/resource-fold/runtime-plan.json",
-      "sha256": "3b6bb06a95b4cf8313280039c75780339c1b47c088df42dd9beeb1b6aa4b7d1e"
-    },
-    "review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/resource-fold/runtime-review.json",
-      "sha256": "b315e98f0dfd6b66a91b3426d9b84796a00a11a848fc84e25beed1a1b73bd1bf"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/resource-fold-contract-20260928-vaf8ds84/repaired-runtime/runtime-plan.json",
+      "sha256": "d0720fd2bdbb7ac8f4d2891b355e4a2adb1d99315a795ba21cad76042d7b94a6"
     },
     "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/resource-fold/runtime-controls.json",
-      "sha256": "57d79c1e29fd00e7323af8b1e600da54662f579844c27c3a7f0b075096bd4cb9"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/resource-fold-contract-20260928-vaf8ds84/repaired-runtime/runtime-controls.json",
+      "sha256": "5bc32887f470cfa9c8c48134983f9e6e0b413bba9a663ff256c899a74d2c441b"
     },
     "build_reuse": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/resource-fold/build-reuse.json",
@@ -684,7 +680,8 @@
       "Request gather_started_ms accepted and exactly bound to response phase clock.",
       "Authorized documentation transition replaces stale documentation protections; both user-owned paths remain exact.",
       "Retain each raw COUNT/search attempt; retry a complete changing-index inventory only inside the original clock, without deduplication.",
-      "Publish exact prompts directly; bind live operator page and fresh per-cell readiness before reservation."
+      "Publish exact prompts directly; bind live operator page and fresh per-cell readiness before reservation.",
+      "Request timeout is read from the bound canonical fixture contract; both compiled fixture sources and all three timeout assignments are verified before native work. Full saved-capture replay and47 focused controls qualify the correction."
     ],
     "cells": [
       "A-automatic",
@@ -705,7 +702,7 @@
     "additional_builds": 0,
     "backend_requests": 0,
     "gate_closures": [],
-    "remaining": "Fresh Duo and RUM/APM authentication/query readiness, then operator-visible page and readiness for each remaining cell. First needed baseline qualifies input. Keep accepted navigation/rollover and original verdicts.",
+    "remaining": "Signed checkpoint, then fresh page-visible readiness and new admission for the corrected four-cell comparison. Original stopped baseline has incomplete persistence; original stage remains unusable.",
     "source_pair": {
       "A": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
       "B": "c9faed816a1d4828d7d8c4b64acae01119425889"
@@ -720,13 +717,85 @@
       "additional_prerequisite": "Live environment/backend and exact page readiness before native admission."
     },
     "prior_preparation": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/owners-before-completion.json",
-      "sha256": "5689f96cac0632c852d50b820023dd78346f9002ae4b0d2e7e7b36c01b96ed8e"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/resource-fold-contract-20260928-vaf8ds84/owners-before-repair.json",
+      "sha256": "72dd871b4ef4031f44b8aca78afde6231307f4c352ee8f65f589c529fe33cd0c"
     },
     "repair_loop": "Results/human-harness-repair-loop-20260927.json",
     "cross_package_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/review-complete.json",
       "sha256": "be0e03e8c001f89a9eafbb0d37531ac6684221b9c1b08a845b1c71410435f4a3"
+    },
+    "repair_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/resource-fold-contract-20260928-vaf8ds84/repair-review.json",
+      "sha256": "0e8bb0436de9bfd8e048ecdbb18e50dad728e0c790d534aae06b6a5f8a16412f"
+    },
+    "consumed_runtime": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/resource-fold/runtime-plan.json",
+      "sha256": "3b6bb06a95b4cf8313280039c75780339c1b47c088df42dd9beeb1b6aa4b7d1e"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/resource-fold-contract-20260928-vaf8ds84/repaired-runtime/runtime-review.json",
+      "sha256": "407b0c0b5b64c013c2ee3ccbde99fb734facde3a3828cffc7d058f3f02eee796"
     }
+  },
+  "human_session_20260928": {
+    "state": "INVALID_HARNESS_CONFIGURATION_MISMATCH",
+    "at": "2026-09-28T15:34:28.650116+00:00",
+    "runtime_plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/resource-fold/runtime-plan.json",
+      "sha256": "3b6bb06a95b4cf8313280039c75780339c1b47c088df42dd9beeb1b6aa4b7d1e"
+    },
+    "stage": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/resource-fold/stage-admission.json",
+      "sha256": "470e5ea655314b62a2705b137d9141fe5c1ea0540e13c176c71fd75e4a70eb9e"
+    },
+    "cell": "A-automatic",
+    "summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/resource-fold/cells/A-automatic/summary.json",
+      "sha256": "273df8b100442a0c361416ed6afe8a9b8ae1fd21f9fe81c765c79969c4b92bf9"
+    },
+    "run_id": "8c79660d-b7ba-4897-a419-e776ef00c3de",
+    "failure": "Fold oracle expected480 while the frozen source, contract and all11 observed native tasks specify660 seconds. No operational deadline expired.",
+    "scenario_verdict": "UNQUALIFIED",
+    "evidence_verdict": "INCOMPLETE",
+    "cleanup_verdict": "PASS",
+    "native_launches": 1,
+    "additional_builds": 0,
+    "startup_backend_calls": 6,
+    "native_receipts": 76,
+    "native_records": 256,
+    "remaining_original_cells": "A-registered/B-automatic/B-registered UNRUN; stopped stage cannot continue",
+    "replay": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/resource-fold-contract-20260928-vaf8ds84/replay-manifest.json",
+      "sha256": "22a65937efa6380581e258d8000cb6071b4262f5652ea541262bf08528f5b570"
+    },
+    "replay_state": "BASELINE_E01_OBSERVATION_LOCAL",
+    "repair_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/resource-fold-contract-20260928-vaf8ds84/controls.json",
+      "sha256": "57d40799c18fb5df689ea354493ae24720a95f16789095c671ff039598e539a2"
+    },
+    "repair_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/resource-fold-contract-20260928-vaf8ds84/repair-review.json",
+      "sha256": "0e8bb0436de9bfd8e048ecdbb18e50dad728e0c790d534aae06b6a5f8a16412f"
+    },
+    "stage_stop": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/resource-fold-contract-20260928-vaf8ds84/stage-stop.json",
+      "sha256": "116bf2e23d8d5788a22312e00c88ae847eaaf8fe733d3466a621d89ee4f6b5e7"
+    },
+    "backend_access": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/resource-fold-contract-20260928-vaf8ds84/backend-access-preflight.json",
+      "sha256": "126c1178a681c2bfc3661362e16d23b16add41e15736f547b28228c662ec0c3a"
+    },
+    "poststop_collection": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/resource-fold-contract-20260928-vaf8ds84/poststop-collection-result.json",
+      "sha256": "76872bc3aefac744dcd62f08a4b09c97c5bf9b2d55c006fb7546ded6628f70bb"
+    },
+    "partial_backend": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/resource-fold-contract-20260928-vaf8ds84/partial-backend-inventory.json",
+      "sha256": "c88e24b762ef9968580ea8c43e63ef122b0a8fb84014e9de16ca95c967fe0ae7"
+    },
+    "poststop_findings": "20 span COUNT attempts each returned2, below10. One later raw search confirms only early exp202.parent and rum-ok; RUM COUNT6. Missing later persistence has no established cause; early task-app cleanup may have prevented pending batches from uploading. No complete response or acceptance.",
+    "original_summary_unchanged": true,
+    "gate_closures": []
   }
 }

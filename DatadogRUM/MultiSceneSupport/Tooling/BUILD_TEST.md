@@ -4,6 +4,11 @@ Read for an admitted build/test/API check. Use [environment preflight](ENVIRONME
 and the [common evidence contract](EVIDENCE.md); exact commands, counts, thresholds
 and budgets come from the owning definition or fixture README.
 
+Before native admission, compare fixture configuration values used by the oracle
+with the hash-bound source contract and actual compiler inputs. Configuration
+identity checks belong in preflight; a stale expected constant must not consume
+human input. Preserve an original failure and any corrected saved replay separately.
+
 ## Freeze inputs before work
 
 Bind the approved source-member dictionary and archive, SDK/fixture/runner/oracle

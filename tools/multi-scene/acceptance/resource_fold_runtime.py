@@ -96,6 +96,7 @@ def verify_runtime(root, expected_sha=None, deep=False):
     require(shared.tree(root/'generated')==plan['generated'],'generated runner changed')
     verify_workspace(root)
     origin=Path(plan['contract']['original_root']);matrix=origin/'matrix'
+    if 'semantic_scope' in plan:scoped.verify_fixture_configuration(matrix)
     require(all(shared.sha(origin/name)==sha for name,sha in plan['contract']['original_inputs'].items()),'original fold inputs changed')
     manifest=shared.read(bound(plan['original_manifest']))
     require(all(shared.sha(row['path'])==row['sha256'] for row in manifest.values()),'original helper changed')

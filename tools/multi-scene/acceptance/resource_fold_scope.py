@@ -1,7 +1,8 @@
 """Apply the current S2 measurement and workspace rules to a fresh fold preparation."""
 import hashlib
+import re
 from pathlib import Path
-from acceptance_common import require
+from acceptance_common import require, digest
 from resource_fold_variant import replace_once
 import s2_hosting_workflow as shared
 
@@ -52,6 +53,34 @@ def protected():
     return result
 
 
+def fixture_request_timeout(expected):
+    """Read configuration from the bound fixture contract, never from observed results."""
+    contract = shared.read(bound(expected['fixture_contract']))
+    require(digest(contract) == expected['identity']['contract_sha256'], 'fixture contract identity differs')
+    value = contract['contract']['public_configuration']['fixture_request_timeout_seconds']
+    require(type(value) is int and value > 0, 'invalid fixture request timeout')
+    return value
+
+
+def verify_fixture_configuration(matrix):
+    """Reject source/contract drift before a human is asked to exercise the fixture."""
+    matrix = Path(matrix)
+    plan = shared.read(matrix/'plan.json')
+    expected = {'identity': {'contract_sha256': plan['contract_sha256']},
+                'fixture_contract': {'path': str(matrix/'contract.json'), 'sha256': shared.sha(matrix/'contract.json')}}
+    timeout = fixture_request_timeout(expected)
+    members = shared.read(matrix/'fixture-members.json')
+    for arm in ['A', 'B']:
+        source = matrix/arm/'client/FixtureScenario.swift'
+        require(shared.sha(source) == members['FixtureScenario.swift'], 'compiled fixture configuration changed')
+        text = source.read_text()
+        for assignment in ['configuration.timeoutIntervalForRequest', 'configuration.timeoutIntervalForResource',
+                           'request.timeoutInterval']:
+            values = re.findall(r'^\s*'+re.escape(assignment)+r'\s*=\s*([0-9]+)\s*$', text, re.MULTILINE)
+            require(values == [str(timeout)], 'fixture source/contract timeout differs: '+assignment)
+    return expected['fixture_contract']
+
+
 def render_oracle(original, expected_sha256):
     require(hashlib.sha256(original).hexdigest() == expected_sha256, 'original semantic oracle changed')
     text = original.decode()
@@ -80,7 +109,10 @@ def render_oracle(original, expected_sha256):
 
 
 def render_fold(original_projection):
-    text = original_projection.decode()
+    text = 'from resource_fold_scope import fixture_request_timeout\n'+original_projection.decode()
+    text = replace_once(text,
+        "bits(r.get('request_timeout_bits'))==480",
+        "bits(r.get('request_timeout_bits'))==fixture_request_timeout(expected)")
     text = replace_once(text,
         "    require(record['capture_finished_ns']-record['capture_started_ns']<1_000_000_000,'stalled atomic capture')\n", '')
     text = replace_once(text, "return {'phases':2,'poses':'Closed -> Open -> Closed',",
