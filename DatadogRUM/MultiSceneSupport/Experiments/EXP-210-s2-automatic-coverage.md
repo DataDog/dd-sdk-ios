@@ -68,7 +68,7 @@ qualified predecessors in place; an append-only family ledger prevents a fresh
 output path from repeating a consumed cell. The first regular UIKit pair is prepared
 without a build or native action. Native qualification and all behavioral gates remain open.
 
-## Revised S2 coverage preparation
+## September25 S2 coverage preparation
 
 The owning result's `s2_scoped_preparation` now freezes exactly12 Duo single-scene
 cells: UIKit/SwiftUI stack/split, each baseline SDK26.5, baseline SDK27.1 and
@@ -81,3 +81,20 @@ errors while ignoring incidental durations, brightness and cross-run UUID values
 Coverage43, runtime24 and shared connector10 controls pass. The earlier40-cell
 preparation and input failures remain historical; they are not a new execution
 obligation. First human input qualification is still required. No gate closes.
+
+
+## First human qualification and counter correction
+
+The [September28 record](../Results/S2-coverage-counter-observation-20260928.json)
+owns the first one-cell UIKit baseline sitting. Its tap callback was captured,
+but the observer omitted the receipt UILabel.text; the native/evidence verdict
+remains unqualified. Released acknowledgement, native idle, task-app removal,
+original display restoration and supervisor absence pass. No SDK regression or
+coverage gate follows from that attempt.
+
+The reviewed correction captures that receipt text separately, keeps SwiftUI's
+accessibility-label contract, and checks the counter before requesting input.
+47 focused controls and three passive-observer builds pass. The replacement
+preparation binds six products and a new series; the failed series remains consumed.
+The current [capture preparation](../Results/S2-capture-contract-preparation.json)
+owns fresh readiness and native qualification. No equivalent diagnostic is due.

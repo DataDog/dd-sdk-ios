@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
   "work_item": "S2 finite input preparation",
-  "status": "THREE_REMAINING_PACKAGES; HARNESS_REVIEW_COMPLETE; NATIVE_UNADMITTED",
-  "updated_at": "2026-09-27T12:15:36.917117+00:00",
+  "status": "THREE_REMAINING_PACKAGES; COUNTER_REPAIR_REVIEWED; NATIVE_UNADMITTED",
+  "updated_at": "2026-09-28T11:39:47.685805+00:00",
   "owner": "Harness implementer; root owns native lane",
   "scope_owner": "Results/S2-release-gate-review-20260925.json; release-gates.json releases.S2.execution_packages",
   "source_pair": {
@@ -31,8 +31,8 @@
       "remaining": "12 Duo cells: UIKit/SwiftUI stack/split for baseline built26.5, baseline built27.1 and candidate built27.1. At most4 ordinary controls only if needed; no extra manual split or physical resize matrix.",
       "decisive_test": "Actual control/navigation/fold effect and exact view/action owner parity. Split journeys supply H14. Existing naming/control limitations remain explicit.",
       "environment": "Xcode27.1 Duo27.1; six refreshed passive-observer products from three original source/compiler pairs (26.5 and27.1).",
-      "preparation": "Reviewed actual S2 sitting support: one to three complete cells, exact predecessor/series claims, passive input-idle witness, delayed Home inventory and guarded cleanup. First sitting selects one baseline cell.",
-      "blocker": "Fresh Duo/operator readiness and first planned baseline native qualification."
+      "preparation": "New one-cell sitting binds reviewed counter correction and six replacement observer products. Failed first sitting stays consumed; cleanup passed.",
+      "blocker": "Fresh Duo and visible operator page readiness; first required baseline qualifies the changed counter capture."
     },
     {
       "id": "transitions",
@@ -47,7 +47,7 @@
       "environment": "Duo27.1 preferred; one eligible physical UIKit pair is the scoped unsupported-input fallback, with no Duo-hardware claim.",
       "qualified_baseline": "Results/S2-H11-H13-local-baseline.json; no UIKit baseline repeat due",
       "prepared_continuation": "Results/S2-H11-H13-local-continuation.json; one reviewed physical B cell using existing signed products",
-      "blocker": "Fresh connected/unlocked physical iPad and operator readiness for the one UIKit candidate.",
+      "blocker": "Fresh connected/unlocked physical iPad and operator readiness for the one UIKit candidate. Two shared-helper bindings refreshed; existing signed products reused.",
       "swiftui_preparation": "Results/S2-H12-H13-swiftui-duo.json",
       "preparation": "Reviewed delayed callback/Home collection, actual saved-capture replay and immutable post-stop evidence. Existing signed products reused."
     },
@@ -139,5 +139,6 @@
     "limit": "Earlier entrypoint checks remain historical. The repair loop owns actual-runner controls, three passive-observer builds and fresh helper-bound preparations; none establish native acceptance."
   },
   "admission_review": "Results/human-session-review-20260927.json",
-  "repair_loop": "Results/human-harness-repair-loop-20260927.json"
+  "repair_loop": "Results/human-harness-repair-loop-20260927.json",
+  "current_capture_repair": "Results/S2-coverage-counter-observation-20260928.json"
 }

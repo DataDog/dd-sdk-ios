@@ -183,10 +183,14 @@ import SwiftUI
                     return [["capture_error": "public accessibility child inventory exceeded fixture bound"]]
                 }
                 if let identifier = view.accessibilityIdentifier, !identifier.isEmpty {
-                    result.append(["id": Self.identity(view), "identifier": identifier,
+                    var control: [String: Any] = ["id": Self.identity(view), "identifier": identifier,
                         "label": view.accessibilityLabel ?? "nil", "value": view.accessibilityValue ?? "nil",
                         "frame_in_window": Self.rect(view.convert(view.bounds, to: window)),
-                        "hidden": view.isHidden, "alpha": view.alpha, "kind": "UIView"])
+                        "hidden": view.isHidden, "alpha": view.alpha, "kind": "UIView"]
+                    if identifier.hasSuffix(".receipt"), let label = view as? UILabel {
+                        control["text"] = label.text ?? "nil"
+                    }
+                    result.append(control)
                 }
             } else if let element = object as? UIAccessibilityElement,
                       let identifier = element.accessibilityIdentifier, !identifier.isEmpty {

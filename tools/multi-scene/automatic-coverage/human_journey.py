@@ -34,9 +34,10 @@ def steps(layout,duo):
     return result
 
 
-def counter(snapshot,screen,binding):
+def counter(snapshot,screen,binding,framework):
     control=h.target(snapshot,screen+'.receipt',binding)
-    text=control.get('label')
+    h.require(framework in ['UIKit','SwiftUI'],'unknown counter framework')
+    text=control.get('text' if framework=='UIKit' else 'label')
     h.require(isinstance(text,str) and re.fullmatch(r'receipt:[0-9]+',text),'native counter missing')
     return int(text.split(':')[1])
 
@@ -78,7 +79,7 @@ def effect(rows,before,after,step,binding,framework):
     if step['kind'] in ['tap','toggle']:
         # In these unchanged sources a toggle's valueChanged/onChange callback
         # increments this counter once; callback delivery alone is insufficient.
-        h.require(counter(after,step['screen'],binding)==counter(before,step['screen'],binding)+1,'native control did not change state exactly once')
+        h.require(counter(after,step['screen'],binding,framework)==counter(before,step['screen'],binding,framework)+1,'native control did not change state exactly once')
     elif step['kind']=='navigate':
         if step['target']=='sheet.close':
             h.require(not any(r.get('identifier')=='screen.sheet' for r in after['payload']['topology']['accessibility']),

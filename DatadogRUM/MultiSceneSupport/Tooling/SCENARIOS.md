@@ -131,6 +131,11 @@ attribution. [EXP-199](../Results/EXP-199-terminal-task-ownership.json) owns red
 
 ## Automatic-only comparisons and input diagnostics
 
+Validate each required native effect witness before asking for human input. In the
+automatic fixture, UIKit receipt text and SwiftUI accessibility labels are distinct
+observations; a readable label cannot replace an omitted UILabel.text value. Keep
+callback, exact increment and owner checks. See the [fixture contract](../../../tools/multi-scene/automatic-coverage/README.md).
+
 Keep UIKit views/actions and SwiftUI views/actions separate. Use unchanged app
 sources, public default predicates and qualified native input; semantic hosts,
 manual calls or marker actions cannot substitute. Compare genuine old/new build

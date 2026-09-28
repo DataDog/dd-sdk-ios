@@ -5,6 +5,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 import human_capture as capture
+import test_human_contract as fixtures
 from acceptance_common import Rejected
 
 
@@ -36,6 +37,28 @@ class HostCaptureControls(unittest.TestCase):
     def test_missing_original_process_invalidates_collector(self):
         with tempfile.TemporaryDirectory() as root,patch.object(capture.time,'time',return_value=1),patch.object(capture.shared,'process',return_value=''):
             with self.assertRaises(Rejected):self.collector(root).live(10)
+    def counter_prompt(self,root,text):
+        fixture=fixtures.NativeInputControls();fixture.setUp()
+        before=fixture.evidence[2];before['timestamp']=1
+        before['payload']['topology']['accessibility'] += [
+            {'identifier':'screen.home','frame_in_window':[0,0,400,40]},
+            {'identifier':'home.receipt','label':'nil','text':text,'frame_in_window':[10,400,300,40]}]
+        collector=capture.Collector(documents=root,output=root,run='run',device='not-executed',pid=1,
+            framework='UIKit',deadline=10,budget={'human_step_seconds':180,'snapshot_seconds':30,'settle_seconds':1.2},local_process=False)
+        collector.binding=fixture.binding
+        return collector,before,capture.journey.flow('stack','initial')[0]
+    def test_missing_counter_is_rejected_before_requesting_a_human_gesture(self):
+        with tempfile.TemporaryDirectory() as root:
+            collector,before,step=self.counter_prompt(root,None)
+            with patch.object(collector,'snapshot',return_value=(before,Path(root))),patch.object(collector,'prompt') as prompt:
+                with self.assertRaisesRegex(ValueError,'native counter missing'):collector.perform(step)
+                prompt.assert_not_called();self.assertFalse(collector.prompt_issued)
+    def test_observable_counter_allows_the_first_prompt(self):
+        with tempfile.TemporaryDirectory() as root:
+            collector,before,step=self.counter_prompt(root,'receipt:0')
+            with patch.object(collector,'snapshot',return_value=(before,Path(root))),patch.object(collector,'prompt',side_effect=RuntimeError('prompt reached')) as prompt:
+                with self.assertRaisesRegex(RuntimeError,'prompt reached'):collector.perform(step)
+                prompt.assert_called_once()
     def test_unprepared_output_fails_before_requests(self):
         with tempfile.TemporaryDirectory() as root:
             with self.assertRaises(Rejected):self.collector(Path(root)/'absent')

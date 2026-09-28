@@ -4,8 +4,9 @@ The current [S2 preparation](../../../DatadogRUM/MultiSceneSupport/Results/S2-ca
 selects12 Duo cells across UIKit/SwiftUI stack/split, each with baseline26.5,
 baseline27.1 and candidate27.1. It binds six refreshed products: only the passive
 observer changed in copies of the three original source/compiler pairs. Ordinary
-UI, RUM configuration and SDK bytes are unchanged. Existing refreshed builds need
-no repeat. Preparation admits no input; the first planned baseline qualifies it.
+UI, RUM configuration and SDK bytes are unchanged. Reuse the products bound by
+the current preparation; superseded observer builds cannot qualify changed capture.
+Preparation admits no input; the first planned baseline qualifies it.
 
 To prepare a changed observer, use `human_fixture_refresh.py prepare --original
 FROZEN_BUILD_ROOT --root NEW_REFRESH_ROOT`, then its `build` action once for each
@@ -144,6 +145,10 @@ admission. Each app target must compile its exact source set. This build workflo
 never installs or launches an app. Keep rejected and corrected builds separate.
 
 The copied observer preserves the original UIKit/SwiftUI UI and RUM configuration.
+UIKit receipt counters use the identified UILabel.text field; SwiftUI counters use
+the accessibility label. These observations are distinct and never substitute for
+each other. A tap/toggle counter must be readable before publishing its prompt;
+a callback still needs exactly one source-defined increment afterward.
 It adds passive callbacks, existing-pan observations and requested public window/
 accessibility snapshots. Requests and ordered file writes run off-main. Each
 snapshot/callback has a bound measured-cost receipt; missing or malformed receipts
@@ -176,7 +181,7 @@ still match their stage, source/product binding and complete artifact inventory.
 The existing comparison oracle retains occurrence owners and unchanged limitations.
 The comparison report closes no gate by itself and retains the regular27.0 versus
 Duo27.1 OS-patch confound. Input witnesses prove observed native effects, not
-independent human causality. Native qualification remains unexecuted.
+independent human causality. The current owning record distinguishes attempted qualification from accepted cells.
 
 ## Legacy pair sittings
 

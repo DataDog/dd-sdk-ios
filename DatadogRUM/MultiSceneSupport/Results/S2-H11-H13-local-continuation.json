@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "state": "REVIEWED_CANDIDATE_HARNESS_NATIVE_UNADMITTED",
-  "updated_at": "2026-09-27T12:15:36.917117+00:00",
+  "updated_at": "2026-09-28T11:39:47.685805+00:00",
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
   "gates": [
@@ -14,20 +14,20 @@
   },
   "predecessor": "Results/S2-H11-H13-local-baseline.json",
   "preparation": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/prepare-physical-v2.log",
-    "sha256": "4908bcf9b68f45f2eff14c4bea00894877ef1ea755395eb634c0bcb5cb6307ab"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/prepare-physical.log",
+    "sha256": "e1617d2adfcefe971929ee3c602ce9b45fb2aec28da208aa4a3dc27fb2418f34"
   },
   "runtime_plan": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/physical-candidate-v2/plan.json",
-    "sha256": "2cc665739b6f44314ac93448d713429806d9392335de95a153cf57dd575c61e1"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/physical-candidate/plan.json",
+    "sha256": "4ff218bae4fd14a59c27b8ab4622018cc05713124f7e2e524feb25b4acb41c51"
   },
   "controls": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/physical-candidate-v2/controls.json",
-    "sha256": "55274c3f7a0cb50000181f86b3b881eda107ad2de010a6f0be0b702ca52f35b8"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/physical-candidate/controls.json",
+    "sha256": "54df0889a56cd11e0b171a1fd49b13c1d3e22dd559cf3e715b4c96165e395881"
   },
   "review": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/physical-candidate-v2/review.json",
-    "sha256": "c9ed85268e1a736bd9e9523132231325fa39dea579c7741b1820ec6a668e1fe2"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/physical-candidate/review.json",
+    "sha256": "cddaec6757c9e25eabfe1e52b97302396a13d34146072dd5746e6bff7d8ff03b"
   },
   "source_pair": {
     "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
@@ -85,5 +85,35 @@
   "prior_preparation": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/owners-before-completion.json",
     "sha256": "5689f96cac0632c852d50b820023dd78346f9002ae4b0d2e7e7b36c01b96ed8e"
+  },
+  "prior_counter_rebind_preparation": {
+    "runtime_plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/physical-candidate-v2/plan.json",
+      "sha256": "2cc665739b6f44314ac93448d713429806d9392335de95a153cf57dd575c61e1"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/physical-candidate-v2/controls.json",
+      "sha256": "55274c3f7a0cb50000181f86b3b881eda107ad2de010a6f0be0b702ca52f35b8"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/physical-candidate-v2/review.json",
+      "sha256": "c9ed85268e1a736bd9e9523132231325fa39dea579c7741b1820ec6a668e1fe2"
+    },
+    "preparation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/prepare-physical-v2.log",
+      "sha256": "4908bcf9b68f45f2eff14c4bea00894877ef1ea755395eb634c0bcb5cb6307ab"
+    }
+  },
+  "counter_helper_rebind": {
+    "owner": "Results/S2-coverage-counter-observation-20260928.json",
+    "delta": [
+      "tools/multi-scene/automatic-coverage/human_capture.py",
+      "tools/multi-scene/automatic-coverage/human_journey.py"
+    ],
+    "state": "REVIEWED_PREPARATION_ONLY",
+    "compiled_products": "UNCHANGED_REVERIFIED",
+    "builds": 0,
+    "native_runs": 0,
+    "existing_controls": "Reused; no new physical suite or capture replay."
   }
 }

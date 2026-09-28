@@ -13,14 +13,40 @@ class NativeEffectControls(unittest.TestCase):
         for row,count in [(self.before,0),(self.after,1)]:
             row['payload']['topology']['accessibility'] += [
                 {'identifier':'screen.home','label':'home','frame_in_window':[0,0,400,40]},
-                {'identifier':'home.receipt','label':'receipt:'+str(count),'frame_in_window':[10,400,300,40]}]
+                {'identifier':'home.receipt','label':'nil','text':'receipt:'+str(count),'frame_in_window':[10,400,300,40]}]
         self.step=journey.flow('stack','initial')[0]
-    def evaluate(self):return journey.effect(self.rows,self.before,self.after,self.step,self.binding,'UIKit')
+    def evaluate(self,framework='UIKit'):return journey.effect(self.rows,self.before,self.after,self.step,self.binding,framework)
     def test_exact_native_state_effect(self):self.assertEqual(self.evaluate()['kind'],'tap')
     def test_callback_without_one_state_change_rejected(self):
         for count in [0,2]:
-            self.after['payload']['topology']['accessibility'][-1]['label']='receipt:'+str(count)
+            self.after['payload']['topology']['accessibility'][-1]['text']='receipt:'+str(count)
             with self.subTest(count=count),self.assertRaises(ValueError):self.evaluate()
+    def test_uikit_accessibility_label_cannot_replace_missing_text(self):
+        for row,count in [(self.before,0),(self.after,1)]:
+            control=row['payload']['topology']['accessibility'][-1]
+            control.pop('text');control['label']='receipt:'+str(count)
+        with self.assertRaisesRegex(ValueError,'native counter missing'):self.evaluate()
+    def test_uikit_label_increment_cannot_hide_unchanged_text(self):
+        self.before['payload']['topology']['accessibility'][-1]['label']='receipt:0'
+        control=self.after['payload']['topology']['accessibility'][-1]
+        control.update(label='receipt:1',text='receipt:0')
+        with self.assertRaisesRegex(ValueError,'state exactly once'):self.evaluate()
+    def test_malformed_uikit_text_is_rejected(self):
+        for text in [None,True,1,'nil','receipt:-1','receipt:1 extra']:
+            self.after['payload']['topology']['accessibility'][-1]['text']=text
+            with self.subTest(text=text),self.assertRaisesRegex(ValueError,'native counter missing'):self.evaluate()
+    def swiftui_counter(self):
+        for row,count in [(self.before,0),(self.after,1)]:
+            control=row['payload']['topology']['accessibility'][-1]
+            control.pop('text');control['label']='receipt:'+str(count)
+    def test_swiftui_reads_accessibility_label_without_uikit_text(self):
+        self.swiftui_counter();self.assertEqual(self.evaluate('SwiftUI')['kind'],'tap')
+    def test_swiftui_text_cannot_replace_missing_accessibility_label(self):
+        self.swiftui_counter()
+        for row,count in [(self.before,0),(self.after,1)]:
+            control=row['payload']['topology']['accessibility'][-1]
+            control['label']='nil';control['text']='receipt:'+str(count)
+        with self.assertRaisesRegex(ValueError,'native counter missing'):self.evaluate('SwiftUI')
     def test_wrong_phase_cannot_reuse_fresh_callback(self):
         self.after['payload']['phase']='next.effect'
         with self.assertRaises(ValueError):self.evaluate()

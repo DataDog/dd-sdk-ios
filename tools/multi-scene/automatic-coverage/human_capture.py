@@ -149,6 +149,7 @@ class Collector:
         deadline=min(self.deadline,time.time()+self.budget['human_step_seconds']);phase=step['phase']
         before,folder=self.snapshot(phase+'.before',deadline)
         journey.visible(before,step['screen'],self.binding);oracle.target(before,step['target'],self.binding)
+        if step['kind'] in ['tap','toggle']:journey.counter(before,step['screen'],self.binding,self.framework)
         self.receipts.append({'run_id':self.run,'phase':phase+'.before','timestamp':before['timestamp'],'payload':{'target':step['target']}})
         control=step['target'].split('.')[-1]
         label={'tap':'Tap','toggle':'Enable','scroll':'the rows','next':'Open detail','sheet':'Present sheet','back':'Return home','close':'Dismiss sheet'}[control]
