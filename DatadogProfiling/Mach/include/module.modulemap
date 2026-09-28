@@ -1,6 +1,7 @@
 module DatadogMachProfiler {
   header "dd_profiler.h"
   header "dd_pprof.h"
+  header "swift_alloc_hook.h"
   export *
 
   explicit module Cxx {
