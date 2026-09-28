@@ -102,6 +102,33 @@ class LogSanitizerTests: XCTestCase {
         XCTAssertNotNil(sanitized.attributes.userAttributes["one.two.three.four.five.six.seven.eight.nine.ten_eleven_twelve"])
     }
 
+    func testWhenUserAndAccountExtraAttributeNamesExceed10NestedLevels_theyAreEscapedByUnderscore() {
+        // `LogEventEncoder` writes these as `usr.<key>` and `account.<key>`, so the prefix already
+        // consumes one nesting level and the 9th dot is escaped.
+        let extraInfo = [
+            "one.two.three.four.five.six.seven.eight": mockValue(),
+            "one.two.three.four.five.six.seven.eight.nine": mockValue(),
+            "one.two.three.four.five.six.seven.eight.nine.ten": mockValue(),
+            "one.two.three.four.five.six.seven.eight.nine.ten.eleven": mockValue(),
+        ]
+        let log = LogEvent.mockWith(
+            userInfo: UserInfo(id: nil, name: nil, email: nil, extraInfo: extraInfo),
+            accountInfo: AccountInfo(id: "account-id", extraInfo: extraInfo)
+        )
+
+        let sanitized = LogEventSanitizer().sanitize(log: log)
+
+        XCTAssertNotNil(sanitized.userInfo.extraInfo["one.two.three.four.five.six.seven.eight"])
+        XCTAssertNotNil(sanitized.userInfo.extraInfo["one.two.three.four.five.six.seven.eight.nine"])
+        XCTAssertNotNil(sanitized.userInfo.extraInfo["one.two.three.four.five.six.seven.eight.nine_ten"])
+        XCTAssertNotNil(sanitized.userInfo.extraInfo["one.two.three.four.five.six.seven.eight.nine_ten_eleven"])
+
+        XCTAssertNotNil(sanitized.accountInfo?.extraInfo["one.two.three.four.five.six.seven.eight"])
+        XCTAssertNotNil(sanitized.accountInfo?.extraInfo["one.two.three.four.five.six.seven.eight.nine"])
+        XCTAssertNotNil(sanitized.accountInfo?.extraInfo["one.two.three.four.five.six.seven.eight.nine_ten"])
+        XCTAssertNotNil(sanitized.accountInfo?.extraInfo["one.two.three.four.five.six.seven.eight.nine_ten_eleven"])
+    }
+
     func testWhenUserAttributeNameIsInvalid_itIsIgnored() {
         let log = LogEvent.mockWith(
             attributes: .mockWith(

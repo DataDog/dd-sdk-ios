@@ -41,9 +41,14 @@ internal struct LogEventSanitizer {
         // `LogEventEncoder` flattens `usr.*`, `account.*`, custom and internal attributes into keys of a
         // single JSON object, so they are children of the same node and must share one budget.
         // If any attributes need to be removed, we first reduce custom attributes, then `account`, then `usr`.
+        // `usr.*` and `account.*` keys are encoded with a one-level prefix, which counts towards the
+        // nesting limit.
+        let sanitizedUserExtraInfo = attributesSanitizer.sanitizeKeys(for: log.userInfo.extraInfo, prefixLevels: 1)
+        let sanitizedAccountExtraInfo = attributesSanitizer.sanitizeKeys(for: log.accountInfo?.extraInfo ?? [:], prefixLevels: 1)
+
         let limit = AttributesSanitizer.Constraints.maxNumberOfAttributes - (log.attributes.internalAttributes?.count ?? 0)
-        let userExtraInfo = attributesSanitizer.limitNumberOf(attributes: log.userInfo.extraInfo, to: limit)
-        let accountExtraInfo = attributesSanitizer.limitNumberOf(attributes: log.accountInfo?.extraInfo ?? [:], to: limit - userExtraInfo.count)
+        let userExtraInfo = attributesSanitizer.limitNumberOf(attributes: sanitizedUserExtraInfo, to: limit)
+        let accountExtraInfo = attributesSanitizer.limitNumberOf(attributes: sanitizedAccountExtraInfo, to: limit - userExtraInfo.count)
 
         var sanitizedLog = log
         sanitizedLog.tags = sanitize(tags: log.tags)
