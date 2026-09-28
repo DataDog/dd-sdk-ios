@@ -134,5 +134,10 @@ The [remaining preparation](../Results/S2-coverage-remaining-preparation.json) n
 binds the exact nine untouched cells and their first one-cell UIKit split sitting.
 Two review rounds and64 offline controls pass. Completed stack evidence retains
 three distinct classes and contributes no inherited native credit. The existing
-six Home-qualified products, native effects, oracle and cleanup are reused; no
-build or native run was added. Fresh operator/device readiness remains required.
+six Home-qualified products, native effects, oracle and cleanup are reused.
+The first sitting stopped before input while the user was AFK; original INVALID
+and cleanup PASS remain. The explicitly requested fresh attempt qualifies the
+UIKit split SDK26.5 baseline:12 Views,26 Actions (22tap/4swipe), four switch
+omissions, three folds, Home and cleanup PASS. Scoped review accepts this one
+baseline. Eight cells remain; the next SDK27.1 baseline is reviewed but requires
+fresh readiness. No builds or repeated controls were needed, and no whole gate closes.

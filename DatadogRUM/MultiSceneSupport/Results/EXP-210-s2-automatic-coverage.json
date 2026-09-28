@@ -844,37 +844,70 @@
       },
       "candidate": "NOT_LAUNCHED"
     },
+    "stopped_remaining_continuations": [
+      {
+        "binding": {
+          "state": "REVIEWED_PREPARATION_ONLY",
+          "owner": "Results/S2-coverage-remaining-preparation.json",
+          "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-01",
+          "plan": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-01/runtime/runtime-plan.json",
+            "sha256": "69cba1b58d824c293c6681c87dd8a75efbdb487c9f7866be58b30d9a75273f18"
+          },
+          "controls": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-01/runtime/controls.json",
+            "sha256": "ee376f43304e8eae0c0c7e64487d5d507e00588c5235e58804b0aa5aa1ea43b1"
+          },
+          "review": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-01/runtime/review.json",
+            "sha256": "c8aa115eb0e06a0219f89368ad837d660747b2dad0f54792223a669d67c84d18"
+          },
+          "series": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/series/series.json",
+            "sha256": "2edebbacd68e76b2508598b0903cff9b74089c52755ae2778941e1bf77d4908b"
+          },
+          "matrix": [
+            {
+              "build": "baseline-26.5",
+              "device": "duo",
+              "framework": "UIKit",
+              "layout": "split",
+              "multiple_scenes": false
+            }
+          ],
+          "native_admitted": false,
+          "gate_closures": []
+        },
+        "definition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/afk-retry-definition.json",
+          "sha256": "75f2b275ad4485e71a9d81f2e683f210810deff544847df6a5c2c1f547352554"
+        },
+        "state": "INVALID_BEFORE_INPUT_CLEANUP_PASS"
+      }
+    ],
     "s2_remaining_continuation": {
-      "state": "REVIEWED_PREPARATION_ONLY",
-      "owner": "Results/S2-coverage-remaining-preparation.json",
-      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-01",
-      "plan": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-01/runtime/runtime-plan.json",
-        "sha256": "69cba1b58d824c293c6681c87dd8a75efbdb487c9f7866be58b30d9a75273f18"
-      },
-      "controls": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-01/runtime/controls.json",
-        "sha256": "ee376f43304e8eae0c0c7e64487d5d507e00588c5235e58804b0aa5aa1ea43b1"
-      },
-      "review": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-01/runtime/review.json",
-        "sha256": "c8aa115eb0e06a0219f89368ad837d660747b2dad0f54792223a669d67c84d18"
-      },
+      "state": "REVIEWED_SITTING_PREPARATION",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-02",
       "series": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/series/series.json",
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/series-user-retry/series.json",
         "sha256": "2edebbacd68e76b2508598b0903cff9b74089c52755ae2778941e1bf77d4908b"
       },
-      "matrix": [
-        {
-          "build": "baseline-26.5",
-          "device": "duo",
-          "framework": "UIKit",
-          "layout": "split",
-          "multiple_scenes": false
-        }
-      ],
-      "native_admitted": false,
-      "gate_closures": []
+      "plan": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-02/runtime/runtime-plan.json",
+        "sha256": "eac7a4377ff2775a08390c3ac59342c73958c74506f74d20d2873e343a5f6b1a"
+      },
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-02/runtime/controls.json",
+        "sha256": "f5093075577b7557ce87d6242165dc49f4160891becb7cfca895fd29b652ba4e"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-02/runtime/review.json",
+        "sha256": "c757b6f4896a1370a6a84885988424c1c81dd9ea51ce7bcd79fd1223f32675a4"
+      },
+      "previous_assessment": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-01-assessment.json",
+        "sha256": "34ae7591f157ac1beff12e1ca78ade190db63d98c25b84b17f9da81f00beac58"
+      }
     }
   },
   "s2_acceptance_review": {
