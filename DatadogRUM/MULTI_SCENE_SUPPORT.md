@@ -25,7 +25,12 @@ application rebuilt with the iOS27 SDK on iPhone Duo, even without major app-sid
 support changes. Assess automatic UIKit and SwiftUI views and actions separately;
 pre-existing limitations are acceptable when unchanged and clearly documented.
 C07–C10 own this finite no-adoption comparison independently of optional exact
-semantic APIs and their pending review.
+semantic APIs and their pending review. Rebuilding can change a split interface
+from one visible column to Sidebar and Detail together. Compare capture and event
+ownership within the actual layout; equal View counts or navigation sequences
+across build SDKs are not required. Preserve the single-current-view contract and
+document inherited pane attribution limits. General Tab Bar/SplitViewController
+tracking and concurrent pane modeling remain outside this project.
 
 The primary validation areas are:
 

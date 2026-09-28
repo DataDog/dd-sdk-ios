@@ -143,6 +143,14 @@ SDKs, freeze installed binaries, and retain known naming/control limitations.
 A Duo 27.1/regular 27.0 comparison has an OS-patch confound; same-device build pairs
 isolate rebuild changes. Mapper evidence alone is not a backend result.
 
+A rebuild can make Sidebar and Detail visible together where the older SDK showed
+one column. Compare native effects and event owners within each actual layout;
+do not require equal View counts, occurrence ordinals or navigation sequences
+across compilers. Retain unknown/foreign/duplicate-owner checks and classify
+inherited single-current-view limitations. General tab/split capture redesign is
+out of scope. Assess a complete foreground prefix separately from an incomplete
+Home boundary; never discard later rows or promote restoration to scenario proof.
+
 Observe callbacks/value changes independently of RUM. End pending actions with a
 qualified real background boundary, not termination. Freeze pre-pose geometry and
 active-display state; acknowledge native change with unchanged scene identity in a

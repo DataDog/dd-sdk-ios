@@ -886,7 +886,7 @@
       }
     ],
     "s2_remaining_continuation": {
-      "state": "REVIEWED_SITTING_PREPARATION",
+      "state": "INVALID_CAPTURE_SEPARATELY_RESTORED",
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-02",
       "series": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/series-user-retry/series.json",
@@ -907,6 +907,10 @@
       "previous_assessment": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-01-assessment.json",
         "sha256": "34ae7591f157ac1beff12e1ca78ade190db63d98c25b84b17f9da81f00beac58"
+      },
+      "assessment": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-02-assessment/assessment.json",
+        "sha256": "b29bed09d525a04c6a98e3233bf5250533a9efdd615d8fd1bac5b5cc3d9f02ee"
       }
     }
   },
@@ -1048,5 +1052,6 @@
     },
     "state": "PASS_SCOPED_PROGRESS",
     "gates_closed": []
-  }
+  },
+  "current_split_comparison": "Results/S2-coverage-remaining-preparation.json"
 }

@@ -275,9 +275,9 @@
             "S2:A01",
             "S2:F07"
           ],
-          "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild at baseline SDK and baseline-to-candidate SDK at27.1 on Duo. Report UIKit views separately. No new loss, duplicate occurrence or wrong owner for the same actual journey; documented baseline limitations may remain. No40-cell cross-product or whole-payload backend equality.",
+          "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild and baseline-to-candidate at27.1 on Duo; report UIKit views separately. Validate View/Navigation/Action capture and exact event owners within the actual layout. Cross-compiler View counts and occurrence sequences may differ when simultaneous columns change. Classify new loss, duplicates or wrong owners; documented baseline pane/control limitations may remain. No general tab/split tracking redesign, concurrent-pane modeling, strict timing or whole-payload equality.",
           "environment": "Xcode27.1 Duo27.1 simulator;12 shared stack/split cells plus at most4 ordinary baseline controls; reuse valid source-matched observations",
-          "evidence": "Results/S2-coverage-home-collection-20260928.json qualifies the current candidate UIKit stack local comparison:11 Views/25 Actions,29 native effects,three actual folds and Home/cleanup PASS. Both the accepted SDK26.5 baseline and separately reviewed offline SDK27.1 reference match; four switch-action omissions are inherited. Original SDK27.1 INVALID/cleanup INVALID remains. UIKit split still required, so this gate stays OPEN. No backend, physical-Duo or full-matrix claim; no baseline/candidate repeat.",
+          "evidence": "Results/S2-coverage-home-collection-20260928.json qualifies the current candidate UIKit stack local comparison:11 Views/25 Actions,29 native effects,three actual folds and Home/cleanup PASS. Both the accepted SDK26.5 baseline and separately reviewed offline SDK27.1 reference match; four switch-action omissions are inherited. Original SDK27.1 INVALID/cleanup INVALID remains. UIKit split still required, so this gate stays OPEN. No backend, physical-Duo or full-matrix claim; no baseline/candidate repeat. Results/S2-coverage-remaining-preparation.json retains the accepted SDK26.5 split baseline and SDK27.1 capture with incomplete Home inventory and separate restoration PASS. Foreground owner assessment and candidate comparison remain; layout differences do not require matching event counts.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
@@ -310,9 +310,9 @@
             "S2:A01",
             "S2:F07"
           ],
-          "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild at baseline SDK and baseline-to-candidate SDK at27.1 on Duo. Report UIKit actions separately. No new loss, duplicate occurrence or wrong owner for the same actual journey; documented baseline limitations may remain. No40-cell cross-product or whole-payload backend equality.",
+          "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild and baseline-to-candidate at27.1 on Duo; report UIKit actions separately. Validate View/Navigation/Action capture and exact event owners within the actual layout. Cross-compiler View counts and occurrence sequences may differ when simultaneous columns change. Classify new loss, duplicates or wrong owners; documented baseline pane/control limitations may remain. No general tab/split tracking redesign, concurrent-pane modeling, strict timing or whole-payload equality.",
           "environment": "Xcode27.1 Duo27.1 simulator;12 shared stack/split cells plus at most4 ordinary baseline controls; reuse valid source-matched observations",
-          "evidence": "Results/S2-coverage-home-collection-20260928.json qualifies the current candidate UIKit stack local comparison:11 Views/25 Actions,29 native effects,three actual folds and Home/cleanup PASS. Both the accepted SDK26.5 baseline and separately reviewed offline SDK27.1 reference match; four switch-action omissions are inherited. Original SDK27.1 INVALID/cleanup INVALID remains. UIKit split still required, so this gate stays OPEN. No backend, physical-Duo or full-matrix claim; no baseline/candidate repeat.",
+          "evidence": "Results/S2-coverage-home-collection-20260928.json qualifies the current candidate UIKit stack local comparison:11 Views/25 Actions,29 native effects,three actual folds and Home/cleanup PASS. Both the accepted SDK26.5 baseline and separately reviewed offline SDK27.1 reference match; four switch-action omissions are inherited. Original SDK27.1 INVALID/cleanup INVALID remains. UIKit split still required, so this gate stays OPEN. No backend, physical-Duo or full-matrix claim; no baseline/candidate repeat. Results/S2-coverage-remaining-preparation.json retains the accepted SDK26.5 split baseline and SDK27.1 capture with incomplete Home inventory and separate restoration PASS. Foreground owner assessment and candidate comparison remain; layout differences do not require matching event counts.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
@@ -345,7 +345,7 @@
             "S2:A01",
             "S2:F07"
           ],
-          "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild at baseline SDK and baseline-to-candidate SDK at27.1 on Duo. Report SwiftUI views separately. No new loss, duplicate occurrence or wrong owner for the same actual journey; documented baseline limitations may remain. No40-cell cross-product or whole-payload backend equality.",
+          "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild and baseline-to-candidate at27.1 on Duo; report SwiftUI views separately. Validate View/Navigation/Action capture and exact event owners within the actual layout. Cross-compiler View counts and occurrence sequences may differ when simultaneous columns change. Classify new loss, duplicates or wrong owners; documented baseline pane/control limitations may remain. No general tab/split tracking redesign, concurrent-pane modeling, strict timing or whole-payload equality.",
           "environment": "Xcode27.1 Duo27.1 simulator;12 shared stack/split cells plus at most4 ordinary baseline controls; reuse valid source-matched observations",
           "evidence": "Results/S2-capture-contract-preparation.json binds the reviewed12-cell EXP210 preparation: six products/four genuine source/compiler builds reused, exact native ownership/order checks retained and recorder timing diagnostic.125 focused controls and scoped helper-reuse review pass. Fresh operator readiness and first native qualification remain; original stopped input mechanisms stay stopped. No behavioral gate credit.",
           "required": true,
@@ -380,7 +380,7 @@
             "S2:A01",
             "S2:F07"
           ],
-          "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild at baseline SDK and baseline-to-candidate SDK at27.1 on Duo. Report SwiftUI actions separately. No new loss, duplicate occurrence or wrong owner for the same actual journey; documented baseline limitations may remain. No40-cell cross-product or whole-payload backend equality.",
+          "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild and baseline-to-candidate at27.1 on Duo; report SwiftUI actions separately. Validate View/Navigation/Action capture and exact event owners within the actual layout. Cross-compiler View counts and occurrence sequences may differ when simultaneous columns change. Classify new loss, duplicates or wrong owners; documented baseline pane/control limitations may remain. No general tab/split tracking redesign, concurrent-pane modeling, strict timing or whole-payload equality.",
           "environment": "Xcode27.1 Duo27.1 simulator;12 shared stack/split cells plus at most4 ordinary baseline controls; reuse valid source-matched observations",
           "evidence": "Results/S2-capture-contract-preparation.json binds the reviewed12-cell EXP210 preparation: six products/four genuine source/compiler builds reused, exact native ownership/order checks retained and recorder timing diagnostic.125 focused controls and scoped helper-reuse review pass. Fresh operator readiness and first native qualification remain; original stopped input mechanisms stay stopped. No behavioral gate credit.",
           "required": true,
@@ -1758,7 +1758,7 @@
             "S2:A01",
             "S2:F07"
           ],
-          "decisive_test": "Reuse the automatic coverage split journeys for actual Closed/Open display geometry, stable scene/window/controller ownership, selection continuity and no new view/action misattribution. No extra physical-iPad resize matrix or ideal semantic selection guarantee.",
+          "decisive_test": "Reuse the automatic coverage split journeys for actual Closed/Open display geometry, stable scene/window/controller ownership, selection continuity and no new view/action misattribution. No extra physical-iPad resize matrix or ideal semantic selection guarantee. Compare attribution within the observed column layout; inherited single-current-view behavior and legitimate cross-compiler occurrence differences are not regressions.",
           "environment": "Qualified Duo27.1 simulator; physical iPhone/iPad only for a specifically unsupported interaction mechanism, not a duplicate matrix",
           "evidence": "Results/S2-capture-contract-preparation.json binds the reviewed12-cell EXP210 preparation: six products/four genuine source/compiler builds reused, exact native ownership/order checks retained and recorder timing diagnostic.125 focused controls and scoped helper-reuse review pass. Fresh operator readiness and first native qualification remain; original stopped input mechanisms stay stopped. No behavioral gate credit.",
           "required": true,

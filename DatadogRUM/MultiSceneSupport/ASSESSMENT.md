@@ -65,7 +65,7 @@ qualifies one of the four Duo coverage journeys: current candidate view/action
 coverage matches both preserved baseline references, including the existing switch
 action omission. Native input, fold geometry, Home capture and cleanup pass. The
 SDK27.1 baseline remains a reviewed offline reference with its original INVALID
-verdict. UIKit split SDK26.5 now qualifies its baseline capture, folds and Home/cleanup; its rebuilt baseline and candidate still need comparison. Both SwiftUI shapes remain, and C07–C10 are open. The [reviewed continuation](Results/S2-coverage-remaining-preparation.json) preserves the original AFK stop and all evidence classes. The [WebView pair](Results/S2-T10-source-preparation.json) closes S2:T10: the
+verdict. UIKit split SDK26.5 qualifies. The SDK27.1 split capture retains a post-Home Sidebar occurrence and incomplete terminal inventory; separate restoration passes. Different simultaneous-column layouts do not require equal event counts. Foreground ownership assessment and a candidate comparison remain, with existing split tracking limits preserved. Both SwiftUI shapes remain and C07–C10 are open. The [continuation](Results/S2-coverage-remaining-preparation.json) owns the evidence classes and revised comparison scope. The [WebView pair](Results/S2-T10-source-preparation.json) closes S2:T10: the
 active native owner survives181seconds, delayed A events retain A within inactive
 retention and have no container after expiry, and the detached WebView releases.
 Both complete backend inventories contain9rows. Candidate scenario, evidence and

@@ -139,5 +139,16 @@ The first sitting stopped before input while the user was AFK; original INVALID
 and cleanup PASS remain. The explicitly requested fresh attempt qualifies the
 UIKit split SDK26.5 baseline:12 Views,26 Actions (22tap/4swipe), four switch
 omissions, three folds, Home and cleanup PASS. Scoped review accepts this one
-baseline. Eight cells remain; the next SDK27.1 baseline is reviewed but requires
-fresh readiness. No builds or repeated controls were needed, and no whole gate closes.
+baseline. The next SDK27.1 split run captured all input and folds but retained a
+new active Sidebar occurrence after Home; final collection and original cleanup
+are INVALID. The later Released acknowledgement allowed separate same-PID idle,
+task removal and Closed restoration, all PASS. Original bytes/verdicts remain.
+The two frozen SDK revisions have identical UIKit view handlers and predicates.
+SDK26.5 single-column and SDK27.1 simultaneous-column layouts need ownership
+classification, not matching event counts. Saved-phase replay revalidates29 native
+effects and three folds;26Actions reconcile with21View identities, with the same
+four switch omissions. The delayed final action predates Home, while the new
+action-free Sidebar remains active in a background scene. This is scoped offline
+ownership evidence, not full Home or native-baseline qualification. Implement and
+review the opt-in candidate comparison; neither baseline needs repeating. Seven
+cells are untouched, no new build/control run occurred, and no whole gate closes.
