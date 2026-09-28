@@ -7,26 +7,14 @@
 import SafariServices
 import UIKit
 
-internal final class SafariFixtureViewController: UIViewController, SFSafariViewControllerDelegate {
-    private var completion: (() -> Void)?
-
+internal final class SafariFixtureViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
     }
 
-    func showSafari(completion: @escaping () -> Void) {
-        self.completion = completion
-
+    func showSafari() {
         let safariViewController = SFSafariViewController(url: URL(string: "http://127.0.0.1")!)
-        safariViewController.delegate = self
         present(safariViewController, animated: false)
-    }
-
-    func safariViewController(_ controller: SFSafariViewController, didCompleteInitialLoad didLoadSuccessfully: Bool) {
-        // A failed load is expected for the local URL and still means Safari is ready.
-        let completion = self.completion
-        self.completion = nil
-        completion?()
     }
 }

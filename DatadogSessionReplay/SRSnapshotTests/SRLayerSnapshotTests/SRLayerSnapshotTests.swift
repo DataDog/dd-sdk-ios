@@ -46,13 +46,32 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
     }
 
     func testSafari() async throws {
+        func containsVisibleHost(_ layer: CALayer) -> Bool {
+            guard let layerClass = NSClassFromString("CALayerHost"), !layer.isHidden, layer.opacity > 0 else {
+                return false
+            }
+            return (layer.isKind(of: layerClass) && !layer.bounds.isEmpty)
+                || layer.sublayers?.contains(where: containsVisibleHost) ?? false
+        }
+
         let fixture = SafariFixtureViewController()
-        let ready = XCTestExpectation(description: "Safari initial load")
+        let ready = XCTNSPredicateExpectation(
+            predicate: NSPredicate { object, _ in
+                guard let fixture = object as? SafariFixtureViewController,
+                      let view = fixture.presentedViewController?.viewIfLoaded else {
+                    return false
+                }
+                return containsVisibleHost(view.layer)
+            },
+            object: fixture
+        )
+        ready.expectationDescription = "Safari remote content"
+
         try await takeLayerSnapshotFor(
             fixture,
             beforeSnapshot: {
-                fixture.showSafari { ready.fulfill() }
-                await self.fulfillment(of: [ready], timeout: 10)
+                fixture.showSafari()
+                await self.fulfillment(of: [ready], timeout: 10.0)
             },
             shouldRecord: shouldRecord
         )
