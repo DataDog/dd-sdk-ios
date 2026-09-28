@@ -98,3 +98,12 @@ accessibility-label contract, and checks the counter before requesting input.
 preparation binds six products and a new series; the failed series remains consumed.
 The current [capture preparation](../Results/S2-capture-contract-preparation.json)
 owns fresh readiness and native qualification. No equivalent diagnostic is due.
+
+The corrected one-cell sitting subsequently qualified the SDK26.5 UIKit stack
+baseline on Duo27.1: scenario, local event evidence, worker absence and cleanup
+all PASS. Its11 Views and25 automatic actions have no duplicate, foreign or
+unassigned actions. Four real switch changes have no automatic action in this
+baseline; their comparison remains open. Closed/Open/Closed/Open display
+transitions and Home were captured, the task app was removed and Closed restored.
+The accepted cell is inherited by the next two-cell SDK27.1 baseline/candidate
+sitting. One of12 required cells is complete; no release gate closes yet.

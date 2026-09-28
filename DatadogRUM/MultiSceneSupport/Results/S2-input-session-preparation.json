@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
   "work_item": "S2 finite input preparation",
-  "status": "THREE_REMAINING_PACKAGES; COUNTER_REPAIR_REVIEWED; NATIVE_UNADMITTED",
-  "updated_at": "2026-09-28T11:39:47.685805+00:00",
+  "status": "THREE_REMAINING_PACKAGES; COVERAGE_ONE_OF_TWELVE_QUALIFIED",
+  "updated_at": "2026-09-28T11:59:30.329409+00:00",
   "owner": "Harness implementer; root owns native lane",
   "scope_owner": "Results/S2-release-gate-review-20260925.json; release-gates.json releases.S2.execution_packages",
   "source_pair": {
@@ -28,11 +28,11 @@
       ],
       "owner": "SDK implementer; human operator for input",
       "evidence_owner": "Results/S2-capture-contract-preparation.json",
-      "remaining": "12 Duo cells: UIKit/SwiftUI stack/split for baseline built26.5, baseline built27.1 and candidate built27.1. At most4 ordinary controls only if needed; no extra manual split or physical resize matrix.",
+      "remaining": "11 Duo cells remain. SDK26.5 UIKit stack is qualified and must be reused; next are SDK27.1 UIKit stack baseline/candidate, followed by the nine other stack/split cells. At most4 ordinary controls only if needed.",
       "decisive_test": "Actual control/navigation/fold effect and exact view/action owner parity. Split journeys supply H14. Existing naming/control limitations remain explicit.",
       "environment": "Xcode27.1 Duo27.1; six refreshed passive-observer products from three original source/compiler pairs (26.5 and27.1).",
-      "preparation": "New one-cell sitting binds reviewed counter correction and six replacement observer products. Failed first sitting stays consumed; cleanup passed.",
-      "blocker": "Fresh Duo and visible operator page readiness; first required baseline qualifies the changed counter capture."
+      "preparation": "First corrected sitting completed scenario/evidence/cleanup PASS. Reviewed next two-cell sitting uses unchanged helpers and products and inherits the accepted baseline.",
+      "blocker": "Fresh Duo and page-visible operator readiness for the reviewed two-cell SDK27.1 UIKit stack sitting."
     },
     {
       "id": "transitions",

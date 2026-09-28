@@ -2,7 +2,7 @@
   "schema_version": 1,
   "experiment": "EXP-210",
   "title": "Qualify the frozen E01 S2 automatic UIKit and SwiftUI coverage",
-  "status": "CHECKPOINTED: UNRESOLVED NATIVE-INPUT VARIABILITY; NO GATE CREDIT",
+  "status": "PARTIAL: ONE OF TWELVE S2 CELLS QUALIFIED; COMPARISONS PENDING",
   "defined_at": "2026-09-20T16:41:07.286869+00:00",
   "defined_before_implementation": true,
   "owner": "root",
@@ -511,7 +511,7 @@
     "sha256": "1e9f9c0b02d0ed0ef1331f53bddfdedef3fdd47d50f397fd6f5e179f6047fc10",
     "acceptance": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/host-review-acceptance.json"
   },
-  "updated_at": "2026-09-28T11:39:47.685805+00:00",
+  "updated_at": "2026-09-28T11:59:30.329409+00:00",
   "input_diagnostic_definition": {
     "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/D1-input-diagnostic-definition.json",
     "sha256": "e5c9a6f5743a120680de3e692837cbfff400fdfb2277dac8bed61b53dc8156a0",
@@ -795,23 +795,23 @@
       "gate_closures": []
     },
     "s2_session_continuation": {
-      "state": "COUNTER_REPAIR_REVIEWED_FINITE_S2_SITTING_NATIVE_UNADMITTED",
+      "state": "ONE_QUALIFIED_CELL_NEXT_TWO_CELL_SITTING_REVIEWED",
       "series": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-series/series.json",
         "sha256": "10fffcee74b48e163876c5b7e6d253b698547b6795b52fb66a1d4a1d9cde6d87"
       },
-      "runtime_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-01/runtime",
+      "runtime_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-02/runtime",
       "plan": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-01/runtime/runtime-plan.json",
-        "sha256": "3e1f30f57caba1b676551a109fd694750f84fa810d6e22a698c26bee77c3390f"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-02/runtime/runtime-plan.json",
+        "sha256": "b19a611ad2bfaf82de808352ad0d2617884cb8eea16ace3f394704c872062ae7"
       },
       "review": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-01/runtime/review.json",
-        "sha256": "6155e0dabcf6dd2710b121692511251f7444fd5ad722160792321d6d19e86b59"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-02/runtime/review.json",
+        "sha256": "5b661d61984e5c0083bdf38291d06c6509da81ad59b589d84496c3f71db3b140"
       },
       "controls": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-01/runtime/controls.json",
-        "sha256": "7ffea120f33790006b8adf326ee53c21763df3cc43aeed609cdf521f6b1d4b08"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-02/runtime/controls.json",
+        "sha256": "0b980fc3480a900cb53252a887a5af76a42bf777a80572f7af4c3d00c72caf1a"
       },
       "master_plan": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-master/runtime/runtime-plan.json",
@@ -821,12 +821,19 @@
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/observer-refresh/refresh-plan.json",
         "sha256": "53ce299626151bda1f8ac79e59285318071f003e6a4a65eedc7262582b9ba3fb"
       },
-      "cells": 1,
-      "remaining_universe": 12,
+      "cells": 2,
+      "remaining_universe": 11,
       "max_cells_per_sitting": 3,
       "native_admitted": false,
       "repair_owner": "Results/S2-coverage-counter-observation-20260928.json",
-      "gate_closures": []
+      "gate_closures": [],
+      "native_cells_executed": 0,
+      "native_cells_qualified": 1,
+      "session_complete": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-01/runtime/session-complete.json",
+        "sha256": "bc68be28c583a37de6fc2a2437ce88483e3220d4ad97809c22937fe7655a4364"
+      },
+      "inherited_cells": 1
     }
   },
   "s2_acceptance_review": {
@@ -861,11 +868,11 @@
     "remaining": "Fresh operator readiness and first baseline input qualification; stopped automatic-input paths remain stopped. Original40-cell plans and failures remain immutable."
   },
   "current_capture_contract": {
-    "state": "REVIEWED_HARNESS_AND_OBSERVER_BUILDS_NATIVE_UNADMITTED",
+    "state": "FIRST_BASELINE_NATIVE_QUALIFIED",
     "owner_record": "Results/S2-capture-contract-preparation.json",
     "repair_loop": "Results/human-harness-repair-loop-20260927.json",
     "scope": "Recorder timing is diagnostic. Exact stable ownership, native order, finite View/Action inventory and released native input remain required. Original attempts and legacy runtime plans are immutable.",
-    "native_runs": 0,
+    "native_runs": 1,
     "gate_closures": []
   },
   "current_counter_repair": "Results/S2-coverage-counter-observation-20260928.json",
@@ -906,6 +913,52 @@
       "native_cells_executed": 1,
       "native_cells_qualified": 0,
       "current_attempt": "Results/S2-coverage-counter-observation-20260928.json"
+    }
+  ],
+  "current_native_qualification": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/sitting-01-assessment.json",
+    "sha256": "f43232785068aa4aab59aee59be56e166ffd34e702987ab64f402bc865f045c1"
+  },
+  "completed_s2_sittings": [
+    {
+      "state": "FIRST_SITTING_COMPLETE_ONE_OF_TWELVE_QUALIFIED",
+      "series": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-series/series.json",
+        "sha256": "10fffcee74b48e163876c5b7e6d253b698547b6795b52fb66a1d4a1d9cde6d87"
+      },
+      "runtime_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-01/runtime",
+      "plan": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-01/runtime/runtime-plan.json",
+        "sha256": "3e1f30f57caba1b676551a109fd694750f84fa810d6e22a698c26bee77c3390f"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-01/runtime/review.json",
+        "sha256": "6155e0dabcf6dd2710b121692511251f7444fd5ad722160792321d6d19e86b59"
+      },
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-01/runtime/controls.json",
+        "sha256": "7ffea120f33790006b8adf326ee53c21763df3cc43aeed609cdf521f6b1d4b08"
+      },
+      "master_plan": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-master/runtime/runtime-plan.json",
+        "sha256": "b2f9718e5c0fc41baf73f678b6bb2a49ecb9b4ca530685f96edab53f982bbed2"
+      },
+      "observer_refresh": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/observer-refresh/refresh-plan.json",
+        "sha256": "53ce299626151bda1f8ac79e59285318071f003e6a4a65eedc7262582b9ba3fb"
+      },
+      "cells": 1,
+      "remaining_universe": 12,
+      "max_cells_per_sitting": 3,
+      "native_admitted": true,
+      "repair_owner": "Results/S2-coverage-counter-observation-20260928.json",
+      "gate_closures": [],
+      "native_cells_executed": 1,
+      "native_cells_qualified": 1,
+      "session_complete": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-01/runtime/session-complete.json",
+        "sha256": "bc68be28c583a37de6fc2a2437ce88483e3220d4ad97809c22937fe7655a4364"
+      }
     }
   ]
 }

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "Repair the counter observation gap found by the first human coverage cell",
-  "status": "REPAIR_REVIEWED_BUILDS_AND_BINDINGS_READY_NATIVE_UNADMITTED",
+  "status": "NATIVE_BASELINE_QUALIFIED_ONE_OF_TWELVE",
   "owner": "Root",
   "reviewer": "/root/c06_runtime_plan",
   "gates": [
@@ -77,7 +77,7 @@
   },
   "gates_closed": [],
   "sdk_changes": false,
-  "updated_at": "2026-09-28T11:39:47.685805+00:00",
+  "updated_at": "2026-09-28T11:59:30.329409+00:00",
   "controls": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/counter-controls.json",
     "sha256": "4c029ec67d3eeb788a60be6c960b8f2dc3e7beec20cd7b1d5c12cd6bd4c274df"
@@ -124,5 +124,34 @@
       }
     }
   },
-  "next_action": "Fresh page-visible readiness for the new one-cell UIKit baseline sitting. Validate the real counter witness before the first prompt. Original failed attempt remains invalid and consumed; no SDK gate closed."
+  "next_action": "Fresh page-visible readiness for the reviewed two-cell SDK27.1 UIKit stack baseline/candidate sitting. The accepted SDK26.5 baseline is inherited; no repeat is due.",
+  "native_qualification": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/sitting-01-assessment.json",
+    "sha256": "f43232785068aa4aab59aee59be56e166ffd34e702987ab64f402bc865f045c1"
+  },
+  "next_sitting": {
+    "state": "REVIEWED_PREPARATION_ONLY",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-02",
+    "plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-02/runtime/runtime-plan.json",
+      "sha256": "b19a611ad2bfaf82de808352ad0d2617884cb8eea16ace3f394704c872062ae7"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-02/runtime/controls.json",
+      "sha256": "0b980fc3480a900cb53252a887a5af76a42bf777a80572f7af4c3d00c72caf1a"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-02/runtime/review.json",
+      "sha256": "5b661d61984e5c0083bdf38291d06c6509da81ad59b589d84496c3f71db3b140"
+    },
+    "predecessor": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/coverage-sitting-01/runtime/session-complete.json",
+      "sha256": "bc68be28c583a37de6fc2a2437ce88483e3220d4ad97809c22937fe7655a4364"
+    },
+    "cells": 2,
+    "inherited_cells": 1,
+    "remaining_total": 11,
+    "native_admitted": false,
+    "gate_closures": []
+  }
 }
