@@ -142,4 +142,19 @@ cleanup PASS; no deadline expired. The corrected source-bound oracle passes the
 complete saved capture and47 focused controls. Separate backend retrieval found
 only the early parent/rum-ok spans and6RUM rows, so it cannot qualify persistence.
 The owning result retains this failed run, separate replay, repair review and fresh
-preparation. Neither the remaining three original cells nor a candidate fold ran.
+preparation. The remaining three cells did not run in that stopped stage.
+
+The corrected human stage then captured all four source/mode cells without another
+build. Both baselines retain the expected terminal-view observation; automatic
+candidate passes. Registered candidate passes native ownership but its original
+backend collection exhausts20 attempts before the600-second phase limit; original
+INVALID and cleanup PASS remain. A separately reviewed, unchanged-window backend
+assessment retrieves all three complete inventories on their first attempt and
+passes the unchanged strict oracle using the saved native evidence. No gesture is
+repeated. Each cell has11 native tasks,5 Resources,1 Error,1 Action,3 views,6 client
+spans,12 RUM rows and two independent10-span inventories, with stable owned topology
+across Closed/Open/Closed. All four cleanups pass. The final paired review combines
+this evidence with accepted navigation, candidate rollover and F08 to close S2:T03
+and S2:T08. The fold owner retains the exact comparison and review; inherited E03/
+E05 limits, earlier invalid attempts, automatic tracking and physical Duo remain
+separate. No Resource/Trace repeat is due.

@@ -440,10 +440,10 @@
     "S2": {
       "name": "Single-scene iPhone Duo readiness",
       "deadline": "2026-10-16",
-      "shipping_rule": "No worse RUM after SDK27 rebuild without major app changes, evaluated by the S2 semantic acceptance contract and six finite execution packages below. E01+DL01+E04 productionc9faed81 on62f64 retains qualified source/lifetime/compatibility evidence; Duo behavior, integrated ownership and final review remain open. No new scene API, duplicate physical matrix or immediate background-upload requirement.",
+      "shipping_rule": "No worse RUM after SDK27 rebuild without major app changes, evaluated by the S2 semantic acceptance contract and six finite execution packages below. E01+DL01+E04 productionc9faed81 on62f64 retains qualified source/lifetime/compatibility evidence. Resource/Trace, WebView and integrated-app ownership qualify; automatic coverage, UIKit transitions and final review remain open. No new scene API, duplicate physical matrix or immediate background-upload requirement.",
       "required": {
         "count": 27,
-        "closed": 17,
+        "closed": 19,
         "remaining": [
           {
             "id": "S2:C07",
@@ -474,24 +474,6 @@
           },
           {
             "id": "S2:C10",
-            "status": "OPEN",
-            "owner": "SDK implementer",
-            "dependencies": [
-              "S2:A01",
-              "S2:F07"
-            ]
-          },
-          {
-            "id": "S2:T03",
-            "status": "OPEN",
-            "owner": "SDK implementer",
-            "dependencies": [
-              "S2:A01",
-              "S2:F07"
-            ]
-          },
-          {
-            "id": "S2:T08",
             "status": "OPEN",
             "owner": "SDK implementer",
             "dependencies": [

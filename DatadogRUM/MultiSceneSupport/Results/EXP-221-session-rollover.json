@@ -61,7 +61,7 @@
   "native_launches": 4,
   "completed_builds": 2,
   "gate_closures": [],
-  "next_action": "No rollover retry is due. Implement and review the separately defined one-session Duo fold stage; integrated-app obligations remain.",
+  "next_action": "No repeat is due. Results/EXP-221-duo-fold.json qualified_fold closes S2:T03/T08 with the separately qualified app obligation; the restart cursor owns remaining S2 work.",
   "build_summary": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-session-rollover-jhqk1yii/build-summary.json",
     "sha256": "93862901d77a40df8a1998e957c59a306995fc8ac81bea984cf3ab0ce4dffd1d"

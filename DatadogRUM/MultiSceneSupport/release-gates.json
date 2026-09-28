@@ -878,14 +878,14 @@
         },
         "S2": {
           "scope": "Single-scene active-work Resource ownership",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [
             "S2:A01",
             "S2:F07"
           ],
           "decisive_test": "Preserve accepted navigation and rollover checks. Remaining fold workload must retain Resource start-view/session, success/error and metrics, with no new foreign action/error counts. Keep inherited EXP202 Resource/action count1/0 limitation; E03 is excluded. App-level Resource parity is checked once in F08.",
           "environment": "Four shared Duo fold cells (baseline/candidate \u00d7 automatic/registered URLSession) with scoped RUM/APM joins; integrated app checked once by F08",
-          "evidence": "EXP221 qualifies all four navigation cells; both selected-candidate rollover modes also pass strict native/backend/cleanup checks. Both rollover baselines remain INVALID on reviewed repeated-resume currentRequest baggage mutation; protocol-start carriers stayed old-owned. Results/EXP-221-s2-resource-trace.json and Results/EXP-221-session-rollover.json own the evidence and limits. Actual fold remains open. S2:F08 closes the shared integrated-app journey obligation with72 source-bound Resources per arm and reviewed native operation consistency; it adds no APM-span inventory claim. E03/E05 limitations are unchanged. September28 human baseline captured both folds with unchanged owned topology; a stale fixture-timeout assertion stopped original acceptance before final backend collection. Original INVALID/cleanup PASS remains. Corrected complete local replay and47 focused controls pass; post-stop inventory has only2early spans/6RUM rows and does not qualify persistence. Fresh source-bound runtime preparation owns the four remaining complete comparisons; no candidate fold ran.",
+          "evidence": "Selected-source navigation and both candidate rollover modes remain qualified at62f64d7b/c9faed81; invalid rollover baselines and inherited E03/E05 limits remain. September28 completes the four actual Duo fold captures: both baselines retain expected observations, automatic candidate PASS, registered candidate separately assessed PASS with its original INVALID/cleanup PASS unchanged. Each has11 native tasks,5 Resources,1 Error,1 Action,3 views,6 client spans,12 RUM rows and independent10-span session/service inventories; all cleanup PASS. Unchanged strict oracle and independent paired review qualify exact ownership, metrics, IDs/carriers and lifecycle continuity. No gesture repeat. Results/EXP-221-duo-fold.json owns the proof; S2:F08 separately qualifies the shared app obligation with72 Resources per arm.",
           "required": true,
           "completion_mode": "Captured Resource start ownership; inherited action-count limitation documented",
           "completed_checks": [
@@ -908,6 +908,16 @@
               "deliverable": "Qualify held Resource and Trace work across an explicit session rollover in both URLSession modes",
               "decisive_test": "Both candidate modes pass the unchanged strict two-session native oracle, 13 RUM rows, two independent 10-span inventories, nine full traces and cleanup. Both baseline failures remain invalid with source-attributed currentRequest baggage mutation; no backend or comparison pass is inferred for them.",
               "environment": "Existing Duo27.1 /24A94401, Xcode27.1 /27A9269, Release fixture and authenticated Datadog RUM/APM"
+            },
+            {
+              "owner": "SDK implementer; independent reviewer",
+              "dependencies": [
+                "S2:A01",
+                "S2:F07"
+              ],
+              "deliverable": "Qualify held Resource/Trace ownership across actual Closed/Open/Closed Duo display changes in automatic and registered URLSession modes",
+              "decisive_test": "Four source-bound captures, complete native and independent RUM/APM inventories, unchanged strict ownership oracle and cleanup; registered candidate uses separately assessed persistence with original INVALID preserved. Paired review PASS.",
+              "environment": "Duo27.1 /24A94401, Xcode27.1 /27A9269, frozen Release fixtures and authenticated Datadog RUM/APM"
             }
           ],
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
@@ -1058,14 +1068,14 @@
         },
         "S2": {
           "scope": "Single-scene active-work Trace correlation",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [
             "S2:A01",
             "S2:F07"
           ],
           "decisive_test": "Use the same remaining fold workload as T03. Preserve manual span start ownership, existing automatic completion-time RUM correlation, exact within-run trace/parent IDs and unchanged carriers/sampling. Keep inherited EXP202 limit and intentional E01 fix; E05 is excluded.",
           "environment": "Four shared Duo fold cells (baseline/candidate \u00d7 automatic/registered URLSession) with scoped RUM/APM joins; integrated app checked once by F08",
-          "evidence": "EXP221 qualifies all four navigation cells; both selected-candidate rollover modes also pass strict native/backend/cleanup checks. Both rollover baselines remain INVALID on reviewed repeated-resume currentRequest baggage mutation; protocol-start carriers stayed old-owned. Results/EXP-221-s2-resource-trace.json and Results/EXP-221-session-rollover.json own the evidence and limits. Actual fold remains open. S2:F08 closes the shared integrated-app journey obligation with72 source-bound Resources per arm and reviewed native operation consistency; it adds no APM-span inventory claim. E03/E05 limitations are unchanged. September28 human baseline captured both folds with unchanged owned topology; a stale fixture-timeout assertion stopped original acceptance before final backend collection. Original INVALID/cleanup PASS remains. Corrected complete local replay and47 focused controls pass; post-stop inventory has only2early spans/6RUM rows and does not qualify persistence. Fresh source-bound runtime preparation owns the four remaining complete comparisons; no candidate fold ran.",
+          "evidence": "Selected-source navigation and both candidate rollover modes remain qualified at62f64d7b/c9faed81; invalid rollover baselines and inherited E03/E05 limits remain. September28 completes the four actual Duo fold captures: both baselines retain expected observations, automatic candidate PASS, registered candidate separately assessed PASS with its original INVALID/cleanup PASS unchanged. Each has11 native tasks,5 Resources,1 Error,1 Action,3 views,6 client spans,12 RUM rows and independent10-span session/service inventories; all cleanup PASS. Unchanged strict oracle and independent paired review qualify exact ownership, metrics, IDs/carriers and lifecycle continuity. No gesture repeat. Results/EXP-221-duo-fold.json owns the proof; S2:F08 separately qualifies the shared app obligation with72 Resources per arm.",
           "required": true,
           "completion_mode": "Captured manual span start ownership; documented existing process-context fallback for automatic URLSession completion",
           "completed_checks": [
@@ -1088,6 +1098,16 @@
               "deliverable": "Qualify held Resource and Trace work across an explicit session rollover in both URLSession modes",
               "decisive_test": "Both candidate modes pass the unchanged strict two-session native oracle, 13 RUM rows, two independent 10-span inventories, nine full traces and cleanup. Both baseline failures remain invalid with source-attributed currentRequest baggage mutation; no backend or comparison pass is inferred for them.",
               "environment": "Existing Duo27.1 /24A94401, Xcode27.1 /27A9269, Release fixture and authenticated Datadog RUM/APM"
+            },
+            {
+              "owner": "SDK implementer; independent reviewer",
+              "dependencies": [
+                "S2:A01",
+                "S2:F07"
+              ],
+              "deliverable": "Qualify held Resource/Trace ownership across actual Closed/Open/Closed Duo display changes in automatic and registered URLSession modes",
+              "decisive_test": "Four source-bound captures, complete native and independent RUM/APM inventories, unchanged strict ownership oracle and cleanup; registered candidate uses separately assessed persistence with original INVALID preserved. Paired review PASS.",
+              "environment": "Duo27.1 /24A94401, Xcode27.1 /27A9269, frozen Release fixtures and authenticated Datadog RUM/APM"
             }
           ],
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
@@ -2875,7 +2895,7 @@
       "id": "S2",
       "name": "Single-scene iPhone Duo readiness",
       "deadline": "2026-10-16",
-      "shipping_rule": "No worse RUM after SDK27 rebuild without major app changes, evaluated by the S2 semantic acceptance contract and six finite execution packages below. E01+DL01+E04 productionc9faed81 on62f64 retains qualified source/lifetime/compatibility evidence; Duo behavior, integrated ownership and final review remain open. No new scene API, duplicate physical matrix or immediate background-upload requirement.",
+      "shipping_rule": "No worse RUM after SDK27 rebuild without major app changes, evaluated by the S2 semantic acceptance contract and six finite execution packages below. E01+DL01+E04 productionc9faed81 on62f64 retains qualified source/lifetime/compatibility evidence. Resource/Trace, WebView and integrated-app ownership qualify; automatic coverage, UIKit transitions and final review remain open. No new scene API, duplicate physical matrix or immediate background-upload requirement.",
       "hardware_uncertainty": "No physical Duo validated. Targeted F09 follows when hardware is available; it is not pre-release readiness proof.",
       "selected_candidate": "E01 + DL01 + E04",
       "candidate_freeze": {
@@ -2894,7 +2914,7 @@
           "E05",
           "deferred semantic SwiftUI and multi-scene implementation"
         ],
-        "status": "SOURCE/LIFETIME/DOCUMENTATION/COMPATIBILITY QUALIFIED; DUO/APP/BACKEND/FINAL RELEASE OPEN",
+        "status": "SOURCE/LIFETIME/DOCUMENTATION/COMPATIBILITY/RESOURCE_TRACE/WEBVIEW/APP QUALIFIED; AUTOMATIC_COVERAGE/UIKIT_TRANSITIONS/FINAL RELEASE OPEN",
         "documentation": "Results/S2-F02-composition-documentation.json",
         "compatibility": "Results/EXP-217-s2-compatibility.json"
       },
@@ -2909,7 +2929,7 @@
         ],
         "evidence": "Results/EXP-216-s2-composition-promotion.json",
         "status": "SELECTED; SOURCE/P03/F02/F03 QUALIFIED",
-        "remaining": "Current candidate Duo/app/backend/final gates remain open. S2:F03 closes at unchanged7604da24 through EXP-217. No accepted checks rerun merely to resume.",
+        "remaining": "Automatic coverage, UIKit transitions and final review remain open. Compatibility at unchanged7604da24, Resource/Trace, WebView and app evidence qualify within their recorded scopes. No accepted check repeats merely to resume.",
         "production_revision": "c9faed816a1d4828d7d8c4b64acae01119425889"
       },
       "candidate_freeze_history": [
@@ -3033,7 +3053,7 @@
             "A01",
             "F07"
           ],
-          "decisive_test": "Retain accepted navigation/rollover evidence. Four remaining fold cells: baseline/candidate \u00d7 automatic/registered URLSession. One shared workload checks Resource success/error/start owner and metrics plus trace/parent IDs, existing correlation and carriers. App resources are checked once in F08.",
+          "decisive_test": "Retain accepted navigation/rollover and four completed fold captures: baseline/candidate \u00d7 automatic/registered URLSession. The shared workload checks Resource success/error/start owner and metrics plus trace/parent IDs, existing correlation and carriers. Registered candidate backend is a separate assessed composition. App resources qualify once in F08; no repeat is due.",
           "environment": "Duo27.1 simulator and authenticated RUM/APM collection after the behavioral boundary",
           "budget": "Four fold cells; no navigation/rollover rerun or separate Trace campaign",
           "evidence_owner": "Results/EXP-221-duo-fold.json"

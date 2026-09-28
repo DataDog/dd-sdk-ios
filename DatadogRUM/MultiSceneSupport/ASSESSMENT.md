@@ -13,7 +13,7 @@ The provisional S3 candidate qualifies all20 platform builds, full RUM27/17.5 an
 | Stage | Qualified scope | Remaining limit |
 | --- | --- | --- |
 | S1: existing-customer reliability | Seven independently prepared packets with source-matched evidence; publication and follow-up history live in the [delivery queue](Results/S1-delivery-queue.json). | Current-head CI, maintainer review and final delivery remain separate from local qualification. Only H00 → E01 is an established merge dependency. |
-| S2: single-scene SDK27 Duo readiness | Exact E01+DL01+E04 production `c9faed81`, documentation `7604da24`. [Composition/lifetime](Results/EXP-216-s2-composition-promotion.json), [documentation](Results/S2-F02-composition-documentation.json), [compatibility](Results/EXP-217-s2-compatibility.json) and the [controlled app comparison](Results/S2-F08-candidate-comparison.json) qualify their finite scopes. | Automatic Duo coverage, interactive transitions, Resource/Trace fold and final-release acceptance remain open. Historical reference results below cannot certify them. |
+| S2: single-scene SDK27 Duo readiness | Exact E01+DL01+E04 production `c9faed81`, documentation `7604da24`. [Composition/lifetime](Results/EXP-216-s2-composition-promotion.json), [documentation](Results/S2-F02-composition-documentation.json), [compatibility](Results/EXP-217-s2-compatibility.json) and the [controlled app comparison](Results/S2-F08-candidate-comparison.json) qualify their finite scopes. | Automatic Duo coverage, interactive transitions and final-release acceptance remain open. Historical reference results below cannot certify them. |
 | S3: full multi-scene support | Experimental scene/semantic behavior has the bounded reference evidence below. | Stable API/RFC, remaining physical topology/ordering and final release obligations remain. F01 proposals are not approval. |
 
 The [S2 scope review](Results/S2-release-gate-review-20260925.json) retains actual
@@ -40,13 +40,15 @@ manual parent and automatic completion-time Trace correlation match the baseline
 and candidate terminal views stop correctly. Both candidate modes also pass
 [explicit session rollover](Results/EXP-221-session-rollover.json). Baseline repeated
 resumes mutate currentRequest baggage; their observed protocol-start carriers stay
-original-owned. [Fold](Results/EXP-221-duo-fold.json) remains unqualified. The latest human baseline
-captures both poses with continuous scene/window/process ownership. Its original
-run stopped on a stale fixture-configuration assertion; corrected saved replay
-passes, but final backend evidence is incomplete and no candidate fold has run.
-This is a harness finding, with no demonstrated SDK regression. Cleanup passes.
+original-owned. [Fold](Results/EXP-221-duo-fold.json) now closes S2:T03/T08 with
+four source-bound Closed/Open/Closed captures and complete RUM/APM ownership
+checks. Both baseline modes retain their terminal-view observations; candidate
+checks pass. Registered candidate persistence qualifies through a separate saved-
+capture assessment after its original collection hit an attempt cap. That original
+INVALID and all cleanup results remain unchanged; no gestures were repeated.
+Inherited E03 action-count and E05 automatic completion-correlation limits remain.
 The controlled-app obligation is qualified by F08 below; automatic view/action
-tracking remains separate.
+tracking and physical Duo acceptance remain separate.
 
 The current-source automatic comparison has unresolved native-input variability.
 [EXP-210](Results/EXP-210-s2-automatic-coverage.json) includes SDK-on switch failures
