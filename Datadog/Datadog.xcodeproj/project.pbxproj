@@ -265,6 +265,11 @@
 		11BBF8E32DC1268800875558 /* DatadogConfiguration+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BBF8DF2DC1268800875558 /* DatadogConfiguration+objc.swift */; };
 		11BBF8EB2DC12A5B00875558 /* CoreLoggerLevel+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11BBF8EA2DC12A5B00875558 /* CoreLoggerLevel+objc.swift */; };
 		11C4E5922F571F86002196F4 /* ProfileAttachments.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11C4E5902F571F86002196F4 /* ProfileAttachments.swift */; };
+		11D51908306AA5D2008C003F /* fishhook.c in Sources */ = {isa = PBXBuildFile; fileRef = 11D51907306AA5D2008C003F /* fishhook.c */; };
+		11D5190A306AA5D7008C003F /* fishhook.h in Headers */ = {isa = PBXBuildFile; fileRef = 11D51909306AA5D7008C003F /* fishhook.h */; };
+		11D5190C306AA655008C003F /* swift_alloc_hook.h in Headers */ = {isa = PBXBuildFile; fileRef = 11D5190B306AA655008C003F /* swift_alloc_hook.h */; };
+		11D5190E306AA6A0008C003F /* swift_alloc_hook.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11D5190D306AA6A0008C003F /* swift_alloc_hook.cpp */; };
+		11D51910306AA6E7008C003F /* SwiftAllocHookTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D5190F306AA6E7008C003F /* SwiftAllocHookTests.swift */; };
 		11E6D59F2E6B1468004D2F87 /* FirstFrameReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E6D59E2E6B1468004D2F87 /* FirstFrameReader.swift */; };
 		11E6D5A22E6B16A3004D2F87 /* FirstFrameReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E6D5A12E6B1696004D2F87 /* FirstFrameReaderTests.swift */; };
 		11EA5C212DC27F7600E8DFA2 /* LogsDataModels+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EA5C1E2DC27F7600E8DFA2 /* LogsDataModels+objc.swift */; };
@@ -2176,6 +2181,11 @@
 		11BBF8E52DC1292700875558 /* URLSessionInstrumentation+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URLSessionInstrumentation+objc.swift"; sourceTree = "<group>"; };
 		11BBF8EA2DC12A5B00875558 /* CoreLoggerLevel+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreLoggerLevel+objc.swift"; sourceTree = "<group>"; };
 		11C4E5902F571F86002196F4 /* ProfileAttachments.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileAttachments.swift; sourceTree = "<group>"; };
+		11D51907306AA5D2008C003F /* fishhook.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = fishhook.c; sourceTree = "<group>"; };
+		11D51909306AA5D7008C003F /* fishhook.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = fishhook.h; sourceTree = "<group>"; };
+		11D5190B306AA655008C003F /* swift_alloc_hook.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_alloc_hook.h; sourceTree = "<group>"; };
+		11D5190D306AA6A0008C003F /* swift_alloc_hook.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = swift_alloc_hook.cpp; sourceTree = "<group>"; };
+		11D5190F306AA6E7008C003F /* SwiftAllocHookTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftAllocHookTests.swift; sourceTree = "<group>"; };
 		11E6D59E2E6B1468004D2F87 /* FirstFrameReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstFrameReader.swift; sourceTree = "<group>"; };
 		11E6D5A12E6B1696004D2F87 /* FirstFrameReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstFrameReaderTests.swift; sourceTree = "<group>"; };
 		11EA5C1D2DC27F7600E8DFA2 /* Logs+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Logs+objc.swift"; sourceTree = "<group>"; };
@@ -6657,6 +6667,8 @@
 				A1B2C3D32F90000100ABCDEF /* aggregation_worker.h */,
 				110DD1B92EEC3EE7002F3B8B /* safe_read_testing.h */,
 				D2355B262E4E05CE000DDF5F /* module.modulemap */,
+				11D51909306AA5D7008C003F /* fishhook.h */,
+				11D5190B306AA655008C003F /* swift_alloc_hook.h */,
 			);
 			path = include;
 			sourceTree = "<group>";
@@ -6674,6 +6686,8 @@
 				D233E7E72E4B588000E7CFDE /* profile.cpp */,
 				A1B2C3D22F90000100ABCDEF /* aggregation_worker.cpp */,
 				D229FF5A2E3BA298009CCD62 /* include */,
+				11D51907306AA5D2008C003F /* fishhook.c */,
+				11D5190D306AA6A0008C003F /* swift_alloc_hook.cpp */,
 			);
 			name = Mach;
 			path = ../Mach;
@@ -7266,6 +7280,7 @@
 				110DD1B62EEC3E45002F3B8B /* SafeReadTests.swift */,
 				1121FD0B2EE848F700297156 /* SDKMetrics */,
 				D2023A9F2FFE64CE00A80981 /* ProfilingConfiguration+RemoteConfigurationTests.swift */,
+				11D5190F306AA6E7008C003F /* SwiftAllocHookTests.swift */,
 			);
 			name = DatadogProfilingTests;
 			path = ../DatadogProfiling/Tests;
@@ -7540,10 +7555,12 @@
 				D2E9371A2E4E25E800FECA76 /* mach_sampling_profiler.h in Headers */,
 				A1B2C3D52F90000100ABCDEF /* aggregation_worker.h in Headers */,
 				D229FFA92E3BCA9B009CCD62 /* dd_profiler.h in Headers */,
+				11D5190A306AA5D7008C003F /* fishhook.h in Headers */,
 				D233E8002E4B588B00E7CFDE /* dd_pprof.h in Headers */,
 				D2F0E8A52F5C000100E7CFDE /* dd_pprof_testing.h in Headers */,
 				118AAE082EBBB7F10018E745 /* dd_profiler_testing.h in Headers */,
 				110DD1BB2EEC3EE7002F3B8B /* safe_read_testing.h in Headers */,
+				11D5190C306AA655008C003F /* swift_alloc_hook.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -9252,7 +9269,9 @@
 				A1B2C3D42F90000100ABCDEF /* aggregation_worker.cpp in Sources */,
 				D233E7C62E4625D400E7CFDE /* Profiling.swift in Sources */,
 				11C4E5922F571F86002196F4 /* ProfileAttachments.swift in Sources */,
+				11D5190E306AA6A0008C003F /* swift_alloc_hook.cpp in Sources */,
 				1162323E2F87D8FC00F20ABC /* ProfilingContextMessageReceiver.swift in Sources */,
+				11D51908306AA5D2008C003F /* fishhook.c in Sources */,
 				11A14A622F9B740000B1C0DE /* ProfilingQuotaChecker.swift in Sources */,
 				116232402F87FA6F00F20ABC /* ProfilingSamplerProvider.swift in Sources */,
 				1121FD022EE33B3400297156 /* ConfigurationMetric.swift in Sources */,
@@ -9899,6 +9918,7 @@
 				D2E937352E535B6400FECA76 /* ProfileMocks.swift in Sources */,
 				1166C5952F748138008E34BC /* DDProfilerTests.swift in Sources */,
 				D2E937322E53368E00FECA76 /* ProfileCxxTests.swift in Sources */,
+				11D51910306AA6E7008C003F /* SwiftAllocHookTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
