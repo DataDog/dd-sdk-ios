@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "Use durable Home capture without relying on suspended receipt publication",
-  "status": "CLEANUP_REPAIR_REVIEWED_HOME_PUBLICATION_REPAIR_PENDING",
+  "status": "HOME_MECHANISM_QUALIFIED_CONTINUATION_REBIND_REQUIRED",
   "defined_at": "2026-09-28T12:20:42.481892+00:00",
   "defined_before_implementation": true,
   "owner": "root",
@@ -58,7 +58,7 @@
     "action_count": 25,
     "all_latest_views_inactive": true,
     "per_view_action_counts_balanced": true,
-    "qualification": "Observed inventory only; scoped source/effect/comparison assessment is pending. No old verdict changed."
+    "qualification": "Reviewed offline parity only:29 input effects, three actual folds and11 Views/25 actions match SDK26.5, including four inherited switch gaps. Original native INVALID remains."
   },
   "bounded_repair_proposal": {
     "home_collection": "Validate the actual persisted same-run native Home/background geometry prefix against the pre-Home request, writer prefix and owned scene/window. Persist a distinctly labeled host observation; never synthesize a native writer checkpoint. Require the full local finite View/Action inventory.",
@@ -71,12 +71,13 @@
       "Missing/duplicate/foreign Action or incomplete/inconsistent inactive View inventory rejects.",
       "Foreground-inactive cleanup is pending; foreign identity, active input or incomplete inventories cannot prove idle.",
       "Saved original pre-cleanup capture must replay without injected observations; original failed artifacts remain unchanged."
-    ]
+    ],
+    "disposition": "Initial scope retained for provenance; reviewed native_home_repair below supersedes its no-build proposal after source identified suspension of the delayed writer."
   },
-  "next_action": "Keep the cleanup fix and original restoration checkpoint. Complete the separately named offline parity assessment, then design/review deterministic native Home persistence before future human admission. Rebind affected runtime helpers without rerunning accepted evidence.",
-  "native_runs_added": 0,
+  "next_action": "Complete the remaining refreshed products and separately reviewed continuation bindings. Reuse SDK26.5 acceptance and SDK27.1 offline parity as distinct reference classes; do not repeat captured baseline gestures or reset consumed claims. Candidate requires fresh independent qualification.",
+  "native_runs_added": 1,
   "gate_closures": [],
-  "updated_at": "2026-09-28T12:27:38.737700+00:00",
+  "updated_at": "2026-09-28T13:12:28.804780+00:00",
   "cleanup_controls": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/cleanup-reactivation-controls.json",
     "sha256": "845b7194de00ba9003eeda2b95612cec80a2f07560d651d56d19837211be3ffc"
@@ -86,9 +87,84 @@
     "sha256": "e08d1ce2e8f8a606cfe09ab30af4dc396e9ff482ca757f731154cd752084f72b"
   },
   "home_review": {
-    "state": "OFFLINE_PARITY_ONLY",
+    "state": "OFFLINE_PARITY_REFERENCE_REVIEWED",
     "reviewer": "/root/c06_runtime_plan",
     "decision": "The329-row prefix is suitable for separately named offline parity. Preserve missing original writer receipt and every restoration row separately; do not relabel the original INVALID. Future native qualification still requires a deterministic writer boundary.",
     "source_cause": "human_variant.STORE queues a checkpoint1.2s after native_background; suspension can postpone it until cleanup reactivation. The SDK has already emitted its complete local inventory."
+  },
+  "cleanup_checkpoint": "2a34b51d08239e2c229570ddecfba7489ab86a68",
+  "offline_parity": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/sitting-02-offline-parity/assessment.json",
+    "sha256": "fa49e059b7b7f3a33d88058d16836a1963b0f2c8ec4ec7696b20e4783548a798"
+  },
+  "offline_parity_scope": {
+    "state": "OFFLINE_PARITY_ASSESSMENT",
+    "release_acceptance": false,
+    "use": "Reviewed behavioral reference for candidate comparison only; original INVALID, late native receipt and separate restoration remain. No baseline gesture repeat solely for the late harness receipt.",
+    "views": "UNCHANGED_OBSERVED_COVERAGE",
+    "actions": "UNCHANGED_LIMITATION; same four switch gaps",
+    "reviewer": "/root/c06_runtime_plan"
+  },
+  "native_home_repair": {
+    "defined_at": "2026-09-28T12:42:08.570465+00:00",
+    "defined_before_implementation": true,
+    "state": "QUALIFIED_HOME_ONLY",
+    "scope": "Fixture observer/writer and existing request transport only. Ordinary UI, SDK source, RUM configuration and finite semantic inventory unchanged.",
+    "mechanism": [
+      "Arm one bounded UIKit background task at the pre-Home snapshot, before prompting the operator.",
+      "Keep the existing1.2s observation allowance inside the task; persist actual Home geometry, idle sidecar and first serial-writer checkpoint.",
+      "Host verifies terminal_rows before a one-shot background.finish request using the existing request file, extended with exact original Home and first-terminal prefix bindings.",
+      "Native validates request/run/PID/owner/prefix, emits no input/snapshot, serializes a final checkpoint, persists end_requested before ending the task. Host revalidates complete terminal inventory before task-only cleanup.",
+      "Expiration, missing/failed writing, premature/duplicate/foreign finish or post-Home native activity fail closed; later restoration cannot replace evidence."
+    ],
+    "validation": [
+      "Focused writer/request/terminal negative controls and designated exact-diff review.",
+      "Build the unchanged source pairs with refreshed observer/writer identities.",
+      "One separately admitted bounded Home-only simulator qualification before requesting another human session."
+    ],
+    "native_admitted": true,
+    "reviewer": "/root/c06_runtime_plan",
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/home-persistence-review.json",
+      "sha256": "2445ff590ddd4a98f6dff86bc954e47e8ffe5532ac3b0408b329ce07df4769ce"
+    },
+    "build": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-home-writer-bfiyq3qq/refresh/baseline-27.1/build-result.json",
+      "sha256": "d262c9dc0aa2b5c7fc841fbf78e7676068ba25bf337843376824775a0bc239b5"
+    },
+    "refresh": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-home-writer-bfiyq3qq/refresh/refresh-plan.json",
+      "sha256": "3426e991503e53225f7b1aa87e9cc98f690055277d4ba16c2a2836ef18104284"
+    },
+    "qualification": {
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-home-writer-bfiyq3qq/home-qualification-bwhb7yc9/definition.json",
+        "sha256": "2d9b731905438bf09ce2058326f8f1d04f12b5333a9d0d7bcb9c225adaf54f07"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-home-writer-bfiyq3qq/home-qualification-bwhb7yc9/review.json",
+        "sha256": "10f4f34450bdf5bd42d0899b842c32d973be1c5f353ad87aa6d9ce920892d6ef"
+      },
+      "admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-home-writer-bfiyq3qq/home-qualification-bwhb7yc9/admission.json",
+        "sha256": "4d54910613aecb49e825696e6be90ed53afaf40635015b2ce326398ee1faed92"
+      },
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-home-writer-bfiyq3qq/home-qualification-bwhb7yc9/out/result.json",
+        "sha256": "1119d93c99103c4d8c602455812fbef93e095d78f182347e115a83459fecb1c3"
+      },
+      "post_exit": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-home-writer-bfiyq3qq/home-qualification-bwhb7yc9/post-exit.json",
+        "sha256": "c714d55429d9d940eb367e9db51e9d5914690eff5b72a4888925c9307d7db4d0"
+      },
+      "state": "PASS",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "native_cells_credited": 0,
+      "release_acceptance": false
+    },
+    "remaining": "Build baseline26.5 and candidate27.1 with the same observer/writer, then rebind the finite continuation before human readiness.",
+    "residual": "Bounded fixture observation only. The final barrier drains the fixture writer, not all arbitrary future SDK work.1.2s is an allowance, not acceptance;60s task expiration and host clocks remain fixed. A late active View before the final host read rejects. No further ack loop or performance/delivery claim."
   }
 }

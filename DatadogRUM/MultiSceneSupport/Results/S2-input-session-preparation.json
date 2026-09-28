@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
   "work_item": "S2 finite input preparation",
-  "status": "THREE_REMAINING_PACKAGES; HOME_CAPTURE_REVIEW_REQUIRED",
-  "updated_at": "2026-09-28T12:27:38.737700+00:00",
+  "status": "THREE_REMAINING_PACKAGES; HOME_QUALIFIED_CONTINUATION_REBIND_REQUIRED",
+  "updated_at": "2026-09-28T13:12:28.804780+00:00",
   "owner": "Harness implementer; root owns native lane",
   "scope_owner": "Results/S2-release-gate-review-20260925.json; release-gates.json releases.S2.execution_packages",
   "source_pair": {
@@ -28,11 +28,11 @@
       ],
       "owner": "SDK implementer; human operator for input",
       "evidence_owner": "Results/S2-capture-contract-preparation.json",
-      "remaining": "11 Duo cells remain. SDK26.5 UIKit stack is qualified and must be reused; next are SDK27.1 UIKit stack baseline/candidate, followed by the nine other stack/split cells. At most4 ordinary controls only if needed.",
+      "remaining": "One of12 native cells accepted; SDK27.1 UIKit stack has a separate reviewed offline parity reference. Candidate then nine other stack/split cells remain executable after preparation. No baseline gesture repeat solely for a late receipt; at most4 ordinary controls only if needed.",
       "decisive_test": "Actual control/navigation/fold effect and exact view/action owner parity. Split journeys supply H14. Existing naming/control limitations remain explicit.",
       "environment": "Xcode27.1 Duo27.1; six refreshed passive-observer products from three original source/compiler pairs (26.5 and27.1).",
-      "preparation": "SDK26.5 baseline accepted. SDK27.1 baseline reached all gestures/Home then stopped on deferred harness receipt; separate restoration PASS. Candidate unrun. Saved native evidence is under source-backed reuse review.",
-      "blocker": "Deterministic Home publication correction, affected helper rebind and reviewed saved-baseline disposition before more human input."
+      "preparation": "Automatic Home-only qualification passes capture/evidence/cleanup; original failed SDK27.1 attempt and separate restoration remain. SDK27.1 baseline build refreshed; two source/compiler refreshes and continuation binding remain.",
+      "blocker": "Complete products and reviewed continuation bindings, then fresh operator readiness for the candidate only."
     },
     {
       "id": "transitions",

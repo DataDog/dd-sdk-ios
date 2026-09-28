@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "state": "FIRST_BASELINE_QUALIFIED_NEXT_BASELINE_HOME_RECEIPT_BLOCKED",
-  "updated_at": "2026-09-28T12:20:42.481892+00:00",
+  "state": "HOME_MECHANISM_QUALIFIED_CONTINUATION_REBIND_REQUIRED",
+  "updated_at": "2026-09-28T13:12:28.804780+00:00",
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
   "gates": [
@@ -65,8 +65,8 @@
     "All original source/build/runtime receipts and verdicts",
     "Native effects, stable ownership, ordering and cleanup assertions"
   ],
-  "limits": "Counter correction qualified in one genuine SDK26.5 UIKit baseline on Duo27.1. Local mapper capture and cleanup PASS; four switch phases have no automatic actions in this baseline. Rebuild and source parity are untested. Original failed attempt remains invalid and consumed.",
-  "next_action": "Follow Results/S2-coverage-home-collection-20260928.json. No repeat of captured gestures; review the saved original prefix, repair the receipt dependency and cleanup reactivation race before candidate admission.",
+  "limits": "One of12 native cells accepted. SDK27.1 saved pre-cleanup parity is a separately reviewed behavioral reference, not native acceptance. One automatic Home-only qualification passes scenario/evidence/cleanup; zero matrix cells or gates added.",
+  "next_action": "Follow Results/S2-coverage-home-collection-20260928.json: preserve the accepted SDK26.5 cell and separately reviewed SDK27.1 offline reference; finish refreshed products and continuation bindings before candidate readiness.",
   "admission_review": {
     "owner": "Results/S2-coverage-counter-observation-20260928.json",
     "state": "FIRST_BASELINE_NATIVE_QUALIFIED",

@@ -18,6 +18,7 @@ import s2_webview_driver as transport
 import s2_webview_runtime as displays
 import local_event_collection
 import human_release
+import human_home
 
 
 def pending_rows(raw,run):
@@ -218,7 +219,7 @@ class Collector:
         event=self.wait(background,deadline)
         print(json.dumps({'human_status':{'instruction':'Background observed. Capturing final events and cleanup; wait.'}}),flush=True)
         identifier='background-'+str(event['sequence']);path=self.documents/('events-checkpoint-'+identifier+'.json')
-        self.wait(lambda:path if path.exists() else None,deadline)
+        human_home.await_ready(self,folder,identifier,deadline)
         raw=(self.documents/'events.jsonl').read_bytes();checkpoint=path.read_bytes()
         rows=oracle.checkpoint(raw,json.loads(checkpoint),self.run,identifier)
         require(event in rows and len([r for r in rows if r['kind']=='native_background'])==1,'background writer receipt is stale')
@@ -240,6 +241,7 @@ class Collector:
         proof_path=self.documents/('home-input-idle-'+before['payload']['request_id']+'.json')
         self.wait(lambda:True if proof_path.exists() else None,collection_deadline)
         shared.save(folder/'home-idle-proof.json',human_release.home_idle(self),exclusive=True)
+        self.evidence=human_home.finish(self,folder,self.evidence,collection_deadline)
         shared.save(folder/'collection.json',{'state':'LOCAL_HOME_INVENTORY_COLLECTED',
             'prefix_sha256':hashlib.sha256(prefix).hexdigest(),'sequence':self.evidence[-1]['sequence'],
             'deadline':collection_deadline,'finished_at':time.time()},exclusive=True)

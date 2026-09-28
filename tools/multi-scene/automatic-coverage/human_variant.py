@@ -9,11 +9,11 @@ final class ObservationStore: @unchecked Sendable {
     private let writer = DispatchQueue(label: "fixture.observation.writer", qos: .utility)
     private var sequence = 0
     private var writeFailed = false
+    private var backgroundSequence: Int?
     private let output: URL
-    init() {
-        output = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("events.jsonl")
-        let output = output
+    init(output: URL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("events.jsonl")) {
+        self.output = output
         writer.async { FileManager.default.createFile(atPath: output.path, contents: nil) }
     }
     @discardableResult
@@ -31,24 +31,41 @@ final class ObservationStore: @unchecked Sendable {
                 try handle.seekToEnd(); try handle.write(contentsOf: data); try handle.write(contentsOf: Data([10]))
             } catch { writeFailed = true; print("Automatic fixture observation write failed") }
         }
-        if kind == "native_background" {
-            let identifier = "background-" + String(sequence)
-            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 1.2) { [self] in checkpoint(identifier) }
-        }
+        if kind == "native_background" { backgroundSequence = sequence }
         return sequence
     }
-    func checkpoint(_ identifier: String) {
+    func persistHome(_ idle: Data, request: String, completion: @escaping @Sendable (Data?) -> Void) {
+        lock.lock(); let background = backgroundSequence; lock.unlock()
+        guard let background = background else { completion(nil); return }
+        let destination = output.deletingLastPathComponent().appendingPathComponent("home-input-idle-" + request + ".json")
+        // The task was armed before Home. This preserves the existing observation
+        // allowance; only the host's finite event inventory can authorize finish.
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 1.2) { [self] in
+            checkpoint("background-" + String(background), sidecar: (destination, idle), completion: completion)
+        }
+    }
+    func checkpoint(_ identifier: String, sidecar: (URL, Data)? = nil, prefix: (Int, String)? = nil,
+                    completion: @escaping @Sendable (Data?) -> Void = { _ in }) {
         lock.lock(); defer { lock.unlock() }
         let committed = sequence
         let destination = output.deletingLastPathComponent().appendingPathComponent("events-checkpoint-" + identifier + ".json")
         writer.async { [self] in
             do {
                 let bytes = try Data(contentsOf: output)
+                guard !writeFailed else { completion(nil); return }
+                if let (count, fingerprint) = prefix {
+                    guard count > 0, count <= bytes.count, bytes[count - 1] == 10,
+                          SHA256.hash(data: bytes.prefix(count)).map({ String(format: "%02x", $0) }).joined() == fingerprint
+                    else { completion(nil); return }
+                }
+                if let (url, data) = sidecar { try data.write(to: url, options: .atomic) }
                 let receipt: [String: Any] = ["schema_version": 1, "run_id": Settings.runID,
                     "request_id": identifier, "sequence": committed, "success": !writeFailed,
                     "byte_count": bytes.count, "sha256": SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined()]
-                try JSONSerialization.data(withJSONObject: receipt, options: [.sortedKeys]).write(to: destination, options: .atomic)
-            } catch { writeFailed = true; print("Automatic fixture checkpoint failed") }
+                let encoded = try JSONSerialization.data(withJSONObject: receipt, options: [.sortedKeys])
+                try encoded.write(to: destination, options: .atomic)
+                completion(encoded)
+            } catch { writeFailed = true; print("Automatic fixture checkpoint failed"); completion(nil) }
         }
     }
     func event<T: Encodable>(_ value: T) {

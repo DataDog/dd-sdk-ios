@@ -3,10 +3,11 @@
 The current [S2 preparation](../../../DatadogRUM/MultiSceneSupport/Results/S2-capture-contract-preparation.json)
 selects12 Duo cells across UIKit/SwiftUI stack/split, each with baseline26.5,
 baseline27.1 and candidate27.1. It binds six refreshed products: only the passive
-observer changed in copies of the three original source/compiler pairs. Ordinary
+observer and ordered writer changed in copies of the three original source/compiler pairs. Ordinary
 UI, RUM configuration and SDK bytes are unchanged. Reuse the products bound by
 the current preparation; superseded observer builds cannot qualify changed capture.
-Preparation admits no input; the first planned baseline qualifies it.
+Preparation admits no input. The reviewed Home-only correction has separate native
+qualification; the owning result records which mechanism each build qualifies.
 
 To prepare a changed observer, use `human_fixture_refresh.py prepare --original
 FROZEN_BUILD_ROOT --root NEW_REFRESH_ROOT`, then its `build` action once for each
@@ -23,6 +24,14 @@ preserves Home's committed prefix, then collects inactive View revisions and exa
 Action counts/owners; it does not equate a writer checkpoint with end of SDK work.
 Successful cleanup requires request-bound native Home/input-idle proof. Failure
 requires Released acknowledgement and fresh native idle before task-app removal.
+Home arms one bounded background task before its prompt. Native geometry/input idle
+and the first writer checkpoint precede a host-validated finite inventory. A one-shot
+`background.finish` binds that exact request, process, owner and prefix; the native
+writer publishes its final checkpoint and `END_REQUESTED` marker. The host validates
+again and consumes `home-final-events.jsonl`. The marker is not an SDK queue-drain
+promise: late active Views, foreign events, expiration or missing proof fail closed.
+The1.2s allowance is diagnostic; original operational budgets remain fixed.
+
 Original attempts and verdicts remain. Baseline and candidate telemetry differences
 require classification; incidental timing/brightness fields are not coverage criteria.
 

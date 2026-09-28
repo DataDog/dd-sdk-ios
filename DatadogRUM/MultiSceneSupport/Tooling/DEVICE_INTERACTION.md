@@ -276,9 +276,9 @@ Any other failure or late response stops the read; cached bytes cannot replace i
 
 A real background notification does not prove that a delayed writer ran before
 suspension. When finalization is required, the fixture must retain its existing
-settle interval inside a bounded background task, await actual writer completion
-and persist same-run/PID/checkpoint proof that the task ended. Missing or expired
-proof stays invalid. Qualify this Home-only mechanism before repeating operator
+allowance inside a bounded background task and validate the final View/Action
+inventory against actual writer and END_REQUESTED receipts. This is not an SDK
+queue-drain promise. Qualify the Home-only mechanism before repeating operator
 gestures; later foreground activation or restoration cannot repair the old run.
 
 Export app JSONL, runner checkpoints/hierarchy/images, console and partial xcresult

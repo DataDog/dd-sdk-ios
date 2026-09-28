@@ -379,7 +379,7 @@ def execute_cell(args):
             if row['kind']=='geometry' and row['sequence']>binding_row['sequence']:
                 scenes=row['payload']['scenes'];require(len(scenes)==1 and scenes[0]['id']==collector.binding['scene'],'native scene inventory changed')
         require(shared.product(installed,bundle=bundle)==product['product'],'installed code changed during scenario')
-        terminal_bytes=(out/'input/background.before/background-collected-events.jsonl').read_bytes()
+        terminal_bytes=(out/'input/background.before/home-final-events.jsonl').read_bytes()
         require((documents/'events.jsonl').read_bytes().startswith(terminal_bytes),'writer rewrote the collected Home prefix')
         (out/'events.jsonl').write_bytes(terminal_bytes);shared.save(out/'receipts.json',collector.receipts,exclusive=True)
         summary['scenario']='PASS'

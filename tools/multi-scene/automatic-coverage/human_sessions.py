@@ -47,10 +47,11 @@ def read_reference(row, shared):
     return shared.read(path)
 
 
-def verify_build_helpers(expected, runner, *, allow_backend_decoder_update=False):
+def verify_build_helpers(expected, runner, *, allow_backend_decoder_update=False, allow_fixture_refresh=False):
     # The decoder is imported by the common harness, but is not compiled into an
     # app or called by this build. New runtime plans bind its current bytes.
     allowed = {BACKEND_DECODER} if allow_backend_decoder_update else set()
+    if allow_fixture_refresh:allowed.add('tools/multi-scene/automatic-coverage/human_variant.py')
     runner.require(all(p in allowed or runner.shared.sha(runner.shared.REPO / p) == h
                        for p, h in expected.items()), 'original build helper source changed')
 
@@ -80,7 +81,8 @@ def original(root, runner, *, allow_backend_decoder_update=False, allow_fixture_
               'protected project or configuration changed')
     s.require(s.tree(root / 'helpers') == base['helpers'] and
               s.tree(runtime / 'helpers') == plan['helpers'], 'original frozen helper/build source changed')
-    verify_build_helpers(base['helpers'], runner, allow_backend_decoder_update=allow_backend_decoder_update)
+    verify_build_helpers(base['helpers'], runner, allow_backend_decoder_update=allow_backend_decoder_update,
+                         allow_fixture_refresh=allow_fixture_refresh)
     s.require(all(s.sha(runner.build.HERE/n)==h for n,h in base['fixture_sources'].items()
                   if not (allow_fixture_refresh and n=='HumanObservation.swift')), 'original fixture changed')
     for key, arm in base['arms'].items():
@@ -105,6 +107,7 @@ def activate_contract_file(path, expected_sha256, runner):
     spec = importlib.util.spec_from_file_location('automatic_session_original_contract', path)
     module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
     runner.capture.oracle = module; runner.journey.h = module; runner.human_fold.h = module
+    if hasattr(runner.capture, 'human_home'):runner.capture.human_home.oracle = module
 
 
 def helpers(original_plan, runner):

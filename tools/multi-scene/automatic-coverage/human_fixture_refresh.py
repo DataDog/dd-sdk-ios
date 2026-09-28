@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Refresh only the passive observer in three existing S2 compiler/source pairs."""
+"""Refresh the passive observer and writer in three existing S2 compiler/source pairs."""
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import plistlib
@@ -12,6 +13,12 @@ import human_sessions as sessions
 
 s=build.shared
 KEYS=['baseline-26.5','baseline-27.1','candidate-27.1']
+REFRESHED={'HumanObservation.swift','Observation.swift'}
+
+
+def observation(source_plan):
+    return build.human_variant.render((build.HERE/'Fixture/Observation.swift').read_bytes(),
+        source_plan['fixture_sources']['Fixture/Observation.swift'])
 
 
 def original(root):
@@ -22,16 +29,17 @@ def original(root):
 def prepare(root,source):
     base=original(source);source_plan=s.read(source/'build-plan.json')
     s.require(not root.exists(),'fixture refresh already prepared');root.mkdir(parents=True)
-    plan=dict(kind='PASSIVE_CLEANUP_OBSERVER_REFRESH',original=str(source),original_plan=sessions.reference(source/'build-plan.json',s),
+    plan=dict(kind='PASSIVE_HOME_WRITER_REFRESH',original=str(source),original_plan=sessions.reference(source/'build-plan.json',s),
         original_runtime=sessions.reference(source/'runtime/runtime-plan.json',s),keys=KEYS,arms={},
-        observer_sha256=s.sha(build.HERE/'HumanObservation.swift'),protected={p:s.protected()[p] for p in sessions.PROTECTED},
-        toolchains=source_plan['toolchains'],helpers={str(Path(__file__).resolve().relative_to(s.REPO)):s.sha(__file__)},native_launches=0)
+        observer_sha256=s.sha(build.HERE/'HumanObservation.swift'),observation_sha256=hashlib.sha256(observation(source_plan)).hexdigest(),protected={p:s.protected()[p] for p in sessions.PROTECTED},
+        toolchains=source_plan['toolchains'],helpers={str(p.relative_to(s.REPO)):s.sha(p) for p in [Path(__file__).resolve(),build.HERE/'human_variant.py']},native_launches=0)
     for key in KEYS:
         folder=root/key;folder.mkdir();prior=source/key;frozen=source_plan['arms'][key]
         shutil.copytree(prior/'sdk',folder/'sdk');shutil.copytree(prior/'client',folder/'client')
         shutil.copyfile(build.HERE/'HumanObservation.swift',folder/'client/HumanObservation.swift')
+        (folder/'client/Observation.swift').write_bytes(observation(source_plan))
         current=s.tree(folder/'client');changed={n for n in set(current)|set(frozen['client']) if current.get(n)!=frozen['client'].get(n)}
-        s.require(changed=={'HumanObservation.swift'},'refresh changed fixture behavior/project')
+        s.require(changed==REFRESHED,'refresh changed fixture behavior/project')
         plan['arms'][key]={**frozen,'client':current,'original_receipt':sessions.reference(prior/'build-result.json',s)}
     s.save(root/'refresh-plan.json',plan,exclusive=True);verify(root)
     return plan
@@ -39,20 +47,22 @@ def prepare(root,source):
 
 def verify(root):
     plan=s.read(root/'refresh-plan.json');source=Path(plan['original']);original(source)
-    s.require(plan['kind']=='PASSIVE_CLEANUP_OBSERVER_REFRESH' and plan['keys']==KEYS and plan['native_launches']==0,'refresh scope changed')
+    s.require(plan['kind']=='PASSIVE_HOME_WRITER_REFRESH' and plan['keys']==KEYS and plan['native_launches']==0,'refresh scope changed')
     s.require(plan['original_plan']==sessions.reference(source/'build-plan.json',s)
         and plan['original_runtime']==sessions.reference(source/'runtime/runtime-plan.json',s),'original fixture pins changed')
     s.require(plan['observer_sha256']==s.sha(build.HERE/'HumanObservation.swift')
         and plan['protected']=={p:s.protected()[p] for p in sessions.PROTECTED}
         and all(s.sha(s.REPO/p)==h for p,h in plan['helpers'].items()),'refresh source/workspace changed')
     source_plan=s.read(source/'build-plan.json')
+    s.require(plan['observation_sha256']==hashlib.sha256(observation(source_plan)).hexdigest(),'refreshed writer source changed')
     s.require(set(plan['arms'])==set(KEYS) and plan['toolchains']==source_plan['toolchains'],'refresh compiler/arm inventory changed')
     for key,arm in plan['arms'].items():
         expected=source_plan['arms'][key]
         s.require(all(arm[k]==expected[k] for k in ['revision','sdk_version','bundle_prefix','sdk','archive_sha256'])
             and arm['original_receipt']==sessions.reference(source/key/'build-result.json',s),'source/compiler identity changed')
         s.require(s.tree(root/key/'sdk')==arm['sdk'] and s.tree(root/key/'client')==arm['client'],'refresh input changed')
-        s.require({n for n in arm['client'] if arm['client'].get(n)!=expected['client'].get(n)}=={'HumanObservation.swift'}
+        s.require({n for n in arm['client'] if arm['client'].get(n)!=expected['client'].get(n)}==REFRESHED
+            and arm['client']['Observation.swift']==plan['observation_sha256']
             and set(arm['client'])==set(expected['client']) and arm['client']['HumanObservation.swift']==plan['observer_sha256'],
             'refresh altered non-observer source')
     return plan

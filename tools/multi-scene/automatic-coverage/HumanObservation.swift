@@ -19,6 +19,13 @@ import SwiftUI
     private var currentPhase: String?
     private var currentRequestHash: String?
     private var backgroundObserver: NSObjectProtocol?
+    private var homeTask: UIBackgroundTaskIdentifier = .invalid
+    private var homeFinished = false
+    private var homeFinishInFlight = false
+    private var homeCheckpoint: Data?
+    private var homeIdle: Data?
+    private var homeRequestID: String?
+    private var homeRequestHash: String?
 
     static func identity(_ object: AnyObject?) -> String {
         guard let object = object else { return "nil" }
@@ -77,11 +84,13 @@ import SwiftUI
         ) { [weak self] _ in
             Task { @MainActor in self?.recordHomeIdle() }
         }
-        requests.start { [weak self] requestID, phase, fingerprint, error in
+        requests.start { [weak self] requestID, phase, fingerprint, requestBytes, error in
             Task { @MainActor in
                 guard let self = self else { return }
                 if let error = error { self.fail(error, fingerprint: fingerprint); return }
-                self.snapshot(requestID: requestID, phase: phase, fingerprint: fingerprint)
+                if phase == "background.finish", let bytes = requestBytes {
+                    self.finishHome(requestID: requestID, fingerprint: fingerprint, bytes: bytes)
+                } else { self.snapshot(requestID: requestID, phase: phase, fingerprint: fingerprint) }
             }
         }
     }
@@ -91,8 +100,17 @@ import SwiftUI
         guard boundWindowID != nil else {
             fail("native content window was not bound before snapshot", fingerprint: fingerprint); return
         }
+        if phase == "cleanup.idle", homeTask != .invalid { endHome(state: "CANCELLED") }
         currentRequestID = requestID
         currentPhase = phase; currentRequestHash = fingerprint
+        if phase == "background.before" {
+            guard homeTask == .invalid, !homeFinished else { fail("Home task already consumed", fingerprint: fingerprint); return }
+            homeRequestID = requestID; homeRequestHash = fingerprint
+            homeTask = UIApplication.shared.beginBackgroundTask(withName: "Fixture Home evidence") { [weak self] in
+                self?.endHome(state: "EXPIRED")
+            }
+            guard homeTask != .invalid else { endHome(state: "UNAVAILABLE"); fail("Home task unavailable", fingerprint: fingerprint); return }
+        }
         var payload: [String: Any] = ["request_id": requestID, "request_sha256": fingerprint,
             "phase": phase, "uptime_ns": DispatchTime.now().uptimeNanoseconds, "topology": topology(includeControls: true)]
         if phase == "cleanup.idle" { payload["input_state"] = cleanupInputState() }
@@ -146,16 +164,79 @@ import SwiftUI
     }
     private func recordHomeIdle() {
         guard currentPhase == "background.before", let request = currentRequestID,
-              let fingerprint = currentRequestHash else { return }
+              let fingerprint = currentRequestHash, homeTask != .invalid, !homeFinished else { return }
+        FixtureObservation.captureGeometry()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 60) { [weak self] in self?.endHome(state: "EXPIRED") }
         let payload: [String: Any] = ["schema_version": 1, "run_id": Settings.runID,
             "request_id": request, "request_sha256": fingerprint,
             "pid": ProcessInfo.processInfo.processIdentifier,
             "notification": "UIApplication.didEnterBackgroundNotification",
             "topology": topology(includeControls: false), "input_state": cleanupInputState()]
         guard let bytes = try? JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys]) else { return }
+        homeIdle = bytes
+        ObservationStore.shared.persistHome(bytes, request: request) { [weak self] checkpoint in
+            DispatchQueue.main.async {
+                guard let self = self, !self.homeFinished else { return }
+                guard let checkpoint = checkpoint else { self.endHome(state: "WRITE_FAILED"); return }
+                self.homeCheckpoint = checkpoint
+                let ready: [String: Any] = ["schema_version": 1, "state": "READY", "run_id": Settings.runID,
+                    "pid": ProcessInfo.processInfo.processIdentifier, "request_id": request,
+                    "request_sha256": fingerprint, "checkpoint_sha256": Self.hash(checkpoint), "idle_sha256": Self.hash(bytes)]
+                let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                    .appendingPathComponent("home-ready-" + request + ".json")
+                do { try JSONSerialization.data(withJSONObject: ready, options: [.sortedKeys]).write(to: url, options: .atomic) }
+                catch { self.endHome(state: "WRITE_FAILED") }
+            }
+        }
+    }
+    private func finishHome(requestID: String, fingerprint: String, bytes: Data) {
+        guard !homeFinished, !homeFinishInFlight, homeTask != .invalid, currentPhase == "background.before",
+              let first = homeCheckpoint, let idle = homeIdle,
+              UIApplication.shared.applicationState == .background,
+              let request = try? JSONSerialization.jsonObject(with: bytes) as? [String: Any],
+              let home = request["home"] as? [String: Any],
+              Set(home.keys) == Set(["request_id", "request_sha256", "pid", "window", "root", "scene",
+                  "checkpoint_sha256", "idle_sha256", "terminal_byte_count", "terminal_sha256"]),
+              home["request_id"] as? String == currentRequestID,
+              home["request_sha256"] as? String == currentRequestHash,
+              home["pid"] as? Int == Int(ProcessInfo.processInfo.processIdentifier),
+              home["window"] as? String == boundWindowID, home["root"] as? String == boundRootID,
+              home["scene"] as? String == boundSceneID,
+              let window = ownedWindow, let root = ownedRoot,
+              window.rootViewController === root, root.viewIfLoaded?.window === window,
+              window.windowScene?.session.persistentIdentifier == boundSceneID,
+              window.windowScene?.activationState == .background,
+              home["checkpoint_sha256"] as? String == Self.hash(first), home["idle_sha256"] as? String == Self.hash(idle),
+              let count = home["terminal_byte_count"] as? Int, count > 0,
+              let hash = home["terminal_sha256"] as? String, hash.count == 64
+        else { endHome(state: "INVALID_FINISH"); fail("invalid Home finish", fingerprint: fingerprint); return }
+        homeFinishInFlight = true
+        ObservationStore.shared.checkpoint("home-finish-" + requestID, prefix: (count, hash)) { [weak self] checkpoint in
+            DispatchQueue.main.async {
+                self?.endHome(state: checkpoint == nil ? "WRITE_FAILED" : "END_REQUESTED",
+                    finishID: requestID, finishHash: fingerprint, checkpoint: checkpoint)
+            }
+        }
+    }
+    private func endHome(state: String, finishID: String = "nil", finishHash: String = "nil", checkpoint: Data? = nil) {
+        guard !homeFinished, let request = homeRequestID, let fingerprint = homeRequestHash else { return }
+        homeFinished = true
+        let task = homeTask; homeTask = .invalid
+        defer { if task != .invalid { UIApplication.shared.endBackgroundTask(task) } }
+        let active = UIApplication.shared.applicationState != .background
+        let receipt: [String: Any] = ["schema_version": 1, "run_id": Settings.runID,
+            "request_id": request, "request_sha256": fingerprint, "pid": ProcessInfo.processInfo.processIdentifier,
+            "state": state == "END_REQUESTED" && active ? "FOREGROUND_RETURNED" : state,
+            "finish_request_id": finishID, "finish_request_sha256": finishHash,
+            "first_checkpoint_sha256": homeCheckpoint.map(Self.hash) ?? "nil",
+            "final_checkpoint_sha256": checkpoint.map(Self.hash) ?? "nil", "idle_sha256": homeIdle.map(Self.hash) ?? "nil",
+            "app_state": UIApplication.shared.applicationState.rawValue, "task_was_valid": task != .invalid]
         let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("home-input-idle-" + request + ".json")
-        DispatchQueue.global(qos: .utility).async { try? bytes.write(to: url, options: .atomic) }
+            .appendingPathComponent("home-task-" + request + ".json")
+        // Persist intent before ending the OS allowance; no write is deferred
+        // until after suspension. The host revalidates the final writer inventory.
+        do { try JSONSerialization.data(withJSONObject: receipt, options: [.sortedKeys]).write(to: url, options: .atomic) }
+        catch { fail("Home completion publication failed", fingerprint: fingerprint) }
     }
     func input(_ target: String) {
         let started = DispatchTime.now().uptimeNanoseconds
@@ -286,7 +367,7 @@ private final class HumanSnapshotRequests: @unchecked Sendable {
     private var previousBytes: String?
     private var requests = Set<String>()
     private var payloads = Set<String>()
-    func start(_ receive: @escaping @Sendable (String, String, String, String?) -> Void) {
+    func start(_ receive: @escaping @Sendable (String, String, String, Data?, String?) -> Void) {
         let run = Settings.runID
         let path = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("human-snapshot-request.json")
@@ -300,16 +381,17 @@ private final class HumanSnapshotRequests: @unchecked Sendable {
                 guard fingerprint != self.previousBytes else { return }
                 self.previousBytes = fingerprint
                 guard let request = try? JSONSerialization.jsonObject(with: bytes) as? [String: Any],
-                      Set(request.keys) == Set(["schema_version", "run_id", "request_id", "phase"]),
+                      Set(request.keys) == Set(["schema_version", "run_id", "request_id", "phase"] +
+                        (request["phase"] as? String == "background.finish" ? ["home"] : [])),
                       request["schema_version"] as? Int == 1,
                       request["run_id"] as? String == run, !run.isEmpty,
                       let identifier = request["request_id"] as? String, UUID(uuidString: identifier)?.uuidString.lowercased() == identifier,
                       let phase = request["phase"] as? String, !phase.isEmpty,
                       !self.requests.contains(identifier), !self.payloads.contains(fingerprint) else {
-                    receive("nil", "nil", fingerprint, "invalid or consumed native snapshot request"); return
+                    receive("nil", "nil", fingerprint, nil, "invalid or consumed native snapshot request"); return
                 }
                 self.requests.insert(identifier); self.payloads.insert(fingerprint)
-                receive(identifier, phase, fingerprint, nil)
+                receive(identifier, phase, fingerprint, bytes, nil)
             }
             self.timer = timer; timer.resume()
         }

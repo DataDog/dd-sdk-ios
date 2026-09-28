@@ -299,12 +299,13 @@ class BindingControls(unittest.TestCase):
     def test_frozen_oracle_is_loaded_for_all_consumers_and_live_variant_is_not_used(self):
         path = self.source / 'runtime/helpers' / sessions.CONTRACT; path.parent.mkdir(parents=True)
         path.write_text('def marker(): return "original reviewed contract"\n')
-        stub = SimpleNamespace(shared=s, require=runner.require, capture=SimpleNamespace(oracle='changed'),
+        stub = SimpleNamespace(shared=s, require=runner.require, capture=SimpleNamespace(oracle='changed', human_home=SimpleNamespace(oracle='changed')),
                                journey=SimpleNamespace(h='changed'), human_fold=SimpleNamespace(h='changed'))
         plan = {'helpers': {sessions.CONTRACT: s.sha(path)}}
         sessions.activate_contract(self.source, plan, stub)
         self.assertEqual(stub.capture.oracle.marker(), 'original reviewed contract')
         self.assertIs(stub.capture.oracle, stub.journey.h); self.assertIs(stub.capture.oracle, stub.human_fold.h)
+        self.assertIs(stub.capture.oracle, stub.capture.human_home.oracle)
         path.write_text('def marker(): return "unreviewed"\n')
         with self.assertRaises(Rejected): sessions.activate_contract(self.source, plan, stub)
 

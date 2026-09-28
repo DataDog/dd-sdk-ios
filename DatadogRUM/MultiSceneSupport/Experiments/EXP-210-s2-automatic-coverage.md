@@ -113,5 +113,8 @@ background writer receipt did not arrive before collection stopped. The
 [Home collection record](../Results/S2-coverage-home-collection-20260928.json)
 preserves original INVALID/cleanup INVALID, separate restoration PASS and the
 unlaunched candidate. Its329 pre-cleanup rows already contain11 inactive Views
-and25 actions with balanced owners. Source-backed reuse and the host capture/
-cleanup correction are under review; no later activation can repair the old run.
+and25 actions with balanced owners. Reviewed offline parity matches SDK26.5's
+29 effects, three folds and four switch gaps; it is a separate candidate reference.
+The fixture Home correction subsequently passes one automatic capture and cleanup
+qualification, without matrix credit. Original INVALID remains; remaining products
+and continuation bindings must qualify before another human sitting.
