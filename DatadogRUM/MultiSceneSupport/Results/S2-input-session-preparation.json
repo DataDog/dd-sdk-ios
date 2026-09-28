@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "work_item": "S2 finite input preparation",
-  "status": "THREE_REMAINING_PACKAGES; REVIEWED_PREPARATIONS_AWAIT_OPERATOR",
+  "status": "THREE_REMAINING_PACKAGES; CANDIDATE_COVERAGE_AWAITING_FRESH_PAGE",
   "updated_at": "2026-09-28T13:40:52.570685+00:00",
   "owner": "Harness implementer; root owns native lane",
   "scope_owner": "Results/S2-release-gate-review-20260925.json; release-gates.json releases.S2.execution_packages",
@@ -32,7 +32,7 @@
       "decisive_test": "Actual control/navigation/fold effect and exact view/action owner parity. Split journeys supply H14. Existing naming/control limitations remain explicit.",
       "environment": "Xcode27.1 Duo27.1; six refreshed passive-observer products from three original source/compiler pairs (26.5 and27.1).",
       "preparation": "Home mechanism and all six refreshed products qualify. Reviewed candidate-only mode binds the accepted SDK26.5 and offline SDK27.1 references separately; no baseline repeat or inherited native credit.",
-      "blocker": "User unavailable. Candidate plan reviewed; instruction server stopped. Fresh availability and Duo/Xcode/live-page readiness precede admission."
+      "blocker": "User returned. Checkpoint, fresh Duo/Xcode and visible live operator page precede candidate-only admission; no baseline repeat."
     },
     {
       "id": "transitions",
@@ -123,7 +123,7 @@
     "duration": "Budgets are operational maxima, not forecasts of user time."
   },
   "operator_readiness": {
-    "state": "OPERATOR_UNAVAILABLE",
+    "state": "AVAILABLE_AWAITING_FRESH_PAGE",
     "active_native": false,
     "fixed_stage_started": false,
     "fresh_readiness_required": true,

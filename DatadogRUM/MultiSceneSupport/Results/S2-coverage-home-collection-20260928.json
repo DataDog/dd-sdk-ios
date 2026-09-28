@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "Use durable Home capture without relying on suspended receipt publication",
-  "status": "CANDIDATE_ONLY_REVIEWED_OPERATOR_UNAVAILABLE",
+  "status": "CANDIDATE_ONLY_REVIEWED_AWAITING_FRESH_PAGE",
   "defined_at": "2026-09-28T12:20:42.481892+00:00",
   "defined_before_implementation": true,
   "owner": "root",
@@ -74,7 +74,7 @@
     ],
     "disposition": "Initial scope retained for provenance; reviewed native_home_repair below supersedes its no-build proposal after source identified suspension of the delayed writer."
   },
-  "next_action": "Keep the reviewed candidate unlaunched until fresh operator availability, Duo/Xcode and live page readiness. Server stopped; no native admission or consumed candidate claim. Both baseline references remain distinct and require no repeat. Continue offline residual S3 preparation meanwhile.",
+  "next_action": "User has returned for the candidate-only UIKit sitting. Checkpoint preparation, then rediscover Duo/Xcode and start a fresh operator page. Admit only after the page is visible. No baseline repeat or inherited native credit.",
   "native_runs_added": 1,
   "gate_closures": [],
   "updated_at": "2026-09-28T13:40:52.570685+00:00",
@@ -235,6 +235,12 @@
     }
   },
   "operator_availability": {
+    "state": "AVAILABLE_AWAITING_FRESH_PAGE",
+    "user_reply": "I'm ready for the previously skipped Human testing session, perform a safe checkpoint then we do the testing session please.",
+    "native_launched": false,
+    "fresh_readiness_required": true
+  },
+  "previous_operator_unavailability": {
     "state": "UNAVAILABLE",
     "user_reply": "Not available now",
     "receipt": {

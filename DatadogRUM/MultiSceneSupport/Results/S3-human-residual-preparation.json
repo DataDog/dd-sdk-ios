@@ -1,0 +1,322 @@
+{
+  "schema_version": 1,
+  "work_item": "Finite source-backed preparation of residual S3 human scenarios",
+  "state": "SOURCE_AUDIT_REVIEWED_IMPLEMENTATION_PENDING",
+  "defined_at": "2026-09-28T13:49:45.760600+00:00",
+  "defined_before_implementation": true,
+  "owner": "Root",
+  "reviewer": "/root/c06_runtime_plan",
+  "source_head": "7e0278a0189e5d7e1b20e855d847d5360914ee73",
+  "candidate_sdk": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "gate": "S3:A02",
+  "new_experiment": false,
+  "source_sha256": {
+    "Datadog/Example/MultiSceneProbe/Sources/Harness/ProbeScenarioCatalog.swift": "0f65d241e8c947327291e4181c07d89e064d496cc611aea0e55bb8ebf52792b0",
+    "Datadog/Example/MultiSceneProbe/Sources/Harness/ProbePhysicalTopologyAdmission.swift": "c7c578d8eb9dd99ea5b0c3c46a6de65e31c59814bf06a6f6c03a7db5865ffb7a",
+    "Datadog/Example/MultiSceneProbe/Sources/Harness/ProbeScenarioDriver.swift": "6dddc0552482a3f5ced30770bccffebee9781314e8aef4eb5293ae420fc487bb",
+    "Datadog/Example/MultiSceneProbe/Sources/RUMNativeMultiSceneProbeApp.swift": "0cb32ba397b22fee484ed214d59013fc1b2cdaa1fb6e07cb5eedbf1386a9d6ba",
+    "Datadog/Example/MultiSceneProbe/Sources/ProbeWindowView.swift": "8150d19e98709188a9ee4ae66e7286a7e3493cade50b1581b0ec222390ee70e0",
+    "Datadog/Example/MultiSceneProbe/project.yml": "80ec673c805047ebbc6252c212e24b42233c314804ece20cd788350429464c2d",
+    "tools/multi-scene/hosted-swiftui/App.swift": "af0fb468a3b652001f321c416258b44aba4cfb17c1efe345e116e500da7f5e7a",
+    "tools/multi-scene/api-availability/same_key_execution.py": "cd56e0696b2917d766eec453a0b7a3c38f6ba70b633df6321a3b64328341ae19"
+  },
+  "packages": [
+    {
+      "id": "split-navigation",
+      "gates": [
+        "S3:H02"
+      ],
+      "maximum_cells": 2,
+      "dependency": [
+        "S3:A01"
+      ],
+      "environment": "Physical iPad with two concurrently visible windows and required regular split geometry; physical Duo remains F04.",
+      "fixture_candidates": [
+        "uikit.split.concurrent-scenes",
+        "swiftui.split.same-type-selection-two-scenes"
+      ],
+      "decisive_test": "Two real visible A/B chains; distinct RUM occurrences, exact per-scene navigation/action owners, no structural primary/placeholder view.",
+      "missing": "Bind both fixtures to a precritical two-window barrier and whole-interval display/native proof. Existing multipleScenes/regularWidth capability labels do not prove co-visibility.",
+      "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
+      "state": "SOURCE_MAPPED_NOT_EXECUTABLE"
+    },
+    {
+      "id": "peer-and-host-removal",
+      "gates": [
+        "S3:H03",
+        "S3:H08"
+      ],
+      "maximum_cells": 2,
+      "dependency": [
+        "S3:A01",
+        "S3:D03",
+        "S3:D07"
+      ],
+      "environment": "Physical iPad with two visible windows; semantic host requires iOS27.",
+      "fixture_candidates": [
+        "windows.close-with-resource",
+        "swiftui.semantic-host.final-removal-isolation"
+      ],
+      "decisive_test": "A-emitted work stays on A while B represents. B close preserves A. Separately, actual final A semantic-host removal stops/releases A once, rejects late resurrection and preserves B.",
+      "missing": "Separate native window close from semantic-host removal. Gate the actual boundary before mutation; retain source lifetime and complete peer-owned work. Review the original stopped disconnect mechanism before choosing human OS close input.",
+      "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
+      "state": "SOURCE_MAPPED_NOT_EXECUTABLE"
+    },
+    {
+      "id": "focus-and-background",
+      "gates": [
+        "S3:H04",
+        "S3:H10"
+      ],
+      "maximum_cells": 1,
+      "dependency": [
+        "S3:A01"
+      ],
+      "environment": "Physical iPad windowing that can background A while B remains usable.",
+      "fixture_candidates": [
+        "windows.activation-sequence"
+      ],
+      "decisive_test": "Actual per-scene active/inactive/background changes and work stay with the intended owner; one scene does not replace its peer current view.",
+      "missing": "Reassess EXP196 four genuine activations by source before repeating. Keep its failed terminal disconnect separate; prepare explicit human OS focus/background boundaries and native state evidence. No equivalent activation/destruction diagnostic.",
+      "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
+      "state": "SOURCE_MAPPED_NOT_EXECUTABLE"
+    },
+    {
+      "id": "inferred-operations",
+      "gates": [
+        "S3:H06"
+      ],
+      "maximum_cells": 1,
+      "dependency": [
+        "S3:A01"
+      ],
+      "environment": "Physical iPad with simultaneous visible windows and authenticated raw/reduced RUM Operation retrieval.",
+      "fixture_candidates": [
+        "operations.cross-scene.lifecycle"
+      ],
+      "decisive_test": "Existing eight calls/four Operations: success A\u2192B, failure A\u2192B(error), parallel alpha A\u2192A and beta B\u2192B ending beta first. Preserve exact per-step view IDs and two visible native scenes through all calls.",
+      "missing": "The current physical barrier only admits the old same-key scenario. Bind the first Operation through the final marker, retain the exact Debug context-inference mechanism as such, and provide actual topology/input-idle plus raw/reduced backend proof.",
+      "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
+      "state": "SOURCE_MAPPED_NOT_EXECUTABLE"
+    },
+    {
+      "id": "disconnect-and-remount",
+      "gates": [
+        "S3:H09"
+      ],
+      "maximum_cells": 1,
+      "dependency": [
+        "S3:A01",
+        "S3:D03",
+        "S3:D08",
+        "S3:P03"
+      ],
+      "environment": "Physical iPad with genuine OS scene disconnect/reconnect, peer remaining alive.",
+      "fixture_candidates": [],
+      "decisive_test": "OS-driven disconnect then live attachment/remount creates a fresh occurrence; stale callbacks stay rejected and peer identity/work continues.",
+      "missing": "Existing retained-reader catalog fixtures explicitly synthesize disconnect; they cannot be used as native H09 proof. Prepare a genuine OS boundary and generation/witness capture without replaying the stopped EXP196 close mechanism.",
+      "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
+      "state": "SOURCE_MAPPED_NOT_EXECUTABLE"
+    },
+    {
+      "id": "restoration",
+      "gates": [
+        "S3:H15"
+      ],
+      "maximum_cells": 1,
+      "process_legs": 2,
+      "dependency": [
+        "S3:A01"
+      ],
+      "environment": "Physical iPad preserving two native scene sessions across an actual process restart.",
+      "fixture_candidates": [
+        "windows.restoration"
+      ],
+      "decisive_test": "Join prepare/relaunch process legs: both native sessions reconnect, each gets a fresh RUM view and neither emits old-run attributes.",
+      "missing": "The catalog defines only post-restoration readiness/markers. Freeze the pre-exit session/owner map, exact restart mode, two process identities and immutable old/new event join; reset only before the cell, not between its restoration legs.",
+      "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
+      "state": "SOURCE_MAPPED_NOT_EXECUTABLE"
+    },
+    {
+      "id": "interactive-navigation",
+      "gates": [
+        "S3:H11",
+        "S3:H12",
+        "S3:H13"
+      ],
+      "maximum_cells": 2,
+      "dependency": [
+        "S3:A01",
+        "S3:D10"
+      ],
+      "environment": "Physical iPad human gestures; UIKit automatic and SwiftUI semantic navigation on iOS27, with a live peer.",
+      "fixture_candidates": [
+        "uikit.split.native-pop-cancel",
+        "uikit.split.native-pop-finish",
+        "swiftui.stack.native-pop-cancel",
+        "swiftui.stack.native-pop-finish",
+        "swiftui.semantic-host.observation-native-dismiss-callbacks"
+      ],
+      "decisive_test": "Recognized cancel preserves the outgoing occurrence; recognized completion yields the correct fresh underlying occurrence and callback-work owner. Peer stays unchanged. Cover pop and sheet cancel/finish per declared mode.",
+      "missing": "Compose finite per-mode cells with the qualified capture/release discipline. Existing S2 automatic/manual limitations do not certify the stronger semantic S3 contract; marker invocation time and asynchronous mapper serialization remain distinct.",
+      "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
+      "state": "SOURCE_MAPPED_NOT_EXECUTABLE"
+    },
+    {
+      "id": "hosted-semantic-navigation",
+      "gates": [
+        "S3:H16"
+      ],
+      "maximum_cells": 2,
+      "dependency": [
+        "S3:A01"
+      ],
+      "environment": "Physical iPad on iOS27; matching semantic content in WindowGroup and UIHostingController with a live peer.",
+      "fixture_candidates": [
+        "tools/multi-scene/hosted-swiftui/App.swift"
+      ],
+      "decisive_test": "The same semantic navigation/lifecycle/work ownership and release behavior under both mounting forms; no duplicate ordinary tracking or cross-scene owner.",
+      "missing": "The current S2 hosting fixture uses ordinary trackRUMView/automatic tracking. Build a source-matched semantic fixture and paired mount adapter; do not repeat accepted S2 ordinary hosting.",
+      "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
+      "state": "SOURCE_MAPPED_NOT_EXECUTABLE"
+    }
+  ],
+  "maximum_cells_before_reuse": 12,
+  "scope_rule": "These12 cells are an upper bound for existing residual H obligations, not a runnable matrix or new admission. First revalidate source-matched accepted sub-evidence. Whole reviewed cells may be split across visits; no silent cross-product or duplicate physical Duo campaign.",
+  "separate_prepared_work": {
+    "owner": "Results/EXP-225-human-setup-preparation.json",
+    "scope": "F03 M02/M03 Swift then Objective-C exact same-key API qualification. Current wrapper/product verify unchanged; this does not prepare residual semantic gestures."
+  },
+  "preserved_evidence": [
+    "H01/H05/H07/H14 remain closed at their owning scope.",
+    "S2 H12/H16/T10/F08 and all existing compatibility/lifetime checks remain accepted; no repeat.",
+    "EXP196 original failed input/close attempts and partial genuine activations remain immutable; no equivalent automation retry.",
+    "F01/public promotion and physical Duo F04 remain separate."
+  ],
+  "findings": [
+    {
+      "id": "S3-HUMAN-01",
+      "state": "OPEN_PREPARATION_GAP",
+      "fact": "Only the legacy same-key scenario installs the physical step guard; its interval is steps6\u201316. The inferred Operations critical interval is first start at6 through final marker at21.",
+      "source": [
+        {
+          "path": "Datadog/Example/MultiSceneProbe/Sources/RUMNativeMultiSceneProbeApp.swift",
+          "lines": [
+            162,
+            193
+          ],
+          "reason": "scenario-specific hook"
+        },
+        {
+          "path": "Datadog/Example/MultiSceneProbe/Sources/Harness/ProbePhysicalTopologyAdmission.swift",
+          "lines": [
+            150,
+            214
+          ],
+          "reason": "fixed admission interval"
+        },
+        {
+          "path": "Datadog/Example/MultiSceneProbe/Sources/Harness/ProbeScenarioCatalog.swift",
+          "lines": [
+            588,
+            682
+          ],
+          "reason": "eight calls and markers"
+        }
+      ],
+      "repair": "Add a narrowly selected, fail-closed H06 admission/capture adapter; do not infer live topology from capability labels."
+    },
+    {
+      "id": "S3-HUMAN-02",
+      "state": "OPEN_SOURCE_BINDING_REQUIREMENT",
+      "fact": "The existing inferred Operations fixture wraps calls in RUMUIEventNetworkContext only under DEBUG; Release invokes the source-less call directly.",
+      "source": [
+        {
+          "path": "Datadog/Example/MultiSceneProbe/Sources/ProbeWindowView.swift",
+          "lines": [
+            3131,
+            3228
+          ],
+          "reason": "conditional call-site inference"
+        },
+        {
+          "path": "Datadog/Example/MultiSceneProbe/project.yml",
+          "lines": [
+            7,
+            8
+          ],
+          "reason": "Debug/Release configurations"
+        }
+      ],
+      "repair": "Freeze the tested inference mechanism and actual compilation conditions. Do not silently convert it to explicit targets or claim real UIKit-event inference. A Release variant needs separately defined source expectations before any run."
+    },
+    {
+      "id": "S3-HUMAN-03",
+      "state": "OPEN_NATIVE_BOUNDARY_REQUIREMENT",
+      "fact": "Retained-reader reconnect candidates explicitly use syntheticReaderDisconnectTarget; windows.restoration records only post-relaunch readiness/markers.",
+      "source": [
+        {
+          "path": "Datadog/Example/MultiSceneProbe/Sources/Harness/ProbeScenarioCatalog.swift",
+          "lines": [
+            5803,
+            5881
+          ],
+          "reason": "synthetic reconnect and one-leg restoration"
+        }
+      ],
+      "repair": "Require genuine OS disconnect evidence for H09 and a separately bound two-process join for H15; preserve old diagnostics."
+    },
+    {
+      "id": "S3-HUMAN-04",
+      "state": "OPEN_FIXTURE_REQUIREMENT",
+      "fact": "The S2 hosted fixture has automatic and ordinary trackRUMView branches, not the S3 semantic navigation host.",
+      "source": [
+        {
+          "path": "tools/multi-scene/hosted-swiftui/App.swift",
+          "lines": [
+            36,
+            57
+          ],
+          "reason": "ordinary hosting content"
+        }
+      ],
+      "repair": "Reuse the writer/identity discipline, but define matching semantic mount fixtures for H16; ordinary S2 acceptance is not S3 semantic acceptance."
+    }
+  ],
+  "next_implementation": {
+    "package": "inferred-operations",
+    "gate": "S3:H06",
+    "scope": "Reuse only the eight-call Operations scenario and its exact owner oracle. First implement precritical concurrent setup and safe release/idle capture with current source/build binding; do not expand into other telemetry families.",
+    "operator_sequence": [
+      "Show the exact scenario and device on the live instruction page before launch.",
+      "Arrange the two actual windows only when prompted, then release input.",
+      "The runner captures current native identities, real display evidence and native idle before the first Operation.",
+      "All eight calls and complete semantic/backend collection are automated; no gesture repeats for delayed indexing.",
+      "Cleanup uses fresh input release/idle and task-only teardown; original attempts keep separate verdicts."
+    ],
+    "controls_required": [
+      "Missing, stale, consumed or wrong-run setup never dispatches an Operation.",
+      "Topology loss or replaced scene/window/root before or during the critical interval stops later calls.",
+      "Wrong or duplicate Operation step, cross-scene view alias, beta/alpha swap and peer drift reject.",
+      "Delayed exact backend evidence is collected without repeating input; conflicting or incomplete evidence remains unqualified.",
+      "Held input, missing release/idle or changed process prevents terminate/uninstall."
+    ],
+    "implementation_admitted": false,
+    "builds_admitted": 0,
+    "native_admitted": false,
+    "budget_policy": "Freeze setup/API/collection/cleanup limits from qualified observed adapter latencies before execution; no active deadline extension. Strict timing is diagnostic.",
+    "next": "After the requested S2 candidate human sitting, prepare only H06; complete actual-runner offline controls and designated review before any build or human invitation."
+  },
+  "native_runs": 0,
+  "sdk_changes": false,
+  "gates_closed": [],
+  "release_acceptance": false,
+  "source_audit_snapshot": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/s3-residual-source-audit.json",
+    "sha256": "784cdf4113deec2def98614576d4cf9ff2fdd34d8384d2a62c194cddac40ee37"
+  },
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/s3-residual-review.json",
+    "sha256": "358e67b60fb25744ada5ddf6902e5832285a28489492900077061fedd7799890"
+  }
+}

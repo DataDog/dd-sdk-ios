@@ -75,6 +75,11 @@ session baseline is claimed; do not retry original-organization discovery.
 
 ## S3 residuals
 
+[The reviewed preparation map](Results/S3-human-residual-preparation.json) bounds
+the remaining obligations to eight packages and at most12 cells before evidence
+reuse. It records source and capture gaps; none of those packages is executable
+yet. Inferred Operations H06 is the next preparation after the requested S2 sitting.
+
 Reuse the qualified simulator/physical procedures only after checking the exact
 source and environment. Remaining simultaneous-scene, teardown/reconnect,
 restoration and interactive combinations stay in the register. H04/H11's bounded
