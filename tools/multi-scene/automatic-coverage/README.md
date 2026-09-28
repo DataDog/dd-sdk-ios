@@ -19,6 +19,15 @@ Use `human_sessions.py prepare-s2 --original MASTER_ROOT --root NEW_SITTING_ROOT
 series; reviewed later sittings select one to three cells with `--previous
 COMPLETED_SITTING_ROOT`. A failed or incomplete predecessor cannot continue.
 
+The reviewed `human_candidate.py` opt-in prepares only the pending UIKit stack
+candidate after a capture-mechanism change. It binds an accepted SDK26.5 baseline
+and a separately reviewed SDK27.1 offline comparison through `--accepted` and
+`--offline`, plus the qualified Home result through `--home`. `--original` is the
+new master, `--root` a fresh sitting and `--series` a fresh one-cell ledger. Existing
+claims stay consumed. Neither reference populates native inheritance; its separate
+`candidate-complete.json` records candidate capture and comparisons with no automatic
+release credit. The standard selector and completed-predecessor rules stay intact.
+
 The frozen native oracle removes only recorder-duration upper bounds. The collector
 preserves Home's committed prefix, then collects inactive View revisions and exact
 Action counts/owners; it does not equate a writer checkpoint with end of SDK work.

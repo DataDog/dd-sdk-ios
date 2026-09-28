@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "Use durable Home capture without relying on suspended receipt publication",
-  "status": "HOME_MECHANISM_QUALIFIED_CONTINUATION_REBIND_REQUIRED",
+  "status": "CANDIDATE_ONLY_PREPARED_REVIEWED_AWAITING_FRESH_READINESS",
   "defined_at": "2026-09-28T12:20:42.481892+00:00",
   "defined_before_implementation": true,
   "owner": "root",
@@ -74,10 +74,10 @@
     ],
     "disposition": "Initial scope retained for provenance; reviewed native_home_repair below supersedes its no-build proposal after source identified suspension of the delayed writer."
   },
-  "next_action": "Complete the remaining refreshed products and separately reviewed continuation bindings. Reuse SDK26.5 acceptance and SDK27.1 offline parity as distinct reference classes; do not repeat captured baseline gestures or reset consumed claims. Candidate requires fresh independent qualification.",
+  "next_action": "Use the reviewed candidate-only plan with fresh Duo/Xcode/operator readiness. Do not repeat either baseline or modify old claims. Candidate capture, cleanup and reference comparisons must qualify independently; nine other matrix cells remain separate.",
   "native_runs_added": 1,
   "gate_closures": [],
-  "updated_at": "2026-09-28T13:12:28.804780+00:00",
+  "updated_at": "2026-09-28T13:27:58.657972+00:00",
   "cleanup_controls": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/cleanup-reactivation-controls.json",
     "sha256": "845b7194de00ba9003eeda2b95612cec80a2f07560d651d56d19837211be3ffc"
@@ -164,7 +164,74 @@
       "native_cells_credited": 0,
       "release_acceptance": false
     },
-    "remaining": "Build baseline26.5 and candidate27.1 with the same observer/writer, then rebind the finite continuation before human readiness.",
-    "residual": "Bounded fixture observation only. The final barrier drains the fixture writer, not all arbitrary future SDK work.1.2s is an allowance, not acceptance;60s task expiration and host clocks remain fixed. A late active View before the final host read rejects. No further ack loop or performance/delivery claim."
+    "remaining": "All six refreshed products qualified. Candidate-only preparation reviewed; no new native admission.",
+    "residual": "Bounded fixture observation only. The final barrier drains the fixture writer, not all arbitrary future SDK work.1.2s is an allowance, not acceptance;60s task expiration and host clocks remain fixed. A late active View before the final host read rejects. No further ack loop or performance/delivery claim.",
+    "source_checkpoint": "0b2d4badec64155531eff2085676fd1759cd681c",
+    "builds": {
+      "baseline-26.5": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-home-writer-bfiyq3qq/refresh/baseline-26.5/build-result.json",
+        "sha256": "b5dd44813270042936cbe621a1ee24ec04892190eed2bf7281685b9171b7a9f6"
+      },
+      "baseline-27.1": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-home-writer-bfiyq3qq/refresh/baseline-27.1/build-result.json",
+        "sha256": "d262c9dc0aa2b5c7fc841fbf78e7676068ba25bf337843376824775a0bc239b5"
+      },
+      "candidate-27.1": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-home-writer-bfiyq3qq/refresh/candidate-27.1/build-result.json",
+        "sha256": "e248294103696dc7b914d140de805fa07b5eefb7dc7e64536dd222ee13d46c25"
+      }
+    }
+  },
+  "continuation_definition": {
+    "defined_at": "2026-09-28T13:16:38.364450+00:00",
+    "defined_before_implementation": true,
+    "state": "PREPARED_REVIEWED",
+    "kind": "S2_CANDIDATE_CONTINUATION",
+    "reviewer": "/root/c06_runtime_plan",
+    "source_checkpoint": "0b2d4badec64155531eff2085676fd1759cd681c",
+    "scope": "One fresh candidate27.1 Duo UIKit stack single-scene cell using the existing collector/cleanup. Separate typed SDK26.5 accepted baseline and SDK27.1 offline comparison references; neither populates native inheritance. Old claims and failures immutable; new one-cell ledger; fresh operator readiness required.",
+    "completion": "Independent candidate scenario/evidence/cleanup and compared View/Action ownership; no automatic release-gate or historical native credit.",
+    "controls": [
+      "Changed/foreign reference, source, product, helper or raw prefix rejects.",
+      "Offline reference cannot become an accepted predecessor; no failed-stage candidate launch may be hidden.",
+      "Only the one selected candidate can be claimed once; partial claims stay consumed.",
+      "Current candidate evidence and cleanup remain mandatory; reference counts and native acceptance remain distinct."
+    ],
+    "native_admitted": false
+  },
+  "continuation_preparation": {
+    "state": "PREPARED_REVIEWED_NOT_ADMITTED",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/candidate-continuation-sq50pppt/candidate",
+    "plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/candidate-continuation-sq50pppt/candidate/runtime/runtime-plan.json",
+      "sha256": "e259c9b76921bca554656d8aca7390209eb0fb4cb14ded20721b3a93541fa705"
+    },
+    "series": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/candidate-continuation-sq50pppt/series/series.json",
+      "sha256": "f229750760d44a51ae605b0d2f966ec1eaef8938ba09de578f1d4fa08811fd8b"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/candidate-continuation-sq50pppt/candidate/runtime/controls.json",
+      "sha256": "717e290903b898972f280263919d6e48601b6f23d6825ce2d9a14f26a745dde2"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/candidate-continuation-sq50pppt/candidate/runtime/review.json",
+      "sha256": "0c748b93da1f4aec4057976e27e705b3f480b1d5cc7180aec4545ae08a7043f1"
+    },
+    "master": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/candidate-continuation-sq50pppt/master/runtime/runtime-plan.json",
+      "sha256": "984f44699565de701edf30cb1ea85cbfce229401bddf3c12a5cca0475ba489f9"
+    },
+    "source_classes": [
+      "ACCEPTED_BASELINE_26_5",
+      "OFFLINE_COMPARISON_27_1"
+    ],
+    "native_admitted": false,
+    "native_cells_credited": 0,
+    "gates_closed": [],
+    "retained_preparation_failure": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/candidate-continuation-rutt2ubb/preparation-failure.json",
+      "sha256": "86c4ca40820427d082b69d4172fdb698940bd8f82805659a252fbff7725ef108"
+    }
   }
 }

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "state": "HOME_MECHANISM_QUALIFIED_CONTINUATION_REBIND_REQUIRED",
-  "updated_at": "2026-09-28T13:12:28.804780+00:00",
+  "state": "CANDIDATE_ONLY_PREPARED_REVIEWED_AWAITING_FRESH_READINESS",
+  "updated_at": "2026-09-28T13:27:58.657972+00:00",
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
   "gates": [
@@ -66,7 +66,7 @@
     "Native effects, stable ownership, ordering and cleanup assertions"
   ],
   "limits": "One of12 native cells accepted. SDK27.1 saved pre-cleanup parity is a separately reviewed behavioral reference, not native acceptance. One automatic Home-only qualification passes scenario/evidence/cleanup; zero matrix cells or gates added.",
-  "next_action": "Follow Results/S2-coverage-home-collection-20260928.json: preserve the accepted SDK26.5 cell and separately reviewed SDK27.1 offline reference; finish refreshed products and continuation bindings before candidate readiness.",
+  "next_action": "Use the exact candidate-only continuation in Results/S2-coverage-home-collection-20260928.json. Both baselines stay references in their original evidence classes; candidate requires fresh device/operator admission and independent capture/cleanup.",
   "admission_review": {
     "owner": "Results/S2-coverage-counter-observation-20260928.json",
     "state": "FIRST_BASELINE_NATIVE_QUALIFIED",
