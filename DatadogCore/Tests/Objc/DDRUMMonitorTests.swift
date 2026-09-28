@@ -581,6 +581,7 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testEvaluatingFeatureFlags() throws {
+        config.featureFlags[.viewUpdates] = false
         RUM.enable(with: config)
         let objcRUMMonitor = objc_RUMMonitor.shared()
 
