@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
   "work_item": "S2 finite input preparation",
-  "status": "THREE_REMAINING_PACKAGES; CANDIDATE_ONLY_COVERAGE_READY_FOR_FRESH_READINESS",
-  "updated_at": "2026-09-28T13:27:58.657972+00:00",
+  "status": "THREE_REMAINING_PACKAGES; REVIEWED_PREPARATIONS_AWAIT_OPERATOR",
+  "updated_at": "2026-09-28T13:40:52.570685+00:00",
   "owner": "Harness implementer; root owns native lane",
   "scope_owner": "Results/S2-release-gate-review-20260925.json; release-gates.json releases.S2.execution_packages",
   "source_pair": {
@@ -32,7 +32,7 @@
       "decisive_test": "Actual control/navigation/fold effect and exact view/action owner parity. Split journeys supply H14. Existing naming/control limitations remain explicit.",
       "environment": "Xcode27.1 Duo27.1; six refreshed passive-observer products from three original source/compiler pairs (26.5 and27.1).",
       "preparation": "Home mechanism and all six refreshed products qualify. Reviewed candidate-only mode binds the accepted SDK26.5 and offline SDK27.1 references separately; no baseline repeat or inherited native credit.",
-      "blocker": "Fresh Duo/Xcode inventory and current operator-page readiness for the single candidate cell."
+      "blocker": "User unavailable. Candidate plan reviewed; instruction server stopped. Fresh availability and Duo/Xcode/live-page readiness precede admission."
     },
     {
       "id": "transitions",
@@ -47,7 +47,7 @@
       "environment": "Duo27.1 preferred; one eligible physical UIKit pair is the scoped unsupported-input fallback, with no Duo-hardware claim.",
       "qualified_baseline": "Results/S2-H11-H13-local-baseline.json; no UIKit baseline repeat due",
       "prepared_continuation": "Results/S2-H11-H13-local-continuation.json; one reviewed physical B cell using existing signed products",
-      "blocker": "Rebind the reviewed cleanup helper before fresh connected/unlocked physical iPad and operator readiness. Existing signed products and accepted baseline stay reusable.",
+      "blocker": "Fresh connected/unlocked physical iPad and operator readiness. Shared helper bindings now reviewed; existing signed products and accepted baseline stay reusable.",
       "swiftui_preparation": "Results/S2-H12-H13-swiftui-duo.json",
       "preparation": "Reviewed delayed callback/Home collection, actual saved-capture replay and immutable post-stop evidence. Existing signed products reused."
     },
@@ -123,10 +123,11 @@
     "duration": "Budgets are operational maxima, not forecasts of user time."
   },
   "operator_readiness": {
-    "state": "FRESH_PACKAGE_READINESS_REQUIRED",
+    "state": "OPERATOR_UNAVAILABLE",
     "active_native": false,
     "fixed_stage_started": false,
-    "fresh_readiness_required": true
+    "fresh_readiness_required": true,
+    "owner": "Results/S2-coverage-home-collection-20260928.json"
   },
   "gate_closures": [],
   "preflight_audit": {
