@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "state": "UIKIT_VIEW_ACTION_GATES_CLOSED_SWIFTUI_REMAINS",
-  "updated_at": "2026-09-29T22:02:03.029770+00:00",
+  "updated_at": "2026-09-29T22:39:14.214738+00:00",
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
   "gates": [
@@ -151,7 +151,7 @@
     "offline_reference_cells": 1,
     "meaning": "Native qualified count covers SDK26.5 split and the scoped candidate. SDK27.1 remains offline-only with original failure unchanged; it does not require a repeat. Six SwiftUI cells remain."
   },
-  "next_action": "Keep this one-use simctl-only mechanism stopped. Compare the qualified H12 supported interaction-session prerequisite with this launch using saved evidence before admitting any materially different continuation. No remaining builds or human prompts yet.",
+  "next_action": "Review saved control evidence and prepare remaining SwiftUI builds/session without repeating native diagnostics; keep fresh actual pre-prompt controls decisive. Fix prerequisite/ownership ordering before any future external dependency.",
   "review_loop": {
     "rounds": 2,
     "final_findings": 0,
@@ -482,19 +482,24 @@
     "scope": "Accepted UIKit stack and split candidate capture with preserved SDK26.5 native and SDK27.1 offline-only references. Existing switch/pane limitations remain; no Home, physical, backend, SwiftUI or whole-S2 promotion."
   },
   "swiftui_preparation": {
-    "state": "STOPPED_BEFORE_HUMAN_INPUT",
-    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-resume-q5hpd3xr",
+    "state": "REVIEWED_PREPARATION_ONLY",
+    "owner": "Results/S2-coverage-remaining-preparation.json",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01",
     "plan": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-resume-q5hpd3xr/runtime/runtime-plan.json",
-      "sha256": "2be7c9c3cf56ef41f7d9787997c67dccad25c5f6881cb94b6a018abba7830e57"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01/runtime/runtime-plan.json",
+      "sha256": "4e119628412cce1bc128c9f19ab1275e70a756cb1574f2a7e5307b6029837565"
     },
     "series": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/series-r5/series.json",
-      "sha256": "2915859f75640b1eef25571322ec056f4ca79ca33ab62beb1448e69790fd8f48"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/series/series.json",
+      "sha256": "2770d73a50bcbd4c826eec2fd697b25a078d39173d10d1d6e05fb5518063a514"
     },
     "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-resume-q5hpd3xr/runtime/controls.json",
-      "sha256": "9eabed98424d7a6c76b730741c5b7ddac2d13ae6a46ac30ed69e969829ea4e01"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01/runtime/controls.json",
+      "sha256": "21a710fdbde3add2deac38ce287dcfd14ed5344de68c858fda5f76932acf7dc8"
+    },
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/continuation-definition.json",
+      "sha256": "2f1d52cb85d06271cbbad73f3cf3d7b26e9e0d6d92cec70697b2d166ea283ab4"
     },
     "selection_profile": "SWIFTUI_ONLY",
     "matrix": [
@@ -551,64 +556,125 @@
       }
     ],
     "excluded": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/excluded-uikit-r5.json",
-      "sha256": "2d3c0f6df130bacc218f0cb189a6eeac12a285199fbdee1ffea1b0657e7c5f59"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/excluded-uikit.json",
+      "sha256": "18d8f8a1d5edb8f24cad330820b5cfc9dd384988699f3ccbddcc684bbd027384"
     },
-    "new_builds": 0,
-    "native_admitted": true,
-    "new_native_runs": 1,
+    "native_admitted": false,
+    "new_native_runs": 0,
     "gate_closures": [],
-    "definition": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/definition.json",
-      "sha256": "e9871bf497766de19db78d3daa2c1c6e9cfe0f20e91666ebdcd2d55eb715c7b5"
-    },
-    "review_input": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/review-input-r5.json",
-      "sha256": "01d05ae03f37e5d3cf225ff0e105d42abefeda30ea417678290a344e6b24a008"
-    },
-    "offline_controls": 107,
-    "preparation_limits": "Preparation only; native qualification and fresh operator readiness remain. Historical products, helper-transition mismatches and superseded offline preparation retained separately.",
     "review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-resume-q5hpd3xr/runtime/review.json",
-      "sha256": "e6339bce68fda5a12e3f3346a2da2cefabceac6c8a1134545b978ce09d521440"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01/runtime/review.json",
+      "sha256": "0ed8f0337f9ad0664fccd91d2040d919a812802eb28fa710e2d61443de85a09f"
     },
-    "operator_page": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-resume-q5hpd3xr/runtime/operator/server.json",
-      "sha256": "6b3c0c3f291cbf3a93fa98e0c512fc20fdb66f4684eeebb47f28f621d8b942a5"
+    "readiness": "WAITING_USER_AVAILABILITY_AND_FRESH_PREFLIGHT",
+    "master_plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/master/runtime/runtime-plan.json",
+      "sha256": "8b56e529e8217cc733d43f804e2a7722e0fa0ba29ce516bc79277f05906f3063"
     },
-    "readiness": "BLOCKED_CAPTURE_CORRECTION",
-    "operator_expiry": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-r5/runtime/operator-expired.json",
-      "sha256": "033e0359781aab877c31c342a707beff742b7a16ecd96675f1b0c8b7e5de2b8e"
-    },
-    "resume_preparation": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-resume-q5hpd3xr/resume-preparation.json",
-      "sha256": "0383fc0b5695f3954335b0f028303fbebe1c01e5b131a13f211238cb76c28354"
-    },
-    "admission": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-resume-q5hpd3xr/runtime/native-admission.json",
-      "sha256": "3a709038dbf71b23502f82398309c8870a4c02277fe2a5ea2d9995737e564991"
-    },
-    "stopped_assessment": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-resume-q5hpd3xr/stopped-assessment.json",
-      "sha256": "b91851047fcff97d89d28b10317aeb0387b1e4b97e23a6273ec7b36aff915d48"
-    }
+    "builds": 3,
+    "scope": "Preparation only. Six behavior cells remain. No new native run or gate closure. Old failed series and claims preserved in history."
   },
   "swiftui_capture_correction": {
-    "state": "STOPPED_PUBLIC_READER_NO_IDENTIFIERS",
+    "state": "REVIEWED_PREPARATION_NATIVE_UNQUALIFIED",
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz",
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/definition.json",
       "sha256": "3025a91af54340d93564f0719937b464a3196675a284462c87341d728ba6b67e"
     },
-    "native_launches": 1,
+    "native_launches": 2,
     "gates_closed": [],
     "assessment": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/readiness-assessment.json",
       "sha256": "b5a8c0e16b938589b2dce8316a8803c17335d6d0e864bcd7a252b8d055b3426e"
     },
-    "qualified_builds": 1,
+    "qualified_builds": 3,
     "offline_controls": 81,
-    "cleanup": "PASS"
-  }
+    "cleanup": {
+      "reader_qualification": "PASS",
+      "supported_qualification_original": "INVALID",
+      "later_restoration": "PASS"
+    },
+    "supported_prerequisite_preparation": {
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/supported-session-__z0h5e_/definition.json",
+        "sha256": "3587a34e7dc6475299e536a9fa05fac1eb2ebd82056cfa0178876260299ee9d4"
+      },
+      "plan": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/supported-session-__z0h5e_/runtime/plan.json",
+        "sha256": "f4bd93813ae30d8c467bb30a47680d00e102d353a279e15179773a99f31b6ca2"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/supported-session-__z0h5e_/runtime/review.json",
+        "sha256": "e24f10395be8d20ee570f7f5a1901c4cae4770baecc4c4d6e1f3a03a19f4b56e"
+      },
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/supported-session-__z0h5e_/controls.json",
+        "sha256": "282836fe740c3200f92ab15c809dd5911f9895974c46020c36f734c2e5cc739c"
+      },
+      "state": "INVALID_RESTORED_CONTROLS_OBSERVED",
+      "native_launches": 1,
+      "assessment": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/supported-session-__z0h5e_/assessment.json",
+        "sha256": "f5eae1a149546b41ad12446b4c952c8c90851ba44106ffe37960a303a4fc178b"
+      }
+    },
+    "separate_restoration": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/supported-session-__z0h5e_/restoration-proof.json",
+      "sha256": "12141ed4e4da6885f4fab7496d29e20f583a77c880361878da38fddbf431867d"
+    },
+    "saved_control_observations": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/supported-session-__z0h5e_/saved-controls-assessment.json",
+      "sha256": "1be7d7572f261633de63e48d442ba5152200622ccbc1e026265b3bac35068a37"
+    },
+    "build_results": {
+      "baseline-26.5": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/refresh/baseline-26.5/build-result.json",
+        "sha256": "d6f5f0d0d312be66c0c3a398c041f14f4eca5d7b655efa66751fa7cb1bcc1983"
+      },
+      "baseline-27.1": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/refresh/baseline-27.1/build-result.json",
+        "sha256": "715c92fb0cc452a737b0390a084ed94abc21e069a69be9c6b8e7c3e4b9653597"
+      },
+      "candidate-27.1": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/refresh/candidate-27.1/build-result.json",
+        "sha256": "458b24716d48b196e5fc607ebf2ce9693e4cc3087dfbfbaaf71f542823301cf3"
+      }
+    },
+    "continuation_definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/continuation-definition.json",
+      "sha256": "2f1d52cb85d06271cbbad73f3cf3d7b26e9e0d6d92cec70697b2d166ea283ab4"
+    },
+    "continuation_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01/runtime/review.json",
+      "sha256": "0ed8f0337f9ad0664fccd91d2040d919a812802eb28fa710e2d61443de85a09f"
+    },
+    "home_transition_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/home-transition-controls-r2.json",
+      "sha256": "a03937f936f15c73483b77b6aaa84719c74fc13bb1d33319b78e037a4b8629ba"
+    },
+    "home_controls": 43,
+    "next_action": "Fresh availability at or after09:00 Paris, environment and live pre-prompt control readiness for the first required SDK26.5 stack cell. No additional diagnostic launch."
+  },
+  "swiftui_preparation_history": [
+    {
+      "state": "STOPPED_BEFORE_HUMAN_INPUT",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-resume-q5hpd3xr",
+      "plan": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-resume-q5hpd3xr/runtime/runtime-plan.json",
+        "sha256": "2be7c9c3cf56ef41f7d9787997c67dccad25c5f6881cb94b6a018abba7830e57"
+      },
+      "series": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/series-r5/series.json",
+        "sha256": "2915859f75640b1eef25571322ec056f4ca79ca33ab62beb1448e69790fd8f48"
+      },
+      "admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-resume-q5hpd3xr/runtime/native-admission.json",
+        "sha256": "3a709038dbf71b23502f82398309c8870a4c02277fe2a5ea2d9995737e564991"
+      },
+      "stopped_assessment": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-resume-q5hpd3xr/stopped-assessment.json",
+        "sha256": "b91851047fcff97d89d28b10317aeb0387b1e4b97e23a6273ec7b36aff915d48"
+      }
+    }
+  ]
 }

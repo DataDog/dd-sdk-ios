@@ -115,6 +115,10 @@ bundles locally and commit only sanitized summaries and durable artifact locator
 Do not log credentials or unrelated customer data.
 
 Persist observed bytes before parsing, terminal-failure handling and uninstall.
+Persist the app identity and first native ownership snapshot before awaiting an
+external interaction service, so a transport failure cannot remove cleanup proof.
+Display assertions consume the actual returned payload, with command metadata
+retained separately. A matching command receipt is not display evidence.
 Capture/persistence errors do not suppress cleanup or the original failure. Each
 response binds its own request, phase and deadline. Include decode, persistence,
 manifest verification and final assembly inside the budget; a late response stays

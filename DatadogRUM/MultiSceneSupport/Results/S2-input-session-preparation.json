@@ -2,7 +2,7 @@
   "schema_version": 2,
   "work_item": "S2 finite input preparation",
   "status": "TWO_REMAINING_INPUT_PACKAGES",
-  "updated_at": "2026-09-29T12:56:10.267346+00:00",
+  "updated_at": "2026-09-29T22:39:14.214738+00:00",
   "owner": "Harness implementer; root owns native lane",
   "scope_owner": "Results/S2-release-gate-review-20260925.json; release-gates.json releases.S2.execution_packages",
   "source_pair": {
@@ -26,11 +26,11 @@
       ],
       "owner": "SDK implementer; human operator for input",
       "evidence_owner": "Results/S2-coverage-remaining-preparation.json",
-      "remaining": "Six untouched SwiftUI stack/split cells: baseline26.5, baseline27.1 and candidate27.1 for each shape. UIKit stack and split evidence close C07/C08; keep their native/offline reference classes and all original failures distinct. No UIKit repeat.",
+      "remaining": "Six SwiftUI stack/split behavior cells remain: baseline26.5, baseline27.1 and candidate27.1 for each shape. Original launch and qualification failures remain; UIKit C07/C08 stay closed.",
       "decisive_test": "Actual control/navigation/fold effect and exact view/action owner parity. Split journeys supply H14. Existing naming/control limitations remain explicit.",
-      "environment": "Xcode27.1 Duo27.1; six refreshed passive-observer products from three original source/compiler pairs (26.5 and27.1).",
-      "preparation": "Reviewed separate SWIFTUI_ONLY series selects the six untouched cells; 107 offline controls pass. First sitting is one SDK26.5 SwiftUI stack baseline. Existing products and standard Home collector; no UIKit inheritance.",
-      "blocker": "Fresh Duo/operator readiness for the reviewed first SwiftUI baseline."
+      "environment": "Xcode27.1 Duo27.1; three refreshed SwiftUI-only products from the original source/compiler pairs (26.5 and27.1).",
+      "preparation": "Three builds and scoped first-cell review pass. The public-reader controls and43 affected Home/continuation controls pass. Saved native graphs expose all six controls; live root, owners, controls, counter and scroll are required before any prompt. Original INVALIDs and separate restoration remain.",
+      "blocker": "User unavailable until09:00 Paris September30. First live readiness and behavioral cell remain unqualified; fresh operator/device readiness required."
     },
     {
       "id": "transitions",
@@ -120,17 +120,17 @@
   "session_splitting": {
     "allowed": true,
     "safe_boundary": "A complete qualified cell or pair with durable evidence and verified cleanup; never mid-gesture.",
-    "coverage": "Reviewed AUTOMATIC_S2_REMAINING_SESSION selects one to three untouched cells from the nine-cell matrix. Typed UIKit-stack references are excluded, with no inherited native credit. Fresh canonical claims, completed same-family baselines and new page/readiness are required; the first sitting is one UIKit split SDK26.5 baseline.",
+    "coverage": "SwiftUI-only continuation has six unqualified cells, with no inherited native credit. Preserve the consumed failed claim. A materially changed prerequisite must qualify before a fresh canonical continuation and operator readiness.",
     "transitions": "Reviewed physical candidate-only continuation reuses its saved baseline; other continuations require explicit source-bound preparation.",
     "network": "Complete. Four captured cells and separately assessed registered persistence qualify; no repeat is due.",
     "duration": "Budgets are operational maxima, not forecasts of user time."
   },
   "operator_readiness": {
-    "state": "SESSION_COMPLETE",
+    "state": "REVIEWED_PREPARATION_WAITING_AVAILABILITY",
     "active_native": false,
     "fixed_stage_started": false,
     "fresh_readiness_required": true,
-    "owner": "Results/EXP-221-duo-fold.json qualified_fold"
+    "owner": "Results/S2-coverage-remaining-preparation.json"
   },
   "gate_closures": [],
   "preflight_audit": {

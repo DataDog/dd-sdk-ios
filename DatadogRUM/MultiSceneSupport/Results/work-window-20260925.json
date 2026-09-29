@@ -291,5 +291,12 @@
   },
   "minimum_autonomous_work_until_utc": "2026-09-27T06:00:00+00:00",
   "latest_autonomous_checkpoint": "Results/autonomous-progress-20260927.json",
-  "historical_entries_note": "Earlier attempt/preparation fields retain historical state. The restart cursor and latest_autonomous_checkpoint own current work; they do not renew old admissions."
+  "historical_entries_note": "Earlier attempt/preparation fields retain historical state. The restart cursor and latest_autonomous_checkpoint own current work; they do not renew old admissions.",
+  "human_availability": {
+    "state": "UNAVAILABLE_UNTIL",
+    "local_time": "2026-09-30T09:00:00+02:00",
+    "utc_time": "2026-09-30T07:00:00Z",
+    "source": "User message: not available for any human session until 9:00 am Paris time",
+    "scope": "Autonomous preparation and already-qualified automatic checks only; fresh readiness is required afterward. Caffeinate remains limited to the existing authorized expiry."
+  }
 }
