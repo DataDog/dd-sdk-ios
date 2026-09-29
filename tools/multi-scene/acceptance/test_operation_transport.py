@@ -194,5 +194,59 @@ class OperationTransportTests(unittest.TestCase):
         self.assertTrue(channel.stopped)
 
 
+class OperationSetupTransportTests(unittest.TestCase):
+    def fixture(self):
+        identity, args = fixture()
+        setup = dict(variant='post-arrangement-owners-v1', scenario='operations.cross-scene.physical-setup',
+                     fullScenarioSHA256='d' * 64, setupPrefixSHA256='e' * 64, setupBoundaryIndex=4,
+                     firstOperationIndex=6, lastOperationIndex=21, ownerBindingVersion=1)
+        identity.update(schemaVersion=2, setupProfile=setup)
+        args['setup_profile'] = setup
+        return identity, args
+
+    def test_mode_two_preserves_capture_only_identity_and_exact_inner_profile(self):
+        identity, args = self.fixture()
+        self.assertEqual(t.challenge(t.encode(identity), **args), identity)
+        raw, inner = t.message(identity, 'setup')
+        self.assertEqual(t.load(raw)['schemaVersion'], 2)
+        self.assertEqual(t.load(inner)['setupProfile'], args['setup_profile'])
+        original = reply(identity, raw)
+        _, capture = t.response(original, raw, inner, identity)
+        self.assertEqual(capture['request']['setupProfile'], args['setup_profile'])
+        self.assertFalse(identity['executionArmed'])
+
+    def test_challenge_rejects_cross_mode_and_changed_frozen_setup(self):
+        identity, args = self.fixture()
+        _, old_args = fixture()
+        with self.assertRaises(ValueError): t.challenge(t.encode(identity), **old_args)
+        old, _ = fixture()
+        with self.assertRaises(ValueError): t.challenge(t.encode(old), **args)
+        for field in ['variant', 'scenario', 'fullScenarioSHA256', 'setupPrefixSHA256',
+                      'setupBoundaryIndex', 'firstOperationIndex', 'lastOperationIndex', 'ownerBindingVersion']:
+            with self.subTest(field=field):
+                changed = copy.deepcopy(identity)
+                changed['setupProfile'][field] = 99 if type(changed['setupProfile'][field]) is int else 'f' * 64
+                with self.assertRaises(ValueError): t.challenge(t.encode(changed), **args)
+        for changed in [dict(identity, schemaVersion=1), dict(identity, setupProfile=None),
+                        dict(identity, executionArmed=True)]:
+            with self.assertRaises(ValueError): t.challenge(t.encode(changed), **args)
+
+    def test_frozen_profile_itself_cannot_select_late_boundary_or_unknown_fields(self):
+        for field, value in [('setupBoundaryIndex', 6), ('firstOperationIndex', True),
+                             ('lastOperationIndex', 20), ('ownerBindingVersion', 2), ('unknown', True)]:
+            identity, args = self.fixture()
+            args['setup_profile'][field] = value
+            with self.assertRaises(ValueError): t.challenge(t.encode(identity), **args)
+
+    def test_schema_two_reply_cannot_substitute_historical_or_altered_profile(self):
+        identity, _ = self.fixture(); raw, inner = t.message(identity, 'setup')
+        for field in ['schemaVersion', 'setupProfile', 'sourceRevision']:
+            response = t.load(reply(identity, raw))
+            if field == 'schemaVersion': response['identity'][field] = 1
+            elif field == 'setupProfile': response['identity'].pop(field)
+            else: response['identity']['profile'][field] = 'f' * 40
+            with self.assertRaises(ValueError): t.response(t.encode(response), raw, inner, identity)
+
+
 if __name__ == '__main__':
     unittest.main()

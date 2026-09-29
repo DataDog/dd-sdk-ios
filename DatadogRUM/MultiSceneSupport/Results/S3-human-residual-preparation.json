@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "Finite source-backed preparation of residual S3 human scenarios",
-  "state": "H06_TRANSPORT_PREPARED_CURRENT_VIEW_BINDING_PENDING",
+  "state": "H06_CURRENT_VIEW_BINDING_PREPARED_RUNTIME_INTEGRATION_PENDING",
   "defined_at": "2026-09-28T13:49:45.760600+00:00",
   "defined_before_implementation": true,
   "owner": "Root",
@@ -92,12 +92,13 @@
       ],
       "environment": "Physical iPad with simultaneous visible windows and authenticated raw/reduced RUM Operation retrieval.",
       "fixture_candidates": [
-        "operations.cross-scene.lifecycle"
+        "operations.cross-scene.physical-setup"
       ],
       "decisive_test": "Existing eight calls/four Operations: success A\u2192B, failure A\u2192B(error), parallel alpha A\u2192A and beta B\u2192B ending beta first. Preserve exact per-step view IDs and two visible native scenes through all calls.",
-      "missing": "Bind actual RUM occurrences after window arrangement, then wire the unarmed channel to app/host setup, installed/display proof and steps6-21 guard. Complete-session collection and release/idle cleanup remain. Profile16, backend11, input15 and transport11 native/11 host controls qualify preparation only.",
+      "missing": "Wire actual session-aware SDK scene reads, the unarmed app channel and host release/display/installed-code proof before marker4; guard steps4-21 and retain complete local/backend collection and safe cleanup. Original scenario/profile bytes remain unchanged; owner controls qualify preparation only.",
       "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
-      "state": "TRANSPORT_PREPARED_CURRENT_VIEW_BINDING_PENDING"
+      "state": "POST_ARRANGEMENT_OWNER_CONTROLS_PASS_RUNTIME_PENDING",
+      "historical_fixture": "operations.cross-scene.lifecycle"
     },
     {
       "id": "disconnect-and-remount",
@@ -284,7 +285,7 @@
     },
     {
       "id": "S3-HUMAN-05",
-      "state": "OPEN_POST_SETUP_RUM_BINDING",
+      "state": "CONTROLLED_PENDING_RUNTIME_INTEGRATION",
       "fact": "The A Home occurrence1 marker precedes opening B and physical window arrangement. Its original RUM view ID is not guaranteed to remain current; the canonical oracle still binds later work to that old marker and occurrence1.",
       "source": [
         {
@@ -312,10 +313,18 @@
           "reason": "ordinary trackRUMView owns the explicit Home lifetime"
         }
       ],
-      "repair": "Preserve old raw occurrences and bind fresh A/B RUM view IDs after arrangement, before the first Operation. Review the separate physical expectation profile; keep original scenario evidence, inferred calls and asynchronous mapper semantics unchanged. Channel remains unarmed.",
+      "repair": "Separate physical-setup profile binds actual post-arrangement A/B Home IDs before marker4, keeps eight inferred calls and preserves old occurrences. Current document version selects mapper state without requiring delivery order. Pure owner/progress controls pass; actual SDK-reader/channel/host integration remains unqualified.",
       "review": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/transport-controls-o97j57gc/home-setup-review.json",
         "sha256": "90c98f2a867bf081b662bd8d738194571501ad6eb60ac5943519c35f318b0585"
+      },
+      "preparation_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/owner-binding-a2li9bq5/review.json",
+        "sha256": "2654587f7609bbe064bbd4e94f8d8f72a82ab9a640b8e06c09bd968f51b5bd02"
+      },
+      "preparation_controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/owner-binding-a2li9bq5/verdict.json",
+        "sha256": "4cd41875a7dc5ed67e070fcc0a0f4a9feb0711db90685e5b3d39942e53778e53"
       }
     }
   ],
@@ -341,14 +350,14 @@
     "builds_admitted": 0,
     "native_admitted": false,
     "budget_policy": "Freeze setup/API/collection/cleanup limits from qualified observed adapter latencies before execution; no active deadline extension. Strict timing is diagnostic.",
-    "next": "Define and review the physical post-arrangement RUM-owner contract, then wire the capture channel, host setup and whole critical interval. The new file transport has11 native/11 host passing controls, but no app pump or admission path; existing opt-in still stops before its first Operation.",
+    "next": "Wire the actual session-aware SDK reader and unarmed app capture pump, then the independent host release/display/installed-code barrier and whole critical interval. No physical run is admitted; prefix stops before marker4.",
     "scope_increment": {
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_",
       "definition": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/definition.json",
         "sha256": "debf3bbb1f457e537f9d0ebd01e77710b915c7a5bf0b4615aa5b27043ffbd463"
       },
-      "state": "PROFILE_BACKEND_INPUT_AND_TRANSPORT_CONTROLS_PASS_APP_BINDING_PENDING",
+      "state": "POST_ARRANGEMENT_OWNER_CONTROLS_PASS_RUNTIME_PENDING",
       "builds_admitted": 0,
       "native_admitted": false,
       "unit_validation": {
@@ -440,6 +449,74 @@
         "signing_attempt": {
           "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/transport-controls-o97j57gc/signed-checkpoint-attempt.json",
           "sha256": "1dc8be9300cb56af37dd566ed874d86131bd5c4e193c30cab3fc141daef30655"
+        }
+      },
+      "owner_binding": {
+        "state": "PREPARATION_CONTROLS_PASS",
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/owner-binding-a2li9bq5",
+        "definition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/owner-binding-a2li9bq5/definition.json",
+          "sha256": "de22d53fc605630cce00ac4d91c7be3b2064dfa2df94b9836f916611287d474f"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/owner-binding-a2li9bq5/review.json",
+          "sha256": "2654587f7609bbe064bbd4e94f8d8f72a82ab9a640b8e06c09bd968f51b5bd02"
+        },
+        "source_contract": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/owner-binding-a2li9bq5/owner-source-contract.json",
+          "sha256": "d89bfc651aace9725269b99d0ad6ad81617377dbf6d13ab32527c0fc7f6e81e9"
+        },
+        "verdict": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/owner-binding-a2li9bq5/verdict.json",
+          "sha256": "4cd41875a7dc5ed67e070fcc0a0f4a9feb0711db90685e5b3d39942e53778e53"
+        },
+        "original_unit_verdict": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/owner-binding-a2li9bq5/unit-verdict.json",
+          "sha256": "537655eacaba43cd58f5317c4e3105a142d990a1a6083528af439a5ebb7a0dc7"
+        },
+        "correction_definition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/owner-binding-a2li9bq5/test-input-correction/definition.json",
+          "sha256": "3944952968a27cc69257170480cfb34fb06a2398a5b6df3f4c6fbd041a564663"
+        },
+        "correction_review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/owner-binding-a2li9bq5/test-input-correction/review.json",
+          "sha256": "04d238234d40175e94f22789cb0b66b923c46a944a8694e4514ad674f8791a34"
+        },
+        "correction_validation": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/owner-binding-a2li9bq5/test-input-correction/unit-validation.json",
+          "sha256": "74ba384d7c627c87a7624072e4fde27a51cbebb831463269bb2b73d20898e2ca"
+        },
+        "correction_cleanup": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/owner-binding-a2li9bq5/test-input-correction/cleanup.json",
+          "sha256": "7ee95e4267777e74d0a8060d5fc737441ddd037ecace083e4c4e4f9327c5bc29"
+        },
+        "host_controls": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/owner-binding-a2li9bq5/python-controls-r1.json",
+          "sha256": "aa2ff3773f953c7f74a13f826b538459a84817b282353c54bd8487ec53b7ce44"
+        },
+        "native_unit_controls": 42,
+        "host_control_count": 15,
+        "unit_invocations": 2,
+        "original_counts": {
+          "passed": 41,
+          "failed": 1
+        },
+        "correction_counts": {
+          "passed": 1,
+          "failed": 0
+        },
+        "cleanup": "PASS_BOTH_RUNS",
+        "scenario": "operations.cross-scene.physical-setup",
+        "guard_interval": [
+          4,
+          21
+        ],
+        "native_scenario_runs": 0,
+        "gate_closures": [],
+        "limits": "Pure owner binding and progress plus versioned unarmed transport only. Runtime SDK reader, app pump, host setup and physical/display proof remain; generic completion and local markers never qualify backend Operations.",
+        "signing_attempt": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/owner-binding-a2li9bq5/signed-checkpoint-attempt.json",
+          "sha256": "ff024744ec69fd18a70ff40fd75208aa807f42008ad545205408a28c41301c90"
         }
       }
     }

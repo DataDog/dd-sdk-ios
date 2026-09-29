@@ -178,7 +178,13 @@ enum ProbeRuntime {
             physicalAdmission = nil
         }
         let stepAdmission: ((Int, ProbeStep, Bool) async -> String?)?
-        if physicalOperationCaptureRequested {
+        if scenario.identifier == ProbePhysicalOperationSetupProfile.scenarioID {
+            // A catalog selection alone never admits setup markers or SDK work.
+            stepAdmission = { index, _, _ in
+                index >= ProbePhysicalOperationSetupProfile.setupBoundary
+                    ? "Operation setup and current-owner binding are not armed" : nil
+            }
+        } else if physicalOperationCaptureRequested {
             // Capture preparation cannot dispatch Operations without the reviewed host barrier.
             stepAdmission = { index, _, _ in
                 guard scenario.identifier == ProbePhysicalOperationProfile.scenarioID else {

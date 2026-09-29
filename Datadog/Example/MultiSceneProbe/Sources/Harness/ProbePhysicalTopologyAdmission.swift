@@ -618,6 +618,7 @@ internal struct ProbePhysicalInputRequest: Codable, Equatable {
     let profile: ProbePhysicalOperationProfile
     let phase: String
     let nonce: String
+    var setupProfile: ProbePhysicalOperationSetupProfile? = nil
 }
 
 internal struct ProbePhysicalInputCapture: Codable {
@@ -637,12 +638,15 @@ internal final class ProbePhysicalInputExchange {
     private let runID: String
     private let processID: Int32
     private let profile: ProbePhysicalOperationProfile
+    private let setupProfile: ProbePhysicalOperationSetupProfile?
     private var consumedNonces = Set<String>()
     private var pendingSetup: (String, ProbePhysicalInputCapture)?
     private var admitted = false
 
-    init(runID: String, processID: Int32, profile: ProbePhysicalOperationProfile) {
+    init(runID: String, processID: Int32, profile: ProbePhysicalOperationProfile,
+         setupProfile: ProbePhysicalOperationSetupProfile? = nil) {
         self.runID = runID; self.processID = processID; self.profile = profile
+        self.setupProfile = setupProfile
     }
     static func sha(_ data: Data) -> String { SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined() }
 
@@ -658,11 +662,14 @@ internal final class ProbePhysicalInputExchange {
 
     private func makeCapture(request raw: Data, observe: () -> ProbePhysicalInputSnapshot) throws -> Data {
         guard raw.count <= 16_384, let object = try JSONSerialization.jsonObject(with: raw) as? [String: Any],
-              Set(object.keys) == ["runID", "processID", "profile", "phase", "nonce"],
+              Set(object.keys) == Set(["runID", "processID", "profile", "phase", "nonce"]
+                + (setupProfile == nil ? [] : ["setupProfile"])),
               let nested = object["profile"] as? [String: Any],
               Set(nested.keys) == ["sourceRevision", "buildConfiguration", "scenarioSHA256", "inference"] else { throw Rejection.request }
         let request = try JSONDecoder().decode(ProbePhysicalInputRequest.self, from: raw)
         guard request.runID == runID, request.processID == processID, request.profile == profile,
+              request.setupProfile == setupProfile,
+              setupProfile.map(ProbePhysicalOperationSetupProfile.accepts) ?? true,
               ["setup", "cleanup"].contains(request.phase), UUID(uuidString: request.nonce) != nil else { throw Rejection.request }
         guard consumedNonces.insert(request.nonce).inserted else { throw Rejection.reused }
         guard request.phase != "setup" || (!admitted && pendingSetup == nil) else { throw Rejection.consumed }
@@ -700,6 +707,7 @@ internal struct ProbePhysicalOperationChannelIdentity: Codable, Equatable {
     let challengeID: String
     let installedCodeSHA256: String
     let executionArmed: Bool
+    var setupProfile: ProbePhysicalOperationSetupProfile? = nil
 }
 
 internal struct ProbePhysicalOperationMessage: Codable {
@@ -724,6 +732,10 @@ internal struct ProbePhysicalOperationReply: Codable {
 /// only: neither successful transport nor a cleanup response authorizes SDK work.
 @MainActor
 internal final class ProbePhysicalOperationChannel {
+    enum Mode {
+        case historical
+        case physicalSetup(ProbePhysicalOperationSetupProfile)
+    }
     enum Failure: Error { case identity, file, message, reused, invalidated }
     let identity: ProbePhysicalOperationChannelIdentity
     private let directory: URL
@@ -738,7 +750,19 @@ internal final class ProbePhysicalOperationChannel {
 
     init(runID: String, processID: Int32, profile: ProbePhysicalOperationProfile,
          installedCode: Data, directory: URL, observe: @escaping () -> ProbePhysicalInputSnapshot,
-         publish: ((Data, URL) throws -> Void)? = nil) throws {
+         publish: ((Data, URL) throws -> Void)? = nil, mode: Mode = .historical) throws {
+        let setupProfile: ProbePhysicalOperationSetupProfile?
+        switch mode {
+        case .historical: setupProfile = nil
+        case .physicalSetup(let value):
+            guard ProbePhysicalOperationSetupProfile.accepts(value),
+                  let original = ProbeScenarioCatalog.scenario(identifier: ProbePhysicalOperationProfile.scenarioID),
+                  profile == ProbePhysicalOperationProfile.make(scenario: original,
+                    sourceRevision: profile.sourceRevision, buildConfiguration: profile.buildConfiguration) else {
+                throw Failure.identity
+            }
+            setupProfile = value
+        }
         guard runID.range(of: "^[a-z0-9-]+$", options: .regularExpression) != nil, processID > 0,
               installedCode.count <= Self.maximumBytes,
               profile.sourceRevision.range(of: "^[a-f0-9]{40}$", options: .regularExpression) != nil,
@@ -750,11 +774,12 @@ internal final class ProbePhysicalOperationChannel {
               code["boundary"] as? String == "before-sdk-initialization",
               let binaries = code["binaries"] as? [String: String], !binaries.isEmpty,
               binaries.values.allSatisfy(Self.digest) else { throw Failure.identity }
-        self.identity = .init(schemaVersion: 1, runID: runID, processID: processID, profile: profile,
+        self.identity = .init(schemaVersion: setupProfile == nil ? 1 : 2,
+                              runID: runID, processID: processID, profile: profile,
                               challengeID: UUID().uuidString, installedCodeSHA256: ProbePhysicalInputExchange.sha(installedCode),
-                              executionArmed: false)
+                              executionArmed: false, setupProfile: setupProfile)
         self.directory = directory
-        self.exchange = .init(runID: runID, processID: processID, profile: profile)
+        self.exchange = .init(runID: runID, processID: processID, profile: profile, setupProfile: setupProfile)
         self.observe = observe
         self.publish = publish ?? Self.writeNew
         try self.publish(Self.encode(identity), url("challenge.json"))
@@ -820,7 +845,7 @@ internal final class ProbePhysicalOperationChannel {
             let message = try JSONDecoder().decode(ProbePhysicalOperationMessage.self, from: bytes)
             // Canonical outer bytes reject unknown/duplicate fields as well as
             // alternate encodings. The opaque inner request is preserved verbatim.
-            guard try Self.encode(message) == bytes, message.schemaVersion == 1,
+            guard try Self.encode(message) == bytes, message.schemaVersion == identity.schemaVersion,
                   message.runID == identity.runID, message.processID == identity.processID,
                   message.challengeID == identity.challengeID, UUID(uuidString: message.commandID) != nil else {
                 throw Failure.message
@@ -839,5 +864,214 @@ internal final class ProbePhysicalOperationChannel {
                                                 commandID: commandID, capture: capture, rejection: rejection)
         try publish(Self.encode(reply), url("response-" + selected + ".json"))
         return reply
+    }
+}
+
+/// Opt-in physical arrangement variant. The original Operation profile is an
+/// unchanged source/inference contract; this namespace binds the new setup.
+internal struct ProbePhysicalOperationSetupProfile: Codable, Equatable {
+    static let scenarioID = "operations.cross-scene.physical-setup"
+    static let variantID = "post-arrangement-owners-v1"
+    static let setupBoundary = 4
+    static let completed = "physical-operations-owners-verified"
+    static let guardInterval = 4...21
+
+    let variant: String
+    let scenario: String
+    let fullScenarioSHA256: String
+    let setupPrefixSHA256: String
+    let setupBoundaryIndex: Int
+    let firstOperationIndex: Int
+    let lastOperationIndex: Int
+    let ownerBindingVersion: Int
+
+    static var steps: [ProbeStep] {
+        let original = ProbePhysicalOperationProfile.steps
+        return [original[0], original[1], original[3], original[4],
+                .init(.emitSceneContextMarker, scene: "scene-A", value: "operation-arranged-home-a"),
+                .init(.emitSceneContextMarker, scene: "scene-B", value: "operation-arranged-home-b")]
+            + Array(original[6...21])
+    }
+
+    static func make(scenario: ProbeScenario) -> Self? {
+        let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
+        guard scenario.identifier == scenarioID,
+              scenario == ProbeScenarioCatalog.scenario(identifier: scenarioID),
+              scenario.steps == steps,
+              !ProbeScenarioCatalog.usesExplicitOperationViewTargetSPI(scenario),
+              let full = try? encoder.encode(scenario),
+              let prefix = try? encoder.encode(Array(steps.prefix(6))) else { return nil }
+        return .init(variant: variantID, scenario: scenarioID,
+                     fullScenarioSHA256: SHA256.hash(data: full).map { String(format: "%02x", $0) }.joined(),
+                     setupPrefixSHA256: SHA256.hash(data: prefix).map { String(format: "%02x", $0) }.joined(),
+                     setupBoundaryIndex: setupBoundary, firstOperationIndex: 6,
+                     lastOperationIndex: 21, ownerBindingVersion: 1)
+    }
+
+    static func accepts(_ value: Self) -> Bool {
+        guard let scenario = ProbeScenarioCatalog.scenario(identifier: scenarioID),
+              let expected = make(scenario: scenario) else { return false }
+        return value == expected
+    }
+}
+
+/// A direct SDK scene-context read, distinct from marker attributes. The app
+/// adapter must use the session-aware snapshot overload and its registered scene.
+internal struct ProbePhysicalOperationRUMOwner: Codable, Equatable {
+    let logicalSceneID: String
+    let nativeSceneID: String
+    let applicationID: String
+    let sessionID: String
+    let viewID: String
+    let viewName: String
+    let viewURL: String
+}
+
+/// Pure evidence binding. This does not consume a host admission or authorize
+/// SDK work; the caller must preserve its actual direct reads and input capture.
+internal struct ProbePhysicalOperationOwners: Codable, Equatable {
+    let runID: String
+    let processID: Int32
+    let profile: ProbePhysicalOperationSetupProfile
+    let setupCaptureSHA256: String
+    let applicationID: String
+    let service: String
+    let source: String
+    let input: ProbePhysicalInputSnapshot
+    let contexts: [String: ProbePhysicalOperationRUMOwner]
+    let mapperSnapshots: [String: ProbeSignal]
+
+    private static func uuid(_ value: String) -> Bool {
+        UUID(uuidString: value)?.uuidString.lowercased() == value
+    }
+
+    @MainActor
+    static func bind(runID: String, processID: Int32, profile: ProbePhysicalOperationSetupProfile,
+                     setupCaptureSHA256: String, applicationID: String,
+                     before: ProbePhysicalInputSnapshot, after: ProbePhysicalInputSnapshot,
+                     directBefore: [String: ProbePhysicalOperationRUMOwner],
+                     directAfter: [String: ProbePhysicalOperationRUMOwner], signals: [ProbeSignal]) -> Self? {
+        guard ProbePhysicalOperationSetupProfile.accepts(profile),
+              runID.range(of: "^[a-z0-9-]+$", options: .regularExpression) != nil, processID > 0,
+              setupCaptureSHA256.range(of: "^[a-f0-9]{64}$", options: .regularExpression) != nil,
+              uuid(applicationID), before == after, after.idleFailure() == nil,
+              directBefore == directAfter, Set(directAfter.keys) == ["scene-A", "scene-B"],
+              Set(directAfter.values.map(\.viewID)).count == 2,
+              Set(directAfter.values.map(\.sessionID)).count == 1,
+              signals.allSatisfy({ $0.runID == runID && $0.scenarioID == profile.scenario && $0.sequence > 0 }),
+              Set(signals.map(\.sequence)).count == signals.count else { return nil }
+        var snapshots: [String: ProbeSignal] = [:]
+        for scene in ["scene-A", "scene-B"] {
+            guard let context = directAfter[scene], context.logicalSceneID == scene,
+                  context.applicationID == applicationID, uuid(context.sessionID), uuid(context.viewID),
+                  context.viewName == "ProbeHomeView", !context.viewURL.isEmpty,
+                  let native = after.scenes.first(where: { $0.logicalSceneID == scene }),
+                  context.nativeSceneID == native.nativeSceneID else { return nil }
+            let views = signals.filter { $0.kind == .rumViewSnapshot && $0.rumContext?.viewID == context.viewID }
+            // Document versions choose current state; mapper delivery order and
+            // occurrence numbers do not. All observations retain their raw IDs.
+            guard !views.isEmpty, views.allSatisfy({
+                $0.evidenceSource == .rumMapper && $0.semanticContext?.logicalSceneID == scene
+                    && $0.semanticContext?.nativeSceneID == context.nativeSceneID && $0.semanticContext?.screen == "home"
+                    && $0.rumContext?.sessionID == context.sessionID && $0.rumContext?.viewName == context.viewName
+                    && $0.rumContext?.viewURL == context.viewURL && ($0.rumContext?.viewDocumentVersion ?? 0) > 0
+            }), let latest = views.max(by: { ($0.rumContext?.viewDocumentVersion ?? 0) < ($1.rumContext?.viewDocumentVersion ?? 0) }),
+                  latest.rumContext?.viewActive == true,
+                  views.filter({ $0.rumContext?.viewDocumentVersion == latest.rumContext?.viewDocumentVersion })
+                    .allSatisfy({ $0.rumContext == latest.rumContext && $0.semanticContext == latest.semanticContext }) else { return nil }
+            snapshots[scene] = latest
+        }
+        return .init(runID: runID, processID: processID, profile: profile, setupCaptureSHA256: setupCaptureSHA256,
+                     applicationID: applicationID, service: "ios-sdk-native-multi-scene-probe", source: "ios",
+                     input: after, contexts: directAfter, mapperSnapshots: snapshots)
+    }
+
+    func markerFailure(_ name: String, scene: String, kind: ProbeSignalKind, signals: [ProbeSignal]) -> String? {
+        let rows = signals.filter { $0.kind == kind && $0.name == name }
+        guard rows.count == 1, let row = rows.first, let owner = contexts[scene],
+              row.runID == runID, row.scenarioID == profile.scenario, row.evidenceSource == .rumMapper,
+              row.sourceContext?.logicalSceneID == scene, row.sourceContext?.nativeSceneID == owner.nativeSceneID,
+              row.sourceContext?.screen == "home", row.sourceContext?.phase == name,
+              row.rumContext?.sessionID == owner.sessionID, row.rumContext?.viewID == owner.viewID,
+              row.rumContext?.viewName == owner.viewName, row.rumContext?.viewURL == owner.viewURL,
+              let eventID = row.eventID, Self.uuid(eventID) else { return "missing, duplicate or foreign Operation marker owner" }
+        if kind == .rumAction {
+            guard row.action?.id == eventID, row.action?.type == "custom",
+                  row.action?.target == "probe-lifecycle-" + scene + ".home." + name else { return "Operation marker Action differs" }
+        } else if kind == .rumResource {
+            guard row.resource?.id == eventID, row.resource?.statusCode == 200,
+                  row.resource?.type == "other", row.resource?.size == 1,
+                  row.resource?.url == "https://multi-scene-probe.invalid/native/" + scene + "/home/" + name else {
+                return "Operation marker Resource differs"
+            }
+        } else { return "unsupported Operation marker family" }
+        return nil
+    }
+
+    /// Complete local identity checks. Native call assertions are not Operation
+    /// vitals; raw/reduced backend ownership remains independently mandatory.
+    func workFailure(signals: [ProbeSignal]) -> String? {
+        guard signals.allSatisfy({ $0.runID == runID && $0.scenarioID == profile.scenario && $0.sequence > 0 }),
+              Set(signals.map(\.sequence)).count == signals.count else { return "foreign or duplicated local signal identity" }
+        let markers = ProbePhysicalOperationSetupProfile.steps.filter { $0.kind == .emitSceneContextMarker }
+        let names = Set(markers.compactMap(\.value))
+        let rows = signals.filter { [.rumAction, .rumResource].contains($0.kind) && ($0.name?.hasPrefix("operation-") ?? false) }
+        guard rows.count == 20, rows.allSatisfy({ names.contains($0.name ?? "") }),
+              Set(rows.compactMap(\.eventID)).count == 20 else { return "incomplete, duplicate or foreign marker inventory" }
+        for marker in markers {
+            guard let name = marker.value, let scene = marker.scene else { return "marker profile missing" }
+            for kind in [ProbeSignalKind.rumAction, .rumResource] {
+                if let reason = markerFailure(name, scene: scene, kind: kind, signals: signals) { return reason }
+            }
+        }
+        let calls = ProbePhysicalOperationSetupProfile.steps.filter { [.startOperation, .succeedOperation, .failOperation].contains($0.kind) }
+        let invoked = signals.filter { $0.operation != nil }.sorted { $0.sequence < $1.sequence }
+        guard invoked.count == calls.count else { return "incomplete native Operation invocation inventory" }
+        for (call, row) in zip(calls, invoked) {
+            guard let scene = call.scene, let owner = contexts[scene], let instance = call.value,
+                  row.kind == .assertion, row.evidenceSource == .probe, row.result == .pass,
+                  row.stepKind == call.kind, row.semanticContext?.logicalSceneID == scene,
+                  row.semanticContext?.nativeSceneID == owner.nativeSceneID, row.semanticContext?.screen == "home",
+                  row.operation?.name == "multi_scene_probe_navigation", row.operation?.key == runID + "-" + instance,
+                  row.operation?.step == (call.kind == .startOperation ? "start" : call.kind == .succeedOperation ? "succeed" : "fail"),
+                  row.operation?.failureReason == (call.kind == .failOperation ? "error" : nil) else {
+                return "native Operation invocation owner or order differs"
+            }
+        }
+        return nil
+    }
+
+    @MainActor
+    struct Progress {
+        let owners: ProbePhysicalOperationOwners
+        private(set) var nextIndex = ProbePhysicalOperationSetupProfile.setupBoundary
+        private(set) var expectsAfter = false
+        private(set) var failure: String?
+        private(set) var complete = false
+
+        mutating func observe(input: ProbePhysicalInputSnapshot, contexts: [String: ProbePhysicalOperationRUMOwner]) -> String? {
+            if failure == nil && (input.idleFailure() != nil || input != owners.input || contexts != owners.contexts) {
+                failure = "Operation input, topology or current RUM owner changed"
+            }
+            return failure
+        }
+
+        mutating func check(index: Int, step: ProbeStep, after: Bool, input: ProbePhysicalInputSnapshot,
+                            contexts: [String: ProbePhysicalOperationRUMOwner], signals: [ProbeSignal]) -> String? {
+            if let reason = observe(input: input, contexts: contexts) { return reason }
+            guard !complete, index == nextIndex, after == expectsAfter,
+                  ProbePhysicalOperationSetupProfile.guardInterval.contains(index),
+                  step == ProbePhysicalOperationSetupProfile.steps[index] else {
+                failure = "Operation setup/critical step is duplicate, late or changed"; return failure
+            }
+            if after && step.kind == .emitSceneContextMarker, let name = step.value, let scene = step.scene {
+                if let reason = owners.markerFailure(name, scene: scene, kind: .rumAction, signals: signals) {
+                    failure = reason; return reason
+                }
+            }
+            if after { complete = index == 21; nextIndex += 1 }
+            expectsAfter = !after
+            return nil
+        }
     }
 }

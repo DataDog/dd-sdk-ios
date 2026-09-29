@@ -381,36 +381,44 @@ Use `physical_same_key_contract.validate_local`, `validate_display` and `validat
 ### H06 Operation preparation
 
 The [owning record](../../../DatadogRUM/MultiSceneSupport/Results/S3-human-residual-preparation.json)
-tracks the fixture profile and backend checker. They are not yet a runnable
-physical session. The separate Operation receipt binds the canonical scenario,
-Debug inference mechanism, source and stable scene/window/root owners through
-steps6–21. The passive input observer installs before scene readiness and retains
-contact revisions plus the full connected-scene/window inventory. Setup capture
-and consumption reject input or inventory changes and reused requests. Auxiliary
-windows are retained without a fixed window-count rule.
+tracks preparation; it does not yet admit a physical session. The original
+`operations.cross-scene.lifecycle` scenario, profile and eight inferred calls stay
+unchanged. `operations.cross-scene.physical-setup` observes A/B readiness, pauses
+before marker4 for window arrangement, then uses fresh post-arrangement markers
+before the same calls at steps6–21. Catalog selection alone cannot pass that pause.
 
-`DD_PROBE_PHYSICAL_OPERATION_CAPTURE=1` still stops before the first Operation.
-`ProbePhysicalOperationChannel` and `operation_transport.Channel` prepare one-use
-file capture: publish an immutable hash-addressed payload before its marker,
-persist exact replies, bind run/process/profile/challenge/installed-receipt bytes,
-and reject stale or malformed envelopes. Capture snapshots retain their original
-numeric encoding; Python must not reserialize Swift geometry as an acceptance rule.
-The channel is unarmed and not wired to the app pump;11 native and11 host controls
-prove only this transport contract. Cleanup replies never authorize teardown.
+`ProbePhysicalOperationOwners` binds distinct current A/B View IDs to independent
+active Home mapper snapshots and unchanged native/input identities. Select the
+current View document version, preserving old occurrences and raw IDs; mapper
+delivery order is not navigation order. Re-read both direct SDK owners and full
+input inventory after any wait. The actual adapter must use the session-aware
+`rumContextSnapshot(for:at:)`, with native scene IDs obtained from the registry.
+The pure progress guard covers both setup markers and every before/after boundary
+through step21. Complete local checks require20 exact Action/Resource markers and
+eight ordered native calls. Generic completion never qualifies Operations.
 
-The original A Home marker precedes opening B. Window arrangement may change its
-RUM occurrence. Bind actual A/B View IDs after setup, preserving prior occurrences,
-before arming the physical profile. Then complete app/host integration, independent
-display/binary proof, release acknowledgement and the whole critical interval.
+The passive input observer installs before scene readiness and retains contact
+revisions plus the full connected-scene/window inventory. Setup consumption rejects
+changed input/owners and reused requests. Auxiliary windows remain recorded without
+a fixed count rule. `DD_PROBE_PHYSICAL_OPERATION_CAPTURE=1` remains unarmed.
 
-`operation_ownership.validate` checks the complete Operation query slice:
-eight raw steps, four reduced Operations, exact ID joins, failure reason and A/B
-view endpoints. Supply independently captured Home view IDs, application and
-service. Custom probe step/source context can be enriched with completion values;
-use raw `view.id` and reduced endpoints for ownership. Raw steps bypass public
-mappers. Backend row order and strict durations are not acceptance criteria.
-Native call order, physical visibility, full-session collection and safe cleanup
-must still qualify separately.
+`ProbePhysicalOperationChannel` and `operation_transport.Channel` use one shared
+file channel. Historical schema1 keeps its original bytes; schema2 additionally
+binds the exact physical setup profile and rejects cross-mode requests. Publish
+immutable hash-addressed payloads before markers, retain actual replies, and bind
+run/process/profile/challenge/installed-receipt bytes. Preserve Swift numeric
+encoding; Python reserialization of geometry is not an acceptance rule. Cleanup
+replies never authorize teardown. Owner/input/transport controls qualify42 native
+and15 host cases; the original failed test-input attempt remains separately saved.
+Runtime SDK reads, the app pump, host release/display/binary proof and actual
+whole-interval capture still need integration and qualification.
+
+`operation_ownership.validate` checks eight raw steps, four reduced Operations,
+exact ID joins, failure reason and A/B endpoints using independently captured View,
+application and service IDs. Raw steps bypass public mappers and custom source/step
+context can contain completion values; use raw `view.id` and reduced endpoints.
+Backend row order and strict durations are diagnostic. Native call order, physical
+visibility, complete-session collection and safe cleanup remain separate requirements.
 
 ## Controlled app inventory preparation
 

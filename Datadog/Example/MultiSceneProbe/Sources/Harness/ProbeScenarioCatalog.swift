@@ -13,6 +13,7 @@ enum ProbeScenarioCatalog {
         "swiftui.stack.return",
         "operations.navigation.lifecycle",
         "operations.cross-scene.lifecycle",
+        ProbePhysicalOperationSetupProfile.scenarioID,
         "operations.explicit-target.cross-scene-serial",
         "actions.explicit-target.cross-scene-serial",
         "actions.explicit-target.long-running-cross-scene-serial",
@@ -83,6 +84,7 @@ enum ProbeScenarioCatalog {
         swiftUIStackReturn,
         operationsNavigationLifecycle,
         operationsCrossSceneLifecycle,
+        operationsPhysicalSetup,
         operationsExplicitTargetCrossSceneSerial,
         actionsExplicitTargetCrossSceneSerial,
         actionsExplicitTargetLongRunningCrossSceneSerial,
@@ -669,6 +671,20 @@ enum ProbeScenarioCatalog {
             reference: "operation-cross-home-a"
         ),
         expectedSemanticTimeline: operationCrossSceneTimeline()
+    )
+
+    /// Physical arrangement may replace the initial Home occurrence. The
+    /// separate owner evaluator binds current scene views after setup; the
+    /// historical ordered timeline remains unchanged.
+    private static let operationsPhysicalSetup = ProbeScenario(
+        identifier: ProbePhysicalOperationSetupProfile.scenarioID,
+        trackingMode: .manual,
+        layout: .stack,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes, .simultaneousVisibleWindows],
+        steps: ProbePhysicalOperationSetupProfile.steps,
+        completionConditions: [.init(.assertion, name: ProbePhysicalOperationSetupProfile.completed)],
+        expectedSemanticTimeline: []
     )
 
     /// EXP-155 reuses the cross-scene Operation contract through the

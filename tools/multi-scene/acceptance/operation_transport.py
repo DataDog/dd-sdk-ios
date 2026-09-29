@@ -14,6 +14,8 @@ IDENTITY_KEYS = {'schemaVersion', 'runID', 'processID', 'profile', 'challengeID'
                  'installedCodeSHA256', 'executionArmed'}
 PROFILE_KEYS = {'sourceRevision', 'buildConfiguration', 'scenarioSHA256', 'inference'}
 MESSAGE_KEYS = {'schemaVersion', 'runID', 'processID', 'challengeID', 'commandID', 'inputRequest'}
+SETUP_KEYS = {'variant', 'scenario', 'fullScenarioSHA256', 'setupPrefixSHA256',
+              'setupBoundaryIndex', 'firstOperationIndex', 'lastOperationIndex', 'ownerBindingVersion'}
 
 
 def require(condition, reason):
@@ -54,10 +56,26 @@ def identifier(value):
         return False
 
 
-def challenge(raw, *, run_id, process_id, profile, installed_code):
+def validate_setup(profile):
+    require(isinstance(profile, dict) and set(profile) == SETUP_KEYS, 'setup profile shape changed')
+    require(profile['variant'] == 'post-arrangement-owners-v1'
+            and profile['scenario'] == 'operations.cross-scene.physical-setup'
+            and digest(profile['fullScenarioSHA256']) and digest(profile['setupPrefixSHA256']),
+            'setup variant or digest changed')
+    for field, expected in [('setupBoundaryIndex', 4), ('firstOperationIndex', 6),
+                            ('lastOperationIndex', 21), ('ownerBindingVersion', 1)]:
+        require(type(profile[field]) is int and profile[field] == expected, 'setup boundary/version changed')
+
+
+def challenge(raw, *, run_id, process_id, profile, installed_code, setup_profile=None):
     value = load(raw)
-    require(isinstance(value, dict) and set(value) == IDENTITY_KEYS, 'channel challenge shape changed')
-    require(type(value['schemaVersion']) is int and value['schemaVersion'] == 1, 'channel schema changed')
+    fields = IDENTITY_KEYS | ({'setupProfile'} if setup_profile is not None else set())
+    require(isinstance(value, dict) and set(value) == fields, 'channel challenge shape changed')
+    version = 2 if setup_profile is not None else 1
+    require(type(value['schemaVersion']) is int and value['schemaVersion'] == version, 'channel schema changed')
+    if setup_profile is not None:
+        validate_setup(setup_profile)
+        require(encode(value['setupProfile']) == encode(setup_profile), 'setup profile differs from frozen contract')
     require(isinstance(run_id, str) and re.fullmatch('[a-z0-9-]+', run_id), 'invalid run identity')
     require(type(process_id) is int and process_id > 0 and type(value['processID']) is int,
             'invalid process identity')
@@ -82,8 +100,13 @@ def message(identity, phase):
     require(phase in ['setup', 'cleanup'], 'unsupported channel phase')
     request = dict(runID=identity['runID'], processID=identity['processID'], profile=identity['profile'],
                    phase=phase, nonce=str(uuid.uuid4()))
+    if identity['schemaVersion'] == 2:
+        validate_setup(identity.get('setupProfile'))
+        request['setupProfile'] = identity['setupProfile']
+    else:
+        require(identity['schemaVersion'] == 1 and 'setupProfile' not in identity, 'channel mode changed')
     raw = encode(request)
-    value = dict(schemaVersion=1, runID=identity['runID'], processID=identity['processID'],
+    value = dict(schemaVersion=identity['schemaVersion'], runID=identity['runID'], processID=identity['processID'],
                  challengeID=identity['challengeID'], commandID=str(uuid.uuid4()),
                  inputRequest=base64.b64encode(raw).decode())
     return encode(value), raw

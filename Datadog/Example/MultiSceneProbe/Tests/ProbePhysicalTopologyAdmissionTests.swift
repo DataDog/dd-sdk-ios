@@ -626,20 +626,22 @@ final class ProbePhysicalOperationChannelTests: XCTestCase {
         return directory
     }
 
-    private func channel(_ directory: URL? = nil, publish: ((Data, URL) throws -> Void)? = nil) throws -> ProbePhysicalOperationChannel {
+    private func channel(_ directory: URL? = nil, publish: ((Data, URL) throws -> Void)? = nil,
+                         mode: ProbePhysicalOperationChannel.Mode = .historical) throws -> ProbePhysicalOperationChannel {
         try .init(runID: "channel-test", processID: 123, profile: profile(), installedCode: code(),
                   directory: directory ?? folder(), observe: { [self] in
             observations += 1
             // Deliberately incomplete topology: transport must retain its idle
             // failure without promoting it to SDK or teardown permission.
             return .init(scenes: [], input: [], connectedSceneIDs: [], applicationActive: true, inventory: [], failure: nil)
-        }, publish: publish)
+        }, publish: publish, mode: mode)
     }
 
     private func request(_ channel: ProbePhysicalOperationChannel, phase: String = "setup", command: String = UUID().uuidString) throws -> Data {
         let input = ProbePhysicalInputRequest(runID: channel.identity.runID, processID: channel.identity.processID,
-                                             profile: channel.identity.profile, phase: phase, nonce: UUID().uuidString)
-        return try ProbePhysicalOperationChannel.encode(ProbePhysicalOperationMessage(schemaVersion: 1,
+                                             profile: channel.identity.profile, phase: phase, nonce: UUID().uuidString,
+                                             setupProfile: channel.identity.setupProfile)
+        return try ProbePhysicalOperationChannel.encode(ProbePhysicalOperationMessage(schemaVersion: channel.identity.schemaVersion,
             runID: channel.identity.runID, processID: channel.identity.processID, challengeID: channel.identity.challengeID,
             commandID: command, inputRequest: ProbePhysicalOperationChannel.encode(input)))
     }
@@ -648,6 +650,80 @@ final class ProbePhysicalOperationChannelTests: XCTestCase {
         let digest = ProbePhysicalInputExchange.sha(raw)
         try raw.write(to: channel.url("request-" + digest + ".json"), options: .atomic)
         try Data(digest.utf8).write(to: channel.url("request"), options: .atomic)
+    }
+
+    private func setupProfile() throws -> ProbePhysicalOperationSetupProfile {
+        let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbePhysicalOperationSetupProfile.scenarioID))
+        return try XCTUnwrap(ProbePhysicalOperationSetupProfile.make(scenario: scenario))
+    }
+
+    func testPhysicalModeHasSeparateSchemaAndCannotArmExecution() throws {
+        let setup = try setupProfile(), value = try channel(mode: .physicalSetup(setup))
+        XCTAssertEqual(value.identity.schemaVersion, 2)
+        XCTAssertEqual(value.identity.setupProfile, setup); XCTAssertFalse(value.identity.executionArmed)
+        try publish(request(value), value)
+        let result = try XCTUnwrap(value.poll())
+        XCTAssertNil(result.rejection)
+        let capture = try JSONDecoder().decode(ProbePhysicalInputCapture.self, from: XCTUnwrap(result.capture))
+        XCTAssertEqual(capture.request.setupProfile, setup)
+        XCTAssertNotNil(capture.idleFailure); XCTAssertFalse(result.identity.executionArmed)
+    }
+
+    func testHistoricalRequestAndChallengeBytesKeepTheirExactShape() throws {
+        let value = try channel()
+        let encoded = try ProbePhysicalOperationChannel.encode(value.identity)
+        let profileText = try XCTUnwrap(String(data: ProbePhysicalOperationChannel.encode(value.identity.profile), encoding: .utf8))
+        let expected = "{\"challengeID\":\"" + value.identity.challengeID + "\",\"executionArmed\":false,\"installedCodeSHA256\":\""
+            + value.identity.installedCodeSHA256 + "\",\"processID\":123,\"profile\":" + profileText
+            + ",\"runID\":\"channel-test\",\"schemaVersion\":1}"
+        XCTAssertEqual(encoded, Data(expected.utf8))
+        let request = ProbePhysicalInputRequest(runID: "channel-test", processID: 123, profile: value.identity.profile,
+                                                phase: "setup", nonce: "00000000-0000-0000-0000-000000000001")
+        let requestExpected = "{\"nonce\":\"00000000-0000-0000-0000-000000000001\",\"phase\":\"setup\",\"processID\":123,\"profile\":"
+            + profileText + ",\"runID\":\"channel-test\"}"
+        XCTAssertEqual(try ProbePhysicalOperationChannel.encode(request), Data(requestExpected.utf8))
+        let fields = try XCTUnwrap(JSONSerialization.jsonObject(with: ProbePhysicalOperationChannel.encode(value.identity.profile)) as? [String: Any])
+        XCTAssertEqual(Set(fields.keys), ["buildConfiguration", "sourceRevision", "scenarioSHA256", "inference"])
+    }
+
+    func testCrossModeAndAlteredSetupRequestsRejectBeforeObservation() throws {
+        for physical in [false, true] {
+            for field in ["schemaVersion", "setupProfile", "digest", "index", "unknown", "null"] {
+                let setup = try setupProfile()
+                let value = try channel(mode: physical ? .physicalSetup(setup) : .historical)
+                let raw = try request(value)
+                var message = try XCTUnwrap(JSONSerialization.jsonObject(with: raw) as? [String: Any])
+                var inner = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(base64Encoded: message["inputRequest"] as! String)!) as? [String: Any])
+                if field == "schemaVersion" { message[field] = physical ? 1 : 2 }
+                else if field == "null" { inner["setupProfile"] = NSNull() }
+                else if physical && field == "setupProfile" { inner.removeValue(forKey: "setupProfile") }
+                else {
+                    var changed = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(setup)) as? [String: Any])
+                    if field == "digest" { changed["fullScenarioSHA256"] = String(repeating: "f", count: 64) }
+                    if field == "index" { changed["setupBoundaryIndex"] = 6 }
+                    if field == "unknown" { changed["unreviewed"] = true }
+                    inner["setupProfile"] = changed
+                }
+                message["inputRequest"] = try JSONSerialization.data(withJSONObject: inner, options: [.sortedKeys, .withoutEscapingSlashes]).base64EncodedString()
+                let bytes = try JSONSerialization.data(withJSONObject: message, options: [.sortedKeys, .withoutEscapingSlashes])
+                let count = observations
+                try publish(bytes, value)
+                XCTAssertNotNil(try XCTUnwrap(value.poll()).rejection, field)
+                XCTAssertEqual(observations, count, field)
+            }
+        }
+    }
+
+    func testChangedSetupProfileCannotCreateNativeChallenge() throws {
+        let setup = try setupProfile()
+        for field in ["variant", "scenario", "fullScenarioSHA256", "setupPrefixSHA256", "setupBoundaryIndex", "firstOperationIndex", "lastOperationIndex", "ownerBindingVersion"] {
+            var object = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(setup)) as? [String: Any])
+            if object[field] is String { object[field] = "foreign" } else { object[field] = 99 }
+            let changed = try JSONDecoder().decode(ProbePhysicalOperationSetupProfile.self, from: JSONSerialization.data(withJSONObject: object))
+            let directory = try folder()
+            XCTAssertThrowsError(try channel(directory, mode: .physicalSetup(changed)), field)
+            XCTAssertTrue(try FileManager.default.contentsOfDirectory(atPath: directory.path).isEmpty, field)
+        }
     }
 
     func testChallengeBindsInstalledBytesAndRejectsRestoredDirectory() throws {
@@ -792,5 +868,288 @@ final class ProbePhysicalOperationChannelTests: XCTestCase {
             challengeID: "00000000-0000-0000-0000-000000000001", commandID: "00000000-0000-0000-0000-000000000002", inputRequest: Data([255]))
         let expected = #"{"challengeID":"00000000-0000-0000-0000-000000000001","commandID":"00000000-0000-0000-0000-000000000002","inputRequest":"/w==","processID":123,"runID":"run","schemaVersion":1}"#
         XCTAssertEqual(try ProbePhysicalOperationChannel.encode(value), Data(expected.utf8))
+    }
+}
+
+@MainActor
+final class ProbePhysicalOperationOwnerTests: XCTestCase {
+    private let runID = "owner-test"
+    private let applicationID = "00000000-0000-0000-0000-000000000010"
+    private let sessionID = "00000000-0000-0000-0000-000000000011"
+    private func snapshot() -> ProbePhysicalInputSnapshot {
+        let scenes: [ProbePhysicalSceneObservation] = ["scene-A", "scene-B"].enumerated().map { index, label in
+            .init(logicalSceneID: label, nativeSceneID: "native-" + label, generation: 0, connected: true,
+                  activationState: index == 0 ? "foreground-inactive" : "foreground-active", hidden: false, alpha: 1,
+                  geometry: .init(x: Double(index) * 400, y: 0, width: 400, height: 800),
+                  windowIdentity: "window-" + label, rootIdentity: "root-" + label)
+        }
+        let input = scenes.map { row in
+            ProbePhysicalInputWindow(logicalSceneID: row.logicalSceneID, nativeSceneID: row.nativeSceneID, generation: 0,
+                windowIdentity: row.windowIdentity!, rootIdentity: row.rootIdentity!, observerIdentity: "observer-" + row.logicalSceneID,
+                attached: true, enabled: true, reliable: true, touches: 0, revision: 10, mounted: true, transitioning: false, resizing: false)
+        }
+        let inventory = scenes.map { row in
+            ProbePhysicalSceneInventory(nativeSceneID: row.nativeSceneID, activationState: row.activationState,
+                keyWindowIdentity: row.windowIdentity, geometry: row.geometry, screenGeometry: .init(x: 0, y: 0, width: 800, height: 800),
+                windows: [.init(identity: row.windowIdentity!, rootIdentity: row.rootIdentity, fixtureOwner: row.logicalSceneID,
+                                sceneMatches: true, key: true, hidden: false, alpha: 1, mounted: true, geometry: row.geometry)])
+        }
+        return .init(scenes: scenes, input: input, connectedSceneIDs: scenes.map(\.nativeSceneID),
+                     applicationActive: true, inventory: inventory, failure: nil)
+    }
+
+    private func profile() throws -> ProbePhysicalOperationSetupProfile {
+        try XCTUnwrap(ProbePhysicalOperationSetupProfile.make(scenario: XCTUnwrap(
+            ProbeScenarioCatalog.scenario(identifier: ProbePhysicalOperationSetupProfile.scenarioID))))
+    }
+    private func contexts() -> [String: ProbePhysicalOperationRUMOwner] {
+        Dictionary(uniqueKeysWithValues: ["scene-A", "scene-B"].enumerated().map { index, scene in
+            (scene, .init(logicalSceneID: scene, nativeSceneID: "native-" + scene, applicationID: applicationID,
+                         sessionID: sessionID, viewID: "00000000-0000-0000-0000-00000000002" + String(index),
+                         viewName: "ProbeHomeView", viewURL: "ProbeHomeView"))
+        })
+    }
+    private func views() -> [ProbeSignal] {
+        ["scene-A", "scene-B"].enumerated().map { index, scene in
+            let owner = contexts()[scene]!
+            return ProbeSignal(kind: .rumViewSnapshot, evidenceSource: .rumMapper,
+                sequence: UInt64(index + 1), runID: runID, scenarioID: ProbePhysicalOperationSetupProfile.scenarioID,
+                semanticContext: .init(logicalSceneID: scene, nativeSceneID: owner.nativeSceneID, screen: "home"),
+                rumContext: .init(sessionID: sessionID, viewID: owner.viewID, viewName: owner.viewName,
+                                  viewURL: owner.viewURL, viewActive: true, viewDocumentVersion: 2))
+        }
+    }
+    private func binding(signals: [ProbeSignal]? = nil, before: [String: ProbePhysicalOperationRUMOwner]? = nil,
+                         after: [String: ProbePhysicalOperationRUMOwner]? = nil,
+                         nativeAfter: ProbePhysicalInputSnapshot? = nil) throws -> ProbePhysicalOperationOwners? {
+        ProbePhysicalOperationOwners.bind(runID: runID, processID: 123, profile: try profile(),
+            setupCaptureSHA256: String(repeating: "a", count: 64), applicationID: applicationID,
+            before: snapshot(), after: nativeAfter ?? snapshot(), directBefore: before ?? contexts(),
+            directAfter: after ?? contexts(), signals: signals ?? views())
+    }
+    private func edit<T: Codable>(_ value: T, _ change: (inout [String: Any]) -> Void) throws -> T {
+        var object = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(value)) as? [String: Any])
+        change(&object)
+        return try JSONDecoder().decode(T.self, from: JSONSerialization.data(withJSONObject: object))
+    }
+    private func markers() -> [ProbeSignal] {
+        ProbePhysicalOperationSetupProfile.steps.enumerated().flatMap { index, step -> [ProbeSignal] in
+            guard step.kind == .emitSceneContextMarker, let scene = step.scene, let name = step.value else { return [] }
+            let owner = contexts()[scene]!
+            return [ProbeSignalKind.rumAction, .rumResource].enumerated().map { offset, kind in
+                let id = UUID().uuidString.lowercased()
+                return ProbeSignal(kind: kind, evidenceSource: .rumMapper, sequence: UInt64(100 + 2 * index + offset),
+                    runID: runID, scenarioID: ProbePhysicalOperationSetupProfile.scenarioID,
+                    sourceContext: .init(logicalSceneID: scene, nativeSceneID: owner.nativeSceneID, screen: "home", phase: name),
+                    rumContext: .init(sessionID: sessionID, viewID: owner.viewID, viewName: owner.viewName, viewURL: owner.viewURL),
+                    eventID: id, name: name,
+                    action: kind == .rumAction ? .init(id: id, type: "custom", target: "probe-lifecycle-" + scene + ".home." + name,
+                        loadingTimeNanoseconds: nil) : nil,
+                    resource: kind == .rumResource ? .init(id: id, type: "other", statusCode: 200, durationNanoseconds: nil,
+                        size: 1, method: nil, url: "https://multi-scene-probe.invalid/native/" + scene + "/home/" + name,
+                        traceID: nil, spanID: nil, parentSpanID: nil) : nil)
+            }
+        }
+    }
+    private func calls() -> [ProbeSignal] {
+        ProbePhysicalOperationSetupProfile.steps.enumerated().compactMap { index, step in
+            guard [.startOperation, .succeedOperation, .failOperation].contains(step.kind),
+                  let scene = step.scene, let instance = step.value else { return nil }
+            return ProbeSignal(kind: .assertion, sequence: UInt64(10 + index), runID: runID,
+                scenarioID: ProbePhysicalOperationSetupProfile.scenarioID,
+                semanticContext: .init(logicalSceneID: scene, nativeSceneID: contexts()[scene]!.nativeSceneID, screen: "home"),
+                stepKind: step.kind, operation: .init(vitalID: nil, name: "multi_scene_probe_navigation", key: runID + "-" + instance,
+                    step: step.kind == .startOperation ? "start" : step.kind == .succeedOperation ? "succeed" : "fail",
+                    failureReason: step.kind == .failOperation ? "error" : nil), result: .pass)
+        }
+    }
+
+    func testVariantKeepsCallsAndUsesDistinctPostArrangementMarkers() throws {
+        let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbePhysicalOperationSetupProfile.scenarioID))
+        let original = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbePhysicalOperationProfile.scenarioID))
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertFalse(ProbeScenarioCatalog.usesExplicitOperationViewTargetSPI(scenario))
+        XCTAssertEqual(Array(scenario.steps[6...21]), Array(original.steps[6...21]))
+        XCTAssertEqual(scenario.steps[2], .init(.openWindow, scene: "scene-A", value: "scene-B"))
+        XCTAssertEqual(scenario.steps[4].value, "operation-arranged-home-a")
+        XCTAssertEqual(scenario.steps[5].value, "operation-arranged-home-b")
+        XCTAssertEqual(try profile().setupBoundaryIndex, 4)
+        XCTAssertNotEqual(try profile().fullScenarioSHA256, try profile().setupPrefixSHA256)
+        XCTAssertNil(ProbePhysicalOperationSetupProfile.make(scenario: original))
+        XCTAssertNil(ProbePhysicalOperationProfile.make(scenario: scenario, sourceRevision: String(repeating: "a", count: 40), buildConfiguration: "Debug"))
+        for field in ["identifier", "steps", "completionConditions", "expectedSemanticTimeline", "runtimeOptions"] {
+            let changed: ProbeScenario = try edit(scenario) { object in
+                if field == "identifier" { object[field] = original.identifier }
+                else if field == "runtimeOptions" {
+                    var options = object[field] as! [String: Any]
+                    options["automaticallyClosesSceneB"] = true
+                    object[field] = options
+                }
+                else if field == "expectedSemanticTimeline" { object[field] = [["kind": "view-started", "occurrence": 1]] }
+                else { object[field] = [] }
+            }
+            XCTAssertNil(ProbePhysicalOperationSetupProfile.make(scenario: changed), field)
+        }
+    }
+
+    func testFreshPostArrangementOccurrenceBindsWithoutRelabelingOldHome() throws {
+        let old: ProbeSignal = try edit(views()[0]) { object in
+            object["sequence"] = 3
+            var rum = object["rumContext"] as! [String: Any]
+            rum["viewID"] = "00000000-0000-0000-0000-000000000030"; rum["viewActive"] = false
+            object["rumContext"] = rum
+        }
+        let signals = [old] + views()
+        let value = try XCTUnwrap(binding(signals: signals))
+        XCTAssertEqual(value.contexts["scene-A"]?.viewID, contexts()["scene-A"]?.viewID)
+        XCTAssertNotEqual(value.contexts["scene-A"]?.viewID, old.rumContext?.viewID)
+        XCTAssertEqual(signals.first, old)
+        var stale = contexts()
+        stale["scene-A"] = try edit(stale["scene-A"]!) { $0["viewID"] = old.rumContext!.viewID! }
+        XCTAssertNil(try binding(signals: signals, before: stale, after: stale))
+    }
+
+    func testOwnerBindingRejectsMissingAliasedAndChangedDirectContexts() throws {
+        XCTAssertNil(try binding(before: [:], after: [:]))
+        for field in ["viewID", "sessionID", "applicationID", "logicalSceneID", "nativeSceneID", "viewName", "viewURL"] {
+            var changed = contexts()
+            changed["scene-A"] = try edit(changed["scene-A"]!) { $0[field] = "foreign" }
+            XCTAssertNil(try binding(before: changed, after: changed), field)
+            XCTAssertNil(try binding(after: changed), field)
+        }
+        var alias = contexts()
+        alias["scene-A"] = try edit(alias["scene-A"]!) { $0["viewID"] = contexts()["scene-B"]!.viewID }
+        XCTAssertNil(try binding(before: alias, after: alias))
+    }
+
+    func testSessionBoundaryWhileWaitingForMapperCannotBind() throws {
+        var newer = contexts()
+        for scene in ["scene-A", "scene-B"] {
+            newer[scene] = try edit(newer[scene]!) { $0["sessionID"] = "00000000-0000-0000-0000-000000000099" }
+        }
+        let changed = try views().map { row in try edit(row) { object in
+            var rum = object["rumContext"] as! [String: Any]; rum["sessionID"] = "00000000-0000-0000-0000-000000000099"; object["rumContext"] = rum
+        } }
+        XCTAssertNil(try binding(signals: changed, after: newer))
+        XCTAssertNotNil(try binding(signals: changed, before: newer, after: newer))
+    }
+
+    func testMapperNeedsExactSemanticOwnerAndCurrentDocumentVersion() throws {
+        XCTAssertNil(try binding(signals: []))
+        for field in ["runID", "scenarioID", "evidenceSource", "viewName", "nativeSceneID", "viewActive", "viewDocumentVersion"] {
+            var rows = views()
+            rows[0] = try edit(rows[0]) { object in
+                if ["runID", "scenarioID"].contains(field) { object[field] = "old" }
+                else if field == "evidenceSource" { object[field] = "internal-hook" }
+                else if field == "nativeSceneID" {
+                    var context = object["semanticContext"] as! [String: Any]; context[field] = "wrong"; object["semanticContext"] = context
+                } else {
+                    var context = object["rumContext"] as! [String: Any]
+                    if field == "viewName" { context[field] = "WrongView" }
+                    if field == "viewActive" { context[field] = false }
+                    if field == "viewDocumentVersion" { context[field] = 0 }
+                    object["rumContext"] = context
+                }
+            }
+            XCTAssertNil(try binding(signals: rows), field)
+        }
+        let inactive: ProbeSignal = try edit(views()[0]) { object in
+            object["sequence"] = 3; var rum = object["rumContext"] as! [String: Any]
+            rum["viewDocumentVersion"] = 3; rum["viewActive"] = false; object["rumContext"] = rum
+        }
+        XCTAssertNil(try binding(signals: [inactive] + views()))
+        XCTAssertNil(try binding(signals: views() + [views()[0]]))
+    }
+
+    func testNativeOrInputChangeAcrossWaitRejectsBinding() throws {
+        let changed: ProbePhysicalInputSnapshot = try edit(snapshot()) { object in
+            var input = object["input"] as! [[String: Any]]; input[0]["revision"] = 11; object["input"] = input
+        }
+        XCTAssertNil(try binding(nativeAfter: changed))
+    }
+
+    func testMarkerJoinUsesBoundOwnerRatherThanMapperOrder() throws {
+        let value = try XCTUnwrap(binding())
+        let rows = markers() + calls() + views()
+        XCTAssertNil(value.workFailure(signals: rows.reversed()))
+        let lateViews = try views().map { row in try edit(row) { $0["sequence"] = row.sequence + 1_000 } }
+        XCTAssertNil(value.workFailure(signals: markers() + calls() + lateViews))
+        let before = markers().filter { $0.name == "operation-arranged-home-a" }
+        XCTAssertNil(value.markerFailure("operation-arranged-home-a", scene: "scene-A", kind: .rumAction, signals: before))
+    }
+
+    func testMissingDuplicateOrWrongMarkerOwnerRejects() throws {
+        let value = try XCTUnwrap(binding()), original = markers()
+        XCTAssertNotNil(value.workFailure(signals: Array(original.dropLast()) + calls()))
+        XCTAssertNotNil(value.workFailure(signals: original + calls() + [original[0]]))
+        for field in ["viewID", "viewName", "sessionID", "sourceScene", "eventID"] {
+            var rows = original
+            rows[0] = try edit(rows[0]) { object in
+                if field == "eventID" { object.removeValue(forKey: field) }
+                else if field == "sourceScene" {
+                    var context = object["sourceContext"] as! [String: Any]; context["logicalSceneID"] = "scene-B"; object["sourceContext"] = context
+                } else {
+                    var rum = object["rumContext"] as! [String: Any]; rum[field] = contexts()["scene-B"]!.viewID; object["rumContext"] = rum
+                }
+            }
+            XCTAssertNotNil(value.workFailure(signals: rows + calls()), field)
+        }
+    }
+
+    func testCallInventoryRejectsMissingDuplicateReorderedAndWrongNativeScene() throws {
+        let value = try XCTUnwrap(binding()), original = calls()
+        XCTAssertNotNil(value.workFailure(signals: markers() + original.dropLast()))
+        XCTAssertNotNil(value.workFailure(signals: markers() + original + [original[0]]))
+        var reordered = original
+        reordered[0] = try edit(original[0]) { $0["sequence"] = 99 }
+        XCTAssertNotNil(value.workFailure(signals: markers() + reordered))
+        var wrong = original
+        wrong[0] = try edit(original[0]) { object in
+            var semantic = object["semanticContext"] as! [String: Any]; semantic["nativeSceneID"] = "wrong"; object["semanticContext"] = semantic
+        }
+        XCTAssertNotNil(value.workFailure(signals: markers() + wrong))
+    }
+
+    func testWholeIntervalIncludesSetupMarkersBeforeFirstOperation() throws {
+        let owners = try XCTUnwrap(binding())
+        var progress = ProbePhysicalOperationOwners.Progress(owners: owners)
+        for index in ProbePhysicalOperationSetupProfile.guardInterval {
+            for after in [false, true] {
+                XCTAssertNil(progress.check(index: index, step: ProbePhysicalOperationSetupProfile.steps[index], after: after,
+                    input: snapshot(), contexts: contexts(), signals: markers()), "index \(index) after \(after)")
+            }
+        }
+        XCTAssertTrue(progress.complete)
+        var skipped = ProbePhysicalOperationOwners.Progress(owners: owners)
+        XCTAssertNotNil(skipped.check(index: 6, step: ProbePhysicalOperationSetupProfile.steps[6], after: false,
+            input: snapshot(), contexts: contexts(), signals: markers()))
+        XCTAssertNotNil(skipped.check(index: 4, step: ProbePhysicalOperationSetupProfile.steps[4], after: false,
+            input: snapshot(), contexts: contexts(), signals: markers()))
+        var missing = ProbePhysicalOperationOwners.Progress(owners: owners)
+        XCTAssertNil(missing.check(index: 4, step: ProbePhysicalOperationSetupProfile.steps[4], after: false,
+            input: snapshot(), contexts: contexts(), signals: []))
+        XCTAssertNotNil(missing.check(index: 4, step: ProbePhysicalOperationSetupProfile.steps[4], after: true,
+            input: snapshot(), contexts: contexts(), signals: []))
+    }
+
+    func testTopologyAndRUMDriftFailPermanentlyDuringCriticalInterval() throws {
+        let owners = try XCTUnwrap(binding())
+        for field in ["revision", "touches", "transitioning", "resizing", "rootIdentity"] {
+            let changed: ProbePhysicalInputSnapshot = try edit(snapshot()) { object in
+                var input = object["input"] as! [[String: Any]]
+                if field == "rootIdentity" { input[0][field] = "replaced" }
+                else if ["transitioning", "resizing"].contains(field) { input[0][field] = true }
+                else { input[0][field] = 11 }
+                object["input"] = input
+            }
+            var progress = ProbePhysicalOperationOwners.Progress(owners: owners)
+            XCTAssertNotNil(progress.observe(input: changed, contexts: contexts()), field)
+            XCTAssertNotNil(progress.observe(input: snapshot(), contexts: contexts()), field)
+        }
+        var changed = contexts()
+        changed["scene-A"] = try edit(changed["scene-A"]!) { $0["viewID"] = "00000000-0000-0000-0000-000000000098" }
+        var progress = ProbePhysicalOperationOwners.Progress(owners: owners)
+        XCTAssertNotNil(progress.observe(input: snapshot(), contexts: changed))
+        XCTAssertNotNil(progress.observe(input: snapshot(), contexts: contexts()))
     }
 }
