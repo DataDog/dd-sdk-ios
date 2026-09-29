@@ -473,6 +473,80 @@ internal struct ProbePhysicalSceneInventory: Codable, Equatable {
     let windows: [ProbePhysicalWindowInventory]
 }
 
+/// Opt-in event history for the fixed, non-navigating SwiftUI Operation fixture.
+/// Notifications are recorded synchronously on their posting thread. Only this
+/// lock-protected value ledger crosses threads; it never reads UIKit state.
+internal final class ProbePhysicalOperationEventLedger: @unchecked Sendable {
+    struct Owner: Codable, Equatable {
+        let logicalSceneID: String
+        let nativeSceneID: String
+        let generation: UInt64
+        let sceneIdentity: String
+        let windowIdentity: String
+        let rootIdentity: String
+    }
+    struct Event: Codable, Equatable {
+        let revision: UInt64
+        let kind: String
+        let objectIdentity: String?
+        let owner: Owner?
+    }
+    struct Snapshot: Codable, Equatable {
+        let owners: [Owner]
+        let events: [Event]
+        let failure: String?
+    }
+    private let lock = NSLock()
+    private let center: NotificationCenter
+    private var tokens: [NSObjectProtocol] = []
+    private var owners: [String: Owner] = [:]
+    private var events: [Event] = []
+    private var failure: String?
+
+    init(center: NotificationCenter = .default) {
+        self.center = center
+        let names = [UIScene.didActivateNotification, UIScene.willDeactivateNotification,
+            UIScene.willEnterForegroundNotification, UIScene.didEnterBackgroundNotification,
+            UIScene.didDisconnectNotification, UIWindow.didBecomeVisibleNotification,
+            UIWindow.didBecomeHiddenNotification, UIWindow.didBecomeKeyNotification, UIWindow.didResignKeyNotification,
+            UIApplication.willResignActiveNotification, UIApplication.didBecomeActiveNotification,
+            UIApplication.didEnterBackgroundNotification, UIApplication.willEnterForegroundNotification]
+        tokens = names.map { name in
+            center.addObserver(forName: name, object: nil, queue: nil) { [weak self] notification in
+                self?.notification(name: notification.name.rawValue,
+                    object: notification.object.map { String(describing: ObjectIdentifier($0 as AnyObject)) })
+            }
+        }
+    }
+    deinit { tokens.forEach(center.removeObserver) }
+
+    func install(_ owner: Owner) {
+        lock.lock(); defer { lock.unlock() }
+        if let existing = owners[owner.logicalSceneID] {
+            if existing != owner { failure = "registered Operation observer owner replaced" }
+        } else { owners[owner.logicalSceneID] = owner }
+    }
+    func record(_ kind: String, scene: String) {
+        lock.lock(); defer { lock.unlock() }
+        append(kind, object: owners[scene]?.sceneIdentity, owner: owners[scene])
+    }
+    private func notification(name: String, object: String?) {
+        lock.lock(); defer { lock.unlock() }
+        // Preserve unknown/auxiliary objects too. A new event during the frozen
+        // interval invalidates continuity without a private-class/count rule.
+        let owner = owners.values.first { $0.sceneIdentity == object || $0.windowIdentity == object }
+        append(name, object: object, owner: owner)
+    }
+    private func append(_ kind: String, object: String?, owner: Owner?) {
+        guard events.count < 2_048 else { failure = "Operation event history overflow"; return }
+        events.append(.init(revision: UInt64(events.count + 1), kind: kind, objectIdentity: object, owner: owner))
+    }
+    func snapshot() -> Snapshot {
+        lock.lock(); defer { lock.unlock() }
+        return .init(owners: owners.values.sorted { $0.logicalSceneID < $1.logicalSceneID }, events: events, failure: failure)
+    }
+}
+
 internal struct ProbePhysicalInputSnapshot: Codable, Equatable {
     let scenes: [ProbePhysicalSceneObservation]
     let input: [ProbePhysicalInputWindow]
@@ -480,10 +554,20 @@ internal struct ProbePhysicalInputSnapshot: Codable, Equatable {
     let applicationActive: Bool
     let inventory: [ProbePhysicalSceneInventory]
     let failure: String?
+    var continuity: ProbePhysicalOperationEventLedger.Snapshot? = nil
 
     @MainActor
     func idleFailure() -> String? {
         if let failure { return failure }
+        if let continuity {
+            if let reason = continuity.failure { return reason }
+            guard continuity.owners.map(\.logicalSceneID) == ["scene-A", "scene-B"],
+                  continuity.owners.allSatisfy({ owner in
+                      input.contains { $0.logicalSceneID == owner.logicalSceneID && $0.nativeSceneID == owner.nativeSceneID
+                          && $0.generation == owner.generation && $0.windowIdentity == owner.windowIdentity
+                          && $0.rootIdentity == owner.rootIdentity }
+                  }) else { return "Operation continuity observers missing or replaced" }
+        }
         guard applicationActive, let owners = ProbePhysicalOperationProfile.ownerIdentities(scenes),
               input.map(\.logicalSceneID) == ["scene-A", "scene-B"],
               Set(input.map(\.observerIdentity)).count == 2 else { return "owned input inventory missing or aliased" }
@@ -525,8 +609,37 @@ internal final class ProbePhysicalOperationInput {
 
     private let registry: ProbeSceneRegistry
     private var entries: [String: Entry] = [:]
+    private let events: ProbePhysicalOperationEventLedger?
+    // Retain original objects only for this opt-in profile, until process cleanup.
+    // This prevents address reuse from masquerading as an unchanged owner.
+    private var retainedOwners: [String: [AnyObject]] = [:]
+    private var presentations: [String: ProbeScenePresentation] = [:]
+    private var resizeStates: [String: Bool] = [:]
     private(set) var failure: String?
-    init(registry: ProbeSceneRegistry) { self.registry = registry }
+    init(registry: ProbeSceneRegistry, recordsContinuity: Bool = false) {
+        self.registry = registry
+        self.events = recordsContinuity ? .init() : nil
+        if recordsContinuity {
+            registry.operationChangeObserver = { [weak self] handle, kind in
+                self?.events?.record("registry-" + kind, scene: handle.logicalSceneID)
+            }
+        }
+    }
+
+    func observe(window: UIWindow) {
+        guard events != nil, let pair = entries.first(where: { $0.value.window === window }) else { return }
+        let label = pair.key, entry = pair.value, value = ProbeScenePresentation.capture(window: window)
+        if let previous = presentations[label], previous != value { events?.record("reader-presentation", scene: label) }
+        presentations[label] = value
+        if entry.root !== window.rootViewController { failure = failure ?? "Operation root replaced" }
+    }
+
+    func observeResize(scene: String, resizing: Bool) {
+        guard let events else { return }
+        // Even start/end delivered between snapshots remain in this history.
+        if resizeStates[scene] != resizing { events.record(resizing ? "resize-began" : "resize-ended", scene: scene) }
+        resizeStates[scene] = resizing
+    }
 
     @discardableResult
     func install(window: UIWindow, handle: ProbeSceneHandle) -> String? {
@@ -544,7 +657,14 @@ internal final class ProbePhysicalOperationInput {
             }
         } else {
             entries[handle.logicalSceneID] = Entry(handle: handle, window: window, root: root)
+            if let events, let scene = window.windowScene {
+                retainedOwners[handle.logicalSceneID] = [window, root, scene]
+                events.install(.init(logicalSceneID: handle.logicalSceneID, nativeSceneID: handle.nativeSceneID,
+                    generation: handle.disconnectGeneration, sceneIdentity: Self.identity(scene),
+                    windowIdentity: Self.identity(window), rootIdentity: Self.identity(root)))
+            }
         }
+        observe(window: window)
         return nil
     }
 
@@ -573,6 +693,7 @@ internal final class ProbePhysicalOperationInput {
                 failure = failure ?? "original input window, root or scene disappeared"
                 continue
             }
+            observe(window: window)
             let matches = registry.handle(logicalSceneID: label) == entry.handle
                 && registry.window(for: entry.handle) === window && entry.root === root
                 && entry.handle.nativeSceneID == scene.session.persistentIdentifier
@@ -608,7 +729,8 @@ internal final class ProbePhysicalOperationInput {
         }.sorted { $0.nativeSceneID < $1.nativeSceneID }
         return .init(scenes: scenes, input: input,
                      connectedSceneIDs: connected.map { $0.session.persistentIdentifier }.sorted(),
-                     applicationActive: UIApplication.shared.applicationState == .active, inventory: inventory, failure: failure)
+                     applicationActive: UIApplication.shared.applicationState == .active, inventory: inventory, failure: failure,
+                     continuity: events?.snapshot())
     }
 }
 
@@ -796,6 +918,15 @@ internal final class ProbePhysicalOperationChannel {
     }
 
     func sealSetup() { exchange.invalidateSetup() }
+
+    func consumeSetup(captureSHA256: String, live: ProbePhysicalInputSnapshot) -> String? {
+        guard failure == nil, identity.schemaVersion == 2 else { return "Operation channel cannot admit setup" }
+        return exchange.consumeSetup(responseSHA256: captureSHA256, live: live)
+    }
+
+    func readArtifact(_ suffix: String, limit: Int = maximumBytes) throws -> Data? {
+        try read(url(suffix), limit: limit)
+    }
 
     static func encode<T: Encodable>(_ value: T) throws -> Data {
         let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
@@ -1081,6 +1212,23 @@ internal struct ProbePhysicalOperationOwners: Codable, Equatable {
                     failure = reason; return reason
                 }
             }
+            return advance(index: index, after: after)
+        }
+
+        /// Native execution does not wait for a mapper at each step. The caller
+        /// must require workFailure on the complete retained inventory at the end.
+        mutating func checkBoundary(index: Int, step: ProbeStep, after: Bool, input: ProbePhysicalInputSnapshot,
+                                    contexts: [String: ProbePhysicalOperationRUMOwner]) -> String? {
+            if let reason = observe(input: input, contexts: contexts) { return reason }
+            guard !complete, index == nextIndex, after == expectsAfter,
+                  ProbePhysicalOperationSetupProfile.guardInterval.contains(index),
+                  step == ProbePhysicalOperationSetupProfile.steps[index] else {
+                failure = "Operation setup/critical step is duplicate, late or changed"; return failure
+            }
+            return advance(index: index, after: after)
+        }
+
+        private mutating func advance(index: Int, after: Bool) -> String? {
             if after { complete = index == 21; nextIndex += 1 }
             expectsAfter = !after
             return nil
@@ -1248,6 +1396,299 @@ internal struct ProbePhysicalOperationContextCompletion: Codable {
     let state: String
     let deadline: TimeInterval
     let finishedAt: TimeInterval
+}
+
+/// Canonical identity-only envelope. Opaque host bytes keep their original
+/// encoding; native joins are against this process's own retained observations.
+internal struct ProbePhysicalOperationHostHandoff: Codable {
+    let schemaVersion: Int
+    let identity: ProbePhysicalOperationChannelIdentity
+    let proof: Data
+    let result: Data
+}
+
+@MainActor
+internal final class ProbePhysicalOperationAdmission {
+    enum Failure: Error { case proof, identity, capture, live, publication, sequence }
+    private struct HostProof: Decodable {
+        let schemaVersion: Int
+        let kind: String
+        let state: String
+        let identity: ProbePhysicalOperationChannelIdentity
+        let consumptionID: String
+        let captureSHA256: String
+        let contextSHA256: String
+        let installedCodeSHA256: String
+        let requestSHA256: String
+        let replySHA256: String
+        let completionSHA256: String
+        let screenshotSHA256: String
+        let reviewSHA256: String
+        let releaseRequestSHA256: String
+        let releaseSHA256: String
+        let artifacts: [String: String]
+        let deadline: TimeInterval
+        let finishedAt: TimeInterval
+        let sdkAdmitted: Bool
+        let teardownAuthorized: Bool
+    }
+    private struct HostResult: Decodable {
+        let state: String
+        let proofSHA256: String
+        let deadline: TimeInterval
+        let finishedAt: TimeInterval
+        let sdkAdmitted: Bool
+        let teardownAuthorized: Bool
+    }
+    private struct Observation: Codable {
+        let index: Int
+        let boundary: String
+        let sample: ProbePhysicalOperationContextSample
+    }
+
+    private let channel: ProbePhysicalOperationChannel
+    private let deadline: TimeInterval
+    private let sample: () -> ProbePhysicalOperationContextSample
+    private let mapper: () -> [ProbeSignal]
+    private let now: () -> TimeInterval
+    private var checking = false
+    private let wait: () async throws -> Void
+    private var hostConsumed = false
+    private var capture: Data?
+    private var capturedContexts: [String: ProbePhysicalOperationRUMOwner]?
+    private var progress: ProbePhysicalOperationOwners.Progress?
+    private var invokedIndex: Int?
+    private var observationSequence = 0
+    private(set) var failure: String?
+    private(set) var complete = false
+
+    init(channel: ProbePhysicalOperationChannel, deadline: TimeInterval,
+         sample: @escaping () -> ProbePhysicalOperationContextSample, mapper: @escaping () -> [ProbeSignal],
+         now: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 },
+         wait: @escaping () async throws -> Void = { try await Task.sleep(nanoseconds: 500_000_000) }) throws {
+        guard channel.identity.schemaVersion == 2, channel.identity.setupProfile != nil,
+              deadline.isFinite, now() < deadline else { throw Failure.identity }
+        self.channel = channel; self.deadline = deadline; self.sample = sample; self.mapper = mapper; self.now = now; self.wait = wait
+        guard !FileManager.default.fileExists(atPath: channel.url("native-admission.json").path) else { throw Failure.publication }
+    }
+
+    private func persist<T: Encodable>(_ value: T, _ suffix: String) throws {
+        let raw = try ProbePhysicalOperationChannel.encode(value), url = channel.url(suffix)
+        guard !FileManager.default.fileExists(atPath: url.path) else { throw Failure.publication }
+        try raw.write(to: url, options: .atomic)
+        guard try channel.readArtifact(suffix, limit: ProbePhysicalOperationCapturePump.maximumContextBytes) == raw else {
+            throw Failure.publication
+        }
+    }
+    private func live() throws {
+        guard failure == nil, channel.failure == nil, !Task.isCancelled, now() < deadline else { throw Failure.live }
+    }
+    private func stop(_ reason: String) -> String {
+        failure = failure ?? reason
+        channel.invalidateSetup(failure!)
+        // This failure receipt is evidence, never an extension of the deadline.
+        try? persist(["state": "INVALID", "reason": failure!], "native-admission-failure.json")
+        return failure!
+    }
+    private func observe(index: Int, boundary: String) throws -> ProbePhysicalOperationContextSample {
+        try live()
+        let value = sample()
+        observationSequence += 1
+        try persist(Observation(index: index, boundary: boundary, sample: value),
+                    "native-observation-" + String(observationSequence) + ".json")
+        try live()
+        guard value.failure == nil, value.ownerProjection != nil else { throw Failure.live }
+        return value
+    }
+
+    /// One host publication per process. Failure consumes it permanently.
+    /// Called separately in controls; the app uses the hash-addressed file below.
+    func consumeHost(_ raw: Data) throws {
+        guard !hostConsumed else { _ = stop("host proof reused"); throw Failure.proof }
+        hostConsumed = true
+        do {
+            try live()
+            guard raw.count <= ProbePhysicalOperationCapturePump.maximumContextBytes else { throw Failure.proof }
+            let handoff = try JSONDecoder().decode(ProbePhysicalOperationHostHandoff.self, from: raw)
+            guard try ProbePhysicalOperationChannel.encode(handoff) == raw,
+                  handoff.schemaVersion == 1, handoff.identity == channel.identity else { throw Failure.identity }
+            try persist(handoff, "native-host-consumed.json")
+            let proof = try JSONDecoder().decode(HostProof.self, from: handoff.proof)
+            let result = try JSONDecoder().decode(HostResult.self, from: handoff.result)
+            guard proof.schemaVersion == 1, proof.kind == "OPERATIONS_HOST_PREREQUISITES",
+                  proof.state == "HOST_PROOF_PREPARED", result.state == proof.state,
+                  proof.identity == channel.identity, UUID(uuidString: proof.consumptionID) != nil,
+                  result.proofSHA256 == ProbePhysicalInputExchange.sha(handoff.proof),
+                  proof.installedCodeSHA256 == channel.identity.installedCodeSHA256,
+                  proof.deadline == deadline, result.deadline == deadline,
+                  proof.finishedAt.isFinite, result.finishedAt.isFinite,
+                  proof.finishedAt <= result.finishedAt, result.finishedAt < deadline,
+                  !proof.sdkAdmitted, !proof.teardownAuthorized, !result.sdkAdmitted, !result.teardownAuthorized,
+                  proof.artifacts.values.allSatisfy({ $0.range(of: "^[a-f0-9]{64}$", options: .regularExpression) != nil }) else {
+                throw Failure.proof
+            }
+            for (name, digest) in ["installed-code.json": proof.installedCodeSHA256,
+                "native-capture.json": proof.captureSHA256, "native-context.json": proof.contextSHA256,
+                "native-request.json": proof.requestSHA256, "native-reply.json": proof.replySHA256,
+                "native-context-result.json": proof.completionSHA256, "screen.png": proof.screenshotSHA256,
+                "display-review.json": proof.reviewSHA256, "release-request.json": proof.releaseRequestSHA256,
+                "release-ack.json": proof.releaseSHA256] {
+                guard proof.artifacts[name] == digest else { throw Failure.proof }
+            }
+            guard proof.requestSHA256.range(of: "^[a-f0-9]{64}$", options: .regularExpression) != nil,
+                  let requestRaw = try channel.readArtifact("request-" + proof.requestSHA256 + ".json"),
+                  ProbePhysicalInputExchange.sha(requestRaw) == proof.requestSHA256,
+                  let replyRaw = try channel.readArtifact("response-" + proof.requestSHA256 + ".json"),
+                  ProbePhysicalInputExchange.sha(replyRaw) == proof.replySHA256,
+                  let contextRaw = try channel.readArtifact("context-" + proof.requestSHA256 + ".json",
+                      limit: ProbePhysicalOperationCapturePump.maximumContextBytes),
+                  ProbePhysicalInputExchange.sha(contextRaw) == proof.contextSHA256,
+                  let terminalRaw = try channel.readArtifact("context-" + proof.requestSHA256 + "-result.json"),
+                  ProbePhysicalInputExchange.sha(terminalRaw) == proof.completionSHA256 else { throw Failure.capture }
+            let request = try JSONDecoder().decode(ProbePhysicalOperationMessage.self, from: requestRaw)
+            let reply = try JSONDecoder().decode(ProbePhysicalOperationReply.self, from: replyRaw)
+            let context = try JSONDecoder().decode(ProbePhysicalOperationContextRecord.self, from: contextRaw)
+            let terminal = try JSONDecoder().decode(ProbePhysicalOperationContextCompletion.self, from: terminalRaw)
+            guard try ProbePhysicalOperationChannel.encode(request) == requestRaw,
+                  request.schemaVersion == channel.identity.schemaVersion, request.runID == channel.identity.runID,
+                  request.processID == channel.identity.processID, request.challengeID == channel.identity.challengeID,
+                  reply.identity == channel.identity, reply.rejection == nil,
+                  reply.requestSHA256 == proof.requestSHA256, reply.commandID == request.commandID,
+                  let rawCapture = reply.capture, ProbePhysicalInputExchange.sha(rawCapture) == proof.captureSHA256,
+                  context.identity == channel.identity, context.state == "CAPTURED", context.failure == nil,
+                  context.order == ["sdkBefore", "mapper", "sdkAfter"],
+                  Set(context.components.keys) == Set(context.order), Set(context.componentSHA256.keys) == Set(context.order),
+                  context.components.allSatisfy({ ProbePhysicalInputExchange.sha($0.value) == context.componentSHA256[$0.key] }),
+                  context.replySHA256 == proof.replySHA256, context.captureSHA256 == proof.captureSHA256,
+                  context.requestSHA256 == proof.requestSHA256, context.deadline == deadline,
+                  terminal.identity == channel.identity, terminal.state == "CAPTURE_COMPLETE",
+                  terminal.contextSHA256 == proof.contextSHA256, terminal.requestSHA256 == proof.requestSHA256,
+                  terminal.replySHA256 == proof.replySHA256, terminal.captureSHA256 == proof.captureSHA256,
+                  terminal.deadline == deadline, terminal.finishedAt < deadline,
+                  ProbePhysicalInputExchange.sha(terminal.status) == terminal.statusSHA256,
+                  let firstRaw = context.components["sdkBefore"], let lastRaw = context.components["sdkAfter"] else {
+                throw Failure.capture
+            }
+            let first = try JSONDecoder().decode(ProbePhysicalOperationContextSample.self, from: firstRaw)
+            let last = try JSONDecoder().decode(ProbePhysicalOperationContextSample.self, from: lastRaw)
+            let input = try JSONDecoder().decode(ProbePhysicalInputCapture.self, from: rawCapture)
+            guard input.request.phase == "setup", input.idleFailure == nil,
+                  input.request.runID == channel.identity.runID, input.request.processID == channel.identity.processID,
+                  input.request.profile == channel.identity.profile, input.request.setupProfile == channel.identity.setupProfile,
+                  input.requestSHA256 == ProbePhysicalInputExchange.sha(request.inputRequest),
+                  try ProbePhysicalOperationChannel.encode(input.request) == request.inputRequest,
+                  input.before == input.after, input.after == first.before,
+                  first.after == last.before, first.before == last.after,
+                  let contexts = first.ownerProjection, contexts == last.ownerProjection,
+                  first.after.continuity?.owners.count == 2 else { throw Failure.capture }
+            capture = rawCapture; capturedContexts = contexts
+        } catch { _ = stop("host proof or original native capture invalid"); throw error }
+    }
+
+    private func prepare() async throws {
+        while !hostConsumed {
+            try live()
+            if let marker = try channel.readArtifact("host-publication", limit: 64),
+               let digest = String(data: marker, encoding: .utf8),
+               digest.range(of: "^[a-f0-9]{64}$", options: .regularExpression) != nil,
+               let raw = try channel.readArtifact("host-publication-" + digest + ".json",
+                    limit: ProbePhysicalOperationCapturePump.maximumContextBytes),
+               ProbePhysicalInputExchange.sha(raw) == digest { try consumeHost(raw); break }
+            try await wait()
+        }
+        guard let capture, let contexts = capturedContexts, let setup = channel.identity.setupProfile else { throw Failure.capture }
+        let original = try JSONDecoder().decode(ProbePhysicalInputCapture.self, from: capture)
+        while progress == nil {
+            let before = try observe(index: 4, boundary: "binding-before")
+            let signals = mapper()
+            try persist(signals, "native-mapper-binding-" + String(observationSequence) + ".json")
+            let after = try observe(index: 4, boundary: "binding-after")
+            guard before.before == original.after, before.after == after.before, after.after == original.after,
+                  before.ownerProjection == contexts, after.ownerProjection == contexts else { throw Failure.live }
+            if let owners = ProbePhysicalOperationOwners.bind(runID: channel.identity.runID, processID: channel.identity.processID,
+                profile: setup, setupCaptureSHA256: ProbePhysicalInputExchange.sha(capture),
+                applicationID: contexts["scene-A"]!.applicationID, before: before.before, after: after.after,
+                directBefore: contexts, directAfter: contexts, signals: signals) {
+                try persist(signals, "native-binding-mapper.json")
+                guard channel.consumeSetup(captureSHA256: owners.setupCaptureSHA256, live: after.after) == nil else {
+                    throw Failure.capture
+                }
+                try persist(owners, "native-admission.json")
+                progress = .init(owners: owners)
+            } else {
+                // Only absence is pending. Contradictory owner evidence stops.
+                let ids = Set(signals.filter { $0.kind == .rumViewSnapshot }.compactMap { $0.rumContext?.viewID })
+                guard !Set(contexts.values.map(\.viewID)).isSubset(of: ids) else { throw Failure.capture }
+                try await wait()
+            }
+        }
+    }
+
+    func check(index: Int, step: ProbeStep, after: Bool) async -> String? {
+        guard index >= ProbePhysicalOperationSetupProfile.setupBoundary else { return nil }
+        guard !checking else { return stop("reentrant Operation admission") }
+        checking = true
+        defer { checking = false }
+        do {
+            if progress == nil { guard index == 4 && !after else { throw Failure.sequence }; try await prepare() }
+            let value = try observe(index: index, boundary: after ? "after" : "before")
+            guard var state = progress, let contexts = value.ownerProjection,
+                  !after || invokedIndex == index,
+                  state.checkBoundary(index: index, step: step, after: after, input: value.after, contexts: contexts) == nil else {
+                throw Failure.sequence
+            }
+            progress = state
+            if after { invokedIndex = nil }
+            if state.complete {
+                while true {
+                    let last = try observe(index: index, boundary: "collection")
+                    guard state.observe(input: last.after, contexts: last.ownerProjection ?? [:]) == nil else { throw Failure.live }
+                    let signals = mapper()
+                    try persist(signals, "native-mapper-collection-" + String(observationSequence) + ".json")
+                    if state.owners.workFailure(signals: signals) == nil {
+                        try persist(signals, "native-final-mapper.json")
+                        // Mapper collection and persistence may overlap a native
+                        // notification. Seal only after a fresh continuity read.
+                        let seal = try observe(index: index, boundary: "collection-seal")
+                        guard state.observe(input: seal.after, contexts: seal.ownerProjection ?? [:]) == nil else {
+                            throw Failure.live
+                        }
+                        try persist(["state": "LOCAL_OWNERS_VERIFIED", "profile": state.owners.profile.scenario,
+                            "finalObservation": "native-observation-" + String(observationSequence) + ".json"],
+                            "native-local-result.json")
+                        complete = true; break
+                    }
+                    let rows = signals.filter { [.rumAction, .rumResource].contains($0.kind)
+                        && ($0.name?.hasPrefix("operation-") ?? false) }
+                    guard rows.count < 20 else { throw Failure.capture }
+                    for marker in ProbePhysicalOperationSetupProfile.steps where marker.kind == .emitSceneContextMarker {
+                        guard let name = marker.value, let scene = marker.scene else { throw Failure.capture }
+                        for kind in [ProbeSignalKind.rumAction, .rumResource] where rows.contains(where: { $0.kind == kind && $0.name == name }) {
+                            guard state.owners.markerFailure(name, scene: scene, kind: kind, signals: signals) == nil else {
+                                throw Failure.capture
+                            }
+                        }
+                    }
+                    try await wait()
+                }
+            }
+            return nil
+        } catch { return stop("Operation setup, live ownership or final evidence incomplete") }
+    }
+
+    /// Called inside the executor after target resolution, immediately before
+    /// its synchronous SDK work. A failed guard must skip the call/assertion.
+    func authorize(_ step: ProbeStep) -> String? {
+        do {
+            guard var state = progress, state.expectsAfter, !state.complete, invokedIndex == nil,
+                  step == ProbePhysicalOperationSetupProfile.steps[state.nextIndex] else { throw Failure.sequence }
+            let value = try observe(index: state.nextIndex, boundary: "call")
+            guard let contexts = value.ownerProjection,
+                  state.observe(input: value.after, contexts: contexts) == nil else { throw Failure.live }
+            progress = state; invokedIndex = state.nextIndex
+            return nil
+        } catch { return stop("Operation call rejected before SDK dispatch") }
+    }
 }
 
 /// App-owned, opt-in capture only. The fixed deadline includes cleanup capture.

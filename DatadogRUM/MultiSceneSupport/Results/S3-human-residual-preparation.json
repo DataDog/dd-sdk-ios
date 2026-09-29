@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "Finite source-backed preparation of residual S3 human scenarios",
-  "state": "H06_HOST_PREREQUISITES_PREPARED_NATIVE_ADMISSION_PENDING",
+  "state": "H06_NATIVE_ADMISSION_PREPARED_HOST_ORCHESTRATION_PENDING",
   "defined_at": "2026-09-28T13:49:45.760600+00:00",
   "defined_before_implementation": true,
   "owner": "Root",
@@ -350,14 +350,14 @@
     "builds_admitted": 0,
     "native_admitted": false,
     "budget_policy": "Freeze setup/API/collection/cleanup limits from qualified observed adapter latencies before execution; no active deadline extension. Strict timing is diagnostic.",
-    "next": "Connect one-use consumption of the reviewed host proof to native owner/input revalidation before marker4 and monitoring through step21. Keep the existing capture path unarmed until those controls/review pass; no physical H06 session admitted.",
+    "next": "Connect the reviewed host channel and native guard to the finite H06 runner: frozen builds, operator arrangement/release, independent full display evidence, complete local/backend collection and separate safe cleanup. Run focused offline wrapper controls before any physical qualification. No human H06 session is admitted.",
     "scope_increment": {
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_",
       "definition": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/definition.json",
         "sha256": "debf3bbb1f457e537f9d0ebd01e77710b915c7a5bf0b4615aa5b27043ffbd463"
       },
-      "state": "HOST_PREREQUISITES_PASS_NATIVE_ADMISSION_PENDING",
+      "state": "NATIVE_ADMISSION_PREPARATION_PASS_HOST_ORCHESTRATION_PENDING",
       "builds_admitted": 0,
       "native_admitted": false,
       "unit_validation": {
@@ -382,7 +382,7 @@
       },
       "fixture_unit_runs": 2,
       "backend_shape_lesson": "Operation vitals bypass public mappers. Custom probe source/step attributes can contain completion context even on a raw start. Use vital/operation identity joins, raw view.id and reduced start_view/end_view with independently captured A/B owners; no indexed-order or strict-timing criterion.",
-      "review_disposition": "No production SDK changes or new attributable finding; production safety review and release register unchanged.",
+      "review_disposition": "Fixture/host harness only; no production SDK change or attributable SDK finding. Production safety review and release register unchanged.",
       "signing_failure": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/checkpoint-signing-failure.json",
         "sha256": "16fcc84e16ba7bce61f9334afbdedbf72273e96caab42365c8952f711fcbd314"
@@ -656,6 +656,41 @@
           "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/host-proof-6zuh3hq8/signed-checkpoint-attempt.json",
           "sha256": "1cfd7859ca731cfb465b1ace7a7135cee5494078c20818ff28c779ea481f65e8"
         }
+      },
+      "native_admission": {
+        "state": "PREPARATION_CONTROLS_PASS",
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/native-admission-groj5r4s",
+        "definition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/native-admission-groj5r4s/definition.json",
+          "sha256": "1c87d5d4b1fc2e82ef53c8b12304ac53bc9f64f9648a145d8234d18e2e8c0646"
+        },
+        "verdict": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/native-admission-groj5r4s/verdict.json",
+          "sha256": "27a0994f0242ef885924e29b632325e6fbd57d8ba4957012428cb862f4adb422"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/native-admission-groj5r4s/final-review.json",
+          "sha256": "b1e5065b6789cba062aeeec32604f42daf99e7e352df5ba13c12d38d5ccd1dac"
+        },
+        "swift_controls": 18,
+        "host_controls": 6,
+        "unit_invocations": 1,
+        "cleanup": "PASS",
+        "destination_restored": true,
+        "native_scenario_runs": 0,
+        "gate_closures": [],
+        "original_control_failure": "Three test-double errors on later proof transfers; corrected by shaping only a new request marker. Original result retained.",
+        "limits": [
+          "Injected SDK/input/mapper controls and app compilation only. Actual physical transfer, simultaneous visibility, SDK dispatch and backend acceptance remain unexecuted.",
+          "Existing launchers do not enable DD_PROBE_PHYSICAL_OPERATION_EXECUTION. Host proof publication alone grants neither SDK nor cleanup authority.",
+          "The exact SwiftUI fixture has no navigation/root assignment during the guarded interval; any future hosting/root changes require a revised contract.",
+          "All native app/scene/window notifications, including foreign or nil objects, invalidate this quiet interval. Stable auxiliary windows remain recorded and allowed.",
+          "Complete native recorder and independent physical display recording remain required before qualification."
+        ],
+        "warning_disposition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/native-admission-groj5r4s/warning-disposition.json",
+          "sha256": "3c65b13972e5154b905f72b4077f8bf0a7050c225317b9aa621eec7d46c8205b"
+        }
       }
     }
   },
@@ -671,5 +706,5 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/s3-residual-review.json",
     "sha256": "358e67b60fb25744ada5ddf6902e5832285a28489492900077061fedd7799890"
   },
-  "updated_at": "2026-09-29T04:53:03.691260+00:00"
+  "updated_at": "2026-09-29T07:54:04.469978+00:00"
 }

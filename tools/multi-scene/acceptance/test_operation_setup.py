@@ -28,7 +28,7 @@ class Device(transport_controls.ContextRemote):
 
     def push(self, *args):
         result = super().push(*args)
-        if self.response:
+        if self.response and args[2].endswith('request'):
             envelope = t.load(self.response); capture = t.load(base64.b64decode(envelope['capture']))
             capture['before'] = capture['after'] = copy.deepcopy(self.snapshot)
             capture.pop('idleFailure')
@@ -332,6 +332,54 @@ class HostSetupTests(unittest.TestCase):
             self.assertEqual(result['pid'], s.os.getpid())
             self.assertEqual(query.call_args.args[0][2], str(s.os.getpid()))
             self.assertNotEqual(query.call_args.args[0][2], '123')
+
+
+    def test_publication_preserves_proof_bytes_and_publishes_payload_before_marker(self):
+        proof = self.collect()
+        digest = self.setup.publish()
+        prefix = 'Documents/' + self.identity['runID'] + '.operations-'
+        raw = self.remote.files[prefix + 'host-publication-' + digest + '.json']
+        envelope = t.load(raw, maximum=t.MAX_CONTEXT_BYTES)
+        self.assertEqual(t.sha(raw), digest)
+        self.assertEqual(self.remote.files[prefix + 'host-publication'], digest.encode())
+        self.assertEqual(base64.b64decode(envelope['proof']), t.encode(proof))
+        self.assertEqual(base64.b64decode(envelope['result']), (self.setup.folder / 'result.json').read_bytes())
+        self.assertEqual(self.remote.calls[-2:], [('push', prefix + 'host-publication-' + digest + '.json'),
+                                                ('push', prefix + 'host-publication')])
+        result = t.load((self.setup.folder / 'publication/result.json').read_bytes())
+        self.assertFalse(result['sdkAdmitted']); self.assertFalse(result['teardownAuthorized'])
+
+    def test_publication_is_one_use_and_cannot_publish_incomplete_host_proof(self):
+        with self.assertRaises(ValueError): self.setup.publish()
+        self.assertFalse(any(x[0] == 'push' for x in self.remote.calls))
+        with self.assertRaises(FileExistsError): self.setup.publish()
+
+    def test_publication_rejects_changed_prerequisite_and_never_sends_marker(self):
+        self.collect()
+        (self.setup.folder / 'native-context.json').write_bytes(b'changed')
+        before = len(self.remote.calls)
+        with self.assertRaises(ValueError): self.setup.publish()
+        self.assertEqual(len(self.remote.calls), before)
+        self.assertTrue((self.setup.folder / 'publication/failure.json').is_file())
+
+    def test_publication_failed_payload_does_not_publish_marker_or_erase_original_proof(self):
+        self.collect(); original = (self.setup.folder / 'result.json').read_bytes()
+        self.remote.mutation = 'push-failure'
+        with self.assertRaises(ValueError): self.setup.publish()
+        self.assertFalse(any(path.endswith('host-publication') for path in self.remote.files))
+        self.assertEqual((self.setup.folder / 'result.json').read_bytes(), original)
+        with self.assertRaises(FileExistsError): self.setup.publish()
+
+    def test_publication_rejects_expired_deadline_without_transfer(self):
+        self.collect(); before = len(self.remote.calls)
+        with patch.object(t.time, 'time', return_value=self.channel.deadline):
+            with self.assertRaises(ValueError): self.setup.publish()
+        self.assertEqual(len(self.remote.calls), before)
+
+    def test_publication_cannot_repeat_successful_marker(self):
+        self.collect(); self.setup.publish(); before = len(self.remote.calls)
+        with self.assertRaises(FileExistsError): self.setup.publish()
+        self.assertEqual(len(self.remote.calls), before)
 
 
 if __name__ == '__main__': unittest.main()

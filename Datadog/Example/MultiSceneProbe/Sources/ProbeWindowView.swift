@@ -850,6 +850,9 @@ struct ProbeWindowRoot: View {
                 registerScene(resolvedWindow)
             }
         )
+        .onInteractiveResizeChange { resizing in
+            ProbeRuntime.physicalOperationInput?.observeResize(scene: window.label, resizing: resizing)
+        }
         .accessibilityIdentifier("probe.native.root.\(window.label)")
         .onChange(of: scenePhase, initial: true) { _, _ in
             updateScenePresentation(kind: .sceneLifecycle)
@@ -2926,6 +2929,7 @@ struct ProbeWindowRoot: View {
                 guard let marker = step.value else {
                     return .rejected(reason: "marker is missing")
                 }
+                if let reason = ProbeRuntime.authorizePhysicalOperation(step) { return .rejected(reason: reason) }
                 #if DEBUG
                 RUMUIEventNetworkContext.withValue(
                     owner: (RUMMonitor.shared() as? RUMCommandSubscriber)?.rumContextHandoffOwner,
@@ -2949,6 +2953,11 @@ struct ProbeWindowRoot: View {
                     phase: marker
                 )
                 #endif
+                if ProbeRuntime.resolution.scenario?.identifier == ProbePhysicalOperationSetupProfile.scenarioID {
+                    ProbeRuntime.eventRecorder.record(ProbeSignal(kind: .assertion,
+                        semanticContext: .init(logicalSceneID: logicalSceneID, nativeSceneID: handle.nativeSceneID, screen: currentSceneScreen),
+                        stepKind: step.kind, name: "operation-marker-invoked-" + marker, result: .pass))
+                }
             case .emitExplicitTargetAction:
                 guard let marker = step.value else {
                     return .rejected(reason: "marker is missing")
@@ -3189,6 +3198,7 @@ struct ProbeWindowRoot: View {
                         )
                     }
                     let target = RUMViewTarget.current(in: windowScene)
+                    if let reason = ProbeRuntime.authorizePhysicalOperation(step) { return .rejected(reason: reason) }
                     switch step.kind {
                     case .startOperation:
                         RUMMonitor.shared().startOperation(
@@ -3216,6 +3226,7 @@ struct ProbeWindowRoot: View {
                         break
                     }
                 } else {
+                    if let reason = ProbeRuntime.authorizePhysicalOperation(step) { return .rejected(reason: reason) }
                 #if DEBUG
                     RUMUIEventNetworkContext.withValue(
                         owner: (RUMMonitor.shared() as? RUMCommandSubscriber)?.rumContextHandoffOwner,
@@ -6286,6 +6297,8 @@ private final class SceneSessionReaderView: UIView {
     }
 
     func resolveIfPossible() {
+        // Preserve the actual observation before the deferred SwiftUI update.
+        if let window { ProbeRuntime.physicalOperationInput?.observe(window: window) }
         guard
             let window,
             let identifier = window.windowScene?.session.persistentIdentifier

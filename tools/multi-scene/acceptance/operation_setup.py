@@ -3,6 +3,7 @@
 The caller supplies the existing physical_io.Device and capture-only Channel.
 This helper neither launches apps nor authorizes input, Operations or teardown.
 """
+import base64
 import ctypes
 import importlib.util
 import math
@@ -342,4 +343,48 @@ class HostSetup:
             return proof
         except Exception as error:
             self.record_failure(error)
+            raise
+
+
+    def publish(self):
+        """Publish this completed proof once; only the native guard can admit it.
+
+        Payload precedes the immutable marker. A failed or partial publication
+        consumes this host attempt and leaves its original proof unchanged.
+        """
+        folder = self.folder / 'publication'
+        folder.mkdir()
+        try:
+            self.live()
+            t.require(self.used and not (self.folder / 'failure.json').exists(), 'host prerequisites incomplete')
+            result_raw = read(self.folder / 'result.json')
+            result = t.load(result_raw)
+            t.require(result['state'] == 'HOST_PROOF_PREPARED' and t.digest(result['proofSHA256'])
+                      and result['deadline'] == self.channel.deadline and result['finishedAt'] < self.channel.deadline
+                      and result['sdkAdmitted'] is False and result['teardownAuthorized'] is False, 'invalid host result')
+            proof_raw = read(self.folder / ('proof-' + result['proofSHA256'] + '.json'))
+            proof = t.load(proof_raw)
+            t.require(t.sha(proof_raw) == result['proofSHA256'] and proof['identity'] == self.identity
+                      and proof['deadline'] == self.channel.deadline and proof['state'] == result['state']
+                      and proof['sdkAdmitted'] is False and proof['teardownAuthorized'] is False,
+                      'host proof changed before publication')
+            t.require(all(file_sha(self.folder / name) == digest for name, digest in proof['artifacts'].items()),
+                      'host prerequisite changed before publication')
+            payload = t.encode(dict(schemaVersion=1, identity=self.identity,
+                proof=base64.b64encode(proof_raw).decode(), result=base64.b64encode(result_raw).decode()))
+            t.require(len(payload) <= t.MAX_CONTEXT_BYTES, 'host handoff too large')
+            digest = t.sha(payload)
+            source = folder / ('host-publication-' + digest + '.json'); t.save(source, payload)
+            marker = folder / 'host-publication'; t.save(marker, digest.encode())
+            prefix = 'Documents/' + self.identity['runID'] + '.operations-'
+            self.channel.transfer(self.remote.push, source, prefix + source.name, 'operation-host-payload')
+            self.channel.transfer(self.remote.push, marker, prefix + marker.name, 'operation-host-marker')
+            self.live()
+            t.save(folder / 'result.json', t.encode(dict(state='HOST_PROOF_PUBLISHED', payloadSHA256=digest,
+                proofSHA256=result['proofSHA256'], deadline=self.channel.deadline, finishedAt=time.time(),
+                sdkAdmitted=False, teardownAuthorized=False)))
+            return digest
+        except Exception as error:
+            t.save(folder / 'failure.json', t.encode(dict(state='INVALID', errorType=type(error).__name__,
+                deadline=self.channel.deadline, finishedAt=time.time(), sdkAdmitted=False, teardownAuthorized=False)))
             raise

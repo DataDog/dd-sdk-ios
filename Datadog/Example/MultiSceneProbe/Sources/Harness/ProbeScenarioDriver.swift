@@ -831,6 +831,14 @@ internal final class ProbeScenarioDriver {
             ) {
                 return .failed(reason)
             }
+            if scenario.identifier == ProbePhysicalOperationSetupProfile.scenarioID {
+                guard let signal = recorder.snapshot().first(where: {
+                    $0.sequence > commandSequence && $0.kind == .assertion && $0.result == .pass
+                        && $0.semanticContext?.logicalSceneID == scene && $0.stepKind == step.kind
+                        && $0.name == "operation-marker-invoked-" + marker
+                }) else { return .inconclusive("Operation marker invocation receipt missing") }
+                return .acknowledged(signal)
+            }
             guard let signal = await wait(
                 for: .encoded(
                     scene: scene,

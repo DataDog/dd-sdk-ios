@@ -428,8 +428,14 @@ receipt and `DD_PROBE_PHYSICAL_OPERATION_CAPTURE_DEADLINE` (absolute Unix second
 The input observer installs before scene-ready. A missing receipt or partial startup
 is terminal for that run. The pump keeps cleanup capture available after a request
 failure until the original deadline; it never grants teardown. `CAPTURED` means bytes
-were collected, not that Operations can start. All driver gates stay blocked pending
-one-use native admission and whole-interval live checks.
+were collected, not that Operations can start. The exact physical-setup profile
+also requires `DD_PROBE_PHYSICAL_OPERATION_EXECUTION=1`; existing launchers leave it
+unset. Its native guard consumes one host proof and the original pending input
+capture, revalidates current SDK owners/input before marker4, and checks every
+before/call/after boundary through step21. Marker invocation receipts let the driver
+advance without imposing immediate mapper delivery. Final collection requires all
+20 marker rows and eight calls, followed by a fresh continuity observation before
+publishing local ownership success. The receipt names that observation cutoff.
 
 `operation_setup.HostSetup` joins the existing channel to a challenge-bound release,
 all signed Mach-O files, separate host/device process identities and actual physical
@@ -447,6 +453,22 @@ consumed once by the app after revalidating current input and RUM owners. A fail
 display review preserves the unarmed capture. It does not request gestures again or
 authorize teardown. There is no additional screenshot freshness cutoff; the fixed
 operational deadline, causal order and live state checks remain mandatory.
+
+`HostSetup.publish()` verifies all prerequisite files again, transfers the opaque
+proof/result payload before its hash marker, and permits only one publication
+attempt. The native side checks both outer request identity and the exact inner
+input request bytes; hash agreement alone is insufficient.
+
+The opt-in native ledger retains app/scene/window notifications, registry changes
+and SwiftUI resize revisions. Original scene/window/root objects remain retained
+through the guarded interval to prevent address reuse. Any new notification,
+including an auxiliary or nil object, invalidates this no-input/no-navigation
+interval; stable auxiliary windows are allowed. This is a source-bound contract
+for the manual SwiftUI fixture. Navigation, root replacement or another host needs
+a revised contract. Eighteen injected fixture controls and six host-publication
+controls pass, with cleanup/restoration verified. Independent full display evidence,
+complete recorder/backend collection and the end-to-end host runner remain required
+before physical qualification. Local proof publication never authorizes teardown.
 
 `operation_ownership.validate` checks eight raw steps, four reduced Operations,
 exact ID joins, failure reason and A/B endpoints using independently captured View,

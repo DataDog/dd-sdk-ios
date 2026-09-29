@@ -168,9 +168,10 @@ enum ProbeRuntime {
     @MainActor static let physicalOperationInput: ProbePhysicalOperationInput? =
         physicalOperationCaptureRequested && [ProbePhysicalOperationProfile.scenarioID,
             ProbePhysicalOperationSetupProfile.scenarioID].contains(scenario?.identifier ?? "")
-        ? .init(registry: sceneRegistry) : nil
+        ? .init(registry: sceneRegistry, recordsContinuity: scenario?.identifier == ProbePhysicalOperationSetupProfile.scenarioID) : nil
 
     #if DEBUG
+    @MainActor private static var physicalOperationAdmission: ProbePhysicalOperationAdmission?
     @MainActor private static var physicalOperationPump: ProbePhysicalOperationCapturePump?
     @MainActor private static var physicalOperationPumpAttempted = false
     #endif
@@ -214,6 +215,10 @@ enum ProbeRuntime {
                 sample: sampler.sample, mapper: eventRecorder.snapshot, reportFailure: { reason in
                     record("Operation capture stopped: " + reason)
                 })
+            if environment["DD_PROBE_PHYSICAL_OPERATION_EXECUTION"] == "1" {
+                physicalOperationAdmission = try .init(channel: channel, deadline: deadline,
+                    sample: sampler.sample, mapper: eventRecorder.snapshot)
+            }
             physicalOperationPump = pump
             pump.start()
         } catch {
@@ -221,6 +226,16 @@ enum ProbeRuntime {
                 result: .inconclusive,
                 reason: "Operation capture never initialized or challenge publication incomplete; fresh run required"))
         }
+        #endif
+    }
+
+    @MainActor static func authorizePhysicalOperation(_ step: ProbeStep) -> String? {
+        guard scenario?.identifier == ProbePhysicalOperationSetupProfile.scenarioID else { return nil }
+        #if DEBUG
+        guard let admission = physicalOperationAdmission else { return "Operation native admission is not armed" }
+        return admission.authorize(step)
+        #else
+        return "Operation owner inference requires the Debug fixture"
         #endif
     }
 
@@ -240,9 +255,19 @@ enum ProbeRuntime {
         let stepAdmission: ((Int, ProbeStep, Bool) async -> String?)?
         if scenario.identifier == ProbePhysicalOperationSetupProfile.scenarioID {
             // A catalog selection alone never admits setup markers or SDK work.
-            stepAdmission = { index, _, _ in
-                index >= ProbePhysicalOperationSetupProfile.setupBoundary
-                    ? "Operation setup and current-owner binding are not armed" : nil
+            stepAdmission = { index, step, after in
+                guard index >= ProbePhysicalOperationSetupProfile.setupBoundary else { return nil }
+                #if DEBUG
+                guard let admission = physicalOperationAdmission else { return "Operation native admission is not armed" }
+                if let reason = await admission.check(index: index, step: step, after: after) { return reason }
+                if admission.complete && after && index == 21 {
+                    eventRecorder.record(ProbeSignal(kind: .assertion,
+                        name: ProbePhysicalOperationSetupProfile.completed, result: .pass))
+                }
+                return nil
+                #else
+                return "Operation owner inference requires the Debug fixture"
+                #endif
             }
         } else if physicalOperationCaptureRequested {
             // Capture preparation cannot dispatch Operations without the reviewed host barrier.

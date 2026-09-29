@@ -155,6 +155,8 @@ internal final class ProbeSceneRegistry {
         }
     }
 
+    var operationChangeObserver: ((ProbeSceneHandle, String) -> Void)?
+
     private var entriesByLogicalSceneID: [String: Entry] = [:]
     private var logicalSceneIDByNativeSceneID: [String: String] = [:]
 
@@ -177,6 +179,8 @@ internal final class ProbeSceneRegistry {
         }
 
         if let entry = entriesByLogicalSceneID[logicalSceneID] {
+            let previous = entry.snapshot
+            let replacedWindow = entry.window !== window
             if entry.nativeSceneID != nativeSceneID {
                 guard entry.readiness == .disconnected else {
                     return .rejected(
@@ -199,6 +203,7 @@ internal final class ProbeSceneRegistry {
                 entry.readiness = .attached
             }
             logicalSceneIDByNativeSceneID[nativeSceneID] = logicalSceneID
+            if replacedWindow || entry.snapshot != previous { operationChangeObserver?(entry.handle, "registration") }
             return .registered(entry.handle)
         }
 
@@ -210,6 +215,7 @@ internal final class ProbeSceneRegistry {
         )
         entriesByLogicalSceneID[logicalSceneID] = entry
         logicalSceneIDByNativeSceneID[nativeSceneID] = logicalSceneID
+        operationChangeObserver?(entry.handle, "registration")
         return .registered(entry.handle)
     }
 
@@ -218,7 +224,9 @@ internal final class ProbeSceneRegistry {
         guard let entry = liveEntry(for: handle), entry.window != nil else {
             return nil
         }
+        let changed = entry.readiness != .ready
         entry.readiness = .ready
+        if changed { operationChangeObserver?(entry.handle, "ready") }
         return entry.snapshot
     }
 
@@ -230,7 +238,9 @@ internal final class ProbeSceneRegistry {
         guard let entry = liveEntry(for: handle) else {
             return nil
         }
+        let changed = entry.currentRoute != route
         entry.currentRoute = route
+        if changed { operationChangeObserver?(entry.handle, "route") }
         return entry.snapshot
     }
 
@@ -242,7 +252,9 @@ internal final class ProbeSceneRegistry {
         guard let entry = liveEntry(for: handle) else {
             return nil
         }
+        let changed = entry.presentation != presentation
         entry.presentation = presentation
+        if changed { operationChangeObserver?(entry.handle, "presentation") }
         return entry.snapshot
     }
 
@@ -259,8 +271,10 @@ internal final class ProbeSceneRegistry {
            resolvedNativeSceneID != handle.nativeSceneID {
             return nil
         }
+        let changed = entry.window !== window || entry.presentation != .capture(window: window)
         entry.window = window
         entry.presentation = .capture(window: window)
+        if changed { operationChangeObserver?(entry.handle, "presentation") }
         return entry.snapshot
     }
 
@@ -284,6 +298,7 @@ internal final class ProbeSceneRegistry {
         entry.readiness = .disconnected
         entry.window = nil
         entry.disconnectGeneration &+= 1
+        operationChangeObserver?(entry.handle, "disconnect")
         return entry.snapshot
     }
 

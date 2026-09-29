@@ -1281,7 +1281,7 @@ final class ProbePhysicalOperationOwnerTests: XCTestCase {
         XCTAssertNotNil(try binding(signals: views(), before: owners, after: owners))
     }
 
-    private func captureChannel() throws -> ProbePhysicalOperationChannel {
+    private func captureChannel(observe: (() -> ProbePhysicalInputSnapshot)? = nil) throws -> ProbePhysicalOperationChannel {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: false)
         addTeardownBlock { try FileManager.default.removeItem(at: directory) }
@@ -1293,7 +1293,7 @@ final class ProbePhysicalOperationOwnerTests: XCTestCase {
             "sourceRevision": source, "boundary": "before-sdk-initialization",
             "binaries": ["fixture": String(repeating: "b", count: 64)]])
         return try .init(runID: runID, processID: 123, profile: canonical, installedCode: code,
-                         directory: directory, observe: snapshot, mode: .physicalSetup(profile()))
+                         directory: directory, observe: observe ?? snapshot, mode: .physicalSetup(profile()))
     }
 
     @discardableResult
@@ -1568,5 +1568,370 @@ final class ProbePhysicalOperationOwnerTests: XCTestCase {
             from: Data(contentsOf: channel.url("context-" + digest + "-result.json")))
         XCTAssertEqual(receipt.state, "CAPTURE_COMPLETE")
         try send(channel); XCTAssertNotNil(try channel.poll()?.rejection)
+    }
+
+    private func continuousSnapshot() -> ProbePhysicalInputSnapshot {
+        var value = snapshot()
+        value.continuity = .init(owners: value.input.map {
+            .init(logicalSceneID: $0.logicalSceneID, nativeSceneID: $0.nativeSceneID, generation: $0.generation,
+                  sceneIdentity: "object-" + $0.nativeSceneID, windowIdentity: $0.windowIdentity, rootIdentity: $0.rootIdentity)
+        }, events: [], failure: nil)
+        return value
+    }
+
+    private func admissionCapture() throws -> (ProbePhysicalOperationChannel, Data) {
+        let input = continuousSnapshot(), values = sdkValues()
+        let channel = try captureChannel(observe: { input })
+        let pump = try ProbePhysicalOperationCapturePump(channel: channel, deadline: 200,
+            sample: { ProbePhysicalOperationContextSampler(observeInput: { input },
+                readContext: { nativeID, _ in values[nativeID] }).sample() }, mapper: views, now: { 100 })
+        let digest = try send(channel); XCTAssertTrue(pump.pollOnce())
+        // Do not stop the capture pump: stopping correctly seals pending setup.
+        let reply = try XCTUnwrap(channel.readArtifact("response-" + digest + ".json"))
+        let context = try XCTUnwrap(channel.readArtifact("context-" + digest + ".json", limit: 1_048_576))
+        let completion = try XCTUnwrap(channel.readArtifact("context-" + digest + "-result.json"))
+        let capture = try rawCapture(channel, digest)
+        let artifacts = ["installed-code.json": channel.identity.installedCodeSHA256,
+            "native-capture.json": ProbePhysicalInputExchange.sha(capture), "native-context.json": ProbePhysicalInputExchange.sha(context),
+            "native-request.json": digest, "native-reply.json": ProbePhysicalInputExchange.sha(reply),
+            "native-context-result.json": ProbePhysicalInputExchange.sha(completion),
+            "screen.png": String(repeating: "a", count: 64), "display-review.json": String(repeating: "b", count: 64),
+            "release-request.json": String(repeating: "c", count: 64), "release-ack.json": String(repeating: "d", count: 64)]
+        let identity = try JSONSerialization.jsonObject(with: ProbePhysicalOperationChannel.encode(channel.identity))
+        let proof: [String: Any] = ["schemaVersion": 1, "kind": "OPERATIONS_HOST_PREREQUISITES", "state": "HOST_PROOF_PREPARED",
+            "identity": identity, "consumptionID": UUID().uuidString, "captureSHA256": artifacts["native-capture.json"]!,
+            "contextSHA256": artifacts["native-context.json"]!, "installedCodeSHA256": channel.identity.installedCodeSHA256,
+            "requestSHA256": digest, "replySHA256": artifacts["native-reply.json"]!, "completionSHA256": artifacts["native-context-result.json"]!,
+            "screenshotSHA256": artifacts["screen.png"]!, "reviewSHA256": artifacts["display-review.json"]!,
+            "releaseRequestSHA256": artifacts["release-request.json"]!, "releaseSHA256": artifacts["release-ack.json"]!,
+            "artifacts": artifacts, "deadline": 200, "finishedAt": 101, "sdkAdmitted": false, "teardownAuthorized": false]
+        let proofRaw = try JSONSerialization.data(withJSONObject: proof, options: [.sortedKeys, .withoutEscapingSlashes])
+        let result = try JSONSerialization.data(withJSONObject: ["state": "HOST_PROOF_PREPARED",
+            "proofSHA256": ProbePhysicalInputExchange.sha(proofRaw), "deadline": 200, "finishedAt": 102,
+            "sdkAdmitted": false, "teardownAuthorized": false], options: [.sortedKeys])
+        // Pump is not started in these controls and deinit has no setup side effect.
+        return (channel, try ProbePhysicalOperationChannel.encode(ProbePhysicalOperationHostHandoff(
+            schemaVersion: 1, identity: channel.identity, proof: proofRaw, result: result)))
+    }
+
+    private func admission(_ channel: ProbePhysicalOperationChannel,
+                           input: (() -> ProbePhysicalInputSnapshot)? = nil,
+                           records: (() -> [ProbeSignal])? = nil,
+                           clock: @escaping () -> TimeInterval = { 103 },
+                           wait: @escaping () async throws -> Void = { throw CocoaError(.userCancelled) }) throws -> ProbePhysicalOperationAdmission {
+        let values = sdkValues()
+        return try .init(channel: channel, deadline: 200,
+            sample: { [self] in ProbePhysicalOperationContextSampler(observeInput: input ?? continuousSnapshot,
+                readContext: { nativeID, _ in values[nativeID] }).sample() }, mapper: records ?? views, now: clock, wait: wait)
+    }
+
+    func testAdmissionRejectsForeignChangedAndReplayedProofBeforeAnyCall() throws {
+        for field in ["identity", "captureSHA256", "contextSHA256", "completionSHA256", "installedCodeSHA256", "deadline", "sdkAdmitted"] {
+            let (channel, raw) = try admissionCapture()
+            let envelope = try JSONDecoder().decode(ProbePhysicalOperationHostHandoff.self, from: raw)
+            var proof = try XCTUnwrap(JSONSerialization.jsonObject(with: envelope.proof) as? [String: Any])
+            if field == "identity" { proof[field] = [:] }
+            else if field == "deadline" { proof[field] = 201 }
+            else if field == "sdkAdmitted" { proof[field] = true }
+            else { proof[field] = String(repeating: "f", count: 64) }
+            let changed = try JSONSerialization.data(withJSONObject: proof)
+            var result = try XCTUnwrap(JSONSerialization.jsonObject(with: envelope.result) as? [String: Any])
+            result["proofSHA256"] = ProbePhysicalInputExchange.sha(changed)
+            let candidate = try ProbePhysicalOperationChannel.encode(ProbePhysicalOperationHostHandoff(schemaVersion: 1,
+                identity: envelope.identity, proof: changed, result: JSONSerialization.data(withJSONObject: result)))
+            let gate = try admission(channel)
+            XCTAssertThrowsError(try gate.consumeHost(candidate), field)
+            XCTAssertNotNil(gate.authorize(ProbePhysicalOperationSetupProfile.steps[4]), field)
+            XCTAssertThrowsError(try gate.consumeHost(raw), field)
+        }
+    }
+
+    /// Preserve every outer digest while varying one semantic request join.
+    /// This ensures the rejection is not merely a changed-file hash failure.
+    private func handoffWithChangedJoin(_ mode: String, channel: ProbePhysicalOperationChannel, raw: Data) throws -> Data {
+        func object(_ data: Data) throws -> [String: Any] {
+            try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        }
+        func encode(_ value: [String: Any]) throws -> Data {
+            try JSONSerialization.data(withJSONObject: value, options: [.sortedKeys, .withoutEscapingSlashes])
+        }
+        let envelope = try JSONDecoder().decode(ProbePhysicalOperationHostHandoff.self, from: raw)
+        var proof = try object(envelope.proof), result = try object(envelope.result)
+        let digest = try XCTUnwrap(proof["requestSHA256"] as? String)
+        var reply = try object(XCTUnwrap(channel.readArtifact("response-" + digest + ".json")))
+        var context = try object(XCTUnwrap(channel.readArtifact("context-" + digest + ".json", limit: 1_048_576)))
+        var terminal = try object(XCTUnwrap(channel.readArtifact("context-" + digest + "-result.json")))
+        if mode == "reply-request" { reply["requestSHA256"] = String(repeating: "f", count: 64) }
+        else if mode == "reply-command" { reply["commandID"] = UUID().uuidString }
+        else {
+            let captureRaw = try XCTUnwrap(Data(base64Encoded: XCTUnwrap(reply["capture"] as? String)))
+            var capture = try object(captureRaw)
+            if mode == "capture-digest" { capture["requestSHA256"] = String(repeating: "f", count: 64) }
+            else {
+                var request = try XCTUnwrap(capture["request"] as? [String: Any])
+                switch mode {
+                case "capture-run": request["runID"] = "foreign"
+                case "capture-process": request["processID"] = 999
+                case "capture-profile":
+                    var profile = try XCTUnwrap(request["profile"] as? [String: Any])
+                    profile["sourceRevision"] = String(repeating: "f", count: 40); request["profile"] = profile
+                default: request["nonce"] = UUID().uuidString
+                }
+                capture["request"] = request
+            }
+            let changed = try encode(capture), hash = ProbePhysicalInputExchange.sha(changed)
+            reply["capture"] = changed.base64EncodedString()
+            proof["captureSHA256"] = hash; context["captureSHA256"] = hash; terminal["captureSHA256"] = hash
+        }
+        let replyRaw = try encode(reply), replyHash = ProbePhysicalInputExchange.sha(replyRaw)
+        proof["replySHA256"] = replyHash; context["replySHA256"] = replyHash; terminal["replySHA256"] = replyHash
+        let contextRaw = try encode(context), contextHash = ProbePhysicalInputExchange.sha(contextRaw)
+        proof["contextSHA256"] = contextHash; terminal["contextSHA256"] = contextHash
+        let terminalRaw = try encode(terminal)
+        proof["completionSHA256"] = ProbePhysicalInputExchange.sha(terminalRaw)
+        var artifacts = try XCTUnwrap(proof["artifacts"] as? [String: String])
+        for (name, field) in ["native-capture.json": "captureSHA256", "native-reply.json": "replySHA256",
+                              "native-context.json": "contextSHA256", "native-context-result.json": "completionSHA256"] {
+            artifacts[name] = try XCTUnwrap(proof[field] as? String)
+        }
+        proof["artifacts"] = artifacts
+        try replyRaw.write(to: channel.url("response-" + digest + ".json"))
+        try contextRaw.write(to: channel.url("context-" + digest + ".json"))
+        try terminalRaw.write(to: channel.url("context-" + digest + "-result.json"))
+        let proofRaw = try encode(proof); result["proofSHA256"] = ProbePhysicalInputExchange.sha(proofRaw)
+        return try ProbePhysicalOperationChannel.encode(ProbePhysicalOperationHostHandoff(schemaVersion: 1,
+            identity: envelope.identity, proof: proofRaw, result: encode(result)))
+    }
+
+    func testAdmissionRejectsMismatchedRequestJoinsWithValidOuterDigests() throws {
+        for mode in ["reply-request", "reply-command", "capture-digest", "capture-run", "capture-process", "capture-profile", "capture-nonce"] {
+            let (channel, raw) = try admissionCapture()
+            let changed = try handoffWithChangedJoin(mode, channel: channel, raw: raw)
+            let gate = try admission(channel)
+            XCTAssertThrowsError(try gate.consumeHost(changed), mode)
+            XCTAssertNotNil(gate.authorize(ProbePhysicalOperationSetupProfile.steps[4]), mode)
+        }
+    }
+
+    func testAdmissionReadsPublishedPayloadOnlyAfterMatchingMarker() async throws {
+        let (channel, raw) = try admissionCapture()
+        let digest = ProbePhysicalInputExchange.sha(raw)
+        var waits = 0
+        try raw.write(to: channel.url("host-publication-" + digest + ".json"))
+        let gate = try admission(channel, wait: {
+            waits += 1
+            XCTAssertFalse(FileManager.default.fileExists(atPath: channel.url("native-host-consumed.json").path))
+            try Data(digest.utf8).write(to: channel.url("host-publication"))
+        })
+        let reason = await gate.check(index: 4, step: ProbePhysicalOperationSetupProfile.steps[4], after: false)
+        XCTAssertNil(reason); XCTAssertEqual(waits, 1)
+        XCTAssertNil(gate.authorize(ProbePhysicalOperationSetupProfile.steps[4]))
+        XCTAssertEqual(try channel.readArtifact("native-host-consumed.json", limit: 1_048_576), raw)
+    }
+
+    func testAdmissionReentrancyDuringMapperWaitPermanentlyStopsDispatch() async throws {
+        let (channel, raw) = try admissionCapture()
+        var gate: ProbePhysicalOperationAdmission!
+        defer { gate = nil }
+        let step = ProbePhysicalOperationSetupProfile.steps[4]
+        gate = try admission(channel, records: { [] }, wait: {
+            let nested = await gate.check(index: 4, step: step, after: false)
+            XCTAssertNotNil(nested)
+        })
+        try gate.consumeHost(raw)
+        let reason = await gate.check(index: 4, step: step, after: false)
+        XCTAssertNotNil(reason); XCTAssertNotNil(gate.authorize(step)); XCTAssertFalse(gate.complete)
+    }
+
+    func testAdmissionConsumesActualLocalContextAndCannotRearmAfterReplay() async throws {
+        let (channel, raw) = try admissionCapture(), gate = try admission(channel)
+        try gate.consumeHost(raw)
+        let reason = await gate.check(index: 4, step: ProbePhysicalOperationSetupProfile.steps[4], after: false)
+        XCTAssertNil(reason)
+        XCTAssertThrowsError(try gate.consumeHost(raw))
+        XCTAssertNotNil(gate.authorize(ProbePhysicalOperationSetupProfile.steps[4]))
+        XCTAssertFalse(gate.complete)
+    }
+
+    func testAdmissionRejectsInputDriftImmediatelyBeforeDispatch() async throws {
+        let (channel, raw) = try admissionCapture()
+        var input = continuousSnapshot()
+        let gate = try admission(channel, input: { input })
+        try gate.consumeHost(raw)
+        let reason = await gate.check(index: 4, step: ProbePhysicalOperationSetupProfile.steps[4], after: false)
+        XCTAssertNil(reason)
+        let before = input.continuity!
+        input.continuity = .init(owners: before.owners, events: [
+            .init(revision: 1, kind: "background", objectIdentity: before.owners[0].sceneIdentity, owner: before.owners[0]),
+            .init(revision: 2, kind: "foreground", objectIdentity: before.owners[0].sceneIdentity, owner: before.owners[0])], failure: nil)
+        XCTAssertNil(input.idleFailure()) // Restored current state is not continuity.
+        XCTAssertNotNil(gate.authorize(ProbePhysicalOperationSetupProfile.steps[4]))
+        input = continuousSnapshot()
+        XCTAssertNotNil(gate.authorize(ProbePhysicalOperationSetupProfile.steps[4]))
+    }
+
+    func testAdmissionRejectsDuplicateCallAndWrongBeforeAfterSequence() async throws {
+        let (channel, raw) = try admissionCapture(), gate = try admission(channel)
+        try gate.consumeHost(raw)
+        let step = ProbePhysicalOperationSetupProfile.steps[4]
+        let reason = await gate.check(index: 4, step: step, after: false)
+        XCTAssertNil(reason); XCTAssertNil(gate.authorize(step)); XCTAssertNotNil(gate.authorize(step))
+        let after = await gate.check(index: 4, step: step, after: true)
+        XCTAssertNotNil(after)
+    }
+
+    func testAdmissionWaitsForIndependentMapperWithoutRecapturingHostProof() async throws {
+        let (channel, raw) = try admissionCapture()
+        var records: [ProbeSignal] = [], waits = 0
+        let gate = try admission(channel, records: { records }, wait: { [self] in waits += 1; records = views() })
+        try gate.consumeHost(raw)
+        let reason = await gate.check(index: 4, step: ProbePhysicalOperationSetupProfile.steps[4], after: false)
+        XCTAssertNil(reason); XCTAssertEqual(waits, 1); XCTAssertNil(gate.authorize(ProbePhysicalOperationSetupProfile.steps[4]))
+    }
+
+    func testAdmissionAllowsAllCallsAndLateMarkerResourcesButRequiresFinalOwners() async throws {
+        let (channel, raw) = try admissionCapture()
+        var records = views(), waits = 0
+        let lateMarkers = markers()
+        let gate = try admission(channel, records: { records }, wait: { waits += 1; records += lateMarkers })
+        try gate.consumeHost(raw)
+        var sdkCalls = 0
+        for index in 4...21 {
+            let step = ProbePhysicalOperationSetupProfile.steps[index]
+            let before = await gate.check(index: index, step: step, after: false)
+            XCTAssertNil(before)
+            XCTAssertNil(gate.authorize(step))
+            if let call = calls().first(where: { $0.stepKind == step.kind && $0.operation?.key == runID + "-" + (step.value ?? "") }) {
+                sdkCalls += 1; records.append(call)
+            }
+            let after = await gate.check(index: index, step: step, after: true)
+            XCTAssertNil(after)
+        }
+        XCTAssertEqual(sdkCalls, 8); XCTAssertEqual(waits, 1); XCTAssertTrue(gate.complete)
+        XCTAssertNotNil(try channel.readArtifact("native-final-mapper.json", limit: 1_048_576))
+    }
+
+    func testAdmissionRejectsContinuityChangeDuringFinalMapperRead() async throws {
+        let (channel, raw) = try admissionCapture()
+        var input = continuousSnapshot(), sealReady = false
+        let records = views() + calls() + markers()
+        let gate = try admission(channel, input: { input }, records: {
+            if sealReady {
+                let continuity = input.continuity!
+                input.continuity = .init(owners: continuity.owners, events: [
+                    .init(revision: 1, kind: "window-key-changed", objectIdentity: nil, owner: nil)], failure: nil)
+            }
+            return records
+        })
+        try gate.consumeHost(raw)
+        for index in 4...21 {
+            let step = ProbePhysicalOperationSetupProfile.steps[index]
+            let before = await gate.check(index: index, step: step, after: false)
+            XCTAssertNil(before); XCTAssertNil(gate.authorize(step))
+            sealReady = index == 21
+            let after = await gate.check(index: index, step: step, after: true)
+            if index == 21 { XCTAssertNotNil(after) } else { XCTAssertNil(after) }
+        }
+        XCTAssertFalse(gate.complete)
+        XCTAssertNil(try channel.readArtifact("native-local-result.json"))
+        XCTAssertNotNil(try channel.readArtifact("native-admission-failure.json"))
+    }
+
+    func testAdmissionExpiredOrCleanupConsumedSetupNeverStarts() async throws {
+        for expired in [false, true] {
+            let (channel, raw) = try admissionCapture()
+            var time = 103.0
+            let gate = try admission(channel, clock: { time })
+            try gate.consumeHost(raw)
+            if expired { time = 200 } else { channel.sealSetup() }
+            let reason = await gate.check(index: 4, step: ProbePhysicalOperationSetupProfile.steps[4], after: false)
+            XCTAssertNotNil(reason); XCTAssertNotNil(gate.authorize(ProbePhysicalOperationSetupProfile.steps[4]))
+        }
+    }
+
+    func testAdmissionRejectsTornAndForeignLocalContextDespiteValidHostLabel() throws {
+        let (channel, raw) = try admissionCapture()
+        let handoff = try JSONDecoder().decode(ProbePhysicalOperationHostHandoff.self, from: raw)
+        let proof = try XCTUnwrap(JSONSerialization.jsonObject(with: handoff.proof) as? [String: Any])
+        let request = try XCTUnwrap(proof["requestSHA256"] as? String)
+        try Data("{}".utf8).write(to: channel.url("context-" + request + ".json"))
+        let gate = try admission(channel)
+        XCTAssertThrowsError(try gate.consumeHost(raw)); XCTAssertNotNil(gate.authorize(ProbePhysicalOperationSetupProfile.steps[4]))
+    }
+
+}
+
+
+final class ProbePhysicalOperationEventLedgerTests: XCTestCase {
+    private func owner(_ name: String, scene: NSObject, window: NSObject, root: NSObject) -> ProbePhysicalOperationEventLedger.Owner {
+        .init(logicalSceneID: name, nativeSceneID: "native-" + name, generation: 7,
+              sceneIdentity: String(describing: ObjectIdentifier(scene)), windowIdentity: String(describing: ObjectIdentifier(window)),
+              rootIdentity: String(describing: ObjectIdentifier(root)))
+    }
+
+    func testLifecycleEventsKeepExactObjectsAndRestoredStateHistory() {
+        let center = NotificationCenter(), scene = NSObject(), window = NSObject(), root = NSObject()
+        let ledger = ProbePhysicalOperationEventLedger(center: center)
+        let bound = owner("scene-A", scene: scene, window: window, root: root); ledger.install(bound)
+        let before = ledger.snapshot()
+        center.post(name: UIScene.didEnterBackgroundNotification, object: scene)
+        center.post(name: UIScene.didActivateNotification, object: scene)
+        let after = ledger.snapshot()
+        XCTAssertNotEqual(before, after); XCTAssertEqual(after.events.map(\.revision), [1, 2])
+        XCTAssertEqual(after.events.map(\.owner), [bound, bound]); XCTAssertNil(after.failure)
+    }
+
+    func testForeignAndMissingObjectsAreRetainedWithoutPrivateWindowFiltering() {
+        let center = NotificationCenter(), ledger = ProbePhysicalOperationEventLedger(center: center)
+        center.post(name: UIScene.didActivateNotification, object: NSObject())
+        center.post(name: UIWindow.didBecomeKeyNotification, object: nil)
+        XCTAssertEqual(ledger.snapshot().events.count, 2)
+        XCTAssertNil(ledger.snapshot().events.last?.objectIdentity)
+        XCTAssertTrue(ledger.snapshot().events.allSatisfy { $0.owner == nil })
+    }
+
+    func testResizeAndRegistryRevisionsNeverResetWhenStateRestores() {
+        let ledger = ProbePhysicalOperationEventLedger(center: NotificationCenter())
+        for event in ["resize-began", "resize-ended", "registry-presentation", "registry-presentation"] {
+            ledger.record(event, scene: "scene-A")
+        }
+        XCTAssertEqual(ledger.snapshot().events.map(\.revision), [1, 2, 3, 4])
+    }
+
+    func testReplacementAndOverflowAreSticky() {
+        let ledger = ProbePhysicalOperationEventLedger(center: NotificationCenter())
+        let scene = NSObject(), window = NSObject(), root = NSObject()
+        let original = owner("scene-A", scene: scene, window: window, root: root)
+        ledger.install(original); ledger.install(owner("scene-A", scene: scene, window: window, root: NSObject()))
+        ledger.install(original); XCTAssertNotNil(ledger.snapshot().failure)
+        for _ in 0...2_048 { ledger.record("resize", scene: "scene-A") }
+        XCTAssertEqual(ledger.snapshot().events.count, 2_048); XCTAssertNotNil(ledger.snapshot().failure)
+    }
+
+    @MainActor
+    func testRegistryRecordsTransientPresentationAndDisconnectAtSource() throws {
+        let registry = ProbeSceneRegistry(), window = UIWindow()
+        var changes: [String] = []
+        registry.operationChangeObserver = { _, kind in changes.append(kind) }
+        guard case .registered(let handle) = registry.register(logicalSceneID: "scene-A", nativeSceneID: "native-A",
+            window: window, currentRoute: ["home"]) else { return XCTFail("registration") }
+        let initial = try XCTUnwrap(registry.snapshot(logicalSceneID: "scene-A")).presentation
+        let background = ProbeScenePresentation(activationState: .background, geometry: initial.geometry,
+            horizontalSizeClass: initial.horizontalSizeClass, verticalSizeClass: initial.verticalSizeClass)
+        registry.updatePresentation(background, for: handle); registry.updatePresentation(initial, for: handle)
+        registry.disconnect(handle)
+        XCTAssertEqual(changes, ["registration", "presentation", "presentation", "disconnect"])
+    }
+
+    func testObserverDeallocationRemovesNotificationRegistration() {
+        let center = NotificationCenter()
+        weak var weakLedger: ProbePhysicalOperationEventLedger?
+        autoreleasepool {
+            let ledger = ProbePhysicalOperationEventLedger(center: center); weakLedger = ledger
+            center.post(name: UIScene.didActivateNotification, object: NSObject())
+            XCTAssertEqual(ledger.snapshot().events.count, 1)
+        }
+        XCTAssertNil(weakLedger)
+        center.post(name: UIScene.didActivateNotification, object: NSObject())
     }
 }
