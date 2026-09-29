@@ -6,6 +6,7 @@ transfer remains unqualified on physical hardware until its first bounded use.
 import base64
 from pathlib import Path
 import re
+import struct
 import time
 
 import operation_setup as setup
@@ -18,6 +19,10 @@ MAX_TREE_BYTES = 128 * 1024 * 1024
 FIELDS = {'schemaVersion', 'identity', 'state', 'profile', 'deadline', 'setupCaptureSHA256',
           'hostPublicationSHA256', 'finalObservation', 'finalObservationSHA256',
           'finalMapperSHA256', 'observationCount', 'artifacts'}
+DISPLAY_FILES = {'display-binding-scene-A.json', 'display-binding-scene-B.json',
+                 'display-START.json', 'display-RUN.json', 'display-FINAL.json',
+                 'display-start-proof-consumed.json', 'display-run-proof-consumed.json',
+                 'display-final-proof-consumed.json', 'display-final-context.json', 'display-completion.json'}
 
 
 def decode_handoff(raw, identity, deadline):
@@ -40,11 +45,16 @@ def terminal(raw, identity, publication, deadline):
     value = t.load(raw, maximum=t.MAX_CONTEXT_BYTES)
     proof = decode_handoff(publication, identity, deadline)
     t.validate_setup(identity['setupProfile'])
-    t.require(set(value) == FIELDS and type(value['schemaVersion']) is int and value['schemaVersion'] == 1
+    expected_fields = FIELDS | ({'displayArtifacts'} if 'displayProof' in proof else set())
+    t.require(set(value) == expected_fields and type(value['schemaVersion']) is int and value['schemaVersion'] == 1
               and value['identity'] == identity and value['state'] == 'LOCAL_OWNERS_VERIFIED'
               and value['profile'] == identity['setupProfile']['scenario'] and value['deadline'] == deadline
               and value['setupCaptureSHA256'] == proof['captureSHA256']
               and value['hostPublicationSHA256'] == t.sha(publication), 'foreign terminal identity or proof')
+    if 'displayProof' in proof:
+        display = value['displayArtifacts']
+        t.require(isinstance(display, dict) and set(display) == DISPLAY_FILES
+                  and all(t.digest(v) for v in display.values()), 'incomplete display completion inventory')
     count, artifacts = value['observationCount'], value['artifacts']
     t.require(type(count) is int and 1 <= count < MAX_FILES and isinstance(artifacts, dict),
               'invalid completion inventory')
@@ -76,6 +86,61 @@ def tree_inventory(directory):
         t.require(len(inventory) < MAX_FILES and total <= MAX_TREE_BYTES, 'native directory exceeds evidence bounds')
         inventory[str(path.relative_to(directory))] = setup.file_sha(path)
     return inventory
+
+
+def sample_owners(sample, owners):
+    t.require(sample.get('failure') is None and sample['before'] == sample['after'] == owners['input'],
+              'input or continuity differs within sealed interval')
+    projected = {}
+    for item in sample['reads']:
+        scene = item['logicalSceneID']; context = item['value']
+        t.require(scene not in projected and isinstance(context, dict), 'duplicate or missing SDK owner')
+        projected[scene] = dict(logicalSceneID=scene, nativeSceneID=item['targetNativeSceneID'],
+            **{key: context[key] for key in ['applicationID', 'sessionID', 'viewID', 'viewName', 'viewURL']})
+    t.require(projected == owners['contexts'], 'SDK ownership differs within sealed interval')
+
+
+def display_snapshot(value, owners, inventory, read_raw, proof):
+    """Join native-consumed display bytes; pixels still require independent assessment."""
+    artifacts = value['displayArtifacts']; prefix = value['identity']['runID'] + '.operations-'
+    for name, digest in artifacts.items():
+        t.require(inventory.get(prefix + name) == digest, 'display artifact missing or changed: ' + name)
+    read = lambda name: t.load(read_raw(name), maximum=t.MAX_CONTEXT_BYTES)
+    bindings = {scene: read('display-binding-' + scene + '.json') for scene in ['scene-A', 'scene-B']}
+    owner_hashes = {scene: artifacts['display-binding-' + scene + '.json'] for scene in bindings}
+    native = {row['logicalSceneID']: row for row in owners['input']['input']}
+    for scene, binding in bindings.items():
+        t.require(binding == {key: native[scene][key] for key in
+                  ['logicalSceneID', 'nativeSceneID', 'generation', 'windowIdentity', 'rootIdentity']},
+                  'display binding differs from admitted native owner')
+    nonce = None; previous = None; request_ids = set()
+    bits = format(struct.unpack('>Q', struct.pack('>d', value['deadline']))[0], 'x')
+    for sequence, phase in enumerate(['START', 'RUN', 'FINAL']):
+        receipt_name = 'display-' + phase + '.json'
+        receipt = read(receipt_name); consumed = read('display-' + phase.lower() + '-proof-consumed.json')
+        nonce = receipt['nonce'] if nonce is None else nonce
+        cause = None if phase == 'START' else (artifacts['display-start-proof-consumed.json']
+                                              if phase == 'RUN' else value['finalObservationSHA256'])
+        t.require(receipt['schemaVersion'] == 1 and receipt['identity'] == value['identity']
+                  and receipt['phase'] == phase and receipt['sequence'] == sequence
+                  and receipt['nonce'] == nonce and receipt['deadlineBits'] == bits
+                  and receipt['bindings'] == bindings and receipt['bindingSHA256'] == owner_hashes
+                  and receipt.get('previousReceiptSHA256') == previous and receipt.get('causeSHA256') == cause
+                  and receipt['nativeAcceptance'] is False, 'native display receipt chain differs')
+        t.require(consumed['identity'] == value['identity'] and consumed['phase'] == phase
+                  and consumed['nonce'] == nonce and consumed['deadlineBits'] == bits
+                  and consumed['owners'] == owner_hashes and consumed['nativeReceiptSHA256'] == artifacts[receipt_name]
+                  and consumed['requestID'] not in request_ids, 'consumed display proof chain differs')
+        request_ids.add(consumed['requestID']); previous = artifacts[receipt_name]
+    t.require(base64.b64decode(proof['displayProof'], validate=True) == read_raw('display-run-proof-consumed.json'),
+              'display RUN proof differs from host admission')
+    completion = read('display-completion.json')
+    t.require(completion == dict(state='DISPLAY_PROOFS_CONSUMED', nonce=nonce,
+                  runProofSHA256=artifacts['display-run-proof-consumed.json'],
+                  finalProofSHA256=artifacts['display-final-proof-consumed.json'],
+                  finalObservationSHA256=value['finalObservationSHA256'], contextSHA256=artifacts['display-final-context.json']),
+              'display completion is not bound to the collection seal and final context')
+    sample_owners(read('display-final-context.json'), owners)
 
 
 def validate_snapshot(directory, raw, *, identity, publication, deadline):
@@ -111,16 +176,10 @@ def validate_snapshot(directory, raw, *, identity, publication, deadline):
     # Digests preserve raw encoding. Equality compares decoded observations and
     # never reserializes geometry into a new native proof.
     for row in observations:
-        sample = row['sample']
-        t.require(sample.get('failure') is None and sample['before'] == sample['after'] == owners['input'],
-                  'input or continuity differs within sealed interval')
-        projected = {}
-        for item in sample['reads']:
-            scene = item['logicalSceneID']; context = item['value']
-            t.require(scene not in projected and isinstance(context, dict), 'duplicate or missing SDK owner')
-            projected[scene] = dict(logicalSceneID=scene, nativeSceneID=item['targetNativeSceneID'],
-                **{key: context[key] for key in ['applicationID', 'sessionID', 'viewID', 'viewName', 'viewURL']})
-        t.require(projected == owners['contexts'], 'SDK ownership differs within sealed interval')
+        sample_owners(row['sample'], owners)
+    if 'displayArtifacts' in value:
+        display_snapshot(value, owners, inventory, lambda name: setup.read(directory / (prefix + name)),
+                         decode_handoff(publication, identity, deadline))
     return dict(manifest=value, owners=owners, inventory=inventory)
 
 

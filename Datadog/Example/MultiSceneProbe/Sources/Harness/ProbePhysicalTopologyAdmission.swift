@@ -1430,6 +1430,7 @@ internal struct ProbePhysicalOperationLocalCompletion: Codable {
     let finalMapperSHA256: String
     let observationCount: Int
     let artifacts: [String: String]
+    var displayArtifacts: [String: String]? = nil
 }
 
 @MainActor
@@ -1456,6 +1457,7 @@ internal final class ProbePhysicalOperationAdmission {
         let finishedAt: TimeInterval
         let sdkAdmitted: Bool
         let teardownAuthorized: Bool
+        let displayProof: Data?
     }
     private struct HostResult: Decodable {
         let state: String
@@ -1472,6 +1474,7 @@ internal final class ProbePhysicalOperationAdmission {
     }
 
     private let channel: ProbePhysicalOperationChannel
+    private let display: ProbeOperationDisplayBoundary?
     private let deadline: TimeInterval
     private let sample: () -> ProbePhysicalOperationContextSample
     private let mapper: () -> [ProbeSignal]
@@ -1490,10 +1493,12 @@ internal final class ProbePhysicalOperationAdmission {
 
     init(channel: ProbePhysicalOperationChannel, deadline: TimeInterval,
          sample: @escaping () -> ProbePhysicalOperationContextSample, mapper: @escaping () -> [ProbeSignal],
+         display: ProbeOperationDisplayBoundary? = nil,
          now: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 },
          wait: @escaping () async throws -> Void = { try await Task.sleep(nanoseconds: 500_000_000) }) throws {
         guard channel.identity.schemaVersion == 2, channel.identity.setupProfile != nil,
               deadline.isFinite, now() < deadline else { throw Failure.identity }
+        self.display = display
         self.channel = channel; self.deadline = deadline; self.sample = sample; self.mapper = mapper; self.now = now; self.wait = wait
         guard !FileManager.default.fileExists(atPath: channel.url("native-admission.json").path) else { throw Failure.publication }
     }
@@ -1519,6 +1524,7 @@ internal final class ProbePhysicalOperationAdmission {
     }
     private func observe(index: Int, boundary: String) throws -> ProbePhysicalOperationContextSample {
         try live()
+        if display?.hasStarted == true { try display?.validate() }
         let value = sample()
         observationSequence += 1
         try persist(Observation(index: index, boundary: boundary, sample: value),
@@ -1608,13 +1614,19 @@ internal final class ProbePhysicalOperationAdmission {
                   first.after == last.before, first.before == last.after,
                   let contexts = first.ownerProjection, contexts == last.ownerProjection,
                   first.after.continuity?.owners.count == 2 else { throw Failure.capture }
+            if let display {
+                guard let raw = proof.displayProof else { throw Failure.proof }
+                try display.consumeRun(raw)
+            }
             capture = rawCapture; capturedContexts = contexts
         } catch { _ = stop("host proof or original native capture invalid"); throw error }
     }
 
     private func prepare() async throws {
+        if let display, !display.hasStarted { try display.begin() }
         while !hostConsumed {
             try live()
+            try display?.pollRunRequest()
             if let marker = try channel.readArtifact("host-publication", limit: 64),
                let digest = String(data: marker, encoding: .utf8),
                digest.range(of: "^[a-f0-9]{64}$", options: .regularExpression) != nil,
@@ -1684,11 +1696,24 @@ internal final class ProbePhysicalOperationAdmission {
                         guard let observationHash = persistedDigests[observation],
                               let mapperHash = persistedDigests["native-final-mapper.json"],
                               let hostHash = persistedDigests["native-host-consumed.json"] else { throw Failure.publication }
+                        var displayArtifacts: [String: String]?
+                        if let display {
+                            try display.seal(observationHash)
+                            while try !display.pollFinalProof() { try live(); try await wait() }
+                            try live()
+                            let afterDisplay = sample()
+                            guard afterDisplay.failure == nil,
+                                  state.observe(input: afterDisplay.after, contexts: afterDisplay.ownerProjection ?? [:]) == nil else {
+                                throw Failure.live
+                            }
+                            displayArtifacts = try display.finish(context: afterDisplay, observationSHA256: observationHash)
+                        }
                         try persist(ProbePhysicalOperationLocalCompletion(schemaVersion: 1, identity: channel.identity,
                             state: "LOCAL_OWNERS_VERIFIED", profile: state.owners.profile.scenario, deadline: deadline,
                             setupCaptureSHA256: state.owners.setupCaptureSHA256, hostPublicationSHA256: hostHash,
                             finalObservation: observation, finalObservationSHA256: observationHash, finalMapperSHA256: mapperHash,
-                            observationCount: observationSequence, artifacts: persistedDigests), "native-local-result.json")
+                            observationCount: observationSequence, artifacts: persistedDigests,
+                            displayArtifacts: displayArtifacts), "native-local-result.json")
                         complete = true; break
                     }
                     let rows = signals.filter { [.rumAction, .rumResource].contains($0.kind)

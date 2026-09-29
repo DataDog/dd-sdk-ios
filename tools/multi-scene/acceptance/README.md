@@ -538,10 +538,28 @@ START/RUN/FINAL screenshots are mandatory. Post-FINAL samples remain preserved b
 excluded from the claimed interval. Twenty-one controls include generated PNG,
 JPEG and compressed MOV media; they grant no native or release credit.
 
-Native integration must still map each marker to its actual window, prove RUN
-before any SDK call and FINAL after the collection seal, and join the entire
-critical native interval. The [preparation owner](../../../DatadogRUM/MultiSceneSupport/Results/S3-human-residual-preparation.json)
-tracks the remaining integrated runner and physical qualification.
+The fixture's `ProbePhysicalOperationDisplay` installs passive marker subviews on
+the exact registered windows. It rechecks native scene, window, root and generation
+before each boundary. START permits arrangement; RUN freezes owner geometry in
+display pixels. Publication geometry describes that observation only: host capture
+must join fresh native evidence and actual pixels after arrangement.
+
+Real physical Operation execution requires fresh `DD_PROBE_OPERATION_DISPLAY_NONCE`,
+`DD_PROBE_OPERATION_DISPLAY_SOURCE_SHA256` and
+`DD_PROBE_OPERATION_DISPLAY_BINARY_SHA256` values. START and RUN screenshot proofs
+must be consumed before SDK dispatch. FINAL follows the native collection seal;
+its screenshot and complete movie proof precede local completion. The terminal's
+`displayArtifacts` map binds all ten native display records, including consumed
+proofs and the final context. The collector rejects missing/changed files and
+mismatched owners or causal links. Legacy unarmed output omits the map.
+
+The native hooks pass18 focused unit controls and three actual UIKit-rendered
+phase decodes. These detached-window controls do not prove physical visibility.
+The terminal join and affected host consumers pass29+52 controls. The typed host bridge,
+whole display/native join and physical adapter qualification remain pending at the
+[preparation owner](../../../DatadogRUM/MultiSceneSupport/Results/S3-human-residual-preparation.json).
+Do not enable the profile with the old host runner or infer pixel/native acceptance
+from local collection alone.
 
 ### H06 physical cleanup disposition
 

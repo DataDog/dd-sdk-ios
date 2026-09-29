@@ -1724,12 +1724,148 @@ final class ProbePhysicalOperationOwnerTests: XCTestCase {
     private func admission(_ channel: ProbePhysicalOperationChannel,
                            input: (() -> ProbePhysicalInputSnapshot)? = nil,
                            records: (() -> [ProbeSignal])? = nil,
+                           display: ProbeOperationDisplayBoundary? = nil,
                            clock: @escaping () -> TimeInterval = { 103 },
                            wait: @escaping () async throws -> Void = { throw CocoaError(.userCancelled) }) throws -> ProbePhysicalOperationAdmission {
         let values = sdkValues()
         return try .init(channel: channel, deadline: 200,
             sample: { [self] in ProbePhysicalOperationContextSampler(observeInput: input ?? continuousSnapshot,
-                readContext: { nativeID, _ in values[nativeID] }).sample() }, mapper: records ?? views, now: clock, wait: wait)
+                readContext: { nativeID, _ in values[nativeID] }).sample() }, mapper: records ?? views,
+            display: display, now: clock, wait: wait)
+    }
+
+    @MainActor private final class DisplayBoundary: ProbeOperationDisplayBoundary {
+        var hasStarted = true
+        var events: [String] = []
+        var finalReady = false
+        var failValidation = false
+        var onSeal: (() throws -> Void)?
+        func begin() throws { hasStarted = true; events.append("begin") }
+        func validate() throws {
+            events.append("validate")
+            if failValidation { throw CocoaError(.userCancelled) }
+        }
+        func pollRunRequest() throws { events.append("poll-run") }
+        func consumeRun(_ raw: Data) throws {
+            guard raw == Data("run-proof".utf8) else { throw CocoaError(.fileReadCorruptFile) }
+            events.append("consume-run")
+        }
+        func seal(_ finalObservationSHA256: String) throws {
+            XCTAssertEqual(finalObservationSHA256.count, 64)
+            events.append("seal"); try onSeal?()
+        }
+        func pollFinalProof() throws -> Bool { events.append("poll-final"); return finalReady }
+        func finish(context: ProbePhysicalOperationContextSample, observationSHA256: String) throws -> [String: String] {
+            XCTAssertTrue(finalReady); XCTAssertNil(context.failure); events.append("finish")
+            return ["display-completion.json": String(repeating: "c", count: 64)]
+        }
+        func retire() { events.append("retire"); failValidation = true }
+    }
+
+    private func withDisplayProof(_ raw: Data, valid: Bool = true) throws -> Data {
+        let original = try JSONDecoder().decode(ProbePhysicalOperationHostHandoff.self, from: raw)
+        var proof = try XCTUnwrap(JSONSerialization.jsonObject(with: original.proof) as? [String: Any])
+        proof["displayProof"] = Data((valid ? "run-proof" : "wrong-proof").utf8).base64EncodedString()
+        let changed = try JSONSerialization.data(withJSONObject: proof, options: [.sortedKeys, .withoutEscapingSlashes])
+        var result = try XCTUnwrap(JSONSerialization.jsonObject(with: original.result) as? [String: Any])
+        result["proofSHA256"] = ProbePhysicalInputExchange.sha(changed)
+        return try ProbePhysicalOperationChannel.encode(ProbePhysicalOperationHostHandoff(
+            schemaVersion: original.schemaVersion, identity: original.identity, proof: changed,
+            result: JSONSerialization.data(withJSONObject: result, options: [.sortedKeys, .withoutEscapingSlashes])))
+    }
+
+    func testDisplayMissingOrRejectedRunProofStopsBeforeDispatch() throws {
+        for missing in [false, true] {
+            let (channel, raw) = try admissionCapture()
+            let display = DisplayBoundary(), gate = try admission(channel, display: display)
+            XCTAssertThrowsError(try gate.consumeHost(missing ? raw : withDisplayProof(raw, valid: false)))
+            XCTAssertNotNil(gate.authorize(ProbePhysicalOperationSetupProfile.steps[4]))
+            XCTAssertFalse(gate.complete); XCTAssertNotNil(channel.failure)
+            XCTAssertNil(try channel.readArtifact("native-admission.json"))
+        }
+    }
+
+    func testDisplayBeginAndRunProofPrecedeFirstAuthorizedCall() async throws {
+        let (channel, original) = try admissionCapture(), display = DisplayBoundary()
+        display.hasStarted = false
+        let raw = try withDisplayProof(original), digest = ProbePhysicalInputExchange.sha(raw)
+        var waits = 0
+        let gate = try admission(channel, display: display, wait: {
+            waits += 1
+            XCTAssertEqual(display.events, ["begin", "poll-run"])
+            XCTAssertNil(try channel.readArtifact("native-admission.json"))
+            try raw.write(to: channel.url("host-publication-" + digest + ".json"))
+            try Data(digest.utf8).write(to: channel.url("host-publication"))
+        })
+        let step = ProbePhysicalOperationSetupProfile.steps[4]
+        let result = await gate.check(index: 4, step: step, after: false)
+        XCTAssertNil(result); XCTAssertEqual(waits, 1)
+        XCTAssertEqual(Array(display.events.prefix(4)), ["begin", "poll-run", "poll-run", "consume-run"])
+        XCTAssertNil(gate.authorize(step))
+    }
+
+    func testDisplayOwnerChangeAtCallBoundaryPreventsSDKWork() async throws {
+        let (channel, raw) = try admissionCapture(), display = DisplayBoundary()
+        let gate = try admission(channel, display: display)
+        try gate.consumeHost(withDisplayProof(raw))
+        let step = ProbePhysicalOperationSetupProfile.steps[4]
+        let before = await gate.check(index: 4, step: step, after: false); XCTAssertNil(before)
+        display.failValidation = true
+        XCTAssertNotNil(gate.authorize(step)); XCTAssertNotNil(channel.failure)
+        XCTAssertFalse(gate.complete)
+    }
+
+    func testDisplayFinalProofMustArriveBeforeLocalCompletion() async throws {
+        let (channel, raw) = try admissionCapture(), display = DisplayBoundary()
+        var records = views(), waits = 0
+        let gate = try admission(channel, records: { records }, display: display, wait: { [self] in
+            waits += 1
+            XCTAssertNil(try channel.readArtifact("native-local-result.json"))
+            if display.events.contains("seal") { display.finalReady = true }
+            else { records += markers() }
+        })
+        display.onSeal = {
+            XCTAssertNotNil(try channel.readArtifact("native-final-mapper.json"))
+            XCTAssertNil(try channel.readArtifact("native-local-result.json"))
+        }
+        try gate.consumeHost(withDisplayProof(raw))
+        var callsPerformed = 0
+        for index in 4...21 {
+            let step = ProbePhysicalOperationSetupProfile.steps[index]
+            let before = await gate.check(index: index, step: step, after: false); XCTAssertNil(before)
+            XCTAssertNil(gate.authorize(step))
+            if let call = calls().first(where: { $0.stepKind == step.kind && $0.operation?.key == runID + "-" + (step.value ?? "") }) {
+                callsPerformed += 1; records.append(call)
+            }
+            let after = await gate.check(index: index, step: step, after: true); XCTAssertNil(after)
+        }
+        XCTAssertEqual(callsPerformed, 8); XCTAssertEqual(waits, 2)
+        XCTAssertTrue(gate.complete); XCTAssertEqual(display.events.last, "finish")
+        let result = try JSONDecoder().decode(ProbePhysicalOperationLocalCompletion.self,
+            from: XCTUnwrap(channel.readArtifact("native-local-result.json", limit: 1_048_576)))
+        XCTAssertEqual(result.displayArtifacts, ["display-completion.json": String(repeating: "c", count: 64)])
+    }
+
+    func testDisplayInvalidationDuringFinalWaitCannotPublishLocalCompletion() async throws {
+        let (channel, raw) = try admissionCapture(), display = DisplayBoundary()
+        var records = views() + markers()
+        let gate = try admission(channel, records: { records }, display: display, wait: {
+            XCTAssertTrue(display.events.contains("seal"))
+            channel.invalidateSetup("test cleanup while awaiting display")
+        })
+        try gate.consumeHost(withDisplayProof(raw))
+        for index in 4...21 {
+            let step = ProbePhysicalOperationSetupProfile.steps[index]
+            let before = await gate.check(index: index, step: step, after: false); XCTAssertNil(before)
+            XCTAssertNil(gate.authorize(step))
+            if let call = calls().first(where: { $0.stepKind == step.kind && $0.operation?.key == runID + "-" + (step.value ?? "") }) {
+                records.append(call)
+            }
+            let after = await gate.check(index: index, step: step, after: true)
+            if index == 21 { XCTAssertNotNil(after) } else { XCTAssertNil(after) }
+        }
+        XCTAssertFalse(gate.complete); XCTAssertFalse(display.events.contains("finish"))
+        XCTAssertNil(try channel.readArtifact("native-local-result.json"))
     }
 
     func testAdmissionRejectsForeignChangedAndReplayedProofBeforeAnyCall() throws {

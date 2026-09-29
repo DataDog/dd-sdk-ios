@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "Finite source-backed preparation of residual S3 human scenarios",
-  "state": "H06_HOST_DISPLAY_CODEC_PREPARED_NATIVE_DISPLAY_RUNNER_PENDING",
+  "state": "H06_NATIVE_DISPLAY_UNIT_PREPARATION_PASS_HOST_BRIDGE_PENDING",
   "defined_at": "2026-09-28T13:49:45.760600+00:00",
   "defined_before_implementation": true,
   "owner": "Root",
@@ -350,7 +350,7 @@
     "builds_admitted": 0,
     "native_admitted": false,
     "budget_policy": "Freeze setup/API/collection/cleanup limits from qualified observed adapter latencies before execution; no active deadline extension. Strict timing is diagnostic.",
-    "next": "Integrate native owner markers and causal START/RUN/FINAL display joins with the reviewed host decoder and capture components. Bind live page/process health and freeze budgets before one physical adapter qualification; no human H06 admission yet.",
+    "next": "Implement the reviewed typed host display bridge with offline controls, then connect and qualify the physical adapter once. No human H06 admission yet.",
     "scope_increment": {
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_",
       "definition": {
@@ -953,11 +953,89 @@
         "native_runs": 0,
         "gates_closed": [],
         "limits": [
-          "Generated pixels and synthetic controls only. Native markers/window mapping, display causality and physical qualification remain unimplemented.",
+          "Host pixel preparation and native marker/unit rendering controls pass; actual physical mapping, causality and integrated qualification remain.",
           "Raw fractional geometry and PTS remain unchanged; integer enclosing pixels and exact rational PTS ordering avoid strict float equality.",
           "Every source/executable/media/invocation/process/decoder/frame artifact is hash-bound.",
           "First FINAL ends the claimed pixel interval; tail remains retained but excluded. Native joins must prove all critical work precedes FINAL."
         ]
+      },
+      "native_display": {
+        "state": "REVIEWED_UNIT_PREPARATION_PASS",
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/native-display-7wpcxn5f",
+        "definition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/native-display-7wpcxn5f/definition.json",
+          "sha256": "8d52013c045a31bcafb8c8c4ef82e6efd75e888e2c577b034e06c1c502de5f6c"
+        },
+        "design_review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/native-display-7wpcxn5f/design-review.json",
+          "sha256": "4bcfec2c56003c6d3f94ae074e3c6c89e0b1282eb6293d7c19338318bf596650"
+        },
+        "implementation_start": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/native-display-7wpcxn5f/implementation-start.json",
+          "sha256": "2ac72ffcb386e5a39b09a220e0dded6ac1e658982811f51cfd60e3da67f6b1df"
+        },
+        "initial_review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/native-display-7wpcxn5f/review-r1.json",
+          "sha256": "2cf7ff827efd08932da709c180bd7b99245e078d9d1197a5dcba9d9118e70d84"
+        },
+        "host_controls": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/native-display-7wpcxn5f/host-controls-r1.json",
+          "sha256": "75b8388ff62aa4f24f66710124bbc4a1eca9b9661a7532bc8be17d96028ddbfa"
+        },
+        "swift_unit_runs": 1,
+        "native_scenario_runs": 0,
+        "gates_closed": [],
+        "limits": [
+          "18 focused native unit controls; detached-window rendering is not physical simultaneous visibility.",
+          "Reviewed terminal join:29 controls and52 affected recorder/backend controls pass.",
+          "Typed host bridge and integrated physical qualification remain separate."
+        ],
+        "source_review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/native-display-7wpcxn5f/review-r2.json",
+          "sha256": "2c4ebf56b6883f861f1d8b1e54562e6af27c02fe2da7b0b736da222bea954f3d"
+        },
+        "source_manifest": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/native-display-7wpcxn5f/reviewed-source.json",
+          "sha256": "2c20ca10dd9dbc4ef734852e777aa5bb0c1764f608dee09f8393dca5bfaf95b3"
+        },
+        "unit_selection": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/native-display-7wpcxn5f/unit-selection.json",
+          "sha256": "083e3fa94979936b21f47a57d71e01f94634fd49b374e3549352362fcd91aff1"
+        },
+        "swift_tests": 18,
+        "verdict": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/native-display-7wpcxn5f/verdict.json",
+          "sha256": "522c0b18e8e57b719fa89ab1ebd9b3fb0445b882b8af758532f0e4c2f783bc4c"
+        },
+        "affected_host_consumers": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/native-display-7wpcxn5f/host-consumers-r1.json",
+          "sha256": "8befdef35a503f1f2ca325922ce809db40c0db672e02a9cdafcd076a18e61d69"
+        },
+        "unit_validation": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/native-display-7wpcxn5f/unit-validation.json",
+          "sha256": "f5fa01fe3da8236371d3fe33cb2b2f31d97b2a71ae3c36db67a9fed86d250e64"
+        },
+        "rendering": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/native-display-7wpcxn5f/rendering-qualification.json",
+          "sha256": "6a7c055b956d1325ae7aa1e4aefc7a09f31eeb98f77aff666c10ea10e4ab697b"
+        },
+        "cleanup": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/native-display-7wpcxn5f/unit-cleanup.json",
+          "sha256": "c8f8d1e4ead797401fd97a3c66bbe94db24c0929fa207e5e3f41e46f50b05043"
+        }
+      },
+      "display_bridge": {
+        "state": "REVIEWED_OFFLINE_DESIGN_NOT_IMPLEMENTED",
+        "definition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/display-bridge-sxu4adxo/definition.json",
+          "sha256": "bf8fe732d1e15723a71126c55abf76a51814a760281ea7e7cd472f9b3fbba1bc"
+        },
+        "design_review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/display-bridge-sxu4adxo/design-review.json",
+          "sha256": "f9e9a33aeda148c9432d29a7cf539354e3d106675a5819decc740f4b386f1f21"
+        },
+        "native_runs": 0,
+        "gates_closed": []
       }
     }
   },
@@ -973,5 +1051,5 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/s3-residual-review.json",
     "sha256": "358e67b60fb25744ada5ddf6902e5832285a28489492900077061fedd7799890"
   },
-  "updated_at": "2026-09-29T13:32:40.418162+00:00"
+  "updated_at": "2026-09-29T14:44:44.718667+00:00"
 }

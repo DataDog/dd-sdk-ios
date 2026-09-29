@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "state": "UIKIT_VIEW_ACTION_GATES_CLOSED_SWIFTUI_REMAINS",
-  "updated_at": "2026-09-29T12:56:10.267346+00:00",
+  "updated_at": "2026-09-29T14:34:49.283981+00:00",
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
   "gates": [
@@ -576,6 +576,10 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-r5/runtime/operator/server.json",
       "sha256": "f49d2e113500608bda8d8eb71777dd6c4ac8f26731bb566184bc337d1db8260d"
     },
-    "readiness": "AWAITING_FRESH_USER_CONFIRMATION"
+    "readiness": "OPERATOR_EXPIRED_NO_NATIVE_LAUNCH",
+    "operator_expiry": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-r5/runtime/operator-expired.json",
+      "sha256": "033e0359781aab877c31c342a707beff742b7a16ecd96675f1b0c8b7e5de2b8e"
+    }
   }
 }

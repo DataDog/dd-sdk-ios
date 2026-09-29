@@ -177,6 +177,7 @@ enum ProbeRuntime {
 
     #if DEBUG
     @MainActor private static var physicalOperationAdmission: ProbePhysicalOperationAdmission?
+    @MainActor private static var physicalOperationDisplay: ProbePhysicalOperationDisplay?
     @MainActor private static var physicalOperationPump: ProbePhysicalOperationCapturePump?
     @MainActor private static var physicalOperationPumpAttempted = false
     #endif
@@ -215,15 +216,27 @@ enum ProbeRuntime {
             let channel = try ProbePhysicalOperationChannel(runID: runID,
                 processID: ProcessInfo.processInfo.processIdentifier, profile: profile, installedCode: installedCode,
                 directory: directory, observe: input.snapshot, mode: .physicalSetup(setup),
-                prepareCleanup: { scenarioDriver?.stopForCleanup() })
+                prepareCleanup: {
+                    scenarioDriver?.stopForCleanup()
+                    physicalOperationDisplay?.retire()
+                })
             let sampler = ProbePhysicalOperationContextSampler(input: input)
             let pump = try ProbePhysicalOperationCapturePump(channel: channel, deadline: deadline,
                 sample: sampler.sample, mapper: eventRecorder.snapshot, reportFailure: { reason in
                     record("Operation capture stopped: " + reason)
                 }, cleanupState: { scenarioDriver?.cleanupState })
             if environment["DD_PROBE_PHYSICAL_OPERATION_EXECUTION"] == "1" {
+                guard let nonce = environment["DD_PROBE_OPERATION_DISPLAY_NONCE"],
+                      let decoderSource = environment["DD_PROBE_OPERATION_DISPLAY_SOURCE_SHA256"],
+                      let decoderBinary = environment["DD_PROBE_OPERATION_DISPLAY_BINARY_SHA256"] else {
+                    throw ProbePhysicalOperationDisplay.Failure.identity
+                }
+                let display = try ProbePhysicalOperationDisplay(channel: channel, registry: sceneRegistry,
+                    deadline: deadline, nonce: nonce, decoderSourceSHA256: decoderSource,
+                    decoderBinarySHA256: decoderBinary, snapshot: input.snapshot)
+                physicalOperationDisplay = display
                 physicalOperationAdmission = try .init(channel: channel, deadline: deadline,
-                    sample: sampler.sample, mapper: eventRecorder.snapshot)
+                    sample: sampler.sample, mapper: eventRecorder.snapshot, display: display)
             }
             physicalOperationPump = pump
             pump.start()

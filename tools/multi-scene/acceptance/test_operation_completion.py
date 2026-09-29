@@ -3,6 +3,7 @@ import base64
 import copy
 from pathlib import Path
 import tempfile
+import struct
 import time
 import unittest
 
@@ -49,7 +50,9 @@ class CompletionTests(unittest.TestCase):
         self.manifest['artifacts'] = {name: t.sha(raw) for name, raw in self.files.items()}
         self.manifest['finalObservationSHA256'] = self.manifest['artifacts'][self.manifest['finalObservation']]
         self.manifest['finalMapperSHA256'] = self.manifest['artifacts']['native-final-mapper.json']
-        self.remote.files = {'Documents/' + self.prefix + name: raw for name, raw in self.files.items()}
+        display = getattr(self, 'display_files', {})
+        if display: self.manifest['displayArtifacts'] = {name: t.sha(raw) for name, raw in display.items()}
+        self.remote.files = {'Documents/' + self.prefix + name: raw for name, raw in (self.files | display).items()}
         self.remote.files['Documents/' + self.prefix + c.TERMINAL] = t.encode(self.manifest)
 
     def pull(self, bundle, source, destination, label, deadline, *, check):
@@ -104,6 +107,104 @@ class CompletionTests(unittest.TestCase):
         calls = len(self.remote.calls)
         with self.assertRaises(ValueError): collector.collect()
         self.assertEqual(len(self.remote.calls), calls)
+
+    def enable_display(self):
+        self.display_files = {}
+        native = t.load(self.files['native-admission.json'], maximum=t.MAX_CONTEXT_BYTES)
+        bindings = {row['logicalSceneID']: {key: row[key] for key in
+                    ['logicalSceneID', 'nativeSceneID', 'generation', 'windowIdentity', 'rootIdentity']}
+                    for row in native['input']['input']}
+        for scene, value in bindings.items(): self.display_files['display-binding-' + scene + '.json'] = t.encode(value)
+        digests = {scene: t.sha(self.display_files['display-binding-' + scene + '.json']) for scene in bindings}
+        bits = format(struct.unpack('>Q', struct.pack('>d', self.deadline))[0], 'x')
+        previous = None; nonce = '00000000-0000-0000-0000-000000000099'
+        for index, phase in enumerate(['START', 'RUN', 'FINAL']):
+            cause = None if index == 0 else (t.sha(self.display_files['display-start-proof-consumed.json'])
+                                             if index == 1 else self.manifest['finalObservationSHA256'])
+            receipt = dict(schemaVersion=1, identity=self.identity, nonce=nonce, phase=phase, sequence=index,
+                deadlineBits=bits, bindings=bindings, bindingSHA256=digests, previousReceiptSHA256=previous,
+                causeSHA256=cause, nativeAcceptance=False)
+            name = 'display-' + phase + '.json'; self.display_files[name] = t.encode(receipt)
+            previous = t.sha(self.display_files[name])
+            consumed = dict(identity=self.identity, nonce=nonce, phase=phase, deadlineBits=bits, owners=digests,
+                            requestID='request-' + phase, nativeReceiptSHA256=previous)
+            self.display_files['display-' + phase.lower() + '-proof-consumed.json'] = t.encode(consumed)
+        sample = t.load(self.files[self.manifest['finalObservation']], maximum=t.MAX_CONTEXT_BYTES)['sample']
+        self.display_files['display-final-context.json'] = t.encode(sample)
+        self.display_files['display-completion.json'] = t.encode(dict(state='DISPLAY_PROOFS_CONSUMED', nonce=nonce,
+            runProofSHA256=t.sha(self.display_files['display-run-proof-consumed.json']),
+            finalProofSHA256=t.sha(self.display_files['display-final-proof-consumed.json']),
+            finalObservationSHA256=self.manifest['finalObservationSHA256'],
+            contextSHA256=t.sha(self.display_files['display-final-context.json'])))
+        envelope = t.load(self.publication, maximum=t.MAX_CONTEXT_BYTES)
+        proof = t.load(base64.b64decode(envelope['proof']), maximum=t.MAX_CONTEXT_BYTES)
+        proof['displayProof'] = base64.b64encode(self.display_files['display-run-proof-consumed.json']).decode()
+        proof_raw = t.encode(proof); result = t.load(base64.b64decode(envelope['result']))
+        result['proofSHA256'] = t.sha(proof_raw)
+        envelope.update(proof=base64.b64encode(proof_raw).decode(), result=base64.b64encode(t.encode(result)).decode())
+        self.publication = t.encode(envelope); self.files['native-host-consumed.json'] = self.publication
+        self.manifest['hostPublicationSHA256'] = t.sha(self.publication)
+        folder = self.host.setup.folder / 'publication'
+        published = t.load((folder / 'result.json').read_bytes()); published['payloadSHA256'] = t.sha(self.publication)
+        (folder / 'result.json').write_bytes(t.encode(published))
+        (folder / ('host-publication-' + t.sha(self.publication) + '.json')).write_bytes(self.publication)
+        self.publish()
+
+    def display_directory(self):
+        folder = Path(tempfile.mkdtemp(dir=self.host.channel.output))
+        for name, raw in self.remote.files.items(): (folder / name.removeprefix('Documents/')).write_bytes(raw)
+        return folder
+
+    def check_display_directory(self, folder):
+        return c.validate_snapshot(folder, (folder / (self.prefix + c.TERMINAL)).read_bytes(),
+            identity=self.identity, publication=self.publication, deadline=self.deadline)
+
+    def test_display_artifacts_join_local_terminal_without_claiming_pixel_acceptance(self):
+        self.enable_display(); collector = self.collector(); joined = collector.collect()
+        self.assertEqual(set(joined['manifest']['displayArtifacts']), c.DISPLAY_FILES)
+        result = t.load((collector.folder / 'result.json').read_bytes())
+        self.assertEqual(result['display'], 'PENDING'); self.assertEqual(result['overall'], 'UNQUALIFIED')
+
+    def test_each_missing_or_changed_display_artifact_rejects(self):
+        self.enable_display(); folder = self.display_directory()
+        for name in sorted(c.DISPLAY_FILES):
+            path = folder / (self.prefix + name); original = path.read_bytes()
+            for missing in [False, True]:
+                with self.subTest(name=name, missing=missing):
+                    if missing: path.unlink()
+                    else: path.write_bytes(original + b' ')
+                    with self.assertRaises(ValueError): self.check_display_directory(folder)
+                    path.write_bytes(original)
+        self.check_display_directory(folder)
+
+    def test_display_host_proof_requires_complete_terminal_hash_inventory(self):
+        self.enable_display(); raw = self.remote.files['Documents/' + self.prefix + c.TERMINAL]
+        for mode in ['missing-field', 'missing-entry', 'foreign-entry']:
+            value = t.load(raw, maximum=t.MAX_CONTEXT_BYTES)
+            if mode == 'missing-field': value.pop('displayArtifacts')
+            elif mode == 'missing-entry': value['displayArtifacts'].pop('display-FINAL.json')
+            else: value['displayArtifacts']['foreign.json'] = 'a' * 64
+            with self.assertRaises(ValueError): c.terminal(t.encode(value), self.identity, self.publication, self.deadline)
+
+    def test_display_final_receipt_must_follow_exact_collection_seal(self):
+        self.enable_display()
+        name = 'display-FINAL.json'; value = t.load(self.display_files[name]); value['causeSHA256'] = 'f' * 64
+        self.display_files[name] = t.encode(value); self.publish()
+        with self.assertRaisesRegex(ValueError, 'receipt chain'): self.check_display_directory(self.display_directory())
+
+    def test_display_final_context_rejects_changed_owner_despite_rehashed_manifest(self):
+        self.enable_display()
+        name = 'display-final-context.json'; value = t.load(self.display_files[name], maximum=t.MAX_CONTEXT_BYTES)
+        value['reads'][0]['value']['viewID'] = 'foreign-view'; self.display_files[name] = t.encode(value)
+        completed = t.load(self.display_files['display-completion.json']); completed['contextSHA256'] = t.sha(self.display_files[name])
+        self.display_files['display-completion.json'] = t.encode(completed); self.publish()
+        with self.assertRaisesRegex(ValueError, 'SDK ownership'): self.check_display_directory(self.display_directory())
+
+    def test_display_binding_rejects_foreign_native_owner(self):
+        self.enable_display()
+        name = 'display-binding-scene-A.json'; value = t.load(self.display_files[name]); value['windowIdentity'] = 'foreign-window'
+        self.display_files[name] = t.encode(value); self.publish()
+        with self.assertRaisesRegex(ValueError, 'admitted native owner'): self.check_display_directory(self.display_directory())
 
     def test_complete_interval_uses_one_directory_copy_and_does_not_close_other_verdicts(self):
         collector = self.collector(); joined = collector.collect()
