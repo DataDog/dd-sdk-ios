@@ -3024,3 +3024,148 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         )
     }
 }
+
+final class ProbeOperationStartupFreshnessTests: XCTestCase {
+    private let manager = FileManager.default
+    private var roots: [URL] = []
+
+    override func tearDownWithError() throws {
+        for root in roots { try manager.removeItem(at: root) }
+        try super.tearDownWithError()
+    }
+
+    private func root() throws -> URL {
+        let value = manager.temporaryDirectory.resolvingSymlinksInPath().appendingPathComponent(UUID().uuidString)
+        try manager.createDirectory(at: value, withIntermediateDirectories: false)
+        roots.append(value)
+        return value
+    }
+
+    private var environment: [String: String] { [
+        "DD_PROBE_PHYSICAL_OPERATION_CAPTURE": "1", "DD_PROBE_CAPTURE_JSONL": "1",
+        "MULTISCENE_CODE_IDENTITY_RUN_ID": "startup-control",
+        "MULTISCENE_CODE_IDENTITY_REVISION": String(repeating: "a", count: 40),
+        ProbeOperationStartupFreshness.nonceKey: "12345678-1234-1234-1234-123456789abc"
+    ] }
+
+    private func prepare(_ root: URL, environment: [String: String]? = nil,
+                         manager: FileManager = .default) throws -> ProbeOperationStartupFreshness.Receipt? {
+        let environment = environment ?? self.environment
+        let resolution = ProbeScenarioRunner.resolve(arguments: ["probe", "--probe-scenario",
+            ProbePhysicalOperationSetupProfile.scenarioID, "--probe-run-id", "startup-control"], environment: environment)
+        return try ProbeOperationStartupFreshness.prepareIfRequested(resolution: resolution, environment: environment,
+            container: root, processID: 123, bundleIdentifier: "test.bundle", manager: manager)
+    }
+
+    func testStartupFreshContainerBindsReceiptBeforeAnyWriter() throws {
+        let container = try root()
+        let receipt = try XCTUnwrap(prepare(container))
+        XCTAssertEqual(receipt.paths["Documents"], "ABSENT")
+        XCTAssertEqual(receipt.nonce, environment[ProbeOperationStartupFreshness.nonceKey])
+        XCTAssertEqual(receipt.boundary, "before-sdk-and-probe-writer")
+        let documents = container.appendingPathComponent("Documents")
+        XCTAssertEqual(try manager.contentsOfDirectory(atPath: documents.path), ["startup-control.startup-freshness.json"])
+        let bytes = try Data(contentsOf: documents.appendingPathComponent("startup-control.startup-freshness.json"))
+        XCTAssertEqual(try JSONDecoder().decode(ProbeOperationStartupFreshness.Receipt.self, from: bytes), receipt)
+        let attachment = XCTAttachment(data: bytes, uniformTypeIdentifier: "public.json")
+        attachment.name = "operation-startup-freshness.json"; attachment.lifetime = .keepAlways; add(attachment)
+    }
+
+    func testStartupAllowsEmptyDocumentsAndUnrelatedSystemCache() throws {
+        let container = try root()
+        try manager.createDirectory(at: container.appendingPathComponent("Documents"), withIntermediateDirectories: false)
+        let unrelated = container.appendingPathComponent("Library/Caches/system/item")
+        try manager.createDirectory(at: unrelated.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data("keep".utf8).write(to: unrelated)
+        XCTAssertEqual(try prepare(container)?.paths["Documents"], "EMPTY")
+        XCTAssertEqual(try Data(contentsOf: unrelated), Data("keep".utf8))
+    }
+
+    func testStartupRejectsPriorSDKProbeAndRunFilesWithoutDeletingThem() throws {
+        for path in ProbeOperationStartupFreshness.absentPaths + ["Documents/old.installed-code.json",
+            "Documents/old.operations-challenge.json", "Documents/.hidden"] {
+            let container = try root(), stale = container.appendingPathComponent(path)
+            try manager.createDirectory(at: stale.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try Data("original".utf8).write(to: stale)
+            XCTAssertThrowsError(try prepare(container), path)
+            XCTAssertEqual(try Data(contentsOf: stale), Data("original".utf8))
+            XCTAssertFalse(manager.fileExists(atPath: container.appendingPathComponent("Documents/startup-control.startup-freshness.json").path))
+        }
+    }
+
+    func testStartupRejectsDanglingLinksAndNonDirectoryParents() throws {
+        let parent = try root(), target = try root()
+        let alias = parent.appendingPathComponent("container-alias")
+        try manager.createSymbolicLink(at: alias, withDestinationURL: target)
+        // Match the app boundary: preserve the URL so the guard sees the link.
+        XCTAssertThrowsError(try prepare(URL(fileURLWithPath: alias.path, isDirectory: true)))
+        XCTAssertTrue(try manager.contentsOfDirectory(atPath: target.path).isEmpty)
+        for path in ["Documents", "Library", "Library/Caches", "Library/Application Support",
+                     "Library/Caches/com.datadoghq", "Library/Application Support/ProbeAcceptance"] {
+            for isLink in [true, false] {
+                let container = try root(), invalid = container.appendingPathComponent(path)
+                try manager.createDirectory(at: invalid.deletingLastPathComponent(), withIntermediateDirectories: true)
+                if isLink {
+                    try manager.createSymbolicLink(at: invalid, withDestinationURL: container.appendingPathComponent("missing"))
+                } else {
+                    try Data("keep".utf8).write(to: invalid)
+                }
+                XCTAssertThrowsError(try prepare(container), path)
+                XCTAssertNotNil(try manager.attributesOfItem(atPath: invalid.path)[.type])
+            }
+        }
+    }
+
+    func testStartupMissingOrWrongLaunchIdentityNeverCreatesReceipt() throws {
+        let changes: [(String, String?)] = [
+            ("DD_PROBE_PHYSICAL_OPERATION_CAPTURE", nil), ("DD_PROBE_CAPTURE_JSONL", nil),
+            ("MULTISCENE_CODE_IDENTITY_RUN_ID", "previous"), ("MULTISCENE_CODE_IDENTITY_REVISION", "bad"),
+            (ProbeOperationStartupFreshness.nonceKey, nil), (ProbeOperationStartupFreshness.nonceKey, "bad"),
+            ("DD_MULTI_SCENE_UNRECOGNIZED", "1")
+        ]
+        for (key, value) in changes {
+            let container = try root(); var environment = self.environment; environment[key] = value
+            XCTAssertThrowsError(try prepare(container, environment: environment), key)
+            XCTAssertTrue(try manager.contentsOfDirectory(atPath: container.path).isEmpty)
+        }
+    }
+
+    func testStartupReplayCannotReplaceOriginalReceipt() throws {
+        let container = try root()
+        _ = try prepare(container)
+        let file = container.appendingPathComponent("Documents/startup-control.startup-freshness.json")
+        let original = try Data(contentsOf: file)
+        XCTAssertThrowsError(try prepare(container))
+        var freshNonce = environment; freshNonce[ProbeOperationStartupFreshness.nonceKey] = UUID().uuidString.lowercased()
+        XCTAssertThrowsError(try prepare(container, environment: freshNonce))
+        XCTAssertEqual(try Data(contentsOf: file), original)
+    }
+
+    func testStartupInspectionOrPublicationFailureDoesNotAdmit() throws {
+        final class FailingManager: FileManager {
+            var failsInspection = true
+            override func contentsOfDirectory(atPath path: String) throws -> [String] {
+                if failsInspection { throw CocoaError(.fileReadNoPermission) }
+                return try super.contentsOfDirectory(atPath: path)
+            }
+            override func createDirectory(at url: URL, withIntermediateDirectories: Bool,
+                                          attributes: [FileAttributeKey: Any]? = nil) throws {
+                throw CocoaError(.fileWriteNoPermission)
+            }
+        }
+        let container = try root(), failing = FailingManager()
+        XCTAssertThrowsError(try prepare(container, manager: failing))
+        failing.failsInspection = false
+        XCTAssertThrowsError(try prepare(container, manager: failing))
+        XCTAssertTrue(try manager.contentsOfDirectory(atPath: container.path).isEmpty)
+    }
+
+    func testStartupGuardLeavesOtherScenariosUnchanged() throws {
+        let resolution = ProbeScenarioRunner.resolve(arguments: ["probe", "--probe-scenario", "swiftui.stack.return"], environment: [:])
+        let container = try root()
+        try Data("keep".utf8).write(to: container.appendingPathComponent("unrelated"))
+        XCTAssertNil(try ProbeOperationStartupFreshness.prepareIfRequested(resolution: resolution, environment: [:],
+            container: container, processID: 0, bundleIdentifier: nil))
+        XCTAssertEqual(try manager.contentsOfDirectory(atPath: container.path), ["unrelated"])
+    }
+}

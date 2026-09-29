@@ -155,15 +155,46 @@ def visible_owners(capture):
     return owners
 
 
+STARTUP_ABSENT_PATHS = {
+    'Library/Caches/com.datadoghq', 'Library/Application Support/com.datadoghq',
+    'Library/Caches/com.datadoghq.logs', 'Library/Caches/com.datadoghq.traces',
+    'Library/Caches/com.datadoghq.rum', 'Library/Application Support/ProbeAcceptance',
+}
+
+
+def startup_freshness(raw, identity, bundle, nonce):
+    """Validate the pre-SDK observation, never recheck emptiness after startup."""
+    value = t.load(raw)
+    t.require(set(value) == {'schemaVersion', 'runID', 'scenarioID', 'sourceRevision', 'processID',
+                            'bundleIdentifier', 'nonce', 'boundary', 'paths', 'releaseAcceptance'},
+              'startup freshness receipt shape differs')
+    t.require(isinstance(nonce, str) and str(uuid.UUID(nonce)) == nonce, 'invalid frozen startup nonce')
+    t.require(type(value['schemaVersion']) is int and value['schemaVersion'] == 1
+              and value['runID'] == identity['runID']
+              and value['scenarioID'] == identity['setupProfile']['scenario']
+              and value['sourceRevision'] == identity['profile']['sourceRevision']
+              and type(value['processID']) is int and value['processID'] == identity['processID']
+              and value['bundleIdentifier'] == bundle and value['nonce'] == nonce
+              and value['boundary'] == 'before-sdk-and-probe-writer'
+              and value['releaseAcceptance'] is False, 'stale or invalid startup identity')
+    paths = value['paths']
+    t.require(isinstance(paths, dict) and set(paths) == STARTUP_ABSENT_PATHS | {'Documents'}
+              and paths['Documents'] in ['ABSENT', 'EMPTY']
+              and all(paths[p] == 'ABSENT' for p in STARTUP_ABSENT_PATHS),
+              'startup freshness path inventory differs')
+    return value
+
+
 class HostSetup:
     """One frozen challenge, one real release, one unarmed capture and one proof.
 
     A failed proof consumes this host attempt. Cleanup requires a separate fresh
     release/native-idle path; this class never terminates or uninstalls anything.
     """
-    def __init__(self, channel, app, installed_raw, expected):
+    def __init__(self, channel, app, installed_raw, expected, *, startup_raw):
         self.channel, self.remote = channel, channel.remote
         self.app = Path(app); self.installed_raw = installed_raw
+        self.startup_raw = bytes(startup_raw)
         self.expected = t.load(t.encode(expected))
         self.folder = channel.output / 'host-setup'
         self.folder.mkdir()
@@ -176,6 +207,8 @@ class HostSetup:
                 setup_profile=expected['setup_profile'])
             t.require(self.remote.identifier == expected['device'] and channel.bundle == expected['product']['bundleIdentifier'],
                       'host channel device or container differs')
+            t.save(self.folder / 'startup-freshness.json', startup_raw)
+            startup_freshness(startup_raw, self.identity, channel.bundle, self.expected['startup_nonce'])
             self.request_raw = t.encode(release_request(self.identity, channel.deadline))
             t.save(self.folder / 'release-request.json', self.request_raw)
         except Exception as error:
@@ -224,6 +257,8 @@ class HostSetup:
         self.used = True
         try:
             self.live()
+            t.require(read(self.folder / 'startup-freshness.json') == self.startup_raw,
+                      'startup freshness observation changed before setup')
             t.save(self.folder / 'release-ack.json', acknowledgement_raw)
             request = t.load(self.request_raw); acknowledgement = t.load(acknowledgement_raw)
             t.require(request['phase'] == 'operations.setup' and request['run_id'] == self.identity['runID']

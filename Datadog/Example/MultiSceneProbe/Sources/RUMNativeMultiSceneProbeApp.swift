@@ -23,20 +23,25 @@ struct RUMNativeMultiSceneProbeApp: App {
 
     init() {
         do {
+            try ProbeOperationStartupFreshness.prepareIfRequested(
+                resolution: ProbeRuntime.resolution, environment: ProcessInfo.processInfo.environment,
+                container: URL(fileURLWithPath: NSHomeDirectory(), isDirectory: true),
+                processID: ProcessInfo.processInfo.processIdentifier, bundleIdentifier: Bundle.main.bundleIdentifier
+            )
             try InstalledCodeReceipt.writeIfRequested(runID: ProbeRuntime.runID)
             installedCodeVerified = true
             ProbeRuntime.configureDatadog()
             ProbeRuntime.installPhysicalDisconnectWitnessIfRequested()
         } catch {
             installedCodeVerified = false
-            print("INVALID: installed code identity could not be recorded")
+            print("INVALID: probe startup identity or freshness could not be verified")
         }
     }
 
     var body: some Scene {
         WindowGroup(id: ProbeWindow.windowGroupID, for: ProbeWindow.self) { $window in
             if !installedCodeVerified {
-                Text("Invalid installed code identity")
+                Text("Invalid probe startup identity or freshness")
             } else if ProbeRuntime.isRunnable {
                 if ProbeFatalContract.isRecovery(ProbeRuntime.resolution.scenario?.identifier ?? "") {
                     Text("Crash report recovery").task { await ProbeFatalAcceptance.recover() }

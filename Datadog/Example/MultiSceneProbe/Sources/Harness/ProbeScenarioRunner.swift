@@ -768,3 +768,96 @@ enum ProbeScenarioRunner {
         return parsed
     }
 }
+
+/// H06-only startup evidence. Inspect before either the recorder or SDK can
+/// create/replace files. This is a scoped artifact check, not container erasure.
+enum ProbeOperationStartupFreshness {
+    enum Failure: Error { case identity, stale, filesystem, publication }
+    static let nonceKey = "DD_PROBE_OPERATION_STARTUP_NONCE"
+    static let absentPaths = [
+        "Library/Caches/com.datadoghq",
+        "Library/Application Support/com.datadoghq",
+        "Library/Caches/com.datadoghq.logs",
+        "Library/Caches/com.datadoghq.traces",
+        "Library/Caches/com.datadoghq.rum",
+        "Library/Application Support/ProbeAcceptance"
+    ]
+
+    struct Receipt: Codable, Equatable {
+        let schemaVersion: Int
+        let runID: String
+        let scenarioID: String
+        let sourceRevision: String
+        let processID: Int32
+        let bundleIdentifier: String
+        let nonce: String
+        let boundary: String
+        let paths: [String: String]
+        let releaseAcceptance: Bool
+    }
+
+    @discardableResult
+    static func prepareIfRequested(
+        resolution: ProbeScenarioResolution, environment: [String: String],
+        container: URL, processID: Int32, bundleIdentifier: String?,
+        manager: FileManager = .default
+    ) throws -> Receipt? {
+        guard resolution.scenario?.identifier == ProbePhysicalOperationSetupProfile.scenarioID else { return nil }
+        let runID = resolution.manifest.runID
+        guard resolution.isValid, resolution.manifest.runMode == .clean,
+              environment["DD_PROBE_PHYSICAL_OPERATION_CAPTURE"] == "1",
+              environment["DD_PROBE_CAPTURE_JSONL"] == "1",
+              environment["MULTISCENE_CODE_IDENTITY_RUN_ID"] == runID,
+              runID.utf8.count <= 128,
+              runID.range(of: "^[a-z0-9-]+$", options: .regularExpression) != nil,
+              let revision = environment["MULTISCENE_CODE_IDENTITY_REVISION"],
+              revision.range(of: "^[a-f0-9]{40}$", options: .regularExpression) != nil,
+              let nonce = environment[nonceKey],
+              UUID(uuidString: nonce)?.uuidString.lowercased() == nonce,
+              processID > 0, let bundleIdentifier, !bundleIdentifier.isEmpty, container.isFileURL else {
+            throw Failure.identity
+        }
+        try directory(container, manager: manager)
+        var paths: [String: String] = [:]
+        for path in ["Documents"] + absentPaths {
+            var current = container
+            var missing = false
+            let components = path.split(separator: "/").map(String.init)
+            for (index, component) in components.enumerated() {
+                let entries = try manager.contentsOfDirectory(atPath: current.path)
+                if !entries.contains(component) { missing = true; break }
+                current.appendPathComponent(component)
+                if index == components.count - 1 && path != "Documents" { throw Failure.stale }
+                try directory(current, manager: manager)
+            }
+            if missing {
+                paths[path] = "ABSENT"
+            } else {
+                guard try manager.contentsOfDirectory(atPath: current.path).isEmpty else { throw Failure.stale }
+                paths[path] = "EMPTY"
+            }
+        }
+        let receipt = Receipt(schemaVersion: 1, runID: runID, scenarioID: ProbePhysicalOperationSetupProfile.scenarioID,
+            sourceRevision: revision, processID: processID, bundleIdentifier: bundleIdentifier, nonce: nonce,
+            boundary: "before-sdk-and-probe-writer", paths: paths, releaseAcceptance: false)
+        let documents = container.appendingPathComponent("Documents", isDirectory: true)
+        if paths["Documents"] == "ABSENT" {
+            try manager.createDirectory(at: documents, withIntermediateDirectories: false)
+        }
+        let destination = documents.appendingPathComponent(runID + ".startup-freshness.json")
+        let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
+        let raw = try encoder.encode(receipt)
+        // A failed/partial write is retained and blocks the next startup.
+        // No SDK or recorder work occurs until the exact bytes are readable.
+        try raw.write(to: destination, options: .withoutOverwriting)
+        guard try Data(contentsOf: destination) == raw else { throw Failure.publication }
+        return receipt
+    }
+
+    private static func directory(_ url: URL, manager: FileManager) throws {
+        // attributesOfItem reports links themselves, including dangling links.
+        guard try manager.attributesOfItem(atPath: url.path)[.type] as? FileAttributeType == .typeDirectory else {
+            throw Failure.filesystem
+        }
+    }
+}

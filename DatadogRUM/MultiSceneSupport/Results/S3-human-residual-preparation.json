@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "Finite source-backed preparation of residual S3 human scenarios",
-  "state": "H06_COLLECTION_CLEANUP_PREPARED_STARTUP_DISPLAY_RUNNER_PENDING",
+  "state": "H06_STARTUP_CAPTURE_BACKEND_CLEANUP_PREPARED_DISPLAY_RUNNER_PENDING",
   "defined_at": "2026-09-28T13:49:45.760600+00:00",
   "defined_before_implementation": true,
   "owner": "Root",
@@ -95,9 +95,9 @@
         "operations.cross-scene.physical-setup"
       ],
       "decisive_test": "Existing eight calls/four Operations: success A\u2192B, failure A\u2192B(error), parallel alpha A\u2192A and beta B\u2192B ending beta first. Preserve exact per-step view IDs and two visible native scenes through all calls.",
-      "missing": "Implement the separate pre-SDK freshness guard against stale SDK/fixture artifacts; integrate reviewed capture/backend/cleanup with independent whole-interval display and real operator workflow, then qualify the physical adapter once. Direct container absence is unverified; physical cleanup uses the reviewed OS-uninstall disposition.",
+      "missing": "Integrate reviewed startup/capture/backend/cleanup with independent whole-interval display and real operator workflow, then qualify the physical adapter once. Startup controls are not physical startup evidence; private app-container cleanup uses the scoped OS-uninstall disposition.",
       "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
-      "state": "CAPTURE_BACKEND_CLEANUP_CONTROLLED_RUNNER_PENDING",
+      "state": "STARTUP_CAPTURE_BACKEND_CLEANUP_CONTROLLED_RUNNER_PENDING",
       "historical_fixture": "operations.cross-scene.lifecycle"
     },
     {
@@ -350,7 +350,7 @@
     "builds_admitted": 0,
     "native_admitted": false,
     "budget_policy": "Freeze setup/API/collection/cleanup limits from qualified observed adapter latencies before execution; no active deadline extension. Strict timing is diagnostic.",
-    "next": "Implement and review H06 startup freshness before SDK initialization, then integrate display/operator workflow and frozen phase budgets with prepared capture/backend/cleanup. Qualify the physical adapter once before human admission. No human H06 session is admitted.",
+    "next": "Integrate whole-interval display/operator workflow and frozen phase budgets with the reviewed startup/capture/backend/cleanup components, then qualify the physical adapter once before human admission. No human H06 session is admitted.",
     "scope_increment": {
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_",
       "definition": {
@@ -843,6 +843,74 @@
           "Keychain, shared containers, cloud data and unqueried filesystem state remain outside the private app-container disposition.",
           "Existing startup installed-code receipt rejects its current run ID but does not yet certify absence of older SDK/fixture state. Implement this separate guard before native admission."
         ]
+      },
+      "startup_freshness": {
+        "state": "STARTUP_FRESHNESS_PREPARATION_PASS",
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/startup-freshness-iy8bidp5",
+        "definition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/startup-freshness-iy8bidp5/definition.json",
+          "sha256": "21c16f62c92e4e222014b7c0caf768f6342c5a2d5412bc4c258c9e743f4dc3de"
+        },
+        "design_review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/startup-freshness-iy8bidp5/design-review.json",
+          "sha256": "e1197ec8b821b574e2df61069b212f0dfa47846b26228e9800d8c1adb21dfdf5"
+        },
+        "original_unit_attempt": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/startup-freshness-iy8bidp5/unit-validation.json",
+          "sha256": "6a4b12b007a57a55ffbb9d0c899cb2996908fc19e3df3840e9672ebb2608f9c2"
+        },
+        "original_cleanup": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/startup-freshness-iy8bidp5/cleanup.json",
+          "sha256": "95ec41563a60785381210f4a863e4fff6b7396d86f3310a9175fcf475cc6dbb0"
+        },
+        "corrected_unit_attempt": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/startup-freshness-iy8bidp5/empty-documents-a0mh9h9o/unit-validation.json",
+          "sha256": "2604f9b843033f55d96065b7adb4f5e0aef70504d9f1837e28806eb0980c9476"
+        },
+        "corrected_cleanup": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/startup-freshness-iy8bidp5/empty-documents-a0mh9h9o/cleanup.json",
+          "sha256": "ceedbe7bf3d2ece095c37456ae4dd9460a26c05f8bf7aa944fd9ccba4155d32d"
+        },
+        "host_controls": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/startup-freshness-iy8bidp5/host-controls.json",
+          "sha256": "fa2de771fd448cc35c56038450f16e8b461a5bad96099537e45e3e91f025e86b"
+        },
+        "swift_host_codec": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/startup-freshness-iy8bidp5/empty-documents-a0mh9h9o/swift-host-codec.json",
+          "sha256": "d7e58a6cd44e65ea00cd6612e2b9308a80c48bb62eab60f9edb18424c1b037b8"
+        },
+        "warnings": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/startup-freshness-iy8bidp5/empty-documents-a0mh9h9o/warning-disposition.json",
+          "sha256": "20bbd89a57b3c30699d326655d6a48a1b34703ae04f3c3693b3585177ccf3a80"
+        },
+        "counts": {
+          "host_controls_passed": 42,
+          "original_swift_passed": 7,
+          "original_swift_failed": 1,
+          "corrected_swift_passed": 4,
+          "unique_swift_controls_qualified": 8,
+          "app_compiler_sources": 39,
+          "unit_compiler_sources": 29,
+          "frozen_files": 669
+        },
+        "native_scenario_runs": 0,
+        "backend_queries": 0,
+        "gates_closed": [],
+        "release_acceptance": false,
+        "limits": [
+          "Original7/8 remains FAIL_FIXTURE_IMPLEMENTATION; corrected4/4 plus four unaffected original passes qualify eight unique controls. No failed run relabeled.",
+          "Original result-decoder database-migration collision retained; finalized same-run evidence parsed sequentially without a native rerun.",
+          "New test Sendable warning removed. Existing recorder conversion warning repeated twice at unchanged source; raw90-warning inventory and multiplicity delta preserved.",
+          "No physical startup or whole-interval display qualification; no operator session admitted. Ordinary installed-code schema and SDK source unchanged."
+        ],
+        "verdict": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/startup-freshness-iy8bidp5/verdict.json",
+          "sha256": "dd9d7fd52cf81dbed3cb102e51de036a06c8b5b662c94d919c9e81226aabf825"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/startup-freshness-iy8bidp5/final-review.json",
+          "sha256": "b813f3d084dffe340d1e521e10b5db7023f07ca9e10d7a6da8937bbcaf3e5fc4"
+        }
       }
     }
   },
@@ -858,5 +926,5 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/s3-residual-review.json",
     "sha256": "358e67b60fb25744ada5ddf6902e5832285a28489492900077061fedd7799890"
   },
-  "updated_at": "2026-09-29T10:18:31.406311+00:00"
+  "updated_at": "2026-09-29T10:49:53.948637+00:00"
 }

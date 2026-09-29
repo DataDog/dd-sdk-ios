@@ -516,11 +516,20 @@ cloud data and unqueried filesystem state are outside this disposition. Apple's
 [deletion guidance](https://support.apple.com/guide/ipad/remove-or-delete-apps-ipad0aed1df8/ipados)
 supports the OS contract; a generic file-list error supplies no absence proof.
 
-Before SDK admission, require a fresh run/nonce and a source-bound startup receipt
-that rejects prior SDK/fixture artifacts, separately from uninstall evidence.
-This guard remains unqualified; do not admit H06 until it and the physical adapter
-are qualified. Old attempt verdicts stay unchanged. The collector never grants
-release acceptance on cleanup alone.
+H06 startup requires `DD_PROBE_OPERATION_STARTUP_NONCE` (a fresh lowercase UUID),
+clean run mode, both capture flags and matching installed-code run/revision.
+`ProbeOperationStartupFreshness` runs before the code receipt, recorder and SDK.
+It requires absent/empty Documents and absent source-known SDK/probe roots,
+rejecting links, invalid parents and read errors without deleting evidence.
+`operation_setup.HostSetup` requires the actual startup receipt as `startup_raw`
+and the frozen `startup_nonce`; it checks them before requesting operator input
+and binds the bytes through publication. Post-initialization paths need not stay empty.
+
+The guard's focused controls and Swift/host codec are qualified at the
+[preparation owner](../../../DatadogRUM/MultiSceneSupport/Results/S3-human-residual-preparation.json).
+Physical startup, display capture and the integrated adapter remain unqualified;
+no H06 human admission follows from these unit checks. Old attempt verdicts stay
+unchanged. Cleanup alone never grants release acceptance.
 
 `operation_backend.Backend` connects the sealed completion/recorder to the existing
 complete count/page transport and ownership check. It preserves the broad

@@ -7,6 +7,7 @@ import struct
 import tempfile
 import time
 import unittest
+import uuid
 from unittest.mock import patch
 
 import operation_setup as s
@@ -98,8 +99,12 @@ class HostSetupTests(unittest.TestCase):
         self.remote = Device(self.identity, self.root)
         self.channel = t.Channel(self.remote, 'test.bundle', self.root / 'channel', self.identity, deadline=time.time() + 1800)
         self.expected = dict(run_id=self.identity['runID'], process_id=123, device=self.remote.identifier, udid='physical-udid',
-            profile=args['profile'], setup_profile=args['setup_profile'], product=self.product)
-        self.setup = s.HostSetup(self.channel, self.app, self.code, self.expected)
+            profile=args['profile'], setup_profile=args['setup_profile'], product=self.product, startup_nonce=str(uuid.uuid4()))
+        self.startup = t.encode(dict(schemaVersion=1, runID=self.identity['runID'], processID=123,
+            sourceRevision=self.identity['profile']['sourceRevision'], scenarioID=args['setup_profile']['scenario'],
+            bundleIdentifier='test.bundle', nonce=self.expected['startup_nonce'], boundary='before-sdk-and-probe-writer',
+            paths={**{p:'ABSENT' for p in s.STARTUP_ABSENT_PATHS}, 'Documents':'EMPTY'}, releaseAcceptance=False))
+        self.setup = s.HostSetup(self.channel, self.app, self.code, self.expected, startup_raw=self.startup)
         self.command_error = False; self.host_calls = 0; self.host_change = False
         self.addCleanup(patch.stopall)
         patch.object(s, 'command', side_effect=self.host_command).start()
@@ -140,6 +145,48 @@ class HostSetupTests(unittest.TestCase):
         self.assertFalse((self.setup.folder / 'result.json').exists())
         if before_capture: self.assertFalse(any(x[0] == 'push' for x in self.remote.calls))
 
+    def test_startup_identity_inventory_and_nonce_precede_release_request(self):
+        original = t.load(self.startup)
+        changes = [('schemaVersion', True), ('runID', 'old'), ('scenarioID', 'other'),
+                   ('sourceRevision', '0'*40), ('processID', True), ('bundleIdentifier', 'other'),
+                   ('nonce', str(uuid.uuid4())), ('boundary', 'after-sdk'), ('releaseAcceptance', True),
+                   ('paths', {'Documents':'EMPTY'})]
+        for index, (field, value) in enumerate(changes):
+            with self.subTest(field=field):
+                raw = t.encode(dict(original, **{field:value}))
+                channel = t.Channel(self.remote, 'test.bundle', self.root / ('startup-bad-' + str(index)),
+                                    self.identity, deadline=self.channel.deadline)
+                with self.assertRaises(ValueError):
+                    s.HostSetup(channel, self.app, self.code, self.expected, startup_raw=raw)
+                folder = channel.output / 'host-setup'
+                self.assertEqual((folder / 'startup-freshness.json').read_bytes(), raw)
+                self.assertTrue((folder / 'failure.json').exists())
+                self.assertFalse((folder / 'release-request.json').exists())
+        self.assertEqual(self.remote.calls, [])
+
+    def test_startup_paths_reject_stale_or_unobserved_state(self):
+        for path in [*s.STARTUP_ABSENT_PATHS, 'Documents']:
+            with self.subTest(path=path):
+                value = t.load(self.startup); value['paths'][path] = 'NOT_CHECKED'
+                with self.assertRaises(ValueError):
+                    s.startup_freshness(t.encode(value), self.identity, 'test.bundle', self.expected['startup_nonce'])
+        for problem in [b'', b'{}', self.startup[:-1]]:
+            with self.assertRaises(ValueError):
+                s.startup_freshness(problem, self.identity, 'test.bundle', self.expected['startup_nonce'])
+
+    def test_startup_receipt_cannot_change_while_waiting_for_operator(self):
+        (self.setup.folder / 'startup-freshness.json').write_bytes(b'{}')
+        self.invalid(before_capture=True)
+        self.assertEqual(self.remote.calls, [])
+
+    def test_startup_receipt_digest_is_bound_to_proof_and_publication(self):
+        proof = self.collect()
+        self.assertEqual(proof['artifacts']['startup-freshness.json'], t.sha(self.startup))
+        (self.setup.folder / 'startup-freshness.json').write_bytes(b'{}')
+        before = len(self.remote.calls)
+        with self.assertRaises(ValueError): self.setup.publish()
+        self.assertEqual(len(self.remote.calls), before)
+
     def test_entrypoint_joins_actual_receipts_without_admitting_sdk_or_cleanup(self):
         result = self.collect()
         self.assertEqual(result['state'], 'HOST_PROOF_PREPARED')
@@ -159,7 +206,7 @@ class HostSetupTests(unittest.TestCase):
                 before = len(self.remote.calls)
                 channel = t.Channel(self.remote, 'test.bundle', self.root / ('bad-release-' + field),
                                     self.identity, deadline=self.channel.deadline)
-                self.setup = s.HostSetup(channel, self.app, self.code, self.expected)
+                self.setup = s.HostSetup(channel, self.app, self.code, self.expected, startup_raw=self.startup)
                 # Match this fresh request before varying exactly one field.
                 bad = t.load(self.ack()); bad[field] = value
                 self.invalid(lambda:self.setup.collect(t.encode(bad), self.review), before_capture=True)
@@ -168,7 +215,7 @@ class HostSetupTests(unittest.TestCase):
     def test_reused_release_and_host_setup_cannot_capture_twice(self):
         self.collect(); count = len(self.remote.calls)
         with self.assertRaises(ValueError): self.collect()
-        with self.assertRaises(FileExistsError): s.HostSetup(self.channel, self.app, self.code, self.expected)
+        with self.assertRaises(FileExistsError): s.HostSetup(self.channel, self.app, self.code, self.expected, startup_raw=self.startup)
         self.assertEqual(count, len(self.remote.calls))
 
     def test_unsigned_product_stops_before_device_and_capture(self):
@@ -292,7 +339,7 @@ class HostSetupTests(unittest.TestCase):
         channel = t.Channel(self.remote, 'test.bundle', self.root / 'wrong-profile', self.identity,
                             deadline=self.channel.deadline)
         expected = copy.deepcopy(self.expected); expected['profile']['sourceRevision'] = 'f' * 40
-        with self.assertRaises(ValueError): s.HostSetup(channel, self.app, self.code, expected)
+        with self.assertRaises(ValueError): s.HostSetup(channel, self.app, self.code, expected, startup_raw=self.startup)
         self.assertTrue((channel.output / 'host-setup' / 'failure.json').is_file())
         self.assertFalse((channel.output / 'host-setup' / 'release-request.json').exists())
         self.assertEqual(self.remote.calls, [])
