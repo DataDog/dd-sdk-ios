@@ -480,8 +480,16 @@ display, backend and cleanup pending, and overall acceptance unqualified.
 Twenty-three host controls and two affected Swift controls pass; actual Swift
 fixture encoding also passes host replay. Physical directory layout needs its first
 bounded qualification, with no silent per-file fallback. SDK/input/mapper doubles
-do not establish physical ownership. Full recorder parsing and the display/backend/
-cleanup orchestration remain required.
+do not establish physical ownership.
+
+`operation_recorder.Recorder` joins the native snapshots to the complete recorder
+prefix through its semantic terminal. It binds the original scenario bytes and
+its one completion condition, preserves later mapper/lifecycle records separately,
+and derives backend IDs from native owners. Partial terminal publication rereads
+the same file within the original deadline; it never recopies the directory or
+repeats native work. Twenty-six fabricated controls pass. Display/backend/cleanup
+still remain pending. Before full-runner admission, cleanup must seal active
+execution and prove the driver stopped, independently of release/idle capture.
 
 `operation_ownership.validate` checks eight raw steps, four reduced Operations,
 exact ID joins, failure reason and A/B endpoints using independently captured View,
