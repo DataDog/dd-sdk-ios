@@ -505,6 +505,14 @@ stays distinct from unverified container absence; generic file-list errors earn
 no absence proof. Full display/backend integration and physical qualification
 remain required.
 
+`operation_backend.Backend` connects the sealed completion/recorder to the existing
+complete count/page transport and ownership check. It preserves the broad
+application/session Operation inventory, actual tool returns and every failed or
+pending attempt. Indexing retries keep the native-derived UTC interval and
+original cutoff, with fresh transport identities; they perform no native work.
+Twenty-six offline controls and review pass. Display, cleanup and overall
+acceptance remain separate; this collector has no native or teardown authority.
+
 `operation_ownership.validate` checks eight raw steps, four reduced Operations,
 exact ID joins, failure reason and A/B endpoints using independently captured View,
 application and service IDs. Raw steps bypass public mappers and custom source/step

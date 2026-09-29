@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "Finite source-backed preparation of residual S3 human scenarios",
-  "state": "H06_HOST_CLEANUP_PREPARED_FULL_RUNNER_PENDING",
+  "state": "H06_BACKEND_COLLECTION_PREPARED_FULL_RUNNER_PENDING",
   "defined_at": "2026-09-28T13:49:45.760600+00:00",
   "defined_before_implementation": true,
   "owner": "Root",
@@ -95,9 +95,9 @@
         "operations.cross-scene.physical-setup"
       ],
       "decisive_test": "Existing eight calls/four Operations: success A\u2192B, failure A\u2192B(error), parallel alpha A\u2192A and beta B\u2192B ending beta first. Preserve exact per-step view IDs and two visible native scenes through all calls.",
-      "missing": "Stop active admission before cleanup capture, prove driver stopped, and integrate reviewed setup/completion/recorder with whole-interval display, backend ownership and release/idle teardown. Actual physical transfer and SDK dispatch remain unqualified.",
+      "missing": "Integrate reviewed setup/completion/recorder, backend collection and release/idle teardown with independent whole-interval display proof and the real operator workflow. Disposition container absence and qualify the physical adapter before human admission; actual physical transfer and SDK dispatch remain unqualified.",
       "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
-      "state": "NATIVE_AND_RECORDER_CONTROLLED_RUNNER_PENDING",
+      "state": "CAPTURE_BACKEND_CLEANUP_CONTROLLED_RUNNER_PENDING",
       "historical_fixture": "operations.cross-scene.lifecycle"
     },
     {
@@ -350,7 +350,7 @@
     "builds_admitted": 0,
     "native_admitted": false,
     "budget_policy": "Freeze setup/API/collection/cleanup limits from qualified observed adapter latencies before execution; no active deadline extension. Strict timing is diagnostic.",
-    "next": "Integrate prepared setup/completion/recorder/host-cleanup with independent display interval and backend ownership, bind real operator page and phase budgets before one physical adapter qualification. Explicitly disposition the separate container-absence limitation before native admission. No human H06 session is admitted.",
+    "next": "Integrate prepared setup/completion/recorder/backend/host-cleanup with independent display interval, real operator page and frozen phase budgets. Disposition container absence, then qualify the physical adapter once before human admission. No human H06 session is admitted.",
     "scope_increment": {
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_",
       "definition": {
@@ -792,6 +792,28 @@
           "Task app/process absence is separate from container absence. Generic CoreDevice file-list failure is diagnostic, containerAbsence stays UNVERIFIED and release acceptance stays false.",
           "Full runner must bind setup/display interval, recorder, backend and cleanup before one physical qualification or a human session."
         ]
+      },
+      "backend_collection": {
+        "state": "BACKEND_COLLECTION_PREPARATION_PASS",
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/backend-collection-2xmvvgjm",
+        "verdict": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/backend-collection-2xmvvgjm/verdict.json",
+          "sha256": "2e38176df338384b31284de4547eca6b1c5b104fcdfe5515c751613f7e0288ad"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/backend-collection-2xmvvgjm/final-review.json",
+          "sha256": "cc1b1325fb926276a33b446d0f17876f614855961fcde33cf15dc4078cfec7c3"
+        },
+        "host_controls": 26,
+        "builds": 0,
+        "native_runs": 0,
+        "backend_queries": 0,
+        "gates_closed": [],
+        "limits": [
+          "Fabricated native and connector observations only; no live Operation backend retrieval or physical qualification.",
+          "Complete application/session Operation union is not filtered by run/service; every row must satisfy native-bound ownership. Only saved PENDING inventories permit another query under original dates/cutoff.",
+          "Real operator/display integration, container disposition and physical adapter qualification remain before any human session."
+        ]
       }
     }
   },
@@ -807,5 +829,5 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/s3-residual-review.json",
     "sha256": "358e67b60fb25744ada5ddf6902e5832285a28489492900077061fedd7799890"
   },
-  "updated_at": "2026-09-29T09:54:09.821201+00:00"
+  "updated_at": "2026-09-29T10:09:27.496387+00:00"
 }
