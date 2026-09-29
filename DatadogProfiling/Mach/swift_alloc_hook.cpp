@@ -130,10 +130,8 @@ private:
   std::atomic<uint64_t> class_deallocations_{0};
   std::atomic<uint64_t> object_deallocations_{0};
   std::atomic<uint64_t> reentrant_skips_{0};
-  static thread_local bool observing_callback_;
+  inline static thread_local bool observing_callback_ = false;
 };
-
-thread_local bool SwiftAllocHook::observing_callback_ = false;
 
 // Fishhook and observer callbacks are defined after the class implementation.
 HeapObject *intercept_alloc(HeapMetadata *, size_t, size_t);
