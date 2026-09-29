@@ -4,7 +4,7 @@
   "gate": "S3:H04",
   "owner": "Root",
   "reviewer": "/root/c06_runtime_plan",
-  "state": "REVIEWED_FIXTURE_ORACLE_AND_COMPILER_PREPARATION_PASS",
+  "state": "REVIEWED_FIXTURE_BUILD_AND_HOST_COLLECTION_PREPARATION_PASS",
   "defined_at": "2026-09-29T18:46:46.665215+00:00",
   "defined_before_implementation": true,
   "new_experiment": false,
@@ -93,11 +93,27 @@
     "offline_tests": 16,
     "build_attempts": 1
   },
-  "updated_at": "2026-09-29T23:09:58.204478+00:00",
+  "updated_at": "2026-09-29T23:22:26.645813+00:00",
   "remaining": [
-    "Compose fresh single-use run claim, physical transport and startup/product identity with the sealed recorder prefix.",
-    "Preserve raw post-terminal delivery/cleanup separately; it may not repair missing scenario evidence.",
-    "Complete source-bound backend pagination/count publication before removal, then release/native-idle task-only cleanup.",
-    "Review the composed runner before one physical cell; no human invitation before September30 09:00 Paris and fresh readiness afterward."
-  ]
+    "Compose a single-use native start/stop channel with installed-process proof and fresh input idle before task-only cleanup.",
+    "Keep native, backend and cleanup verdicts separate; backend collection precedes uninstall without forced flush.",
+    "Review and freeze the composed runner and signed physical product before the one H04 cell.",
+    "No human invitation before September30 09:00 Paris; fresh readiness remains required."
+  ],
+  "collection": {
+    "verdict": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-collection-7qrhzpip/verdict.json",
+      "sha256": "c65bc08e90adc4e8805cb22f834388f63b107362d35b94cd3a27e9926e46f504"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-collection-7qrhzpip/review.json",
+      "sha256": "159ea30f92e574892b29f0e8951fddd7077b1d2d29b91f2b1dc6dede38e52bfc"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-collection-7qrhzpip/controls-r1.json",
+      "sha256": "776451476527a9dde286751878b0d5c3b502dcbd4c815a94d84795bd401b31dd"
+    },
+    "offline_tests": 23,
+    "scope": "Exact recorder prefix and later raw rows, fixed-interval backend transport publication and partial/complete ownership joins. No native/connector execution."
+  }
 }

@@ -399,6 +399,15 @@ are preparation only. Physical transport, backend publication and release/idle
 cleanup must compose under review before execution. No H10, disconnect, concurrent
 visibility or physical-Duo credit follows.
 
+`focus_activation_recorder` seals the first exact semantic prefix and retains the
+original tail. Complete later rows may contain ordinary updates for known Views
+or native scenes; new work, errors or guards reject. Partial trailing bytes remain
+pending on the same file. `focus_activation_backend` uses the existing durable
+count/page transport with a fixed application/session query and interval. It checks
+present owners before classifying missing expected IDs as pending, even when
+incidental rows make the total large enough. Neither helper authorizes native
+work, teardown or a release verdict.
+
 ### H06 Operation preparation
 
 The [owning record](../../../DatadogRUM/MultiSceneSupport/Results/S3-human-residual-preparation.json)
