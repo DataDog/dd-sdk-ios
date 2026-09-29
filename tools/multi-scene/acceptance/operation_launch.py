@@ -17,6 +17,8 @@ import operation_cleanup as cleanup
 import operation_display as pixels
 import operation_media as media
 import operation_operator as operator
+import operation_quicktime as quicktime
+import operation_quicktime_session as quicktime_session
 import operation_session as session
 import operation_setup as setup
 import operation_transport as t
@@ -197,14 +199,19 @@ class Launcher:
         self.live(); self.app = product(self.plan)
         current_toolchain = toolchain(self.plan, self.environment)
         a = self.admission
-        t.require(a['state'] == 'NATIVE_ADMITTED' and a['scope'] == 'H06_PHYSICAL_LAUNCH'
+        qt_mode = 'recorder' in self.plan
+        scope = 'H06_QUICKTIME_FIRST_CELL' if qt_mode else 'H06_PHYSICAL_LAUNCH'
+        t.require(a['state'] == 'NATIVE_ADMITTED' and a['scope'] == scope
                   and a['reviewer'] == REVIEWER and a['planSHA256'] == t.sha(self.plan_raw),
                   'native launch not separately reviewed')
-        qualified = t.load(setup.read(reference(a['adapterQualification'])))
-        t.require(qualified['state'] == 'PHYSICAL_ADAPTER_QUALIFIED'
-                  and qualified['device'] == self.remote.identifier
-                  and qualified['helpers'] == self.plan['helpers']
-                  and qualified['toolchain'] == current_toolchain, 'physical adapter qualification missing or stale')
+        if qt_mode:
+            qualified = quicktime_session.preparation(self.plan, a)
+        else:
+            qualified = t.load(setup.read(reference(a['adapterQualification'])))
+            t.require(qualified['state'] == 'PHYSICAL_ADAPTER_QUALIFIED'
+                      and qualified['device'] == self.remote.identifier
+                      and qualified['helpers'] == self.plan['helpers']
+                      and qualified['toolchain'] == current_toolchain, 'physical adapter qualification missing or stale')
         self.server_raw = launch_readiness(self.directory,self.readiness_raw,self.plan_raw,self.admission_raw,time.time())
         self.page_identity = session.page_health(self.directory,self.server_raw,self.cutoffs['launchUntil'],self.folder/'page-before')
         t.save(self.folder/'readiness-consumed.json',t.encode(dict(sha256=t.sha(self.readiness_raw),at=time.time())))
@@ -221,6 +228,19 @@ class Launcher:
                   build=properties['osBuildUpdate']), 'physical adapter OS qualification differs')
         raw,_ = self.observed.command(['device','info','lockState'],'startup-lock')
         t.require(raw['result']['passcodeRequired'] is False and raw['result']['unlockedSinceBoot'] is True, 'physical iPad locked')
+        if qt_mode:
+            observed = a['recorderObservation']
+            t.require(set(observed) == {'inventory', 'pid', 'initialAX', 'toolCallID', 'originalAudio'},
+                      'QuickTime initial observation incomplete')
+            self.quicktime = quicktime.Recorder(self.folder/'quicktime', run_id=self.run_id,
+                device=self.remote.identifier, inventory=observed['inventory'], pid=observed['pid'],
+                decoder=self.plan['decoder']['binary'], decoder_source_sha256=self.plan['decoder']['source']['sha256'],
+                record_deadline=self.cutoffs['recordUntil'], evidence_deadline=self.cutoffs['stopUntil'],
+                restore_deadline=self.cutoffs['executionUntil'], original_audio=observed['originalAudio'],
+                developer_directory=current_toolchain['developer'],
+                initial_ax=setup.read(reference(observed['initialAX']), t.MAX_CONTEXT_BYTES),
+                initial_tool_call_id=observed['toolCallID'])
+            t.require(self.quicktime.binding['device']['udid'] == self.plan['udid'], 'QuickTime iPad differs')
         self.absence('before-install'); self.absence_proved = True
 
     def absence(self, label):
@@ -255,8 +275,11 @@ class Launcher:
             product=self.plan['product'],startup_nonce=self.startup_nonce)
         host = setup.HostSetup(channel,self.app,code,expected,startup_raw=startup)
         prompts = operator.Operator(self.directory,channel,server_raw=self.server_raw)
-        movie = media.Movie(remote,self.folder/'movie',record_until=self.cutoffs['recordUntil'],
-            stop_until=self.cutoffs['stopUntil'],environment=self.environment)
+        if 'recorder' in self.plan:
+            movie = quicktime_session.Movie(remote, self.quicktime, run_id=identity['runID'])
+        else:
+            movie = media.Movie(remote,self.folder/'movie',record_until=self.cutoffs['recordUntil'],
+                stop_until=self.cutoffs['stopUntil'],environment=self.environment)
         capture = media.Media(host,self.folder/'media',binary=self.plan['decoder']['binary']['path'],
             source_sha256=self.plan['decoder']['source']['sha256'],binary_sha256=self.plan['decoder']['binary']['sha256'],
             nonce=self.display_nonce,movie=movie,wait=self.wait)

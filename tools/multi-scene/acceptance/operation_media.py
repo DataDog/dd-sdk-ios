@@ -127,6 +127,21 @@ class Movie:
             argv=self.argv, startedAt=time.time(), recorderReady=False)))
         self.running()
 
+    @property
+    def quiescent(self):
+        return self.process is None or self.reaped
+
+    def checkpoint(self):
+        self.running()
+
+    def collect(self, capture):
+        return capture.decode(self.finish(accept=True), 'MOVIE', 'MOVIE')
+
+    def restore(self):
+        if not self.quiescent:
+            self.finish(accept=False)
+        t.require(self.quiescent, 'recorder is not quiescent')
+
     def expire(self):
         self.expired = True
         if self.process is not None and self.process.poll() is None:

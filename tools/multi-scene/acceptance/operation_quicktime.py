@@ -343,6 +343,17 @@ class Recorder:
                 self.checks += int(phase == 'CHECK')
             return ref
 
+    def running(self):
+        """Check frozen receipts and process lifetime, not continuous video content."""
+        with self._guard('RUNNING'):
+            t.require(self.failure is None and self.pending is None and self.phase in ('START', 'CHECK')
+                      and self.decoded is None and self.restored is None, 'recorder is not in capture phase')
+            self._verify()
+            folder = self.output / ('running-' + str(uuid.uuid4()))
+            folder.mkdir()
+            self._process(folder, 'observed', self.binding['record_deadline'])
+            t.require(time.time() < self.binding['record_deadline'], 'running check exceeded original cutoff')
+
     def finish(self):
         with self._guard('DECODE'):
             t.require(self.failure is None and self.pending is None and self.phase == 'SAVE'

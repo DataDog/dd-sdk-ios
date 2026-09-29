@@ -134,7 +134,7 @@ class Session:
         self.folder = host.channel.output/'session'; self.folder.mkdir()
         self.wait, self.notify, self.used = wait, notify, False
         self.bridge = self.recorder = None
-        self.verdicts = dict(scenario='UNRUN', display='UNQUALIFIED', backend='UNRUN', cleanup='UNRUN')
+        self.verdicts = dict(scenario='UNRUN', display='UNQUALIFIED', backend='UNRUN', cleanup='UNRUN', recorder_restoration='UNRUN')
         self.definition = dict(identity=host.identity, device=self.remote.identifier, bundle=host.channel.bundle,
             executionUntil=self.remote.execution_until, deadline=host.channel.deadline,
             backendDeadline=backend_deadline, maximumAttempts=maximum_attempts, pollSeconds=poll_seconds,
@@ -181,13 +181,12 @@ class Session:
             self.bridge.start(self.capture.start_raw,self.capture.bindings,self.capture.start_image)
             run = self.capture.poll('display-RUN.json')
             self.bridge.run(run,self.capture.screenshot('RUN'))
-            self.movie.running(); self.execution_live()
+            self.movie.checkpoint(); self.execution_live()
             self.host.publish(); self.verdicts['scenario'] = 'PENDING'
             final = self.capture.poll('display-FINAL.json')
             seal = self.capture.pull('native-final-observation.json')
             image = self.capture.screenshot('FINAL')
-            movie = self.movie.finish(accept=True)
-            decoded = self.capture.decode(movie,'MOVIE','MOVIE')
+            decoded = self.movie.collect(self.capture)
             self.bridge.final(final,seal,image,decoded)
             self.recorder = recorder_contract.Recorder(completion.Completion(self.host,wait=self.wait))
             self.recorder.collect()  # This is the sole Completion.collect call.
@@ -199,13 +198,18 @@ class Session:
             self.verdicts['scenario'] = 'INVALID'
             self.failure('capture',error)
         finally:
-            if self.movie.process is not None and not self.movie.reaped:
-                try: self.movie.finish(accept=False)
-                except BaseException as error: self.failure('recorder-stop',error)
+            try:
+                self.movie.restore()
+                t.require(self.movie.quiescent, 'recorder restoration unproved')
+                self.verdicts['recorder_restoration'] = 'PASS'
+            except BaseException as error:
+                self.verdicts['recorder_restoration'] = 'BLOCKED'
+                self.failure('recorder-restoration',error)
         # Capture failure never becomes a successful scenario after restoration.
         try:
+            t.require(self.movie.quiescent and self.verdicts['recorder_restoration'] == 'PASS',
+                      'recorder is not quiescent')
             self.remote.begin_cleanup()
-            t.require(self.movie.process is None or self.movie.reaped, 'recorder is not quiescent')
             t.require((self.host.folder/'process-before-response.json').is_file(),
                       'setup never established the original process; app left untouched')
             native, terminal = cleanup_expectations(self.host,self.folder/'cleanup-expectations')

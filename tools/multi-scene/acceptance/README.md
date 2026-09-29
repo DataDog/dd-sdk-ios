@@ -589,7 +589,7 @@ ends before the original cleanup cutoff; `ExecutionDevice` applies the earlier
 cutoff without changing channel identity or extending a deadline.
 
 The native START receipt and bindings precede setup capture. After the real setup
-acknowledgement, one owned movie process starts before the START screenshot. RUN
+acknowledgement, the selected recorder starts before the START screenshot. RUN
 gets a separate screenshot before setup publication. FINAL follows the native
 collection seal, independent screenshot and complete movie decode. The fixture
 publishes the seal's exact sequenced bytes as `native-final-observation.json`
@@ -667,8 +667,10 @@ QuickTime with no AX window; opening New Movie Recording restores the preview.
 Metadata frame counts do not replace the decoder's emitted-frame inventory. This
 capability does not qualify H06 startup, causal run markers or simultaneous owners.
 
-`operation_quicktime.Recorder` prepares the offline receipt chain; it is not wired
-into `Session` or `Launcher`. Freeze a fresh directory, run/device identity,
+`operation_quicktime.Recorder` supplies the receipt chain. `operation_quicktime_session`
+connects it to `Session` and the explicitly selected QuickTime launch mode. The
+connection is offline-reviewed preparation until its first native cell. Freeze a
+fresh directory, run/device identity,
 QuickTime PID/start/executable, decoder and three original cutoffs. Retain the
 actual initial full AX observation and its tool-call ID. The first request checks
 publication, destination absence and current wired-device identity before UI work.
@@ -696,6 +698,45 @@ or a disconnect/reconnect between samples. They cannot grant H06 admission:
 startup transfer, actual source-bound START/RUN/FINAL markers, RUN pixels before
 SDK dispatch, FINAL after the collection seal and full task cleanup remain to be
 qualified. The earlier CoreDevice recording failure stays stopped.
+
+### QuickTime session connection
+
+The launcher requires an explicit `QUICKTIME_CUA` recorder selection and
+`H06_QUICKTIME_FIRST_CELL` admission. Its preparation record binds the scoped
+review, unchanged helpers/Xcode/device, and the saved `PASS_CAPTURE_CAPABILITY_ONLY`
+result, review, definition and movie. This is never `PHYSICAL_ADAPTER_QUALIFIED`.
+The first cell must still qualify startup, Documents traffic, source-bound media,
+Operation owners, cleanup and backend evidence. No fallback selects the stopped
+CoreDevice recording path. The old root-container failure remains INVALID; a
+reviewed prior Documents transfer supports testing the real channel in this cell,
+without another standalone root-payload or Home qualifier.
+
+Before installation, bind the actual current QuickTime PID, wired-iPad inventory,
+full initial AX return/tool-call ID and original audio selection in the admission.
+The session requests SOURCE, START, exactly one CHECK before `HostSetup.publish()`,
+STOP, SAVE and independent RESTORE. Intermediate `running()` checks inspect the
+frozen receipts and process; they do not require additional UI calls or claim
+continuous capture. The final full movie and unchanged START/RUN/FINAL decoder
+provide that display evidence. SDK initialization occurs during startup; the
+native barrier gates the selected Operations afterward.
+
+For each printed `quicktime_request`, use supported CUA controls, await the actual
+return, then call `operation_quicktime_session.returned()` with that request
+reference, actual tool-call ID/completion time, exact full AX bytes and the explicit
+reply described above. On tool failure, supply the actual error bytes instead.
+It writes immutable raw files before an atomic completion marker. Partial, late,
+foreign, conflicting or reused publications reject; matching older observations
+cannot replace them. Keep each returned tool observation in the transcript.
+
+QuickTime is never killed or represented by an owned subprocess. Capture,
+recorder restoration and task cleanup keep separate verdicts. An unknown, late
+or failed UI call blocks overlapping restoration and task teardown; preserve the
+app and perform any later restoration as a separate recovery. A timely returned
+semantic/capture failure must first obtain a stopped-document observation before
+restoring audio. Stop is attempted at most once under its original cutoff. A
+failed Stop or expired cutoff blocks restoration and task cleanup; it never
+authorizes a retry. Restoration cannot repair the original capture verdict. App cleanup still requires its own fresh release, native idle,
+worker quiescence and task-only removal proof.
 
 ### H06 physical cleanup disposition
 

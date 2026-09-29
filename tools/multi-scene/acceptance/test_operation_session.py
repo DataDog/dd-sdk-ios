@@ -24,7 +24,8 @@ class SessionTests(unittest.TestCase):
         self.operator=types.SimpleNamespace(channel=self.channel,present=self.present,
             acknowledgement=lambda:(self.call('ack') or b'actual-page-ack'))
         self.movie=types.SimpleNamespace(remote=self.remote,process=None,reaped=False,start=self.start,
-            finish=self.finish,running=lambda:self.call('recording-live'))
+            finish=self.finish,running=lambda:self.call('recording-live'),quiescent=True,
+            checkpoint=lambda:self.call('recorder-checkpoint'),collect=self.collect_movie,restore=self.restore_movie)
         self.capture=types.SimpleNamespace(host=self.host,movie=self.movie,nonce='nonce',source_sha256='a'*64,
             binary_sha256='b'*64,start_raw=b'start',bindings={'A':b'owner'},start_image={},
             start_barrier=lambda:self.call('start-barrier'),review_start=lambda *_:None,
@@ -56,13 +57,20 @@ class SessionTests(unittest.TestCase):
     def present(self,path):self.call('prompt-cleanup' if 'host-cleanup' in str(path) else 'prompt-setup')
 
     def start(self):
-        self.movie.process=object();self.call('start-movie')
+        self.movie.process=object();self.movie.quiescent=False;self.call('start-movie')
 
     def finish(self,*,accept):
         self.call('finish-movie' if accept else 'abort-movie')
         if self.stop_fails:raise ValueError('child still running')
-        self.movie.reaped=True
+        self.movie.reaped=True;self.movie.quiescent=True
         return self.root/'movie.mp4'
+
+    def collect_movie(self,capture):
+        return capture.decode(self.finish(accept=True),'MOVIE','MOVIE')
+
+    def restore_movie(self):
+        self.call('restore-movie')
+        if not self.movie.quiescent:self.finish(accept=False)
 
     def poll(self,name):self.call('poll-'+name);return name.encode()
 
@@ -80,7 +88,7 @@ class SessionTests(unittest.TestCase):
 
     def backend(self,*args,**kwargs):
         self.assertEqual(kwargs['deadline'],self.session.backend_deadline)
-        self.assertTrue(self.remote.cleanup_started);self.call('backend-init')
+        self.call('backend-init')
         return types.SimpleNamespace(collect=lambda:(self.call('backend-collect') or {'state':'BACKEND_OWNERSHIP_JOINED'}))
 
     def run_session(self):
@@ -91,11 +99,12 @@ class SessionTests(unittest.TestCase):
     def test_complete_order_has_one_completion_and_cleanup_before_backend(self):
         result=self.run_session();self.assertEqual(result['state'],'EVIDENCE_COMPLETE')
         phases=['start-barrier','prompt-setup','start-movie','collect-host','proof-start','poll-display-RUN.json',
-            'image-RUN','proof-run','publish','poll-display-FINAL.json','seal','image-FINAL','finish-movie',
+            'image-RUN','proof-run','recorder-checkpoint','publish','poll-display-FINAL.json','seal','image-FINAL','finish-movie',
             'decode-movie','proof-final','completion-init','collect-local','join-display','prompt-cleanup',
             'cleanup-remove','backend-collect']
         offsets=[self.calls.index(p) for p in phases];self.assertEqual(offsets,sorted(offsets))
         self.assertEqual(self.calls.count('collect-local'),1)
+        self.assertTrue(self.remote.cleanup_started)
         with self.assertRaises(ValueError):self.session.run()
 
     def test_start_barrier_failure_has_no_capture_or_teardown(self):
@@ -145,7 +154,7 @@ class SessionTests(unittest.TestCase):
     def test_failed_backend_preserves_successful_capture_and_cleanup(self):
         self.fail_at='backend-collect';result=self.run_session()
         self.assertEqual(result['state'],'INVALID')
-        self.assertEqual(result['verdicts'],dict(scenario='PASS',display='PASS',backend='INVALID',cleanup='PASS'))
+        self.assertEqual(result['verdicts'],dict(scenario='PASS',display='PASS',backend='INVALID',cleanup='PASS',recorder_restoration='PASS'))
 
     def test_foreign_components_reject_before_session_publication(self):
         self.capture.host=object()
@@ -165,5 +174,18 @@ class SessionTests(unittest.TestCase):
         with patch.object(s,'operator_health',side_effect=changed):result=self.run_session()
         self.assertNotIn('cleanup-remove',self.calls);self.assertEqual(result['verdicts']['cleanup'],'BLOCKED')
         self.assertEqual(result['verdicts']['scenario'],'PASS')
+
+    def test_failed_recorder_checkpoint_never_dispatches_operations(self):
+        self.fail_at='recorder-checkpoint';result=self.run_session()
+        self.assertNotIn('publish',self.calls);self.assertEqual(result['verdicts']['scenario'],'INVALID')
+        self.assertEqual(result['verdicts']['cleanup'],'PASS')
+
+    def test_restoration_failure_blocks_teardown_and_keeps_other_verdicts(self):
+        self.fail_at='restore-movie';result=self.run_session()
+        self.assertNotIn('cleanup-remove',self.calls)
+        self.assertEqual(result['verdicts']['recorder_restoration'],'BLOCKED')
+        self.assertFalse(self.remote.cleanup_started)
+        self.assertEqual(result['verdicts']['cleanup'],'BLOCKED')
+        self.assertEqual(result['verdicts']['scenario'],'PASS');self.assertEqual(result['state'],'INVALID')
 
 if __name__=='__main__':unittest.main()

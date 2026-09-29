@@ -271,4 +271,88 @@ class ReadinessAndProcessTests(unittest.TestCase):
                 l.require_no_task_process(rows,Path('/signed/Fixture.app'),dict(executable='Fixture'))
 
 
+class QuickTimeLauncherTests(unittest.TestCase):
+    assert_stopped = LauncherTests.assert_stopped
+
+    def setUp(self):
+        LauncherTests.setUp(self)
+        import test_operation_quicktime as fixture
+        def save(name, value):
+            p = self.root / name; p.write_bytes(t.encode(value)); return l.pixels.reference(p)
+        movie = self.root / 'capability.mov'; movie.write_bytes(b'offline capability fixture')
+        capability = save('qt-capability.json', dict(state='PASS_CAPTURE_CAPABILITY_ONLY',
+            scenario_verdict='PASS', evidence_verdict='PASS', cleanup_verdict='PASS', decoder_completed=True,
+            gate_credit=False, movie_sha256=l.setup.file_sha(movie)))
+        review = save('qt-review.json', dict(state='PASS', reviewer=l.REVIEWER))
+        definition = save('qt-definition.json', dict(movie=str(movie), decoder=dict(
+            sha256=self.plan['decoder']['binary']['sha256'], source_sha256=self.plan['decoder']['source']['sha256'])))
+        self.plan['toolchain'] = dict(fixture=True, developer=str(self.root))
+        self.prepared = dict(state='REVIEWED_QUICKTIME_SESSION_PREPARATION', reviewer=l.REVIEWER,
+            device=self.remote.identifier, helpers=self.plan['helpers'], toolchain=self.plan['toolchain'],
+            required_current_cell=l.quicktime_session.CURRENT_CELL, native_qualification=False,
+            hardware=dict(udid='device-udid', os='27.0', build='fixture'), capability=capability,
+            capability_review=review, capability_definition=definition)
+        prepared = save('qt-preparation.json', self.prepared)
+        self.plan['recorder'] = dict(kind=l.quicktime_session.KIND, preparation=prepared)
+        self.admission.update(scope='H06_QUICKTIME_FIRST_CELL', recorderPreparation=prepared,
+            recorderObservation=dict(inventory=save('qt-devices.json', {}), pid=fixture.PID,
+                initialAX=save('qt-ax.json', {}), toolCallID='offline-initial-call', originalAudio=fixture.AUDIO))
+        del self.admission['adapterQualification']
+        def mock(target, **kw):
+            p=patch(target, **kw); x=p.start(); self.addCleanup(p.stop); return x
+        self.toolchain = mock('operation_launch.toolchain', return_value=self.plan['toolchain'])
+        self.qt = mock('operation_launch.quicktime.Recorder', return_value=types.SimpleNamespace(
+            binding=dict(device=dict(udid='device-udid'))))
+        self.movie = mock('operation_launch.quicktime_session.Movie', return_value=object())
+        self.legacy = mock('operation_launch.media.Movie', return_value=object())
+        self.refresh()
+
+    def refresh(self):
+        self.o.plan = self.plan; self.o.plan_raw = t.encode(self.plan); self.plan_path.write_bytes(self.o.plan_raw)
+        (self.o.folder/'plan.json').write_bytes(self.o.plan_raw)
+        self.admission['planSHA256'] = t.sha(self.o.plan_raw)
+        self.o.admission = self.admission; self.o.admission_raw = t.encode(self.admission)
+        (self.o.folder/'admission.json').write_bytes(self.o.admission_raw)
+        ready = t.load(self.o.readiness_raw)
+        ready.update(planSHA256=t.sha(self.o.plan_raw), admissionSHA256=t.sha(self.o.admission_raw))
+        self.o.readiness_raw=t.encode(ready); (self.o.folder/'readiness.json').write_bytes(self.o.readiness_raw)
+
+    def test_explicit_first_cell_uses_quicktime_without_old_qualification(self):
+        self.assertIs(self.o.launch(), self.session.return_value)
+        self.qt.assert_called_once(); self.movie.assert_called_once(); self.legacy.assert_not_called()
+        self.assertEqual(self.movie.call_args.kwargs['run_id'], self.o.run_id)
+        self.assertEqual(self.qt.call_args.kwargs['restore_deadline'], self.cutoffs['executionUntil'])
+        self.assertIn('Documents/'+self.o.run_id+'.startup-freshness.json', self.remote.calls)
+        self.assertIn('Documents/'+self.o.run_id+'.operations-challenge.json', self.remote.calls)
+
+    def test_capability_never_becomes_completed_adapter_or_gate_proof(self):
+        path=Path(self.plan['recorder']['preparation']['path']); value=t.load(path.read_bytes())
+        value['state']='PHYSICAL_ADAPTER_QUALIFIED';path.write_bytes(t.encode(value))
+        ref=l.pixels.reference(path);self.plan['recorder']['preparation']=ref;self.admission['recorderPreparation']=ref
+        self.refresh();self.assert_stopped('preparation')
+        self.assertNotIn('install', self.remote.calls);self.qt.assert_not_called()
+
+    def test_changed_saved_movie_prevents_install(self):
+        (self.root/'capability.mov').write_bytes(b'substituted movie')
+        self.assert_stopped('capability');self.assertNotIn('install',self.remote.calls)
+
+    def test_legacy_scope_cannot_admit_quicktime(self):
+        self.admission['scope']='H06_PHYSICAL_LAUNCH';self.refresh();self.assert_stopped('separately reviewed')
+        self.assertEqual(self.remote.calls,[])
+
+    def test_first_cell_still_requires_real_startup_and_process(self):
+        self.remote.problem='nonce';self.assert_stopped('startup identity')
+        self.assertIn('launch',self.remote.calls);self.movie.assert_not_called();self.legacy.assert_not_called()
+
+    def test_recorder_failure_has_no_coredevice_fallback(self):
+        self.qt.side_effect=ValueError('QuickTime unavailable');self.assert_stopped('QuickTime unavailable')
+        self.assertNotIn('install',self.remote.calls);self.legacy.assert_not_called()
+
+    def test_helper_review_drift_blocks_install(self):
+        path=Path(self.plan['recorder']['preparation']['path']); value=t.load(path.read_bytes());value['helpers']={}
+        path.write_bytes(t.encode(value));ref=l.pixels.reference(path)
+        self.plan['recorder']['preparation']=ref;self.admission['recorderPreparation']=ref;self.refresh()
+        self.assert_stopped('preparation');self.assertNotIn('install',self.remote.calls)
+
+
 if __name__=='__main__':unittest.main()
