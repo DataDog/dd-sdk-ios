@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "Finite source-backed preparation of residual S3 human scenarios",
-  "state": "H06_CLEANUP_STOP_PREPARED_FULL_RUNNER_PENDING",
+  "state": "H06_HOST_CLEANUP_PREPARED_FULL_RUNNER_PENDING",
   "defined_at": "2026-09-28T13:49:45.760600+00:00",
   "defined_before_implementation": true,
   "owner": "Root",
@@ -350,7 +350,7 @@
     "builds_admitted": 0,
     "native_admitted": false,
     "budget_policy": "Freeze setup/API/collection/cleanup limits from qualified observed adapter latencies before execution; no active deadline extension. Strict timing is diagnostic.",
-    "next": "Integrate setup, completion, recorder and stopped-driver receipt with independent display interval, backend ownership and separate release/idle teardown. Preserve original deadlines, one directory pull and verdict boundaries. Qualify physical adapter once before any human H06 session; no session is admitted.",
+    "next": "Integrate prepared setup/completion/recorder/host-cleanup with independent display interval and backend ownership, bind real operator page and phase budgets before one physical adapter qualification. Explicitly disposition the separate container-absence limitation before native admission. No human H06 session is admitted.",
     "scope_increment": {
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_",
       "definition": {
@@ -769,6 +769,29 @@
           "Driver/pump STOPPED is independent of operator release, native idle and process absence; it never authorizes teardown alone.",
           "Actual physical transport, independent display interval, backend and complete host orchestration remain unqualified."
         ]
+      },
+      "host_cleanup": {
+        "state": "HOST_CLEANUP_PREPARATION_PASS",
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/host-cleanup-x5n7f6_b",
+        "verdict": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/host-cleanup-x5n7f6_b/verdict.json",
+          "sha256": "e4c07532ef7323e200a6618dd411eafa8155613a4b4d2cfc09bfe0c1e604b743"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/host-cleanup-x5n7f6_b/final-review.json",
+          "sha256": "85294dfd9070bd58d1b26f603a16c9fb512c3c5858f3974dbb00d1dd5a1db8c9"
+        },
+        "host_controls": 19,
+        "builds": 0,
+        "native_runs": 0,
+        "backend_queries": 0,
+        "gates_closed": [],
+        "limits": [
+          "All process/input/CoreDevice observations are fabricated controls. Actual physical transfer and removal remain unqualified.",
+          "One public run(ack) performs release/stop/idle/process checks and task-only removal before yielding; its original channel cutoff never changes.",
+          "Task app/process absence is separate from container absence. Generic CoreDevice file-list failure is diagnostic, containerAbsence stays UNVERIFIED and release acceptance stays false.",
+          "Full runner must bind setup/display interval, recorder, backend and cleanup before one physical qualification or a human session."
+        ]
       }
     }
   },
@@ -784,5 +807,5 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/s3-residual-review.json",
     "sha256": "358e67b60fb25744ada5ddf6902e5832285a28489492900077061fedd7799890"
   },
-  "updated_at": "2026-09-29T09:29:33.289757+00:00"
+  "updated_at": "2026-09-29T09:54:09.821201+00:00"
 }

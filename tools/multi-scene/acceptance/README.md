@@ -496,8 +496,14 @@ context and original terminal bytes. `operation_transport.cleanup_response` chec
 those joins without granting teardown authority. Eight host controls and thirteen
 Swift controls qualify this preparation; the original empty-fixture failure and
 corrected two-test result remain separate. The actual Swift receipt also passes
-host replay. Operator release, fresh native idle, process identity and task-only
-teardown still require full-runner integration before physical qualification.
+host replay. `operation_cleanup.Cleanup.run` now connects real operator release to fresh
+stop/idle proof, exact original PID/executable checks, host-child quiescence and
+task-only removal in one call. Both prior-result expectations are required; `None`
+means absence. A pending driver permits one further capture under the same cutoff,
+never removal. Nineteen offline controls pass after review. App/process absence
+stays distinct from unverified container absence; generic file-list errors earn
+no absence proof. Full display/backend integration and physical qualification
+remain required.
 
 `operation_ownership.validate` checks eight raw steps, four reduced Operations,
 exact ID joins, failure reason and A/B endpoints using independently captured View,
