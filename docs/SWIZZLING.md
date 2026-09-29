@@ -14,14 +14,14 @@ The SDK installs into thousands of apps alongside frameworks like RxSwift, RxCoc
 
 ## How the SDK swizzles
 
-All swizzles use `MethodSwizzler<Signature, Override>` in `DatadogInternal/Sources/Swizzling/MethodSwizzler.swift`. This class:
+SDK method swizzles normally use `MethodSwizzler<Signature, Override>` in `DatadogInternal/Sources/Swizzling/MethodSwizzler.swift`. This class:
 
 - Captures the IMP that is current at install time as `previousImplementation`
 - Sets a new IMP that calls the override closure, which receives `previousImplementation`
-- Maintains a linked list so multiple independent swizzles on the same method compose correctly
-- Provides `unswizzle()` to remove a specific layer without disturbing others
+- Maintains a linked list so multiple swizzles on the same method that this class manages compose correctly
+- Provides `unswizzle()` to remove a managed layer without disturbing other managed layers
 
-**Always use `MethodSwizzler`. Never call `method_exchangeImplementations` or `method_setImplementation` directly in production code.**
+**Use `MethodSwizzler` for method swizzles. A direct IMP replacement requires a documented exception.**
 
 ---
 
@@ -261,7 +261,7 @@ Additionally, when reusing an existing proxy on a delegate, the handler is now u
 
 Before submitting a swizzle:
 
-- [ ] Uses `MethodSwizzler` — no direct `method_setImplementation` calls
+- [ ] Uses `MethodSwizzler`, or documents why a direct IMP replacement is required
 - [ ] Setter wrapping a value → getter swizzle installed that unwraps it
 - [ ] Setter calls `previousImplementation` → re-entrancy guard keyed on object identity
 - [ ] Proxy with `responds(to:)` / `forwardingTarget(for:)` → `isRespondingToSelector` guard
