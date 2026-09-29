@@ -556,8 +556,9 @@ mismatched owners or causal links. Legacy unarmed output omits the map.
 The native hooks pass18 focused unit controls and three actual UIKit-rendered
 phase decodes. These detached-window controls do not prove physical visibility.
 The terminal join and affected host consumers pass29+52 controls. The typed host
-bridge passes58 offline controls and scoped review. The whole display/native join
-and physical adapter qualification remain pending at the
+bridge passes58 offline controls and scoped review. The post-startup coordinator and display/native join pass117 host controls and
+two focused fixture tests with cleanup PASS. Launcher composition and one physical
+adapter qualification remain pending at the
 [preparation owner](../../../DatadogRUM/MultiSceneSupport/Results/S3-human-residual-preparation.json).
 Do not enable the profile with the old host runner or infer pixel/native acceptance
 from local collection alone.
@@ -577,6 +578,31 @@ The bridge never captures pixels or substitutes an older observation. A changed
 artifact, failed transfer or reused phase consumes the attempt. The caller still
 owns actual native pulls, screenshot/recorder lifecycle, complete backend evidence
 and separate cleanup. Offline controls do not admit a human session.
+
+### H06 capture session integration
+
+`operation_session.Session` composes an already admitted `HostSetup`, `Operator`
+and `operation_media.Media`; it does not build, install or launch. A fresh live
+operator page and its process must match before capture and cleanup. Execution
+ends before the original cleanup cutoff; `ExecutionDevice` applies the earlier
+cutoff without changing channel identity or extending a deadline.
+
+The native START receipt and bindings precede setup capture. After the real setup
+acknowledgement, one owned movie process starts before the START screenshot. RUN
+gets a separate screenshot before setup publication. FINAL follows the native
+collection seal, independent screenshot and complete movie decode. The fixture
+publishes the seal's exact sequenced bytes as `native-final-observation.json`
+before waiting for FINAL; terminal collection checks both byte/hash identities.
+`Recorder.collect()` invokes `Completion` once. Every consumed display proof must
+join those same native artifacts and the decoded media.
+
+Capture failure stops and reaps only the owned recorder. Cleanup still requires
+fresh release, native idle and original result expectations; an unreaped recorder
+blocks teardown. Backend collection consumes sealed evidence after cleanup, so a
+backend wait cannot delay the release prompt. Scenario, display, backend and
+cleanup outcomes stay separate. No host control qualifies the physical recorder's
+SIGINT response, transfer behavior or simultaneous window visibility. The launcher
+and one native adapter qualification remain required before a human session.
 
 ### H06 physical cleanup disposition
 

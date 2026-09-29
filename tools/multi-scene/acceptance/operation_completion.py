@@ -60,6 +60,10 @@ def terminal(raw, identity, publication, deadline):
               'invalid completion inventory')
     t.require(value['finalObservation'] == f'native-observation-{count}.json', 'invalid final observation pointer')
     required = {'native-host-consumed.json', 'native-admission.json', 'native-binding-mapper.json', 'native-final-mapper.json'}
+    if 'displayProof' in proof:
+        required.add('native-final-observation.json')
+        t.require(artifacts.get('native-final-observation.json') == value['finalObservationSHA256'],
+                  'final observation alias differs from terminal seal')
     observations = {f'native-observation-{i}.json' for i in range(1, count + 1)}
     t.require(required | observations <= artifacts.keys(), 'incomplete native manifest')
     for name, digest in artifacts.items():
@@ -178,6 +182,9 @@ def validate_snapshot(directory, raw, *, identity, publication, deadline):
     for row in observations:
         sample_owners(row['sample'], owners)
     if 'displayArtifacts' in value:
+        t.require(setup.read(directory / (prefix + 'native-final-observation.json'))
+                  == setup.read(directory / (prefix + value['finalObservation'])),
+                  'final observation alias bytes differ')
         display_snapshot(value, owners, inventory, lambda name: setup.read(directory / (prefix + name)),
                          decode_handoff(publication, identity, deadline))
     return dict(manifest=value, owners=owners, inventory=inventory)

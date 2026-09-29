@@ -1504,7 +1504,10 @@ internal final class ProbePhysicalOperationAdmission {
     }
 
     private func persist<T: Encodable>(_ value: T, _ suffix: String) throws {
-        let raw = try ProbePhysicalOperationChannel.encode(value), url = channel.url(suffix)
+        try persistRaw(ProbePhysicalOperationChannel.encode(value), suffix)
+    }
+    private func persistRaw(_ raw: Data, _ suffix: String) throws {
+        let url = channel.url(suffix)
         guard !FileManager.default.fileExists(atPath: url.path) else { throw Failure.publication }
         try raw.write(to: url, options: .atomic)
         guard try channel.readArtifact(suffix, limit: ProbePhysicalOperationCapturePump.maximumContextBytes) == raw else {
@@ -1698,6 +1701,12 @@ internal final class ProbePhysicalOperationAdmission {
                               let hostHash = persistedDigests["native-host-consumed.json"] else { throw Failure.publication }
                         var displayArtifacts: [String: String]?
                         if let display {
+                            // The host needs this seal before publishing FINAL proof; the
+                            // terminal's sequenced filename is not available until afterward.
+                            guard let original = try channel.readArtifact(observation,
+                                limit: ProbePhysicalOperationCapturePump.maximumContextBytes),
+                                ProbePhysicalInputExchange.sha(original) == observationHash else { throw Failure.publication }
+                            try persistRaw(original, "native-final-observation.json")
                             try display.seal(observationHash)
                             while try !display.pollFinalProof() { try live(); try await wait() }
                             try live()

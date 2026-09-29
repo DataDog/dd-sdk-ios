@@ -110,6 +110,7 @@ class CompletionTests(unittest.TestCase):
 
     def enable_display(self):
         self.display_files = {}
+        self.files['native-final-observation.json'] = self.files[self.manifest['finalObservation']]
         native = t.load(self.files['native-admission.json'], maximum=t.MAX_CONTEXT_BYTES)
         bindings = {row['logicalSceneID']: {key: row[key] for key in
                     ['logicalSceneID', 'nativeSceneID', 'generation', 'windowIdentity', 'rootIdentity']}
@@ -185,6 +186,23 @@ class CompletionTests(unittest.TestCase):
             elif mode == 'missing-entry': value['displayArtifacts'].pop('display-FINAL.json')
             else: value['displayArtifacts']['foreign.json'] = 'a' * 64
             with self.assertRaises(ValueError): c.terminal(t.encode(value), self.identity, self.publication, self.deadline)
+
+    def test_display_final_observation_alias_is_required_and_hash_bound(self):
+        self.enable_display(); folder = self.display_directory()
+        alias = folder / (self.prefix + 'native-final-observation.json'); original = alias.read_bytes()
+        for changed in [None, original+b' ', self.files['native-observation-1.json']]:
+            with self.subTest(changed=changed):
+                if changed is None: alias.unlink()
+                else: alias.write_bytes(changed)
+                with self.assertRaises(ValueError): self.check_display_directory(folder)
+                alias.write_bytes(original)
+        manifest = t.load((folder/(self.prefix+c.TERMINAL)).read_bytes(), maximum=t.MAX_CONTEXT_BYTES)
+        for digest in [None, 'f'*64]:
+            changed = copy.deepcopy(manifest)
+            if digest is None: changed['artifacts'].pop('native-final-observation.json')
+            else: changed['artifacts']['native-final-observation.json'] = digest
+            with self.assertRaisesRegex(ValueError, 'alias'):
+                c.terminal(t.encode(changed), self.identity, self.publication, self.deadline)
 
     def test_display_final_receipt_must_follow_exact_collection_seal(self):
         self.enable_display()

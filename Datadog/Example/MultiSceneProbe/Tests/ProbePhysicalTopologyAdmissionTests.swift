@@ -1826,6 +1826,10 @@ final class ProbePhysicalOperationOwnerTests: XCTestCase {
         })
         display.onSeal = {
             XCTAssertNotNil(try channel.readArtifact("native-final-mapper.json"))
+            let alias = try XCTUnwrap(channel.readArtifact("native-final-observation.json", limit: 1_048_576))
+            let observed = try XCTUnwrap(JSONSerialization.jsonObject(with: alias) as? [String: Any])
+            XCTAssertEqual(observed["index"] as? Int, 21)
+            XCTAssertEqual(observed["boundary"] as? String, "collection-seal")
             XCTAssertNil(try channel.readArtifact("native-local-result.json"))
         }
         try gate.consumeHost(withDisplayProof(raw))
@@ -1844,6 +1848,9 @@ final class ProbePhysicalOperationOwnerTests: XCTestCase {
         let result = try JSONDecoder().decode(ProbePhysicalOperationLocalCompletion.self,
             from: XCTUnwrap(channel.readArtifact("native-local-result.json", limit: 1_048_576)))
         XCTAssertEqual(result.displayArtifacts, ["display-completion.json": String(repeating: "c", count: 64)])
+        let alias = try XCTUnwrap(channel.readArtifact("native-final-observation.json", limit: 1_048_576))
+        XCTAssertEqual(alias, try channel.readArtifact(result.finalObservation, limit: 1_048_576))
+        XCTAssertEqual(result.artifacts["native-final-observation.json"], result.finalObservationSHA256)
     }
 
     func testDisplayInvalidationDuringFinalWaitCannotPublishLocalCompletion() async throws {
