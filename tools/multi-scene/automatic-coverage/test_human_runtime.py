@@ -1,5 +1,6 @@
 """No native execution: finite inventory and actual-query cleanup adapter controls."""
 import copy
+import hashlib
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -56,24 +57,36 @@ class RuntimeBindingControls(unittest.TestCase):
 
 class S2PreparationControls(unittest.TestCase):
     LEGACY_RULE=b"        limit=100_000_000 if cost['operation']=='snapshot' else 2_000_000\n        require(type(cost.get('duration_ns')) is int and 0<=cost['duration_ns']<=limit,'observer exceeded main-thread budget')"
+    SCROLL_RULE=b"    # Public accessibility bounds tie the callback's concrete UIScrollView to this phase's control.\n    require(rectangle(x['frame_in_window'])==rectangle(item['frame_in_window']),'gesture belongs to another visible scroll')"
+    SCROLL_REPLACEMENT=b"    scroll_geometry.check(x,y,item,before['payload']['topology']['framework'])"
     def frozen_oracle(self,source):
         path=source/'runtime/helpers'/runtime.human_sessions.CONTRACT;path.parent.mkdir(parents=True)
-        path.write_bytes(b'def observe(cost):\n    if cost:\n'+self.LEGACY_RULE+b'\n        require(cost["owner"]=="original", "foreign owner")\n')
+        path.write_bytes(b'import math\ndef observe(cost):\n    if cost:\n'+self.LEGACY_RULE+b'\n        require(cost["owner"]=="original", "foreign owner")\n'+self.SCROLL_RULE+b'\n')
         return path
-    def test_timing_migration_retains_every_other_original_oracle_byte(self):
+    def test_reviewed_migrations_retain_every_other_original_oracle_byte(self):
         with tempfile.TemporaryDirectory() as temp:
             source=Path(temp);path=self.frozen_oracle(source);original=path.read_bytes()
             base={'helpers':{runtime.human_sessions.CONTRACT:runtime.shared.sha(path)}}
             raw,measurement=runtime.s2_oracle(source,base)
-            self.assertEqual(measurement['policy'],'diagnostic-observer-timing-v1')
+            self.assertEqual(measurement['policy'],'diagnostic-timing-scroll-identity-v2')
             self.assertEqual(raw,original.replace(self.LEGACY_RULE,
-                b"        require(type(cost.get('duration_ns')) is int and cost['duration_ns']>=0,'invalid observer duration')"))
+                b"        require(type(cost.get('duration_ns')) is int and cost['duration_ns']>=0,'invalid observer duration')").replace(self.SCROLL_RULE,self.SCROLL_REPLACEMENT).replace(b'import math\n',b'import math\nimport scroll_geometry\n'))
+            prior=measurement['predecessor']
+            self.assertEqual(prior['policy'],'diagnostic-observer-timing-v1')
+            self.assertEqual(prior['original_sha256'],measurement['original_sha256'])
+            self.assertEqual(prior['rendered_sha256'],hashlib.sha256(original.replace(self.LEGACY_RULE,
+                b"        require(type(cost.get('duration_ns')) is int and cost['duration_ns']>=0,'invalid observer duration')")).hexdigest())
             self.assertEqual(path.read_bytes(),original)
             path.write_bytes(original+b'# unexpected change')
             with self.assertRaises(Rejected):runtime.s2_oracle(source,base)
             path.write_bytes(original.replace(b'2_000_000',b'3_000_000'))
             base['helpers'][runtime.human_sessions.CONTRACT]=runtime.shared.sha(path)
             with self.assertRaises(Rejected):runtime.s2_oracle(source,base)
+            changed=original+b'# retained source comment\n'
+            path.write_bytes(changed);base['helpers'][runtime.human_sessions.CONTRACT]=runtime.shared.sha(path)
+            _,changed_measurement=runtime.s2_oracle(source,base)
+            self.assertNotEqual(changed_measurement['predecessor']['original_sha256'],prior['original_sha256'])
+            self.assertNotEqual(changed_measurement['predecessor']['rendered_sha256'],prior['rendered_sha256'])
     def test_build_reuse_exception_is_only_for_the_noncompiled_backend_decoder(self):
         with tempfile.TemporaryDirectory() as temp:
             repo=Path(temp);decoder=repo/runtime.human_sessions.BACKEND_DECODER
@@ -106,7 +119,7 @@ class S2PreparationControls(unittest.TestCase):
                 plan=runtime.verify(root)
                 self.assertEqual(plan['kind'],runtime.S2_KIND);self.assertEqual(len(plan['matrix']),12)
                 self.assertEqual(len(plan['products']),6);self.assertFalse(plan['native_admitted'])
-                self.assertEqual(plan['measurement']['policy'],'diagnostic-observer-timing-v1')
+                self.assertEqual(plan['measurement']['policy'],'diagnostic-timing-scroll-identity-v2')
                 self.assertEqual(activate.call_args.args[:2],(root.resolve()/'runtime/helpers'/contract,plan['helpers'][contract]))
                 self.assertEqual(frozen.read_bytes(),original)
                 for key in ['measurement','build_helper_reuse']:

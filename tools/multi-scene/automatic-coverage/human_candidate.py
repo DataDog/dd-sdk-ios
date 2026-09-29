@@ -32,12 +32,21 @@ def unchanged_cell(out,row,runner):
     check(actual==row['artifacts'],'historical raw artifact inventory changed',runner)
 
 
+def measurement_matches(previous,current):
+    # The verified master computes this exact predecessor from the untouched
+    # original oracle, so saved baselines keep their own reviewed checker's hash.
+    return previous==current or (current.get('policy')=='diagnostic-timing-scroll-identity-v2'
+        and previous.get('policy')=='diagnostic-observer-timing-v1'
+        and previous==current.get('predecessor')
+        and previous.get('original_sha256')==current.get('original_sha256'))
+
+
 def history(summary_ref,base,runner):
     """Check frozen historical inputs, without binding them to today's observer."""
     s=runner.shared;row=sessions.read_reference(summary_ref,s);out=Path(summary_ref['path']).parent;runtime=out.parent.parent
     plan=s.read(runtime/'runtime-plan.json')
     check(s.sha(runtime/'runtime-plan.json')==row['runtime_plan_sha256'] and plan['build_plan_sha256']==base['build_plan_sha256']
-        and plan['scope']==base['scope'] and plan['measurement']==base['measurement'],'historical source or contract differs',runner)
+        and plan['scope']==base['scope'] and measurement_matches(plan['measurement'],base['measurement']),'historical source or contract differs',runner)
     check(s.tree(runtime/'helpers')==plan['helpers'],'historical helper snapshot changed',runner)
     sessions.reviewed(runtime.parent,plan,runner);stage=sessions.stage_receipts(runtime.parent,plan,runner)
     check(stage['stage_id']==row['stage_id'],'historical stage differs',runner)

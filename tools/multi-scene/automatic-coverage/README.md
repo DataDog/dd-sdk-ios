@@ -37,7 +37,12 @@ stack references retain their distinct evidence classes and never become native
 predecessors. This reuses the six Home-qualified products and existing capture,
 Home and cleanup paths; it does not admit native work.
 
-The frozen native oracle removes only recorder-duration upper bounds. The collector
+The frozen native oracle applies the declared timing rule and a source-bound scroll
+check: floating-point frame conversion allows at most `1e-6` points of absolute
+noise, while object/window/scene/request identities stay exact. UIKit additionally
+requires the expected accessibility identifier at both gesture ends. This is not
+a layout or timing tolerance. Historical baselines retain the exact computed prior
+oracle identity; original frozen files remain unchanged. The collector
 preserves Home's committed prefix, then collects inactive View revisions and exact
 Action counts/owners; it does not equate a writer checkpoint with end of SDK work.
 Successful cleanup requires request-bound native Home/input-idle proof. Failure

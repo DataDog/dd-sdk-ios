@@ -6,6 +6,7 @@ No XCTest result is constructed. The complete mapper inventory remains separate.
 import hashlib
 import json
 import math
+import scroll_geometry
 import uuid
 
 
@@ -242,8 +243,7 @@ def scroll(all_rows,before,after,identifier,binding):
     require(x['id']==y['id'] and x['owned'] is True and y['owned'] is True
             and x['window']==y['window']==binding['window'] and x['scene']==y['scene']==binding['scene'],'scroll owner changed')
     require(all(z['hidden'] is False and z['alpha']>0 and z['enabled'] is True for z in [x,y]),'scroll was unavailable')
-    # Public accessibility bounds tie the callback's concrete UIScrollView to this phase's control.
-    require(rectangle(x['frame_in_window'])==rectangle(item['frame_in_window']),'gesture belongs to another visible scroll')
+    scroll_geometry.check(x,y,item,before['payload']['topology']['framework'])
     require(len(x['offset'])==len(y['offset'])==2 and all(type(n) in [int,float] and math.isfinite(n) for n in x['offset']+y['offset'])
             and x['offset']!=y['offset'],'no actual content displacement')
     return {'begin':begin,'end':end}

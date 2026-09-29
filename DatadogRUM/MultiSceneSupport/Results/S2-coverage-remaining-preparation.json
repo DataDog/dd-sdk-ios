@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "SPLIT_CANDIDATE_PREPARED_NOT_ADMITTED",
+  "state": "CORRECTED_CANDIDATE_REVIEWED_NOT_ADMITTED",
   "updated_at": "2026-09-28T23:34:22Z",
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
@@ -138,15 +138,15 @@
   },
   "results": {
     "builds": 0,
-    "native_launches": 3,
+    "native_launches": 4,
     "backend_queries": 0,
     "gate_closures": [],
     "qualified_cells": 1,
     "remaining_cells": 8,
-    "untouched_cells": 7,
-    "incomplete_cells": 1
+    "untouched_cells": 6,
+    "incomplete_cells": 2
   },
-  "next_action": "UIKit split candidate remains reviewed and unconsumed; user unavailable. Preserve both baselines and the exact preparation. Continue independent S3:H06 preparation; a future human sitting requires a new operator channel and fresh readiness before admission.",
+  "next_action": "Fresh operator readiness for one corrected candidate-only UIKit split session. Same products, prior baselines preserved; no native admission yet.",
   "review_loop": {
     "rounds": 2,
     "final_findings": 0,
@@ -252,24 +252,75 @@
     "new_native_runs": 0,
     "gate_closures": []
   },
+  "split_continuation_history": [
+    {
+      "state": "INVALID_SCROLL_FRAME_CHECK_CLEANUP_PASS",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/sitting",
+      "plan": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/sitting/runtime/runtime-plan.json",
+        "sha256": "7d51fccf0b3d2974795f8e2336cd87f60a94b89a5e6ebe678e8d557108f5a9b6"
+      },
+      "series": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/series/series.json",
+        "sha256": "c91ce9d1668c37d3628bf858cd15b6d67af73fc2ea3e0456a94bb0aea7e3a6bd"
+      },
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/sitting/runtime/controls.json",
+        "sha256": "b61a1c1478ed4a764e55f7574364c52cf02e835fffa57e1b5372f5e3265a9acd"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/sitting/runtime/review.json",
+        "sha256": "3e512777c0cda121ee9265b3277095bafb79fad5a309ea02c4cfe13fc133c153"
+      },
+      "matrix": [
+        {
+          "build": "candidate-27.1",
+          "device": "duo",
+          "framework": "UIKit",
+          "layout": "split",
+          "multiple_scenes": false
+        }
+      ],
+      "scope": "Foreground View/Navigation/Action ownership in the actual layout; full Home lifecycle remains unqualified. Release and fresh native idle are required independently before cleanup.",
+      "new_builds": 0,
+      "new_native_runs": 1,
+      "gate_closures": [],
+      "deferral": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/deferred.json",
+        "sha256": "7369e7813251b0b93ba1209919ba69225df720163c61c3fba2eb8981f42d74be"
+      },
+      "resume_preparation": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/resume-ppl1jqdd/preparation.json",
+        "sha256": "83e61a6efd967de37b6c2c6a7028ed20a83ce39a919c55dbcdd1cafc901db62f"
+      },
+      "native_admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/sitting/runtime/native-admission.json",
+        "sha256": "00ff6f4f33d118f12392a3906e9eb544b4a62c5c90ac14c0bdd1c5febba2c1d8"
+      },
+      "native_outcome": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/resume-ppl1jqdd/stopped.json",
+        "sha256": "65a538beeed843d0c2abef78f67104e371613ad8c54736486d17b3ff76bbab7d"
+      }
+    }
+  ],
   "split_continuation": {
-    "state": "PREPARED_OPERATOR_UNAVAILABLE",
-    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/sitting",
+    "state": "REVIEWED_WAITING_FRESH_OPERATOR",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/sitting",
     "plan": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/sitting/runtime/runtime-plan.json",
-      "sha256": "7d51fccf0b3d2974795f8e2336cd87f60a94b89a5e6ebe678e8d557108f5a9b6"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/sitting/runtime/runtime-plan.json",
+      "sha256": "c6dabfae1cd9fc7498df2b9f9bae1d3537f1a5e647abc4fae78f9d6bd3e833b7"
     },
     "series": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/series/series.json",
-      "sha256": "c91ce9d1668c37d3628bf858cd15b6d67af73fc2ea3e0456a94bb0aea7e3a6bd"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/series/series.json",
+      "sha256": "94591c4525c815e2ce0e89b6dbd105d0475aa3ce7737b6a583237c5891abab96"
     },
     "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/sitting/runtime/controls.json",
-      "sha256": "b61a1c1478ed4a764e55f7574364c52cf02e835fffa57e1b5372f5e3265a9acd"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/sitting/runtime/controls.json",
+      "sha256": "810fe46e81b8e2c594211dd7db031b0896420b839dd021cb1fe1bb244159805f"
     },
-    "review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/sitting/runtime/review.json",
-      "sha256": "3e512777c0cda121ee9265b3277095bafb79fad5a309ea02c4cfe13fc133c153"
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/continuation-definition.json",
+      "sha256": "12324fa2038ba9e1ea0bdf65e62a97d91b868ef55ddd0f4b2f87b3cd8bf7be8c"
     },
     "matrix": [
       {
@@ -284,9 +335,44 @@
     "new_builds": 0,
     "new_native_runs": 0,
     "gate_closures": [],
-    "deferral": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/deferred.json",
-      "sha256": "7369e7813251b0b93ba1209919ba69225df720163c61c3fba2eb8981f42d74be"
+    "preceding_attempt": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/sitting/runtime/cells/candidate-27.1-duo-UIKit-split-single/summary.json",
+      "sha256": "a0b1ab3ca894efa8d800d2e5a0839f90dd05b7e5f6e483d79b149ac75431958f"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/sitting/runtime/review.json",
+      "sha256": "9b564413142dd91663cc40218e550511db2ae3bbe02fad0d5362c404ff727767"
     }
+  },
+  "scroll_frame_correction": {
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/scroll-frame-k4j69qvm/definition.json",
+      "sha256": "78525cc9a66a5d9acb17a9b120123626807f07da25ecc7eceeaa68e4cfb23634"
+    },
+    "original_replay": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/scroll-frame-k4j69qvm/original-replay.json",
+      "sha256": "cb56746e0fe1b9c6d187e23cdc7c6a7df8a2ba89ea2f2edc6e12ebbd38e8a5f2"
+    },
+    "saved_replay": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/frozen-oracle-replay.json",
+      "sha256": "b395e428bb418985d5009cdfb60793294f4e2ddbfe8fc504b354859616f59c5f"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/sitting/runtime/review.json",
+      "sha256": "9b564413142dd91663cc40218e550511db2ae3bbe02fad0d5362c404ff727767"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/scroll-frame-k4j69qvm/controls-r3.json",
+      "sha256": "53ed07d657a375b530cafdfbf32866174726ac9cb516584e0b6a8a79a65270d5"
+    },
+    "tests": 89,
+    "original_test_only_import_failure": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/scroll-frame-k4j69qvm/controls-r2.json",
+      "sha256": "7937b5fd25266f25fc68c0e2ddb7d111d35229aa1c5537e06ff81e879de606df"
+    },
+    "preparation_rejections": "Canonical consumed-record guard and exact prior-measurement guard stopped local preparation before native work; logs retained in split-scroll-candidate-17ovynzz. Consumed record moved intact to history, exact predecessor mapping reviewed.",
+    "builds": 0,
+    "native_runs": 0,
+    "gates_closed": []
   }
 }

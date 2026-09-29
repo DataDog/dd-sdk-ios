@@ -77,7 +77,7 @@ class NativeInputControls(unittest.TestCase):
     def scroll_rows(self):
         before=copy.deepcopy(self.evidence[2]);after=copy.deepcopy(self.evidence[-1]);after['sequence']=7
         for row in [before,after]:row['payload']['topology']['accessibility']=[{'identifier':'home.scroll','frame_in_window':[10,100,300,150]}]
-        view={'id':'scroll','window':'window','scene':'scene','owned':True,'hidden':False,'alpha':1,'enabled':True,'frame_in_window':[10,100,300,150],'offset':[0,0]}
+        view={'id':'scroll','accessibility_id':'home.scroll','window':'window','scene':'scene','owned':True,'hidden':False,'alpha':1,'enabled':True,'frame_in_window':[10,100,300,150],'offset':[0,0]}
         a={'gesture_id':'gesture','request_id':self.request['request_id'],'current_request_id':self.request['request_id'],
            'state':1,'uptime_ns':101,'scroll':view}
         b=copy.deepcopy(a);b.update(state=3,uptime_ns=115);b['scroll']['offset']=[0,60]
@@ -85,6 +85,35 @@ class NativeInputControls(unittest.TestCase):
         return rows,before,after
     def test_observed_scroll_displacement_matches_actual_target(self):
         rows,before,after=self.scroll_rows();self.assertEqual(h.scroll(rows,before,after,'home.scroll',self.binding)['end']['sequence'],5)
+    def test_scroll_frame_conversion_noise_keeps_the_same_owner(self):
+        rows,before,after=self.scroll_rows()
+        before['payload']['topology']['accessibility'][0]['frame_in_window']=[16,292.33333333333337,350,150]
+        rows[1]['payload']['scroll']['frame_in_window']=[16,292.3333333333333,350,150.00000000000006]
+        self.assertEqual(h.scroll(rows,before,after,'home.scroll',self.binding)['end']['sequence'],5)
+    def test_scroll_geometry_tolerance_cannot_accept_a_different_effect(self):
+        mutations={'point change':('frame_in_window',[10,100.000002,300,150]),
+                   'one pixel':('frame_in_window',[10,100+1/3,300,150]),
+                   'nan':('frame_in_window',[10,float('nan'),300,150]),
+                   'infinity':('frame_in_window',[10,100,float('inf'),150]),
+                   'empty width':('frame_in_window',[10,100,0,150]),
+                   'boolean':('frame_in_window',[True,100,300,150]),
+                   'foreign object':('id','other'), 'foreign window':('window','other'),
+                   'foreign scene':('scene','other'), 'unowned':('owned',False),
+                   'hidden':('hidden',True), 'transparent':('alpha',0), 'disabled':('enabled',False),
+                   'wrong UIKit target':('accessibility_id','other.scroll')}
+        for name,(key,value) in mutations.items():
+            rows,before,after=self.scroll_rows();rows[1]['payload']['scroll'][key]=value
+            with self.subTest(name=name),self.assertRaises(ValueError):h.scroll(rows,before,after,'home.scroll',self.binding)
+    def test_uikit_target_identifier_must_match_at_both_ends(self):
+        for first,last in [('home.scroll','other.scroll'),('other.scroll','other.scroll'),(None,None),('nil','nil')]:
+            rows,before,after=self.scroll_rows()
+            rows[1]['payload']['scroll']['accessibility_id']=first;rows[2]['payload']['scroll']['accessibility_id']=last
+            with self.subTest(first=first,last=last),self.assertRaises(ValueError):h.scroll(rows,before,after,'home.scroll',self.binding)
+    def test_swiftui_accessibility_bridge_does_not_require_the_uikit_identifier(self):
+        rows,before,after=self.scroll_rows()
+        for row in [before,after]:row['payload']['topology']['framework']='SwiftUI'
+        for row in rows[1:3]:row['payload']['scroll']['accessibility_id']='nil'
+        self.assertEqual(h.scroll(rows,before,after,'home.scroll',self.binding)['end']['sequence'],5)
     def test_cancelled_or_stationary_scroll_is_not_an_effect(self):
         for mutation in ['cancel','stationary','foreign frame','consumed request']:
             rows,before,after=self.scroll_rows();last=rows[2]['payload']

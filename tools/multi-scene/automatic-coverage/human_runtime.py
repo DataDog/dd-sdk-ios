@@ -92,16 +92,24 @@ def s2_scope():
 
 
 def s2_oracle(source, base):
-    """Apply only the approved timing rule to the original native oracle."""
+    """Apply the reviewed timing and scroll-identity corrections to the frozen oracle."""
     raw=(Path(source)/'runtime/helpers'/human_sessions.CONTRACT).read_bytes()
     require(hashlib.sha256(raw).hexdigest()==base['helpers'][human_sessions.CONTRACT], 'original native oracle changed')
     old=b"        limit=100_000_000 if cost['operation']=='snapshot' else 2_000_000\n        require(type(cost.get('duration_ns')) is int and 0<=cost['duration_ns']<=limit,'observer exceeded main-thread budget')"
     new=b"        require(type(cost.get('duration_ns')) is int and cost['duration_ns']>=0,'invalid observer duration')"
     require(raw.count(old)==1,'original observer timing rule changed')
     rendered=raw.replace(old,new)
-    return rendered, {'policy':'diagnostic-observer-timing-v1','original_sha256':hashlib.sha256(raw).hexdigest(),
+    predecessor={'policy':'diagnostic-observer-timing-v1','original_sha256':hashlib.sha256(raw).hexdigest(),
+                 'rendered_sha256':hashlib.sha256(rendered).hexdigest(),
+                 'scope':'Recorder duration upper bounds only; native ownership/order and operational deadlines unchanged.'}
+    scroll_old=b"    # Public accessibility bounds tie the callback's concrete UIScrollView to this phase's control.\n    require(rectangle(x['frame_in_window'])==rectangle(item['frame_in_window']),'gesture belongs to another visible scroll')"
+    scroll_new=b"    scroll_geometry.check(x,y,item,before['payload']['topology']['framework'])"
+    require(rendered.count(scroll_old)==1 and rendered.count(b'import math\n')==1,
+            'original scroll geometry rule changed')
+    rendered=rendered.replace(scroll_old,scroll_new).replace(b'import math\n',b'import math\nimport scroll_geometry\n')
+    return rendered, {'policy':'diagnostic-timing-scroll-identity-v2','predecessor':predecessor,'original_sha256':hashlib.sha256(raw).hexdigest(),
                       'rendered_sha256':hashlib.sha256(rendered).hexdigest(),
-                      'scope':'Recorder duration upper bounds only; native ownership/order and operational deadlines unchanged.'}
+                      'scope':'Recorder durations diagnostic; scroll geometry allows only1e-6 point arithmetic noise, UIKit target identifiers stay exact. Native object/window/scene/request/order, displacement and operational deadlines unchanged.'}
 
 
 def s2_helpers(measurement):

@@ -38,6 +38,19 @@ class CandidateControls(unittest.TestCase):
         with self.assertRaises(Rejected):c.nested_references(ref,s)
         alias=self.root/'alias.json';alias.symlink_to(p)
         with self.assertRaises(Rejected):c.nested_references({'path':str(alias),'sha256':s.sha(alias)},s)
+    def test_only_exact_computed_scroll_oracle_predecessor_can_be_reused(self):
+        old={'policy':'diagnostic-observer-timing-v1','original_sha256':'original','rendered_sha256':'old-render','scope':'old-scope'}
+        current={'policy':'diagnostic-timing-scroll-identity-v2','original_sha256':'original','rendered_sha256':'new-render','predecessor':old}
+        self.assertTrue(c.measurement_matches(old,old))
+        self.assertTrue(c.measurement_matches(old,current))
+        for key,value in [('policy','other'),('original_sha256','other'),('rendered_sha256','other'),('scope','other')]:
+            with self.subTest(key=key):self.assertFalse(c.measurement_matches(dict(old,**{key:value}),current))
+        self.assertFalse(c.measurement_matches(old,dict(current,policy='unreviewed')))
+        self.assertFalse(c.measurement_matches(old,dict(current,original_sha256='foreign')))
+        self.assertFalse(c.measurement_matches(old,dict(current,predecessor={})))
+        self.assertFalse(c.measurement_matches(old,{key:value for key,value in current.items() if key!='predecessor'}))
+        self.assertFalse(c.measurement_matches(dict(current,rendered_sha256='old-render'),current))
+
     def test_extra_missing_symlinked_or_changed_historical_artifact_rejects(self):
         out=self.root/'historical';out.mkdir();s.save(out/'summary.json',{})
         raw=out/'events.jsonl';raw.write_text('preserved rows')
