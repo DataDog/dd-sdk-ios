@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "work_item": "Physical iPad QuickTime recording capability",
+  "state": "PASS_CAPTURE_CAPABILITY_ONLY",
+  "owner": "Root",
+  "reviewer": "/root/c06_runtime_plan",
+  "updated_at": "2026-09-29T19:38:48.597524+00:00",
+  "gate_dependency": "S3:H06",
+  "candidate_sdk": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "source_head": "8f57d2495e51f31ab07ce65aa28df3d20b78c4bb",
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/quicktime-capture-rawr8wkz/definition.json",
+    "sha256": "b155bc2450570263d7026e0606fb1e7c58c0945a5ac2353f03b0978cceff404d"
+  },
+  "admission": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/quicktime-capture-rawr8wkz/admission.json",
+    "sha256": "d31da8ff1541634939a075f0b9f0b2f7f753649a3247fffa0978a26e9971a204"
+  },
+  "outcome": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/quicktime-capture-rawr8wkz/outcome.json",
+    "sha256": "aa010d530ea7976756826382f88ec3c45bd4b218e1a74c3e3fe43c6fd1e2a713"
+  },
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/quicktime-capture-rawr8wkz/outcome-review.json",
+    "sha256": "3cf9a06dad8d1ab93e12e06c9b6b82f701f060c6bb8ab8e00789818e30f50be1"
+  },
+  "restoration": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/quicktime-capture-rawr8wkz/restoration.json",
+    "sha256": "2c197002ae631238cd5b5e216c40253eae168b02c8d96a039a07134ff49e1b9e"
+  },
+  "device_hub": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/quicktime-capture-rawr8wkz/device-hub-observation.json",
+    "sha256": "499de72a5920a02456ea6983557216e0b174038b3a8ecb2d6ceb53cf527c654e"
+  },
+  "recordings": 1,
+  "fully_decoded_frames": 264,
+  "movie_bytes": 18105326,
+  "movie_sha256": "614539b01f444413d589cb18a4f96cad792376c671c1800585b9e813f5f37459",
+  "scenario": "PASS",
+  "evidence": "PASS",
+  "cleanup": "PASS",
+  "native_scenario_runs": 0,
+  "sdk_changes": false,
+  "gates_closed": [],
+  "human_admission": false,
+  "limitations": [
+    "QuickTime source checkmarks and restoration are actual returned CUA observations; no on-disk UI screenshot hash is claimed.",
+    "ffprobe reports273 metadata frames; the unchanged authoritative decoder completed264frames. Metadata is not the acceptance frame count.",
+    "One earlier stale readiness assertion stopped before admission/recording; no active deadline was extended.",
+    "Original CoreDevice1001/7000 failures remain immutable. No H06 startup, topology, SDK or backend qualification follows."
+  ],
+  "next": "Prepare a QuickTime-specific host recorder adapter with actual raw CUA observations and immutable file/decoder bindings. Qualify startup transfer and source-bound START/RUN/FINAL before one H06 cell. Device Hub is available for live inspection."
+}

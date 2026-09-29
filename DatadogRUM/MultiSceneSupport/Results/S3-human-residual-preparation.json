@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "Finite source-backed preparation of residual S3 human scenarios",
-  "state": "H06_ADAPTER_STOPPED_CAPTURE_UNSUPPORTED",
+  "state": "H06_QUICKTIME_CAPABILITY_PASS_INTEGRATION_PENDING",
   "defined_at": "2026-09-28T13:49:45.760600+00:00",
   "defined_before_implementation": true,
   "owner": "Root",
@@ -96,9 +96,9 @@
         "operations.cross-scene.physical-setup"
       ],
       "decisive_test": "Existing eight calls/four Operations: success A\u2192B, failure A\u2192B(error), parallel alpha A\u2192A and beta B\u2192B ending beta first. Preserve exact per-step view IDs and two visible native scenes through all calls.",
-      "missing": "Original no-launch adapter INVALID/cleanup PASS; CoreDevice screen recording unsupported and root-destination transfer failed. User now supplied a USB QuickTime iPad preview. Distinct one-shot movie/save/decode scope reviewed, pending audio-source approval and fresh admission. Startup transfer, H06 topology and SDK owners remain unqualified.",
+      "missing": "Results/S3-H06-quicktime-capture.json qualifies one saved/decoded iPad movie and restoration. The stopped CoreDevice failures remain. Startup transfer, run-marker integration and physical H06 owners remain unqualified.",
       "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
-      "state": "COREDEVICE_PATH_STOPPED_QUICKTIME_PREPARED",
+      "state": "QUICKTIME_CAPABILITY_PASS_H06_INTEGRATION_PENDING",
       "historical_fixture": "operations.cross-scene.lifecycle"
     },
     {
@@ -351,14 +351,14 @@
     "builds_admitted": 0,
     "native_admitted": false,
     "budget_policy": "Freeze setup/API/collection/cleanup limits from qualified observed adapter latencies before execution; no active deadline extension. Strict timing is diagnostic.",
-    "next": "Qualify the separately reviewed QuickTime movie/save/decode path only after the pending audio-source permission and fresh one-shot admission. Preserve the stopped CoreDevice attempt. Independently implement the bounded H04 cell from its owning preparation without invalidating H06 frozen fixture inputs.",
+    "next": "Prepare a QuickTime-specific host recorder adapter with actual raw CUA observations and immutable file/decoder bindings. Qualify startup transfer and source-bound START/RUN/FINAL before one H06 cell. Device Hub is available for live inspection.",
     "scope_increment": {
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_",
       "definition": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/definition.json",
         "sha256": "debf3bbb1f457e537f9d0ebd01e77710b915c7a5bf0b4615aa5b27043ffbd463"
       },
-      "state": "ADAPTER_STOPPED_CAPTURE_UNSUPPORTED",
+      "state": "QUICKTIME_CAPABILITY_PASS_INTEGRATION_PENDING",
       "builds_admitted": 0,
       "native_admitted": false,
       "unit_validation": {
@@ -1206,7 +1206,7 @@
         }
       },
       "quicktime_preparation": {
-        "state": "REVIEWED_NOT_ADMITTED_AUDIO_APPROVAL_PENDING",
+        "state": "PASS_CAPTURE_CAPABILITY_ONLY",
         "definition": {
           "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/quicktime-capture-rawr8wkz/definition.json",
           "sha256": "b155bc2450570263d7026e0606fb1e7c58c0945a5ac2353f03b0978cceff404d"
@@ -1219,11 +1219,20 @@
           "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/usb-reconnection-wiohqn99/summary.json",
           "sha256": "77a57ddc01a930eab5b8680d6c28decd80b47254e4dd70bb2bc76473fa2ccc78"
         },
-        "recordings": 0,
+        "recordings": 1,
         "native_scenario_runs": 0,
         "gates_closed": [],
-        "scope": "One movie capability check through the user-opened QuickTime UI; no app launch or H06 qualification.",
-        "prior_cmio_probe": "Optional metadata setter was rejected before execution; no CoreMediaIO flag change occurred."
+        "scope": "One saved/decoded physical iPad movie and restoration. Device Hub live preview observed separately. No app launch or H06 qualification.",
+        "prior_cmio_probe": "Optional metadata setter was rejected before execution; no CoreMediaIO flag change occurred.",
+        "result_owner": "Results/S3-H06-quicktime-capture.json",
+        "outcome": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/quicktime-capture-rawr8wkz/outcome.json",
+          "sha256": "aa010d530ea7976756826382f88ec3c45bd4b218e1a74c3e3fe43c6fd1e2a713"
+        },
+        "outcome_review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/quicktime-capture-rawr8wkz/outcome-review.json",
+          "sha256": "3cf9a06dad8d1ab93e12e06c9b6b82f701f060c6bb8ab8e00789818e30f50be1"
+        }
       }
     }
   },
@@ -1239,6 +1248,6 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/s3-residual-review.json",
     "sha256": "358e67b60fb25744ada5ddf6902e5832285a28489492900077061fedd7799890"
   },
-  "updated_at": "2026-09-29T18:15:52.325559+00:00",
+  "updated_at": "2026-09-29T19:38:48.597524+00:00",
   "native_adapter_attempts": 1
 }

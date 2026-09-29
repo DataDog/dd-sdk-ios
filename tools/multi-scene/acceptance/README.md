@@ -655,6 +655,18 @@ Actual native command responses use the bounded 1 MiB host-context parser; the
 64 KiB app-channel limit is unchanged. Large process inventories retain every row,
 strict JSON validation and exact raw-response/receipt joins through setup and cleanup.
 
+### Physical recording alternatives
+
+A live Device Hub preview is useful for inspection; it does not prove that a
+recording finalized. The [QuickTime capability result](../../../DatadogRUM/MultiSceneSupport/Results/S3-H06-quicktime-capture.json)
+qualifies one selected iPad movie through supported UI Start/Stop/Save and complete
+decode. Preserve actual returned source/control observations, an absent destination,
+final file hash and decoded frames; restore the original audio input afterward.
+Activate the captured document before saving. Closing its last document can leave
+QuickTime with no AX window; opening New Movie Recording restores the preview.
+Metadata frame counts do not replace the decoder's emitted-frame inventory. This
+capability does not qualify H06 startup, causal run markers or simultaneous owners.
+
 ### H06 physical cleanup disposition
 
 Only this physical fixture may record `OS_APP_UNINSTALL_CONTRACT` for private
