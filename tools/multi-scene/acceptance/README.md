@@ -391,8 +391,12 @@ before the same calls at steps6–21. Catalog selection alone cannot pass that p
 active Home mapper snapshots and unchanged native/input identities. Select the
 current View document version, preserving old occurrences and raw IDs; mapper
 delivery order is not navigation order. Re-read both direct SDK owners and full
-input inventory after any wait. The actual adapter must use the session-aware
-`rumContextSnapshot(for:at:)`, with native scene IDs obtained from the registry.
+input inventory after any wait. The app-only sampler uses session-aware
+`rumContextSnapshot(for:at:)` for both native scene IDs at one sampled date. It
+retains missing/partial SDK reads separately from its validated owner projection;
+eight controls reject absent/aliased owners, mixed sessions and input drift.
+Shared harness sources also compile in the hostless unit target, which does not
+link SDK frameworks. Keep the actual Monitor adapter in app-only source.
 The pure progress guard covers both setup markers and every before/after boundary
 through step21. Complete local checks require20 exact Action/Resource markers and
 eight ordered native calls. Generic completion never qualifies Operations.
@@ -410,8 +414,9 @@ run/process/profile/challenge/installed-receipt bytes. Preserve Swift numeric
 encoding; Python reserialization of geometry is not an acceptance rule. Cleanup
 replies never authorize teardown. Owner/input/transport controls qualify42 native
 and15 host cases; the original failed test-input attempt remains separately saved.
-Runtime SDK reads, the app pump, host release/display/binary proof and actual
-whole-interval capture still need integration and qualification.
+The SDK sampler is compiled and unit-qualified. Its runtime invocation, independent
+mapper snapshot, app pump, host release/display/binary proof and whole-interval
+capture still need integration and qualification.
 
 `operation_ownership.validate` checks eight raw steps, four reduced Operations,
 exact ID joins, failure reason and A/B endpoints using independently captured View,

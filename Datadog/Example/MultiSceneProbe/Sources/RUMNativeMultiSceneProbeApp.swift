@@ -9,7 +9,12 @@ import OSLog
 import SwiftUI
 import UIKit
 import DatadogCore
+#if DEBUG
+@testable import DatadogRUM
+@_spi(Internal) import DatadogInternal
+#else
 import DatadogRUM
+#endif
 import DatadogTrace
 
 @main
@@ -1370,3 +1375,19 @@ private enum ProbeArtifactCapture {
         }
     }
 }
+
+#if DEBUG
+// The hostless unit target compiles the pure harness sources without SDK linkage.
+// Keep its live SDK adapter in the app target.
+extension ProbePhysicalOperationContextSampler {
+    convenience init(input: ProbePhysicalOperationInput) {
+        self.init(observeInput: input.snapshot, readContext: { nativeID, sampledAt in
+            guard let monitor = RUMMonitor.shared() as? Monitor,
+                  let value = monitor.rumContextSnapshot(for: .scene(.init(rawValue: nativeID)), at: sampledAt) else { return nil }
+            return .init(applicationID: value.applicationID, sessionID: value.sessionID,
+                         viewID: value.viewID, viewName: value.viewName, viewURL: value.viewPath)
+        })
+    }
+
+}
+#endif

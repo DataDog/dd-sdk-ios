@@ -1152,4 +1152,133 @@ final class ProbePhysicalOperationOwnerTests: XCTestCase {
         XCTAssertNotNil(progress.observe(input: snapshot(), contexts: changed))
         XCTAssertNotNil(progress.observe(input: snapshot(), contexts: contexts()))
     }
+
+    private func sdkValues() -> [String: ProbePhysicalOperationSDKValue] {
+        Dictionary(uniqueKeysWithValues: contexts().values.map {
+            ($0.nativeSceneID, .init(applicationID: $0.applicationID, sessionID: $0.sessionID,
+                viewID: $0.viewID, viewName: $0.viewName, viewURL: $0.viewURL))
+        })
+    }
+
+    private func sample(values: [String: ProbePhysicalOperationSDKValue]? = nil) -> ProbePhysicalOperationContextSample {
+        let rows = values ?? sdkValues()
+        return ProbePhysicalOperationContextSampler(observeInput: snapshot, readContext: { nativeID, _ in rows[nativeID] }).sample()
+    }
+
+    func testSamplerUsesExactNativeTargetsAndOneDate() throws {
+        let expectedDate = Date(timeIntervalSince1970: 123), values = sdkValues(), input = snapshot()
+        var targets: [String] = [], dates: [Date] = []
+        var inputReads = 0, clockReads = 0
+        let sampler = ProbePhysicalOperationContextSampler(observeInput: {
+            inputReads += 1; return input
+        }, readContext: { nativeID, date in
+            targets.append(nativeID); dates.append(date); return values[nativeID]
+        }, now: { clockReads += 1; return expectedDate })
+        let capture = sampler.sample()
+        XCTAssertNil(capture.failure)
+        XCTAssertEqual(targets, ["native-scene-A", "native-scene-B"])
+        XCTAssertEqual(dates, [expectedDate, expectedDate])
+        XCTAssertEqual(clockReads, 1); XCTAssertEqual(inputReads, 2)
+        XCTAssertEqual(capture.sampledAt, expectedDate)
+        XCTAssertEqual(capture.before, input); XCTAssertEqual(capture.after, input)
+        XCTAssertEqual(capture.ownerProjection, contexts())
+        XCTAssertEqual(try JSONDecoder().decode(ProbePhysicalOperationContextSample.self,
+            from: JSONEncoder().encode(capture)), capture)
+    }
+
+    func testSamplerRetainsUnavailableExpiredAndIncompleteContexts() throws {
+        var missing = sdkValues(); missing.removeValue(forKey: "native-scene-A")
+        let unavailable = sample(values: missing)
+        XCTAssertNotNil(unavailable.failure); XCTAssertNil(unavailable.ownerProjection)
+        XCTAssertEqual(unavailable.reads.count, 2)
+        XCTAssertNil(unavailable.reads[0].value)
+        XCTAssertEqual(unavailable.reads[1].value, missing["native-scene-B"])
+        // The session-aware SDK reader returns nil for an expired or absent scene.
+        for field in ["applicationID", "sessionID", "viewID", "viewName", "viewURL"] {
+            for replacement in ["", "invalid"] {
+                if ["viewName", "viewURL"].contains(field) && replacement == "invalid" { continue }
+                var changed = sdkValues()
+                changed["native-scene-A"] = try edit(changed["native-scene-A"]!) { $0[field] = replacement }
+                let capture = sample(values: changed)
+                XCTAssertNotNil(capture.failure, field); XCTAssertNil(capture.ownerProjection, field)
+                XCTAssertEqual(capture.reads[0].value, changed["native-scene-A"])
+            }
+        }
+        for field in ["viewID", "viewName", "viewURL"] {
+            var changed = sdkValues()
+            changed["native-scene-A"] = try edit(changed["native-scene-A"]!) { $0.removeValue(forKey: field) }
+            XCTAssertNil(sample(values: changed).ownerProjection, field)
+        }
+    }
+
+    func testSamplerRejectsDifferentApplicationsSessionsAndAliasedViews() throws {
+        for field in ["applicationID", "sessionID", "viewID"] {
+            var changed = sdkValues()
+            changed["native-scene-B"] = try edit(changed["native-scene-B"]!) {
+                $0[field] = field == "viewID" ? changed["native-scene-A"]!.viewID! : "00000000-0000-0000-0000-000000000099"
+            }
+            let capture = sample(values: changed)
+            XCTAssertNotNil(capture.failure); XCTAssertNil(capture.ownerProjection)
+            XCTAssertEqual(capture.reads[1].value, changed["native-scene-B"])
+        }
+    }
+
+    func testSamplerRetainsInputChangeDuringSDKReads() throws {
+        let original = snapshot(), values = sdkValues()
+        let changed: ProbePhysicalInputSnapshot = try edit(original) { object in
+            var rows = object["input"] as! [[String: Any]]; rows[0]["revision"] = 11; object["input"] = rows
+        }
+        var live = original
+        let capture = ProbePhysicalOperationContextSampler(observeInput: { live }, readContext: { nativeID, _ in
+            live = changed; return values[nativeID]
+        }).sample()
+        XCTAssertEqual(capture.before, original); XCTAssertEqual(capture.after, changed)
+        XCTAssertEqual(capture.reads.count, 2)
+        XCTAssertNotNil(capture.failure); XCTAssertNil(capture.ownerProjection)
+    }
+
+    func testSamplerDoesNotReadSDKWhenInputIsInvalid() throws {
+        let held: ProbePhysicalInputSnapshot = try edit(snapshot()) { object in
+            var rows = object["input"] as! [[String: Any]]; rows[0]["touches"] = 1; object["input"] = rows
+        }
+        var reads = 0
+        let capture = ProbePhysicalOperationContextSampler(observeInput: { held }, readContext: { _, _ in
+            reads += 1; return nil
+        }).sample()
+        XCTAssertEqual(reads, 0); XCTAssertEqual(capture.reads, [])
+        XCTAssertEqual(capture.before, held); XCTAssertEqual(capture.after, held)
+        XCTAssertNotNil(capture.failure); XCTAssertNil(capture.ownerProjection)
+    }
+
+    func testSamplerProjectionRevalidatesReadTargetsAndInventory() throws {
+        let original = sample()
+        for field in ["logicalSceneID", "targetNativeSceneID"] {
+            let changed: ProbePhysicalOperationContextSample = try edit(original) { object in
+                var rows = object["reads"] as! [[String: Any]]; rows[0][field] = "wrong"; object["reads"] = rows
+            }
+            XCTAssertNil(changed.ownerProjection, field)
+        }
+        let duplicate: ProbePhysicalOperationContextSample = try edit(original) { object in
+            let rows = object["reads"] as! [[String: Any]]; object["reads"] = [rows[0], rows[0]]
+        }
+        XCTAssertNil(duplicate.ownerProjection)
+    }
+
+    func testSamplerSessionChangeAcrossWaitCannotBind() throws {
+        let first = sample()
+        var changed = sdkValues()
+        for native in ["native-scene-A", "native-scene-B"] {
+            changed[native] = try edit(changed[native]!) { $0["sessionID"] = "00000000-0000-0000-0000-000000000099" }
+        }
+        let second = sample(values: changed)
+        XCTAssertNil(first.failure); XCTAssertNil(second.failure)
+        XCTAssertNil(try binding(before: XCTUnwrap(first.ownerProjection), after: XCTUnwrap(second.ownerProjection)))
+    }
+
+    func testSamplerDirectReadsCannotSubstituteForMapperOwners() throws {
+        let capture = sample(), owners = try XCTUnwrap(capture.ownerProjection)
+        XCTAssertNil(try binding(signals: [], before: owners, after: owners))
+        XCTAssertNotNil(try binding(signals: views(), before: owners, after: owners))
+    }
+
 }

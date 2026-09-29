@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "Finite source-backed preparation of residual S3 human scenarios",
-  "state": "H06_CURRENT_VIEW_BINDING_PREPARED_RUNTIME_INTEGRATION_PENDING",
+  "state": "H06_SDK_SAMPLER_PREPARED_APP_HOST_INTEGRATION_PENDING",
   "defined_at": "2026-09-28T13:49:45.760600+00:00",
   "defined_before_implementation": true,
   "owner": "Root",
@@ -95,9 +95,9 @@
         "operations.cross-scene.physical-setup"
       ],
       "decisive_test": "Existing eight calls/four Operations: success A\u2192B, failure A\u2192B(error), parallel alpha A\u2192A and beta B\u2192B ending beta first. Preserve exact per-step view IDs and two visible native scenes through all calls.",
-      "missing": "Wire actual session-aware SDK scene reads, the unarmed app channel and host release/display/installed-code proof before marker4; guard steps4-21 and retain complete local/backend collection and safe cleanup. Original scenario/profile bytes remain unchanged; owner controls qualify preparation only.",
+      "missing": "Connect the reviewed SDK sampler and unarmed channel to app/host release, display and installed-code proof before marker4; guard steps4-21 with independent mapper/current-owner checks and retain complete backend collection and safe cleanup. Eight new sampler controls pass; no physical admission.",
       "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
-      "state": "POST_ARRANGEMENT_OWNER_CONTROLS_PASS_RUNTIME_PENDING",
+      "state": "SDK_SAMPLER_CONTROLS_PASS_APP_HOST_INTEGRATION_PENDING",
       "historical_fixture": "operations.cross-scene.lifecycle"
     },
     {
@@ -313,7 +313,7 @@
           "reason": "ordinary trackRUMView owns the explicit Home lifetime"
         }
       ],
-      "repair": "Separate physical-setup profile binds actual post-arrangement A/B Home IDs before marker4, keeps eight inferred calls and preserves old occurrences. Current document version selects mapper state without requiring delivery order. Pure owner/progress controls pass; actual SDK-reader/channel/host integration remains unqualified.",
+      "repair": "Post-arrangement profile and owner controls pass. Actual SDK sampler compiles in app target; eight injected-reader controls preserve missing/partial values and reject wrong targets, owner/session aliasing and input drift. Connect it to the unarmed capture channel and independent mapper before native admission.",
       "review": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/transport-controls-o97j57gc/home-setup-review.json",
         "sha256": "90c98f2a867bf081b662bd8d738194571501ad6eb60ac5943519c35f318b0585"
@@ -350,14 +350,14 @@
     "builds_admitted": 0,
     "native_admitted": false,
     "budget_policy": "Freeze setup/API/collection/cleanup limits from qualified observed adapter latencies before execution; no active deadline extension. Strict timing is diagnostic.",
-    "next": "Wire the actual session-aware SDK reader and unarmed app capture pump, then the independent host release/display/installed-code barrier and whole critical interval. No physical run is admitted; prefix stops before marker4.",
+    "next": "Connect the reviewed live SDK sampler to the unarmed app channel, then bind host release/display/installed-code proof and the whole critical interval. Read sampler target-membership evidence before changes: shared harness sources compile in a hostless unit target without SDK linkage. No physical run admitted.",
     "scope_increment": {
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_",
       "definition": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/definition.json",
         "sha256": "debf3bbb1f457e537f9d0ebd01e77710b915c7a5bf0b4615aa5b27043ffbd463"
       },
-      "state": "POST_ARRANGEMENT_OWNER_CONTROLS_PASS_RUNTIME_PENDING",
+      "state": "SDK_SAMPLER_CONTROLS_PASS_APP_HOST_INTEGRATION_PENDING",
       "builds_admitted": 0,
       "native_admitted": false,
       "unit_validation": {
@@ -517,6 +517,63 @@
         "signing_attempt": {
           "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/owner-binding-a2li9bq5/signed-checkpoint-attempt.json",
           "sha256": "ff024744ec69fd18a70ff40fd75208aa807f42008ad545205408a28c41301c90"
+        }
+      },
+      "sdk_sampler": {
+        "state": "EIGHT_CONTROLS_PASS_APP_ADAPTER_COMPILES",
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/runtime-reader-zktmxnqc",
+        "definition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/runtime-reader-zktmxnqc/definition.json",
+          "sha256": "4d7fc00f6333099715da9ba9aa9f4aa9900fc7f8c158b678bbd8b0e2ec517a7b"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/runtime-reader-zktmxnqc/review.json",
+          "sha256": "a7485ffe0c68925101adc6b46f93d81801ac0922de6d9e7bc0cfa50054a0513a"
+        },
+        "verdict": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/runtime-reader-zktmxnqc/verdict.json",
+          "sha256": "12611b14877b6c020fcecd8c3611c6c12de83ce23eb23b663fad124bd675929a"
+        },
+        "original_build": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/runtime-reader-zktmxnqc/failed-build-validation.json",
+          "sha256": "4fcfa3a3fab2aba035315938821211bcbc84e86948f3cee00d5061595378680a"
+        },
+        "original_cleanup": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/runtime-reader-zktmxnqc/failed-cleanup.json",
+          "sha256": "d57617a5d87644d555687f62c4d34b9ea89f089e46252f658b6a8c46e0ccc487"
+        },
+        "correction_definition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/runtime-reader-zktmxnqc/app-target-correction/definition.json",
+          "sha256": "e4c6224b39c82b84b4a1a04aa5122014168887585b3785c089be8b9b3db4094f"
+        },
+        "correction_review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/runtime-reader-zktmxnqc/app-target-correction/review.json",
+          "sha256": "5ef8b80308fed9b1b19e4453341d3524c61482f1a15812b3fb18c76f9c76186a"
+        },
+        "correction_unit": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/runtime-reader-zktmxnqc/app-target-correction/unit-validation.json",
+          "sha256": "5d4b1711140b1673a970cbcc5e89853b2083229e49fe9872f4b929f1bd1efd5e"
+        },
+        "correction_cleanup": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/runtime-reader-zktmxnqc/app-target-correction/cleanup.json",
+          "sha256": "70883eb2e3fb0f73ba925899dac7a9b3f81490622e24f55dc5b29148b112db6b"
+        },
+        "compiler_membership": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/runtime-reader-zktmxnqc/app-target-correction/compiler-membership.json",
+          "sha256": "160e012fa1dd6da218f5f048c93db914a8e08bada34f9d6fe87d9506611bec65"
+        },
+        "warnings": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/runtime-reader-zktmxnqc/app-target-correction/warning-disposition.json",
+          "sha256": "e04c18d57ac3d2cec008545dfa4c26c47f9ff77c3ac7c9a204139b0550cf4bc6"
+        },
+        "controls": 8,
+        "unit_invocations": 2,
+        "native_scenario_runs": 0,
+        "gate_closures": [],
+        "limits": "Actual Monitor adapter belongs to app target; controls inject SDK reads. Capture both actual SDK samples and an independent recorder snapshot before binding current owners. App/host capture and physical acceptance remain unqualified.",
+        "signing_attempt": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/runtime-reader-zktmxnqc/signed-checkpoint-attempt.json",
+          "sha256": "1af8c2e8015243ab9605496f394f46bf7e94c5128be2581fb4afcc73149cd1d8"
         }
       }
     }

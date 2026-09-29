@@ -1075,3 +1075,107 @@ internal struct ProbePhysicalOperationOwners: Codable, Equatable {
         }
     }
 }
+
+#if DEBUG
+/// Values returned by the SDK, without filling absent fields from mapper data.
+internal struct ProbePhysicalOperationSDKValue: Codable, Equatable {
+    let applicationID: String
+    let sessionID: String
+    let viewID: String?
+    let viewName: String?
+    let viewURL: String?
+}
+
+internal struct ProbePhysicalOperationSDKRead: Codable, Equatable {
+    let logicalSceneID: String
+    let targetNativeSceneID: String
+    let value: ProbePhysicalOperationSDKValue?
+}
+
+internal struct ProbePhysicalOperationContextSample: Codable, Equatable {
+    let sampledAt: Date
+    let before: ProbePhysicalInputSnapshot
+    let after: ProbePhysicalInputSnapshot
+    let reads: [ProbePhysicalOperationSDKRead]
+    let failure: String?
+
+    @MainActor
+    init(sampledAt: Date, before: ProbePhysicalInputSnapshot, after: ProbePhysicalInputSnapshot,
+         reads: [ProbePhysicalOperationSDKRead]) {
+        self.sampledAt = sampledAt; self.before = before; self.after = after; self.reads = reads
+        failure = Self.validate(sampledAt: sampledAt, before: before, after: after, reads: reads)
+    }
+
+    @MainActor
+    private static func validate(sampledAt: Date, before: ProbePhysicalInputSnapshot,
+                                 after: ProbePhysicalInputSnapshot, reads: [ProbePhysicalOperationSDKRead]) -> String? {
+        if let reason = before.idleFailure() ?? after.idleFailure() { return reason }
+        guard before == after else { return "native input changed during SDK context reads" }
+        guard sampledAt.timeIntervalSince1970.isFinite,
+              reads.map(\.logicalSceneID) == ["scene-A", "scene-B"] else { return "SDK scene read inventory differs" }
+        func uuid(_ value: String?) -> Bool {
+            guard let value else { return false }
+            return UUID(uuidString: value)?.uuidString.lowercased() == value
+        }
+        for read in reads {
+            guard let scene = after.scenes.first(where: { $0.logicalSceneID == read.logicalSceneID }),
+                  read.targetNativeSceneID == scene.nativeSceneID else { return "SDK read targets a different native scene" }
+            guard let value = read.value else { return "current session-aware SDK scene context unavailable" }
+            guard uuid(value.applicationID), uuid(value.sessionID), uuid(value.viewID),
+                  value.viewName?.isEmpty == false, value.viewURL?.isEmpty == false else {
+                return "current SDK scene context is incomplete"
+            }
+        }
+        guard Set(reads.compactMap { $0.value?.applicationID }).count == 1,
+              Set(reads.compactMap { $0.value?.sessionID }).count == 1,
+              Set(reads.compactMap { $0.value?.viewID }).count == 2 else {
+            return "SDK scene owners have different applications/sessions or aliased views"
+        }
+        return nil
+    }
+
+    /// Raw reads remain in the sample. This projection neither proves mapper
+    /// delivery nor admits setup, SDK work, display readiness or cleanup.
+    @MainActor
+    var ownerProjection: [String: ProbePhysicalOperationRUMOwner]? {
+        guard failure == nil, Self.validate(sampledAt: sampledAt, before: before, after: after, reads: reads) == nil else {
+            return nil
+        }
+        var owners: [String: ProbePhysicalOperationRUMOwner] = [:]
+        for read in reads {
+            guard let value = read.value, let viewID = value.viewID,
+                  let name = value.viewName, let url = value.viewURL else { return nil }
+            owners[read.logicalSceneID] = .init(logicalSceneID: read.logicalSceneID, nativeSceneID: read.targetNativeSceneID,
+                applicationID: value.applicationID, sessionID: value.sessionID, viewID: viewID, viewName: name, viewURL: url)
+        }
+        return owners
+    }
+}
+
+/// Synchronous main-actor capture. The input sampler resolves registered native
+/// scene/window/root identities; SDK reads always use that actual scene target.
+@MainActor
+internal final class ProbePhysicalOperationContextSampler {
+    private let observeInput: () -> ProbePhysicalInputSnapshot
+    private let readContext: (String, Date) -> ProbePhysicalOperationSDKValue?
+    private let now: () -> Date
+
+
+    init(observeInput: @escaping () -> ProbePhysicalInputSnapshot,
+         readContext: @escaping (String, Date) -> ProbePhysicalOperationSDKValue?, now: @escaping () -> Date = Date.init) {
+        self.observeInput = observeInput; self.readContext = readContext; self.now = now
+    }
+
+    func sample() -> ProbePhysicalOperationContextSample {
+        let before = observeInput(), sampledAt = now()
+        var reads: [ProbePhysicalOperationSDKRead] = []
+        if before.idleFailure() == nil {
+            for scene in before.scenes {
+                reads.append(.init(logicalSceneID: scene.logicalSceneID, targetNativeSceneID: scene.nativeSceneID,
+                                   value: readContext(scene.nativeSceneID, sampledAt)))
+            }
+        }
+        return .init(sampledAt: sampledAt, before: before, after: observeInput(), reads: reads)
+    }
+}
+#endif
