@@ -111,7 +111,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     let isInitialSession: Bool
     /// The start time of this Session, measured in device date. In initial session this is the time of SDK init.
     let sessionStartTime: Date
-    /// Time of the last RUM interaction noticed by this Session.
+    /// Time of the last RUM interaction noticed by this Session, measured in device time (see `RUMCommandDeviceTime`).
     private(set) var lastInteractionTime: Date
     /// Indicates whether the "ApplicationLaunch" view was active when the app entered the background.
     private var hadApplicationLaunchViewWhenEnteringBackground: Bool? = nil
@@ -159,7 +159,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         self.sessionUUID = sessionUUID
         self.isInitialSession = isInitialSession
         self.sessionStartTime = startTime
-        self.lastInteractionTime = startTime
+        self.lastInteractionTime = dependencies.commandDeviceTime.value ?? startTime
         self.trackBackgroundEvents = dependencies.trackBackgroundEvents
         self.endReason = nil
         self.state = RUMSessionState(
@@ -277,7 +277,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     // MARK: - RUMScope
 
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
-        if hasTimedOut(currentTime: command.time) {
+        let deviceTime = dependencies.commandDeviceTime.value ?? command.time
+        if hasTimedOut(currentTime: deviceTime) {
             endReason = .timeOut
             return false // end this session (no longer keep the session scope)
         }
@@ -287,7 +288,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         }
 
         if command.isUserInteraction {
-            lastInteractionTime = command.time
+            lastInteractionTime = deviceTime
         }
 
         if !sampler.isSampled {

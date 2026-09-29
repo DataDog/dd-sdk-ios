@@ -7,6 +7,26 @@
 import DatadogInternal
 import Foundation
 
+/// Keeps the device time of the command being processed when `Monitor` replaced its `time` with a timestamp
+/// from a cross-platform SDK (see `Monitor.transform(command:)`).
+///
+/// That timestamp comes from another clock, which can drift from the device clock (e.g. after a device time change),
+/// so session inactivity is measured with this device time instead. It is `nil` for commands whose time was not
+/// replaced, and outside of processing.
+///
+/// It must be only accessed from the RUM context queue.
+internal final class RUMCommandDeviceTime {
+    /// Device time of the command being processed, if its `time` was replaced with a cross-platform timestamp.
+    private(set) var value: Date?
+
+    /// Runs `block` with `value` set to the given device time.
+    func process<T>(deviceTime: Date?, _ block: () -> T) -> T {
+        value = deviceTime
+        defer { value = nil }
+        return block()
+    }
+}
+
 internal struct VitalsReaders {
     let frequency: TimeInterval
 
@@ -77,6 +97,8 @@ internal struct RUMScopeDependencies {
 
     /// A factory function that creates a `INVMetric` when session starts.
     let interactionToNextViewMetricFactory: () -> INVMetricTracking?
+    /// Device time of the command being processed, if its time was replaced with a cross-platform timestamp.
+    let commandDeviceTime: RUMCommandDeviceTime
 
     init(
         featureScope: FeatureScope,
@@ -109,7 +131,8 @@ internal struct RUMScopeDependencies {
         interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking?,
         sessionType: RUMSessionType?,
         initialSessionUUID: RUMUUID? = nil,
-        timeseriesCollector: TimeseriesCollecting? = nil
+        timeseriesCollector: TimeseriesCollecting? = nil,
+        commandDeviceTime: RUMCommandDeviceTime = RUMCommandDeviceTime()
     ) {
         self.featureScope = featureScope
         self.rumApplicationID = rumApplicationID
@@ -142,6 +165,7 @@ internal struct RUMScopeDependencies {
         self.featureFlags = featureFlags
         self.networkSettledMetricFactory = networkSettledMetricFactory
         self.interactionToNextViewMetricFactory = interactionToNextViewMetricFactory
+        self.commandDeviceTime = commandDeviceTime
 
         if let sessionType = sessionType {
             self.sessionType = sessionType
