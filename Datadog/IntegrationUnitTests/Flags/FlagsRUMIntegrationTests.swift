@@ -84,25 +84,17 @@ final class FlagsRUMIntegrationTests: XCTestCase {
         monitor.stopView(key: "test-view")
 
         // Then
-        let rumEvents = core.waitAndReturnEvents(
-            ofFeature: RUMFeature.name,
-            ofType: RUMViewEvent.self
+        let session = try XCTUnwrap(
+            RUMSessionMatcher.groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers()).first
         )
-        let rumViewUpdateEvents = core.waitAndReturnEvents(
-            ofFeature: RUMFeature.name,
-            ofType: RUMViewUpdateEvent.self
-        )
-        let viewEvent = try XCTUnwrap(
-            rumEvents.last,
-            "Should have at least one view event"
-        )
+        let view = try XCTUnwrap(session.views.first { $0.name == "Test View" })
         let featureFlags = try XCTUnwrap(
-            rumViewUpdateEvents.last?.featureFlags?.featureFlagsInfo ?? viewEvent.featureFlags?.featureFlagsInfo,
+            view.latestViewEvent?.featureFlags?.featureFlagsInfo,
             "View should have feature flags"
         )
 
         XCTAssertEqual(featureFlags.count, 2)
-        XCTAssertEqual(featureFlags["boolean-flag"] as? String, "variation-124")
-        XCTAssertEqual(featureFlags["string-flag"] as? String, "variation-123")
+        XCTAssertEqual((featureFlags["boolean-flag"] as? AnyCodable)?.value as? String, "variation-124")
+        XCTAssertEqual((featureFlags["string-flag"] as? AnyCodable)?.value as? String, "variation-123")
     }
 }
