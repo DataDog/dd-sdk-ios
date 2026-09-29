@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "Finite source-backed preparation of residual S3 human scenarios",
-  "state": "H06_ADAPTER_PREPARED_DEVICE_PENDING",
+  "state": "H06_ADAPTER_STOPPED_CAPTURE_UNSUPPORTED",
   "defined_at": "2026-09-28T13:49:45.760600+00:00",
   "defined_before_implementation": true,
   "owner": "Root",
@@ -350,14 +350,14 @@
     "builds_admitted": 0,
     "native_admitted": false,
     "budget_policy": "Freeze setup/API/collection/cleanup limits from qualified observed adapter latencies before execution; no active deadline extension. Strict timing is diagnostic.",
-    "next": "Run the reviewed no-launch adapter qualification once after fresh connected/unlocked iPad discovery. Reuse the signed product and prepared contract; no build repeat. Actual startup/native challenge, two-window topology and Operations remain in the separately admitted first H06 human cell.",
+    "next": "The no-launch adapter attempt is INVALID: physical CoreDevice Screen Recording is unsupported and root-destination transfer failed. Cleanup PASS. Stop that recorder path; assess a distinct source-supported physical capture mechanism offline, then obtain scoped review before another native qualification. Preserve the signed product and all failed attempts. No H06 human session or release gate is admitted.",
     "scope_increment": {
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_",
       "definition": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/definition.json",
         "sha256": "debf3bbb1f457e537f9d0ebd01e77710b915c7a5bf0b4615aa5b27043ffbd463"
       },
-      "state": "ADAPTER_PREPARED_DEVICE_PENDING",
+      "state": "ADAPTER_STOPPED_CAPTURE_UNSUPPORTED",
       "builds_admitted": 0,
       "native_admitted": false,
       "unit_validation": {
@@ -1158,7 +1158,7 @@
         "gates_closed": []
       },
       "adapter_contract": {
-        "state": "REVIEWED_PREPARATION_ONLY",
+        "state": "NATIVE_ATTEMPT_INVALID_CLEANUP_PASS",
         "verdict": {
           "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/adapter-contract-mrlwkgsz/verdict.json",
           "sha256": "1d3c9b7a41f42dca3c7739c470475b0f7409d27b0b004860e7f2bba704d7e8c3"
@@ -1179,9 +1179,30 @@
           "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/adapter-contract-mrlwkgsz/review-final.json",
           "sha256": "30f06153c9e332fb104c2c454cb39e8d87aa9c6b9f8423005d741e188cffc4b8"
         },
-        "unique_offline_controls": 44,
+        "unique_offline_controls": 53,
         "native_admitted": false,
-        "gates_closed": []
+        "gates_closed": [],
+        "qualification_outcome": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/physical-adapter-q99v9ymn/native-response-correction-y47__19q/outcome.json",
+          "sha256": "f43fe3896a0a62ca32ac3af052a1665f63a87eb0a2414fa6b14ead034dba4d20"
+        },
+        "prepared_plan_after_native_reader_correction": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/physical-adapter-q99v9ymn/native-response-correction-y47__19q/prepared-product.json",
+          "sha256": "2f7b18055f6f371d74ec0c971fe752ea50159b1af85b1ddbc5ebfcc8cffe94c2"
+        },
+        "native_response_controls": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/physical-adapter-q99v9ymn/native-response-correction-y47__19q/controls.json",
+          "sha256": "e49b0a6688ba0ab46b65b8791bf7c8c45fb8ccbe653a2e3096ccb4e4125c062d"
+        },
+        "native_response_review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/physical-adapter-q99v9ymn/native-response-correction-y47__19q/review.json",
+          "sha256": "bf1db83f6b9a5f98bec42898b01c52db2325a287470e136a70578bf3837fb7bf"
+        },
+        "native_attempts": 1,
+        "qualification_review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/physical-adapter-q99v9ymn/native-response-correction-y47__19q/outcome-review.json",
+          "sha256": "42dfe21a034d288e2f06fbe20c6344fee0d21a2f01f5da0c74fa3e2059f92787"
+        }
       }
     }
   },
@@ -1197,5 +1218,6 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/s3-residual-review.json",
     "sha256": "358e67b60fb25744ada5ddf6902e5832285a28489492900077061fedd7799890"
   },
-  "updated_at": "2026-09-29T17:56:01.109986+00:00"
+  "updated_at": "2026-09-29T18:15:52.325559+00:00",
+  "native_adapter_attempts": 1
 }

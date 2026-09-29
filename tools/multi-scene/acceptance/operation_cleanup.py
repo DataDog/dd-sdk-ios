@@ -64,7 +64,7 @@ class ObservedDevice:
         prefix = f'{self.remote.sequence:05d}-' + label
         t.save(self.folder / (prefix + '-response.json'), raw)
         t.save(self.folder / (prefix + '-receipt.json'), recorded)
-        t.require(t.load(raw) == result and t.load(recorded) == receipt
+        t.require(setup.native_response(raw) == result and t.load(recorded) == receipt
                   and receipt['response_sha256'] == t.sha(raw), 'returned cleanup observation was substituted')
         t.require(receipt['before'] == receipt['remaining'] == [] and receipt.get('quiescence_error') is None
                   and type(receipt['returncode']) is int
@@ -123,7 +123,7 @@ class Cleanup:
                   and product['bundleIdentifier'] == self.bundle, 'cleanup product differs')
         self.product = product
         reference = setup.read(host.folder / 'process-before-response.json')
-        source = t.load(reference); args = source['info']['arguments']
+        source = setup.native_response(reference); args = source['info']['arguments']
         t.require(source['info']['commandType'] == 'devicectl.device.info.processes'
                   and source['info']['outcome'] == 'success' and args.count('--device') == 1
                   and args[args.index('--device') + 1] == self.remote.identifier, 'original process observation missing')

@@ -636,8 +636,11 @@ failed build separately.
 --output <fresh-root>` qualifies one recorder/screenshot and one opaque file
 roundtrip through the task app container. The reviewed admission fixes all stage
 cutoffs and a fresh nonce; its sidecar prevents replay. The app is installed once
-and never launched. The root-container payload requires no assumed Documents
-layout and cannot replace later native startup receipts.
+and never launched. The original root-container transfer failed on the physical
+iPad, and CoreDevice reported screen recording unsupported. That path is stopped;
+its INVALID verdict and successful cleanup are preserved at the
+[preparation owner](../../../DatadogRUM/MultiSceneSupport/Results/S3-human-residual-preparation.json).
+Do not admit a human session or repeat this mechanism from offline controls alone.
 
 Require fresh connected/unlocked physical iPad, active display, exact signed
 product/helper/decoder/Xcode identity, and initial app/process absence. Install
@@ -647,6 +650,10 @@ absence before uninstall. A discovered or ambiguous task process blocks removal.
 No human release receipt is fabricated. The result qualifies tools only; startup,
 input, concurrent topology, SDK/backend ownership and release gates stay separate.
 The launcher rejects a qualification from different Xcode bytes or device OS/build.
+
+Actual native command responses use the bounded 1 MiB host-context parser; the
+64 KiB app-channel limit is unchanged. Large process inventories retain every row,
+strict JSON validation and exact raw-response/receipt joins through setup and cleanup.
 
 ### H06 physical cleanup disposition
 

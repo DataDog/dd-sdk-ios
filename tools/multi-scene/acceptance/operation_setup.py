@@ -35,6 +35,12 @@ def read(path, maximum=t.MAX_CONTEXT_BYTES):
     return value
 
 
+def native_response(raw):
+    # CoreDevice inventories can exceed the small app-channel message limit.
+    # Preserve the existing bounded host-context limit and strict JSON parser.
+    return t.load(raw, maximum=t.MAX_CONTEXT_BYTES)
+
+
 def file_sha(path):
     path = Path(path)
     t.require(path.is_file() and not path.is_symlink(), 'missing or symlinked proof artifact')
@@ -236,7 +242,7 @@ class HostSetup:
         t.save(self.folder / (label + '-response.json'), raw)
         observed_receipt = read(source / 'receipt.json')
         t.save(self.folder / (label + '-receipt.json'), observed_receipt)
-        t.require(t.load(raw) == result and t.load(observed_receipt) == receipt
+        t.require(native_response(raw) == result and t.load(observed_receipt) == receipt
                   and receipt['response_sha256'] == t.sha(raw), 'native return differs from saved observation')
         t.require(type(receipt.get('returncode')) is int and receipt['returncode'] == 0
                   and receipt['before'] == receipt['remaining'] == [] and receipt.get('quiescence_error') is None
