@@ -199,6 +199,18 @@ class HostSetupTests(unittest.TestCase):
         self.assertEqual(len(self.remote.snapshot['inventory'][0]['windows']), 3)
         self.assertEqual(sum(c[0] == 'push' for c in self.remote.calls), 2)
 
+    def test_legacy_publication_retains_original_proof_without_display_extension(self):
+        proof = self.collect()
+        raw = t.encode(proof)
+        result = (self.setup.folder / 'result.json').read_bytes()
+        digest = self.setup.publish()
+        handoff = t.load((self.setup.folder / 'publication' / ('host-publication-' + digest + '.json')).read_bytes(),
+                         maximum=t.MAX_CONTEXT_BYTES)
+        self.assertEqual(base64.b64decode(handoff['proof']), raw)
+        self.assertEqual(base64.b64decode(handoff['result']), result)
+        self.assertNotIn('displayProof', proof)
+        self.assertFalse((self.setup.folder / 'display-extension.json').exists())
+
     def test_release_binds_fresh_challenge_request_and_precedes_native_commands(self):
         for field, value in [('run_id', 'old'), ('request_id', 'old'), ('request_sha256', '0'*64),
                              ('at', self.channel.deadline), ('user_message', '')]:

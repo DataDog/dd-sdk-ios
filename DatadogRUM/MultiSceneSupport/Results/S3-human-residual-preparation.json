@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "Finite source-backed preparation of residual S3 human scenarios",
-  "state": "H06_NATIVE_DISPLAY_UNIT_PREPARATION_PASS_HOST_BRIDGE_PENDING",
+  "state": "H06_DISPLAY_PROOF_PREPARATION_PASS_RUNNER_INTEGRATION_PENDING",
   "defined_at": "2026-09-28T13:49:45.760600+00:00",
   "defined_before_implementation": true,
   "owner": "Root",
@@ -95,9 +95,9 @@
         "operations.cross-scene.physical-setup"
       ],
       "decisive_test": "Existing eight calls/four Operations: success A\u2192B, failure A\u2192B(error), parallel alpha A\u2192A and beta B\u2192B ending beta first. Preserve exact per-step view IDs and two visible native scenes through all calls.",
-      "missing": "Install source-bound native owner/phase markers, connect independent display anchors and complete video to SDK boundaries, then integrate and qualify the physical adapter once. Host decoder controls grant no native credit.",
+      "missing": "Native marker/phase unit and typed host bridge controls pass. Integrate actual native observation pulls, screenshot/movie capture, completion/backend and cleanup once; qualify the physical adapter before human admission.",
       "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
-      "state": "HOST_DISPLAY_CODEC_CONTROLLED_NATIVE_INTEGRATION_PENDING",
+      "state": "DISPLAY_PROOF_CONTROLLED_RUNNER_INTEGRATION_PENDING",
       "historical_fixture": "operations.cross-scene.lifecycle"
     },
     {
@@ -350,7 +350,7 @@
     "builds_admitted": 0,
     "native_admitted": false,
     "budget_policy": "Freeze setup/API/collection/cleanup limits from qualified observed adapter latencies before execution; no active deadline extension. Strict timing is diagnostic.",
-    "next": "Implement the reviewed typed host display bridge with offline controls, then connect and qualify the physical adapter once. No human H06 admission yet.",
+    "next": "Integrate the reviewed host/display/capture/backend/cleanup components into one bounded physical H06 runner, qualify the changed adapter once, then admit the existing human setup cell. No human H06 admission yet.",
     "scope_increment": {
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_",
       "definition": {
@@ -1025,7 +1025,7 @@
         }
       },
       "display_bridge": {
-        "state": "REVIEWED_OFFLINE_DESIGN_NOT_IMPLEMENTED",
+        "state": "REVIEWED_OFFLINE_PREPARATION_PASS",
         "definition": {
           "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/display-bridge-sxu4adxo/definition.json",
           "sha256": "bf8fe732d1e15723a71126c55abf76a51814a760281ea7e7cd472f9b3fbba1bc"
@@ -1035,7 +1035,20 @@
           "sha256": "f9e9a33aeda148c9432d29a7cf539354e3d106675a5819decc740f4b386f1f21"
         },
         "native_runs": 0,
-        "gates_closed": []
+        "gates_closed": [],
+        "verdict": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/display-bridge-sxu4adxo/verdict.json",
+          "sha256": "82f3856bd2c16e09766946f34e6d28daa4eed7c56c2bd98d985f77fb0401c68d"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/display-bridge-sxu4adxo/review.json",
+          "sha256": "b3962e5e76caa8bc16c9ee99ca1ab82915c5a2465fb8d225725068582933475f"
+        },
+        "source": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/display-bridge-sxu4adxo/source-final.json",
+          "sha256": "85dc4dd59dbf71ca0a63a15a1b0179d85d39f5003625c3743f8059470f16dd9d"
+        },
+        "controls": 58
       }
     }
   },
@@ -1051,5 +1064,5 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/s3-residual-review.json",
     "sha256": "358e67b60fb25744ada5ddf6902e5832285a28489492900077061fedd7799890"
   },
-  "updated_at": "2026-09-29T14:44:44.718667+00:00"
+  "updated_at": "2026-09-29T15:00:44.611729+00:00"
 }

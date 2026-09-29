@@ -555,11 +555,28 @@ mismatched owners or causal links. Legacy unarmed output omits the map.
 
 The native hooks pass18 focused unit controls and three actual UIKit-rendered
 phase decodes. These detached-window controls do not prove physical visibility.
-The terminal join and affected host consumers pass29+52 controls. The typed host bridge,
-whole display/native join and physical adapter qualification remain pending at the
+The terminal join and affected host consumers pass29+52 controls. The typed host
+bridge passes58 offline controls and scoped review. The whole display/native join
+and physical adapter qualification remain pending at the
 [preparation owner](../../../DatadogRUM/MultiSceneSupport/Results/S3-human-residual-preparation.json).
 Do not enable the profile with the old host runner or infer pixel/native acceptance
 from local collection alone.
+
+`operation_display_proof.DisplayProofBridge` attaches after `HostSetup.collect()`
+and before publication. Supply original native START receipt/binding bytes and the
+manifest decoded from that collection's screenshot to `start()`. It publishes the
+one-use START request. Supply the resulting native RUN receipt and independently
+captured RUN image to `run()`, then call `HostSetup.publish()` once. Publication
+appends a selected proof/result and `display-extension.json`; the original proof
+and result stay immutable. Legacy publication omits the extension entirely.
+
+After the native collection seal, `final()` joins its original observation bytes,
+the FINAL receipt/screenshot and the finalized movie manifest, then publishes the
+FINAL proof. Collect native completion afterward; its ten-file map must match.
+The bridge never captures pixels or substitutes an older observation. A changed
+artifact, failed transfer or reused phase consumes the attempt. The caller still
+owns actual native pulls, screenshot/recorder lifecycle, complete backend evidence
+and separate cleanup. Offline controls do not admit a human session.
 
 ### H06 physical cleanup disposition
 

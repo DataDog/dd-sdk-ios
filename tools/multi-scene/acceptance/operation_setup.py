@@ -405,6 +405,10 @@ class HostSetup:
                       'host proof changed before publication')
             t.require(all(file_sha(self.folder / name) == digest for name, digest in proof['artifacts'].items()),
                       'host prerequisite changed before publication')
+            bridge = getattr(self, 'display_bridge', None)
+            if bridge is not None:
+                proof_raw, result_raw = bridge.extend_host(proof_raw, result_raw)
+                result = t.load(result_raw)
             payload = t.encode(dict(schemaVersion=1, identity=self.identity,
                 proof=base64.b64encode(proof_raw).decode(), result=base64.b64encode(result_raw).decode()))
             t.require(len(payload) <= t.MAX_CONTEXT_BYTES, 'host handoff too large')
@@ -418,8 +422,12 @@ class HostSetup:
             t.save(folder / 'result.json', t.encode(dict(state='HOST_PROOF_PUBLISHED', payloadSHA256=digest,
                 proofSHA256=result['proofSHA256'], deadline=self.channel.deadline, finishedAt=time.time(),
                 sdkAdmitted=False, teardownAuthorized=False)))
+            if bridge is not None:
+                bridge.host_published(digest)
             return digest
         except Exception as error:
+            if getattr(self, 'display_bridge', None) is not None:
+                self.display_bridge.invalidate(error)
             t.save(folder / 'failure.json', t.encode(dict(state='INVALID', errorType=type(error).__name__,
                 deadline=self.channel.deadline, finishedAt=time.time(), sdkAdmitted=False, teardownAuthorized=False)))
             raise
