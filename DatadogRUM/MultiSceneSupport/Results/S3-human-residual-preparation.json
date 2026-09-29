@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "Finite source-backed preparation of residual S3 human scenarios",
-  "state": "H06_LAUNCHER_PREPARATION_PASS_PHYSICAL_QUALIFICATION_PENDING",
+  "state": "H06_SIGNED_PRODUCT_PREPARED_PHYSICAL_QUALIFICATION_PENDING",
   "defined_at": "2026-09-28T13:49:45.760600+00:00",
   "defined_before_implementation": true,
   "owner": "Root",
@@ -95,9 +95,9 @@
         "operations.cross-scene.physical-setup"
       ],
       "decisive_test": "Existing eight calls/four Operations: success A\u2192B, failure A\u2192B(error), parallel alpha A\u2192A and beta B\u2192B ending beta first. Preserve exact per-step view IDs and two visible native scenes through all calls.",
-      "missing": "Launch/startup/readiness composition passes scoped review,63 distinct host controls and a real instruction-page identity/cleanup check. Prepare the signed physical Debug product and qualify recording/transfer once before human admission.",
+      "missing": "Reviewed launcher and signed arm64 Debug product are prepared. Freeze the actual command/profile qualification contract, then qualify physical recording/transfer once before human admission; the paired iPad is unavailable.",
       "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
-      "state": "LAUNCHER_CONTROLLED_PHYSICAL_PRODUCT_AND_ADAPTER_PENDING",
+      "state": "SIGNED_PRODUCT_PREPARED_PHYSICAL_ADAPTER_PENDING",
       "historical_fixture": "operations.cross-scene.lifecycle"
     },
     {
@@ -350,14 +350,14 @@
     "builds_admitted": 0,
     "native_admitted": false,
     "budget_policy": "Freeze setup/API/collection/cleanup limits from qualified observed adapter latencies before execution; no active deadline extension. Strict timing is diagnostic.",
-    "next": "Prepare source/compiler-bound signed physical Debug probe at SDK94842cc8 with the current fixture. Qualify actual physical screen recording, screenshots and transfer once when the iPad is available; only then admit the existing H06 human setup cell with fresh readiness.",
+    "next": "Freeze the physical adapter qualification contract against the prepared signed Debug product and original command schemas. Qualify actual recorder, screenshot and transfer once when the iPad is available; then admit the existing H06 human setup cell with fresh readiness. No build repeat is due.",
     "scope_increment": {
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_",
       "definition": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/definition.json",
         "sha256": "debf3bbb1f457e537f9d0ebd01e77710b915c7a5bf0b4615aa5b27043ffbd463"
       },
-      "state": "LAUNCHER_PREPARATION_PASS_PHYSICAL_QUALIFICATION_PENDING",
+      "state": "SIGNED_PRODUCT_PREPARED_PHYSICAL_QUALIFICATION_PENDING",
       "builds_admitted": 0,
       "native_admitted": false,
       "unit_validation": {
@@ -1123,6 +1123,39 @@
           "Qualify physical recording SIGINT/returned schema, screenshots and original transfers once.",
           "Obtain a fresh reviewed admission and explicit operator readiness before the existing one-cell H06 human setup."
         ]
+      },
+      "physical_product": {
+        "state": "REVIEWED_SIGNED_PHYSICAL_DEBUG_PRODUCT_PREPARED",
+        "verdict": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/physical-product-f_b3o_fc/verdict.json",
+          "sha256": "e37ba6e5e76d313e42522997553bd440a197bc2eab393b917ce923fa76e2d48b"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/physical-product-f_b3o_fc/review-final.json",
+          "sha256": "2a32fd434bc2130125795ab77363fdae6d8c9a0924bc4db1e4a4bd6882063843"
+        },
+        "signed_product": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/physical-product-f_b3o_fc/signed/product.json",
+          "sha256": "0ec2bc0848fa52e1e371d7112b3f86ddfe7f12d03ee174b99fb07e3c559524e4"
+        },
+        "compiler": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/physical-product-f_b3o_fc/arm64-continuation/compiler.json",
+          "sha256": "371c5f8fdd5bd10447c2534a5374a9840c2910209a3254e727059e05c2f86e14"
+        },
+        "source": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/physical-product-f_b3o_fc/source-build.json",
+          "sha256": "0a7fdb3f904e7351d848b2191d6c4342edc6b8964ab14bcb84a1c78970088bba"
+        },
+        "sdk_equivalence": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/physical-product-f_b3o_fc/sdk-equivalence.json",
+          "sha256": "5b937fde4448e304ad3cdf4a7e627978b89266c7d3954fe3804d3078585250cb"
+        },
+        "build_attempts": 2,
+        "original_build": "FAIL_ARCHITECTURE_PREPARATION",
+        "corrected_build": "PASS_ARM64_DEBUG",
+        "native_installs": 0,
+        "native_launches": 0,
+        "gates_closed": []
       }
     }
   },
@@ -1138,5 +1171,5 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/s3-residual-review.json",
     "sha256": "358e67b60fb25744ada5ddf6902e5832285a28489492900077061fedd7799890"
   },
-  "updated_at": "2026-09-29T16:13:49.617703+00:00"
+  "updated_at": "2026-09-29T16:36:48.764686+00:00"
 }

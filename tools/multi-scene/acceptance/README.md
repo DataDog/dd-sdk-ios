@@ -557,8 +557,9 @@ The native hooks pass18 focused unit controls and three actual UIKit-rendered
 phase decodes. These detached-window controls do not prove physical visibility.
 The terminal join and affected host consumers pass29+52 controls. The typed host
 bridge passes58 offline controls and scoped review. The post-startup coordinator and display/native join pass117 host controls and
-two focused fixture tests with cleanup PASS. Launcher composition and one physical
-adapter qualification remain pending at the
+two focused fixture tests with cleanup PASS. Launcher composition and the signed
+physical Debug product qualify preparation; one physical adapter qualification
+remains pending at the
 [preparation owner](../../../DatadogRUM/MultiSceneSupport/Results/S3-human-residual-preparation.json).
 Do not enable the profile with the old host runner or infer pixel/native acceptance
 from local collection alone.
@@ -623,7 +624,11 @@ quiescence and unambiguous task-process absence. Decode file URLs and reject
 conflicting bundle/executable ownership. After attempted launch without a validated
 channel, preserve the app and record cleanup BLOCKED for separate safe recovery.
 Offline controls and the actual host-page check qualify this composition only;
-product preparation and physical adapter qualification precede native admission.
+the prepared signed product still needs physical adapter qualification before
+native admission. For generic physical builds, set command-local `ARCHS=arm64`:
+Xcode may otherwise compile an arm64e app against arm64-only package products.
+Verify actual compiler triples and all required code slices; retain the original
+failed build separately.
 
 ### H06 physical cleanup disposition
 
