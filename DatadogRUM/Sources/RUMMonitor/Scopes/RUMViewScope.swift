@@ -755,9 +755,17 @@ extension RUMViewScope {
     private func sendErrorEvent(on command: RUMErrorCommand, context: DatadogContext, writer: Writer) {
         let errorId = dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat
         errorsCount += 1
-        totalAppHangDuration += (command as? RUMAddCurrentViewAppHangCommand)?.hangDuration ?? 0
 
         if let appHangCommand = command as? RUMAddCurrentViewAppHangCommand {
+            let hangStart = max(viewStartTime, appHangCommand.time)
+            let hangEnd = appHangCommand.time.addingTimeInterval(appHangCommand.hangDuration)
+            if hangEnd > hangStart {
+                let appStateHistory = context.applicationStateHistory
+                totalAppHangDuration += appStateHistory.state(at: viewStartTime) == nil
+                    ? hangEnd.timeIntervalSince(hangStart)
+                    : appStateHistory.foregroundDuration(during: hangStart...hangEnd)
+            }
+
             let appHang = DurationEvent(
                 id: errorId,
                 type: .error,

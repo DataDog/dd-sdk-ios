@@ -3373,6 +3373,70 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(stopViewEvent?.view.freezeRate, 0.5.hours)
     }
 
+    #if !os(macOS)
+    func testWhenAppHangSpansBackground_freezeRateCountsOnlyForegroundDuration() throws {
+        let startTime: Date = .mockDecember15th2019At10AMUTC()
+        let identity = ViewIdentifier("view")
+        let scenarios: [(hangStart: TimeInterval, hangDuration: TimeInterval, expectedFreezeRate: Double)] = [
+            (2, 5, 0), // Entirely in background
+            (1, 6, 1_800) // One second in foreground, five in background
+        ]
+
+        for scenario in scenarios {
+            let writer = FileWriterMock()
+            var context = self.context
+            context.applicationStateHistory = .mockWith(
+                initialState: .active,
+                date: startTime,
+                transitions: [(state: .background, date: startTime + 2)]
+            )
+            let scope = RUMViewScope(
+                isInitialView: false,
+                parent: parent,
+                dependencies: .mockWith(hasAppHangsEnabled: true, viewHitchesReaderFactory: { nil }),
+                identity: identity,
+                path: "view",
+                name: "View",
+                customTimings: [:],
+                startTime: startTime,
+                serverTimeOffset: .zero,
+                interactionToNextViewMetric: nil,
+                viewIndexInSession: 1
+            )
+
+            _ = scope.process(
+                command: RUMStartViewCommand.mockWith(time: startTime, identity: identity),
+                context: context,
+                writer: writer
+            )
+            _ = scope.process(
+                command: RUMHandleAppLifecycleEventCommand(time: startTime + 2, event: .didEnterBackground),
+                context: context,
+                writer: writer
+            )
+            XCTAssertTrue(scope.isActiveView)
+            _ = scope.process(
+                command: RUMAddCurrentViewAppHangCommand.mockWith(
+                    time: startTime + scenario.hangStart,
+                    hangDuration: scenario.hangDuration
+                ),
+                context: context,
+                writer: writer
+            )
+            _ = scope.process(
+                command: RUMStopViewCommand.mockWith(time: startTime + 7, identity: identity),
+                context: context,
+                writer: writer
+            )
+
+            let finalView = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last?.view)
+            XCTAssertEqual(try XCTUnwrap(finalView.freezeRate), scenario.expectedFreezeRate, accuracy: 0.001)
+            let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
+            XCTAssertEqual(error.freeze?.duration, scenario.hangDuration.dd.toInt64Nanoseconds)
+        }
+    }
+    #endif
+
     func testWhenViewErrorIsAdded_ButErrorEventDiscarded_itCallsCompletionHandler() throws {
         let completionExpectation = expectation(description: "Error processing completion")
 
