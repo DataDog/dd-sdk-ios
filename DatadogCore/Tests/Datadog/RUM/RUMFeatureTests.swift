@@ -213,3 +213,161 @@ class RUMFeatureTests: XCTestCase {
         }
     }
 }
+
+/// Tests for the synchronous sampling store that `RUMFeature` exposes to features which cannot wait
+/// for the RUM context to travel the message bus.
+class RUMSessionSamplingStoreTests: XCTestCase {
+    /// A session UUID whose Knuth hash fraction is roughly 6.4%.
+    ///
+    /// That band is what makes the two sampling policies distinguishable: the session is kept at a
+    /// 20% rate applied on its own, and dropped at the 2% that results from composing 20% with a 10%
+    /// session rate. A vector outside the band would be decided the same way by both policies, so the
+    /// assertions below would pass even if the policies were swapped.
+    private let sessionUUID = UUID(uuidString: "a1b2c3d4-e5f6-7890-abcd-ceb01cf21171")!
+    private let sessionID = "a1b2c3d4-e5f6-7890-abcd-ceb01cf21171"
+    private let sessionRate: SampleRate = 10
+    private let featureRate: SampleRate = 20
+
+    private func makeStore() -> RUMSessionSamplingStore {
+        let store = RUMSessionSamplingStore()
+        store.setSession(
+            id: sessionID,
+            sampler: DeterministicSampler(uuid: sessionUUID, samplingRate: sessionRate)
+        )
+        return store
+    }
+
+    func testThePolicyVectorSeparatesTheTwoPolicies() {
+        // A guard on the test's own premise: if the hash math ever changes, every assertion below
+        // becomes vacuous rather than failing, so assert the separation explicitly.
+        let sessionSampler = DeterministicSampler(uuid: sessionUUID, samplingRate: sessionRate)
+        XCTAssertTrue(sessionSampler.isSampled, "Precondition: the session itself must be sampled at \(sessionRate)%")
+        XCTAssertTrue(
+            DeterministicSampler(seed: sessionSampler.seed, samplingRate: featureRate).isSampled,
+            "Precondition: the vector must be kept at the feature rate applied alone"
+        )
+        XCTAssertFalse(
+            sessionSampler.combined(with: featureRate).isSampled,
+            "Precondition: the vector must be dropped at the composed rate"
+        )
+    }
+
+    func testFeatureRatePolicy_appliesTheFeatureRateAlone() throws {
+        // When
+        let snapshot = try XCTUnwrap(makeStore().decision(for: .featureRate, rate: featureRate))
+
+        // Then — the session supplies only the seed, so a 20% feature rate stays 20%.
+        XCTAssertTrue(snapshot.isSampled)
+        XCTAssertEqual(
+            snapshot.isSampled,
+            DeterministicSampler(uuid: sessionUUID, samplingRate: featureRate).isSampled,
+            "The decision must match a sampler built from the session seed at the feature rate"
+        )
+    }
+
+    func testCombinedPolicy_multipliesTheFeatureRateWithTheSessionRate() throws {
+        // When
+        let snapshot = try XCTUnwrap(makeStore().decision(for: .combinedWithSessionRate, rate: featureRate))
+
+        // Then — 20% of a 10% session is an effective 2%, which drops this vector.
+        XCTAssertFalse(snapshot.isSampled)
+        XCTAssertEqual(
+            snapshot.isSampled,
+            DeterministicSampler(uuid: sessionUUID, samplingRate: sessionRate).combined(with: featureRate).isSampled,
+            "The decision must match the composed rate"
+        )
+    }
+
+    func testCombinedPolicyAtMaxRate_returnsTheSessionsOwnDecision() throws {
+        // When
+        let snapshot = try XCTUnwrap(
+            makeStore().decision(for: .combinedWithSessionRate, rate: .maxSampleRate)
+        )
+
+        // Then — composing with 100% leaves the session rate untouched, which is how a consumer asks
+        // for "is this session tracked at all".
+        XCTAssertEqual(snapshot.isSampled, DeterministicSampler(uuid: sessionUUID, samplingRate: sessionRate).isSampled)
+        XCTAssertTrue(snapshot.isSampled)
+    }
+
+    func testSnapshotCarriesTheIDOfTheSessionThatMadeTheDecision() throws {
+        // Given
+        let store = makeStore()
+        let otherUUID = UUID(uuidString: "c5b3c4ab-fa4a-4de9-8199-a522131ec48a")!
+        let otherID = "c5b3c4ab-fa4a-4de9-8199-a522131ec48a"
+
+        // When — the session rolls over between two reads
+        let first = try XCTUnwrap(store.decision(for: .featureRate, rate: featureRate))
+        store.setSession(id: otherID, sampler: DeterministicSampler(uuid: otherUUID, samplingRate: sessionRate))
+        let second = try XCTUnwrap(store.decision(for: .featureRate, rate: featureRate))
+
+        // Then — each snapshot pairs an ID with the decision made for that same session
+        XCTAssertEqual(first.sessionID, sessionID)
+        XCTAssertEqual(first.isSampled, DeterministicSampler(uuid: sessionUUID, samplingRate: featureRate).isSampled)
+        XCTAssertEqual(second.sessionID, otherID)
+        XCTAssertEqual(second.isSampled, DeterministicSampler(uuid: otherUUID, samplingRate: featureRate).isSampled)
+    }
+
+    func testWithNoSession_itReturnsNilSoConsumersFallBack() {
+        XCTAssertNil(RUMSessionSamplingStore().decision(for: .featureRate, rate: featureRate))
+        XCTAssertNil(RUMSessionSamplingStore().decision(for: .combinedWithSessionRate, rate: featureRate))
+    }
+
+    func testAfterClearingTheSession_itReturnsNil() {
+        // Given
+        let store = makeStore()
+        XCTAssertNotNil(store.decision(for: .featureRate, rate: featureRate))
+
+        // When — this is what `stopSession()` produces
+        store.clearSession()
+
+        // Then
+        XCTAssertNil(store.decision(for: .featureRate, rate: featureRate))
+    }
+
+    func testConcurrentSessionRollover_neverPairsAnIDWithAnotherSessionsDecision() {
+        // Two sessions whose decisions are OPPOSITE at `sessionRate`, so a torn read is detectable:
+        // - keptUUID   (hash ~6.4%)  is sampled at 10%
+        // - droppedUUID (hash ~50.7%) is not
+        // A reader that observed one session's ID alongside the other's decision would break the
+        // correspondence asserted below. Identical decisions would make this test pass even if the
+        // store read the ID and the sampler under two separate lock acquisitions.
+        let keptUUID = sessionUUID
+        let keptID = sessionID
+        let droppedUUID = UUID(uuidString: "c5b3c4ab-fa4a-4de9-8199-a522131ec48a")!
+        let droppedID = "c5b3c4ab-fa4a-4de9-8199-a522131ec48a"
+
+        XCTAssertTrue(DeterministicSampler(uuid: keptUUID, samplingRate: sessionRate).isSampled)
+        XCTAssertFalse(DeterministicSampler(uuid: droppedUUID, samplingRate: sessionRate).isSampled)
+
+        let store = RUMSessionSamplingStore()
+        store.setSession(id: keptID, sampler: DeterministicSampler(uuid: keptUUID, samplingRate: sessionRate))
+
+        // Readers run on the request path while RUM rolls the session over, so both must be safe and,
+        // more importantly, every snapshot must be internally consistent.
+        DispatchQueue.concurrentPerform(iterations: 1_000) { iteration in
+            switch iteration % 5 {
+            case 0:
+                store.setSession(id: keptID, sampler: DeterministicSampler(uuid: keptUUID, samplingRate: self.sessionRate))
+            case 1:
+                store.setSession(id: droppedID, sampler: DeterministicSampler(uuid: droppedUUID, samplingRate: self.sessionRate))
+            case 2:
+                store.clearSession()
+            default:
+                // Composing with 100% leaves the session rate untouched, so `isSampled` here is the
+                // session's own decision and must match the ID it came back with.
+                guard let snapshot = store.decision(for: .combinedWithSessionRate, rate: .maxSampleRate) else {
+                    return // no active session, nothing to correlate
+                }
+                switch snapshot.sessionID {
+                case keptID:
+                    XCTAssertTrue(snapshot.isSampled, "Kept session's ID came back with the dropped session's decision")
+                case droppedID:
+                    XCTAssertFalse(snapshot.isSampled, "Dropped session's ID came back with the kept session's decision")
+                default:
+                    XCTFail("Unexpected session ID \(snapshot.sessionID)")
+                }
+            }
+        }
+    }
+}

@@ -7,12 +7,12 @@
 import Foundation
 import DatadogInternal
 
+/// The slice of the core context Trace keeps between messages.
+///
+/// Sampling does not read from here. It uses ``SessionSampler``, which resolves on the calling thread.
 internal struct CoreContext {
     /// Provides the history of app foreground / background states.
     var applicationStateHistory: AppStateHistory?
-
-    /// Provides the current active RUM context, if any
-    var rumContext: RUMCoreContext?
 
     /// Provides the current user information, if any
     var userInfo: UserInfo?
@@ -23,12 +23,7 @@ internal struct CoreContext {
 
 internal final class ContextMessageReceiver: FeatureMessageReceiver {
     /// Creates a new `ContextMessageReceiver`.
-    ///
-    /// - parameters:
-    ///   - samplerProvider: The sampler provider that will be updated with the RUM
-    ///   deterministic tracer.
-    init(samplerProvider: SamplerProvider) {
-        self.samplerProvider = samplerProvider
+    init() {
         self.context = .init()
     }
 
@@ -37,9 +32,6 @@ internal final class ContextMessageReceiver: FeatureMessageReceiver {
     /// The context is synchronized using a read-write lock.
     @ReadWriteLock
     var context: CoreContext
-
-    /// The tracer sampler that should be updated with the RUM deterministic sampler.
-    let samplerProvider: SamplerProvider
 
     /// Process messages receives from the bus.
     ///
@@ -59,16 +51,11 @@ internal final class ContextMessageReceiver: FeatureMessageReceiver {
     ///
     /// - Parameter context: The updated core context.
     private func update(context datadogContext: DatadogContext, from core: DatadogCoreProtocol) -> Bool {
-        let rumContext = datadogContext.additionalContext(ofType: RUMCoreContext.self)
-
         _context.mutate {
             $0.applicationStateHistory = datadogContext.applicationStateHistory
-            $0.rumContext = rumContext
             $0.userInfo = datadogContext.userInfo
             $0.accountInfo = datadogContext.accountInfo
         }
-
-        samplerProvider.updateWith(deterministicSampler: rumContext?.sessionSampler)
 
         return true
     }
