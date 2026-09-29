@@ -4,7 +4,7 @@
   "state": "PASS_CAPTURE_CAPABILITY_ONLY",
   "owner": "Root",
   "reviewer": "/root/c06_runtime_plan",
-  "updated_at": "2026-09-29T19:38:48.597524+00:00",
+  "updated_at": "2026-09-29T20:09:34.818338+00:00",
   "gate_dependency": "S3:H06",
   "candidate_sdk": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
   "source_head": "8f57d2495e51f31ab07ce65aa28df3d20b78c4bb",
@@ -49,5 +49,14 @@
     "One earlier stale readiness assertion stopped before admission/recording; no active deadline was extended.",
     "Original CoreDevice1001/7000 failures remain immutable. No H06 startup, topology, SDK or backend qualification follows."
   ],
-  "next": "Prepare a QuickTime-specific host recorder adapter with actual raw CUA observations and immutable file/decoder bindings. Qualify startup transfer and source-bound START/RUN/FINAL before one H06 cell. Device Hub is available for live inspection."
+  "next": "Audit the failed container transfer and define a source-backed startup/marker integration. The reviewed offline QuickTime recorder has35 passing controls; it is not wired into Session/Launcher. Qualify actual START/RUN/FINAL and cleanup before one H06 cell. Device Hub remains available for live inspection.",
+  "recorder_adapter": {
+    "state": "REVIEWED_OFFLINE_RECORDER_PREPARED",
+    "result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/quicktime-adapter-072s4mgx/outcome.json",
+      "sha256": "7dd6f1121e67faa4ac849474fedf63b688406c9e02996b5c6e8743926f4182a4"
+    },
+    "controls": 35,
+    "native_runs": 0
+  }
 }

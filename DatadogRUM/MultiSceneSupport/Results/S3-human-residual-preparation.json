@@ -351,7 +351,7 @@
     "builds_admitted": 0,
     "native_admitted": false,
     "budget_policy": "Freeze setup/API/collection/cleanup limits from qualified observed adapter latencies before execution; no active deadline extension. Strict timing is diagnostic.",
-    "next": "Prepare a QuickTime-specific host recorder adapter with actual raw CUA observations and immutable file/decoder bindings. Qualify startup transfer and source-bound START/RUN/FINAL before one H06 cell. Device Hub is available for live inspection.",
+    "next": "Continue from Results/S3-H06-quicktime-capture.json: offline QuickTime recorder reviewed; audit container transfer, then prepare startup/marker integration. No H06 native admission or gate credit.",
     "scope_increment": {
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_",
       "definition": {
@@ -1248,6 +1248,6 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/s3-residual-review.json",
     "sha256": "358e67b60fb25744ada5ddf6902e5832285a28489492900077061fedd7799890"
   },
-  "updated_at": "2026-09-29T19:38:48.597524+00:00",
+  "updated_at": "2026-09-29T20:09:34.818338+00:00",
   "native_adapter_attempts": 1
 }

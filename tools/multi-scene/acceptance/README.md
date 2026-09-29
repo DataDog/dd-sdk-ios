@@ -667,6 +667,36 @@ QuickTime with no AX window; opening New Movie Recording restores the preview.
 Metadata frame counts do not replace the decoder's emitted-frame inventory. This
 capability does not qualify H06 startup, causal run markers or simultaneous owners.
 
+`operation_quicktime.Recorder` prepares the offline receipt chain; it is not wired
+into `Session` or `Launcher`. Freeze a fresh directory, run/device identity,
+QuickTime PID/start/executable, decoder and three original cutoffs. Retain the
+actual initial full AX observation and its tool-call ID. The first request checks
+publication, destination absence and current wired-device identity before UI work.
+
+For each SOURCE/START/optional CHECK/STOP/SAVE request, use supported computer
+control and pass the exact returned full AX bytes to `observe()`. Use
+`getAXState({disableDiffing:true})`, or `getAXStateAndScreenshot` for SOURCE and
+RESTORE; a diff is insufficient. The response includes that request hash, a fresh
+observation ID, the actual tool-call ID, observation time and app ID. Source
+inspection records the screen/audio checkmarks seen in the image from that same
+call; it is explicitly a human/model interpretation, not a fabricated disk-image
+hash. The selected input is iPad Screen/Speaker at High quality; RESTORE records
+the original audio selection. `fail_pending()` retains an actual tool error when
+no AX observation returned, allowing separate restoration without inventing one.
+
+`finish()` verifies the exact saved movie and completes the existing decoder under
+the evidence cutoff. No frame-count metadata equality or recording-duration target
+is required. Recorder restoration has its own verdict/cutoff; it cannot repair a
+failed capture and does not establish app cleanup. Never substitute an older
+observation, restart a failed chain or reopen an expired cutoff.
+
+On this host, CUA exposes focused window titles/URLs but no stable macOS window
+IDs. These receipts therefore cannot detect every same-title preview replacement
+or a disconnect/reconnect between samples. They cannot grant H06 admission:
+startup transfer, actual source-bound START/RUN/FINAL markers, RUN pixels before
+SDK dispatch, FINAL after the collection seal and full task cleanup remain to be
+qualified. The earlier CoreDevice recording failure stays stopped.
+
 ### H06 physical cleanup disposition
 
 Only this physical fixture may record `OS_APP_UNINSTALL_CONTRACT` for private
