@@ -270,7 +270,13 @@
     "authorized_seconds": 7200,
     "awake_until_utc": "2026-09-28T23:31:19.809452+00:00",
     "work_deadline": null,
-    "state": "RUNNING_USER_AUTHORIZED"
+    "state": "EXPIRED_VERIFIED_ABSENT",
+    "prior_reported_state": "RUNNING_USER_AUTHORIZED",
+    "verification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/adapter-contract-mrlwkgsz/awake-current.json",
+      "sha256": "f7976d6aa96172ed1dc819147e3d7889d557fcedf0f302a0d2d672e1f629548c"
+    },
+    "renewed": false
   },
   "minimum_autonomous_work_until_utc": "2026-09-27T06:00:00+00:00",
   "latest_autonomous_checkpoint": "Results/autonomous-progress-20260927.json",

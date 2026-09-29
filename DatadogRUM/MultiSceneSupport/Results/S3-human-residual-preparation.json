@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "Finite source-backed preparation of residual S3 human scenarios",
-  "state": "H06_SIGNED_PRODUCT_PREPARED_PHYSICAL_QUALIFICATION_PENDING",
+  "state": "H06_ADAPTER_PREPARED_DEVICE_PENDING",
   "defined_at": "2026-09-28T13:49:45.760600+00:00",
   "defined_before_implementation": true,
   "owner": "Root",
@@ -95,9 +95,9 @@
         "operations.cross-scene.physical-setup"
       ],
       "decisive_test": "Existing eight calls/four Operations: success A\u2192B, failure A\u2192B(error), parallel alpha A\u2192A and beta B\u2192B ending beta first. Preserve exact per-step view IDs and two visible native scenes through all calls.",
-      "missing": "Reviewed launcher and signed arm64 Debug product are prepared. Freeze the actual command/profile qualification contract, then qualify physical recording/transfer once before human admission; the paired iPad is unavailable.",
+      "missing": "Signed product, canonical Swift profiles and one-shot capture/transfer qualifier are reviewed. The iPad is disconnected; run that no-launch qualification once after fresh readiness, then admit the H06 human topology cell separately.",
       "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
-      "state": "SIGNED_PRODUCT_PREPARED_PHYSICAL_ADAPTER_PENDING",
+      "state": "ADAPTER_QUALIFIER_PREPARED_DEVICE_PENDING",
       "historical_fixture": "operations.cross-scene.lifecycle"
     },
     {
@@ -350,14 +350,14 @@
     "builds_admitted": 0,
     "native_admitted": false,
     "budget_policy": "Freeze setup/API/collection/cleanup limits from qualified observed adapter latencies before execution; no active deadline extension. Strict timing is diagnostic.",
-    "next": "Freeze the physical adapter qualification contract against the prepared signed Debug product and original command schemas. Qualify actual recorder, screenshot and transfer once when the iPad is available; then admit the existing H06 human setup cell with fresh readiness. No build repeat is due.",
+    "next": "Run the reviewed no-launch adapter qualification once after fresh connected/unlocked iPad discovery. Reuse the signed product and prepared contract; no build repeat. Actual startup/native challenge, two-window topology and Operations remain in the separately admitted first H06 human cell.",
     "scope_increment": {
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_",
       "definition": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/definition.json",
         "sha256": "debf3bbb1f457e537f9d0ebd01e77710b915c7a5bf0b4615aa5b27043ffbd463"
       },
-      "state": "SIGNED_PRODUCT_PREPARED_PHYSICAL_QUALIFICATION_PENDING",
+      "state": "ADAPTER_PREPARED_DEVICE_PENDING",
       "builds_admitted": 0,
       "native_admitted": false,
       "unit_validation": {
@@ -1156,6 +1156,32 @@
         "native_installs": 0,
         "native_launches": 0,
         "gates_closed": []
+      },
+      "adapter_contract": {
+        "state": "REVIEWED_PREPARATION_ONLY",
+        "verdict": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/adapter-contract-mrlwkgsz/verdict.json",
+          "sha256": "1d3c9b7a41f42dca3c7739c470475b0f7409d27b0b004860e7f2bba704d7e8c3"
+        },
+        "prepared_plan": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/adapter-contract-mrlwkgsz/prepared-product-r2.json",
+          "sha256": "299c7ad916097af62b74bdd74367907bd337c38d080b1c1ab42cf830f785021b"
+        },
+        "definition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/adapter-contract-mrlwkgsz/qualification-preparation-r2.json",
+          "sha256": "9b119822f89e202e21b803f3d46f6c18902e8de140954b014645071ae2aa3f64"
+        },
+        "controls": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/adapter-contract-mrlwkgsz/controls-final.json",
+          "sha256": "5a2d8dbd6c3ad43d2e5baac136cbacbe52f02b28f9979caf46483cd50278ed06"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/adapter-contract-mrlwkgsz/review-final.json",
+          "sha256": "30f06153c9e332fb104c2c454cb39e8d87aa9c6b9f8423005d741e188cffc4b8"
+        },
+        "unique_offline_controls": 44,
+        "native_admitted": false,
+        "gates_closed": []
       }
     }
   },
@@ -1171,5 +1197,5 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/s3-residual-review.json",
     "sha256": "358e67b60fb25744ada5ddf6902e5832285a28489492900077061fedd7799890"
   },
-  "updated_at": "2026-09-29T16:36:48.764686+00:00"
+  "updated_at": "2026-09-29T17:56:01.109986+00:00"
 }

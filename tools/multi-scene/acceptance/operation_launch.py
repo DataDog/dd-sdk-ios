@@ -20,6 +20,7 @@ import operation_operator as operator
 import operation_session as session
 import operation_setup as setup
 import operation_transport as t
+import s2_hosting_workflow as workflow
 
 SDK = '94842cc8ad7b104c1394c236b98b95b6c24a0956'
 BUNDLE = 'com.datadoghq.rum-native-multi-scene-probe'
@@ -78,6 +79,17 @@ def product(plan):
     t.require(reference(plan['decoder']['source']) == Path(pixels.__file__).with_suffix('.swift').resolve(),
               'foreign display decoder source')
     return app
+
+
+def toolchain(plan, environment):
+    """Bind recording and CoreDevice transfers to the same prepared Xcode bytes."""
+    value = plan['toolchain']; developer = Path(workflow.DEVELOPER)
+    t.require(set(value) == {'developer', 'version', 'devicectl'}
+              and value['developer'] == str(developer)
+              and environment.get('DEVELOPER_DIR') == str(developer), 'capture/transfer Xcode environment differs')
+    t.require(reference(value['version']) == developer.parent/'version.plist'
+              and reference(value['devicectl']) == developer/'usr/bin/devicectl', 'capture toolchain changed')
+    return value
 
 
 def stage_cutoffs(value, now):
@@ -183,6 +195,7 @@ class Launcher:
 
     def preflight(self):
         self.live(); self.app = product(self.plan)
+        current_toolchain = toolchain(self.plan, self.environment)
         a = self.admission
         t.require(a['state'] == 'NATIVE_ADMITTED' and a['scope'] == 'H06_PHYSICAL_LAUNCH'
                   and a['reviewer'] == REVIEWER and a['planSHA256'] == t.sha(self.plan_raw),
@@ -190,7 +203,8 @@ class Launcher:
         qualified = t.load(setup.read(reference(a['adapterQualification'])))
         t.require(qualified['state'] == 'PHYSICAL_ADAPTER_QUALIFIED'
                   and qualified['device'] == self.remote.identifier
-                  and qualified['helpers'] == self.plan['helpers'], 'physical adapter qualification missing or stale')
+                  and qualified['helpers'] == self.plan['helpers']
+                  and qualified['toolchain'] == current_toolchain, 'physical adapter qualification missing or stale')
         self.server_raw = launch_readiness(self.directory,self.readiness_raw,self.plan_raw,self.admission_raw,time.time())
         self.page_identity = session.page_health(self.directory,self.server_raw,self.cutoffs['launchUntil'],self.folder/'page-before')
         t.save(self.folder/'readiness-consumed.json',t.encode(dict(sha256=t.sha(self.readiness_raw),at=time.time())))
@@ -203,6 +217,8 @@ class Launcher:
         t.require(hardware['reality'] == 'physical' and hardware['deviceType'] == 'iPad'
                   and hardware['udid'] == self.plan['udid'] and properties['developerModeStatus'] == 'enabled'
                   and properties['ddiServicesAvailable'] is True, 'physical iPad unavailable')
+        t.require(qualified['hardware'] == dict(udid=hardware['udid'], os=properties['osVersionNumber'],
+                  build=properties['osBuildUpdate']), 'physical adapter OS qualification differs')
         raw,_ = self.observed.command(['device','info','lockState'],'startup-lock')
         t.require(raw['result']['passcodeRequired'] is False and raw['result']['unlockedSinceBoot'] is True, 'physical iPad locked')
         self.absence('before-install'); self.absence_proved = True

@@ -630,6 +630,24 @@ Xcode may otherwise compile an arm64e app against arm64-only package products.
 Verify actual compiler triples and all required code slices; retain the original
 failed build separately.
 
+### H06 physical adapter qualification
+
+`operation_qualify.py --plan <prepared-product> --admission <fresh-admission>
+--output <fresh-root>` qualifies one recorder/screenshot and one opaque file
+roundtrip through the task app container. The reviewed admission fixes all stage
+cutoffs and a fresh nonce; its sidecar prevents replay. The app is installed once
+and never launched. The root-container payload requires no assumed Documents
+layout and cannot replace later native startup receipts.
+
+Require fresh connected/unlocked physical iPad, active display, exact signed
+product/helper/decoder/Xcode identity, and initial app/process absence. Install
+and verify process absence before recording. Preserve actual command returns,
+decode the complete media, stop/reap the recorder and verify fresh task-process
+absence before uninstall. A discovered or ambiguous task process blocks removal.
+No human release receipt is fabricated. The result qualifies tools only; startup,
+input, concurrent topology, SDK/backend ownership and release gates stay separate.
+The launcher rejects a qualification from different Xcode bytes or device OS/build.
+
 ### H06 physical cleanup disposition
 
 Only this physical fixture may record `OS_APP_UNINSTALL_CONTRACT` for private

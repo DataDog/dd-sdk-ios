@@ -35,7 +35,7 @@ class Device:
 
     def command(self,args,label,deadline,**kwargs):
         self.calls.append(label)
-        if label=='startup-device':value=dict(hardwareProperties=dict(reality='physical',deviceType='iPad',udid='device-udid'),deviceProperties=dict(developerModeStatus='enabled',ddiServicesAvailable=True))
+        if label=='startup-device':value=dict(hardwareProperties=dict(reality='physical',deviceType='iPad',udid='device-udid'),deviceProperties=dict(developerModeStatus='enabled',ddiServicesAvailable=True,osVersionNumber='27.0',osBuildUpdate='fixture'))
         elif label=='startup-lock':value=dict(passcodeRequired=False,unlockedSinceBoot=True)
         elif args[:3]==['device','info','apps']:
             value=dict(deviceIdentifier=self.identifier,matchingBundleIdentifier=l.BUNDLE,
@@ -100,7 +100,7 @@ class LauncherTests(unittest.TestCase):
             decoder=dict(source=l.pixels.reference(Path(l.pixels.__file__).with_suffix('.swift')),binary=l.pixels.reference(decoder)),
             backend=dict(maximumAttempts=1,pollSeconds=1))
         self.plan_path=self.root/'plan.json';self.plan_path.write_bytes(t.encode(self.plan))
-        qualification=self.root/'qualification.json';qualification.write_bytes(t.encode(dict(state='PHYSICAL_ADAPTER_QUALIFIED',device=self.remote.identifier,helpers=self.plan['helpers'])))
+        qualification=self.root/'qualification.json';qualification.write_bytes(t.encode(dict(state='PHYSICAL_ADAPTER_QUALIFIED',device=self.remote.identifier,helpers=self.plan['helpers'],toolchain={'fixture':True},hardware=dict(udid='device-udid',os='27.0',build='fixture'))))
         self.now=time.time();self.cutoffs=dict(launchUntil=self.now+60,recordUntil=self.now+120,stopUntil=self.now+150,executionUntil=self.now+180,deadline=self.now+240)
         self.admission=dict(state='NATIVE_ADMITTED',scope='H06_PHYSICAL_LAUNCH',reviewer=l.REVIEWER,planSHA256=t.sha(self.plan_path.read_bytes()),
             adapterQualification=l.pixels.reference(qualification),cutoffs=self.cutoffs,identity=l.new_identity(),issuedAt=self.now)
@@ -111,6 +111,7 @@ class LauncherTests(unittest.TestCase):
         rp.write_bytes(t.encode(dict(kind='OPERATOR_READY',planSHA256=t.sha(self.plan_path.read_bytes()),admissionSHA256=t.sha(ap.read_bytes()),identitySHA256=t.sha(t.encode(self.admission['identity'])),channel=self.server,device=self.remote.identifier,mode=l.SCENARIO,userMessageReference='offline-test-only',at=self.now)))
         self.o=l.Launcher(self.root,self.remote,self.plan_path,ap,rp,environment={},wait=lambda:None);self.remote.launcher=self.o
         self.patches=[]
+        toolchain_patch=patch.object(l,'toolchain',return_value={'fixture':True});toolchain_patch.start();self.addCleanup(toolchain_patch.stop)
         def mock(target,**kw):
             p=patch(target,**kw);x=p.start();self.addCleanup(p.stop);return x
         self.health=mock('operation_launch.session.page_health',return_value={'pid':22})
@@ -134,6 +135,22 @@ class LauncherTests(unittest.TestCase):
         self.assertTrue((self.o.folder/'native.startup-freshness.json').is_file())
         with self.assertRaises(ValueError):self.o.launch()
         self.assertEqual(self.remote.calls.count('launch'),1)
+
+    def test_changed_toolchain_or_device_os_prevents_install(self):
+        with patch.object(l,'toolchain',return_value={'fixture':False}):
+            with self.assertRaises(ValueError): self.o.launch()
+        self.assertNotIn('install',self.remote.calls)
+
+    def test_changed_device_os_prevents_install(self):
+        qualification=self.root/'qualification.json';value=t.load(qualification.read_bytes())
+        value['hardware']['build']='different-build';qualification.write_bytes(t.encode(value))
+        self.o.admission['adapterQualification']=l.pixels.reference(qualification)
+        self.o.admission_raw=t.encode(self.o.admission)
+        (self.o.folder/'admission.json').write_bytes(self.o.admission_raw)
+        # Readiness is an offline double in this test; the real check is covered separately.
+        with patch.object(l,'launch_readiness',return_value=(self.root/'operator/server.json').read_bytes()):
+            with self.assertRaises(ValueError): self.o.launch()
+        self.assertIn('startup-device',self.remote.calls);self.assertNotIn('install',self.remote.calls)
 
     def test_present_bundle_never_installs_or_removes(self):
         self.remote.problem='present';r=self.assert_stopped('task bundle present');self.assertEqual(r['cleanup'],'UNTOUCHED')
