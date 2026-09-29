@@ -10,6 +10,7 @@ import time
 import uuid
 
 MAX_BYTES = 65_536
+MAX_CONTEXT_BYTES = 1_048_576
 IDENTITY_KEYS = {'schemaVersion', 'runID', 'processID', 'profile', 'challengeID',
                  'installedCodeSHA256', 'executionArmed'}
 PROFILE_KEYS = {'sourceRevision', 'buildConfiguration', 'scenarioSHA256', 'inference'}
@@ -32,8 +33,8 @@ def encode(value):
     return json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=False, allow_nan=False).encode()
 
 
-def load(raw):
-    require(isinstance(raw, bytes) and len(raw) <= MAX_BYTES, 'oversized or absent channel bytes')
+def load(raw, *, maximum=MAX_BYTES):
+    require(isinstance(raw, bytes) and len(raw) <= maximum, 'oversized or absent channel bytes')
     def unique(pairs):
         result = {}
         for key, value in pairs:
@@ -137,6 +138,74 @@ def response(raw, request_raw, input_raw, identity):
     return capture_raw, capture
 
 
+def context_response(raw, *, completion_raw, reply_raw, request_raw, input_raw, identity, deadline):
+    """Join captured bytes only; owner, release/display and SDK admission are separate."""
+    capture_raw, _ = response(reply_raw, request_raw, input_raw, identity)
+    completion = load(completion_raw)
+    completion_keys = {'schemaVersion', 'identity', 'requestSHA256', 'replySHA256', 'captureSHA256',
+                       'contextSHA256', 'status', 'statusSHA256', 'state', 'deadline', 'finishedAt'}
+    require(isinstance(completion, dict) and set(completion) == completion_keys
+            and type(completion['schemaVersion']) is int and completion['schemaVersion'] == 1
+            and completion['state'] == 'CAPTURE_COMPLETE', 'missing terminal context receipt')
+    require(encode(completion['identity']) == encode(identity)
+            and completion['requestSHA256'] == sha(request_raw)
+            and completion['replySHA256'] == sha(reply_raw) and completion['captureSHA256'] == sha(capture_raw)
+            and completion['contextSHA256'] == sha(raw), 'terminal receipt joins different context bytes')
+    require(type(completion['deadline']) in [int, float] and completion['deadline'] == deadline
+            and type(completion['finishedAt']) in [int, float] and math.isfinite(completion['finishedAt'])
+            and completion['finishedAt'] < deadline, 'terminal context receipt is late')
+    require(isinstance(completion['status'], str), 'missing terminal status bytes')
+    status_raw = base64.b64decode(completion['status'], validate=True)
+    require(completion['statusSHA256'] == sha(status_raw), 'terminal status digest differs')
+    status = load(status_raw)
+    require(isinstance(status, dict) and set(status) == {'identity', 'sequence', 'state', 'requestSHA256',
+                                                       'deadline', 'observedAt'}
+            and encode(status['identity']) == encode(identity) and status['state'] == 'CONTEXT_PUBLISHED'
+            and status['requestSHA256'] == sha(request_raw) and type(status['sequence']) is int
+            and status['sequence'] > 0 and type(status['deadline']) in [int, float]
+            and status['deadline'] == deadline and type(status['observedAt']) in [int, float]
+            and math.isfinite(status['observedAt']) and status['observedAt'] <= completion['finishedAt'],
+            'terminal publication status differs')
+    value = load(raw, maximum=MAX_CONTEXT_BYTES)
+    fields = {'schemaVersion', 'identity', 'requestSHA256', 'replySHA256', 'captureSHA256',
+              'order', 'components', 'componentSHA256', 'state', 'deadline', 'finishedAt'}
+    require(isinstance(value, dict) and set(value) in [fields, fields | {'failure'}],
+            'context document shape changed')
+    require(type(value['schemaVersion']) is int and value['schemaVersion'] == 1
+            and identity['schemaVersion'] == 2 and 'setupProfile' in identity,
+            'context capture mode changed')
+    require(encode(value['identity']) == encode(identity) and value['requestSHA256'] == sha(request_raw)
+            and value['replySHA256'] == sha(reply_raw) and value['captureSHA256'] == sha(capture_raw),
+            'foreign context reply or capture')
+    require(value['state'] == 'CAPTURED' and 'failure' not in value, 'incomplete or failed context capture')
+    require(type(value['deadline']) in [int, float] and value['deadline'] == deadline
+            and type(value['finishedAt']) in [int, float] and math.isfinite(value['finishedAt'])
+            and value['finishedAt'] < deadline, 'context original deadline differs or expired')
+    order = ['sdkBefore', 'mapper', 'sdkAfter']
+    require(value['order'] == order and isinstance(value['components'], dict)
+            and isinstance(value['componentSHA256'], dict)
+            and set(value['components']) == set(order) and set(value['componentSHA256']) == set(order),
+            'missing or reordered context component')
+    decoded = {}
+    for name in order:
+        require(isinstance(value['components'][name], str), 'context component is not encoded bytes')
+        component = base64.b64decode(value['components'][name], validate=True)
+        require(value['componentSHA256'][name] == sha(component), 'context component digest differs')
+        item = load(component, maximum=MAX_CONTEXT_BYTES)
+        if name == 'mapper':
+            require(isinstance(item, list) and all(isinstance(row, dict) for row in item),
+                    'missing independent mapper snapshot')
+        else:
+            keys = {'sampledAt', 'before', 'after', 'reads'}
+            require(isinstance(item, dict) and set(item) in [keys, keys | {'failure'}]
+                    and type(item['sampledAt']) in [int, float] and math.isfinite(item['sampledAt'])
+                    and isinstance(item['before'], dict) and isinstance(item['after'], dict)
+                    and isinstance(item['reads'], list), 'missing SDK sample inventory')
+        decoded[name] = item
+    # Do not canonicalize Swift Date/geometry values or manufacture mapper rows.
+    return value, decoded
+
+
 def save(path, raw):
     path = Path(path)
     require(path.parent.is_dir() and not path.is_symlink(), 'unprepared or symlinked output')
@@ -200,7 +269,39 @@ class Channel:
         require(info.get('outcome') == 'success', 'failed native transfer response')
         return True
 
-    def capture(self, phase):
+    def collect_context(self, folder, fingerprint, returned, raw, inner):
+        prefix = 'Documents/' + self.identity['runID'] + '.operations-'
+        for attempt in range(1, 100_001):
+            self.live()
+            terminal_path = folder / f'context-result-{attempt:06d}.json'
+            if self.transfer(self.remote.pull, prefix + 'context-' + fingerprint + '-result.json', terminal_path,
+                             'operation-context-result', optional=True):
+                require(terminal_path.is_file() and not terminal_path.is_symlink(),
+                        'missing or symlinked terminal context receipt')
+                with terminal_path.open('rb') as source:
+                    terminal = source.read(MAX_BYTES + 1)
+                completed = load(terminal)
+                require(isinstance(completed, dict) and completed.get('state') == 'CAPTURE_COMPLETE',
+                        'native context capture failed')
+                # A terminal receipt requires its context to exist already. An
+                # absent context here is invalid, not another readiness wait.
+                destination = folder / 'context-000001.json'
+                require(self.transfer(self.remote.pull, prefix + 'context-' + fingerprint + '.json', destination,
+                                      'operation-context', optional=True), 'completed context is missing')
+                require(destination.is_file() and not destination.is_symlink(), 'missing or symlinked native context')
+                with destination.open('rb') as source:
+                    observed = source.read(MAX_CONTEXT_BYTES + 1)
+                context_response(observed, completion_raw=terminal, reply_raw=returned, request_raw=raw,
+                                 input_raw=inner, identity=self.identity, deadline=self.deadline)
+                self.live()
+                save(folder / 'context.json', observed)
+                save(folder / 'context-result.json', terminal)
+                return sha(observed)
+            time.sleep(min(.25, max(0, self.deadline - time.time())))
+        raise ValueError('context terminal receipt attempt bound exhausted')
+
+    def capture(self, phase, *, with_context=False):
+        require(not with_context or self.identity.get('schemaVersion') == 2, 'context requires physical setup mode')
         require(not self.stopped or phase == 'cleanup', 'failed channel only permits cleanup capture')
         self.live(); self.sequence += 1
         folder = self.output / f'{self.sequence:04d}-{phase}'; folder.mkdir()
@@ -226,8 +327,11 @@ class Channel:
                     capture_raw, capture = response(returned, raw, inner, self.identity)
                     save(folder / 'capture.json', capture_raw)
                     self.live()
+                    context_hash = self.collect_context(folder, fingerprint, returned, raw, inner) if with_context else None
+                    self.live()
                     save(folder / 'transport-result.json', encode(dict(state='CAPTURED', request_sha256=fingerprint,
-                        response_sha256=sha(returned), capture_sha256=sha(capture_raw), idle_failure=capture.get('idleFailure'),
+                        response_sha256=sha(returned), capture_sha256=sha(capture_raw), context_sha256=context_hash,
+                        idle_failure=capture.get('idleFailure'),
                         deadline=self.deadline, finished_at=time.time(), sdk_admitted=False, teardown_authorized=False)))
                     self.live()
                     return capture

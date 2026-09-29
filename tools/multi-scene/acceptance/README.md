@@ -414,9 +414,22 @@ run/process/profile/challenge/installed-receipt bytes. Preserve Swift numeric
 encoding; Python reserialization of geometry is not an acceptance rule. Cleanup
 replies never authorize teardown. Owner/input/transport controls qualify42 native
 and15 host cases; the original failed test-input attempt remains separately saved.
-The SDK sampler is compiled and unit-qualified. Its runtime invocation, independent
-mapper snapshot, app pump, host release/display/binary proof and whole-interval
-capture still need integration and qualification.
+The unarmed app pump captures SDK/recorder/SDK observations in sequence and retains
+immutable stage files. Its separate context document preserves raw component bytes;
+a completion receipt binds the context, original channel reply/capture and terminal
+publication status. Host collection waits for that receipt first and rejects missing,
+partial, foreign or late evidence. A later normal stop/expiry seals future setup
+without rewriting a completed observation. Fifteen injected native capture controls
+and ten host controls pass; the app compiles. Real SDK invocation and physical file
+transfers remain unqualified.
+
+Startup requires the physical-setup scenario, capture flag, pre-SDK installed-code
+receipt and `DD_PROBE_PHYSICAL_OPERATION_CAPTURE_DEADLINE` (absolute Unix seconds).
+The input observer installs before scene-ready. A missing receipt or partial startup
+is terminal for that run. The pump keeps cleanup capture available after a request
+failure until the original deadline; it never grants teardown. `CAPTURED` means bytes
+were collected, not that Operations can start. Host release/display/binary proof and
+whole-interval live admission still need integration; all driver gates stay blocked.
 
 `operation_ownership.validate` checks eight raw steps, four reduced Operations,
 exact ID joins, failure reason and A/B endpoints using independently captured View,

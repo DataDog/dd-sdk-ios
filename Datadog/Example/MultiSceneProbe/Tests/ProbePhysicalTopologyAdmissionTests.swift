@@ -1281,4 +1281,292 @@ final class ProbePhysicalOperationOwnerTests: XCTestCase {
         XCTAssertNotNil(try binding(signals: views(), before: owners, after: owners))
     }
 
+    private func captureChannel() throws -> ProbePhysicalOperationChannel {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: false)
+        addTeardownBlock { try FileManager.default.removeItem(at: directory) }
+        let original = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbePhysicalOperationProfile.scenarioID))
+        let source = String(repeating: "a", count: 40)
+        let canonical = try XCTUnwrap(ProbePhysicalOperationProfile.make(scenario: original,
+            sourceRevision: source, buildConfiguration: "Debug"))
+        let code = try JSONSerialization.data(withJSONObject: ["runID": runID, "processID": 123,
+            "sourceRevision": source, "boundary": "before-sdk-initialization",
+            "binaries": ["fixture": String(repeating: "b", count: 64)]])
+        return try .init(runID: runID, processID: 123, profile: canonical, installedCode: code,
+                         directory: directory, observe: snapshot, mode: .physicalSetup(profile()))
+    }
+
+    @discardableResult
+    private func send(_ channel: ProbePhysicalOperationChannel, phase: String = "setup", foreign: Bool = false) throws -> String {
+        let input = ProbePhysicalInputRequest(runID: runID, processID: 123, profile: channel.identity.profile,
+            phase: phase, nonce: UUID().uuidString, setupProfile: channel.identity.setupProfile)
+        let message = ProbePhysicalOperationMessage(schemaVersion: 2, runID: foreign ? "foreign" : runID,
+            processID: 123, challengeID: channel.identity.challengeID, commandID: UUID().uuidString,
+            inputRequest: try ProbePhysicalOperationChannel.encode(input))
+        let raw = try ProbePhysicalOperationChannel.encode(message), digest = ProbePhysicalInputExchange.sha(raw)
+        try raw.write(to: channel.url("request-" + digest + ".json"))
+        try Data(digest.utf8).write(to: channel.url("request"), options: .atomic)
+        return digest
+    }
+
+    private func context(_ channel: ProbePhysicalOperationChannel, _ digest: String) throws -> ProbePhysicalOperationContextRecord {
+        try JSONDecoder().decode(ProbePhysicalOperationContextRecord.self,
+            from: Data(contentsOf: channel.url("context-" + digest + ".json")))
+    }
+    private func rawCapture(_ channel: ProbePhysicalOperationChannel, _ digest: String) throws -> Data {
+        let reply = try JSONDecoder().decode(ProbePhysicalOperationReply.self,
+            from: Data(contentsOf: channel.url("response-" + digest + ".json")))
+        return try XCTUnwrap(reply.capture)
+    }
+
+    func testCapturePumpPersistsActualOrderedSamplesAndIndependentMapper() throws {
+        let channel = try captureChannel(); var order: [String] = []
+        let pump = try ProbePhysicalOperationCapturePump(channel: channel, deadline: 200,
+            sample: { [self] in order.append("sdk"); return sample() },
+            mapper: { [self] in order.append("mapper"); return views() }, now: { 100 })
+        let digest = try send(channel)
+        XCTAssertTrue(pump.pollOnce()); XCTAssertTrue(pump.pollOnce())
+        XCTAssertEqual(order, ["sdk", "mapper", "sdk"])
+        let record = try context(channel, digest)
+        XCTAssertEqual(record.state, "CAPTURED"); XCTAssertFalse(record.identity.executionArmed)
+        XCTAssertNotNil(record.ownerBinding(capture: try rawCapture(channel, digest)))
+        let reply = try Data(contentsOf: channel.url("response-" + digest + ".json"))
+        XCTAssertEqual(record.replySHA256, ProbePhysicalInputExchange.sha(reply))
+        XCTAssertEqual(try Data(contentsOf: channel.url("context-" + digest + "-accepted.json")), reply)
+        for name in record.order {
+            XCTAssertEqual(try Data(contentsOf: channel.url("context-" + digest + "-" + name + ".json")), record.components[name])
+        }
+        XCTAssertNil(pump.failure)
+    }
+
+    func testCapturePumpRetainsMissingSDKValuesAndCannotBind() throws {
+        let channel = try captureChannel()
+        let missing = sample(values: [:])
+        let pump = try ProbePhysicalOperationCapturePump(channel: channel, deadline: 200,
+            sample: { missing }, mapper: views, now: { 100 })
+        let digest = try send(channel); pump.pollOnce()
+        let record = try context(channel, digest)
+        XCTAssertEqual(record.state, "CAPTURED")
+        let first = try JSONDecoder().decode(ProbePhysicalOperationContextSample.self,
+            from: XCTUnwrap(record.components["sdkBefore"]))
+        XCTAssertEqual(first, missing)
+        XCTAssertNil(record.ownerBinding(capture: try rawCapture(channel, digest)))
+    }
+
+    func testCapturePumpNeverSubstitutesMapperRowsArrivingAfterSnapshot() throws {
+        let channel = try captureChannel(), late = views()
+        var rows: [ProbeSignal] = [], reads = 0
+        let pump = try ProbePhysicalOperationCapturePump(channel: channel, deadline: 200,
+            sample: { [self] in reads += 1; if reads == 2 { rows = late }; return sample() },
+            mapper: { rows }, now: { 100 })
+        let digest = try send(channel); pump.pollOnce()
+        let record = try context(channel, digest)
+        XCTAssertEqual(rows.count, 2)
+        XCTAssertEqual(try JSONDecoder().decode([ProbeSignal].self, from: XCTUnwrap(record.components["mapper"])).count, 0)
+        XCTAssertNil(record.ownerBinding(capture: try rawCapture(channel, digest)))
+    }
+
+    func testCapturePumpRetainsChangedInputAndOwnerBetweenSamples() throws {
+        for field in ["native", "session"] {
+            let channel = try captureChannel(), original = sample()
+            let changed: ProbePhysicalOperationContextSample
+            if field == "native" {
+                changed = try edit(original) { value in
+                    var after = value["after"] as! [String: Any]
+                    var input = after["input"] as! [[String: Any]]; input[0]["revision"] = 11
+                    after["input"] = input; value["after"] = after
+                }
+            } else {
+                var values = sdkValues()
+                for key in Array(values.keys) { values[key] = try edit(values[key]!) { $0["sessionID"] = "00000000-0000-0000-0000-000000000099" } }
+                changed = sample(values: values)
+            }
+            var reads = 0
+            let pump = try ProbePhysicalOperationCapturePump(channel: channel, deadline: 200,
+                sample: { reads += 1; return reads == 1 ? original : changed }, mapper: views, now: { 100 })
+            let digest = try send(channel); pump.pollOnce()
+            let record = try context(channel, digest)
+            XCTAssertNil(record.ownerBinding(capture: try rawCapture(channel, digest)), field)
+            XCTAssertEqual(try JSONDecoder().decode(ProbePhysicalOperationContextSample.self,
+                from: XCTUnwrap(record.components["sdkAfter"])), changed)
+        }
+    }
+
+    func testCapturePumpPublicationFailuresInvalidateSetupButKeepCleanup() throws {
+        for suffix in ["-accepted.json", "-sdkBefore.json", "-mapper.json", "-sdkAfter.json", "-terminal"] {
+            let channel = try captureChannel(); var failed = false
+            let pump = try ProbePhysicalOperationCapturePump(channel: channel, deadline: 200,
+                sample: { [self] in sample() }, mapper: views, now: { 100 }, publish: { bytes, url in
+                    let terminal = url.lastPathComponent.contains("context-") && !url.lastPathComponent.contains("-sdk")
+                        && !url.lastPathComponent.contains("-mapper") && !url.lastPathComponent.contains("-accepted")
+                    if !failed && (url.lastPathComponent.hasSuffix(suffix) || suffix == "-terminal" && terminal) {
+                        failed = true; throw CocoaError(.fileWriteUnknown)
+                    }
+                    try bytes.write(to: url, options: .atomic)
+                })
+            let digest = try send(channel); pump.pollOnce()
+            XCTAssertTrue(failed, suffix); XCTAssertNotNil(pump.failure); XCTAssertNotNil(channel.failure)
+            let record = try context(channel, digest)
+            XCTAssertEqual(record.state, "INVALID"); XCTAssertNil(record.ownerBinding(capture: try rawCapture(channel, digest)))
+            let duplicate = try send(channel); pump.pollOnce()
+            let rejected = try JSONDecoder().decode(ProbePhysicalOperationReply.self,
+                from: Data(contentsOf: channel.url("response-" + duplicate + ".json")))
+            XCTAssertNotNil(rejected.rejection)
+            let cleanup = try send(channel, phase: "cleanup"); pump.pollOnce()
+            let restored = try context(channel, cleanup)
+            XCTAssertEqual(restored.state, "CAPTURED")
+            XCTAssertNil(restored.ownerBinding(capture: try rawCapture(channel, cleanup)))
+            XCTAssertEqual(try context(channel, digest).state, "INVALID")
+        }
+    }
+
+    func testCapturePumpDetectsPartialStageAndPreservesActualBytes() throws {
+        let channel = try captureChannel(); var truncated = false
+        let pump = try ProbePhysicalOperationCapturePump(channel: channel, deadline: 200,
+            sample: { [self] in sample() }, mapper: views, now: { 100 }, publish: { bytes, url in
+                if !truncated && url.lastPathComponent.hasSuffix("-mapper.json") {
+                    truncated = true; try Data(bytes.prefix(4)).write(to: url)
+                } else { try bytes.write(to: url, options: .atomic) }
+            })
+        let digest = try send(channel); pump.pollOnce()
+        XCTAssertTrue(truncated); XCTAssertNotNil(pump.failure)
+        XCTAssertEqual(try Data(contentsOf: channel.url("context-" + digest + "-mapper.json")).count, 4)
+        XCTAssertEqual(try context(channel, digest).state, "INVALID")
+    }
+
+    func testCapturePumpDeadlineDuringPublicationStopsWithoutRecapture() throws {
+        for suffix in ["-accepted.json", "-sdkBefore.json", "-mapper.json", "-sdkAfter.json", "-terminal"] {
+            let channel = try captureChannel(); var clock: Double = 100, reads = 0
+            let pump = try ProbePhysicalOperationCapturePump(channel: channel, deadline: 200,
+                sample: { [self] in reads += 1; return sample() }, mapper: views, now: { clock }, publish: { bytes, url in
+                    try bytes.write(to: url, options: .atomic)
+                    let terminal = url.lastPathComponent.contains("context-") && !url.lastPathComponent.contains("-sdk")
+                        && !url.lastPathComponent.contains("-mapper") && !url.lastPathComponent.contains("-accepted")
+                    if url.lastPathComponent.hasSuffix(suffix) || suffix == "-terminal" && terminal { clock = 201 }
+                })
+            try send(channel); XCTAssertFalse(pump.pollOnce()); XCTAssertTrue(pump.stopped)
+            XCTAssertNotNil(pump.failure); XCTAssertNotNil(channel.failure)
+            let count = reads; clock = 100
+            XCTAssertFalse(pump.pollOnce()); XCTAssertEqual(reads, count)
+            XCTAssertEqual(pump.deadline, 200)
+        }
+    }
+
+    func testCapturePumpForeignRequestNeverSamplesAndCleanupCannotBind() throws {
+        let channel = try captureChannel(); var reads = 0
+        let pump = try ProbePhysicalOperationCapturePump(channel: channel, deadline: 200,
+            sample: { [self] in reads += 1; return sample() }, mapper: views, now: { 100 })
+        try send(channel, foreign: true); pump.pollOnce()
+        XCTAssertEqual(reads, 0); XCTAssertNotNil(pump.failure)
+        let digest = try send(channel, phase: "cleanup"); pump.pollOnce()
+        XCTAssertEqual(reads, 2)
+        XCTAssertNil(try context(channel, digest).ownerBinding(capture: rawCapture(channel, digest)))
+    }
+
+    func testCapturePumpReentrantPollCannotPublishQualifiedSetup() throws {
+        let channel = try captureChannel(); var pump: ProbePhysicalOperationCapturePump!
+        pump = try .init(channel: channel, deadline: 200, sample: { [self] in
+            XCTAssertFalse(pump.pollOnce()); return sample()
+        }, mapper: views, now: { 100 })
+        let digest = try send(channel); pump.pollOnce()
+        XCTAssertNotNil(pump.failure); XCTAssertEqual(try context(channel, digest).state, "INVALID")
+        pump = nil
+    }
+
+    func testCaptureContextRejectsChangedHashesPartialOrderAndForeignCapture() throws {
+        let channel = try captureChannel()
+        let pump = try ProbePhysicalOperationCapturePump(channel: channel, deadline: 200,
+            sample: { [self] in sample() }, mapper: views, now: { 100 })
+        let digest = try send(channel); pump.pollOnce()
+        let original = try context(channel, digest), raw = try rawCapture(channel, digest)
+        for field in ["state", "order", "componentSHA256", "deadline", "captureSHA256", "identity"] {
+            let changed: ProbePhysicalOperationContextRecord = try edit(original) { value in
+                switch field {
+                case "order": value[field] = ["sdkBefore", "sdkAfter", "mapper"]
+                case "componentSHA256": value[field] = [:]
+                case "deadline": value[field] = 99
+                case "identity": var identity = value[field] as! [String: Any]; identity["processID"] = 124; value[field] = identity
+                default: value[field] = "invalid"
+                }
+            }
+            XCTAssertNil(changed.ownerBinding(capture: raw), field)
+        }
+        XCTAssertNil(original.ownerBinding(capture: Data()))
+    }
+
+    func testCapturePumpDuplicateStartStopAndDeallocationAreBounded() async throws {
+        let channel = try captureChannel()
+        var pump: ProbePhysicalOperationCapturePump? = try .init(channel: channel, deadline: 200,
+            sample: { [self] in sample() }, mapper: views, now: { 100 })
+        weak var weakPump = pump
+        pump?.start(); pump?.start()
+        XCTAssertTrue(pump?.started == true)
+        pump?.stop(); pump?.stop()
+        XCTAssertTrue(pump?.stopped == true); XCTAssertFalse(pump!.pollOnce())
+        pump = nil
+        await Task.yield()
+        XCTAssertNil(weakPump)
+    }
+
+    func testCapturePumpExpiredOrReservedOutputCannotSample() throws {
+        let channel = try captureChannel(); var reads = 0
+        XCTAssertThrowsError(try ProbePhysicalOperationCapturePump(channel: channel, deadline: 99,
+            sample: { [self] in sample() }, mapper: views, now: { 100 }))
+        let pump = try ProbePhysicalOperationCapturePump(channel: channel, deadline: 200,
+            sample: { [self] in reads += 1; return sample() }, mapper: views, now: { 100 })
+        let digest = try send(channel), reserved = Data("preserve".utf8)
+        try reserved.write(to: channel.url("context-" + digest + ".json"))
+        pump.pollOnce()
+        XCTAssertEqual(reads, 0); XCTAssertNotNil(pump.failure); XCTAssertTrue(pump.statusPublicationFailed)
+        XCTAssertEqual(try Data(contentsOf: channel.url("context-" + digest + ".json")), reserved)
+    }
+    func testCapturePumpStopDuringContextPublicationHasNoSuccessfulReceipt() throws {
+        let channel = try captureChannel(); var pump: ProbePhysicalOperationCapturePump!
+        pump = try .init(channel: channel, deadline: 200, sample: { [self] in sample() }, mapper: views,
+            now: { 100 }, publish: { bytes, url in
+                try bytes.write(to: url, options: .atomic)
+                if url.lastPathComponent.contains("context-") && !url.lastPathComponent.contains("-sdk")
+                    && !url.lastPathComponent.contains("-mapper") && !url.lastPathComponent.contains("-accepted")
+                    && !url.lastPathComponent.contains("-result") { pump.stop() }
+            })
+        let digest = try send(channel); XCTAssertFalse(pump.pollOnce())
+        let completion = try JSONDecoder().decode(ProbePhysicalOperationContextCompletion.self,
+            from: Data(contentsOf: channel.url("context-" + digest + "-result.json")))
+        XCTAssertEqual(completion.state, "INVALID"); XCTAssertNotNil(pump.failure)
+        pump = nil
+    }
+
+    func testCapturePumpCompletedReceiptSurvivesNormalStopWithoutGrantingSetup() throws {
+        let channel = try captureChannel()
+        let pump = try ProbePhysicalOperationCapturePump(channel: channel, deadline: 200,
+            sample: { [self] in sample() }, mapper: views, now: { 100 })
+        let digest = try send(channel); pump.pollOnce()
+        let url = channel.url("context-" + digest + "-result.json"), raw = try Data(contentsOf: url)
+        let completion = try JSONDecoder().decode(ProbePhysicalOperationContextCompletion.self, from: raw)
+        XCTAssertEqual(completion.state, "CAPTURE_COMPLETE")
+        XCTAssertEqual(completion.contextSHA256, ProbePhysicalInputExchange.sha(
+            try Data(contentsOf: channel.url("context-" + digest + ".json"))))
+        pump.stop()
+        XCTAssertTrue(pump.stopped); XCTAssertNil(pump.failure); XCTAssertNil(channel.failure)
+        XCTAssertEqual(try Data(contentsOf: url), raw)
+        try send(channel)
+        XCTAssertNotNil(try channel.poll()?.rejection)
+    }
+    func testCapturePumpDeadlineAfterCompletedReceiptPreservesObservationAndSealsSetup() throws {
+        let channel = try captureChannel(); var receiptWritten = false, clockReads = 0
+        let pump = try ProbePhysicalOperationCapturePump(channel: channel, deadline: 200,
+            sample: { [self] in sample() }, mapper: views, now: {
+                if receiptWritten { clockReads += 1; return clockReads == 1 ? 199 : 201 }
+                return 100
+            }, publish: { bytes, url in
+                try bytes.write(to: url, options: .atomic)
+                if url.lastPathComponent.hasSuffix("-result.json") { receiptWritten = true }
+            })
+        let digest = try send(channel); XCTAssertFalse(pump.pollOnce())
+        XCTAssertTrue(pump.stopped); XCTAssertNil(pump.failure); XCTAssertNil(channel.failure)
+        let receipt = try JSONDecoder().decode(ProbePhysicalOperationContextCompletion.self,
+            from: Data(contentsOf: channel.url("context-" + digest + "-result.json")))
+        XCTAssertEqual(receipt.state, "CAPTURE_COMPLETE")
+        try send(channel); XCTAssertNotNil(try channel.poll()?.rejection)
+    }
 }

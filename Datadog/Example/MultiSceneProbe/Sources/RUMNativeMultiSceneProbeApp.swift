@@ -166,8 +166,63 @@ enum ProbeRuntime {
     static let physicalOperationCaptureRequested =
         ProcessInfo.processInfo.environment["DD_PROBE_PHYSICAL_OPERATION_CAPTURE"] == "1"
     @MainActor static let physicalOperationInput: ProbePhysicalOperationInput? =
-        physicalOperationCaptureRequested && scenario?.identifier == ProbePhysicalOperationProfile.scenarioID
+        physicalOperationCaptureRequested && [ProbePhysicalOperationProfile.scenarioID,
+            ProbePhysicalOperationSetupProfile.scenarioID].contains(scenario?.identifier ?? "")
         ? .init(registry: sceneRegistry) : nil
+
+    #if DEBUG
+    @MainActor private static var physicalOperationPump: ProbePhysicalOperationCapturePump?
+    @MainActor private static var physicalOperationPumpAttempted = false
+    #endif
+
+    @MainActor static func startPhysicalOperationCaptureIfRequested() {
+        #if DEBUG
+        guard physicalOperationCaptureRequested,
+              scenario?.identifier == ProbePhysicalOperationSetupProfile.scenarioID,
+              !physicalOperationPumpAttempted else { return }
+        // Receipt creation precedes SDK initialization. A failed start is terminal
+        // for this run; retrying could consume a partially published challenge.
+        physicalOperationPumpAttempted = true
+        do {
+            let environment = ProcessInfo.processInfo.environment
+            guard let input = physicalOperationInput, let scenario,
+                  let setup = ProbePhysicalOperationSetupProfile.make(scenario: scenario),
+                  let original = ProbeScenarioCatalog.scenario(identifier: ProbePhysicalOperationProfile.scenarioID),
+                  let revision = environment["MULTISCENE_CODE_IDENTITY_REVISION"],
+                  let profile = ProbePhysicalOperationProfile.make(scenario: original,
+                      sourceRevision: revision, buildConfiguration: "Debug"),
+                  environment["MULTISCENE_CODE_IDENTITY_RUN_ID"] == runID,
+                  let deadline = environment["DD_PROBE_PHYSICAL_OPERATION_CAPTURE_DEADLINE"].flatMap(Double.init),
+                  deadline.isFinite, deadline > Date().timeIntervalSince1970,
+                  let directory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+                throw ProbePhysicalOperationCapturePump.Failure.identity
+            }
+            let codeURL = directory.appendingPathComponent(runID + ".installed-code.json")
+            let values = try codeURL.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey, .fileSizeKey])
+            guard values.isRegularFile == true, values.isSymbolicLink != true,
+                  let size = values.fileSize, size <= ProbePhysicalOperationChannel.maximumBytes else {
+                throw ProbePhysicalOperationCapturePump.Failure.file
+            }
+            let file = try FileHandle(forReadingFrom: codeURL)
+            defer { try? file.close() }
+            let installedCode = try file.read(upToCount: ProbePhysicalOperationChannel.maximumBytes + 1) ?? Data()
+            let channel = try ProbePhysicalOperationChannel(runID: runID,
+                processID: ProcessInfo.processInfo.processIdentifier, profile: profile, installedCode: installedCode,
+                directory: directory, observe: input.snapshot, mode: .physicalSetup(setup))
+            let sampler = ProbePhysicalOperationContextSampler(input: input)
+            let pump = try ProbePhysicalOperationCapturePump(channel: channel, deadline: deadline,
+                sample: sampler.sample, mapper: eventRecorder.snapshot, reportFailure: { reason in
+                    record("Operation capture stopped: " + reason)
+                })
+            physicalOperationPump = pump
+            pump.start()
+        } catch {
+            eventRecorder.record(ProbeSignal(kind: .assertion, name: "operation-capture-start",
+                result: .inconclusive,
+                reason: "Operation capture never initialized or challenge publication incomplete; fresh run required"))
+        }
+        #endif
+    }
 
     @MainActor static let scenarioDriver: ProbeScenarioDriver? = {
         guard usesObservableScenarioDriver, let scenario else {

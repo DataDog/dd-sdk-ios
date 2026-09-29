@@ -2617,6 +2617,7 @@ struct ProbeWindowRoot: View {
                 name: "operation-input-observer", result: .inconclusive, reason: reason))
             return
         }
+        ProbeRuntime.startPhysicalOperationCaptureIfRequested()
         guard let snapshot = ProbeRuntime.sceneRegistry.markReady(handle) else {
             return
         }

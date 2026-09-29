@@ -248,5 +248,170 @@ class OperationSetupTransportTests(unittest.TestCase):
             with self.assertRaises(ValueError): t.response(t.encode(response), raw, inner, identity)
 
 
+def context_reply(identity, request, returned, deadline):
+    capture = base64.b64decode(t.load(returned)['capture'])
+    sample = t.encode(dict(sampledAt=0.00001, before={'actual': 0.00001}, after={'actual': 0.00001},
+                           reads=[], failure='fabricated missing owners')).replace(b'1e-05', b'0.00001')
+    parts = {'sdkBefore': sample, 'mapper': b'[]', 'sdkAfter': sample}
+    return t.encode(dict(schemaVersion=1, identity=identity, requestSHA256=t.sha(request),
+        replySHA256=t.sha(returned), captureSHA256=t.sha(capture), order=['sdkBefore', 'mapper', 'sdkAfter'],
+        components={name: base64.b64encode(raw).decode() for name, raw in parts.items()},
+        componentSHA256={name: t.sha(raw) for name, raw in parts.items()}, state='CAPTURED',
+        deadline=deadline, finishedAt=deadline-1))
+
+
+def context_completion(identity, request, returned, context, deadline):
+    status = t.encode(dict(identity=identity, sequence=2, state='CONTEXT_PUBLISHED',
+                           requestSHA256=t.sha(request), deadline=deadline, observedAt=deadline-.5))
+    return t.encode(dict(schemaVersion=1, identity=identity, requestSHA256=t.sha(request),
+        replySHA256=t.sha(returned), captureSHA256=t.sha(base64.b64decode(t.load(returned)['capture'])),
+        contextSHA256=t.sha(context), status=base64.b64encode(status).decode(), statusSHA256=t.sha(status),
+        state='CAPTURE_COMPLETE', deadline=deadline, finishedAt=deadline-.25))
+
+
+class ContextRemote(Remote):
+    def __init__(self, identity, mode=None):
+        super().__init__(identity)
+        self.mode = mode
+        self.context_missing = 1 if mode == 'pending' else 0
+        self.context_bytes = None
+
+    def pull(self, bundle, source, destination, label, deadline, *, check):
+        if '.operations-context-' not in source:
+            return super().pull(bundle, source, destination, label, deadline, check=check)
+        self.calls.append(('pull', source))
+        failed = self.context_missing > 0
+        if failed: self.context_missing -= 1
+        result, receipt = self.result('from', bundle, source, destination, failed)
+        if not failed:
+            digest = t.load(self.response)['requestSHA256']
+            request = next(raw for path, raw in self.files.items() if path.endswith('request-' + digest + '.json'))
+            context = context_reply(self.identity, request, self.response, deadline)
+            if self.mode == 'partial': context = context[:50]
+            elif self.mode in ['foreign', 'invalid']:
+                value = t.load(context, maximum=t.MAX_CONTEXT_BYTES)
+                if self.mode == 'foreign': value['replySHA256'] = 'f' * 64
+                else: value.update(state='INVALID', failure='partial capture')
+                context = t.encode(value)
+            self.context_bytes = context
+            if source.endswith('-result.json'):
+                raw = context_completion(self.identity, request, self.response, context, deadline)
+                if self.mode == 'invalid':
+                    value = t.load(raw); value['state'] = 'INVALID'; raw = t.encode(value)
+            else:
+                raw = context
+            Path(destination).write_bytes(raw)
+        if self.mode == 'late' or self.mode == 'late-result' and source.endswith('-result.json'):
+            receipt['finished_at'] = deadline+1
+        return result, receipt
+
+
+class OperationContextTransportTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory(); self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name)
+        self.identity, _ = OperationSetupTransportTests().fixture()
+        self.request, self.inner = t.message(self.identity, 'setup')
+        self.returned = reply(self.identity, self.request)
+        self.deadline = time.time()+30
+        self.raw = context_reply(self.identity, self.request, self.returned, self.deadline)
+        self.completion = context_completion(self.identity, self.request, self.returned, self.raw, self.deadline)
+        self.args = dict(completion_raw=self.completion, reply_raw=self.returned,
+                         request_raw=self.request, input_raw=self.inner, identity=self.identity, deadline=self.deadline)
+
+    def test_context_preserves_opaque_samples_and_does_not_qualify_owners(self):
+        value, parts = t.context_response(self.raw, **self.args)
+        self.assertEqual(parts['mapper'], [])
+        self.assertEqual(parts['sdkBefore']['failure'], 'fabricated missing owners')
+        self.assertFalse(value['identity']['executionArmed'])
+        raw = base64.b64decode(value['components']['sdkBefore'])
+        self.assertNotEqual(raw, t.encode(t.load(raw)))
+        self.assertEqual(t.sha(raw), value['componentSHA256']['sdkBefore'])
+
+    def test_foreign_reply_capture_identity_and_reordered_components_reject(self):
+        for field in ['identity', 'requestSHA256', 'replySHA256', 'captureSHA256', 'order', 'componentSHA256', 'components']:
+            value = t.load(self.raw, maximum=t.MAX_CONTEXT_BYTES)
+            if field == 'identity': value[field]['processID'] = 124
+            elif field == 'order': value[field] = ['sdkAfter', 'mapper', 'sdkBefore']
+            elif field in ['componentSHA256', 'components']: value[field].pop('mapper')
+            else: value[field] = 'f' * 64
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                t.context_response(t.encode(value), **self.args)
+
+    def test_changed_duplicate_nonfinite_and_oversized_context_rejects(self):
+        for raw in [self.raw[:-1]+b',"schemaVersion":1}', self.raw.replace(b'"schemaVersion":1', b'"schemaVersion":true'),
+                    self.raw.replace(b'"finishedAt":', b'"finishedAt":NaN,"old":'), b'x'*(t.MAX_CONTEXT_BYTES+1)]:
+            with self.assertRaises(ValueError): t.context_response(raw, **self.args)
+        value = t.load(self.raw, maximum=t.MAX_CONTEXT_BYTES)
+        value['components']['mapper'] = base64.b64encode(b'[{"late":"substitution"}]').decode()
+        with self.assertRaises(ValueError): t.context_response(t.encode(value), **self.args)
+
+    def test_incomplete_invalid_and_late_context_cannot_complete_transport(self):
+        for field, replacement in [('state', 'INVALID'), ('failure', 'failed'), ('deadline', self.deadline+1),
+                                   ('finishedAt', self.deadline), ('finishedAt', True)]:
+            value = t.load(self.raw, maximum=t.MAX_CONTEXT_BYTES); value[field] = replacement
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                t.context_response(t.encode(value), **self.args)
+
+    def test_sample_and_mapper_payload_shapes_cannot_be_substituted(self):
+        for name, content in [('mapper', {}), ('sdkBefore', []), ('sdkAfter', {'sampledAt': 2})]:
+            value = t.load(self.raw, maximum=t.MAX_CONTEXT_BYTES); raw = t.encode(content)
+            value['components'][name] = base64.b64encode(raw).decode(); value['componentSHA256'][name] = t.sha(raw)
+            with self.assertRaises(ValueError): t.context_response(t.encode(value), **self.args)
+
+    def test_host_waits_for_actual_context_and_preserves_exact_download(self):
+        remote = ContextRemote(self.identity, 'pending')
+        channel = t.Channel(remote, 'test.bundle', self.root/'joined', self.identity, deadline=self.deadline)
+        with patch.object(t.time, 'sleep'): value = channel.capture('setup', with_context=True)
+        folder = channel.output/'0001-setup'
+        self.assertEqual(value['request']['phase'], 'setup')
+        self.assertEqual((folder/'context.json').read_bytes(), remote.context_bytes)
+        self.assertEqual((folder/'context-000001.json').read_bytes(), remote.context_bytes)
+        result = t.load((folder/'transport-result.json').read_bytes())
+        self.assertEqual(result['context_sha256'], t.sha(remote.context_bytes))
+        self.assertFalse(result['sdk_admitted']); self.assertFalse(result['teardown_authorized'])
+        self.assertEqual([x[0] for x in remote.calls], ['push', 'push', 'pull', 'pull', 'pull', 'pull'])
+
+    def test_partial_foreign_invalid_and_late_downloads_remain_invalid(self):
+        for mode in ['partial', 'foreign', 'invalid', 'late', 'late-result']:
+            remote = ContextRemote(self.identity, mode)
+            channel = t.Channel(remote, 'test.bundle', self.root/mode, self.identity, deadline=self.deadline)
+            with self.subTest(mode=mode), self.assertRaises(ValueError): channel.capture('setup', with_context=True)
+            folder = channel.output/'0001-setup'
+            self.assertTrue((folder/'context-result-000001.json').is_file())
+            if (folder/'context-000001.json').exists():
+                self.assertEqual((folder/'context-000001.json').read_bytes(), remote.context_bytes)
+            self.assertFalse((folder/'transport-result.json').exists()); self.assertTrue(channel.stopped)
+            self.assertTrue((folder/'transport-failure.json').exists())
+            remote.mode = None
+            cleanup = channel.capture('cleanup')
+            self.assertEqual(cleanup['request']['phase'], 'cleanup')
+
+    def test_context_whitespace_and_key_order_changes_break_terminal_hash(self):
+        value = t.load(self.raw, maximum=t.MAX_CONTEXT_BYTES)
+        # json.dumps without sorted keys changes only envelope layout, not meaning.
+        import json
+        changed = json.dumps(dict(reversed(list(value.items()))), separators=(',', ':')).encode()
+        for raw in [self.raw + b'\n', changed]:
+            self.assertNotEqual(raw, self.raw)
+            with self.assertRaises(ValueError): t.context_response(raw, **self.args)
+
+    def test_missing_failed_or_unbound_terminal_status_rejects_context(self):
+        for field in ['state', 'contextSHA256', 'statusSHA256', 'status', 'deadline', 'finishedAt']:
+            value = t.load(self.completion)
+            value[field] = self.deadline+1 if field in ['deadline', 'finishedAt'] else 'invalid'
+            args = dict(self.args, completion_raw=t.encode(value))
+            with self.subTest(field=field), self.assertRaises(ValueError): t.context_response(self.raw, **args)
+        for raw in [b'{}', b'{', b'']:
+            with self.assertRaises(ValueError): t.context_response(self.raw, **dict(self.args, completion_raw=raw))
+
+
+    def test_historical_mode_never_creates_context_transfers(self):
+        identity, _ = fixture(); remote = ContextRemote(identity)
+        channel = t.Channel(remote, 'test.bundle', self.root/'historical', identity, deadline=self.deadline)
+        with self.assertRaises(ValueError): channel.capture('setup', with_context=True)
+        self.assertEqual(remote.calls, [])
+
+
 if __name__ == '__main__':
     unittest.main()

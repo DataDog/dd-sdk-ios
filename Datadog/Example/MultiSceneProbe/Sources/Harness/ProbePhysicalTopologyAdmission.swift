@@ -685,6 +685,11 @@ internal final class ProbePhysicalInputExchange {
         return bytes
     }
 
+    func invalidateSetup() {
+        pendingSetup = nil
+        admitted = true
+    }
+
     func consumeSetup(responseSHA256: String, live: ProbePhysicalInputSnapshot) -> String? {
         guard !admitted, let (digest, value) = pendingSetup else { return "setup capture absent or already consumed" }
         pendingSetup = nil
@@ -784,6 +789,13 @@ internal final class ProbePhysicalOperationChannel {
         self.publish = publish ?? Self.writeNew
         try self.publish(Self.encode(identity), url("challenge.json"))
     }
+
+    func invalidateSetup(_ reason: String) {
+        failure = failure ?? reason
+        exchange.invalidateSetup()
+    }
+
+    func sealSetup() { exchange.invalidateSetup() }
 
     static func encode<T: Encodable>(_ value: T) throws -> Data {
         let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
@@ -1176,6 +1188,287 @@ internal final class ProbePhysicalOperationContextSampler {
             }
         }
         return .init(sampledAt: sampledAt, before: before, after: observeInput(), reads: reads)
+    }
+}
+
+/// The channel reply remains unchanged. This separate, versioned document keeps
+/// the three actual observations and their acquisition order, including partial
+/// failures. CAPTURED means persisted bytes, never SDK or teardown permission.
+internal struct ProbePhysicalOperationContextRecord: Codable {
+    let schemaVersion: Int
+    let identity: ProbePhysicalOperationChannelIdentity
+    let requestSHA256: String
+    let replySHA256: String
+    let captureSHA256: String
+    let order: [String]
+    let components: [String: Data]
+    let componentSHA256: [String: String]
+    let state: String
+    let deadline: TimeInterval
+    let finishedAt: TimeInterval
+    let failure: String?
+
+    @MainActor
+    func ownerBinding(capture raw: Data) -> ProbePhysicalOperationOwners? {
+        guard schemaVersion == 1, state == "CAPTURED", failure == nil,
+              identity.schemaVersion == 2, !identity.executionArmed,
+              let profile = identity.setupProfile,
+              deadline.isFinite, finishedAt.isFinite, finishedAt < deadline,
+              order == ["sdkBefore", "mapper", "sdkAfter"],
+              Set(components.keys) == Set(order), Set(componentSHA256.keys) == Set(order),
+              components.allSatisfy({ ProbePhysicalInputExchange.sha($0.value) == componentSHA256[$0.key] }),
+              ProbePhysicalInputExchange.sha(raw) == captureSHA256,
+              let capture = try? JSONDecoder().decode(ProbePhysicalInputCapture.self, from: raw),
+              capture.request.phase == "setup", capture.idleFailure == nil,
+              capture.request.runID == identity.runID, capture.request.processID == identity.processID,
+              capture.request.profile == identity.profile, capture.request.setupProfile == profile,
+              let beforeBytes = components["sdkBefore"], let mapperBytes = components["mapper"],
+              let afterBytes = components["sdkAfter"],
+              let first = try? JSONDecoder().decode(ProbePhysicalOperationContextSample.self, from: beforeBytes),
+              let signals = try? JSONDecoder().decode([ProbeSignal].self, from: mapperBytes),
+              let last = try? JSONDecoder().decode(ProbePhysicalOperationContextSample.self, from: afterBytes),
+              let before = first.ownerProjection, let after = last.ownerProjection,
+              capture.before == capture.after, capture.after == first.before,
+              first.after == last.before, let applicationID = before["scene-A"]?.applicationID else { return nil }
+        return ProbePhysicalOperationOwners.bind(runID: identity.runID, processID: identity.processID,
+            profile: profile, setupCaptureSHA256: captureSHA256, applicationID: applicationID,
+            before: first.before, after: last.after, directBefore: before, directAfter: after, signals: signals)
+    }
+}
+
+internal struct ProbePhysicalOperationContextCompletion: Codable {
+    let schemaVersion: Int
+    let identity: ProbePhysicalOperationChannelIdentity
+    let requestSHA256: String
+    let replySHA256: String
+    let captureSHA256: String
+    let contextSHA256: String
+    let status: Data
+    let statusSHA256: String
+    let state: String
+    let deadline: TimeInterval
+    let finishedAt: TimeInterval
+}
+
+/// App-owned, opt-in capture only. The fixed deadline includes cleanup capture.
+/// All observations and bounded file operations are serialized on MainActor;
+/// asynchronous sleeps yield between polls. No Operation is dispatched here.
+@MainActor
+internal final class ProbePhysicalOperationCapturePump {
+    enum Failure: Error { case deadline, file, identity, reentrant }
+    private struct Status: Codable {
+        let identity: ProbePhysicalOperationChannelIdentity
+        let sequence: Int
+        let state: String
+        let requestSHA256: String?
+        let deadline: TimeInterval
+        let observedAt: TimeInterval
+    }
+
+    static let maximumContextBytes = 1_048_576
+    let channel: ProbePhysicalOperationChannel
+    let deadline: TimeInterval
+    private let sample: () -> ProbePhysicalOperationContextSample
+    private let mapper: () -> [ProbeSignal]
+    private let now: () -> TimeInterval
+    private let publish: (Data, URL) throws -> Void
+    private let reportFailure: (String) -> Void
+    private var task: Task<Void, Never>?
+    private var statusSequence = 0
+    private var polling = false
+    private var hasCompletedCapture = false
+    private(set) var started = false
+    private(set) var stopped = false
+    private(set) var failure: String?
+    private(set) var statusPublicationFailed = false
+
+    init(channel: ProbePhysicalOperationChannel, deadline: TimeInterval,
+         sample: @escaping () -> ProbePhysicalOperationContextSample, mapper: @escaping () -> [ProbeSignal],
+         now: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 },
+         publish: ((Data, URL) throws -> Void)? = nil, reportFailure: @escaping (String) -> Void = { _ in }) throws {
+        guard channel.identity.schemaVersion == 2, channel.identity.setupProfile != nil,
+              !channel.identity.executionArmed else { throw Failure.identity }
+        guard deadline.isFinite, deadline > now() else { throw Failure.deadline }
+        self.channel = channel; self.deadline = deadline; self.sample = sample; self.mapper = mapper
+        self.now = now; self.publish = publish ?? Self.writeNew; self.reportFailure = reportFailure
+        try status("CREATED")
+    }
+
+    deinit { task?.cancel() }
+
+    private static func writeNew(_ bytes: Data, _ url: URL) throws {
+        guard !FileManager.default.fileExists(atPath: url.path) else { throw Failure.file }
+        try bytes.write(to: url, options: .atomic)
+    }
+
+    private func persist(_ bytes: Data, to url: URL) throws {
+        guard bytes.count <= Self.maximumContextBytes,
+              !FileManager.default.fileExists(atPath: url.path) else { throw Failure.file }
+        try publish(bytes, url)
+        guard try read(url) == bytes else { throw Failure.file }
+    }
+
+    private func read(_ url: URL) throws -> Data {
+        let values = try url.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey, .fileSizeKey])
+        guard values.isRegularFile == true, values.isSymbolicLink != true,
+              let size = values.fileSize, size <= Self.maximumContextBytes else { throw Failure.file }
+        let file = try FileHandle(forReadingFrom: url)
+        defer { try? file.close() }
+        let bytes = try file.read(upToCount: Self.maximumContextBytes + 1) ?? Data()
+        guard bytes.count <= Self.maximumContextBytes else { throw Failure.file }
+        return bytes
+    }
+
+    private func live() throws {
+        guard !stopped, now() < deadline else { throw Failure.deadline }
+    }
+
+    @discardableResult
+    private func status(_ state: String, request: String? = nil) throws -> Data {
+        statusSequence += 1
+        let value = Status(identity: channel.identity, sequence: statusSequence, state: state,
+                           requestSHA256: request, deadline: deadline, observedAt: now())
+        let bytes = try ProbePhysicalOperationChannel.encode(value)
+        try persist(bytes, to: channel.url("capture-status-" + String(statusSequence) + ".json"))
+        return bytes
+    }
+
+    private func invalidate(_ reason: String, request: String? = nil) {
+        failure = failure ?? reason
+        channel.invalidateSetup(reason)
+        do { try status(reason, request: request) }
+        catch { statusPublicationFailed = true }
+        reportFailure(reason)
+    }
+
+    func start() {
+        guard !started, !stopped else { return }
+        started = true
+        task = Task { @MainActor [weak self] in
+            while !Task.isCancelled {
+                guard self?.pollOnce() == true else { return }
+                do { try await Task.sleep(nanoseconds: 250_000_000) }
+                catch { self?.stop(); return }
+            }
+            self?.stop()
+        }
+    }
+
+    func stop() {
+        guard !stopped else { return }
+        stopped = true
+        task?.cancel()
+        channel.sealSetup()
+        if polling || !hasCompletedCapture { invalidate("STOPPED") }
+        else {
+            do { try status("STOPPED_AFTER_CAPTURE") }
+            catch { statusPublicationFailed = true; reportFailure("STOP_STATUS_FAILED") }
+        }
+    }
+
+    /// Exposed to focused controls without a scheduler. A failed setup remains
+    /// failed, but the same pump can still publish fresh cleanup input evidence.
+    @discardableResult
+    func pollOnce() -> Bool {
+        guard !stopped else { return false }
+        guard !polling else { invalidate("REENTRANT_POLL"); return false }
+        polling = true
+        defer { polling = false }
+        do {
+            try live()
+            if let reply = try channel.poll() {
+                try live()
+                if let raw = reply.capture { capture(reply, raw: raw) }
+                else { invalidate("REQUEST_REJECTED", request: reply.requestSHA256) }
+            }
+        } catch {
+            if now() < deadline || !hasCompletedCapture || failure != nil {
+                invalidate("CHANNEL_OR_DEADLINE_FAILED")
+            }
+        }
+        if now() >= deadline {
+            stopped = true
+            channel.sealSetup()
+            if hasCompletedCapture && failure == nil {
+                do { try status("DEADLINE_AFTER_CAPTURE") }
+                catch { statusPublicationFailed = true; reportFailure("STOP_STATUS_FAILED") }
+            } else { invalidate("DEADLINE_EXPIRED") }
+        }
+        return !stopped
+    }
+
+    private func capture(_ reply: ProbePhysicalOperationReply, raw: Data) {
+        let prefix = "context-" + reply.requestSHA256
+        var components: [String: Data] = [:]
+        var order: [String] = []
+        var replyHash = ""
+        func record(_ state: String, reason: String?) -> ProbePhysicalOperationContextRecord {
+            .init(schemaVersion: 1, identity: channel.identity, requestSHA256: reply.requestSHA256,
+                  replySHA256: replyHash, captureSHA256: ProbePhysicalInputExchange.sha(raw), order: order,
+                  components: components, componentSHA256: components.mapValues(ProbePhysicalInputExchange.sha),
+                  state: state, deadline: deadline, finishedAt: now(), failure: reason)
+        }
+        do {
+            try live()
+            let suffixes = [".json", "-result.json", "-accepted.json", "-sdkBefore.json", "-mapper.json", "-sdkAfter.json"]
+            guard suffixes.allSatisfy({ !FileManager.default.fileExists(atPath: channel.url(prefix + $0).path) }) else {
+                throw Failure.file
+            }
+            let replyBytes = try read(channel.url("response-" + reply.requestSHA256 + ".json"))
+            replyHash = ProbePhysicalInputExchange.sha(replyBytes)
+            guard try ProbePhysicalOperationChannel.encode(reply) == replyBytes else { throw Failure.file }
+            try persist(replyBytes, to: channel.url(prefix + "-accepted.json"))
+            try live()
+            let first = sample()
+            components["sdkBefore"] = try ProbePhysicalOperationChannel.encode(first); order.append("sdkBefore")
+            try live()
+            try persist(components["sdkBefore"]!, to: channel.url(prefix + "-sdkBefore.json"))
+            try live()
+            let signals = mapper()
+            components["mapper"] = try ProbePhysicalOperationChannel.encode(signals); order.append("mapper")
+            try live()
+            try persist(components["mapper"]!, to: channel.url(prefix + "-mapper.json"))
+            try live()
+            let last = sample()
+            components["sdkAfter"] = try ProbePhysicalOperationChannel.encode(last); order.append("sdkAfter")
+            try live()
+            try persist(components["sdkAfter"]!, to: channel.url(prefix + "-sdkAfter.json"))
+            try live()
+            if let input = try? JSONDecoder().decode(ProbePhysicalInputCapture.self, from: raw),
+               input.request.phase == "setup", failure != nil || channel.failure != nil { throw Failure.reentrant }
+            let contextBytes = try ProbePhysicalOperationChannel.encode(record("CAPTURED", reason: nil))
+            try persist(contextBytes, to: channel.url(prefix + ".json"))
+            try live()
+            let statusBytes = try status("CONTEXT_PUBLISHED", request: reply.requestSHA256)
+            try live()
+            let completion = ProbePhysicalOperationContextCompletion(schemaVersion: 1, identity: channel.identity,
+                requestSHA256: reply.requestSHA256, replySHA256: replyHash,
+                captureSHA256: ProbePhysicalInputExchange.sha(raw), contextSHA256: ProbePhysicalInputExchange.sha(contextBytes),
+                status: statusBytes, statusSHA256: ProbePhysicalInputExchange.sha(statusBytes), state: "CAPTURE_COMPLETE",
+                deadline: deadline, finishedAt: now())
+            try persist(ProbePhysicalOperationChannel.encode(completion), to: channel.url(prefix + "-result.json"))
+            try live()
+            hasCompletedCapture = true
+        } catch {
+            let reason = "CONTEXT_OR_DEADLINE_FAILED"
+            invalidate(reason, request: reply.requestSHA256)
+            // Failure evidence may be written after expiry; it never resumes work
+            // or rewrites a completed/failed document from this request.
+            do {
+                try persist(ProbePhysicalOperationChannel.encode(record("INVALID", reason: reason)),
+                            to: channel.url(prefix + ".json"))
+            } catch { statusPublicationFailed = true }
+            do {
+                let statusBytes = try read(channel.url("capture-status-" + String(statusSequence) + ".json"))
+                let contextBytes = (try? read(channel.url(prefix + ".json"))) ?? Data()
+                let terminal = ProbePhysicalOperationContextCompletion(schemaVersion: 1, identity: channel.identity,
+                    requestSHA256: reply.requestSHA256, replySHA256: replyHash,
+                    captureSHA256: ProbePhysicalInputExchange.sha(raw), contextSHA256: ProbePhysicalInputExchange.sha(contextBytes),
+                    status: statusBytes, statusSHA256: ProbePhysicalInputExchange.sha(statusBytes), state: "INVALID",
+                    deadline: deadline, finishedAt: now())
+                try persist(ProbePhysicalOperationChannel.encode(terminal), to: channel.url(prefix + "-result.json"))
+            } catch { statusPublicationFailed = true }
+        }
     }
 }
 #endif
