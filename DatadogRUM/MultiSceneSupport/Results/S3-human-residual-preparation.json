@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "Finite source-backed preparation of residual S3 human scenarios",
-  "state": "H06_STARTUP_CAPTURE_BACKEND_CLEANUP_PREPARED_DISPLAY_RUNNER_PENDING",
+  "state": "H06_STARTUP_CAPTURE_BACKEND_CLEANUP_OPERATOR_PREPARED_DISPLAY_RUNNER_PENDING",
   "defined_at": "2026-09-28T13:49:45.760600+00:00",
   "defined_before_implementation": true,
   "owner": "Root",
@@ -95,9 +95,9 @@
         "operations.cross-scene.physical-setup"
       ],
       "decisive_test": "Existing eight calls/four Operations: success A\u2192B, failure A\u2192B(error), parallel alpha A\u2192A and beta B\u2192B ending beta first. Preserve exact per-step view IDs and two visible native scenes through all calls.",
-      "missing": "Integrate reviewed startup/capture/backend/cleanup with independent whole-interval display and real operator workflow, then qualify the physical adapter once. Startup controls are not physical startup evidence; private app-container cleanup uses the scoped OS-uninstall disposition.",
+      "missing": "Integrate independent whole-interval display and live page/process health with the reviewed components, then qualify the physical adapter once. Startup and operator controls are preparation only; scoped OS-uninstall disposition remains separate.",
       "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
-      "state": "STARTUP_CAPTURE_BACKEND_CLEANUP_CONTROLLED_RUNNER_PENDING",
+      "state": "STARTUP_CAPTURE_BACKEND_CLEANUP_OPERATOR_CONTROLLED_RUNNER_PENDING",
       "historical_fixture": "operations.cross-scene.lifecycle"
     },
     {
@@ -350,7 +350,7 @@
     "builds_admitted": 0,
     "native_admitted": false,
     "budget_policy": "Freeze setup/API/collection/cleanup limits from qualified observed adapter latencies before execution; no active deadline extension. Strict timing is diagnostic.",
-    "next": "Integrate whole-interval display/operator workflow and frozen phase budgets with the reviewed startup/capture/backend/cleanup components, then qualify the physical adapter once before human admission. No human H06 session is admitted.",
+    "next": "Integrate causal whole-interval display evidence and frozen phase budgets with reviewed startup/capture/backend/cleanup/operator components. The runner must bind live page health and process executable before native admission, then qualify the physical adapter once. No human H06 session is admitted.",
     "scope_increment": {
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_",
       "definition": {
@@ -911,6 +911,24 @@
           "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/startup-freshness-iy8bidp5/final-review.json",
           "sha256": "b813f3d084dffe340d1e521e10b5db7023f07ca9e10d7a6da8937bbcaf3e5fc4"
         }
+      },
+      "operator_adapter": {
+        "state": "PREPARATION_PASS",
+        "verdict": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/operator-adapter-2pjfncif/verdict.json",
+          "sha256": "8530a7eb3fb530dc8f479c97ec0b374cffa84ef343055d19f9237e242fffb433"
+        },
+        "controls_passed": 28,
+        "source_sha256": {
+          "tools/multi-scene/acceptance/operation_operator.py": "67ac8565d5db3a880173b5cbebae1aa1e6837ea0982e07734f1986fdc64a7682",
+          "tools/multi-scene/acceptance/test_operation_operator.py": "2886ea026e86e28d643a037d66a5095b17eff336a61572e6e55f661e8e077044"
+        },
+        "contract": "Original operations.setup/cleanup request bytes stay immutable; UI maps to Ready/Released, binds channel/page/deadline, consumes one real acknowledgement, and preserves cleanup supersession. Partial acknowledgement publication cannot be retried as acceptance.",
+        "limits": [
+          "Full runner must bind live server health and process executable before native admission.",
+          "Display contract, integrated orchestration and one physical qualification remain pending.",
+          "No server/native/backend run or release acceptance."
+        ]
       }
     }
   },
@@ -926,5 +944,5 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/s3-residual-review.json",
     "sha256": "358e67b60fb25744ada5ddf6902e5832285a28489492900077061fedd7799890"
   },
-  "updated_at": "2026-09-29T10:49:53.948637+00:00"
+  "updated_at": "2026-09-29T11:17:42.253895+00:00"
 }

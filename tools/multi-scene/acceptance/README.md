@@ -505,6 +505,23 @@ cleanup disposition below. App/process absence stays distinct from unverified
 container absence. Full display/operator integration and physical qualification
 remain required.
 
+### H06 operator prompts
+
+`operation_operator.Operator` maps the original `operations.setup` request to the
+page's `setup`/Ready label, and `operations.cleanup` to cleanup/Released. Original
+request bytes remain immutable. Bind the channel challenge, run/process, device,
+bundle, exact page/server receipt, request path/hash and original outer deadline.
+No legacy 300-second readiness cutoff applies. The runner must independently bind
+live page health and its process executable before native admission.
+
+Only the actual page acknowledgement and matching generation transition may be
+consumed. Status cannot retire pending readiness; cleanup may supersede it and
+permanently prohibits returning to setup. A failed acknowledgement write consumes
+the attempt; preserve the real reply and use separate cleanup. The adapter neither
+runs the server nor grants SDK/teardown authority. Its 28 offline controls and
+review qualify preparation only; integrated display/physical qualification remains
+at the [owning record](../../../DatadogRUM/MultiSceneSupport/Results/S3-human-residual-preparation.json).
+
 ### H06 physical cleanup disposition
 
 Only this physical fixture may record `OS_APP_UNINSTALL_CONTRACT` for private
