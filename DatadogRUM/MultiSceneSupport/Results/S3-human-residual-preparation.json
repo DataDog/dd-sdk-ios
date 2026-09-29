@@ -77,9 +77,10 @@
         "windows.activation-sequence"
       ],
       "decisive_test": "Actual per-scene active/inactive/background changes and work stay with the intended owner; one scene does not replace its peer current view.",
-      "missing": "Reassess EXP196 four genuine activations by source before repeating. Keep its failed terminal disconnect separate; prepare explicit human OS focus/background boundaries and native state evidence. No equivalent activation/destruction diagnostic.",
+      "missing": "Results/S3-H04-activation-preparation.json defines one new activation-only cell; original failed disconnect unchanged. Current source and unavailable historical raw paths assessed. New fixture/oracle implementation remains; H10 is separate and no extra cell is admitted.",
       "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
-      "state": "SOURCE_MAPPED_NOT_EXECUTABLE"
+      "state": "H04_SCOPE_REVIEWED_H10_STILL_UNPREPARED",
+      "preparation_owner": "Results/S3-H04-activation-preparation.json"
     },
     {
       "id": "inferred-operations",
@@ -95,9 +96,9 @@
         "operations.cross-scene.physical-setup"
       ],
       "decisive_test": "Existing eight calls/four Operations: success A\u2192B, failure A\u2192B(error), parallel alpha A\u2192A and beta B\u2192B ending beta first. Preserve exact per-step view IDs and two visible native scenes through all calls.",
-      "missing": "Signed product, canonical Swift profiles and one-shot capture/transfer qualifier are reviewed. The iPad is disconnected; run that no-launch qualification once after fresh readiness, then admit the H06 human topology cell separately.",
+      "missing": "Original no-launch adapter INVALID/cleanup PASS; CoreDevice screen recording unsupported and root-destination transfer failed. User now supplied a USB QuickTime iPad preview. Distinct one-shot movie/save/decode scope reviewed, pending audio-source approval and fresh admission. Startup transfer, H06 topology and SDK owners remain unqualified.",
       "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
-      "state": "ADAPTER_QUALIFIER_PREPARED_DEVICE_PENDING",
+      "state": "COREDEVICE_PATH_STOPPED_QUICKTIME_PREPARED",
       "historical_fixture": "operations.cross-scene.lifecycle"
     },
     {
@@ -350,7 +351,7 @@
     "builds_admitted": 0,
     "native_admitted": false,
     "budget_policy": "Freeze setup/API/collection/cleanup limits from qualified observed adapter latencies before execution; no active deadline extension. Strict timing is diagnostic.",
-    "next": "The no-launch adapter attempt is INVALID: physical CoreDevice Screen Recording is unsupported and root-destination transfer failed. Cleanup PASS. Stop that recorder path; assess a distinct source-supported physical capture mechanism offline, then obtain scoped review before another native qualification. Preserve the signed product and all failed attempts. No H06 human session or release gate is admitted.",
+    "next": "Qualify the separately reviewed QuickTime movie/save/decode path only after the pending audio-source permission and fresh one-shot admission. Preserve the stopped CoreDevice attempt. Independently implement the bounded H04 cell from its owning preparation without invalidating H06 frozen fixture inputs.",
     "scope_increment": {
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_",
       "definition": {
@@ -1203,6 +1204,26 @@
           "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/physical-adapter-q99v9ymn/native-response-correction-y47__19q/outcome-review.json",
           "sha256": "42dfe21a034d288e2f06fbe20c6344fee0d21a2f01f5da0c74fa3e2059f92787"
         }
+      },
+      "quicktime_preparation": {
+        "state": "REVIEWED_NOT_ADMITTED_AUDIO_APPROVAL_PENDING",
+        "definition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/quicktime-capture-rawr8wkz/definition.json",
+          "sha256": "b155bc2450570263d7026e0606fb1e7c58c0945a5ac2353f03b0978cceff404d"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/quicktime-capture-rawr8wkz/review.json",
+          "sha256": "65f75ebd50bee11d2818684406e57df267324e6667ce7380859d9a94b242602d"
+        },
+        "usb_reconnection": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/usb-reconnection-wiohqn99/summary.json",
+          "sha256": "77a57ddc01a930eab5b8680d6c28decd80b47254e4dd70bb2bc76473fa2ccc78"
+        },
+        "recordings": 0,
+        "native_scenario_runs": 0,
+        "gates_closed": [],
+        "scope": "One movie capability check through the user-opened QuickTime UI; no app launch or H06 qualification.",
+        "prior_cmio_probe": "Optional metadata setter was rejected before execution; no CoreMediaIO flag change occurred."
       }
     }
   },

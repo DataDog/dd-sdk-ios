@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "work_item": "Actual focus and activation without the unrelated terminal disconnect",
+  "gate": "S3:H04",
+  "owner": "Root",
+  "reviewer": "/root/c06_runtime_plan",
+  "state": "REVIEWED_SCOPE_NOT_IMPLEMENTED",
+  "defined_at": "2026-09-29T18:46:46.665215+00:00",
+  "defined_before_implementation": true,
+  "new_experiment": false,
+  "candidate_sdk": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "historical_owner": "Results/EXP-196-physical-ipad-suite.json",
+  "assessment": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-activation-scope-r_a5c22a/assessment.json",
+    "sha256": "4c6a6ebb9701c1014df9afbe252202fa69b3b677d526666a31154787c4ad972b"
+  },
+  "scenario": "windows.focus-activation-only",
+  "proposed_profile": "physical-focus-activation-only",
+  "maximum_native_cells": 1,
+  "dependencies": [
+    "S3:A01",
+    "Fresh source/compiler/product identity",
+    "Reviewed distinct scenario and strict local/backend contract",
+    "Qualified physical transport and cleanup"
+  ],
+  "environment": "Physical iPad with actual OS activation and peer backgrounding. Concurrent visible windows and physical Duo are not claimed.",
+  "scope": [
+    "Reuse the existing activation prefix through after-reactivate-A as a newly identified scenario; never truncate or relabel the old manifest.",
+    "Four exact target activations and peer-background boundaries; five distinct Home occurrences A1/A2/A3 and B1/B2 in one RUM session.",
+    "Seal the scenario after the final marker Action/Resource completes, before any dismissWindow or scene-destruction call."
+  ],
+  "source_audit": "The public SwiftUI modifier and Core/Internal/Trace production sources are unchanged between historical04201edc and selected94842cc8. The fixture uses manual trackRUMView and unscoped marker work. Three RUM API/Monitor files differ; fresh ownership evidence is still required. This is source preparation, not native equivalence certification.",
+  "decisive_assertions": [
+    "New exact manifest/profile and fresh run; original16-step/19-expectation contract remains untouched.",
+    "Exact ordered14-step driver; fresh actual foregroundActive target and background peer evidence precedes each marker.",
+    "Stable, distinct native scene identities; each marker Action and Resource owns the independently observed active Home occurrence.",
+    "One complete local event stream, exact work identities, no cross-scene aliases, duplicate work, error or crash.",
+    "Complete backend pagination/count inventory joins every selected view and work owner; delayed delivery never requires repeating input.",
+    "Safe release/native-idle cleanup, task-only app/process absence and protected workspace state unchanged."
+  ],
+  "controls_before_native": [
+    "Wrong or old scenario/profile and consumed run ID reject.",
+    "Stale activation, peer not background, replaced native scene and late assertions reject.",
+    "Wrong/inactive/aliased view owner, marker swap and missing/duplicate work reject.",
+    "Missing terminal completion or silently appended disconnect rejects.",
+    "Incomplete or conflicting backend inventory rejects."
+  ],
+  "non_claims": [
+    "No reuse of missing historical raw files or alteration of original EXP196 failures.",
+    "No H10 background-peer continuity, H09 disconnect/remount or simultaneous-visibility credit.",
+    "No new telemetry family, performance threshold or extra physical Duo cell."
+  ],
+  "implementation_order": [
+    "Preserve all H06 signed-product source inputs; use a separate frozen fixture source before editing the scenario catalog.",
+    "Add the distinct scenario/profile and focused negative controls; obtain designated review before build/native admission.",
+    "Run at most one reviewed current-source physical cell after fresh prerequisites. Stop if the already-supported activation mechanism no longer produces the required native effect."
+  ],
+  "native_runs": 0,
+  "backend_queries": 0,
+  "gates_closed": []
+}
