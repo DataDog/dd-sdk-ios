@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "state": "UIKIT_VIEW_ACTION_GATES_CLOSED_SWIFTUI_REMAINS",
-  "updated_at": "2026-09-29T12:30:31.654178+00:00",
+  "updated_at": "2026-09-29T12:56:10.267346+00:00",
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
   "gates": [
@@ -151,7 +151,7 @@
     "offline_reference_cells": 1,
     "meaning": "Native qualified count covers SDK26.5 split and the scoped candidate. SDK27.1 remains offline-only with original failure unchanged; it does not require a repeat. Six SwiftUI cells remain."
   },
-  "next_action": "Prepare one SwiftUI stack SDK26.5 baseline from the six unchanged products and existing reviewed human capture path; bind the current helper correction and completed UIKit exclusion explicitly. Six SwiftUI cells remain. Do not repeat UIKit or change original failures.",
+  "next_action": "Obtain fresh Duo/operator readiness and launch only the SDK26.5 SwiftUI stack baseline. Existing products; no UIKit repeat or offline native inheritance.",
   "review_loop": {
     "rounds": 2,
     "final_findings": 0,
@@ -480,5 +480,97 @@
       "sha256": "a421b7a1b509412cf6409c33c668c820a5efc97df5c625fca2ea5a57b6e58beb"
     },
     "scope": "Accepted UIKit stack and split candidate capture with preserved SDK26.5 native and SDK27.1 offline-only references. Existing switch/pane limitations remain; no Home, physical, backend, SwiftUI or whole-S2 promotion."
+  },
+  "swiftui_preparation": {
+    "state": "REVIEWED_PREPARATION_ONLY",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-r5",
+    "plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-r5/runtime/runtime-plan.json",
+      "sha256": "2be7c9c3cf56ef41f7d9787997c67dccad25c5f6881cb94b6a018abba7830e57"
+    },
+    "series": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/series-r5/series.json",
+      "sha256": "2915859f75640b1eef25571322ec056f4ca79ca33ab62beb1448e69790fd8f48"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-r5/runtime/controls.json",
+      "sha256": "9eabed98424d7a6c76b730741c5b7ddac2d13ae6a46ac30ed69e969829ea4e01"
+    },
+    "selection_profile": "SWIFTUI_ONLY",
+    "matrix": [
+      {
+        "build": "baseline-26.5",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "stack",
+        "multiple_scenes": false
+      }
+    ],
+    "universe": [
+      {
+        "build": "baseline-26.5",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "stack",
+        "multiple_scenes": false
+      },
+      {
+        "build": "baseline-27.1",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "stack",
+        "multiple_scenes": false
+      },
+      {
+        "build": "candidate-27.1",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "stack",
+        "multiple_scenes": false
+      },
+      {
+        "build": "baseline-26.5",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "split",
+        "multiple_scenes": false
+      },
+      {
+        "build": "baseline-27.1",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "split",
+        "multiple_scenes": false
+      },
+      {
+        "build": "candidate-27.1",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "split",
+        "multiple_scenes": false
+      }
+    ],
+    "excluded": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/excluded-uikit-r5.json",
+      "sha256": "2d3c0f6df130bacc218f0cb189a6eeac12a285199fbdee1ffea1b0657e7c5f59"
+    },
+    "new_builds": 0,
+    "native_admitted": false,
+    "new_native_runs": 0,
+    "gate_closures": [],
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/definition.json",
+      "sha256": "e9871bf497766de19db78d3daa2c1c6e9cfe0f20e91666ebdcd2d55eb715c7b5"
+    },
+    "review_input": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/review-input-r5.json",
+      "sha256": "01d05ae03f37e5d3cf225ff0e105d42abefeda30ea417678290a344e6b24a008"
+    },
+    "offline_controls": 107,
+    "preparation_limits": "Preparation only; native qualification and fresh operator readiness remain. Historical products, helper-transition mismatches and superseded offline preparation retained separately.",
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-r5/runtime/review.json",
+      "sha256": "e6339bce68fda5a12e3f3346a2da2cefabceac6c8a1134545b978ce09d521440"
+    }
   }
 }

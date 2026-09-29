@@ -11,19 +11,36 @@ KIND = 'AUTOMATIC_S2_REMAINING_SESSION'
 OWNER_KEY = 's2_remaining_continuation'
 CLASSES = ['ACCEPTED_NATIVE', 'OFFLINE_COMPARISON', 'CANDIDATE_ONLY']
 BUILDS = ['baseline-26.5', 'baseline-27.1', 'candidate-27.1']
+SWIFTUI = 'SWIFTUI_ONLY'
+SWIFTUI_OWNER_KEY = 's2_swiftui_remaining_continuation'
+UIKIT_OWNER = Path('DatadogRUM/MultiSceneSupport/Results/S2-coverage-remaining-preparation.json')
 
 
 def check(value, message, runner):
     runner.require(value, 'remaining coverage: ' + message)
 
 
-def universe(matrix, runner):
+def owner_key(profile, runner):
+    check(profile in [None, SWIFTUI], 'unknown selection profile', runner)
+    return SWIFTUI_OWNER_KEY if profile == SWIFTUI else OWNER_KEY
+
+
+def swiftui_matrix():
+    return [dict(candidate.CELL, framework='SwiftUI', layout=layout, build=build)
+            for layout in ['stack', 'split'] for build in BUILDS]
+
+
+def universe(matrix, runner, profile=None):
+    owner_key(profile, runner)
     expected = runner.s2_matrix(runner.shared.read(runner.build.OWNER), runner.shared.read(runner.REGISTER))
     check(matrix == expected, 'original finite matrix changed', runner)
-    return [row for row in matrix if (row['framework'], row['layout']) != ('UIKit', 'stack')]
+    return swiftui_matrix() if profile == SWIFTUI else [
+        row for row in matrix if (row['framework'], row['layout']) != ('UIKit', 'stack')]
 
 
-def select(matrix, accepted, count, runner):
+def select(matrix, accepted, count, runner, profile=None):
+    owner_key(profile, runner)
+    check(profile != SWIFTUI or matrix == swiftui_matrix(), 'SwiftUI universe changed', runner)
     check(type(count) is int and 1 <= count <= 3, 'one to three complete cells required', runner)
     check(list(accepted) == [runner.cell_key(row) for row in matrix[:len(accepted)]],
           'predecessors include excluded, missing or reordered cells', runner)
@@ -32,14 +49,22 @@ def select(matrix, accepted, count, runner):
     return rows
 
 
-def predecessors(row, accepted, runner):
+def predecessors(row, accepted, runner, profile=None):
+    owner_key(profile, runner)
+    if profile == SWIFTUI:
+        check(row in swiftui_matrix() and accepted <= {runner.cell_key(v) for v in swiftui_matrix()},
+              'foreign SwiftUI predecessor or cell', runner)
     if row['build'] == 'candidate-27.1':
         required = {runner.cell_key(dict(row, build=build)) for build in BUILDS[:2]}
         check(required <= accepted, 'candidate requires both completed same-family baselines', runner)
 
 
-def excluded(ref, base, runner):
+def excluded(ref, base, runner, profile=None):
+    owner_key(profile, runner)
     s = runner.shared; value = sessions.read_reference(ref, s)
+    if profile == SWIFTUI:
+        check(value == swiftui_exclusion(base, runner, value['home_helper_transition']['controls']), 'reviewed UIKit exclusions changed', runner)
+        return value
     rows = value['rows']
     check(value['state'] == 'REVIEWED_STACK_EXCLUDED' and value['native_cells_credited'] == 0
           and value['gates_closed'] == [] and len(rows) == 3, 'excluded scope expanded or credited', runner)
@@ -98,9 +123,86 @@ def excluded(ref, base, runner):
     return value
 
 
+def swiftui_exclusion(base, runner, controls_ref):
+    """Reference closed UIKit gates without granting native SwiftUI inheritance."""
+    s = runner.shared; owner = s.read(s.REPO/UIKIT_OWNER)
+    authority = owner['uikit_gate_assessment']
+    check(authority['state'] == 'CLOSED_SCOPED_NON_REGRESSION' and authority['gates'] == ['S2:C07', 'S2:C08'],
+          'UIKit gates are not assessed', runner)
+    assessment = sessions.read_reference(authority['assessment'], s)
+    review = sessions.read_reference(authority['review'], s)
+    check(assessment['state'] == 'PASS_SCOPED_UIKIT_AUTOMATIC_COMPARISON'
+          and assessment['source_pair'] == base['scope']['contract']['source_pair']
+          and assessment['review'] == authority['review'] and review['state'] == 'PASS'
+          and review['reviewer'] == '/root/c06_runtime_plan' and review['findings'] == [],
+          'UIKit assessment or review changed', runner)
+    stack = sessions.read_reference(assessment['stack']['assessment'], s)
+    split_plan = sessions.read_reference(owner['split_continuation']['plan'], s)
+    summary_refs = []
+    for layout, refs, summary in [
+        ('stack', [stack['accepted_baseline'], stack['offline_baseline']], stack['summary']),
+        ('split', [split_plan['accepted_baseline_reference'], split_plan['offline_comparison_reference']],
+         assessment['split']['native_summary'])]:
+        native, offline = [sessions.read_reference(ref, s) for ref in refs]
+        check(offline['original_verdict'] == offline['original_cleanup'] == 'INVALID',
+              'offline UIKit evidence was promoted', runner)
+        sessions.read_reference(offline['separate_restoration'], s)
+        for build, kind, ref in zip(BUILDS, ['ACCEPTED_NATIVE', 'OFFLINE_COMPARISON', 'SCOPED_COMPARISON'],
+                                    [native['summary'], offline['original_summary'], summary]):
+            summary_refs.append(dict(cell=dict(candidate.CELL, layout=layout, build=build), evidence_class=kind, reference=ref))
+    historical = []; home = None; home_helpers = None
+    for value in summary_refs:
+        row, out, runtime, old, stage = candidate.history(value['reference'], base, runner)
+        expected = 'INVALID' if value['evidence_class'] == 'OFFLINE_COMPARISON' else 'PASS'
+        check(row['identity']['cell'] == value['cell'] and row['state'] == row['cleanup'] == expected,
+              'excluded native identity or verdict changed', runner)
+        # Baselines retain their original passive-observer builds, validated by history().
+        # Only the qualified candidate products must equal those reused for SwiftUI.
+        if value['evidence_class'] == 'SCOPED_COMPARISON':
+            check(old['products'] == base['products'] and old['observer_refresh'] == base['observer_refresh'],
+                  'qualified candidate products changed', runner)
+        check(not s.process(s.read(runtime/'session-run.json')['pid']), 'excluded runner still active', runner)
+        if expected == 'PASS':
+            check(all(row[key] == 'PASS' for key in ['scenario', 'evidence']), 'excluded evidence incomplete', runner)
+            runner.prior_cells(runtime, old, stage)
+        historical.append(old['series'])
+        if value['cell'] == candidate.CELL:
+            home = {k: old[k] for k in ['home_qualification', 'home_provenance']}
+            home_helpers = old['helpers']
+    # Reuse the qualified native writer; current host hooks are bound by this runtime's review.
+    runner.human_split.verify_home(home, base, runner)
+    transition = home_transition(home, home_helpers, base, controls_ref, runner)
+    current = s.read(runner.build.OWNER)['human_current_composition']
+    historical += [current[key]['series'] for key in ['session_continuation', 's2_session_continuation', 's2_remaining_continuation']]
+    historical += [value['binding']['series'] for value in current.get('stopped_remaining_continuations', [])]
+    historical += [value['series'] for value in owner.get('split_continuation_history', [])]
+    ledgers = {ref['path']: ref for ref in historical}
+    return dict(state='REVIEWED_UIKIT_EXCLUDED', selection_profile=SWIFTUI, native_cells_credited=0,
+                gates_closed=[], gate_assessment=authority, rows=summary_refs, **home, home_helper_transition=transition,
+                blocked_series=[ledgers[path] for path in sorted(ledgers)])
+
+
+def home_transition(home, old_helpers, base, controls_ref, runner):
+    """Bind the reviewed host-hook transition without treating it as new native proof."""
+    s = runner.shared; controls = sessions.read_reference(controls_ref, s)
+    names = ['tools/multi-scene/automatic-coverage/'+name for name in ['human_home.py', 'human_capture.py']]
+    old = {name: old_helpers[name] for name in names}; new = {name: base['helpers'][name] for name in names}
+    definition = sessions.read_reference(home['home_provenance']['definition'], s)
+    check(old == {name: definition['helpers'][name] for name in names}, 'original Home host binding changed', runner)
+    check(controls['state'] == 'PASS' and controls['exit_code'] == 0 and controls['home_helpers'] == new
+          and all(s.sha(s.REPO/name) == digest for name, digest in new.items())
+          and {'test_human_home', 'test_split_capture', 'test_human_remaining'} <= set(controls['command']),
+          'default Home transition controls missing or stale', runner)
+    log = Path(controls['log']['path'])
+    check(log.is_absolute() and not log.is_symlink() and s.sha(log) == controls['log']['sha256'],
+          'default Home controls log changed', runner)
+    return dict(state='DEFAULT_HOST_HOOKS_BOUND_FOR_RUNTIME_REVIEW', old=old, new=new, controls=controls_ref,
+                native_cells_credited=0)
+
+
 def no_overlap(plan, runner):
     s = runner.shared; value = sessions.read_reference(plan['excluded_prefix_reference'], s)
-    selected = {runner.cell_key(row) for row in plan['matrix']}
+    selected = {runner.cell_key(row) for row in (plan['universe'] if plan.get('selection_profile') == SWIFTUI else plan['matrix'])}
     for ref in value['blocked_series']:
         sessions.read_reference(ref, s)
         folder = Path(ref['path']).parent/'claims'
@@ -112,7 +214,7 @@ def verify(root, plan, runner, seen=()):
     s = runner.shared; root = Path(root); source = Path(plan['source_runtime_root']); base = runner.verify(source)
     check(plan['kind'] == KIND and base['kind'] == runner.S2_KIND
           and plan['source_runtime'] == sessions.reference(source/'runtime/runtime-plan.json', s), 'source runtime changed', runner)
-    matrix = universe(base['matrix'], runner)
+    profile = plan.get('selection_profile'); matrix = universe(base['matrix'], runner, profile)
     check(plan['original_universe'] == base['matrix'] and plan['universe'] == matrix
           and plan['native_admitted'] is False and plan['gates_closed'] == [], 'remaining universe or preparation scope changed', runner)
     check(all(plan[k] == base[k] for k in candidate.FIELDS)
@@ -120,28 +222,30 @@ def verify(root, plan, runner, seen=()):
     previous = plan['previous']
     if previous:
         old = s.read(Path(previous['root'])/'runtime/runtime-plan.json')
-        check(old['kind'] == KIND and all(old[k] == plan[k] for k in
+        check(old['kind'] == KIND and old.get('selection_profile') == profile and all(old[k] == plan[k] for k in
               ['source_runtime', 'series', 'excluded_prefix_reference', 'universe']), 'foreign predecessor or series', runner)
     accepted = sessions.inherited(plan, runner, seen or (str(root),))
-    check(plan['inherited'] == accepted and plan['matrix'] == select(matrix, accepted, plan['cell_count'], runner),
+    check(plan['inherited'] == accepted and plan['matrix'] == select(matrix, accepted, plan['cell_count'], runner, profile),
           'selected cells or native inheritance changed', runner)
     check(plan['contract'] == dict(base['contract'], stage_execution_seconds=sessions.budget(plan['matrix'], base['contract'], runner)),
           'sitting budget changed', runner)
     series = sessions.read_reference(plan['series'], s)
     check(series == series_record(plan), 'canonical series changed', runner)
-    excluded(plan['excluded_prefix_reference'], base, runner)
+    excluded(plan['excluded_prefix_reference'], base, runner, profile)
     no_overlap(plan, runner)
     return plan
 
 
 def series_record(plan):
-    return dict(kind=KIND, native_attempts_per_cell=1, **{k: plan[k] for k in
-                ['source_runtime', 'universe', 'original_universe', 'excluded_prefix_reference', 'helpers']})
+    value = dict(kind=KIND, native_attempts_per_cell=1, **{k: plan[k] for k in
+                 ['source_runtime', 'universe', 'original_universe', 'excluded_prefix_reference', 'helpers']})
+    if 'selection_profile' in plan: value['selection_profile'] = plan['selection_profile']
+    return value
 
 
 def ready(root, plan, operator, runner):
     s = runner.shared; folder = root/'runtime'
-    owner = s.read(runner.build.OWNER)['human_current_composition'].get(OWNER_KEY, {})
+    owner = s.read(runner.build.OWNER)['human_current_composition'].get(owner_key(plan.get('selection_profile'), runner), {})
     check(owner.get('series') == plan['series'] and owner.get('plan') == sessions.reference(folder/'runtime-plan.json', s),
           'missing canonical owning-record authority', runner)
     check(not (folder/'session-run.json').exists() and not (folder/'session-complete.json').exists()
@@ -163,10 +267,14 @@ def claim(root, plan, stage, runner):
 def prepare(args, runner):
     s = runner.shared; source = args.original.resolve(); root = args.root.resolve(); base = runner.verify(source)
     check(base['kind'] == runner.S2_KIND and not root.exists(), 'fresh remaining sitting required', runner)
-    ref = sessions.reference(args.excluded, s); excluded(ref, base, runner)
+    profile = getattr(args, 'selection_profile', None); key = owner_key(profile, runner)
+    ref = sessions.reference(args.excluded, s); excluded(ref, base, runner, profile)
     previous = args.previous.resolve() if args.previous else None
+    if previous:
+        old = s.read(previous/'runtime/runtime-plan.json')
+        check(old['kind'] == KIND and old.get('selection_profile') == profile, 'foreign predecessor profile', runner)
     accepted = sessions.completed(previous, runner) if previous else {}
-    matrix = universe(base['matrix'], runner); selected = select(matrix, accepted, args.cells, runner)
+    matrix = universe(base['matrix'], runner, profile); selected = select(matrix, accepted, args.cells, runner, profile)
     plan = {**{k: base[k] for k in candidate.FIELDS}, 'kind': KIND, 'prepared_at': time.time(),
             'source_runtime_root': str(source), 'source_runtime': sessions.reference(source/'runtime/runtime-plan.json', s),
             'excluded_prefix_reference': ref, 'original_universe': base['matrix'], 'universe': matrix,
@@ -175,13 +283,14 @@ def prepare(args, runner):
             'previous': {'root': str(previous), **{name+'_sha256': s.sha(previous/'runtime'/(name+'.json'))
                          for name in ['runtime-plan', 'session-complete']}} if previous else None,
             'native_admitted': False, 'gates_closed': []}
+    if profile is not None: plan['selection_profile'] = profile
     if previous:
         old = s.read(previous/'runtime/runtime-plan.json'); plan['series'] = old['series']
         check(old['kind'] == KIND and old['excluded_prefix_reference'] == ref
               and (args.series is None or args.series.resolve() == Path(old['series']['path']).parent), 'foreign predecessor series', runner)
     else:
         owner = s.read(runner.build.OWNER)['human_current_composition']
-        check(OWNER_KEY not in owner and args.series is not None and not args.series.exists(), 'canonical remaining series already exists', runner)
+        check(key not in owner and args.series is not None and not args.series.exists(), 'canonical remaining series already exists', runner)
         args.series.mkdir(); (args.series/'claims').mkdir()
         s.save(args.series/'series.json', series_record(plan), exclusive=True)
         plan['series'] = sessions.reference(args.series/'series.json', s)
@@ -193,7 +302,7 @@ def prepare(args, runner):
     runner.human_operator.publish(folder/'operator', {'instruction': 'Waiting for review and fresh readiness for untouched coverage cells.'})
     s.save(folder/'runtime-plan.json', plan, exclusive=True); verify(root, plan, runner)
     print(json.dumps(dict(state='REMAINING_SITTING_PREPARED_NOT_ADMITTED', root=str(root), cells=len(selected),
-                          preserved_native_cells=len(accepted), excluded_stack_cells=3, native_launches=0)))
+                          preserved_native_cells=len(accepted), excluded_uikit_cells=6 if profile == SWIFTUI else 3, native_launches=0)))
 
 
 if __name__ == '__main__':
@@ -202,4 +311,5 @@ if __name__ == '__main__':
     for name in ['root', 'original', 'excluded']: parser.add_argument('--'+name, type=Path, required=True)
     for name in ['series', 'previous']: parser.add_argument('--'+name, type=Path)
     parser.add_argument('--cells', type=int, default=1)
+    parser.add_argument('--selection-profile', choices=[SWIFTUI])
     prepare(parser.parse_args(), runner)

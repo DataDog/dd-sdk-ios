@@ -168,3 +168,11 @@ with the accepted stack assessment, this closes S2:C07/C08. Inherited switch/pan
 limits, offline-only SDK27.1 baselines and unqualified full split Home remain.
 Six SwiftUI cells remain. The remaining-coverage record owns exact artifacts,
 controls, reviewer receipts and the next finite preparation.
+
+The next preparation uses an explicit SwiftUI-only profile in the existing runner.
+Its six-cell series starts with one SDK26.5 stack baseline and binds the reviewed
+UIKit exclusions, historical claim ledgers and qualified Home writer. All107
+offline controls pass. Current host-helper hashes and default-mode controls are
+explicit; offline references grant no native inheritance. No rebuild or native
+run is included in this preparation. Exact scoped review has no findings; fresh
+operator/environment readiness is required.

@@ -37,6 +37,16 @@ stack references retain their distinct evidence classes and never become native
 predecessors. This reuses the six Home-qualified products and existing capture,
 Home and cleanup paths; it does not admit native work.
 
+After the scoped UIKit gate assessment, add `--selection-profile SWIFTUI_ONLY`
+and use the reviewed six-row UIKit exclusion record. This selects exactly six
+SwiftUI stack/split cells in baseline26.5, baseline27.1, candidate27.1 order.
+It uses a separate canonical owner and series; start without `--previous`.
+UIKit native and offline references remain distinct, with zero inherited credit.
+All six SwiftUI cells must be unclaimed in historical ledgers. Later sittings
+require completed native predecessors from this same SwiftUI series. Existing
+products and the standard Home collector are reused; the split-only collector
+and its scoped Home exception do not apply to SwiftUI.
+
 `human_split.py` is the scoped candidate-only split continuation. Its comparison
 keeps actual pane layout, per-input owners and View inventory separate from the
 inherited Home limitation. Compare in-memory and persisted inventories through

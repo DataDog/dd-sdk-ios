@@ -338,7 +338,7 @@ def admit_cell(root,key,plan,review,execution_limit,cleanup_limit):
     attempted=prior_cells(runtime,plan,stage)
     next_cell=next((row for row in plan['matrix'] if cell_key(row) not in attempted),None)
     require(next_cell is not None and cell_key(next_cell)==key,'out-of-order or already consumed cell')
-    if plan.get('kind')==human_remaining.KIND:human_remaining.predecessors(next_cell,set(plan['inherited'])|set(attempted),sys.modules[__name__])
+    if plan.get('kind')==human_remaining.KIND:human_remaining.predecessors(next_cell,set(plan['inherited'])|set(attempted),sys.modules[__name__],plan.get('selection_profile'))
     seconds=plan['contract']['duo_cell_seconds' if next_cell['device']=='duo' else 'regular_cell_seconds']
     native=min(now+seconds,stage['execution_deadline'],execution_limit)
     cleanup=min(native+plan['contract']['cleanup_seconds'],stage['cleanup_deadline'],cleanup_limit)
