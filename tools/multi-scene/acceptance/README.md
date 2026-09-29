@@ -428,8 +428,25 @@ receipt and `DD_PROBE_PHYSICAL_OPERATION_CAPTURE_DEADLINE` (absolute Unix second
 The input observer installs before scene-ready. A missing receipt or partial startup
 is terminal for that run. The pump keeps cleanup capture available after a request
 failure until the original deadline; it never grants teardown. `CAPTURED` means bytes
-were collected, not that Operations can start. Host release/display/binary proof and
-whole-interval live admission still need integration; all driver gates stay blocked.
+were collected, not that Operations can start. All driver gates stay blocked pending
+one-use native admission and whole-interval live checks.
+
+`operation_setup.HostSetup` joins the existing channel to a challenge-bound release,
+all signed Mach-O files, separate host/device process identities and actual physical
+display evidence. It preserves this command's raw responses and screenshot; visual
+review maps both fixture owners to distinct visible content regions. PNG dimensions
+must match the screenshot response and CoreDevice display bounds in pixels. The
+point scale is retained, not applied again. The host checks `proc_pidpath` against
+`ps`; macOS framework Python may have a different launcher path.
+
+Thirty-two offline entrypoint controls, one corrected real host-identity check and
+saved physical-schema replay pass. Original control/host failures remain recorded.
+No new native or physical transfer is qualified. The immutable host proof has no SDK
+or cleanup authority: its exact capture/context and prerequisite hashes must be
+consumed once by the app after revalidating current input and RUM owners. A failed
+display review preserves the unarmed capture. It does not request gestures again or
+authorize teardown. There is no additional screenshot freshness cutoff; the fixed
+operational deadline, causal order and live state checks remain mandatory.
 
 `operation_ownership.validate` checks eight raw steps, four reduced Operations,
 exact ID joins, failure reason and A/B endpoints using independently captured View,
