@@ -234,13 +234,17 @@ class FileReaderTests: XCTestCase {
         XCTAssertEqual(metric.attributes["batch_removal_reason"] as? String, "invalid")
     }
 
-    func testGivenUndecryptableMetadata_whenReadingBatch_itKeepsTheEvent() throws {
-        let reader = makeReader(encryption: DataEncryptionMock(decrypt: { data in
-            if data == "metadata".utf8Data {
-                throw ErrorMock("decryption key unavailable")
-            }
-            return data
-        }))
+    func testGivenUndecryptableMetadata_whenReadingBatch_itKeepsTheEventAndReportsFailure() throws {
+        let telemetry = TelemetryMock()
+        let reader = makeReader(
+            encryption: DataEncryptionMock(decrypt: { data in
+                if data == "metadata".utf8Data {
+                    throw ErrorMock("decryption key unavailable")
+                }
+                return data
+            }),
+            telemetry: telemetry
+        )
         let file = try directory.createFile(named: Date().toFileName)
         try file.append(data: BatchDataBlock(type: .eventMetadata, data: "metadata".utf8Data).serialize())
         try file.append(data: BatchDataBlock(type: .event, data: "event".utf8Data).serialize())
@@ -248,6 +252,7 @@ class FileReaderTests: XCTestCase {
         let batch = try XCTUnwrap(reader.readBatch(from: file))
         XCTAssertEqual(batch.events, [Event(data: "event".utf8Data, metadata: nil)])
         XCTAssertEqual(try directory.files().count, 1)
+        XCTAssertEqual(telemetry.messages.firstError()?.message, "(rum) Failed to decrypt data")
     }
 
     func testGivenUndecryptableOldFiles_whenReadingBatches_itSelectsNewerFile() throws {

@@ -50,15 +50,18 @@ internal final class FileReader: Reader {
             return nil
         }
 
+        if decoded.hasUndecryptableBlocks {
+            DD.logger.error("(\(orchestrator.trackName)) Failed to decrypt data")
+            telemetry.error("(\(orchestrator.trackName)) Failed to decrypt data")
+        }
+
         guard !decoded.hasEvent else {
             return Batch(dataBlocks: decoded.blocks, file: file)
         }
 
         guard !decoded.hasUndecryptableBlocks else {
             // No event could be decrypted. Retrying this file on every upload cycle can prevent
-            // newer batches from being selected. `decode(stream:)` reported the failure.
-            DD.logger.error("(\(orchestrator.trackName)) Failed to decrypt data")
-            telemetry.error("(\(orchestrator.trackName)) Failed to decrypt data")
+            // newer batches from being selected.
             markFileAsRead(file, reason: .invalid)
             return nil
         }
