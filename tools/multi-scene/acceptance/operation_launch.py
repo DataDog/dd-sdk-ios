@@ -94,11 +94,14 @@ def toolchain(plan, environment):
     return value
 
 
-def stage_cutoffs(value, now):
+def stage_cutoffs(value, now, *, with_backend=False):
     keys = ['launchUntil','recordUntil','stopUntil','executionUntil','deadline']
-    t.require(set(value) == set(keys) and all(setup.finite(value[k]) for k in keys), 'missing fixed stage cutoffs')
+    expected = keys + (['backendUntil'] if with_backend else [])
+    t.require(set(value) == set(expected) and all(setup.finite(value[k]) for k in expected), 'missing fixed stage cutoffs')
     a,b,c,d,e = [value[k] for k in keys]
     t.require(now < a < b < c <= d < e, 'closed or unordered stage cutoffs')
+    if with_backend:
+        t.require(d < value['backendUntil'] < e, 'backend cutoff leaves no cleanup reserve')
     return dict(value)
 
 
@@ -172,7 +175,7 @@ class Launcher:
         self.admission_raw = setup.read(admission_path); self.admission = t.load(self.admission_raw)
         self.readiness_raw = setup.read(readiness_path)
         self.environment, self.wait = dict(environment), wait
-        self.started = time.time(); self.cutoffs = stage_cutoffs(self.admission['cutoffs'], self.started)
+        self.started = time.time(); self.cutoffs = stage_cutoffs(self.admission['cutoffs'], self.started, with_backend=True)
         self.folder = self.root/'cells'/'h06-launch'; self.folder.mkdir()
         self.launch_attempted = self.install_attempted = self.absence_proved = False
         self.used = False; self.bound_session = None; self.sequence = 0
@@ -283,7 +286,7 @@ class Launcher:
         capture = media.Media(host,self.folder/'media',binary=self.plan['decoder']['binary']['path'],
             source_sha256=self.plan['decoder']['source']['sha256'],binary_sha256=self.plan['decoder']['binary']['sha256'],
             nonce=self.display_nonce,movie=movie,wait=self.wait)
-        result = session.Session(host,prompts,capture,backend_deadline=self.cutoffs['deadline'],
+        result = session.Session(host,prompts,capture,backend_deadline=self.cutoffs['backendUntil'],
             maximum_attempts=self.plan['backend']['maximumAttempts'],poll_seconds=self.plan['backend']['pollSeconds'],wait=self.wait)
         t.save(self.folder/'construction.json',t.encode(dict(state='SESSION_BOUND',identity=identity,
             planSHA256=t.sha(self.plan_raw),admissionSHA256=t.sha(self.admission_raw),

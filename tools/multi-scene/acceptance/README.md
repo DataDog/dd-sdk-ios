@@ -599,9 +599,13 @@ join those same native artifacts and the decoded media.
 
 Capture failure stops and reaps only the owned recorder. Cleanup still requires
 fresh release, native idle and original result expectations; an unreaped recorder
-blocks teardown. Backend collection consumes sealed evidence after cleanup, so a
-backend wait cannot delay the release prompt. Scenario, display, backend and
-cleanup outcomes stay separate. No host control qualifies the physical recorder's
+blocks teardown. Publish the release prompt promptly, then collect backend evidence
+while the app remains installed. Local mapper/terminal records and frequent upload
+do not prove delivery. Freeze `backendUntil` strictly between `executionUntil` and
+the final cleanup deadline; expired or missing inventory remains INVALID. After
+collection, recheck recorder/operator identity and consume the actual release, then
+capture fresh native idle immediately before removal. Scenario, display, backend
+and cleanup outcomes stay separate. No host control qualifies the physical recorder's
 SIGINT response, transfer behavior or simultaneous window visibility. A signed
 physical product and one native adapter qualification remain required before a
 human session.
@@ -612,7 +616,8 @@ human session.
 product, source/compiler evidence, decoder and helper identities. Freeze its three
 UUIDs with `new_identity()` in the reviewed admission before requesting readiness.
 The actual reply binds the plan, admission, identity, server, device and scenario
-within the original launch cutoff; there is no five-minute readiness rule.
+within the original launch cutoff; there is no five-minute readiness rule. Fresh
+launch admissions also require the distinct `backendUntil` cleanup reserve.
 
 One install and one launch supply the actual PID, installed-code receipt, startup
 freshness and native challenge. Only those validated original observations may
@@ -656,6 +661,14 @@ Actual native command responses use the bounded 1 MiB host-context parser; the
 strict JSON validation and exact raw-response/receipt joins through setup and cleanup.
 
 ### Physical recording alternatives
+
+Audio is not acceptance evidence. Future captures must be silent; do not treat a
+muted monitor-volume slider or removing an audio track afterward as disabling
+capture. The inspected physical-iPad Device Hub menu has Record Screen disabled,
+and QuickTime movie mode exposes no audio-off source. Keep the historical
+capability below unchanged, but prepare a silent route before another recording.
+The current H06 movie contract proves co-visibility between phase anchors; live
+preview or anchor screenshots alone do not provide that interval evidence.
 
 A live Device Hub preview is useful for inspection; it does not prove that a
 recording finalized. The [QuickTime capability result](../../../DatadogRUM/MultiSceneSupport/Results/S3-H06-quicktime-capture.json)

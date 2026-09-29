@@ -134,7 +134,7 @@ class Cleanup:
         request = dict(kind='HUMAN_RELEASE_REQUIRED', request_id=str(uuid.uuid4()), run_id=self.identity['runID'],
             channel_identity_sha256=t.sha(t.encode(self.identity)), phase='operations.cleanup', issued_at=time.time(),
             deadline=self.deadline, instruction='Release all input and confirm Released. Leave both task windows visible; '
-                'the runner will verify idle and remove only the test app.')
+                'the runner may finish collecting telemetry, then verify idle and remove only the test app.')
         self.request_raw = t.encode(request); t.save(self.folder / 'release-request.json', self.request_raw)
         t.save(self.folder / 'definition.json', t.encode(dict(identity=self.identity, deadline=self.deadline,
             bundle=self.bundle, device=self.remote.identifier, maximumStopCaptures=2,

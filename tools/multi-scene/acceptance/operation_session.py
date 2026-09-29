@@ -118,7 +118,7 @@ def display_join(recorder, bridge):
 
 
 class Session:
-    """One setup/capture, one cleanup, then saved-source backend collection."""
+    """One capture, backend collection while installed, then fresh-idle cleanup."""
     def __init__(self, host, operator, capture, *, backend_deadline, maximum_attempts,
                  poll_seconds, notify=backend.notify_request, wait=lambda:time.sleep(.25)):
         self.host, self.operator, self.capture = host, operator, capture
@@ -126,7 +126,7 @@ class Session:
         t.require(isinstance(self.remote, media.ExecutionDevice) and host.channel.remote is self.remote
                   and operator.channel is host.channel and capture.host is host and self.movie.remote is self.remote,
                   'session components do not share the original channel')
-        t.require(setup.finite(backend_deadline) and self.remote.execution_until < backend_deadline <= host.channel.deadline
+        t.require(setup.finite(backend_deadline) and self.remote.execution_until < backend_deadline < host.channel.deadline
                   and host.channel.deadline == self.remote.deadline, 'backend or native deadline differs')
         self.backend_deadline, self.maximum_attempts, self.poll_seconds = backend_deadline, maximum_attempts, poll_seconds
         t.require(type(maximum_attempts) is int and 1 <= maximum_attempts <= 24
@@ -153,6 +153,9 @@ class Session:
 
     def acknowledgement(self, path, *, cutoff):
         self.operator.present(path)
+        return self.wait_acknowledgement(cutoff=cutoff)
+
+    def wait_acknowledgement(self, *, cutoff):
         while time.time() < cutoff:
             raw = self.operator.acknowledgement()
             if raw is not None: return raw
@@ -205,7 +208,10 @@ class Session:
             except BaseException as error:
                 self.verdicts['recorder_restoration'] = 'BLOCKED'
                 self.failure('recorder-restoration',error)
-        # Capture failure never becomes a successful scenario after restoration.
+        # Ask for release promptly, but keep the app alive for ordinary SDK upload.
+        # The later cleanup run still captures fresh native idle immediately before
+        # removal; acknowledging this prompt does not authorize early teardown.
+        cleaner = None
         try:
             t.require(self.movie.quiescent and self.verdicts['recorder_restoration'] == 'PASS',
                       'recorder is not quiescent')
@@ -213,25 +219,38 @@ class Session:
             t.require((self.host.folder/'process-before-response.json').is_file(),
                       'setup never established the original process; app left untouched')
             native, terminal = cleanup_expectations(self.host,self.folder/'cleanup-expectations')
-            cleaner = cleanup.Cleanup(self.host,original_native_raw=native,original_terminal=terminal,wait=self.wait)
+            prepared = cleanup.Cleanup(self.host,original_native_raw=native,original_terminal=terminal,wait=self.wait)
             page = operator_health(self.operator,self.folder/'page-cleanup')
             t.require(page == self.page, 'operator process changed before cleanup')
-            ack = self.acknowledgement(cleaner.folder/'release-request.json',cutoff=self.host.channel.deadline)
-            result = cleaner.run(ack)
-            t.require(result['state'] == 'TASK_APP_REMOVED', 'task removal incomplete')
-            t.save(self.folder/'cleanup-result.json',t.encode(result)); self.verdicts['cleanup'] = 'PASS'
+            self.operator.present(prepared.folder/'release-request.json')
+            cleaner = prepared
         except BaseException as error:
             self.verdicts['cleanup'] = 'BLOCKED'
-            self.failure('cleanup',error)
-        # Backend reads no native state and never delays the release/idle request.
+            self.failure('cleanup-preparation',error)
+        # Local mapper/terminal evidence is not a delivery barrier. Do not delete
+        # buffered SDK payloads before the bounded backend collection has finished.
         if self.verdicts['scenario'] == self.verdicts['display'] == 'PASS':
             try:
+                t.require(time.time() < self.backend_deadline, 'original backend cutoff expired')
                 collected = backend.Backend(self.recorder,deadline=self.backend_deadline,
                     maximum_attempts=self.maximum_attempts,poll_seconds=self.poll_seconds,notify=self.notify)
                 result = collected.collect()
+                t.require(time.time() < self.backend_deadline, 'backend result arrived after original cutoff')
                 t.save(self.folder/'backend-result.json',t.encode(result)); self.verdicts['backend'] = 'PASS'
             except BaseException as error:
                 self.verdicts['backend'] = 'INVALID'; self.failure('backend',error)
+        if cleaner is not None:
+            try:
+                t.require(self.movie.quiescent, 'recorder is not quiescent before removal')
+                page = operator_health(self.operator,self.folder/'page-before-removal')
+                t.require(page == self.page, 'operator process changed during backend collection')
+                ack = self.wait_acknowledgement(cutoff=self.host.channel.deadline)
+                result = cleaner.run(ack)
+                t.require(result['state'] == 'TASK_APP_REMOVED', 'task removal incomplete')
+                t.save(self.folder/'cleanup-result.json',t.encode(result)); self.verdicts['cleanup'] = 'PASS'
+            except BaseException as error:
+                self.verdicts['cleanup'] = 'BLOCKED'
+                self.failure('cleanup',error)
         result = dict(state='EVIDENCE_COMPLETE' if all(v == 'PASS' for v in self.verdicts.values()) else 'INVALID',
             verdicts=self.verdicts, identity=self.host.identity, finishedAt=time.time(),
             deadline=self.host.channel.deadline, definitionSHA256=t.sha(self.definition_raw),

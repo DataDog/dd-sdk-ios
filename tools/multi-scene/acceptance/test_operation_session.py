@@ -42,7 +42,7 @@ class SessionTests(unittest.TestCase):
         patched('operation_session.cleanup_expectations',side_effect=lambda *_:(self.call('expectations') or (b'native-original',{'state':'PASS'})))
         patched('operation_session.cleanup.Cleanup',side_effect=self.cleaner)
         patched('operation_session.backend.Backend',side_effect=self.backend)
-        self.session=s.Session(self.host,self.operator,self.capture,backend_deadline=self.remote.deadline,
+        self.session=s.Session(self.host,self.operator,self.capture,backend_deadline=self.remote.deadline-300,
             maximum_attempts=2,poll_seconds=1,wait=lambda:None)
 
     def call(self,name):
@@ -88,6 +88,7 @@ class SessionTests(unittest.TestCase):
 
     def backend(self,*args,**kwargs):
         self.assertEqual(kwargs['deadline'],self.session.backend_deadline)
+        self.assertNotIn('cleanup-remove',self.calls)
         self.call('backend-init')
         return types.SimpleNamespace(collect=lambda:(self.call('backend-collect') or {'state':'BACKEND_OWNERSHIP_JOINED'}))
 
@@ -96,12 +97,12 @@ class SessionTests(unittest.TestCase):
         self.assertFalse(result['releaseAcceptance']);self.assertEqual(result['gatesClosed'],[])
         self.assertFalse(result['sdkRegression']);return result
 
-    def test_complete_order_has_one_completion_and_cleanup_before_backend(self):
+    def test_app_stays_installed_until_backend_finishes_and_then_requires_cleanup(self):
         result=self.run_session();self.assertEqual(result['state'],'EVIDENCE_COMPLETE')
         phases=['start-barrier','prompt-setup','start-movie','collect-host','proof-start','poll-display-RUN.json',
             'image-RUN','proof-run','recorder-checkpoint','publish','poll-display-FINAL.json','seal','image-FINAL','finish-movie',
             'decode-movie','proof-final','completion-init','collect-local','join-display','prompt-cleanup',
-            'cleanup-remove','backend-collect']
+            'backend-collect','cleanup-remove']
         offsets=[self.calls.index(p) for p in phases];self.assertEqual(offsets,sorted(offsets))
         self.assertEqual(self.calls.count('collect-local'),1)
         self.assertTrue(self.remote.cleanup_started)
@@ -159,7 +160,7 @@ class SessionTests(unittest.TestCase):
     def test_foreign_components_reject_before_session_publication(self):
         self.capture.host=object()
         with self.assertRaisesRegex(ValueError,'original channel'):
-            s.Session(self.host,self.operator,self.capture,backend_deadline=self.remote.deadline,maximum_attempts=1,poll_seconds=1)
+            s.Session(self.host,self.operator,self.capture,backend_deadline=self.remote.deadline-300,maximum_attempts=1,poll_seconds=1)
 
     def test_mutated_definition_cannot_trigger_input_or_work(self):
         (self.session.folder/'definition.json').write_bytes(b'{}');result=self.run_session()
@@ -187,5 +188,70 @@ class SessionTests(unittest.TestCase):
         self.assertFalse(self.remote.cleanup_started)
         self.assertEqual(result['verdicts']['cleanup'],'BLOCKED')
         self.assertEqual(result['verdicts']['scenario'],'PASS');self.assertEqual(result['state'],'INVALID')
+
+    def test_release_can_arrive_during_backend_without_early_removal(self):
+        pending = []
+        def backend_call(*args, **kwargs):
+            self.assertIn('prompt-cleanup', self.calls)
+            self.assertNotIn('cleanup-remove', self.calls)
+            def collect():
+                pending.append('backend-uploaded')
+                self.assertNotIn('cleanup-remove', self.calls)
+                self.call('backend-collect')
+                return {'state': 'BACKEND_OWNERSHIP_JOINED'}
+            return types.SimpleNamespace(collect=collect)
+        with patch.object(s.backend, 'Backend', side_effect=backend_call):
+            result = self.run_session()
+        self.assertEqual(pending, ['backend-uploaded'])
+        self.assertEqual(result['state'], 'EVIDENCE_COMPLETE')
+        self.assertEqual(self.calls.count('prompt-cleanup'), 1)
+        self.assertLess(self.calls.index('backend-collect'), self.calls.index('cleanup-remove'))
+
+    def test_late_backend_result_preserves_original_cleanup_reserve(self):
+        cutoff = self.session.backend_deadline
+        clock = [time.time()]
+        def late(*args, **kwargs):
+            def collect():
+                self.assertNotIn('cleanup-remove', self.calls)
+                self.call('backend-collect')
+                clock[0] = cutoff
+                return {'state': 'BACKEND_OWNERSHIP_JOINED'}
+            return types.SimpleNamespace(collect=collect)
+        with patch.object(s.backend, 'Backend', side_effect=late), \
+                patch.object(s.time, 'time', side_effect=lambda: clock[0]):
+            result = self.run_session()
+        self.assertEqual(result['verdicts']['backend'], 'INVALID')
+        self.assertEqual(result['verdicts']['cleanup'], 'PASS')
+        self.assertEqual(self.session.backend_deadline, cutoff)
+        self.assertLess(cutoff, self.channel.deadline)
+        self.assertFalse((self.session.folder/'backend-result.json').exists())
+
+    def test_missing_cleanup_release_does_not_discard_backend_evidence(self):
+        def ack():
+            self.call('ack')
+            if 'prompt-cleanup' in self.calls:
+                raise ValueError('operator has not released')
+            return b'actual-page-ack'
+        self.operator.acknowledgement = ack
+        result = self.run_session()
+        self.assertNotIn('cleanup-remove', self.calls)
+        self.assertEqual(result['verdicts']['backend'], 'PASS')
+        self.assertEqual(result['verdicts']['cleanup'], 'BLOCKED')
+
+    def test_operator_replacement_during_backend_blocks_removal(self):
+        original = s.operator_health
+        def changed(op, folder):
+            result = original(op, folder)
+            return {'pid': 99} if folder.name == 'page-before-removal' else result
+        with patch.object(s, 'operator_health', side_effect=changed):
+            result = self.run_session()
+        self.assertNotIn('cleanup-remove', self.calls)
+        self.assertEqual(result['verdicts']['backend'], 'PASS')
+        self.assertEqual(result['verdicts']['cleanup'], 'BLOCKED')
+
+    def test_backend_and_cleanup_cannot_share_the_same_cutoff(self):
+        with self.assertRaisesRegex(ValueError, 'deadline differs'):
+            s.Session(self.host, self.operator, self.capture, backend_deadline=self.remote.deadline,
+                      maximum_attempts=1, poll_seconds=1)
 
 if __name__=='__main__':unittest.main()

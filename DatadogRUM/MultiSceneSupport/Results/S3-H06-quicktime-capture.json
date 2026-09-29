@@ -4,7 +4,7 @@
   "state": "PASS_CAPTURE_CAPABILITY_ONLY",
   "owner": "Root",
   "reviewer": "/root/c06_runtime_plan",
-  "updated_at": "2026-09-29T20:53:45.916785+00:00",
+  "updated_at": "2026-09-29T21:15:14.886738+00:00",
   "gate_dependency": "S3:H06",
   "candidate_sdk": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
   "source_head": "8f57d2495e51f31ab07ce65aa28df3d20b78c4bb",
@@ -49,7 +49,7 @@
     "One earlier stale readiness assertion stopped before admission/recording; no active deadline was extended.",
     "Original CoreDevice1001/7000 failures remain immutable. No H06 startup, topology, SDK or backend qualification follows."
   ],
-  "next": "Prepare one fresh H06 first-cell admission with current device, signed product, recorder and operator readiness. Its startup/Documents exchanges, CUA chain, source-bound START/RUN/FINAL, ownership/backend joins and cleanup remain unqualified. Do not repeat the stopped CoreDevice or root-transfer qualifier.",
+  "next": "Prepare a silent display capture path before any fresh H06 admission. Delivery-before-cleanup is reviewed; actual startup/Documents exchanges, source-bound display, ownership/backend joins and cleanup remain unqualified. Advance isolated H04 independently. Do not repeat stopped CoreDevice or root-transfer qualifiers.",
   "recorder_adapter": {
     "state": "REVIEWED_OFFLINE_RECORDER_PREPARED",
     "result": {
@@ -80,5 +80,20 @@
     },
     "unique_controls": 128,
     "native_runs": 0
+  },
+  "delivery_order_correction": {
+    "state": "REVIEWED_DELIVERY_BEFORE_CLEANUP",
+    "result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/delivery-before-cleanup-zb_4ejke/outcome.json",
+      "sha256": "801b19630394ec5f4684ec00c920ee1fb9cc917ecbaa8515a1abcc61d609f745"
+    },
+    "unique_controls": 131,
+    "native_runs": 0
+  },
+  "future_capture_policy": {
+    "audio": "No semantic audio requirement. Future recordings must use a silent capture path; microphone/device audio is unnecessary.",
+    "device_hub": "Live physical-iPad preview available; Record Screen was disabled in the inspected Controls menu. This is UI discovery, not a recorded capability result.",
+    "quicktime": "Movie mode inspection exposed no audio-off selection. Preserve the previous capability and restoration, but do not admit another audio-bearing recording.",
+    "display": "The current H06 contract still requires the decoded movie between source-bound START/RUN/FINAL frames; anchor screenshots alone do not establish interval co-visibility."
   }
 }

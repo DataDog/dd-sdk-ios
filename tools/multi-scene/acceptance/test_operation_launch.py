@@ -101,7 +101,7 @@ class LauncherTests(unittest.TestCase):
             backend=dict(maximumAttempts=1,pollSeconds=1))
         self.plan_path=self.root/'plan.json';self.plan_path.write_bytes(t.encode(self.plan))
         qualification=self.root/'qualification.json';qualification.write_bytes(t.encode(dict(state='PHYSICAL_ADAPTER_QUALIFIED',device=self.remote.identifier,helpers=self.plan['helpers'],toolchain={'fixture':True},hardware=dict(udid='device-udid',os='27.0',build='fixture'))))
-        self.now=time.time();self.cutoffs=dict(launchUntil=self.now+60,recordUntil=self.now+120,stopUntil=self.now+150,executionUntil=self.now+180,deadline=self.now+240)
+        self.now=time.time();self.cutoffs=dict(launchUntil=self.now+60,recordUntil=self.now+120,stopUntil=self.now+150,executionUntil=self.now+180,backendUntil=self.now+210,deadline=self.now+240)
         self.admission=dict(state='NATIVE_ADMITTED',scope='H06_PHYSICAL_LAUNCH',reviewer=l.REVIEWER,planSHA256=t.sha(self.plan_path.read_bytes()),
             adapterQualification=l.pixels.reference(qualification),cutoffs=self.cutoffs,identity=l.new_identity(),issuedAt=self.now)
         ap=self.root/'admission.json';ap.write_bytes(t.encode(self.admission));rp=self.root/'ready.json';rp.write_bytes(t.encode({'kind':'offline-double'}))
@@ -133,6 +133,7 @@ class LauncherTests(unittest.TestCase):
         identity=self.channel.call_args.args[3];self.assertEqual(identity['processID'],123)
         self.assertEqual(t.load((self.o.folder/'construction.json').read_bytes())['identity'],identity)
         self.assertTrue((self.o.folder/'native.startup-freshness.json').is_file())
+        self.assertEqual(self.session.call_args.kwargs['backend_deadline'], self.cutoffs['backendUntil'])
         with self.assertRaises(ValueError):self.o.launch()
         self.assertEqual(self.remote.calls.count('launch'),1)
 
@@ -217,7 +218,16 @@ class LauncherTests(unittest.TestCase):
     def test_closed_stage_budget_has_no_fallback_extension(self):
         for key in self.cutoffs:
             value=dict(self.cutoffs);value[key]=self.now-1
-            with self.subTest(key=key),self.assertRaises(ValueError):l.stage_cutoffs(value,self.now)
+            with self.subTest(key=key),self.assertRaises(ValueError):l.stage_cutoffs(value,self.now,with_backend=True)
+
+    def test_backend_cutoff_requires_a_distinct_cleanup_reserve(self):
+        for backend_until in [self.cutoffs['executionUntil'], self.cutoffs['deadline']]:
+            with self.subTest(backend_until=backend_until), self.assertRaisesRegex(ValueError, 'cleanup reserve'):
+                l.stage_cutoffs(dict(self.cutoffs, backendUntil=backend_until), self.now, with_backend=True)
+        old = dict(self.cutoffs); del old['backendUntil']
+        with self.assertRaisesRegex(ValueError, 'fixed stage cutoffs'):
+            l.stage_cutoffs(old, self.now, with_backend=True)
+        self.assertEqual(self.remote.calls, [])
 
     def test_failed_prelaunch_quiescence_blocks_removal(self):
         self.remote.problem='unreaped-install'
