@@ -155,6 +155,16 @@ It preserves the complete post-Home observations and grants neither lifecycle no
 cleanup acceptance. The candidate-only runner is now frozen and reviewed:70 affected controls,84
 session/runtime controls and9 final dispatch/tail controls pass. It seals the
 compared prefix before requiring release and fresh native idle; cleanup rows stay
-separate. Strict default Home checks are unchanged. Fresh operator/environment
-readiness is required; neither baseline needs repeating. Seven cells are untouched,
-no build/native run was added, and no whole gate closes.
+separate. Strict default Home checks are unchanged. That preparation required fresh operator/environment readiness; neither baseline
+needed repeating. It granted no gate credit before native execution.
+
+The corrected candidate subsequently captures all split gestures and folds with
+scenario/evidence/cleanup PASS. A prior scroll-frame rejection remains INVALID;
+its exact floating-point noise is corrected without relaxing native identities.
+The completed run's original Home comparison flag is also preserved: tuple/list
+serialization caused it, while the saved values and ordering match. The separate
+reviewed offline comparison confirms unchanged View and Action ownership. Combined
+with the accepted stack assessment, this closes S2:C07/C08. Inherited switch/pane
+limits, offline-only SDK27.1 baselines and unqualified full split Home remain.
+Six SwiftUI cells remain. The remaining-coverage record owns exact artifacts,
+controls, reviewer receipts and the next finite preparation.

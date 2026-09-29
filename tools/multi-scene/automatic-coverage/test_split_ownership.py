@@ -218,6 +218,43 @@ class SplitOwnership(unittest.TestCase):
 
 
 
+    def test_replayed_inventory_matches_persisted_json_without_loosening_tail_values(self):
+        receipts = [dict(phase='detail.tap.before', timestamp=0), dict(phase='background.before', timestamp=10),
+                    dict(phase='complete', timestamp=20)]
+        run = dict(run_id='run', build='baseline-27.1', device='duo', framework='UIKit', layout='split')
+        evaluated = self.check()
+        baseline = split.comparison_inventory(run, evaluated, receipts)
+        candidate = json.loads(json.dumps(baseline))
+        candidate['cell'][0] = 'candidate-27.1'
+        self.assertIsInstance(baseline['tail']['new_views'][0], tuple)
+        self.assertIsInstance(candidate['tail']['new_views'][0], list)
+        original_baseline, original_candidate = copy.deepcopy(baseline), copy.deepcopy(candidate)
+        result = split.compare(baseline, candidate)
+        self.assertEqual(result['state'], 'OWNER_RELATIONSHIPS_UNCHANGED')
+        self.assertEqual(result['home_state'], 'CLASSIFIED_TAIL_UNCHANGED')
+        self.assertEqual(result['view_state'], 'VIEW_INVENTORY_UNCHANGED')
+        self.assertEqual(baseline, original_baseline); self.assertEqual(candidate, original_candidate)
+        self.assertFalse(evaluated['home_lifecycle_qualified']); self.assertFalse(evaluated['cleanup_authorized'])
+        self.assertTrue(evaluated['requires_fresh_cleanup_idle']); self.assertFalse(result['release_acceptance'])
+        self.assertEqual(result['gates_closed'], [])
+        for mode in ['name', 'url', 'active', 'active_type', 'appearance_kind', 'appearance_screen',
+                     'view_order', 'appearance_order', 'extra', 'missing', 'extra_key', 'classification']:
+            changed = copy.deepcopy(candidate)
+            if mode in ['name', 'url']:
+                changed['tail']['new_views'][0][0 if mode == 'name' else 1] = 'other'
+            elif mode in ['active', 'active_type']:
+                changed['tail']['new_views'][0][2] = True if mode == 'active' else 0
+            elif mode in ['appearance_kind', 'appearance_screen']:
+                changed['tail']['appearances'][0][0 if mode == 'appearance_kind' else 1] = 'other'
+            elif mode in ['view_order', 'appearance_order']:
+                changed['tail']['new_views' if mode == 'view_order' else 'appearances'].reverse()
+            elif mode == 'extra': changed['tail']['new_views'].append(changed['tail']['new_views'][0])
+            elif mode == 'missing': changed['tail']['new_views'].pop()
+            elif mode == 'extra_key': changed['tail']['unclassified'] = []
+            else: changed['home_classification'] = 'other'
+            with self.subTest(mode=mode):
+                self.assertEqual(split.compare(baseline, changed)['state'], 'HOME_TAIL_DIFFERENCE_REQUIRES_CLASSIFICATION')
+
     def test_recognized_tail_may_arrive_after_the_committed_home_prefix(self):
         prefix = encoded(self.rows[:self.home_sequence])
         self.assertEqual(self.check(prefix=prefix)['home_classification'], split.LIMITATION)

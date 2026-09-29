@@ -2,7 +2,7 @@
   "schema_version": 2,
   "work_item": "S2 finite input preparation",
   "status": "TWO_REMAINING_INPUT_PACKAGES",
-  "updated_at": "2026-09-28T21:17:53.399972+00:00",
+  "updated_at": "2026-09-29T12:30:31.654178+00:00",
   "owner": "Harness implementer; root owns native lane",
   "scope_owner": "Results/S2-release-gate-review-20260925.json; release-gates.json releases.S2.execution_packages",
   "source_pair": {
@@ -20,19 +20,17 @@
     {
       "id": "coverage",
       "gates": [
-        "S2:C07",
-        "S2:C08",
         "S2:C09",
         "S2:C10",
         "S2:H14"
       ],
       "owner": "SDK implementer; human operator for input",
       "evidence_owner": "Results/S2-coverage-remaining-preparation.json",
-      "remaining": "Nine untouched cells: UIKit split and SwiftUI stack/split triplets. UIKit stack candidate/local comparison passes with its accepted SDK26.5 and separately reviewed offline SDK27.1 references; no baseline or candidate repeat. No whole coverage gate closes.",
+      "remaining": "Six untouched SwiftUI stack/split cells: baseline26.5, baseline27.1 and candidate27.1 for each shape. UIKit stack and split evidence close C07/C08; keep their native/offline reference classes and all original failures distinct. No UIKit repeat.",
       "decisive_test": "Actual control/navigation/fold effect and exact view/action owner parity. Split journeys supply H14. Existing naming/control limitations remain explicit.",
       "environment": "Xcode27.1 Duo27.1; six refreshed passive-observer products from three original source/compiler pairs (26.5 and27.1).",
       "preparation": "Reviewed exact nine-cell continuation; 64 offline controls and actual historical source/product/evidence verification pass. First sitting: one UIKit split baseline26.5. Six Home-qualified products reused, no build or native launch.",
-      "blocker": "Fresh Duo/Xcode/live-page readiness and human input. Typed completed stack references remain excluded; no repeated baseline or candidate."
+      "blocker": "Prepare a separately reviewed first SwiftUI baseline with current helper bindings, then fresh Duo/operator readiness."
     },
     {
       "id": "transitions",
@@ -96,6 +94,15 @@
       "owner": "Results/EXP-221-duo-fold.json qualified_fold",
       "repeat_due": false,
       "limit": "Registered candidate persistence is separately assessed; original INVALID and all historical failures remain."
+    },
+    {
+      "id": "uikit-coverage",
+      "gates": [
+        "S2:C07",
+        "S2:C08"
+      ],
+      "owner": "Results/S2-coverage-remaining-preparation.json",
+      "repeat_due": false
     }
   ],
   "final_review": {

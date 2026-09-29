@@ -270,14 +270,14 @@
         },
         "S2": {
           "scope": "UIKit automatic view non-regression after an iOS 27 rebuild",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [
             "S2:A01",
             "S2:F07"
           ],
           "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild and baseline-to-candidate at27.1 on Duo; report UIKit views separately. Validate View/Navigation/Action capture and exact event owners within the actual layout. Cross-compiler View counts and occurrence sequences may differ when simultaneous columns change. Classify new loss, duplicates or wrong owners; documented baseline pane/control limitations may remain. No general tab/split tracking redesign, concurrent-pane modeling, strict timing or whole-payload equality.",
           "environment": "Xcode27.1 Duo27.1 simulator;12 shared stack/split cells plus at most4 ordinary baseline controls; reuse valid source-matched observations",
-          "evidence": "Results/S2-coverage-home-collection-20260928.json qualifies the current candidate UIKit stack local comparison:11 Views/25 Actions,29 native effects,three actual folds and Home/cleanup PASS. Both the accepted SDK26.5 baseline and separately reviewed offline SDK27.1 reference match; four switch-action omissions are inherited. Original SDK27.1 INVALID/cleanup INVALID remains. UIKit split still required, so this gate stays OPEN. No backend, physical-Duo or full-matrix claim; no baseline/candidate repeat. Results/S2-coverage-remaining-preparation.json retains the accepted SDK26.5 split baseline and SDK27.1 capture with incomplete Home inventory and separate restoration PASS. Foreground owner assessment and candidate comparison remain; layout differences do not require matching event counts.",
+          "evidence": "Results/S2-coverage-remaining-preparation.json closes the UIKit family from reviewed stack and split comparisons on selected SDKc9faed81. Stack11Views/25Actions and split21Views/26Actions preserve SDK27.1 baseline View/Navigation/Action ownership; four switch omissions and unfolded pane-owner limitations are inherited. Genuine SDK26.5 split12Views/26Actions uses a different column layout, so occurrence-count equality is not required. Candidate capture, three folds, release/native-idle cleanup and Closed restoration pass. SDK27.1 baselines stay offline-only with original INVALID and separate restoration unchanged. The original tuple/list comparator flag remains; a reviewed saved-evidence correction establishes parity. Split full Home lifecycle remains unqualified. No SwiftUI, backend or physical-Duo claim and no repeat due.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
@@ -305,14 +305,14 @@
         },
         "S2": {
           "scope": "UIKit automatic action non-regression after an iOS 27 rebuild",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [
             "S2:A01",
             "S2:F07"
           ],
           "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild and baseline-to-candidate at27.1 on Duo; report UIKit actions separately. Validate View/Navigation/Action capture and exact event owners within the actual layout. Cross-compiler View counts and occurrence sequences may differ when simultaneous columns change. Classify new loss, duplicates or wrong owners; documented baseline pane/control limitations may remain. No general tab/split tracking redesign, concurrent-pane modeling, strict timing or whole-payload equality.",
           "environment": "Xcode27.1 Duo27.1 simulator;12 shared stack/split cells plus at most4 ordinary baseline controls; reuse valid source-matched observations",
-          "evidence": "Results/S2-coverage-home-collection-20260928.json qualifies the current candidate UIKit stack local comparison:11 Views/25 Actions,29 native effects,three actual folds and Home/cleanup PASS. Both the accepted SDK26.5 baseline and separately reviewed offline SDK27.1 reference match; four switch-action omissions are inherited. Original SDK27.1 INVALID/cleanup INVALID remains. UIKit split still required, so this gate stays OPEN. No backend, physical-Duo or full-matrix claim; no baseline/candidate repeat. Results/S2-coverage-remaining-preparation.json retains the accepted SDK26.5 split baseline and SDK27.1 capture with incomplete Home inventory and separate restoration PASS. Foreground owner assessment and candidate comparison remain; layout differences do not require matching event counts.",
+          "evidence": "Results/S2-coverage-remaining-preparation.json closes the UIKit family from reviewed stack and split comparisons on selected SDKc9faed81. Stack11Views/25Actions and split21Views/26Actions preserve SDK27.1 baseline View/Navigation/Action ownership; four switch omissions and unfolded pane-owner limitations are inherited. Genuine SDK26.5 split12Views/26Actions uses a different column layout, so occurrence-count equality is not required. Candidate capture, three folds, release/native-idle cleanup and Closed restoration pass. SDK27.1 baselines stay offline-only with original INVALID and separate restoration unchanged. The original tuple/list comparator flag remains; a reviewed saved-evidence correction establishes parity. Split full Home lifecycle remains unqualified. No SwiftUI, backend or physical-Duo claim and no repeat due.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
@@ -347,7 +347,7 @@
           ],
           "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild and baseline-to-candidate at27.1 on Duo; report SwiftUI views separately. Validate View/Navigation/Action capture and exact event owners within the actual layout. Cross-compiler View counts and occurrence sequences may differ when simultaneous columns change. Classify new loss, duplicates or wrong owners; documented baseline pane/control limitations may remain. No general tab/split tracking redesign, concurrent-pane modeling, strict timing or whole-payload equality.",
           "environment": "Xcode27.1 Duo27.1 simulator;12 shared stack/split cells plus at most4 ordinary baseline controls; reuse valid source-matched observations",
-          "evidence": "Results/S2-capture-contract-preparation.json binds the reviewed12-cell EXP210 preparation: six products/four genuine source/compiler builds reused, exact native ownership/order checks retained and recorder timing diagnostic.125 focused controls and scoped helper-reuse review pass. Fresh operator readiness and first native qualification remain; original stopped input mechanisms stay stopped. No behavioral gate credit.",
+          "evidence": "Results/S2-coverage-remaining-preparation.json owns six unexecuted SwiftUI stack/split cells using the existing six source/compiler-bound products. The shared capture path is qualified by completed UIKit journeys; this is no SwiftUI behavioral credit. Fresh one-cell preparation, review and operator readiness remain.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
@@ -382,7 +382,7 @@
           ],
           "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild and baseline-to-candidate at27.1 on Duo; report SwiftUI actions separately. Validate View/Navigation/Action capture and exact event owners within the actual layout. Cross-compiler View counts and occurrence sequences may differ when simultaneous columns change. Classify new loss, duplicates or wrong owners; documented baseline pane/control limitations may remain. No general tab/split tracking redesign, concurrent-pane modeling, strict timing or whole-payload equality.",
           "environment": "Xcode27.1 Duo27.1 simulator;12 shared stack/split cells plus at most4 ordinary baseline controls; reuse valid source-matched observations",
-          "evidence": "Results/S2-capture-contract-preparation.json binds the reviewed12-cell EXP210 preparation: six products/four genuine source/compiler builds reused, exact native ownership/order checks retained and recorder timing diagnostic.125 focused controls and scoped helper-reuse review pass. Fresh operator readiness and first native qualification remain; original stopped input mechanisms stay stopped. No behavioral gate credit.",
+          "evidence": "Results/S2-coverage-remaining-preparation.json owns six unexecuted SwiftUI stack/split cells using the existing six source/compiler-bound products. The shared capture path is qualified by completed UIKit journeys; this is no SwiftUI behavioral credit. Fresh one-cell preparation, review and operator readiness remain.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
@@ -1760,7 +1760,7 @@
           ],
           "decisive_test": "Reuse the automatic coverage split journeys for actual Closed/Open display geometry, stable scene/window/controller ownership, selection continuity and no new view/action misattribution. No extra physical-iPad resize matrix or ideal semantic selection guarantee. Compare attribution within the observed column layout; inherited single-current-view behavior and legitimate cross-compiler occurrence differences are not regressions.",
           "environment": "Qualified Duo27.1 simulator; physical iPhone/iPad only for a specifically unsupported interaction mechanism, not a duplicate matrix",
-          "evidence": "Results/S2-capture-contract-preparation.json binds the reviewed12-cell EXP210 preparation: six products/four genuine source/compiler builds reused, exact native ownership/order checks retained and recorder timing diagnostic.125 focused controls and scoped helper-reuse review pass. Fresh operator readiness and first native qualification remain; original stopped input mechanisms stay stopped. No behavioral gate credit.",
+          "evidence": "Results/S2-coverage-remaining-preparation.json qualifies the UIKit split portion: three actual Open/Closed transitions, stable native owners and unchanged per-input attribution, with inherited pane limitations classified. SwiftUI split remains unrun, so H14 stays OPEN. No duplicate physical matrix or full Home claim.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }

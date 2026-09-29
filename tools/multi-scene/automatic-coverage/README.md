@@ -37,6 +37,14 @@ stack references retain their distinct evidence classes and never become native
 predecessors. This reuses the six Home-qualified products and existing capture,
 Home and cleanup paths; it does not admit native work.
 
+`human_split.py` is the scoped candidate-only split continuation. Its comparison
+keeps actual pane layout, per-input owners and View inventory separate from the
+inherited Home limitation. Compare in-memory and persisted inventories through
+the same JSON representation: dictionary key order is irrelevant, while array
+order and every scalar type/value remain exact. Preserve any original comparator
+verdict and record a reviewed replay separately. Such a replay neither admits a
+native run nor supplies missing Home or cleanup evidence.
+
 The frozen native oracle applies the declared timing rule and a source-bound scroll
 check: floating-point frame conversion allows at most `1e-6` points of absolute
 noise, while object/window/scene/request identities stay exact. UIKit additionally

@@ -224,9 +224,12 @@ def compare(baseline, candidate):
     view_state = 'VIEW_INVENTORY_UNCHANGED' if before_views == after_views else 'VIEW_DIFFERENCE_REQUIRES_CLASSIFICATION'
     before_home = {key: baseline[key] for key in ['home_classification', 'tail']}
     after_home = {key: candidate[key] for key in ['home_classification', 'tail']}
-    home_state = 'CLASSIFIED_TAIL_UNCHANGED' if before_home == after_home else 'HOME_TAIL_DIFFERENCE_REQUIRES_CLASSIFICATION'
+    # Compare the stored JSON representation; a replay has tuples where a saved inventory has lists.
+    # Dictionary key order is irrelevant; occurrence order and scalar types remain exact.
+    same_home = json.dumps(before_home, sort_keys=True, allow_nan=False) == json.dumps(after_home, sort_keys=True, allow_nan=False)
+    home_state = 'CLASSIFIED_TAIL_UNCHANGED' if same_home else 'HOME_TAIL_DIFFERENCE_REQUIRES_CLASSIFICATION'
     state = action_state if before_views == after_views else 'VIEW_DIFFERENCE_REQUIRES_CLASSIFICATION'
-    if before_home != after_home:
+    if not same_home:
         state = home_state
     return dict(state=state, home_state=home_state, before_home=before_home, after_home=after_home,
                 action_state=action_state, view_state=view_state, before=before, after=after,
