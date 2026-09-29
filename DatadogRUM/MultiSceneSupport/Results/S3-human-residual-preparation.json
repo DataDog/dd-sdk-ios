@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "Finite source-backed preparation of residual S3 human scenarios",
-  "state": "H06_STARTUP_CAPTURE_BACKEND_CLEANUP_OPERATOR_PREPARED_DISPLAY_RUNNER_PENDING",
+  "state": "H06_HOST_DISPLAY_CODEC_PREPARED_NATIVE_DISPLAY_RUNNER_PENDING",
   "defined_at": "2026-09-28T13:49:45.760600+00:00",
   "defined_before_implementation": true,
   "owner": "Root",
@@ -95,9 +95,9 @@
         "operations.cross-scene.physical-setup"
       ],
       "decisive_test": "Existing eight calls/four Operations: success A\u2192B, failure A\u2192B(error), parallel alpha A\u2192A and beta B\u2192B ending beta first. Preserve exact per-step view IDs and two visible native scenes through all calls.",
-      "missing": "Integrate independent whole-interval display and live page/process health with the reviewed components, then qualify the physical adapter once. Startup and operator controls are preparation only; scoped OS-uninstall disposition remains separate.",
+      "missing": "Install source-bound native owner/phase markers, connect independent display anchors and complete video to SDK boundaries, then integrate and qualify the physical adapter once. Host decoder controls grant no native credit.",
       "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
-      "state": "STARTUP_CAPTURE_BACKEND_CLEANUP_OPERATOR_CONTROLLED_RUNNER_PENDING",
+      "state": "HOST_DISPLAY_CODEC_CONTROLLED_NATIVE_INTEGRATION_PENDING",
       "historical_fixture": "operations.cross-scene.lifecycle"
     },
     {
@@ -350,7 +350,7 @@
     "builds_admitted": 0,
     "native_admitted": false,
     "budget_policy": "Freeze setup/API/collection/cleanup limits from qualified observed adapter latencies before execution; no active deadline extension. Strict timing is diagnostic.",
-    "next": "Integrate causal whole-interval display evidence and frozen phase budgets with reviewed startup/capture/backend/cleanup/operator components. The runner must bind live page health and process executable before native admission, then qualify the physical adapter once. No human H06 session is admitted.",
+    "next": "Integrate native owner markers and causal START/RUN/FINAL display joins with the reviewed host decoder and capture components. Bind live page/process health and freeze budgets before one physical adapter qualification; no human H06 admission yet.",
     "scope_increment": {
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_",
       "definition": {
@@ -929,6 +929,35 @@
           "Display contract, integrated orchestration and one physical qualification remain pending.",
           "No server/native/backend run or release acceptance."
         ]
+      },
+      "display_codec": {
+        "state": "HOST_ONLY_PREPARATION_PASS",
+        "definition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/display-codec-4lnjta2b/definition.json",
+          "sha256": "43ad8e17c6a8c53227eac6a08956b82371f1fbf3cc02c56677632490c01fb682"
+        },
+        "verdict": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/display-codec-4lnjta2b/verdict.json",
+          "sha256": "f701b9781b044abb91faff02767917a8cfc2ab070661d58062d4d25e5167298a"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/display-codec-4lnjta2b/final-review.json",
+          "sha256": "21e08331c87e2848685a77dfaa39a0d4c0402707b78f66cc87879295f023a6db"
+        },
+        "controls": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/display-codec-4lnjta2b/controls-r3.json",
+          "sha256": "5eb524a94a7b76bd417889f3d6054d7c52ba8b168dead284cc526f8a374b8227"
+        },
+        "host_controls": 21,
+        "review_rounds": 2,
+        "native_runs": 0,
+        "gates_closed": [],
+        "limits": [
+          "Generated pixels and synthetic controls only. Native markers/window mapping, display causality and physical qualification remain unimplemented.",
+          "Raw fractional geometry and PTS remain unchanged; integer enclosing pixels and exact rational PTS ordering avoid strict float equality.",
+          "Every source/executable/media/invocation/process/decoder/frame artifact is hash-bound.",
+          "First FINAL ends the claimed pixel interval; tail remains retained but excluded. Native joins must prove all critical work precedes FINAL."
+        ]
       }
     }
   },
@@ -944,5 +973,5 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/s3-residual-review.json",
     "sha256": "358e67b60fb25744ada5ddf6902e5832285a28489492900077061fedd7799890"
   },
-  "updated_at": "2026-09-29T11:17:42.253895+00:00"
+  "updated_at": "2026-09-29T13:32:40.418162+00:00"
 }

@@ -522,6 +522,27 @@ runs the server nor grants SDK/teardown authority. Its 28 offline controls and
 review qualify preparation only; integrated display/physical qualification remains
 at the [owning record](../../../DatadogRUM/MultiSceneSupport/Results/S3-human-residual-preparation.json).
 
+### H06 display decoder preparation
+
+`operation_display.swift` decodes actual images and every returned video sample
+with CoreImage, Vision and AVFoundation. `operation_display.py` binds the decoder
+source/executable, invocation/process receipts, raw media, metadata and frame stream
+in an immutable manifest. Saved consumption rechecks every reference. Geometry
+uses enclosing integer pixels, retaining raw fractional bounds; PTS order uses
+exact rational values. No duration matching is required.
+
+The pixel interval requires both owner markers from START through RUN to FINAL.
+Each phase advances monotonically; a temporarily undecodable phase is allowed only
+between adjacent states while both owner markers remain visible. Separate actual
+START/RUN/FINAL screenshots are mandatory. Post-FINAL samples remain preserved but
+excluded from the claimed interval. Twenty-one controls include generated PNG,
+JPEG and compressed MOV media; they grant no native or release credit.
+
+Native integration must still map each marker to its actual window, prove RUN
+before any SDK call and FINAL after the collection seal, and join the entire
+critical native interval. The [preparation owner](../../../DatadogRUM/MultiSceneSupport/Results/S3-human-residual-preparation.json)
+tracks the remaining integrated runner and physical qualification.
+
 ### H06 physical cleanup disposition
 
 Only this physical fixture may record `OS_APP_UNINSTALL_CONTRACT` for private

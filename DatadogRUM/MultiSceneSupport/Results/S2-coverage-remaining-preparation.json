@@ -571,6 +571,11 @@
     "review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-r5/runtime/review.json",
       "sha256": "e6339bce68fda5a12e3f3346a2da2cefabceac6c8a1134545b978ce09d521440"
-    }
+    },
+    "operator_page": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-r5/runtime/operator/server.json",
+      "sha256": "f49d2e113500608bda8d8eb71777dd6c4ac8f26731bb566184bc337d1db8260d"
+    },
+    "readiness": "AWAITING_FRESH_USER_CONFIRMATION"
   }
 }
