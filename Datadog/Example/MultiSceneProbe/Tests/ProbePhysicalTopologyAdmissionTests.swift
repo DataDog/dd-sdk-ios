@@ -601,3 +601,196 @@ final class ProbePhysicalInputTests: XCTestCase {
         XCTAssertThrowsError(try exchange.capture(request: request(), observe: snapshot))
     }
 }
+
+
+@MainActor
+final class ProbePhysicalOperationChannelTests: XCTestCase {
+    private var observations = 0
+
+    private func profile() throws -> ProbePhysicalOperationProfile {
+        let scenario = try XCTUnwrap(ProbeScenarioCatalog.all.first { $0.identifier == ProbePhysicalOperationProfile.scenarioID })
+        return try XCTUnwrap(ProbePhysicalOperationProfile.make(scenario: scenario,
+                              sourceRevision: String(repeating: "a", count: 40), buildConfiguration: "Debug"))
+    }
+
+    private func code() throws -> Data {
+        try JSONSerialization.data(withJSONObject: ["runID": "channel-test", "processID": 123,
+            "sourceRevision": String(repeating: "a", count: 40), "boundary": "before-sdk-initialization",
+            "binaries": ["fixture": String(repeating: "b", count: 64)]], options: [.sortedKeys])
+    }
+
+    private func folder() throws -> URL {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: false)
+        addTeardownBlock { try FileManager.default.removeItem(at: directory) }
+        return directory
+    }
+
+    private func channel(_ directory: URL? = nil, publish: ((Data, URL) throws -> Void)? = nil) throws -> ProbePhysicalOperationChannel {
+        try .init(runID: "channel-test", processID: 123, profile: profile(), installedCode: code(),
+                  directory: directory ?? folder(), observe: { [self] in
+            observations += 1
+            // Deliberately incomplete topology: transport must retain its idle
+            // failure without promoting it to SDK or teardown permission.
+            return .init(scenes: [], input: [], connectedSceneIDs: [], applicationActive: true, inventory: [], failure: nil)
+        }, publish: publish)
+    }
+
+    private func request(_ channel: ProbePhysicalOperationChannel, phase: String = "setup", command: String = UUID().uuidString) throws -> Data {
+        let input = ProbePhysicalInputRequest(runID: channel.identity.runID, processID: channel.identity.processID,
+                                             profile: channel.identity.profile, phase: phase, nonce: UUID().uuidString)
+        return try ProbePhysicalOperationChannel.encode(ProbePhysicalOperationMessage(schemaVersion: 1,
+            runID: channel.identity.runID, processID: channel.identity.processID, challengeID: channel.identity.challengeID,
+            commandID: command, inputRequest: ProbePhysicalOperationChannel.encode(input)))
+    }
+
+    private func publish(_ raw: Data, _ channel: ProbePhysicalOperationChannel) throws {
+        let digest = ProbePhysicalInputExchange.sha(raw)
+        try raw.write(to: channel.url("request-" + digest + ".json"), options: .atomic)
+        try Data(digest.utf8).write(to: channel.url("request"), options: .atomic)
+    }
+
+    func testChallengeBindsInstalledBytesAndRejectsRestoredDirectory() throws {
+        let directory = try folder(), value = try channel(directory)
+        let saved = try Data(contentsOf: value.url("challenge.json"))
+        XCTAssertEqual(try JSONDecoder().decode(ProbePhysicalOperationChannelIdentity.self, from: saved), value.identity)
+        XCTAssertEqual(value.identity.installedCodeSHA256, try ProbePhysicalInputExchange.sha(code()))
+        XCTAssertFalse(value.identity.executionArmed)
+        XCTAssertThrowsError(try channel(directory))
+        XCTAssertEqual(try Data(contentsOf: value.url("challenge.json")), saved)
+    }
+
+    func testWrongInstalledRunProcessSourceOrBoundaryCreatesNoChallenge() throws {
+        for (key, value) in [("runID", "other" as Any), ("processID", 124), ("sourceRevision", String(repeating: "c", count: 40)),
+                             ("boundary", "after-sdk-initialization"), ("binaries", [:] as [String: String])] {
+            let directory = try folder()
+            var fields = try XCTUnwrap(JSONSerialization.jsonObject(with: code()) as? [String: Any]); fields[key] = value
+            XCTAssertThrowsError(try ProbePhysicalOperationChannel(runID: "channel-test", processID: 123, profile: profile(),
+                installedCode: JSONSerialization.data(withJSONObject: fields), directory: directory, observe: { fatalError("must not observe") }))
+            XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: directory.path), [])
+        }
+    }
+
+    func testTornMissingAndMismatchedPublicationNeverCaptures() throws {
+        let value = try channel(), raw = try request(value), hash = ProbePhysicalInputExchange.sha(raw)
+        XCTAssertNil(try value.poll())
+        for fragment in ["", String(hash.prefix(16)), String(repeating: "g", count: 64), hash] {
+            try Data(fragment.utf8).write(to: value.url("request"), options: .atomic)
+            XCTAssertNil(try value.poll())
+        }
+        try Data(raw.prefix(20)).write(to: value.url("request-" + hash + ".json"))
+        XCTAssertNil(try value.poll()); XCTAssertEqual(observations, 0)
+        try publish(raw, value)
+        XCTAssertNotNil(try value.poll()?.capture); XCTAssertEqual(observations, 2)
+    }
+
+    func testOneUseResponseRetainsActualNonidleCapture() throws {
+        let value = try channel(), raw = try request(value)
+        try publish(raw, value)
+        let reply = try XCTUnwrap(value.poll())
+        let capture = try JSONDecoder().decode(ProbePhysicalInputCapture.self, from: XCTUnwrap(reply.capture))
+        XCTAssertNotNil(capture.idleFailure); XCTAssertEqual(capture.before, capture.after)
+        XCTAssertEqual(reply.requestSHA256, ProbePhysicalInputExchange.sha(raw))
+        XCTAssertNil(reply.rejection); XCTAssertFalse(reply.identity.executionArmed)
+        let output = value.url("response-" + reply.requestSHA256 + ".json")
+        let saved = try Data(contentsOf: output)
+        for _ in 0..<3 { XCTAssertNil(try value.poll()) }
+        XCTAssertEqual(observations, 2); XCTAssertEqual(try Data(contentsOf: output), saved)
+    }
+
+    func testForeignUnknownDuplicateAndNoncanonicalFieldsRejectBeforeCapture() throws {
+        for mode in ["runID", "processID", "challengeID", "extra", "duplicate", "newline"] {
+            let value = try channel(), raw = try request(value)
+            var object = try XCTUnwrap(JSONSerialization.jsonObject(with: raw) as? [String: Any])
+            if mode == "runID" { object[mode] = "old" }
+            if mode == "processID" { object[mode] = 124 }
+            if mode == "challengeID" { object[mode] = UUID().uuidString }
+            if mode == "extra" { object[mode] = true }
+            var changed = try JSONSerialization.data(withJSONObject: object, options: [.sortedKeys, .withoutEscapingSlashes])
+            if mode == "duplicate" { changed = Data("{\"schemaVersion\":1,".utf8) + changed.dropFirst() }
+            if mode == "newline" { changed.append(10) }
+            let before = observations
+            try publish(changed, value)
+            let reply = try XCTUnwrap(value.poll())
+            XCTAssertNotNil(reply.rejection, mode); XCTAssertNil(reply.capture, mode)
+            XCTAssertEqual(observations, before, mode); XCTAssertNotNil(value.failure, mode)
+        }
+    }
+
+    func testMalformedInnerRequestsRejectBeforeObservation() throws {
+        for mode in ["duplicate", "unknown", "whitespace", "profile"] {
+            let value = try channel(), original = try request(value)
+            let message = try JSONDecoder().decode(ProbePhysicalOperationMessage.self, from: original)
+            var inner = message.inputRequest
+            switch mode {
+            case "duplicate": inner = Data("{\"phase\":\"setup\",".utf8) + inner.dropFirst()
+            case "unknown": inner = Data("{\"extra\":true,".utf8) + inner.dropFirst()
+            case "profile":
+                let text = try XCTUnwrap(String(data: inner, encoding: .utf8))
+                inner = Data(text.replacingOccurrences(of: "\"profile\":{", with: "\"profile\":{\"extra\":true,").utf8)
+            default: inner.append(10)
+            }
+            let changed = ProbePhysicalOperationMessage(schemaVersion: message.schemaVersion, runID: message.runID,
+                processID: message.processID, challengeID: message.challengeID, commandID: message.commandID, inputRequest: inner)
+            try publish(ProbePhysicalOperationChannel.encode(changed), value)
+            let before = observations
+            XCTAssertNotNil(try value.poll()?.rejection, mode); XCTAssertEqual(observations, before, mode)
+        }
+    }
+
+    func testReusedCommandAndReappearedPublicationCannotRecapture() throws {
+        let value = try channel(), command = UUID().uuidString
+        let first = try request(value, command: command)
+        try publish(first, value); XCTAssertNotNil(try value.poll()?.capture)
+        let next = try request(value, phase: "cleanup", command: command)
+        try publish(next, value); XCTAssertNotNil(try value.poll()?.rejection)
+        XCTAssertEqual(observations, 2)
+        try publish(first, value); XCTAssertThrowsError(try value.poll())
+        XCTAssertEqual(observations, 2)
+    }
+
+    func testReservedResponseStopsBeforeConsumingReadiness() throws {
+        let value = try channel(), raw = try request(value)
+        let output = value.url("response-" + ProbePhysicalInputExchange.sha(raw) + ".json")
+        let old = Data("old response".utf8); try old.write(to: output)
+        try publish(raw, value); XCTAssertThrowsError(try value.poll())
+        XCTAssertEqual(observations, 0); XCTAssertEqual(try Data(contentsOf: output), old)
+        XCTAssertNotNil(value.failure)
+    }
+
+    func testFailedResponsePersistenceLeavesSetupBlockedButCleanupAvailable() throws {
+        var refuseResponse = true
+        let value = try channel(publish: { bytes, url in
+            if url.lastPathComponent.contains("response-"), refuseResponse { refuseResponse = false; throw CocoaError(.fileWriteUnknown) }
+            guard !FileManager.default.fileExists(atPath: url.path) else { throw CocoaError(.fileWriteFileExists) }
+            try bytes.write(to: url, options: .atomic)
+        })
+        try publish(request(value), value); XCTAssertThrowsError(try value.poll()); XCTAssertNotNil(value.failure)
+        try publish(request(value), value); XCTAssertNotNil(try value.poll()?.rejection)
+        XCTAssertEqual(observations, 2)
+        try publish(request(value, phase: "cleanup"), value)
+        XCTAssertNotNil(try value.poll()?.capture); XCTAssertEqual(observations, 4)
+        XCTAssertFalse(value.identity.executionArmed)
+    }
+
+    func testOversizedAndSymlinkedRequestsDoNotObserve() throws {
+        for mode in ["oversized", "symlink"] {
+            let value = try channel(), bytes = Data(repeating: 65, count: mode == "oversized" ? 65_537 : 1)
+            let hash = ProbePhysicalInputExchange.sha(bytes), target = value.url("request-" + hash + ".json")
+            if mode == "symlink" {
+                let source = value.url("foreign"); try bytes.write(to: source)
+                try FileManager.default.createSymbolicLink(at: target, withDestinationURL: source)
+            } else { try bytes.write(to: target) }
+            try Data(hash.utf8).write(to: value.url("request"))
+            let before = observations
+            XCTAssertThrowsError(try value.poll()); XCTAssertEqual(observations, before)
+        }
+    }
+
+    func testCanonicalEnvelopeMatchesHostEncodingIncludingBase64Slash() throws {
+        let value = ProbePhysicalOperationMessage(schemaVersion: 1, runID: "run", processID: 123,
+            challengeID: "00000000-0000-0000-0000-000000000001", commandID: "00000000-0000-0000-0000-000000000002", inputRequest: Data([255]))
+        let expected = #"{"challengeID":"00000000-0000-0000-0000-000000000001","commandID":"00000000-0000-0000-0000-000000000002","inputRequest":"/w==","processID":123,"runID":"run","schemaVersion":1}"#
+        XCTAssertEqual(try ProbePhysicalOperationChannel.encode(value), Data(expected.utf8))
+    }
+}

@@ -271,3 +271,8 @@ evidence and cannot be replayed or supply a qualification admission. During futu
 cleanup only, lingering ibtoold may settle within the original budget; preserve each
 actual process inventory and require an empty worker set. Active builds/tests and
 preflight still stop immediately.
+
+Cross-language transport controls must preserve actual native payload bytes.
+Canonical encoding may bind identity-only envelopes; do not require Python to
+reserialize Swift floating-point geometry identically. The [H06 fixture contract](../../../tools/multi-scene/acceptance/README.md#h06-operation-preparation)
+separates file-channel qualification from app wiring and post-setup View ownership.

@@ -389,10 +389,19 @@ contact revisions plus the full connected-scene/window inventory. Setup capture
 and consumption reject input or inventory changes and reused requests. Auxiliary
 windows are retained without a fixed window-count rule.
 
-`DD_PROBE_PHYSICAL_OPERATION_CAPTURE=1` currently stops before the first Operation.
-The exchange has no file transport yet; its unit controls do not prove native
-gestures or authorize teardown. Complete atomic app/host integration, independent
-display/binary proof and host-side release acknowledgement before admission.
+`DD_PROBE_PHYSICAL_OPERATION_CAPTURE=1` still stops before the first Operation.
+`ProbePhysicalOperationChannel` and `operation_transport.Channel` prepare one-use
+file capture: publish an immutable hash-addressed payload before its marker,
+persist exact replies, bind run/process/profile/challenge/installed-receipt bytes,
+and reject stale or malformed envelopes. Capture snapshots retain their original
+numeric encoding; Python must not reserialize Swift geometry as an acceptance rule.
+The channel is unarmed and not wired to the app pump;11 native and11 host controls
+prove only this transport contract. Cleanup replies never authorize teardown.
+
+The original A Home marker precedes opening B. Window arrangement may change its
+RUM occurrence. Bind actual A/B View IDs after setup, preserving prior occurrences,
+before arming the physical profile. Then complete app/host integration, independent
+display/binary proof, release acknowledgement and the whole critical interval.
 
 `operation_ownership.validate` checks the complete Operation query slice:
 eight raw steps, four reduced Operations, exact ID joins, failure reason and A/B

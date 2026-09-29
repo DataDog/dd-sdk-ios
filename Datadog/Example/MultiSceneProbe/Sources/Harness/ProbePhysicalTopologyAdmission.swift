@@ -690,3 +690,154 @@ internal final class ProbePhysicalInputExchange {
         return nil
     }
 }
+
+
+internal struct ProbePhysicalOperationChannelIdentity: Codable, Equatable {
+    let schemaVersion: Int
+    let runID: String
+    let processID: Int32
+    let profile: ProbePhysicalOperationProfile
+    let challengeID: String
+    let installedCodeSHA256: String
+    let executionArmed: Bool
+}
+
+internal struct ProbePhysicalOperationMessage: Codable {
+    let schemaVersion: Int
+    let runID: String
+    let processID: Int32
+    let challengeID: String
+    let commandID: String
+    let inputRequest: Data
+}
+
+internal struct ProbePhysicalOperationReply: Codable {
+    let identity: ProbePhysicalOperationChannelIdentity
+    let requestSHA256: String
+    let commandID: String?
+    let capture: Data?
+    let rejection: String?
+}
+
+/// Fixture-only file channel. A completed content-addressed request is consumed
+/// once; a reply is published atomically before the next poll. It captures input
+/// only: neither successful transport nor a cleanup response authorizes SDK work.
+@MainActor
+internal final class ProbePhysicalOperationChannel {
+    enum Failure: Error { case identity, file, message, reused, invalidated }
+    let identity: ProbePhysicalOperationChannelIdentity
+    private let directory: URL
+    private let exchange: ProbePhysicalInputExchange
+    private let observe: () -> ProbePhysicalInputSnapshot
+    private var lastPublication: String?
+    private var consumedPublications = Set<String>()
+    private var consumedCommands = Set<String>()
+    private(set) var failure: String?
+    private let publish: (Data, URL) throws -> Void
+    static let maximumBytes = 65_536
+
+    init(runID: String, processID: Int32, profile: ProbePhysicalOperationProfile,
+         installedCode: Data, directory: URL, observe: @escaping () -> ProbePhysicalInputSnapshot,
+         publish: ((Data, URL) throws -> Void)? = nil) throws {
+        guard runID.range(of: "^[a-z0-9-]+$", options: .regularExpression) != nil, processID > 0,
+              installedCode.count <= Self.maximumBytes,
+              profile.sourceRevision.range(of: "^[a-f0-9]{40}$", options: .regularExpression) != nil,
+              profile.buildConfiguration == "Debug", Self.digest(profile.scenarioSHA256),
+              profile.inference == ProbePhysicalOperationProfile.inferenceMechanism,
+              let code = try JSONSerialization.jsonObject(with: installedCode) as? [String: Any],
+              code["runID"] as? String == runID, code["processID"] as? Int32 == processID,
+              code["sourceRevision"] as? String == profile.sourceRevision,
+              code["boundary"] as? String == "before-sdk-initialization",
+              let binaries = code["binaries"] as? [String: String], !binaries.isEmpty,
+              binaries.values.allSatisfy(Self.digest) else { throw Failure.identity }
+        self.identity = .init(schemaVersion: 1, runID: runID, processID: processID, profile: profile,
+                              challengeID: UUID().uuidString, installedCodeSHA256: ProbePhysicalInputExchange.sha(installedCode),
+                              executionArmed: false)
+        self.directory = directory
+        self.exchange = .init(runID: runID, processID: processID, profile: profile)
+        self.observe = observe
+        self.publish = publish ?? Self.writeNew
+        try self.publish(Self.encode(identity), url("challenge.json"))
+    }
+
+    static func encode<T: Encodable>(_ value: T) throws -> Data {
+        let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
+        return try encoder.encode(value)
+    }
+
+    private static func digest(_ value: String) -> Bool {
+        value.range(of: "^[a-f0-9]{64}$", options: .regularExpression) != nil
+    }
+
+    private static func writeNew(_ bytes: Data, _ url: URL) throws {
+        guard !FileManager.default.fileExists(atPath: url.path) else { throw Failure.file }
+        try bytes.write(to: url, options: .atomic)
+    }
+
+    func url(_ suffix: String) -> URL { directory.appendingPathComponent(identity.runID + ".operations-" + suffix) }
+
+    private func read(_ url: URL, limit: Int) throws -> Data? {
+        guard FileManager.default.fileExists(atPath: url.path) else { return nil }
+        let values = try url.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey, .fileSizeKey])
+        guard values.isRegularFile == true, values.isSymbolicLink != true,
+              let size = values.fileSize, size <= limit else { throw Failure.file }
+        let file = try FileHandle(forReadingFrom: url)
+        defer { try? file.close() }
+        let bytes = try file.read(upToCount: limit + 1) ?? Data()
+        guard bytes.count <= limit else { throw Failure.file }
+        return bytes
+    }
+
+    /// Partial/missing publication is pending, never an invitation to reuse an
+    /// earlier response. The caller owns a fixed operational deadline.
+    @discardableResult
+    func poll() throws -> ProbePhysicalOperationReply? {
+        do { return try readPublication() }
+        catch {
+            failure = failure ?? "Operation channel file or response publication failed"
+            throw error
+        }
+    }
+
+    private func readPublication() throws -> ProbePhysicalOperationReply? {
+        guard let marker = try read(url("request"), limit: 64),
+              let selected = String(data: marker, encoding: .utf8), Self.digest(selected) else { return nil }
+        if selected == lastPublication { return nil }
+        guard let bytes = try read(url("request-" + selected + ".json"), limit: Self.maximumBytes),
+              ProbePhysicalInputExchange.sha(bytes) == selected else { return nil }
+        lastPublication = selected
+        guard consumedPublications.insert(selected).inserted else {
+            failure = "Operation publication reused"
+            throw Failure.reused
+        }
+        guard !FileManager.default.fileExists(atPath: url("response-" + selected + ".json").path) else {
+            throw Failure.file
+        }
+        var commandID: String?
+        var capture: Data?
+        var rejection: String?
+        do {
+            let message = try JSONDecoder().decode(ProbePhysicalOperationMessage.self, from: bytes)
+            // Canonical outer bytes reject unknown/duplicate fields as well as
+            // alternate encodings. The opaque inner request is preserved verbatim.
+            guard try Self.encode(message) == bytes, message.schemaVersion == 1,
+                  message.runID == identity.runID, message.processID == identity.processID,
+                  message.challengeID == identity.challengeID, UUID(uuidString: message.commandID) != nil else {
+                throw Failure.message
+            }
+            commandID = message.commandID
+            guard consumedCommands.insert(message.commandID).inserted else { throw Failure.reused }
+            let request = try JSONDecoder().decode(ProbePhysicalInputRequest.self, from: message.inputRequest)
+            guard try Self.encode(request) == message.inputRequest else { throw Failure.message }
+            guard failure == nil || request.phase == "cleanup" else { throw Failure.invalidated }
+            capture = try exchange.capture(request: message.inputRequest, observe: observe)
+        } catch {
+            failure = failure ?? "Operation channel request rejected"
+            rejection = "Operation channel request rejected"
+        }
+        let reply = ProbePhysicalOperationReply(identity: identity, requestSHA256: selected,
+                                                commandID: commandID, capture: capture, rejection: rejection)
+        try publish(Self.encode(reply), url("response-" + selected + ".json"))
+        return reply
+    }
+}
