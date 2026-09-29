@@ -20,6 +20,7 @@ public struct Reflector {
             let paths: [ReflectionMirror.Path]
         }
         case notFound(Context)
+        case unsupportedLayout(Context)
         case typeMismatch(Context, expect: Any.Type, got: Any.Type)
     }
 
@@ -73,6 +74,17 @@ public struct Reflector {
         mirror.descendant(paths)
     }
 
+    private func descendantValue(_ paths: [ReflectionMirror.Path], copyingIntermediates: Bool) throws -> Any? {
+        if copyingIntermediates {
+            return descendant(paths)
+        }
+        do {
+            return try StoredPropertyReflection.descendant(of: mirror, at: paths)
+        } catch StoredPropertyReflection.Error.unsupportedLayout {
+            throw Error.unsupportedLayout(.init(subjectType: mirror.subjectType, paths: paths))
+        }
+    }
+
     /// Access a descendant of `Any` type by path.
     ///
     /// This method provide direct access to the mirror.
@@ -122,20 +134,42 @@ extension Reflector {
         descendant([first] + rest) as? T
     }
 
-    /// Access a descendant of specified type by path.
+    /// Access a descendant of the specified type by path.
     ///
     /// - Parameters:
     ///   - type: The expected descendant type.
+    ///   - copyingIntermediates: Whether to copy intermediate values along the path. Defaults to `true`.
+    ///     When `false`, only the descendant is copied.
     ///   - first: The first path element.
     ///   - rest: The rest of the path elements.
-    /// - Returns: The descendant instance if it exist at the provided path.
-    /// - Throws: `Reflector.Error.notFound` or `Reflector.Error.typeMismatch`
-    public func descendant<T>(type: T.Type = T.self, _ first: ReflectionMirror.Path, _ rest: ReflectionMirror.Path...) throws -> T {
-        try descendant([first] + rest)
+    /// - Returns: The descendant instance if it exists at the provided path.
+    /// - Throws: `Reflector.Error.notFound`, `Reflector.Error.typeMismatch`,
+    ///   or `Reflector.Error.unsupportedLayout`.
+    public func descendant<T>(
+        type: T.Type = T.self,
+        copyingIntermediates: Bool = true,
+        _ first: ReflectionMirror.Path,
+        _ rest: ReflectionMirror.Path...
+    ) throws -> T {
+        try descendant(type: type, copyingIntermediates: copyingIntermediates, [first] + rest)
     }
 
-    public func descendant<T>(type: T.Type = T.self, _ paths: [ReflectionMirror.Path]) throws -> T {
-        guard let value = descendant(paths) else {
+    /// Access a descendant of the specified type by path.
+    ///
+    /// - Parameters:
+    ///   - type: The expected descendant type.
+    ///   - copyingIntermediates: Whether to copy intermediate values along the path. Defaults to `true`.
+    ///     When `false`, only the descendant is copied.
+    ///   - paths: The path to the descendant.
+    /// - Returns: The descendant instance if it exists at the provided path.
+    /// - Throws: `Reflector.Error.notFound`, `Reflector.Error.typeMismatch`,
+    ///   or `Reflector.Error.unsupportedLayout`.
+    public func descendant<T>(
+        type: T.Type = T.self,
+        copyingIntermediates: Bool = true,
+        _ paths: [ReflectionMirror.Path]
+    ) throws -> T {
+        guard let value = try descendantValue(paths, copyingIntermediates: copyingIntermediates) else {
             throw Error.notFound(.init(subjectType: mirror.subjectType, paths: paths))
         }
 
@@ -181,30 +215,38 @@ extension Reflector {
         }
     }
 
-    /// Reflect a descendant to the specified Element type by path.
+    /// Reflect a Collection descendant of the specified type by path.
     ///
     /// - Parameters:
-    ///   - type: The expected descendant type.
+    ///   - copyingIntermediates: Whether to copy intermediate values along the path. Defaults to `true`.
+    ///     When `false`, only the descendant is copied.
     ///   - first: The first path element.
     ///   - rest: The rest of the path elements.
-    /// - Returns: The descendant instance if it exist at the provided path.
-    /// - Throws: `Reflector.Error` or any other error from the `Reflection` type.
-    public func descendant<T>(type: T.Type = T.self, _ first: ReflectionMirror.Path, _ rest: ReflectionMirror.Path...) throws -> T where T: Reflection {
-        try descendant(type: type, [first] + rest)
+    /// - Returns: The reflected collection, omitting elements that could not be reflected.
+    /// - Throws: `Reflector.Error.typeMismatch` or `Reflector.Error.unsupportedLayout`.
+    public func descendant<Element>(
+        copyingIntermediates: Bool = true,
+        _ first: ReflectionMirror.Path,
+        _ rest: ReflectionMirror.Path...
+    ) throws -> [Element] where Element: Reflection {
+        try descendant(copyingIntermediates: copyingIntermediates, [first] + rest)
     }
 
     /// Reflect a Collection descendant of the specified type by path.
     ///
     /// - Parameters:
-    ///   - type: The expected element type.
-    ///   - first: The first path element.
-    ///   - rest: The rest of the path elements.
-    /// - Returns: The descendant instance if it exist at the provided path.
-    /// - Throws: `Reflector.Error` or any other error from the `Reflection` type.
-    public func descendant<Element>(_ first: ReflectionMirror.Path, _ rest: ReflectionMirror.Path...) throws -> [Element] where Element: Reflection {
-        guard let subject = descendant([first] + rest) as? [Any] else {
+    ///   - copyingIntermediates: Whether to copy intermediate values along the path. Defaults to `true`.
+    ///     When `false`, only the descendant is copied.
+    ///   - paths: The path to the descendant.
+    /// - Returns: The reflected collection, omitting elements that could not be reflected.
+    /// - Throws: `Reflector.Error.typeMismatch` or `Reflector.Error.unsupportedLayout`.
+    public func descendant<Element>(
+        copyingIntermediates: Bool = true,
+        _ paths: [ReflectionMirror.Path]
+    ) throws -> [Element] where Element: Reflection {
+        guard let subject = try descendantValue(paths, copyingIntermediates: copyingIntermediates) as? [Any] else {
             throw Error.typeMismatch(
-                .init(subjectType: mirror.subjectType, paths: [first] + rest),
+                .init(subjectType: mirror.subjectType, paths: paths),
                 expect: [Any].self,
                 got: mirror.subjectType
             )
@@ -223,15 +265,35 @@ extension Reflector {
     /// Reflect a Dictionary descendant to the specified Key/Value types by path.
     ///
     /// - Parameters:
-    ///   - type: The expected element type.
+    ///   - copyingIntermediates: Whether to copy intermediate values along the path. Defaults to `true`.
+    ///     When `false`, only the descendant is copied.
     ///   - first: The first path element.
     ///   - rest: The rest of the path elements.
-    /// - Returns: The descendant instance if it exist at the provided path.
-    /// - Throws: `Reflector.Error` or any other error from the `Reflection` type.
-    public func descendant<Key, Value>(_ first: ReflectionMirror.Path, _ rest: ReflectionMirror.Path...) throws -> [Key: Value] where Key: Hashable, Value: Reflection {
-        guard let subject = descendant([first] + rest) as? [Key: Any] else {
+    /// - Returns: The reflected dictionary, omitting entries that could not be reflected.
+    /// - Throws: `Reflector.Error.typeMismatch` or `Reflector.Error.unsupportedLayout`.
+    public func descendant<Key, Value>(
+        copyingIntermediates: Bool = true,
+        _ first: ReflectionMirror.Path,
+        _ rest: ReflectionMirror.Path...
+    ) throws -> [Key: Value] where Key: Hashable, Value: Reflection {
+        try descendant(copyingIntermediates: copyingIntermediates, [first] + rest)
+    }
+
+    /// Reflect a Dictionary descendant to the specified Key/Value types by path.
+    ///
+    /// - Parameters:
+    ///   - copyingIntermediates: Whether to copy intermediate values along the path. Defaults to `true`.
+    ///     When `false`, only the descendant is copied.
+    ///   - paths: The path to the descendant.
+    /// - Returns: The reflected dictionary, omitting entries that could not be reflected.
+    /// - Throws: `Reflector.Error.typeMismatch` or `Reflector.Error.unsupportedLayout`.
+    public func descendant<Key, Value>(
+        copyingIntermediates: Bool = true,
+        _ paths: [ReflectionMirror.Path]
+    ) throws -> [Key: Value] where Key: Hashable, Value: Reflection {
+        guard let subject = try descendantValue(paths, copyingIntermediates: copyingIntermediates) as? [Key: Any] else {
             throw Error.typeMismatch(
-                .init(subjectType: mirror.subjectType, paths: [first] + rest),
+                .init(subjectType: mirror.subjectType, paths: paths),
                 expect: [Key: Any].self,
                 got: mirror.subjectType
             )
@@ -249,15 +311,35 @@ extension Reflector {
     /// Reflect a Dictionary descendant to the specified Key/Value types by path.
     ///
     /// - Parameters:
-    ///   - type: The expected element type.
+    ///   - copyingIntermediates: Whether to copy intermediate values along the path. Defaults to `true`.
+    ///     When `false`, only the descendant is copied.
     ///   - first: The first path element.
     ///   - rest: The rest of the path elements.
-    /// - Returns: The descendant instance if it exist at the provided path.
-    /// - Throws: `Reflector.Error` or any other error from the `Reflection` type.
-    public func descendant<Key, Value>(_ first: ReflectionMirror.Path, _ rest: ReflectionMirror.Path...) throws -> [Key: Value] where Key: Reflection, Key: Hashable, Value: Reflection {
-        guard let subject = descendant([first] + rest) as? [AnyHashable: Any] else {
+    /// - Returns: The reflected dictionary, omitting entries that could not be reflected.
+    /// - Throws: `Reflector.Error.typeMismatch` or `Reflector.Error.unsupportedLayout`.
+    public func descendant<Key, Value>(
+        copyingIntermediates: Bool = true,
+        _ first: ReflectionMirror.Path,
+        _ rest: ReflectionMirror.Path...
+    ) throws -> [Key: Value] where Key: Reflection, Key: Hashable, Value: Reflection {
+        try descendant(copyingIntermediates: copyingIntermediates, [first] + rest)
+    }
+
+    /// Reflect a Dictionary descendant to the specified Key/Value types by path.
+    ///
+    /// - Parameters:
+    ///   - copyingIntermediates: Whether to copy intermediate values along the path. Defaults to `true`.
+    ///     When `false`, only the descendant is copied.
+    ///   - paths: The path to the descendant.
+    /// - Returns: The reflected dictionary, omitting entries that could not be reflected.
+    /// - Throws: `Reflector.Error.typeMismatch` or `Reflector.Error.unsupportedLayout`.
+    public func descendant<Key, Value>(
+        copyingIntermediates: Bool = true,
+        _ paths: [ReflectionMirror.Path]
+    ) throws -> [Key: Value] where Key: Reflection, Key: Hashable, Value: Reflection {
+        guard let subject = try descendantValue(paths, copyingIntermediates: copyingIntermediates) as? [AnyHashable: Any] else {
             throw Error.typeMismatch(
-                .init(subjectType: mirror.subjectType, paths: [first] + rest),
+                .init(subjectType: mirror.subjectType, paths: paths),
                 expect: [AnyHashable: Any].self,
                 got: mirror.subjectType
             )
@@ -272,8 +354,40 @@ extension Reflector {
         }
     }
 
-    public func descendant<T>(type: T.Type = T.self, _ paths: [ReflectionMirror.Path]) throws -> T where T: Reflection {
-        guard let value = descendant(paths) else {
+    /// Reflect a descendant to the specified type by path.
+    ///
+    /// - Parameters:
+    ///   - type: The expected descendant type.
+    ///   - copyingIntermediates: Whether to copy intermediate values along the path. Defaults to `true`.
+    ///     When `false`, only the descendant is copied.
+    ///   - first: The first path element.
+    ///   - rest: The rest of the path elements.
+    /// - Returns: The reflection instance.
+    /// - Throws: `Reflector.Error` or any other error from the `Reflection` type.
+    public func descendant<T>(
+        type: T.Type = T.self,
+        copyingIntermediates: Bool = true,
+        _ first: ReflectionMirror.Path,
+        _ rest: ReflectionMirror.Path...
+    ) throws -> T where T: Reflection {
+        try descendant(type: type, copyingIntermediates: copyingIntermediates, [first] + rest)
+    }
+
+    /// Reflect a descendant to the specified type by path.
+    ///
+    /// - Parameters:
+    ///   - type: The expected descendant type.
+    ///   - copyingIntermediates: Whether to copy intermediate values along the path. Defaults to `true`.
+    ///     When `false`, only the descendant is copied.
+    ///   - paths: The path to the descendant.
+    /// - Returns: The reflection instance.
+    /// - Throws: `Reflector.Error` or any other error from the `Reflection` type.
+    public func descendant<T>(
+        type: T.Type = T.self,
+        copyingIntermediates: Bool = true,
+        _ paths: [ReflectionMirror.Path]
+    ) throws -> T where T: Reflection {
+        guard let value = try descendantValue(paths, copyingIntermediates: copyingIntermediates) else {
             throw Error.notFound(.init(subjectType: mirror.subjectType, paths: paths))
         }
 
