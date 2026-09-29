@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "Finite source-backed preparation of residual S3 human scenarios",
-  "state": "SOURCE_AUDIT_REVIEWED_IMPLEMENTATION_PENDING",
+  "state": "H06_PROFILE_AND_BACKEND_PREPARED_RUNTIME_ADAPTER_PENDING",
   "defined_at": "2026-09-28T13:49:45.760600+00:00",
   "defined_before_implementation": true,
   "owner": "Root",
@@ -95,9 +95,9 @@
         "operations.cross-scene.lifecycle"
       ],
       "decisive_test": "Existing eight calls/four Operations: success A\u2192B, failure A\u2192B(error), parallel alpha A\u2192A and beta B\u2192B ending beta first. Preserve exact per-step view IDs and two visible native scenes through all calls.",
-      "missing": "The current physical barrier only admits the old same-key scenario. Bind the first Operation through the final marker, retain the exact Debug context-inference mechanism as such, and provide actual topology/input-idle plus raw/reduced backend proof.",
+      "missing": "Integrate the reviewed profile before step6, passive input-idle observation, full steps6-21 topology capture, physical transport, complete-session collection and release/idle cleanup. Eleven backend controls and saved raw/reduced replay qualify the checker only.",
       "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
-      "state": "SOURCE_MAPPED_NOT_EXECUTABLE"
+      "state": "PROFILE_AND_BACKEND_PREPARED_RUNTIME_ADAPTER_PENDING"
     },
     {
       "id": "disconnect-and-remount",
@@ -301,11 +301,48 @@
       "Delayed exact backend evidence is collected without repeating input; conflicting or incomplete evidence remains unqualified.",
       "Held input, missing release/idle or changed process prevents terminate/uninstall."
     ],
-    "implementation_admitted": false,
+    "implementation_admitted": true,
     "builds_admitted": 0,
     "native_admitted": false,
     "budget_policy": "Freeze setup/API/collection/cleanup limits from qualified observed adapter latencies before execution; no active deadline extension. Strict timing is diagnostic.",
-    "next": "After the requested S2 candidate human sitting, prepare only H06; complete actual-runner offline controls and designated review before any build or human invitation."
+    "next": "Continue the fixture-only H06 input observer and app/host adapter. Bind independent app/source/build/scene owners, complete-session projection and safe release/idle before a reviewed build or human invitation. The separate16-method unit validation is complete.",
+    "scope_increment": {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_",
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/definition.json",
+        "sha256": "debf3bbb1f457e537f9d0ebd01e77710b915c7a5bf0b4615aa5b27043ffbd463"
+      },
+      "state": "PROFILE_AND_BACKEND_CONTROLS_PASS_RUNTIME_ADAPTER_PENDING",
+      "builds_admitted": 0,
+      "native_admitted": false,
+      "unit_validation": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/unit-verdict.json",
+        "sha256": "d338e471518cc0bf47d8f90e61116672cd7db622ac750fde16d766f851b1c73b"
+      },
+      "backend_definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/backend-definition.json",
+        "sha256": "cc8d7c55d051508623aea99bcf041bc8dbd53d6c73ac18c467c24d617a128273"
+      },
+      "backend_controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/backend-controls.json",
+        "sha256": "2aa6dc75f5993761a36608a1b2065fc1b79bd3c624f5ce4e7f360f92f5da9eae"
+      },
+      "backend_replay": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/backend-replay.json",
+        "sha256": "63f498f99bc506ae899a91a67729033bfeaef6a04893269bf320d77e49b74787"
+      },
+      "backend_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/backend-review.json",
+        "sha256": "87f4a47eea0a248dff5ef968adc97f1d2d91037d728b1a01346402980897f311"
+      },
+      "fixture_unit_runs": 1,
+      "backend_shape_lesson": "Operation vitals bypass public mappers. Custom probe source/step attributes can contain completion context even on a raw start. Use vital/operation identity joins, raw view.id and reduced start_view/end_view with independently captured A/B owners; no indexed-order or strict-timing criterion.",
+      "review_disposition": "No production SDK changes or new attributable finding; production safety review and release register unchanged.",
+      "signing_failure": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/checkpoint-signing-failure.json",
+        "sha256": "16fcc84e16ba7bce61f9334afbdedbf72273e96caab42365c8952f711fcbd314"
+      }
+    }
   },
   "native_runs": 0,
   "sdk_changes": false,

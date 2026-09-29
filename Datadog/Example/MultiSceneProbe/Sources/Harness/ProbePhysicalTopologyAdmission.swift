@@ -4,8 +4,113 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import CryptoKit
 import Foundation
 import UIKit
+
+/// Exact fixture profile for the existing inferred Operation scenario. This
+/// prepares the contract only; input-idle and host transport remain separate.
+internal struct ProbePhysicalOperationProfile: Codable, Equatable {
+    static let scenarioID = "operations.cross-scene.lifecycle"
+    static let receiptSuffix = ".operations-physical-admission.json"
+    static let criticalInterval = 6...21
+    static let inferenceMechanism = "debug-rum-ui-event-network-context"
+
+    let sourceRevision: String
+    let buildConfiguration: String
+    let scenarioSHA256: String
+    let inference: String
+
+    static var steps: [ProbeStep] {
+        let calls: [(ProbeStepKind, String, String, String)] = [
+            (.startOperation, "scene-A", "cross-success", "operation-cross-success-start-a"),
+            (.succeedOperation, "scene-B", "cross-success", "operation-cross-success-end-b"),
+            (.startOperation, "scene-A", "cross-failure", "operation-cross-failure-start-a"),
+            (.failOperation, "scene-B", "cross-failure", "operation-cross-failure-end-b"),
+            (.startOperation, "scene-A", "parallel-alpha", "operation-parallel-alpha-start-a"),
+            (.startOperation, "scene-B", "parallel-beta", "operation-parallel-beta-start-b"),
+            (.succeedOperation, "scene-B", "parallel-beta", "operation-parallel-beta-end-b"),
+            (.succeedOperation, "scene-A", "parallel-alpha", "operation-parallel-alpha-end-a")
+        ]
+        return [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#1"),
+            ProbeStep(.emitSceneContextMarker, scene: "scene-A", value: "operation-cross-home-a"),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
+            ProbeStep(.waitForSignal, scene: "scene-B", signal: "rum-view:home#1"),
+            ProbeStep(.emitSceneContextMarker, scene: "scene-B", value: "operation-cross-home-b")
+        ] + calls.flatMap { kind, scene, instance, marker in
+            [ProbeStep(kind, scene: scene, value: instance),
+             ProbeStep(.emitSceneContextMarker, scene: scene, value: marker)]
+        }
+    }
+
+    static func make(scenario: ProbeScenario, sourceRevision: String, buildConfiguration: String) -> Self? {
+        guard let canonical = ProbeScenarioCatalog.all.first(where: { $0.identifier == scenarioID }),
+              scenario == canonical, scenario.identifier == scenarioID, scenario.steps == steps,
+              scenario.trackingMode == .manual, scenario.layout == .stack,
+              scenario.initialWindows == ["scene-A", "scene-B"],
+              scenario.requiredCapabilities == [.multipleScenes, .simultaneousVisibleWindows],
+              scenario.defaultRunMode == .clean,
+              sourceRevision.range(of: "^[a-f0-9]{40}$", options: .regularExpression) != nil,
+              buildConfiguration == "Debug" else { return nil }
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        guard let bytes = try? encoder.encode(scenario) else { return nil }
+        return Self(sourceRevision: sourceRevision, buildConfiguration: buildConfiguration,
+                    scenarioSHA256: SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined(),
+                    inference: inferenceMechanism)
+    }
+
+    @MainActor
+    static func ownerIdentities(_ scenes: [ProbePhysicalSceneObservation]) -> [String: [String]]? {
+        guard ProbePhysicalTopologyAdmission.validateLive(scenes) == nil,
+              scenes.allSatisfy({ !($0.windowIdentity ?? "").isEmpty && !($0.rootIdentity ?? "").isEmpty }),
+              Set(scenes.compactMap(\.windowIdentity)).count == 2,
+              Set(scenes.compactMap(\.rootIdentity)).count == 2 else { return nil }
+        return Dictionary(uniqueKeysWithValues: scenes.map {
+            ($0.logicalSceneID, [$0.nativeSceneID, String($0.generation), $0.windowIdentity ?? "", $0.rootIdentity ?? ""])
+        })
+    }
+
+    /// Called before and after each exact step, and by the continuous observer.
+    /// A failure is sticky, so later matching observations cannot hide drift.
+    @MainActor
+    struct Progress {
+        let owners: [String: [String]]
+        private(set) var nextIndex = criticalInterval.lowerBound
+        private(set) var expectsAfter = false
+        private(set) var failure: String?
+        private(set) var complete = false
+
+        init?(scenes: [ProbePhysicalSceneObservation]) {
+            guard let owners = ownerIdentities(scenes) else { return nil }
+            self.owners = owners
+        }
+
+        mutating func observe(_ scenes: [ProbePhysicalSceneObservation]) -> String? {
+            if failure == nil && ownerIdentities(scenes) != owners {
+                failure = "Operation scene, window or root owner changed"
+            }
+            return failure
+        }
+
+        mutating func check(index: Int, step: ProbeStep, after: Bool, scenes: [ProbePhysicalSceneObservation]) -> String? {
+            if let reason = observe(scenes) { return reason }
+            guard !complete, index == nextIndex, after == expectsAfter,
+                  criticalInterval.contains(index), step == steps[index] else {
+                failure = "Operation admission step is duplicate, late or changed"
+                return failure
+            }
+            if after {
+                complete = index == criticalInterval.upperBound
+                nextIndex += 1
+            }
+            expectsAfter = !after
+            return nil
+        }
+    }
+}
 
 internal struct ProbePhysicalSceneObservation: Codable, Equatable {
     let logicalSceneID: String
@@ -16,6 +121,8 @@ internal struct ProbePhysicalSceneObservation: Codable, Equatable {
     let hidden: Bool
     let alpha: Double
     let geometry: ProbeGeometry
+    var windowIdentity: String? = nil
+    var rootIdentity: String? = nil
 }
 
 internal struct ProbePhysicalTopologyObservation: Codable, Equatable {
@@ -45,6 +152,60 @@ internal struct ProbePhysicalAdmissionReceipt: Codable {
     var evidenceSHA256: String
     var nativeSceneIDs: [String: String]
     var generations: [String: UInt64]
+}
+
+/// Not accepted by the same-key file path or validator. The eventual host must
+/// additionally bind release/input-idle, installed binaries and display proof.
+internal struct ProbePhysicalOperationReceipt: Codable {
+    var topology: ProbePhysicalAdmissionReceipt
+    var profile: ProbePhysicalOperationProfile
+    var owners: [String: [String]]
+
+    private struct Key: CodingKey {
+        let stringValue: String
+        var intValue: Int? { nil }
+        init(stringValue: String) { self.stringValue = stringValue }
+        init?(intValue: Int) { return nil }
+    }
+
+    init(topology: ProbePhysicalAdmissionReceipt, profile: ProbePhysicalOperationProfile, owners: [String: [String]]) {
+        self.topology = topology
+        self.profile = profile
+        self.owners = owners
+    }
+
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: Key.self)
+        func requireKeys(_ actual: [Key], _ expected: Set<String>) throws {
+            guard Set(actual.map(\.stringValue)) == expected else {
+                throw DecodingError.dataCorrupted(.init(codingPath: decoder.codingPath,
+                                                       debugDescription: "Unexpected Operation admission fields"))
+            }
+        }
+        try requireKeys(values.allKeys, ["topology", "profile", "owners"])
+        let topologyKey = Key(stringValue: "topology")
+        let profileKey = Key(stringValue: "profile")
+        try requireKeys(values.nestedContainer(keyedBy: Key.self, forKey: topologyKey).allKeys,
+                        ["runID", "scenarioID", "processID", "nonce", "capturedAtMilliseconds",
+                         "captureID", "evidenceSHA256", "nativeSceneIDs", "generations"])
+        try requireKeys(values.nestedContainer(keyedBy: Key.self, forKey: profileKey).allKeys,
+                        ["sourceRevision", "buildConfiguration", "scenarioSHA256", "inference"])
+        topology = try values.decode(ProbePhysicalAdmissionReceipt.self, forKey: topologyKey)
+        profile = try values.decode(ProbePhysicalOperationProfile.self, forKey: profileKey)
+        owners = try values.decode([String: [String]].self, forKey: Key(stringValue: "owners"))
+    }
+
+    @MainActor
+    func validate(profile expected: ProbePhysicalOperationProfile, challenge: ProbePhysicalAdmissionChallenge,
+                  live: [ProbePhysicalSceneObservation], now: Int64) -> String? {
+        guard profile == expected, challenge.scenarioID == ProbePhysicalOperationProfile.scenarioID,
+              let original = ProbePhysicalOperationProfile.ownerIdentities(challenge.scenes),
+              let current = ProbePhysicalOperationProfile.ownerIdentities(live),
+              owners == original, owners == current else {
+            return "Operation profile or owned window/root identity changed"
+        }
+        return ProbePhysicalTopologyAdmission.validate(topology, challenge: challenge, live: live, now: now)
+    }
 }
 
 /// Fixture-only barrier. External display evidence establishes visibility;

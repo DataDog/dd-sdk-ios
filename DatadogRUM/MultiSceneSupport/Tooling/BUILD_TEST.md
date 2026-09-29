@@ -125,6 +125,8 @@ failures by target and selector when classes share names. `No result`, `notRun`,
 missing selected tests or an unexpected restarted process invalidates the claimed
 complete run. Preserve the first exception before a restarted suite's later pass.
 
+An MCP-exported xcresult can be an incomplete copy even when its test list is complete. Preserve it; use the actual same-run console path to locate and separately retain the finalized original. Verify its exact selected test tree, device and diagnostics without rerunning tests.
+
 Keep XCTest asynchronous while host bridges serve requests. Collect both immediate
 and yielded helper completion before inspecting exit status or parsing output.
 Store the complete transcript durably even if a tool filter returns too much text;

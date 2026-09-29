@@ -378,6 +378,23 @@ The original same-key scenario supports `DD_PROBE_PHYSICAL_TOPOLOGY=1`. Before i
 
 Use `physical_same_key_contract.validate_local`, `validate_display` and `validate_backend`. The display proof must preserve the host receipt/challenge, native process identity, actual screenshot/video hashes and timings, and a review that both actual scene contents remained visible through the critical interval. Local frames, capability flags, or a terminal22/22 alone do not qualify. The backend check compares the complete session inventory to every native mapper view and Action/Resource ID, including the seven decisive pairs. The compact unit fixture explicitly contains fabricated topology and clocks; it is never physical evidence.
 
+### H06 Operation preparation
+
+The [owning record](../../../DatadogRUM/MultiSceneSupport/Results/S3-human-residual-preparation.json)
+tracks the fixture profile and backend checker. They are not yet a runnable
+physical session. The separate Operation receipt binds the canonical scenario,
+Debug inference mechanism, source and stable scene/window/root owners through
+steps6–21. Input-idle capture and app/host integration remain required.
+
+`operation_ownership.validate` checks the complete Operation query slice:
+eight raw steps, four reduced Operations, exact ID joins, failure reason and A/B
+view endpoints. Supply independently captured Home view IDs, application and
+service. Custom probe step/source context can be enriched with completion values;
+use raw `view.id` and reduced endpoints for ownership. Raw steps bypass public
+mappers. Backend row order and strict durations are not acceptance criteria.
+Native call order, physical visibility, full-session collection and safe cleanup
+must still qualify separately.
+
 ## Controlled app inventory preparation
 
 `app_journey_inventory.py` supplies offline guards for the finite F08 app journeys.
