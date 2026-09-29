@@ -73,4 +73,3 @@ class RUMViewUpdateEventTests: XCTestCase {
         XCTAssertNil(clearedUpdate.account)
     }
 }
-
