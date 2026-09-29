@@ -3,6 +3,7 @@
 - [FIX] Release the RUM display-link observer and its frame readers when their owner is released.
 - [FIX] Pin KSCrash to exact version 2.5.1 via SPM to prevent silently resolving newer, unvetted releases.
 - [FIX] Keep attributes isolated when returning to a previously tracked RUM view while its earlier resources are still pending.
+- [IMPROVEMENT] Increase the maximum number of custom attributes per event from 256 to 1900 in RUM, Logs and Traces. In RUM the limit applies to `context`, `usr` and `account` independently; in Logs and Traces those attributes are encoded into a single JSON object, so they share one limit. Log `usr` and `account` extra attributes are now limited as well. See [#3198][]
 - [IMPROVEMENT] Require Swift tools version 6.2 (Xcode 26) to resolve the package with Swift Package Manager. See [#3231][]
 
 # 3.18.0 / 21-09-2026
@@ -1261,6 +1262,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3164]: https://github.com/DataDog/dd-sdk-ios/pull/3164
 [#3167]: https://github.com/DataDog/dd-sdk-ios/pull/3167
 [#3183]: https://github.com/DataDog/dd-sdk-ios/pull/3183
+[#3198]: https://github.com/DataDog/dd-sdk-ios/pull/3198
 [#3186]: https://github.com/DataDog/dd-sdk-ios/pull/3186
 [#3195]: https://github.com/DataDog/dd-sdk-ios/pull/3195
 [#3200]: https://github.com/DataDog/dd-sdk-ios/pull/3200
