@@ -77,13 +77,16 @@ def render(path, raw):
     anchor = '        } else if physicalOperationCaptureRequested {\n'
     hook = '''        } else if scenario.identifier == ProbeFocusActivationAdmission.scenarioID {
             let focus = physicalOperationInput.map { ProbeFocusActivationAdmission(input: $0, recorder: eventRecorder) }
+            let session = physicalOperationInput.flatMap { ProbeFocusSession.make(input: $0) }
             stepAdmission = { index, step, after in
-                guard let focus else { return "focus activation profile is not armed" }
+                guard let focus, let session else { return "focus activation profile is not armed" }
+                if let reason = await session.admission(index: index, after: after) { return reason }
                 return focus.check(index: index, step: step, after: after)
             }
 '''
     text = replace_once(text,anchor,hook+anchor)
-    return (text+'\n'+(HERE/'focus_activation_guard.swift').read_text()).encode()
+    return (text+'\n'+'\n'.join((HERE/name).read_text() for name in
+            ['focus_activation_guard.swift','focus_activation_channel.swift','focus_activation_session.swift'])).encode()
 
 
 def prepare(source, destination):
@@ -104,7 +107,8 @@ def prepare(source, destination):
     require(all(hashlib.sha256((source/k).read_bytes()).hexdigest() == v for k,v in before.items()), 'original fixture changed')
     receipt = dict(state='PREPARED_SOURCE_ONLY',scenario=SCENARIO,profile=PROFILE,original=before,rendered=after,
                    helpers={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in
-                            [Path(__file__),HERE/'focus_activation_guard.swift',HERE/'focus-activation-scenario-contract.json']},
+                            [Path(__file__),HERE/'focus_activation_guard.swift',HERE/'focus_activation_channel.swift',
+                             HERE/'focus_activation_session.swift',HERE/'focus-activation-scenario-contract.json']},
                    native_launches=0,builds=0,gates_closed=[])
     (destination/'source.json').write_text(json.dumps(receipt,indent=2)+'\n')
     return receipt

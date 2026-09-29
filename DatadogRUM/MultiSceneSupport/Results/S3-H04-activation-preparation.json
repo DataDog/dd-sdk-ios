@@ -4,7 +4,7 @@
   "gate": "S3:H04",
   "owner": "Root",
   "reviewer": "/root/c06_runtime_plan",
-  "state": "REVIEWED_FIXTURE_BUILD_AND_HOST_COLLECTION_PREPARATION_PASS",
+  "state": "REVIEWED_NATIVE_CHANNEL_COMPONENT_PREPARATION_PASS",
   "defined_at": "2026-09-29T18:46:46.665215+00:00",
   "defined_before_implementation": true,
   "new_experiment": false,
@@ -93,12 +93,12 @@
     "offline_tests": 16,
     "build_attempts": 1
   },
-  "updated_at": "2026-09-29T23:22:26.645813+00:00",
+  "updated_at": "2026-09-29T23:49:25.898096+00:00",
   "remaining": [
-    "Compose a single-use native start/stop channel with installed-process proof and fresh input idle before task-only cleanup.",
+    "Compose the physical transfer/process adapter and evidence-preserving task-only cleanup with the reviewed native channel.",
+    "Rebuild and sign the isolated composed product; the earlier unsigned product predates the channel.",
     "Keep native, backend and cleanup verdicts separate; backend collection precedes uninstall without forced flush.",
-    "Review and freeze the composed runner and signed physical product before the one H04 cell.",
-    "No human invitation before September30 09:00 Paris; fresh readiness remains required."
+    "Review the complete runner before one physical H04 cell; no human invitation before September30 09:00 Paris and fresh readiness remains required."
   ],
   "collection": {
     "verdict": {
@@ -115,5 +115,27 @@
     },
     "offline_tests": 23,
     "scope": "Exact recorder prefix and later raw rows, fixed-interval backend transport publication and partial/complete ownership joins. No native/connector execution."
+  },
+  "native_channel": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-native-channel-r5b96iv2",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-native-channel-r5b96iv2/definition.json",
+      "sha256": "08a2ef128f1490b26e5ae253196498dc816f5ec629ca15ed0a4c25dbbd51756a"
+    },
+    "native_admitted": false,
+    "verdict": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-native-channel-r5b96iv2/verdict.json",
+      "sha256": "c4fa48ed610ed57738f3686425ce7eb97617962065adb7fddb21121f4dba4cf8"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-native-channel-r5b96iv2/review-final.json",
+      "sha256": "96591cf8148a63b12164939555576f6d6f296cdca068db5d6f124641e7db28f4"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-native-channel-r5b96iv2/controls-r2/result.json",
+      "sha256": "11e56ef3d4f4b0d0b930be256fb454f5a909f16f195f9ae90b2bc058f0b9731d"
+    },
+    "python_tests": 10,
+    "actual_swift_checks": 31
   }
 }

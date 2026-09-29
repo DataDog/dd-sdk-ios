@@ -927,3 +927,16 @@ TTID duration as diagnostics. Exact registered metrics, ownership, ordering, ful
 inventories and actual display/scene/window proofs remain required. The request's
 first `gather_started_ms` must equal the response's phase clock; transport and cleanup
 deadlines remain fixed. Original helpers, attempts and verdicts are untouched.
+
+The isolated H04 renderer also appends `focus_activation_channel.swift` and
+`focus_activation_session.swift`. They bind ARM/STOP to the pre-SDK installed-code
+bytes, run, process, unique challenge and frozen operational cutoffs. ARM precedes
+the first driver step; STOP seals future work and waits for the original driver
+to stop plus fresh original-owner/input-idle evidence. A background peer is valid
+for cleanup. A failed scenario's different activation layout can also be safely
+cleaned up; it earns no H04 acceptance. Marker admission still requires the exact
+active target and background peer. Native geometry bytes are retained without an
+exact floating-point equality gate. `focus_activation_transport.py` returns only
+protocol qualification: actual transfer/process receipts and reviewed task-only
+cleanup remain mandatory. `test_focus_activation_transport.py` exercises the actual
+Swift channel/idle code with synthetic adapters; it is not native device evidence.
