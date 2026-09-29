@@ -88,12 +88,16 @@ final class FlagsRUMIntegrationTests: XCTestCase {
             ofFeature: RUMFeature.name,
             ofType: RUMViewEvent.self
         )
+        let rumViewUpdateEvents = core.waitAndReturnEvents(
+            ofFeature: RUMFeature.name,
+            ofType: RUMViewUpdateEvent.self
+        )
         let viewEvent = try XCTUnwrap(
             rumEvents.last,
             "Should have at least one view event"
         )
         let featureFlags = try XCTUnwrap(
-            viewEvent.featureFlags?.featureFlagsInfo,
+            rumViewUpdateEvents.last?.featureFlags?.featureFlagsInfo ?? viewEvent.featureFlags?.featureFlagsInfo,
             "View should have feature flags"
         )
 

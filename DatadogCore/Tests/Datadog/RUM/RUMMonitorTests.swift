@@ -168,7 +168,7 @@ class RUMMonitorTests: XCTestCase {
         let views = try session.views.dropApplicationLaunchView()
         let viewEvent = try XCTUnwrap(views[0].viewEvents.last)
         let resourceEvent = try XCTUnwrap(views[0].resourceEvents.last)
-        XCTAssertEqual(views[0].latestUpdateValue(\.view.resource?.count) ?? viewEvent.view.resource.count, 1)
+        XCTAssertEqual(views[0].latestViewEvent?.view.resource.count, 1)
         XCTAssertEqual(resourceEvent.resource.type, .image)
         XCTAssertEqual(resourceEvent.resource.statusCode, 200)
         XCTAssertEqual(resourceEvent.view.id, viewEvent.view.id)
@@ -347,8 +347,8 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(action.action.type, .tap)
         XCTAssertEqual(action.action.target?.name, actionName)
 
-        XCTAssertEqual(view.latestUpdateValue(\.view.action?.count) ?? view.viewEvents.last?.view.action.count, 1)
-        XCTAssertEqual(view.latestUpdateValue(\.view.resource?.count) ?? view.viewEvents.last?.view.resource.count, 0)
+        XCTAssertEqual(view.latestViewEvent?.view.action.count, 1)
+        XCTAssertEqual(view.latestViewEvent?.view.resource.count, 0)
     }
 
     func testStartingView_thenLoadingResources_whileScrolling() throws {
@@ -388,9 +388,9 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(action.action.error?.count, 0)
         XCTAssertEqual(action.action.id, userActionID)
 
-        XCTAssertEqual(view.latestUpdateValue(\.view.action?.count) ?? view.viewEvents.last?.view.action.count, 1)
-        XCTAssertEqual(view.latestUpdateValue(\.view.resource?.count) ?? view.viewEvents.last?.view.resource.count, 2)
-        XCTAssertEqual(view.latestUpdateValue(\.view.error?.count) ?? view.viewEvents.last?.view.error.count, 0)
+        XCTAssertEqual(view.latestViewEvent?.view.action.count, 1)
+        XCTAssertEqual(view.latestViewEvent?.view.resource.count, 2)
+        XCTAssertEqual(view.latestViewEvent?.view.error.count, 0)
     }
 
     func testStartingView_thenIssuingErrors_whileScrolling() throws {
@@ -418,9 +418,9 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(views.count, 1, "Session should track one view")
 
         let firstView = views[0]
-        XCTAssertEqual(firstView.latestUpdateValue(\.view.action?.count) ?? firstView.viewEvents.last?.view.action.count, 1, "View must track 1 action")
-        XCTAssertEqual(firstView.latestUpdateValue(\.view.resource?.count) ?? firstView.viewEvents.last?.view.resource.count, 0, "View must track no resources")
-        XCTAssertEqual(firstView.latestUpdateValue(\.view.error?.count) ?? firstView.viewEvents.last?.view.error.count, 3, "View must track 3 errors")
+        XCTAssertEqual(firstView.latestViewEvent?.view.action.count, 1, "View must track 1 action")
+        XCTAssertEqual(firstView.latestViewEvent?.view.resource.count, 0, "View must track no resources")
+        XCTAssertEqual(firstView.latestViewEvent?.view.error.count, 3, "View must track 3 errors")
 
         let firstAction = firstView.actionEvents[0]
         XCTAssertEqual(firstAction.action.type, .scroll, "First action must be 'scroll'")
@@ -476,8 +476,8 @@ class RUMMonitorTests: XCTestCase {
             let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).takeSingle()
             let view2 = try XCTUnwrap(session.views.first { $0.path == "view2" })
             XCTAssertEqual(view2.name, "View 2")
-            XCTAssertEqual(view2.latestUpdateValue(\.view.action?.count) ?? view2.viewEvents.last?.view.action.count, 1, "Second View should track the 'tap' Action")
-            XCTAssertEqual(view2.latestUpdateValue(\.view.resource?.count) ?? view2.viewEvents.last?.view.resource.count, 1, "Second View should track the Resource")
+            XCTAssertEqual(view2.latestViewEvent?.view.action.count, 1, "Second View should track the 'tap' Action")
+            XCTAssertEqual(view2.latestViewEvent?.view.resource.count, 1, "Second View should track the Resource")
         }
         try rumEventMatchers
             .lastRUMEvent(ofType: RUMActionEvent.self)
@@ -528,12 +528,12 @@ class RUMMonitorTests: XCTestCase {
         let secondView = views[1]
         XCTAssertEqual(firstView.viewEvents.last?.view.url, "view1")
         XCTAssertEqual(firstView.viewEvents.last?.view.name, "View 1")
-        XCTAssertEqual(firstView.latestUpdateValue(\.view.resource?.count) ?? firstView.viewEvents.last?.view.resource.count, 1, "First view must track 1 resource")
-        XCTAssertEqual(firstView.latestUpdateValue(\.view.error?.count) ?? firstView.viewEvents.last?.view.error.count, 1, "First view must track 1 resource error")
+        XCTAssertEqual(firstView.latestViewEvent?.view.resource.count, 1, "First view must track 1 resource")
+        XCTAssertEqual(firstView.latestViewEvent?.view.error.count, 1, "First view must track 1 resource error")
         XCTAssertEqual(secondView.viewEvents.last?.view.url, "view2")
         XCTAssertEqual(secondView.viewEvents.last?.view.name, "View 2")
-        XCTAssertEqual(secondView.latestUpdateValue(\.view.resource?.count) ?? secondView.viewEvents.last?.view.resource.count, 2, "Second view must track 2 resources")
-        XCTAssertEqual(secondView.latestUpdateValue(\.view.error?.count) ?? secondView.viewEvents.last?.view.error.count, 1, "Second view must track 1 resource error")
+        XCTAssertEqual(secondView.latestViewEvent?.view.resource.count, 2, "Second view must track 2 resources")
+        XCTAssertEqual(secondView.latestViewEvent?.view.error.count, 1, "Second view must track 1 resource error")
 
         let firstResource = firstView.resourceEvents[0]
         let secondResourceError = firstView.errorEvents[0]
@@ -577,7 +577,7 @@ class RUMMonitorTests: XCTestCase {
             }
         let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).takeSingle()
         let view = try session.views.dropApplicationLaunchView()[0]
-        XCTAssertEqual(view.latestUpdateValue(\.view.action?.count) ?? view.viewEvents.last?.view.action.count, 2)
+        XCTAssertEqual(view.latestViewEvent?.view.action.count, 2)
     }
 
     func testStartingView_thenSendingActionEvents() throws {

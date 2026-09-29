@@ -312,11 +312,19 @@ class WebEventIntegrationTests: XCTestCase {
         let viewAStart = dateProvider.now
         monitor.startView(key: "native-a", name: "Native A")
         core.flush()
+        // `.viewUpdates` is enabled by default, so a view's state transitions may be reported
+        // either as a full `RUMViewEvent` (the first write) or as a delta `RUMViewUpdateEvent`
+        // (subsequent writes). Both must be considered part of the view's record inventory.
+        func isNativeViewRecord(_ matcher: RUMEventMatcher) -> Bool {
+            guard matcher.model(isTypeOf: RUMViewEvent.self) || matcher.model(isTypeOf: RUMViewUpdateEvent.self) else {
+                return false
+            }
+            let name: String? = try? matcher.attribute(forKeyPath: "view.name")
+            return name != nil
+        }
+
         let eventsBeforeViewB = try core.waitAndReturnRUMEventMatchers()
-        let allNativeViewEventsBeforeViewB = eventsBeforeViewB.filterRUMEvents(
-            ofType: RUMViewEvent.self,
-            where: { $0.view.name != nil }
-        )
+        let allNativeViewEventsBeforeViewB = eventsBeforeViewB.filter(isNativeViewRecord)
         let incidentalNativeViewCount = allNativeViewEventsBeforeViewB.filter {
             let name: String? = try? $0.attribute(forKeyPath: "view.name")
             return name != "Native A" && name != "Native B"
@@ -342,10 +350,14 @@ class WebEventIntegrationTests: XCTestCase {
         monitor.startView(key: "native-b", name: "Native B")
         core.flush()
         let eventsAfterViewB = try core.waitAndReturnRUMEventMatchers()
-        let allNativeViewEventsAfterViewB = eventsAfterViewB.filterRUMEvents(
-            ofType: RUMViewEvent.self,
-            where: { $0.view.name != nil }
-        )
+        for m in eventsAfterViewB {
+            let type: String? = try? m.attribute(forKeyPath: "type")
+            let name: String? = try? m.attribute(forKeyPath: "view.name")
+            let isView = m.model(isTypeOf: RUMViewEvent.self)
+            let isViewUpdate = m.model(isTypeOf: RUMViewUpdateEvent.self)
+            print("DEBUG_EVENT type=\(String(describing: type)) name=\(String(describing: name)) isView=\(isView) isViewUpdate=\(isViewUpdate)")
+        }
+        let allNativeViewEventsAfterViewB = eventsAfterViewB.filter(isNativeViewRecord)
         let incidentalNativeViewCountAfterViewB = allNativeViewEventsAfterViewB.filter {
             let name: String? = try? $0.attribute(forKeyPath: "view.name")
             return name != "Native A" && name != "Native B"
@@ -361,23 +373,24 @@ class WebEventIntegrationTests: XCTestCase {
             return name == "Native A"
         }
         XCTAssertEqual(nativeAEvents.count, 2, "The native inventory must contain A's active and terminal records")
-        let nativeAStoppedEvents = try nativeAEvents.compactMap { matcher -> RUMEventMatcher? in
-            let event: RUMViewEvent = try matcher.model()
-            return event.view.isActive == false ? matcher : nil
+        let nativeAStoppedEvents = nativeAEvents.filter { matcher in
+            let isActive: Bool? = try? matcher.attribute(forKeyPath: "view.is_active")
+            return isActive == false
         }
         XCTAssertEqual(nativeAStoppedEvents.count, 1, "A must have exactly one terminal record")
-        let nativeAIDs = try nativeAEvents.map { (matcher: RUMEventMatcher) -> String in
-            let event: RUMViewEvent = try matcher.model()
-            return event.view.id
+        let nativeAIDs = try nativeAEvents.map { matcher -> String in
+            try matcher.attribute(forKeyPath: "view.id")
         }
         XCTAssertEqual(Set(nativeAIDs).count, 1, "A's active and terminal records must share one owner")
-        let nativeAEvent: RUMViewEvent = try XCTUnwrap(nativeAStoppedEvents.first?.model())
-        XCTAssertEqual(nativeAEvent.view.name, "Native A")
-        let nativeViewA = nativeAEvent.view.id
-        let nativeSessionID = nativeAEvent.session.id
-        let nativeApplicationID = nativeAEvent.application.id
+        let nativeAEvent = try XCTUnwrap(nativeAStoppedEvents.first)
+        let nativeAEventName: String = try nativeAEvent.attribute(forKeyPath: "view.name")
+        XCTAssertEqual(nativeAEventName, "Native A")
+        let nativeViewA: String = try nativeAEvent.attribute(forKeyPath: "view.id")
+        let nativeSessionID: String = try nativeAEvent.attribute(forKeyPath: "session.id")
+        let nativeApplicationID: String = try nativeAEvent.attribute(forKeyPath: "application.id")
         XCTAssertEqual(nativeApplicationID, applicationID)
-        XCTAssertEqual(nativeAEvent.session.hasReplay, true)
+        let nativeHasReplay: Bool = try nativeAEvent.attribute(forKeyPath: "session.has_replay")
+        XCTAssertEqual(nativeHasReplay, true)
         let nativeBEventsAfterViewB = nativeViewEventsAfterViewB.filter {
             let name: String? = try? $0.attribute(forKeyPath: "view.name")
             return name == "Native B"
