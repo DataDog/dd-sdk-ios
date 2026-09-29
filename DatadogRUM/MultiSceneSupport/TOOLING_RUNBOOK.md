@@ -52,7 +52,8 @@ timeouts bound work and cleanup without independently implying an SDK regression
    compiler membership, runtime, all built/installed Mach-O files and process/run ID.
    A manifest label, launcher stub or matching count alone is insufficient.
 6. **Prove boundaries before work.** Clean install requires observed container
-   absence. Native readiness, live ownership and required topology precede the
+   absence. Physical H06 has a [scoped freshness/cleanup alternative](../../tools/multi-scene/acceptance/README.md#h06-physical-cleanup-disposition)
+   that must qualify before use. Native readiness, live ownership and required topology precede the
    critical API interval; later assertions cannot repair a missed boundary.
 7. **Keep the oracle strict.** Require exact owners, event identities, counts,
    values, ordering and complete inventories. Preserve negative controls for stale
@@ -65,7 +66,8 @@ timeouts bound work and cleanup without independently implying an SDK regression
    scope. Do not rerun accepted tests merely to resume, reconnect, rename a test or
    sign identical source. Different candidates need explicit evidence mapping.
 10. **Finish with cleanup and one durable summary.** Reap owned children, prove app/
-    process/container absence and restore temporarily changed state. Keep a later
+    process/container absence (or the explicit physical H06 disposition) and restore
+    temporarily changed state. Keep a later
     cleanup proof separate from an earlier failed receipt.
 
 Sign local commits when available; the user's recorded-failure fallback permits

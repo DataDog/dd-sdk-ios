@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "Finite source-backed preparation of residual S3 human scenarios",
-  "state": "H06_BACKEND_COLLECTION_PREPARED_FULL_RUNNER_PENDING",
+  "state": "H06_COLLECTION_CLEANUP_PREPARED_STARTUP_DISPLAY_RUNNER_PENDING",
   "defined_at": "2026-09-28T13:49:45.760600+00:00",
   "defined_before_implementation": true,
   "owner": "Root",
@@ -95,7 +95,7 @@
         "operations.cross-scene.physical-setup"
       ],
       "decisive_test": "Existing eight calls/four Operations: success A\u2192B, failure A\u2192B(error), parallel alpha A\u2192A and beta B\u2192B ending beta first. Preserve exact per-step view IDs and two visible native scenes through all calls.",
-      "missing": "Integrate reviewed setup/completion/recorder, backend collection and release/idle teardown with independent whole-interval display proof and the real operator workflow. Disposition container absence and qualify the physical adapter before human admission; actual physical transfer and SDK dispatch remain unqualified.",
+      "missing": "Implement the separate pre-SDK freshness guard against stale SDK/fixture artifacts; integrate reviewed capture/backend/cleanup with independent whole-interval display and real operator workflow, then qualify the physical adapter once. Direct container absence is unverified; physical cleanup uses the reviewed OS-uninstall disposition.",
       "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
       "state": "CAPTURE_BACKEND_CLEANUP_CONTROLLED_RUNNER_PENDING",
       "historical_fixture": "operations.cross-scene.lifecycle"
@@ -350,7 +350,7 @@
     "builds_admitted": 0,
     "native_admitted": false,
     "budget_policy": "Freeze setup/API/collection/cleanup limits from qualified observed adapter latencies before execution; no active deadline extension. Strict timing is diagnostic.",
-    "next": "Integrate prepared setup/completion/recorder/backend/host-cleanup with independent display interval, real operator page and frozen phase budgets. Disposition container absence, then qualify the physical adapter once before human admission. No human H06 session is admitted.",
+    "next": "Implement and review H06 startup freshness before SDK initialization, then integrate display/operator workflow and frozen phase budgets with prepared capture/backend/cleanup. Qualify the physical adapter once before human admission. No human H06 session is admitted.",
     "scope_increment": {
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_",
       "definition": {
@@ -814,6 +814,35 @@
           "Complete application/session Operation union is not filtered by run/service; every row must satisfy native-bound ownership. Only saved PENDING inventories permit another query under original dates/cutoff.",
           "Real operator/display integration, container disposition and physical adapter qualification remain before any human session."
         ]
+      },
+      "physical_cleanup_disposition": {
+        "state": "PHYSICAL_CLEANUP_DISPOSITION_PREPARATION_PASS",
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/cleanup-disposition-6sqqnu06",
+        "verdict": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/cleanup-disposition-6sqqnu06/verdict.json",
+          "sha256": "1144ba3b982f171f46d2682d9ffb57ef53ce6fcb4b014ef63f9c70a27138f9db"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/cleanup-disposition-6sqqnu06/final-review.json",
+          "sha256": "96e0705a86eaccd84fb7790b14991880530f81c6ccdbc9ddc65ed28c1e8e742b"
+        },
+        "host_controls": 21,
+        "builds": 0,
+        "native_runs": 0,
+        "backend_queries": 0,
+        "gates_closed": [],
+        "policy": {
+          "dataDisposition": "OS_APP_UNINSTALL_CONTRACT",
+          "dataScope": "PRIVATE_APP_CONTAINER",
+          "containerAbsence": "UNVERIFIED",
+          "directlyObservedFilesystemAbsence": false,
+          "preAdmissionFreshness": "SEPARATE_PROOF_REQUIRED"
+        },
+        "limits": [
+          "H06 physical cleanup only; no retrospective changes to previous cleanup attempts.",
+          "Keychain, shared containers, cloud data and unqueried filesystem state remain outside the private app-container disposition.",
+          "Existing startup installed-code receipt rejects its current run ID but does not yet certify absence of older SDK/fixture state. Implement this separate guard before native admission."
+        ]
       }
     }
   },
@@ -829,5 +858,5 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/s3-residual-review.json",
     "sha256": "358e67b60fb25744ada5ddf6902e5832285a28489492900077061fedd7799890"
   },
-  "updated_at": "2026-09-29T10:09:27.496387+00:00"
+  "updated_at": "2026-09-29T10:18:31.406311+00:00"
 }

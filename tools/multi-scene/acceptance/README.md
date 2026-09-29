@@ -500,10 +500,27 @@ host replay. `operation_cleanup.Cleanup.run` now connects real operator release 
 stop/idle proof, exact original PID/executable checks, host-child quiescence and
 task-only removal in one call. Both prior-result expectations are required; `None`
 means absence. A pending driver permits one further capture under the same cutoff,
-never removal. Nineteen offline controls pass after review. App/process absence
-stays distinct from unverified container absence; generic file-list errors earn
-no absence proof. Full display/backend integration and physical qualification
+never removal. Twenty-one offline controls pass after the reviewed physical
+cleanup disposition below. App/process absence stays distinct from unverified
+container absence. Full display/operator integration and physical qualification
 remain required.
+
+### H06 physical cleanup disposition
+
+Only this physical fixture may record `OS_APP_UNINSTALL_CONTRACT` for private
+app-container data after a verified task-specific OS uninstall and fresh app/
+process absence. Bind the exact device, OS build, bundle, release, idle, driver
+stop, child quiescence and actual teardown observations. Keep `containerAbsence`
+`UNVERIFIED` and direct filesystem observation false. Keychain, shared containers,
+cloud data and unqueried filesystem state are outside this disposition. Apple's
+[deletion guidance](https://support.apple.com/guide/ipad/remove-or-delete-apps-ipad0aed1df8/ipados)
+supports the OS contract; a generic file-list error supplies no absence proof.
+
+Before SDK admission, require a fresh run/nonce and a source-bound startup receipt
+that rejects prior SDK/fixture artifacts, separately from uninstall evidence.
+This guard remains unqualified; do not admit H06 until it and the physical adapter
+are qualified. Old attempt verdicts stay unchanged. The collector never grants
+release acceptance on cleanup alone.
 
 `operation_backend.Backend` connects the sealed completion/recorder to the existing
 complete count/page transport and ownership check. It preserves the broad

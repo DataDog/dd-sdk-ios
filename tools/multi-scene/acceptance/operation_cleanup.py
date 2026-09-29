@@ -233,6 +233,13 @@ class Cleanup:
             # original channel or reuse its consumed setup request.
             self.channel = t.Channel(self.observed, self.bundle, self.folder / 'channel', self.identity, deadline=self.deadline)
             self.current_process('cleanup-process-before')
+            raw, _ = self.observed.command(['device', 'info', 'details'], 'cleanup-device')
+            hardware, properties = raw['result']['hardwareProperties'], raw['result']['deviceProperties']
+            t.require(hardware['reality'] == 'physical' and hardware['deviceType'] == 'iPad'
+                      and hardware['udid'] == self.expected['udid']
+                      and all(isinstance(properties.get(k), str) and properties[k].strip()
+                              for k in ['osVersionNumber', 'osBuildUpdate']), 'physical cleanup OS identity missing')
+            self.device_os = dict(version=properties['osVersionNumber'], build=properties['osBuildUpdate'])
             joined = None
             for attempt in [1, 2]:
                 joined = self.stop_capture(attempt)
@@ -286,14 +293,18 @@ class Cleanup:
             t.require(value.get('deviceIdentifier') == self.remote.identifier and value.get('matchingBundleIdentifier') == self.bundle
                       and value.get('apps') == [], 'task app absence unproved')
             self.process_absence('cleanup-process-final-absence')
-            # Generic CoreDevice file-list errors are diagnostic, never an
-            # invented container-absence assertion.
-            container, _ = self.observed.command(['device', 'info', 'files', '--domain-type', 'appDataContainer',
-                '--domain-identifier', self.bundle], 'cleanup-container-diagnostic', check=False)
+            # The physical cleanup policy relies on the observed OS uninstall.
+            # A failed file-list query cannot prove absence, so do not issue one.
+            # This disposition never substitutes for pre-SDK freshness checks.
             self.live()
+            bindings = {p.name: setup.file_sha(p) for p in sorted(self.folder.iterdir()) if p.is_file()}
             result = dict(state='TASK_APP_REMOVED', processAbsence='PASS', appAbsence='PASS', containerAbsence='UNVERIFIED',
-                containerQueryOutcome=container.get('info', {}).get('outcome'), deadline=self.deadline,
-                finishedAt=time.time(), scenario='UNCHANGED', evidence='UNCHANGED', releaseAcceptance=False)
+                dataDisposition='OS_APP_UNINSTALL_CONTRACT', dataScope='PRIVATE_APP_CONTAINER',
+                device=self.remote.identifier, deviceOS=self.device_os, bundleIdentifier=self.bundle,
+                directlyObservedFilesystemAbsence=False, cleanupEvidence=bindings,
+                outOfScope=['Keychain', 'shared containers', 'cloud data', 'unqueried filesystem state'],
+                deadline=self.deadline, finishedAt=time.time(), scenario='UNCHANGED', evidence='UNCHANGED',
+                preAdmissionFreshness='SEPARATE_PROOF_REQUIRED', releaseAcceptance=False)
             t.save(self.folder / 'result.json', t.encode(result)); return result
         except Exception as error:
             self.fail('removal', error); raise

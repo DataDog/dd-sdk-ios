@@ -60,10 +60,12 @@ class Device(setup_fixture.Device):
             if self.mode == 'wrong-uninstalled-bundle': value['uninstalledApplications'][0]['bundleID'] = 'other.bundle'
         elif args[:3] == ['device', 'info', 'apps']:
             value = dict(deviceIdentifier=self.identifier, matchingBundleIdentifier='test.bundle', apps=[{}] if self.installed else [])
-        elif args[:3] == ['device', 'info', 'files']:
-            raw = self.envelope(args, {}); raw['info']['outcome'] = 'failed'
-            raw.update(errorSignature='(CoreDevice.ActionError 3)', error=dict(code=3,domain='CoreDevice.ActionError'))
-            return self.recorded(raw, label, returncode=1)
+        elif args[:3] == ['device', 'info', 'details']:
+            value = dict(hardwareProperties=dict(reality='physical', deviceType='iPad', udid='physical-udid'),
+                         deviceProperties=dict(osVersionNumber='27.0', osBuildUpdate='24Afixture'))
+            if self.mode == 'missing-os': del value['deviceProperties']['osBuildUpdate']
+            if self.mode == 'foreign-os-device': value['hardwareProperties']['udid'] = 'other'
+            if self.mode == 'simulator-os': value['hardwareProperties']['reality'] = 'simulated'
         else: raise AssertionError(args)
         raw = self.envelope(args, value)
         if self.mode == 'foreign-device': raw['info']['arguments'][5] = 'foreign'
@@ -155,6 +157,31 @@ class CleanupHostTests(unittest.TestCase):
         self.assertEqual((cleanup.folder/'original-native-result.json').read_bytes(),original)
         self.assertEqual(result['scenario'],result['evidence']);self.assertEqual(result['scenario'],'UNCHANGED')
         self.assertTrue((cleanup.folder/'teardown-admission.json').is_file())
+
+    def test_physical_uninstall_disposition_binds_evidence_without_claiming_container_absence(self):
+        cleanup,remote,ack=self.fixture('already-stopped');result=cleanup.run(ack)
+        self.assertEqual(result['dataDisposition'],'OS_APP_UNINSTALL_CONTRACT')
+        self.assertEqual(result['deviceOS'],dict(version='27.0',build='24Afixture'))
+        self.assertEqual(result['bundleIdentifier'],'test.bundle');self.assertEqual(result['device'],remote.identifier)
+        self.assertEqual(result['containerAbsence'],'UNVERIFIED');self.assertFalse(result['directlyObservedFilesystemAbsence'])
+        self.assertEqual(result['preAdmissionFreshness'],'SEPARATE_PROOF_REQUIRED')
+        self.assertEqual(result['dataScope'],'PRIVATE_APP_CONTAINER')
+        self.assertEqual(result['outOfScope'],['Keychain','shared containers','cloud data','unqueried filesystem state'])
+        self.assertNotIn(('command','cleanup-container-diagnostic'),remote.calls)
+        bindings=result['cleanupEvidence']
+        for path,digest in bindings.items():self.assertEqual(c.setup.file_sha(cleanup.folder/path),digest)
+        for name in ['release-ack.json','ready.json','host-quiescence.json','teardown-admission.json']:
+            self.assertIn(name,bindings)
+        for label in ['cleanup-device','cleanup-terminate','cleanup-process-absence','cleanup-uninstall',
+                      'cleanup-app-absence','cleanup-process-final-absence']:
+            self.assertEqual(sum(p.endswith(label+'-response.json') for p in bindings),1)
+
+    def test_missing_or_foreign_physical_os_evidence_blocks_capture_and_removal(self):
+        for mode in ['missing-os','foreign-os-device','simulator-os']:
+            with self.subTest(mode=mode):
+                cleanup,remote,ack=self.fixture(mode)
+                with self.assertRaises(ValueError):cleanup.run(ack)
+                self.no_mutations(remote);self.assertEqual(remote.captures,0)
 
     def test_explicit_absence_of_both_prior_results_is_preserved(self):
         cleanup,remote,ack=self.fixture(absent=True)
