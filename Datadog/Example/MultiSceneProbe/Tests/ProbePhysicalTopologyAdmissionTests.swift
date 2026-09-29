@@ -1808,7 +1808,28 @@ final class ProbePhysicalOperationOwnerTests: XCTestCase {
             XCTAssertNil(after)
         }
         XCTAssertEqual(sdkCalls, 8); XCTAssertEqual(waits, 1); XCTAssertTrue(gate.complete)
-        XCTAssertNotNil(try channel.readArtifact("native-final-mapper.json", limit: 1_048_576))
+        let rawResult = try XCTUnwrap(channel.readArtifact("native-local-result.json", limit: 1_048_576))
+        let result = try JSONDecoder().decode(ProbePhysicalOperationLocalCompletion.self, from: rawResult)
+        XCTAssertEqual(result.identity, channel.identity); XCTAssertEqual(result.deadline, 200)
+        XCTAssertEqual(result.hostPublicationSHA256, ProbePhysicalInputExchange.sha(raw))
+        XCTAssertEqual(result.state, "LOCAL_OWNERS_VERIFIED")
+        XCTAssertEqual(result.artifacts["native-final-mapper.json"], result.finalMapperSHA256)
+        XCTAssertEqual(result.artifacts[result.finalObservation], result.finalObservationSHA256)
+        XCTAssertEqual(result.finalObservation, "native-observation-" + String(result.observationCount) + ".json")
+        for index in 1...result.observationCount { XCTAssertNotNil(result.artifacts["native-observation-" + String(index) + ".json"]) }
+        for (name, digest) in result.artifacts {
+            XCTAssertEqual(try channel.readArtifact(name, limit: 1_048_576).map(ProbePhysicalInputExchange.sha), digest, name)
+        }
+        let final = try XCTUnwrap(channel.readArtifact(result.finalObservation, limit: 1_048_576))
+        let observation = try XCTUnwrap(JSONSerialization.jsonObject(with: final) as? [String: Any])
+        XCTAssertEqual(observation["index"] as? Int, 21); XCTAssertEqual(observation["boundary"] as? String, "collection-seal")
+        // Export the actual Swift encoding for host collector controls. Input,
+        // SDK reads and mapper records remain doubles, not physical acceptance.
+        let directory = channel.url("native-local-result.json").deletingLastPathComponent()
+        let files = try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)
+        let inventory = try Dictionary(uniqueKeysWithValues: files.map { ($0.lastPathComponent, try Data(contentsOf: $0)) })
+        let attachment = XCTAttachment(data: try ProbePhysicalOperationChannel.encode(inventory), uniformTypeIdentifier: "public.json")
+        attachment.name = "operation-native-completion-fixture.json"; attachment.lifetime = .keepAlways; add(attachment)
     }
 
     func testAdmissionRejectsContinuityChangeDuringFinalMapperRead() async throws {

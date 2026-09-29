@@ -873,7 +873,7 @@ internal final class ProbePhysicalOperationChannel {
     private var consumedCommands = Set<String>()
     private(set) var failure: String?
     private let publish: (Data, URL) throws -> Void
-    static let maximumBytes = 65_536
+    nonisolated static let maximumBytes = 65_536
 
     init(runID: String, processID: Int32, profile: ProbePhysicalOperationProfile,
          installedCode: Data, directory: URL, observe: @escaping () -> ProbePhysicalInputSnapshot,
@@ -1407,6 +1407,23 @@ internal struct ProbePhysicalOperationHostHandoff: Codable {
     let result: Data
 }
 
+/// The terminal receipt covers this immutable local interval. Host collection,
+/// physical display, backend ownership and cleanup keep separate verdicts.
+internal struct ProbePhysicalOperationLocalCompletion: Codable {
+    let schemaVersion: Int
+    let identity: ProbePhysicalOperationChannelIdentity
+    let state: String
+    let profile: String
+    let deadline: TimeInterval
+    let setupCaptureSHA256: String
+    let hostPublicationSHA256: String
+    let finalObservation: String
+    let finalObservationSHA256: String
+    let finalMapperSHA256: String
+    let observationCount: Int
+    let artifacts: [String: String]
+}
+
 @MainActor
 internal final class ProbePhysicalOperationAdmission {
     enum Failure: Error { case proof, identity, capture, live, publication, sequence }
@@ -1459,6 +1476,7 @@ internal final class ProbePhysicalOperationAdmission {
     private var progress: ProbePhysicalOperationOwners.Progress?
     private var invokedIndex: Int?
     private var observationSequence = 0
+    private var persistedDigests: [String: String] = [:]
     private(set) var failure: String?
     private(set) var complete = false
 
@@ -1479,6 +1497,7 @@ internal final class ProbePhysicalOperationAdmission {
         guard try channel.readArtifact(suffix, limit: ProbePhysicalOperationCapturePump.maximumContextBytes) == raw else {
             throw Failure.publication
         }
+        persistedDigests[suffix] = ProbePhysicalInputExchange.sha(raw)
     }
     private func live() throws {
         guard failure == nil, channel.failure == nil, !Task.isCancelled, now() < deadline else { throw Failure.live }
@@ -1653,9 +1672,15 @@ internal final class ProbePhysicalOperationAdmission {
                         guard state.observe(input: seal.after, contexts: seal.ownerProjection ?? [:]) == nil else {
                             throw Failure.live
                         }
-                        try persist(["state": "LOCAL_OWNERS_VERIFIED", "profile": state.owners.profile.scenario,
-                            "finalObservation": "native-observation-" + String(observationSequence) + ".json"],
-                            "native-local-result.json")
+                        let observation = "native-observation-" + String(observationSequence) + ".json"
+                        guard let observationHash = persistedDigests[observation],
+                              let mapperHash = persistedDigests["native-final-mapper.json"],
+                              let hostHash = persistedDigests["native-host-consumed.json"] else { throw Failure.publication }
+                        try persist(ProbePhysicalOperationLocalCompletion(schemaVersion: 1, identity: channel.identity,
+                            state: "LOCAL_OWNERS_VERIFIED", profile: state.owners.profile.scenario, deadline: deadline,
+                            setupCaptureSHA256: state.owners.setupCaptureSHA256, hostPublicationSHA256: hostHash,
+                            finalObservation: observation, finalObservationSHA256: observationHash, finalMapperSHA256: mapperHash,
+                            observationCount: observationSequence, artifacts: persistedDigests), "native-local-result.json")
                         complete = true; break
                     }
                     let rows = signals.filter { [.rumAction, .rumResource].contains($0.kind)

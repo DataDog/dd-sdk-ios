@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "Finite source-backed preparation of residual S3 human scenarios",
-  "state": "H06_NATIVE_ADMISSION_PREPARED_HOST_ORCHESTRATION_PENDING",
+  "state": "H06_LOCAL_COMPLETION_PREPARED_FULL_RUNNER_PENDING",
   "defined_at": "2026-09-28T13:49:45.760600+00:00",
   "defined_before_implementation": true,
   "owner": "Root",
@@ -95,9 +95,9 @@
         "operations.cross-scene.physical-setup"
       ],
       "decisive_test": "Existing eight calls/four Operations: success A\u2192B, failure A\u2192B(error), parallel alpha A\u2192A and beta B\u2192B ending beta first. Preserve exact per-step view IDs and two visible native scenes through all calls.",
-      "missing": "Consume the exact completed host proof once in the app before marker4, revalidate current input/SDK/mapper owners, guard steps4-21, then connect whole-interval display, backend collection and release/idle cleanup. App capture and host prerequisite controls pass; no physical admission.",
+      "missing": "Integrate the reviewed host setup, once-consumed native guard and complete local collector with whole-interval display proof, full recorder/backend joins and release/idle cleanup. Actual physical transfer and SDK dispatch remain unqualified.",
       "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
-      "state": "HOST_PREREQUISITES_CONTROLLED_NATIVE_ADMISSION_PENDING",
+      "state": "NATIVE_ADMISSION_AND_LOCAL_COMPLETION_CONTROLLED_RUNNER_PENDING",
       "historical_fixture": "operations.cross-scene.lifecycle"
     },
     {
@@ -350,7 +350,7 @@
     "builds_admitted": 0,
     "native_admitted": false,
     "budget_policy": "Freeze setup/API/collection/cleanup limits from qualified observed adapter latencies before execution; no active deadline extension. Strict timing is diagnostic.",
-    "next": "Connect the reviewed host channel and native guard to the finite H06 runner: frozen builds, operator arrangement/release, independent full display evidence, complete local/backend collection and separate safe cleanup. Run focused offline wrapper controls before any physical qualification. No human H06 session is admitted.",
+    "next": "Integrate reviewed setup/completion into the finite H06 host runner, then bind complete recorder, independent display interval, backend ownership and separate release/idle cleanup. Preserve one directory pull and all verdict boundaries. Focused offline controls precede any physical qualification; no human H06 session is admitted.",
     "scope_increment": {
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_",
       "definition": {
@@ -691,6 +691,34 @@
           "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/native-admission-groj5r4s/warning-disposition.json",
           "sha256": "3c65b13972e5154b905f72b4077f8bf0a7050c225317b9aa621eec7d46c8205b"
         }
+      },
+      "completion_collection": {
+        "state": "PREPARATION_CONTROLS_PASS",
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/completion-host-tb4mol9_",
+        "definition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/completion-host-tb4mol9_/definition.json",
+          "sha256": "d9cdc2500a4b7bc4eecfd9a17caf0e34f6ee5ea0cdbd8f1432a2ace1e53cddfd"
+        },
+        "verdict": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/completion-host-tb4mol9_/verdict.json",
+          "sha256": "1698d841c37b00bf690e21d88f48bf32eeaaa80463f361fcb4c86ee6fe2882e3"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/completion-host-tb4mol9_/final-review.json",
+          "sha256": "7af62761d09ddb68ea4e9835e354a689e60498f070a952e7896ed0500c249870"
+        },
+        "host_controls": 23,
+        "swift_controls": 2,
+        "unit_invocations": 1,
+        "actual_swift_codec_replay": "PASS",
+        "cleanup": "PASS",
+        "native_scenario_runs": 0,
+        "gates_closed": [],
+        "limits": [
+          "SDK/input/mapper unit doubles, not actual physical SDK dispatch.",
+          "First physical directory transfer must qualify actual destination layout once. No per-file fallback.",
+          "Full recorder parsing, display interval, backend joins and safe end-to-end cleanup remain pending."
+        ]
       }
     }
   },
@@ -706,5 +734,5 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/s3-residual-review.json",
     "sha256": "358e67b60fb25744ada5ddf6902e5832285a28489492900077061fedd7799890"
   },
-  "updated_at": "2026-09-29T07:54:04.469978+00:00"
+  "updated_at": "2026-09-29T08:24:05.726433+00:00"
 }

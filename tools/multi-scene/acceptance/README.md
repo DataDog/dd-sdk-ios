@@ -470,6 +470,19 @@ controls pass, with cleanup/restoration verified. Independent full display evide
 complete recorder/backend collection and the end-to-end host runner remain required
 before physical qualification. Local proof publication never authorizes teardown.
 
+`operation_completion.Completion` waits for the distinct native terminal receipt,
+then pulls `Documents` once and seals the actual directory. The terminal manifest
+binds every native artifact and the full observation interval, final mapper and
+continuity seal. Missing, extra, changed, wrapped or substituted evidence rejects;
+a native failure takes precedence. The collector preserves actual transport
+responses and has no launch, input or teardown authority. Its local result leaves
+display, backend and cleanup pending, and overall acceptance unqualified.
+Twenty-three host controls and two affected Swift controls pass; actual Swift
+fixture encoding also passes host replay. Physical directory layout needs its first
+bounded qualification, with no silent per-file fallback. SDK/input/mapper doubles
+do not establish physical ownership. Full recorder parsing and the display/backend/
+cleanup orchestration remain required.
+
 `operation_ownership.validate` checks eight raw steps, four reduced Operations,
 exact ID joins, failure reason and A/B endpoints using independently captured View,
 application and service IDs. Raw steps bypass public mappers and custom source/step
