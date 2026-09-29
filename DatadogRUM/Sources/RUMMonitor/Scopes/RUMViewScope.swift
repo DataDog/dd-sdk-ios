@@ -136,6 +136,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private let viewHitchesReader: (ViewHitchesModel & RenderLoopReader)?
     /// Tracks "View Hangs" for this view.
     private var totalAppHangDuration: Double = 0.0
+    /// Rendering rates are finalized when the view becomes inactive and retained for later full updates.
+    private var slowFramesRate: Double?
+    private var freezeRate: Double?
 
     private var accessibilityReader: AccessibilityReading?
 
@@ -215,6 +218,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
 extension RUMViewScope {
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
+        let wasActiveView = isActiveView
+
         // Tells if the View did change and an update event should be send.
         needsViewUpdate = false
 
@@ -356,6 +361,13 @@ extension RUMViewScope {
         }
 
         // Consider scope state and completion
+        if wasActiveView && !isActiveView {
+            if let viewHitchesReader {
+                // Pending resources can keep the scope alive after the view stops rendering.
+                dependencies.renderLoopObserver?.unregister(viewHitchesReader)
+            }
+            calculateRenderingRates(at: command.time, using: context.applicationStateHistory)
+        }
         if needsViewUpdate {
             sendViewUpdateEvent(on: command, context: context, writer: writer)
         }
@@ -370,7 +382,6 @@ extension RUMViewScope {
                     hitchesTelemetry: viewHitchesReader.telemetryModel,
                     viewDuration: command.time.timeIntervalSince(viewStartTime).dd.toInt64Nanoseconds
                 )
-                dependencies.renderLoopObserver?.unregister(viewHitchesReader)
             }
             viewEndedMetric.send()
         }
@@ -525,18 +536,6 @@ extension RUMViewScope {
         let isSlowRendered = refreshRateInfo?.meanValue.map { $0 < Constants.slowRenderingThresholdFPS }
         let networkSettledTime = networkSettledMetric.value(with: context.applicationStateHistory)
         var interactionToNextViewTime = interactionToNextViewMetric?.value(for: viewUUID) ?? .failure(.disabled)
-        var slowFramesRate: Double?
-        var freezeRate: Double?
-        if let command = command as? RUMStopViewCommand,
-           command.identity == identity,
-           timeSpent >= Constants.minimumTimeSpentForRates {
-            if let totalHitchesDuration = viewHitchesReader?.dataModel.hitchesDuration {
-                slowFramesRate = totalHitchesDuration / timeSpent * Double(1.dd.toMilliseconds) // milliseconds/second
-            }
-            if dependencies.hasAppHangsEnabled {
-                freezeRate = totalAppHangDuration / timeSpent * 1.hours // seconds/hour
-            }
-        }
         // Only overwrite with a custom value if INV was disabled
         if interactionToNextViewTime == .failure(.disabled),
            let customInvValue = internalAttributes[CrossPlatformAttributes.customINVValue] as? (any BinaryInteger),
@@ -756,9 +755,17 @@ extension RUMViewScope {
     private func sendErrorEvent(on command: RUMErrorCommand, context: DatadogContext, writer: Writer) {
         let errorId = dependencies.rumUUIDGenerator.generateUnique().toRUMDataFormat
         errorsCount += 1
-        totalAppHangDuration += (command as? RUMAddCurrentViewAppHangCommand)?.hangDuration ?? 0
 
         if let appHangCommand = command as? RUMAddCurrentViewAppHangCommand {
+            let hangStart = max(viewStartTime, appHangCommand.time)
+            let hangEnd = appHangCommand.time.addingTimeInterval(appHangCommand.hangDuration)
+            if hangEnd > hangStart {
+                let appStateHistory = context.applicationStateHistory
+                totalAppHangDuration += appStateHistory.state(at: viewStartTime) == nil
+                    ? hangEnd.timeIntervalSince(hangStart)
+                    : appStateHistory.foregroundDuration(during: hangStart...hangEnd)
+            }
+
             let appHang = DurationEvent(
                 id: errorId,
                 type: .error,
@@ -979,6 +986,31 @@ extension RUMViewScope {
 
     private func addFeatureFlagEvaluation(on command: RUMAddFeatureFlagEvaluationCommand) {
         featureFlags[command.name] = command.value
+    }
+
+    private func calculateRenderingRates(at endTime: Date, using appStateHistory: AppStateHistory) {
+        guard viewPath != RUMOffViewEventsHandlingRule.Constants.backgroundViewURL,
+              viewPath != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
+              endTime >= viewStartTime else {
+            return
+        }
+
+        let elapsed = endTime.timeIntervalSince(viewStartTime)
+        let hasAppStateHistory = appStateHistory.state(at: viewStartTime) != nil
+        let viewInterval = viewStartTime...endTime
+
+        if let totalHitchesDuration = viewHitchesReader?.dataModel.hitchesDuration {
+            let activeTime = hasAppStateHistory ? appStateHistory.activeDuration(during: viewInterval) : elapsed
+            if activeTime >= Constants.minimumTimeSpentForRates {
+                slowFramesRate = totalHitchesDuration / activeTime * Double(1.dd.toMilliseconds) // milliseconds/second
+            }
+        }
+        if dependencies.hasAppHangsEnabled {
+            let foregroundTime = hasAppStateHistory ? appStateHistory.foregroundDuration(during: viewInterval) : elapsed
+            if foregroundTime >= Constants.minimumTimeSpentForRates {
+                freezeRate = totalAppHangDuration / foregroundTime * 1.hours // seconds/hour
+            }
+        }
     }
 
     private func updatePerformanceMetric(on command: RUMUpdatePerformanceMetric) {

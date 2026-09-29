@@ -185,6 +185,14 @@ public struct AppStateHistory: Codable, Equatable {
         duration(during: range, predicate: { $0.isRunningInForeground })
     }
 
+    /// Computes the total duration the app was active within the given time range.
+    ///
+    /// - Parameter range: The time period to analyze.
+    /// - Returns: The total time (in seconds) spent in the active state.
+    public func activeDuration(during range: ClosedRange<Date>) -> TimeInterval {
+        duration(during: range, predicate: { $0 == .active })
+    }
+
     /// Computes the total duration the app was running in states where the process could not have been suspended within the given time range.
     ///
     /// - Parameter range: The time period to analyze.

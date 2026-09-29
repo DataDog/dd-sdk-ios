@@ -685,6 +685,76 @@ class RUMViewScope_Tests: XCTestCase {
         XCTAssertEqual(updates.last?.view.slowFramesRate, 16, "Stop update: rate is computed")
     }
 
+    func testWhenViewIsReplaced_pendingResourceResyncRetainsRenderingRates() {
+        let startTime: Date = .mockDecember15th2019At10AMUTC()
+        let identity = ViewIdentifier("view-a")
+        let scope = RUMViewScope(
+            isInitialView: false,
+            parent: parent,
+            dependencies: .mockWith(
+                hasAppHangsEnabled: true,
+                viewHitchesReaderFactory: {
+                    ViewHitchesMock(hitchesDataModel: ([Hitch(start: 0, duration: 0.16.dd.toInt64Nanoseconds)], 0.16))
+                },
+                featureFlags: ff
+            ),
+            identity: identity,
+            path: "view-a",
+            name: "View A",
+            customTimings: [:],
+            startTime: startTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: nil,
+            viewIndexInSession: 1
+        )
+
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: startTime, identity: identity),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStartResourceCommand.mockWith(resourceKey: "pending", time: startTime),
+            context: context,
+            writer: writer
+        )
+        for second in 1...3 {
+            _ = scope.process(
+                command: RUMAddViewTimingCommand.mockWith(time: startTime + TimeInterval(second), timingName: "timing-\(second)"),
+                context: context,
+                writer: writer
+            )
+        }
+        _ = scope.process(
+            command: RUMAddCurrentViewAppHangCommand.mockWith(
+                time: startTime + 4,
+                message: "App Hang",
+                type: "AppHang",
+                stack: "<hang stack>",
+                hangDuration: 5
+            ),
+            context: context,
+            writer: writer
+        )
+
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: startTime + 10, identity: ViewIdentifier("view-b")),
+            context: context,
+            writer: writer
+        )
+        XCTAssertEqual(writer.events(ofType: RUMViewUpdateEvent.self).last?.view.slowFramesRate, 16)
+        XCTAssertEqual(writer.events(ofType: RUMViewUpdateEvent.self).last?.view.freezeRate, 0.5.hours)
+
+        _ = scope.process(
+            command: RUMStopResourceCommand.mockWith(resourceKey: "pending", time: startTime + 11),
+            context: context,
+            writer: writer
+        )
+        XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).count, 2)
+        XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).last?.view.slowFramesRate, 16)
+        XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).last?.view.freezeRate, 0.5.hours)
+    }
+
     func testWhenThereAreAppHangs_stopViewUpdateEventHasFreezeRate() {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
