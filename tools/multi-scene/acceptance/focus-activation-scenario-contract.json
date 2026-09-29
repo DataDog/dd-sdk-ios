@@ -1,0 +1,205 @@
+{
+  "identifier": "windows.focus-activation-only",
+  "trackingMode": "manual",
+  "layout": "stack",
+  "initialWindows": [
+    "scene-A",
+    "scene-B"
+  ],
+  "defaultRunMode": "clean",
+  "requiredCapabilities": [
+    "multiple-scenes"
+  ],
+  "steps": [
+    {
+      "kind": "wait-for-scene-ready",
+      "scene": "scene-A"
+    },
+    {
+      "kind": "open-window",
+      "scene": "scene-A",
+      "value": "scene-B"
+    },
+    {
+      "kind": "activate-window",
+      "scene": "scene-B"
+    },
+    {
+      "kind": "wait-for-signal",
+      "scene": "scene-A",
+      "signal": "scene-state:background"
+    },
+    {
+      "kind": "emit-marker",
+      "scene": "scene-B",
+      "value": "after-initial-activate-B"
+    },
+    {
+      "kind": "activate-window",
+      "scene": "scene-A"
+    },
+    {
+      "kind": "wait-for-signal",
+      "scene": "scene-B",
+      "signal": "scene-state:background"
+    },
+    {
+      "kind": "emit-marker",
+      "scene": "scene-A",
+      "value": "after-activate-A"
+    },
+    {
+      "kind": "activate-window",
+      "scene": "scene-B"
+    },
+    {
+      "kind": "wait-for-signal",
+      "scene": "scene-A",
+      "signal": "scene-state:background"
+    },
+    {
+      "kind": "emit-marker",
+      "scene": "scene-B",
+      "value": "after-reactivate-B"
+    },
+    {
+      "kind": "activate-window",
+      "scene": "scene-A"
+    },
+    {
+      "kind": "wait-for-signal",
+      "scene": "scene-B",
+      "signal": "scene-state:background"
+    },
+    {
+      "kind": "emit-marker",
+      "scene": "scene-A",
+      "value": "after-reactivate-A"
+    }
+  ],
+  "completionConditions": [
+    {
+      "kind": "action",
+      "scene": "scene-A",
+      "screen": "home",
+      "occurrence": 3,
+      "name": "after-reactivate-A"
+    },
+    {
+      "kind": "resource",
+      "scene": "scene-A",
+      "screen": "home",
+      "occurrence": 3,
+      "name": "after-reactivate-A"
+    }
+  ],
+  "expectedSemanticTimeline": [
+    {
+      "kind": "view-started",
+      "scene": "scene-A",
+      "screen": "home",
+      "occurrence": 1
+    },
+    {
+      "kind": "view-started",
+      "scene": "scene-B",
+      "screen": "home",
+      "occurrence": 1
+    },
+    {
+      "kind": "action",
+      "scene": "scene-B",
+      "screen": "home",
+      "occurrence": 1,
+      "name": "after-initial-activate-B"
+    },
+    {
+      "kind": "resource",
+      "scene": "scene-B",
+      "screen": "home",
+      "occurrence": 1,
+      "name": "after-initial-activate-B"
+    },
+    {
+      "kind": "view-started",
+      "scene": "scene-A",
+      "screen": "home",
+      "occurrence": 2
+    },
+    {
+      "kind": "action",
+      "scene": "scene-A",
+      "screen": "home",
+      "occurrence": 2,
+      "name": "after-activate-A"
+    },
+    {
+      "kind": "resource",
+      "scene": "scene-A",
+      "screen": "home",
+      "occurrence": 2,
+      "name": "after-activate-A"
+    },
+    {
+      "kind": "view-started",
+      "scene": "scene-B",
+      "screen": "home",
+      "occurrence": 2
+    },
+    {
+      "kind": "action",
+      "scene": "scene-B",
+      "screen": "home",
+      "occurrence": 2,
+      "name": "after-reactivate-B"
+    },
+    {
+      "kind": "resource",
+      "scene": "scene-B",
+      "screen": "home",
+      "occurrence": 2,
+      "name": "after-reactivate-B"
+    },
+    {
+      "kind": "view-started",
+      "scene": "scene-A",
+      "screen": "home",
+      "occurrence": 3
+    },
+    {
+      "kind": "action",
+      "scene": "scene-A",
+      "screen": "home",
+      "occurrence": 3,
+      "name": "after-reactivate-A"
+    },
+    {
+      "kind": "resource",
+      "scene": "scene-A",
+      "screen": "home",
+      "occurrence": 3,
+      "name": "after-reactivate-A"
+    }
+  ],
+  "runtimeOptions": {
+    "initialSwiftUIPath": [],
+    "swiftUIRouterWritePolicy": "accept",
+    "automaticallyNavigates": false,
+    "automaticallyOpensSecondWindow": false,
+    "automaticallyClosesSceneB": false,
+    "automaticallyAbortsDetail": false,
+    "automaticallyReplacesDetail": false,
+    "automaticallyReplacesDetailInstance": false,
+    "forcesNavigationRouteIdentity": false,
+    "automaticallyPopsUIKitSplitNavigation": true,
+    "startsSplitWithoutSelection": false,
+    "automaticallyAdvancesSplitSelection": true,
+    "automaticallyReturnsSplitToDetail": false,
+    "exercisesUIEventContextHandoff": false,
+    "exercisesUIKitScrollOwnership": false,
+    "exercisesTraceOnlyURLSessionOwnership": false,
+    "exercisesSwiftUIButtonStructuredTask": false,
+    "swiftUIStress": "none",
+    "manualSwiftUIViewScreensByScene": {}
+  }
+}

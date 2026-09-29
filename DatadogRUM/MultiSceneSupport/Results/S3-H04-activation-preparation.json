@@ -4,7 +4,7 @@
   "gate": "S3:H04",
   "owner": "Root",
   "reviewer": "/root/c06_runtime_plan",
-  "state": "REVIEWED_SCOPE_NOT_IMPLEMENTED",
+  "state": "REVIEWED_FIXTURE_ORACLE_AND_COMPILER_PREPARATION_PASS",
   "defined_at": "2026-09-29T18:46:46.665215+00:00",
   "defined_before_implementation": true,
   "new_experiment": false,
@@ -57,5 +57,47 @@
   ],
   "native_runs": 0,
   "backend_queries": 0,
-  "gates_closed": []
+  "gates_closed": [],
+  "implementation": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-activation-implementation-prfgpu6f",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-activation-implementation-prfgpu6f/definition.json",
+      "sha256": "e92ea676cecf5904b5a702785ce62e10abb9780e18f401c1880e7bdb7706dbf6"
+    },
+    "native_admitted": false,
+    "gates_closed": [],
+    "verdict": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-activation-implementation-prfgpu6f/verdict.json",
+      "sha256": "1359c7adb9e1752d643ddb1fd27ef5ebcce441c59ab5ac11e2234e479f147e72"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-activation-implementation-prfgpu6f/review-r2.json",
+      "sha256": "a477f19624c219405f98a3ccff2653e1baa9bdf61a0047dbb1d83912e04814ca"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-activation-implementation-prfgpu6f/controls-r2.json",
+      "sha256": "d4741d7f31718aa0476b33587a145d4eb9405bbd545568511085625c2daefa56"
+    },
+    "source": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-activation-implementation-prfgpu6f/fixture-r2/source.json",
+      "sha256": "f027682902e789f6733feca4074fd4204487b431df5b16b1bd57b01967b8daf8"
+    },
+    "compiler": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-activation-implementation-prfgpu6f/compiler-r2/compiler.json",
+      "sha256": "fb314453e01929dc7ca36c68fe5f9939224798cc0e102f8ebb4899b44cc30733"
+    },
+    "unsigned_product": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-activation-implementation-prfgpu6f/compiler-r2/unsigned-product.json",
+      "sha256": "8a6b2a254d095fbe1a6dba99cf0b61cc8d28d7cda5163b30a6d363747a405baf"
+    },
+    "offline_tests": 16,
+    "build_attempts": 1
+  },
+  "updated_at": "2026-09-29T23:09:58.204478+00:00",
+  "remaining": [
+    "Compose fresh single-use run claim, physical transport and startup/product identity with the sealed recorder prefix.",
+    "Preserve raw post-terminal delivery/cleanup separately; it may not repair missing scenario evidence.",
+    "Complete source-bound backend pagination/count publication before removal, then release/native-idle task-only cleanup.",
+    "Review the composed runner before one physical cell; no human invitation before September30 09:00 Paris and fresh readiness afterward."
+  ]
 }

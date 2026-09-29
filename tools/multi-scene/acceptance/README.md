@@ -378,6 +378,27 @@ The original same-key scenario supports `DD_PROBE_PHYSICAL_TOPOLOGY=1`. Before i
 
 Use `physical_same_key_contract.validate_local`, `validate_display` and `validate_backend`. The display proof must preserve the host receipt/challenge, native process identity, actual screenshot/video hashes and timings, and a review that both actual scene contents remained visible through the critical interval. Local frames, capability flags, or a terminal22/22 alone do not qualify. The backend check compares the complete session inventory to every native mapper view and Action/Resource ID, including the seven decisive pairs. The compact unit fixture explicitly contains fabricated topology and clocks; it is never physical evidence.
 
+### H04 activation-only preparation
+
+[H04 preparation](../../../DatadogRUM/MultiSceneSupport/Results/S3-H04-activation-preparation.json)
+owns the one-cell scope and remaining admission prerequisites.
+`focus_activation_fixture.py` renders a separate source copy with the explicit
+`windows.focus-activation-only` scenario and `physical-focus-activation-only`
+profile. The original16-step activation/disconnect contract and H06 inputs remain
+unchanged. The new14 steps contain four actual active/background changes, five
+independent Home occurrences and four exact Action/Resource pairs.
+
+The fixture checks complete native scene/window/key/input ownership before and
+after each marker. Every intervening lifecycle/window notification invalidates
+that interval, including notifications without a known fixture owner. Auxiliary
+windows are inventoried rather than rejected by count. The independent Python
+oracle requires the semantic terminal to end its accepted prefix. Preserve later
+raw mapper/lifecycle rows separately for delivery and cleanup; they cannot supply
+missing guards, work or owners. Sixteen offline controls and compiler qualification
+are preparation only. Physical transport, backend publication and release/idle
+cleanup must compose under review before execution. No H10, disconnect, concurrent
+visibility or physical-Duo credit follows.
+
 ### H06 Operation preparation
 
 The [owning record](../../../DatadogRUM/MultiSceneSupport/Results/S3-human-residual-preparation.json)
