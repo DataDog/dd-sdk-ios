@@ -2611,6 +2611,12 @@ struct ProbeWindowRoot: View {
             advanceCurrentRUMViewBindingGeneration()
         }
 
+        if let reason = ProbeRuntime.physicalOperationInput?.install(window: resolvedWindow, handle: handle) {
+            ProbeRuntime.eventRecorder.record(ProbeSignal(kind: .assertion,
+                semanticContext: .init(logicalSceneID: window.label, nativeSceneID: identifier),
+                name: "operation-input-observer", result: .inconclusive, reason: reason))
+            return
+        }
         guard let snapshot = ProbeRuntime.sceneRegistry.markReady(handle) else {
             return
         }

@@ -365,3 +365,328 @@ internal final class ProbePhysicalTopologyAdmission {
         return failure
     }
 }
+
+
+/// Contact bookkeeping stays invalid after a lost callback or observer reset.
+internal struct ProbePhysicalContactLedger {
+    private(set) var active: Set<ObjectIdentifier> = []
+    private(set) var revision: UInt64 = 0
+    private(set) var reliable = true
+
+    mutating func began(_ contacts: Set<ObjectIdentifier>) {
+        advance()
+        if !active.isDisjoint(with: contacts) { reliable = false }
+        active.formUnion(contacts)
+    }
+
+    mutating func moved(_ contacts: Set<ObjectIdentifier>) {
+        advance()
+        if !contacts.isSubset(of: active) { reliable = false }
+    }
+
+    mutating func ended(_ contacts: Set<ObjectIdentifier>) {
+        advance()
+        if !contacts.isSubset(of: active) { reliable = false }
+        active.subtract(contacts)
+    }
+
+    mutating func reset() {
+        if !active.isEmpty { invalidate() }
+    }
+
+    mutating func invalidate() { reliable = false; advance() }
+
+    private mutating func advance() {
+        if revision == .max { reliable = false }
+        else { revision += 1 }
+    }
+}
+
+/// Observes contacts delivered to a fixture window; never recognizes a gesture.
+/// OS chrome input still requires a separate human release acknowledgement.
+@MainActor
+internal final class ProbePhysicalTouches: UIGestureRecognizer {
+    private(set) var ledger = ProbePhysicalContactLedger()
+
+    init() {
+        super.init(target: nil, action: nil)
+        cancelsTouchesInView = false
+        delaysTouchesBegan = false
+        delaysTouchesEnded = false
+    }
+
+    override var isEnabled: Bool {
+        didSet { if !isEnabled { ledger.invalidate() } }
+    }
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
+        ledger.began(Set(touches.map(ObjectIdentifier.init)))
+    }
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent) {
+        ledger.moved(Set(touches.map(ObjectIdentifier.init)))
+    }
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent) {
+        ledger.ended(Set(touches.map(ObjectIdentifier.init)))
+    }
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent) {
+        ledger.ended(Set(touches.map(ObjectIdentifier.init)))
+    }
+    override func reset() { ledger.reset(); super.reset() }
+    override func canPrevent(_ other: UIGestureRecognizer) -> Bool { false }
+    override func canBePrevented(by other: UIGestureRecognizer) -> Bool { false }
+}
+
+internal struct ProbePhysicalInputWindow: Codable, Equatable {
+    let logicalSceneID: String
+    let nativeSceneID: String
+    let generation: UInt64
+    let windowIdentity: String
+    let rootIdentity: String
+    let observerIdentity: String
+    let attached: Bool
+    let enabled: Bool
+    let reliable: Bool
+    let touches: Int
+    let revision: UInt64
+    let mounted: Bool
+    let transitioning: Bool
+    let resizing: Bool
+}
+
+internal struct ProbePhysicalWindowInventory: Codable, Equatable {
+    let identity: String
+    let rootIdentity: String?
+    let fixtureOwner: String?
+    let sceneMatches: Bool
+    let key: Bool
+    let hidden: Bool
+    let alpha: Double
+    let mounted: Bool
+    let geometry: ProbeGeometry
+}
+
+internal struct ProbePhysicalSceneInventory: Codable, Equatable {
+    let nativeSceneID: String
+    let activationState: String
+    let keyWindowIdentity: String?
+    let geometry: ProbeGeometry
+    let screenGeometry: ProbeGeometry
+    let windows: [ProbePhysicalWindowInventory]
+}
+
+internal struct ProbePhysicalInputSnapshot: Codable, Equatable {
+    let scenes: [ProbePhysicalSceneObservation]
+    let input: [ProbePhysicalInputWindow]
+    let connectedSceneIDs: [String]
+    let applicationActive: Bool
+    let inventory: [ProbePhysicalSceneInventory]
+    let failure: String?
+
+    @MainActor
+    func idleFailure() -> String? {
+        if let failure { return failure }
+        guard applicationActive, let owners = ProbePhysicalOperationProfile.ownerIdentities(scenes),
+              input.map(\.logicalSceneID) == ["scene-A", "scene-B"],
+              Set(input.map(\.observerIdentity)).count == 2 else { return "owned input inventory missing or aliased" }
+        for row in input {
+            guard owners[row.logicalSceneID] == [row.nativeSceneID, String(row.generation), row.windowIdentity, row.rootIdentity],
+                  !row.observerIdentity.isEmpty, row.attached, row.enabled, row.reliable, row.mounted,
+                  row.touches == 0, !row.transitioning, !row.resizing else { return "input is active, incomplete or detached" }
+            let sceneRows = inventory.filter { $0.nativeSceneID == row.nativeSceneID }
+            guard connectedSceneIDs.filter({ $0 == row.nativeSceneID }).count == 1, sceneRows.count == 1,
+                  let scene = sceneRows.first else { return "owned native scene inventory missing" }
+            let windows = scene.windows.filter { $0.fixtureOwner == row.logicalSceneID }
+            guard windows.count == 1, let window = windows.first, window.identity == row.windowIdentity,
+                  window.rootIdentity == row.rootIdentity, window.sceneMatches, window.mounted,
+                  !window.hidden, window.alpha.isFinite, window.alpha > 0,
+                  scene.windows.filter({ $0.identity == row.windowIdentity }).count == 1,
+                  scene.windows.filter({ $0.key }).map(\.identity) == (scene.keyWindowIdentity.map({ [$0] }) ?? []) else {
+                return "owned window or key-window inventory differs"
+            }
+        }
+        return nil
+    }
+}
+
+/// Installed once per original fixture owner, before scene-ready publication.
+/// Repeated SwiftUI layout callbacks never replace the observer or its ledger.
+@MainActor
+internal final class ProbePhysicalOperationInput {
+    @MainActor private final class Entry {
+        let handle: ProbeSceneHandle
+        weak var window: UIWindow?
+        weak var root: UIViewController?
+        let touches: ProbePhysicalTouches
+        init(handle: ProbeSceneHandle, window: UIWindow, root: UIViewController) {
+            self.handle = handle; self.window = window; self.root = root
+            touches = ProbePhysicalTouches()
+            window.addGestureRecognizer(touches)
+        }
+    }
+
+    private let registry: ProbeSceneRegistry
+    private var entries: [String: Entry] = [:]
+    private(set) var failure: String?
+    init(registry: ProbeSceneRegistry) { self.registry = registry }
+
+    @discardableResult
+    func install(window: UIWindow, handle: ProbeSceneHandle) -> String? {
+        if let failure { return failure }
+        guard ["scene-A", "scene-B"].contains(handle.logicalSceneID),
+              registry.window(for: handle) === window, let root = window.rootViewController else {
+            if let entry = entries[handle.logicalSceneID] { entry.window?.removeGestureRecognizer(entry.touches) }
+            failure = "input observer requires an exact registered owner"; return failure
+        }
+        if let entry = entries[handle.logicalSceneID] {
+            guard entry.handle == handle, entry.window === window, entry.root === root,
+                  entry.touches.view === window, entry.touches.isEnabled else {
+                entry.window?.removeGestureRecognizer(entry.touches)
+                failure = "input observer owner replaced or detached"; return failure
+            }
+        } else {
+            entries[handle.logicalSceneID] = Entry(handle: handle, window: window, root: root)
+        }
+        return nil
+    }
+
+    private static func identity(_ value: AnyObject) -> String { String(describing: ObjectIdentifier(value)) }
+    private static func geometry(_ value: CGRect) -> ProbeGeometry {
+        .init(x: value.origin.x, y: value.origin.y, width: value.width, height: value.height)
+    }
+    private static func transitioning(_ root: UIViewController) -> Bool {
+        var pending = [root]
+        var visited = Set<ObjectIdentifier>()
+        while let current = pending.popLast() {
+            guard visited.insert(ObjectIdentifier(current)).inserted else { continue }
+            if current.transitionCoordinator != nil || current.isBeingPresented || current.isBeingDismissed { return true }
+            pending.append(contentsOf: current.children)
+            if let presented = current.presentedViewController { pending.append(presented) }
+        }
+        return false
+    }
+
+    func snapshot() -> ProbePhysicalInputSnapshot {
+        var scenes: [ProbePhysicalSceneObservation] = []
+        var input: [ProbePhysicalInputWindow] = []
+        for label in ["scene-A", "scene-B"] {
+            guard let entry = entries[label] else { continue }
+            guard let window = entry.window, let root = window.rootViewController, let scene = window.windowScene else {
+                failure = failure ?? "original input window, root or scene disappeared"
+                continue
+            }
+            let matches = registry.handle(logicalSceneID: label) == entry.handle
+                && registry.window(for: entry.handle) === window && entry.root === root
+                && entry.handle.nativeSceneID == scene.session.persistentIdentifier
+            let attached = entry.touches.view === window
+                && window.gestureRecognizers?.contains(where: { $0 === entry.touches }) == true
+            if !matches || !attached || !entry.touches.isEnabled { failure = failure ?? "input observer owner changed" }
+            scenes.append(.init(logicalSceneID: label, nativeSceneID: scene.session.persistentIdentifier,
+                generation: entry.handle.disconnectGeneration,
+                connected: matches && UIApplication.shared.connectedScenes.contains(scene),
+                activationState: ProbeSceneActivationState(scene.activationState).rawValue,
+                hidden: window.isHidden, alpha: Double(window.alpha), geometry: Self.geometry(window.frame),
+                windowIdentity: Self.identity(window), rootIdentity: Self.identity(root)))
+            input.append(.init(logicalSceneID: label, nativeSceneID: scene.session.persistentIdentifier,
+                generation: entry.handle.disconnectGeneration, windowIdentity: Self.identity(window),
+                rootIdentity: Self.identity(root), observerIdentity: Self.identity(entry.touches), attached: attached,
+                enabled: entry.touches.isEnabled, reliable: entry.touches.ledger.reliable,
+                touches: entry.touches.ledger.active.count, revision: entry.touches.ledger.revision,
+                mounted: root.viewIfLoaded?.window === window, transitioning: Self.transitioning(root),
+                resizing: scene.effectiveGeometry.isInteractivelyResizing))
+        }
+        let connected = UIApplication.shared.connectedScenes
+        let inventory = connected.compactMap { $0 as? UIWindowScene }.map { scene in
+            ProbePhysicalSceneInventory(nativeSceneID: scene.session.persistentIdentifier,
+                activationState: ProbeSceneActivationState(scene.activationState).rawValue,
+                keyWindowIdentity: scene.keyWindow.map(Self.identity), geometry: Self.geometry(scene.effectiveGeometry.coordinateSpace.bounds),
+                screenGeometry: Self.geometry(scene.screen.bounds), windows: scene.windows.map { window in
+                    ProbePhysicalWindowInventory(identity: Self.identity(window), rootIdentity: window.rootViewController.map(Self.identity),
+                        fixtureOwner: entries.first(where: { $0.value.window === window })?.key,
+                        sceneMatches: window.windowScene === scene, key: window.isKeyWindow,
+                        hidden: window.isHidden, alpha: Double(window.alpha),
+                        mounted: window.rootViewController?.viewIfLoaded?.window === window, geometry: Self.geometry(window.frame))
+                }.sorted { $0.identity < $1.identity })
+        }.sorted { $0.nativeSceneID < $1.nativeSceneID }
+        return .init(scenes: scenes, input: input,
+                     connectedSceneIDs: connected.map { $0.session.persistentIdentifier }.sorted(),
+                     applicationActive: UIApplication.shared.applicationState == .active, inventory: inventory, failure: failure)
+    }
+}
+
+internal struct ProbePhysicalInputRequest: Codable, Equatable {
+    let runID: String
+    let processID: Int32
+    let profile: ProbePhysicalOperationProfile
+    let phase: String
+    let nonce: String
+}
+
+internal struct ProbePhysicalInputCapture: Codable {
+    let request: ProbePhysicalInputRequest
+    let requestSHA256: String
+    let captureID: String
+    let before: ProbePhysicalInputSnapshot
+    let after: ProbePhysicalInputSnapshot
+    let idleFailure: String?
+}
+
+/// Pure handoff contract; file transport and host release/display/binary proof
+/// remain separate. A valid input response alone never authorizes SDK work.
+@MainActor
+internal final class ProbePhysicalInputExchange {
+    enum Rejection: Error { case request, reused, consumed }
+    private let runID: String
+    private let processID: Int32
+    private let profile: ProbePhysicalOperationProfile
+    private var consumedNonces = Set<String>()
+    private var pendingSetup: (String, ProbePhysicalInputCapture)?
+    private var admitted = false
+
+    init(runID: String, processID: Int32, profile: ProbePhysicalOperationProfile) {
+        self.runID = runID; self.processID = processID; self.profile = profile
+    }
+    static func sha(_ data: Data) -> String { SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined() }
+
+    func capture(request raw: Data, observe: () -> ProbePhysicalInputSnapshot) throws -> Data {
+        do {
+            return try makeCapture(request: raw, observe: observe)
+        } catch {
+            pendingSetup = nil
+            admitted = true
+            throw error
+        }
+    }
+
+    private func makeCapture(request raw: Data, observe: () -> ProbePhysicalInputSnapshot) throws -> Data {
+        guard raw.count <= 16_384, let object = try JSONSerialization.jsonObject(with: raw) as? [String: Any],
+              Set(object.keys) == ["runID", "processID", "profile", "phase", "nonce"],
+              let nested = object["profile"] as? [String: Any],
+              Set(nested.keys) == ["sourceRevision", "buildConfiguration", "scenarioSHA256", "inference"] else { throw Rejection.request }
+        let request = try JSONDecoder().decode(ProbePhysicalInputRequest.self, from: raw)
+        guard request.runID == runID, request.processID == processID, request.profile == profile,
+              ["setup", "cleanup"].contains(request.phase), UUID(uuidString: request.nonce) != nil else { throw Rejection.request }
+        guard consumedNonces.insert(request.nonce).inserted else { throw Rejection.reused }
+        guard request.phase != "setup" || (!admitted && pendingSetup == nil) else { throw Rejection.consumed }
+        let before = observe(), after = observe()
+        let failure = before.idleFailure() ?? after.idleFailure()
+            ?? (before == after ? nil : "native input or window inventory changed during capture")
+        let value = ProbePhysicalInputCapture(request: request, requestSHA256: Self.sha(raw), captureID: UUID().uuidString,
+                                              before: before, after: after, idleFailure: failure)
+        let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
+        let bytes = try encoder.encode(value)
+        if request.phase == "setup" { pendingSetup = (Self.sha(bytes), value) }
+        else { pendingSetup = nil; admitted = true }
+        return bytes
+    }
+
+    func consumeSetup(responseSHA256: String, live: ProbePhysicalInputSnapshot) -> String? {
+        guard !admitted, let (digest, value) = pendingSetup else { return "setup capture absent or already consumed" }
+        pendingSetup = nil
+        admitted = true
+        guard digest == responseSHA256 else { return "setup response digest differs" }
+        if let reason = value.idleFailure ?? live.idleFailure() { return reason }
+        guard value.after == live else {
+            return "native input or window inventory changed since capture"
+        }
+        return nil
+    }
+}

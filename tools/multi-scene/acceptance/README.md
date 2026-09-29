@@ -384,7 +384,15 @@ The [owning record](../../../DatadogRUM/MultiSceneSupport/Results/S3-human-resid
 tracks the fixture profile and backend checker. They are not yet a runnable
 physical session. The separate Operation receipt binds the canonical scenario,
 Debug inference mechanism, source and stable scene/window/root owners through
-steps6–21. Input-idle capture and app/host integration remain required.
+steps6–21. The passive input observer installs before scene readiness and retains
+contact revisions plus the full connected-scene/window inventory. Setup capture
+and consumption reject input or inventory changes and reused requests. Auxiliary
+windows are retained without a fixed window-count rule.
+
+`DD_PROBE_PHYSICAL_OPERATION_CAPTURE=1` currently stops before the first Operation.
+The exchange has no file transport yet; its unit controls do not prove native
+gestures or authorize teardown. Complete atomic app/host integration, independent
+display/binary proof and host-side release acknowledgement before admission.
 
 `operation_ownership.validate` checks the complete Operation query slice:
 eight raw steps, four reduced Operations, exact ID joins, failure reason and A/B

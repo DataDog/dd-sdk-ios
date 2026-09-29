@@ -158,6 +158,12 @@ enum ProbeRuntime {
     static let usesSemanticNavigationValueLinks = scenario.map(
         ProbeScenarioCatalog.usesSemanticNavigationValueLinks
     ) ?? false
+    static let physicalOperationCaptureRequested =
+        ProcessInfo.processInfo.environment["DD_PROBE_PHYSICAL_OPERATION_CAPTURE"] == "1"
+    @MainActor static let physicalOperationInput: ProbePhysicalOperationInput? =
+        physicalOperationCaptureRequested && scenario?.identifier == ProbePhysicalOperationProfile.scenarioID
+        ? .init(registry: sceneRegistry) : nil
+
     @MainActor static let scenarioDriver: ProbeScenarioDriver? = {
         guard usesObservableScenarioDriver, let scenario else {
             return nil
@@ -170,6 +176,21 @@ enum ProbeRuntime {
                                       recorder: eventRecorder, directory: documents)
         } else {
             physicalAdmission = nil
+        }
+        let stepAdmission: ((Int, ProbeStep, Bool) async -> String?)?
+        if physicalOperationCaptureRequested {
+            // Capture preparation cannot dispatch Operations without the reviewed host barrier.
+            stepAdmission = { index, _, _ in
+                guard scenario.identifier == ProbePhysicalOperationProfile.scenarioID else {
+                    return "Operation capture requested for a different scenario"
+                }
+                return index >= ProbePhysicalOperationProfile.criticalInterval.lowerBound
+                    ? "Operation host transport is not armed" : nil
+            }
+        } else {
+            stepAdmission = physicalAdmission.map { admission in
+                { index, step, after in await admission.check(index: index, step: step, after: after) }
+            }
         }
         return ProbeScenarioDriver(
             scenario: scenario,
@@ -186,9 +207,7 @@ enum ProbeRuntime {
                 : options.exercisesUIKitScrollOwnership
                     ? 60_000_000_000
                     : 10_000_000_000,
-            stepAdmission: physicalAdmission.map { admission in
-                { index, step, after in await admission.check(index: index, step: step, after: after) }
-            }
+            stepAdmission: stepAdmission
         )
     }()
 

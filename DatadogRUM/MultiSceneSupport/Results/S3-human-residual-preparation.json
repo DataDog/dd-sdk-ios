@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "Finite source-backed preparation of residual S3 human scenarios",
-  "state": "H06_PROFILE_AND_BACKEND_PREPARED_RUNTIME_ADAPTER_PENDING",
+  "state": "H06_INPUT_CONTRACT_PREPARED_HOST_ADAPTER_PENDING",
   "defined_at": "2026-09-28T13:49:45.760600+00:00",
   "defined_before_implementation": true,
   "owner": "Root",
@@ -95,9 +95,9 @@
         "operations.cross-scene.lifecycle"
       ],
       "decisive_test": "Existing eight calls/four Operations: success A\u2192B, failure A\u2192B(error), parallel alpha A\u2192A and beta B\u2192B ending beta first. Preserve exact per-step view IDs and two visible native scenes through all calls.",
-      "missing": "Integrate the reviewed profile before step6, passive input-idle observation, full steps6-21 topology capture, physical transport, complete-session collection and release/idle cleanup. Eleven backend controls and saved raw/reduced replay qualify the checker only.",
+      "missing": "Finish atomic app/host transport, installed code/display proof and full steps6-21 guard/call capture, then complete-session collection and release/idle cleanup. Profile16/16, backend11/11 and input15/15 controls qualify preparation only.",
       "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
-      "state": "PROFILE_AND_BACKEND_PREPARED_RUNTIME_ADAPTER_PENDING"
+      "state": "INPUT_CONTRACT_PREPARED_HOST_ADAPTER_PENDING"
     },
     {
       "id": "disconnect-and-remount",
@@ -196,7 +196,7 @@
   "findings": [
     {
       "id": "S3-HUMAN-01",
-      "state": "OPEN_PREPARATION_GAP",
+      "state": "PARTIALLY_PREPARED_NOT_EXECUTABLE",
       "fact": "Only the legacy same-key scenario installs the physical step guard; its interval is steps6\u201316. The inferred Operations critical interval is first start at6 through final marker at21.",
       "source": [
         {
@@ -224,7 +224,7 @@
           "reason": "eight calls and markers"
         }
       ],
-      "repair": "Add a narrowly selected, fail-closed H06 admission/capture adapter; do not infer live topology from capability labels."
+      "repair": "H06 profile and passive input exchange are reviewed and unit-tested. Complete its atomic host admission and whole critical-interval guard before execution; the old same-key guard remains unchanged."
     },
     {
       "id": "S3-HUMAN-02",
@@ -305,14 +305,14 @@
     "builds_admitted": 0,
     "native_admitted": false,
     "budget_policy": "Freeze setup/API/collection/cleanup limits from qualified observed adapter latencies before execution; no active deadline extension. Strict timing is diagnostic.",
-    "next": "Continue the fixture-only H06 input observer and app/host adapter. Bind independent app/source/build/scene owners, complete-session projection and safe release/idle before a reviewed build or human invitation. The separate16-method unit validation is complete.",
+    "next": "Integrate the reviewed native input exchange into the atomic app/host H06 barrier, complete-session projection and safe release/idle cleanup before a reviewed product build or human invitation. The opt-in app path currently stops before its first Operation.",
     "scope_increment": {
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_",
       "definition": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/definition.json",
         "sha256": "debf3bbb1f457e537f9d0ebd01e77710b915c7a5bf0b4615aa5b27043ffbd463"
       },
-      "state": "PROFILE_AND_BACKEND_CONTROLS_PASS_RUNTIME_ADAPTER_PENDING",
+      "state": "PROFILE_BACKEND_AND_INPUT_CONTROLS_PASS_HOST_ADAPTER_PENDING",
       "builds_admitted": 0,
       "native_admitted": false,
       "unit_validation": {
@@ -335,12 +335,44 @@
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/backend-review.json",
         "sha256": "87f4a47eea0a248dff5ef968adc97f1d2d91037d728b1a01346402980897f311"
       },
-      "fixture_unit_runs": 1,
+      "fixture_unit_runs": 2,
       "backend_shape_lesson": "Operation vitals bypass public mappers. Custom probe source/step attributes can contain completion context even on a raw start. Use vital/operation identity joins, raw view.id and reduced start_view/end_view with independently captured A/B owners; no indexed-order or strict-timing criterion.",
       "review_disposition": "No production SDK changes or new attributable finding; production safety review and release register unchanged.",
       "signing_failure": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/checkpoint-signing-failure.json",
         "sha256": "16fcc84e16ba7bce61f9334afbdedbf72273e96caab42365c8952f711fcbd314"
+      },
+      "fixture_compile_failures": 1,
+      "native_input": {
+        "definition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/native-input-definition.json",
+          "sha256": "d599ad2b7980012cc9317df94b307ce94b0e4b0d857f478ccdda0da58b73abff"
+        },
+        "verdict": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/input-controls-zm6i1t73/verdict.json",
+          "sha256": "f9e4613419e672f431fa185ca02e4d702685a0cd98ac82d2dfbeb45e8c252bca"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/input-controls-zm6i1t73/source-review.json",
+          "sha256": "1b8ddc23acd61b498ca844f2d2c92b42b8720a9900d456c457e5b83f84f7863f"
+        },
+        "compile_correction_review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/input-controls-zm6i1t73/correction-admission.json",
+          "sha256": "cf3a96dddf4a9e3c7f6272ad1ab9db2a0f0dc114f98a8dec04a65e98fc200019"
+        },
+        "destination_restored": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/input-controls-zm6i1t73/destination-restored.json",
+          "sha256": "3da549687269d1f7ef02269478d85f6181e21cb7b1473abf1a743750d7e4ae13"
+        },
+        "tests": 15,
+        "original_build": "FAILED_ZERO_TESTS",
+        "original_cleanup": "INVALID_PROCESS_CLASSIFIER",
+        "separate_restoration": "PASS",
+        "scope": "Passive observer installs before scene-ready; idempotent owner registration, exact full-inventory/contact revision binding and one-use request/response controls. Real gesture behavior, atomic file transport and host integration are unqualified. No physical H06 execution.",
+        "signing_attempt": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/input-controls-zm6i1t73/signed-checkpoint-attempt.json",
+          "sha256": "4639457a953cec2405dbbfae9565f227e41c38712581906830a9c9c34d997e9b"
+        }
       }
     }
   },

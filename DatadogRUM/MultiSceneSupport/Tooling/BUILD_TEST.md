@@ -143,7 +143,9 @@ A diagnostic child can own another process group. Identify it by the exact
 experiment/app/output path before termination, reap it and prove absence. Process
 guards should match actual XCTest/test bundles, known SDK hosts and competing
 build/profile workloads; a broad `Runner` suffix also matches unrelated system apps.
-Never kill or exclude an unrelated process to repair a guard.
+Never kill or exclude an unrelated process to repair a guard. An owned simulator's
+`launchd_sim` is its control daemon, not an XCTest worker. Bind the observed
+executable and owned bootstrap path; a UDID substring alone cannot classify a worker.
 
 Include process-inventory latency in the fixed cleanup reservation and retain the
 actual rows or partial timeout output. An empty reaped group needs one inventory.
