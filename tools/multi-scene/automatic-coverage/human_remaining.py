@@ -126,6 +126,7 @@ def excluded(ref, base, runner, profile=None):
 def swiftui_exclusion(base, runner, controls_ref):
     """Reference closed UIKit gates without granting native SwiftUI inheritance."""
     s = runner.shared; owner = s.read(s.REPO/UIKIT_OWNER)
+    historical_base = runner.human_swiftui_refresh.historical_base(base)
     authority = owner['uikit_gate_assessment']
     check(authority['state'] == 'CLOSED_SCOPED_NON_REGRESSION' and authority['gates'] == ['S2:C07', 'S2:C08'],
           'UIKit gates are not assessed', runner)
@@ -152,14 +153,14 @@ def swiftui_exclusion(base, runner, controls_ref):
             summary_refs.append(dict(cell=dict(candidate.CELL, layout=layout, build=build), evidence_class=kind, reference=ref))
     historical = []; home = None; home_helpers = None
     for value in summary_refs:
-        row, out, runtime, old, stage = candidate.history(value['reference'], base, runner)
+        row, out, runtime, old, stage = candidate.history(value['reference'], historical_base, runner)
         expected = 'INVALID' if value['evidence_class'] == 'OFFLINE_COMPARISON' else 'PASS'
         check(row['identity']['cell'] == value['cell'] and row['state'] == row['cleanup'] == expected,
               'excluded native identity or verdict changed', runner)
         # Baselines retain their original passive-observer builds, validated by history().
         # Only the qualified candidate products must equal those reused for SwiftUI.
         if value['evidence_class'] == 'SCOPED_COMPARISON':
-            check(old['products'] == base['products'] and old['observer_refresh'] == base['observer_refresh'],
+            check(old['products'] == historical_base['products'] and old['observer_refresh'] == historical_base['observer_refresh'],
                   'qualified candidate products changed', runner)
         check(not s.process(s.read(runtime/'session-run.json')['pid']), 'excluded runner still active', runner)
         if expected == 'PASS':
@@ -170,7 +171,7 @@ def swiftui_exclusion(base, runner, controls_ref):
             home = {k: old[k] for k in ['home_qualification', 'home_provenance']}
             home_helpers = old['helpers']
     # Reuse the qualified native writer; current host hooks are bound by this runtime's review.
-    runner.human_split.verify_home(home, base, runner)
+    runner.human_split.verify_home(home, historical_base, runner)
     transition = home_transition(home, home_helpers, base, controls_ref, runner)
     current = s.read(runner.build.OWNER)['human_current_composition']
     historical += [current[key]['series'] for key in ['session_continuation', 's2_session_continuation', 's2_remaining_continuation']]

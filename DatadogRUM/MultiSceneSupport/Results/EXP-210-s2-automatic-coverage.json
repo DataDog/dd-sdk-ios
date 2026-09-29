@@ -914,10 +914,10 @@
       }
     },
     "s2_swiftui_remaining_continuation": {
-      "state": "REVIEWED_PREPARATION_ONLY",
-      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-r5",
+      "state": "STOPPED_BEFORE_HUMAN_INPUT",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-resume-q5hpd3xr",
       "plan": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-r5/runtime/runtime-plan.json",
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-resume-q5hpd3xr/runtime/runtime-plan.json",
         "sha256": "2be7c9c3cf56ef41f7d9787997c67dccad25c5f6881cb94b6a018abba7830e57"
       },
       "series": {
@@ -925,7 +925,7 @@
         "sha256": "2915859f75640b1eef25571322ec056f4ca79ca33ab62beb1448e69790fd8f48"
       },
       "controls": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-r5/runtime/controls.json",
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-resume-q5hpd3xr/runtime/controls.json",
         "sha256": "9eabed98424d7a6c76b730741c5b7ddac2d13ae6a46ac30ed69e969829ea4e01"
       },
       "selection_profile": "SWIFTUI_ONLY",
@@ -991,9 +991,42 @@
       "new_native_runs": 0,
       "gate_closures": [],
       "review": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-r5/runtime/review.json",
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-resume-q5hpd3xr/runtime/review.json",
         "sha256": "e6339bce68fda5a12e3f3346a2da2cefabceac6c8a1134545b978ce09d521440"
+      },
+      "resume_preparation": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-resume-q5hpd3xr/resume-preparation.json",
+        "sha256": "0383fc0b5695f3954335b0f028303fbebe1c01e5b131a13f211238cb76c28354"
+      },
+      "admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-resume-q5hpd3xr/runtime/native-admission.json",
+        "sha256": "3a709038dbf71b23502f82398309c8870a4c02277fe2a5ea2d9995737e564991"
+      },
+      "stopped_assessment": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-resume-q5hpd3xr/stopped-assessment.json",
+        "sha256": "b91851047fcff97d89d28b10317aeb0387b1e4b97e23a6273ec7b36aff915d48"
       }
+    },
+    "swiftui_operator_expiries": [
+      {
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-r5",
+        "plan": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-r5/runtime/runtime-plan.json",
+          "sha256": "2be7c9c3cf56ef41f7d9787997c67dccad25c5f6881cb94b6a018abba7830e57"
+        },
+        "expiry": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-r5/runtime/operator-expired.json",
+          "sha256": "033e0359781aab877c31c342a707beff742b7a16ecd96675f1b0c8b7e5de2b8e"
+        }
+      }
+    ],
+    "swiftui_capture_correction": {
+      "state": "STOPPED_PUBLIC_READER_NO_IDENTIFIERS",
+      "assessment": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/readiness-assessment.json",
+        "sha256": "b5a8c0e16b938589b2dce8316a8803c17335d6d0e864bcd7a252b8d055b3426e"
+      },
+      "next_action": "Keep this one-use simctl-only mechanism stopped. Compare the qualified H12 supported interaction-session prerequisite with this launch using saved evidence before admitting any materially different continuation. No remaining builds or human prompts yet."
     }
   },
   "s2_acceptance_review": {

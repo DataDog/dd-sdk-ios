@@ -45,6 +45,26 @@ def counter(snapshot,screen,binding,framework):
 def visible(snapshot,screen,binding):return h.target(snapshot,'screen.'+screen,binding)
 
 
+
+def ready_controls(snapshot, screen, binding, framework):
+    """Prove the whole first screen is observable before asking for any input."""
+    visible(snapshot,screen,binding)
+    names=['tap','toggle','scroll','receipt','next']
+    controls={name:h.target(snapshot,screen+'.'+name,binding) for name in names}
+    count=counter(snapshot,screen,binding,framework)
+    matches=[]
+    for scroll in snapshot['payload']['topology'].get('scrolls',[]):
+        if not (scroll.get('owned') is True and scroll.get('window')==binding['window']
+                and scroll.get('scene')==binding['scene'] and scroll.get('hidden') is False
+                and scroll.get('alpha',0)>0 and scroll.get('enabled') is True):continue
+        try:h.scroll_geometry.check(scroll,scroll,controls['scroll'],framework)
+        except ValueError:continue
+        matches.append(scroll)
+    actual=h.one(matches,'owned first-screen scroll')
+    return dict(identifiers=['screen.'+screen]+[screen+'.'+name for name in names],
+                counter=count,scroll_id=actual['id'],snapshot_sequence=snapshot['sequence'])
+
+
 def interval(rows,before,after):
     h.require(before['sequence']<after['sequence'],'input effect precedes readiness')
     return [r for r in rows if before['sequence']<r['sequence']<after['sequence']]

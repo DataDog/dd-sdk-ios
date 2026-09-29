@@ -26,6 +26,7 @@ import os
 import analyze
 import human_sessions
 import human_fixture_refresh
+import human_swiftui_refresh
 import human_candidate
 import human_remaining
 import human_split
@@ -115,7 +116,21 @@ def s2_oracle(source, base):
 def s2_helpers(measurement):
     helpers=helper_members()
     helpers[human_sessions.CONTRACT]=measurement['rendered_sha256']
+    if measurement.get('policy')=='public-accessibility-ownership-v3':
+        helpers.update(human_swiftui_refresh.helper_bindings())
     return helpers
+
+
+def refresh_module(root):
+    value=shared.read(Path(root)/'refresh-plan.json')
+    return human_swiftui_refresh if value.get('kind')==human_swiftui_refresh.KIND else human_fixture_refresh
+
+
+def refresh_oracle(source, base, refresh):
+    raw,measurement=s2_oracle(source,base)
+    if refresh is not None and refresh_module(refresh) is human_swiftui_refresh:
+        return human_swiftui_refresh.oracle(raw,measurement)
+    return raw,measurement
 
 
 def prepare_s2(args):
@@ -125,8 +140,8 @@ def prepare_s2(args):
     refresh=refresh.resolve()
     require(not root.exists(),'S2 runtime output already consumed')
     base=human_sessions.original(source,sys.modules[__name__],allow_backend_decoder_update=True,allow_fixture_refresh=True)
-    refreshed=human_fixture_refresh.products(refresh)
-    oracle,measurement=s2_oracle(source,base)
+    refreshed=refresh_module(refresh).products(refresh)
+    oracle,measurement=refresh_oracle(source,base,refresh)
     matrix=s2_matrix(shared.read(build.OWNER),shared.read(REGISTER))
     names={row['build']+'-'+row['framework']+'-single' for row in matrix}
     runtime=root/'runtime';runtime.mkdir(parents=True)
@@ -155,7 +170,7 @@ def prepare_s2(args):
 def verify_s2(root,plan):
     refresh=plan.get('observer_refresh')
     source=Path(plan['original_build_root']);base=human_sessions.original(source,sys.modules[__name__],allow_backend_decoder_update=True,allow_fixture_refresh=refresh is not None)
-    _,measurement=s2_oracle(source,base)
+    _,measurement=refresh_oracle(source,base,Path(refresh['path']).parent if refresh else None)
     require(plan['original_runtime_plan_sha256']==shared.sha(source/'runtime/runtime-plan.json') and
             plan['scope']==s2_scope() and plan['matrix']==s2_matrix(shared.read(build.OWNER),shared.read(REGISTER)),
             'S2 scope/source/matrix changed')
@@ -165,7 +180,7 @@ def verify_s2(root,plan):
     names={row['build']+'-'+row['framework']+'-single' for row in plan['matrix']}
     if refresh:
         human_sessions.read_reference(refresh,shared)
-        products=human_fixture_refresh.products(Path(refresh['path']).parent)
+        products=refresh_module(Path(refresh['path']).parent).products(Path(refresh['path']).parent)
     else:products=base['products']
     require(plan['products']=={name:products[name] for name in sorted(names)},'S2 product slice changed')
     require(plan.get('measurement')==measurement,'S2 observer measurement rule changed')
@@ -201,7 +216,9 @@ def helper_members():
         if name:
             path=Path(name).resolve()
             if path.is_relative_to(base) and path.suffix=='.py' and not path.name.startswith('test_'):paths.add(path)
-    return {str(path.relative_to(shared.REPO)):shared.sha(path) for path in sorted(paths)}
+    scoped=set(human_swiftui_refresh.helper_bindings())
+    return {str(path.relative_to(shared.REPO)):shared.sha(path) for path in sorted(paths)
+            if str(path.relative_to(shared.REPO)) not in scoped}
 
 
 def prepare(args):

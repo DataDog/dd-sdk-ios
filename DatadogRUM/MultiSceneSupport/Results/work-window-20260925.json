@@ -17,7 +17,7 @@
     "instruction": "Continue without human input; remove heartbeat after safe morning checkpoint. This is not a native admission or deadline extension.",
     "removed_at": "2026-09-27T06:00:55.094691+00:00"
   },
-  "next_task": "One prepared physical UIKit candidate when the operator is ready; then remaining automatic coverage and Resource/Trace fold packages. S3 window setup passes controls/build only and needs separate human/device admission.",
+  "next_task": "Correct SwiftUI control discovery and qualify initial capture automatically before another human session. Preserve stopped SDK26.5 baseline and successful cleanup; all six behavioral comparisons remain.",
   "gate_closures": [
     "S2:H16",
     "S2:T10",
@@ -33,7 +33,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": "2026-09-27T06:00:55.094691+00:00",
+  "updated_at": "2026-09-29T21:33:11.328069+00:00",
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
@@ -120,7 +120,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automated-scope-rww2sb_g/webview-backend-continuation/summary.json",
     "sha256": "c67b680daecad3400c1ffc85ce8e56ba26629a167932e2b6f7cc0a687ab45543"
   },
-  "awake_until_utc": "2026-09-28T23:31:19.809452+00:00",
+  "awake_until_utc": "2026-09-29T23:27:18.243114+00:00",
   "deadline_correction": {
     "at": "2026-09-25T12:43:44.248636+00:00",
     "previous_inferred_work_deadline_utc": "2026-09-25T12:42:56.993742+00:00",
@@ -259,24 +259,35 @@
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/caffeinate-stop.json",
         "sha256": "83585077e78d091710fa78e2d914598823a1cd6f50a0c5c5bf59be9cf039b0fa"
       }
+    },
+    {
+      "receipt": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/caffeinate.json",
+        "sha256": "86ee74f58f911328745253cae61190428e7b3b6d80a062e93a23f2dfdc56b778"
+      },
+      "pid": 70762,
+      "authorized_seconds": 7200,
+      "awake_until_utc": "2026-09-28T23:31:19.809452+00:00",
+      "work_deadline": null,
+      "state": "EXPIRED_VERIFIED_ABSENT",
+      "prior_reported_state": "RUNNING_USER_AUTHORIZED",
+      "verification": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/adapter-contract-mrlwkgsz/awake-current.json",
+        "sha256": "f7976d6aa96172ed1dc819147e3d7889d557fcedf0f302a0d2d672e1f629548c"
+      },
+      "renewed": false
     }
   ],
   "current_awake": {
     "receipt": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/caffeinate.json",
-      "sha256": "86ee74f58f911328745253cae61190428e7b3b6d80a062e93a23f2dfdc56b778"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-resume-q5hpd3xr/runtime/awake.json",
+      "sha256": "a8540a378c496ba1f8f0dbcad78feba7dc493c0dec33bda5ed0510e4d32b3476"
     },
-    "pid": 70762,
+    "pid": 74325,
     "authorized_seconds": 7200,
-    "awake_until_utc": "2026-09-28T23:31:19.809452+00:00",
+    "awake_until_utc": "2026-09-29T23:27:18.243114+00:00",
     "work_deadline": null,
-    "state": "EXPIRED_VERIFIED_ABSENT",
-    "prior_reported_state": "RUNNING_USER_AUTHORIZED",
-    "verification": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/adapter-contract-mrlwkgsz/awake-current.json",
-      "sha256": "f7976d6aa96172ed1dc819147e3d7889d557fcedf0f302a0d2d672e1f629548c"
-    },
-    "renewed": false
+    "state": "RUNNING_USER_AUTHORIZED"
   },
   "minimum_autonomous_work_until_utc": "2026-09-27T06:00:00+00:00",
   "latest_autonomous_checkpoint": "Results/autonomous-progress-20260927.json",

@@ -127,9 +127,14 @@ class Collector:
         initial,_=self.snapshot(prefix+'.root.readiness',deadline)
         root='sidebar' if layout=='split' else 'home'
         try:
-            journey.visible(initial,root,self.binding);return
+            journey.visible(initial,root,self.binding)
         except ValueError:
             require(self.framework=='UIKit' and layout=='split','expected root is not observable')
+        else:
+            if self.framework=='SwiftUI':
+                proof=journey.ready_controls(initial,root,self.binding,self.framework)
+                shared.save(self.output/(prefix+'.controls-ready.json'),proof,exclusive=True)
+            return
         journey.visible(initial,'empty',self.binding)
         before,folder=self.snapshot(prefix+'.revealSidebar.before',deadline)
         actual=self.prompt(prefix+'.revealSidebar','Use the visible native Back control to show Sidebar once.',folder,deadline,before)

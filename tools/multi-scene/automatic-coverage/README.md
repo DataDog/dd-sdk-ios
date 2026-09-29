@@ -47,6 +47,18 @@ require completed native predecessors from this same SwiftUI series. Existing
 products and the standard Home collector are reused; the split-only collector
 and its scoped Home exception do not apply to SwiftUI.
 
+The first SwiftUI stack launch exposed an empty legacy control inventory before
+any human prompt; its INVALID result and successful cleanup remain. For the
+reviewed repair, `human_swiftui_refresh.py prepare --original PRIOR_REFRESH
+--root NEW_REFRESH` copies the prior source/compiler arms and changes only the
+observer and copied build scheme. Its `build` action compiles SwiftUI only, reusing
+the existing public accessibility traversal; original UIKit products remain exact.
+`human_runtime.py prepare-s2` recognizes this opt-in refresh and freezes the public
+container/identifier/visibility oracle with the exact prior oracle recorded.
+First-screen readiness must find the screen, all controls, the SwiftUI receipt
+label and its owned scroll before prompting. Automatic initial readiness must
+qualify before another human invitation; it supplies no behavioral or release credit.
+
 `human_split.py` is the scoped candidate-only split continuation. Its comparison
 keeps actual pane layout, per-input owners and View inventory separate from the
 inherited Home limitation. Compare in-memory and persisted inventories through
@@ -205,6 +217,8 @@ snapshot/callback has a bound measured-cost receipt; missing or malformed receip
 invalidate the comparison, while duration is diagnostic. Exact sequence/byte-count/hash checkpoints establish
 persisted prefixes before readiness is consumed. This is a paced fixture comparison,
 not an uninstrumented production performance measurement.
+
+A public accessibility traversal must expose the required source-declared controls in the actual environment before human readiness. Nonempty UIView ancestry alone does not qualify SwiftUI control capture. Bind any external interaction-session prerequisite explicitly; do not synthesize identifiers or substitute earlier snapshots.
 
 `human_journey.py` retains the original ordered flows. `human_capture.py` connects
 fresh requests, durable prefixes, actual screenshots, native effects, fold geometry
