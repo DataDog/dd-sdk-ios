@@ -5,8 +5,9 @@ This package is **not linked into DatadogFlags or shipped to customers**. The
 standalone package/local benchmark pod pins SwiftProtobuf 1.38.1; the shipping SDK
 does not gain this dependency. Generated types and evaluators are internal. The
 public Objective-C facade exists only to connect the companion RN benchmark app.
-There is no networking, configuration persistence, or telemetry. The adapter can
-export benchmark reports to the app's Documents directory. CryptoKit supplies MD5
+There is no networking, production configuration cache, or telemetry in this
+package. The adapter can persist temporary fixture bytes for hydration experiments
+and export benchmark reports to the app's Documents directory. CryptoKit supplies MD5
 for the assignment protocol, not for security.
 
 Tracking: [FFL-3347](https://datadoghq.atlassian.net/browse/FFL-3347).
@@ -20,6 +21,27 @@ configuration installation, context-dependent reads, decoder/native-direct timin
 controls, an echo control, and environment metadata. The RN adapter must serialize
 access to installation and evaluation; the facade itself is not thread-safe.
 Parsing happens on installation, not on every read.
+
+### Persisted Hydration Follow-Up
+
+The benchmark-only facade also accepts `persistBinary`, `readCachedBinary`,
+`readCachedJson`, and `evaluateCachedBinary`. It writes fixture bytes to a unique
+temporary file per facade instance and removes that file on deinitialization.
+These operations are not a production cache API or an offline provider lifecycle.
+The RN caller serializes them using the same adapter as the original placements.
+
+The companion RN harness compares an asynchronous native file read followed by
+JS decoding/evaluation, native decoding with a ProtoJSON handoff, or native
+decoding/evaluation with only the result returned. Files are created before timing
+and the OS cache is warm. The last path intentionally decodes on each hydration
+sample; ordinary installed-snapshot reads still decode only on installation.
+Tests check persisted bytes, both decoded representations, configuration
+replacement, evaluation metadata, and isolation between facade instances.
+
+The RN follow-up separately measures the existing native tracking pipeline;
+no tracking code is added to this Swift package. See the companion
+[results summary](https://github.com/DataDog/dd-sdk-reactnative/blob/sameerank/mobile-flags-benchmarks/benchmarks/src/flags/RESULTS.md)
+for the saved measurements, provenance, and limitations.
 
 This evaluator deliberately supports only the synthetic RN benchmark subset:
 boolean variations, static allocations, string membership/negation, numeric
@@ -146,11 +168,21 @@ is not a production payload-size or startup benchmark.
 device performance or a JavaScript/native architecture decision**. Debug builds
 skip the benchmark. No performance thresholds are asserted in tests.
 
-## Pending Evidence
+## Evidence and Remaining Work
 
 Use the companion RN benchmark for optimized physical-device measurements.
 A faster direct Swift call does not establish that native evaluation is faster
 for an RN caller, and an echo control does not substitute for a real evaluator.
-Simulator and host measurements are correctness smoke tests only. The RFC's
-performance conclusion remains pending device runs; Android, tracking transport,
-memory, binary size, network, and durable storage need separate measurements.
+Release simulator and iPhone 16 Pro placement measurements are now available.
+Both favor local JS repeated reads from an RN caller's perspective, while direct
+native decoding/evaluation controls are faster. The device reported serious
+thermal conditions at completion, so it is exploratory evidence rather than a
+nominal-temperature latency baseline. Simulator follow-ups measured warm-file
+hydration and real native tracking with a loopback collector.
+
+Simulator data can inform architecture and expose transfer/blocking costs; it
+does not establish phone energy, thermal, or flash behavior. Host Swift tests are
+not mobile performance results. Android, true cold startup, broader conformance,
+incremental package size, isolated memory attribution, and production cache
+policy remain open. Do not pool device and simulator samples or infer a fastest
+possible JSI/shared-memory design from the tested ProtoJSON transfer.

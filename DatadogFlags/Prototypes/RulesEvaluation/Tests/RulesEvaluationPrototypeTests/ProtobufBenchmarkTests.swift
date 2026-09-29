@@ -10,6 +10,26 @@ import XCTest
 @testable import RulesEvaluationPrototype
 
 final class ProtobufBenchmarkTests: XCTestCase {
+    func testPersistedHydrationPathsMatchAndReplaceTheSameSnapshot() throws {
+        let bridge = FlagsBenchmark()
+        XCTAssertNotNil(bridge.run(["op": "readCachedBinary"])["benchmarkError"])
+        for fixture in try loadFixtures() {
+            let base64 = try XCTUnwrap(fixture["protobufBase64"] as? String)
+            _ = bridge.run(["op": "preload", "base64": base64])
+            XCTAssertNil(bridge.run(["op": "persistBinary"])["benchmarkError"])
+            XCTAssertEqual(bridge.run(["op": "readCachedBinary"])["base64"] as? String, base64)
+            let json = try XCTUnwrap(bridge.run(["op": "readCachedJson"])["json"] as? String)
+            XCTAssertEqual(try ClientRules(jsonString: json), try ClientRules(serializedBytes: XCTUnwrap(Data(base64Encoded: base64))))
+            let cases = try XCTUnwrap(fixture["cases"] as? [[String: Any]])
+            for entry in cases {
+                var input = try XCTUnwrap(entry["request"] as? [String: Any])
+                input["op"] = "evaluateCachedBinary"
+                XCTAssertEqual(try canonical(bridge.run(input)), try canonical(XCTUnwrap(entry["expected"] as? [String: Any])))
+            }
+        }
+        XCTAssertNotNil(FlagsBenchmark().run(["op": "readCachedBinary"])["benchmarkError"])
+    }
+
     func testSharedClientFixturesThroughBothDecoders() throws {
         let fixtures = try loadFixtures()
         let bridge = FlagsBenchmark()

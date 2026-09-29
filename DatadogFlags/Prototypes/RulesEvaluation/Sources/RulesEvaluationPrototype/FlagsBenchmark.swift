@@ -13,9 +13,13 @@ import SwiftProtobuf
 public final class FlagsBenchmark: NSObject {
     private var bytes: Data?
     private var evaluator: ProtobufRulesEvaluator?
+    private let cacheURL = FileManager.default.temporaryDirectory
+        .appendingPathComponent("flags-benchmark-\(UUID().uuidString).bin")
 
     @objc
     override public init() { super.init() }
+
+    deinit { try? FileManager.default.removeItem(at: cacheURL) }
 
     @objc
     public func run(_ request: [String: Any]) -> [String: Any] {
@@ -32,6 +36,19 @@ public final class FlagsBenchmark: NSObject {
                 return ["flagCount": configuration.flags.count]
             case "binaryToJson":
                 return ["json": try decode().jsonString()]
+            case "persistBinary":
+                guard let bytes = bytes else { throw PrototypeError.notInitialized }
+                try bytes.write(to: cacheURL, options: .atomic)
+                return ["byteCount": bytes.count]
+            case "readCachedBinary":
+                return ["base64": try Data(contentsOf: cacheURL).base64EncodedString()]
+            case "readCachedJson":
+                let configuration = try ClientRules(serializedBytes: Data(contentsOf: cacheURL))
+                return ["json": try configuration.jsonString()]
+            case "evaluateCachedBinary":
+                let configuration = try ClientRules(serializedBytes: Data(contentsOf: cacheURL))
+                evaluator = ProtobufRulesEvaluator(configuration: configuration)
+                return evaluator?.evaluate(try ProtobufRequest(request), timestamp: Date().timeIntervalSince1970 * 1_000) ?? [:]
             case "installJson":
                 guard let json = request["json"] as? String else { throw PrototypeError.invalidRequest }
                 let configuration = try ClientRules(jsonString: json)
