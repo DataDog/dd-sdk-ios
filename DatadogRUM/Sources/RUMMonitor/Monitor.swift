@@ -158,8 +158,12 @@ internal class Monitor: RUMCommandSubscriber {
             }
 
             let transformedCommand = self.transform(command: command)
+            // `transform` can replace the command time with a cross-platform timestamp, so keep its device time for measuring session inactivity:
+            let deviceTime = transformedCommand.time != command.time ? command.time : nil
 
-            _ = self.applicationScope.process(command: transformedCommand, context: context, writer: writer)
+            self.applicationScope.dependencies.commandDeviceTime.process(deviceTime: deviceTime) {
+                _ = self.applicationScope.process(command: transformedCommand, context: context, writer: writer)
+            }
 
             if let debugging = self.debugging {
                 debugging.debug(applicationScope: self.applicationScope)
