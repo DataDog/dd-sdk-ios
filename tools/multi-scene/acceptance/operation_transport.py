@@ -264,6 +264,38 @@ def save(path, raw):
         os.fsync(stream.fileno())
 
 
+def transferred(result, receipt, *, device, bundle, source, destination, deadline, optional):
+    """Validate bootstrap or channel IO without constructing a native identity."""
+    require(type(receipt.get('returncode')) is int and receipt['remaining'] == []
+            and receipt['before'] == [] and receipt.get('quiescence_error') is None,
+            'unqualified transfer lifetime')
+    require(receipt['finished_at'] < min(receipt['deadline'], deadline), 'late transfer')
+    info = (result or {}).get('info', {}); args = info.get('arguments', [])
+    command = 'devicectl.device.copy.from' if optional else 'devicectl.device.copy.to'
+    require(isinstance(args, list), 'missing transfer arguments')
+    for flag, expected in [('--device', device), ('--domain-type', 'appDataContainer'),
+                           ('--domain-identifier', bundle), ('--source', str(source)),
+                           ('--destination', str(destination))]:
+        require(args.count(flag) == 1 and args.index(flag) + 1 < len(args)
+                and args[args.index(flag) + 1] == expected, 'foreign transfer ' + flag)
+    require(info.get('commandType') == command, 'wrong transfer operation')
+    if receipt['returncode'] != 0:
+        # The existing CoreDevice wrapper preserves the raw failure. Only a
+        # missing response file is pending; other transport failures stop.
+        signature = (result or {}).get('errorSignature', '')
+        error = (result or {}).get('error', {})
+        description = error.get('userInfo', {}).get('NSLocalizedDescription', {}).get('string')
+        require(optional and info.get('outcome') == 'failed'
+                and signature == '(com.apple.dt.CoreDeviceError 7000)'
+                and error.get('domain') == 'com.apple.dt.CoreDeviceError'
+                and error.get('code') == 7000
+                and description == 'Failed to retrieve the file node for ' + str(source),
+                'native response transfer failed')
+        return False
+    require(info.get('outcome') == 'success', 'failed native transfer response')
+    return True
+
+
 class Channel:
     """Serialize transfers through the existing physical_io.Device instance.
 
@@ -289,34 +321,8 @@ class Channel:
         result, receipt = method(self.bundle, source, destination, label, self.deadline,
                                  **({'check': False} if optional else {}))
         self.live()
-        require(type(receipt.get('returncode')) is int and receipt['remaining'] == []
-                and receipt['before'] == [] and receipt.get('quiescence_error') is None,
-                'unqualified transfer lifetime')
-        require(receipt['finished_at'] < min(receipt['deadline'], self.deadline), 'late transfer')
-        info = (result or {}).get('info', {}); args = info.get('arguments', [])
-        command = 'devicectl.device.copy.from' if optional else 'devicectl.device.copy.to'
-        require(isinstance(args, list), 'missing transfer arguments')
-        for flag, expected in [('--device', self.remote.identifier), ('--domain-type', 'appDataContainer'),
-                               ('--domain-identifier', self.bundle), ('--source', str(source)),
-                               ('--destination', str(destination))]:
-            require(args.count(flag) == 1 and args.index(flag) + 1 < len(args)
-                    and args[args.index(flag) + 1] == expected, 'foreign transfer ' + flag)
-        require(info.get('commandType') == command, 'wrong transfer operation')
-        if receipt['returncode'] != 0:
-            # The existing CoreDevice wrapper preserves the raw failure. Only a
-            # missing response file is pending; other transport failures stop.
-            signature = (result or {}).get('errorSignature', '')
-            error = (result or {}).get('error', {})
-            description = error.get('userInfo', {}).get('NSLocalizedDescription', {}).get('string')
-            require(optional and info.get('outcome') == 'failed'
-                    and signature == '(com.apple.dt.CoreDeviceError 7000)'
-                    and error.get('domain') == 'com.apple.dt.CoreDeviceError'
-                    and error.get('code') == 7000
-                    and description == 'Failed to retrieve the file node for ' + str(source),
-                    'native response transfer failed')
-            return False
-        require(info.get('outcome') == 'success', 'failed native transfer response')
-        return True
+        return transferred(result, receipt, device=self.remote.identifier, bundle=self.bundle,
+                           source=source, destination=destination, deadline=self.deadline, optional=optional)
 
     def collect_context(self, folder, fingerprint, returned, raw, inner):
         prefix = 'Documents/' + self.identity['runID'] + '.operations-'

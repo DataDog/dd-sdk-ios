@@ -22,20 +22,23 @@ import operation_setup as setup
 import operation_transport as t
 
 
-def operator_health(operator, folder):
+def page_health(directory, server_raw, deadline, folder):
     """Bind the actual local page response and its host process, without a new expiry."""
-    operator.live(); folder = Path(folder); folder.mkdir()
-    server = t.load(operator.server_raw)
+    folder = Path(folder); folder.mkdir()
+    directory = operator_contract.clean_path(directory)
+    t.require(setup.read(directory/'server.json') == server_raw and time.time() < deadline,
+              'operator page changed or expired')
+    server = t.load(server_raw)
     url = server['url']+'/health'
     started = time.time()
-    with urllib.request.urlopen(url, timeout=min(2, operator.deadline-started)) as response:
+    with urllib.request.urlopen(url, timeout=min(2, deadline-started)) as response:
         raw = response.read(t.MAX_BYTES+1)
         observed = dict(url=response.url, status=response.status, startedAt=started, finishedAt=time.time())
     t.save(folder/'response.json', raw); t.save(folder/'http.json', t.encode(observed))
     t.require(observed['url'] == url and observed['status'] == 200 and t.load(raw) == server,
               'live operator response differs from bound page')
     pid = server['pid']
-    command = setup.command(['/bin/ps','-p',str(pid),'-o','pid=,lstart=,comm='], folder, 'process', operator.deadline)
+    command = setup.command(['/bin/ps','-p',str(pid),'-o','pid=,lstart=,comm='], folder, 'process', deadline)
     match = re.fullmatch(r'\s*'+str(pid)+r'\s+(.+?)\s+(/[^\n]+)\n?', command['stdout'])
     t.require(match is not None, 'operator process unavailable')
     query = ctypes.CDLL('/usr/lib/libproc.dylib').proc_pidpath
@@ -44,14 +47,21 @@ def operator_health(operator, folder):
     t.require(0 < size < len(buffer), 'operator kernel executable missing')
     executable = Path(buffer.value.decode()).resolve()
     t.require(executable == Path(match[2]).resolve(), 'operator process executable differs')
-    argv = setup.command(['/bin/ps','-p',str(pid),'-o','command='], folder, 'arguments', operator.deadline)
+    argv = setup.command(['/bin/ps','-p',str(pid),'-o','command='], folder, 'arguments', deadline)
     arguments = shlex.split(argv['stdout'].strip())
     script = Path(operator_contract.page.__file__).resolve()
     t.require(str(script) in arguments and arguments.count('--directory') == 1
-              and arguments[arguments.index('--directory')+1] == str(operator.directory), 'foreign operator process arguments')
+              and arguments[arguments.index('--directory')+1] == str(directory), 'foreign operator process arguments')
     result = dict(pid=pid, start=match[1], executable=pixels.reference(executable), script=pixels.reference(script),
-        serverSHA256=t.sha(operator.server_raw), responseSHA256=t.sha(raw))
-    t.save(folder/'result.json',t.encode(result)); operator.live(); return result
+        serverSHA256=t.sha(server_raw), responseSHA256=t.sha(raw))
+    t.save(folder/'result.json',t.encode(result)); return result
+
+
+def operator_health(operator, folder):
+    operator.live()
+    result = page_health(operator.directory, operator.server_raw, operator.deadline, folder)
+    operator.live()
+    return result
 
 
 def cleanup_expectations(host, folder):

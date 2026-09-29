@@ -601,8 +601,29 @@ fresh release, native idle and original result expectations; an unreaped recorde
 blocks teardown. Backend collection consumes sealed evidence after cleanup, so a
 backend wait cannot delay the release prompt. Scenario, display, backend and
 cleanup outcomes stay separate. No host control qualifies the physical recorder's
-SIGINT response, transfer behavior or simultaneous window visibility. The launcher
-and one native adapter qualification remain required before a human session.
+SIGINT response, transfer behavior or simultaneous window visibility. A signed
+physical product and one native adapter qualification remain required before a
+human session.
+
+### H06 launch preparation
+
+`operation_launch.Launcher` verifies a separately prepared signed physical Debug
+product, source/compiler evidence, decoder and helper identities. Freeze its three
+UUIDs with `new_identity()` in the reviewed admission before requesting readiness.
+The actual reply binds the plan, admission, identity, server, device and scenario
+within the original launch cutoff; there is no five-minute readiness rule.
+
+One install and one launch supply the actual PID, installed-code receipt, startup
+freshness and native challenge. Only those validated original observations may
+construct the channel and return `Session`; the caller runs it once. Shared transfer
+validation handles startup without creating a provisional channel.
+
+Before any attempted launch, a failed install may be removed only after fresh
+quiescence and unambiguous task-process absence. Decode file URLs and reject
+conflicting bundle/executable ownership. After attempted launch without a validated
+channel, preserve the app and record cleanup BLOCKED for separate safe recovery.
+Offline controls and the actual host-page check qualify this composition only;
+product preparation and physical adapter qualification precede native admission.
 
 ### H06 physical cleanup disposition
 

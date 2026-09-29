@@ -74,7 +74,7 @@ to the linked results and [delivery queue](Results/S1-delivery-queue.json).
 
 Exported/fatal/process/vitals/profile validation added no established production
 finding; [the assessment](ASSESSMENT.md) links those capabilities and their limits.
-Fixture/oracle issues remain in their owning results, not in this SDK defect list. The [S3 display preparation](Results/S3-human-residual-preparation.json) passes scoped review,21 decoder controls,18 native unit controls and three UIKit-rendered phase decodes. Terminal and affected recorder/backend controls pass29+52; cleanup PASS. Typed host bridge passes review/58 offline controls. Post-startup capture/cleanup integration and exact final-seal alias pass review/117 host controls and two fixture tests; cleanup PASS. Launcher composition and physical recorder/transfer qualification remain. No SDK source or release verdict changes.
+Fixture/oracle issues remain in their owning results, not in this SDK defect list. The [S3 H06 preparation](Results/S3-human-residual-preparation.json) qualifies display decoding, native markers, capture/cleanup integration and launcher/startup composition through scoped review and focused controls. The actual host instruction-page identity check and cleanup pass. Signed physical product preparation and one physical recorder/transfer qualification remain before human admission. No SDK source or release verdict changes.
 Session Replay captured-content repair is outside scope; crash safety and other-
 feature continuity remain required. Optional network microbenchmarks add no numeric
 claim. Future sessions follow the semantic measurement rule; strict timing is not
