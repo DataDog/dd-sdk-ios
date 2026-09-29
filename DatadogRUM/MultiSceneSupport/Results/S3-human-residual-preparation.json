@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "Finite source-backed preparation of residual S3 human scenarios",
-  "state": "H06_RECORDER_PREPARED_FULL_RUNNER_PENDING",
+  "state": "H06_CLEANUP_STOP_PREPARED_FULL_RUNNER_PENDING",
   "defined_at": "2026-09-28T13:49:45.760600+00:00",
   "defined_before_implementation": true,
   "owner": "Root",
@@ -350,7 +350,7 @@
     "builds_admitted": 0,
     "native_admitted": false,
     "budget_policy": "Freeze setup/API/collection/cleanup limits from qualified observed adapter latencies before execution; no active deadline extension. Strict timing is diagnostic.",
-    "next": "Seal active execution before cleanup capture and require stopped-driver proof. Then integrate setup/completion/recorder with independent display interval, backend ownership and separate release/idle teardown. Preserve original deadlines, one directory pull and verdict boundaries; no human H06 session is admitted.",
+    "next": "Integrate setup, completion, recorder and stopped-driver receipt with independent display interval, backend ownership and separate release/idle teardown. Preserve original deadlines, one directory pull and verdict boundaries. Qualify physical adapter once before any human H06 session; no session is admitted.",
     "scope_increment": {
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_",
       "definition": {
@@ -743,6 +743,32 @@
           "sha256": "747626489909834eae24cbe874173cb67f46c697c2dbfeb3725bcf491f079d7c"
         },
         "limits": "Fabricated recorder/transport controls. Actual physical transfer, display/backend/cleanup orchestration and SDK dispatch remain unqualified."
+      },
+      "cleanup_stop": {
+        "state": "PREPARATION_CONTROLS_PASS",
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/cleanup-stop-bhtzw6_5",
+        "verdict": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/cleanup-stop-bhtzw6_5/verdict.json",
+          "sha256": "77d944aa0a6b599577eec8b08eb430742dda0bf7b4dacae4a19f98745667ae30"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/cleanup-stop-bhtzw6_5/final-review.json",
+          "sha256": "4c8c06171e1bc19b1879d272f42df3f697b34a8ce8787df0fc773ab66f0ea675"
+        },
+        "host_controls": 8,
+        "qualified_swift_controls": 13,
+        "original_invocation": "12/13 PASS; immutable test-fixture failure.",
+        "corrected_success_controls": "2/2 PASS; implementation unchanged.",
+        "actual_swift_codec_replay": "PASS",
+        "cleanup": "PASS_BOTH_INVOCATIONS",
+        "native_scenario_runs": 0,
+        "backend_queries": 0,
+        "gates_closed": [],
+        "limits": [
+          "Injected SDK/input/mapper fixture controls and host-parser controls only.",
+          "Driver/pump STOPPED is independent of operator release, native idle and process absence; it never authorizes teardown alone.",
+          "Actual physical transport, independent display interval, backend and complete host orchestration remain unqualified."
+        ]
       }
     }
   },
@@ -758,5 +784,5 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/s3-residual-review.json",
     "sha256": "358e67b60fb25744ada5ddf6902e5832285a28489492900077061fedd7799890"
   },
-  "updated_at": "2026-09-29T08:48:45.677906+00:00"
+  "updated_at": "2026-09-29T09:29:33.289757+00:00"
 }

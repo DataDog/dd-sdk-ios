@@ -36,6 +36,12 @@ internal final class ProbeSceneStepExecutor {
 
 @MainActor
 internal final class ProbeScenarioDriver {
+    struct CleanupState: Codable, Equatable {
+        let requested: Bool
+        let stopped: Bool
+        let terminalBeforeStop: ProbeSemanticResult?
+    }
+
     private enum StepOutcome {
         case acknowledged(ProbeSignal)
         case failed(String)
@@ -301,6 +307,8 @@ internal final class ProbeScenarioDriver {
     private let stepAdmission: ((Int, ProbeStep, Bool) async -> String?)?
     private var registrations: [String: Registration] = [:]
     private var runTask: Task<Void, Never>?
+    private var cleanupTask: Task<Void, Never>?
+    private(set) var cleanupState = CleanupState(requested: false, stopped: false, terminalBeforeStop: nil)
     private(set) var terminalResult: ProbeSemanticResult?
 
     init(
@@ -336,8 +344,27 @@ internal final class ProbeScenarioDriver {
         registrations.removeValue(forKey: handle.logicalSceneID)
     }
 
+    /// Cancellation seals future work immediately. Only awaiting the original
+    /// task establishes quiescence; a terminal result alone does not.
+    func stopForCleanup() {
+        guard !cleanupState.requested else { return }
+        let terminal = terminalResult
+        cleanupState = .init(requested: true, stopped: runTask == nil, terminalBeforeStop: terminal)
+        guard let running = runTask else { return }
+        running.cancel()
+        cleanupTask = Task { @MainActor [weak self] in
+            await running.value
+            self?.cleanupState = .init(requested: true, stopped: true, terminalBeforeStop: terminal)
+        }
+    }
+
+    func waitUntilCleanupStopped() async -> CleanupState {
+        await cleanupTask?.value
+        return cleanupState
+    }
+
     func startIfNeeded() {
-        guard runTask == nil, terminalResult == nil else {
+        guard !cleanupState.requested, runTask == nil, terminalResult == nil else {
             return
         }
         runTask = Task { @MainActor [weak self] in
@@ -354,9 +381,7 @@ internal final class ProbeScenarioDriver {
         var observationCursor: UInt64 = 0
 
         for (index, step) in scenario.steps.enumerated() {
-            guard !Task.isCancelled else {
-                return
-            }
+            guard !cleanupState.requested, !Task.isCancelled else { return }
 
             let started = recorder.record(
                 ProbeSignal(
@@ -376,11 +401,13 @@ internal final class ProbeScenarioDriver {
                 return
             }
 
+            guard !cleanupState.requested, !Task.isCancelled else { return }
             let outcome = await execute(
                 step,
                 after: observationCursor,
                 commandSequence: started.sequence
             )
+            guard !cleanupState.requested, !Task.isCancelled else { return }
             guard case .acknowledged(let observation) = outcome else {
                 if case .inconclusive(let reason) = outcome {
                     finish(
@@ -422,6 +449,7 @@ internal final class ProbeScenarioDriver {
                 return
             }
 
+            guard !cleanupState.requested, !Task.isCancelled else { return }
             observationCursor = max(
                 observationCursor,
                 observation.sequence
@@ -1305,6 +1333,9 @@ internal final class ProbeScenarioDriver {
         _ step: ProbeStep,
         scene: String
     ) -> ProbeStepExecutionResult {
+        guard !cleanupState.requested, !Task.isCancelled else {
+            return .rejected(reason: "scenario stopped for cleanup")
+        }
         guard
             let registration = registrations[scene],
             let executor = registration.executor,
@@ -1419,7 +1450,7 @@ internal final class ProbeScenarioDriver {
     }
 
     private func finish(_ result: ProbeSemanticResult) {
-        guard terminalResult == nil else {
+        guard !cleanupState.requested, terminalResult == nil else {
             return
         }
         terminalResult = result

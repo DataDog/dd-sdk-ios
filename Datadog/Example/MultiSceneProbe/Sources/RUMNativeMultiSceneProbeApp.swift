@@ -209,12 +209,13 @@ enum ProbeRuntime {
             let installedCode = try file.read(upToCount: ProbePhysicalOperationChannel.maximumBytes + 1) ?? Data()
             let channel = try ProbePhysicalOperationChannel(runID: runID,
                 processID: ProcessInfo.processInfo.processIdentifier, profile: profile, installedCode: installedCode,
-                directory: directory, observe: input.snapshot, mode: .physicalSetup(setup))
+                directory: directory, observe: input.snapshot, mode: .physicalSetup(setup),
+                prepareCleanup: { scenarioDriver?.stopForCleanup() })
             let sampler = ProbePhysicalOperationContextSampler(input: input)
             let pump = try ProbePhysicalOperationCapturePump(channel: channel, deadline: deadline,
                 sample: sampler.sample, mapper: eventRecorder.snapshot, reportFailure: { reason in
                     record("Operation capture stopped: " + reason)
-                })
+                }, cleanupState: { scenarioDriver?.cleanupState })
             if environment["DD_PROBE_PHYSICAL_OPERATION_EXECUTION"] == "1" {
                 physicalOperationAdmission = try .init(channel: channel, deadline: deadline,
                     sample: sampler.sample, mapper: eventRecorder.snapshot)

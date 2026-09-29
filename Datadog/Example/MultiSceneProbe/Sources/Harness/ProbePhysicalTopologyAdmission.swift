@@ -868,6 +868,7 @@ internal final class ProbePhysicalOperationChannel {
     private let directory: URL
     private let exchange: ProbePhysicalInputExchange
     private let observe: () -> ProbePhysicalInputSnapshot
+    private let prepareCleanup: () -> Void
     private var lastPublication: String?
     private var consumedPublications = Set<String>()
     private var consumedCommands = Set<String>()
@@ -877,7 +878,8 @@ internal final class ProbePhysicalOperationChannel {
 
     init(runID: String, processID: Int32, profile: ProbePhysicalOperationProfile,
          installedCode: Data, directory: URL, observe: @escaping () -> ProbePhysicalInputSnapshot,
-         publish: ((Data, URL) throws -> Void)? = nil, mode: Mode = .historical) throws {
+         publish: ((Data, URL) throws -> Void)? = nil, mode: Mode = .historical,
+         prepareCleanup: @escaping () -> Void = {}) throws {
         let setupProfile: ProbePhysicalOperationSetupProfile?
         switch mode {
         case .historical: setupProfile = nil
@@ -908,6 +910,7 @@ internal final class ProbePhysicalOperationChannel {
         self.directory = directory
         self.exchange = .init(runID: runID, processID: processID, profile: profile, setupProfile: setupProfile)
         self.observe = observe
+        self.prepareCleanup = prepareCleanup
         self.publish = publish ?? Self.writeNew
         try self.publish(Self.encode(identity), url("challenge.json"))
     }
@@ -998,6 +1001,11 @@ internal final class ProbePhysicalOperationChannel {
             let request = try JSONDecoder().decode(ProbePhysicalInputRequest.self, from: message.inputRequest)
             guard try Self.encode(request) == message.inputRequest else { throw Failure.message }
             guard failure == nil || request.phase == "cleanup" else { throw Failure.invalidated }
+            if request.phase == "cleanup", identity.schemaVersion == 2 {
+                // The exchange alone cannot stop an already-consumed admission.
+                invalidateSetup("cleanup requested")
+                prepareCleanup()
+            }
             capture = try exchange.capture(request: message.inputRequest, observe: observe)
         } catch {
             failure = failure ?? "Operation channel request rejected"
@@ -1716,6 +1724,23 @@ internal final class ProbePhysicalOperationAdmission {
     }
 }
 
+internal struct ProbePhysicalOperationCleanupReceipt: Codable {
+    let schemaVersion: Int
+    let identity: ProbePhysicalOperationChannelIdentity
+    let requestSHA256: String
+    let replySHA256: String
+    let captureSHA256: String
+    let contextCompletionSHA256: String
+    let driver: ProbeScenarioDriver.CleanupState?
+    let state: String
+    let pumpStopped: Bool
+    let pumpStopStatus: Data?
+    let pumpStopStatusSHA256: String?
+    let nativeLocalResultSHA256: String?
+    let deadline: TimeInterval
+    let finishedAt: TimeInterval
+}
+
 /// App-owned, opt-in capture only. The fixed deadline includes cleanup capture.
 /// All observations and bounded file operations are serialized on MainActor;
 /// asynchronous sleeps yield between polls. No Operation is dispatched here.
@@ -1739,6 +1764,7 @@ internal final class ProbePhysicalOperationCapturePump {
     private let now: () -> TimeInterval
     private let publish: (Data, URL) throws -> Void
     private let reportFailure: (String) -> Void
+    private let cleanupState: () -> ProbeScenarioDriver.CleanupState?
     private var task: Task<Void, Never>?
     private var statusSequence = 0
     private var polling = false
@@ -1751,12 +1777,14 @@ internal final class ProbePhysicalOperationCapturePump {
     init(channel: ProbePhysicalOperationChannel, deadline: TimeInterval,
          sample: @escaping () -> ProbePhysicalOperationContextSample, mapper: @escaping () -> [ProbeSignal],
          now: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 },
-         publish: ((Data, URL) throws -> Void)? = nil, reportFailure: @escaping (String) -> Void = { _ in }) throws {
+         publish: ((Data, URL) throws -> Void)? = nil, reportFailure: @escaping (String) -> Void = { _ in },
+         cleanupState: @escaping () -> ProbeScenarioDriver.CleanupState? = { nil }) throws {
         guard channel.identity.schemaVersion == 2, channel.identity.setupProfile != nil,
               !channel.identity.executionArmed else { throw Failure.identity }
         guard deadline.isFinite, deadline > now() else { throw Failure.deadline }
         self.channel = channel; self.deadline = deadline; self.sample = sample; self.mapper = mapper
         self.now = now; self.publish = publish ?? Self.writeNew; self.reportFailure = reportFailure
+        self.cleanupState = cleanupState
         try status("CREATED")
     }
 
@@ -1852,6 +1880,7 @@ internal final class ProbePhysicalOperationCapturePump {
                 invalidate("CHANNEL_OR_DEADLINE_FAILED")
             }
         }
+        if stopped { return false }
         if now() >= deadline {
             stopped = true
             channel.sealSetup()
@@ -1861,6 +1890,32 @@ internal final class ProbePhysicalOperationCapturePump {
             } else { invalidate("DEADLINE_EXPIRED") }
         }
         return !stopped
+    }
+
+    private func finishCleanup(reply: ProbePhysicalOperationReply, capture: Data,
+                               completion: ProbePhysicalOperationContextCompletion) throws {
+        try live()
+        let driver = cleanupState()
+        let quiescent = driver?.requested == true && driver?.stopped == true
+        let local = try channel.readArtifact("native-local-result.json", limit: Self.maximumContextBytes)
+        var stoppedStatus: Data?
+        if quiescent {
+            stopped = true
+            task?.cancel()
+            channel.sealSetup()
+            stoppedStatus = try status("STOPPED_FOR_CLEANUP", request: reply.requestSHA256)
+        }
+        guard now() < deadline else { throw Failure.deadline }
+        let receipt = ProbePhysicalOperationCleanupReceipt(schemaVersion: 1, identity: channel.identity,
+            requestSHA256: reply.requestSHA256, replySHA256: completion.replySHA256,
+            captureSHA256: ProbePhysicalInputExchange.sha(capture),
+            contextCompletionSHA256: ProbePhysicalInputExchange.sha(try ProbePhysicalOperationChannel.encode(completion)),
+            driver: driver, state: quiescent ? "STOPPED" : "NOT_STOPPED", pumpStopped: stopped,
+            pumpStopStatus: stoppedStatus, pumpStopStatusSHA256: stoppedStatus.map(ProbePhysicalInputExchange.sha),
+            nativeLocalResultSHA256: local.map(ProbePhysicalInputExchange.sha), deadline: deadline, finishedAt: now())
+        try persist(ProbePhysicalOperationChannel.encode(receipt),
+                    to: channel.url("cleanup-" + reply.requestSHA256 + "-driver.json"))
+        guard now() < deadline else { throw Failure.deadline }
     }
 
     private func capture(_ reply: ProbePhysicalOperationReply, raw: Data) {
@@ -1915,6 +1970,10 @@ internal final class ProbePhysicalOperationCapturePump {
             try persist(ProbePhysicalOperationChannel.encode(completion), to: channel.url(prefix + "-result.json"))
             try live()
             hasCompletedCapture = true
+            let input = try JSONDecoder().decode(ProbePhysicalInputCapture.self, from: raw)
+            if input.request.phase == "cleanup" {
+                try finishCleanup(reply: reply, capture: raw, completion: completion)
+            }
         } catch {
             let reason = "CONTEXT_OR_DEADLINE_FAILED"
             invalidate(reason, request: reply.requestSHA256)

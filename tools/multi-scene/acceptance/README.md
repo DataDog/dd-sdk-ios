@@ -488,8 +488,16 @@ its one completion condition, preserves later mapper/lifecycle records separatel
 and derives backend IDs from native owners. Partial terminal publication rereads
 the same file within the original deadline; it never recopies the directory or
 repeats native work. Twenty-six fabricated controls pass. Display/backend/cleanup
-still remain pending. Before full-runner admission, cleanup must seal active
-execution and prove the driver stopped, independently of release/idle capture.
+still remain pending.
+
+Cleanup seals admission before input capture, cancels and awaits the scenario
+driver, then stops the capture pump. Its immutable receipt binds the actual
+context and original terminal bytes. `operation_transport.cleanup_response` checks
+those joins without granting teardown authority. Eight host controls and thirteen
+Swift controls qualify this preparation; the original empty-fixture failure and
+corrected two-test result remain separate. The actual Swift receipt also passes
+host replay. Operator release, fresh native idle, process identity and task-only
+teardown still require full-runner integration before physical qualification.
 
 `operation_ownership.validate` checks eight raw steps, four reduced Operations,
 exact ID joins, failure reason and A/B endpoints using independently captured View,

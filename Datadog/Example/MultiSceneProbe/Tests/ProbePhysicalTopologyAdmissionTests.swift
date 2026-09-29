@@ -1281,7 +1281,8 @@ final class ProbePhysicalOperationOwnerTests: XCTestCase {
         XCTAssertNotNil(try binding(signals: views(), before: owners, after: owners))
     }
 
-    private func captureChannel(observe: (() -> ProbePhysicalInputSnapshot)? = nil) throws -> ProbePhysicalOperationChannel {
+    private func captureChannel(observe: (() -> ProbePhysicalInputSnapshot)? = nil,
+                                prepareCleanup: @escaping () -> Void = {}) throws -> ProbePhysicalOperationChannel {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: false)
         addTeardownBlock { try FileManager.default.removeItem(at: directory) }
@@ -1293,7 +1294,8 @@ final class ProbePhysicalOperationOwnerTests: XCTestCase {
             "sourceRevision": source, "boundary": "before-sdk-initialization",
             "binaries": ["fixture": String(repeating: "b", count: 64)]])
         return try .init(runID: runID, processID: 123, profile: canonical, installedCode: code,
-                         directory: directory, observe: observe ?? snapshot, mode: .physicalSetup(profile()))
+                         directory: directory, observe: observe ?? snapshot, mode: .physicalSetup(profile()),
+                         prepareCleanup: prepareCleanup)
     }
 
     @discardableResult
@@ -1568,6 +1570,111 @@ final class ProbePhysicalOperationOwnerTests: XCTestCase {
             from: Data(contentsOf: channel.url("context-" + digest + "-result.json")))
         XCTAssertEqual(receipt.state, "CAPTURE_COMPLETE")
         try send(channel); XCTAssertNotNil(try channel.poll()?.rejection)
+    }
+
+    func testCleanupStopsPumpOnlyAfterDriverReturnsAndPreservesResults() async throws {
+        let scenario = ProbeScenario(identifier: ProbePhysicalOperationSetupProfile.scenarioID,
+            trackingMode: .manual, layout: .stack, steps: [], completionConditions: [], expectedSemanticTimeline: [])
+        let recorder = ProbeEventRecorder(runID: runID, scenarioID: scenario.identifier, sink: { _ in })
+        recorder.record(ProbeSignal(kind: .assertion, name: "cleanup-fixture-ready", result: .pass))
+        let driver = ProbeScenarioDriver(scenario: scenario, recorder: recorder, sceneRegistry: ProbeSceneRegistry())
+        driver.startIfNeeded(); let terminal = await driver.waitUntilFinished()
+        XCTAssertEqual(terminal?.state, .pass)
+        var preparing = false
+        var channel: ProbePhysicalOperationChannel!
+        channel = try captureChannel(observe: { [self] in
+            if preparing { XCTAssertTrue(driver.cleanupState.requested); XCTAssertNotNil(channel.failure) }
+            return snapshot()
+        }, prepareCleanup: { preparing = true; driver.stopForCleanup() })
+        let pump = try ProbePhysicalOperationCapturePump(channel: channel, deadline: 200,
+            sample: { [self] in sample() }, mapper: views, now: { 100 }, cleanupState: { driver.cleanupState })
+        let native = Data(#"{"state":"LOCAL_OWNERS_VERIFIED"}"#.utf8)
+        try native.write(to: channel.url("native-local-result.json"))
+        let first = try send(channel, phase: "cleanup"); XCTAssertTrue(pump.pollOnce())
+        let pending = try JSONDecoder().decode(ProbePhysicalOperationCleanupReceipt.self,
+            from: XCTUnwrap(channel.readArtifact("cleanup-" + first + "-driver.json")))
+        XCTAssertEqual(pending.state, "NOT_STOPPED"); XCTAssertFalse(pump.stopped)
+        let stopped = await driver.waitUntilCleanupStopped(); XCTAssertTrue(stopped.stopped)
+        let final = try send(channel, phase: "cleanup"); XCTAssertFalse(pump.pollOnce())
+        let raw = try XCTUnwrap(channel.readArtifact("cleanup-" + final + "-driver.json"))
+        let proof = try JSONDecoder().decode(ProbePhysicalOperationCleanupReceipt.self, from: raw)
+        XCTAssertEqual(proof.state, "STOPPED"); XCTAssertTrue(proof.pumpStopped); XCTAssertTrue(pump.stopped)
+        XCTAssertEqual(proof.driver?.terminalBeforeStop, terminal); XCTAssertEqual(driver.terminalResult, terminal)
+        XCTAssertEqual(proof.nativeLocalResultSHA256, ProbePhysicalInputExchange.sha(native))
+        XCTAssertEqual(try channel.readArtifact("native-local-result.json"), native)
+        let reply = try XCTUnwrap(channel.readArtifact("response-" + final + ".json"))
+        XCTAssertEqual(proof.replySHA256, ProbePhysicalInputExchange.sha(reply))
+        XCTAssertEqual(proof.captureSHA256, ProbePhysicalInputExchange.sha(try rawCapture(channel, final)))
+        XCTAssertEqual(proof.contextCompletionSHA256,
+            ProbePhysicalInputExchange.sha(try XCTUnwrap(channel.readArtifact("context-" + final + "-result.json"))))
+        try send(channel); XCTAssertFalse(pump.pollOnce()); XCTAssertEqual(driver.terminalResult, terminal)
+        var artifacts: [String: Data] = [:]
+        for suffix in ["challenge.json", "request-" + final + ".json", "response-" + final + ".json",
+                       "context-" + final + ".json", "context-" + final + "-result.json",
+                       "cleanup-" + final + "-driver.json", "native-local-result.json"] {
+            artifacts[suffix] = try XCTUnwrap(channel.readArtifact(suffix, limit: 1_048_576))
+        }
+        let attachment = XCTAttachment(data: try JSONEncoder().encode(artifacts), uniformTypeIdentifier: "public.json")
+        attachment.name = "operation-cleanup-codec.json"; attachment.lifetime = .keepAlways; add(attachment)
+    }
+
+    func testCleanupWithoutDriverProofOrWithHeldInputKeepsSeparateVerdicts() throws {
+        for hasDriver in [false, true] {
+            let held: ProbePhysicalInputSnapshot = try edit(snapshot()) { value in
+                var rows = value["input"] as! [[String: Any]]; rows[0]["touches"] = 1; value["input"] = rows
+            }
+            let channel = try captureChannel(observe: { held })
+            let pump = try ProbePhysicalOperationCapturePump(channel: channel, deadline: 200,
+                sample: { [self] in sample() }, mapper: views, now: { 100 }, cleanupState: {
+                    hasDriver ? .init(requested: true, stopped: true, terminalBeforeStop: nil) : nil
+                })
+            let digest = try send(channel, phase: "cleanup"); pump.pollOnce()
+            let proof = try JSONDecoder().decode(ProbePhysicalOperationCleanupReceipt.self,
+                from: XCTUnwrap(channel.readArtifact("cleanup-" + digest + "-driver.json")))
+            XCTAssertEqual(proof.state, hasDriver ? "STOPPED" : "NOT_STOPPED")
+            XCTAssertNotNil(try JSONDecoder().decode(ProbePhysicalInputCapture.self, from: rawCapture(channel, digest)).idleFailure)
+            XCTAssertEqual(pump.stopped, hasDriver)
+        }
+    }
+
+    func testCleanupReceiptPublicationFailureCannotRearmPump() throws {
+        let channel = try captureChannel()
+        let pump = try ProbePhysicalOperationCapturePump(channel: channel, deadline: 200,
+            sample: { [self] in sample() }, mapper: views, now: { 100 }, publish: { bytes, url in
+                if url.lastPathComponent.hasSuffix("-driver.json") { throw CocoaError(.fileWriteUnknown) }
+                try bytes.write(to: url, options: .atomic)
+            }, cleanupState: { .init(requested: true, stopped: true, terminalBeforeStop: nil) })
+        let digest = try send(channel, phase: "cleanup"); XCTAssertFalse(pump.pollOnce())
+        XCTAssertTrue(pump.stopped); XCTAssertNotNil(pump.failure); XCTAssertNotNil(channel.failure)
+        XCTAssertNil(try channel.readArtifact("cleanup-" + digest + "-driver.json"))
+        pump.start(); XCTAssertFalse(pump.pollOnce())
+    }
+
+    func testCleanupDuringFinalEvidenceWaitStopsAdmittedWork() async throws {
+        let (channel, raw) = try admissionCapture()
+        let setupDigest = String(decoding: try XCTUnwrap(channel.readArtifact("request", limit: 64)), as: UTF8.self)
+        let contextName = "context-" + setupDigest + "-result.json"
+        let original = try XCTUnwrap(channel.readArtifact(contextName))
+        var records = views(), waits = 0
+        let gate = try admission(channel, records: { records }, wait: { [self] in
+            waits += 1; try send(channel, phase: "cleanup"); XCTAssertNotNil(try channel.poll()?.capture)
+        })
+        try gate.consumeHost(raw)
+        for index in 4...21 {
+            let step = ProbePhysicalOperationSetupProfile.steps[index]
+            let before = await gate.check(index: index, step: step, after: false); XCTAssertNil(before)
+            XCTAssertNil(gate.authorize(step))
+            if let call = calls().first(where: { $0.stepKind == step.kind && $0.operation?.key == runID + "-" + (step.value ?? "") }) {
+                records.append(call)
+            }
+            let after = await gate.check(index: index, step: step, after: true)
+            if index == 21 { XCTAssertNotNil(after) } else { XCTAssertNil(after) }
+        }
+        XCTAssertEqual(waits, 1); XCTAssertFalse(gate.complete); XCTAssertNotNil(gate.failure)
+        XCTAssertNil(try channel.readArtifact("native-local-result.json"))
+        XCTAssertNotNil(try channel.readArtifact("native-admission-failure.json"))
+        XCTAssertEqual(try channel.readArtifact(contextName), original)
+        XCTAssertNotNil(gate.authorize(ProbePhysicalOperationSetupProfile.steps[6]))
     }
 
     private func continuousSnapshot() -> ProbePhysicalInputSnapshot {

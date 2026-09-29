@@ -9,6 +9,110 @@ import XCTest
 
 @MainActor
 final class ProbeScenarioDriverTests: XCTestCase {
+    func testCleanupBeforeStartPermanentlySealsDriver() async {
+        let scenario = ProbeScenario(identifier: "cleanup-before-start", trackingMode: .manual, layout: .stack,
+            steps: [.init(.waitForSignal, signal: "marker:never")], completionConditions: [], expectedSemanticTimeline: [])
+        let recorder = ProbeEventRecorder(runID: "cleanup", scenarioID: scenario.identifier, sink: { _ in })
+        let driver = ProbeScenarioDriver(scenario: scenario, recorder: recorder, sceneRegistry: ProbeSceneRegistry())
+        driver.stopForCleanup(); driver.startIfNeeded()
+        let state = await driver.waitUntilCleanupStopped()
+        XCTAssertTrue(state.requested); XCTAssertTrue(state.stopped); XCTAssertNil(state.terminalBeforeStop)
+        XCTAssertTrue(recorder.snapshot().isEmpty); XCTAssertNil(driver.terminalResult)
+    }
+
+    func testCleanupDuringAdmissionWaitPreventsDispatchAfterResume() async {
+        let scenario = ProbeScenario(identifier: "cleanup-admission", trackingMode: .manual, layout: .stack,
+            steps: [.init(.startOperation, scene: "scene-A", value: "alpha")], completionConditions: [], expectedSemanticTimeline: [])
+        let recorder = ProbeEventRecorder(runID: "cleanup", scenarioID: scenario.identifier, sink: { _ in })
+        let entered = expectation(description: "admission suspended")
+        var continuation: CheckedContinuation<Void, Never>?
+        let driver = ProbeScenarioDriver(scenario: scenario, recorder: recorder, sceneRegistry: ProbeSceneRegistry(),
+            stepAdmission: { _, _, _ in
+                await withCheckedContinuation { continuation = $0; entered.fulfill() }
+                return nil
+            })
+        driver.startIfNeeded(); await fulfillment(of: [entered], timeout: 2)
+        driver.stopForCleanup(); XCTAssertFalse(driver.cleanupState.stopped)
+        continuation?.resume()
+        let state = await driver.waitUntilCleanupStopped()
+        XCTAssertTrue(state.stopped); XCTAssertNil(driver.terminalResult)
+        XCTAssertEqual(recorder.snapshot().filter { $0.kind == .stepStarted }.count, 1)
+        XCTAssertFalse(recorder.snapshot().contains { $0.kind == .stepAcknowledged || $0.kind == .rumOperation })
+        driver.startIfNeeded(); XCTAssertTrue(driver.cleanupState.stopped)
+    }
+
+    func testCleanupDuringSignalWaitReapsDriverWithoutFollowingWork() async {
+        let scenario = ProbeScenario(identifier: "cleanup-signal", trackingMode: .manual, layout: .stack,
+            steps: [.init(.waitForSignal, signal: "marker:never"), .init(.startOperation, scene: "scene-A", value: "alpha")],
+            completionConditions: [], expectedSemanticTimeline: [])
+        let entered = expectation(description: "signal wait started")
+        let recorder = ProbeEventRecorder(runID: "cleanup", scenarioID: scenario.identifier, sink: { raw in
+            if raw.contains("step-started") { entered.fulfill() }
+        })
+        let driver = ProbeScenarioDriver(scenario: scenario, recorder: recorder, sceneRegistry: ProbeSceneRegistry())
+        driver.startIfNeeded(); await fulfillment(of: [entered], timeout: 2)
+        driver.stopForCleanup(); let stopped = await driver.waitUntilCleanupStopped()
+        XCTAssertTrue(stopped.stopped); XCTAssertNil(driver.terminalResult)
+        XCTAssertEqual(recorder.snapshot().filter { $0.kind == .stepStarted }.count, 1)
+        XCTAssertFalse(recorder.snapshot().contains { $0.kind == .stepAcknowledged })
+    }
+
+    func testCleanupRacingWithAdmissionFailureDoesNotAppendTerminal() async {
+        let scenario = ProbeScenario(identifier: "cleanup-admission-failure", trackingMode: .manual, layout: .stack,
+            steps: [.init(.startOperation, scene: "scene-A", value: "alpha")], completionConditions: [], expectedSemanticTimeline: [])
+        let lines = DriverLockedLines()
+        let recorder = ProbeEventRecorder(runID: "cleanup", scenarioID: scenario.identifier,
+            sink: { _ in }, terminalSink: { lines.append($0) })
+        let entered = expectation(description: "admission suspended")
+        var continuation: CheckedContinuation<Void, Never>?
+        let driver = ProbeScenarioDriver(scenario: scenario, recorder: recorder, sceneRegistry: ProbeSceneRegistry(),
+            stepAdmission: { _, _, _ in
+                await withCheckedContinuation { continuation = $0; entered.fulfill() }
+                return "admission failed after suspension"
+            })
+        driver.startIfNeeded(); await fulfillment(of: [entered], timeout: 2)
+        driver.stopForCleanup(); continuation?.resume()
+        let stopped = await driver.waitUntilCleanupStopped()
+        XCTAssertTrue(stopped.stopped); XCTAssertNil(stopped.terminalBeforeStop)
+        XCTAssertNil(driver.terminalResult); XCTAssertTrue(lines.snapshot().isEmpty)
+    }
+
+    func testCleanupRacingWithTerminalWaitDoesNotAppendTerminal() async {
+        let scenario = ProbeScenario(identifier: "cleanup-terminal-wait", trackingMode: .manual, layout: .stack,
+            steps: [.init(.waitForSignal, signal: "assertion:initial-ready")],
+            completionConditions: [.init(.assertion, name: "late-completion")], expectedSemanticTimeline: [])
+        let entered = expectation(description: "last step acknowledged")
+        let lines = DriverLockedLines()
+        let recorder = ProbeEventRecorder(runID: "cleanup", scenarioID: scenario.identifier,
+            sink: { raw in if raw.contains("step-acknowledged") { entered.fulfill() } },
+            terminalSink: { lines.append($0) })
+        recorder.record(ProbeSignal(kind: .assertion, name: "initial-ready", result: .pass))
+        let driver = ProbeScenarioDriver(scenario: scenario, recorder: recorder, sceneRegistry: ProbeSceneRegistry())
+        driver.startIfNeeded(); await fulfillment(of: [entered], timeout: 2)
+        XCTAssertNil(driver.terminalResult)
+        driver.stopForCleanup()
+        recorder.record(ProbeSignal(kind: .assertion, name: "late-completion", result: .pass))
+        let stopped = await driver.waitUntilCleanupStopped()
+        XCTAssertTrue(stopped.stopped); XCTAssertNil(stopped.terminalBeforeStop)
+        XCTAssertNil(driver.terminalResult); XCTAssertTrue(lines.snapshot().isEmpty)
+    }
+
+    func testCleanupAfterSuccessPreservesTerminalBytes() async {
+        let scenario = ProbeScenario(identifier: "cleanup-finished", trackingMode: .manual, layout: .stack,
+            steps: [], completionConditions: [], expectedSemanticTimeline: [])
+        let lines = DriverLockedLines()
+        let recorder = ProbeEventRecorder(runID: "cleanup", scenarioID: scenario.identifier,
+            sink: { _ in }, terminalSink: { lines.append($0) })
+        recorder.record(ProbeSignal(kind: .assertion, name: "cleanup-fixture-ready", result: .pass))
+        let driver = ProbeScenarioDriver(scenario: scenario, recorder: recorder, sceneRegistry: ProbeSceneRegistry())
+        driver.startIfNeeded(); let original = await driver.waitUntilFinished(); let bytes = lines.snapshot()
+        XCTAssertEqual(original?.state, .pass)
+        driver.stopForCleanup(); let state = await driver.waitUntilCleanupStopped()
+        XCTAssertTrue(state.stopped); XCTAssertEqual(state.terminalBeforeStop, original)
+        driver.stopForCleanup(); driver.startIfNeeded()
+        XCTAssertEqual(driver.terminalResult, original); XCTAssertEqual(lines.snapshot(), bytes)
+    }
+
     func testDrivesHomeDetailHomeFromObservedSignalsAndEmitsOnePass() async throws {
         let lines = DriverLockedLines()
         let terminalLines = DriverLockedLines()

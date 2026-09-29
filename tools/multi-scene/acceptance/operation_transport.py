@@ -206,6 +206,55 @@ def context_response(raw, *, completion_raw, reply_raw, request_raw, input_raw, 
     return value, decoded
 
 
+
+def cleanup_response(raw, *, context_raw, native_local_raw=None, **context_arguments):
+    """Prove stopped native workers only; release, idle and teardown stay separate."""
+    context_response(context_raw, **context_arguments)
+    identity, deadline = context_arguments['identity'], context_arguments['deadline']
+    request, reply = context_arguments['request_raw'], context_arguments['reply_raw']
+    capture_raw, _ = response(reply, request, context_arguments['input_raw'], identity)
+    require(load(context_arguments['input_raw'])['phase'] == 'cleanup', 'cleanup request required')
+    value = load(raw)
+    fields = {'schemaVersion', 'identity', 'requestSHA256', 'replySHA256', 'captureSHA256',
+              'contextCompletionSHA256', 'driver', 'state', 'pumpStopped', 'pumpStopStatus',
+              'pumpStopStatusSHA256', 'deadline', 'finishedAt'}
+    require(isinstance(value, dict) and set(value) in [fields, fields | {'nativeLocalResultSHA256'}],
+            'cleanup stop receipt incomplete')
+    require(type(value['schemaVersion']) is int and value['schemaVersion'] == 1
+            and encode(value['identity']) == encode(identity) and identity['schemaVersion'] == 2
+            and value['state'] == 'STOPPED' and value['pumpStopped'] is True, 'native workers not stopped')
+    for field, observed in [('requestSHA256', request), ('replySHA256', reply), ('captureSHA256', capture_raw),
+                            ('contextCompletionSHA256', context_arguments['completion_raw'])]:
+        require(value[field] == sha(observed), 'cleanup receipt joins different bytes')
+    require(value.get('nativeLocalResultSHA256') == (sha(native_local_raw) if native_local_raw is not None else None),
+            'completed native result changed or absent')
+    driver = value['driver']
+    require(isinstance(driver, dict) and set(driver) in [{'requested', 'stopped'},
+            {'requested', 'stopped', 'terminalBeforeStop'}] and driver['requested'] is True
+            and driver['stopped'] is True, 'driver task has not returned')
+    if 'terminalBeforeStop' in driver:
+        terminal = driver['terminalBeforeStop']
+        require(isinstance(terminal, dict) and terminal.get('schemaVersion') == 1
+                and terminal.get('scenarioID') == identity['setupProfile']['scenario'], 'foreign pre-cleanup terminal')
+    finished = load(context_arguments['completion_raw'])['finishedAt']
+    require(type(value['deadline']) in (int, float) and value['deadline'] == deadline
+            and type(value['finishedAt']) in (int, float) and math.isfinite(value['finishedAt'])
+            and finished <= value['finishedAt'] < deadline, 'cleanup stop receipt late or reordered')
+    status_raw = base64.b64decode(value['pumpStopStatus'], validate=True)
+    require(value['pumpStopStatusSHA256'] == sha(status_raw), 'pump stop status changed')
+    status = load(status_raw)
+    require(isinstance(status, dict) and set(status) == {'identity', 'sequence', 'state', 'requestSHA256',
+                                                       'deadline', 'observedAt'}
+            and encode(status['identity']) == encode(identity) and status['state'] == 'STOPPED_FOR_CLEANUP'
+            and status['requestSHA256'] == sha(request) and type(status['sequence']) is int
+            and status['sequence'] > load(base64.b64decode(load(context_arguments['completion_raw'])['status']))['sequence']
+            and type(status['deadline']) in (int, float) and status['deadline'] == deadline
+            and type(status['observedAt']) in (int, float) and math.isfinite(status['observedAt'])
+            and finished <= status['observedAt'] <= value['finishedAt'], 'pump stop status missing or reordered')
+    return dict(state='CLEANUP_STOP_JOINED', receipt=value, receiptSHA256=sha(raw),
+                release='PENDING', idle='PENDING', processAbsence='PENDING', teardownAuthorized=False)
+
+
 def save(path, raw):
     path = Path(path)
     require(path.parent.is_dir() and not path.is_symlink(), 'unprepared or symlinked output')
