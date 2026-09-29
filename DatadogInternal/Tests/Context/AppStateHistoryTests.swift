@@ -196,6 +196,17 @@ class AppStateHistoryTests: XCTestCase {
         XCTAssertEqual(history.foregroundDuration(during: (date + 10)...(date + 100)), 90)
     }
 
+    // MARK: - `activeDuration(during:)`
+
+    func testActiveDuration_excludesInactiveTime() {
+        var history = AppStateHistory(initialState: .active, date: date)
+        history.append(state: .inactive, at: date + 10)
+        history.append(state: .active, at: date + 70)
+
+        XCTAssertEqual(history.activeDuration(during: date...(date + 80)), 20)
+        XCTAssertEqual(history.activeDuration(during: (date + 15)...(date + 75)), 5)
+    }
+
     // MARK: - `containsState(during:where:)`
 
     func testContainsState_whenOnlyInitialState() {

@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FIX] Report slow frame and freeze rates for RUM views when navigation starts a new view without calling `stopView()` on the previous one.
+
 # 3.16.0 / 19-08-2026
 
 - [FEATURE] Add an experimental Core Animation recording pipeline for Session Replay, available through the `compositionTreeRecording` feature flag. See [#3127][]

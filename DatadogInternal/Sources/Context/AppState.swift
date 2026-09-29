@@ -114,9 +114,28 @@ public struct AppStateHistory: Codable, Equatable {
     /// - Parameter range: The time period to analyze.
     /// - Returns: The total time (in seconds) spent in foreground states.
     public func foregroundDuration(during range: ClosedRange<Date>) -> TimeInterval {
+        duration(during: range, predicate: { $0.isRunningInForeground })
+    }
+
+    /// Computes the total duration the app was active within the given time range.
+    ///
+    /// - Parameter range: The time period to analyze.
+    /// - Returns: The total time (in seconds) spent in the active state.
+    public func activeDuration(during range: ClosedRange<Date>) -> TimeInterval {
+        duration(during: range, predicate: { $0 == .active })
+    }
+
+    /// Helper function for calculating durations of a given condition.
+    ///
+    /// - Parameters:
+    ///   - range: The time period to analyze.
+    ///   - predicate: The predicate applied to each state in the history inside the given range. If `true` the duration of that
+    ///   state is considered.
+    /// - Returns: The total time (in seconds) spent in states that satisfy the predicate.
+    private func duration(during range: ClosedRange<Date>, predicate: (AppState) -> Bool) -> TimeInterval {
         var total: TimeInterval = 0
         iterateStates(in: range) { state, duration in
-            if state.isRunningInForeground {
+            if predicate(state) {
                 total += duration
             }
         }
