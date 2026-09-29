@@ -14,6 +14,239 @@ import DatadogInternal
 final class FlagsRepositoryTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
 
+    func testOverlappingContextUpdates_whenSuccessPublicationIsDelayed_preservesNewerState() {
+        for expectedState: FlagsClientState in [.reconciling, .error, .ready, .notReady] {
+            let featureScope = FeatureScopeMock()
+            let successApplied = DispatchSemaphore(value: 0)
+            let resumePublication = DispatchSemaphore(value: 0)
+            var completions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+            let repository = FlagsRepository(
+                clientName: "client",
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                    completions.append(completion)
+                },
+                dateProvider: DateProviderMock(),
+                featureScope: featureScope,
+                initializationTimeout: 5,
+                scheduleInitializationTimeout: { _, _ in
+                    return {
+                        // Pause after applying A's assignments but before delivering its completion.
+                        successApplied.signal()
+                        resumePublication.wait()
+                    }
+                }
+            )
+            featureScope.dataStore.flush()
+            @ReadWriteLock
+            var states: [FlagsClientState] = []
+            let listener = ClosureFlagsStateListener { state in _states.mutate { $0.append(state) } }
+            repository.state.addListener(listener)
+            let olderFinished = DispatchGroup()
+            olderFinished.enter()
+            defer {
+                resumePublication.signal()
+                XCTAssertEqual(olderFinished.wait(timeout: .now() + 2), .success)
+                repository.flush()
+            }
+
+            repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "user-A")) { result in
+                if case .failure(let error) = result {
+                    XCTFail("Expected success, got \(error)")
+                }
+            }
+            let olderCompletion = completions[0]
+            DispatchQueue.global().async {
+                olderCompletion(.success(["old": .mockAny()]))
+                olderFinished.leave()
+            }
+            XCTAssertEqual(successApplied.wait(timeout: .now() + 2), .success)
+            let newerContext = FlagsEvaluationContext(targetingKey: "user-B")
+            repository.setEvaluationContext(newerContext) { _ in }
+            switch expectedState {
+            case .error: completions[1](.failure(.invalidResponse))
+            case .ready: completions[1](.success(["new": .mockAny()]))
+            case .notReady: repository.reset()
+            default: break
+            }
+            XCTAssertEqual(repository.state.currentState, expectedState)
+            let statesBeforeResuming = states
+
+            resumePublication.signal()
+            XCTAssertEqual(olderFinished.wait(timeout: .now() + 2), .success)
+
+            XCTAssertEqual(repository.state.currentState, expectedState)
+            XCTAssertEqual(states, statesBeforeResuming, "A must not deliver a superseded ready notification")
+            if expectedState == .ready {
+                XCTAssertEqual(repository.context, newerContext)
+                XCTAssertNotNil(repository.flagAssignment(for: "new"))
+            } else if expectedState != .reconciling {
+                XCTAssertNil(repository.flagAssignments())
+            }
+        }
+    }
+
+    func testOverlappingContextUpdates_whenResultDeliveryIsReordered_preservesNewerSuccess() throws {
+        let dateProvider = PausingDateProvider()
+        let requested = expectation(description: "both requests started")
+        requested.expectedFulfillmentCount = 2
+        @ReadWriteLock
+        var networkCompletions: [(Result<Data, Error>) -> Void] = []
+        let fetcher = FlagAssignmentsFetcher(
+            customEndpoint: nil,
+            customHeaders: nil,
+            featureScope: featureScope,
+            fetch: { _, completion in
+                _networkCompletions.mutate { $0.append(completion) }
+                requested.fulfill()
+            }
+        )
+        let repository = FlagsRepository(
+            clientName: "client",
+            flagAssignmentsFetcher: fetcher,
+            dateProvider: dateProvider,
+            featureScope: featureScope,
+            initializationTimeout: nil
+        )
+        featureScope.dataStore.flush()
+        let contextA = FlagsEvaluationContext(targetingKey: "user-A")
+        let contextB = FlagsEvaluationContext(targetingKey: "user-B")
+        let finished = DispatchGroup()
+        let secondFinished = DispatchSemaphore(value: 0)
+        finished.enter()
+        finished.enter()
+        defer {
+            dateProvider.resume.signal()
+            _ = finished.wait(timeout: .now() + 2)
+            repository.flush()
+        }
+        repository.setEvaluationContext(contextA) { result in
+            if case .failure(let error) = result {
+                XCTFail("Expected success, got \(error)")
+            }
+            finished.leave()
+        }
+        repository.setEvaluationContext(contextB) { result in
+            if case .failure(let error) = result {
+                XCTFail("Expected success, got \(error)")
+            }
+            secondFinished.signal()
+            finished.leave()
+        }
+        wait(for: [requested], timeout: 1)
+
+        let completions = networkCompletions
+        XCTAssertEqual(completions.count, 2)
+        guard completions.count == 2 else {
+            return
+        }
+        completions[0](.success(.mockAnyFlagAssignmentsResponse()))
+        XCTAssertEqual(dateProvider.started.wait(timeout: .now() + 1), .success)
+        completions[1](.success(.mockAnyFlagAssignmentsResponse()))
+        // B can finish while A is paused, but A must not overwrite it when resumed.
+        XCTAssertEqual(secondFinished.wait(timeout: .now() + 1), .success)
+        dateProvider.resume.signal()
+        XCTAssertEqual(finished.wait(timeout: .now() + 1), .success)
+        XCTAssertEqual(repository.context, contextB)
+        XCTAssertEqual(repository.state.currentState, .ready)
+
+        repository.flush()
+        featureScope.dataStore.flush()
+        let persisted = try XCTUnwrap(featureScope.dataStoreMock.storage["client"]?.data())
+        XCTAssertEqual(try JSONDecoder().decode(FlagsData.self, from: persisted).context, contextB)
+    }
+
+    func testOverlappingContextUpdates_whenSuccessesArriveInEitherOrder_preservesNewerFlags() {
+        for responseOrder in [[0, 1], [1, 0]] {
+            let featureScope = FeatureScopeMock()
+            var completions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+            let repository = makeRepository(
+                dataStore: featureScope.dataStore,
+                fetcher: FlagAssignmentsFetcherMock { _, completion in completions.append(completion) },
+                initializationTimeout: nil
+            )
+            featureScope.dataStore.flush()
+            defer { repository.flush() }
+            let olderContext = FlagsEvaluationContext(targetingKey: "user-A")
+            let newerContext = FlagsEvaluationContext(targetingKey: "user-B")
+            var callbackCounts = [0, 0]
+            for (index, context) in [olderContext, newerContext].enumerated() {
+                repository.setEvaluationContext(context) { result in
+                    if case .failure(let error) = result {
+                        XCTFail("Expected the original success, got \(error)")
+                    }
+                    callbackCounts[index] += 1
+                }
+            }
+
+            for index in responseOrder {
+                completions[index](.success([index == 0 ? "old" : "new": .mockAny()]))
+
+                if index == 0 && responseOrder[0] == 0 {
+                    XCTAssertEqual(callbackCounts, [1, 0])
+                    XCTAssertEqual(repository.state.currentState, .reconciling)
+                    XCTAssertNil(repository.context)
+                    XCTAssertNil(repository.flagAssignments())
+                    repository.flush()
+                    featureScope.dataStore.flush()
+                    XCTAssertNil(featureScope.dataStoreMock.storage["client"]?.data())
+                }
+            }
+
+            XCTAssertEqual(callbackCounts, [1, 1])
+            XCTAssertEqual(repository.context, newerContext)
+            XCTAssertEqual(repository.state.currentState, .ready)
+            XCTAssertNotNil(repository.flagAssignment(for: "new"))
+            XCTAssertNil(repository.flagAssignment(for: "old"))
+        }
+    }
+
+    func testOverlappingContextUpdates_whenSupersededSuccessArrives_doesNotEndNewerReconciliation() {
+        var completions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+        let repository = makeRepository(
+            dataStore: featureScope.dataStore,
+            fetcher: FlagAssignmentsFetcherMock { _, completion in completions.append(completion) },
+            initializationTimeout: nil
+        )
+        defer { repository.flush() }
+        repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "user-A")) { _ in }
+        let newerContext = FlagsEvaluationContext(targetingKey: "user-B")
+        repository.setEvaluationContext(newerContext) { _ in }
+        completions[1](.success(["new": .mockAny()]))
+        repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "user-C")) { _ in }
+
+        completions[0](.success(["old": .mockAny()]))
+
+        XCTAssertEqual(repository.state.currentState, .reconciling)
+        XCTAssertEqual(repository.context, newerContext)
+        XCTAssertNotNil(repository.flagAssignment(for: "new"))
+        XCTAssertNil(repository.flagAssignment(for: "old"))
+        completions[2](.success(["latest": .mockAny()]))
+        XCTAssertEqual(repository.state.currentState, .ready)
+        XCTAssertNotNil(repository.flagAssignment(for: "latest"))
+    }
+
+    func testSetEvaluationContext_whenSuccessArrivesAfterReset_doesNotRestoreFlags() {
+        var fetchCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+        let repository = makeRepository(
+            dataStore: featureScope.dataStore,
+            fetcher: FlagAssignmentsFetcherMock { _, completion in fetchCompletion = completion },
+            initializationTimeout: nil
+        )
+        var completed = false
+        repository.setEvaluationContext(.mockAny()) { _ in completed = true }
+        repository.reset()
+
+        fetchCompletion?(.success(["old": .mockAny()]))
+        repository.flush()
+        featureScope.dataStore.flush()
+
+        XCTAssertTrue(completed)
+        XCTAssertEqual(repository.state.currentState, .notReady)
+        XCTAssertNil(repository.context)
+        XCTAssertNil(repository.flagAssignments())
+        XCTAssertNil(featureScope.dataStoreMock.storage["client"]?.data())
+    }
+
     func testInitAndReset() throws {
         // Given
         let initialState = FlagsData(
@@ -73,7 +306,7 @@ final class FlagsRepositoryTests: XCTestCase {
         }
 
         // Then
-        waitForExpectations(timeout: 0)
+        wait(for: [completed], timeout: 0)
 
         XCTAssertNotNil(capturedResult)
         XCTAssertNoThrow(try capturedResult?.get())
@@ -81,6 +314,7 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertEqual(flagsRepository.context, .mockAny())
         XCTAssertEqual(flagsRepository.flagAssignment(for: "test"), .mockAny())
 
+        flagsRepository.flush()
         let data = try XCTUnwrap(featureScope.dataStoreMock.storage[.mockAny()]?.data())
         let storedState = try JSONDecoder().decode(FlagsData.self, from: data)
 
@@ -92,6 +326,678 @@ final class FlagsRepositoryTests: XCTestCase {
                 date: dateProvider.now
             )
         )
+    }
+
+    func testSetEvaluationContext_whenCacheWriteIsBlocked_doesNotDelayReadyOrCompletion() {
+        // Given
+        let dataStore = BlockingWriteDataStore()
+        let cacheWriteStarted = expectation(description: "cache write started")
+        dataStore.onSetValueStarted = {
+            cacheWriteStarted.fulfill()
+        }
+        defer {
+            dataStore.resumeWrite()
+        }
+
+        let flagsRepository = makeRepository(
+            dataStore: dataStore,
+            fetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success(["test": .mockAny()]))
+            }
+        )
+
+        let completed = expectation(description: "completed")
+        var stateInCompletion: FlagsClientState?
+
+        // When
+        DispatchQueue.global().async {
+            flagsRepository.setEvaluationContext(.mockAny()) { _ in
+                stateInCompletion = flagsRepository.state.currentState
+                completed.fulfill()
+            }
+        }
+
+        // Then
+        wait(for: [completed], timeout: 1)
+
+        XCTAssertEqual(stateInCompletion, .ready)
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+        XCTAssertFalse(dataStore.isWriteFinished)
+
+        wait(for: [cacheWriteStarted], timeout: 1)
+        dataStore.resumeWrite()
+        XCTAssertTrue(dataStore.waitForWriteFinished(timeout: 1))
+    }
+
+    func testFlush_whenCacheWriteIsBlocked_waitsForCacheWrite() {
+        // Given
+        let dataStore = BlockingWriteDataStore()
+        let cacheWriteStarted = expectation(description: "cache write started")
+        dataStore.onSetValueStarted = {
+            cacheWriteStarted.fulfill()
+        }
+        defer {
+            dataStore.resumeWrite()
+        }
+
+        let flagsRepository = makeRepository(
+            dataStore: dataStore,
+            fetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success(["test": .mockAny()]))
+            }
+        )
+
+        let setContextCompleted = expectation(description: "set context completed")
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in
+            setContextCompleted.fulfill()
+        }
+        wait(for: [setContextCompleted], timeout: 1)
+
+        let flushSemaphore = DispatchSemaphore(value: 0)
+
+        // When
+        DispatchQueue.global().async {
+            flagsRepository.flush()
+            flushSemaphore.signal()
+        }
+        wait(for: [cacheWriteStarted], timeout: 1)
+
+        // Then
+        XCTAssertEqual(flushSemaphore.wait(timeout: .now() + 0.05), .timedOut)
+
+        dataStore.resumeWrite()
+        XCTAssertEqual(flushSemaphore.wait(timeout: .now() + 1), .success)
+        XCTAssertTrue(dataStore.isWriteFinished)
+    }
+
+    func testReset_whenCacheWriteIsBlocked_doesNotLeaveStaleFlagsOnDisk() {
+        // Given
+        let clientName = "client"
+        let dataStore = BlockingWriteDataStore()
+        let cacheWriteStarted = expectation(description: "cache write started")
+        let cacheRemoveCompleted = expectation(description: "cache remove completed")
+        dataStore.onSetValueStarted = {
+            cacheWriteStarted.fulfill()
+        }
+        dataStore.onRemoveValue = {
+            cacheRemoveCompleted.fulfill()
+        }
+        defer {
+            dataStore.resumeWrite()
+        }
+
+        let flagsRepository = makeRepository(
+            dataStore: dataStore,
+            fetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success(["test": .mockAny()]))
+            }
+        )
+
+        let completed = expectation(description: "completed")
+
+        DispatchQueue.global().async {
+            flagsRepository.setEvaluationContext(.mockAny()) { _ in
+                completed.fulfill()
+            }
+        }
+        wait(for: [completed, cacheWriteStarted], timeout: 1)
+
+        let resetStarted = expectation(description: "reset started")
+        let resetCompleted = expectation(description: "reset completed")
+
+        // When
+        DispatchQueue.global().async {
+            resetStarted.fulfill()
+            flagsRepository.reset()
+            resetCompleted.fulfill()
+        }
+        wait(for: [resetStarted], timeout: 1)
+
+        // Then
+        XCTAssertFalse(dataStore.isWriteFinished)
+
+        dataStore.resumeWrite()
+        XCTAssertTrue(dataStore.waitForWriteFinished(timeout: 1))
+        wait(for: [resetCompleted, cacheRemoveCompleted], timeout: 1)
+
+        XCTAssertEqual(flagsRepository.state.currentState, .notReady)
+        XCTAssertNil(flagsRepository.context)
+        XCTAssertNil(flagsRepository.flagAssignment(for: "test"))
+        XCTAssertNil(dataStore.value(forKey: clientName)?.data())
+    }
+
+    func testSetEvaluationContext_whenInitialReadIsDelayed_becomesReadyBeforeReadAndPreservesFetchedFlags() throws {
+        let clientName = "client"
+        let requestedContext = FlagsEvaluationContext(targetingKey: "fresh-user")
+        let cachedData = FlagsData(
+            flags: ["cached": .mockAny()],
+            context: FlagsEvaluationContext(targetingKey: "cached-user"),
+            date: .mockAny()
+        )
+        let cachedValue = DataStoreValueResult.value(try JSONEncoder().encode(cachedData), dataStoreDefaultKeyVersion)
+
+        for initialValue in [cachedValue, .noValue] {
+            let dataStore = DelayedReadDataStore(storage: [clientName: initialValue])
+            let fetchStarted = expectation(description: "fetch started")
+            let repository = makeRepository(
+                dataStore: dataStore,
+                fetcher: FlagAssignmentsFetcherMock { _, completion in
+                    fetchStarted.fulfill()
+                    completion(.success(["fresh": .mockAny()]))
+                }
+            )
+            defer {
+                dataStore.resumeRead()
+                dataStore.flush()
+                repository.flush()
+            }
+            wait(for: [dataStore.readStarted], timeout: 1)
+
+            let completed = expectation(description: "completed before cache read")
+            repository.setEvaluationContext(requestedContext) { result in
+                if case .failure(let error) = result {
+                    XCTFail("Expected success, got \(error)")
+                }
+                completed.fulfill()
+            }
+            wait(for: [fetchStarted, completed], timeout: 1)
+            XCTAssertEqual(repository.state.currentState, .ready)
+            XCTAssertEqual(repository.context, requestedContext)
+            XCTAssertNotNil(repository.flagAssignment(for: "fresh"))
+            XCTAssertNil(repository.flagAssignment(for: "cached"))
+
+            dataStore.resumeRead()
+            dataStore.flush()
+
+            XCTAssertEqual(repository.state.currentState, .ready)
+            XCTAssertEqual(repository.context, requestedContext)
+            XCTAssertNotNil(repository.flagAssignment(for: "fresh"))
+            XCTAssertNil(repository.flagAssignment(for: "cached"))
+        }
+    }
+
+    func testInitialDataStoreRead_whenCompletesAfterSuccess_preservesFetchedFallback() throws {
+        let clientName = "client"
+        let context = FlagsEvaluationContext(targetingKey: "user-A", attributes: [:])
+        let otherContext = FlagsEvaluationContext(targetingKey: "user-B", attributes: [:])
+        let cachedData = FlagsData(flags: ["old": .mockAny()], context: context, date: .mockAny())
+        let cachedValue = DataStoreValueResult.value(try JSONEncoder().encode(cachedData), dataStoreDefaultKeyVersion)
+
+        for initialValue in [cachedValue, .noValue] {
+            // Given
+            let dataStore = DelayedReadDataStore(storage: [clientName: initialValue])
+            var fetchResult: Result<[String: FlagAssignment], FlagsError> = .success(["fresh": .mockAny()])
+            let repository = makeRepository(
+                dataStore: dataStore,
+                fetcher: FlagAssignmentsFetcherMock { _, completion in completion(fetchResult) }
+            )
+            defer {
+                dataStore.resumeRead()
+                dataStore.flush()
+                repository.flush()
+            }
+            wait(for: [dataStore.readStarted], timeout: 1)
+
+            let initialized = expectation(description: "initialized")
+            repository.setEvaluationContext(context) { result in
+                if case .failure(let error) = result {
+                    XCTFail("Expected success, got \(error)")
+                }
+                initialized.fulfill()
+            }
+            wait(for: [initialized], timeout: 1)
+
+            // When
+            dataStore.resumeRead()
+            dataStore.flush()
+            fetchResult = .failure(.networkError(URLError(.notConnectedToInternet)))
+            let otherContextCompleted = expectation(description: "other context completed")
+            repository.setEvaluationContext(otherContext) { _ in otherContextCompleted.fulfill() }
+            wait(for: [otherContextCompleted], timeout: 1)
+            XCTAssertEqual(repository.state.currentState, .error)
+            XCTAssertNil(repository.flagAssignments())
+
+            let originalContextCompleted = expectation(description: "original context completed")
+            repository.setEvaluationContext(context) { result in
+                if case .success = result {
+                    XCTFail("Expected failure")
+                }
+                originalContextCompleted.fulfill()
+            }
+            wait(for: [originalContextCompleted], timeout: 1)
+
+            // Then
+            XCTAssertEqual(repository.state.currentState, .stale)
+            XCTAssertEqual(repository.context, context)
+            XCTAssertNotNil(repository.flagAssignment(for: "fresh"))
+            XCTAssertNil(repository.flagAssignment(for: "old"))
+        }
+    }
+
+    func testFailedContextUpdate_whenInitialReadIsDelayed_doesNotWaitAfterSuccess() {
+        let context = FlagsEvaluationContext(targetingKey: "user-A", attributes: [:])
+        let otherContext = FlagsEvaluationContext(targetingKey: "user-B", attributes: [:])
+
+        for requestedContext in [context, otherContext] {
+            // Given
+            let dataStore = DelayedReadDataStore()
+            var fetchResult: Result<[String: FlagAssignment], FlagsError> = .success(["fresh": .mockAny()])
+            let repository = makeRepository(
+                dataStore: dataStore,
+                fetcher: FlagAssignmentsFetcherMock { _, completion in completion(fetchResult) }
+            )
+            defer {
+                dataStore.resumeRead()
+                dataStore.flush()
+                repository.flush()
+            }
+            wait(for: [dataStore.readStarted], timeout: 1)
+            let initialized = expectation(description: "initialized")
+            repository.setEvaluationContext(context) { _ in initialized.fulfill() }
+            wait(for: [initialized], timeout: 1)
+
+            // When
+            fetchResult = .failure(.networkError(URLError(.notConnectedToInternet)))
+            let completed = DispatchSemaphore(value: 0)
+            repository.setEvaluationContext(requestedContext) { result in
+                if case .success = result {
+                    XCTFail("Expected failure")
+                }
+                completed.signal()
+            }
+
+            // Then
+            let completionBeforeRead = completed.wait(timeout: .now() + 1)
+            XCTAssertEqual(completionBeforeRead, .success)
+            XCTAssertEqual(repository.state.currentState, requestedContext == context ? .stale : .error)
+            XCTAssertEqual(repository.context, requestedContext == context ? context : nil)
+            XCTAssertEqual(repository.flagAssignment(for: "fresh") != nil, requestedContext == context)
+
+            dataStore.resumeRead()
+            dataStore.flush()
+            if completionBeforeRead == .timedOut {
+                XCTAssertEqual(completed.wait(timeout: .now() + 1), .success)
+            }
+        }
+    }
+
+    func testPendingFailedContextUpdates_whenCacheReadIsSuperseded_completeBeforeListenersWithoutWaitingForDisk() throws {
+        let scenarios = [
+            (shouldReset: false, hasCache: false),
+            (shouldReset: false, hasCache: true),
+            (shouldReset: true, hasCache: true)
+        ]
+        for (shouldReset, hasCache) in scenarios {
+            let context = FlagsEvaluationContext(targetingKey: "user-A")
+            let newerContext = FlagsEvaluationContext(targetingKey: "user-B")
+            let cachedData = FlagsData(flags: ["cached": .mockAny()], context: context, date: .mockAny())
+            let cachedValue = DataStoreValueResult.value(try JSONEncoder().encode(cachedData), dataStoreDefaultKeyVersion)
+            let dataStore = DelayedReadDataStore(storage: ["client": hasCache ? cachedValue : .noValue])
+            var fetchCompletions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+            var timeoutAction: (() -> Void)?
+            @ReadWriteLock
+            var timeoutCancellationCount = 0
+            @ReadWriteLock
+            var callbackCount = 0
+            let completed = DispatchSemaphore(value: 0)
+            let expectedState: FlagsClientState = shouldReset ? .notReady : .ready
+            let repository = FlagsRepository(
+                clientName: "client",
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                    fetchCompletions.append(completion)
+                },
+                dateProvider: DateProviderMock(),
+                featureScope: FeatureScopeMock(dataStore: dataStore),
+                initializationTimeout: 5,
+                scheduleInitializationTimeout: { _, action in
+                    timeoutAction = action
+                    return { _timeoutCancellationCount.mutate { $0 += 1 } }
+                }
+            )
+            defer {
+                dataStore.resumeRead()
+                dataStore.flush()
+                repository.flush()
+            }
+            wait(for: [dataStore.readStarted], timeout: 1)
+
+            for index in 0..<2 {
+                repository.setEvaluationContext(context) { result in
+                    switch result {
+                    case .failure(.invalidResponse):
+                        break
+                    default:
+                        XCTFail("Expected the original fetch error, got \(result)")
+                    }
+                    XCTAssertEqual(repository.state.currentState, expectedState)
+                    XCTAssertFalse(dataStore.isOnReadQueue)
+                    // Reentrant getters verify that callbacks do not run under the repository lock.
+                    XCTAssertEqual(repository.context, shouldReset ? nil : newerContext)
+                    _callbackCount.mutate { $0 += 1 }
+                    completed.signal()
+                }
+                fetchCompletions[index](.failure(.invalidResponse))
+            }
+            XCTAssertEqual(callbackCount, 0)
+
+            let stateObserved = expectation(description: "state listener completed")
+            let listener = ClosureFlagsStateListener { state in
+                guard state == expectedState else {
+                    return
+                }
+                XCTAssertEqual(timeoutCancellationCount, 1)
+                timeoutAction?()
+                // Pending failures must complete even while this listener is blocked.
+                XCTAssertEqual(completed.wait(timeout: .now() + 1), .success)
+                XCTAssertEqual(completed.wait(timeout: .now() + 1), .success)
+                stateObserved.fulfill()
+            }
+            repository.state.addListener(listener)
+            defer { repository.state.removeListener(listener) }
+
+            if shouldReset {
+                repository.reset()
+            } else {
+                repository.setEvaluationContext(newerContext) { result in
+                    if case .failure(let error) = result {
+                        XCTFail("Expected success, got \(error)")
+                    }
+                    timeoutAction?()
+                }
+                fetchCompletions[2](.success(["fresh": .mockAny()]))
+            }
+
+            wait(for: [stateObserved], timeout: 1)
+            XCTAssertEqual(callbackCount, 2)
+            XCTAssertEqual(timeoutCancellationCount, 1)
+
+            // A late disk read and an already-scheduled timeout must not complete requests again.
+            dataStore.resumeRead()
+            dataStore.flush()
+            try XCTUnwrap(timeoutAction)()
+            XCTAssertEqual(completed.wait(timeout: .now() + 0.05), .timedOut)
+            XCTAssertEqual(callbackCount, 2)
+            XCTAssertEqual(repository.state.currentState, expectedState)
+            XCTAssertEqual(repository.context, shouldReset ? nil : newerContext)
+            XCTAssertEqual(repository.flagAssignment(for: "fresh") != nil, !shouldReset)
+            XCTAssertNil(repository.flagAssignment(for: "cached"))
+        }
+    }
+
+    func testWaitingGetters_whenInitialDataBecomesAvailable_allResumeBeforeTimeout() throws {
+        enum DataSource {
+            case fetch, reset, disk
+        }
+
+        for source in [DataSource.fetch, .reset, .disk] {
+            // Given
+            let cachedContext = FlagsEvaluationContext(targetingKey: "cached-user")
+            let freshContext = FlagsEvaluationContext(targetingKey: "fresh-user")
+            let flags = ["test": FlagAssignment.mockAny()]
+            let cachedData = FlagsData(flags: flags, context: cachedContext, date: .mockAny())
+            let dataStore = DelayedReadDataStore(storage: [
+                "client": .value(try JSONEncoder().encode(cachedData), dataStoreDefaultKeyVersion)
+            ])
+            let repository = FlagsRepository(
+                clientName: "client",
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                    completion(.success(flags))
+                },
+                dateProvider: DateProviderMock(),
+                featureScope: FeatureScopeMock(dataStore: dataStore),
+                readTimeout: 5
+            )
+            let started = DispatchGroup()
+            let finished = DispatchGroup()
+            defer {
+                dataStore.resumeRead()
+                dataStore.flush()
+                XCTAssertEqual(finished.wait(timeout: .now() + 6), .success)
+                repository.flush()
+            }
+            wait(for: [dataStore.readStarted], timeout: 1)
+            let expectedContext = source == .fetch ? freshContext : cachedContext
+            let getters: [() -> Void] = [
+                { XCTAssertEqual(repository.context, source == .reset ? nil : expectedContext) },
+                { XCTAssertEqual(repository.flagAssignment(for: "test"), source == .reset ? nil : flags["test"]) },
+                { XCTAssertEqual(repository.flagAssignments(), source == .reset ? nil : flags) }
+            ]
+            for getter in getters {
+                started.enter()
+                finished.enter()
+                DispatchQueue.global().async {
+                    started.leave()
+                    getter()
+                    finished.leave()
+                }
+            }
+            XCTAssertEqual(started.wait(timeout: .now() + 1), .success)
+            XCTAssertEqual(finished.wait(timeout: .now() + 0.05), .timedOut)
+
+            // When
+            switch source {
+            case .fetch:
+                repository.setEvaluationContext(freshContext) { result in
+                    if case .failure(let error) = result {
+                        XCTFail("Expected success, got \(error)")
+                    }
+                }
+            case .reset:
+                repository.reset()
+            case .disk:
+                dataStore.resumeRead()
+                dataStore.flush()
+            }
+
+            // Then: all three getters finish well before their five-second timeout.
+            XCTAssertEqual(finished.wait(timeout: .now() + 1), .success)
+            dataStore.resumeRead()
+            dataStore.flush()
+            XCTAssertEqual(repository.context, source == .reset ? nil : expectedContext)
+        }
+    }
+
+    func testInitialDataStoreRead_whenPending_doesNotRetainRepository() {
+        // Given
+        let dataStore = DelayedReadDataStore()
+        var repository: FlagsRepository? = makeRepository(dataStore: dataStore)
+        weak var weakRepository = repository
+        wait(for: [dataStore.readStarted], timeout: 1)
+
+        // When
+        repository = nil
+
+        // Then
+        XCTAssertNil(weakRepository)
+        dataStore.resumeRead()
+        dataStore.flush()
+    }
+
+    func testInitialDataStoreRead_whenCompletesAfterReset_doesNotRestoreCachedFlags() throws {
+        // Given
+        let clientName = "client"
+        let context = FlagsEvaluationContext.mockAny()
+        let cachedData = FlagsData(flags: ["old": .mockAny()], context: context, date: .mockAny())
+        let dataStore = DelayedReadDataStore(storage: [
+            clientName: .value(try JSONEncoder().encode(cachedData), dataStoreDefaultKeyVersion)
+        ])
+        let repository = makeRepository(
+            dataStore: dataStore,
+            fetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.failure(.networkError(URLError(.notConnectedToInternet))))
+            }
+        )
+        defer {
+            dataStore.resumeRead()
+            dataStore.flush()
+        }
+        wait(for: [dataStore.readStarted], timeout: 1)
+
+        // When
+        repository.reset()
+        dataStore.resumeRead()
+        dataStore.flush()
+
+        // Then
+        XCTAssertEqual(repository.state.currentState, .notReady)
+        XCTAssertNil(repository.flagAssignments())
+
+        let completed = expectation(description: "failed request completed")
+        repository.setEvaluationContext(context) { _ in completed.fulfill() }
+        wait(for: [completed], timeout: 1)
+        XCTAssertEqual(repository.state.currentState, .error)
+        XCTAssertNil(repository.flagAssignments())
+    }
+
+    func testInitialDataStoreRead_whenCompletesDuringReconcilingWithMatchingContext_servesCachedFlags() throws {
+        // Given
+        let clientName = "client"
+        let requestedContext = FlagsEvaluationContext(targetingKey: "cached-user", attributes: [:])
+        let cachedData = FlagsData(
+            flags: ["cached": .mockAny()],
+            context: requestedContext,
+            date: .mockAny()
+        )
+        let dataStore = DelayedReadDataStore(
+            storage: [
+                clientName: .value(
+                    try JSONEncoder().encode(cachedData),
+                    dataStoreDefaultKeyVersion
+                )
+            ]
+        )
+
+        let fetchStarted = expectation(description: "fetch started")
+        var fetchCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+        let flagsRepository = makeRepository(
+            dataStore: dataStore,
+            fetcher: FlagAssignmentsFetcherMock { _, completion in
+                fetchCompletion = completion
+                fetchStarted.fulfill()
+            }
+        )
+        defer {
+            dataStore.resumeRead()
+            dataStore.flush()
+        }
+        wait(for: [dataStore.readStarted], timeout: 1)
+
+        let completed = expectation(description: "completed")
+
+        // When
+        flagsRepository.setEvaluationContext(requestedContext) { result in
+            if case .failure(let error) = result {
+                XCTFail("Expected success, got \(error)")
+            }
+            completed.fulfill()
+        }
+        wait(for: [fetchStarted], timeout: 1)
+
+        dataStore.resumeRead()
+        dataStore.flush()
+
+        // Then
+        XCTAssertEqual(flagsRepository.state.currentState, .reconciling)
+        XCTAssertEqual(flagsRepository.context, requestedContext)
+        XCTAssertNotNil(flagsRepository.flagAssignment(for: "cached"))
+        XCTAssertNil(flagsRepository.flagAssignment(for: "fresh"))
+
+        fetchCompletion?(.success(["fresh": .mockAny()]))
+        wait(for: [completed], timeout: 1)
+
+        XCTAssertEqual(flagsRepository.state.currentState, .ready)
+        XCTAssertEqual(flagsRepository.context, requestedContext)
+        XCTAssertNil(flagsRepository.flagAssignment(for: "cached"))
+        XCTAssertNotNil(flagsRepository.flagAssignment(for: "fresh"))
+    }
+
+    func testInitialDataStoreRead_whenFetchFails_waitsForReadAndOnlyUsesMatchingCachedFlags() throws {
+        let clientName = "client"
+        let cachedContext = FlagsEvaluationContext(targetingKey: "cached-user")
+        let otherContext = FlagsEvaluationContext(targetingKey: "other-user")
+        let cachedData = FlagsData(flags: ["cached": .mockAny()], context: cachedContext, date: .mockAny())
+        let cachedValue = DataStoreValueResult.value(try JSONEncoder().encode(cachedData), dataStoreDefaultKeyVersion)
+
+        for requestedContext in [cachedContext, otherContext] {
+            let dataStore = DelayedReadDataStore(storage: [clientName: cachedValue])
+            let repository = makeRepository(
+                dataStore: dataStore,
+                fetcher: FlagAssignmentsFetcherMock { _, completion in
+                    completion(.failure(.networkError(URLError(.notConnectedToInternet))))
+                }
+            )
+            defer {
+                dataStore.resumeRead()
+                dataStore.flush()
+            }
+            wait(for: [dataStore.readStarted], timeout: 1)
+            let completed = expectation(description: "completed after cache read")
+            var didComplete = false
+
+            repository.setEvaluationContext(requestedContext) { result in
+                didComplete = true
+                if case .success = result {
+                    XCTFail("Expected failure")
+                }
+                completed.fulfill()
+            }
+            XCTAssertEqual(repository.state.currentState, .reconciling)
+            XCTAssertFalse(didComplete)
+
+            dataStore.resumeRead()
+            dataStore.flush()
+            wait(for: [completed], timeout: 1)
+
+            let hasMatchingCache = requestedContext == cachedContext
+            XCTAssertEqual(repository.state.currentState, hasMatchingCache ? .stale : .error)
+            XCTAssertEqual(repository.context, hasMatchingCache ? requestedContext : nil)
+            XCTAssertEqual(repository.flagAssignment(for: "cached") != nil, hasMatchingCache)
+        }
+    }
+
+    func testInitialDataStoreRead_whenFetchFailsBeforeReadCompletes_dispatchesFailureCallbacksOffDataStoreQueue() {
+        // Given
+        let dataStore = DelayedReadDataStore()
+
+        let flagsRepository = makeRepository(
+            dataStore: dataStore,
+            fetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.failure(.networkError(URLError(.notConnectedToInternet))))
+            }
+        )
+        defer {
+            dataStore.resumeRead()
+            dataStore.flush()
+        }
+        wait(for: [dataStore.readStarted], timeout: 1)
+
+        let errorStateObserved = expectation(description: "error state observed")
+        var wasErrorStateNotifiedOnDataStoreQueue: Bool?
+        let listener = ClosureFlagsStateListener { state in
+            guard state == .error else {
+                return
+            }
+            wasErrorStateNotifiedOnDataStoreQueue = dataStore.isOnReadQueue
+            errorStateObserved.fulfill()
+        }
+        flagsRepository.state.addListener(listener)
+
+        let completed = expectation(description: "completed")
+        var wasCompletionCalledOnDataStoreQueue: Bool?
+
+        // When
+        flagsRepository.setEvaluationContext(.mockAny()) { _ in
+            wasCompletionCalledOnDataStoreQueue = dataStore.isOnReadQueue
+            completed.fulfill()
+        }
+        XCTAssertEqual(flagsRepository.state.currentState, .reconciling)
+
+        dataStore.resumeRead()
+
+        // Then
+        wait(for: [errorStateObserved, completed], timeout: 1)
+        XCTAssertEqual(wasErrorStateNotifiedOnDataStoreQueue, false)
+        XCTAssertEqual(wasCompletionCalledOnDataStoreQueue, false)
     }
 
     func testSetEvaluationContextError() throws {
@@ -309,39 +1215,49 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertNotNil(flagsRepository.flagAssignment(for: "promotion"))
     }
 
-    func testInitializationTimeoutDoesNotReplaceReadyStateFromANewerRequest() throws {
-        // Given
-        var fetchCompletions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
-        var timeoutAction: (() -> Void)?
-        var firstResult: Result<Void, FlagsError>?
-        let flagsRepository = FlagsRepository(
-            clientName: .mockAny(),
-            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
-                fetchCompletions.append(completion)
-            },
-            dateProvider: DateProviderMock(),
-            featureScope: featureScope,
-            initializationTimeout: 2.5,
-            scheduleInitializationTimeout: { _, action in
-                timeoutAction = action
-                return {}
+    func testInitializationTimeoutDoesNotReplaceStateFromANewerRequest() throws {
+        for expectedState: FlagsClientState in [.reconciling, .ready, .error, .notReady] {
+            // Given
+            let featureScope = FeatureScopeMock()
+            var fetchCompletions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+            var timeoutAction: (() -> Void)?
+            var firstResult: Result<Void, FlagsError>?
+            let flagsRepository = FlagsRepository(
+                clientName: .mockAny(),
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                    fetchCompletions.append(completion)
+                },
+                dateProvider: DateProviderMock(),
+                featureScope: featureScope,
+                initializationTimeout: 2.5,
+                scheduleInitializationTimeout: { _, action in
+                    timeoutAction = action
+                    return {}
+                }
+            )
+            featureScope.dataStore.flush()
+            defer { flagsRepository.flush() }
+
+            flagsRepository.setEvaluationContext(.mockAny()) { firstResult = $0 }
+            flagsRepository.setEvaluationContext(.mockRandom()) { _ in }
+            XCTAssertEqual(fetchCompletions.count, 2)
+
+            // When
+            switch expectedState {
+            case .ready: fetchCompletions[1](.success(["newer": .mockAny()]))
+            case .error: fetchCompletions[1](.failure(.invalidResponse))
+            case .notReady: flagsRepository.reset()
+            default: break
             }
-        )
+            XCTAssertEqual(flagsRepository.state.currentState, expectedState)
+            try XCTUnwrap(timeoutAction)()
 
-        flagsRepository.setEvaluationContext(.mockAny()) { firstResult = $0 }
-        flagsRepository.setEvaluationContext(.mockRandom()) { _ in }
-        XCTAssertEqual(fetchCompletions.count, 2)
-
-        // When
-        fetchCompletions[1](.success(["newer": .mockAny()]))
-        XCTAssertEqual(flagsRepository.state.currentState, .ready)
-        try XCTUnwrap(timeoutAction)()
-
-        // Then
-        guard case .failure(.initializationTimedOut) = firstResult else {
-            return XCTFail("Expected the first request to time out")
+            // Then
+            guard case .failure(.initializationTimedOut) = firstResult else {
+                return XCTFail("Expected the first request to time out")
+            }
+            XCTAssertEqual(flagsRepository.state.currentState, expectedState)
         }
-        XCTAssertEqual(flagsRepository.state.currentState, .ready)
     }
 
     func testInitializationSuccessClaimsCompletionBeforeReadyListeners() throws {
@@ -377,6 +1293,64 @@ final class FlagsRepositoryTests: XCTestCase {
         // Then
         XCTAssertNoThrow(try XCTUnwrap(callbackResult).get())
         XCTAssertEqual(flagsRepository.state.currentState, .ready)
+    }
+
+    func testInitializationFailureClaimsCompletionBeforeStateListeners() throws {
+        for hasCache in [false, true] {
+            // Given
+            let featureScope = FeatureScopeMock()
+            let context = FlagsEvaluationContext.mockAny()
+            let expectedState: FlagsClientState = hasCache ? .stale : .error
+            if hasCache {
+                let cachedData = FlagsData(flags: ["cached": .mockAny()], context: context, date: .mockAny())
+                try featureScope.dataStoreMock.setValue(JSONEncoder().encode(cachedData), forKey: .mockAny())
+            }
+            var fetchCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+            var timeoutAction: (() -> Void)?
+            var timeoutCancellationCount = 0
+            var callbackResults: [Result<Void, FlagsError>] = []
+            var stateAtCompletion: FlagsClientState?
+            var callbackWasDeliveredBeforeListener = false
+            let flagsRepository = FlagsRepository(
+                clientName: .mockAny(),
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                    fetchCompletion = completion
+                },
+                dateProvider: DateProviderMock(),
+                featureScope: featureScope,
+                initializationTimeout: 2.5,
+                scheduleInitializationTimeout: { _, action in
+                    timeoutAction = action
+                    return { timeoutCancellationCount += 1 }
+                }
+            )
+            featureScope.dataStore.flush()
+            let listener = ClosureFlagsStateListener { state in
+                if state == expectedState {
+                    callbackWasDeliveredBeforeListener = !callbackResults.isEmpty
+                    timeoutAction?()
+                }
+            }
+            flagsRepository.state.addListener(listener)
+            flagsRepository.setEvaluationContext(context) {
+                stateAtCompletion = flagsRepository.state.currentState
+                callbackResults.append($0)
+            }
+
+            // When
+            try XCTUnwrap(fetchCompletion)(.failure(.networkError(URLError(.notConnectedToInternet))))
+
+            // Then
+            XCTAssertTrue(callbackWasDeliveredBeforeListener)
+            XCTAssertEqual(callbackResults.count, 1)
+            XCTAssertEqual(timeoutCancellationCount, 1)
+            XCTAssertEqual(stateAtCompletion, expectedState)
+            XCTAssertEqual(flagsRepository.state.currentState, expectedState)
+            guard case .failure(.networkError(let error)) = try XCTUnwrap(callbackResults.first) else {
+                return XCTFail("Expected the network error, not an initialization timeout")
+            }
+            XCTAssertEqual((error as? URLError)?.code, .notConnectedToInternet)
+        }
     }
 
     func testInitializationTimeoutCompletesBeforeErrorListeners() throws {
@@ -703,7 +1677,7 @@ final class FlagsRepositoryTests: XCTestCase {
         )
 
         // When — call setEvaluationContext while the disk read may still be in-flight.
-        // The fix ensures waitForFlagsDataRead() is called before checking hadFlags.
+        // The repository waits for the disk read before deciding stale vs error on failure.
         let completed = expectation(description: "completed")
         flagsRepository.setEvaluationContext(.mockAny()) { _ in
             completed.fulfill()
@@ -790,6 +1764,133 @@ final class FlagsRepositoryTests: XCTestCase {
     }
 
     // MARK: - Overlapping Requests
+
+    func testOverlappingContextUpdates_whenBothFail_onlyLatestContextCanUseCache() throws {
+        let olderContext = FlagsEvaluationContext(targetingKey: "user-A")
+        let newerContext = FlagsEvaluationContext(targetingKey: "user-B")
+        let cachedContexts: [FlagsEvaluationContext?] = [olderContext, newerContext, nil]
+
+        for cachedContext in cachedContexts {
+            for responseOrder in [[0, 1], [1, 0]] {
+                for delayCacheRead in [false, true] {
+                    var storage: [String: DataStoreValueResult] = [:]
+                    if let cachedContext {
+                        let data = FlagsData(flags: ["cached": .mockAny()], context: cachedContext, date: .mockAny())
+                        storage["client"] = .value(try JSONEncoder().encode(data), dataStoreDefaultKeyVersion)
+                    }
+                    let dataStore = DelayedReadDataStore(storage: storage)
+                    var completions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+                    let repository = makeRepository(
+                        dataStore: dataStore,
+                        fetcher: FlagAssignmentsFetcherMock { _, completion in completions.append(completion) },
+                        initializationTimeout: nil
+                    )
+                    defer {
+                        dataStore.resumeRead()
+                        dataStore.flush()
+                    }
+                    wait(for: [dataStore.readStarted], timeout: 1)
+                    if !delayCacheRead {
+                        dataStore.resumeRead()
+                        dataStore.flush()
+                    }
+                    let completed = expectation(description: "both failures completed")
+                    completed.expectedFulfillmentCount = 2
+                    @ReadWriteLock
+                    var callbackCounts = [0, 0]
+                    for (index, context) in [olderContext, newerContext].enumerated() {
+                        repository.setEvaluationContext(context) { result in
+                            guard case .failure(.invalidResponse) = result else {
+                                return XCTFail("Expected the original fetch error, got \(result)")
+                            }
+                            _callbackCounts.mutate { $0[index] += 1 }
+                            completed.fulfill()
+                        }
+                    }
+
+                    for index in responseOrder {
+                        completions[index](.failure(.invalidResponse))
+                    }
+                    dataStore.resumeRead()
+                    dataStore.flush()
+                    wait(for: [completed], timeout: 1)
+
+                    let hasMatchingCache = cachedContext == newerContext
+                    XCTAssertEqual(callbackCounts, [1, 1])
+                    XCTAssertEqual(repository.state.currentState, hasMatchingCache ? .stale : .error)
+                    XCTAssertEqual(repository.context, hasMatchingCache ? newerContext : nil)
+                    XCTAssertEqual(repository.flagAssignment(for: "cached") != nil, hasMatchingCache)
+                    XCTAssertEqual(repository.flagAssignments() != nil, hasMatchingCache)
+                }
+            }
+        }
+    }
+
+    func testOverlappingContextUpdates_whenOlderRequestFails_preservesNewerReconciliation() throws {
+        let featureScope = FeatureScopeMock()
+        let newerContext = FlagsEvaluationContext(targetingKey: "user-B")
+        let cachedData = FlagsData(flags: ["cached": .mockAny()], context: newerContext, date: .mockAny())
+        try featureScope.dataStoreMock.setValue(JSONEncoder().encode(cachedData), forKey: "client")
+        var completions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+        let repository = makeRepository(
+            dataStore: featureScope.dataStore,
+            fetcher: FlagAssignmentsFetcherMock { _, completion in completions.append(completion) },
+            initializationTimeout: nil
+        )
+        featureScope.dataStore.flush()
+        var callbackCount = 0
+        repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "user-A")) { _ in callbackCount += 1 }
+        repository.setEvaluationContext(newerContext) { _ in callbackCount += 1 }
+
+        completions[0](.failure(.invalidResponse))
+
+        XCTAssertEqual(callbackCount, 1)
+        XCTAssertEqual(repository.state.currentState, .reconciling)
+        XCTAssertEqual(repository.context, newerContext)
+        XCTAssertNotNil(repository.flagAssignment(for: "cached"))
+
+        completions[1](.failure(.invalidResponse))
+        XCTAssertEqual(callbackCount, 2)
+        XCTAssertEqual(repository.state.currentState, .stale)
+        XCTAssertEqual(repository.context, newerContext)
+    }
+
+    func testOverlappingContextUpdates_whenLatestRequestFails_olderSuccessCannotRestoreWrongContext() {
+        for responseOrder in [[0, 1], [1, 0]] {
+            let featureScope = FeatureScopeMock()
+            var completions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+            let repository = makeRepository(
+                dataStore: featureScope.dataStore,
+                fetcher: FlagAssignmentsFetcherMock { _, completion in completions.append(completion) },
+                initializationTimeout: nil
+            )
+            featureScope.dataStore.flush()
+            defer { repository.flush() }
+            var callbackCounts = [0, 0]
+            repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "user-A")) { result in
+                if case .failure(let error) = result {
+                    XCTFail("Expected the original success, got \(error)")
+                }
+                callbackCounts[0] += 1
+            }
+            repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "user-B")) { result in
+                if case .success = result {
+                    XCTFail("Expected the original fetch error")
+                }
+                callbackCounts[1] += 1
+            }
+
+            for index in responseOrder {
+                completions[index](index == 0 ? .success(["old": .mockAny()]) : .failure(.invalidResponse))
+            }
+
+            XCTAssertEqual(callbackCounts, [1, 1])
+            XCTAssertEqual(repository.state.currentState, .error)
+            XCTAssertNil(repository.context)
+            XCTAssertNil(repository.flagAssignment(for: "old"))
+            XCTAssertNil(repository.flagAssignments())
+        }
+    }
 
     func testOverlappingContextUpdates_laterSuccessShouldNotBeClearedByEarlierFailure() {
         // This test reproduces the race condition from Codex feedback #24:
@@ -898,6 +1999,142 @@ final class FlagsRepositoryTests: XCTestCase {
         // (dd-openfeature-provider-swift depends on this ordering)
         waitForExpectations(timeout: 0)
         XCTAssertEqual(stateInCompletion, .error)
+    }
+
+    private func makeRepository(
+        dataStore: any DataStore,
+        fetcher: any FlagAssignmentsFetching = FlagAssignmentsFetcherMock(),
+        initializationTimeout: TimeInterval? = Flags.Configuration.defaultInitializationTimeout
+    ) -> FlagsRepository {
+        FlagsRepository(
+            clientName: "client",
+            flagAssignmentsFetcher: fetcher,
+            dateProvider: DateProviderMock(),
+            featureScope: FeatureScopeMock(dataStore: dataStore),
+            initializationTimeout: initializationTimeout
+        )
+    }
+}
+
+private final class BlockingWriteDataStore: DataStore, @unchecked Sendable {
+    @ReadWriteLock
+    private var storage: [String: DataStoreValueResult] = [:]
+
+    @ReadWriteLock
+    private var hasFinishedWrite = false
+
+    private let writeSemaphore = DispatchSemaphore(value: 0)
+    private let writeFinishedSemaphore = DispatchSemaphore(value: 0)
+
+    var onSetValueStarted: (() -> Void)?
+    var onRemoveValue: (() -> Void)?
+
+    var isWriteFinished: Bool {
+        hasFinishedWrite
+    }
+
+    func setValue(_ value: Data, forKey key: String, version: DataStoreKeyVersion) {
+        onSetValueStarted?()
+        writeSemaphore.wait()
+        storage[key] = .value(value, version)
+        hasFinishedWrite = true
+        writeFinishedSemaphore.signal()
+    }
+
+    func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {
+        callback(storage[key] ?? .noValue)
+    }
+
+    func removeValue(forKey key: String) {
+        storage[key] = nil
+        onRemoveValue?()
+    }
+
+    func clearAllData() {
+        storage.removeAll()
+    }
+
+    func flush() {}
+
+    func resumeWrite() {
+        writeSemaphore.signal()
+    }
+
+    func waitForWriteFinished(timeout: TimeInterval) -> Bool {
+        writeFinishedSemaphore.wait(timeout: .now() + timeout) == .success
+    }
+
+    func value(forKey key: String) -> DataStoreValueResult? {
+        storage[key]
+    }
+}
+
+private final class DelayedReadDataStore: DataStore, @unchecked Sendable {
+    @ReadWriteLock
+    private var storage: [String: DataStoreValueResult]
+
+    private let queue = DispatchQueue(label: "com.datadoghq.flags-delayed-read-data-store")
+    private let queueKey = DispatchSpecificKey<Void>()
+    private let readSemaphore = DispatchSemaphore(value: 0)
+
+    let readStarted = XCTestExpectation(description: "initial cache read started")
+
+    var isOnReadQueue: Bool {
+        DispatchQueue.getSpecific(key: queueKey) != nil
+    }
+
+    init(storage: [String: DataStoreValueResult] = [:]) {
+        self.storage = storage
+        queue.setSpecific(key: queueKey, value: ())
+    }
+
+    func setValue(_ value: Data, forKey key: String, version: DataStoreKeyVersion) {
+        storage[key] = .value(value, version)
+    }
+
+    func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void) {
+        queue.async {
+            let result = self.storage[key] ?? .noValue
+            self.readStarted.fulfill()
+            self.readSemaphore.wait()
+            callback(result)
+        }
+    }
+
+    func removeValue(forKey key: String) {
+        storage[key] = nil
+    }
+
+    func clearAllData() {
+        storage.removeAll()
+    }
+
+    func flush() {
+        queue.sync {}
+    }
+
+    func resumeRead() {
+        readSemaphore.signal()
+    }
+}
+
+private final class PausingDateProvider: DateProvider {
+    @ReadWriteLock
+    private var calls = 0
+    let started = DispatchSemaphore(value: 0)
+    let resume = DispatchSemaphore(value: 0)
+
+    var now: Date {
+        var shouldPause = false
+        _calls.mutate { value in
+            shouldPause = value == 0
+            value += 1
+        }
+        if shouldPause {
+            started.signal()
+            resume.wait()
+        }
+        return Date()
     }
 }
 

@@ -37,7 +37,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         }
 
         // Then
-        waitForExpectations(timeout: 0)
+        waitForExpectations(timeout: 1)
         XCTAssertEqual(
             capturedRequest?.url?.absoluteString,
             "https://preview.ff-cdn.us3.datadoghq.com/precompute-assignments"
@@ -68,7 +68,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         }
 
         // Then
-        waitForExpectations(timeout: 0)
+        waitForExpectations(timeout: 1)
     }
 
     func testFlagAssignmentsInvalidResponse() {
@@ -91,7 +91,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         }
 
         // Then
-        waitForExpectations(timeout: 0)
+        waitForExpectations(timeout: 1)
     }
 
     func testFlagAssignmentsCustomEndpoint() {
@@ -116,7 +116,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         }
 
         // Then
-        waitForExpectations(timeout: 0)
+        waitForExpectations(timeout: 1)
         XCTAssertEqual(capturedRequest?.url, customEndpoint)
         XCTAssertEqual(capturedRequest?.allHTTPHeaderFields?["X-Custom-Header"], "custom-value")
     }
@@ -136,4 +136,93 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
             XCTAssertEqual(site.flagsEndpoint().absoluteString, expectedEndpoint)
         }
     }
+
+    func testFlagAssignments_whenCompletionIsBlocked_doesNotBlockAnotherRequest() {
+        let results: [Result<Data, Error>] = [
+            .success(.mockAnyFlagAssignmentsResponse()),
+            .success(Data()),
+            .failure(URLError(.notConnectedToInternet))
+        ]
+
+        for result in results {
+            // Given
+            let contextQueue = DispatchQueue(label: "com.datadoghq.flags-tests-context")
+            let featureScope = QueuedFeatureScope(contextQueue: contextQueue)
+            let queue = DispatchQueue(label: "com.datadoghq.flags-tests-assignment-fetch")
+            let queueKey = DispatchSpecificKey<Void>()
+            queue.setSpecific(key: queueKey, value: ())
+            let fetcher = FlagAssignmentsFetcher(
+                customEndpoint: nil,
+                customHeaders: nil,
+                featureScope: featureScope,
+                assignmentFetchQueue: queue,
+                fetch: { _, completion in
+                    XCTAssertFalse(featureScope.isOnContextQueue)
+                    XCTAssertNotNil(DispatchQueue.getSpecific(key: queueKey))
+                    completion(result)
+                }
+            )
+            let firstCompletionStarted = expectation(description: "first completion started")
+            let firstCompletionFinished = expectation(description: "first completion finished")
+            let secondCompleted = expectation(description: "second request completed")
+            let releaseCompletion = DispatchSemaphore(value: 0)
+            defer {
+                releaseCompletion.signal()
+                wait(for: [firstCompletionFinished], timeout: 1)
+            }
+
+            fetcher.flagAssignments(for: .mockAny()) { _ in
+                XCTAssertFalse(featureScope.isOnContextQueue)
+                XCTAssertNil(DispatchQueue.getSpecific(key: queueKey))
+                firstCompletionStarted.fulfill()
+                releaseCompletion.wait()
+                firstCompletionFinished.fulfill()
+            }
+            wait(for: [firstCompletionStarted], timeout: 1)
+
+            // When
+            fetcher.flagAssignments(for: .mockAny()) { _ in
+                XCTAssertFalse(featureScope.isOnContextQueue)
+                XCTAssertNil(DispatchQueue.getSpecific(key: queueKey))
+                secondCompleted.fulfill()
+            }
+
+            // Then
+            wait(for: [secondCompleted], timeout: 1)
+        }
+    }
+}
+
+private final class QueuedFeatureScope: FeatureScope, @unchecked Sendable {
+    private let contextQueue: DispatchQueue
+    private let contextQueueKey = DispatchSpecificKey<Void>()
+    private let contextMock: DatadogContext
+
+    var isOnContextQueue: Bool {
+        DispatchQueue.getSpecific(key: contextQueueKey) != nil
+    }
+
+    init(contextQueue: DispatchQueue, context: DatadogContext = .mockAny()) {
+        self.contextQueue = contextQueue
+        self.contextMock = context
+        self.contextQueue.setSpecific(key: contextQueueKey, value: ())
+    }
+
+    func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {}
+
+    func context(_ block: @escaping (DatadogContext) -> Void) {
+        contextQueue.async {
+            block(self.contextMock)
+        }
+    }
+
+    var dataStore: DataStore { NOPDataStore() }
+
+    var telemetry: Telemetry { NOPTelemetry() }
+
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) {}
+
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {}
+
+    func set(anonymousId: String?) {}
 }
