@@ -172,6 +172,34 @@ public struct CrashContext: Codable, Equatable {
         self.appLaunchDate = context.launchInfo.launchPhaseDates[.processLaunch]
     }
 
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        appLaunchDate = try container.decodeIfPresent(Date.self, forKey: .appLaunchDate)
+        serverTimeOffset = try container.decode(TimeInterval.self, forKey: .serverTimeOffset)
+        service = try container.decode(String.self, forKey: .service)
+        env = try container.decode(String.self, forKey: .env)
+        version = try container.decode(String.self, forKey: .version)
+        buildNumber = try container.decode(String.self, forKey: .buildNumber)
+        device = try container.decode(Device.self, forKey: .device)
+        os = try container.decode(OperatingSystem.self, forKey: .os)
+        sdkVersion = try container.decode(String.self, forKey: .sdkVersion)
+        source = try container.decode(String.self, forKey: .source)
+        trackingConsent = try container.decode(TrackingConsent.self, forKey: .trackingConsent)
+        userInfo = try container.decodeIfPresent(UserInfo.self, forKey: .userInfo)
+        accountInfo = try container.decodeIfPresent(AccountInfo.self, forKey: .accountInfo)
+        networkConnectionInfo = try container.decodeIfPresent(NetworkConnectionInfo.self, forKey: .networkConnectionInfo)
+        carrierInfo = try container.decodeIfPresent(CarrierInfo.self, forKey: .carrierInfo)
+        lastIsAppInForeground = try container.decode(Bool.self, forKey: .lastIsAppInForeground)
+        remoteConfigurationId = try container.decodeIfPresent(String.self, forKey: .remoteConfigurationId)
+        // Older, already-persisted crash contexts predate this field, so it must be decoded
+        // leniently to avoid dropping crash reports captured by a prior SDK version.
+        applicationBundleType = try container.decodeIfPresent(BundleType.self, forKey: .applicationBundleType) ?? .iOSApp
+        lastRUMViewEvent = try container.decodeIfPresent(RUMViewEvent.self, forKey: .lastRUMViewEvent)
+        lastRUMSessionState = try container.decodeIfPresent(RUMSessionState.self, forKey: .lastRUMSessionState)
+        lastLogAttributes = try container.decodeIfPresent(LogEventAttributes.self, forKey: .lastLogAttributes)
+        lastRUMAttributes = try container.decodeIfPresent(RUMEventAttributes.self, forKey: .lastRUMAttributes)
+    }
+
     public static func == (lhs: CrashContext, rhs: CrashContext) -> Bool {
         lhs.serverTimeOffset == rhs.serverTimeOffset &&
         lhs.service == rhs.service &&
