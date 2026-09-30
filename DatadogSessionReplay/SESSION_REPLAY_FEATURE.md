@@ -266,7 +266,7 @@ When `Datadog.Configuration.remoteConfiguration` is set, Core fetches and caches
 
 ## Additional Context
 
-- Session Replay is iOS only (not available on tvOS, macOS, watchOS)
+- Session Replay recording is iOS-only; tvOS support is limited to package compatibility.
 - Recording captures visual state, not actual screen pixels
 - Per-view overrides inherit from parent views if not explicitly set
 - `hide = true` renders view as opaque wireframe in replay and hide subviews as well
