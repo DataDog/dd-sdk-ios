@@ -236,6 +236,11 @@ Its separate supported-input adapter preserves actual returns and stops at the
 first failed effect. Review found two pre-launch blockers: ordinary snapshots lack
 idle state, and worker rejection needed an immediate no-call response. Both fixes
 pass 44 focused offline controls, including saved-payload replay, and independent
-re-review. No build or native attempt is added. The original failed fold already had
-correct resized geometry. Automatic interaction can alter accessibility state, so
-non-reproduction cannot resolve the human failure or authorize another invitation.
+re-review. Its one automatic attempt then stopped before the first action: inspection
+of the saved screenshot and orchestration exhausted the step budget. The PNG is
+unchanged and readable; the display-layer cause is unknown. Zero gestures or folds
+ran. Actual End, native idle, task-only removal and Closed restoration pass; all
+80 artifact hashes and 63 helpers verify. The original failed human fold already
+had correct resized geometry. This attempt supplies no ancestry or gate conclusion;
+the automated path stays stopped. Continue independent H10 work without another
+human invitation.

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "REVIEWED_AUTOMATIC_QUALIFICATION_PREPARATION",
+  "state": "STOPPED_BEFORE_INPUT_CLEANUP_PASS",
   "owner": "EXP-210",
   "gates": [
     "S2:C09",
@@ -25,8 +25,8 @@
     "sha256": "461e47b710a7c939738bcb9d96538b873b427f6bff307edf222d8fcde78a6dbb"
   },
   "controls_count": 44,
-  "native_admitted": false,
-  "native_runs": 0,
+  "native_admitted": true,
+  "native_runs": 1,
   "new_builds": 0,
   "gates_closed": [],
   "observed": {
@@ -54,8 +54,8 @@
     "Exact swipe trajectories/amplitudes are unavailable; direction and source ownership are bound.",
     "Stop at first failed input/capture, preserve actual returns, end the worker, verify idle, and clean only the task app."
   ],
-  "next_action": "Fresh environment and worker-readiness checks, then one automatic diagnostic qualification only. No human invitation; a clean run cannot resolve the original human failure.",
-  "updated_at": "2026-09-30T15:24:12.306627+00:00",
+  "next_action": "Keep this automatic path stopped. Continue offline capture work and independent H10 composition; no human retry until the original ancestry failure has a reviewed and qualified correction.",
+  "updated_at": "2026-09-30T15:39:30.866575+00:00",
   "review_history": [
     {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-split-prefix-0oeq73m2/review-r1.json",
@@ -77,5 +77,44 @@
   "resolved_findings": [
     "PREFIX-001: source-shaped idle snapshots separate from ordinary observations; saved-payload replay passes.",
     "PREFIX-002: pre-call rejection publishes an immediate NO_CALL receipt with no invented tool response; End remains usable."
-  ]
+  ],
+  "run_id": "4559afa5-2531-4f69-a970-fb0074277377",
+  "admission": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-split-prefix-0oeq73m2/native/admission.json",
+    "sha256": "6badd0c070c31787698622fabc56e28628554a40c1b42a19a1b6feb89765ba7f"
+  },
+  "controller": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-split-prefix-0oeq73m2/controller.json",
+    "sha256": "c7f1fe708837c6ca934279021629956bc0294a29cb1569c0d90ded64335fc5b7"
+  },
+  "preflight": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-split-prefix-0oeq73m2/preflight.json",
+    "sha256": "adcfb0d7985c66a060cfea59094081805369e58909263515e0c7f96c56bd0c3e"
+  },
+  "worker_readiness": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-split-prefix-0oeq73m2/worker-readiness.json",
+    "sha256": "ce661104240d7be5fca9da5c2d75032869671cbf09041e5e810842540bd9c681"
+  },
+  "native_active": false,
+  "scenario": "NOT_ASSESSED",
+  "evidence": "INCOMPLETE",
+  "cleanup": "PASS",
+  "result": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-split-prefix-0oeq73m2/native/result.json",
+    "sha256": "088f57554a8f8c2b5442a9db617987ca8ac5ae501ece1d0df4a37957ddbd8d21"
+  },
+  "verification": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-split-prefix-0oeq73m2/verification.json",
+    "sha256": "4f73ef6abc702f9e6ffb43531a503a77233f988138336ac078e49e8bd29082a1"
+  },
+  "outcome_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-split-prefix-0oeq73m2/outcome-review.json",
+    "sha256": "217b1ed1da305151a0d38e5b0a17710040e96d6b4d6d8737b864e7a5a478f202"
+  },
+  "inspection_assessment": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-split-prefix-0oeq73m2/inspection-assessment.json",
+    "sha256": "fca148a409664325b1fb792a8ec2e05006329e7f3952041b2f6fc2986bedea7a"
+  },
+  "input_commands": 0,
+  "folds": 0
 }

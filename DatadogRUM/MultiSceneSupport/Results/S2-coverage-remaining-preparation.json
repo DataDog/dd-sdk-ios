@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "state": "UIKIT_VIEW_ACTION_GATES_CLOSED_SWIFTUI_REMAINS",
-  "updated_at": "2026-09-30T15:24:12.306627+00:00",
+  "updated_at": "2026-09-30T15:39:30.866575+00:00",
   "execution": {
     "record": "Results/S2-swiftui-split271-20260930.json"
   },
@@ -44,7 +44,7 @@
         "multiple_scenes": false
       }
     ],
-    "prerequisites": "The original 13-step split prefix is bound. Automatic qualification preparation passes 44 offline controls and independent review. One automatic diagnostic awaits fresh prerequisites; no human invitation. Non-reproduction cannot resolve the human-session ancestry failure.",
+    "prerequisites": "The one reviewed automatic prefix qualification stopped before its first input; evidence remains incomplete, with actual End, task removal and Closed restoration PASS. Keep that path stopped. Original human ancestry failure remains unresolved; no human invitation. Continue independent H10 composition.",
     "review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting/runtime/review.json",
       "sha256": "077abf3f22847aa8547c60ef103912d2ea6f328e18018a95b404176e714f5fe5"

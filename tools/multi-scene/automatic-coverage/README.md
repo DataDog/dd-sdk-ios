@@ -127,6 +127,10 @@ Switch hit points and stops on the first failed effect. It ends the tool session
 before the fresh pre-fold boundary. The original human failure already had resized
 geometry; an active tool session during navigation is a diagnostic limitation.
 Non-reproduction cannot resolve that failure or authorize another human invitation.
+The first qualification stopped before any input; use its owner for the terminal
+result and keep that path stopped. Future worker preparation must complete the
+service setup and publication check before admission. Prospective budgets must
+include observed inspection and orchestration costs, not only native call latency.
 
 `human_split.py` is the scoped candidate-only split continuation. Its comparison
 keeps actual pane layout, per-input owners and View inventory separate from the
