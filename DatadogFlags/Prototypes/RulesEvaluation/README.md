@@ -83,6 +83,10 @@ swift build --package-path .build/checkouts/swift-protobuf \
 PATH="$PWD/.build/checkouts/swift-protobuf/.build/release:$PATH" buf generate
 ```
 
+After regeneration, restore the repository's Apache license header at the top
+of `Sources/RulesEvaluationPrototype/Generated/ufc.pb.swift`. Run
+`make license-check` from the repository root before committing the generated file.
+
 The dependency's tooling requires Swift 6.2; this experiment does not change the
 shipping SDK's supported toolchain. `Package.resolved` pins the dependency revision.
 
