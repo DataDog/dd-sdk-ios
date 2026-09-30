@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "state": "PREPARED_REVIEWED_PENDING_NATIVE",
+  "updated_at": "2026-09-30T09:19:45.794005+00:00",
+  "owner": "EXP-210",
+  "gates": [
+    "S2:C09",
+    "S2:C10",
+    "S2:H14"
+  ],
+  "selected": {
+    "build": "baseline-26.5",
+    "device": "duo",
+    "framework": "SwiftUI",
+    "layout": "stack",
+    "multiple_scenes": false
+  },
+  "plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4/runtime/runtime-plan.json",
+    "sha256": "af05dbadc8c2ee4927655e99dabce6f007803a317fd676dbf8d54565695644e6"
+  },
+  "controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4/runtime/controls.json",
+    "sha256": "8fa89371f0af27f2db4e8af8712fb784bb8792103f0c699eb101461c3e860e9a"
+  },
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4/runtime/review.json",
+    "sha256": "7071357ed0cdc288a73d6b376224a14c55825cd28e227d1baa74fe13d5c70870"
+  },
+  "previous_attempt": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-readiness-20260930.json",
+    "sha256": "00853ad168c4d36597e206da7d03334a4a60767c7adf6d9c24ecd6ec6c2ad08a"
+  },
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/definition.json",
+    "sha256": "0881a6249eeb04e1468efba18271da38ab82153b21f0e6056fa5dce8be5dbc4c"
+  },
+  "scenario": "NOT_RUN",
+  "evidence": "PREPARATION_ONLY",
+  "cleanup": "NOT_RUN",
+  "native_launches": 0,
+  "human_prompts": 0,
+  "human_inputs": 0,
+  "backend_queries": 0,
+  "qualified_cells": 0,
+  "gates_closed": [],
+  "release_acceptance": false,
+  "controller": null,
+  "admission": null,
+  "reviewed_scope": "Same frozen SDK/compiler product and collector, oracle, gestures, Home and cleanup. One supported-session owner starts, captures without input, and ends before fresh Ready. Source/device/bundle/PID and actual returned artifacts are required.",
+  "offline_controls": 25,
+  "next_action": "Verify live prerequisites and prior controller absence, record controller identity, then qualify the supported capture in this first required baseline. Do not invite gestures until native controls survive session closure and fresh Ready."
+}

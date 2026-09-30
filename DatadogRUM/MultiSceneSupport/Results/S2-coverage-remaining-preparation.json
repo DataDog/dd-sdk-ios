@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
   "state": "UIKIT_VIEW_ACTION_GATES_CLOSED_SWIFTUI_REMAINS",
-  "updated_at": "2026-09-30T08:30:12.591745+00:00",
+  "updated_at": "2026-09-30T09:19:45.794005+00:00",
   "execution": {
-    "record": "Results/S2-swiftui-readiness-20260930.json"
+    "record": "Results/S2-swiftui-supported-session-20260930.json"
   },
   "current": {
     "kind": "swiftui_preparation",
@@ -17,16 +17,16 @@
       "S2:H14"
     ],
     "plan": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01/runtime/runtime-plan.json",
-      "sha256": "4e119628412cce1bc128c9f19ab1275e70a756cb1574f2a7e5307b6029837565"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4/runtime/runtime-plan.json",
+      "sha256": "af05dbadc8c2ee4927655e99dabce6f007803a317fd676dbf8d54565695644e6"
     },
     "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01/runtime/controls.json",
-      "sha256": "21a710fdbde3add2deac38ce287dcfd14ed5344de68c858fda5f76932acf7dc8"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4/runtime/controls.json",
+      "sha256": "8fa89371f0af27f2db4e8af8712fb784bb8792103f0c699eb101461c3e860e9a"
     },
     "review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01/runtime/review.json",
-      "sha256": "0ed8f0337f9ad0664fccd91d2040d919a812802eb28fa710e2d61443de85a09f"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4/runtime/review.json",
+      "sha256": "7071357ed0cdc288a73d6b376224a14c55825cd28e227d1baa74fe13d5c70870"
     },
     "master_plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/master/runtime/runtime-plan.json",
@@ -76,7 +76,7 @@
         "multiple_scenes": false
       }
     ],
-    "prerequisites": "The selected first baseline stopped before prompts; its claim is consumed. Read latest_attempt, preserve the INVALID/cleanup PASS, and integrate the supported session prerequisite before a new reviewed baseline. No further human input or plain simulator-launch retry."
+    "prerequisites": "Reviewed supported-session prefix must qualify actual controls before fresh Ready and the unchanged first baseline. Original stopped attempt remains consumed; preparation grants no native credit."
   },
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
@@ -88,24 +88,20 @@
     "S2:H14"
   ],
   "swiftui_preparation": {
-    "state": "STOPPED_BEFORE_PROMPTS_CAPTURE_PREREQUISITE",
+    "state": "REVIEWED_SUPPORTED_PREFIX_PENDING_NATIVE",
     "owner": "Results/S2-coverage-remaining-preparation.json",
-    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4",
     "plan": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01/runtime/runtime-plan.json",
-      "sha256": "4e119628412cce1bc128c9f19ab1275e70a756cb1574f2a7e5307b6029837565"
-    },
-    "series": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/series/series.json",
-      "sha256": "2770d73a50bcbd4c826eec2fd697b25a078d39173d10d1d6e05fb5518063a514"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4/runtime/runtime-plan.json",
+      "sha256": "af05dbadc8c2ee4927655e99dabce6f007803a317fd676dbf8d54565695644e6"
     },
     "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01/runtime/controls.json",
-      "sha256": "21a710fdbde3add2deac38ce287dcfd14ed5344de68c858fda5f76932acf7dc8"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4/runtime/controls.json",
+      "sha256": "8fa89371f0af27f2db4e8af8712fb784bb8792103f0c699eb101461c3e860e9a"
     },
     "definition": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/continuation-definition.json",
-      "sha256": "2f1d52cb85d06271cbbad73f3cf3d7b26e9e0d6d92cec70697b2d166ea283ab4"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/definition.json",
+      "sha256": "0881a6249eeb04e1468efba18271da38ab82153b21f0e6056fa5dce8be5dbc4c"
     },
     "selection_profile": "SWIFTUI_ONLY",
     "matrix": [
@@ -169,15 +165,15 @@
     "new_native_runs": 0,
     "gate_closures": [],
     "review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01/runtime/review.json",
-      "sha256": "0ed8f0337f9ad0664fccd91d2040d919a812802eb28fa710e2d61443de85a09f"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4/runtime/review.json",
+      "sha256": "7071357ed0cdc288a73d6b376224a14c55825cd28e227d1baa74fe13d5c70870"
     },
     "master_plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/master/runtime/runtime-plan.json",
       "sha256": "8b56e529e8217cc733d43f804e2a7722e0fa0ba29ce516bc79277f05906f3063"
     },
     "builds": 3,
-    "scope": "Original preparation bindings only. The consumed runtime attempt is owned by latest_attempt; no qualified cell or gate closure."
+    "scope": "One first-baseline adapter; existing products and frozen collector/oracle. Six SwiftUI cells remain. Execution state belongs to execution.record."
   },
   "swiftui_capture_correction": {
     "state": "STOPPED_NATIVE_READINESS_INCOMPLETE",
@@ -258,10 +254,25 @@
       "sha256": "a03937f936f15c73483b77b6aaa84719c74fc13bb1d33319b78e037a4b8629ba"
     },
     "home_controls": 43,
-    "next_action": "Keep this consumed cell and both stopped mechanisms frozen. Complete offline session-lifecycle integration and focused controls, obtain designated review, then qualify the changed mechanism in the first required baseline before inviting further gestures.",
+    "next_action": "Verify live prerequisites and prior controller absence, record controller identity, then qualify the supported capture in this first required baseline. Do not invite gestures until native controls survive session closure and fresh Ready.",
     "latest_attempt": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-readiness-20260930.json",
       "sha256": "00853ad168c4d36597e206da7d03334a4a60767c7adf6d9c24ecd6ec6c2ad08a"
+    },
+    "supported_first_baseline_preparation": {
+      "record": "Results/S2-swiftui-supported-session-20260930.json",
+      "plan": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4/runtime/runtime-plan.json",
+        "sha256": "af05dbadc8c2ee4927655e99dabce6f007803a317fd676dbf8d54565695644e6"
+      },
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4/runtime/controls.json",
+        "sha256": "8fa89371f0af27f2db4e8af8712fb784bb8792103f0c699eb101461c3e860e9a"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4/runtime/review.json",
+        "sha256": "7071357ed0cdc288a73d6b376224a14c55825cd28e227d1baa74fe13d5c70870"
+      }
     }
   },
   "comparison_contract": {

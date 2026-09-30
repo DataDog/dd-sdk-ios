@@ -59,14 +59,23 @@ First-screen readiness must find the screen, all controls, the SwiftUI receipt
 label and its owned scroll before prompting. Automatic initial readiness must
 qualify before another human invitation; it supplies no behavioral or release credit.
 
-The [latest first baseline](../../../DatadogRUM/MultiSceneSupport/Results/S2-swiftui-readiness-20260930.json)
+The [stopped first baseline](../../../DatadogRUM/MultiSceneSupport/Results/S2-swiftui-readiness-20260930.json)
 stopped before prompts: the native graph exposed only UIView ancestry, with no
-source-defined controls. The supported Xcode session used before richer restoration
-observations was absent from this runner. Prepare one context to start/capture/end
-and preserve its actual returns and exact session/device/bundle/PID joins before the
-native graph. Retain the root/control/counter/scroll checks. The consumed claim stays
-stopped; qualify changed setup in the first required baseline, without another human
-diagnostic sequence. No SwiftUI UI or SDK change is supported by this capture failure.
+source-defined controls. The opt-in `human_supported_readiness.py` adds the missing
+supported Xcode session to the first required baseline. `prepare --root NEW_ROOT
+--stopped-result STOPPED_RECORD --skill EXPORTED_SKILL --tool-contract LIVE_SCHEMAS`
+binds the existing product and frozen collector/oracle; focused controls and exact
+designated review precede `admit --root NEW_ROOT --preflight FRESH_PREFLIGHT
+--tool-owner EXCLUSIVE_SUBAGENT`. `run --root NEW_ROOT` installs and verifies the app,
+then one tool owner performs Start, one empty capture and End. Each actual returned
+observation is preserved and checked against the requested device, session, bundle
+and PID. No activation or input is permitted in this prefix. Native root, controls,
+counter and scroll ownership must qualify both before and after End. Only then does
+the live page request a fresh Ready acknowledgement and begin the unchanged journey.
+The [execution owner](../../../DatadogRUM/MultiSceneSupport/Results/S2-swiftui-supported-session-20260930.json)
+records controller identity, admission and results. Failed setup stops before prompts;
+unresolved session closure blocks app teardown and preserves diagnostic evidence.
+Original failures remain unchanged. This is capture preparation, not SDK evidence.
 
 `human_split.py` is the scoped candidate-only split continuation. Its comparison
 keeps actual pane layout, per-input owners and View inventory separate from the

@@ -511,7 +511,7 @@
     "sha256": "1e9f9c0b02d0ed0ef1331f53bddfdedef3fdd47d50f397fd6f5e179f6047fc10",
     "acceptance": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/host-review-acceptance.json"
   },
-  "updated_at": "2026-09-29T12:30:31.654178+00:00",
+  "updated_at": "2026-09-30T09:19:45.794005+00:00",
   "input_diagnostic_definition": {
     "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/D1-input-diagnostic-definition.json",
     "sha256": "e5c9a6f5743a120680de3e692837cbfff400fdfb2277dac8bed61b53dc8156a0",
@@ -1045,99 +1045,36 @@
       }
     ],
     "s2_swiftui_remaining_continuation": {
-      "state": "STOPPED_BEFORE_HUMAN_INPUT",
+      "state": "PREPARATION_ONLY",
       "owner": "Results/S2-coverage-remaining-preparation.json",
-      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01",
+      "execution_record": "Results/S2-swiftui-supported-session-20260930.json",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4",
       "plan": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01/runtime/runtime-plan.json",
-        "sha256": "4e119628412cce1bc128c9f19ab1275e70a756cb1574f2a7e5307b6029837565"
-      },
-      "series": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/series/series.json",
-        "sha256": "2770d73a50bcbd4c826eec2fd697b25a078d39173d10d1d6e05fb5518063a514"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4/runtime/runtime-plan.json",
+        "sha256": "af05dbadc8c2ee4927655e99dabce6f007803a317fd676dbf8d54565695644e6"
       },
       "controls": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01/runtime/controls.json",
-        "sha256": "21a710fdbde3add2deac38ce287dcfd14ed5344de68c858fda5f76932acf7dc8"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4/runtime/controls.json",
+        "sha256": "8fa89371f0af27f2db4e8af8712fb784bb8792103f0c699eb101461c3e860e9a"
       },
-      "definition": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/continuation-definition.json",
-        "sha256": "2f1d52cb85d06271cbbad73f3cf3d7b26e9e0d6d92cec70697b2d166ea283ab4"
-      },
-      "selection_profile": "SWIFTUI_ONLY",
-      "matrix": [
-        {
-          "build": "baseline-26.5",
-          "device": "duo",
-          "framework": "SwiftUI",
-          "layout": "stack",
-          "multiple_scenes": false
-        }
-      ],
-      "universe": [
-        {
-          "build": "baseline-26.5",
-          "device": "duo",
-          "framework": "SwiftUI",
-          "layout": "stack",
-          "multiple_scenes": false
-        },
-        {
-          "build": "baseline-27.1",
-          "device": "duo",
-          "framework": "SwiftUI",
-          "layout": "stack",
-          "multiple_scenes": false
-        },
-        {
-          "build": "candidate-27.1",
-          "device": "duo",
-          "framework": "SwiftUI",
-          "layout": "stack",
-          "multiple_scenes": false
-        },
-        {
-          "build": "baseline-26.5",
-          "device": "duo",
-          "framework": "SwiftUI",
-          "layout": "split",
-          "multiple_scenes": false
-        },
-        {
-          "build": "baseline-27.1",
-          "device": "duo",
-          "framework": "SwiftUI",
-          "layout": "split",
-          "multiple_scenes": false
-        },
-        {
-          "build": "candidate-27.1",
-          "device": "duo",
-          "framework": "SwiftUI",
-          "layout": "split",
-          "multiple_scenes": false
-        }
-      ],
-      "excluded": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/excluded-uikit.json",
-        "sha256": "18d8f8a1d5edb8f24cad330820b5cfc9dd384988699f3ccbddcc684bbd027384"
-      },
-      "native_admitted": false,
-      "new_native_runs": 0,
-      "gate_closures": [],
       "review": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01/runtime/review.json",
-        "sha256": "0ed8f0337f9ad0664fccd91d2040d919a812802eb28fa710e2d61443de85a09f"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4/runtime/review.json",
+        "sha256": "7071357ed0cdc288a73d6b376224a14c55825cd28e227d1baa74fe13d5c70870"
       },
-      "readiness": "BLOCKED_CAPTURE_MECHANISM_CONSUMED_CELL",
+      "selected": {
+        "build": "baseline-26.5",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "stack",
+        "multiple_scenes": false
+      },
       "stopped_assessment": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-readiness-20260930.json",
         "sha256": "00853ad168c4d36597e206da7d03334a4a60767c7adf6d9c24ecd6ec6c2ad08a"
       },
-      "admission": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01/runtime/native-admission.json",
-        "sha256": "23ec2cdb9c2a16950c3d20bb3932fdd45e6e36996308ca805cc9b098610441f5"
-      }
+      "native_admitted": false,
+      "new_native_runs": 0,
+      "gate_closures": []
     }
   },
   "s2_acceptance_review": {
