@@ -21,6 +21,7 @@ import physical_local as local
 import physical_automatic as automatic
 import runtime as original
 import installed_code
+import reviewer_assignment
 from capture_io import atomic, encoded
 
 shared=builds.shared
@@ -106,7 +107,8 @@ def verify(root):
 
 def reviewed(root):
     plan=verify(root);review=shared.read(root/'review.json');controls=shared.read(root/'controls.json')
-    require(review['state']==controls['state']=='PASS' and review['reviewer']=='/root/c06_runtime_plan' and
+    reviewer_assignment.require_reviewer(review,shared.sha(root/'plan.json'),root)
+    require(review['state']==controls['state']=='PASS' and
         review['plan_sha256']==controls['plan_sha256']==shared.sha(root/'plan.json') and
         review['controls_sha256']==shared.sha(root/'controls.json') and controls['helpers']==plan['helpers'],'physical review/controls absent')
     return plan
