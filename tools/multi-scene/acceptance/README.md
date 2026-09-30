@@ -497,6 +497,14 @@ actual recorder with minimal signal models. The display digest is a binding
 placeholder until actual source-bound display artifacts are verified. Saved Swift
 bytes and synthetic transfer controls qualify the client only. Native bootstrap,
 physical transfers, backend and safe cleanup integration remain unqualified.
+The isolated `scene_background_display_contract.swift` and host checker bind four
+anchors to one-use host inspect commands, exact witnesses and collection work.
+Generated images qualify joins only. The dormant `scene_background_display.swift`
+renderer reuses Surface/image with per-layout rounding and no frozen geometry;
+its UIKit compile and actual supported-source capture remain pending. A-background
+requires fresh B pixels; old A pixels cannot qualify foreground. QR visibility
+does not establish whole-window visibility or input usability.
+
 No component PASS grants native or release acceptance. Sealing allows
 delayed ordinary view-document revisions, rejects additional work or changed
 owners, and precedes terminal success. Preserve post-terminal updates and cleanup

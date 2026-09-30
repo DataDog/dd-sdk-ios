@@ -283,3 +283,8 @@ critical work or changed owners. Independently join the final invocation sequenc
 and bind every raw transfer response/receipt in the checked manifest. A display digest alone does not qualify display
 evidence. The [H10 adapter](../../../tools/multi-scene/acceptance/README.md#h10-isolated-background-preparation)
 documents these component boundaries; its controls do not certify a native session.
+
+Display markers must bind the existing one-use host request and exact native
+witness. Fresh decoded owner pixels qualify only that anchor; they do not prove
+whole-window visibility, uninterrupted usability or lifecycle continuity. Keep
+those native obligations and actual supported-source qualification separate.

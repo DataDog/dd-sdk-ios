@@ -2,7 +2,7 @@
   "schema_version": 1,
   "work_item": "Isolated scene background and foreground with an unchanged usable peer",
   "gate": "S3:H10",
-  "state": "REVIEWED_HOST_CHANNEL_DISPLAY_RUNNER_UNPREPARED",
+  "state": "REVIEWED_DISPLAY_COMPONENT_RENDERER_COMPILE_PENDING",
   "owner": "Root",
   "reviewer": "/root/c06_runtime_plan",
   "defined_at": "2026-09-30T00:54:04.093738+00:00",
@@ -215,16 +215,16 @@
     "Late native/display evidence or dropped lifecycle journal rows"
   ],
   "next": [
-    "Prepare the source-bound native/display boundary validator against actual phase captures and verified silent display artifacts. The client refuses a missing validator or bare digest.",
-    "Compose fresh process/storage/installed-code bootstrap and the reviewed phase client with backend collection and safe task-only cleanup, then obtain scoped review. No native transfer has run.",
-    "Native use waits for qualified physical input/display, fresh device/backend prerequisites and user availability. No invitation before September30 09:00 Paris and no automatic start at09:00."
+    "Complete the user-requested bounded documentation consolidation after the safe checkpoint.",
+    "Then compile the isolated dormant display renderer and qualify the supported-tool source/capture before wiring a native/display boundary validator.",
+    "Compose reviewed bootstrap/backend/cleanup separately. User chose autonomous work; human availability and native prerequisites must be fresh before any later admission."
   ],
-  "updated_at": "2026-09-30T04:28:14.211088+00:00",
+  "updated_at": "2026-09-30T07:42:50.625878+00:00",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/review-r2.json",
     "sha256": "d7435346784f04ada43626bbd95247abf2f47cee3a568d8e652bbe6c32eddb9a"
   },
-  "native_input_capture_gap": "Compiled app/session and host phase/collection components are reviewed. A source-owned actual display/native boundary validator and complete bootstrap/backend/cleanup runner still prevent native admission; original H04/H06 inputs remain unchanged.",
+  "native_input_capture_gap": "Reviewed marker/decoder component added; dormant UIKit renderer remains uncompiled. Actual source capture, native/display integration and complete bootstrap/backend/cleanup still block admission.",
   "oracle_component": {
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/oracle-definition.json",
@@ -483,5 +483,22 @@
     "native_runs": 0,
     "gates_closed": [],
     "scope": "Four actual saved Swift protocol cells and31 synthetic transfer controls qualify the client only. Every IO copy is bound by chained manifests; collection independently checks the actual final invocation. Native bootstrap/display/backend/cleanup are not supplied by this component."
+  },
+  "display_component": {
+    "state": "PASS_OFFLINE_ANCHOR_COMPONENT_RENDERER_COMPILE_PENDING",
+    "verdict": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/display-anchors-cr61mmfo/verdict.json",
+      "sha256": "2ab2056b8c942a34d88c4ef888b02ae060387e132777883ce888f85f65cce890"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/display-anchors-cr61mmfo/review-final.json",
+      "sha256": "272998c6f8a3c7484c16597b1b8e1a7822db0b35c7b6e65667fabee77fd7cdd6"
+    },
+    "swift_controls": 17,
+    "image_controls": 24,
+    "ios_builds": 0,
+    "native_runs": 0,
+    "gates_closed": [],
+    "scope": "Four phase anchors bind the host command token, exact native witness, recorder prefix and collection invocation. Reuses H06 rendering primitives only. UIKit source is dormant and uncompiled; marker pixels never establish whole-window usability."
   }
 }
