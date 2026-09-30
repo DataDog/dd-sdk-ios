@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""First required SwiftUI baseline with a supported, prompt-free capture prefix.
+"""Next untouched SwiftUI cell with a supported, prompt-free capture prefix.
 
 This opt-in entrypoint reuses frozen automatic helpers. It neither migrates an
 old claim nor changes the dispatch or helper closure of historical sessions.
@@ -19,10 +19,11 @@ import uuid
 
 import human_supported_session as supported
 import human_effect_recapture
+import human_supported_continuation as continuation
 
 REPO = Path(__file__).resolve().parents[3]
 HERE = Path(__file__).resolve().parent
-KIND = 'S2_SWIFTUI_SUPPORTED_FIRST_BASELINE'
+KIND = 'S2_SWIFTUI_SUPPORTED_CONTINUATION'
 SELECTED = dict(build='baseline-26.5', device='duo', framework='SwiftUI', layout='stack', multiple_scenes=False)
 CONTRACT = 'tools/multi-scene/automatic-coverage/human_contract.py'
 RUNTIME = 'tools/multi-scene/automatic-coverage/human_runtime.py'
@@ -30,7 +31,8 @@ SESSIONS = 'tools/multi-scene/automatic-coverage/human_sessions.py'
 ADAPTERS = ['tools/multi-scene/automatic-coverage/'+name for name in (
     'human_supported_readiness.py','human_supported_session.py',
     'test_human_supported_readiness.py','test_human_supported_session.py',
-    'human_effect_recapture.py','test_human_effect_recapture.py')]
+    'human_effect_recapture.py','test_human_effect_recapture.py',
+    'human_supported_continuation.py','test_human_supported_continuation.py')]
 require = supported.require
 
 
@@ -47,7 +49,8 @@ def load_module(name, path):
     return module
 
 
-def source(stopped_reference):
+def source(stopped_reference, selected=SELECTED):
+    require(selected in continuation.UNIVERSE, 'unknown SwiftUI cell')
     stopped = bound_read(stopped_reference)
     require(stopped['selected'] == SELECTED and stopped['state'] == 'STOPPED_BEFORE_HUMAN_INPUT'
             and stopped['human_prompts'] == 0 and stopped['cleanup'] == 'PASS', 'wrong predecessor')
@@ -70,9 +73,9 @@ def source(stopped_reference):
     require(measurement == old['measurement'] and supported.sha(folder/'helpers'/CONTRACT)
             == __import__('hashlib').sha256(oracle).hexdigest(), 'predecessor native oracle changed')
     runner.human_sessions.activate_contract_file(folder/'helpers'/CONTRACT, old['helpers'][CONTRACT], runner)
-    product = runner.human_swiftui_refresh.product(refresh_root, SELECTED['build'])
-    require(product == old['products']['baseline-26.5-SwiftUI-single'], 'selected product changed')
-    return runner, old, product, refresh['arms'][SELECTED['build']]['revision']
+    product = runner.human_swiftui_refresh.product(refresh_root, selected['build'])
+    require(product == old['products'][selected['build']+'-SwiftUI-single'], 'selected product changed')
+    return runner, old, product, refresh['arms'][selected['build']]['revision']
 
 
 def helper_binding(old, stopped):
@@ -87,8 +90,15 @@ def prepare(args):
     root = args.root.resolve()
     require(not root.exists(), 'output root already consumed')
     stopped = supported.reference(args.stopped_result)
-    runner, old, product, revision = source(stopped)
-    plan = dict(schema_version=1, kind=KIND, selected=SELECTED, source=revision, product=product,
+    owner_path = args.coverage_owner.resolve()
+    require(owner_path == REPO/'DatadogRUM/MultiSceneSupport/Results/S2-coverage-remaining-preparation.json',
+            'foreign coverage owner')
+    owner = supported.read(owner_path)
+    selected, completed, _ = continuation.selection(owner)
+    require(selected['layout'] == 'stack', 'split readiness requires its own reviewed preparation')
+    runner, old, product, revision = source(stopped, selected)
+    plan = dict(schema_version=1, kind=KIND, selected=selected, source=revision, product=product,
+                completed=completed, coverage_owner=str(owner_path),
                 stopped=stopped, original_build_root=old['original_build_root'],
                 helpers=helper_binding(old, bound_read(stopped)), skill=supported.reference(args.skill),
                 tool_contract=supported.reference(args.tool_contract),
@@ -98,6 +108,8 @@ def prepare(args):
                 native_admitted=False, gates_closed=[])
     runtime = root/'runtime'
     runtime.mkdir(parents=True)
+    supported.save(runtime/'accepted-owner.json', owner)
+    plan['accepted_owner'] = supported.reference(runtime/'accepted-owner.json')
     for name in ('cells', 'operator'):
         (runtime/name).mkdir()
     plan['publication'] = runner.transport.publication_preflight(runtime)
@@ -109,11 +121,24 @@ def prepare(args):
 def verify(root, *, reviewed=True):
     runtime = Path(root)/'runtime'
     plan = supported.read(runtime/'runtime-plan.json')
-    require(plan['kind'] == KIND and plan['selected'] == SELECTED and plan['native_admitted'] is False
+    require(plan['kind'] == KIND and plan['native_admitted'] is False
             and plan['gates_closed'] == [] and plan['capture_seconds'] == 120 and plan['ready_seconds'] == 600,
             'unsupported cell or contract')
     require(plan['effect_observation'] == human_effect_recapture.CONTRACT, 'effect observation contract changed')
-    runner, old, product, revision = source(plan['stopped'])
+    selected, completed, accepted_plans = continuation.selection(bound_read(plan['accepted_owner']))
+    require(plan['selected'] == selected and selected['layout'] == 'stack' and plan['completed'] == completed
+            and plan['coverage_owner'] == str(REPO/'DatadogRUM/MultiSceneSupport/Results/S2-coverage-remaining-preparation.json'),
+            'continuation selection changed')
+    runner, old, product, revision = source(plan['stopped'], selected)
+    for prior in accepted_plans:
+        _, before, prior_product, prior_revision = source(plan['stopped'], prior['selected'])
+        require(prior['stopped'] == plan['stopped'] and prior['original_build_root'] == old['original_build_root']
+                and prior['contract'] == old['contract'] and prior['effect_observation'] == plan['effect_observation']
+                and prior['product'] == prior_product and prior['source'] == prior_revision,
+                'completed source/product/contract differs from this comparison')
+        expected_helpers = helper_binding(before, bound_read(plan['stopped']))
+        require(all(prior['helpers'][name] == expected_helpers[name] for name in before['helpers']),
+                'completed native oracle or dependency differs')
     require(plan['source'] == revision and plan['product'] == product and plan['contract'] == old['contract']
             and plan['original_build_root'] == old['original_build_root']
             and plan['helpers'] == helper_binding(old, bound_read(plan['stopped'])), 'frozen input binding changed')
@@ -147,6 +172,7 @@ def page(directory):
 def admit(args):
     runner, plan = verify(args.root)
     runtime = args.root.resolve()/'runtime'
+    continuation.current_selection(plan, supported.reference(runtime/'runtime-plan.json'))
     preflight = supported.read(args.preflight)
     now = time.time()
     require(preflight['state'] == 'PASS' and preflight['runtime_plan_sha256'] == supported.sha(runtime/'runtime-plan.json')
@@ -173,13 +199,15 @@ def admit(args):
 
 def native_ready(collector, phase, runner):
     snapshot, folder = collector.snapshot(phase, collector.deadline)
-    proof = runner.journey.ready_controls(snapshot, 'home', collector.binding, 'SwiftUI')
-    require(proof['counter'] == 0 and not any(r['kind'] in ('human_callback','native_input','human_scroll_begin','human_scroll_end','native_background')
-                                            for r in collector.evidence), 'input occurred before gesture readiness')
+    require(not any(r['kind'] in ('human_callback','native_input','human_scroll_begin','human_scroll_end','native_background')
+                    for r in collector.evidence), 'input occurred before gesture readiness')
+    launch = runner.capture.oracle.one([r for r in collector.evidence if r['kind'] == 'launch'], 'native launch')['payload']
+    root = {'stack': 'home', 'split': 'sidebar'}[launch['layout']]
+    proof = runner.journey.ready_controls(snapshot, root, collector.binding, 'SwiftUI')
+    require(proof['counter'] == 0, 'input occurred before gesture readiness')
     # The frozen observer includes input_state only for cleanup.idle. Reuse its
     # existing request-bound idle reader before input, while no Home task exists.
     # Ordinary control snapshots deliberately do not have that payload member.
-    launch = runner.capture.oracle.one([r for r in collector.evidence if r['kind'] == 'launch'], 'native launch')['payload']
     idle_folder = folder/'input-idle'
     idle_folder.mkdir()
     idle = collector.cleanup_idle(idle_folder, dict(run_id=collector.run, bundle=launch['bundle']), collector.deadline)
@@ -227,8 +255,8 @@ def scenario(collector, runner, selected, out, installed, product):
             human_effect_recapture.perform(collector, runner, step)
     rows = collector.evidence
     launch = runner.capture.oracle.one([r for r in rows if r['kind'] == 'launch'], 'complete native launch')['payload']
-    require(launch['framework'] == 'SwiftUI' and launch['layout'] == 'stack'
-            and launch['build_sdk'] == 'iphonesimulator26.5' and launch['multiple_scenes'] is False,
+    require(launch['framework'] == 'SwiftUI' and launch['layout'] == selected['layout']
+            and launch['build_sdk'] == 'iphonesimulator'+selected['build'].split('-')[1] and launch['multiple_scenes'] is False,
             'native declaration differs')
     bound = runner.capture.oracle.one([r for r in rows if r['kind'] == 'human_window_binding'], 'bound window')
     for row in rows:
@@ -252,6 +280,7 @@ def execute(args):
     root = args.root.resolve()
     runtime = root/'runtime'
     runner, plan = verify(root)
+    continuation.current_selection(plan, supported.reference(runtime/'runtime-plan.json'))
     stage = supported.read(runtime/'native-admission.json')
     require(stage['runtime_plan_sha256'] == supported.sha(runtime/'runtime-plan.json')
             and stage['review_sha256'] == supported.sha(runtime/'review.json')
@@ -290,7 +319,7 @@ def execute(args):
                        plan_sha256=stage['runtime_plan_sha256'])
         session = supported.Session(out/'supported',binding,seconds=plan['capture_seconds'],deadline=deadline,emit=lambda s:print(s,flush=True))
         session.start()
-        runner.shared.command(['xcrun','simctl','launch',device_id,bundle,'--run-id',identity['run_id'],'--layout','stack'],out,'launch',deadline=min(deadline,time.time()+60))
+        runner.shared.command(['xcrun','simctl','launch',device_id,bundle,'--run-id',identity['run_id'],'--layout',selected['layout']],out,'launch',deadline=min(deadline,time.time()+60))
         match = re.fullmatch(re.escape(bundle)+r': ([1-9][0-9]*)\s*',(out/'launch.log').read_text())
         require(match is not None, 'launch did not return exact PID'); pid=int(match[1])
         require(Path(runner.shared.process(pid)).resolve() == (installed/product['product']['executable']).resolve(), 'wrong native executable')
@@ -379,7 +408,7 @@ def run(args):
     stage=supported.read(runtime/'native-admission.json');key=runner.cell_key(plan['selected'])
     def message(value):
         print(json.dumps(value),flush=True)
-        runner.human_operator.forward(runtime/'operator',value,context='Duo / SwiftUI stack / baseline SDK26.5')
+        runner.human_operator.forward(runtime/'operator',value,context='Duo / SwiftUI '+plan['selected']['layout']+' / '+plan['selected']['build'])
     argv=[sys.executable,'-B',str(Path(__file__).resolve()),'cell','--root',str(args.root.resolve())]
     error=None
     try:
@@ -399,6 +428,7 @@ def main():
         if name=='prepare':
             command.add_argument('--stopped-result',type=Path,required=True);command.add_argument('--skill',type=Path,required=True)
             command.add_argument('--tool-contract',type=Path,required=True)
+            command.add_argument('--coverage-owner',type=Path,required=True)
         if name=='admit':
             command.add_argument('--preflight',type=Path,required=True);command.add_argument('--tool-owner',required=True)
     args=parser.parse_args()

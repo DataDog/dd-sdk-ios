@@ -62,8 +62,9 @@ qualify before another human invitation; it supplies no behavioral or release cr
 The [stopped first baseline](../../../DatadogRUM/MultiSceneSupport/Results/S2-swiftui-readiness-20260930.json)
 stopped before prompts: the native graph exposed only UIView ancestry, with no
 source-defined controls. The opt-in `human_supported_readiness.py` adds the missing
-supported Xcode session to the first required baseline. `prepare --root NEW_ROOT
---stopped-result STOPPED_RECORD --skill EXPORTED_SKILL --tool-contract LIVE_SCHEMAS`
+supported Xcode session to each selected stack cell. The completed SDK26.5 baseline
+qualifies that sequence. `prepare --root NEW_ROOT --stopped-result STOPPED_RECORD
+--skill EXPORTED_SKILL --tool-contract LIVE_SCHEMAS --coverage-owner CURRENT_OWNER`
 binds the existing product and frozen collector/oracle; focused controls and exact
 designated review precede `admit --root NEW_ROOT --preflight FRESH_PREFLIGHT
 --tool-owner EXCLUSIVE_SUBAGENT`. `run --root NEW_ROOT` installs and verifies the app,
@@ -75,10 +76,18 @@ snapshots omit input state: each readiness check also requests the existing nati
 `cleanup.idle` inventory under its own output folder. That reader is used before
 Home is armed and performs no input. The page then requests fresh Ready, followed
 by another control and input-idle check before the unchanged journey.
-The [execution owner](../../../DatadogRUM/MultiSceneSupport/Results/S2-swiftui-effect-recapture-20260930.json)
-records controller identity, admission and results. Failed setup stops before prompts;
+The [coverage owner](../../../DatadogRUM/MultiSceneSupport/Results/S2-coverage-remaining-preparation.json)
+selects the execution record with controller identity, admission and results. Failed setup stops before prompts;
 unresolved session closure blocks app teardown and preserves diagnostic evidence.
-Original failures remain unchanged. This is capture preparation, not SDK evidence.
+Original failures remain unchanged. Preparation supplies no native credit.
+
+`human_supported_continuation.py` verifies the completed native prefix and selects
+one successor in the fixed six-cell matrix. It binds an immutable owner snapshot,
+original summaries, complete artifact inventories, exact source copies, products,
+reviews and cleanup. Admission also checks the current owner still selects that
+plan and prefix. A prepared, partial or reordered result cannot skip a cell; a
+completed cell cannot be selected again. Supported split readiness needs its own
+reviewed preparation; the current continuation is limited to stack cells.
 
 `human_effect_recapture.py` permits one additional SwiftUI tap/toggle observation
 only when public traversal encounters a new view missing from its owned-ancestry
@@ -88,7 +97,7 @@ The full graph, original callback, one counter increment and unchanged ownership
 must pass; intervening input/lifecycle/geometry changes stop the run. Receipts and
 local/final summaries retain `NATIVE_EFFECT_RECAPTURED` and the failed-capture
 reference. A second incomplete observation stops. Cleanup captures cannot replace
-scenario evidence; first native qualification belongs to the planned baseline.
+scenario evidence. The accepted SDK26.5 stack baseline includes one such recapture.
 
 `human_split.py` is the scoped candidate-only split continuation. Its comparison
 keeps actual pane layout, per-input owners and View inventory separate from the

@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "state": "REVIEWED_PREPARATION",
+  "owner": "EXP-210",
+  "gates": [
+    "S2:C09",
+    "S2:C10",
+    "S2:H14"
+  ],
+  "scope": "Select the next untouched SwiftUI cell from the fixed six-cell matrix after validating the accepted prefix. Reuse frozen SDK, fixture, products, native oracle and supported capture sequence.",
+  "accepted_prefix_owner": "Results/S2-coverage-remaining-preparation.json",
+  "first_accepted_result": "Results/S2-swiftui-effect-recapture-20260930.json",
+  "next_cell": {
+    "build": "baseline-27.1",
+    "device": "duo",
+    "framework": "SwiftUI",
+    "layout": "stack",
+    "multiple_scenes": false
+  },
+  "contract": [
+    "Preserve every consumed plan, raw observation, verdict and source-at-run snapshot.",
+    "Validate accepted summaries, native reviews, exact source/product bindings, event/receipt/local-result hashes and successful cleanup before skipping a completed cell.",
+    "Freeze the ordered completed prefix and select exactly its successor; reject a gap, repeat, reordered or incomplete prefix and stale current selection at admission.",
+    "Derive SDK and layout from that selection. Keep actual returned capture responses, strict ownership and recapture classification unchanged.",
+    "Use focused offline selection/reuse controls and the designated exact-source review before one planned human cell. No diagnostic launch or new SDK build.",
+    "Keep existing operational budgets and one admission per plan; never extend an active deadline. No new timing acceptance rule."
+  ],
+  "native_admitted": false,
+  "native_runs": 0,
+  "gate_closures": [],
+  "release_acceptance": false,
+  "scenario": "NOT_RUN",
+  "evidence": "PREPARATION_ONLY",
+  "cleanup": "NOT_REQUIRED",
+  "next_action": "Fresh native/build-lane and Duo preflight, supported automatic capture, then page Ready for the SDK27.1 SwiftUI stack baseline. Preserve the accepted SDK26.5 cell; no rebuild is needed.",
+  "plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/stack-baseline-271/runtime/runtime-plan.json",
+    "sha256": "a5e44e227471e318ad799b55daf252330f6306e97db54a11ede726d328402726"
+  },
+  "controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/stack-baseline-271/runtime/controls.json",
+    "sha256": "fe322215c2b5d250592fcf893c692bf62f2df6e56a5aad5adb5f7a4c0c0b7045"
+  },
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/stack-baseline-271/runtime/review.json",
+    "sha256": "eb173e0b1d492b01c9659c973b590aa6090447698576408e16bed7c3172d4f86"
+  },
+  "updated_at": "2026-09-30T10:46:08.196816+00:00",
+  "selected": {
+    "build": "baseline-27.1",
+    "device": "duo",
+    "framework": "SwiftUI",
+    "layout": "stack",
+    "multiple_scenes": false
+  },
+  "offline_controls": 53,
+  "accepted_prefix_check": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/accepted-prefix-check.json",
+    "sha256": "c7fcb3c22fa61ace9512ab678c9ab35fb3cac21152c2a680a8a96c2c54997b81"
+  },
+  "selection_at_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/stack-baseline-271/runtime/selection-at-review.json",
+    "sha256": "32e825500397e2c000a6f67f0e91469b6078f0dadeb012461414cb729b62ed0b"
+  }
+}

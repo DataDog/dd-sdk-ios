@@ -42,7 +42,7 @@ class ReadinessTests(unittest.TestCase):
         # Match the frozen observer: ordinary snapshots omit input_state;
         # a separate cleanup.idle request supplies the actual native inventory.
         self.collector.snapshot=lambda *_:({'payload':{'topology':{}}},self.out)
-        self.collector.evidence=[dict(kind='launch',payload={'bundle':'fixture'})]
+        self.collector.evidence=[dict(kind='launch',payload={'bundle':'fixture','layout':'stack'})]
         def capture_idle(folder,identity,deadline):
             self.assertEqual(identity,{'run_id':self.collector.run,'bundle':'fixture'})
             self.assertEqual(deadline,self.collector.deadline)

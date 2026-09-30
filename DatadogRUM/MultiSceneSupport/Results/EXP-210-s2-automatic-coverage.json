@@ -2,7 +2,7 @@
   "schema_version": 1,
   "experiment": "EXP-210",
   "title": "Qualify the frozen E01 S2 automatic UIKit and SwiftUI coverage",
-  "status": "PARTIAL: S2 UIKIT VIEW/ACTION GATES CLOSED; SIX SWIFTUI CELLS REMAIN",
+  "status": "PARTIAL: S2 UIKIT VIEW/ACTION GATES CLOSED; SWIFTUI SDK26.5 STACK BASELINE QUALIFIED; FIVE CELLS REMAIN",
   "defined_at": "2026-09-20T16:41:07.286869+00:00",
   "defined_before_implementation": true,
   "owner": "root",
@@ -1045,24 +1045,24 @@
       }
     ],
     "s2_swiftui_remaining_continuation": {
-      "state": "PREPARATION_ONLY",
+      "state": "REVIEWED_PREPARATION",
       "owner": "Results/S2-coverage-remaining-preparation.json",
-      "execution_record": "Results/S2-swiftui-effect-recapture-20260930.json",
-      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2",
+      "execution_record": "Results/S2-swiftui-continuation-20260930.json",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/stack-baseline-271",
       "plan": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/runtime-plan.json",
-        "sha256": "571d0368672d90676cbba9bef8472a2861d2c9d8ca5d0dde95ac4b40851e2efe"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/stack-baseline-271/runtime/runtime-plan.json",
+        "sha256": "a5e44e227471e318ad799b55daf252330f6306e97db54a11ede726d328402726"
       },
       "controls": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/controls.json",
-        "sha256": "aee37e1d0f0da44051543cb9d82e87a7a5c5829d45ccac6b998de608191b6174"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/stack-baseline-271/runtime/controls.json",
+        "sha256": "fe322215c2b5d250592fcf893c692bf62f2df6e56a5aad5adb5f7a4c0c0b7045"
       },
       "review": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/review.json",
-        "sha256": "2c7583cb7b3dc33e9d2644c530403a1600d09e28caf93d9ede02826b73721802"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/stack-baseline-271/runtime/review.json",
+        "sha256": "eb173e0b1d492b01c9659c973b590aa6090447698576408e16bed7c3172d4f86"
       },
       "selected": {
-        "build": "baseline-26.5",
+        "build": "baseline-27.1",
         "device": "duo",
         "framework": "SwiftUI",
         "layout": "stack",
@@ -1083,7 +1083,9 @@
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-input-idle-20260930.json",
         "sha256": "e34b536b275cfec91b78e8663771df69d297f9be17e21103a7b4b8c412fe85c0"
       }
-    }
+    },
+    "swiftui_execution_owner": "Results/S2-swiftui-continuation-20260930.json",
+    "accepted_swiftui_baseline": "Results/S2-swiftui-effect-recapture-20260930.json"
   },
   "s2_acceptance_review": {
     "owner": "Results/S2-release-gate-review-20260925.json",
