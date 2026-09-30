@@ -110,6 +110,15 @@ and cleanup remain immutable; separate reviewed restoration proves task removal
 and actual Closed display only. Do not widen recapture to folds or repeat the
 human cell without a source-backed correction and fresh capture qualification.
 
+The [bounded ancestry diagnostic](../../../DatadogRUM/MultiSceneSupport/Results/S2-swiftui-ancestry-20260930.json)
+keeps missing-ancestry capture rejected while recording reciprocal parent membership.
+Its first Open snapshot preceded native resize; the preserved tail contains the
+later geometry, and cleanup passes. The attempt stays INVALID. A display switch
+alone is insufficient readiness for an app snapshot. A future adapter must observe
+fresh native geometry, then join a new owned snapshot and actual display readback
+within the original budget. The geometry hint cannot replace ownership assertions,
+classify an unobserved alias or qualify a release gate.
+
 `human_split.py` is the scoped candidate-only split continuation. Its comparison
 keeps actual pane layout, per-input owners and View inventory separate from the
 inherited Home limitation. Compare in-memory and persisted inventories through

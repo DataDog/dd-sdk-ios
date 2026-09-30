@@ -209,3 +209,14 @@ INVALID. A separately reviewed nine-control restoration preserved evidence, prov
 native idle after Released, removed only the task app and restored actual Closed
 display; the app/controller/page are absent. The next task is capture repair before
 any human repeat. No SwiftUI or resize gate closes from this attempt.
+
+The separate [ancestry diagnostic](../Results/S2-swiftui-ancestry-20260930.json)
+adds failure-only reciprocal-parent evidence to one copied baseline product.
+Six renderer controls and six request/ownership controls pass; one build preserves
+SDK/UI bytes outside that observer branch. The one automatic Open attempt remains
+INVALID: the display switched before the requested app snapshot reflected its size.
+The preserved tail later reaches the expected native dimensions, while all three
+snapshots have complete accessibility inventories. The earlier ancestry failure is
+therefore unresolved. Task-only cleanup and restoration pass; 218 artifact hashes
+and app/controller absence are verified. Next is offline event-driven fold readiness,
+not another admitted native run. All accepted cells and prior failures remain intact.

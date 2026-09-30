@@ -44,7 +44,7 @@
         "multiple_scenes": false
       }
     ],
-    "prerequisites": "Persistent SDK27.1 split accessibility capture must be repaired and qualified before fresh human readiness.",
+    "prerequisites": "Persistent SDK27.1 split ancestry remains unresolved. The one automatic diagnostic stopped on an early geometry snapshot and cleaned up; prepare event-driven readiness offline before any new native admission or human invitation.",
     "review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting/runtime/review.json",
       "sha256": "077abf3f22847aa8547c60ef103912d2ea6f328e18018a95b404176e714f5fe5"
@@ -533,5 +533,8 @@
         "sha256": "bc67dea7037b2debbacd69c8ad9e51c14251071ae56c32a10a2e595943798af8"
       }
     }
-  ]
+  ],
+  "capture_diagnostic": {
+    "record": "Results/S2-swiftui-ancestry-20260930.json"
+  }
 }

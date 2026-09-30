@@ -1251,5 +1251,6 @@
     "remaining_cells": 2,
     "result": "SDK26.5 split baseline qualifies. SDK27.1 baseline stopped at the first unfold on persistent accessibility ancestry failure; original attempt/cleanup remain INVALID and separate restoration passes. Both SDK27.1 comparisons remain; no SDK-regression or gate-closure claim.",
     "stopped_attempt": "Results/S2-swiftui-split271-20260930.json"
-  }
+  },
+  "current_capture_diagnostic": "Results/S2-swiftui-ancestry-20260930.json"
 }

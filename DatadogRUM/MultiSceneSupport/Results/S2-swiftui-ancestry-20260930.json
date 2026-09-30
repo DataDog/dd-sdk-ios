@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "state": "DIAGNOSTIC_STOPPED_GEOMETRY_CLEANUP_PASS",
+  "owner": "EXP-210",
+  "gates": [
+    "S2:C09",
+    "S2:C10",
+    "S2:H14"
+  ],
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-ancestry-j7r7e8fi/definition.json",
+    "sha256": "db68ae2e919dd6fe84f31aebd4e706a8161d6e1881609a52e1be9d0c4df97db9"
+  },
+  "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-ancestry-j7r7e8fi",
+  "native_admitted": true,
+  "native_runs": 1,
+  "gates_closed": [],
+  "next_action": "Prepare and review an event-driven fold-readiness discriminator offline. No new native admission or human invitation. Preserve the original diagnostic and all accepted cells.",
+  "build_plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-ancestry-j7r7e8fi/build-plan.json",
+    "sha256": "f3768cf7b72bd489700e749d1877a490d840f3c9b40fa4db7439bca2006fded0"
+  },
+  "build_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-ancestry-j7r7e8fi/build-review.json",
+    "sha256": "8d86419cc982fa1c1b23e49ef24e234583a38d206173a2d5edf30dd34dda9343"
+  },
+  "build": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-ancestry-j7r7e8fi/build/result.json",
+    "sha256": "620e6f7ef62bc19213ff81e7cc3d7096e9b657c40ee4704aeae83fced8586853"
+  },
+  "controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-ancestry-j7r7e8fi/offline-controls.json",
+    "sha256": "fbd54aafb71c23e40150e92b8071305cbf690c54ad91793c3cf35f4057256cd5"
+  },
+  "native_controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-ancestry-j7r7e8fi/native-offline-controls-r2.json",
+    "sha256": "a890052e576295a90732e64be51217889c8366ea660230cb3767ccbed66808b1"
+  },
+  "native_plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-ancestry-j7r7e8fi/native/plan.json",
+    "sha256": "99529eaea5a60ad2303d4bb25680cdff84ecb2f228538827b3f451cb8c290204"
+  },
+  "updated_at": "2026-09-30T14:14:36.684128+00:00",
+  "native_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-ancestry-j7r7e8fi/native/review.json",
+    "sha256": "edda2e4f8c54070ba63f209f08520e59bfa7119a9939a289edc45e4066fdb275"
+  },
+  "admission": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-ancestry-j7r7e8fi/native/admission.json",
+    "sha256": "bd5da89de726bb14396a3bd4d4c08a913836e802b8135a2978731bf664a599a6"
+  },
+  "controller": 21462,
+  "scenario": "NOT_ASSESSED",
+  "evidence": "INCOMPLETE",
+  "cleanup": "PASS",
+  "original_verdict": "INVALID_DIAGNOSTIC",
+  "result": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-ancestry-j7r7e8fi/native/result.json",
+    "sha256": "95dc5aa07a42160142e2dd738b394638d113534d7bd398380b7ea8ecad2dfffe"
+  },
+  "post_exit": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-ancestry-j7r7e8fi/native/post-exit.json",
+    "sha256": "58590ef0ec2dde59133aec8050e6a07efe12ffdd88d8584d6e4734cb4f46c2f1"
+  },
+  "source_at_run": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-ancestry-j7r7e8fi/source-at-run/manifest.json",
+    "sha256": "70d7d2e6882214e38e944e4f46f06833799e47c5d791c048a34bb167106eb1ed"
+  },
+  "classification": "ANCESTRY_NOT_REPRODUCED; GEOMETRY_BOUNDARY_CAPTURED_EARLY",
+  "observed": {
+    "closed_sequence": 17,
+    "open_sequence": 31,
+    "cleanup_sequence": 34,
+    "accessibility_inventory_counts": [
+      106,
+      110,
+      110
+    ],
+    "actual_inner_display_pixels": [
+      2853,
+      2007
+    ],
+    "snapshot_window_points": [
+      466,
+      678
+    ],
+    "later_native_geometry_sequence": 47,
+    "later_native_geometry_points": [
+      951,
+      669
+    ],
+    "same_native_scene": true,
+    "native_geometry_tail_not_acceptance": true,
+    "artifacts_verified": 218
+  },
+  "native_assessment": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-ancestry-j7r7e8fi/native/native-assessment.json",
+    "sha256": "88ba411eb5fd6c4c1a2d32060a9ee9e4015d2dc148b22029f6fbcf650e92ac54"
+  }
+}
