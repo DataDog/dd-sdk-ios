@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "state": "UIKIT_VIEW_ACTION_GATES_CLOSED_SWIFTUI_REMAINS",
-  "updated_at": "2026-09-30T09:34:09.480373+00:00",
+  "updated_at": "2026-09-30T09:45:12.491610+00:00",
   "execution": {
     "record": "Results/S2-swiftui-input-idle-20260930.json"
   },
@@ -76,7 +76,7 @@
         "multiple_scenes": false
       }
     ],
-    "prerequisites": "Run the corrected first baseline under fresh preflight and controller identity. Present Ready only after actual supported capture, session closure, controls and separate input-idle proof."
+    "prerequisites": "Inspect saved before/after toggle inventory against the frozen public-accessibility oracle. No repeat of gestures or stopped mechanisms without a source-backed correction and review."
   },
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
@@ -254,7 +254,7 @@
       "sha256": "a03937f936f15c73483b77b6aaa84719c74fc13bb1d33319b78e037a4b8629ba"
     },
     "home_controls": 43,
-    "next_action": "Run the corrected first baseline under fresh preflight and controller identity. Present Ready only after actual supported capture, session closure, controls and separate input-idle proof.",
+    "next_action": "Inspect saved before/after toggle inventory against the frozen public-accessibility oracle. No repeat of gestures or stopped mechanisms without a source-backed correction and review.",
     "latest_attempt": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-readiness-20260930.json",
       "sha256": "00853ad168c4d36597e206da7d03334a4a60767c7adf6d9c24ecd6ec6c2ad08a"

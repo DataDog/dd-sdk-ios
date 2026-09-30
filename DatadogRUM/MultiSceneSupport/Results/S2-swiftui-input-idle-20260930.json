@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "state": "PREPARED_REVIEWED_PENDING_NATIVE",
-  "updated_at": "2026-09-30T09:34:09.480373+00:00",
+  "state": "STOPPED_TOGGLE_INVENTORY",
+  "updated_at": "2026-09-30T09:42:20.549463+00:00",
   "owner": "EXP-210",
   "gates": [
     "S2:C09",
@@ -39,19 +39,102 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/schema-correction-replay/result.json",
     "sha256": "1506a5aed60819f99437a1b4c446ea841ab96dd6af85a24b5844ba6b4b8688a1"
   },
-  "scenario": "NOT_RUN",
-  "evidence": "PREPARATION_ONLY",
-  "cleanup": "NOT_RUN",
-  "native_launches": 0,
-  "human_prompts": 0,
-  "human_inputs": 0,
+  "scenario": "UNQUALIFIED",
+  "evidence": "INCOMPLETE",
+  "cleanup": "PASS",
+  "native_launches": 1,
+  "human_prompts": 2,
+  "human_inputs": 2,
   "backend_queries": 0,
   "qualified_cells": 0,
   "gates_closed": [],
   "release_acceptance": false,
-  "controller": null,
-  "admission": null,
+  "controller": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/controller.json",
+    "sha256": "6935e9b8b6049d338aaabb8ac4dfee630cba1f1176dcf6cebedcfec5e92e483c"
+  },
+  "admission": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/native-admission.json",
+    "sha256": "cf629aff6c6695da9629a5335b912592f2d03c7077ebfb1ae01d5611972e7f5d"
+  },
   "offline_controls": 26,
-  "classification": "Host-only idle-schema correction. Ordinary controls and input inventory are separate native requests. Same product, source, oracle and journey.",
-  "next_action": "Run the corrected first baseline under fresh preflight and controller identity. Present Ready only after actual supported capture, session closure, controls and separate input-idle proof."
+  "classification": "Supported capture, closure, all three native control/input-idle checks, fresh Ready and first tap qualified. Post-toggle public accessibility inventory was rejected; no complete baseline or SDK attribution follows.",
+  "next_action": "Inspect saved before/after toggle inventory against the frozen public-accessibility oracle. No repeat of gestures or stopped mechanisms without a source-backed correction and review.",
+  "supported_capture": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/supported/capture/proof.json",
+    "sha256": "286c499dcbd128652dab4710b93d76ae530d814e353572b4231f36fead444511"
+  },
+  "supported_end": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/supported/ended.json",
+    "sha256": "c5e8c4c85bab8377f648e51fe9ea7c15b6fa9f2076f43da5032ec8fe8930d680"
+  },
+  "tool_owner_completion": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/supported/worker-completed.json",
+    "sha256": "aa7a8f3b9d8130cdbb47bb7fe06b6d825fe5e151fbfc0ebe8b54d5c5b33a921c"
+  },
+  "ready_request": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/operator-ready/request.json",
+    "sha256": "95d207dc31d4c00750e8e5300d0c38f4460d29a2e5ac9d8aff11b6b799faf4a1"
+  },
+  "readiness_proofs": {
+    "supported.before-end": {
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/input/supported.before-end/controls-ready.json",
+        "sha256": "32f84fd879fe7049dff36912d92f95f8f2024a07b53bb4a2e1b63c30d5415c84"
+      },
+      "idle": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/input/supported.before-end/input-idle/proof.json",
+        "sha256": "45a9a7e48abd9dfa4300e238a285086317f1f161a490eaa57a133475418b9a56"
+      }
+    },
+    "supported.after-end": {
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/input/supported.after-end/controls-ready.json",
+        "sha256": "c7ef02df11a3621539781a9427d8daf2a7f194023d40d0ad3a5a9040ae630422"
+      },
+      "idle": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/input/supported.after-end/input-idle/proof.json",
+        "sha256": "35a2bf63b6f4d66213c96b178cf847cd7fa442d1609b43fac7a6e1c20a0a31b9"
+      }
+    },
+    "supported.after-ready": {
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/input/supported.after-ready/controls-ready.json",
+        "sha256": "ba8b193d53f6243547c2edac5abcd172c13d0217aeed97e413b957f9c82ae684"
+      },
+      "idle": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/input/supported.after-ready/input-idle/proof.json",
+        "sha256": "6c50000b65cc45ed8097c39909f4b48d7a223a7b17a917ae05719264aa65244e"
+      }
+    }
+  },
+  "reason": "automatic human input: incomplete public accessibility inventory",
+  "original_summary": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/summary.json",
+    "sha256": "d1b49d98cdfbfdc8efdf4934b3e511bf2b35a045109007ed5500d9ea9535cca1"
+  },
+  "supervisor": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/baseline-26.5-duo-SwiftUI-stack-single-driver.supervisor.json",
+    "sha256": "b6158662e6487569dad4cc550b88d892f2f21974a64d3d1698a570387e1f8ca7"
+  },
+  "ready_ack": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/operator-ready/operator-released.json",
+    "sha256": "1df2f2cd4ea2e4fb11fc0e6e4f0d04974819ce08a49943c31b71271b82b078ba"
+  },
+  "release_ack": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/human-release/operator-released.json",
+    "sha256": "67c0572f3ec1725dbd01218d395839b528cc430250f858352283a6fa6240747f"
+  },
+  "instruction_server_stopped": true,
+  "source_at_run": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/source-at-run/manifest.json",
+    "sha256": "70bc48d3a8b0fa30d94d6fe603c9fce90aab78cd8a6f6bf7dbfb62cf925d138f"
+  },
+  "restoration_verified": {
+    "task_container_absent": true,
+    "original_pids_absent": true,
+    "supervisor_worker_absence": "PASS",
+    "cleanup": "PASS"
+  },
+  "native_capture_prerequisite": "QUALIFIED_START_CAPTURE_END_CONTROLS_AND_IDLE"
 }
