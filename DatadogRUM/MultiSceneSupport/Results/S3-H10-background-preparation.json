@@ -2,7 +2,7 @@
   "schema_version": 1,
   "work_item": "Isolated scene background and foreground with an unchanged usable peer",
   "gate": "S3:H10",
-  "state": "BACKEND_COLLECTOR_COMPONENT_QUALIFIED",
+  "state": "BOOTSTRAP_CLEANUP_COMPONENT_QUALIFIED",
   "owner": "Root",
   "reviewer": "/root/c06_runtime_plan",
   "defined_at": "2026-09-30T00:54:04.093738+00:00",
@@ -215,15 +215,15 @@
     "Late native/display evidence or dropped lifecycle journal rows"
   ],
   "next": [
-    "Compose the reviewed native session, host command channel, display anchors and sealed backend collector with bootstrap and task-only cleanup before native admission.",
-    "Actual supported-source silent capture remains unqualified. Component controls, compile and review grant no runtime or release-gate acceptance; fresh human availability is required for any later human session."
+    "Define and implement the smallest H10 physical still-source adapter using actual returned Xcode MCP artifacts and the existing display decoder; source/device/session/inspect bindings and focused controls precede native qualification.",
+    "Compose actual native/display/bootstrap/backend/cleanup evidence before one bounded H10 admission. H06 continuous silent recording and physical Duo remain separate."
   ],
-  "updated_at": "2026-09-30T17:17:03.448704+00:00",
+  "updated_at": "2026-09-30T21:00:58.642687+00:00",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/review-r2.json",
     "sha256": "d7435346784f04ada43626bbd95247abf2f47cee3a568d8e652bbe6c32eddb9a"
   },
-  "native_input_capture_gap": "Dormant UIKit renderer compile and sealed backend collector qualify. Actual source capture, native/display validation and full bootstrap/cleanup composition still block admission.",
+  "native_input_capture_gap": "Reviewed bootstrap/cleanup and backend components qualify offline. Actual supported-source still capture, source-bound native/display validation and full runtime composition still block admission.",
   "oracle_component": {
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/oracle-definition.json",
@@ -594,5 +594,82 @@
     "backend_queries": 0,
     "gates_closed": [],
     "scope": "Fixed signal-derived interval and independent indexing budget. Actual durable pages are checked for contradictions before retry, including changing counts. Complete exact View/work owners required; prospective failed results are invalidated. No native/display/cleanup/teardown authority."
+  },
+  "bootstrap_cleanup_component": {
+    "state": "REVIEWED_OFFLINE_COMPONENT",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-bootstrap-k40_0mn0",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-bootstrap-k40_0mn0/definition.json",
+      "sha256": "777550b448c587fe9b37eb87ff8030c4e87e133f0dc0e19537229fdfdbc844e5"
+    },
+    "native_runs": 0,
+    "gates_closed": [],
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-bootstrap-k40_0mn0/controls-r3.json",
+      "sha256": "8e8382c841f507c4fac36fbfb15e5d77658db9a3fc77f73f993a9263977fb1e1"
+    },
+    "control_log": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-bootstrap-k40_0mn0/controls-r3.log",
+      "sha256": "af8b07117e7bc819ce8b92f08d3b8a6c01b9d67f82d3e3568d3a269de1d5e03d"
+    },
+    "tests": 41,
+    "original_failed_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-bootstrap-k40_0mn0/controls-r1.json",
+      "sha256": "46abda21ff9a46b81693eace53050aadf1b6ebcc587a936e98fa240bb5bb50fa"
+    },
+    "original_control_source": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-bootstrap-k40_0mn0/source-r1.json",
+      "sha256": "5f35328f0a125a1412a2a10136529ab434d079b7d6337a396538b53953155892"
+    },
+    "reviewer_assignment": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-bootstrap-k40_0mn0/reviewer-assignment-r2.json",
+      "sha256": "cf51d9944133b1d98fa81b2a7f387218d1c1e2ebb02493873f8620d03409c526"
+    },
+    "source_closure": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-bootstrap-k40_0mn0/source-closure-r3.json",
+      "sha256": "054416cc9380f3050eab556d7075d967e8ae92bcdd731fad0f4c29aef5ddf218"
+    },
+    "reviewer": "/root/h10_backend_reviewer",
+    "scope": "H10-specific bootstrap, original IO/product/process bindings, release before STOP, original A/B idle ownership and scoped task cleanup. Synthetic controls only; full runtime, native/source/display and gate acceptance remain unqualified.",
+    "prior_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-bootstrap-k40_0mn0/review-r1.json",
+      "sha256": "0b725496d276020b3a8e8dd9dcb3701becd8a6d9e60087c9073d39fc6172dc1b"
+    },
+    "prior_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-bootstrap-k40_0mn0/controls-r2.json",
+      "sha256": "3eb572f63d67e00deacb465544bf7a973bc71c29f03bfabd8822e66301e5ea13"
+    },
+    "source": [
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/acceptance/scene_background_bootstrap.py",
+        "sha256": "e5d6e6f3b5024dfd285a7915fd3c2fc4268fd7f4ea59b75fbb5403157eae84e4"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/acceptance/test_scene_background_bootstrap.py",
+        "sha256": "87bcb51d3d93dc0096c53c05f17c32694b8589e172c9c0c2acd9268c2cc1867e"
+      }
+    ],
+    "repaired_findings": [
+      "H10-BOOTSTRAP-R1-01",
+      "H10-BOOTSTRAP-R1-02"
+    ],
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-bootstrap-k40_0mn0/review-r2.json",
+      "sha256": "02d02ee7a182a6e672186e19ff441c859cc3357a59b1fd7718a1fbe9ae190c5c"
+    },
+    "verdict": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-bootstrap-k40_0mn0/verdict.json",
+      "sha256": "cc98e2ce732627256a40846921285fd496470625a3ad98b16dd322917ef87878"
+    }
+  },
+  "source_capture_preparation": {
+    "state": "PROPOSED_NEXT_COMPONENT_NO_NATIVE_ADMISSION",
+    "design": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-bootstrap-k40_0mn0/next-source-producer-design.json",
+      "sha256": "c1053793c4ce991e88e88ebd5c7bc79ebd1c0a5bdcb20adb5255a91f4086c550"
+    },
+    "discriminator": "The current Xcode MCP contract explicitly supports physical-device still capture without activation or input; H10 needs four one-use display anchors, not H06 continuous video.",
+    "native_runs": 0,
+    "gates_closed": []
   }
 }
