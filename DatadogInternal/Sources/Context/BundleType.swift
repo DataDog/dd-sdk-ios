@@ -6,7 +6,7 @@
 
 import Foundation
 
-public enum BundleType: String, CaseIterable {
+public enum BundleType: String, CaseIterable, Codable {
     /// An iOS application.
     case iOSApp
     /// An iOS app extension.

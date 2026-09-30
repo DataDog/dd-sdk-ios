@@ -74,6 +74,9 @@ public struct CrashContext: Codable, Equatable {
     /// The identifier of the remote configuration the SDK was configured with.
     public let remoteConfigurationId: String?
 
+    /// Denotes the mobile application's process type, such as its main process or an app extension process.
+    public let applicationBundleType: BundleType
+
     /// The last RUM view in crashed app process.
     public var lastRUMViewEvent: RUMViewEvent?
 
@@ -109,7 +112,8 @@ public struct CrashContext: Codable, Equatable {
         lastRUMSessionState: RUMSessionState?,
         lastRUMAttributes: RUMEventAttributes?,
         lastLogAttributes: LogEventAttributes?,
-        remoteConfigurationId: String? = nil
+        remoteConfigurationId: String? = nil,
+        applicationBundleType: BundleType = .iOSApp
     ) {
         self.serverTimeOffset = serverTimeOffset
         self.service = service.sanitizedToDDTags()
@@ -128,6 +132,7 @@ public struct CrashContext: Codable, Equatable {
         self.lastIsAppInForeground = lastIsAppInForeground
         self.appLaunchDate = appLaunchDate
         self.remoteConfigurationId = remoteConfigurationId
+        self.applicationBundleType = applicationBundleType
         self.lastRUMViewEvent = lastRUMViewEvent
         self.lastRUMSessionState = lastRUMSessionState
         self.lastRUMAttributes = lastRUMAttributes
@@ -157,6 +162,7 @@ public struct CrashContext: Codable, Equatable {
         self.carrierInfo = context.carrierInfo
         self.lastIsAppInForeground = context.applicationStateHistory.currentState.isRunningInForeground
         self.remoteConfigurationId = context.remoteConfigurationId
+        self.applicationBundleType = context.applicationBundleType
 
         self.lastRUMViewEvent = lastRUMViewEvent
         self.lastRUMSessionState = lastRUMSessionState
