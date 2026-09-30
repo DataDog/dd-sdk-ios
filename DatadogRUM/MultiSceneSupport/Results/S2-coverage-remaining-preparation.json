@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
   "state": "UIKIT_VIEW_ACTION_GATES_CLOSED_SWIFTUI_REMAINS",
-  "updated_at": "2026-09-30T09:45:12.491610+00:00",
+  "updated_at": "2026-09-30T10:06:08.385354+00:00",
   "execution": {
-    "record": "Results/S2-swiftui-input-idle-20260930.json"
+    "record": "Results/S2-swiftui-effect-recapture-20260930.json"
   },
   "current": {
     "kind": "swiftui_preparation",
@@ -17,16 +17,16 @@
       "S2:H14"
     ],
     "plan": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/runtime-plan.json",
-      "sha256": "9b5f844c59e44a8546a68465ce5e0c747d279facc34537c044a3a146ed965d1c"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline/runtime/runtime-plan.json",
+      "sha256": "1cf92eeaec21353083e93c2a11c6822cb51c42f1086df5051837669f2fba1b17"
     },
     "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/controls.json",
-      "sha256": "e626941f472620a6c938eae34ed1fcfcbfe47fc1bd32db3fea1a24e5d862cd09"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline/runtime/controls.json",
+      "sha256": "dcb7fce123b97e8e81572a750f1ec188fdcba869eae21ae88dd74cd17dd68990"
     },
     "review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/review.json",
-      "sha256": "21e0530e5611713b80028c02b0f7f8254f66c03c3c624641dfd67620e9fa0f4b"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline/runtime/review.json",
+      "sha256": "d25d12c3e39dd867c0ade4c093193df6b034543cecb69a6eb7652ab2a55e1488"
     },
     "master_plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/master/runtime/runtime-plan.json",
@@ -76,7 +76,7 @@
         "multiple_scenes": false
       }
     ],
-    "prerequisites": "Inspect saved before/after toggle inventory against the frozen public-accessibility oracle. No repeat of gestures or stopped mechanisms without a source-backed correction and review."
+    "prerequisites": "Fresh environment/actor/page preflight, then the first planned baseline. Qualify automatic capture and fresh Ready before gestures. No duplicate diagnostic run."
   },
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
@@ -88,16 +88,16 @@
     "S2:H14"
   ],
   "swiftui_preparation": {
-    "state": "REVIEWED_IDLE_SCHEMA_CORRECTION_PENDING_NATIVE",
+    "state": "REVIEWED_EFFECT_RECAPTURE_PENDING_NATIVE",
     "owner": "Results/S2-coverage-remaining-preparation.json",
-    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline",
     "plan": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/runtime-plan.json",
-      "sha256": "9b5f844c59e44a8546a68465ce5e0c747d279facc34537c044a3a146ed965d1c"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline/runtime/runtime-plan.json",
+      "sha256": "1cf92eeaec21353083e93c2a11c6822cb51c42f1086df5051837669f2fba1b17"
     },
     "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/controls.json",
-      "sha256": "e626941f472620a6c938eae34ed1fcfcbfe47fc1bd32db3fea1a24e5d862cd09"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline/runtime/controls.json",
+      "sha256": "dcb7fce123b97e8e81572a750f1ec188fdcba869eae21ae88dd74cd17dd68990"
     },
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/definition.json",
@@ -165,15 +165,31 @@
     "new_native_runs": 0,
     "gate_closures": [],
     "review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/review.json",
-      "sha256": "21e0530e5611713b80028c02b0f7f8254f66c03c3c624641dfd67620e9fa0f4b"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline/runtime/review.json",
+      "sha256": "d25d12c3e39dd867c0ade4c093193df6b034543cecb69a6eb7652ab2a55e1488"
     },
     "master_plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/master/runtime/runtime-plan.json",
       "sha256": "8b56e529e8217cc733d43f804e2a7722e0fa0ba29ce516bc79277f05906f3063"
     },
     "builds": 3,
-    "scope": "One first-baseline adapter; existing products and frozen collector/oracle. Six SwiftUI cells remain. Execution state belongs to execution.record."
+    "scope": "One first-baseline adapter; existing products and frozen collector/oracle. Six SwiftUI cells remain. Execution state belongs to execution.record.",
+    "next_action": "Fresh environment/actor/page preflight, then the first planned baseline. Qualify automatic capture and fresh Ready before gestures. No duplicate diagnostic run.",
+    "effect_recapture": {
+      "record": "Results/S2-swiftui-effect-recapture-20260930.json",
+      "plan": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline/runtime/runtime-plan.json",
+        "sha256": "1cf92eeaec21353083e93c2a11c6822cb51c42f1086df5051837669f2fba1b17"
+      },
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline/runtime/controls.json",
+        "sha256": "dcb7fce123b97e8e81572a750f1ec188fdcba869eae21ae88dd74cd17dd68990"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline/runtime/review.json",
+        "sha256": "d25d12c3e39dd867c0ade4c093193df6b034543cecb69a6eb7652ab2a55e1488"
+      }
+    }
   },
   "swiftui_capture_correction": {
     "state": "STOPPED_NATIVE_READINESS_INCOMPLETE",

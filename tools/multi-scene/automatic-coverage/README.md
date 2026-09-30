@@ -75,10 +75,20 @@ snapshots omit input state: each readiness check also requests the existing nati
 `cleanup.idle` inventory under its own output folder. That reader is used before
 Home is armed and performs no input. The page then requests fresh Ready, followed
 by another control and input-idle check before the unchanged journey.
-The [execution owner](../../../DatadogRUM/MultiSceneSupport/Results/S2-swiftui-input-idle-20260930.json)
+The [execution owner](../../../DatadogRUM/MultiSceneSupport/Results/S2-swiftui-effect-recapture-20260930.json)
 records controller identity, admission and results. Failed setup stops before prompts;
 unresolved session closure blocks app teardown and preserves diagnostic evidence.
 Original failures remain unchanged. This is capture preparation, not SDK evidence.
+
+`human_effect_recapture.py` permits one additional SwiftUI tap/toggle observation
+only when public traversal encounters a new view missing from its owned-ancestry
+cache. It keeps the failed snapshot INVALID and uses a fresh `.effect.recapture`
+request within the original deadline. No new input or settle interval is added.
+The full graph, original callback, one counter increment and unchanged ownership
+must pass; intervening input/lifecycle/geometry changes stop the run. Receipts and
+local/final summaries retain `NATIVE_EFFECT_RECAPTURED` and the failed-capture
+reference. A second incomplete observation stops. Cleanup captures cannot replace
+scenario evidence; first native qualification belongs to the planned baseline.
 
 `human_split.py` is the scoped candidate-only split continuation. Its comparison
 keeps actual pane layout, per-input owners and View inventory separate from the

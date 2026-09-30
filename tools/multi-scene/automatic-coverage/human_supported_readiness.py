@@ -18,6 +18,7 @@ import urllib.request
 import uuid
 
 import human_supported_session as supported
+import human_effect_recapture
 
 REPO = Path(__file__).resolve().parents[3]
 HERE = Path(__file__).resolve().parent
@@ -28,7 +29,8 @@ RUNTIME = 'tools/multi-scene/automatic-coverage/human_runtime.py'
 SESSIONS = 'tools/multi-scene/automatic-coverage/human_sessions.py'
 ADAPTERS = ['tools/multi-scene/automatic-coverage/'+name for name in (
     'human_supported_readiness.py','human_supported_session.py',
-    'test_human_supported_readiness.py','test_human_supported_session.py')]
+    'test_human_supported_readiness.py','test_human_supported_session.py',
+    'human_effect_recapture.py','test_human_effect_recapture.py')]
 require = supported.require
 
 
@@ -90,7 +92,8 @@ def prepare(args):
                 stopped=stopped, original_build_root=old['original_build_root'],
                 helpers=helper_binding(old, bound_read(stopped)), skill=supported.reference(args.skill),
                 tool_contract=supported.reference(args.tool_contract),
-                contract=old['contract'], capture_seconds=120, ready_seconds=600,
+                contract=old['contract'], effect_observation=human_effect_recapture.CONTRACT,
+                capture_seconds=120, ready_seconds=600,
                 budget_basis='Start 4.2s, empty capture error 6.2s, End 4.0s observed. Each tool phase retains the prior 120s transport bound; no inferred session lifetime. Human step/cleanup bounds are unchanged.',
                 native_admitted=False, gates_closed=[])
     runtime = root/'runtime'
@@ -109,6 +112,7 @@ def verify(root, *, reviewed=True):
     require(plan['kind'] == KIND and plan['selected'] == SELECTED and plan['native_admitted'] is False
             and plan['gates_closed'] == [] and plan['capture_seconds'] == 120 and plan['ready_seconds'] == 600,
             'unsupported cell or contract')
+    require(plan['effect_observation'] == human_effect_recapture.CONTRACT, 'effect observation contract changed')
     runner, old, product, revision = source(plan['stopped'])
     require(plan['source'] == revision and plan['product'] == product and plan['contract'] == old['contract']
             and plan['original_build_root'] == old['original_build_root']
@@ -220,7 +224,7 @@ def scenario(collector, runner, selected, out, installed, product):
         else:
             if step['phase'] in ('initial.root.tap', 'inner.root.tap'):
                 collector.ensure_root(selected['layout'], step['phase'].split('.')[0])
-            collector.perform(step)
+            human_effect_recapture.perform(collector, runner, step)
     rows = collector.evidence
     launch = runner.capture.oracle.one([r for r in rows if r['kind'] == 'launch'], 'complete native launch')['payload']
     require(launch['framework'] == 'SwiftUI' and launch['layout'] == 'stack'
@@ -237,6 +241,7 @@ def scenario(collector, runner, selected, out, installed, product):
     (out/'events.jsonl').write_bytes(terminal)
     supported.save(out/'receipts.json', collector.receipts)
     local = runner.analyze.summarize(dict(run_id=collector.run, **selected), rows, collector.receipts)
+    local['recaptured_effects'] = human_effect_recapture.observation_summary(collector.receipts)
     require(not any(local[k] for k in ('duplicate_action_ids','unknown_action_owners','unassigned_actions','errors')),
             'local ownership requires attribution')
     supported.save(out/'local-result.json', local)
@@ -293,6 +298,7 @@ def execute(args):
             pid=pid,framework='SwiftUI',deadline=deadline,budget=plan['contract'])
         qualify(session,collector,out,stage,runner)
         terminal = scenario(collector,runner,selected,out,installed,product)
+        summary['recaptured_effects'] = human_effect_recapture.observation_summary(collector.receipts)
         summary.update(scenario='PASS',evidence='PASS')
         verify(root)
         require(time.time() < deadline, 'scenario completed outside fixed budget')

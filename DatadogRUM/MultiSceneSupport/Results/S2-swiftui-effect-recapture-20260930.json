@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "state": "REVIEWED_PENDING_NATIVE",
+  "owner": "EXP-210",
+  "gates": [
+    "S2:C09",
+    "S2:C10",
+    "S2:H14"
+  ],
+  "previous_attempt": "Results/S2-swiftui-input-idle-20260930.json",
+  "finding": "Public accessibility enumeration observed a newly attached UIView absent from the prewalked visual ancestry. The strict reader rejected the incomplete graph. A later cleanup snapshot has the original owner and updated counter, but cannot supply scenario evidence.",
+  "scope": "One new request-bound effect observation for SwiftUI tap/toggle only, within the original effect deadline. No SDK, fixture, input, build, Home or fold change.",
+  "contract": [
+    "Keep the original INVALID run and all raw observations unchanged.",
+    "Recover only the exact missing-owned-ancestry capture error in the originally bound window after the other snapshot checks pass.",
+    "Persist the failed observation and error before one distinct recapture phase/request; do not add a gesture, settle interval or deadline.",
+    "Require original launch, scene/window/root, native callback and input, and unchanged native stream prefix.",
+    "Reject intervening input, callback, lifecycle, geometry or ownership changes; validate the full recaptured graph with the existing strict oracle.",
+    "Evaluate the actual recaptured phase and counter under NATIVE_EFFECT_RECAPTURED; never rewrite a phase or substitute cleanup evidence.",
+    "Use focused offline controls and the designated exact-source review before the first planned baseline supplies native qualification. Stop on a second incomplete observation."
+  ],
+  "native_admitted": false,
+  "native_runs": 0,
+  "gate_closures": [],
+  "release_acceptance": false,
+  "updated_at": "2026-09-30T10:06:08.385354+00:00",
+  "plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline/runtime/runtime-plan.json",
+    "sha256": "1cf92eeaec21353083e93c2a11c6822cb51c42f1086df5051837669f2fba1b17"
+  },
+  "controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline/runtime/controls.json",
+    "sha256": "dcb7fce123b97e8e81572a750f1ec188fdcba869eae21ae88dd74cd17dd68990"
+  },
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline/runtime/review.json",
+    "sha256": "d25d12c3e39dd867c0ade4c093193df6b034543cecb69a6eb7652ab2a55e1488"
+  },
+  "selected": {
+    "build": "baseline-26.5",
+    "device": "duo",
+    "framework": "SwiftUI",
+    "layout": "stack",
+    "multiple_scenes": false
+  },
+  "scenario": "NOT_RUN",
+  "evidence": "NOT_RUN",
+  "cleanup": "NOT_NEEDED",
+  "offline_controls": 42,
+  "saved_replay": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/classification-reviewed-replay/result.json",
+    "sha256": "0cd191289a579069384b09406ff4d893a05450b0f45eab4e2ab6f971466b83d7"
+  },
+  "next_action": "Fresh environment/actor/page preflight, then the first planned baseline. Qualify automatic capture and fresh Ready before gestures. No duplicate diagnostic run."
+}

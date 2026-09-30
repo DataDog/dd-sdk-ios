@@ -176,3 +176,8 @@ offline controls pass. Current host-helper hashes and default-mode controls are
 explicit; offline references grant no native inheritance. No rebuild or native
 run is included in this preparation. Exact scoped review has no findings; fresh
 operator/environment readiness is required.
+
+The [current SwiftUI capture correction](../Results/S2-swiftui-effect-recapture-20260930.json)
+permits one distinct tap/toggle observation after an incomplete ancestry inventory.
+All42 controls and exact-source review pass. Failed evidence and recapture
+classification remain explicit; native qualification belongs to the next baseline.

@@ -1047,19 +1047,19 @@
     "s2_swiftui_remaining_continuation": {
       "state": "PREPARATION_ONLY",
       "owner": "Results/S2-coverage-remaining-preparation.json",
-      "execution_record": "Results/S2-swiftui-input-idle-20260930.json",
-      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5",
+      "execution_record": "Results/S2-swiftui-effect-recapture-20260930.json",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline",
       "plan": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/runtime-plan.json",
-        "sha256": "9b5f844c59e44a8546a68465ce5e0c747d279facc34537c044a3a146ed965d1c"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline/runtime/runtime-plan.json",
+        "sha256": "1cf92eeaec21353083e93c2a11c6822cb51c42f1086df5051837669f2fba1b17"
       },
       "controls": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/controls.json",
-        "sha256": "e626941f472620a6c938eae34ed1fcfcbfe47fc1bd32db3fea1a24e5d862cd09"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline/runtime/controls.json",
+        "sha256": "dcb7fce123b97e8e81572a750f1ec188fdcba869eae21ae88dd74cd17dd68990"
       },
       "review": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/review.json",
-        "sha256": "21e0530e5611713b80028c02b0f7f8254f66c03c3c624641dfd67620e9fa0f4b"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline/runtime/review.json",
+        "sha256": "d25d12c3e39dd867c0ade4c093193df6b034543cecb69a6eb7652ab2a55e1488"
       },
       "selected": {
         "build": "baseline-26.5",
@@ -1078,6 +1078,10 @@
       "stopped_supported_attempt": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-supported-session-20260930.json",
         "sha256": "9d42b470ed1ff16ccd43165f5025f5d906abf1623e2f6afafe01ff646e8ede45"
+      },
+      "stopped_toggle_attempt": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-input-idle-20260930.json",
+        "sha256": "e34b536b275cfec91b78e8663771df69d297f9be17e21103a7b4b8c412fe85c0"
       }
     }
   },
