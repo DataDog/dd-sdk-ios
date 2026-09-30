@@ -1,6 +1,7 @@
 # Unreleased
 
 - [FEATURE] Add experimental client-side APM stats, enabled with `Trace.Configuration.featureFlags[.clientSideStats]`. The SDK aggregates request counts, error counts and latency distributions on-device over every finished span before the trace sampling decision, so APM RED metrics stay accurate at any `sampleRate`. Off by default. See [#3246][]
+- [IMPROVEMENT] Enable RUM view update (delta) events by default. Views that update often now send a smaller payload. See [#3233][]
 - [FIX] Release the RUM display-link observer and its frame readers when their owner is released.
 - [FIX] Pin KSCrash to exact version 2.5.1 via SPM to prevent silently resolving newer, unvetted releases.
 - [FIX] Keep attributes isolated when returning to a previously tracked RUM view while its earlier resources are still pending.
@@ -1273,6 +1274,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3208]: https://github.com/DataDog/dd-sdk-ios/pull/3208
 [#3231]: https://github.com/DataDog/dd-sdk-ios/pull/3231
 [#3246]: https://github.com/DataDog/dd-sdk-ios/pull/3246
+[#3233]: https://github.com/DataDog/dd-sdk-ios/pull/3233
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

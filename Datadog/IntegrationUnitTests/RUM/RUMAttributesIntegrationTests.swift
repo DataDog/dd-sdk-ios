@@ -48,8 +48,8 @@ final class RUMAttributesIntegrationTests: XCTestCase {
             .takeSingle()
 
         let firstView = try XCTUnwrap(session.views.first(where: { $0.name == firstViewName }))
-        XCTAssertEqual(firstView.viewEvents[0].numberOfAttributes, 3) // startView
-        XCTAssertEqual(firstView.viewEvents[1].numberOfAttributes, 0) // stopView
+        XCTAssertEqual(firstView.contextSnapshots[0].numberOfAttributes, 3) // startView
+        XCTAssertEqual(firstView.contextSnapshots[1].numberOfAttributes, 0) // stopView
 
         let secondView = try XCTUnwrap(session.views.first(where: { $0.name == secondViewName }))
         secondView.viewEvents.forEach { viewEvent in
@@ -123,7 +123,7 @@ final class RUMAttributesIntegrationTests: XCTestCase {
         }
 
         let customView = try XCTUnwrap(session.views.first(where: { $0.name == viewName }))
-        let lastViewEvent = customView.viewEvents.last
+        let lastViewEvent = customView.contextSnapshots.last
 
         XCTAssertEqual(lastViewEvent?.numberOfAttributes, initialAttributes.count)
 
@@ -151,16 +151,16 @@ final class RUMAttributesIntegrationTests: XCTestCase {
             .takeSingle()
 
         let customView = try XCTUnwrap(session.views.first(where: { $0.name == viewName }))
-        XCTAssertEqual(customView.viewEvents.count, 3)
-        XCTAssertEqual(customView.viewEvents[0].numberOfAttributes, 1)
-        XCTAssertEqual(customView.viewEvents[0].attribute(forKey: "viewKey"), "viewValue")
+        XCTAssertEqual(customView.contextSnapshots.count, 3)
+        XCTAssertEqual(customView.contextSnapshots[0].numberOfAttributes, 1)
+        XCTAssertEqual(customView.contextSnapshots[0].attribute(forKey: "viewKey"), "viewValue")
 
-        XCTAssertEqual(customView.viewEvents[1].numberOfAttributes, 2)
-        XCTAssertEqual(customView.viewEvents[1].attribute(forKey: "viewKey"), "viewValue")
-        XCTAssertEqual(customView.viewEvents[1].attribute(forKey: "globalKey"), "globalValue")
+        XCTAssertEqual(customView.contextSnapshots[1].numberOfAttributes, 2)
+        XCTAssertEqual(customView.contextSnapshots[1].attribute(forKey: "viewKey"), "viewValue")
+        XCTAssertEqual(customView.contextSnapshots[1].attribute(forKey: "globalKey"), "globalValue")
 
-        XCTAssertEqual(customView.viewEvents[2].numberOfAttributes, 1)
-        XCTAssertEqual(customView.viewEvents[2].attribute(forKey: "viewKey"), "viewValue")
+        XCTAssertEqual(customView.contextSnapshots[2].numberOfAttributes, 1)
+        XCTAssertEqual(customView.contextSnapshots[2].attribute(forKey: "viewKey"), "viewValue")
     }
 
     // MARK: - View Attributes
@@ -190,14 +190,14 @@ final class RUMAttributesIntegrationTests: XCTestCase {
             .takeSingle()
 
         let customView = try XCTUnwrap(session.views.first(where: { $0.name == viewName }))
-        XCTAssertEqual(customView.viewEvents.count, 4)
-        XCTAssertEqual(customView.viewEvents[0].numberOfAttributes, 0)
-        XCTAssertEqual(customView.viewEvents[1].numberOfAttributes, 1)
-        XCTAssertEqual(customView.viewEvents[1].attribute(forKey: "viewKey"), "viewValue")
-        XCTAssertEqual(customView.viewEvents[2].numberOfAttributes, 2)
-        XCTAssertEqual(customView.viewEvents[2].attribute(forKey: "newViewKey"), "newViewValue")
-        XCTAssertEqual(customView.viewEvents[2].attribute(forKey: "anotherViewKey"), "anotherViewValue")
-        XCTAssertEqual(customView.viewEvents[3].numberOfAttributes, 0)
+        XCTAssertEqual(customView.contextSnapshots.count, 4)
+        XCTAssertEqual(customView.contextSnapshots[0].numberOfAttributes, 0)
+        XCTAssertEqual(customView.contextSnapshots[1].numberOfAttributes, 1)
+        XCTAssertEqual(customView.contextSnapshots[1].attribute(forKey: "viewKey"), "viewValue")
+        XCTAssertEqual(customView.contextSnapshots[2].numberOfAttributes, 2)
+        XCTAssertEqual(customView.contextSnapshots[2].attribute(forKey: "newViewKey"), "newViewValue")
+        XCTAssertEqual(customView.contextSnapshots[2].attribute(forKey: "anotherViewKey"), "anotherViewValue")
+        XCTAssertEqual(customView.contextSnapshots[3].numberOfAttributes, 0)
 
         XCTAssertEqual(customView.actionEvents.count, 2)
         XCTAssertEqual(customView.actionEvents[0].numberOfAttributes, 1)
@@ -234,14 +234,14 @@ final class RUMAttributesIntegrationTests: XCTestCase {
             .takeSingle()
 
         let customView = try XCTUnwrap(session.views.first(where: { $0.name == viewName }))
-        XCTAssertEqual(customView.viewEvents.count, 4)
-        XCTAssertEqual(customView.viewEvents[0].numberOfAttributes, 0)
-        XCTAssertEqual(customView.viewEvents[1].numberOfAttributes, 1)
-        XCTAssertEqual(customView.viewEvents[1].attribute(forKey: "viewKey"), "viewValue")
-        XCTAssertEqual(customView.viewEvents[2].numberOfAttributes, 2)
-        XCTAssertEqual(customView.viewEvents[2].attribute(forKey: "newViewKey"), "newViewValue")
-        XCTAssertEqual(customView.viewEvents[2].attribute(forKey: "anotherViewKey"), "anotherViewValue")
-        XCTAssertEqual(customView.viewEvents[3].numberOfAttributes, 0)
+        XCTAssertEqual(customView.contextSnapshots.count, 4)
+        XCTAssertEqual(customView.contextSnapshots[0].numberOfAttributes, 0)
+        XCTAssertEqual(customView.contextSnapshots[1].numberOfAttributes, 1)
+        XCTAssertEqual(customView.contextSnapshots[1].attribute(forKey: "viewKey"), "viewValue")
+        XCTAssertEqual(customView.contextSnapshots[2].numberOfAttributes, 2)
+        XCTAssertEqual(customView.contextSnapshots[2].attribute(forKey: "newViewKey"), "newViewValue")
+        XCTAssertEqual(customView.contextSnapshots[2].attribute(forKey: "anotherViewKey"), "anotherViewValue")
+        XCTAssertEqual(customView.contextSnapshots[3].numberOfAttributes, 0)
 
         XCTAssertEqual(customView.resourceEvents.count, 2)
         XCTAssertEqual(customView.resourceEvents[0].numberOfAttributes, 1)
@@ -276,14 +276,14 @@ final class RUMAttributesIntegrationTests: XCTestCase {
             .takeSingle()
 
         let customView = try XCTUnwrap(session.views.first(where: { $0.name == viewName }))
-        XCTAssertEqual(customView.viewEvents.count, 4)
-        XCTAssertEqual(customView.viewEvents[0].numberOfAttributes, 0)
-        XCTAssertEqual(customView.viewEvents[1].numberOfAttributes, 1)
-        XCTAssertEqual(customView.viewEvents[1].attribute(forKey: "viewKey"), "viewValue")
-        XCTAssertEqual(customView.viewEvents[2].numberOfAttributes, 2)
-        XCTAssertEqual(customView.viewEvents[2].attribute(forKey: "newViewKey"), "newViewValue")
-        XCTAssertEqual(customView.viewEvents[2].attribute(forKey: "anotherViewKey"), "anotherViewValue")
-        XCTAssertEqual(customView.viewEvents[3].numberOfAttributes, 0)
+        XCTAssertEqual(customView.contextSnapshots.count, 4)
+        XCTAssertEqual(customView.contextSnapshots[0].numberOfAttributes, 0)
+        XCTAssertEqual(customView.contextSnapshots[1].numberOfAttributes, 1)
+        XCTAssertEqual(customView.contextSnapshots[1].attribute(forKey: "viewKey"), "viewValue")
+        XCTAssertEqual(customView.contextSnapshots[2].numberOfAttributes, 2)
+        XCTAssertEqual(customView.contextSnapshots[2].attribute(forKey: "newViewKey"), "newViewValue")
+        XCTAssertEqual(customView.contextSnapshots[2].attribute(forKey: "anotherViewKey"), "anotherViewValue")
+        XCTAssertEqual(customView.contextSnapshots[3].numberOfAttributes, 0)
 
         XCTAssertEqual(customView.errorEvents.count, 2)
         XCTAssertEqual(customView.errorEvents[0].numberOfAttributes, 1)
@@ -318,14 +318,14 @@ final class RUMAttributesIntegrationTests: XCTestCase {
             .takeSingle()
 
         let customView = try XCTUnwrap(session.views.first(where: { $0.name == viewName }))
-        XCTAssertEqual(customView.viewEvents.count, 4)
-        XCTAssertEqual(customView.viewEvents[0].numberOfAttributes, 0)
-        XCTAssertEqual(customView.viewEvents[1].numberOfAttributes, 1)
-        XCTAssertEqual(customView.viewEvents[1].attribute(forKey: "viewKey"), "viewValue")
-        XCTAssertEqual(customView.viewEvents[2].numberOfAttributes, 2)
-        XCTAssertEqual(customView.viewEvents[2].attribute(forKey: "newViewKey"), "newViewValue")
-        XCTAssertEqual(customView.viewEvents[2].attribute(forKey: "anotherViewKey"), "anotherViewValue")
-        XCTAssertEqual(customView.viewEvents[3].numberOfAttributes, 0)
+        XCTAssertEqual(customView.contextSnapshots.count, 4)
+        XCTAssertEqual(customView.contextSnapshots[0].numberOfAttributes, 0)
+        XCTAssertEqual(customView.contextSnapshots[1].numberOfAttributes, 1)
+        XCTAssertEqual(customView.contextSnapshots[1].attribute(forKey: "viewKey"), "viewValue")
+        XCTAssertEqual(customView.contextSnapshots[2].numberOfAttributes, 2)
+        XCTAssertEqual(customView.contextSnapshots[2].attribute(forKey: "newViewKey"), "newViewValue")
+        XCTAssertEqual(customView.contextSnapshots[2].attribute(forKey: "anotherViewKey"), "anotherViewValue")
+        XCTAssertEqual(customView.contextSnapshots[3].numberOfAttributes, 0)
 
         XCTAssertEqual(customView.longTaskEvents.count, 2)
         XCTAssertEqual(customView.longTaskEvents[0].numberOfAttributes, 1)
@@ -370,13 +370,13 @@ final class RUMAttributesIntegrationTests: XCTestCase {
             .takeSingle()
 
         let customView = try XCTUnwrap(session.views.first(where: { $0.name == viewName }))
-        XCTAssertEqual(customView.viewEvents.count, 4)
-        XCTAssertEqual(customView.viewEvents[0].numberOfAttributes, 1)
-        XCTAssertEqual(customView.viewEvents[0].attribute(forKey: "viewKey"), "viewValue")
-        XCTAssertEqual(customView.viewEvents[1].numberOfAttributes, 2)
-        XCTAssertEqual(customView.viewEvents[1].attribute(forKey: "viewKey"), "viewValue")
-        XCTAssertEqual(customView.viewEvents[1].attribute(forKey: "globalKey"), "globalValue")
-        customView.viewEvents.dropFirst().dropFirst().forEach { viewEvent in
+        XCTAssertEqual(customView.contextSnapshots.count, 4)
+        XCTAssertEqual(customView.contextSnapshots[0].numberOfAttributes, 1)
+        XCTAssertEqual(customView.contextSnapshots[0].attribute(forKey: "viewKey"), "viewValue")
+        XCTAssertEqual(customView.contextSnapshots[1].numberOfAttributes, 2)
+        XCTAssertEqual(customView.contextSnapshots[1].attribute(forKey: "viewKey"), "viewValue")
+        XCTAssertEqual(customView.contextSnapshots[1].attribute(forKey: "globalKey"), "globalValue")
+        customView.contextSnapshots.dropFirst().dropFirst().forEach { viewEvent in
             XCTAssertEqual(viewEvent.numberOfAttributes, 3)
             XCTAssertEqual(viewEvent.attribute(forKey: "viewKey"), "viewValue")
             XCTAssertEqual(viewEvent.attribute(forKey: "newViewKey"), "newViewValue")
@@ -433,10 +433,10 @@ final class RUMAttributesIntegrationTests: XCTestCase {
             .takeSingle()
 
         let customView = try XCTUnwrap(session.views.first(where: { $0.name == viewName }))
-        XCTAssertEqual(customView.viewEvents.count, 4)
-        XCTAssertEqual(customView.viewEvents[0].numberOfAttributes, 1)
-        XCTAssertEqual(customView.viewEvents[0].attribute(forKey: "viewKey"), "viewValue")
-        customView.viewEvents.dropFirst().forEach { viewEvent in
+        XCTAssertEqual(customView.contextSnapshots.count, 4)
+        XCTAssertEqual(customView.contextSnapshots[0].numberOfAttributes, 1)
+        XCTAssertEqual(customView.contextSnapshots[0].attribute(forKey: "viewKey"), "viewValue")
+        customView.contextSnapshots.dropFirst().forEach { viewEvent in
             XCTAssertEqual(viewEvent.numberOfAttributes, 2)
             XCTAssertEqual(viewEvent.attribute(forKey: "viewKey"), "viewValue")
             XCTAssertEqual(viewEvent.attribute(forKey: "globalKey"), "globalValue")
@@ -558,8 +558,8 @@ final class RUMAttributesIntegrationTests: XCTestCase {
             .takeSingle()
 
         let applicationView = try XCTUnwrap(session.views.first(where: { $0.isApplicationLaunchView() }))
-        let firstViewEvent = applicationView.viewEvents.first
-        let lastViewEvent = applicationView.viewEvents.last
+        let firstViewEvent = applicationView.contextSnapshots.first
+        let lastViewEvent = applicationView.contextSnapshots.last
         XCTAssertEqual(firstViewEvent?.numberOfAttributes, 0)
         XCTAssertEqual(lastViewEvent?.numberOfAttributes, 1)
 
@@ -605,8 +605,8 @@ final class RUMAttributesIntegrationTests: XCTestCase {
             .takeSingle()
 
         let customView = try XCTUnwrap(session.views.first(where: { $0.name == viewName }))
-        XCTAssertEqual(customView.viewEvents.count, 3)
-        customView.viewEvents.forEach { viewEvent in
+        XCTAssertEqual(customView.contextSnapshots.count, 3)
+        customView.contextSnapshots.forEach { viewEvent in
             XCTAssertEqual(viewEvent.numberOfAttributes, 1)
             XCTAssertEqual(viewEvent.attribute(forKey: "key"), "viewValue")
         }
@@ -654,9 +654,9 @@ final class RUMAttributesIntegrationTests: XCTestCase {
             .takeSingle()
 
         let customView = try XCTUnwrap(session.views.first(where: { $0.name == viewName }))
-        XCTAssertEqual(customView.viewEvents.count, 4)
+        XCTAssertEqual(customView.contextSnapshots.count, 4)
 
-        customView.viewEvents.dropFirst().forEach { viewEvent in
+        customView.contextSnapshots.dropFirst().forEach { viewEvent in
             XCTAssertEqual(viewEvent.numberOfAttributes, 1)
             XCTAssertEqual(viewEvent.attribute(forKey: "key"), "viewValue")
         }
@@ -691,8 +691,8 @@ final class RUMAttributesIntegrationTests: XCTestCase {
             .takeSingle()
 
         let applicationView = try XCTUnwrap(session.views.first(where: { $0.isApplicationLaunchView() }))
-        let firstViewEvent = applicationView.viewEvents.first
-        let lastViewEvent = applicationView.viewEvents.last
+        let firstViewEvent = applicationView.contextSnapshots.first
+        let lastViewEvent = applicationView.contextSnapshots.last
         XCTAssertEqual(firstViewEvent?.numberOfAttributes, 0)
         XCTAssertEqual(lastViewEvent?.numberOfAttributes, 1)
 
@@ -815,26 +815,26 @@ final class RUMAttributesIntegrationTests: XCTestCase {
         let firstView = try XCTUnwrap(session.views.first(where: { $0.name == view1 }))
         let secondView = try XCTUnwrap(session.views.first(where: { $0.name == view2 }))
 
-        XCTAssertEqual(firstView.viewEvents.count, 3)
+        XCTAssertEqual(firstView.contextSnapshots.count, 3)
         XCTAssertEqual(firstView.resourceEvents.count, 1)
         XCTAssertEqual(secondView.viewEvents.count, 1)
 
         // start view event
-        XCTAssertEqual(firstView.viewEvents[0].numberOfAttributes, 2)
-        XCTAssertEqual(firstView.viewEvents[0].attribute(forKey: "viewKey"), "viewValue")
-        XCTAssertEqual(firstView.viewEvents[0].attribute(forKey: "globalKey"), "globalValue")
+        XCTAssertEqual(firstView.contextSnapshots[0].numberOfAttributes, 2)
+        XCTAssertEqual(firstView.contextSnapshots[0].attribute(forKey: "viewKey"), "viewValue")
+        XCTAssertEqual(firstView.contextSnapshots[0].attribute(forKey: "globalKey"), "globalValue")
 
         // stop view event
-        XCTAssertEqual(firstView.viewEvents[1].numberOfAttributes, 3)
-        XCTAssertEqual(firstView.viewEvents[1].attribute(forKey: "viewKey"), "viewValue")
-        XCTAssertEqual(firstView.viewEvents[1].attribute(forKey: "newViewKey"), "newViewValue")
-        XCTAssertEqual(firstView.viewEvents[1].attribute(forKey: "globalKey"), "globalValue")
+        XCTAssertEqual(firstView.contextSnapshots[1].numberOfAttributes, 3)
+        XCTAssertEqual(firstView.contextSnapshots[1].attribute(forKey: "viewKey"), "viewValue")
+        XCTAssertEqual(firstView.contextSnapshots[1].attribute(forKey: "newViewKey"), "newViewValue")
+        XCTAssertEqual(firstView.contextSnapshots[1].attribute(forKey: "globalKey"), "globalValue")
 
         // resource view event
-        XCTAssertEqual(firstView.viewEvents[2].numberOfAttributes, 3)
-        XCTAssertEqual(firstView.viewEvents[2].attribute(forKey: "viewKey"), "viewValue")
-        XCTAssertEqual(firstView.viewEvents[2].attribute(forKey: "newViewKey"), "newViewValue")
-        XCTAssertEqual(firstView.viewEvents[2].attribute(forKey: "globalKey"), "globalValue")
+        XCTAssertEqual(firstView.contextSnapshots[2].numberOfAttributes, 3)
+        XCTAssertEqual(firstView.contextSnapshots[2].attribute(forKey: "viewKey"), "viewValue")
+        XCTAssertEqual(firstView.contextSnapshots[2].attribute(forKey: "newViewKey"), "newViewValue")
+        XCTAssertEqual(firstView.contextSnapshots[2].attribute(forKey: "globalKey"), "globalValue")
 
         // start view2 event
         XCTAssertEqual(secondView.viewEvents[0].numberOfAttributes, 2)
@@ -1147,6 +1147,28 @@ private extension RUMViewEvent {
 
 private extension RUMViewUpdateEvent {
     func attribute<T: Equatable>(forKey key: String) -> T? { (context?.contextInfo[key] as? AnyCodable)?.value as? T }
+}
+
+/// Represents the view's custom attributes as of one particular "write" to the view, either a full
+/// baseline `RUMViewEvent` or an update delta `RUMViewUpdateEvent`.
+private struct RUMViewContextSnapshot {
+    let contextInfo: [String: Encodable]?
+
+    var numberOfAttributes: Int { contextInfo?.count ?? 0 }
+
+    func attribute<T: Equatable>(forKey key: String) -> T? { (contextInfo?[key] as? AnyCodable)?.value as? T }
+}
+
+private extension RUMSessionMatcher.View {
+    /// The view's attributes at every write, ordered chronologically by `dd.documentVersion`.
+    ///
+    /// Reads off `reconstructedViewEvents`, which folds `RUMViewUpdateEvent` deltas onto their
+    /// preceding state (`context` is forward-filled there since it's a diffed, not wholesale-forwarded,
+    /// field — see `RUMViewEvent.apply(update:)`), so this gives "the view's attributes at write N" the
+    /// same way regardless of whether write N was a full event or a delta.
+    var contextSnapshots: [RUMViewContextSnapshot] {
+        reconstructedViewEvents.map { RUMViewContextSnapshot(contextInfo: $0.context?.contextInfo) }
+    }
 }
 
 private extension RUMActionEvent {

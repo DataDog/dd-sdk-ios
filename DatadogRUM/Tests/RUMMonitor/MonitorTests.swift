@@ -157,7 +157,7 @@ class MonitorTests: XCTestCase {
     func testAddViewLoadingTimeToActiveView_thenLoadingTimeUpdated() throws {
         // Given
         let monitor = Monitor(
-            dependencies: .mockWith(featureScope: featureScope),
+            dependencies: .mockWith(featureScope: featureScope, featureFlags: [.viewUpdates: false]),
             dateProvider: SystemDateProvider()
         )
         monitor.notifySDKInit()
@@ -195,7 +195,7 @@ class MonitorTests: XCTestCase {
     func testAddViewLoadingTimeMultipleTimes_thenLoadingTimeOverwritten() throws {
         // Given
         let monitor = Monitor(
-            dependencies: .mockWith(featureScope: featureScope),
+            dependencies: .mockWith(featureScope: featureScope, featureFlags: [.viewUpdates: false]),
             dateProvider: SystemDateProvider()
         )
         monitor.notifySDKInit()
@@ -244,7 +244,8 @@ class MonitorTests: XCTestCase {
         let monitor = Monitor(
             dependencies: .mockWith(
                 featureScope: featureScope,
-                viewHitchesReaderFactory: { ViewHitchesMock(hitchesDataModel: ([hitch], 0.16)) }
+                viewHitchesReaderFactory: { ViewHitchesMock(hitchesDataModel: ([hitch], 0.16)) },
+                featureFlags: [.viewUpdates: false]
             ),
             dateProvider: dateProvider
         )
