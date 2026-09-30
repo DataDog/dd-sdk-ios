@@ -453,8 +453,12 @@ The arm and before/invocation/after witnesses bind actual native owners, input
 state and an append-only lifecycle journal. `scene_background_fixture.py` appends
 the dormant typed witness to an isolated copy of the existing native observer.
 It returns actual UIKit notification names and owner-bound window/root interaction
-flags on MainActor. Its reviewed compiler check does not activate a scenario;
-arm/invocation guards, display and session composition remain. Benign focus/layout events are allowed;
+flags on MainActor. The dormant MainActor `scene_background_guard.swift` freezes
+one arm and enforces five ordered before/invoked/after boundaries with sticky
+failure. Its portable Swift controls use source-derived models and synthetic data.
+The app must call it immediately around actual scene-context dispatch and retain
+every returned witness. Scenario wiring, display and session composition remain.
+Benign focus/layout events are allowed;
 B background/disconnect, owner replacement and unknown events reject. Ownerless
 window events must match observed scene-bound non-fixture auxiliary identities;
 there is no window-count or private-class-name rule.

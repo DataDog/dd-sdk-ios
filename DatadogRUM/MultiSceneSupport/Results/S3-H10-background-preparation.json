@@ -2,7 +2,7 @@
   "schema_version": 1,
   "work_item": "Isolated scene background and foreground with an unchanged usable peer",
   "gate": "S3:H10",
-  "state": "REVIEWED_ORACLE_AND_NATIVE_WITNESS_SESSION_UNPREPARED",
+  "state": "REVIEWED_WITNESS_AND_GUARD_SESSION_UNPREPARED",
   "owner": "Root",
   "reviewer": "/root/c06_runtime_plan",
   "defined_at": "2026-09-30T00:54:04.093738+00:00",
@@ -215,11 +215,11 @@
     "Late native/display evidence or dropped lifecycle journal rows"
   ],
   "next": [
-    "Compose the fresh arm and per-marker native admission with scene-context dispatch, preserving the reviewed witness/oracle and frozen H04/H06 inputs.",
+    "Wire the reviewed guard into the isolated scenario at each actual scene-context dispatch, with fresh host phase barriers and immutable raw capture. Preserve all H04/H06 inputs and the earlier witness build.",
     "Compose source/compiler/process/manifest identity, complete sealed capture and display with the physical mechanism and safe cleanup; obtain scoped review before native use.",
     "Native use waits for qualified physical input/display, fresh device/backend prerequisites and user availability. No automatic start at09:00."
   ],
-  "updated_at": "2026-09-30T02:04:09.764741+00:00",
+  "updated_at": "2026-09-30T02:19:37.411460+00:00",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/review-r2.json",
     "sha256": "d7435346784f04ada43626bbd95247abf2f47cee3a568d8e652bbe6c32eddb9a"
@@ -293,5 +293,43 @@
     "native_runs": 0,
     "gates_closed": [],
     "scope": "Actual typed UIKit names and native interaction flags compile in one isolated existing source member. No activation, arm/marker sequencing, display/session integration, signing or native admission."
+  },
+  "native_guard": {
+    "state": "REVIEWED_UNWIRED_PRECRITICAL_GUARD",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/native-sequencing-icixsjln/definition.json",
+      "sha256": "955a58015381d8241c3490ed3bf425ef30a41adc65aebb62f1bb97e7c4a42ec3"
+    },
+    "verdict": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/native-sequencing-icixsjln/verdict.json",
+      "sha256": "83b46360ff28eb5b1523af396a20e45760119bc9d125129891759dad6f221b06"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/native-sequencing-icixsjln/review-final.json",
+      "sha256": "def405ae6e4169ed5a6e81d3f61015ebebcc8267ca4e8cdc8e3923351206151a"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/native-sequencing-icixsjln/controls-r2/result.json",
+      "sha256": "201b0f03971bae2b1adde1306246c8e1953aeeea55838547b0e3dba920e24302"
+    },
+    "source": [
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/acceptance/scene_background_guard.swift",
+        "sha256": "05cc38a7b6762ff11c68c204818da5934b4d0c0c1b8b7e8beec8cfc345a7c07d"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/acceptance/scene_background_guard_checks.py",
+        "sha256": "462b7aac851f2f720930b658eff5b268383ed5a009e41fdc871fc388ca8439b2"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/acceptance/scene_background_guard_check_main.swift",
+        "sha256": "ae2817262528adf1fd1d534454a5413f0cf761eda2b33aa0856adf2abac8b0f5"
+      }
+    ],
+    "controls_count": 41,
+    "ios_builds": 0,
+    "native_runs": 0,
+    "gates_closed": [],
+    "scope": "One arm then five ordered before/invoked/after guards; actual Swift state machine exercised with source-derived Codable models and synthetic inputs. No SDK dispatch, notification delivery, display or cleanup evidence."
   }
 }
