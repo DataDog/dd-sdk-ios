@@ -175,4 +175,130 @@ class ReflectorTests: XCTestCase {
         XCTAssertEqual(echo.bar.baz, "baz")
         XCTAssertNil(echo.bar.qux)
     }
+
+    func testDictionaryUsesItsActualTypeBeforeCasting() throws {
+        // Given
+        struct Key: Hashable { let id: Int }
+        let key = Key(id: 42)
+        let object = NSObject()
+        let subject = Subject(Payload(value: [key: object]))
+
+        // When
+        let dictionary: [AnyHashable: Any] = try reflector(subject).descendant(
+            copyingIntermediates: false, "payload", "value"
+        )
+
+        // Then
+        XCTAssertEqual(dictionary.count, 1)
+        XCTAssertTrue(dictionary[key] as? NSObject === object)
+    }
+
+    func testTypeMismatchUsesActualLeafType() {
+        // Given
+        let subject = Subject(Payload(value: 42))
+
+        // When
+        XCTAssertThrowsError(try reflector(subject).descendant(
+            type: String.self, copyingIntermediates: false, "payload", "value"
+        )) {
+            // Then
+            guard case let Reflector.Error.typeMismatch(_, expect: expected, got: actual) = $0 else {
+                return XCTFail("Expected a type mismatch, got \($0)")
+            }
+            XCTAssertTrue(expected == String.self)
+            XCTAssertTrue(actual == Int.self)
+        }
+    }
+
+    func testDefaultAndExplicitCopyingPreserveExistingTraversal() throws {
+        // Given
+        let subject = Payload(value: Optional.some(Payload(value: "value")))
+        let reader = reflector(subject)
+
+        // When
+        let defaultCopying: String = try reader.descendant("value", "value")
+        let arrayPath: String = try reader.descendant(["value", "value"])
+        let explicitCopying: String = try reader.descendant(
+            copyingIntermediates: true, "value", "value"
+        )
+
+        // Then
+        XCTAssertEqual(defaultCopying, "value")
+        XCTAssertEqual(arrayPath, "value")
+        XCTAssertEqual(explicitCopying, "value")
+    }
+
+    func testReflectionConversion() throws {
+        // Given
+        struct Value { let text: String }
+        let subject = Subject(Payload(value: Value(text: "value")))
+
+        // When
+        let reflected: TextReflection = try reflector(subject).descendant(
+            copyingIntermediates: false, "payload", "value"
+        )
+
+        // Then
+        XCTAssertEqual(reflected.text, "value")
+    }
+
+    func testUnsupportedLayoutIncludesContext() {
+        // Given
+        let subject = Payload(value: "value")
+
+        // When
+        XCTAssertThrowsError(try reflector(subject).descendant(
+            type: String.self, copyingIntermediates: false, "value"
+        )) {
+            // Then
+            guard case let Reflector.Error.unsupportedLayout(context) = $0 else {
+                return XCTFail("Expected unsupported layout, got \($0)")
+            }
+            XCTAssertTrue(context.subjectType == Payload<String>.self)
+            XCTAssertEqual(context.paths.count, 1)
+            guard case let .key(name)? = context.paths.first else {
+                return XCTFail("Expected a named property path")
+            }
+            XCTAssertEqual(name, "value")
+        }
+    }
+
+    func testMissingDescendantThrowsNotFound() {
+        // Given
+        let subject = Subject(Payload(value: "value"))
+
+        // When
+        XCTAssertThrowsError(try reflector(subject).descendant(
+            type: String.self, copyingIntermediates: false, "payload", "missing"
+        )) {
+            // Then
+            guard case Reflector.Error.notFound = $0 else {
+                return XCTFail("Expected a missing field, got \($0)")
+            }
+        }
+    }
+
+    private func reflector(_ subject: Any) -> Reflector {
+        Reflector(subject: subject, telemetry: NOPTelemetry())
+    }
+}
+
+private struct Payload<Value> {
+    var value: Value
+}
+
+private class Subject<Payload> {
+    var payload: Payload
+
+    init(_ payload: Payload) {
+        self.payload = payload
+    }
+}
+
+private struct TextReflection: Reflection {
+    let text: String
+
+    init(from reflector: Reflector) throws {
+        text = try reflector.descendant("text")
+    }
 }
