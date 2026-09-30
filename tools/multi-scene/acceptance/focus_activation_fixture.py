@@ -14,6 +14,8 @@ ORIGINAL = {CATALOG: 'ed8f88eac90a01de6be54e3c92a3ea52f576fa40119e296fb303e66bae
             APP: '74a948580533bdd15a1e4d20c16c5d6c680101a5d4d8f32887a83777b2a4c412'}
 SCENARIO = 'windows.focus-activation-only'
 PROFILE = 'physical-focus-activation-only'
+STARTUP = 'Sources/Harness/ProbeScenarioRunner.swift'
+STARTUP_SHA256 = 'd266b8f27beb08451d0caf287792edfe2e8c1182a29fefe55abe932712befe0f'
 
 
 def contract():
@@ -49,6 +51,19 @@ def replace_once(source, old, new):
     return source.replace(old,new,1)
 
 
+def startup_source():
+    # Reuse the reviewed filesystem implementation; only its explicit scenario/profile changes.
+    raw=(PROBE/STARTUP).read_bytes()
+    require(hashlib.sha256(raw).hexdigest() == STARTUP_SHA256, 'unreviewed startup freshness source')
+    source=raw.decode().split('enum ProbeOperationStartupFreshness {',1)[1]
+    source='enum ProbeFocusStartupFreshness {'+source
+    source=source.replace('ProbePhysicalOperationSetupProfile.scenarioID', '"'+SCENARIO+'"')
+    source=source.replace('DD_PROBE_OPERATION_STARTUP_NONCE','DD_PROBE_FOCUS_STARTUP_NONCE')
+    source=replace_once(source,'environment["DD_PROBE_PHYSICAL_OPERATION_CAPTURE"] == "1",',
+                        'environment["DD_PROBE_FOCUS_ACTIVATION_PROFILE"] == "'+PROFILE+'",')
+    return source
+
+
 def render(path, raw):
     require(path in ORIGINAL and hashlib.sha256(raw).hexdigest() == ORIGINAL[path], 'unreviewed focus fixture input')
     text = raw.decode()
@@ -74,6 +89,14 @@ def render(path, raw):
             ? .init(registry: sceneRegistry, recordsContinuity: scenario?.identifier == ProbePhysicalOperationSetupProfile.scenarioID) : nil
     }()'''
     text = replace_once(text,old,new)
+    startup = '''            try ProbeOperationStartupFreshness.prepareIfRequested(
+'''
+    text = replace_once(text,startup,'''            try ProbeFocusStartupFreshness.prepareIfRequested(
+                resolution: ProbeRuntime.resolution, environment: ProcessInfo.processInfo.environment,
+                container: URL(fileURLWithPath: NSHomeDirectory(), isDirectory: true),
+                processID: ProcessInfo.processInfo.processIdentifier, bundleIdentifier: Bundle.main.bundleIdentifier
+            )
+'''+startup)
     anchor = '        } else if physicalOperationCaptureRequested {\n'
     hook = '''        } else if scenario.identifier == ProbeFocusActivationAdmission.scenarioID {
             let focus = physicalOperationInput.map { ProbeFocusActivationAdmission(input: $0, recorder: eventRecorder) }
@@ -86,7 +109,7 @@ def render(path, raw):
 '''
     text = replace_once(text,anchor,hook+anchor)
     return (text+'\n'+'\n'.join((HERE/name).read_text() for name in
-            ['focus_activation_guard.swift','focus_activation_channel.swift','focus_activation_session.swift'])).encode()
+            ['focus_activation_guard.swift','focus_activation_channel.swift','focus_activation_session.swift'])+'\n'+startup_source()).encode()
 
 
 def prepare(source, destination):
@@ -109,6 +132,7 @@ def prepare(source, destination):
                    helpers={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in
                             [Path(__file__),HERE/'focus_activation_guard.swift',HERE/'focus_activation_channel.swift',
                              HERE/'focus_activation_session.swift',HERE/'focus-activation-scenario-contract.json']},
+                   startup_source=dict(path=str(PROBE/STARTUP),sha256=STARTUP_SHA256),
                    native_launches=0,builds=0,gates_closed=[])
     (destination/'source.json').write_text(json.dumps(receipt,indent=2)+'\n')
     return receipt

@@ -940,3 +940,13 @@ exact floating-point equality gate. `focus_activation_transport.py` returns only
 protocol qualification: actual transfer/process receipts and reviewed task-only
 cleanup remain mandatory. `test_focus_activation_transport.py` exercises the actual
 Swift channel/idle code with synthetic adapters; it is not native device evidence.
+
+`focus_activation_host.py` joins original physical copy/process receipts, the
+pre-SDK freshness record and complete installed Mach-O identity before ARM. It
+preserves the actual successful recorder download, including a later missing-file
+poll, before parsing. STOP, idle, worker quiescence and same-process checks precede
+task-only removal. Invalid scenario bytes remain available even when cleanup is
+safe. Physical filesystem absence stays unverified; observed OS uninstall and the
+separate fresh-start receipt describe the private app-container disposition, with
+Keychain/shared/cloud data excluded. The outer reviewed runner must still bind
+installation, signed product, backend-before-cleanup ordering and aggregate verdicts.

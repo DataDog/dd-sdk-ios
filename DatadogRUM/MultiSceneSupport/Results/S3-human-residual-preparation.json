@@ -77,9 +77,9 @@
         "windows.focus-activation-only"
       ],
       "decisive_test": "Actual per-scene active/inactive/background changes and work stay with the intended owner; one scene does not replace its peer current view.",
-      "missing": "The H04 owner qualifies isolated fixture/oracle, host collection and native arm/stop/idle components. Physical transfer/cleanup composition, a rebuilt signed product and one physical cell remain. Earlier compiler evidence predates the new channel. Original failed disconnect and H06 inputs unchanged; H10 separate.",
+      "missing": "H04 fixture/oracle, collection, native channel, startup freshness and physical transfer/cleanup components pass review. Outer runner, rebuilt signed product and one physical cell remain. Earlier compiler evidence predates the new channel. Original failed disconnect and H06 inputs unchanged; H10 separate.",
       "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
-      "state": "H04_NATIVE_CHANNEL_REVIEWED_PHYSICAL_COMPOSITION_PENDING",
+      "state": "H04_PHYSICAL_ADAPTER_REVIEWED_RUNNER_PENDING",
       "preparation_owner": "Results/S3-H04-activation-preparation.json"
     },
     {
@@ -1248,6 +1248,6 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/s3-residual-review.json",
     "sha256": "358e67b60fb25744ada5ddf6902e5832285a28489492900077061fedd7799890"
   },
-  "updated_at": "2026-09-29T23:49:25.898096+00:00",
+  "updated_at": "2026-09-30T00:09:05.323283+00:00",
   "native_adapter_attempts": 1
 }
