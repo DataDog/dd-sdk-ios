@@ -36,6 +36,14 @@ ADAPTERS = ['tools/multi-scene/automatic-coverage/'+name for name in (
 require = supported.require
 
 
+def readiness_profile(layout):
+    require(layout in ('stack', 'split'), 'unsupported SwiftUI layout')
+    screen = 'home' if layout == 'stack' else 'sidebar'
+    return dict(layout=layout, screen=screen,
+                identifiers=list(supported.control_identifiers(layout)),
+                unsupported_initial_screen='STOP_BEFORE_READY')
+
+
 def bound_read(reference):
     require(supported.reference(reference['path']) == reference, 'bound evidence changed')
     return supported.read(reference['path'])
@@ -95,7 +103,6 @@ def prepare(args):
             'foreign coverage owner')
     owner = supported.read(owner_path)
     selected, completed, _ = continuation.selection(owner)
-    require(selected['layout'] == 'stack', 'split readiness requires its own reviewed preparation')
     runner, old, product, revision = source(stopped, selected)
     plan = dict(schema_version=1, kind=KIND, selected=selected, source=revision, product=product,
                 completed=completed, coverage_owner=str(owner_path),
@@ -103,6 +110,7 @@ def prepare(args):
                 helpers=helper_binding(old, bound_read(stopped)), skill=supported.reference(args.skill),
                 tool_contract=supported.reference(args.tool_contract),
                 contract=old['contract'], effect_observation=human_effect_recapture.CONTRACT,
+                readiness=readiness_profile(selected['layout']),
                 capture_seconds=120, ready_seconds=600,
                 budget_basis='Start 4.2s, empty capture error 6.2s, End 4.0s observed. Each tool phase retains the prior 120s transport bound; no inferred session lifetime. Human step/cleanup bounds are unchanged.',
                 native_admitted=False, gates_closed=[])
@@ -126,9 +134,10 @@ def verify(root, *, reviewed=True):
             'unsupported cell or contract')
     require(plan['effect_observation'] == human_effect_recapture.CONTRACT, 'effect observation contract changed')
     selected, completed, accepted_plans = continuation.selection(bound_read(plan['accepted_owner']))
-    require(plan['selected'] == selected and selected['layout'] == 'stack' and plan['completed'] == completed
+    require(plan['selected'] == selected and plan['completed'] == completed
             and plan['coverage_owner'] == str(REPO/'DatadogRUM/MultiSceneSupport/Results/S2-coverage-remaining-preparation.json'),
             'continuation selection changed')
+    require(plan['readiness'] == readiness_profile(selected['layout']), 'layout readiness changed')
     runner, old, product, revision = source(plan['stopped'], selected)
     for prior in accepted_plans:
         _, before, prior_product, prior_revision = source(plan['stopped'], prior['selected'])
@@ -197,13 +206,15 @@ def admit(args):
     print(json.dumps(dict(state='AUTOMATIC_PREFIX_ADMITTED', admission=supported.reference(runtime/'native-admission.json'))))
 
 
-def native_ready(collector, phase, runner):
+def native_ready(collector, phase, runner, expected_layout):
     snapshot, folder = collector.snapshot(phase, collector.deadline)
     require(not any(r['kind'] in ('human_callback','native_input','human_scroll_begin','human_scroll_end','native_background')
                     for r in collector.evidence), 'input occurred before gesture readiness')
     launch = runner.capture.oracle.one([r for r in collector.evidence if r['kind'] == 'launch'], 'native launch')['payload']
-    root = {'stack': 'home', 'split': 'sidebar'}[launch['layout']]
-    proof = runner.journey.ready_controls(snapshot, root, collector.binding, 'SwiftUI')
+    require(launch['layout'] == expected_layout, 'native launch layout differs from selected cell')
+    profile = readiness_profile(expected_layout)
+    proof = runner.journey.ready_controls(snapshot, profile['screen'], collector.binding, 'SwiftUI')
+    require(proof['identifiers'] == profile['identifiers'], 'first-screen control inventory differs')
     require(proof['counter'] == 0, 'input occurred before gesture readiness')
     # The frozen observer includes input_state only for cleanup.idle. Reuse its
     # existing request-bound idle reader before input, while no Home task exists.
@@ -217,8 +228,8 @@ def native_ready(collector, phase, runner):
     return proof
 
 
-def human_ready(collector, out, stage, runner):
-    native_ready(collector, 'supported.after-end', runner)
+def human_ready(collector, out, stage, runner, expected_layout):
+    native_ready(collector, 'supported.after-end', runner, expected_layout)
     folder = out/'operator-ready'
     folder.mkdir()
     now = time.time()
@@ -234,15 +245,15 @@ def human_ready(collector, out, stage, runner):
     runner.capture.human_release.release_protocol.validate_ack(request, (folder/'request.json').read_bytes(),
                                                               supported.read(reply_path), time.time())
     require(page(out.parents[1]/'operator') == stage['page'], 'Ready arrived from a replaced page')
-    native_ready(collector, 'supported.after-ready', runner)
+    native_ready(collector, 'supported.after-ready', runner, expected_layout)
 
 
-def qualify(session, collector, out, stage, runner):
+def qualify(session, collector, out, stage, runner, expected_layout):
     """No ordinary prompt can be reached until capture, closure and fresh Ready."""
     session.capture(collector.pid)
-    native_ready(collector, 'supported.before-end', runner)
+    native_ready(collector, 'supported.before-end', runner, expected_layout)
     session.end(collector.deadline)
-    human_ready(collector, out, stage, runner)
+    human_ready(collector, out, stage, runner, expected_layout)
 
 
 def scenario(collector, runner, selected, out, installed, product):
@@ -315,6 +326,7 @@ def execute(args):
         require(not documents.exists() or not list(documents.iterdir()), 'restored fixture data')
         supported.save(out/'native-publication-preflight.json',runner.transport.publication_preflight(documents))
         binding = dict(owner=stage['tool_owner'], device=device_id, bundle=bundle, run_id=identity['run_id'],
+                       layout=selected['layout'],
                        product_sha256=__import__('hashlib').sha256(json.dumps(product,sort_keys=True).encode()).hexdigest(),
                        plan_sha256=stage['runtime_plan_sha256'])
         session = supported.Session(out/'supported',binding,seconds=plan['capture_seconds'],deadline=deadline,emit=lambda s:print(s,flush=True))
@@ -325,7 +337,7 @@ def execute(args):
         require(Path(runner.shared.process(pid)).resolve() == (installed/product['product']['executable']).resolve(), 'wrong native executable')
         collector = runner.capture.Collector(documents=documents,output=out/'input',run=identity['run_id'],device=device_id,
             pid=pid,framework='SwiftUI',deadline=deadline,budget=plan['contract'])
-        qualify(session,collector,out,stage,runner)
+        qualify(session,collector,out,stage,runner,selected['layout'])
         terminal = scenario(collector,runner,selected,out,installed,product)
         summary['recaptured_effects'] = human_effect_recapture.observation_summary(collector.receipts)
         summary.update(scenario='PASS',evidence='PASS')

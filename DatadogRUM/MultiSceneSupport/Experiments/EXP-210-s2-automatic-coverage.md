@@ -182,8 +182,18 @@ permits one distinct tap/toggle observation after an incomplete ancestry invento
 All 42 controls and exact-source review pass. Failed evidence and recapture
 classification remain explicit.
 
-That fresh baseline now qualifies with 17 Views, 25 automatic Actions, 29 native
-effects, three display transitions and Home/cleanup PASS. Four missing toggle
-actions remain explicit baseline limitations. One real recapture passes with its
-failed snapshot preserved; scoped review accepts only this cell. Five SwiftUI
-cells remain, with no candidate conclusion or broader gate closure.
+The [completed stack comparison](../Results/S2-swiftui-stack-candidate-20260930.json)
+now qualifies both compiler baselines and the candidate: each captures 17 Views,
+25 automatic Actions, 29 native effects, three display transitions and Home, with
+cleanup PASS. Candidate ownership matches the SDK27.1 baseline. The sole difference
+from SDK26.5 is a source-classified scroll/swipe subtype; no measured velocity is
+claimed. Generic Home views and four toggle-action omissions remain inherited
+limitations. Explicit recaptures retain their original failed snapshots and do
+not repeat input.
+
+Only the three split cells remain. Their [preparation](../Results/S2-swiftui-split-20260930.json)
+corrects the supported hierarchy check that previously required Home identifiers
+for every layout. Actual Sidebar controls, native owners and idle state must
+qualify before Ready; Empty or Detail cannot substitute. The first planned split
+baseline qualifies the mechanism. No whole SwiftUI gate closes from stack evidence
+or offline preparation.

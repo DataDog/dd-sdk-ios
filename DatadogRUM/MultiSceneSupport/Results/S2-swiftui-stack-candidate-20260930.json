@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "REVIEWED_PREFLIGHT_COMPLETE",
+  "state": "NATIVE_CELL_QUALIFIED",
   "owner": "EXP-210",
   "gates": [
     "S2:C09",
@@ -22,25 +22,103 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stackcandidate-0tf_u253/sitting/runtime/controls.json",
     "sha256": "8ee42b5fa35c552a329bb0be0dffa20d8a69b374593b00c6096a26497ef7ce13"
   },
-  "native_admitted": false,
-  "native_runs": 0,
-  "qualified_cells": 0,
+  "native_admitted": true,
+  "native_runs": 1,
+  "qualified_cells": 1,
   "gates_closed": [],
-  "scenario": "UNQUALIFIED",
-  "evidence": "INCOMPLETE",
-  "cleanup": "NOT_RUN",
-  "updated_at": "2026-09-30T11:37:59.632696+00:00",
-  "next_action": "Await current operator availability, then use fresh environment preflight before supported capture and native Ready. No app has launched.",
+  "scenario": "PASS",
+  "evidence": "PASS",
+  "cleanup": "PASS",
+  "updated_at": "2026-09-30T11:57:43.446923+00:00",
+  "next_action": "Preserve the accepted three-cell SwiftUI stack comparison. Only the three SwiftUI split cells remain; qualify their source-backed readiness before human input.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stackcandidate-0tf_u253/sitting/runtime/review.json",
     "sha256": "617c17513465856ea6be5e456aedccc1ffb7ad2400a2d9edf96dd2043acd4d2e"
   },
   "preflight": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stackcandidate-0tf_u253/sitting/runtime/preflight.json",
-    "sha256": "7351d0e88efed30d8f80fe2c9cc602fa0ba31a21a39941b67e8d2512f18cf570"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stackcandidate-0tf_u253/sitting/runtime/preflight-r2.json",
+    "sha256": "7697a267f0a7ffe8ad1863931c350a3d31f81c3c5d4f59bb0bc3f21adcfea8bb"
   },
   "source_at_run": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stackcandidate-0tf_u253/sitting/runtime/source-at-run/manifest.json",
     "sha256": "4decf63fe9c74ccd27b7d7549694d280f06353b144376addbf299127cf49e84c"
+  },
+  "admission": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stackcandidate-0tf_u253/sitting/runtime/native-admission.json",
+    "sha256": "62e86b6e43e54e4353f4bf641f84a7c3f3600a26ca6e7f1d230615fad03b1ce4"
+  },
+  "controller": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stackcandidate-0tf_u253/sitting/runtime/controller.json",
+    "sha256": "2d283f8be3af417c47cc9482c573355410c25180fa0ffdb593ff54a4c5e2472e"
+  },
+  "run_id": "e6120d9b-769e-436e-a03b-fc3c822d5b9a",
+  "native_launches": 1,
+  "original_summary": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stackcandidate-0tf_u253/sitting/runtime/cells/candidate-27.1-duo-SwiftUI-stack-single/summary.json",
+    "sha256": "efd5c69422a8d71a09a133e686858a6f1a296325f4906d5302f766dc6c60ef12"
+  },
+  "local_result": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stackcandidate-0tf_u253/sitting/runtime/cells/candidate-27.1-duo-SwiftUI-stack-single/local-result.json",
+    "sha256": "b040d7672270a3be9d43464cb37f89d2da1b5e724f22497f7af1d1f607713170"
+  },
+  "receipts": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stackcandidate-0tf_u253/sitting/runtime/cells/candidate-27.1-duo-SwiftUI-stack-single/receipts.json",
+    "sha256": "9be8d6a76edca1c613f3322921fccf2ac4dec223758dd311e3815d1f32f2e917"
+  },
+  "events": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stackcandidate-0tf_u253/sitting/runtime/cells/candidate-27.1-duo-SwiftUI-stack-single/events.jsonl",
+    "sha256": "55df6bc7ec0616e954420380ee30504a0a28f3c91067535e64fe5297ccd5889e"
+  },
+  "post_exit": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stackcandidate-0tf_u253/sitting/runtime/post-exit.json",
+    "sha256": "45d1fc77981050354123a6e4a0f0b8182488c518c1add97ad5588b2ba00408e2"
+  },
+  "recaptured_effects": [
+    {
+      "phase": "initial.root.toggle.effect",
+      "observation_phase": "initial.root.toggle.effect.recapture",
+      "state": "NATIVE_EFFECT_RECAPTURED",
+      "failed_observation": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stackcandidate-0tf_u253/sitting/runtime/cells/candidate-27.1-duo-SwiftUI-stack-single/input/initial.root.toggle.effect/capture-failure.json",
+        "sha256": "dc0ace4bf9448a095a6b0218cd3c26976754b3e50b342ec7825bd75721fc7a68"
+      }
+    },
+    {
+      "phase": "initial.detail.toggle.effect",
+      "observation_phase": "initial.detail.toggle.effect.recapture",
+      "state": "NATIVE_EFFECT_RECAPTURED",
+      "failed_observation": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stackcandidate-0tf_u253/sitting/runtime/cells/candidate-27.1-duo-SwiftUI-stack-single/input/initial.detail.toggle.effect/capture-failure.json",
+        "sha256": "4847ac53a9cfa5b4ffe918cafc4b0cae4df2a2a9900a5f98327f233486cc60d0"
+      }
+    },
+    {
+      "phase": "inner.detail.toggle.effect",
+      "observation_phase": "inner.detail.toggle.effect.recapture",
+      "state": "NATIVE_EFFECT_RECAPTURED",
+      "failed_observation": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stackcandidate-0tf_u253/sitting/runtime/cells/candidate-27.1-duo-SwiftUI-stack-single/input/inner.detail.toggle.effect/capture-failure.json",
+        "sha256": "badf252062b98bb25268923982a6a52695c5247c7ec57bafa64f9c8162f7c5d1"
+      }
+    }
+  ],
+  "stack_comparison": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stackcandidate-0tf_u253/sitting/runtime/stack-comparison.json",
+    "sha256": "de201771e155945461a4cd5447c19af199a1da5f28542bed51a7e7dc2a1e20ae"
+  },
+  "stack_classification": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stackcandidate-0tf_u253/sitting/runtime/stack-classification.json",
+    "sha256": "392ee3c916f52cbfde54d6cb51567d0857a8e601c2af9d8dd91e3f8571c6e358"
+  },
+  "counts": {
+    "views": 17,
+    "automatic_actions": 25,
+    "native_effects": 29,
+    "folds": 3,
+    "home_boundaries": 1
+  },
+  "native_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stackcandidate-0tf_u253/sitting/runtime/native-review.json",
+    "sha256": "4d1d2e1ae419e86dee15045e1b0b1e2099c833f078ff60592a2e03d702018e87"
   }
 }

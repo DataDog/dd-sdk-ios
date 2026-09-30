@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "state": "REVIEWED_SPLIT_PREPARATION",
+  "owner": "EXP-210",
+  "gates": [
+    "S2:C09",
+    "S2:C10",
+    "S2:H14"
+  ],
+  "selected": {
+    "build": "baseline-26.5",
+    "device": "duo",
+    "framework": "SwiftUI",
+    "layout": "split",
+    "multiple_scenes": false
+  },
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/definition.json",
+    "sha256": "25d7fb5195821015c27b8c6dec36825cc8585c11a426c0263629c0344b31839c"
+  },
+  "plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/runtime-plan.json",
+    "sha256": "c70095a5b5bdac3bb55046de6dfcb5d042ad0022be2df6b8be7b930e96b0af10"
+  },
+  "native_admitted": false,
+  "native_runs": 0,
+  "qualified_cells": 0,
+  "scenario": "UNQUALIFIED",
+  "evidence": "INCOMPLETE",
+  "cleanup": "NOT_RUN",
+  "gates_closed": [],
+  "updated_at": "2026-09-30T12:14:57.837343+00:00",
+  "next_action": "Offer the first split baseline after fresh operator availability and environment preflight. Automatic prefix must prove actual Sidebar capture, selected native layout and idle before Ready; stop on failure without a diagnostic retry.",
+  "controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/controls.json",
+    "sha256": "9fd6b1bca86a2535e4b26e286cff0eeca3363c4ad8e338ea520418d94aea3fc9"
+  },
+  "hierarchy_definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/hierarchy-definition.json",
+    "sha256": "c963d319804404a4dc2c6ebf85d6bc3cd81ae3743b01b6788737422af691df08"
+  },
+  "review_disposition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/review-disposition.json",
+    "sha256": "bde6fa20eac9bef76cbd5517706f19274ffee30cdcca5d7976bcb2f419cb57cc"
+  },
+  "prior_preparation": {
+    "plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting/runtime/runtime-plan.json",
+      "sha256": "86bcc4dee1d9c56d6cb321f75521714e1c980b72fef72b3d41f8a09a9f78b13f"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/review-r1.json",
+      "sha256": "e5dff1412da68f6f5bae88602dfde5d0179cd462a781d29f5292513af7e334ff"
+    },
+    "native_runs": 0,
+    "returned_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/review-r1-returned.md",
+      "sha256": "71da0aa1298e85966d333bc540cc736c9f655ca933b07f4fd93a10e0d0b7d063"
+    }
+  },
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/review.json",
+    "sha256": "088691e57664ce10a2f6a5cde1f99357b63a107a086a3382b304eea4defb1db5"
+  }
+}

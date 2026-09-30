@@ -1231,14 +1231,15 @@
     "S2:C07",
     "S2:C08"
   ],
-  "current_swiftui_baselines": {
+  "current_swiftui_stack": {
     "owner": "Results/S2-coverage-remaining-preparation.json",
     "records": [
       "Results/S2-swiftui-effect-recapture-20260930.json",
-      "Results/S2-swiftui-stack271-20260930.json"
+      "Results/S2-swiftui-stack271-20260930.json",
+      "Results/S2-swiftui-stack-candidate-20260930.json"
     ],
-    "accepted_cells": 2,
-    "remaining_cells": 4,
-    "result": "Both baselines qualify capture, Home, cleanup and exact owners. Same 17 Views and 25 Actions; one source-classified scroll/swipe subtype difference. Candidate and split comparison remain; no gate closure."
+    "accepted_cells": 3,
+    "remaining_cells": 3,
+    "result": "Stack baseline26.5, baseline27.1 and candidate qualify capture, Home and cleanup. Candidate matches27.1 view/action ownership. SDK26.5 scroll/swipe subtype is source-classified; generic views and four toggle omissions remain. Split comparisons remain; no gate closure."
   }
 }

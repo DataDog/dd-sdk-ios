@@ -347,7 +347,7 @@
           ],
           "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild and baseline-to-candidate at27.1 on Duo; report SwiftUI views separately. Validate View/Navigation/Action capture and exact event owners within the actual layout. Cross-compiler View counts and occurrence sequences may differ when simultaneous columns change. Classify new loss, duplicates or wrong owners; documented baseline pane/control limitations may remain. No general tab/split tracking redesign, concurrent-pane modeling, strict timing or whole-payload equality.",
           "environment": "Xcode27.1 Duo27.1 simulator;12 shared stack/split cells plus at most4 ordinary baseline controls; reuse valid source-matched observations",
-          "evidence": "Results/S2-coverage-remaining-preparation.json owns six unexecuted SwiftUI stack/split cells using the existing six source/compiler-bound products. The shared capture path is qualified by completed UIKit journeys; this is no SwiftUI behavioral credit. Fresh one-cell preparation, review and operator readiness remain.",
+          "evidence": "Results/S2-swiftui-stack-candidate-20260930.json qualifies all three SwiftUI stack cells: same17 Views/25 Actions and source-paired owners, actual folds/Home and cleanup PASS. Generic views and four toggle omissions are inherited; the only SDK26.5 action subtype difference is source-classified. Results/S2-coverage-remaining-preparation.json owns the three remaining split cells. Split readiness correction requires scoped review and first planned baseline qualification; no full gate closure.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }
@@ -382,7 +382,7 @@
           ],
           "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild and baseline-to-candidate at27.1 on Duo; report SwiftUI actions separately. Validate View/Navigation/Action capture and exact event owners within the actual layout. Cross-compiler View counts and occurrence sequences may differ when simultaneous columns change. Classify new loss, duplicates or wrong owners; documented baseline pane/control limitations may remain. No general tab/split tracking redesign, concurrent-pane modeling, strict timing or whole-payload equality.",
           "environment": "Xcode27.1 Duo27.1 simulator;12 shared stack/split cells plus at most4 ordinary baseline controls; reuse valid source-matched observations",
-          "evidence": "Results/S2-coverage-remaining-preparation.json owns six unexecuted SwiftUI stack/split cells using the existing six source/compiler-bound products. The shared capture path is qualified by completed UIKit journeys; this is no SwiftUI behavioral credit. Fresh one-cell preparation, review and operator readiness remain.",
+          "evidence": "Results/S2-swiftui-stack-candidate-20260930.json qualifies all three SwiftUI stack cells: same17 Views/25 Actions and source-paired owners, actual folds/Home and cleanup PASS. Generic views and four toggle omissions are inherited; the only SDK26.5 action subtype difference is source-classified. Results/S2-coverage-remaining-preparation.json owns the three remaining split cells. Split readiness correction requires scoped review and first planned baseline qualification; no full gate closure.",
           "required": true,
           "acceptance_review": "Results/S2-release-gate-review-20260925.json"
         }

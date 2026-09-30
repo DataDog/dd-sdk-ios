@@ -116,6 +116,35 @@ class SupportedSessionTests(unittest.TestCase):
                     self.hierarchy(ids=h.HOME_IDS[1:]),self.hierarchy(ids=())+self.hierarchy(bundle='other')]:
             with self.subTest(raw=raw),self.assertRaises(ValueError):h.hierarchy_owner(raw,'fixture',123)
 
+    def test_split_hierarchy_requires_sidebar_in_the_actual_app(self):
+        sidebar=h.control_identifiers('split')
+        self.assertEqual(h.hierarchy_owner(self.hierarchy(ids=sidebar),'fixture',123,layout='split')['identifiers'],list(sidebar))
+        for raw in [self.hierarchy(),self.hierarchy(ids=[n.replace('sidebar','empty') for n in sidebar]),
+                    self.hierarchy(ids=[n.replace('sidebar','detail') for n in sidebar]),
+                    self.hierarchy(ids=())+self.hierarchy(bundle='foreign',ids=sidebar),
+                    self.hierarchy(pid=999,ids=sidebar)]:
+            with self.subTest(raw=raw),self.assertRaises(ValueError):h.hierarchy_owner(raw,'fixture',123,layout='split')
+        for identifier in sidebar:
+            with self.subTest(identifier=identifier),self.assertRaises(ValueError):
+                h.hierarchy_owner(self.hierarchy(ids=[i for i in sidebar if i!=identifier]),'fixture',123,layout='split')
+
+    def test_split_capture_uses_the_request_layout(self):
+        self.binding['layout']='split';path=self.capture();request=h.read(path)
+        original=self.root/'actual.txt';original.write_text(self.hierarchy(ids=h.control_identifiers('split')))
+        screenshot=self.root/'actual.png';screenshot.write_bytes(b'\x89PNG\r\n\x1a\nactual')
+        proof=h.capture_value(request,dict(hierarchyPath=str(original),screenshotPath=str(screenshot),applicationState='NotRun'),path.parent)
+        self.assertEqual(proof['owner']['identifiers'],list(h.control_identifiers('split')))
+        self.assertEqual((path.parent/'returned-hierarchy.txt').read_bytes(),original.read_bytes())
+
+    def test_capture_cannot_switch_from_stack_to_split_after_start(self):
+        path=self.capture();request=h.read(path);request['binding']['layout']='split'
+        path.write_text(json.dumps(request));self.response(path,{},started=111,finished=114,published=115)
+        with self.assertRaisesRegex(ValueError,'detached'):h.validate_response(path,now=116)
+
+    def test_unknown_capture_layout_is_rejected(self):
+        path=self.request('start');request=h.read(path);request['binding']['layout']='empty'
+        with self.assertRaisesRegex(ValueError,'unsupported capture layout'):h.validate_request(request)
+
     def test_actual_paths_and_bytes_preserved_even_when_owner_fails(self):
         path=self.capture();request=h.read(path)
         original=self.root/'actual.txt';original.write_text(self.hierarchy(pid=999))

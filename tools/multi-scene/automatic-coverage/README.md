@@ -86,8 +86,13 @@ one successor in the fixed six-cell matrix. It binds an immutable owner snapshot
 original summaries, complete artifact inventories, exact source copies, products,
 reviews and cleanup. Admission also checks the current owner still selects that
 plan and prefix. A prepared, partial or reordered result cannot skip a cell; a
-completed cell cannot be selected again. Supported split readiness needs its own
-reviewed preparation; the current continuation is limited to stack cells.
+completed cell cannot be selected again. The reviewed layout profile requires
+Home controls for stack and Sidebar controls for split. Supported requests bind
+that layout from Start through capture and End; historical requests without a
+layout retain stack semantics. Empty or Detail cannot replace Sidebar. The native
+control/scroll and idle checks still precede Ready. An unsupported initial screen
+stops this mechanism before gestures; the first planned split baseline qualifies
+the changed capture path, with no extra diagnostic cell.
 
 `human_effect_recapture.py` permits one additional SwiftUI tap/toggle observation
 only when public traversal encounters a new view missing from its owned-ancestry

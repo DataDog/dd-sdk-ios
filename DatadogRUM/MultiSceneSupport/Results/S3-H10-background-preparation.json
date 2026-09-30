@@ -2,7 +2,7 @@
   "schema_version": 1,
   "work_item": "Isolated scene background and foreground with an unchanged usable peer",
   "gate": "S3:H10",
-  "state": "DISPLAY_RENDERER_COMPILE_PREPARED",
+  "state": "DISPLAY_RENDERER_COMPILER_QUALIFIED",
   "owner": "Root",
   "reviewer": "/root/c06_runtime_plan",
   "defined_at": "2026-09-30T00:54:04.093738+00:00",
@@ -215,10 +215,10 @@
     "Late native/display evidence or dropped lifecycle journal rows"
   ],
   "next": [
-    "Run the single reviewed unsigned renderer compile after the active SwiftUI human session. No H10 build or native launch has started.",
-    "Actual silent capture and native/display/bootstrap/backend/cleanup composition remain unqualified. Fresh human availability is required for any later human session."
+    "Compose the reviewed native session, host command channel and display anchors with bootstrap, exact backend ownership and task-only cleanup before native admission.",
+    "Actual silent capture remains unqualified. The unsigned renderer compile adds no runtime or release-gate evidence. Fresh human availability is required for any later human session."
   ],
-  "updated_at": "2026-09-30T11:23:11.199069+00:00",
+  "updated_at": "2026-09-30T11:53:23.243493+00:00",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/review-r2.json",
     "sha256": "d7435346784f04ada43626bbd95247abf2f47cee3a568d8e652bbe6c32eddb9a"
@@ -484,7 +484,7 @@
     "scope": "Four actual saved Swift protocol cells and31 synthetic transfer controls qualify the client only. Every IO copy is bound by chained manifests; collection independently checks the actual final invocation. Native bootstrap/display/backend/cleanup are not supplied by this component."
   },
   "display_component": {
-    "state": "PASS_OFFLINE_ANCHOR_COMPONENT_RENDERER_COMPILE_PENDING",
+    "state": "PASS_OFFLINE_ANCHOR_COMPONENT_RENDERER_COMPILER_QUALIFIED",
     "verdict": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/display-anchors-cr61mmfo/verdict.json",
       "sha256": "2ab2056b8c942a34d88c4ef888b02ae060387e132777883ce888f85f65cce890"
@@ -495,12 +495,12 @@
     },
     "swift_controls": 17,
     "image_controls": 24,
-    "ios_builds": 0,
+    "ios_builds": 1,
     "native_runs": 0,
     "gates_closed": [],
-    "scope": "Four phase anchors bind the host command token, exact native witness, recorder prefix and collection invocation. Reuses H06 rendering primitives only. UIKit source is dormant and uncompiled; marker pixels never establish whole-window usability.",
+    "scope": "Four phase anchors bind the host command token, exact native witness, recorder prefix and collection invocation. The dormant UIKit renderer compiles for arm64 iOS; actual silent capture remains unqualified. Marker pixels never establish whole-window usability.",
     "renderer_compile": {
-      "state": "REVIEWED_BUILD_DEFERRED_FOR_REQUESTED_HUMAN_SESSION",
+      "state": "UNSIGNED_PHYSICAL_DEBUG_PRODUCT_QUALIFIED",
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-display-compile-82gt03e1",
       "definition": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-display-compile-82gt03e1/definition.json",
@@ -518,12 +518,32 @@
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-display-compile-82gt03e1/preparation-failure.json",
         "sha256": "1a5efdf8eb14b11683742e79f916bf789b4bfbc0f80c5509b0ed26bb70decbbf"
       },
-      "builds": 0,
+      "builds": 1,
       "native_runs": 0,
       "gates_closed": [],
       "review": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-display-compile-82gt03e1/compile-review.json",
         "sha256": "a40e8dbcf922c75bf17b39b58a5e6d2450c6ee142eec56267f97acfcfc7a4ee8"
+      },
+      "claim": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-display-compile-82gt03e1/build-claim.json",
+        "sha256": "67e5a7cc9f1a08b08a90b9a37b2fa7b737d9448e84b149022c9ddb4c2bbfc957"
+      },
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-display-compile-82gt03e1/result.json",
+        "sha256": "fe463691560d8fba1bc3090ba66ba3e6f2cfc0f304e91b867853b0ee1ac9dc03"
+      },
+      "product": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-display-compile-82gt03e1/unsigned-product.json",
+        "sha256": "db573039522f5f237a8dbcc72663fb3da9bf022359aa4885f6b3ea0b405c3888"
+      },
+      "compiler": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-display-compile-82gt03e1/compiler.json",
+        "sha256": "3a042ef384343d9b6ff2ff2c0f9b172e0dbf738705c68c64e2e8cd4b5adb51be"
+      },
+      "warnings": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-display-compile-82gt03e1/warning-comparison.json",
+        "sha256": "7030c8379bffdd2821c41401e6c39191d6fed48de3c33be124bf7d990f08ff2c"
       }
     }
   }

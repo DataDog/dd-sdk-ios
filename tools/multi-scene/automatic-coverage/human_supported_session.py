@@ -19,6 +19,11 @@ TOOLS = {'start': START, 'capture': CAPTURE, 'end': END}
 HOME_IDS = ('screen.home', 'home.tap', 'home.toggle', 'home.scroll', 'home.receipt', 'home.next')
 
 
+def control_identifiers(layout):
+    require(layout in ('stack', 'split'), 'unsupported capture layout')
+    return HOME_IDS if layout == 'stack' else tuple(name.replace('home', 'sidebar') for name in HOME_IDS)
+
+
 def require(value, message):
     if not value:
         raise ValueError(message)
@@ -81,6 +86,7 @@ def validate_request(request):
             'foreign session request')
     phase = request['phase']
     binding = request['binding']
+    control_identifiers(binding.get('layout', 'stack'))
     for key in ('owner', 'device', 'bundle', 'run_id', 'product_sha256', 'plan_sha256'):
         require(isinstance(binding.get(key), str) and binding[key].strip(), 'missing session binding: ' + key)
     require(request['tool'] == TOOLS[phase]
@@ -149,6 +155,7 @@ def validate_response(request_path, *, now=None, expected_request=None):
         start_raw = tool_value(read(start_folder/'tool-result.json'))
         require(request['start_response_sha256'] == sha(start_folder/'response.json')
                 and request['session_key'] == start_raw.get('interactionSessionKey')
+                and request['binding'].get('layout', 'stack') == start_request['binding'].get('layout', 'stack')
                 and all(request['binding'][k] == v for k,v in start_request['binding'].items())
                 and start_response['finished_at'] <= request['issued_at'],
                 'capture/end detached from actual session creation')
@@ -166,17 +173,18 @@ def start_value(request, value):
     return key
 
 
-def hierarchy_owner(raw, bundle, pid):
+def hierarchy_owner(raw, bundle, pid, *, layout='stack'):
     headers = re.findall(r'Application bundle identifier: ([^\n]+)\nApplication UI orientation: [^\n]+\nApplication, pid: ([0-9]+),', raw)
     require(headers.count((bundle, str(pid))) == 1
             and sum(name == bundle for name, _ in headers) == 1,
             'hierarchy does not uniquely identify the launched task app')
     sections = re.split(r'(?=Application bundle identifier: )', raw)
     section = next(s for s in sections if s.startswith('Application bundle identifier: ' + bundle + '\n'))
-    for identifier in HOME_IDS:
+    identifiers = control_identifiers(layout)
+    for identifier in identifiers:
         require(re.search(r"identifier: ['\"]" + re.escape(identifier) + r"['\"]", section),
                 'supported hierarchy missing source control: ' + identifier)
-    return dict(bundle=bundle, pid=pid, identifiers=list(HOME_IDS))
+    return dict(bundle=bundle, pid=pid, identifiers=list(identifiers))
 
 
 def capture_value(request, value, folder):
@@ -197,7 +205,8 @@ def capture_value(request, value, folder):
         artifacts[name] = dict(source_path=str(source), **reference(target))
     require(value.get('applicationState') in ('NotRun', 'Running'), 'task is not observable in a foreground-capable state')
     proof = hierarchy_owner(Path(artifacts['hierarchy']['path']).read_text(),
-                            request['binding']['bundle'], request['binding']['pid'])
+                            request['binding']['bundle'], request['binding']['pid'],
+                            layout=request['binding'].get('layout', 'stack'))
     return dict(state='SUPPORTED_HIERARCHY_JOINED', owner=proof, artifacts=artifacts,
                 application_state=value.get('applicationState'))
 
