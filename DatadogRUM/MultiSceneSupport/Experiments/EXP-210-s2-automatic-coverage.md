@@ -179,5 +179,11 @@ operator/environment readiness is required.
 
 The [current SwiftUI capture correction](../Results/S2-swiftui-effect-recapture-20260930.json)
 permits one distinct tap/toggle observation after an incomplete ancestry inventory.
-All42 controls and exact-source review pass. Failed evidence and recapture
-classification remain explicit; native qualification belongs to the next baseline.
+All 42 controls and exact-source review pass. Failed evidence and recapture
+classification remain explicit.
+
+That fresh baseline now qualifies with 17 Views, 25 automatic Actions, 29 native
+effects, three display transitions and Home/cleanup PASS. Four missing toggle
+actions remain explicit baseline limitations. One real recapture passes with its
+failed snapshot preserved; scoped review accepts only this cell. Five SwiftUI
+cells remain, with no candidate conclusion or broader gate closure.

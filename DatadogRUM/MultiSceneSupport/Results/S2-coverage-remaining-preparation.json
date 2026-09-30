@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "state": "UIKIT_VIEW_ACTION_GATES_CLOSED_SWIFTUI_REMAINS",
-  "updated_at": "2026-09-30T10:10:49.749627+00:00",
+  "updated_at": "2026-09-30T10:25:56.977520+00:00",
   "execution": {
     "record": "Results/S2-swiftui-effect-recapture-20260930.json"
   },
@@ -76,7 +76,7 @@
         "multiple_scenes": false
       }
     ],
-    "prerequisites": "Fresh environment/actor/page preflight, then the first planned baseline. Qualify automatic capture and fresh Ready before gestures. No duplicate diagnostic run."
+    "prerequisites": "Prepare the SDK27.1 SwiftUI stack baseline using the qualified supported capture prefix and preserved SDK26.5 baseline. Five unconsumed cells remain; no accepted cell needs repeating."
   },
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
@@ -88,7 +88,7 @@
     "S2:H14"
   ],
   "swiftui_preparation": {
-    "state": "REVIEWED_EFFECT_RECAPTURE_PENDING_NATIVE",
+    "state": "FIRST_BASELINE_QUALIFIED_NEXT_PLAN_PENDING",
     "owner": "Results/S2-coverage-remaining-preparation.json",
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2",
     "plan": {
@@ -174,7 +174,7 @@
     },
     "builds": 3,
     "scope": "One first-baseline adapter; existing products and frozen collector/oracle. Six SwiftUI cells remain. Execution state belongs to execution.record.",
-    "next_action": "Fresh environment/actor/page preflight, then the first planned baseline. Qualify automatic capture and fresh Ready before gestures. No duplicate diagnostic run.",
+    "next_action": "Prepare the SDK27.1 SwiftUI stack baseline using the qualified supported capture prefix and preserved SDK26.5 baseline. Five unconsumed cells remain; no accepted cell needs repeating.",
     "effect_recapture": {
       "record": "Results/S2-swiftui-effect-recapture-20260930.json",
       "plan": {
@@ -507,5 +507,20 @@
   "latest_attempt": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-readiness-20260930.json",
     "sha256": "00853ad168c4d36597e206da7d03334a4a60767c7adf6d9c24ecd6ec6c2ad08a"
-  }
+  },
+  "completed_swiftui_cells": [
+    {
+      "selected": {
+        "build": "baseline-26.5",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "stack",
+        "multiple_scenes": false
+      },
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-effect-recapture-20260930.json",
+        "sha256": "86e282bd8531a4fe3d00a05b686a0cd35305fcb209a763b66743948ab73f1f39"
+      }
+    }
+  ]
 }

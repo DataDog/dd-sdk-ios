@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "REVIEWED_PENDING_NATIVE",
+  "state": "NATIVE_BASELINE_QUALIFIED",
   "owner": "EXP-210",
   "gates": [
     "S2:C09",
@@ -19,11 +19,11 @@
     "Evaluate the actual recaptured phase and counter under NATIVE_EFFECT_RECAPTURED; never rewrite a phase or substitute cleanup evidence.",
     "Use focused offline controls and the designated exact-source review before the first planned baseline supplies native qualification. Stop on a second incomplete observation."
   ],
-  "native_admitted": false,
-  "native_runs": 0,
+  "native_admitted": true,
+  "native_runs": 1,
   "gate_closures": [],
   "release_acceptance": false,
-  "updated_at": "2026-09-30T10:10:49.749627+00:00",
+  "updated_at": "2026-09-30T10:25:56.977520+00:00",
   "plan": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/runtime-plan.json",
     "sha256": "571d0368672d90676cbba9bef8472a2861d2c9d8ca5d0dde95ac4b40851e2efe"
@@ -43,15 +43,15 @@
     "layout": "stack",
     "multiple_scenes": false
   },
-  "scenario": "NOT_RUN",
-  "evidence": "NOT_RUN",
-  "cleanup": "NOT_NEEDED",
+  "scenario": "PASS",
+  "evidence": "PASS",
+  "cleanup": "PASS",
   "offline_controls": 42,
   "saved_replay": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/classification-reviewed-replay/result.json",
     "sha256": "0cd191289a579069384b09406ff4d893a05450b0f45eab4e2ab6f971466b83d7"
   },
-  "next_action": "Fresh environment/actor/page preflight, then the first planned baseline. Qualify automatic capture and fresh Ready before gestures. No duplicate diagnostic run.",
+  "next_action": "Prepare the SDK27.1 SwiftUI stack baseline using the qualified supported capture prefix and preserved SDK26.5 baseline. Five unconsumed cells remain; no accepted cell needs repeating.",
   "unadmitted_preparation": {
     "plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline/runtime/runtime-plan.json",
@@ -65,5 +65,123 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline/runtime/review.json",
       "sha256": "d25d12c3e39dd867c0ade4c093193df6b034543cecb69a6eb7652ab2a55e1488"
     }
-  }
+  },
+  "controller": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/controller.json",
+    "sha256": "a1aa792c9fcfe32fbd15451b30169664c8092ddbd9d24899462f3c23d5b0b3a7"
+  },
+  "admission": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/native-admission.json",
+    "sha256": "bf815e8c8a1ec664a39e3317860ab4449f91e6e549aca3814aedc4397530bfe7"
+  },
+  "source_at_run": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/source-at-run/manifest.json",
+    "sha256": "098d72ceed34b168f6b015d767f22d8a1fba15560da5a35e90737e31212df8aa"
+  },
+  "native_launches": 1,
+  "human_prompts": 33,
+  "human_inputs": 22,
+  "supported_capture": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/supported/capture/proof.json",
+    "sha256": "a6807834f65589a8d11da8b9a9b3a4cb09278f2b2eb397a55a7d6119ece0600d"
+  },
+  "supported_end": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/supported/ended.json",
+    "sha256": "1d9e4b9dfd9e7cfcdd8c7ea30ab2e2f721b0a5ead5f38d752378646aecdc504a"
+  },
+  "tool_owner_completion": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/supported/worker-completed.json",
+    "sha256": "c19ad4babddcfce04a6bbc2397c9831092615a88d66cfe19b35694ebd09b4286"
+  },
+  "ready_request": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/operator-ready/request.json",
+    "sha256": "f6081c07ca7808040502ce9913022182bfbfe7b48b090cd44d947ab9d04e67df"
+  },
+  "readiness_proofs": {
+    "supported.before-end": {
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/input/supported.before-end/controls-ready.json",
+        "sha256": "deb896d7b697cef7851856a28ca116d4794b5c9134a73b54e06f172a3da650dd"
+      },
+      "idle": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/input/supported.before-end/input-idle/proof.json",
+        "sha256": "4e60172968dfaf7dd233c428c60ad85b1afd0053ec309b091040109660d3d715"
+      }
+    },
+    "supported.after-end": {
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/input/supported.after-end/controls-ready.json",
+        "sha256": "4eeabfe5ad140ae515b1dd5f20d242a63eda9e5ffe83ad1bc9f905029cff93e3"
+      },
+      "idle": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/input/supported.after-end/input-idle/proof.json",
+        "sha256": "9393c7645d8b212d19a8d1960a7eab39e44484a9374c0dc0ae60c1ae54ae98ef"
+      }
+    },
+    "supported.after-ready": {
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/input/supported.after-ready/controls-ready.json",
+        "sha256": "381b5492afbd5aab6acf1f92cce9855230cca47085059e0bbb3171f209f3b3a5"
+      },
+      "idle": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/input/supported.after-ready/input-idle/proof.json",
+        "sha256": "87da0d3a45b52d382294b9f0d099456fb6c4137b0627a43ca09c0010d991568a"
+      }
+    }
+  },
+  "ready_ack": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/operator-ready/operator-released.json",
+    "sha256": "d09adc554c0af61daa5af39c94806301376eaca09b52953343361a6cf6b43179"
+  },
+  "qualified_cells": 1,
+  "backend_queries": 0,
+  "original_summary": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/summary.json",
+    "sha256": "28651bad580b5ca0346f9952cff8339773b7d7a33c05541d248d3e91ca96d4f1"
+  },
+  "local_result": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/local-result.json",
+    "sha256": "1292ffbc6ed9600169034d69cf536f1e9fb32daa218ca0759d521358acd22639"
+  },
+  "receipts": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/receipts.json",
+    "sha256": "6cb0007f234fe5202a0a8a94e99e458a6e48c951ba0ece3779c48001753cefe6"
+  },
+  "native_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/native-review.json",
+    "sha256": "3e8e1bcc80c44b87f905715482a397c51a62d2dbc45a77ee3eefe1268417d4a4"
+  },
+  "post_exit": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/post-exit.json",
+    "sha256": "1d7023ec75435ddce33cc3e57c11285ce865c2bd91c293ba680910b403a914a6"
+  },
+  "events": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/events.jsonl",
+    "sha256": "94b83e444c211ca0f91db22a82e648904230cc6c23bbabae81f8432561fdf630"
+  },
+  "recaptured_effects": [
+    {
+      "phase": "inner.detail.toggle.effect",
+      "observation_phase": "inner.detail.toggle.effect.recapture",
+      "state": "NATIVE_EFFECT_RECAPTURED",
+      "failed_observation": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/input/inner.detail.toggle.effect/capture-failure.json",
+        "sha256": "16698a28e935f1eac606514d1de00ff3864a5f72741ab723cc2d55ee190caf6e"
+      }
+    }
+  ],
+  "instruction_server_stopped": true,
+  "counts": {
+    "views": 17,
+    "automatic_actions": 25,
+    "native_effects": 29,
+    "folds": 3
+  },
+  "missing_action_phases": [
+    "initial.root.toggle",
+    "initial.detail.toggle",
+    "inner.root.toggle",
+    "inner.detail.toggle"
+  ],
+  "native_capture_prerequisite": "QUALIFIED_WITH_ONE_EXPLICIT_RECAPTURE"
 }
