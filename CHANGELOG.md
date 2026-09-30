@@ -1,12 +1,14 @@
 # Unreleased
 
+# 3.19.0 / 30-09-2026
+
 - [IMPROVEMENT] Enable RUM view update (delta) events by default. Views that update often now send a smaller payload. See [#3233][]
-- [FIX] Release the RUM display-link observer and its frame readers when their owner is released.
-- [FIX] Pin KSCrash to exact version 2.5.1 via SPM to prevent silently resolving newer, unvetted releases.
-- [FIX] Keep attributes isolated when returning to a previously tracked RUM view while its earlier resources are still pending.
+- [FIX] Release the RUM display-link observer and its frame readers when their owner is released. See [#3216][]
+- [FIX] Pin KSCrash to exact version 2.5.1 via SPM to prevent silently resolving newer, unvetted releases. See [#3232][]
+- [FIX] Keep attributes isolated when returning to a previously tracked RUM view while its earlier resources are still pending. See [#3217][]
 - [IMPROVEMENT] Increase the maximum number of custom attributes per event from 256 to 1900 in RUM, Logs and Traces. In RUM the limit applies to `context`, `usr` and `account` independently; in Logs and Traces those attributes are encoded into a single JSON object, so they share one limit. Log `usr` and `account` extra attributes are now limited as well. See [#3198][]
 - [IMPROVEMENT] Require Swift tools version 6.2 (Xcode 26) to resolve the package with Swift Package Manager. See [#3231][]
-- [FIX] Report slow frame and freeze rates for RUM views when navigation starts a new view without calling `stopView()` on the previous one.
+- [FIX] Report slow frame and freeze rates for RUM views when navigation starts a new view without calling `stopView()` on the previous one. See [#3237][]
 - [FIX] Traced requests and spans created immediately after the SDK is initialized now use the same sampling decision as the rest of the RUM session, and carry that session's ID. Previously they could be sampled independently of the session and sent without it. See [#3221][]
 
 # 3.18.0 / 21-09-2026
@@ -1273,6 +1275,10 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3208]: https://github.com/DataDog/dd-sdk-ios/pull/3208
 [#3231]: https://github.com/DataDog/dd-sdk-ios/pull/3231
 [#3233]: https://github.com/DataDog/dd-sdk-ios/pull/3233
+[#3216]: https://github.com/DataDog/dd-sdk-ios/pull/3216
+[#3217]: https://github.com/DataDog/dd-sdk-ios/pull/3217
+[#3232]: https://github.com/DataDog/dd-sdk-ios/pull/3232
+[#3237]: https://github.com/DataDog/dd-sdk-ios/pull/3237
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
