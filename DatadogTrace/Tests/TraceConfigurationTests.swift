@@ -22,7 +22,7 @@ class TraceConfigurationTests: XCTestCase {
         XCTAssertNil(config.eventMapper)
         XCTAssertNil(config.customEndpoint)
         XCTAssertNil(config.customStatsEndpoint)
-        XCTAssertFalse(config.statsComputationEnabled)
+        XCTAssertFalse(config.featureFlags[.clientSideStats])
     }
 
     func testCustomStatsEndpointInitParameter() {
