@@ -75,9 +75,17 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
             return
         }
 
-        featureScope.eventWriteContext { [metricController] _, writer in
+        featureScope.eventWriteContext { [metricController] context, writer in
             for bucket in exportedBuckets {
-                writer.write(value: bucket)
+                // Stamp the deployment identity now, while the spans' context is still current.
+                // See `ExportedBucket.env` for why upload time is too late.
+                writer.write(
+                    value: bucket.stamped(
+                        env: context.env,
+                        version: context.version,
+                        service: context.service
+                    )
+                )
             }
             // Report only after the write: in some cases the event write context is not
             // available, and we do not want to signal a flush that never reached storage.
