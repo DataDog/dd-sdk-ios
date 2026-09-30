@@ -2,7 +2,7 @@
   "schema_version": 1,
   "work_item": "Isolated scene background and foreground with an unchanged usable peer",
   "gate": "S3:H10",
-  "state": "REVIEWED_WITNESS_AND_GUARD_SESSION_UNPREPARED",
+  "state": "REVIEWED_COMPILED_EXECUTOR_SESSION_UNPREPARED",
   "owner": "Root",
   "reviewer": "/root/c06_runtime_plan",
   "defined_at": "2026-09-30T00:54:04.093738+00:00",
@@ -215,11 +215,11 @@
     "Late native/display evidence or dropped lifecycle journal rows"
   ],
   "next": [
-    "Wire the reviewed guard into the isolated scenario at each actual scene-context dispatch, with fresh host phase barriers and immutable raw capture. Preserve all H04/H06 inputs and the earlier witness build.",
-    "Compose source/compiler/process/manifest identity, complete sealed capture and display with the physical mechanism and safe cleanup; obtain scoped review before native use.",
+    "Compose the reviewed executor with an H10-specific app/session adapter and phase channel. Preserve publish-before-grant, stop priority and raw observations; arm only after two current mapper owners and display evidence.",
+    "Seal the complete delayed mapper prefix and retain later/cleanup tails. Integrate source/compiler/process/manifest identity, display and safe cleanup; scoped review precedes native use.",
     "Native use waits for qualified physical input/display, fresh device/backend prerequisites and user availability. No automatic start at09:00."
   ],
-  "updated_at": "2026-09-30T02:19:37.411460+00:00",
+  "updated_at": "2026-09-30T02:46:21.219762+00:00",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/review-r2.json",
     "sha256": "d7435346784f04ada43626bbd95247abf2f47cee3a568d8e652bbe6c32eddb9a"
@@ -331,5 +331,56 @@
     "native_runs": 0,
     "gates_closed": [],
     "scope": "One arm then five ordered before/invoked/after guards; actual Swift state machine exercised with source-derived Codable models and synthetic inputs. No SDK dispatch, notification delivery, display or cleanup evidence."
+  },
+  "native_dispatch": {
+    "state": "REVIEWED_COMPILED_EXECUTOR_COMPONENT",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/native-composition-mxg1pbtn/dispatch-definition.json",
+      "sha256": "fdf63fdefc30e4b0f36bccabf4302515581f589994ceb5c8149276bbad9811f0"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/native-composition-mxg1pbtn/dispatch-review.json",
+      "sha256": "631ca2d1101ea1aac47ab2e9cd58205acf63928b11dee4d890e933d44b0f83f9"
+    },
+    "verdict": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/native-composition-mxg1pbtn/dispatch-verdict.json",
+      "sha256": "522a35d55a44340c788546281244ad9414859d1bdda96d29e9a37196d42e267d"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/native-composition-mxg1pbtn/dispatch-controls-r1/result.json",
+      "sha256": "5560ed87eb0b47bed4591688c6ee8acb5b3f3904f243bdd31343ab4fe64ec7cf"
+    },
+    "renderer_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/native-composition-mxg1pbtn/renderer-controls.json",
+      "sha256": "0cf9f6f645b2510bbf1283a0a79b2c4bd17f56ebf89a76f97052e76804ea5ead"
+    },
+    "build": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/native-composition-mxg1pbtn/compiler-r1/unsigned-product.json",
+      "sha256": "bb1ce9ad8486c682ccf4c8866655cf264af5e7e19d0c18e6d49205239a2a420e"
+    },
+    "helpers": [
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/acceptance/scene_background_dispatch.swift",
+        "sha256": "a86c195b20febcb0de076a0a2efdffe082db9ffaa16606e6efafcb6ce9f4d9e0"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/acceptance/scene_background_fixture.py",
+        "sha256": "5cc58676d3769229d345f7369d06cfe6a296dfcd0bdb00e843f0359777a22586"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/acceptance/scene_background_dispatch_checks.py",
+        "sha256": "13b630bd617e5f7372bc27b0671b96129118b4d581a5058cec1228fb5995aebe"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/acceptance/scene_background_dispatch_check_main.swift",
+        "sha256": "dd405688cdf1028cf2a2b00277a25a6cc742e91cfdd9f4f4a69455623ab374c5"
+      }
+    ],
+    "controls_count": 20,
+    "renderer_controls_count": 5,
+    "ios_builds": 1,
+    "native_runs": 0,
+    "gates_closed": [],
+    "scope": "Synchronous wrapper in isolated executor and fail-closed driver hook compile. Actual suspended admission, cancellation, owner changes, publication failure, rejection and reentrancy controls pass. No app/session injection, host phase transport, display or native acceptance. Dormant rendering remains byte-identical; 719 original H06 inputs preserved."
   }
 }

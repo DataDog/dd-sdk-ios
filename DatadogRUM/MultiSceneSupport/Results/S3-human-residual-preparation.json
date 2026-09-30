@@ -95,9 +95,9 @@
         "windows.isolated-background-foreground"
       ],
       "decisive_test": "A ends and restarts its view across one actual background/foreground cycle while B keeps its native owners and current RUM view; five Action/Resource pairs retain exact scene attribution.",
-      "missing": "Native witness producer, composed capture/display/runner and physical input qualification remain; the offline oracle and 15 controls pass designated review.",
+      "missing": "App/session injection, H10 phase channel, complete capture/display/runner and physical input qualification remain. The owning preparation records reviewed oracle, native witness, guard and compiled executor controls.",
       "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
-      "state": "REVIEWED_OFFLINE_ORACLE_NATIVE_UNQUALIFIED",
+      "state": "REVIEWED_COMPILED_EXECUTOR_SESSION_UNPREPARED",
       "preparation_owner": "Results/S3-H10-background-preparation.json"
     },
     {
@@ -1266,7 +1266,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/s3-residual-review.json",
     "sha256": "358e67b60fb25744ada5ddf6902e5832285a28489492900077061fedd7799890"
   },
-  "updated_at": "2026-09-30T01:21:20.020327+00:00",
+  "updated_at": "2026-09-30T02:46:21.220799+00:00",
   "native_adapter_attempts": 1,
   "package_split_review": {
     "contract": {
