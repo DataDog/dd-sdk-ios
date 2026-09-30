@@ -229,3 +229,13 @@ reads and display changes reject; half-pixel coordinate roundoff is allowed.
 Saved-tail replay preserves the early snapshot failure. No new native run or
 gate credit: the exact original navigation prefix must qualify before another
 human invitation, since launch-state folding did not reproduce its alias.
+
+The [prefix qualification](../Results/S2-prefix-ancestry-20260930.json) binds those
+13 original effects, including both downward scrolls and final Sidebar state.
+Its separate supported-input adapter preserves actual returns and stops at the
+first failed effect. Review found two pre-launch blockers: ordinary snapshots lack
+idle state, and worker rejection needed an immediate no-call response. Both fixes
+pass 44 focused offline controls, including saved-payload replay, and independent
+re-review. No build or native attempt is added. The original failed fold already had
+correct resized geometry. Automatic interaction can alter accessibility state, so
+non-reproduction cannot resolve the human failure or authorize another invitation.

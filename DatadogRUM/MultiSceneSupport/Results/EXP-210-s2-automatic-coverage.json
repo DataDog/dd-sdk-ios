@@ -511,7 +511,7 @@
     "sha256": "1e9f9c0b02d0ed0ef1331f53bddfdedef3fdd47d50f397fd6f5e179f6047fc10",
     "acceptance": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/host-review-acceptance.json"
   },
-  "updated_at": "2026-09-30T11:36:24.068081+00:00",
+  "updated_at": "2026-09-30T15:24:12.306627+00:00",
   "input_diagnostic_definition": {
     "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/D1-input-diagnostic-definition.json",
     "sha256": "e5c9a6f5743a120680de3e692837cbfff400fdfb2277dac8bed61b53dc8156a0",
@@ -1253,5 +1253,8 @@
     "stopped_attempt": "Results/S2-swiftui-split271-20260930.json"
   },
   "current_capture_diagnostic": "Results/S2-swiftui-ancestry-20260930.json",
-  "current_capture_readiness": "Results/S2-fold-readiness-20260930.json"
+  "current_capture_readiness": "Results/S2-fold-readiness-20260930.json",
+  "current_prefix_qualification": {
+    "record": "Results/S2-prefix-ancestry-20260930.json"
+  }
 }

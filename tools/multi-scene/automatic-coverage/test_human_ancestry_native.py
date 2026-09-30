@@ -3,7 +3,11 @@ import copy
 import hashlib
 import json
 from pathlib import Path
+import tempfile
+import time
+from types import SimpleNamespace
 import unittest
+from unittest.mock import patch
 
 import human_ancestry_native as native
 
@@ -64,6 +68,29 @@ class SnapshotJoin(unittest.TestCase):
         native.screen(self.module,changed,binding,display)
         display['nativeSize'][0]+=100
         with self.assertRaises(ValueError):native.screen(self.module,row,binding,display)
+
+    def test_failed_snapshot_retains_actual_bytes_without_advancing_accepted_state(self):
+        for prefix in (b'',b'replaced-prefix'):
+            with self.subTest(prefix=prefix),tempfile.TemporaryDirectory() as temporary:
+                folder=Path(temporary);documents=folder/'documents';documents.mkdir()
+                raw=b'actual-invalid-stream\n';checkpoint=b'{}'
+                def publish(path,request):
+                    native.evidence.save(path,request)
+                    (documents/'events.jsonl').write_bytes(raw)
+                    (documents/('events-checkpoint-'+request['request_id']+'.json')).write_bytes(checkpoint)
+                module=SimpleNamespace(shared=SimpleNamespace(save=publish),
+                    human_release=SimpleNamespace(process_identity=lambda _: 'actual-process'))
+                capture=native.Capture(module,folder,documents,'run',123)
+                capture.prefix=prefix;capture.last_sequence=7;capture.last_row={'sequence':7}
+                with patch.object(native,'validate_snapshot',side_effect=ValueError('invalid current capture')):
+                    with self.assertRaises(ValueError):capture.snapshot('failed','cleanup.idle',time.time()+30)
+                failure=native.evidence.read(capture.failed_snapshot['path'])
+                self.assertEqual(Path(failure['events']['path']).read_bytes(),raw)
+                self.assertEqual(Path(failure['checkpoint']['path']).read_bytes(),checkpoint)
+                self.assertEqual(failure['prior_accepted_sequence'],7)
+                self.assertFalse(failure['scenario_credit'])
+                self.assertEqual(capture.last_row,{'sequence':7});self.assertEqual(capture.prefix,prefix)
+                self.assertFalse((folder/'failed/joined.json').exists())
 
 
 if __name__=='__main__':unittest.main()

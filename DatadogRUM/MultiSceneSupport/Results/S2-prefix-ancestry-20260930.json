@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "state": "REVIEWED_AUTOMATIC_QUALIFICATION_PREPARATION",
+  "owner": "EXP-210",
+  "gates": [
+    "S2:C09",
+    "S2:C10",
+    "S2:H14"
+  ],
+  "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-split-prefix-0oeq73m2",
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-split-prefix-0oeq73m2/definition.json",
+    "sha256": "ece98f19bb9bed08009ff332cc5362f409ab3a1bc1a430865e80c19acf805f9b"
+  },
+  "original_prefix": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-split-prefix-0oeq73m2/prefix-binding.json",
+    "sha256": "2aa7c759ac3b55021b04af6afdfb4f1d69f23d79688e0272f2be33ba888159e6"
+  },
+  "plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-split-prefix-0oeq73m2/native/plan.json",
+    "sha256": "1dbf311c0ec5719f1f7106e91f7dccc93552056134e9e7b96409fb1cbeeaa9ca"
+  },
+  "controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-split-prefix-0oeq73m2/controls-r2.json",
+    "sha256": "461e47b710a7c939738bcb9d96538b873b427f6bff307edf222d8fcde78a6dbb"
+  },
+  "controls_count": 44,
+  "native_admitted": false,
+  "native_runs": 0,
+  "new_builds": 0,
+  "gates_closed": [],
+  "observed": {
+    "original_failure_already_resized_points": [
+      951,
+      669
+    ],
+    "original_prefix_steps": 13,
+    "original_downward_scroll_end_offsets": [
+      [
+        0,
+        -84
+      ],
+      [
+        0,
+        -29
+      ]
+    ],
+    "original_final_sidebar_counter": 3,
+    "original_final_sidebar_toggle": "1"
+  },
+  "scope": "One prospective automatic diagnostic using the existing isolated ancestry product. Exact semantic navigation prefix; current supported coordinates and native effects. No human invitation or release credit.",
+  "limits": [
+    "Supported tool session during gestures differs from original human session; non-reproduction cannot resolve the human failure.",
+    "Exact swipe trajectories/amplitudes are unavailable; direction and source ownership are bound.",
+    "Stop at first failed input/capture, preserve actual returns, end the worker, verify idle, and clean only the task app."
+  ],
+  "next_action": "Fresh environment and worker-readiness checks, then one automatic diagnostic qualification only. No human invitation; a clean run cannot resolve the original human failure.",
+  "updated_at": "2026-09-30T15:24:12.306627+00:00",
+  "review_history": [
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-split-prefix-0oeq73m2/review-r1.json",
+      "sha256": "d1553b8ddaba8f63b773fb5171b1e9bc35c169c558ba824d1bda0fe0adb56184"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-split-prefix-0oeq73m2/review-r2.json",
+      "sha256": "60aff281882ae7c84bd2faeb6c0095fe06b0cb265128564f0e889c27e62b0efc"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-split-prefix-0oeq73m2/review-r3.json",
+      "sha256": "01568684843ec7ce91119f7eff8ab3e654f7f1eca68e46b4435c6dcaf47df7cc"
+    }
+  ],
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-split-prefix-0oeq73m2/native/review.json",
+    "sha256": "97b5f95283aadfe0427f4b0919df944b05dfa60c19a22abff3eee927fe50386b"
+  },
+  "resolved_findings": [
+    "PREFIX-001: source-shaped idle snapshots separate from ordinary observations; saved-payload replay passes.",
+    "PREFIX-002: pre-call rejection publishes an immediate NO_CALL receipt with no invented tool response; End remains usable."
+  ]
+}

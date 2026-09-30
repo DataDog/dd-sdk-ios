@@ -120,6 +120,14 @@ display readback within a shared budget under the original cutoff. The geometry
 hint cannot replace ownership assertions, classify an unobserved alias or qualify
 a release gate. The exact original navigation prefix still needs qualification.
 
+The [automatic prefix qualification](../../../DatadogRUM/MultiSceneSupport/Results/S2-prefix-ancestry-20260930.json)
+binds the original thirteen native effects, including downward scroll direction.
+Its separate supported-input protocol preserves raw returns, uses current nested
+Switch hit points and stops on the first failed effect. It ends the tool session
+before the fresh pre-fold boundary. The original human failure already had resized
+geometry; an active tool session during navigation is a diagnostic limitation.
+Non-reproduction cannot resolve that failure or authorize another human invitation.
+
 `human_split.py` is the scoped candidate-only split continuation. Its comparison
 keeps actual pane layout, per-input owners and View inventory separate from the
 inherited Home limitation. Compare in-memory and persisted inventories through

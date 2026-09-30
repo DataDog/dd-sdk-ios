@@ -14,6 +14,9 @@ import uuid
 import human_ancestry_probe as build
 import human_supported_session as evidence
 import fold_readiness
+import prefix_input
+import prefix_sequence
+import prefix_session
 
 require = evidence.require
 
@@ -61,10 +64,28 @@ def device(module, identifier):
     return module.shared.devices(identifier)
 
 
-def prepare(root, identifier):
+def prefix_definition(path, root):
+    value = evidence.read(path)
+    require(value['state'] == 'DEFINED_NO_NATIVE_ADMISSION'
+            and value['kind'] == 'ONE_AUTOMATIC_PREFIX_ANCESTRY_QUALIFICATION'
+            and Path(value['diagnostic_root']).resolve() == root.resolve()
+            and value['diagnostic_build'] == evidence.reference(root/'build/result.json')
+            and value['scope'] == dict(builds=0,native_attempts=1,input_commands=13,taps=11,
+                downward_swipes=2,folds=1,home_input=False,scenario_credit=False,human_invitation=False),
+            'prefix definition exceeds one diagnostic qualification')
+    prefix_input.original(value['prefix'])
+    require(build.bound(value['readiness_owner'])['state'] == 'REVIEWED_OFFLINE_READINESS', 'readiness repair not reviewed')
+    return value
+
+
+def prepare(root, identifier, *, output=None, prefix=None):
     module, definition, previous = context(root)
     result = product(root)
-    folder = root/'native'; require(not folder.exists(), 'native diagnostic already prepared')
+    require((output is None) == (prefix is None), 'separate prefix output and definition required together')
+    continuation = prefix_definition(prefix,root) if prefix is not None else None
+    require(prefix is None or output.resolve() == prefix.resolve().parent/'native', 'one output per prefix definition')
+    folder = root/'native' if output is None else output
+    require(not folder.exists(), 'native diagnostic already prepared')
     folder.mkdir()
     module.transport.publication_preflight(folder)
     current = device(module, identifier)
@@ -75,13 +96,16 @@ def prepare(root, identifier):
                 cleanup_review=build.bound(definition['source_attempt'])['separate_restoration']['review'],
                 budgets=definition['budgets_seconds'], worker='/root/swiftui_supported_owner',
                 scenario_credit=False, created_at=time.time())
+    if continuation is not None:
+        plan.update(kind=continuation['kind'],prefix_definition=evidence.reference(prefix),
+                    budgets=continuation['budgets_seconds'])
     evidence.save(folder/'plan.json', plan)
     return plan
 
 
-def validate_snapshot(module, raw, checkpoint, request_bytes, run, binding=None, *, after_sequence=0):
+def validate_snapshot(module, raw, checkpoint, request_bytes, run, binding=None, *, after_sequence=0, phases=()):
     request = json.loads(request_bytes)
-    require(request['run_id'] == run and request['phase'] in ('diagnostic.closed','diagnostic.opened','cleanup.idle'),
+    require(request['run_id'] == run and request['phase'] in ('diagnostic.closed','diagnostic.opened','cleanup.idle',*phases),
             'foreign snapshot request')
     rows = module.oracle.checkpoint(raw, checkpoint, run, request['request_id'])
     current = module.oracle.one([r for r in rows if r['kind'] == 'human_window_binding'], 'native binding')['payload']
@@ -97,12 +121,15 @@ def validate_snapshot(module, raw, checkpoint, request_bytes, run, binding=None,
 
 
 class Capture:
-    def __init__(self, module, folder, documents, run, pid):
+    def __init__(self, module, folder, documents, run, pid, *, phases=()):
         self.module, self.folder, self.documents, self.run, self.pid = module, folder, documents, run, pid
         self.process_identity = module.human_release.process_identity(pid)
         self.binding = None
         self.prefix = b''
         self.last_sequence = 0
+        self.phases = phases
+        self.last_row = None
+        self.failed_snapshot = None
 
     def live(self, deadline):
         require(time.time() < deadline and self.module.human_release.process_identity(self.pid) == self.process_identity,
@@ -122,13 +149,22 @@ class Capture:
             self.live(deadline); time.sleep(.1)
         raw = (self.documents/'events.jsonl').read_bytes(); checkpoint = path.read_bytes()
         (folder/'events.jsonl').write_bytes(raw); (folder/'checkpoint.json').write_bytes(checkpoint)
-        require(raw.startswith(self.prefix), 'native stream was replaced')
-        row, binding, rows = validate_snapshot(self.module, raw, json.loads(checkpoint), request_bytes, self.run,
-                                              self.binding, after_sequence=self.last_sequence)
+        try:
+            require(raw.startswith(self.prefix), 'native stream was replaced')
+            row, binding, rows = validate_snapshot(self.module, raw, json.loads(checkpoint), request_bytes, self.run,
+                                                  self.binding, after_sequence=self.last_sequence, phases=self.phases)
+        except Exception as error:
+            evidence.save(folder/'failure.json',dict(state='INVALID_NATIVE_SNAPSHOT',reason=str(error),
+                request=evidence.reference(folder/'published-request.json'),events=evidence.reference(folder/'events.jsonl'),
+                checkpoint=evidence.reference(folder/'checkpoint.json'),prior_accepted_sequence=self.last_sequence,
+                scenario_credit=False))
+            self.failed_snapshot=evidence.reference(folder/'failure.json')
+            raise
         previous_sequence = self.last_sequence
         self.last_sequence = row['sequence']
         self.binding = binding
         self.prefix = raw[:json.loads(checkpoint)['byte_count']]
+        self.last_row = row
         self.live(deadline)
         evidence.save(folder/'joined.json', dict(sequence=row['sequence'], after_sequence=previous_sequence,
                                                 binding=binding, scenario_credit=False))
@@ -182,14 +218,21 @@ def classify(row, binding):
     return build.probe.classify(failure)
 
 
-def run(root):
-    module, definition, previous = context(root); folder = root/'native'
+def run(root, *, output=None):
+    module, definition, previous = context(root); folder = root/'native' if output is None else output
     plan = evidence.read(folder/'plan.json'); review = evidence.read(folder/'review.json')
     require(review['state'] == 'PASS' and review['reviewer'] == '/root/c06_runtime_plan'
             and review['plan_sha256'] == evidence.sha(folder/'plan.json'), 'native diagnostic not reviewed')
     require(plan['driver'] == evidence.reference(__file__) and plan['helpers'] == dependencies()
             and build.bound(plan['build']) == product(root)
             and plan['definition'] == evidence.reference(root/'definition.json'), 'native source binding changed')
+    continuation = None
+    if 'prefix_definition' in plan:
+        continuation = prefix_definition(plan['prefix_definition']['path'],root)
+        require(plan['prefix_definition'] == evidence.reference(plan['prefix_definition']['path'])
+                and plan['budgets'] == continuation['budgets_seconds'] and plan['kind'] == continuation['kind'],
+                'prefix qualification definition changed')
+        require(folder.resolve() == Path(plan['prefix_definition']['path']).resolve().parent/'native', 'prefix admission output changed')
     identifier = plan['device']['udid']; current = device(module, identifier)
     require(all(current[k] == plan['device'][k] for k in ('udid','runtime','state','deviceTypeIdentifier')),
             'native device changed')
@@ -212,10 +255,12 @@ def run(root):
         binding=dict(owner=plan['worker'],device=identifier,bundle=bundle,run_id=plan['run_id'],layout='split',
                      product_sha256=hashlib.sha256(json.dumps(task,sort_keys=True).encode()).hexdigest(),
                      plan_sha256=evidence.sha(folder/'plan.json'))
-        session=evidence.Session(folder/'supported',binding,seconds=120,deadline=deadline,emit=lambda s:print(s,flush=True))
-        session.start()
+        session_type = prefix_session.Session if continuation is not None else evidence.Session
+        session=session_type(folder/'supported',binding,seconds=plan['budgets'].get('request',120),deadline=deadline,emit=lambda s:print(s,flush=True))
+        if continuation is None: session.start()
         module.shared.command(['xcrun','simctl','install',identifier,task['path']],folder,'install',deadline=min(deadline,time.time()+60))
         installed=True
+        if continuation is not None: session.start()
         app=Path(module.shared.capture(['xcrun','simctl','get_app_container',identifier,bundle,'app']).stdout.decode().strip())
         require(module.shared.product(app,bundle=bundle)==task['product'],'installed product changed')
         documents=Path(module.shared.capture(['xcrun','simctl','get_app_container',identifier,bundle,'data']).stdout.decode().strip())/'Documents'
@@ -226,11 +271,24 @@ def run(root):
         match=re.fullmatch(re.escape(bundle)+r': ([1-9][0-9]*)\s*',(folder/'launch.log').read_text())
         require(match is not None,'native PID absent'); pid=int(match[1])
         require(Path(module.shared.process(pid)).resolve()==(app/task['product']['executable']).resolve(),'wrong launched executable')
-        capture=Capture(module,folder,documents,plan['run_id'],pid)
+        capture=Capture(module,folder,documents,plan['run_id'],pid,
+                        phases=prefix_sequence.phases() if continuation is not None else ())
         evidence.save(folder/'process.json',dict(pid=pid,identity=capture.process_identity,app=str(app)))
-        session.capture(pid); session.end(deadline)
+        session.capture(pid)
+        if continuation is None: session.end(deadline)
         closed,_=capture.snapshot('closed','diagnostic.closed',min(deadline,time.time()+plan['budgets']['passive_snapshot']))
         screen(module,closed,capture.binding,old_display)
+        if continuation is not None:
+            prefix_after=prefix_sequence.run(capture,session,folder/'prefix',plan['budgets'],deadline)
+            session.end(deadline)
+            post_end_idle=prefix_sequence.idle(capture,'prefix-idle-ended',min(deadline,time.time()+plan['budgets']['passive_snapshot']),after=prefix_after)
+            closed,rows=capture.snapshot('prefold','diagnostic.closed',min(deadline,time.time()+plan['budgets']['passive_snapshot']))
+            require(not any(r['kind'] in prefix_input.INPUT_KINDS for r in rows if r['sequence']>prefix_after['sequence'])
+                    and closed['sequence']>post_end_idle['sequence'],
+                    'input changed after the completed prefix')
+            prefix_input.final_state(closed,capture.binding)
+            screen(module,closed,capture.binding,old_display)
+            result['prefix'] = evidence.reference(folder/'prefix/result.json')
         evidence.save(folder/'fold-request.json',dict(kind='ONE_SUPPORTED_DEVICE_HUB_OPEN',device=identifier,
             run_id=plan['run_id'],plan=evidence.reference(folder/'plan.json'),issued_at=time.time(),deadline=deadline))
         print(json.dumps(dict(phase='READY_FOR_ONE_DEVICE_HUB_OPEN',request=str(folder/'fold-request.json'))),flush=True)
@@ -245,13 +303,31 @@ def run(root):
         after=opened_snapshot(module,capture,folder,identifier,closed,opened,deadline,plan['budgets']['passive_snapshot'])
         rows=module.oracle.rows(capture.prefix,plan['run_id'])
         require(after['sequence']>closed['sequence']
-                and not any(r['kind'] in ('human_callback','native_input','human_scroll_begin','human_scroll_end','native_background') for r in rows),
+                and not any(r['kind'] in prefix_input.INPUT_KINDS for r in rows
+                            if continuation is None or r['sequence']>closed['sequence']),
                 'unadmitted input or stale fold observation')
         result.update(state='DIAGNOSTIC_COMPLETE',evidence='PASS',classification=classify(after,capture.binding),
                       closed_classification=classify(closed,capture.binding),binding=capture.binding,
                       actual_display_transition=True,closed_sequence=closed['sequence'],open_sequence=after['sequence'])
     except Exception as error:
         result.update(state='INVALID_DIAGNOSTIC',reason=str(error))
+        if continuation is not None and capture is not None and capture.last_row is not None:
+            try:
+                if capture.failed_snapshot is not None:
+                    result['failed_snapshot']=capture.failed_snapshot
+                else:
+                    result.update(ancestry_classification=classify(capture.last_row,capture.binding),
+                                  failure_sequence=capture.last_row['sequence'])
+            except Exception as classification_error:
+                result['classification_error']=str(classification_error)
+            try:
+                captured=module.oracle.rows(capture.prefix,capture.run)
+                failures=[r for r in captured if any('ancestry_probe' in a for a in
+                    r['payload'].get('topology',{}).get('accessibility',[]))]
+                result['captured_ancestry_failures']=[dict(sequence=r['sequence'],kind=r['kind'],
+                    classification=classify(r,capture.binding)) for r in failures]
+            except Exception as diagnostic_error:
+                result['prefix_diagnostic_error']=str(diagnostic_error)
     finally:
         fixed=min(cleanup_limit,time.time()+plan['budgets']['cleanup'])
         try:
@@ -296,6 +372,7 @@ def run(root):
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('action',choices=('prepare','run'))
-    parser.add_argument('--root',type=Path,required=True);parser.add_argument('--device');args=parser.parse_args()
-    if args.action=='prepare':prepare(args.root.resolve(),args.device)
-    else:sys.exit(run(args.root.resolve()))
+    parser.add_argument('--root',type=Path,required=True);parser.add_argument('--device')
+    parser.add_argument('--output',type=Path);parser.add_argument('--prefix',type=Path);args=parser.parse_args()
+    if args.action=='prepare':prepare(args.root.resolve(),args.device,output=args.output,prefix=args.prefix)
+    else:sys.exit(run(args.root.resolve(),output=args.output))
