@@ -61,15 +61,17 @@ readiness, not a separate S2 release outcome.
 Owners name responsible roles, not implied reviewer approval. Never push, merge,
 or publish without separate authorization.
 
-Required performance benchmarking concerns application-visible frame rate,
-hitches/hangs, CPU and memory impact of included new SwiftUI semantic tracking and
-multi-scene changes. Use one bounded representative before/after application
-comparison; if F07 proves both change families absent, qualify that exclusion.
-View/Action information, Resource-to-view attribution and object lifetime remain
-separate correctness obligations. Detailed network/per-dispatch benchmarks and any
-replacement standalone network campaign are optional; investigate concrete visible
-network regressions if found. [Preserved infrastructure](NETWORK_BENCHMARK_FOLLOWUP.md)
-retains the work. Expected low risk is not measured evidence.
+Future sessions follow the [September25 measurement rule](../MULTI_SCENE_SUPPORT.md#measurement-and-testing-rule):
+event attribution and View/Navigation/Action capture are acceptance requirements.
+Application-performance and strict timing campaigns are optional diagnostics.
+Existing correctness, object-lifetime, retained-state and reentrancy obligations
+remain; investigate concrete regressions without inferring safety from absent
+measurements. Historical [baseline results](BASELINES.md) and
+[network infrastructure](NETWORK_BENCHMARK_FOLLOWUP.md) retain their original scope.
+
+The generated [remaining-work view](REMAINING_WORK.md) joins release gates with
+their current preparation owners. It separates component preparation, native
+qualification and gate-closing evidence; it does not admit a run.
 
 <!-- release-views:start -->
 ### Candidate release views

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "DEFINED_PENDING_SAFE_CHECKPOINT",
+  "state": "COMPLETE_REVIEWED",
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
   "requested_at": "2026-09-30T07:41:43.482214+00:00",
@@ -33,5 +33,235 @@
     "No push"
   ],
   "user_readiness": "Latest explicit response: continue autonomous work. No human session admitted.",
-  "success": "A restarted agent selects the next task, prerequisites, decisive assertions and reusable evidence without reconstructing experiment history."
+  "success": "A restarted agent selects the next task, prerequisites, decisive assertions and reusable evidence without reconstructing experiment history.",
+  "checkpoint": {
+    "commit": "bb3c6e80d67abfe7f49e1857866b0464c20a384c",
+    "signature": "N",
+    "receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/display-anchors-cr61mmfo/checkpoint/receipt.json"
+  },
+  "evidence_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/documentation-consolidation-20260930-hi7z9k4h",
+  "before": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/documentation-consolidation-20260930-hi7z9k4h/before.json",
+    "sha256": "b156ce0ca14e141b143dd1e2bbd8820b0e63a9046bfafc0b8ebd3d861e8588a0"
+  },
+  "procedure_migration": [
+    {
+      "old": "tools/multi-scene/acceptance/README.md#one-invocation-with-the-authenticated-connector",
+      "new": "tools/multi-scene/acceptance/docs/RUNNER.md#one-invocation-with-the-authenticated-connector",
+      "source_section_sha256": "3a34d6da1939f02d08de8f259860bad548f34d0314abb3978d206abda6b4bc20"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#contract-and-negative-controls",
+      "new": "tools/multi-scene/acceptance/docs/RUNNER.md#contract-and-negative-controls",
+      "source_section_sha256": "ef1e22edb5e74f8286d2d3947425bfbb3dcedf2401d3c0d96b2ce8f358f2384e"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#resource-contract-exp-176t03",
+      "new": "tools/multi-scene/acceptance/docs/TELEMETRY.md#resource-contract-exp-176t03",
+      "source_section_sha256": "58a5622b0b57716de4403413643230691171becf71a6cac8ba74a35f1ba17b3d"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#attribute-contract-exp-178t05",
+      "new": "tools/multi-scene/acceptance/docs/TELEMETRY.md#attribute-contract-exp-178t05",
+      "source_section_sha256": "5bd2f32c41810ed4ad40222c29edda6f3ce24e3e14e26dfc0d15f6b872c1aa2c"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#timing-contract-exp-179t06",
+      "new": "tools/multi-scene/acceptance/docs/TELEMETRY.md#timing-contract-exp-179t06",
+      "source_section_sha256": "1099a2d1aad1ea3afc5950face3e03d81da63def52b911ff12d5ce1f64bb0f9a"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#flaginternal-mutation-contract-exp-180t07",
+      "new": "tools/multi-scene/acceptance/docs/TELEMETRY.md#flaginternal-mutation-contract-exp-180t07",
+      "source_section_sha256": "9409dc7d10d9e47d6117ac4a2c20c804a01e78bacd7b8feb4fb48bfb18de8985"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#logs-and-mirrored-errors-exp-182t09",
+      "new": "tools/multi-scene/acceptance/docs/TELEMETRY.md#logs-and-mirrored-errors-exp-182t09",
+      "source_section_sha256": "9180d99f630f6fb922e3ebed457aa73ee41eb2296c01f13e8b1f053314e84161"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#webview-containers-exp-183t10",
+      "new": "tools/multi-scene/acceptance/docs/TELEMETRY.md#webview-containers-exp-183t10",
+      "source_section_sha256": "b7b6adcb049dc4a57dfff5ccc77fed08f6af55cac326115c1dd4eaed48ab950b"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#shared-vitals-acceptance-exp-186t13",
+      "new": "tools/multi-scene/acceptance/docs/TELEMETRY.md#shared-vitals-acceptance-exp-186t13",
+      "source_section_sha256": "75dd6a00ab254d95838e051d9694cb96138b3ec2d6d376932225957070c2f73d"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#physical-installed-code-receipt",
+      "new": "tools/multi-scene/acceptance/docs/PHYSICAL.md#physical-installed-code-receipt",
+      "source_section_sha256": "cf788c54f272f8e26edfd396bcdd07a3179109439576dcc1e7fc01ea67f923fb"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#one-scene-representative-hardware-sample",
+      "new": "tools/multi-scene/acceptance/docs/PHYSICAL.md#one-scene-representative-hardware-sample",
+      "source_section_sha256": "89cdf22bc7cd8ef16d54a13b9da565ef8b53856a39b60d93c455419076a916f3"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#exp-194-native-replay-coexistence",
+      "new": "tools/multi-scene/acceptance/docs/PHYSICAL.md#exp-194-native-replay-coexistence",
+      "source_section_sha256": "b639fd8d3399d77723fec0f6740f741fff743e3c5671061c32b9ca296a4064a5"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#physical-replay-timing",
+      "new": "tools/multi-scene/acceptance/docs/PHYSICAL.md#physical-replay-timing",
+      "source_section_sha256": "5b80fa367e4fe1ad182e12ab2e0c56af4f32e1140e1dd1a3a8d3c941d6522552"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#physical-h01-precritical-admission",
+      "new": "tools/multi-scene/acceptance/docs/PHYSICAL.md#physical-h01-precritical-admission",
+      "source_section_sha256": "e38565fe184f8a0141a0f11c8f77d3c7b7fd7b29e79854157b0a7ad1dceb65d1"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#h04-activation-only-preparation",
+      "new": "tools/multi-scene/acceptance/docs/H04.md#h04-activation-only-preparation",
+      "source_section_sha256": "be86377e1085d87a1fba584548dc949c9c06a6ab0d7e5e1d70a5d3d9838c9c75"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#h10-isolated-background-preparation",
+      "new": "tools/multi-scene/acceptance/docs/H10.md#h10-isolated-background-preparation",
+      "source_section_sha256": "f323fe00d6f0214246f4a6a3dbe812b91565e5f1297d7f6d33ab4d7f0fc3535b"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#h06-operation-preparation",
+      "new": "tools/multi-scene/acceptance/docs/H06.md#h06-operation-preparation",
+      "source_section_sha256": "14557ecf362441060346a88792e47fe38c13d90ea2a67769eecbcc4e23aa5ff1"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#h06-operator-prompts",
+      "new": "tools/multi-scene/acceptance/docs/H06.md#h06-operator-prompts",
+      "source_section_sha256": "217e9c22a7fa8b47824e0362edc95b6fbb548b9e12473e37b70d102a14d3cf85"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#h06-display-decoder-preparation",
+      "new": "tools/multi-scene/acceptance/docs/CAPTURE.md#h06-display-decoder-preparation",
+      "source_section_sha256": "ea95513bd90dce61b1907d18aef2ef0c5e1cac23a5d340cdee8b9f3058a91204"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#h06-capture-session-integration",
+      "new": "tools/multi-scene/acceptance/docs/CAPTURE.md#h06-capture-session-integration",
+      "source_section_sha256": "db3349b6cb92b23b17f3f42584831f2f2d11afc581d8a384c1b69bd7149a6f15"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#h06-launch-preparation",
+      "new": "tools/multi-scene/acceptance/docs/CAPTURE.md#h06-launch-preparation",
+      "source_section_sha256": "072df5740fb7922164d03232862e02e733a12cb0da30ffdb621fb1e84ec4364e"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#h06-physical-adapter-qualification",
+      "new": "tools/multi-scene/acceptance/docs/CAPTURE.md#h06-physical-adapter-qualification",
+      "source_section_sha256": "b7b297fd06b40ef280d601fb2e68a960b4e1213dbcb60e22b310a617aae05dde"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#physical-recording-alternatives",
+      "new": "tools/multi-scene/acceptance/docs/CAPTURE.md#physical-recording-alternatives",
+      "source_section_sha256": "955146de6f72d2ace9b93eeaaaf38f04fc15b25241fdefdb5fcef63e328d4ac8"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#silent-host-recording-preparation",
+      "new": "tools/multi-scene/acceptance/docs/CAPTURE.md#silent-host-recording-preparation",
+      "source_section_sha256": "0b4c92a144793a6d1ab35cb8da4a70ee61063d0db5ef725ea04af7cb8f711dc5"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#quicktime-session-connection",
+      "new": "tools/multi-scene/acceptance/docs/CAPTURE.md#quicktime-session-connection",
+      "source_section_sha256": "748e879e5fc7ba59f25eac976c45bf5663e0645d695f80ec73d50a4631667867"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#h06-physical-cleanup-disposition",
+      "new": "tools/multi-scene/acceptance/docs/H06.md#h06-physical-cleanup-disposition",
+      "source_section_sha256": "feb5af76ae2998d4d9ef23a9a4666865ef851e8bb1253f7c5d8ca4379f15ec11"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#controlled-app-inventory-preparation",
+      "new": "tools/multi-scene/acceptance/docs/PHYSICAL.md#controlled-app-inventory-preparation",
+      "source_section_sha256": "7638eddedb6d04053c87c88034926a7c30c9b6881e4410886bf40e2f3c8a846d"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#human-paced-hosting-and-shared-host-bindings",
+      "new": "tools/multi-scene/acceptance/docs/HUMAN.md#human-paced-hosting-and-shared-host-bindings",
+      "source_section_sha256": "dfe90425f44b61d2d4799f219d8fe175ed5952e0c6fba1312bf7eaf199924a4b"
+    },
+    {
+      "old": "tools/multi-scene/acceptance/README.md#human-resourcetrace-fold-with-immutable-build-reuse",
+      "new": "tools/multi-scene/acceptance/docs/HUMAN.md#human-resourcetrace-fold-with-immutable-build-reuse",
+      "source_section_sha256": "6d831a44c22348ae200302e0e5851c687ecec3f672a884988c09639f96ceaad7"
+    }
+  ],
+  "state_migration": {
+    "S2": {
+      "snapshot": {
+        "path": "Results/History/S2-coverage-20260930.json",
+        "sha256": "76a927f0d06a0b535a4426eebf23ebad6caf81e870dbef00893ce46690f891e5"
+      },
+      "compatibility_readers": [
+        "tools/multi-scene/automatic-coverage/human_remaining.py",
+        "tools/multi-scene/automatic-coverage/human_split.py"
+      ],
+      "preserved_root_fields": [
+        "uikit_gate_assessment",
+        "split_continuation",
+        "split_continuation_history"
+      ],
+      "reason": "Frozen reviewed helper copies still read these historical facts. Canonical JSON value hashes bind the compatibility slots to the archived original; no current admission comes from them."
+    },
+    "S3": {
+      "snapshot": {
+        "path": "Results/History/S3-residual-20260930.json",
+        "sha256": "7d66257973ace9ee7f00b294b860a93315df1c97d5d6e89bcde743faf5106941"
+      },
+      "consumers": "No Python readers of the former next_implementation field were found across tools/multi-scene."
+    }
+  },
+  "validation": {
+    "controls-r1.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/documentation-consolidation-20260930-hi7z9k4h/controls-r1.json",
+      "sha256": "4e4535203090bd9d1d3762c810e3300fa069f1970d9705cdd0830a12f15ef879"
+    },
+    "controls-r2.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/documentation-consolidation-20260930-hi7z9k4h/controls-r2.json",
+      "sha256": "e82e5cb2bc2431ca1720a0a2c54444974af703852f361f803687b5e76916bb66"
+    },
+    "runtime-binding-verification.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/documentation-consolidation-20260930-hi7z9k4h/runtime-binding-verification.json",
+      "sha256": "0e5a46fe2e2df5ed36deeaa4528c83cfc8bc3fd46ca7c6d5fffad13357c325b6"
+    },
+    "preservation.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/documentation-consolidation-20260930-hi7z9k4h/preservation.json",
+      "sha256": "d3530817b8a03f06205c5b0386446ff7458c0679edb934cdf2a56a365b9232dd"
+    },
+    "documentation-controls-final.log": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/documentation-consolidation-20260930-hi7z9k4h/documentation-controls-final.log",
+      "sha256": "bd4b2bcbf6b200f52c03528083f39bf3a97c9f3cf5f795d8f7a7731a76d15d27"
+    }
+  },
+  "active_summary_migration": {
+    "source_commit": "bb3c6e80d67abfe7f49e1857866b0464c20a384c",
+    "source_manifest": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/documentation-consolidation-20260930-hi7z9k4h/before.json",
+      "sha256": "b156ce0ca14e141b143dd1e2bbd8820b0e63a9046bfafc0b8ebd3d861e8588a0"
+    },
+    "ASSESSMENT.md": "Present support, stage boundaries and decisive owner links; run chronology remains in original Git object and owning Results.",
+    "PRODUCTION_SAFETY_REVIEW.md": "Original R01-R12 dispositions preserved; current capture/component/compatibility limitations condensed without closure.",
+    "PLAN.md/FINAL_COMPATIBILITY.md": "September25 optional-performance rule; historical BASELINES and correctness/lifetime/reentrancy evidence unchanged."
+  },
+  "counts": {
+    "new_experiments": 0,
+    "gate_status_changes": 0,
+    "sdk_changes": 0,
+    "native_runs": 0,
+    "documentation_controls": 29,
+    "affected_reader_controls": 37,
+    "procedures": 16,
+    "active_links": 861
+  },
+  "completed_at": "2026-09-30T08:10:00.440393+00:00",
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/documentation-consolidation-20260930-hi7z9k4h/review-final.json",
+    "sha256": "80123d164fd591080aaf53661614acd07e112e27980167d0b9d1aaf46644ec23"
+  },
+  "next": "Resume isolated H10 renderer compilation from the authoritative cursor; user continues autonomous work and no native/human session is admitted."
 }

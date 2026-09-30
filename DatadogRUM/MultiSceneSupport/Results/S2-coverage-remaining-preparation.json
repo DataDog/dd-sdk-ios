@@ -1,7 +1,81 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "state": "UIKIT_VIEW_ACTION_GATES_CLOSED_SWIFTUI_REMAINS",
-  "updated_at": "2026-09-29T22:39:14.214738+00:00",
+  "updated_at": "2026-09-30T07:53:42.092696+00:00",
+  "current": {
+    "kind": "swiftui_preparation",
+    "evidence_level": "PREPARATION_ONLY",
+    "native_admitted": false,
+    "native_cells_credited": 0,
+    "gates_closed": [],
+    "gates": [
+      "S2:C09",
+      "S2:C10",
+      "S2:H14"
+    ],
+    "plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01/runtime/runtime-plan.json",
+      "sha256": "4e119628412cce1bc128c9f19ab1275e70a756cb1574f2a7e5307b6029837565"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01/runtime/controls.json",
+      "sha256": "21a710fdbde3add2deac38ce287dcfd14ed5344de68c858fda5f76932acf7dc8"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01/runtime/review.json",
+      "sha256": "0ed8f0337f9ad0664fccd91d2040d919a812802eb28fa710e2d61443de85a09f"
+    },
+    "master_plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/master/runtime/runtime-plan.json",
+      "sha256": "8b56e529e8217cc733d43f804e2a7722e0fa0ba29ce516bc79277f05906f3063"
+    },
+    "readiness": "USER_CHOSE_AUTONOMOUS_WORK",
+    "remaining_matrix": [
+      {
+        "build": "baseline-26.5",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "stack",
+        "multiple_scenes": false
+      },
+      {
+        "build": "baseline-27.1",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "stack",
+        "multiple_scenes": false
+      },
+      {
+        "build": "candidate-27.1",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "stack",
+        "multiple_scenes": false
+      },
+      {
+        "build": "baseline-26.5",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "split",
+        "multiple_scenes": false
+      },
+      {
+        "build": "baseline-27.1",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "split",
+        "multiple_scenes": false
+      },
+      {
+        "build": "candidate-27.1",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "split",
+        "multiple_scenes": false
+      }
+    ],
+    "prerequisites": "Preserve the prepared first SwiftUI stack cell. Fresh user availability and native/tool/backend preflight are required before presenting the instruction page; qualify the five live controls before prompts."
+  },
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
   "gates": [
@@ -11,476 +85,6 @@
     "S2:C10",
     "S2:H14"
   ],
-  "definition": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/definition.json",
-    "sha256": "a8466cc4884ae99db3ae87fa62bd740e7d9ea90d480dc283e3d1134af396679d"
-  },
-  "review_input": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/review-input.json",
-    "sha256": "eeaea6918ad00953b287a55a8e77c6cc71659490f5acf071a672641d3a6cbb0a"
-  },
-  "excluded_prefix_reference": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/excluded-stack.json",
-    "sha256": "5bf31c2dc7baf54dfe00cc1eed16435875093076efc11715bad2953f644c0c9f"
-  },
-  "master_plan": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/master/runtime/runtime-plan.json",
-    "sha256": "e8aa48b10c6a0ce29d0868047160de1cc8695e71e292f49382740a71b1b38f67"
-  },
-  "first_sitting": {
-    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-01",
-    "plan": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-01/runtime/runtime-plan.json",
-      "sha256": "69cba1b58d824c293c6681c87dd8a75efbdb487c9f7866be58b30d9a75273f18"
-    },
-    "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-01/runtime/controls.json",
-      "sha256": "ee376f43304e8eae0c0c7e64487d5d507e00588c5235e58804b0aa5aa1ea43b1"
-    },
-    "review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-01/runtime/review.json",
-      "sha256": "c8aa115eb0e06a0219f89368ad837d660747b2dad0f54792223a669d67c84d18"
-    },
-    "series": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/series/series.json",
-      "sha256": "2edebbacd68e76b2508598b0903cff9b74089c52755ae2778941e1bf77d4908b"
-    },
-    "matrix": [
-      {
-        "build": "baseline-26.5",
-        "device": "duo",
-        "framework": "UIKit",
-        "layout": "split",
-        "multiple_scenes": false
-      }
-    ]
-  },
-  "remaining_matrix": [
-    {
-      "build": "baseline-26.5",
-      "device": "duo",
-      "framework": "UIKit",
-      "layout": "split",
-      "multiple_scenes": false
-    },
-    {
-      "build": "baseline-27.1",
-      "device": "duo",
-      "framework": "UIKit",
-      "layout": "split",
-      "multiple_scenes": false
-    },
-    {
-      "build": "candidate-27.1",
-      "device": "duo",
-      "framework": "UIKit",
-      "layout": "split",
-      "multiple_scenes": false
-    },
-    {
-      "build": "baseline-26.5",
-      "device": "duo",
-      "framework": "SwiftUI",
-      "layout": "stack",
-      "multiple_scenes": false
-    },
-    {
-      "build": "baseline-27.1",
-      "device": "duo",
-      "framework": "SwiftUI",
-      "layout": "stack",
-      "multiple_scenes": false
-    },
-    {
-      "build": "candidate-27.1",
-      "device": "duo",
-      "framework": "SwiftUI",
-      "layout": "stack",
-      "multiple_scenes": false
-    },
-    {
-      "build": "baseline-26.5",
-      "device": "duo",
-      "framework": "SwiftUI",
-      "layout": "split",
-      "multiple_scenes": false
-    },
-    {
-      "build": "baseline-27.1",
-      "device": "duo",
-      "framework": "SwiftUI",
-      "layout": "split",
-      "multiple_scenes": false
-    },
-    {
-      "build": "candidate-27.1",
-      "device": "duo",
-      "framework": "SwiftUI",
-      "layout": "split",
-      "multiple_scenes": false
-    }
-  ],
-  "qualified_products": 6,
-  "controls": {
-    "new": 16,
-    "affected_existing": 48,
-    "total": 64,
-    "result": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-01/runtime/controls.json",
-      "sha256": "ee376f43304e8eae0c0c7e64487d5d507e00588c5235e58804b0aa5aa1ea43b1"
-    }
-  },
-  "evidence_limits": {
-    "accepted_sdk265_stack": "Retained native baseline; excluded from this series.",
-    "sdk271_stack": "Offline-only parity, original INVALID/cleanup INVALID and separate restoration unchanged.",
-    "candidate_stack": "Completed candidate-only comparison; no inherited native credit in this series.",
-    "home": "Existing Home qualification and six products reused; no new native qualification."
-  },
-  "results": {
-    "builds": 0,
-    "native_launches": 6,
-    "backend_queries": 0,
-    "gate_closures": [
-      "S2:C07",
-      "S2:C08"
-    ],
-    "qualified_cells": 2,
-    "remaining_cells": 6,
-    "untouched_cells": 5,
-    "incomplete_cells": 2,
-    "offline_reference_cells": 1,
-    "meaning": "Native qualified count covers SDK26.5 split and the scoped candidate. SDK27.1 remains offline-only with original failure unchanged; it does not require a repeat. Six SwiftUI cells remain."
-  },
-  "next_action": "Review saved control evidence and prepare remaining SwiftUI builds/session without repeating native diagnostics; keep fresh actual pre-prompt controls decisive. Fix prerequisite/ownership ordering before any future external dependency.",
-  "review_loop": {
-    "rounds": 2,
-    "final_findings": 0,
-    "hardening": "Exact new session kind added to the existing predicate; redundant runtime predicate removed.",
-    "control_invocation_correction": "First invocation could not locate the new test module; existing controls passed. Corrected path and final 64 controls pass; all logs retained."
-  },
-  "native_admitted": true,
-  "release_acceptance": false,
-  "attempts": [
-    {
-      "definition": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/afk-retry-definition.json",
-        "sha256": "75f2b275ad4485e71a9d81f2e683f210810deff544847df6a5c2c1f547352554"
-      },
-      "state": "INVALID_BEFORE_INPUT",
-      "cleanup": "PASS",
-      "reason": "Operator reported being AFK; no scenario input captured.",
-      "gates_closed": []
-    }
-  ],
-  "current_sitting": {
-    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-02",
-    "plan": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-02/runtime/runtime-plan.json",
-      "sha256": "eac7a4377ff2775a08390c3ac59342c73958c74506f74d20d2873e343a5f6b1a"
-    },
-    "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-02/runtime/controls.json",
-      "sha256": "f5093075577b7557ce87d6242165dc49f4160891becb7cfca895fd29b652ba4e"
-    },
-    "review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-02/runtime/review.json",
-      "sha256": "c757b6f4896a1370a6a84885988424c1c81dd9ea51ce7bcd79fd1223f32675a4"
-    },
-    "state": "INVALID_CAPTURE_SEPARATELY_RESTORED",
-    "matrix": [
-      {
-        "build": "baseline-27.1",
-        "device": "duo",
-        "framework": "UIKit",
-        "layout": "split",
-        "multiple_scenes": false
-      }
-    ],
-    "assessment": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-02-assessment/assessment.json",
-      "sha256": "b29bed09d525a04c6a98e3233bf5250533a9efdd615d8fd1bac5b5cc3d9f02ee"
-    },
-    "owner_replay": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-02-assessment/owner-replay.json",
-      "sha256": "73c26dc96d17fabf02a931544048c298ad86db763a40c206775ea1efe1894b4c"
-    }
-  },
-  "accepted_cells": [
-    {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-01-assessment.json",
-      "sha256": "34ae7591f157ac1beff12e1ca78ade190db63d98c25b84b17f9da81f00beac58"
-    }
-  ],
-  "comparison_contract": {
-    "basis": "User clarification on simultaneous Sidebar and Detail after SDK27.1 rebuild, 2026-09-29",
-    "comparison_axes": {
-      "rebuild_26_5_to_27_1": "Describe actual layout, captured destinations and owner relationships; event-count and occurrence-sequence equality is not required.",
-      "source_pair_27_1": "Check event attribution, View/Navigation/Action capture within the same actual layout; classify every newly missing, duplicated, unknown or incorrect owner."
-    },
-    "ownership": "Retain the SDK single-current-RUM-destination contract. Simultaneous visible columns do not imply concurrent active RUM Views. Record inherited sidebar/detail attribution limitations explicitly.",
-    "out_of_scope": [
-      "General Tab Bar/SplitViewController tracking redesign",
-      "Concurrent pane modeling",
-      "Strict timing measurements"
-    ],
-    "home": "Keep actual background, post-background appearances and incomplete terminal inventory distinct. Do not turn restoration into scenario evidence or an incomplete run into a qualified baseline.",
-    "next_native": "One candidate-only split session after reviewed offline reference and harness preparation; no repeat of either saved baseline."
-  },
-  "profile_design_review": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-02-assessment/profile-design-review.json",
-    "sha256": "2838725221cf90b1cb6bdb15581ce649ae10d7a10477d05f0cca924b80c8eae0"
-  },
-  "checkpoint_review": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/sitting-02-assessment/checkpoint-review.json",
-    "sha256": "3ef438d1418b6fa686471be57ac178ac815932cb5ca7f0c3e94a26fb1fb278e4"
-  },
-  "offline_profile": {
-    "state": "REVIEWED_OFFLINE_ONLY",
-    "definition": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-profile-x9mrhy19/definition.json",
-      "sha256": "fd984a41e22973ceea750548db98c995d817200e1212e24bfbc7a392d8db3a75"
-    },
-    "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-profile-x9mrhy19/controls-r4.json",
-      "sha256": "a811efcef48f82e0318536ddfb5fea6107dc38e0e11bf0f9b9091627c94a347f"
-    },
-    "replay": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-profile-x9mrhy19/saved-replay-r4.json",
-      "sha256": "84c2846b20c36922ab0b277ab428b6d4d142e1323d8ca29eba1a92a5dfe10834"
-    },
-    "review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-profile-x9mrhy19/review.json",
-      "sha256": "2bc2c4fe7073ec69769fea8725d586280e1751463fe314b657c2dca747430286"
-    },
-    "tests": 15,
-    "new_builds": 0,
-    "new_native_runs": 0,
-    "gate_closures": []
-  },
-  "split_continuation_history": [
-    {
-      "state": "INVALID_SCROLL_FRAME_CHECK_CLEANUP_PASS",
-      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/sitting",
-      "plan": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/sitting/runtime/runtime-plan.json",
-        "sha256": "7d51fccf0b3d2974795f8e2336cd87f60a94b89a5e6ebe678e8d557108f5a9b6"
-      },
-      "series": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/series/series.json",
-        "sha256": "c91ce9d1668c37d3628bf858cd15b6d67af73fc2ea3e0456a94bb0aea7e3a6bd"
-      },
-      "controls": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/sitting/runtime/controls.json",
-        "sha256": "b61a1c1478ed4a764e55f7574364c52cf02e835fffa57e1b5372f5e3265a9acd"
-      },
-      "review": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/sitting/runtime/review.json",
-        "sha256": "3e512777c0cda121ee9265b3277095bafb79fad5a309ea02c4cfe13fc133c153"
-      },
-      "matrix": [
-        {
-          "build": "candidate-27.1",
-          "device": "duo",
-          "framework": "UIKit",
-          "layout": "split",
-          "multiple_scenes": false
-        }
-      ],
-      "scope": "Foreground View/Navigation/Action ownership in the actual layout; full Home lifecycle remains unqualified. Release and fresh native idle are required independently before cleanup.",
-      "new_builds": 0,
-      "new_native_runs": 1,
-      "gate_closures": [],
-      "deferral": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/deferred.json",
-        "sha256": "7369e7813251b0b93ba1209919ba69225df720163c61c3fba2eb8981f42d74be"
-      },
-      "resume_preparation": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/resume-ppl1jqdd/preparation.json",
-        "sha256": "83e61a6efd967de37b6c2c6a7028ed20a83ce39a919c55dbcdd1cafc901db62f"
-      },
-      "native_admission": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/sitting/runtime/native-admission.json",
-        "sha256": "00ff6f4f33d118f12392a3906e9eb544b4a62c5c90ac14c0bdd1c5febba2c1d8"
-      },
-      "native_outcome": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/resume-ppl1jqdd/stopped.json",
-        "sha256": "65a538beeed843d0c2abef78f67104e371613ad8c54736486d17b3ff76bbab7d"
-      }
-    }
-  ],
-  "split_continuation": {
-    "state": "PASS_SCOPED_COMPARISON",
-    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/sitting",
-    "plan": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/sitting/runtime/runtime-plan.json",
-      "sha256": "c6dabfae1cd9fc7498df2b9f9bae1d3537f1a5e647abc4fae78f9d6bd3e833b7"
-    },
-    "series": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/series/series.json",
-      "sha256": "94591c4525c815e2ce0e89b6dbd105d0475aa3ce7737b6a583237c5891abab96"
-    },
-    "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/sitting/runtime/controls.json",
-      "sha256": "810fe46e81b8e2c594211dd7db031b0896420b839dd021cb1fe1bb244159805f"
-    },
-    "definition": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/continuation-definition.json",
-      "sha256": "12324fa2038ba9e1ea0bdf65e62a97d91b868ef55ddd0f4b2f87b3cd8bf7be8c"
-    },
-    "matrix": [
-      {
-        "build": "candidate-27.1",
-        "device": "duo",
-        "framework": "UIKit",
-        "layout": "split",
-        "multiple_scenes": false
-      }
-    ],
-    "scope": "Foreground View/Navigation/Action ownership in the actual layout; full Home lifecycle remains unqualified. Release and fresh native idle are required independently before cleanup.",
-    "new_builds": 0,
-    "new_native_runs": 1,
-    "gate_closures": [],
-    "preceding_attempt": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/sitting/runtime/cells/candidate-27.1-duo-UIKit-split-single/summary.json",
-      "sha256": "a0b1ab3ca894efa8d800d2e5a0839f90dd05b7e5f6e483d79b149ac75431958f"
-    },
-    "review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/sitting/runtime/review.json",
-      "sha256": "9b564413142dd91663cc40218e550511db2ae3bbe02fad0d5362c404ff727767"
-    },
-    "admission": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/sitting/runtime/native-admission.json",
-      "sha256": "97859c8b27b042c3d63f1eae53191cbab25b7470c68f313e9af1d762e4748abd"
-    },
-    "runner": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/runner-process.json",
-      "sha256": "48beacb8bdc0c0f15e588e6dc5ca52b85ca42d4dde11db43c527f894dde5cd0f"
-    },
-    "native_result": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/sitting/runtime/cells/candidate-27.1-duo-UIKit-split-single/summary.json",
-      "sha256": "4c9ce11377975202e95b22eebc7fc9e44054c26a3392348c1c729750ec59fb9d"
-    },
-    "original_comparison": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/sitting/runtime/comparison.json",
-      "sha256": "4b455e45c0635a7a756e5f6e34058a4e87250f4c0b68f11c4a2d4cb0612580c5"
-    },
-    "post_exit": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/tail-assessment-a3esezj6/post-exit.json",
-      "sha256": "8d2dc27fff6e4ea0b46413646dd4341c89ea08b7ae3118c6012928a89b32b9ca"
-    },
-    "tail_representation_correction": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/tail-assessment-a3esezj6/definition.json",
-      "sha256": "14282ed3ccb7c49b8a1f33465576c16aa1d44af6670cf8b34914543d832f6861"
-    },
-    "assessment": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/tail-assessment-a3esezj6/assessment.json",
-      "sha256": "aeff286b8c202d49c2acaf200362e8abecdabff382d1a006faceecfd44ee18a7"
-    },
-    "comparison_review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/tail-assessment-a3esezj6/review.json",
-      "sha256": "a421b7a1b509412cf6409c33c668c820a5efc97df5c625fca2ea5a57b6e58beb"
-    },
-    "corrected_offline_comparison": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/tail-assessment-a3esezj6/corrected-replay.json",
-      "sha256": "3a014bd35358dbafd3aa760416a5591935af644a1321af61d0bde27fe8002b20"
-    },
-    "display_restoration": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/tail-assessment-a3esezj6/display-restoration-proof.json",
-      "sha256": "8eb44f41caee26753accb06baf0231546584a872d6930ea9f393e2e5e88b53e4"
-    }
-  },
-  "scroll_frame_correction": {
-    "definition": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/scroll-frame-k4j69qvm/definition.json",
-      "sha256": "78525cc9a66a5d9acb17a9b120123626807f07da25ecc7eceeaa68e4cfb23634"
-    },
-    "original_replay": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/scroll-frame-k4j69qvm/original-replay.json",
-      "sha256": "cb56746e0fe1b9c6d187e23cdc7c6a7df8a2ba89ea2f2edc6e12ebbd38e8a5f2"
-    },
-    "saved_replay": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/frozen-oracle-replay.json",
-      "sha256": "b395e428bb418985d5009cdfb60793294f4e2ddbfe8fc504b354859616f59c5f"
-    },
-    "review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/sitting/runtime/review.json",
-      "sha256": "9b564413142dd91663cc40218e550511db2ae3bbe02fad0d5362c404ff727767"
-    },
-    "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/scroll-frame-k4j69qvm/controls-r3.json",
-      "sha256": "53ed07d657a375b530cafdfbf32866174726ac9cb516584e0b6a8a79a65270d5"
-    },
-    "tests": 89,
-    "original_test_only_import_failure": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/scroll-frame-k4j69qvm/controls-r2.json",
-      "sha256": "7937b5fd25266f25fc68c0e2ddb7d111d35229aa1c5537e06ff81e879de606df"
-    },
-    "preparation_rejections": "Canonical consumed-record guard and exact prior-measurement guard stopped local preparation before native work; logs retained in split-scroll-candidate-17ovynzz. Consumed record moved intact to history, exact predecessor mapping reviewed.",
-    "builds": 0,
-    "native_runs": 0,
-    "gates_closed": []
-  },
-  "unexecuted_matrix": [
-    {
-      "build": "baseline-26.5",
-      "device": "duo",
-      "framework": "SwiftUI",
-      "layout": "stack",
-      "multiple_scenes": false
-    },
-    {
-      "build": "baseline-27.1",
-      "device": "duo",
-      "framework": "SwiftUI",
-      "layout": "stack",
-      "multiple_scenes": false
-    },
-    {
-      "build": "candidate-27.1",
-      "device": "duo",
-      "framework": "SwiftUI",
-      "layout": "stack",
-      "multiple_scenes": false
-    },
-    {
-      "build": "baseline-26.5",
-      "device": "duo",
-      "framework": "SwiftUI",
-      "layout": "split",
-      "multiple_scenes": false
-    },
-    {
-      "build": "baseline-27.1",
-      "device": "duo",
-      "framework": "SwiftUI",
-      "layout": "split",
-      "multiple_scenes": false
-    },
-    {
-      "build": "candidate-27.1",
-      "device": "duo",
-      "framework": "SwiftUI",
-      "layout": "split",
-      "multiple_scenes": false
-    }
-  ],
-  "remaining_matrix_meaning": "Original nine-cell continuation definition; unexecuted_matrix owns the current remainder.",
-  "uikit_gate_assessment": {
-    "state": "CLOSED_SCOPED_NON_REGRESSION",
-    "gates": [
-      "S2:C07",
-      "S2:C08"
-    ],
-    "assessment": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/tail-assessment-a3esezj6/assessment.json",
-      "sha256": "aeff286b8c202d49c2acaf200362e8abecdabff382d1a006faceecfd44ee18a7"
-    },
-    "review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/tail-assessment-a3esezj6/review.json",
-      "sha256": "a421b7a1b509412cf6409c33c668c820a5efc97df5c625fca2ea5a57b6e58beb"
-    },
-    "scope": "Accepted UIKit stack and split candidate capture with preserved SDK26.5 native and SDK27.1 offline-only references. Existing switch/pane limitations remain; no Home, physical, backend, SwiftUI or whole-S2 promotion."
-  },
   "swiftui_preparation": {
     "state": "REVIEWED_PREPARATION_ONLY",
     "owner": "Results/S2-coverage-remaining-preparation.json",
@@ -655,25 +259,193 @@
     "home_controls": 43,
     "next_action": "Fresh availability at or after09:00 Paris, environment and live pre-prompt control readiness for the first required SDK26.5 stack cell. No additional diagnostic launch."
   },
-  "swiftui_preparation_history": [
+  "comparison_contract": {
+    "basis": "User clarification on simultaneous Sidebar and Detail after SDK27.1 rebuild, 2026-09-29",
+    "comparison_axes": {
+      "rebuild_26_5_to_27_1": "Describe actual layout, captured destinations and owner relationships; event-count and occurrence-sequence equality is not required.",
+      "source_pair_27_1": "Check event attribution, View/Navigation/Action capture within the same actual layout; classify every newly missing, duplicated, unknown or incorrect owner."
+    },
+    "ownership": "Retain the SDK single-current-RUM-destination contract. Simultaneous visible columns do not imply concurrent active RUM Views. Record inherited sidebar/detail attribution limitations explicitly.",
+    "out_of_scope": [
+      "General Tab Bar/SplitViewController tracking redesign",
+      "Concurrent pane modeling",
+      "Strict timing measurements"
+    ],
+    "home": "Keep actual background, post-background appearances and incomplete terminal inventory distinct. Do not turn restoration into scenario evidence or an incomplete run into a qualified baseline."
+  },
+  "history": {
+    "snapshot": {
+      "path": "Results/History/S2-coverage-20260930.json",
+      "sha256": "76a927f0d06a0b535a4426eebf23ebad6caf81e870dbef00893ce46690f891e5"
+    },
+    "scope": "Original admissions, sittings, matrices, failures and separate restoration. Historical values never select current work."
+  },
+  "historical_reader_compatibility": {
+    "scope": "HISTORICAL_READ_ONLY",
+    "snapshot": {
+      "path": "Results/History/S2-coverage-20260930.json",
+      "sha256": "76a927f0d06a0b535a4426eebf23ebad6caf81e870dbef00893ce46690f891e5"
+    },
+    "fields": {
+      "uikit_gate_assessment": {
+        "scope": "HISTORICAL_READ_ONLY",
+        "sha256": "366796094e5f6d8d48809ba5594d446be3370a53923951d64970d6885bfbed30"
+      },
+      "split_continuation": {
+        "scope": "HISTORICAL_READ_ONLY",
+        "sha256": "12b7ab393e967d9308efdfaeee6aa0983ab2b64ea46d0d2a80e88c61b3fa015e"
+      },
+      "split_continuation_history": {
+        "scope": "HISTORICAL_READ_ONLY",
+        "sha256": "f1fca10dc5ec4e01547691ce7a453f0e307d265f0963ae0f824189299cb6aeac"
+      }
+    }
+  },
+  "uikit_gate_assessment": {
+    "state": "CLOSED_SCOPED_NON_REGRESSION",
+    "gates": [
+      "S2:C07",
+      "S2:C08"
+    ],
+    "assessment": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/tail-assessment-a3esezj6/assessment.json",
+      "sha256": "aeff286b8c202d49c2acaf200362e8abecdabff382d1a006faceecfd44ee18a7"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/tail-assessment-a3esezj6/review.json",
+      "sha256": "a421b7a1b509412cf6409c33c668c820a5efc97df5c625fca2ea5a57b6e58beb"
+    },
+    "scope": "Accepted UIKit stack and split candidate capture with preserved SDK26.5 native and SDK27.1 offline-only references. Existing switch/pane limitations remain; no Home, physical, backend, SwiftUI or whole-S2 promotion."
+  },
+  "split_continuation": {
+    "state": "PASS_SCOPED_COMPARISON",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/sitting",
+    "plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/sitting/runtime/runtime-plan.json",
+      "sha256": "c6dabfae1cd9fc7498df2b9f9bae1d3537f1a5e647abc4fae78f9d6bd3e833b7"
+    },
+    "series": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/series/series.json",
+      "sha256": "94591c4525c815e2ce0e89b6dbd105d0475aa3ce7737b6a583237c5891abab96"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/sitting/runtime/controls.json",
+      "sha256": "810fe46e81b8e2c594211dd7db031b0896420b839dd021cb1fe1bb244159805f"
+    },
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/continuation-definition.json",
+      "sha256": "12324fa2038ba9e1ea0bdf65e62a97d91b868ef55ddd0f4b2f87b3cd8bf7be8c"
+    },
+    "matrix": [
+      {
+        "build": "candidate-27.1",
+        "device": "duo",
+        "framework": "UIKit",
+        "layout": "split",
+        "multiple_scenes": false
+      }
+    ],
+    "scope": "Foreground View/Navigation/Action ownership in the actual layout; full Home lifecycle remains unqualified. Release and fresh native idle are required independently before cleanup.",
+    "new_builds": 0,
+    "new_native_runs": 1,
+    "gate_closures": [],
+    "preceding_attempt": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/sitting/runtime/cells/candidate-27.1-duo-UIKit-split-single/summary.json",
+      "sha256": "a0b1ab3ca894efa8d800d2e5a0839f90dd05b7e5f6e483d79b149ac75431958f"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/sitting/runtime/review.json",
+      "sha256": "9b564413142dd91663cc40218e550511db2ae3bbe02fad0d5362c404ff727767"
+    },
+    "admission": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/sitting/runtime/native-admission.json",
+      "sha256": "97859c8b27b042c3d63f1eae53191cbab25b7470c68f313e9af1d762e4748abd"
+    },
+    "runner": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/runner-process.json",
+      "sha256": "48beacb8bdc0c0f15e588e6dc5ca52b85ca42d4dde11db43c527f894dde5cd0f"
+    },
+    "native_result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/sitting/runtime/cells/candidate-27.1-duo-UIKit-split-single/summary.json",
+      "sha256": "4c9ce11377975202e95b22eebc7fc9e44054c26a3392348c1c729750ec59fb9d"
+    },
+    "original_comparison": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/sitting/runtime/comparison.json",
+      "sha256": "4b455e45c0635a7a756e5f6e34058a4e87250f4c0b68f11c4a2d4cb0612580c5"
+    },
+    "post_exit": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/tail-assessment-a3esezj6/post-exit.json",
+      "sha256": "8d2dc27fff6e4ea0b46413646dd4341c89ea08b7ae3118c6012928a89b32b9ca"
+    },
+    "tail_representation_correction": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/tail-assessment-a3esezj6/definition.json",
+      "sha256": "14282ed3ccb7c49b8a1f33465576c16aa1d44af6670cf8b34914543d832f6861"
+    },
+    "assessment": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/tail-assessment-a3esezj6/assessment.json",
+      "sha256": "aeff286b8c202d49c2acaf200362e8abecdabff382d1a006faceecfd44ee18a7"
+    },
+    "comparison_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/tail-assessment-a3esezj6/review.json",
+      "sha256": "a421b7a1b509412cf6409c33c668c820a5efc97df5c625fca2ea5a57b6e58beb"
+    },
+    "corrected_offline_comparison": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/tail-assessment-a3esezj6/corrected-replay.json",
+      "sha256": "3a014bd35358dbafd3aa760416a5591935af644a1321af61d0bde27fe8002b20"
+    },
+    "display_restoration": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-scroll-reviewed-221ahoko/tail-assessment-a3esezj6/display-restoration-proof.json",
+      "sha256": "8eb44f41caee26753accb06baf0231546584a872d6930ea9f393e2e5e88b53e4"
+    }
+  },
+  "split_continuation_history": [
     {
-      "state": "STOPPED_BEFORE_HUMAN_INPUT",
-      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-resume-q5hpd3xr",
+      "state": "INVALID_SCROLL_FRAME_CHECK_CLEANUP_PASS",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/sitting",
       "plan": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-resume-q5hpd3xr/runtime/runtime-plan.json",
-        "sha256": "2be7c9c3cf56ef41f7d9787997c67dccad25c5f6881cb94b6a018abba7830e57"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/sitting/runtime/runtime-plan.json",
+        "sha256": "7d51fccf0b3d2974795f8e2336cd87f60a94b89a5e6ebe678e8d557108f5a9b6"
       },
       "series": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/series-r5/series.json",
-        "sha256": "2915859f75640b1eef25571322ec056f4ca79ca33ab62beb1448e69790fd8f48"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/series/series.json",
+        "sha256": "c91ce9d1668c37d3628bf858cd15b6d67af73fc2ea3e0456a94bb0aea7e3a6bd"
       },
-      "admission": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-resume-q5hpd3xr/runtime/native-admission.json",
-        "sha256": "3a709038dbf71b23502f82398309c8870a4c02277fe2a5ea2d9995737e564991"
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/sitting/runtime/controls.json",
+        "sha256": "b61a1c1478ed4a764e55f7574364c52cf02e835fffa57e1b5372f5e3265a9acd"
       },
-      "stopped_assessment": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/sitting-01-resume-q5hpd3xr/stopped-assessment.json",
-        "sha256": "b91851047fcff97d89d28b10317aeb0387b1e4b97e23a6273ec7b36aff915d48"
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/sitting/runtime/review.json",
+        "sha256": "3e512777c0cda121ee9265b3277095bafb79fad5a309ea02c4cfe13fc133c153"
+      },
+      "matrix": [
+        {
+          "build": "candidate-27.1",
+          "device": "duo",
+          "framework": "UIKit",
+          "layout": "split",
+          "multiple_scenes": false
+        }
+      ],
+      "scope": "Foreground View/Navigation/Action ownership in the actual layout; full Home lifecycle remains unqualified. Release and fresh native idle are required independently before cleanup.",
+      "new_builds": 0,
+      "new_native_runs": 1,
+      "gate_closures": [],
+      "deferral": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/deferred.json",
+        "sha256": "7369e7813251b0b93ba1209919ba69225df720163c61c3fba2eb8981f42d74be"
+      },
+      "resume_preparation": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/resume-ppl1jqdd/preparation.json",
+        "sha256": "83e61a6efd967de37b6c2c6a7028ed20a83ce39a919c55dbcdd1cafc901db62f"
+      },
+      "native_admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/sitting/runtime/native-admission.json",
+        "sha256": "00ff6f4f33d118f12392a3906e9eb544b4a62c5c90ac14c0bdd1c5febba2c1d8"
+      },
+      "native_outcome": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-coverage-z9c6wy3n/split-candidate-cxm3ubza/resume-ppl1jqdd/stopped.json",
+        "sha256": "65a538beeed843d0c2abef78f67104e371613ad8c54736486d17b3ff76bbab7d"
       }
     }
   ]

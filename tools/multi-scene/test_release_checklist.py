@@ -281,8 +281,10 @@ class ReleaseChecklistTests(unittest.TestCase):
             cases = [
                 (CHECKLIST.RUNBOOK, "detail\n" * 201),
                 (CHECKLIST.RUNBOOK, "detail " * 1801),
-                (".continue-here.md", "detail\n" * 111),
-                (".continue-here.md", "detail " * 1101),
+                (".continue-here.md", "detail\n" * 86),
+                (".continue-here.md", "detail " * 901),
+                (CHECKLIST.ACCEPTANCE_ROUTER, "detail\n" * 181),
+                (CHECKLIST.ACCEPTANCE_ROUTER, "detail " * 1601),
                 (CHECKLIST.TOOLING_DIRECTORY + "/BUILD.md", "```text\n" + "detail\n" * 321 + "```\n"),
                 (CHECKLIST.TOOLING_DIRECTORY + "/BUILD.md", "detail " * 3601),
             ]
@@ -295,6 +297,33 @@ class ReleaseChecklistTests(unittest.TestCase):
                         CHECKLIST.validate_documents(root, gates)
                     path.write_text(original)
             CHECKLIST.validate_documents(root, gates)
+
+    def test_acceptance_procedures_require_routes_and_valid_legacy_anchors(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            gates = self.document_fixture(root)
+            page = root / CHECKLIST.ACCEPTANCE_DIRECTORY / 'H10.md'
+            page.parent.mkdir(parents=True)
+            page.write_text('# Background\n[router](../README.md#h10-isolated-background-preparation)\n')
+            with self.assertRaisesRegex(ValueError, 'procedure missing'):
+                CHECKLIST.validate_documents(root, gates)
+            router = root / CHECKLIST.ACCEPTANCE_ROUTER
+            router.write_text('[H10](docs/H10.md#background)\n')
+            with self.assertRaisesRegex(ValueError, 'missing heading'):
+                CHECKLIST.validate_documents(root, gates)
+            router.write_text('<a id="h10-isolated-background-preparation"></a>\n' + router.read_text())
+            self.assertEqual(CHECKLIST.validate_documents(root, gates)['procedures'], 2)
+
+    def test_obsolete_active_performance_requirements_reject_but_history_is_preserved(self):
+        texts = {CHECKLIST.DOCUMENT_ROOT + name: '' for name in ('PLAN.md', 'FINAL_COMPATIBILITY.md')}
+        for name, old in [('PLAN.md', 'Required performance benchmarking concerns application-visible frame rate.'),
+                          ('PLAN.md', 'Use one bounded representative before/after application comparison; if F07 proves absence, qualify it.'),
+                          ('FINAL_COMPATIBILITY.md', "It does not replace F06's final independent review or the paired performance, allocation checks.")]:
+            with self.subTest(name=name), self.assertRaisesRegex(ValueError, 'active policy contradicts'):
+                CHECKLIST.validate_active_policy(dict(texts, **{CHECKLIST.DOCUMENT_ROOT + name: old}))
+        texts[CHECKLIST.DOCUMENT_ROOT + 'PLAN.md'] = 'Application-performance campaigns are optional; retain lifetime and reentrancy checks.'
+        texts[CHECKLIST.DOCUMENT_ROOT + 'BASELINES.md'] = 'Required performance benchmarking concerns frame rate.'
+        CHECKLIST.validate_active_policy(texts)
 
     def test_long_progress_narrative_cannot_be_copied_between_active_summaries(self):
         with tempfile.TemporaryDirectory() as directory:

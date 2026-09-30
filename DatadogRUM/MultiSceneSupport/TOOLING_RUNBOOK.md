@@ -6,7 +6,8 @@ task. This entry point does not admit an experiment or resume paused execution.
 
 The [assessment](ASSESSMENT.md) describes supported behavior. The
 [register](release-gates.json) owns release obligations and evidence, and
-[PLAN](PLAN.md) is its generated checklist. Exact commands, inventories, budgets,
+[PLAN](PLAN.md) is its generated checklist. [Remaining work](REMAINING_WORK.md)
+joins current preparation with the open gates. Exact commands, inventories, budgets,
 run IDs and results belong to the owning experiment or fixture README.
 
 ## Choose a procedure
@@ -135,8 +136,9 @@ count, console PASS or a not-run target cannot substitute.
 
 [Documentation maintenance](Tooling/DOCUMENTATION.md) defines each fact's owner,
 minimal checkpoint updates and checks. Update detailed results once, adjust support
-or review conclusions only when they change, and regenerate PLAN/progress only from
-register changes. Completed narratives do not belong in this router or the cursor.
+or review conclusions only when they change, and regenerate derived views when
+their register or preparation-owner inputs change. Completed narratives do not
+belong in this router or the cursor.
 
 Run the documentation check from the repository root:
 
@@ -144,7 +146,7 @@ Run the documentation check from the repository root:
 python3 -B tools/multi-scene/release_checklist.py
 ```
 
-Use `--update` only when register changes require regeneration. The checker includes
+Use `--update` when a register or current-owner change requires regeneration. The checker includes
 all procedure links, router coverage, compact-entry limits and experiment-index
 ownership. The [migration map](Results/documentation-migration-exp220.json) and
 [non-frozen historical checkpoint](Experiments/DOCUMENTATION_CHECKPOINT_EXP-220.md)

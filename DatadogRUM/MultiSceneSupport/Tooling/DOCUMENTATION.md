@@ -14,7 +14,7 @@ experiment archive unless a specific old experiment is needed.
 | [Stable API review](../STABLE_API_REVIEW.md) | Canonical Swift, Objective-C and semantic declarations; API approval record | Separate inventories in Guild presentations |
 | [Navigation history](../Experiments/NAVIGATION_API_HISTORY.md) | Earlier designs and original experiment observations | Present support status and execution instructions |
 | [Register](../release-gates.json) | Finite deliverables, owners, dependencies, decisive tests, environments, release-specific status and proof | Duplicate manually maintained totals |
-| [PLAN](../PLAN.md) and [progress](../Results/release-progress.json) | Generated checklist, stage views and priorities | Completed experiment narratives |
+| [PLAN](../PLAN.md), [progress](../Results/release-progress.json) and [remaining work](../REMAINING_WORK.md) | Generated gate views; remaining work also joins current preparation owners | Completed experiment narratives or hand-maintained totals |
 | [Assessment](../ASSESSMENT.md) | Present support conclusions and evidence limits | Detailed run counts, command failures and PR chronology |
 | [Cursor](../../../.continue-here.md) | Actual unfinished work, next action, active protections and minimal reading order | Completed delivery narratives or another execution queue |
 | [Experiment index](../EXPERIMENTS.md) | Compact ID/gate/status/conclusion/record lookup | Detailed outcomes and run recipes |
@@ -52,11 +52,12 @@ historical checkpoint. Keep the source revision and old-to-new section map; do n
 rewrite detailed experiment shards or load frozen history wholesale.
 
 Keep the runbook as a short router (at most 200 lines/1,800 words), the cursor at
-most 110 lines/1,100 words, and each procedure page at most 320 lines/3,600 words.
+most 85 lines/900 words, the acceptance router at most 180 lines/1,600 words,
+and each procedure page at most 320 lines/3,600 words.
 These caps protect reading cost; do not evade them with giant lines or code fences.
 If a procedure outgrows its boundary, consolidate at a safe checkpoint and route to
 an existing fixture README before adding another page. No page is a mandatory read
-for every task. Link all procedure pages from the router; keep compatibility anchors
+for every task. Link pages from their runbook or acceptance router; keep compatibility anchors
 for links that cannot be updated safely.
 
 Do not copy experiment progress paragraphs between assessment, safety review and
@@ -77,14 +78,23 @@ From the repository root:
 ```bash
 python3 -B tools/multi-scene/release_checklist.py
 python3 -B -m unittest discover -s tools/multi-scene -p test_release_checklist.py
+python3 -B -m unittest discover -s tools/multi-scene -p test_release_work.py
 ```
 
-After a register change, run `release_checklist.py --update` before the read-only
-check. It regenerates PLAN rows and progress; never hand-edit a total. The same
+After a register or current preparation-owner change, run `release_checklist.py
+--update` before the read-only check. It regenerates PLAN, progress and remaining
+work; never hand-edit a total. The same
 checker validates active links/fragments, finite experiment IDs, ownership guards,
 procedure discovery/routing and entry-point size limits. Its controls must reject a
-broken deep link, an orphaned procedure and entry-point growth, not merely confirm
-that current prose matches a snapshot.
+broken deep link, an orphaned procedure, entry-point growth, stale selection and
+the superseded active performance requirements. It also rejects preparation
+promoted to native credit and unmarked historical admission fields.
+
+Current/history selectors are schema-versioned. Read `current` first; historical
+snapshots never authorize execution. The S2 coverage owner's three historical
+reader slots remain only for frozen helper compatibility and are hash-bound to its
+immutable snapshot. Preserve them until those helper closures are retired. Do not
+rebuild prepared products merely to migrate documentation.
 
 For consolidation, separately verify protected paths and unchanged gate/evidence
 hashes against the saved pre-edit manifest. Commit only explicit documentation and

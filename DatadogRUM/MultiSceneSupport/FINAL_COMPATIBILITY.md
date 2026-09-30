@@ -144,10 +144,13 @@ owns the current executable action.
 This matrix does not replace each gate’s own evidence boundary: physical/Duo
 H01–H16/F04, minimum-runtime C06, legacy-host C03, physical vitals/profiling
 T13/T14 and Replay coexistence F05 retain their separately recorded status.
-It does not replace F06's final independent review or the paired performance,
-allocation, retained-state and reentrancy checks with unchanged
-[baseline thresholds](BASELINES.md). Run performance without competing builds,
-tests or profiling. Independent extraction proceeds now; S1/S2/S3 have separate
+F06's final independent review and correctness checks for object lifetime,
+retained state and reentrancy remain separate. The
+[September25 measurement rule](../MULTI_SCENE_SUPPORT.md#measurement-and-testing-rule)
+makes application-performance and strict timing campaigns optional; this matrix
+does not reinstate them. Historical [baseline thresholds and results](BASELINES.md)
+retain their original scope. If an optional measurement is selected, isolate it
+from competing builds, tests and profiling. S1/S2/S3 have separate
 F06 freezes. Full physical-Duo F04 is S3, with optional later S2 confirmation F09.
 
 The user supplied iOS17.5; fresh inventory confirms21F79 available and an iPad

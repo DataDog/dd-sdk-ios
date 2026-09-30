@@ -199,20 +199,24 @@ def plan_rows(text, gates):
 
 ACTIVE_DOCUMENTS = [
     '.continue-here.md', 'DatadogRUM/MULTI_SCENE_SUPPORT.md',
+    'tools/multi-scene/acceptance/README.md',
     *['DatadogRUM/MultiSceneSupport/' + name + '.md' for name in [
         'PLAN', 'ASSESSMENT', 'EXPERIMENTS', 'TOOLING_RUNBOOK',
         'PRODUCTION_SAFETY_REVIEW', 'REVIEW_TRIAGE', 'COMPONENT_REVIEW',
         'STABLE_API_REVIEW', 'SUPPORT_GUIDE', 'FINAL_COMPATIBILITY',
-        'DEFERRED_SINGLE_SCENE_EXTRACTION', 'HUMAN_ACCEPTANCE']],
+        'DEFERRED_SINGLE_SCENE_EXTRACTION', 'HUMAN_ACCEPTANCE', 'REMAINING_WORK']],
 ]
 
 
 DOCUMENT_ROOT = 'DatadogRUM/MultiSceneSupport/'
 TOOLING_DIRECTORY = DOCUMENT_ROOT + 'Tooling'
 RUNBOOK = DOCUMENT_ROOT + 'TOOLING_RUNBOOK.md'
+ACCEPTANCE_ROUTER = 'tools/multi-scene/acceptance/README.md'
+ACCEPTANCE_DIRECTORY = 'tools/multi-scene/acceptance/docs'
 DOCUMENT_BUDGETS = {
     RUNBOOK: (200, 1800),
-    '.continue-here.md': (110, 1100),
+    '.continue-here.md': (85, 900),
+    ACCEPTANCE_ROUTER: (180, 1600),
 }
 PROCEDURE_BUDGET = (320, 3600)
 HISTORICAL_DOCUMENTS = [
@@ -226,6 +230,7 @@ def procedure_documents(repo):
     paths = sorted((repo / TOOLING_DIRECTORY).rglob('*.md'))
     if not paths:
         raise ValueError('runbook must route to at least one procedure')
+    paths += sorted((repo / ACCEPTANCE_DIRECTORY).rglob('*.md'))
     if any(path.is_symlink() for path in paths):
         raise ValueError('procedure documents must be regular files, not symlinks')
     return [str(path.relative_to(repo)) for path in paths]
@@ -243,18 +248,22 @@ def validate_document_layout(repo, procedures):
     from urllib.parse import unquote
     for name, budget in DOCUMENT_BUDGETS.items():
         validate_reading_budget(name, (repo / name).read_text(), budget)
-    runbook = repo / RUNBOOK
-    routed = set()
-    for raw in re.findall(r'\]\((<[^>]+>|[^)\s]+)\)', prose(runbook.read_text())):
-        value = unquote(raw.strip('<>'))
-        if re.match(r'^[a-zA-Z][\w+.-]*:', value):
-            continue
-        path = value.partition('#')[0]
-        if path:
-            routed.add((runbook.parent / path).resolve())
+    routes = {}
+    for name in (RUNBOOK, ACCEPTANCE_ROUTER):
+        router = repo / name
+        routed = set()
+        for raw in re.findall(r'\]\((<[^>]+>|[^)\s]+)\)', prose(router.read_text())):
+            value = unquote(raw.strip('<>'))
+            if re.match(r'^[a-zA-Z][\w+.-]*:', value):
+                continue
+            path = value.partition('#')[0]
+            if path:
+                routed.add((router.parent / path).resolve())
+        routes[name] = routed
     for name in procedures:
         path = repo / name
-        if path.resolve() not in routed:
+        router = ACCEPTANCE_ROUTER if name.startswith(ACCEPTANCE_DIRECTORY + '/') else RUNBOOK
+        if path.resolve() not in routes[router]:
             raise ValueError(name + ': procedure missing from runbook routes')
         validate_reading_budget(name, path.read_text(), PROCEDURE_BUDGET)
 
@@ -327,11 +336,28 @@ def validate_links(repo, names):
     return checked
 
 
+def validate_active_policy(texts):
+    # These previously active requirements contradict the approved September25
+    # rule. Historical baseline protocols/results retain their original wording.
+    patterns = [r'\brequired performance benchmarking\b',
+                r'\b(?:must|required|mandatory)\s+(?:run\s+)?(?:a\s+)?(?:paired\s+)?(?:application[- ]|strict[- ])(?:performance|timing)\b',
+                r'\bdoes not replace F06.{0,100}\bpaired performance\b',
+                r'\buse one bounded representative before/after application comparison\b']
+    for name in (DOCUMENT_ROOT + 'PLAN.md', DOCUMENT_ROOT + 'FINAL_COMPATIBILITY.md'):
+        # PLAN's generated register evidence includes historical scope; only its
+        # active policy prose is checked here. Register requirements own gates.
+        text = re.sub(r'<!-- release-views:start -->.*?<!-- release-views:end -->', '', texts[name], flags=re.S)
+        normalized = ' '.join(line for line in text.splitlines() if not line.startswith('|')).replace('\n', ' ')
+        if any(re.search(pattern, normalized, re.I) for pattern in patterns):
+            raise ValueError(name + ': active policy contradicts the September25 measurement rule')
+
+
 def validate_documents(repo, gates):
     procedures = procedure_documents(repo)
     names = ACTIVE_DOCUMENTS + procedures
     validate_document_layout(repo, procedures)
     texts = {name: prose((repo / name).read_text()) for name in names}
+    validate_active_policy(texts)
     index = texts['DatadogRUM/MultiSceneSupport/EXPERIMENTS.md']
     ids = re.findall(r'^\| (?:<a id="exp-\d{3}"></a>)?(EXP-\d{3}) \|', index, re.M)
     records = repo / 'DatadogRUM/MultiSceneSupport/Experiments'
@@ -472,6 +498,9 @@ def main():
     base = Path(__file__).resolve().parents[2] / 'DatadogRUM/MultiSceneSupport'
     register = json.loads((base / 'release-gates.json').read_text())
     gates = validate(register)
+    import release_work
+    remaining_path = base / 'REMAINING_WORK.md'
+    remaining = release_work.render(register, release_work.read_owners(base.parents[1]))
     progress = progress_document(register, gates)
     counts = progress['counts']
     plan = base / 'PLAN.md'
@@ -480,9 +509,12 @@ def main():
         plan.write_text(rendered)
         (base / 'Results').mkdir(exist_ok=True)
         (base / 'Results/release-progress.json').write_text(json.dumps(progress, indent=2) + '\n')
+        remaining_path.write_text(remaining)
     elif rendered != plan.read_text():
         raise ValueError('PLAN.md gate rows are stale; run --update')
     check_progress(base / 'Results/release-progress.json', progress)
+    if not remaining_path.exists() or remaining_path.read_text() != remaining:
+        raise ValueError('REMAINING_WORK.md is stale; run --update')
     documents = validate_documents(base.parents[1], gates)
     print(json.dumps({'documents': documents, 'total': len(gates), 'counts': counts, 'closed': progress['closed']}))
 

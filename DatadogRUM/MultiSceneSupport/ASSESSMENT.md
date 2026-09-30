@@ -1,141 +1,73 @@
 # RUM multi-scene support assessment
 
-This file describes present support and evidence limits. The approved contract is
-in [the overview](../MULTI_SCENE_SUPPORT.md). [The register](release-gates.json)
-owns finite gate status, owners, dependencies, tests and environments;
-[PLAN](PLAN.md) is generated. [The cursor](../../.continue-here.md) alone owns the
-current execution state and next action.
-
-The provisional S3 candidate qualifies all20 platform builds, full RUM27/17.5 and all nine other module suites. The [final Integration component](Results/EXP-227-integration-fixture-result.json) passes280/280 after fixture-only lifecycle, assertion-guard and hitch-oracle corrections; exact compiled source, eight inherited runtime warnings and cleanup qualify. SDK94842cc8 is unchanged. Original failures and separate diagnostic restoration remain preserved; the initial TTID cause is unproven. [EXP-228](Results/EXP-228-public-clients-result.json) also qualifies five existing-public-client configurations. The [current source audit](Results/S3-M10-source-audit.json) passes strict lint and retains every existing API declaration across nine modules. RUM additions remain provisional; approved baselines are unchanged. API approval, simultaneous scene ownership, approved API/documentation integration and final review remain; these results do not replace runtime/human gates.
+This file owns present support conclusions and evidence limits. The
+[overview](../MULTI_SCENE_SUPPORT.md) owns approved behavior; the
+[register](release-gates.json) owns gate status and requirements. The generated
+[remaining-work view](REMAINING_WORK.md) separates preparation from missing native
+evidence. Only [the cursor](../../.continue-here.md) selects current execution.
 
 ## Release evidence boundaries
 
 | Stage | Qualified scope | Remaining limit |
 | --- | --- | --- |
-| S1: existing-customer reliability | Seven independently prepared packets with source-matched evidence; publication and follow-up history live in the [delivery queue](Results/S1-delivery-queue.json). | Current-head CI, maintainer review and final delivery remain separate from local qualification. Only H00 → E01 is an established merge dependency. |
-| S2: single-scene SDK27 Duo readiness | Exact E01+DL01+E04 production `c9faed81`, documentation `7604da24`. [Composition/lifetime](Results/EXP-216-s2-composition-promotion.json), [documentation](Results/S2-F02-composition-documentation.json), [compatibility](Results/EXP-217-s2-compatibility.json) and the [controlled app comparison](Results/S2-F08-candidate-comparison.json) qualify their finite scopes. | Automatic Duo coverage, interactive transitions and final-release acceptance remain open. Historical reference results below cannot certify them. |
-| S3: full multi-scene support | Experimental scene/semantic behavior has the bounded reference evidence below. | Stable API/RFC, remaining physical topology/ordering and final release obligations remain. F01 proposals are not approval. |
+| S1: existing-customer reliability | Source-matched independent packets; [delivery queue](Results/S1-delivery-queue.json). | Current-head CI, maintainer review and delivery remain separate. H00 → E01 is the established merge dependency. |
+| S2: single-scene SDK27 Duo readiness | E01+DL01+E04, production `c9faed81`, documentation `7604da24`; [composition/lifetime](Results/EXP-216-s2-composition-promotion.json) and [compatibility](Results/EXP-217-s2-compatibility.json). | SwiftUI automatic stack/split comparisons, one physical UIKit candidate and final review. No semantic/scene API adoption is required. |
+| S3: full multi-scene support | Provisional SDK `94842cc8`; [F03 components](Results/S3-F03-candidate-preparation.json) cover platform builds, RUM/legacy and module suites, existing-public clients and API/lint audit. | RFC/public exposure, simultaneous topology, native lifecycle ordering and final review. Preparation does not certify those gates. |
 
-The [S2 scope review](Results/S2-release-gate-review-20260925.json) retains actual
-Duo behavior and exact required owners, while removing duplicate physical matrices,
-whole-payload backend parity and immediate background delivery as universal criteria.
-The latest iPad run proves only its baseline gestures; candidate comparison is still
-missing. Late Home delivery is not event loss. The proposed forced-flush extension
-is stopped before implementation. The separate
-[saved hosting assessment](Results/S2-H16-scoped-assessment.json) closes S2:H16: both
-automatic/manual pairs retain the five native outcomes and fresh RUM owners. Original
-invalid attempts and the manual candidate backend gap remain; no gesture/fold claim.
-
-S2 contains six qualified production files and excludes deferred semantic/scene
-implementation. The earlier source-exclusion
-assessment remains valid; the [current testing rule](../MULTI_SCENE_SUPPORT.md#measurement-and-testing-rule)
-requires no strict timing or application-performance comparison.
-Its compatibility evidence retains predefined OS skips, Replay-content exclusions,
-Integration QoS warnings and original preparation stops. No blanket warning,
+Future sessions follow the [September25 measurement rule](../MULTI_SCENE_SUPPORT.md#measurement-and-testing-rule).
+Event attribution and View/Navigation/Action capture are decisive. Strict timing
+and application-performance campaigns are optional; [EXP224](Results/EXP-224-application-impact.json)
+remains stopped without a performance result. Compatibility preserves its original
+skips, runtime warnings and Replay-content exclusions; no blanket warning,
 sanitizer, crash-freedom or performance clearance follows.
 
-[The selected-source Resource/Trace navigation comparison](Results/EXP-221-s2-resource-trace.json)
-now qualifies both URLSession modes on Duo: Resources retain their start owner,
-manual parent and automatic completion-time Trace correlation match the baseline,
-and candidate terminal views stop correctly. Both candidate modes also pass
-[explicit session rollover](Results/EXP-221-session-rollover.json). Baseline repeated
-resumes mutate currentRequest baggage; their observed protocol-start carriers stay
-original-owned. [Fold](Results/EXP-221-duo-fold.json) now closes S2:T03/T08 with
-four source-bound Closed/Open/Closed captures and complete RUM/APM ownership
-checks. Both baseline modes retain their terminal-view observations; candidate
-checks pass. Registered candidate persistence qualifies through a separate saved-
-capture assessment after its original collection hit an attempt cap. That original
-INVALID and all cleanup results remain unchanged; no gestures were repeated.
-Inherited E03 action-count and E05 automatic completion-correlation limits remain.
-The controlled-app obligation is qualified by F08 below; automatic view/action
-tracking and physical Duo acceptance remain separate.
+## Selected S2 conclusions
 
-The current-source automatic comparison has unresolved native-input variability.
-[EXP-210](Results/EXP-210-s2-automatic-coverage.json) includes SDK-on switch failures
-and passing SDK-off/later action-on controls without an isolated cause.
-[EXP-218](Results/EXP-218-native-input-observation.json) adds a native SDK-on pass
-whose strict dispatch observer rejects its boundary; SDK-off remains unrun.
-The [callback-side witness](Results/EXP-220-native-input-callback.json) now observes
-successful SDK-on/off callbacks on a regular iPhone27.0, with prior setup/host stops
-preserved. This does not reproduce earlier variability or establish an SDK
-cause, complete automatic-tracking comparison or candidate gate closure.
+| Capability | Conclusion and owning evidence | Retained limit |
+| --- | --- | --- |
+| Resource/Trace | [Navigation](Results/EXP-221-s2-resource-trace.json), [rollover](Results/EXP-221-session-rollover.json), [fold](Results/EXP-221-duo-fold.json) and integrated-app ownership qualify T03/T08. | Baseline repeated-resume baggage and terminal-view observations remain; E03 action counts and E05 completion-time correlation retain their inherited limits. Registered persistence was separately assessed after the original attempt-cap failure. |
+| Automatic UIKit | [Stack](Results/S2-coverage-home-collection-20260928.json) and [split](Results/S2-coverage-remaining-preparation.json) close C07/C08 within actual layouts. Candidate owners match the SDK27.1 baseline; SDK26.5 rebuild differences are documented. | Switch omissions and Sidebar/Empty/reopened-Detail attribution limitations remain. Simultaneous columns do not require equal occurrence counts. SDK27.1 baselines remain offline-only; full split Home lifecycle is unqualified. |
+| Automatic SwiftUI | [Current preparation](Results/S2-coverage-remaining-preparation.json) binds reviewed builds and first-cell capture controls. | C09/C10 and the SwiftUI portion of H14 need actual baseline/candidate ownership comparisons. No current human session is admitted. |
+| Interactive navigation/dismissal | [SwiftUI pair](Results/S2-H12-H13-swiftui-duo.json) closes H12 and qualifies its H13 portion with matching native transitions and automatic/manual inventories. | Existing-manual cancelled-pop restart/callback and outgoing-Sheet dismissal attribution remain. [Physical UIKit baseline](Results/S2-H11-H13-local-baseline.json) is reusable; candidate H11/H13 evidence is still missing. |
+| UIKit-hosted SwiftUI | [Saved paired assessment](Results/S2-H16-scoped-assessment.json) closes H16 for ordinary hosting, native outcomes and fresh RUM owners. | Original manual candidate backend gap remains. No action, gesture, fold, physical or S3 semantic claim. |
+| Native/WebView | [Paired assessment](Results/S2-T10-source-preparation.json) closes T10: active ownership, delayed A ownership before inactive expiry, no container after expiry, detached weak release and backend identities. | Original transport/budget failures remain; no physical-Duo or S3 claim. |
+| Controlled app | [Paired app assessment](Results/S2-F08-candidate-comparison.json) closes F08 for Services/detail/Back, a dashboard interaction and Home/return, with native/Browser owners and cleanup. | Custom/explicit tracking does not certify automatic-only coverage. Extra setup actions and incidental totals/timing are not parity claims. |
 
-The [UIKit stack comparison](Results/S2-coverage-home-collection-20260928.json) and
-[split comparison](Results/S2-coverage-remaining-preparation.json) close S2:C07/C08:
-selected-candidate View/Navigation/Action ownership matches the SDK27.1 baseline
-within each actual layout. The genuine SDK26.5 rebuild comparison documents the
-change to simultaneous columns; equal occurrence counts are not required. Existing
-switch omissions and pane attribution limits remain, including Sidebar actions
-owned by Empty and a reopened Detail tap owned by Sidebar. Candidate capture and
-cleanup pass. SDK27.1 baselines remain offline-only with original failed verdicts
-and separate restoration unchanged. Split full Home lifecycle is unqualified; the
-same background Sidebar occurrence exists in the baseline. The original comparator
-flag is retained alongside its reviewed serialization correction. SwiftUI C09/C10
-and the SwiftUI portion of H14 remain open.
+The [S2 scope review](Results/S2-release-gate-review-20260925.json) excludes duplicate
+physical matrices, whole-payload equality, immediate background delivery and
+mapper-before-callback ordering as universal criteria. Late Home delivery is not
+event loss; the forced-flush proposal remains stopped. Original INVALID verdicts
+and successful later restorations remain separate in their owners. No accepted
+baseline, gesture sequence or compatibility suite needs repetition to resume.
 
-The [WebView pair](Results/S2-T10-source-preparation.json) closes S2:T10: the
-active native owner survives181seconds, delayed A events retain A within inactive
-retention and have no container after expiry, and the detached WebView releases.
-Both complete backend inventories contain9rows. Candidate scenario, evidence and
-cleanup pass; original baseline late-publication and first-candidate budget failures
-remain immutable. No further TTL run is needed for the controlled app smoke.
+Earlier [input observations](Results/EXP-220-native-input-callback.json) never
+isolated an SDK cause for switch/dispatch variability. The completed source-paired
+UIKit comparison supplies its own evidence without explaining those diagnostics.
+[Semantic Duo boot failures](Results/S2-Duo-environment-readiness.json) preceded app
+assertions; an equivalent retry needs materially changed prerequisites.
 
-The [controlled app comparison](Results/S2-F08-candidate-comparison.json) closes
-S2:F08 for signed-in Services/detail/Back, one dashboard interaction and Home/return
-on Duo27.1. Both source-bound captures retain the required view/action/resource and
-Browser owners, with complete independent backend inventories and successful cleanup.
-The candidate's extra range-setup actions are classified separately. No new crash,
-hang or navigation failure was observed. Incidental Browser totals and timing are
-not parity claims. Original harness/transport INVALID verdicts remain unchanged;
-separate saved-evidence assessments and paired review support this finite closure.
-The app uses custom/explicit tracking, so it does not close automatic-only C07–C10.
-[Semantic Duo boot failures](Results/S2-Duo-environment-readiness.json) occur before
-app installation/assertions and have no established SDK cause. An equivalent retry
-requires materially changed conditions and separate admission.
+## Provisional S3 conclusions
 
-Physical Duo hardware is unavailable before release. S2 can use qualified Duo
-simulator and relevant iPhone/iPad evidence while disclosing uncertainty; F09 owns
-later confirmation and full F04 remains S3. API availability amendments stay under
-[existing S3 F01/C06/F03/A02 obligations](Results/S3-api-availability-plan.json).
-[EXP-225](Results/EXP-225-api-availability.json) implements ordinary deployment15
-calls with SDK-selected fallback and crash-safe Objective-C background rejection.
-Optimized single-scene clients qualify on17.5/27 with automatic tracking on/off.
-[Current-source legacy comparisons](Results/EXP-225-legacy17-result.json) also preserve
-automatic/manual navigation and actual background/foreground ownership on17.5.
-This remains experimental: attributable API approval, normal public exposure,
-simultaneous native same-key ownership and the complete final matrix stay open.
-The [same-key native attempt](Results/EXP-225-same-key-result.json) stopped before API
-work because activating B backgrounded A; it provides no SDK regression finding.
-The [full-RUM continuation](Results/EXP-225-rum-suite-result.json) qualifies the
-complete target on27.0 and17.5. The older run exposed XCTest invoking an iOS27-only
-test class; its runtime guard now skips exactly those25 methods, which all pass
-on27. With the existing routing skip,17.5 passes1,381 cases and explicitly skips26.
-SDK bytes and test assertions are unchanged, original crashes remain recorded,
-and both simulators are restored. Other modules and final release approval remain.
+[API/legacy qualification](Results/EXP-225-api-availability.json) supports ordinary
+deployment15 calls through SDK-selected fallback and crash-safe off-main Objective-C
+rejection. [Current legacy comparisons](Results/EXP-225-legacy17-result.json) and
+[full RUM suites](Results/EXP-225-rum-suite-result.json) retain actual runnable-system
+evidence and exact availability skips. They do not approve the API or establish
+simultaneous same-key owners: the [original native attempt](Results/EXP-225-same-key-result.json)
+stopped before API work when A backgrounded.
 
-[Application-impact preparation](Results/EXP-224-application-impact.json) now binds
-four signed Release clients and reviewed sampler/trace controls to that API candidate.
-Physical baseline install, launch and code identity pass, but recorder attachment fails
-before workload readiness. Capture is stopped; cleanup passes. There is no performance
-result or SDK regression finding. This optional diagnostic is no longer a release
-prerequisite under the September25 measurement rule; no further profiling run is due.
+[Final compatibility preparation](Results/S3-F03-candidate-preparation.json) owns
+the qualified build/module/client components. The [Integration result](Results/EXP-227-integration-fixture-result.json)
+qualifies fixture-only corrections without assigning an unproven cause to original
+TTID failures. The [API audit](Results/S3-M10-source-audit.json) retains existing
+declarations and unchanged baselines; additions remain provisional.
+[Residual preparation](Results/S3-human-residual-preparation.json) distinguishes
+compiled/offline capture components from actual topology and ownership evidence.
 
-[EXP223](Results/EXP-223-interactive-transitions.json) retains ordinary-simulator
-capture and a [reviewed physical UIKit baseline](Results/S2-H11-H13-local-baseline.json).
-Its actual cancel/finish chains and emitted action owners qualify for local reuse;
-source, installed code, durable observations and cleanup have been reverified.
-The original finish mapper-order failures and backend timeout remain unchanged.
-Delayed Home upload establishes no event loss. The physical UIKit candidate remains
-untested; no baseline gesture repeat is required. On Duo, the [automatic SwiftUI
-pair](Results/S2-H12-H13-swiftui-duo.json) matches15 View occurrences,10 actions and
-all four foreground transitions. The existing-manual baseline captures12 Views and
-10 actions but restarts Detail after a cancelled pop and attributes its callback to
-intermediate Home; completed sheet dismissal attributes its callback to the outgoing
-Sheet. These strict failures and successful cleanup remain recorded. The candidate
-matches the complete manual inventory and both inherited limitations; all four native
-outcomes match in both tracking modes. Independent review closes S2:H12 and qualifies
-the SwiftUI portion of H13. The physical UIKit candidate remains required for H13;
-no automatic-only, S3 semantic, Home or physical Duo claim follows.
+Physical Duo remains unqualified. S2 uses measured Duo-simulator and relevant
+physical iPhone/iPad evidence with disclosed hardware uncertainty; F09 owns later
+confirmation and full F04 remains S3. Stronger S3 peer-continuity and semantic
+contracts cannot inherit S2 limitations as a pass.
 
 ## Immediate compatibility priority
 
