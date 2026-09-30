@@ -4,7 +4,7 @@
   "gate": "S3:H04",
   "owner": "Root",
   "reviewer": "/root/c06_runtime_plan",
-  "state": "OUTER_RUNNER_AND_SIGNED_PRODUCT_PREPARED",
+  "state": "FINAL_PLAN_REVIEWED_DEVICE_LOCKED",
   "defined_at": "2026-09-29T18:46:46.665215+00:00",
   "defined_before_implementation": true,
   "new_experiment": false,
@@ -93,11 +93,11 @@
     "offline_tests": 16,
     "build_attempts": 1
   },
-  "updated_at": "2026-09-30T00:35:07.730401+00:00",
+  "updated_at": "2026-09-30T00:47:45.985748+00:00",
   "remaining": [
-    "Bind the final signed product, complete helpers and reviewed source/compiler evidence into a one-cell plan.",
-    "Prepare actual backend-access proof and fixed native/backend/cleanup admission before execution; never revive old readiness or deadlines.",
-    "Designated final admission review and one physical H04 cell; no human invitation before September30 09:00 Paris."
+    "Fresh unlocked physical device, original display and task/process-absence checks; no human request before September30 09:00 Paris.",
+    "Fresh backend access after the future admission issue time, original fixed cutoffs and one physical H04 cell. Reuse the reviewed plan and product while their identities remain exact.",
+    "Assess native scenario, complete backend evidence and cleanup separately; H10 and original failed disconnect remain separate."
   ],
   "collection": {
     "verdict": {
@@ -211,5 +211,31 @@
     },
     "attempts": 1,
     "native_launches": 0
+  },
+  "prepared_plan": {
+    "plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-runner-k7v7gh_e/prepared/plan.json",
+      "sha256": "045d8b6ef4133ae801bb37cf4f6ee1a6cee69016a04dcb297f6150be786ee838"
+    },
+    "entry": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-runner-k7v7gh_e/prepared/run.py",
+      "sha256": "838d3232c88b2c5e2f405cba207a8d4a1b1b3fcd496079e660a3c2f6b3554cc8"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-runner-k7v7gh_e/prepared/review.json",
+      "sha256": "51ad214883da6bbf010e97d9470a376ecbfcb027ea7be70f5ff83e84f0fbcd42"
+    },
+    "access_preparation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-runner-k7v7gh_e/access-preparation/result.json",
+      "sha256": "02a2dab7e917bf66fe032336bdffcd0ceff95ca029d7a8ccc74d593c8ece4a7b"
+    },
+    "device_prerequisites": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-runner-k7v7gh_e/device-prerequisite-read/result.json",
+      "sha256": "9652671aa5e9b5e0e77de429065f738025e83be1cb2193828a07deb02e95f5e2"
+    },
+    "native_admitted": false,
+    "native_installs": 0,
+    "native_launches": 0,
+    "blocker": "Physical iPad reports passcodeRequired=true; user unavailable until September30 09:00 Paris. No unlock request or repeated native prerequisite polling without changed conditions."
   }
 }
