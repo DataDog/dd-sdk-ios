@@ -191,9 +191,14 @@ claimed. Generic Home views and four toggle-action omissions remain inherited
 limitations. Explicit recaptures retain their original failed snapshots and do
 not repeat input.
 
-Only the three split cells remain. Their [preparation](../Results/S2-swiftui-split-20260930.json)
-corrects the supported hierarchy check that previously required Home identifiers
-for every layout. Actual Sidebar controls, native owners and idle state must
-qualify before Ready; Empty or Detail cannot substitute. The first planned split
-baseline qualifies the mechanism. No whole SwiftUI gate closes from stack evidence
-or offline preparation.
+The [SDK26.5 split baseline](../Results/S2-swiftui-split-20260930.json) also qualifies:
+17 Views, 25 automatic Actions, 29 gesture effects, three display transitions and
+Home, with cleanup PASS and no duplicate, unknown or unassigned Action owners.
+One toggle observation was recaptured without repeated input; four toggle omissions
+remain explicit. The corrected supported capture proves actual Sidebar controls,
+native owners and idle before Ready. Empty or Detail cannot substitute. Cleanup
+used the supported Device Hub Closed control after task-app removal; actual display
+readback proves restoration. All 1,200 artifact hashes and the independent review pass.
+Only the SDK27.1 split baseline and candidate remain. Their unchanged-source
+[continuation](../Results/S2-swiftui-split271-20260930.json) reuses accepted builds
+and 64 focused controls. No SwiftUI or resize gate closes before those comparisons.

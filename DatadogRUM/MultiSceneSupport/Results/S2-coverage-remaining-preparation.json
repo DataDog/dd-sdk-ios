@@ -3,7 +3,7 @@
   "state": "UIKIT_VIEW_ACTION_GATES_CLOSED_SWIFTUI_REMAINS",
   "updated_at": "2026-09-30T12:14:57.837343+00:00",
   "execution": {
-    "record": "Results/S2-swiftui-split-20260930.json"
+    "record": "Results/S2-swiftui-split271-20260930.json"
   },
   "current": {
     "kind": "swiftui_preparation",
@@ -17,25 +17,18 @@
       "S2:H14"
     ],
     "plan": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/runtime-plan.json",
-      "sha256": "c70095a5b5bdac3bb55046de6dfcb5d042ad0022be2df6b8be7b930e96b0af10"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting/runtime/runtime-plan.json",
+      "sha256": "bd9ab15e7504cc8dc40d9f2a3eca7f4842e1dd27b63f18c296bc07a7cbe4841d"
     },
     "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/controls.json",
-      "sha256": "9fd6b1bca86a2535e4b26e286cff0eeca3363c4ad8e338ea520418d94aea3fc9"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting/runtime/controls.json",
+      "sha256": "4b27e18de8bd66b764862781c95207cd0a984f20db6edd9948cbef8c56f54c53"
     },
     "master_plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/master/runtime/runtime-plan.json",
       "sha256": "8b56e529e8217cc733d43f804e2a7722e0fa0ba29ce516bc79277f05906f3063"
     },
     "remaining_matrix": [
-      {
-        "build": "baseline-26.5",
-        "device": "duo",
-        "framework": "SwiftUI",
-        "layout": "split",
-        "multiple_scenes": false
-      },
       {
         "build": "baseline-27.1",
         "device": "duo",
@@ -51,10 +44,10 @@
         "multiple_scenes": false
       }
     ],
-    "prerequisites": "Fresh operator availability and environment preflight; first split baseline qualifies actual Sidebar capture before Ready.",
+    "prerequisites": "Fresh operator availability and environment preflight; reuse the qualified layout-specific capture and fixed cleanup.",
     "review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/review.json",
-      "sha256": "088691e57664ce10a2f6a5cde1f99357b63a107a086a3382b304eea4defb1db5"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting/runtime/review.json",
+      "sha256": "077abf3f22847aa8547c60ef103912d2ea6f328e18018a95b404176e714f5fe5"
     }
   },
   "owner": "root",
@@ -67,16 +60,16 @@
     "S2:H14"
   ],
   "swiftui_preparation": {
-    "state": "REVIEWED_SPLIT_PREPARATION",
+    "state": "REVIEWED_SPLIT_271_CONTINUATION",
     "owner": "Results/S2-coverage-remaining-preparation.json",
-    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting",
     "plan": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/runtime-plan.json",
-      "sha256": "c70095a5b5bdac3bb55046de6dfcb5d042ad0022be2df6b8be7b930e96b0af10"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting/runtime/runtime-plan.json",
+      "sha256": "bd9ab15e7504cc8dc40d9f2a3eca7f4842e1dd27b63f18c296bc07a7cbe4841d"
     },
     "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/controls.json",
-      "sha256": "9fd6b1bca86a2535e4b26e286cff0eeca3363c4ad8e338ea520418d94aea3fc9"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting/runtime/controls.json",
+      "sha256": "4b27e18de8bd66b764862781c95207cd0a984f20db6edd9948cbef8c56f54c53"
     },
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/definition.json",
@@ -85,7 +78,7 @@
     "selection_profile": "SWIFTUI_ONLY",
     "matrix": [
       {
-        "build": "baseline-26.5",
+        "build": "baseline-27.1",
         "device": "duo",
         "framework": "SwiftUI",
         "layout": "split",
@@ -148,8 +141,8 @@
       "sha256": "8b56e529e8217cc733d43f804e2a7722e0fa0ba29ce516bc79277f05906f3063"
     },
     "builds": 3,
-    "scope": "All three stack cells qualify; only the three split cells remain.",
-    "next_action": "Fresh operator availability and environment preflight; first split baseline qualifies actual Sidebar capture before Ready.",
+    "scope": "All three stack cells and the SDK26.5 split baseline qualify; only two SDK27.1 split cells remain.",
+    "next_action": "Fresh operator availability and environment preflight; reuse the qualified layout-specific capture and fixed cleanup.",
     "effect_recapture": {
       "record": "Results/S2-swiftui-effect-recapture-20260930.json",
       "plan": {
@@ -166,8 +159,8 @@
       }
     },
     "review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/review.json",
-      "sha256": "088691e57664ce10a2f6a5cde1f99357b63a107a086a3382b304eea4defb1db5"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting/runtime/review.json",
+      "sha256": "077abf3f22847aa8547c60ef103912d2ea6f328e18018a95b404176e714f5fe5"
     }
   },
   "swiftui_capture_correction": {
@@ -525,6 +518,19 @@
       "result": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-stack-candidate-20260930.json",
         "sha256": "5930e4621a7047569bdc70de1b650288be20dfd11e232e53dc369768ec8cb61e"
+      }
+    },
+    {
+      "selected": {
+        "build": "baseline-26.5",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "split",
+        "multiple_scenes": false
+      },
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-split-20260930.json",
+        "sha256": "bc67dea7037b2debbacd69c8ad9e51c14251071ae56c32a10a2e595943798af8"
       }
     }
   ]

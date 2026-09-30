@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "state": "AUTONOMOUS_H10_PREPARATION",
+  "state": "S2_SWIFTUI_SPLIT_271_PREPARED",
   "authority": "Standing user instruction to continue autonomous plan execution until explicitly stopped; caffeinate has a separate finite duration",
   "started_at": 1790316486.131028,
   "work_deadline_utc": null,
   "caffeinate": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/caffeinate.json",
-    "sha256": "a2544ea3603f16950666b80f6ad6cd49a36ddc7a008cce60056b04aa1427430b"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/caffeinate.json",
+    "sha256": "e9ad1ed9f5059440b3e5594efc2fa18f0f02c4abbf304c0ac5931fccb42b978a"
   },
   "previous_window": "unattended-work-20260924.json",
   "automation": {
@@ -17,7 +17,7 @@
     "instruction": "Continue without human input; remove heartbeat after safe morning checkpoint. This is not a native admission or deadline extension.",
     "removed_at": "2026-09-27T06:00:55.094691+00:00"
   },
-  "next_task": "H10 renderer compile recipe from the current H10 owner; human SwiftUI continuation requires fresh availability.",
+  "next_task": "Fresh preflight and one admitted SDK27.1 split baseline after the reviewed SDK26.5 baseline. User availability is current; no native run yet.",
   "gate_closures": [
     "S2:H16",
     "S2:T10",
@@ -33,7 +33,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": "2026-09-30T11:03:39.408303+00:00",
+  "updated_at": "2026-09-30T13:03:37.164853+00:00",
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
@@ -120,7 +120,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automated-scope-rww2sb_g/webview-backend-continuation/summary.json",
     "sha256": "c67b680daecad3400c1ffc85ce8e56ba26629a167932e2b6f7cc0a687ab45543"
   },
-  "awake_until_utc": "2026-09-30T12:39:04.742164+00:00",
+  "awake_until_utc": "2026-09-30T14:21:53.486126+00:00",
   "deadline_correction": {
     "at": "2026-09-25T12:43:44.248636+00:00",
     "previous_inferred_work_deadline_utc": "2026-09-25T12:42:56.993742+00:00",
@@ -292,16 +292,27 @@
         "sha256": "787efa26df9928692abafd46a716222e1308a9a09d2c56b3014bd7df5b792360"
       },
       "renewed": false
+    },
+    {
+      "receipt": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/caffeinate.json",
+        "sha256": "d4074490ca2be9933faac58fed0812b33b2868856ce3eccf3ff074c23322f521"
+      },
+      "pid": 36083,
+      "authorized_seconds": 7200,
+      "awake_until_utc": "2026-09-30T12:39:04.742164+00:00",
+      "work_deadline": null,
+      "state": "RUNNING_USER_AUTHORIZED"
     }
   ],
   "current_awake": {
     "receipt": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/caffeinate.json",
-      "sha256": "d4074490ca2be9933faac58fed0812b33b2868856ce3eccf3ff074c23322f521"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/caffeinate.json",
+      "sha256": "e9ad1ed9f5059440b3e5594efc2fa18f0f02c4abbf304c0ac5931fccb42b978a"
     },
-    "pid": 36083,
+    "pid": 42941,
     "authorized_seconds": 7200,
-    "awake_until_utc": "2026-09-30T12:39:04.742164+00:00",
+    "awake_until_utc": "2026-09-30T14:21:53.486126+00:00",
     "work_deadline": null,
     "state": "RUNNING_USER_AUTHORIZED"
   },
@@ -311,5 +322,6 @@
   "human_availability": {
     "state": "FRESH_READY_REQUIRED",
     "source": "Completed the SDK26.5 stack baseline; later cells require their own live Ready."
-  }
+  },
+  "current_execution": "Results/S2-swiftui-split271-20260930.json"
 }

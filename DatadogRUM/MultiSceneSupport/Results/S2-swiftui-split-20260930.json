@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "REVIEWED_SPLIT_PREPARATION",
+  "state": "NATIVE_BASELINE_QUALIFIED",
   "owner": "EXP-210",
   "gates": [
     "S2:C09",
@@ -22,15 +22,15 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/runtime-plan.json",
     "sha256": "c70095a5b5bdac3bb55046de6dfcb5d042ad0022be2df6b8be7b930e96b0af10"
   },
-  "native_admitted": false,
-  "native_runs": 0,
-  "qualified_cells": 0,
-  "scenario": "UNQUALIFIED",
-  "evidence": "INCOMPLETE",
-  "cleanup": "NOT_RUN",
+  "native_admitted": true,
+  "native_runs": 1,
+  "qualified_cells": 1,
+  "scenario": "PASS",
+  "evidence": "PASS",
+  "cleanup": "PASS",
   "gates_closed": [],
-  "updated_at": "2026-09-30T12:14:57.837343+00:00",
-  "next_action": "Offer the first split baseline after fresh operator availability and environment preflight. Automatic prefix must prove actual Sidebar capture, selected native layout and idle before Ready; stop on failure without a diagnostic retry.",
+  "updated_at": "2026-09-30T12:57:06.614492+00:00",
+  "next_action": "Preserve this accepted SDK26.5 split baseline. Only the SDK27.1 baseline and candidate split cells remain; do not repeat this run.",
   "controls": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/controls.json",
     "sha256": "9fd6b1bca86a2535e4b26e286cff0eeca3363c4ad8e338ea520418d94aea3fc9"
@@ -61,5 +61,65 @@
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/review.json",
     "sha256": "088691e57664ce10a2f6a5cde1f99357b63a107a086a3382b304eea4defb1db5"
+  },
+  "admission": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/native-admission.json",
+    "sha256": "8188e98ff89c0ac4287dc5a633e49f287dea39e067db17a7084582ccfda1dfb9"
+  },
+  "controller": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/controller.json",
+    "sha256": "414283b3f718636b703bbe6513f9965bf671dca7b9f6f33c5894d066a0195d1d"
+  },
+  "source_at_run": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/source-at-run/manifest.json",
+    "sha256": "d81b2cc29d168bd406d8218625e85901513ac56b58a541f3a2cda3b38457b3c7"
+  },
+  "run_id": "67102887-d1d2-4af3-b91b-55121b5f9227",
+  "native_launches": 1,
+  "original_summary": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/cells/baseline-26.5-duo-SwiftUI-split-single/summary.json",
+    "sha256": "46579abb8713bcdab0b4cf29ddab6c824ff60c5f9d61c26c1fa56d7513bbcd1d"
+  },
+  "local_result": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/cells/baseline-26.5-duo-SwiftUI-split-single/local-result.json",
+    "sha256": "71c8dc8e07edb6604c3d1a5d80d53c712773c469c1e7fc2adde62f05fb4f2dbf"
+  },
+  "receipts": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/cells/baseline-26.5-duo-SwiftUI-split-single/receipts.json",
+    "sha256": "4861e43e5bc7e6d60d259102ed0f83fbc97edc4d3e8f117594e438af733fbc46"
+  },
+  "events": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/cells/baseline-26.5-duo-SwiftUI-split-single/events.jsonl",
+    "sha256": "fc70ca16fea00e2ab78aea573319f559f37686d3d602c360dfc2555b3c4abb87"
+  },
+  "post_exit": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/post-exit.json",
+    "sha256": "a1b9192038799b9a189959897e3b64a6141ea929266bbc5e2686deaff998d16c"
+  },
+  "recaptured_effects": [
+    {
+      "phase": "initial.root.toggle.effect",
+      "observation_phase": "initial.root.toggle.effect.recapture",
+      "state": "NATIVE_EFFECT_RECAPTURED",
+      "failed_observation": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/cells/baseline-26.5-duo-SwiftUI-split-single/input/initial.root.toggle.effect/capture-failure.json",
+        "sha256": "dd093a64e8397b519dd63f33486d17582ec5273dff8803c8e7921310f4742d9c"
+      }
+    }
+  ],
+  "counts": {
+    "views": 17,
+    "automatic_actions": 25,
+    "native_effects": 29,
+    "folds": 3,
+    "home_boundaries": 1
+  },
+  "cleanup_ui_restoration": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/cleanup-ui-restoration.json",
+    "sha256": "b768c9cc3faaf6a1e9d35d3fbbf4ee6032a2f199a17995404e6705fb4bfa1abb"
+  },
+  "native_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/native-review.json",
+    "sha256": "17118ba9a8aaa368273bd9c5e1752b9121b36d28d3595d113bd212e090ce527c"
   }
 }
