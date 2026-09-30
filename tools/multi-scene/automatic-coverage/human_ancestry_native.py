@@ -17,6 +17,8 @@ import fold_readiness
 import prefix_input
 import prefix_sequence
 import prefix_session
+import reviewer_assignment
+import tool_worker_service as worker_service
 
 require = evidence.require
 
@@ -75,6 +77,10 @@ def prefix_definition(path, root):
             'prefix definition exceeds one diagnostic qualification')
     prefix_input.original(value['prefix'])
     require(build.bound(value['readiness_owner'])['state'] == 'REVIEWED_OFFLINE_READINESS', 'readiness repair not reviewed')
+    worker_service.validate_ledger(build.bound(value['budget_ledger']), value['budgets_seconds'])
+    require(isinstance(value['worker'], str) and value['worker'].startswith('/root/')
+            and worker_service.reference(value['pump_source']['path']) == value['pump_source'],
+            'prospective prefix worker source or owner missing')
     return value
 
 
@@ -98,7 +104,13 @@ def prepare(root, identifier, *, output=None, prefix=None):
                 scenario_credit=False, created_at=time.time())
     if continuation is not None:
         plan.update(kind=continuation['kind'],prefix_definition=evidence.reference(prefix),
-                    budgets=continuation['budgets_seconds'])
+                    budgets=continuation['budgets_seconds'], budget_ledger=continuation['budget_ledger'],
+                    worker=continuation['worker'], pump_source=continuation['pump_source'],
+                    worker_sources=dict(plan['helpers'], **{continuation['pump_source']['path']:
+                        continuation['pump_source']['sha256']}),
+                    worker_service=str(folder.resolve().parent/'worker-service'))
+        (folder/'supported').mkdir()
+        module.transport.publication_preflight(folder/'supported')
     evidence.save(folder/'plan.json', plan)
     return plan
 
@@ -218,11 +230,135 @@ def classify(row, binding):
     return build.probe.classify(failure)
 
 
+def worker_binding(folder, plan):
+    return dict(owner=plan['worker'], device=plan['device']['udid'], bundle=plan['product']['bundle'],
+                run_id=plan['run_id'], plan_sha256=evidence.sha(folder/'plan.json'),
+                product_sha256=hashlib.sha256(json.dumps(plan['product'],sort_keys=True).encode()).hexdigest())
+
+
+def worker_gate(folder, plan):
+    """Consume actual prospective readiness before admission or installation."""
+    folder=Path(folder)
+    require(not (folder/'admission.json').exists(), 'native admission already consumed')
+    root=Path(plan['worker_service'])
+    require(root.resolve()==folder.resolve().parent/'worker-service'
+            and (folder/'supported').is_dir() and not list((folder/'supported').iterdir()),
+            'prospective worker output absent, redirected or already consumed')
+    binding=worker_binding(folder,plan); owned=False; consumption=None
+    try:
+        record=worker_service.health(root)
+        require(record['binding']==binding and record['sources']==plan['worker_sources']
+                and record['pump_source']==plan['pump_source']
+                and record['requests']==str((folder/'supported').resolve()), 'worker source or delivery route differs')
+        owned=True; service_reference=worker_service.reference(root/'service.json')
+        worker_service.validate_ledger(build.bound(plan['budget_ledger']), plan['budgets'])
+        answer=worker_service.read(root/'answer.json')
+        contract=worker_service.setup_current(answer,record,root)
+        require(contract['discovery_source']=='LIVE_TOOL_DISCOVERY', 'synthetic controls cannot admit native work')
+        receipt=worker_service.consume(root,binding,plan['budgets'])
+        consumption=worker_service.value_reference(root/'consumed.json',receipt)
+        worker_service.active(root,consumption)
+        worker_service.validate_ledger(build.bound(plan['budget_ledger']),plan['budgets'])
+        return receipt,consumption,service_reference
+    except Exception as error:
+        cleanup='NOT_AUTHORIZED_FOREIGN_OR_UNVERIFIED_SERVICE'
+        if owned:
+            try:
+                if consumption is not None and (root/'consumed.json').exists():
+                    worker_service.invalidate(root,'consumed.json',error)
+                worker_service.stop_before_admission(root,deadline=min(record['deadline'],time.time()+30),
+                    expected_service=service_reference)
+                cleanup='OWNED_SERVICE_STOPPED_NO_NATIVE_CLEANUP'
+            except Exception as stop_error:
+                cleanup='INCOMPLETE: '+str(stop_error)
+        evidence.save(folder/'worker-preflight-rejected.json',dict(state='REJECTED_BEFORE_ADMISSION',
+            reason=str(error),service_cleanup=cleanup,native_admitted=False,installations=0,gates_closed=[]))
+        raise
+
+
+def admission_current(root, folder, module, plan, admission, consumption):
+    """Rejoin the immutable preparation at the last boundary before native work."""
+    require(admission['plan']==evidence.reference(folder/'plan.json')
+            and evidence.read(folder/'plan.json')==plan
+            and admission['review']==evidence.reference(folder/'review.json'), 'admission plan or review changed')
+    review=evidence.read(folder/'review.json')
+    require(review['state']=='PASS' and review['plan_sha256']==admission['plan']['sha256'], 'admission review differs')
+    reviewer_assignment.require_reviewer(review,admission['plan']['sha256'],folder)
+    require(plan['driver']==evidence.reference(__file__) and plan['helpers']==dependencies()
+            and plan['definition']==evidence.reference(root/'definition.json')
+            and build.bound(plan['build'])==product(root), 'admission source or product changed')
+    if 'cleanup_script' in plan:
+        require(plan['cleanup_script']==evidence.reference(plan['cleanup_script']['path'])
+                and plan['cleanup_review']==evidence.reference(plan['cleanup_review']['path']),
+                'admission cleanup source or review changed')
+    require(plan['prefix_definition']==evidence.reference(plan['prefix_definition']['path']),
+            'admission prefix definition changed')
+    worker_service.validate_ledger(build.bound(plan['budget_ledger']),plan['budgets'])
+    clocks=worker_service.active(Path(plan['worker_service']),consumption)
+    require(clocks['binding']==worker_binding(folder,plan)
+            and admission['worker_consumption']==consumption
+            and admission['run_id']==plan['run_id'] and admission['kind']==plan['kind']
+            and admission['started_at']==clocks['issued_at']
+            and admission['deadline']==clocks['execution_deadline']
+            and admission['cleanup_deadline']==clocks['cleanup_deadline']
+            and admission['controller_pid']==clocks['controller']['pid']==os.getpid()
+            and admission['controller_identity']==module.human_release.process_identity(os.getpid())
+            and time.time()<min(admission['deadline'],
+                worker_service.read(Path(plan['worker_service'])/'probe.json')['deadline']),
+            'admission clocks, controller or original readiness cutoff differ')
+
+
+def publish_admission(root,folder,module,plan,admission,consumption,service_reference,original_apps):
+    """Invalid publication never leaves a positive admission or invokes native cleanup."""
+    service_root=Path(plan['worker_service'])
+    expected=worker_service.value_reference(folder/'admission.json',admission)
+    try:
+        admission_current(root,folder,module,plan,admission,consumption)
+        worker_service.save(folder/'admission.json',admission)
+        evidence.save(folder/'initial-apps.json',original_apps)
+        require(worker_service.reference(folder/'admission.json')==expected
+                and evidence.read(folder/'initial-apps.json')==original_apps, 'issued admission bytes changed')
+        admission_current(root,folder,module,plan,admission,consumption)
+        require(worker_service.reference(folder/'admission.json')==expected, 'admission changed during final rejoin')
+    except Exception as error:
+        worker_service.invalidate(folder,'admission.json',error)
+        cleanup='INCOMPLETE'
+        try:
+            if (service_root/'consumed.json').exists(): worker_service.invalidate(service_root,'consumed.json',error)
+            worker_service.stop_before_admission(service_root,
+                deadline=min(worker_service.read(service_root/'service.json')['deadline'],time.time()+30),
+                expected_service=service_reference)
+            cleanup='OWNED_SERVICE_STOPPED_NO_NATIVE_CLEANUP'
+        except Exception as stop_error:
+            cleanup+=': '+str(stop_error)
+        evidence.save(folder/'admission-rejection.json',dict(state='REJECTED_BEFORE_NATIVE_WORK',reason=str(error),
+            service_cleanup=cleanup,installations=0,session_calls=0,input_calls=0,native_cleanup=False,gates_closed=[]))
+        raise
+
+
+class PreparedPrefixSession(prefix_session.Session):
+    """Reuse the dispatcher; guard its existing exchange through End/completion."""
+    def __init__(self,*args,service_root,consumption,**kwargs):
+        self.service_root,self.consumption=service_root,consumption
+        super().__init__(*args,**kwargs)
+
+    def exchange(self,*args,**kwargs):
+        worker_service.active(self.service_root,self.consumption)
+        result=super().exchange(*args,**kwargs)
+        worker_service.active(self.service_root,self.consumption)
+        return result
+
+    def end(self,deadline):
+        super().end(deadline)
+        worker_service.active(self.service_root,self.consumption)
+
+
 def run(root, *, output=None):
     module, definition, previous = context(root); folder = root/'native' if output is None else output
     plan = evidence.read(folder/'plan.json'); review = evidence.read(folder/'review.json')
-    require(review['state'] == 'PASS' and review['reviewer'] == '/root/c06_runtime_plan'
+    require(review['state'] == 'PASS'
             and review['plan_sha256'] == evidence.sha(folder/'plan.json'), 'native diagnostic not reviewed')
+    reviewer_assignment.require_reviewer(review,evidence.sha(folder/'plan.json'),folder)
     require(plan['driver'] == evidence.reference(__file__) and plan['helpers'] == dependencies()
             and build.bound(plan['build']) == product(root)
             and plan['definition'] == evidence.reference(root/'definition.json'), 'native source binding changed')
@@ -239,11 +375,24 @@ def run(root, *, output=None):
     task = plan['product']; bundle = task['bundle']; original = module.shared.apps(identifier)
     require(bundle not in original and module.shared.capture(['xcrun','simctl','get_app_container',identifier,bundle,'data'],check=False).returncode != 0,
             'task already installed; no destructive install')
-    started = time.time(); deadline = started+plan['budgets']['native']; cleanup_limit = deadline+plan['budgets']['cleanup']
+    consumption=None
+    if continuation is not None:
+        require(plan['budget_ledger']==continuation['budget_ledger'] and plan['worker']==continuation['worker']
+                and plan['pump_source']==continuation['pump_source']
+                and plan['worker_sources']==dict(plan['helpers'],**{plan['pump_source']['path']:plan['pump_source']['sha256']}),
+                'prospective worker preparation changed')
+        clocks,consumption,service_reference=worker_gate(folder,plan)
+        started,deadline,cleanup_limit=clocks['issued_at'],clocks['execution_deadline'],clocks['cleanup_deadline']
+    else:
+        started = time.time(); deadline = started+plan['budgets']['native']; cleanup_limit = deadline+plan['budgets']['cleanup']
     admission = dict(kind=plan['kind'], plan=evidence.reference(folder/'plan.json'), review=evidence.reference(folder/'review.json'),
                      run_id=plan['run_id'], controller_pid=os.getpid(), controller_identity=module.human_release.process_identity(os.getpid()),
                      started_at=started, deadline=deadline, cleanup_deadline=cleanup_limit, scenario_credit=False)
-    evidence.save(folder/'admission.json', admission); evidence.save(folder/'initial-apps.json', original)
+    if consumption is not None: admission['worker_consumption']=consumption
+    if consumption is not None:
+        publish_admission(root,folder,module,plan,admission,consumption,service_reference,original)
+    else:
+        evidence.save(folder/'admission.json', admission); evidence.save(folder/'initial-apps.json', original)
     result = dict(state='INCONCLUSIVE', scenario='NOT_ASSESSED', evidence='INCOMPLETE', cleanup='NOT_RUN',
                   run_id=plan['run_id'], plan=evidence.reference(folder/'plan.json'), scenario_credit=False, gates_closed=[])
     session=None; pid=None; documents=None; capture=None; initial=None; installed=False
@@ -251,13 +400,15 @@ def run(root, *, output=None):
         initial = module.transport.display(identifier,folder,'initial-displays',deadline)
         old_display = module.displays.active_display(json.loads(initial),identifier)
         require(old_display.get('primary') is True, 'actual initial display is not Closed')
-        (folder/'supported').mkdir()
+        if continuation is None: (folder/'supported').mkdir()
         binding=dict(owner=plan['worker'],device=identifier,bundle=bundle,run_id=plan['run_id'],layout='split',
                      product_sha256=hashlib.sha256(json.dumps(task,sort_keys=True).encode()).hexdigest(),
                      plan_sha256=evidence.sha(folder/'plan.json'))
-        session_type = prefix_session.Session if continuation is not None else evidence.Session
-        session=session_type(folder/'supported',binding,seconds=plan['budgets'].get('request',120),deadline=deadline,emit=lambda s:print(s,flush=True))
+        session_type = PreparedPrefixSession if continuation is not None else evidence.Session
+        extra=dict(service_root=Path(plan['worker_service']),consumption=consumption) if continuation is not None else {}
+        session=session_type(folder/'supported',binding,seconds=plan['budgets'].get('request',120),deadline=deadline,emit=lambda s:print(s,flush=True),**extra)
         if continuation is None: session.start()
+        if consumption is not None: worker_service.active(Path(plan['worker_service']),consumption)
         module.shared.command(['xcrun','simctl','install',identifier,task['path']],folder,'install',deadline=min(deadline,time.time()+60))
         installed=True
         if continuation is not None: session.start()
@@ -363,6 +514,13 @@ def run(root, *, output=None):
         except Exception as error:
             result.update(cleanup='INVALID',cleanup_reason=str(error))
         if result['cleanup']!='PASS':result['state']='INVALID_DIAGNOSTIC'
+        if consumption is not None:
+            try:
+                worker_service.stop_owned(Path(plan['worker_service']),
+                    deadline=min(cleanup_limit,time.time()+30),consumed=consumption)
+                result['service_cleanup']='OWNED_SERVICE_STOPPED'
+            except Exception as error:
+                result.update(state='INVALID_DIAGNOSTIC',service_cleanup='INCOMPLETE',service_cleanup_reason=str(error))
         result.update(finished_at=time.time(),cleanup_deadline=fixed)
         result['artifacts']={str(p.relative_to(folder)):evidence.sha(p) for p in folder.rglob('*') if p.is_file()}
         evidence.save(folder/'result.json',result)

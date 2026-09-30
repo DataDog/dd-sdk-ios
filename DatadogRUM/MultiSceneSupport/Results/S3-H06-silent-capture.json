@@ -4,7 +4,7 @@
   "gate": "S3:H06",
   "owner": "Root",
   "reviewer": "/root/c06_runtime_plan",
-  "updated_at": "2026-09-30T01:44:10.522371+00:00",
+  "updated_at": "2026-09-30T19:34:11.603799+00:00",
   "definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h06-silent-capture-vzkosoiv/definition.json",
     "sha256": "23a5fa7cd15ae6994d8d38c45d3ce6ce97dca98bab57c8df31e515431b94e021"
@@ -14,7 +14,7 @@
   "native_runs": 0,
   "gates_closed": [],
   "prior_owner": "Results/S3-H06-quicktime-capture.json",
-  "next": "Qualify the actual supported-tool source observer and one bounded silent capture/stop/decode when Mac and iPad are available, then compose the H06 adapter under review. No native admission or human invitation before09:00 Paris; fresh readiness remains required.",
+  "next": "Actual supported-source silent capture remains unqualified. Current Device Hub selection returned no usable surface; no native session or recording was started. Continue H10 bootstrap/cleanup preparation offline; preserve stopped CoreDevice recording and audio exclusion.",
   "clarified_definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h06-silent-capture-vzkosoiv/definition-r2.json",
     "sha256": "c894f613173e38b783e2b5b14ef332c45ebb114643540489aaf42c15d7a1c639"
@@ -47,5 +47,9 @@
       "sha256": "52a7721fa6557817e7f90bb5107260c3d8beef5df907db7a3892c177da03f32a"
     }
   ],
-  "evidence_limit": "CLI help and mocked processes are not recording capability. The inspector verifies all AVFoundation tracks, never plays media, and does not prove frames or source identity. CUA currently exposes focused titles/URLs without stable macOS window IDs; never invent one. The future source producer must join actual selected device/mirror/display/geometry and fresh source-bound pixels."
+  "evidence_limit": "CLI help and mocked processes are not recording capability. The inspector verifies all AVFoundation tracks, never plays media, and does not prove frames or source identity. CUA currently exposes focused titles/URLs without stable macOS window IDs; never invent one. The future source producer must join actual selected device/mirror/display/geometry and fresh source-bound pixels.",
+  "latest_passive_source_check": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/shared-capture-preflight-jcl_7t_p/physical-source-availability.json",
+    "sha256": "4a2a5cb86989a6c454ffed33d514e0de173dd21a49ea16c01f7646bc6b2515af"
+  }
 }

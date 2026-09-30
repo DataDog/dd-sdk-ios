@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "work_item": "Actual worker startup and prospective capture budget prerequisites",
+  "state": "REVIEWED_OFFLINE_PREFLIGHT_COMPONENT",
+  "gates": [
+    "S2:A02",
+    "S3:A02"
+  ],
+  "owner": "/root",
+  "reviewer": "/root/h10_backend_reviewer",
+  "reviewer_role": "rum-runtime-reviewer",
+  "updated_at": "2026-09-30T19:34:11.603245+00:00",
+  "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/shared-capture-preflight-jcl_7t_p",
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/shared-capture-preflight-jcl_7t_p/definition.json",
+    "sha256": "a28e1f76b6e87d725ec5e4c53c0fa9df717677823965f6b0fdf0070c46badf8d"
+  },
+  "design": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/shared-capture-preflight-jcl_7t_p/design.json",
+    "sha256": "a61bd0f3eeb72978ebe0b25908169eac3faab22b9460a2e99bd93197aa768555"
+  },
+  "reviewer_assignment": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/shared-capture-preflight-jcl_7t_p/design-review-assignment.json",
+    "sha256": "94ccccd845de93825588d7c56876fcd21173032a9da571ea3ef3ec1eb0ead54d"
+  },
+  "source_failure_owner": "Results/S2-prefix-ancestry-20260930.json",
+  "scope": "Finite operational prerequisite repair. Bind actual service/pump readiness before admission and account for observed inspection/orchestration in prospective budgets. Original missing-ancestry failure and stopped automatic attempt remain unresolved and immutable.",
+  "controls_run": 36,
+  "native_admitted": false,
+  "native_runs": 0,
+  "builds": 0,
+  "backend_queries": 0,
+  "gates_closed": [],
+  "next": "Prepare H10 bootstrap and task-only cleanup composition offline. Any actual pump/native continuation needs separately reviewed exact runtime bindings; the original ancestry failure and stopped attempt remain unresolved.",
+  "design_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/shared-capture-preflight-jcl_7t_p/design-review-r1.json",
+    "sha256": "75ec5ff14cce7783fccbca9ef7dcfac2a2a4e0556bfc2632170f1ee1c55f2224"
+  },
+  "implementation_assignment": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/shared-capture-preflight-jcl_7t_p/implementation-review-assignment-r2.json",
+    "sha256": "96f28491a28534753e1a790df61213ee1e4ce5d0dd6d8b2988418d36ac80bb84"
+  },
+  "controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/shared-capture-preflight-jcl_7t_p/controls-r3.json",
+    "sha256": "8bcc7b8dfdcff52e285ac5e516f1cd9312feb60db8573b4552b37f7e4dcb27ae"
+  },
+  "prospective_budget_ledger": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/shared-capture-preflight-jcl_7t_p/prospective-budget-ledger.json",
+    "sha256": "693f5cda6cfd3db93f69b319de62f6987aae6c2061e8bf0e8578d3e16704e5ef"
+  },
+  "review_history": [
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/shared-capture-preflight-jcl_7t_p/implementation-review-r1.json",
+      "sha256": "72b6d1050837f213e8ab1d17d7aa65e174c48859c096e3b2f2d6e4ea0b6753cf"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/shared-capture-preflight-jcl_7t_p/implementation-review-r2.json",
+      "sha256": "004919b6a50f376d829658d009b972c3ba1947185681c621fd2b2d9657a24be3"
+    }
+  ],
+  "r1_source_preservation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/shared-capture-preflight-jcl_7t_p/source-r1.json",
+    "sha256": "9102e575734e08c8f09f7eb71f1eedfb253565dcea299024671322863e1a5197"
+  },
+  "open_findings": [],
+  "implementation_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/shared-capture-preflight-jcl_7t_p/implementation-review-r2.json",
+    "sha256": "004919b6a50f376d829658d009b972c3ba1947185681c621fd2b2d9657a24be3"
+  },
+  "control_log": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/shared-capture-preflight-jcl_7t_p/controls-r3.log",
+    "sha256": "f7afbcf5a51666613885714c2a47b5290ae7298ef0ef415ed650549e578a6138"
+  },
+  "sources": {
+    "tools/multi-scene/acceptance/test_tool_worker_service.py": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/acceptance/test_tool_worker_service.py",
+      "sha256": "1b903c09c77a2122a22d0b60055dc7a94319d9f58ffb95c5379d6bf506c0c37d"
+    },
+    "tools/multi-scene/acceptance/tool_worker_service.py": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/acceptance/tool_worker_service.py",
+      "sha256": "457e2816fb1737e9f7e51e4a4bab1de820c84d350ebe38f598304308f69f7004"
+    },
+    "tools/multi-scene/automatic-coverage/human_ancestry_native.py": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/automatic-coverage/human_ancestry_native.py",
+      "sha256": "f3d854aeb65e38a1b9ba518a3992740c38cb203e8541954bdc792c81e64bbb38"
+    },
+    "tools/multi-scene/automatic-coverage/test_human_ancestry_native.py": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/automatic-coverage/test_human_ancestry_native.py",
+      "sha256": "5f3638dbc880e1b81d907fc1ad6ce6bdae39f23112e7bed566b038b6487e6e8f"
+    }
+  },
+  "runtime_qualified": false,
+  "limitations": [
+    "PASS applies only to this exact source/component preparation and its recorded synthetic controls. Real pump startup, live tool discovery, supported capture, current native/display topology, ancestry observation and native cleanup remain unqualified.",
+    "The original stopped automatic prefix attempt, its cleanup evidence and H10 r2 component receipt remain immutable. This review does not authorize a retry, new native admission, human invitation, S3/H10 native composition or gate closure.",
+    "The earlier unchanged-image rendering failure remains unexplained. Preflight and prospective budgets do not prove that rendering or ancestry failure is repaired.",
+    "A future live pump must preserve actual awaited returns despite delivery failures/expired requests, stay available through End/completion and cooperate with reaping its owned service so actual process absence can be recorded. Synthetic component coverage does not establish those runtime properties.",
+    "No service health, receipt, operational deadline or observed host duration grants native input-idle, task teardown, semantic event attribution or release acceptance."
+  ]
+}

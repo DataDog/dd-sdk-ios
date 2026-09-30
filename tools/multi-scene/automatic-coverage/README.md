@@ -132,6 +132,34 @@ result and keep that path stopped. Future worker preparation must complete the
 service setup and publication check before admission. Prospective budgets must
 include observed inspection and orchestration costs, not only native call latency.
 
+The [shared preflight repair](../../../DatadogRUM/MultiSceneSupport/Results/shared-capture-preflight-20260930.json)
+owns the prospective `tool_worker_service.py` integration and its review. It grants
+no further attempt on the stopped automatic path. For a separately reviewed future
+prefix, prepare an observed-cost `budget_ledger`, exact worker/pump source and fresh
+plan before starting its local delivery service. The plan freezes the service
+directory, complete helper closure, product/run/owner and empty response directory.
+
+Start the service from its bounded `--setup` file before admission. The exclusive
+pump must load the actual live tool contract, persist `pump-contract.json` and
+`pump-setup.json`, then answer one fresh non-native `probe` through the delivery
+route. Service health or a PREPARED declaration is insufficient. Retain actual
+probe, answer, setup and publication bytes. `qualify` checks the original cutoff;
+the prefix runner independently checks and consumes that proof once before
+admission or installation. The final publication rejoins issued receipt bytes,
+clocks, controller, plan/review, helper/product and observation-ledger identities
+before display/session/install. A mismatch retains invalidated diagnostic bytes
+and stops only the verified owned local service. `SYNTHETIC_CONTROL` cannot admit native work.
+
+The source-bound ledger accounts for both returned-image inspections, four passive
+snapshots per step, all thirteen steps, bootstrap/fold and cleanup. Its rounding
+and margin are resource reservations, never SDK timing assertions. An insufficient
+remaining service window rejects; no issued or expired deadline changes. The
+service guards the existing request protocol through actual End and completion.
+Before consumption, rejection may stop only the verified owned service. Afterward,
+shutdown requires the existing End/completion proof; retain actual PID absence
+separately from native task cleanup. Component controls and this procedure do not
+qualify real pump startup, missing-ancestry capture or human readiness.
+
 `human_split.py` is the scoped candidate-only split continuation. Its comparison
 keeps actual pane layout, per-input owners and View inventory separate from the
 inherited Home limitation. Compare in-memory and persisted inventories through
