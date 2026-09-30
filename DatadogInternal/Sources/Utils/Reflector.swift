@@ -75,12 +75,9 @@ public struct Reflector {
     }
 
     private func descendantValue(_ paths: [ReflectionMirror.Path], copyingIntermediates: Bool) throws -> Any? {
-        if copyingIntermediates {
-            return descendant(paths)
-        }
         do {
-            return try StoredPropertyReflection.descendant(of: mirror, at: paths)
-        } catch StoredPropertyReflection.Error.unsupportedLayout {
+            return try mirror.descendant(copyingIntermediates: copyingIntermediates, paths)
+        } catch ReflectionMirror.Error.unsupportedLayout {
             throw Error.unsupportedLayout(.init(subjectType: mirror.subjectType, paths: paths))
         }
     }

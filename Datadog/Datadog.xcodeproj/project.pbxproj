@@ -439,7 +439,6 @@
 		5B9CB9E52E41FD60005485E6 /* Drawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9CB9E42E41FD5C005485E6 /* Drawing.swift */; };
 		5B9CB9E72E420ACB005485E6 /* ImageRendererTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9CB9E62E420AC4005485E6 /* ImageRendererTests.swift */; };
 		5BA5ABF12FF7B058004EEE75 /* CALayerSnapshot+Mask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA5ABF02FF7B04E004EEE75 /* CALayerSnapshot+Mask.swift */; };
-		5BA88F3C306BF47900124461 /* StoredPropertyReflection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA88F3B306BF47900124461 /* StoredPropertyReflection.swift */; };
 		5BA88F3E306BF53600124461 /* ReflectorStoredPropertyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA88F3D306BF53600124461 /* ReflectorStoredPropertyTests.swift */; };
 		5BA8C3042E784C0200B1DA80 /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D23039A5298D513C001A1FA3 /* DatadogInternal.framework */; };
 		5BA8C3102E785A2000B1DA80 /* Flags.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA8C30F2E785A2000B1DA80 /* Flags.swift */; };
@@ -2341,7 +2340,6 @@
 		5B9CB9E42E41FD5C005485E6 /* Drawing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Drawing.swift; sourceTree = "<group>"; };
 		5B9CB9E62E420AC4005485E6 /* ImageRendererTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageRendererTests.swift; sourceTree = "<group>"; };
 		5BA5ABF02FF7B04E004EEE75 /* CALayerSnapshot+Mask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CALayerSnapshot+Mask.swift"; sourceTree = "<group>"; };
-		5BA88F3B306BF47900124461 /* StoredPropertyReflection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoredPropertyReflection.swift; sourceTree = "<group>"; };
 		5BA88F3D306BF53600124461 /* ReflectorStoredPropertyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectorStoredPropertyTests.swift; sourceTree = "<group>"; };
 		5BA8C2ED2E784B3C00B1DA80 /* DatadogFlags.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogFlags.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5BA8C30F2E785A2000B1DA80 /* Flags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Flags.swift; sourceTree = "<group>"; };
@@ -7142,7 +7140,6 @@
 				61133BBA2423979B00786299 /* SwiftExtensions.swift */,
 				D29A9F9429DDB1DB005C54A4 /* UIKitExtensions.swift */,
 				618032032D6F1214007027E3 /* Assert.swift */,
-				5BA88F3B306BF47900124461 /* StoredPropertyReflection.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -9322,7 +9319,6 @@
 				6167E6E82B8122E900C3CA2D /* BacktraceReport.swift in Sources */,
 				D297F6152FD9616700EC8619 /* Attributes+Equatable.swift in Sources */,
 				110B0ECB2DF0ABC6008ABA19 /* DeterministicSampler.swift in Sources */,
-				5BA88F3C306BF47900124461 /* StoredPropertyReflection.swift in Sources */,
 				960A0D3B2D6E2490004BB999 /* Reflector.swift in Sources */,
 				960A0D3C2D6E2490004BB999 /* CustomDump.swift in Sources */,
 				5BD25CEF3019E32E0064A649 /* UIView+SessionReplaySlotID.swift in Sources */,

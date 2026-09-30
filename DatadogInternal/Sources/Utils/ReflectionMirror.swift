@@ -280,6 +280,72 @@ extension ReflectionMirror {
     }
 }
 
+extension ReflectionMirror {
+    enum Error: Swift.Error {
+        case unsupportedLayout
+    }
+
+    /// Returns a descendant, optionally copying only the final value along the path.
+    ///
+    /// - Parameters:
+    ///   - copyingIntermediates: Whether to copy intermediate values along the path.
+    ///   - paths: The path to the descendant.
+    /// - Returns: The descendant, or `nil` if it does not exist.
+    /// - Throws: `Error.unsupportedLayout`.
+    func descendant(copyingIntermediates: Bool, _ paths: [Path]) throws -> Any? {
+        if copyingIntermediates {
+            return descendant(paths)
+        }
+        guard !paths.isEmpty else {
+            return nil
+        }
+        guard _MetadataKind(subjectType) == .class else {
+            throw Error.unsupportedLayout
+        }
+
+        let owner = subject as AnyObject
+        return try withExtendedLifetime(owner) {
+            var address = UnsafeRawPointer(Unmanaged.passUnretained(owner).toOpaque())
+            var parentType = subjectType
+
+            for (position, path) in paths.enumerated() {
+                guard case let .key(name) = path else {
+                    throw Error.unsupportedLayout
+                }
+                guard let field = try _getStoredField(named: name, in: parentType) else {
+                    return nil
+                }
+
+                if position == paths.count - 1 {
+                    let value: Any
+                    if position == 0 {
+                        // A direct class field has no intermediate struct to copy.
+                        guard let directValue = descendant(paths) else {
+                            return nil
+                        }
+                        value = directValue
+                    } else {
+                        value = _getChild(at: address, type: parentType, index: field.index)
+                    }
+                    // Swift reflection substitutes Void for fields it cannot copy.
+                    guard !(value is Void) || field.type == Void.self
+                        || _MetadataKind(field.type) == .existential else {
+                        throw Error.unsupportedLayout
+                    }
+                    return value
+                }
+
+                guard _MetadataKind(field.type) == .struct else {
+                    throw Error.unsupportedLayout
+                }
+                address = address.advanced(by: field.offset)
+                parentType = field.type
+            }
+            return nil
+        }
+    }
+}
+
 extension ReflectionMirror.Path: ExpressibleByIntegerLiteral {
     public init(integerLiteral value: Int) {
         self = .index(value)
@@ -292,7 +358,7 @@ extension ReflectionMirror.Path: ExpressibleByStringLiteral {
     }
 }
 
-private func _getChild<T>(of value: T, type: Any.Type, index: Int) -> ReflectionMirror.Child {
+private func _getChild<T: ~Copyable>(of value: borrowing T, type: Any.Type, index: Int) -> ReflectionMirror.Child {
     var nameC: UnsafePointer<CChar>? = nil
     var freeFunc: NameFreeFunc? = nil
     let value = _getChild(of: value, type: type, index: index, outName: &nameC, outFreeFunc: &freeFunc)
@@ -305,6 +371,48 @@ private func _getChildren<T>(of value: T, type: Any.Type, count: Int) -> any Col
     (0 ..< count).lazy.map {
         _getChild(of: value, type: type, index: $0)
     }
+}
+
+// Field lookup follows Swift's field enumeration implementation:
+// https://github.com/swiftlang/swift/blob/33ed3118bb034651a01d874eb6a61918b82c6df8/stdlib/public/core/ReflectionMirror.swift
+private func _getStoredField(named name: String, in type: Any.Type) throws -> (index: Int, offset: Int, type: Any.Type)? {
+    // Inherited fields precede the most derived class's fields.
+    for index in (0..<_getRecursiveChildCount(type)).reversed() {
+        var field = _FieldReflectionMetadata()
+        let fieldType = _getChildMetadata(type, index: index, fieldMetadata: &field)
+        defer { field.freeFunc?(field.name) }
+
+        guard field.name.map({ String(cString: $0) }) == name else {
+            continue
+        }
+        guard field.isStrong else {
+            throw ReflectionMirror.Error.unsupportedLayout
+        }
+        let offset = _getChildOffset(type, index: index)
+        guard offset >= 0 else {
+            throw ReflectionMirror.Error.unsupportedLayout
+        }
+        return (index: index, offset: offset, type: fieldType)
+    }
+    return nil
+}
+
+private func _getChild(at address: UnsafeRawPointer, type: Any.Type, index: Int) -> Any {
+    func open<Parent>(_ parent: Parent.Type) -> Any {
+        _getBorrowedChild(at: address, parent: parent, type: type, index: index)
+    }
+    return _openExistential(type, do: open)
+}
+
+private func _getBorrowedChild<Parent: ~Copyable>(
+    at address: UnsafeRawPointer,
+    parent: Parent.Type,
+    type: Any.Type,
+    index: Int
+) -> Any {
+    // Suppressing Copyable is essential: a Copyable generic parent can be
+    // copied into temporary storage even when the callee borrows it.
+    return _getChild(of: address.assumingMemoryBound(to: Parent.self).pointee, type: type, index: index).value
 }
 
 /// Gets indexes of non-recursive named fields of a reference type.
@@ -380,11 +488,14 @@ private func _getChildMetadata(
     fieldMetadata: UnsafeMutablePointer<_FieldReflectionMetadata>
 ) -> Any.Type
 
+@_silgen_name("swift_reflectionMirror_recursiveChildOffset")
+private func _getChildOffset(_: Any.Type, index: Int) -> Int
+
 private typealias NameFreeFunc = @convention(c) (UnsafePointer<CChar>?) -> Void
 
 @_silgen_name("swift_reflectionMirror_subscript")
-private func _getChild<T>(
-    of: T,
+private func _getChild<T: ~Copyable>(
+    of: borrowing T,
     type: Any.Type,
     index: Int,
     outName: UnsafeMutablePointer<UnsafePointer<CChar>?>,
