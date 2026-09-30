@@ -8,6 +8,32 @@ import Foundation
 
 extension URLSessionTask: DatadogExtended {}
 extension DatadogExtension where ExtendedType: URLSessionTask {
+    /// Prepares this task once per feature instance before forwarding `resume()`.
+    ///
+    /// Concurrent resumes wait for preparation; different tasks prepare independently.
+    /// The task monitor can also make native `cancel()` wait until preparation finishes.
+    /// Weak feature identities let the task outlive an SDK instance without retaining it.
+    func prepareOnce(for feature: NetworkInstrumentationFeature, _ prepare: () -> Void) {
+        objc_sync_enter(type)
+        defer { objc_sync_exit(type) }
+
+        guard type.state != .completed else {
+            return
+        }
+        let preparedFeatures: NSHashTable<NetworkInstrumentationFeature>
+        if let existing = objc_getAssociatedObject(type, &preparedFeaturesKey) as? NSHashTable<NetworkInstrumentationFeature> {
+            preparedFeatures = existing
+        } else {
+            preparedFeatures = NSHashTable(options: [.weakMemory, .objectPointerPersonality])
+            objc_setAssociatedObject(type, &preparedFeaturesKey, preparedFeatures, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        }
+        guard !preparedFeatures.contains(feature) else {
+            return
+        }
+        preparedFeatures.add(feature)
+        prepare()
+    }
+
     /// Overrides the current request of the ``URLSessionTask``.
     ///
     /// The current request must be overridden before the task resumes.
@@ -80,6 +106,7 @@ extension DatadogExtension where ExtendedType: URLSessionTask {
 }
 
 private var hasCompletionKey: Void?
+private var preparedFeaturesKey: Void?
 
 extension URLSessionTask {
     /// `URLSessionTask` subclasses that declare most of their inherited properties as `NS_UNAVAILABLE`

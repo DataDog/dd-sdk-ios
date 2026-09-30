@@ -2,6 +2,7 @@
 
 - [FIX] Keep automatic URLSession spans linked to the RUM view and session captured when each request starts. See [#3220][]
 - [FIX] Reduce the risk of SwiftUI crashes during Session Replay recording by avoiding copies of unrelated view cache data. See [#3245][]
+- [FIX] Ensure repeated or concurrent URLSession task resumes apply request customization and start tracking only once per SDK instance. See [#3215][]
 
 # 3.19.0 / 30-09-2026
 
@@ -1284,6 +1285,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3232]: https://github.com/DataDog/dd-sdk-ios/pull/3232
 [#3237]: https://github.com/DataDog/dd-sdk-ios/pull/3237
 [#3245]: https://github.com/DataDog/dd-sdk-ios/pull/3245
+[#3215]: https://github.com/DataDog/dd-sdk-ios/pull/3215
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

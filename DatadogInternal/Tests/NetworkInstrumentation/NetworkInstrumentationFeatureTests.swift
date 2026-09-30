@@ -689,6 +689,193 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
     }
 
+    func testAutomaticMode_whenTaskIsResumedTwice_itMutatesAndStartsItOnlyOnce() throws {
+        let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
+
+        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        let session = server.getInterceptedURLSession(delegate: nil)
+        let mutations = ReadWriteLock(wrappedValue: 0)
+        let url = try XCTUnwrap(URL(string: "https://example.com/repeated-resume-\(UUID().uuidString)"))
+        handler.onRequestMutation = { request, _, _ in
+            if request.url == url {
+                mutations.mutate { $0 += 1 }
+            }
+        }
+
+        let task = session.dataTask(with: url)
+        task.resume()
+        task.resume()
+
+        wait(
+            for: [notifyInterceptionDidStart, notifyInterceptionDidComplete],
+            timeout: 5,
+            enforceOrder: false
+        )
+        _ = server.waitAndReturnRequests(count: 1)
+
+        XCTAssertEqual(mutations.wrappedValue, 1)
+        XCTAssertEqual(handler.interceptions.count, 1)
+    }
+
+    func testAutomaticMode_whenCompletedTaskResumes_itDoesNotInstrumentAgain() throws {
+        let (server, started, completed) = setupInterceptionTest()
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        let url = try XCTUnwrap(URL(string: "https://example.com/completed-resume"))
+        let mutations = ReadWriteLock(wrappedValue: 0)
+        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])
+        handler.onRequestMutation = { request, _, _ in
+            if request.url == url { mutations.mutate { $0 += 1 } }
+        }
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        let session = server.getInterceptedURLSession()
+        defer { session.finishTasksAndInvalidate() }
+        let task = session.dataTask(with: url)
+        task.resume()
+        wait(for: [started, completed], timeout: 5, enforceOrder: true)
+        feature.flush()
+        _ = server.waitAndReturnRequests(count: 1)
+
+        task.resume()
+        feature.flush()
+        XCTAssertEqual(mutations.wrappedValue, 1)
+        XCTAssertEqual(handler.interceptions.count, 1)
+        XCTAssertNotNil(handler.interceptions.first?.value.completion)
+    }
+
+    func testRegisteredDelegate_whenResumedTwice_itMutatesOnceAndPreservesMetrics() throws {
+        let (server, started, completed) = setupInterceptionTest()
+        let url = try XCTUnwrap(URL(string: "https://example.com/registered-repeated-resume"))
+        let mutations = ReadWriteLock(wrappedValue: 0)
+        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])
+        handler.onRequestMutation = { request, _, _ in
+            if request.url == url { mutations.mutate { $0 += 1 } }
+        }
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        let session = server.getInterceptedURLSession(delegate: SessionDataDelegateMock())
+        defer { session.finishTasksAndInvalidate() }
+        let task = session.dataTask(with: url)
+
+        task.resume()
+        task.resume()
+        wait(for: [started, completed], timeout: 5, enforceOrder: true)
+        core.get(feature: NetworkInstrumentationFeature.self)?.flush()
+        _ = server.waitAndReturnRequests(count: 1)
+
+        let interception = try XCTUnwrap(handler.interceptions.first?.value)
+        XCTAssertEqual(mutations.wrappedValue, 1)
+        XCTAssertEqual(handler.interceptions.count, 1)
+        XCTAssertEqual(interception.trackingMode, .registeredDelegate)
+        XCTAssertNotNil(interception.metrics)
+        XCTAssertNotNil(interception.completion)
+    }
+
+    func testAutomaticMode_whenCancelledBeforeFirstResume_itDoesNotInstrument() throws {
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        let url = URL(string: "https://example.com/cancel-before-resume")!
+        let session = URLSession(configuration: .ephemeral)
+        defer { session.invalidateAndCancel() }
+        let nativeCompleted = expectation(description: "Unstarted task finishes cancellation")
+        let task = session.dataTask(with: url) { _, _, error in
+            XCTAssertEqual((error as NSError?)?.code, NSURLErrorCancelled)
+            nativeCompleted.fulfill()
+        }
+        let mutations = ReadWriteLock(wrappedValue: 0)
+        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])
+        handler.shouldInterceptRequest = { $0.url == url }
+        handler.onRequestMutation = { _, _, _ in mutations.mutate { $0 += 1 } }
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+
+        task.cancel()
+        wait(for: [nativeCompleted], timeout: 5)
+        XCTAssertEqual(task.state, .completed)
+        task.resume()
+        feature.flush()
+
+        XCTAssertEqual(mutations.wrappedValue, 0)
+        XCTAssertTrue(handler.interceptions.isEmpty)
+    }
+
+    func testAutomaticMode_whenTwoSDKInstancesObserveTask_eachPreparesOnceWithoutBeingRetained() throws {
+        try assertTwoSDKInstancesPrepareOnce(mode: .automatic)
+    }
+
+    func testRegisteredDelegate_whenTwoSDKInstancesObserveTask_eachPreparesOnceWithoutBeingRetained() throws {
+        try assertTwoSDKInstancesPrepareOnce(mode: .registeredDelegate)
+    }
+
+    private func assertTwoSDKInstancesPrepareOnce(mode: TrackingMode) throws {
+        let (server, firstStarted, firstCompleted) = setupInterceptionTest()
+        let url = URL(string: "https://example.com/multiple-sdk-instances")!
+        let session = server.getInterceptedURLSession(delegate: mode == .registeredDelegate ? SessionDataDelegateMock() : nil)
+        defer { session.invalidateAndCancel() }
+        var retainedTask: URLSessionTask?
+        weak var firstFeature: NetworkInstrumentationFeature?
+        weak var secondFeature: NetworkInstrumentationFeature?
+        let mutations = ReadWriteLock(wrappedValue: [Int: Int]())
+        let secondStarted = expectation(description: "Second SDK starts once")
+        let secondCompleted = expectation(description: "Second SDK completes once")
+
+        try autoreleasepool {
+            let secondCore = SingleFeatureCoreMock<NetworkInstrumentationFeature>()
+            let secondHandler = URLSessionHandlerMock()
+            secondHandler.shouldInterceptRequest = { $0.url == url }
+            secondHandler.onInterceptionDidStart = { _ in secondStarted.fulfill() }
+            secondHandler.onInterceptionDidComplete = { _ in secondCompleted.fulfill() }
+            try secondCore.register(urlSessionHandler: secondHandler)
+            for (index, instanceHandler) in [handler!, secondHandler].enumerated() {
+                instanceHandler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])
+                instanceHandler.onRequestMutation = { [weak instanceHandler] request, _, _ in
+                    guard request.url == url else {
+                        return
+                    }
+                    mutations.mutate { $0[index, default: 0] += 1 }
+                    var modified = request
+                    modified.setValue("prepared", forHTTPHeaderField: "X-Instance-\(index)")
+                    instanceHandler?.modifiedRequest = modified
+                }
+            }
+            try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+            try URLSessionInstrumentation.enableOrThrow(with: nil, in: secondCore)
+            if mode == .registeredDelegate {
+                try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+                try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: secondCore)
+            }
+            firstFeature = core.get(feature: NetworkInstrumentationFeature.self)
+            secondFeature = secondCore.get(feature: NetworkInstrumentationFeature.self)
+            let task = session.dataTask(with: url)
+            retainedTask = task
+            task.resume()
+            task.resume()
+            wait(for: [firstStarted, firstCompleted, secondStarted, secondCompleted], timeout: 5)
+            firstFeature?.flush()
+            secondFeature?.flush()
+            task.resume()
+            firstFeature?.flush()
+            secondFeature?.flush()
+
+            let request = try XCTUnwrap(server.waitAndReturnRequests(count: 1).first)
+            XCTAssertEqual(request.value(forHTTPHeaderField: "X-Instance-0"), "prepared")
+            XCTAssertEqual(request.value(forHTTPHeaderField: "X-Instance-1"), "prepared")
+            XCTAssertTrue(server.isMyRequest(try XCTUnwrap(task.currentRequest)), "Preparation preserves URLSession configuration headers")
+            XCTAssertEqual(mutations.wrappedValue, [0: 1, 1: 1])
+            XCTAssertEqual(handler.interceptions.count, 1)
+            XCTAssertEqual(secondHandler.interceptions.count, 1)
+            for instanceHandler in [handler!, secondHandler] {
+                let interception = try XCTUnwrap(instanceHandler.interceptions.first?.value)
+                XCTAssertEqual(interception.trackingMode, mode)
+                XCTAssertEqual(interception.metrics != nil, mode == .registeredDelegate)
+                XCTAssertNotNil(interception.completion)
+            }
+            core = nil
+        }
+
+        XCTAssertEqual(retainedTask?.state, .completed)
+        XCTAssertNil(firstFeature, "A live task must not retain the first SDK instance")
+        XCTAssertNil(secondFeature, "A live task must not retain the second SDK instance")
+    }
+
     func testAutomaticMode_tracksAsyncAwaitTasks() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
         guard #available(iOS 16, tvOS 16, *) else {
