@@ -802,7 +802,35 @@ startup transfer, actual source-bound START/RUN/FINAL markers, RUN pixels before
 SDK dispatch, FINAL after the collection seal and full task cleanup remain to be
 qualified. The earlier CoreDevice recording failure stays stopped.
 
+### Silent host recording preparation
+
+[Silent capture preparation](../../../DatadogRUM/MultiSceneSupport/Results/S3-H06-silent-capture.json)
+owns the separate `operation_silent_capture` primitives and
+`operation_silent_tracks.swift` inspector. The Apple command uses an explicit
+rectangle and fixed duration, with no audio, interactive selection or app-opening
+flags. One child group has immutable recording/finalization cutoffs; early exit,
+failed stop and forced cleanup preserve independent evidence. Its raw result seals
+the original command, cutoffs, child identity, completion and movie hashes.
+`checked_raw` verifies that chain; it still returns no native/source qualification.
+
+The source-bound AVFoundation inspector requires exactly one video and zero audio
+tracks. Keep its compiler/executable/input/process receipts and the complete
+pixel decoder separately. A zero-audio metadata result does not prove decoded
+frames, actual capture or ownership. Do not strip an existing audio track and
+relabel that recording silent.
+
+The supported-tool source producer and native session adapter are not implemented.
+Fresh observations must bind the actual device, mirror, host display, global
+rectangle and resulting pixel dimensions before and after capture. CUA's limited
+window identity must remain explicit; never invent a stable window ID. Qualify one
+actual silent recording/stop/full decode before use, retaining physical anchor
+PNGs and the existing START/RUN/FINAL ownership oracle. Offline controls cannot
+admit a human session or select an automatic recording fallback.
+
 ### QuickTime session connection
+
+This audio-bearing connection is retained as historical preparation. Do not use it
+for a new recording under the current silent-capture policy.
 
 The launcher requires an explicit `QUICKTIME_CUA` recorder selection and
 `H06_QUICKTIME_FIRST_CELL` admission. Its preparation record binds the scoped

@@ -4,7 +4,7 @@
   "state": "PASS_CAPTURE_CAPABILITY_ONLY",
   "owner": "Root",
   "reviewer": "/root/c06_runtime_plan",
-  "updated_at": "2026-09-29T21:15:14.886738+00:00",
+  "updated_at": "2026-09-30T01:44:10.522371+00:00",
   "gate_dependency": "S3:H06",
   "candidate_sdk": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
   "source_head": "8f57d2495e51f31ab07ce65aa28df3d20b78c4bb",
@@ -49,7 +49,7 @@
     "One earlier stale readiness assertion stopped before admission/recording; no active deadline was extended.",
     "Original CoreDevice1001/7000 failures remain immutable. No H06 startup, topology, SDK or backend qualification follows."
   ],
-  "next": "Prepare a silent display capture path before any fresh H06 admission. Delivery-before-cleanup is reviewed; actual startup/Documents exchanges, source-bound display, ownership/backend joins and cleanup remain unqualified. Advance isolated H04 independently. Do not repeat stopped CoreDevice or root-transfer qualifiers.",
+  "next": "Silent recording primitives and track inspection pass component review. Actual supported-tool source observation, one bounded native capability and H06 session integration remain unqualified; see the silent preparation owner. Preserve the existing product and original CoreDevice/root-transfer failures. Advance H10 offline while devices are locked.",
   "recorder_adapter": {
     "state": "REVIEWED_OFFLINE_RECORDER_PREPARED",
     "result": {
@@ -95,5 +95,6 @@
     "device_hub": "Live physical-iPad preview available; Record Screen was disabled in the inspected Controls menu. This is UI discovery, not a recorded capability result.",
     "quicktime": "Movie mode inspection exposed no audio-off selection. Preserve the previous capability and restoration, but do not admit another audio-bearing recording.",
     "display": "The current H06 contract still requires the decoded movie between source-bound START/RUN/FINAL frames; anchor screenshots alone do not establish interval co-visibility."
-  }
+  },
+  "silent_preparation_owner": "Results/S3-H06-silent-capture.json"
 }

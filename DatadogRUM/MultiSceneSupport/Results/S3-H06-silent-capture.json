@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "state": "REVIEWED_PRIMITIVES_NATIVE_SOURCE_AND_CAPTURE_UNQUALIFIED",
+  "gate": "S3:H06",
+  "owner": "Root",
+  "reviewer": "/root/c06_runtime_plan",
+  "updated_at": "2026-09-30T01:44:10.522371+00:00",
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h06-silent-capture-vzkosoiv/definition.json",
+    "sha256": "23a5fa7cd15ae6994d8d38c45d3ce6ce97dca98bab57c8df31e515431b94e021"
+  },
+  "preparation_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h06-silent-capture-vzkosoiv",
+  "native_admitted": false,
+  "native_runs": 0,
+  "gates_closed": [],
+  "prior_owner": "Results/S3-H06-quicktime-capture.json",
+  "next": "Qualify the actual supported-tool source observer and one bounded silent capture/stop/decode when Mac and iPad are available, then compose the H06 adapter under review. No native admission or human invitation before09:00 Paris; fresh readiness remains required.",
+  "clarified_definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h06-silent-capture-vzkosoiv/definition-r2.json",
+    "sha256": "c894f613173e38b783e2b5b14ef332c45ebb114643540489aaf42c15d7a1c639"
+  },
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h06-silent-capture-vzkosoiv/review-final.json",
+    "sha256": "741e6e7ec54c9a5899381457b5e16a13e1dfc1be4f481fb6013ae4d698515aa7"
+  },
+  "verdict": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h06-silent-capture-vzkosoiv/verdict.json",
+    "sha256": "3c8ca2534adb7ee7da8363a8d8d9388ddb490d7b2f607c59756431919e00ac25"
+  },
+  "mocked_controls": 13,
+  "actual_saved_or_generated_media_controls": 5,
+  "host_compile": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h06-silent-capture-vzkosoiv/compiler-r1/result.json",
+    "sha256": "a068b46b3a609fc2aec5220465103be2d72c62b5eb0b523bcb155178be489ba5"
+  },
+  "source": [
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/acceptance/operation_silent_capture.py",
+      "sha256": "6102ee02c492c3eee819df31705b17d3f007d9fc793fef86574dff2c92b06fdf"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/acceptance/operation_silent_tracks.swift",
+      "sha256": "e4c328f4c85840b10f980b7896d3239b12cd3303c20f59549da201e68954b4b2"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/acceptance/test_operation_silent_capture.py",
+      "sha256": "52a7721fa6557817e7f90bb5107260c3d8beef5df907db7a3892c177da03f32a"
+    }
+  ],
+  "evidence_limit": "CLI help and mocked processes are not recording capability. The inspector verifies all AVFoundation tracks, never plays media, and does not prove frames or source identity. CUA currently exposes focused titles/URLs without stable macOS window IDs; never invent one. The future source producer must join actual selected device/mirror/display/geometry and fresh source-bound pixels."
+}
