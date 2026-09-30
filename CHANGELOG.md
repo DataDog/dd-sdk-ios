@@ -10,6 +10,11 @@
 - [FIX] Pin KSCrash to exact version 2.5.1 via SPM to prevent silently resolving newer, unvetted releases. See [#3232][]
 - [FIX] Keep attributes isolated when returning to a previously tracked RUM view while its earlier resources are still pending. See [#3217][]
 - [IMPROVEMENT] Increase the maximum number of custom attributes per event from 256 to 1900 in RUM, Logs, and Traces. In RUM, the limit applies to `context`, `usr`, and `account` independently; in Logs and Traces, those attributes are encoded into a single JSON object, so they share one limit. Log `usr` and `account` extra attributes are now limited as well. See [#3198][]
+- [FEATURE] Add experimental client-side APM stats, enabled with `Trace.Configuration.featureFlags[.clientSideStats]`. The SDK aggregates request counts, error counts and latency distributions on-device over every finished span before the trace sampling decision, so APM RED metrics stay accurate at any `sampleRate`. Off by default. See [#3246][]
+- [FIX] Release the RUM display-link observer and its frame readers when their owner is released.
+- [FIX] Pin KSCrash to exact version 2.5.1 via SPM to prevent silently resolving newer, unvetted releases.
+- [FIX] Keep attributes isolated when returning to a previously tracked RUM view while its earlier resources are still pending.
+- [IMPROVEMENT] Increase the maximum number of custom attributes per event from 256 to 1900 in RUM, Logs and Traces. In RUM the limit applies to `context`, `usr` and `account` independently; in Logs and Traces those attributes are encoded into a single JSON object, so they share one limit. Log `usr` and `account` extra attributes are now limited as well. See [#3198][]
 - [IMPROVEMENT] Require Swift tools version 6.2 (Xcode 26) to resolve the package with Swift Package Manager. See [#3231][]
 - [FIX] Report slow frame and freeze rates for RUM views when navigation starts a new view without calling `stopView()` on the previous one. See [#3237][]
 - [FIX] Traced requests created immediately after SDK initialization now use the RUM session's sampling decision and inject that session's ID. Automatic URLSession spans no longer receive an independently sampled decision while waiting for RUM context. See [#3221][]
@@ -1284,6 +1289,8 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3232]: https://github.com/DataDog/dd-sdk-ios/pull/3232
 [#3237]: https://github.com/DataDog/dd-sdk-ios/pull/3237
 [#3245]: https://github.com/DataDog/dd-sdk-ios/pull/3245
+[#3271]: https://github.com/DataDog/dd-sdk-ios/pull/3271
+[#3246]: https://github.com/DataDog/dd-sdk-ios/pull/3246
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

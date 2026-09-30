@@ -320,7 +320,7 @@ public enum Trace
         public var eventMapper: EventMapper?
         public var customEndpoint: URL?
         public var customStatsEndpoint: URL?
-        public var statsComputationEnabled: Bool
+        public var featureFlags: FeatureFlags
         public struct URLSessionTracking: Sendable
             public var firstPartyHostsTracing: FirstPartyHostsTracing
             public enum FirstPartyHostsTracing: Sendable
@@ -329,7 +329,14 @@ public enum Trace
             public static let defaultRedactedStatusCodes: Set<Int> = [404]
             public var redactedStatusCodes: Set<Int>
             public init(firstPartyHostsTracing: FirstPartyHostsTracing,redactedStatusCodes: Set<Int> = defaultRedactedStatusCodes)
-        public init(sampleRate: SampleRate = .maxSampleRate,service: String? = nil,tags: [String: OTTagValue]? = nil,urlSessionTracking: URLSessionTracking? = nil,bundleWithRumEnabled: Bool = true,networkInfoEnabled: Bool = false,eventMapper: EventMapper? = nil,customEndpoint: URL? = nil,customStatsEndpoint: URL? = nil,statsComputationEnabled: Bool = false)
+        public init(sampleRate: SampleRate = .maxSampleRate,service: String? = nil,tags: [String: OTTagValue]? = nil,urlSessionTracking: URLSessionTracking? = nil,bundleWithRumEnabled: Bool = true,networkInfoEnabled: Bool = false,eventMapper: EventMapper? = nil,customEndpoint: URL? = nil,customStatsEndpoint: URL? = nil,featureFlags: FeatureFlags = .defaults)
+[?] extension Trace.Configuration
+    public typealias FeatureFlags = [FeatureFlag: Bool]
+    public enum FeatureFlag: String, Sendable
+        case clientSideStats = "client_side_stats"
+[?] extension Trace.Configuration.FeatureFlags
+    public static var defaults: Self
+    public subscript(flag: Key) -> Bool
 public enum SpanTags
     public static let resource = "resource.name"
     public static let operation = "operation.name"
