@@ -1,0 +1,259 @@
+{
+  "schema_version": 1,
+  "work_item": "Isolated scene background and foreground with an unchanged usable peer",
+  "gate": "S3:H10",
+  "state": "REVIEWED_OFFLINE_ORACLE_NATIVE_UNQUALIFIED",
+  "owner": "Root",
+  "reviewer": "/root/c06_runtime_plan",
+  "defined_at": "2026-09-30T00:54:04.093738+00:00",
+  "defined_before_implementation": true,
+  "new_experiment": false,
+  "candidate_sdk": "94842cc8ad7b104c1394c236b98b95b6c24a0956",
+  "preparation_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx",
+  "maximum_native_cells": 1,
+  "native_admitted": false,
+  "native_runs": 0,
+  "gates_closed": [],
+  "source": [
+    {
+      "path": "DatadogRUM/MULTI_SCENE_SUPPORT.md",
+      "sha256": "9b860195e990a40fd3610cbbdb91a4e832db3e46d409670672b874c839df01b7",
+      "lines": [
+        78,
+        95
+      ],
+      "reason": "Approved scene-local background/restart and focus semantics"
+    },
+    {
+      "path": "DatadogRUM/Sources/Instrumentation/Views/RUMViewsHandler.swift",
+      "sha256": "5fd86be03cc2e6d0626565d5c7cc0b47dd8fa877ba93070188e32cf5117a5b6e",
+      "lines": [
+        919,
+        938,
+        1022,
+        1065
+      ],
+      "reason": "Scene-keyed suspension/resume is idempotent and addresses only its stack",
+      "selected_sdk_match": true
+    },
+    {
+      "path": "DatadogRUM/Tests/Instrumentation/Views/RUMViewsHandlerTests.swift",
+      "sha256": "fae324352611a013b6afa5b02ad7c6e5f7acc973616e9546bfab45ba9c673da3",
+      "lines": [
+        845,
+        932
+      ],
+      "reason": "Existing deterministic scene-scoped lifecycle controls; not rerun or treated as physical proof"
+    },
+    {
+      "path": "Datadog/Example/MultiSceneProbe/Sources/Harness/ProbeScenarioCatalog.swift",
+      "sha256": "ed8f88eac90a01de6be54e3c92a3ea52f576fa40119e296fb303e66bae338696",
+      "lines": [
+        5655,
+        5778
+      ],
+      "reason": "Serial activation alternates peer backgrounding and has separate failed disconnect"
+    },
+    {
+      "path": "Datadog/Example/MultiSceneProbe/Sources/Harness/ProbeScenarioDriver.swift",
+      "sha256": "3a7dcaeb39a9cf5273e55529fd8047e328da26eed6bb243f96eb9376a8810f6b",
+      "lines": [
+        579,
+        607,
+        1439,
+        1450
+      ],
+      "reason": "Latest observed scene state has no H10 armed-cycle identity"
+    },
+    {
+      "path": "Datadog/Example/MultiSceneProbe/Sources/Harness/ProbePhysicalTopologyAdmission.swift",
+      "sha256": "7b4ff1c0a0619c7481ca60c2b67c1021e8aca90ab7dbccd3b87d4f3ca2ebcabd",
+      "lines": [
+        479,
+        548,
+        597,
+        733
+      ],
+      "reason": "Complete owner-bound lifecycle journal and fresh native scene/window/input inventory"
+    },
+    {
+      "path": "Datadog/Example/MultiSceneProbe/Sources/ProbeWindowView.swift",
+      "sha256": "02df330e40dbb2b5bf81f996b8cfbeb1894da654955eb1ade3c953b45731332f",
+      "lines": [
+        849,
+        882,
+        2916,
+        2950,
+        3274,
+        3293
+      ],
+      "reason": "Native scene presentation witness and generic versus scene-context marker paths"
+    },
+    {
+      "path": "Datadog/Example/MultiSceneProbe/Sources/RUMNativeMultiSceneProbeApp.swift",
+      "sha256": "74a948580533bdd15a1e4d20c16c5d6c680101a5d4d8f32887a83777b2a4c412",
+      "lines": [
+        642,
+        690,
+        882,
+        929
+      ],
+      "reason": "Unscoped marker attributes do not select an owner; raw independent mapper and lifecycle capture"
+    },
+    {
+      "path": "Datadog/Example/MultiSceneProbe/project.yml",
+      "sha256": "80ec673c805047ebbc6252c212e24b42233c314804ece20cd788350429464c2d",
+      "lines": [
+        18,
+        29
+      ],
+      "reason": "Probe deployment target27.0; existing SDK deployment15 compatibility unchanged"
+    }
+  ],
+  "contract": "Background only A, then restore A, while B remains in the foreground and its current RUM view occurrence stays unchanged. Losing focus while visible is permitted. A ends its original view and returns with a fresh occurrence.",
+  "preserve": [
+    "H04 final reviewed plan/product and original EXP196 invalid disconnect remain unchanged.",
+    "H06 original719 source inputs and signed product remain unchanged.",
+    "Existing source, lifetime and compatibility evidence remains accepted; no rerun or simulator substitution.",
+    "S2 prepared SwiftUI sessions await fresh human readiness after September30 09:00 Paris."
+  ],
+  "findings": [
+    {
+      "id": "H10-PREP-01",
+      "kind": "harness-scope",
+      "fact": "H04 deliberately backgrounds the peer at every activation; it cannot prove uninterrupted B ownership across A background/foreground.",
+      "action": "Use a separately named one-cycle fixture with both scenes foreground before the critical interval."
+    },
+    {
+      "id": "H10-PREP-02",
+      "kind": "attribution-oracle",
+      "fact": "emitLifecycleMarker adds source attributes but sends unscoped work. After A returns, generic work intended for B could follow the process representative.",
+      "action": "Use fresh scene resolution for each marker, with existing DEBUG scene-context dispatch or reviewed explicit scene target; source tags never count as owner proof. Do not reuse a captured view target that could hide a replaced current view."
+    },
+    {
+      "id": "H10-PREP-03",
+      "kind": "native-boundary",
+      "fact": "A latest recorded scene-state value does not identify a background/foreground cycle after this admission.",
+      "action": "Freeze original owners and lifecycle-journal revision at the armed barrier; require fresh actual A notifications and owner-bound state after that revision. No synthetic notifications or consumed old readiness."
+    }
+  ],
+  "scenario": {
+    "identifier": "windows.isolated-background-foreground",
+    "profile": "physical-isolated-background-foreground",
+    "tracking": "Existing manual trackRUMView on identical Home content in two scenes; no navigation or public API expansion.",
+    "environment": "Physical iPad on iOS27 in an already authorized windowing mode that preserves usable B while A is minimized/restored. Physical Duo remains separate.",
+    "phases": [
+      {
+        "id": "before",
+        "state": "A and B foreground-active or foreground-inactive, connected with exact original native owners. Actual display shows both fixture windows.",
+        "markers": [
+          "A.before-background",
+          "B.before-background"
+        ],
+        "owners": "Capture the independently mapped current A and B occurrences after setup; do not require absolute occurrence1 or count setup reactivations as failures."
+      },
+      {
+        "id": "background",
+        "input": "Minimize only A using the actual OS window control.",
+        "state": "Fresh actual A didEnterBackground after the armed journal revision; A background is required. B stays foreground-active or foreground-inactive. At every marker B must retain the same connected scene/window/controller/generation, visible mounted content, enabled window/root interaction, attached enabled reliable input observer with zero active touches, and no active transition/resize. If B is foreground-active its fixture window must own its scene key window. Actual display identifies B as visible and unobstructed.",
+        "markers": [
+          "B.while-A-background"
+        ],
+        "owners": "A original view ends; B marker retains its captured current view ID."
+      },
+      {
+        "id": "foreground",
+        "input": "Restore A beside B using the actual OS window control.",
+        "state": "Fresh actual A willEnterForeground and settled foreground state after its background, same native owner identities; B remains foreground. Actual display shows both windows.",
+        "markers": [
+          "A.after-foreground",
+          "B.after-A-foreground"
+        ],
+        "owners": "A marker uses one fresh occurrence distinct from its original; B marker keeps its original occurrence."
+      }
+    ],
+    "scope_limits": [
+      "One A cycle, five Action/Resource pairs, three critical view occurrences. Complete setup and tail inventories are retained separately.",
+      "No disconnect/remount, close-window, restoration, H06 Operation, interactive navigation, performance or physical-Duo credit.",
+      "No repeated SDK-on/off diagnosis; if the chosen OS action fails its expected effect, preserve evidence and stop that path."
+    ]
+  },
+  "oracle": {
+    "native": [
+      "Freeze distinct logical/native scene, scene object, window, controller, generation and input-observer identities before the critical interval.",
+      "Keep an append-only complete lifecycle journal and inventory of all actual windows, including auxiliary windows; no window-count or private-class-name rule.",
+      "Accept expected focus/key and geometry changes, including B foreground-inactive at a marker under the explicit usable-owner predicate. Reject B background/disconnect/owner replacement, whole-application background, journal gaps, or unsupported input. A background is the intended middle phase, not an invalidation.",
+      "Observe each transition before its work. Returned native observations are retained verbatim; no substitution from a prior capture. Actual display anchors qualify topology, not sidebar icons or local frame coordinates alone.",
+      "Freeze armRevision in the copied fixture after both original foreground owners qualify. Require an owner-bound A didEnterBackground with revision greater than armRevision, followed by an owner-bound A willEnterForeground with a greater revision. Each settled-state witness must include the corresponding journal prefix before work. Never satisfy these boundaries with the generic latest-state signal alone.",
+      "B focus activation/deactivation, key-window changes, layout changes and ordinary RUM document-version updates are allowed. The forbidden changes are B becoming background/disconnected, replacement of a native owner, or ending/replacing its current RUM occurrence. No blanket ban on B lifecycle or view-document revisions."
+    ],
+    "rum": [
+      "Join independent mapper View, Action and Resource identities to each exact marker and native scene. Source attributes alone never establish ownership.",
+      "Capture current A/B occurrences after setup and before the requested cycle. Allow earlier legitimate setup occurrences but inventory every one.",
+      "Require original A stop plus one new A view after return; B keeps its current ID and never ends/restarts during the critical interval. All critical work uses one RUM session.",
+      "Require exactly five uniquely identified Action/Resource pairs at the selected current owners; reject missing, duplicate, aliased, unexpected or cross-scene work and errors/crashes.",
+      "Use event attribution and document revisions, not mapper serialization order against synchronous UI callbacks or strict timing/float equality."
+    ],
+    "evidence": [
+      "Keep scenario, local/backend evidence and cleanup verdicts separate. Build/oracle PASS is preparation only.",
+      "Use complete paginated session inventory with exact event/owner joins; delayed upload is pending evidence and never a reason to repeat gestures.",
+      "Bind helper/source/compiler/all-MachO/run/process identity and a fresh one-cell admission before any launch.",
+      "Require safe release/native-idle and worker quiescence before task-only cleanup; preserve original failures and separate restorations."
+    ]
+  },
+  "offline_negative_controls": [
+    "Stale pre-arm A background/foreground accepted as the cycle",
+    "Transient B background followed by foreground",
+    "Foreground-inactive B incorrectly rejected",
+    "Replaced or aliased scene/window/controller/generation",
+    "A reuses its old RUM occurrence or produces extra new occurrences",
+    "B stops/restarts even with the same view name",
+    "B marker follows A process representative",
+    "Missing/duplicate work or incomplete backend inventory",
+    "Setup occurrences or asynchronously serialized mapper rows incorrectly classified as extra critical views",
+    "Auxiliary windows and harmless floating-point geometry changes incorrectly rejected",
+    "Late native/display evidence or dropped lifecycle journal rows"
+  ],
+  "next": [
+    "Implement the isolated native producer with actual UIKit notification names, fresh arm/invocation witnesses and window/root interaction state, preserving all H04/H06 inputs.",
+    "Compose source/compiler/process/manifest identity, complete sealed capture and display with the physical mechanism and safe cleanup; obtain scoped review before native use.",
+    "Native use waits for qualified physical input/display, fresh device/backend prerequisites and user availability. No automatic start at09:00."
+  ],
+  "updated_at": "2026-09-30T01:21:20.020327+00:00",
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/review-r2.json",
+    "sha256": "d7435346784f04ada43626bbd95247abf2f47cee3a568d8e652bbe6c32eddb9a"
+  },
+  "native_input_capture_gap": "The existing H04/H06 snapshot enabled flag describes the observer. H10 must add actual window/root interaction-enabled values in the isolated copied fixture; never edit the frozen H04/H06 source inputs.",
+  "oracle_component": {
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/oracle-definition.json",
+      "sha256": "93a1128e0200a9e285ed94c5a917cdb860b599e7cb7520b1e4a783265107fa22"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/oracle-review-final.json",
+      "sha256": "8567708d5d65e3d2de02c7090cc463ed223b8b49e6977567b49a0069f231fe81"
+    },
+    "verdict": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/verdict.json",
+      "sha256": "e979c44c988be7d336a11bf04b0248803b62b694c96dce4f1d416232eeaeec52"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/controls-r4/result.json",
+      "sha256": "2666c59c3bd4bd6aab19d5e1412ba28e687a1b585b68442a734147cd2eb62084"
+    },
+    "tests": 15,
+    "source": [
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/acceptance/scene_background_cycle.py",
+        "sha256": "7b12f4b35ac4cd5103fd30c10386b80e31ac5b700c50f0a695d80af6533a0fc5"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/acceptance/test_scene_background_cycle.py",
+        "sha256": "dfe1c975777a3fe0b73f1d812b93916d2648ba6c6f3665ee62e520e0c49ed5e6"
+      }
+    ],
+    "native_producer_implemented": false,
+    "scope": "Offline component only; complete sealed source-bound transfer, typed native producer, display, composed runner and cleanup remain separate."
+  }
+}

@@ -440,6 +440,34 @@ and cleanup verdicts stay separate; all three must pass for component qualificat
 The runner never changes release gates. Its final plan, original backend-access
 observations and one-cell admission require review before native use.
 
+### H10 isolated background preparation
+
+[H10 preparation](../../../DatadogRUM/MultiSceneSupport/Results/S3-H10-background-preparation.json)
+owns one A background/foreground cycle while B stays usable with the same RUM
+view occurrence. H04 serial activation is a separate cell because it backgrounds
+its peer. `scene_background_cycle.py` checks a complete sealed pre-teardown signal
+prefix for `windows.isolated-background-foreground` and the
+`physical-isolated-background-foreground` profile.
+
+The arm and before/invocation/after witnesses bind actual native owners, input
+state and an append-only lifecycle journal. UIKit notification names must come
+from the future typed native producer. Benign focus/layout events are allowed;
+B background/disconnect, owner replacement and unknown events reject. Ownerless
+window events must match observed scene-bound non-fixture auxiliary identities;
+there is no window-count or private-class-name rule.
+
+Five Action/Resource pairs use freshly resolved scene ownership. Setup views are
+inventoried separately; delayed mapper serialization and ordinary document
+updates are allowed. A stops its old occurrence and returns with a new one; B
+keeps its current occurrence. Complete backend joins remain independent of source
+tags and reject missing, duplicated or foreign work.
+
+The focused synthetic controls and component review qualify only this checker.
+A native producer, complete sealed source/process-bound transfer, actual display,
+composed runner and safe cleanup are still required. Neither local nor backend
+component PASS grants native or release acceptance. Preserve post-terminal
+updates and cleanup as a separate tail; never discard them to satisfy the checker.
+
 ### H06 Operation preparation
 
 The [owning record](../../../DatadogRUM/MultiSceneSupport/Results/S3-human-residual-preparation.json)
