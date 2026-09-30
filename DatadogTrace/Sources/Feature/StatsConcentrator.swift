@@ -95,6 +95,47 @@ internal struct ExportedBucket: Codable, Sendable {
     let start: UInt64
     let duration: UInt64
     let stats: [ExportedGroupedStats]
+
+    /// Deployment identity captured when the bucket was flushed to storage.
+    ///
+    /// A bucket can sit on disk across an app upgrade, or across an `env`/`service` change, so the
+    /// uploaded payload must report the identity its spans were aggregated under rather than
+    /// whatever is current at upload time. Reporting the latter silently reattributes older
+    /// traffic to the new version, and `_dd.compute_stats=0` stops the backend from correcting it.
+    ///
+    /// Optional so that buckets written by an earlier build still decode: `StatsRequestBuilder`
+    /// falls back to the upload-time context for those rather than dropping the batch.
+    let env: String?
+    let version: String?
+    let service: String?
+
+    init(
+        start: UInt64,
+        duration: UInt64,
+        stats: [ExportedGroupedStats],
+        env: String? = nil,
+        version: String? = nil,
+        service: String? = nil
+    ) {
+        self.start = start
+        self.duration = duration
+        self.stats = stats
+        self.env = env
+        self.version = version
+        self.service = service
+    }
+
+    /// Returns a copy carrying the deployment identity active when the bucket reached storage.
+    func stamped(env: String, version: String, service: String) -> ExportedBucket {
+        ExportedBucket(
+            start: start,
+            duration: duration,
+            stats: stats,
+            env: env,
+            version: version,
+            service: service
+        )
+    }
 }
 
 /// A single grouped stats entry ready for serialization.
