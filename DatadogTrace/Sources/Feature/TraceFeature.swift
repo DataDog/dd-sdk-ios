@@ -49,7 +49,7 @@ internal final class TraceFeature: DatadogRemoteFeature {
                 networkInfoEnabled: configuration.networkInfoEnabled,
                 eventsMapper: configuration.eventMapper,
                 bundleWithRUM: configuration.bundleWithRumEnabled,
-                statsComputationEnabled: configuration.statsComputationEnabled,
+                statsComputationEnabled: configuration.featureFlags[.clientSideStats],
                 telemetry: core.telemetry
             )
         )

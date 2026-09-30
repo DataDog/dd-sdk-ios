@@ -130,7 +130,7 @@ Trace.enable(
         customEndpoint: nil,
 
         // Custom intake endpoint for client-side stats.
-        // Has no effect unless `statsComputationEnabled` is also `true`.
+        // Has no effect unless the `clientSideStats` feature flag is enabled.
         // Default: nil (uses Datadog intake)
         customStatsEndpoint: nil,
 
@@ -140,7 +140,7 @@ Trace.enable(
         // enabled, the SDK stamps `_dd.compute_stats=0` on spans so the backend does
         // not also compute stats for the same traffic (avoiding double-counting).
         // Default: false
-        statsComputationEnabled: false
+        featureFlags: [.clientSideStats: true]
     )
 )
 
@@ -205,7 +205,7 @@ requestSpan.finish()
   - Automatic `URLSession` instrumentation and distributed tracing (`urlSessionTracking`)
   - RUM and network-info enrichment
   - Span event mapper, custom endpoint
-  - Client-side APM stats (`statsComputationEnabled`, `customStatsEndpoint`)
+  - Client-side APM stats (`featureFlags[.clientSideStats]`, `customStatsEndpoint`)
 - **`DatadogTrace/Sources/TraceConfiguration+RemoteConfiguration.swift`** — Applies Datadog Remote Configuration on top of the in-code `Trace.Configuration`, once, at `Trace.enable(with:)` time (see [Remote Configuration](#remote-configuration))
 
 ### Public API — Manual Instrumentation
@@ -285,8 +285,8 @@ Automatically instrumented `URLSession` spans have no call site to tag. Do **not
 - **`eventMapper`** — `@Sendable (SpanEvent) -> SpanEvent`. Modify spans before upload (e.g. scrub sensitive data, override tags). Cannot drop spans — must return an event. Runs on a background thread; keep it fast and `Sendable`-safe.
 
 ### Client-Side Stats (APM)
-- **`statsComputationEnabled`** (default: `false`) — when enabled, the SDK aggregates APM stats (request hits, errors, and latency distributions) on-device across every finished span *before* the sampling decision, and uploads them to the Datadog stats intake. This yields accurate RED metrics regardless of the trace `sampleRate`. To avoid double-counting, the SDK stamps `_dd.compute_stats=0` on uploaded spans so the backend does not recompute stats for the same traffic. Aggregation and upload respect tracking consent.
-- **`customStatsEndpoint`** (default: `nil`) — overrides the client-side stats intake URL. Independent of `customEndpoint` (spans) and has no effect unless `statsComputationEnabled` is `true`.
+- **`featureFlags[.clientSideStats]`** (default: `false`, experimental) — when enabled, the SDK aggregates APM stats (request hits, errors, and latency distributions) on-device across every finished span *before* the sampling decision, and uploads them to the Datadog stats intake. This yields accurate RED metrics regardless of the trace `sampleRate`. To avoid double-counting, the SDK stamps `_dd.compute_stats=0` on uploaded spans so the backend does not recompute stats for the same traffic. Aggregation and upload respect tracking consent.
+- **`customStatsEndpoint`** (default: `nil`) — overrides the client-side stats intake URL. Independent of `customEndpoint` (spans) and has no effect unless the `clientSideStats` feature flag is enabled.
 
 ### Manual Header Propagation
 For non-`URLSession` HTTP clients, build headers yourself:
