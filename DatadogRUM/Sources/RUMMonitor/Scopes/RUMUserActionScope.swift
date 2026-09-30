@@ -195,6 +195,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             session: .init(
                 hasReplay: context.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
+                isMainProcess: context.applicationBundleType != .iOSAppExtension,
                 type: dependencies.sessionType
             ),
             source: .init(rawValue: context.source) ?? .ios,
