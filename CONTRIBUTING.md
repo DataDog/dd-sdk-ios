@@ -70,4 +70,4 @@ $ ./tools/lint/run-linter.sh --fix
 
 #### Dependency manager tests
 
-Isolated example apps using `cocoapods`, `carthage` and `spm` to ensure SDK is well integrated with all supported dependency managers.
+Isolated example apps using `cocoapods` and `spm` to ensure SDK is well integrated with all supported dependency managers.

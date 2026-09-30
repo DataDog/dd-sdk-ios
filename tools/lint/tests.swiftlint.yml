@@ -106,8 +106,6 @@ included:
   - ../../tools/api-surface/Tests
   - ../../tools/rum-models-generator/Tests
   - ../../tools/sr-snapshots/Tests
-  - ../../SmokeTests/carthage/CTProjectTests
-  - ../../SmokeTests/carthage/CTProjectUITests
   - ../../SmokeTests/cocoapods/CTProjectTests
   - ../../SmokeTests/cocoapods/CTProjectUITests
   - ../../SmokeTests/spm/SPMProjectTests

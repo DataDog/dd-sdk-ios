@@ -175,6 +175,5 @@ included:
   - ../../tools/rum-models-generator/Sources
   - ../../tools/rum-models-generator/Tests/rum-models-generator-coreTests/Fixtures/Output # lint generation fixture
   - ../../tools/sr-snapshots/Sources
-  - ../../SmokeTests/carthage/CTProject
   - ../../SmokeTests/cocoapods/CPProject
   - ../../SmokeTests/spm/SPMProject
