@@ -17,23 +17,25 @@
     {
       "id": "E01-watchOS",
       "owner": "SDK implementer",
-      "dependency": "Maintainer review and separately authorized H00 merge/verified-source retarget",
-      "status": "REBASED_HEAD_CI_PENDING",
+      "dependency": "Current-head CI and maintainer acceptance; H00 merge/E01 retarget already complete.",
+      "status": "CURRENT_HEAD_CI_FAILURE_UNATTRIBUTED",
       "finding": "Signed test-only 0eaba3e3 replaces mock request counts with exact task-forwarding identities. Both macOS cases pass 10 iterations in one process; watchOS arm64/x86_64 full-target compilation passes.",
       "decisive_test": "Exact target/foreign forwarding witness;2focused cases repeated10times on macOS with no expected failures/skips;watchOS test-target compilation and current-head CI runtime. No ServerMock/SDK edit.",
       "environment": "CI Xcode26.0/watchOS26.0 with test visibility enabled; no local watchOS runtime is installed.",
       "review": "Independent source/result review accepts the bounded repair. Preserve both harness stops, their static reconciliations and 59 inherited test-dependency diagnostics; no warning-free claim.",
       "sdk_cause": "NO_SDK_REPAIR_REQUIRED_FOR_IDENTIFIED_ASSERTION",
       "repair": "Results/S1-resume-witness-review.json",
-      "current_head": "0ec10c36dd02d51dde68ada89f104fcd34548022",
+      "current_head": "69c0b401724edfed4d7957f76133dc1dd9783363",
       "prior_status": "TEST_REPAIR_PUBLISHED_CI_PENDING",
-      "current_ci": "Four reported checks pending at 2026-09-22T15:08:55.812169+00:00; required-check completeness not inferred.",
-      "before_rebase_status": "CURRENT_CHECKS_PASS_REVIEW_PENDING"
+      "current_ci": "Five of11 reported statuses pass; five platform unit statuses and aggregate DDCI fail. No current log attribution or retry; earlier assertion repair does not diagnose these failures.",
+      "before_rebase_status": "CURRENT_CHECKS_PASS_REVIEW_PENDING",
+      "current_observation_owner": "Results/S1-delivery-queue.json",
+      "current_observation_at": "2026-09-30T09:55:09Z"
     },
     {
       "id": "E02-timeseries",
       "owner": "SDK implementer / upstream test maintainer",
-      "status": "UPSTREAM_FIX_MERGED_PR3196",
+      "status": "MERGED_UPSTREAM",
       "dependency": "Upstream PR3196; no duplicate local publication",
       "finding": "Existing open PR3196 at5d5058e9 fixes the pause/flush race in the same test. Local investigation independently reached that direction; source is not byte-identical.",
       "decisive_test": "Upstream maintainer acceptance and subsequent exact-source CI when available. Local20/20 and deliberate negative control are retained as local evidence only; not qualification of PR3196.",
@@ -69,12 +71,15 @@
       },
       "publication": "None: no commit or push of the local test candidate.",
       "before_rebase_status": "UPSTREAM_FIX_OWNED_BY_PR3196",
-      "current_ci": "PR3196 is included in frozen develop. E02 current head CI is pending; no duplicate pause fix."
+      "current_ci": "PR merged upstream ate0d6323bed9ebf5961cf3144ee1ff19541014cfc; original qualification and failure history retained.",
+      "current_head": "568be6cb87a7f64bc96cd1ff49cd5ed4c6f504e3",
+      "current_observation_owner": "Results/S1-delivery-queue.json",
+      "current_observation_at": "2026-09-30T09:55:09Z"
     },
     {
       "id": "E03-current-macOS",
       "owner": "SDK implementer",
-      "status": "REBASED_HEAD_CI_PENDING",
+      "status": "CURRENT_REPORTED_STATUSES_PASS_CONFLICT",
       "dependency": "Clear evidence linking failure to changed Resource surface or associated tests before further investigation",
       "finding": "The detailed Core log identifies DataUploadWorkerTests.testItFlushesAllData over-fulfilling Make 3 uploads at line 7752, then uncaught NSInternalInconsistencyException and signal 6. Xcode restarts at line 8155; the later 503-case passing summary does not erase the crash.",
       "decisive_test": "Retain original crash and exact source comparison. No repair or extra test is admitted without changed-surface evidence.",
@@ -82,8 +87,10 @@
       "prior_failure": "Earlier job2063993559 timeseries failure is retained in the first analysis and E02 item.",
       "scope_disposition": "Worker/test match inspected develop; no Resource cause is established. Proposed fixture repair is not implemented.",
       "before_rebase_status": "UNATTRIBUTED_FLAKE_REPAIR_OUT_OF_SCOPE",
-      "current_head": "4b9e842babd188282a0521ac6c357897304ee3a0",
-      "current_ci": "Four reported checks pending at 2026-09-22T15:08:55.812169+00:00; required-check completeness not inferred."
+      "current_head": "e3c3bde1c58cc8031c5496fafabb4c2df9763e87",
+      "current_ci": "All22 reported statuses pass; a maintainer approval is observed, but GitHub reports a merge conflict. Preserve earlier unrelated failures; no repair campaign.",
+      "current_observation_owner": "Results/S1-delivery-queue.json",
+      "current_observation_at": "2026-09-30T09:55:09Z"
     },
     {
       "id": "E04-watchOS",
@@ -93,21 +100,26 @@
       "decisive_test": "All current CI checks pass at the 18:58 observation. Retain the older failed integrity job; no agent retry or merge.",
       "environment": "Authenticated CI artifact; no agent retry",
       "prior_status": "CURRENT_CHECKS_PASS_REVIEW_PENDING",
-      "current_ci": "PR merged externally; original failure history retained.",
-      "before_rebase_status": "CURRENT_CHECKS_PASS_REVIEW_PENDING"
+      "current_ci": "PR merged upstream atb8b201639e8c0eb487462fa7997b02143d4ef32b; original qualification and failure history retained.",
+      "before_rebase_status": "CURRENT_CHECKS_PASS_REVIEW_PENDING",
+      "current_head": "171a24092dd5a953e428fd5e038f70a3021a9dc2",
+      "current_observation_owner": "Results/S1-delivery-queue.json",
+      "current_observation_at": "2026-09-30T09:55:09Z"
     },
     {
       "id": "E05-current-CI",
       "owner": "Repository CI / SDK implementer",
-      "status": "REBASED_HEAD_CI_PENDING",
+      "status": "CURRENT_REPORTED_STATUSES_PASS_REVIEW_AND_CONFLICT_PENDING",
       "dependency": "Current external CI jobs",
       "finding": "All seven PRs are now ready for review by external action. E05 macOS passes; only iOS/tvOS smoke jobs remain pending at 18:58. Its aggregate DDCI status still reports failure.",
       "decisive_test": "Resolve current required smoke-job and aggregate outcomes. Session Replay captured-content correctness remains outside repair scope.",
       "environment": "Repository CI / PR3220; preserve externally changed ready state.",
       "prior_status": "SMOKE_JOBS_PENDING",
-      "current_ci": "Four reported checks pending at 2026-09-22T15:08:55.812169+00:00; required-check completeness not inferred.",
+      "current_ci": "All22 reported statuses pass; GitHub reports a merge conflict and no maintainer approval is observed.",
       "before_rebase_status": "CURRENT_CHECKS_PASS_REVIEW_PENDING",
-      "current_head": "ba03a1ba4d40941adb1b932c6830f8ca1722ce93"
+      "current_head": "ba03a1ba4d40941adb1b932c6830f8ca1722ce93",
+      "current_observation_owner": "Results/S1-delivery-queue.json",
+      "current_observation_at": "2026-09-30T09:55:09Z"
     },
     {
       "id": "H00-current-CI",
@@ -119,20 +131,25 @@
       "finding": "The detailed watchOS log identifies a live DatadogCoreProxy after RUMMonitorTests.testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash. The test, monitor, proxy and core match inspected develop 9a8a66c3.",
       "scope_disposition": "Test/monitor/core/proxy match inspected develop; no hitch cause is established. Source audit remains diagnostic history only.",
       "prior_status": "UNATTRIBUTED_FLAKE_REPAIR_OUT_OF_SCOPE",
-      "current_ci": "PR merged externally; original failure history retained.",
-      "before_rebase_status": "CURRENT_CHECKS_PASS_REVIEW_PENDING"
+      "current_ci": "PR merged upstream ateb0fdb8ae1c6084a18b8b914c578e484b53edcea; original qualification and failure history retained.",
+      "before_rebase_status": "CURRENT_CHECKS_PASS_REVIEW_PENDING",
+      "current_head": "0deff4750a172309c79bcc916e99f575ccc37f8d",
+      "current_observation_owner": "Results/S1-delivery-queue.json",
+      "current_observation_at": "2026-09-30T09:55:09Z"
     },
     {
       "id": "DL01-current-CI",
       "owner": "Repository CI / SDK implementer",
       "dependency": "Maintainer review and separately authorized merge",
-      "status": "REBASED_HEAD_CI_PENDING",
+      "status": "MERGED_UPSTREAM",
       "decisive_test": "Current CI checks pass at29c28a01; mergegate and review remain. No merge authorized.",
       "environment": "Repository CI / PR3216",
       "prior_status": "CURRENT_CHECKS_PASS_REVIEW_PENDING",
-      "current_ci": "Four reported checks pending at 2026-09-22T15:08:55.812169+00:00; required-check completeness not inferred.",
+      "current_ci": "PR merged upstream atdf0a160639d1fc1d881c344a42629b4ff724e9e4; original qualification and failure history retained.",
       "before_rebase_status": "CURRENT_CHECKS_PASS_REVIEW_PENDING",
-      "current_head": "0ca7cafbc745c6f29d0f7a34af3e84732a012061"
+      "current_head": "0ca7cafbc745c6f29d0f7a34af3e84732a012061",
+      "current_observation_owner": "Results/S1-delivery-queue.json",
+      "current_observation_at": "2026-09-30T09:55:09Z"
     }
   ],
   "local_environment": {
@@ -218,7 +235,7 @@
   "sdk_changes": 0,
   "agent_ci_retries": 0,
   "gate_closures": [],
-  "next_action": "Five rebased signed PR heads await current CI and maintainer review. H00/E04 are merged externally. Preserve original failures and qualifications; only attributable failures admit repair. S2 source selection is unchanged.",
+  "next_action": "H00/DL01/E02/E04 are merged. E01 current CI is failing and maintainer acceptance remains; E03 has green reported statuses and an observed approval, E05 has green statuses without an observed maintainer approval, and both report merge conflicts. Complete only relevant current delivery work. All S2 built evidence and closed gates remain accepted under the E01 equivalence decision.",
   "prior_log_analysis": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/ci-log-analysis-round2.json",
     "sha256": "492b626868b471e8c6790e513adcb61580d7296456763d98bfc05658bbf26054"
@@ -231,7 +248,7 @@
       "E03 upload-flush fixture repair",
       "H00 retained-core repair"
     ],
-    "next_plan_work": "S2:F08 source-bound finite app-journey oracle; no CI retries or unrelated flake tests."
+    "next_plan_work": "The authoritative .continue-here.md selects current S2/S3 work. S1 CI status does not invalidate accepted S2 evidence under the user-approved E01 equivalence decision."
   },
   "prior_snapshot": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/ci-refresh-20260921T185832Z.json",
@@ -251,5 +268,8 @@
     "at": "2026-09-21T21:39:28.322Z",
     "limit": "Read-only current-head statuses and review timeline; no maintainer approval or required-check completeness inferred."
   },
-  "rebase_record": "Results/S1-rebase-20260922.json"
+  "rebase_record": "Results/S1-rebase-20260922.json",
+  "last_updated_at": "2026-09-30T09:55:09Z",
+  "current_status_owner": "Results/S1-delivery-queue.json",
+  "current_status_limit": "The September22 snapshot/log analysis below is historical. Fresh September30 PR/head/status/review observations are owned by S1-delivery-queue.json; no new CI logs were investigated."
 }

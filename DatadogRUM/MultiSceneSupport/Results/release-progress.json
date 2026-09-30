@@ -363,7 +363,7 @@
     "S1": {
       "name": "Independent reliability fixes",
       "deadline": null,
-      "shipping_rule": "Release each narrow fix independently after its candidate checks and F06. Required-gate counts here describe selected E01 only; the seven-unit [S1 delivery queue](S1_DELIVERY_PLAN.md) separately tracks H00, E01-E05 and DL01. E03 design/repair checkpoint precedes further S2/S3 expansion; other qualified packets proceed independently.",
+      "shipping_rule": "Release each narrow fix independently after its candidate checks and F06. Required-gate counts describe selected E01 qualification only; its current-head CI/review and F06 remain open. The [S1 delivery queue](S1_DELIVERY_PLAN.md) records H00, DL01, E02 and E04 merged; E01, E03 and E05 remain open. Qualified packets proceed independently.",
       "required": {
         "count": 16,
         "closed": 15,
@@ -440,7 +440,7 @@
     "S2": {
       "name": "Single-scene iPhone Duo readiness",
       "deadline": "2026-10-16",
-      "shipping_rule": "No worse RUM after SDK27 rebuild without major app changes, evaluated by the S2 semantic acceptance contract and six finite execution packages below. E01+DL01+E04 productionc9faed81 on62f64 retains qualified source/lifetime/compatibility evidence. Resource/Trace, WebView and integrated-app ownership qualify; automatic coverage, UIKit transitions and final review remain open. No new scene API, duplicate physical matrix or immediate background-upload requirement.",
+      "shipping_rule": "No worse RUM after SDK27 rebuild without major app changes, evaluated by the S2 semantic acceptance contract and six finite execution packages below. E01+DL01+E04 productionc9faed81 on62f64 retains qualified source/lifetime/compatibility evidence. Resource/Trace, WebView and integrated-app ownership qualify; automatic coverage, UIKit transitions and final review remain open. No new scene API, duplicate physical matrix or immediate background-upload requirement. The user-approved [E01 equivalence decision](../MULTI_SCENE_SUPPORT.md#e01-replacement-and-s2-evidence) preserves all original S2 built evidence and closed gates; replacement alone requires no rebuild, retest or reopening.",
       "required": {
         "count": 27,
         "closed": 21,

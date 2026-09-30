@@ -38,9 +38,10 @@
     "human_review_required": true,
     "codeowners_must_be_rechecked": true,
     "performance": "Preserve current acceptance scope. No new mandatory standalone networking, per-dispatch or allocation benchmark campaign. Included new semantic SwiftUI/multi-scene code requires its existing application-impact gate; expected absent from these PRs. Investigate concrete regressions.",
-    "evidence_reuse": "Bind accepted results to exact source/test/dependency/toolchain/configuration/runtime identities. Rerun missing or invalidated checks only; metadata-only re-signing is not a reason to rerun tests.",
+    "evidence_reuse": "Bind accepted results to exact source/test/dependency/toolchain/configuration/runtime identities. Rerun missing or invalidated checks only; metadata-only re-signing is not a reason to rerun tests. User decision2026-09-30 explicitly accepts the E01 replacement as functionally equivalent for S2: all original S2 built evidence and closed gates remain valid, with no requalification solely for that replacement.",
     "session_replay_scope": "Session Replay captured-content testing and repair are excluded by user scope2026-09-21. Preserve historical failures without a PASS; host-app crash safety and non-disruption to other SDK features remain required. No fixture correction, waiver or full Replay run is required.",
-    "session_replay_scope_record": "Results/S1-replay-scope-disposition.json"
+    "session_replay_scope_record": "Results/S1-replay-scope-disposition.json",
+    "e01_s2_equivalence": "../MULTI_SCENE_SUPPORT.md#e01-replacement-and-s2-evidence"
   },
   "scheduling": {
     "checkpoint": "Finish or safely checkpoint the current bounded experiment; preserve its failures and exact source identities. Do not interrupt or modify its worktree from this side conversation.",
@@ -48,7 +49,7 @@
       "H00",
       "E01"
     ],
-    "next_repair": "No unqualified S1 SDK repair remains; investigate current CI or new attributable review findings.",
+    "next_repair": "No SDK repair is admitted by this status refresh. Current E01 CI failure requires attribution; E03/E05 report conflicts. Preserve unrelated-flake exclusions.",
     "independent_packet_priority": [
       "DL01",
       "E02",
@@ -137,10 +138,7 @@
       ],
       "decisive_test": "Full documents replace baseline state; delta omissions preserve state and explicit empty fields clear it. Disabled tracking omits slow_frames in every source document. Exact3cases/3passes,zero skips and41-source membership qualify signed0deff4750.",
       "environment": "Affected native integration fixture and repository CI, exact current test source; no production or device-specific qualification.",
-      "remaining_gates": [
-        "Current-base CI and human review",
-        "Separately authorized merge and verified upstream source"
-      ],
+      "remaining_gates": [],
       "rollback": "Revert only the assertion correction if required; preserve the original failing evidence.",
       "delivery": {
         "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/worktree",
@@ -177,7 +175,7 @@
       "path_inventory_owner": "Results/S1-delivery-queue.json",
       "local_preparation": "Results/S1-local-preparation.json",
       "outgoing_signature_status": "ALL_VERIFIED_GOOD",
-      "next_action": "Merged externally; preserve original qualification and current S2 source selection.",
+      "next_action": "Merged upstream; preserve historical qualification. No further delivery action required for this packet.",
       "pr_number": 3214,
       "remote_branch": "valpertui/rum-view-hitch-assertions",
       "remote_base": "develop",
@@ -189,18 +187,27 @@
       },
       "review_followup": "Results/S1-hitch-review.json",
       "current_observation": {
-        "at": "2026-09-22T15:08:55.812169+00:00",
+        "at": "2026-09-30T09:55:09Z",
         "head": "0deff4750a172309c79bcc916e99f575ccc37f8d",
         "merged": true,
         "merge_commit": "eb0fdb8ae1c6084a18b8b914c578e484b53edcea",
-        "owner": "Results/S1-rebase-20260922.json"
+        "source": "GitHub PR metadata, current-head commit statuses and PR review timeline",
+        "pr_url": "https://github.com/DataDog/dd-sdk-ios/pull/3214",
+        "base": "develop",
+        "base_sha": "9a8a66c3da7859437fcb3139455b51e07bd150c7",
+        "state": "closed",
+        "merged_at": "2026-09-22T11:56:47Z",
+        "github_mergeable": false,
+        "github_updated_at": "2026-09-22T11:56:50Z",
+        "limit": "Merged state and merge commit verified through GitHub; historical qualification retains its original source. No new build, test or local ancestry audit."
       },
       "before_rebase_delivery": {
         "head": "0deff4750a172309c79bcc916e99f575ccc37f8d",
         "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/worktree",
         "state": "READY_FOR_REVIEW"
       },
-      "rebase_record": "Results/S1-rebase-20260922.json"
+      "rebase_record": "Results/S1-rebase-20260922.json",
+      "delivery_head_source": "GitHub observation; saved local delivery checkout and frozen qualification receipts are historical and must be reverified before use."
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -217,7 +224,7 @@
       "gate_reference": "S1:E01 and E01-specific S1:F06",
       "title": "Prepare URLSession instrumentation once per task",
       "branch_slug": "urlsession-exactly-once",
-      "state": "REBASED_PUBLISHED_CI_PENDING",
+      "state": "PUBLISHED_CI_FAILURE_REVIEW_PENDING",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/urlsession-exactly-once",
       "source_branch": "valpertui/urlsession-exactly-once",
       "source_head": "652ce169773b0be5b6767179eca8ab5f4cf25f8a",
@@ -230,7 +237,7 @@
         "652ce169773b0be5b6767179eca8ab5f4cf25f8a"
       ],
       "excluded_duplicate_commit": "925b9326bcb364aab87686bbd665be8da576f674",
-      "target": "H00 delivery branch while stacked for review; develop after H00 upstream merge",
+      "target": "develop; H00 upstream prerequisite completed",
       "hard_merge_dependencies": [],
       "allowed_existing_paths": [
         "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift",
@@ -252,17 +259,18 @@
         "DatadogRUM/MultiSceneSupport/Experiments/EXP-202-urlsession-backend.md",
         "DatadogRUM/MultiSceneSupport/FINAL_COMPATIBILITY.md"
       ],
-      "decisive_test": "Exactly one request mutation/start through repeated, concurrent, reentrant and suspend/resume operations; early callbacks and terminal cleanup preserved. Automatic/registered backend owners and failure/cancellation weak controls match accepted results.",
+      "decisive_test": "Prepare each eligible task once per SDK instance; preserve supported automatic/registered RUM and Trace behavior, multiple SDK instances and terminal release. The current PR uses a per-task lock and forwards every resume synchronously; same-task resume from a custom mutation handler is outside the accepted simpler design.",
       "environment": "Accepted affected Internal/Core/RUM/Trace and integration suites; ordinary and legacy native runtimes, custom/NOP matrix, platform/client/API checks already recorded. Fresh CI and only invalidated local checks after rebase.",
       "remaining_gates": [
-        "Verified H00 upstream merge, then rebase/retarget with source-bound validation",
-        "Current-base CI and human review",
-        "Separately authorized merge and verified upstream source"
+        "Resolve current-head required CI and maintainer review; investigate failures only when attributable to the changed surface",
+        "S1:F06 final acceptance and separately authorized merge"
       ],
       "limits": [
-        "15/16 describes E01 only, not the entire S1 stream",
-        "Deferred duplicate resumes can execute on the preparation thread; no arbitrary same-stack/thread guarantee",
-        "Inherited QoS warning is retained, not declared harmless",
+        "15/16 describes selected E01 qualification only, not the entire S1 delivery stream",
+        "Current PR removes deferred resumes and callback buffering; every resume forwards synchronously on its calling thread",
+        "Concurrent cancel can block until task preparation finishes; custom-handler same-task resume reentry is excluded by the accepted simpler design",
+        "Current-head CI and maintainer review remain under S1:F06",
+        "All accepted S2 built evidence and closed gates remain valid under the user-approved functional-equivalence decision",
         "No physical Duo or standalone networking benchmark prerequisite"
       ],
       "rollback": "Revert E01 production/test/doc commits together while retaining H00; refresh affected feature-document verification.",
@@ -287,7 +295,7 @@
         ]
       },
       "packet": "Results/S1-H00-E01-packets.json",
-      "delivery_head": "0ec10c36dd02d51dde68ada89f104fcd34548022",
+      "delivery_head": "69c0b401724edfed4d7957f76133dc1dd9783363",
       "feature_document_reachability": "PASS_LOCAL_AB71C3A6; refresh after final ticket rewrite",
       "compatibility_continuation": {
         "status": "PASS_FIVE_MISSING_HOSTLESS_SUITES",
@@ -328,40 +336,81 @@
       "path_inventory_owner": "Results/S1-delivery-queue.json",
       "local_preparation": "Results/S1-local-preparation.json",
       "outgoing_signature_status": "ALL_VERIFIED_GOOD",
-      "next_action": "Current-head CI and maintainer review; inspect only attributable failures. No S2 source promotion.",
+      "next_action": "Complete current-head CI/review and S1:F06. The intended per-task-lock replacement preserves all S2 built evidence and closed gates under the user-approved equivalence decision.",
       "pr_number": 3215,
       "remote_branch": "valpertui/urlsession-exactly-once",
       "remote_base": "develop",
       "publication_record": "Results/S1-publication.json",
       "current_observation": {
-        "at": "2026-09-22T15:08:55.812169+00:00",
-        "head": "0ec10c36dd02d51dde68ada89f104fcd34548022",
+        "at": "2026-09-30T09:55:09Z",
+        "head": "69c0b401724edfed4d7957f76133dc1dd9783363",
         "merged": false,
-        "checks": 4,
-        "successes": 0,
+        "successes": 5,
         "non_success": [
           {
+            "name": "dd-gitlab/Unit Tests (watchOS)",
+            "state": "failure",
+            "url": "https://mosaic.us1.ddbuild.io/change-request/2795561881314808221?owner=DataDog&repository=dd-sdk-ios&taskExecutionId=2093229640&taskId=gitlab&utm_content=gitlab_task_check&utm_source=github_pr_page"
+          },
+          {
+            "name": "dd-gitlab/Unit Tests (macOS)",
+            "state": "failure",
+            "url": "https://mosaic.us1.ddbuild.io/change-request/2795561881314808221?owner=DataDog&repository=dd-sdk-ios&taskExecutionId=2093229642&taskId=gitlab&utm_content=gitlab_task_check&utm_source=github_pr_page"
+          },
+          {
+            "name": "dd-gitlab/Unit Tests (tvOS)",
+            "state": "failure",
+            "url": "https://mosaic.us1.ddbuild.io/change-request/2795561881314808221?owner=DataDog&repository=dd-sdk-ios&taskExecutionId=2093229639&taskId=gitlab&utm_content=gitlab_task_check&utm_source=github_pr_page"
+          },
+          {
+            "name": "dd-gitlab/Unit Tests (visionOS)",
+            "state": "failure",
+            "url": "https://mosaic.us1.ddbuild.io/change-request/2795561881314808221?owner=DataDog&repository=dd-sdk-ios&taskExecutionId=2093229641&taskId=gitlab&utm_content=gitlab_task_check&utm_source=github_pr_page"
+          },
+          {
+            "name": "dd-gitlab/Unit Tests (iOS)",
+            "state": "failure",
+            "url": "https://mosaic.us1.ddbuild.io/change-request/2795561881314808221?owner=DataDog&repository=dd-sdk-ios&taskExecutionId=2093229638&taskId=gitlab&utm_content=gitlab_task_check&utm_source=github_pr_page"
+          },
+          {
             "name": "DDCI Status",
-            "state": "pending",
-            "url": "https://mosaic.us1.ddbuild.io/change-request/17277606558356827826?utm_content=ddci_status_check&utm_source=github_pr_page"
-          },
-          {
-            "name": "dd-gitlab/ENV check",
-            "state": "pending",
-            "url": "https://mosaic.us1.ddbuild.io/change-request/17277606558356827826?owner=DataDog&repository=dd-sdk-ios&taskExecutionId=2068007559&taskId=gitlab&utm_content=gitlab_task_check&utm_source=github_pr_page"
-          },
-          {
-            "name": "dd-gitlab/Build Dependencies",
-            "state": "pending",
-            "url": "https://mosaic.us1.ddbuild.io/change-request/17277606558356827826?owner=DataDog&repository=dd-sdk-ios&taskExecutionId=2068007566&taskId=gitlab&utm_content=gitlab_task_check&utm_source=github_pr_page"
-          },
-          {
-            "name": "devflow/mergegate",
-            "state": "in_progress",
-            "url": "https://github.com/DataDog/dd-sdk-ios/runs/106804397783"
+            "state": "failure",
+            "url": "https://mosaic.us1.ddbuild.io/change-request/repository/DataDog/dd-sdk-ios/pull/3215/request/2795561881314808221?utm_content=ddci_status_check&utm_source=github_pr_page"
           }
         ],
-        "owner": "Results/S1-rebase-20260922.json"
+        "source": "GitHub PR metadata, current-head commit statuses and PR review timeline",
+        "pr_url": "https://github.com/DataDog/dd-sdk-ios/pull/3215",
+        "base": "develop",
+        "base_sha": "1849ad6351706f696c5f835a1e9bc241a87bec7d",
+        "state": "open",
+        "merged_at": null,
+        "merge_commit": null,
+        "github_mergeable": true,
+        "github_updated_at": "2026-09-30T09:31:41Z",
+        "status_count": 11,
+        "maintainer_review_submissions": [
+          {
+            "review": "DISMISSED",
+            "author": "tienquocbui",
+            "at": "2026-09-23T13:57:34Z",
+            "url": "https://github.com/DataDog/dd-sdk-ios/pull/3215#pullrequestreview-5291959313"
+          },
+          {
+            "review": "COMMENTED",
+            "author": "simaoseica-dd",
+            "at": "2026-09-23T15:46:05Z",
+            "url": "https://github.com/DataDog/dd-sdk-ios/pull/3215#pullrequestreview-5292901195"
+          },
+          {
+            "review": "CHANGES_REQUESTED",
+            "author": "maxep",
+            "at": "2026-09-28T16:52:02Z",
+            "url": "https://github.com/DataDog/dd-sdk-ios/pull/3215#pullrequestreview-5341931981"
+          }
+        ],
+        "limit": "Reported commit statuses and submitted reviews only; required-check completeness, current-head approval, resolved review threads and local merge feasibility were not independently established. No CI log diagnosis or retry.",
+        "ci_url": "https://mosaic.us1.ddbuild.io/change-request/repository/DataDog/dd-sdk-ios/pull/3215/request/2795561881314808221?utm_content=ddci_status_check&utm_source=github_pr_page",
+        "ci_source": "GitHub combined statuses for the recorded head; totals and all non-success statuses retained."
       },
       "prior_delivery_checkpoint": {
         "head": "ab71c3a6fb77307081f58b67d86d096d0340ce5f",
@@ -377,7 +426,8 @@
       "delivery_branch": "valpertui/urlsession-exactly-once",
       "satisfied_hard_merge_dependencies": [
         "H00"
-      ]
+      ],
+      "delivery_head_source": "GitHub observation; saved local delivery checkout and frozen qualification receipts are historical and must be reverified before use."
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -389,12 +439,12 @@
       "publication_authorization": true,
       "merge_authorization": false,
       "pr_url": "https://github.com/DataDog/dd-sdk-ios/pull/3217",
-      "merge_commit": null,
+      "merge_commit": "e0d6323bed9ebf5961cf3144ee1ff19541014cfc",
       "id": "E02",
       "gate_reference": "S1:E02; separate candidate freeze required",
       "title": "Keep attributes isolated between repeated view occurrences",
       "branch_slug": "view-occurrence-ownership",
-      "state": "REBASED_PUBLISHED_CI_PENDING",
+      "state": "MERGED_UPSTREAM",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership",
       "source_branch": "valpertui/view-occurrence-ownership",
       "source_head": "96d064c4fa083a7a74c709eb4a626fc17017db01",
@@ -426,16 +476,13 @@
       ],
       "decisive_test": "Pending H1 Resource retains its original view; Detail to H2 navigation cannot change H1 start/stop attributes, H2 action stays on H2, and restoration retains only one active occurrence. Assert serialized full/delta output.",
       "environment": "Accepted full RUM and native public-monitor fixture on recorded runtime; freeze missing affected compatibility/platform/API/CI cells on delivery source.",
-      "remaining_gates": [
-        "Current-base CI and human review",
-        "Separately authorized merge and verified upstream source"
-      ],
+      "remaining_gates": [],
       "limits": [
         "Source-less sequential navigation evidence; not a multi-scene router",
         "No backend or real navigation callback claim from writer serialization alone"
       ],
       "rollback": "Revert only E02 predicates and its tests/docs; retain unrelated shared-file tests.",
-      "delivery_head": "117942e7e1e29cc5ea30c2d482f4fc35bd164d83",
+      "delivery_head": "568be6cb87a7f64bc96cd1ff49cd5ed4c6f504e3",
       "delivery_checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-s1-rebase-20260922",
       "packet": "Results/S1-independent-packets.json",
       "body": "Delivery/E02-pr.md",
@@ -519,40 +566,25 @@
       "path_inventory_owner": "Results/S1-documentation-checkpoint.json",
       "local_preparation": "Results/S1-local-preparation.json",
       "outgoing_signature_status": "ALL_VERIFIED_GOOD",
-      "next_action": "Current-head CI and maintainer review; inspect only attributable failures. No S2 source promotion.",
+      "next_action": "Merged upstream; preserve historical qualification. No further delivery action required for this packet.",
       "pr_number": 3217,
       "remote_branch": "valpertui/view-occurrence-ownership",
       "remote_base": "develop",
       "publication_record": "Results/S1-publication.json",
       "current_observation": {
-        "at": "2026-09-22T15:08:55.812169+00:00",
-        "head": "117942e7e1e29cc5ea30c2d482f4fc35bd164d83",
-        "merged": false,
-        "checks": 4,
-        "successes": 0,
-        "non_success": [
-          {
-            "name": "DDCI Status",
-            "state": "pending",
-            "url": "https://mosaic.us1.ddbuild.io/change-request/11838522451192273504?utm_content=ddci_status_check&utm_source=github_pr_page"
-          },
-          {
-            "name": "dd-gitlab/ENV check",
-            "state": "pending",
-            "url": "https://mosaic.us1.ddbuild.io/change-request/11838522451192273504?owner=DataDog&repository=dd-sdk-ios&taskExecutionId=2068012986&taskId=gitlab&utm_content=gitlab_task_check&utm_source=github_pr_page"
-          },
-          {
-            "name": "dd-gitlab/Build Dependencies",
-            "state": "pending",
-            "url": "https://mosaic.us1.ddbuild.io/change-request/11838522451192273504?owner=DataDog&repository=dd-sdk-ios&taskExecutionId=2068012989&taskId=gitlab&utm_content=gitlab_task_check&utm_source=github_pr_page"
-          },
-          {
-            "name": "devflow/mergegate",
-            "state": "in_progress",
-            "url": "https://github.com/DataDog/dd-sdk-ios/runs/106804944494"
-          }
-        ],
-        "owner": "Results/S1-rebase-20260922.json"
+        "at": "2026-09-30T09:55:09Z",
+        "head": "568be6cb87a7f64bc96cd1ff49cd5ed4c6f504e3",
+        "merged": true,
+        "source": "GitHub PR metadata, current-head commit statuses and PR review timeline",
+        "pr_url": "https://github.com/DataDog/dd-sdk-ios/pull/3217",
+        "base": "develop",
+        "base_sha": "6704a8fffc92a4ef414ddf181d76ac2f0e10e63e",
+        "state": "closed",
+        "merged_at": "2026-09-24T18:09:17Z",
+        "merge_commit": "e0d6323bed9ebf5961cf3144ee1ff19541014cfc",
+        "github_mergeable": false,
+        "github_updated_at": "2026-09-24T18:09:20Z",
+        "limit": "Merged state and merge commit verified through GitHub; historical qualification retains its original source. No new build, test or local ancestry audit."
       },
       "before_rebase_delivery": {
         "head": "4dec888b99e70285cc855197790c3c2f6d20e426",
@@ -560,7 +592,8 @@
         "state": "READY_FOR_REVIEW"
       },
       "rebase_record": "Results/S1-rebase-20260922.json",
-      "delivery_branch": "valpertui/view-occurrence-ownership"
+      "delivery_branch": "valpertui/view-occurrence-ownership",
+      "delivery_head_source": "GitHub observation; saved local delivery checkout and frozen qualification receipts are historical and must be reverified before use."
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -578,7 +611,7 @@
       "title": "Keep Resource completion counters on their owning view",
       "title_provisional": false,
       "branch_slug": "resource-completion-ownership",
-      "state": "REBASED_PUBLISHED_CI_PENDING",
+      "state": "PUBLISHED_CI_GREEN_APPROVAL_OBSERVED_CONFLICT",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/resource-completion-ownership",
       "source_branch": "valpertui/resource-completion-ownership",
       "source_head": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
@@ -623,8 +656,8 @@
       "decisive_test": "Keep four original foreign ownership reds and four ordinary/100ms expiry controls. Preserve all nine historical bodies/baseline; supersede ninth automatic role explicitly. Actual-handler/native failed-body transfer produces one owning network Error, zero completed Resources, controlled action0/1 with received status; successful/HEAD/204 and manual compatibility remain unchanged.",
       "environment": "Bounded source/design review first, then affected RUM unit and native public-monitor/actual-handler tests on available supported runtime; candidate compatibility/CI after a compatible repair exists.",
       "remaining_gates": [
-        "Current-head CI and maintainer review",
-        "Separately authorized merge and verified upstream source"
+        "Reconcile reported merge conflict while preserving reviewed source and tests",
+        "Verify required checks and review for the final head, then separately authorized merge"
       ],
       "candidate_design": "Single automatic error terminal plus per-dispatch known-owner IDs; action filtering follows expiry and preserves matching Resource/TNS settlement and unknown manual compatibility.",
       "limits": [
@@ -635,7 +668,7 @@
       ],
       "rollback": "Revert the standalone Resource repair and its documentation independently; it has no hard merge dependency.",
       "contract_proposal": "E03_COMPLETION_CONTRACT.md",
-      "next_action": "Current-head CI and maintainer review; inspect only attributable failures. No S2 source promotion.",
+      "next_action": "Resolve current reported conflict and verify the final head before delivery. All 22 reported statuses pass and maintainer approval is observed; merge is not authorized by this refresh.",
       "product_decision": "E03_RESOURCE_COMPLETION_DECISION.md",
       "implementation_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp219-upstream-integration-l_p4vm9s/worktree",
       "allowed_production_paths_after_design_admission": [
@@ -653,7 +686,7 @@
         "E03 current-develop integration: EXP219 sourceb3c60b7b/docs1b2bff3e; RUM920/956,metrics9/9,native9/9, strict semantics/lint/API/docs/review/cleanup pass.",
         "PR3218 review: behavior-based test names and readable fixtures published at signed046719c3; exact token mapping, strict lint and syntax checks pass. Smaller ownership alternatives do not preserve the contract."
       ],
-      "delivery_head": "4b9e842babd188282a0521ac6c357897304ee3a0",
+      "delivery_head": "e3c3bde1c58cc8031c5496fafabb4c2df9763e87",
       "delivery_checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-s1-rebase-20260922",
       "packet": "Results/S1-E03-packet.json",
       "body": "Delivery/E03-pr.md",
@@ -710,34 +743,32 @@
       "historical_compatibility_scope": "Existing platform/core/compatibility fields remain qualified on their recorded pre-reconciliation source; current-head CI still required.",
       "review_followup": "Results/S1-resource-completion-review.json",
       "current_observation": {
-        "at": "2026-09-22T15:08:55.812169+00:00",
-        "head": "4b9e842babd188282a0521ac6c357897304ee3a0",
+        "at": "2026-09-30T09:55:09Z",
+        "head": "e3c3bde1c58cc8031c5496fafabb4c2df9763e87",
         "merged": false,
-        "checks": 4,
-        "successes": 0,
-        "non_success": [
+        "successes": 22,
+        "non_success": [],
+        "source": "GitHub PR metadata, current-head commit statuses and PR review timeline",
+        "pr_url": "https://github.com/DataDog/dd-sdk-ios/pull/3218",
+        "base": "develop",
+        "base_sha": "1b802c4a46a85c0cf864bc1f1d8cd8a45cd30b8c",
+        "state": "open",
+        "merged_at": null,
+        "merge_commit": null,
+        "github_mergeable": false,
+        "github_updated_at": "2026-09-28T23:27:22Z",
+        "status_count": 22,
+        "maintainer_review_submissions": [
           {
-            "name": "DDCI Status",
-            "state": "pending",
-            "url": "https://mosaic.us1.ddbuild.io/change-request/2069050121053770140?utm_content=ddci_status_check&utm_source=github_pr_page"
-          },
-          {
-            "name": "dd-gitlab/ENV check",
-            "state": "pending",
-            "url": "https://mosaic.us1.ddbuild.io/change-request/2069050121053770140?owner=DataDog&repository=dd-sdk-ios&taskExecutionId=2068013891&taskId=gitlab&utm_content=gitlab_task_check&utm_source=github_pr_page"
-          },
-          {
-            "name": "dd-gitlab/Build Dependencies",
-            "state": "pending",
-            "url": "https://mosaic.us1.ddbuild.io/change-request/2069050121053770140?owner=DataDog&repository=dd-sdk-ios&taskExecutionId=2068013903&taskId=gitlab&utm_content=gitlab_task_check&utm_source=github_pr_page"
-          },
-          {
-            "name": "devflow/mergegate",
-            "state": "in_progress",
-            "url": "https://github.com/DataDog/dd-sdk-ios/runs/106804979031"
+            "review": "APPROVED",
+            "author": "tienquocbui",
+            "at": "2026-09-28T23:27:22Z",
+            "url": "https://github.com/DataDog/dd-sdk-ios/pull/3218#pullrequestreview-5345842136"
           }
         ],
-        "owner": "Results/S1-rebase-20260922.json"
+        "limit": "Reported commit statuses and submitted reviews only; required-check completeness, current-head approval, resolved review threads and local merge feasibility were not independently established. No CI log diagnosis or retry.",
+        "ci_url": "https://mosaic.us1.ddbuild.io/change-request/repository/DataDog/dd-sdk-ios/pull/3218/request/9496436475845121471?utm_content=ddci_status_check&utm_source=github_pr_page",
+        "ci_source": "GitHub combined statuses for the recorded head; totals and all non-success statuses retained."
       },
       "before_rebase_delivery": {
         "head": "046719c3b62c9643bee2065866e35dd07b2e2158",
@@ -745,7 +776,8 @@
         "state": "READY_FOR_REVIEW"
       },
       "rebase_record": "Results/S1-rebase-20260922.json",
-      "delivery_branch": "valpertui/resource-completion-ownership"
+      "delivery_branch": "valpertui/resource-completion-ownership",
+      "delivery_head_source": "GitHub observation; saved local delivery checkout and frozen qualification receipts are historical and must be reverified before use."
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -795,10 +827,7 @@
       ],
       "decisive_test": "Long-lived active native view remains the delayed WebView container; inactivity starts its TTL exactly once. Preserve session stop/timeout/restoration, capacity 30, ordering, Replay and out-of-window rejection.",
       "environment": "Accepted full RUM and injected native WebView bridge serialization pair; missing applicable release/CI checks on independent delivery branch.",
-      "remaining_gates": [
-        "Current-base CI and human review",
-        "Separately authorized merge and verified upstream source"
-      ],
+      "remaining_gates": [],
       "limits": [
         "Native injected messages and writer JSON do not prove actual browser callback or backend ingestion",
         "EXP-212 composition does not replace independent E04 release qualification",
@@ -889,24 +918,33 @@
       "path_inventory_owner": "Results/S1-documentation-checkpoint.json",
       "local_preparation": "Results/S1-local-preparation.json",
       "outgoing_signature_status": "ALL_VERIFIED_GOOD",
-      "next_action": "Merged externally; preserve original qualification and current S2 source selection.",
+      "next_action": "Merged upstream; preserve historical qualification. No further delivery action required for this packet.",
       "pr_number": 3219,
       "remote_branch": "valpertui/active-view-cache-lifetime",
       "remote_base": "develop",
       "publication_record": "Results/S1-publication.json",
       "current_observation": {
-        "at": "2026-09-22T15:08:55.812169+00:00",
+        "at": "2026-09-30T09:55:09Z",
         "head": "171a24092dd5a953e428fd5e038f70a3021a9dc2",
         "merged": true,
         "merge_commit": "b8b201639e8c0eb487462fa7997b02143d4ef32b",
-        "owner": "Results/S1-rebase-20260922.json"
+        "source": "GitHub PR metadata, current-head commit statuses and PR review timeline",
+        "pr_url": "https://github.com/DataDog/dd-sdk-ios/pull/3219",
+        "base": "develop",
+        "base_sha": "9a8a66c3da7859437fcb3139455b51e07bd150c7",
+        "state": "closed",
+        "merged_at": "2026-09-22T09:42:09Z",
+        "github_mergeable": false,
+        "github_updated_at": "2026-09-22T11:15:56Z",
+        "limit": "Merged state and merge commit verified through GitHub; historical qualification retains its original source. No new build, test or local ancestry audit."
       },
       "before_rebase_delivery": {
         "head": "171a24092dd5a953e428fd5e038f70a3021a9dc2",
         "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/worktree",
         "state": "READY_FOR_REVIEW"
       },
-      "rebase_record": "Results/S1-rebase-20260922.json"
+      "rebase_record": "Results/S1-rebase-20260922.json",
+      "delivery_head_source": "GitHub observation; saved local delivery checkout and frozen qualification receipts are historical and must be reverified before use."
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -923,7 +961,7 @@
       "gate_reference": "S1:E05; separate candidate freeze required",
       "title": "Preserve request-time RUM ownership in automatic traces",
       "branch_slug": "request-time-trace-ownership",
-      "state": "REBASED_PUBLISHED_CI_PENDING",
+      "state": "PUBLISHED_CI_GREEN_REVIEW_PENDING_CONFLICT",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership",
       "source_branch": "valpertui/request-time-trace-ownership",
       "source_head": "9254adbcbf5a1809219ec30f6cc07df4f3af4518",
@@ -954,8 +992,8 @@
       "decisive_test": "Reverse completion preserves each request's start-time RUM owner in outgoing baggage and serialized span. Explicit nil never adopts a later view. Preserve parent sampling, user/account context, caller headers and legacy missing-network-context fallback.",
       "environment": "Accepted full Trace and native public networking integration pair; audit/fill applicable registered mode, terminal cleanup, backend and platform/CI cells before release claims.",
       "remaining_gates": [
-        "Current-base CI and human review",
-        "Separately authorized merge and verified upstream source"
+        "Reconcile reported merge conflict while preserving reviewed source and tests",
+        "Obtain maintainer approval and verify final-head required checks before separately authorized merge"
       ],
       "limits": [
         "Do not expand into PR2683 partial-carrier/header-merge policy",
@@ -1087,7 +1125,7 @@
         "owner": "Results/S1-E05-release-admission.json",
         "original_failures_preserved": true
       },
-      "next_action": "Current-head CI and maintainer review; inspect only attributable failures. No S2 source promotion.",
+      "next_action": "Resolve current reported conflict and obtain maintainer review/final-head acceptance. All 22 reported statuses pass; merge is not authorized by this refresh.",
       "replay_scope_disposition": "Results/S1-replay-scope-disposition.json",
       "body_sha256": "af5229c640cf463e5778ab0f391f4e2d3c2c9c980c20cf8b5ada190bfc7b3114",
       "path_inventory_owner": "Results/S1-delivery-queue.json",
@@ -1100,34 +1138,25 @@
       "remote_base": "develop",
       "publication_record": "Results/S1-publication.json",
       "current_observation": {
-        "at": "2026-09-22T15:08:55.812169+00:00",
+        "at": "2026-09-30T09:55:09Z",
         "head": "ba03a1ba4d40941adb1b932c6830f8ca1722ce93",
         "merged": false,
-        "checks": 4,
-        "successes": 0,
-        "non_success": [
-          {
-            "name": "DDCI Status",
-            "state": "pending",
-            "url": "https://mosaic.us1.ddbuild.io/change-request/263371353889725779?utm_content=ddci_status_check&utm_source=github_pr_page"
-          },
-          {
-            "name": "dd-gitlab/ENV check",
-            "state": "pending",
-            "url": "https://mosaic.us1.ddbuild.io/change-request/263371353889725779?owner=DataDog&repository=dd-sdk-ios&taskExecutionId=2068014238&taskId=gitlab&utm_content=gitlab_task_check&utm_source=github_pr_page"
-          },
-          {
-            "name": "dd-gitlab/Build Dependencies",
-            "state": "pending",
-            "url": "https://mosaic.us1.ddbuild.io/change-request/263371353889725779?owner=DataDog&repository=dd-sdk-ios&taskExecutionId=2068014253&taskId=gitlab&utm_content=gitlab_task_check&utm_source=github_pr_page"
-          },
-          {
-            "name": "devflow/mergegate",
-            "state": "in_progress",
-            "url": "https://github.com/DataDog/dd-sdk-ios/runs/106805003990"
-          }
-        ],
-        "owner": "Results/S1-rebase-20260922.json"
+        "successes": 22,
+        "non_success": [],
+        "source": "GitHub PR metadata, current-head commit statuses and PR review timeline",
+        "pr_url": "https://github.com/DataDog/dd-sdk-ios/pull/3220",
+        "base": "develop",
+        "base_sha": "dfc3ffccad7891d07e1151b557bb23d86b6cdcdd",
+        "state": "open",
+        "merged_at": null,
+        "merge_commit": null,
+        "github_mergeable": false,
+        "github_updated_at": "2026-09-23T07:12:48Z",
+        "status_count": 22,
+        "maintainer_review_submissions": [],
+        "limit": "Reported commit statuses and submitted reviews only; required-check completeness, current-head approval, resolved review threads and local merge feasibility were not independently established. No CI log diagnosis or retry.",
+        "ci_url": "https://mosaic.us1.ddbuild.io/change-request/repository/DataDog/dd-sdk-ios/pull/3220/request/263371353889725779?utm_content=ddci_status_check&utm_source=github_pr_page",
+        "ci_source": "GitHub combined statuses for the recorded head; totals and all non-success statuses retained."
       },
       "before_rebase_delivery": {
         "head": "444788406977c52ffdf84b88571c4cbe63eef245",
@@ -1135,7 +1164,8 @@
         "state": "READY_FOR_REVIEW"
       },
       "rebase_record": "Results/S1-rebase-20260922.json",
-      "delivery_branch": "valpertui/request-time-trace-ownership"
+      "delivery_branch": "valpertui/request-time-trace-ownership",
+      "delivery_head_source": "GitHub observation; saved local delivery checkout and frozen qualification receipts are historical and must be reverified before use."
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -1147,12 +1177,12 @@
       "publication_authorization": true,
       "merge_authorization": false,
       "pr_url": "https://github.com/DataDog/dd-sdk-ios/pull/3216",
-      "merge_commit": null,
+      "merge_commit": "df0a160639d1fc1d881c344a42629b4ff724e9e4",
       "id": "DL01",
       "gate_reference": "General S1 reliability extraction from EXP-211; local delivery ID, not a new release gate",
       "title": "Release RUM display-link observers with their owner",
       "branch_slug": "rum-display-link-lifetime",
-      "state": "REBASED_PUBLISHED_CI_PENDING",
+      "state": "MERGED_UPSTREAM",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/s2-rum-lifetime",
       "source_branch": "valpertui/s2-rum-lifetime",
       "source_head_observed": "ef9d9732d4440038d5ce9278e86943fed3f9e931",
@@ -1185,10 +1215,7 @@
       ],
       "decisive_test": "Real CADisplayLink cannot retain its observer through its target; weak callback forwarding releases correctly and preserves frame delivery. SDK release witness is evaluated after actual pending MessageBus work has drained.",
       "environment": "Recorded ordinary iPad iOS17.5 evidence; independent develop-based Core/RUM tests and relevant conditional-platform compile checks. No Duo hardware dependency.",
-      "remaining_gates": [
-        "Current-base CI and human review",
-        "Separately authorized merge and verified upstream source"
-      ],
+      "remaining_gates": [],
       "limits": [
         "Eight accepted D2 tests plus one corrected D4 witness are focused evidence, not global lifetime clearance",
         "Two-second witness originally included a legitimate five-second queued owner",
@@ -1256,40 +1283,25 @@
       "path_inventory_owner": "Results/S1-documentation-checkpoint.json",
       "local_preparation": "Results/S1-local-preparation.json",
       "outgoing_signature_status": "ALL_VERIFIED_GOOD",
-      "next_action": "Current-head CI and maintainer review; inspect only attributable failures. No S2 source promotion.",
+      "next_action": "Merged upstream; preserve historical qualification. No further delivery action required for this packet.",
       "pr_number": 3216,
       "remote_branch": "valpertui/rum-display-link-lifetime",
       "remote_base": "develop",
       "publication_record": "Results/S1-publication.json",
       "current_observation": {
-        "at": "2026-09-22T15:08:55.812169+00:00",
+        "at": "2026-09-30T09:55:09Z",
         "head": "0ca7cafbc745c6f29d0f7a34af3e84732a012061",
-        "merged": false,
-        "checks": 4,
-        "successes": 0,
-        "non_success": [
-          {
-            "name": "DDCI Status",
-            "state": "pending",
-            "url": "https://mosaic.us1.ddbuild.io/change-request/12254050544702590210?utm_content=ddci_status_check&utm_source=github_pr_page"
-          },
-          {
-            "name": "dd-gitlab/ENV check",
-            "state": "pending",
-            "url": "https://mosaic.us1.ddbuild.io/change-request/12254050544702590210?owner=DataDog&repository=dd-sdk-ios&taskExecutionId=2068012228&taskId=gitlab&utm_content=gitlab_task_check&utm_source=github_pr_page"
-          },
-          {
-            "name": "dd-gitlab/Build Dependencies",
-            "state": "pending",
-            "url": "https://mosaic.us1.ddbuild.io/change-request/12254050544702590210?owner=DataDog&repository=dd-sdk-ios&taskExecutionId=2068012250&taskId=gitlab&utm_content=gitlab_task_check&utm_source=github_pr_page"
-          },
-          {
-            "name": "devflow/mergegate",
-            "state": "in_progress",
-            "url": "https://github.com/DataDog/dd-sdk-ios/runs/106804910615"
-          }
-        ],
-        "owner": "Results/S1-rebase-20260922.json"
+        "merged": true,
+        "source": "GitHub PR metadata, current-head commit statuses and PR review timeline",
+        "pr_url": "https://github.com/DataDog/dd-sdk-ios/pull/3216",
+        "base": "develop",
+        "base_sha": "dfc3ffccad7891d07e1151b557bb23d86b6cdcdd",
+        "state": "closed",
+        "merged_at": "2026-09-23T21:39:40Z",
+        "merge_commit": "df0a160639d1fc1d881c344a42629b4ff724e9e4",
+        "github_mergeable": false,
+        "github_updated_at": "2026-09-23T21:39:43Z",
+        "limit": "Merged state and merge commit verified through GitHub; historical qualification retains its original source. No new build, test or local ancestry audit."
       },
       "before_rebase_delivery": {
         "head": "29c28a01b4abec47a2c0869ca1ad6ade16b3dbd6",
@@ -1297,7 +1309,8 @@
         "state": "READY_FOR_REVIEW"
       },
       "rebase_record": "Results/S1-rebase-20260922.json",
-      "delivery_branch": "valpertui/rum-display-link-lifetime"
+      "delivery_branch": "valpertui/rum-display-link-lifetime",
+      "delivery_head_source": "GitHub observation; saved local delivery checkout and frozen qualification receipts are historical and must be reverified before use."
     }
   ],
   "checkpoint": {
@@ -1326,7 +1339,7 @@
     "E03_upstream_reconciliation": "2026-09-21T14:01:34.522669+00:00",
     "latest_review_refresh": "Results/S1-ci-followup.json"
   },
-  "last_updated_at": "2026-09-22T15:12:19.862123+00:00",
+  "last_updated_at": "2026-09-30T09:55:09Z",
   "publication": {
     "status": "SEVEN_DRAFTS_PUBLISHED_AND_VERIFIED",
     "record": "Results/S1-publication.json",
@@ -1335,5 +1348,21 @@
     "merge_authorization": false
   },
   "current_ci_owner": "Results/S1-ci-followup.json",
-  "current_rebase_owner": "Results/S1-rebase-20260922.json"
+  "current_rebase_owner": "Results/S1-rebase-20260922.json",
+  "observation_scope": "Current delivery facts are in each item's current_observation. Earlier rebase, checkout, packet and qualification fields retain historical identities.",
+  "delivery_summary": {
+    "merged": [
+      "H00",
+      "DL01",
+      "E02",
+      "E04"
+    ],
+    "open": [
+      "E01",
+      "E03",
+      "E05"
+    ],
+    "qualification_scope": "Selected E01 retains 15 of 16 required qualification gates; S1:F06 remains open. These counts do not describe the entire seven-unit delivery queue.",
+    "new_gate_closures": []
+  }
 }

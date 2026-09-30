@@ -570,7 +570,7 @@
           ],
           "decisive_test": "Zero SDK-caused deadlock/crash or cross-task/feature interference under synchronous request-mutation reentry, concurrent first resumes and payload/error destruction reentry. One preparation/interception per eligible task; each intercepted native resume continuation forwards exactly once. Buffered data/metrics/completion remain ordered behind preparation. Completed, unsupported/internal, rebind and foreign-task paths preserve their established forwarding behavior. Terminal cleanup leaves no strong preparation/task/feature ownership.",
           "environment": "Exact candidate on qualified17.5 simulator; accepted EXP-199 Debug invariants plus EXP-203 three existing reentry controls with verified Release/-O and finite waits.",
-          "evidence": "EXP-203: exactly3 existing controls/3 executions pass once, no failures/skips/retries, on17.5/21F79. Actual SDK/test/helper compile jobs prove Release -O and testability; five exact source/test hashes match1bd/925 and accepted EXP-199 Debug invariants. Hostless cleanup and protected state pass. No numeric or full-suite claim;142 build warnings/59 dependency duplicate classes remain in F06 diagnostics.",
+          "evidence": "EXP-203: exactly3 existing controls/3 executions pass once, no failures/skips/retries, on17.5/21F79. Actual SDK/test/helper compile jobs prove Release -O and testability; five exact source/test hashes match1bd/925 and accepted EXP-199 Debug invariants. Hostless cleanup and protected state pass. No numeric or full-suite claim;142 build warnings/59 dependency duplicate classes remain in F06 diagnostics. This CLOSED entry records the original coordinator's qualified contract; it is not a claim that the replacement implements buffering or deferred continuations. The simpler PR3215 design excludes same-task resume from custom mutation handlers and accepts cancellation blocking. Current implementation review remains under S1:F06; the separate S2 equivalence decision preserves all S2 evidence.",
           "required": true
         },
         "S2": {
@@ -2543,9 +2543,9 @@
             "S1:T03",
             "S1:T08"
           ],
-          "decisive_test": "Require applicable correctness, View/Action information, Resource attribution, object-lifetime/reentrancy, privacy, crash, API and exact source/artifact checks plus attributable review. Detailed network benchmarks and a replacement standalone network performance campaign are not prerequisites; investigate concrete visible regressions if found. Signed outgoing history is required before any separately authorized push. Separately land the qualified hitch assertion fix, then rebase only after verified upstream merge and confirm source/test identities. Session Replay captured-content defects are not blockers; host-app crash safety and other-feature non-disruption remain required. CI-flake repair is admitted only with clear evidence implicating the changed surface or associated tests; unrelated upstream failures remain visible without an agent repair campaign.",
+          "decisive_test": "Require applicable correctness, View/Action information, Resource attribution, object-lifetime/reentrancy, privacy, crash, API and exact source/artifact checks plus attributable review. Detailed network benchmarks and a replacement standalone network performance campaign are not prerequisites; investigate concrete visible regressions if found. Signed outgoing history is required before any separately authorized push. H00 upstream merge/source verification and E01 retarget are completed; final current-head CI, maintainer acceptance and source/artifact checks remain. Session Replay captured-content defects are not blockers; host-app crash safety and other-feature non-disruption remain required. CI-flake repair is admitted only with clear evidence implicating the changed surface or associated tests; unrelated upstream failures remain visible without an agent repair campaign.",
           "environment": "Exact candidate; one host; no concurrent measurement contamination",
-          "evidence": "E01 production 1bdc9286 retains its prerequisite gates; Results/S1-publication.json owns the original seven published PR identities. Results/S1-resume-witness-review.json qualifies and publishes signed test-only 0eaba3e3 with 20 macOS passes and full watchOS compilation; current-head CI remains. EXP219 and Results/S1-resource-completion-review.json retain E03 qualification and behavior-only cleanup 046719c3. Results/S1-hitch-review.json owns test-only 0deff4750. Results/S1-ci-followup.json records the latest changed-surface-only CI repair scope. PR3196 owns the pause-test correction; local20/20 evidence does not qualify its different head. Unattributed upload-fixture/core-retention repairs are stopped. Current-head CI/human acceptance, separately authorized H00 merge and verified-source E01 retarget remain. Original failures and diagnostic limits are preserved; no new SDK defect or merge authorization follows.",
+          "evidence": "As of2026-09-30, H00#3214, DL01#3216, E02#3217 and E04#3219 are merged; the original H00 dependency and E01 develop retarget are complete. E01#3215 is open at69c0b401 with the intended per-task-lock replacement: five reported statuses pass and six fail (five platform unit statuses plus aggregate DDCI). The review timeline retains a changes-requested submission and the earlier approval is dismissed; current acceptance is not established. E03#3218 has22 passing reported statuses and a maintainer approval, with a reported merge conflict. E05#3220 has22 passing reported statuses, no maintainer approval observed and a reported merge conflict. Results/S1-delivery-queue.json owns exact current observations; Results/S1-ci-followup.json preserves original failures and changed-surface-only investigation policy. S1:F06 remains OPEN; no source repair, CI retry, merge, push or new native qualification follows. The intended E01 replacement preserves accepted S2 evidence and closed gates under strategy_decision.e01_functional_equivalence.",
           "required": true
         },
         "S2": {
@@ -2605,7 +2605,7 @@
           ],
           "decisive_test": "Source-less repeated/suspend/resume handler mutation regression fails current develop and passes a synchronized narrow task-claim/lifecycle fix; automatic and registered delegates remain compatible.",
           "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
-          "evidence": "EXP-197 baseline red retained. EXP-199 candidate1bdc9286 full Internal455 tests/491 executions passes, plus5 native suspend/resume boundary repetitions. Exactly-once automatic/registered/dual/rebind, early callbacks and payload destruction controls pass. Paired native automatic/registered ownership and affected Core/RUM/Trace suites pass. P03/performance and remaining release gates stay open.",
+          "evidence": "EXP-197 baseline red retained. EXP-199 candidate1bdc9286 full Internal455 tests/491 executions passes, plus5 native suspend/resume boundary repetitions. Exactly-once automatic/registered/dual/rebind, early callbacks and payload destruction controls pass. Paired native automatic/registered ownership and affected Core/RUM/Trace suites pass. Historical qualification is preserved. Current delivery uses the intended per-task-lock replacement at69c0b401; its CI/review and final acceptance remain under S1:F06. Results/S1-delivery-queue.json records current source and delivery facts.",
           "required": true
         }
       },
@@ -2661,7 +2661,7 @@
           ],
           "decisive_test": "Retained H1 cannot absorb H2 start/stop attributes; old Resource remains H1, new action H2; restoration leaves one active occurrence. Must first fail current develop.",
           "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
-          "evidence": "EXP-205: source-less start/stop regressions fail freshly verified develop62f64. Two active-view predicates at3ce541b3 pass903 RUM tests/939 executions; identical public-monitor full/delta writer-JSON tests fail only H1 attributes upstream and pass2/2 on candidate96d064c4. Exact Resource/action UUIDs and restored active-count assertions pass. Source/product/dependency/deadline/cleanup proof and independent review retained. Eligibility only; candidate-specific release qualification remains separate. Results/EXP-205-view-occurrence-isolation.json. Signed independent local delivery packet and finite remaining checks: Results/S1-independent-packets.json. Eligibility remains separate from final release/CI/human review.",
+          "evidence": "EXP-205: source-less start/stop regressions fail freshly verified develop62f64. Two active-view predicates at3ce541b3 pass903 RUM tests/939 executions; identical public-monitor full/delta writer-JSON tests fail only H1 attributes upstream and pass2/2 on candidate96d064c4. Exact Resource/action UUIDs and restored active-count assertions pass. Source/product/dependency/deadline/cleanup proof and independent review retained. Eligibility only; candidate-specific release qualification remains separate. Results/EXP-205-view-occurrence-isolation.json. Signed independent local delivery packet and finite remaining checks: Results/S1-independent-packets.json. Eligibility remains separate from final release/CI/human review. Delivery update2026-09-30: PR3217 merged2026-09-24 at e0d6323bed9ebf5961cf3144ee1ff19541014cfc. No remaining delivery action for E02; Results/S1-delivery-queue.json.",
           "required": false
         }
       }
@@ -2685,7 +2685,7 @@
           ],
           "decisive_test": "Tracked late success/error/metrics cannot mutate a foreign view/session action. Native failed-body transfer, including response plus error, emits Error1/Resource0 with received status and controlled action0/1. Preserve successful/HEAD/204 behavior, both100ms expiry controls and unrelated manual compatibility. Original ninth automatic acceptance role is explicitly superseded; historical evidence stays intact.",
           "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
-          "evidence": "EXP219 reconciles E03 with develop9a8a66c3: signed sourceb3c60b7b9/docs1b2bff3e7 published in #3218. RUM920/956, metrics9/9, native9/9 with strict ownership attachments, lint, nine-module Swift/ObjC API, five docs/registry and independent review/cleanup pass. Original EXP214 source, broad compatibility results and inherited stopped-session diagnostic remain attributable. Ticket references waived by direct user publication approval. Current-head CI and human review remain; no merge/backend/full-platform claim. Results/EXP-219-upstream-resource-integration.json PR3218 review retains production after smaller-design comparison. Behavior-based test cleanup passes exact renamed-token, lint and syntax checks; signed046719c3 is published with unchanged production; new-head CI and maintainer review remain. Results/S1-resource-completion-review.json",
+          "evidence": "EXP219 reconciles E03 with develop9a8a66c3: signed sourceb3c60b7b9/docs1b2bff3e7 published in #3218. RUM920/956, metrics9/9, native9/9 with strict ownership attachments, lint, nine-module Swift/ObjC API, five docs/registry and independent review/cleanup pass. Original EXP214 source, broad compatibility results and inherited stopped-session diagnostic remain attributable. Ticket references waived by direct user publication approval. Current-head CI and human review remain; no merge/backend/full-platform claim. Results/EXP-219-upstream-resource-integration.json PR3218 review retains production after smaller-design comparison. Behavior-based test cleanup passes exact renamed-token, lint and syntax checks; signed046719c3 is published with unchanged production; new-head CI and maintainer review remain. Results/S1-resource-completion-review.json Delivery update2026-09-30 supersedes the pending-CI/review snapshot: at e3c3bde1 all22 reported statuses pass and tienquocbui approval is observed2026-09-28. GitHub reports a merge conflict; final-head required-check/review completeness and delivery remain open. Original qualification and failures are unchanged. Results/S1-delivery-queue.json.",
           "required": false
         }
       }
@@ -2709,7 +2709,7 @@
           ],
           "decisive_test": "Delayed WebView event from long-lived A after navigation to B preserves A container for inactive retention window; capacity/newest-first and release stay bounded. Must first fail current develop.",
           "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
-          "evidence": "EXP-207 qualifies independent E04 eligibility on develop62f64: eight exact baseline failures and five preservation passes. Two-file repair cc83c850 passes910 RUM cases/946 executions; identical native bridge slice fails only delayed-A container source/id upstream and passes3/3 at test checkpoint a3d34069. Lifetime, restoration, capacity and Replay controls, input/product/cleanup/deadline evidence and independent reviews pass. Controlled-clock injected bridge/writer JSON only; candidate-specific release/performance qualification remains separate. Results/EXP-207-active-view-cache.json. Signed independent local delivery packet and finite remaining checks: Results/S1-independent-packets.json. Eligibility remains separate from final release/CI/human review.",
+          "evidence": "EXP-207 qualifies independent E04 eligibility on develop62f64: eight exact baseline failures and five preservation passes. Two-file repair cc83c850 passes910 RUM cases/946 executions; identical native bridge slice fails only delayed-A container source/id upstream and passes3/3 at test checkpoint a3d34069. Lifetime, restoration, capacity and Replay controls, input/product/cleanup/deadline evidence and independent reviews pass. Controlled-clock injected bridge/writer JSON only; candidate-specific release/performance qualification remains separate. Results/EXP-207-active-view-cache.json. Signed independent local delivery packet and finite remaining checks: Results/S1-independent-packets.json. Eligibility remains separate from final release/CI/human review. Delivery update2026-09-30: PR3219 merged2026-09-22 at b8b201639e8c0eb487462fa7997b02143d4ef32b. No remaining delivery action for E04; Results/S1-delivery-queue.json.",
           "required": false
         }
       }
@@ -2733,7 +2733,7 @@
           ],
           "decisive_test": "Prove a current-develop source-less defect, then bounded existing NetworkContext.rumContext/fixed write context correction; nil start never adopts later view and sampling/headers/user/account behavior stays unchanged.",
           "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
-          "evidence": "EXP-208 qualifies bounded E05 eligibility:8 exact baseline unit failures/34 assertions plus5 controls,154/154 full Trace green, identical native3-test pair with2 baseline failures/6 assertions versus3/3 candidate. Independent reviews, frozen inputs, original deadline and cleanup pass. Productionf270c375 and tests9254adbc preserve qualified bytes; authorized unsigned local fallback after signing timeouts. Header amendment and all failed attempts retained. Broader release/performance checks remain separate. Signed independent local delivery packet and finite remaining checks: Results/S1-independent-packets.json. Eligibility remains separate from final release/CI/human review.",
+          "evidence": "EXP-208 qualifies bounded E05 eligibility:8 exact baseline unit failures/34 assertions plus5 controls,154/154 full Trace green, identical native3-test pair with2 baseline failures/6 assertions versus3/3 candidate. Independent reviews, frozen inputs, original deadline and cleanup pass. Productionf270c375 and tests9254adbc preserve qualified bytes; authorized unsigned local fallback after signing timeouts. Header amendment and all failed attempts retained. Broader release/performance checks remain separate. Signed independent local delivery packet and finite remaining checks: Results/S1-independent-packets.json. Eligibility remains separate from final release/CI/human review. Delivery update2026-09-30: at ba03a1ba all22 reported statuses pass; GitHub reports a merge conflict and no maintainer approval is observed. Qualification remains CLOSED; final delivery is pending. Results/S1-delivery-queue.json.",
           "required": false
         }
       }
@@ -2886,16 +2886,18 @@
       "id": "S1",
       "name": "Independent reliability fixes",
       "deadline": null,
-      "shipping_rule": "Release each narrow fix independently after its candidate checks and F06. Required-gate counts here describe selected E01 only; the seven-unit [S1 delivery queue](S1_DELIVERY_PLAN.md) separately tracks H00, E01-E05 and DL01. E03 design/repair checkpoint precedes further S2/S3 expansion; other qualified packets proceed independently.",
+      "shipping_rule": "Release each narrow fix independently after its candidate checks and F06. Required-gate counts describe selected E01 qualification only; its current-head CI/review and F06 remain open. The [S1 delivery queue](S1_DELIVERY_PLAN.md) records H00, DL01, E02 and E04 merged; E01, E03 and E05 remain open. Qualified packets proceed independently.",
       "selected_candidate": "E01",
       "delivery_queue": "Results/S1-delivery-queue.json",
-      "measurement_rule": "strategy_decision.project_measurement_rule"
+      "measurement_rule": "strategy_decision.project_measurement_rule",
+      "delivery_status_as_of": "2026-09-30T09:55:09Z",
+      "delivery_status_owner": "Results/S1-delivery-queue.json"
     },
     {
       "id": "S2",
       "name": "Single-scene iPhone Duo readiness",
       "deadline": "2026-10-16",
-      "shipping_rule": "No worse RUM after SDK27 rebuild without major app changes, evaluated by the S2 semantic acceptance contract and six finite execution packages below. E01+DL01+E04 productionc9faed81 on62f64 retains qualified source/lifetime/compatibility evidence. Resource/Trace, WebView and integrated-app ownership qualify; automatic coverage, UIKit transitions and final review remain open. No new scene API, duplicate physical matrix or immediate background-upload requirement.",
+      "shipping_rule": "No worse RUM after SDK27 rebuild without major app changes, evaluated by the S2 semantic acceptance contract and six finite execution packages below. E01+DL01+E04 productionc9faed81 on62f64 retains qualified source/lifetime/compatibility evidence. Resource/Trace, WebView and integrated-app ownership qualify; automatic coverage, UIKit transitions and final review remain open. No new scene API, duplicate physical matrix or immediate background-upload requirement. The user-approved [E01 equivalence decision](../MULTI_SCENE_SUPPORT.md#e01-replacement-and-s2-evidence) preserves all original S2 built evidence and closed gates; replacement alone requires no rebuild, retest or reopening.",
       "hardware_uncertainty": "No physical Duo validated. Targeted F09 follows when hardware is available; it is not pre-release readiness proof.",
       "selected_candidate": "E01 + DL01 + E04",
       "candidate_freeze": {
@@ -2916,7 +2918,8 @@
         ],
         "status": "SOURCE/LIFETIME/DOCUMENTATION/COMPATIBILITY/RESOURCE_TRACE/WEBVIEW/APP QUALIFIED; AUTOMATIC_COVERAGE/UIKIT_TRANSITIONS/FINAL RELEASE OPEN",
         "documentation": "Results/S2-F02-composition-documentation.json",
-        "compatibility": "Results/EXP-217-s2-compatibility.json"
+        "compatibility": "Results/EXP-217-s2-compatibility.json",
+        "e01_replacement_decision": "strategy_decision.e01_functional_equivalence"
       },
       "qualification_candidate": {
         "head": "7604da24bfb757e8d19314e7183b840fa17d858f",
@@ -3262,6 +3265,19 @@
       "rule": "All future measurement and testing sessions in this project validate event attribution, View capture, Navigation capture and Action capture. Strict timing measurements, recorder-cost caps and timing benchmarks are not acceptance prerequisites. Retained timings are diagnostic only. Operational timeouts bound execution, evidence collection and cleanup; a timeout alone is not an SDK regression. Missing or ambiguous capture/owners and actual scenario failures remain unresolved. Preserve original results and their limits.",
       "owner": "MULTI_SCENE_SUPPORT.md#measurement-and-testing-rule",
       "prior_results": "Unchanged; removing a prerequisite is not a measured pass or gate closure"
+    },
+    "e01_functional_equivalence": {
+      "date": "2026-09-30",
+      "source": "Direct user instruction in the S1 status / E01 decision side conversation",
+      "owner": "../MULTI_SCENE_SUPPORT.md#e01-replacement-and-s2-evidence",
+      "decision": "The E01 implementation change is intended. Assume the replacement is functionally equivalent to the original frozen E01 implementation for S2. All S2 built evidence and closed gates using the original implementation remain valid.",
+      "original_s2_production_revision": "c9faed816a1d4828d7d8c4b64acae01119425889",
+      "replacement_pr": "https://github.com/DataDog/dd-sdk-ios/pull/3215",
+      "replacement_head_at_recording": "69c0b401724edfed4d7957f76133dc1dd9783363",
+      "evidence_basis": "User-approved equivalence assumption; not a new native measurement of the replacement.",
+      "preserve": "Keep actual source/build identities, observations, original verdicts and all closed S2 statuses. Do not rewrite old captures to claim replacement code was exercised.",
+      "execution": "Do not require source reconciliation, a new candidate freeze, rebuilds, retests or gate reopening solely because of the E01 replacement. Continue the remaining finite S2 work; investigate E01 only upon concrete evidence of a regression.",
+      "boundary": "This decision grants no new gate closure and does not replace current S1 CI, maintainer review or merge acceptance."
     }
   }
 }

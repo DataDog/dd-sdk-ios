@@ -74,6 +74,25 @@ unresolved. Preserve source identity, raw evidence, cleanup and original verdict
 This rule supersedes the earlier mandatory application-performance comparison;
 existing safety and compatibility evidence retains its original scope.
 
+## E01 replacement and S2 evidence
+
+Approved by the user on September 30, 2026. The implementation replacement in
+[E01 / PR #3215](https://github.com/DataDog/dd-sdk-ios/pull/3215) is intended and
+is assumed functionally equivalent to the original frozen E01 implementation for
+S2. **All S2 built evidence and closed gates using the original E01 remain valid.**
+The replacement alone requires no source-reconciliation prerequisite, rebuild,
+retest, new candidate freeze or gate reopening.
+
+Keep historical source/build identities, observations and verdicts unchanged;
+those captures are not relabeled as executions of the replacement. Continue the
+remaining finite S2 work. A concrete regression can warrant a targeted
+investigation; the implementation change itself is not such evidence. S1's
+current PR CI, maintainer review and final acceptance remain separate.
+
+The [register](MultiSceneSupport/release-gates.json), under
+`strategy_decision.e01_functional_equivalence`, records the frozen S2 revision
+and replacement PR head observed when this decision was documented.
+
 ## Confirmed product decisions
 
 Status: approved for multi-window iPad and iPhone applications.

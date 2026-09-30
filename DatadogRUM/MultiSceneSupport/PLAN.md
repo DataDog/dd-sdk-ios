@@ -4,18 +4,20 @@
 The generated release views below decide readiness for each shipped candidate;
 [release-progress.json](Results/release-progress.json) owns counts. Original gate
 IDs and their evidence remain intact as the experimental reference. A reference
-pass does not qualify a new develop-based release candidate. Product decisions
-and non-goals remain in [the overview](../MULTI_SCENE_SUPPORT.md).
+pass does not automatically qualify a new develop-based release candidate. The
+[approved E01 equivalence decision](../MULTI_SCENE_SUPPORT.md#e01-replacement-and-s2-evidence) explicitly preserves all original S2 built evidence and closed gates.
+Product decisions and non-goals remain in [the overview](../MULTI_SCENE_SUPPORT.md).
 
 ## Execution priorities and admission
 
 The sole restart cursor is [.continue-here.md](../../.continue-here.md).
 
-1. **S1: independent reliability fixes.** Start E01 on verified current develop;
-   require a source-less customer regression red before its narrow fix is admitted.
-   F07 identifies its shipped dependencies; affected compatibility, Resource/Trace,
-   object-lifetime/reentrancy and F03 checks lead to S1:F06. Deliver each eligible fix separately.
-   E02–E05 are finite independent candidates, not prerequisites for E01.
+1. **S1: independent reliability fixes.** H00, DL01, E02 and E04 are merged.
+   E01, E03 and E05 retain the finite delivery work in the
+   [current queue](Results/S1-delivery-queue.json); source-less regression and prior
+   qualification records remain accepted at their recorded identities. S1:F06
+   owns selected E01's current-head CI/review and final acceptance. Deliver each
+   eligible fix independently; the other packets are not prerequisites for E01.
 2. **S2: single-scene Duo readiness by October 16, 2026.** Use the six generated
    execution packages below and the register's semantic acceptance contract.
    Compare genuine old/new Apple-SDK builds separately from baseline/candidate
@@ -35,7 +37,8 @@ The sole restart cursor is [.continue-here.md](../../.continue-here.md).
 admitted unless it closes an existing release gate or investigates a concrete
 regression. Freeze source, hypothesis, decisive oracle, environment, timebox and
 stop rule first. Failed attempts do not create deliverables. Do not repeat accepted
-experiments to resume, and do not copy old passes onto changed release source.
+experiments to resume. Preserve recorded source identities; apply the explicit
+E01/S2 equivalence decision without relabeling historical captures.
 
 F07 must prove deferred behavior is absent from the actual source/artifact. Hiding
 APIs or setting a manifest flag is insufficient. S1/S2 do not depend on unrelated
@@ -43,10 +46,10 @@ new scene APIs or full physical Duo acceptance. Any selected S1 dependency of S2
 must be explicit. The iOS17.5 simulator is available; C06 requires actual execution,
 not availability alone. No runtime exception has been applied.
 
-E01's final delivery review also requires the register's explicit test-fix
-sequence: independently land the qualified hitch assertion correction, then rebase
-only after its verified upstream merge and compare source/test identities. Keep
-the current checkpoint intact. The separate [PR2683 review](Results/PR-2683-header-ownership-review.json)
+E01's hitch assertion prerequisite, upstream verification and develop retarget
+are complete. Its current-head CI, maintainer acceptance and final source/artifact
+checks remain under S1:F06; [the queue](Results/S1-delivery-queue.json) owns current
+heads and review/status observations. Keep the current checkpoint intact. The separate [PR2683 review](Results/PR-2683-header-ownership-review.json)
 is a bounded T08 follow-up after E05; it does not change EXP-208 header policy or
 close a runtime gate. [Independent S1 packets](Results/S1-independent-packets.json)
 now bind DL01/E02/E04/E05 to signed delivery histories and finite missing-check
@@ -78,8 +81,8 @@ qualification and gate-closing evidence; it does not admit a run.
 
 | Release | Deadline | Shipping rule | Required | Closed | Remaining |
 | --- | --- | --- | ---: | ---: | ---: |
-| S1 — Independent reliability fixes | TBD | Release each narrow fix independently after its candidate checks and F06. Required-gate counts here describe selected E01 only; the seven-unit [S1 delivery queue](S1_DELIVERY_PLAN.md) separately tracks H00, E01-E05 and DL01. E03 design/repair checkpoint precedes further S2/S3 expansion; other qualified packets proceed independently. | 16 | 15 | 1 |
-| S2 — Single-scene iPhone Duo readiness | 2026-10-16 | No worse RUM after SDK27 rebuild without major app changes, evaluated by the S2 semantic acceptance contract and six finite execution packages below. E01+DL01+E04 productionc9faed81 on62f64 retains qualified source/lifetime/compatibility evidence. Resource/Trace, WebView and integrated-app ownership qualify; automatic coverage, UIKit transitions and final review remain open. No new scene API, duplicate physical matrix or immediate background-upload requirement. | 27 | 21 | 6 |
+| S1 — Independent reliability fixes | TBD | Release each narrow fix independently after its candidate checks and F06. Required-gate counts describe selected E01 qualification only; its current-head CI/review and F06 remain open. The [S1 delivery queue](S1_DELIVERY_PLAN.md) records H00, DL01, E02 and E04 merged; E01, E03 and E05 remain open. Qualified packets proceed independently. | 16 | 15 | 1 |
+| S2 — Single-scene iPhone Duo readiness | 2026-10-16 | No worse RUM after SDK27 rebuild without major app changes, evaluated by the S2 semantic acceptance contract and six finite execution packages below. E01+DL01+E04 productionc9faed81 on62f64 retains qualified source/lifetime/compatibility evidence. Resource/Trace, WebView and integrated-app ownership qualify; automatic coverage, UIKit transitions and final review remain open. No new scene API, duplicate physical matrix or immediate background-upload requirement. The user-approved [E01 equivalence decision](../MULTI_SCENE_SUPPORT.md#e01-replacement-and-s2-evidence) preserves all original S2 built evidence and closed gates; replacement alone requires no rebuild, retest or reopening. | 27 | 21 | 6 |
 | S3 — Full multi-scene support | TBD | Complete exact scene APIs, full ownership/lifecycle/client/docs matrix, physical Duo F04 and S3:F06 after hardware release. Preserve all prior evidence boundaries. | 69 | 46 | 23 |
 
 ### S1 release gates
@@ -102,7 +105,7 @@ qualification and gate-closing evidence; it does not admit a run.
 | S1:T10 | WebView bridge: Existing source-less native/WebView correlation | SDK implementer | S1:A01, S1:F07 | If view/cache/WebView is touched, preserve long-lived native container and delayed browser event ownership, then release detached state. | Source-less fixtures and relevant native/backend inventory | follow-up · OPEN | [register evidence](release-gates.json) |
 | S1:F02 | Support documentation: Documentation for the actual shipped changes | SDK implementer | S1:F07 | Review changelog/support limitations and affected feature docs against exact source; preserve existing API and customer setup. Publish no unrelated experimental scene API. | Source and compiling examples for affected modules | required · CLOSED | [register evidence](release-gates.json) |
 | S1:F03 | Final compatibility build/test matrix: Candidate-scoped final compatibility matrix | SDK implementer | S1:F07, S1:C06 | Freeze affected modules/platforms via F07; run relevant complete suites, deployment builds, existing Swift/Objective-C clients, lint and unchanged API/wire/privacy checks. Replay scope is crash safety and other-feature non-disruption only; no full capture suite. | FINAL_COMPATIBILITY.md release applicability matrix | required · CLOSED | [register evidence](release-gates.json) |
-| S1:F06 | Release-specific freezes (S1/S2/S3): First independent extraction candidate freeze; repeat per later eligible fix | RUM maintainers | S1:C01, S1:C02, S1:C03, S1:C04, S1:C05, S1:C06, S1:P03, S1:P04, S1:A01, S1:F02, S1:F03, S1:F07, S1:E01, S1:T03, S1:T08 | Require applicable correctness, View/Action information, Resource attribution, object-lifetime/reentrancy, privacy, crash, API and exact source/artifact checks plus attributable review. Detailed network benchmarks and a replacement standalone network performance campaign are not prerequisites; investigate concrete visible regressions if found. Signed outgoing history is required before any separately authorized push. Separately land the qualified hitch assertion fix, then rebase only after verified upstream merge and confirm source/test identities. Session Replay captured-content defects are not blockers; host-app crash safety and other-feature non-disruption remain required. CI-flake repair is admitted only with clear evidence implicating the changed surface or associated tests; unrelated upstream failures remain visible without an agent repair campaign. | Exact candidate; one host; no concurrent measurement contamination | required · OPEN | [register evidence](release-gates.json) |
+| S1:F06 | Release-specific freezes (S1/S2/S3): First independent extraction candidate freeze; repeat per later eligible fix | RUM maintainers | S1:C01, S1:C02, S1:C03, S1:C04, S1:C05, S1:C06, S1:P03, S1:P04, S1:A01, S1:F02, S1:F03, S1:F07, S1:E01, S1:T03, S1:T08 | Require applicable correctness, View/Action information, Resource attribution, object-lifetime/reentrancy, privacy, crash, API and exact source/artifact checks plus attributable review. Detailed network benchmarks and a replacement standalone network performance campaign are not prerequisites; investigate concrete visible regressions if found. Signed outgoing history is required before any separately authorized push. H00 upstream merge/source verification and E01 retarget are completed; final current-head CI, maintainer acceptance and source/artifact checks remain. Session Replay captured-content defects are not blockers; host-app crash safety and other-feature non-disruption remain required. CI-flake repair is admitted only with clear evidence implicating the changed surface or associated tests; unrelated upstream failures remain visible without an agent repair campaign. | Exact candidate; one host; no concurrent measurement contamination | required · OPEN | [register evidence](release-gates.json) |
 | S1:E01 | URLSession exactly-once interception: URLSession exactly-once interception | SDK implementer + independent reviewer | S1:F07 | Source-less repeated/suspend/resume handler mutation regression fails current develop and passes a synchronized narrow task-claim/lifecycle fix; automatic and registered delegates remain compatible. | Isolated clean checkout of then-current develop; affected unit and native fixtures | required · CLOSED | [register evidence](release-gates.json) |
 | S1:E02 | Repeated view occurrence isolation: Repeated view occurrence isolation | SDK implementer + independent reviewer | S1:F07 | Retained H1 cannot absorb H2 start/stop attributes; old Resource remains H1, new action H2; restoration leaves one active occurrence. Must first fail current develop. | Isolated clean checkout of then-current develop; affected unit and native fixtures | follow-up · CLOSED | [register evidence](release-gates.json) |
 | S1:E03 | Resource completion ownership extraction: Resource completion ownership extraction | SDK implementer + independent reviewer | S1:F07 | Tracked late success/error/metrics cannot mutate a foreign view/session action. Native failed-body transfer, including response plus error, emits Error1/Resource0 with received status and controlled action0/1. Preserve successful/HEAD/204 behavior, both100ms expiry controls and unrelated manual compatibility. Original ninth automatic acceptance role is explicitly superseded; historical evidence stays intact. | Isolated clean checkout of then-current develop; affected unit and native fixtures | follow-up · OPEN | [register evidence](release-gates.json) |
