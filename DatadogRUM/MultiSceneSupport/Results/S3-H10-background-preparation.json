@@ -2,7 +2,7 @@
   "schema_version": 1,
   "work_item": "Isolated scene background and foreground with an unchanged usable peer",
   "gate": "S3:H10",
-  "state": "REVIEWED_PHASE_TRANSPORT_SESSION_UNPREPARED",
+  "state": "REVIEWED_COMPILED_SESSION_HOST_UNPREPARED",
   "owner": "Root",
   "reviewer": "/root/c06_runtime_plan",
   "defined_at": "2026-09-30T00:54:04.093738+00:00",
@@ -215,16 +215,16 @@
     "Late native/display evidence or dropped lifecycle journal rows"
   ],
   "next": [
-    "Compose the reviewed executor and phase transport with an H10-specific app/session adapter, actual witness/mapper producer and source-bound catalog. Arm only after two current mapper owners and display evidence.",
-    "Seal the complete delayed mapper prefix and retain later/cleanup tails. Integrate source/compiler/process/manifest identity, display and safe cleanup; scoped review precedes native use.",
-    "Native use waits for qualified physical input/display, fresh device/backend prerequisites and user availability. No automatic start at09:00."
+    "Compose the host phase/collection client with complete raw response persistence, transferred artifact verification, source/process identity and original cutoffs. Qualify changed transport with focused offline controls before native use.",
+    "Bind actual source-owned silent display evidence, backend inventory and safe task-only cleanup. Reuse the reviewed H06 primitives; no display digest alone qualifies co-visibility.",
+    "Native use waits for qualified physical input/display, fresh device/backend prerequisites and user availability. No invitation before September30 09:00 Paris and no automatic start at09:00."
   ],
-  "updated_at": "2026-09-30T03:04:30.644821+00:00",
+  "updated_at": "2026-09-30T04:04:26.326115+00:00",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/review-r2.json",
     "sha256": "d7435346784f04ada43626bbd95247abf2f47cee3a568d8e652bbe6c32eddb9a"
   },
-  "native_input_capture_gap": "The isolated compiled witness now reports actual window/root interaction flags alongside the observer state. Arm/invocation sequencing and session wiring remain incomplete; frozen H04/H06 sources are unchanged.",
+  "native_input_capture_gap": "The isolated app composes actual witness/mapper producers, three phase barriers, five dispatches and complete-prefix sealing. Physical input/display, host transfer, backend and cleanup integration remain unqualified; frozen H04/H06 inputs are unchanged.",
   "oracle_component": {
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/oracle-definition.json",
@@ -428,5 +428,40 @@
       }
     ],
     "scope": "Actual local filesystem transport controls with synthetic observations/driver; no UIKit, SDK or native app executes. Hash-checked namespace relocation preserves H04. No app/session adapter, native mapper/display proof, complete capture seal or cleanup integration."
+  },
+  "native_session": {
+    "state": "REVIEWED_COMPILED_SESSION_COMPONENT_ONLY",
+    "verdict": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/native-session-hgvu049h/verdict.json",
+      "sha256": "ac441c75622df1146f633583553f3a4e43d4f0bd2613d59b5762cd05f89b7250"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/native-session-hgvu049h/review-final.json",
+      "sha256": "c85a433ac230c72467ea45bb332182f97cf3713b1843299af36f5348f8e3efe7"
+    },
+    "source": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/native-session-hgvu049h/source-snapshot.json",
+      "sha256": "85e5872fe1456126607a2973e97f47966886836688d4198a2c1744c46fb88701"
+    },
+    "build": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/native-session-hgvu049h/compiler-r2/unsigned-product.json",
+      "sha256": "a4fbcc2663cecae93b0c1bd1a4b38294aa20521ed5509ca2d4f11c436b9edaa0"
+    },
+    "counts": {
+      "phase_controls": 30,
+      "capture_controls": 39,
+      "host_positive_captures": 6,
+      "host_controls": 14,
+      "renderer_controls": 6,
+      "recorder_controls": 6,
+      "concurrent_recorder_snapshots": 256,
+      "unsigned_ios_compile_passes": 1,
+      "unsigned_ios_compile_failures": 1
+    },
+    "native_producer_source_implemented": true,
+    "native_producer_runtime_qualified": false,
+    "native_runs": 0,
+    "gates_closed": [],
+    "scope": "Only five existing copied fixture members change. Actual recorder/broker and independent host checker controls plus one final unsigned iOS compile qualify composition. Synthetic observations and source/compiler results do not qualify display, physical process/transfer, backend or cleanup. Earlier component receipts and the original failed build remain unchanged."
   }
 }

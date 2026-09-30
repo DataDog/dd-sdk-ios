@@ -467,8 +467,14 @@ three inspect/permit barriers with fresh challenges, chained replies and single-
 consumption. Partial publication remains pending under its original cutoff;
 unknown newer work, stale replies and failed writes cannot grant permission.
 STOP is polled before consuming a grant, and actual observation bytes remain
-opaque. App/session injection, native mapper production, display and complete
-capture composition remain; these controls grant no native admission.
+opaque. A separate collection operation binds all three consumed replies and the
+fifth invocation; it never grants more SDK work. `scene_background_session.swift`
+composes the producer and dispatcher in an isolated seven-step app/driver adapter.
+`scene_background_capture.swift` persists complete recorder snapshots and validates
+the inspected prefix against a fresh snapshot before sealing. The host reader
+`scene_background_capture.py` rechecks both complete prefixes and native journals.
+The renderer changes five existing copied members; the app compiles without
+changing original fixture membership. These are component qualifications only.
 Benign focus/layout events are allowed;
 B background/disconnect, owner replacement and unknown events reject. Ownerless
 window events must match observed scene-bound non-fixture auxiliary identities;
@@ -480,11 +486,14 @@ updates are allowed. A stops its old occurrence and returns with a new one; B
 keeps its current occurrence. Complete backend joins remain independent of source
 tags and reject missing, duplicated or foreign work.
 
-The focused synthetic controls and component review qualify only this checker.
-A native producer, complete sealed source/process-bound transfer, actual display,
-composed runner and safe cleanup are still required. Neither local nor backend
-component PASS grants native or release acceptance. Preserve post-terminal
-updates and cleanup as a separate tail; never discard them to satisfy the checker.
+The focused controls use synthetic observations; recorder lock checks use the
+actual recorder with minimal signal models. The display digest is a binding
+placeholder until actual source-bound display artifacts are verified. Host
+transport, native process/transfer, backend and safe cleanup integration remain
+unqualified. No component PASS grants native or release acceptance. Sealing allows
+delayed ordinary view-document revisions, rejects additional work or changed
+owners, and precedes terminal success. Preserve post-terminal updates and cleanup
+as a separate tail; never discard them to satisfy the checker.
 
 ### H06 Operation preparation
 

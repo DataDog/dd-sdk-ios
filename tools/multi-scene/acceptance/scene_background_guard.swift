@@ -93,6 +93,13 @@ internal final class ProbeSceneBackgroundGuard {
             && owners.first(where: { $0.logicalSceneID == scene })?.nativeSceneID == native
     }
 
+    func inspectCollection(_ value: ProbeSceneBackgroundWitness) -> String? {
+        if let failure { return failure }
+        guard complete else { return reject("background collection precedes completed dispatch") }
+        if let reason = inspect(value, phase: .foreground) { return reject(reason) }
+        return nil
+    }
+
     private static func geometry(_ value: ProbeGeometry) -> Bool {
         [value.x, value.y, value.width, value.height].allSatisfy(\.isFinite)
             && value.width > 0 && value.height > 0

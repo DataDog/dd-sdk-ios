@@ -32,6 +32,13 @@ internal final class ProbeSceneBackgroundDispatch {
 
     var complete: Bool { failure == nil && guardrail.complete }
 
+    func inspectCollection(_ value: ProbeSceneBackgroundWitness) -> String? {
+        if let reason = interruption() { return reason }
+        guard !busy else { return reject("background collection reentered dispatch") }
+        if let reason = guardrail.inspectCollection(value) { return reject(reason) }
+        return nil
+    }
+
     private func reject(_ reason: String) -> String {
         failure = failure ?? reason
         return failure ?? reason
