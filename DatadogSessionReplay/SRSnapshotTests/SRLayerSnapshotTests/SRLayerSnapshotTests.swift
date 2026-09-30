@@ -29,6 +29,14 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
         )
     }
 
+    func testTextVariants() async throws {
+        try await takeLayerSnapshotFor(
+            TextVariantsFixtureView(),
+            with: [.maskAll, .maskSensitiveInputs],
+            shouldRecord: shouldRecord
+        )
+    }
+
     func testDrawingGroup() async throws {
         try await takeLayerSnapshotFor(
             DrawingGroupFixtureView(),
