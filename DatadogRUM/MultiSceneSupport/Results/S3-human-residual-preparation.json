@@ -77,9 +77,9 @@
         "windows.focus-activation-only"
       ],
       "decisive_test": "Actual per-scene active/inactive/background changes and work stay with the intended owner; one scene does not replace its peer current view.",
-      "missing": "H04 fixture/oracle, collection, native channel, startup freshness and physical transfer/cleanup components pass review. Outer runner, rebuilt signed product and one physical cell remain. Earlier compiler evidence predates the new channel. Original failed disconnect and H06 inputs unchanged; H10 separate.",
+      "missing": "H04 components and outer runner pass reviews and controls; composed physical build and signature qualify. Final exact product/access/admission review and one physical cell remain. Original disconnect failures and H06 inputs unchanged; H10 separate.",
       "owner": "Root implements; /root/c06_runtime_plan reviews; user supplies only unavailable native input",
-      "state": "H04_PHYSICAL_ADAPTER_REVIEWED_RUNNER_PENDING",
+      "state": "H04_RUNNER_AND_SIGNED_PRODUCT_PREPARED",
       "preparation_owner": "Results/S3-H04-activation-preparation.json"
     },
     {

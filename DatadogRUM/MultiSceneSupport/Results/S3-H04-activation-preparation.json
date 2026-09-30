@@ -4,7 +4,7 @@
   "gate": "S3:H04",
   "owner": "Root",
   "reviewer": "/root/c06_runtime_plan",
-  "state": "REVIEWED_PHYSICAL_ADAPTER_PREPARATION_PASS",
+  "state": "OUTER_RUNNER_AND_SIGNED_PRODUCT_PREPARED",
   "defined_at": "2026-09-29T18:46:46.665215+00:00",
   "defined_before_implementation": true,
   "new_experiment": false,
@@ -93,12 +93,11 @@
     "offline_tests": 16,
     "build_attempts": 1
   },
-  "updated_at": "2026-09-30T00:09:05.323283+00:00",
+  "updated_at": "2026-09-30T00:35:07.730401+00:00",
   "remaining": [
-    "Compose signed-product/source/device preflight, install/launch, the reviewed collectors and task-only cleanup in one outer runner.",
-    "Rebuild and sign the isolated composed product; the earlier unsigned product predates native channel and startup freshness.",
-    "Keep native, backend and cleanup verdicts separate; backend collection precedes uninstall without forced flush.",
-    "Designated final review before one physical H04 cell; no human invitation before September30 09:00 Paris and fresh readiness remains required."
+    "Bind the final signed product, complete helpers and reviewed source/compiler evidence into a one-cell plan.",
+    "Prepare actual backend-access proof and fixed native/backend/cleanup admission before execution; never revive old readiness or deadlines.",
+    "Designated final admission review and one physical H04 cell; no human invitation before September30 09:00 Paris."
   ],
   "collection": {
     "verdict": {
@@ -159,5 +158,58 @@
     },
     "host_tests": 18,
     "actual_swift_freshness_checks": 6
+  },
+  "runner": {
+    "verdict": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-runner-k7v7gh_e/verdict.json",
+      "sha256": "8ba2de36622379bfd2cd4f8962d942fc68bee37474e314eac1ae55ce27183770"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-runner-k7v7gh_e/review.json",
+      "sha256": "03475e44e2f004f53607fbd13f785f335b8cc384419e3e6b012027fcbee61b87"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-runner-k7v7gh_e/controls-r1/result.json",
+      "sha256": "0d7a1bb564efba4cb2946ceae06800220c00faa8fa2fcddbcab29fbec7619a65"
+    },
+    "offline_tests": 22,
+    "native_admitted": false
+  },
+  "composed_build": {
+    "state": "SIGNED_PHYSICAL_DEBUG_PRODUCT_QUALIFIED",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-runner-k7v7gh_e/compiler-r1/definition.json",
+      "sha256": "762b6deacf138ec1dc79c22f26c401cf5ab4fbffe4da253734bafd9955062591"
+    },
+    "result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-runner-k7v7gh_e/compiler-r1/result.json",
+      "sha256": "cf212795017698ec397c3ff3fe195bdb69d24dfcb868844fa45dec047c2dcbe4"
+    },
+    "compiler": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-runner-k7v7gh_e/compiler-r1/compiler.json",
+      "sha256": "54867ffc4d89c7412dab9e163cfc261bcb479f04617d4bdb71dec0bf71c88cba"
+    },
+    "unsigned_product": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-runner-k7v7gh_e/compiler-r1/unsigned-product.json",
+      "sha256": "5944e4096653e44f17c2a6b969e530441a36661b00e6947e5a68c137a1163cdb"
+    },
+    "warnings": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-runner-k7v7gh_e/compiler-r1/warning-disposition.json",
+      "sha256": "cd8fde9b0f42c6f52e049b581f0f15bb8817e1eaf088d455edc51d5b153ad1ba"
+    },
+    "signed_product": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-runner-k7v7gh_e/signed/product.json",
+      "sha256": "8ff62b3368cbc06826c93a6cdff3c5af99e04733db66162334a5074466670e35"
+    },
+    "signing_original_failure": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-runner-k7v7gh_e/signed/failure.json",
+      "sha256": "ee1f075812a7cbdc0b036afa143a831392205ab7ce0b29614348a5b7dac5b4c9"
+    },
+    "separate_signature_verification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-runner-k7v7gh_e/signed/verification-r2/definition.json",
+      "sha256": "362ebf7d3fee28a4704279420f25f828505fe63e877c7af0f1517f2dc12874e8"
+    },
+    "attempts": 1,
+    "native_launches": 0
   }
 }

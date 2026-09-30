@@ -287,7 +287,12 @@
     "authorized_seconds": 7200,
     "awake_until_utc": "2026-09-29T23:27:18.243114+00:00",
     "work_deadline": null,
-    "state": "RUNNING_USER_AUTHORIZED"
+    "state": "EXPIRED_VERIFIED_ABSENT",
+    "verification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h06-preparation-1gvtmky_/h04-runner-k7v7gh_e/awake-current.json",
+      "sha256": "787efa26df9928692abafd46a716222e1308a9a09d2c56b3014bd7df5b792360"
+    },
+    "renewed": false
   },
   "minimum_autonomous_work_until_utc": "2026-09-27T06:00:00+00:00",
   "latest_autonomous_checkpoint": "Results/autonomous-progress-20260927.json",
