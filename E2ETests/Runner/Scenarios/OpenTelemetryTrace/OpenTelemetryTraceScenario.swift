@@ -30,7 +30,7 @@ struct TraceScenario: Scenario {
                 ),
                 // Exercise the client-side stats upload pipeline (MessagePack + deflate to
                 // `/api/v0.2/stats`) end to end so Synthetics validates real intake acceptance.
-                statsComputationEnabled: true
+                featureFlags: [.clientSideStats: true]
             )
         )
 
