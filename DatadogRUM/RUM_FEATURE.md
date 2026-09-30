@@ -184,11 +184,11 @@ RUM.enable(
         collectAccessibility: false,
         
         // RUM feature flags
-        // Default: .defaults ([.trackScrollAndSwipeActions: true])
+        // Default: .defaults ([.trackScrollAndSwipeActions: true, .viewUpdates: true])
         // Set [.trackScrollAndSwipeActions: false] to disable automatic
         // scroll/swipe action tracking and INV attribution for those gestures.
-        // Set [.viewUpdates: true] to send incremental view_update deltas
-        // instead of resending the full view event on every update
+        // Set [.viewUpdates: false] to always resend the full view event
+        // on every update, instead of incremental view_update deltas
         featureFlags: .defaults
     )
 )
@@ -274,9 +274,9 @@ Event mappers allow modifying or dropping events before upload:
 **Note**: To filter views, use view predicates instead of the mapper.
 
 ### Feature Flags
-- `featureFlags` defaults to `.defaults`, currently `[.trackScrollAndSwipeActions: true]`.
+- `featureFlags` defaults to `.defaults`, currently `[.trackScrollAndSwipeActions: true, .viewUpdates: true]`.
 - `.trackScrollAndSwipeActions`: when set to `false`, disables automatic scroll and swipe action tracking done through `UIScrollView.delegate` swizzling. It has no effect unless `uiKitActionsPredicate` is configured. Disabling it also prevents scroll/swipe gestures from being considered for INV (Interaction-to-Next-View) attribution.
-- `.viewUpdates`: defaults to `false` (not set). When set to `true`, changes how view updates are reported: instead of resending the full view event on every update, the SDK sends one full event and then only the fields that changed since (as a `view_update` event). A full event is still sent every 5 updates so the view state can be fully reconstructed even if some updates are lost in transit.
+- `.viewUpdates`: defaults to `true`. When `true`, changes how view updates are reported: instead of resending the full view event on every update, the SDK sends one full event and then only the fields that changed since (as a `view_update` event). A full event is still sent every 5 updates so the view state can be fully reconstructed even if some updates are lost in transit. Set to `false` to opt out and always send full view events.
 - `.none`: no-op feature flag case kept in the public enum.
 
 ### Timeseries Collection (Experimental)

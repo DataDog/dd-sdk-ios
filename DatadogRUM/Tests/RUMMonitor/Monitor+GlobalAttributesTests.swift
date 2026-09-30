@@ -16,7 +16,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
 
     override func setUp() {
         monitor = Monitor(
-            dependencies: .mockWith(featureScope: featureScope),
+            dependencies: .mockWith(featureScope: featureScope, featureFlags: [.viewUpdates: false]),
             dateProvider: SystemDateProvider()
         )
     }

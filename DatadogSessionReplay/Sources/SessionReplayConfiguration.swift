@@ -141,9 +141,9 @@ extension SessionReplay.Configuration.FeatureFlags {
 
     /// Accesses a feature flag value.
     ///
-    /// Returns false by default.
+    /// Falls back to the flag's entry in `.defaults` when not explicitly set, or `false` if it has no default.
     public subscript(flag: Key) -> Bool {
-        self[flag, default: false]
+        self[flag] ?? Self.defaults[flag, default: false]
     }
 }
 

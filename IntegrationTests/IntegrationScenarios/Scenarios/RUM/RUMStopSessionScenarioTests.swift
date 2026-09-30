@@ -69,7 +69,7 @@ class RUMStopSessionScenarioTests: IntegrationTests, RUMCommonAsserts {
             let sessions = try RUMSessionMatcher.sessions(maxCount: 4, from: requests)
             // No active views in any session
             return sessions.count == 4 && sessions.allSatisfy { session in
-                !session.views.contains(where: { $0.viewEvents.last?.view.isActive == true })
+                !session.views.contains(where: { $0.isActive == true })
             }
         }
 
@@ -87,7 +87,7 @@ class RUMStopSessionScenarioTests: IntegrationTests, RUMCommonAsserts {
             let view1 = appStartSession.views[1]
             XCTAssertEqual(view1.name, "KioskViewController")
             XCTAssertEqual(view1.path, "Runner.KioskViewController")
-            XCTAssertEqual(view1.viewEvents.last?.session.isActive, false)
+            XCTAssertEqual(view1.latestViewEvent?.session.isActive, false)
             RUMSessionMatcher.assertViewWasEventuallyInactive(view1)
         }
 
@@ -110,7 +110,7 @@ class RUMStopSessionScenarioTests: IntegrationTests, RUMCommonAsserts {
             let view2 = normalSession.views[1]
             XCTAssertEqual(view2.name, "KioskViewController")
             XCTAssertEqual(view2.path, "Runner.KioskViewController")
-            XCTAssertEqual(view2.viewEvents.last?.session.isActive, false)
+            XCTAssertEqual(view2.latestViewEvent?.session.isActive, false)
             RUMSessionMatcher.assertViewWasEventuallyInactive(view2)
         }
 
@@ -132,7 +132,7 @@ class RUMStopSessionScenarioTests: IntegrationTests, RUMCommonAsserts {
             let view2 = interruptedSession.views[1]
             XCTAssertEqual(view2.name, "KioskViewController")
             XCTAssertEqual(view2.path, "Runner.KioskViewController")
-            XCTAssertEqual(view2.viewEvents.last?.session.isActive, false)
+            XCTAssertEqual(view2.latestViewEvent?.session.isActive, false)
             RUMSessionMatcher.assertViewWasEventuallyInactive(view2)
         }
     }

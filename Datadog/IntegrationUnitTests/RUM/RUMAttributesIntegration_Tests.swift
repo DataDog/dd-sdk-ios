@@ -573,7 +573,7 @@ final class RUMAttributesIntegration_Tests: XCTestCase {
         let firstViewEvent = applicationView.viewEvents.first
         XCTAssertEqual(firstViewEvent?.numberOfAttributes, 0)
         // app launch view stop delta carries the global attr (changed from 0 to 1)
-        XCTAssertEqual(applicationView.latestUpdateValue(\.context)?.contextInfo.count, 1)
+        XCTAssertEqual(applicationView.latestViewEvent?.context?.contextInfo.count, 1)
 
         let customView = try XCTUnwrap(session.views.first(where: { $0.name == viewName }))
 
@@ -706,7 +706,7 @@ final class RUMAttributesIntegration_Tests: XCTestCase {
         let firstViewEvent = applicationView.viewEvents.first
         XCTAssertEqual(firstViewEvent?.numberOfAttributes, 0)
         // app launch view stop delta carries the global attr (changed from 0 to 1)
-        XCTAssertEqual(applicationView.latestUpdateValue(\.context)?.contextInfo.count, 1)
+        XCTAssertEqual(applicationView.latestViewEvent?.context?.contextInfo.count, 1)
 
         let customView = try XCTUnwrap(session.views.first(where: { $0.name == viewName }))
 
@@ -838,7 +838,7 @@ final class RUMAttributesIntegration_Tests: XCTestCase {
         XCTAssertEqual(firstView.viewUpdateEvents[0].attribute(forKey: "globalKey"), "globalValue")
 
         // resource completion delta: context unchanged from stop delta (nil); verify final state
-        XCTAssertEqual(firstView.latestUpdateValue(\.context)?.contextInfo.count, 3)
+        XCTAssertEqual(firstView.latestViewEvent?.context?.contextInfo.count, 3)
 
         // start view2 event
         XCTAssertEqual(secondView.viewEvents[0].numberOfAttributes, 2)

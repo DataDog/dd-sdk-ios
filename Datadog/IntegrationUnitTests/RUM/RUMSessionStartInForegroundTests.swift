@@ -452,7 +452,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 XCTAssertEqual(session.views.count, 1)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
                 DDAssertEqual(session.views[0].duration, timeToSDKInit + timeToAppBecomeActive + dt1 + dt2, accuracy: accuracy)
-                XCTAssertEqual(session.views[0].viewEvents.last?.view.longTask?.count, 2)
+                XCTAssertEqual(session.views[0].latestViewEvent?.view.longTask?.count, 2)
             }
         }
 
@@ -487,7 +487,7 @@ class RUMSessionStartInForegroundTests: RUMSessionTestsBase {
                 XCTAssertEqual(session.views.count, 1)
                 XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
                 DDAssertEqual(session.views[0].duration, dt1 + dt2, accuracy: accuracy)
-                XCTAssertEqual(session.views[0].viewEvents.last?.view.longTask?.count, 2)
+                XCTAssertEqual(session.views[0].latestViewEvent?.view.longTask?.count, 2)
             }
         }
     }

@@ -67,8 +67,8 @@ class RUMInternalProxyTests: XCTestCase {
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 
         // Then
-        try rumEventMatchers.lastRUMEvent(ofType: RUMViewEvent.self)
-            .model(ofType: RUMViewEvent.self) { rumModel in
+        try rumEventMatchers.lastRUMEvent(ofType: RUMViewUpdateEvent.self)
+            .model(ofType: RUMViewUpdateEvent.self) { rumModel in
                 XCTAssertEqual(rumModel.view.jsRefreshRate?.max, 50.0)
                 XCTAssertEqual(rumModel.view.jsRefreshRate?.min, 25.0)
                 XCTAssertEqual(rumModel.view.jsRefreshRate?.average, 40.0)
