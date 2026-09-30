@@ -2,7 +2,7 @@
   "schema_version": 2,
   "work_item": "S2 finite input preparation",
   "status": "TWO_REMAINING_INPUT_PACKAGES",
-  "updated_at": "2026-09-29T22:39:14.214738+00:00",
+  "updated_at": "2026-09-30T23:39:15.262442+00:00",
   "owner": "Harness implementer; root owns native lane",
   "scope_owner": "Results/S2-release-gate-review-20260925.json; release-gates.json releases.S2.execution_packages",
   "source_pair": {
@@ -26,11 +26,11 @@
       ],
       "owner": "SDK implementer; human operator for input",
       "evidence_owner": "Results/S2-coverage-remaining-preparation.json",
-      "remaining": "Six SwiftUI stack/split behavior cells remain: baseline26.5, baseline27.1 and candidate27.1 for each shape. Original launch and qualification failures remain; UIKit C07/C08 stay closed.",
+      "remaining": "Two SDK27.1 SwiftUI split cells remain in the coverage owner; accepted stack cells and SDK26.5 split baseline are preserved. UIKit C07/C08 stay closed.",
       "decisive_test": "Actual control/navigation/fold effect and exact view/action owner parity. Split journeys supply H14. Existing naming/control limitations remain explicit.",
       "environment": "Xcode27.1 Duo27.1; three refreshed SwiftUI-only products from the original source/compiler pairs (26.5 and27.1).",
       "preparation": "Three builds and scoped first-cell review pass. The public-reader controls and43 affected Home/continuation controls pass. Saved native graphs expose all six controls; live root, owners, controls, counter and scroll are required before any prompt. Original INVALIDs and separate restoration remain.",
-      "blocker": "User unavailable until09:00 Paris September30. First live readiness and behavioral cell remain unqualified; fresh operator/device readiness required."
+      "blocker": "The SDK27.1 split attempt and automatic prefix qualification stopped. Read the coverage owner and its distinct failed cleanup/restoration; supported capture remains unqualified. No repeat or human invitation is admitted."
     },
     {
       "id": "transitions",
@@ -44,8 +44,8 @@
       "decisive_test": "Real pop cancel/finish and sheet cancel/dismiss; emitted callback-work owners and complete local occurrence/action parity. Async mapper timing and immediate background upload are not universal prerequisites.",
       "environment": "Duo27.1 preferred; one eligible physical UIKit pair is the scoped unsupported-input fallback, with no Duo-hardware claim.",
       "qualified_baseline": "Results/S2-H11-H13-local-baseline.json; no UIKit baseline repeat due",
-      "prepared_continuation": "Results/S2-H11-H13-local-continuation.json; one reviewed physical B cell using existing signed products",
-      "blocker": "Fresh connected/unlocked physical iPad and operator readiness. Shared helper bindings now reviewed; existing signed products and accepted baseline stay reusable.",
+      "prepared_continuation": "Results/S2-H11-H13-local-continuation.json owns the consumed attempt and original reviewed binding; existing signed products remain reusable.",
+      "blocker": "Candidate stopped before input on the portrait/landscape axis assumption; cleanup PASS. Prepare baseline-matched orientation readiness and review before another admission. Device/operator readiness cannot renew the consumed attempt.",
       "swiftui_preparation": "Results/S2-H12-H13-swiftui-duo.json",
       "preparation": "Reviewed delayed callback/Home collection, actual saved-capture replay and immutable post-stop evidence. Existing signed products reused."
     }
@@ -138,7 +138,7 @@
     "artifacts": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/remaining-preflight",
     "coverage": "Existing fresh-process entrypoint PASS; frozen rendered oracle intentionally retained.",
     "network": "Existing fresh-process entrypoint PASS.",
-    "transitions": "Reviewed helper refresh PASS; only two helper hashes changed. Default human/Home and source/product/cleanup contract preserved.",
+    "transitions": "Current physical owner records the pre-input orientation failure, original INVALID and cleanup PASS. Accepted baseline and products remain; orientation readiness needs a finite offline correction before another admission.",
     "native_runs": 0,
     "limit": "Earlier entrypoint checks remain historical. The repair loop owns actual-runner controls, three passive-observer builds and fresh helper-bound preparations; none establish native acceptance."
   },

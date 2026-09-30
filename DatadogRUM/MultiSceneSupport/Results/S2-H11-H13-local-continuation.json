@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "state": "REVIEWED_CANDIDATE_HARNESS_NATIVE_UNADMITTED",
-  "updated_at": "2026-09-28T13:40:52.570685+00:00",
+  "state": "STOPPED_BEFORE_INPUT_CLEANUP_PASS",
+  "updated_at": "2026-09-30T23:33:02.223803+00:00",
   "owner": "root",
-  "reviewer": "/root/c06_runtime_plan",
+  "reviewer": "/root/h10_backend_reviewer",
   "gates": [
     "S2:H11",
     "S2:H13"
@@ -14,20 +14,20 @@
   },
   "predecessor": "Results/S2-H11-H13-local-baseline.json",
   "preparation": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/prepare-physical.log",
-    "sha256": "d19ab72a0092d31ecd5f467d5b01565bbd7329a967951b4d923e79eff12e6603"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/prepare.log",
+    "sha256": "ce868e0a307bfb5e85cb553582ffb0f192751dda6d57c3a46021c96374a89fb7"
   },
   "runtime_plan": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/physical-candidate/plan.json",
-    "sha256": "69710c4d6d7b2313a78a0bf8254f793d0af431127148ebf8fffe9d37fa83ce3c"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/runtime/plan.json",
+    "sha256": "a3e02d13763bdf9867ed15e7959e8c396e0bef3260ea970a91cf3721fc021378"
   },
   "controls": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/physical-candidate/controls.json",
-    "sha256": "a95803e0ed31c475ee0fd30d1596bddf9f6a42cbca7a0e4dbc348e5c001f899c"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/runtime/controls.json",
+    "sha256": "15fdeeeb0642dbae9f72f089a04475bb170ee42ce42e8f9bfb106fca7f795427"
   },
   "review": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-human-sitting-20260928-8u_qq42x/remaining-preparation-u2_h3rrs/physical-candidate/review.json",
-    "sha256": "1c851c5044c86b78af170d8cd38ec2b291fe466df4f228595c6aa65dab54afff"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/runtime/review.json",
+    "sha256": "d7b75972008f6ea684befb7bdbb529e6a7dc7e0ea9ed8955493d83e7bbbe9607"
   },
   "source_pair": {
     "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
@@ -37,21 +37,27 @@
     "candidate_cells": 1,
     "existing_signed_products": "REVERIFIED",
     "builds": 0,
-    "native_runs": 0,
+    "native_runs": 1,
     "backend_queries": 0,
     "physical_runner_controls": 93,
     "shared_collection_controls": 13,
     "saved_capture_replay": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/human-harness-loop-20260927-2kdeikfi/cycle-4-saved-capture-replay.json",
       "sha256": "cd66a0dc50275a788c6058af302a1984f56078cf8c2df9acb50979d3b7dac3b8"
-    }
+    },
+    "reviewer_provenance_controls": 9,
+    "physical_suites_rerun": 0,
+    "qualified_candidate_cells": 0,
+    "user_prompts": 0,
+    "gesture_inputs": 0,
+    "native_transitions": 0
   },
   "contract": "s2-local-transitions-v1",
   "scope": "Only the missing physical UIKit automatic candidate. Exact actual transition/owner, View/Action and Home stop inventory; actual display and installed binary bound. Recorder duration and mapper-before-callback timing remain diagnostic. Complete backend delivery is separately owned.",
-  "original_verdicts": "Immutable INVALID / evidence INCOMPLETE / cleanup PASS; no old admission renewed",
+  "original_verdicts": "All original failed attempts and admissions remain immutable. This attempt is INVALID / evidence INCOMPLETE / cleanup PASS; the later read-only checkpoint verification is separate.",
   "release_acceptance": false,
   "gate_closures": [],
-  "next_action": "Fresh connected/unlocked iPad and operator readiness for the single UIKit candidate. Delayed callback/Home work collects by identity; failed input requires release/native idle. Reuse the saved baseline; no UIKit baseline, SwiftUI or Home-only repeat.",
+  "next_action": "Prepare an offline preflight bound to the saved landscapeLeft baseline, actual orientation and screenshot/native axes before another invitation. Retain full owned scene/window/root/key and source-supported auxiliary-window checks. Do not blindly sort/swap axes, change the old oracle or repeat the consumed admission.",
   "superseded_preparation": {
     "runtime_plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/physical-candidate/runtime/plan.json",
@@ -145,5 +151,87 @@
     "builds": 0,
     "native_runs": 0,
     "tests_rerun": 0
+  },
+  "superseded_preparation_reference": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/owner-before-rebind.json",
+    "sha256": "7c34ef4fc863ed3db1093f8867c60d55c66d77544119fccf3b75b63cb0e518da"
+  },
+  "reviewer_assignment": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/runtime/reviewer-assignment.json",
+    "sha256": "222be8ba71531c00d846366df65e755244097957698896c0a48ee180eb9ebc85"
+  },
+  "current_rebind": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/rebind.json",
+    "sha256": "394ff8086eb40ac09a392144ac57e9017655b31360dab698cddbdee93828fc68"
+  },
+  "current_device_preflight": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/hardware-fresh.json",
+    "sha256": "638de2ed30fb5f1012761fedefff828aa0e93a72b438276a86d46a9ace76a0ae"
+  },
+  "native_admitted": true,
+  "execution": {
+    "controller": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/runtime/controller.json",
+      "sha256": "65f60cd83b4fec0c214b2950acada4ff1b2ed78ed1aa3a2a0eea98a71009964e"
+    },
+    "admission": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/runtime/native-admission.json",
+      "sha256": "162247a3bbc84443a410a2e7153a850c6c5dc1f6418e7fa8eb06db748f7930f1"
+    },
+    "preflight": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/preflight.json",
+      "sha256": "ae971d3366d7becc3fd26cf8cb1d7beb4b62adfbb912c7d8926e464a872ada43"
+    },
+    "operator_ready": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/operator-ready-r2.json",
+      "sha256": "4d0a685d568bb55434e12d62548fd2e81f795354bf710d0394e4147fcbf99768"
+    },
+    "scenario": "UNQUALIFIED",
+    "evidence": "INCOMPLETE",
+    "cleanup": "PASS",
+    "state": "INVALID",
+    "original_summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/runtime/cells/physical_ipad-UIKit-automatic-stack-B/summary.json",
+      "sha256": "2d09b42dbccef0dc9452bb32d5731c0b212c1ec52c43a3a63f4a55aed25b7dcf"
+    },
+    "supervisor": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/runtime/physical_ipad-UIKit-automatic-stack-B-driver.supervisor.json",
+      "sha256": "b8ad5102b91a5589c68747419893d5eec975b293ac4d6a57ff9d7a90935f74cd"
+    },
+    "native_preserved": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/runtime/cells/physical_ipad-UIKit-automatic-stack-B/native-preserved.jsonl",
+      "sha256": "3cc7598926c8ef7c820c96f1c20a4984e191014e8537f8705a5baf41c7b9fc63"
+    },
+    "installed_code": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/runtime/cells/physical_ipad-UIKit-automatic-stack-B/installed-code-verified.json",
+      "sha256": "4f1c0570f55f902b722b86a6ff32a06b407aee13b821c05a0832809070915899"
+    },
+    "geometry_assessment": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/safe-checkpoint/geometry-assessment.json",
+      "sha256": "311c4188e5fe44c4b4416599918d3de697a5f5c7bf53f8e03b9177368b69aab6"
+    },
+    "post_exit_device_verification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/safe-checkpoint/device-verification.json",
+      "sha256": "e51173f65656a62de0b90e92c7eca7d0e1dde95635a18b3d003b8e4e1072127c"
+    },
+    "post_exit_host_quiescence": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/safe-checkpoint/host-quiescence.json",
+      "sha256": "c344defc810dcdb9844477cea0976c1698f50468aa64d6f5045ad43c61a6413a"
+    },
+    "operator_page_closed": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/safe-checkpoint/operator-closed.json",
+      "sha256": "31994feb4073caa172a8b459a2cde4a7dfb6cc122e57123117681fc7a8537cab"
+    },
+    "admission_consumed": true,
+    "active_native": false,
+    "user_prompt_issued": false
+  },
+  "checkpoint": {
+    "state": "SAFE_NO_NATIVE_WORKER_OR_TASK_APP",
+    "at": "2026-09-30T23:33:02.223803+00:00",
+    "owner_request": "User: Perform a safe checkpoint",
+    "source_change": "None; the orientation preflight repair is not implemented",
+    "release_acceptance": false,
+    "gate_closures": []
   }
 }

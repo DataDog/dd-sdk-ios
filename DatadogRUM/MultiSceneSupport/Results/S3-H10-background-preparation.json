@@ -2,7 +2,7 @@
   "schema_version": 1,
   "work_item": "Isolated scene background and foreground with an unchanged usable peer",
   "gate": "S3:H10",
-  "state": "BOOTSTRAP_CLEANUP_COMPONENT_QUALIFIED",
+  "state": "STILL_SOURCE_DRAFT_CHECKPOINTED_UNQUALIFIED",
   "owner": "Root",
   "reviewer": "/root/c06_runtime_plan",
   "defined_at": "2026-09-30T00:54:04.093738+00:00",
@@ -215,10 +215,10 @@
     "Late native/display evidence or dropped lifecycle journal rows"
   ],
   "next": [
-    "Define and implement the smallest H10 physical still-source adapter using actual returned Xcode MCP artifacts and the existing display decoder; source/device/session/inspect bindings and focused controls precede native qualification.",
+    "Recover the exact privately preserved still-source draft, complete request/capture ordering and failure guards, add focused negative controls, and obtain designated review. Actual tool/source qualification follows only after that offline component passes.",
     "Compose actual native/display/bootstrap/backend/cleanup evidence before one bounded H10 admission. H06 continuous silent recording and physical Duo remain separate."
   ],
-  "updated_at": "2026-09-30T21:00:58.642687+00:00",
+  "updated_at": "2026-09-30T23:33:02.223803+00:00",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/review-r2.json",
     "sha256": "d7435346784f04ada43626bbd95247abf2f47cee3a568d8e652bbe6c32eddb9a"
@@ -663,13 +663,26 @@
     }
   },
   "source_capture_preparation": {
-    "state": "PROPOSED_NEXT_COMPONENT_NO_NATIVE_ADMISSION",
+    "state": "UNQUALIFIED_DRAFT_PRESERVED",
     "design": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-bootstrap-k40_0mn0/next-source-producer-design.json",
       "sha256": "c1053793c4ce991e88e88ebd5c7bc79ebd1c0a5bdcb20adb5255a91f4086c550"
     },
     "discriminator": "The current Xcode MCP contract explicitly supports physical-device still capture without activation or input; H10 needs four one-use display anchors, not H06 continuous video.",
     "native_runs": 0,
-    "gates_closed": []
+    "gates_closed": [],
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-still-source-r5u9921j",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-still-source-r5u9921j/definition.json",
+      "sha256": "686e7e16428a66b8684914b239d6a6f5580e556f82bf10d0bc30e7bf0c6afe7d"
+    },
+    "scope": "Host source-binding adapter only. Actual tool/pump startup, display instantiation, native phase composition, human input, H10 runtime and H06 continuous silent video remain unqualified.",
+    "draft_checkpoint": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-still-source-r5u9921j/checkpoint-draft/preservation.json",
+      "sha256": "609d68e126c4324a090eb7e66cac9d0ca58938185f718de63c9019922ea421d6"
+    },
+    "working_tree_draft_removed": true,
+    "tests": 0,
+    "review": "NOT_RUN"
   }
 }

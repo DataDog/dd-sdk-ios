@@ -571,13 +571,17 @@ installed code, all7349 artifact hashes, four native callback chains,10 terminal
 views/10actions, Home stop and cleanup were reverified. Four emitted callback actions
 have the expected owner. The finish chains retain their original asynchronous mapper
 snapshot failures. Fourteen captured-evidence controls, six unit tests and designated
-review pass. Candidate remains unrun; no gate closes and no original verdict changes.
+review pass. At that assessment the candidate was unrun; no gate closed and no original verdict changed.
 
 The [candidate-only continuation](../Results/S2-H11-H13-local-continuation.json)
 now binds the missing UIKit arm to that reviewed baseline and the existing signed
 products. Its local View/Action contract retains actual display/transition/owner
-checks and cleanup, with no backend query. Preparation and review pass; fresh
-physical/operator readiness and a real candidate result remain required.
+checks and cleanup, with no backend query. Its first candidate attempt stopped before
+any prompt: the baseline was landscapeLeft, while the full owned candidate window
+was portraitUpsideDown and the harness compared its axes with unrotated panel bounds.
+Cleanup and separate post-exit verification pass; the original INVALID remains.
+The linked owner retains the full inventory and exact evidence. Prepare orientation
+readiness offline before another admission; no SDK regression or gate closure follows.
 
 
 ## Scoped Duo SwiftUI continuation, September27
@@ -608,5 +612,5 @@ scenario/evidence/cleanup and matches the complete12View/10action inventory, inc
 both inherited limitations. The combined saved-evidence assessment revalidates both
 tracking pairs, source/products, worker/session end and complete artifact inventories.
 Independent review closes only S2:H12 and supplies the SwiftUI portion of H13. Physical
-UIKit B remains unrun; no more SwiftUI or baseline gestures are due. The old strict
+UIKit B still needs a valid comparison; no more SwiftUI or baseline gestures are due. The old strict
 failure and stopped matrix remain immutable; no S3 or physical Duo claim follows.

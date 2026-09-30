@@ -2958,13 +2958,17 @@
     "state": "REVIEWED_LOCAL_BASELINE_REUSE",
     "owner_record": "Results/S2-H11-H13-local-baseline.json",
     "candidate": "UNRUN",
-    "gate_closures": []
+    "gate_closures": [],
+    "candidate_state_meaning": "UNRUN is the historical saved-baseline assessment; s2_local_continuation points to current candidate execution."
   },
   "s2_local_continuation": {
-    "state": "REVIEWED_CANDIDATE_ONLY_NATIVE_UNADMITTED",
+    "state": "STOPPED_BEFORE_INPUT_CLEANUP_PASS",
     "owner_record": "Results/S2-H11-H13-local-continuation.json",
-    "candidate": "PREPARED_UNRUN",
-    "gate_closures": []
+    "candidate": "STOPPED_BEFORE_INPUT",
+    "gate_closures": [],
+    "native_runs": 1,
+    "cleanup": "PASS",
+    "current_disposition": "The linked owner preserves the original INVALID and separate post-exit verification. Prepare baseline-matched orientation readiness before another admission; no SDK regression or gate closure."
   },
   "s2_swiftui_duo_continuation": {
     "state": "CLOSED_S2_H12; H13_SWIFTUI_PORTION_COMPLETE",

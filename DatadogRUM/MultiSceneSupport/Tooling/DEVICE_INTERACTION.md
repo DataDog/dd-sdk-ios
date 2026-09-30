@@ -230,8 +230,7 @@ requires preserved preactivation bytes and actual same-PID/executable activation
 after release. Verify the prefix is unchanged and keep the later idle stream
 separate; no scenario/backend evidence may come from cleanup reactivation. Use the
 existing idle/cleanup deadline, with no extension or replacement process.
-That cleanup-only proof does not discard earlier failure rows or qualify the scenario. Expiry leaves the
-app installed and cleanup incomplete; later restoration is a separate record.
+Cleanup-only proof cannot discard failure rows or qualify a scenario. Expiry leaves the app installed and cleanup incomplete; later restoration is separate.
 
 Interactive sheet pans can begin before a controller transition is observable.
 The reviewed EXP223 correction resolves only from actual recognizer callbacks,
@@ -247,9 +246,10 @@ terminal and after settling. A different nonnull container remains invalid.
 Presentation getters can inherit an ancestor's relationship: select reciprocal
 presenter/presented ownership before uniqueness, retaining the complete inventory.
 Do not infer extra presentations from inherited aliases or hardcode class names.
-An ordinary iPad can omit the Duo `active` field. Select its single lit primary
-integrated display with a scoped parser and preflight it before installation; do
-not invent response fields or relax the Duo fold parser.
+An ordinary iPad may omit Duo's `active`; preflight its one lit primary integrated
+display with the physical parser. Compare actual orientation, screenshot and native
+axes with the saved baseline: panel bounds may retain native axes. Preserve owned
+scene/window/root/key checks; unrotated or blindly sorted dimensions cannot prove fill.
 For public accessibility inventories, visual UIView ancestry and accessibility
 container paths are distinct evidence. Retain both; compute view hidden/alpha from
 its owned physical hierarchy, and require exact identifiers before target input.

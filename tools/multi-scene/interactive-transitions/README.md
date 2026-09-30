@@ -7,8 +7,10 @@ and the shared human-session prerequisites are complete.
 
 For current S2 work, start from the
 [finite input index](../../../DatadogRUM/MultiSceneSupport/Results/S2-input-session-preparation.json).
-Only the physical UIKit candidate remains. The saved baseline and all four Duo
-SwiftUI automatic/manual stack cells qualify for reuse. H14 uses automatic split
+The physical UIKit candidate remains after a pre-input orientation mismatch; its
+cleanup passes. Prepare baseline-matched orientation readiness before another
+admission. The saved baseline and all four Duo SwiftUI automatic/manual stack cells
+qualify for reuse. H14 uses automatic split
 coverage; H16 is closed. The candidate collector preserves native effect boundaries
 and collects delayed callback work by exact identity. Home is a durable prefix;
 required inactive View/Action evidence may follow it. The final post-stop file is

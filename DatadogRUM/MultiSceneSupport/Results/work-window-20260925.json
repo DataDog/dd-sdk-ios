@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "state": "S2_SWIFTUI_OFFLINE_FOLD_READINESS",
+  "state": "SAFE_CHECKPOINT_NO_NATIVE_EXECUTION",
   "authority": "Standing user instruction to continue autonomous plan execution until explicitly stopped; caffeinate has a separate finite duration",
   "started_at": 1790316486.131028,
   "work_deadline_utc": null,
   "caffeinate": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/caffeinate.json",
-    "sha256": "e9ad1ed9f5059440b3e5594efc2fa18f0f02c4abbf304c0ac5931fccb42b978a"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/awake.json",
+    "sha256": "a35c6cede824eda024e93c52570e46fdaf6efb951b5cae2b1f2886a7feb87cd9"
   },
   "previous_window": "unattended-work-20260924.json",
   "automation": {
@@ -17,7 +17,7 @@
     "instruction": "Continue without human input; remove heartbeat after safe morning checkpoint. This is not a native admission or deadline extension.",
     "removed_at": "2026-09-27T06:00:55.094691+00:00"
   },
-  "next_task": "Prepare and review one qualification bound to the exact original navigation prefix. Prove supported-tool input can drive that prefix before admission; launch-state folding cannot resolve the original alias. No native admission or human invitation is prepared.",
+  "next_task": "Prepare the physical baseline-matched orientation preflight offline; recover H10's preserved unqualified still-source draft. No human invitation or native retry is admitted.",
   "gate_closures": [
     "S2:H16",
     "S2:T10",
@@ -33,7 +33,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": "2026-09-30T14:37:33.299850+00:00",
+  "updated_at": "2026-09-30T23:33:02.223803+00:00",
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
@@ -120,7 +120,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automated-scope-rww2sb_g/webview-backend-continuation/summary.json",
     "sha256": "c67b680daecad3400c1ffc85ce8e56ba26629a167932e2b6f7cc0a687ab45543"
   },
-  "awake_until_utc": "2026-09-30T14:21:53.486126+00:00",
+  "awake_until_utc": "2026-10-01T00:46:15+00:00",
   "deadline_correction": {
     "at": "2026-09-25T12:43:44.248636+00:00",
     "previous_inferred_work_deadline_utc": "2026-09-25T12:42:56.993742+00:00",
@@ -303,30 +303,70 @@
       "awake_until_utc": "2026-09-30T12:39:04.742164+00:00",
       "work_deadline": null,
       "state": "RUNNING_USER_AUTHORIZED"
+    },
+    {
+      "receipt": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/caffeinate.json",
+        "sha256": "e9ad1ed9f5059440b3e5594efc2fa18f0f02c4abbf304c0ac5931fccb42b978a"
+      },
+      "pid": 42941,
+      "authorized_seconds": 7200,
+      "awake_until_utc": "2026-09-30T14:21:53.486126+00:00",
+      "work_deadline": null,
+      "state": "EXPIRED_VERIFIED_ABSENT",
+      "verification": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-fold-readiness-yf66qjnm/awake-expired.json",
+        "sha256": "d3d60ae0dfa3919f26cc1e0c3172282a4afff7591aac3ff355235be2643f088b"
+      },
+      "renewed": false
     }
   ],
   "current_awake": {
-    "receipt": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/caffeinate.json",
-      "sha256": "e9ad1ed9f5059440b3e5594efc2fa18f0f02c4abbf304c0ac5931fccb42b978a"
-    },
-    "pid": 42941,
+    "state": "RUNNING_USER_AUTHORIZED",
+    "pid": 11460,
+    "process": "11460 Thu Oct  1 00:46:15 2026     /usr/bin/caffeinate -di -t 7200",
+    "started_at": "2026-09-30T22:46:15+00:00",
     "authorized_seconds": 7200,
-    "awake_until_utc": "2026-09-30T14:21:53.486126+00:00",
+    "awake_until_utc": "2026-10-01T00:46:15+00:00",
+    "authority": "User: Connected and ready; caffeinate 2 hours",
     "work_deadline": null,
-    "state": "EXPIRED_VERIFIED_ABSENT",
-    "verification": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-fold-readiness-yf66qjnm/awake-expired.json",
-      "sha256": "d3d60ae0dfa3919f26cc1e0c3172282a4afff7591aac3ff355235be2643f088b"
-    },
-    "renewed": false
+    "observed_at": "2026-09-30T22:47:48.978569+00:00",
+    "receipt": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/awake.json",
+      "sha256": "a35c6cede824eda024e93c52570e46fdaf6efb951b5cae2b1f2886a7feb87cd9"
+    }
   },
   "minimum_autonomous_work_until_utc": "2026-09-27T06:00:00+00:00",
   "latest_autonomous_checkpoint": "Results/autonomous-progress-20260927.json",
   "historical_entries_note": "Earlier attempt/preparation fields retain historical state. The restart cursor and latest_autonomous_checkpoint own current work; they do not renew old admissions.",
   "human_availability": {
-    "state": "FRESH_READY_REQUIRED",
-    "source": "Completed the SDK26.5 stack baseline; later cells require their own live Ready."
+    "state": "CONSUMED_ATTEMPT_CHECKPOINTED",
+    "source": "The physical UIKit candidate stopped before any prompt. Future readiness cannot reuse this consumed admission."
   },
-  "current_execution": "Results/S2-swiftui-split271-20260930.json"
+  "current_execution": "Results/S2-H11-H13-local-continuation.json",
+  "safe_checkpoint": {
+    "requested_by": "User: Perform a safe checkpoint",
+    "original_attempt": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/runtime/cells/physical_ipad-UIKit-automatic-stack-B/summary.json",
+      "sha256": "2d09b42dbccef0dc9452bb32d5731c0b212c1ec52c43a3a63f4a55aed25b7dcf"
+    },
+    "device": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/safe-checkpoint/device-verification.json",
+      "sha256": "e51173f65656a62de0b90e92c7eca7d0e1dde95635a18b3d003b8e4e1072127c"
+    },
+    "workers": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/safe-checkpoint/host-quiescence.json",
+      "sha256": "c344defc810dcdb9844477cea0976c1698f50468aa64d6f5045ad43c61a6413a"
+    },
+    "operator": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/safe-checkpoint/operator-closed.json",
+      "sha256": "31994feb4073caa172a8b459a2cde4a7dfb6cc122e57123117681fc7a8537cab"
+    },
+    "h10_draft": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-still-source-r5u9921j/checkpoint-draft/preservation.json",
+      "sha256": "609d68e126c4324a090eb7e66cac9d0ca58938185f718de63c9019922ea421d6"
+    },
+    "at": "2026-09-30T23:33:02.223803+00:00",
+    "caffeinate": "Retain only the existing authorized assertion until 2026-10-01T00:46:15Z; no extension"
+  }
 }
