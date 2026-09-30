@@ -360,6 +360,7 @@ def execute(args):
                     prefix=(out/'input/background.before/background-events.jsonl').read_bytes())
                 require(rows is not None,'final local inventory incomplete')
                 local=runner.analyze.summarize(dict(run_id=identity['run_id'],**selected),rows,collector.receipts)
+                local['recaptured_effects']=human_effect_recapture.observation_summary(collector.receipts)
                 require(not any(local[k] for k in ('duplicate_action_ids','unknown_action_owners','unassigned_actions','errors')),'final ownership requires attribution')
                 (out/'events.jsonl').write_bytes(raw);runner.shared.save(out/'local-result.json',local)
             except Exception as error: evidence_errors.append(str(error))

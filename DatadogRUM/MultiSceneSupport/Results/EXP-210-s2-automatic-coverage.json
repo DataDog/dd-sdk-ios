@@ -1048,18 +1048,18 @@
       "state": "PREPARATION_ONLY",
       "owner": "Results/S2-coverage-remaining-preparation.json",
       "execution_record": "Results/S2-swiftui-effect-recapture-20260930.json",
-      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2",
       "plan": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline/runtime/runtime-plan.json",
-        "sha256": "1cf92eeaec21353083e93c2a11c6822cb51c42f1086df5051837669f2fba1b17"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/runtime-plan.json",
+        "sha256": "571d0368672d90676cbba9bef8472a2861d2c9d8ca5d0dde95ac4b40851e2efe"
       },
       "controls": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline/runtime/controls.json",
-        "sha256": "dcb7fce123b97e8e81572a750f1ec188fdcba869eae21ae88dd74cd17dd68990"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/controls.json",
+        "sha256": "aee37e1d0f0da44051543cb9d82e87a7a5c5829d45ccac6b998de608191b6174"
       },
       "review": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline/runtime/review.json",
-        "sha256": "d25d12c3e39dd867c0ade4c093193df6b034543cecb69a6eb7652ab2a55e1488"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/review.json",
+        "sha256": "2c7583cb7b3dc33e9d2644c530403a1600d09e28caf93d9ede02826b73721802"
       },
       "selected": {
         "build": "baseline-26.5",
