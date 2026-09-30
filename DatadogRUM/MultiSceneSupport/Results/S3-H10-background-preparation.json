@@ -2,7 +2,7 @@
   "schema_version": 1,
   "work_item": "Isolated scene background and foreground with an unchanged usable peer",
   "gate": "S3:H10",
-  "state": "REVIEWED_COMPILED_EXECUTOR_SESSION_UNPREPARED",
+  "state": "REVIEWED_PHASE_TRANSPORT_SESSION_UNPREPARED",
   "owner": "Root",
   "reviewer": "/root/c06_runtime_plan",
   "defined_at": "2026-09-30T00:54:04.093738+00:00",
@@ -215,11 +215,11 @@
     "Late native/display evidence or dropped lifecycle journal rows"
   ],
   "next": [
-    "Compose the reviewed executor with an H10-specific app/session adapter and phase channel. Preserve publish-before-grant, stop priority and raw observations; arm only after two current mapper owners and display evidence.",
+    "Compose the reviewed executor and phase transport with an H10-specific app/session adapter, actual witness/mapper producer and source-bound catalog. Arm only after two current mapper owners and display evidence.",
     "Seal the complete delayed mapper prefix and retain later/cleanup tails. Integrate source/compiler/process/manifest identity, display and safe cleanup; scoped review precedes native use.",
     "Native use waits for qualified physical input/display, fresh device/backend prerequisites and user availability. No automatic start at09:00."
   ],
-  "updated_at": "2026-09-30T02:46:21.219762+00:00",
+  "updated_at": "2026-09-30T03:04:30.644821+00:00",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/review-r2.json",
     "sha256": "d7435346784f04ada43626bbd95247abf2f47cee3a568d8e652bbe6c32eddb9a"
@@ -382,5 +382,51 @@
     "native_runs": 0,
     "gates_closed": [],
     "scope": "Synchronous wrapper in isolated executor and fail-closed driver hook compile. Actual suspended admission, cancellation, owner changes, publication failure, rejection and reentrancy controls pass. No app/session injection, host phase transport, display or native acceptance. Dormant rendering remains byte-identical; 719 original H06 inputs preserved."
+  },
+  "native_phase_transport": {
+    "state": "PASS_LOCAL_PHASE_TRANSPORT_ONLY",
+    "proposal": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/native-phase-outxlclc/proposal.json",
+      "sha256": "0b2cb4c6aea830b17dd57ae0f3ee4ccd0d3e6c56471b9f44679b850e0d0184ee"
+    },
+    "design_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/native-phase-outxlclc/proposal-review.json",
+      "sha256": "028f84d61c2c9572316024747acc449287a9baa49357cea26ec82527f615b82a"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/native-phase-outxlclc/review-final.json",
+      "sha256": "61707162054e1d782efa39530501507d4694c659e71fda898519d81800293135"
+    },
+    "compiler": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/native-phase-outxlclc/controls-r1/compiler-result.json",
+      "sha256": "8b347699a1a1bfd9cc2394ffec55035108542b4435fb7fcb54116f2879124748"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/native-phase-outxlclc/controls-r1/result.json",
+      "sha256": "7bd89d62e9ee6f4344595265114e6d29e706ba7848ef452619e4812bef1ea129"
+    },
+    "preservation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/native-phase-outxlclc/preservation.json",
+      "sha256": "849d3cfbbf65765ffe56018df2e2a08573e086a58107f8b78ea2bad747ef0cf6"
+    },
+    "controls_count": 30,
+    "ios_builds": 0,
+    "native_runs": 0,
+    "gates_closed": [],
+    "helpers": [
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/acceptance/scene_background_channel.py",
+        "sha256": "ad5264331fb74bec711100cabb2bc403be2c16e4a58493b19942cb0d7a42e9cc"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/acceptance/scene_background_phase.swift",
+        "sha256": "dee1f06516d0074ba3bf7473f2d9e3696df3d1b0aaf405a15ba8c0d72aa5be56"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/acceptance/scene_background_phase_check_main.swift",
+        "sha256": "7e790bcee25fe2ee3a1774b29d3b06587a23752b7170bfa0dc383e0dff7812b6"
+      }
+    ],
+    "scope": "Actual local filesystem transport controls with synthetic observations/driver; no UIKit, SDK or native app executes. Hash-checked namespace relocation preserves H04. No app/session adapter, native mapper/display proof, complete capture seal or cleanup integration."
   }
 }

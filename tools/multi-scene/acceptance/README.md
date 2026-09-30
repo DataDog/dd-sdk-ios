@@ -461,8 +461,14 @@ asynchronous admission, captures its actual after state before publication and
 latches stop, cancellation, owner changes, reentrancy and publication failures.
 The renderer's `with_dispatch` mode adds the reviewed executor/driver hook only
 to its isolated copy; the default dormant output remains unchanged. The complete
-iOS fixture compiles. App/session injection, phase transport, display and capture
-composition remain; these controls grant no native admission.
+iOS fixture compiles. `scene_background_channel.py` relocates the unchanged H04
+arm/stop logic into a distinct H10 namespace. `scene_background_phase.swift` adds
+three inspect/permit barriers with fresh challenges, chained replies and single-use
+consumption. Partial publication remains pending under its original cutoff;
+unknown newer work, stale replies and failed writes cannot grant permission.
+STOP is polled before consuming a grant, and actual observation bytes remain
+opaque. App/session injection, native mapper production, display and complete
+capture composition remain; these controls grant no native admission.
 Benign focus/layout events are allowed;
 B background/disconnect, owner replacement and unknown events reject. Ownerless
 window events must match observed scene-bound non-fixture auxiliary identities;
