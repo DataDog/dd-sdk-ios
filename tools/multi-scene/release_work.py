@@ -138,7 +138,7 @@ def render(register, owners):
         if ident not in covered:
             lines.append('| S2:' + ident + ' | ' + req['status'] + ' | ' + req['decisive_test'].replace('|', '\\|') + ' |')
     if swift_ids:
-        lines.extend(['', 'The prepared next SwiftUI cell is: **' + ', '.join(str(owners['swiftui']['matrix'][0][k])
+        lines.extend(['', 'The selected SwiftUI cell is: **' + ', '.join(str(owners['swiftui']['matrix'][0][k])
                       for k in ('framework', 'layout', 'build', 'device')) + '**. No native admission is current.'])
     lines.extend(['', 'Required gate owners, dependencies and environments remain authoritative in the',
                   '[generated PLAN](PLAN.md#s2-release-gates). Reuse closed UIKit, Resource/Trace,',

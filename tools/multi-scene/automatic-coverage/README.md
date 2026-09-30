@@ -59,6 +59,15 @@ First-screen readiness must find the screen, all controls, the SwiftUI receipt
 label and its owned scroll before prompting. Automatic initial readiness must
 qualify before another human invitation; it supplies no behavioral or release credit.
 
+The [latest first baseline](../../../DatadogRUM/MultiSceneSupport/Results/S2-swiftui-readiness-20260930.json)
+stopped before prompts: the native graph exposed only UIView ancestry, with no
+source-defined controls. The supported Xcode session used before richer restoration
+observations was absent from this runner. Prepare one context to start/capture/end
+and preserve its actual returns and exact session/device/bundle/PID joins before the
+native graph. Retain the root/control/counter/scroll checks. The consumed claim stays
+stopped; qualify changed setup in the first required baseline, without another human
+diagnostic sequence. No SwiftUI UI or SDK change is supported by this capture failure.
+
 `human_split.py` is the scoped candidate-only split continuation. Its comparison
 keeps actual pane layout, per-input owners and View inventory separate from the
 inherited Home limitation. Compare in-memory and persisted inventories through

@@ -8,11 +8,11 @@ selects current execution. A preparation PASS admits no native run or gate closu
 
 | Remaining work | Current preparation | Required evidence |
 | --- | --- | --- |
-| S2:C09, S2:C10, S2:H14 | [REVIEWED_PREPARATION_ONLY](Results/S2-coverage-remaining-preparation.json) | 6 SwiftUI stack/split cells: both compiler baselines and the candidate. View/Navigation/Action owners in each actual layout; first-cell live controls before prompts. |
+| S2:C09, S2:C10, S2:H14 | [STOPPED_BEFORE_PROMPTS_CAPTURE_PREREQUISITE](Results/S2-coverage-remaining-preparation.json) | 6 SwiftUI stack/split cells: both compiler baselines and the candidate. View/Navigation/Action owners in each actual layout; first-cell live controls before prompts. |
 | S2:H11, S2:H13 | [REVIEWED_CANDIDATE_HARNESS_NATIVE_UNADMITTED](Results/S2-H11-H13-local-continuation.json) | One physical UIKit candidate; reuse the accepted baseline. Capture cancel/finish ownership and cleanup. |
 | S2:F06 | OPEN | Review the exact selected source, accepted evidence, baseline limitations and remaining hardware uncertainty. No unresolved attributable regression, API/wire/privacy change or required evidence gap. Preserve qualified compatibility/lifetime checks; sign outgoing history before separately authorized publication. The S2 acceptance contract governs behavioral and delivery evidence separately; no immediate background upload, physical-Duo or optional performance prerequisite. |
 
-The prepared next SwiftUI cell is: **SwiftUI, stack, baseline-26.5, duo**. No native admission is current.
+The selected SwiftUI cell is: **SwiftUI, stack, baseline-26.5, duo**. No native admission is current.
 
 Required gate owners, dependencies and environments remain authoritative in the
 [generated PLAN](PLAN.md#s2-release-gates). Reuse closed UIKit, Resource/Trace,

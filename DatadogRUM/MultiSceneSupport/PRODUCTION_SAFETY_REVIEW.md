@@ -59,7 +59,7 @@ to the linked results and [delivery queue](Results/S1-delivery-queue.json).
 
 | Observation / obligation | Disposition and evidence limit |
 | --- | --- |
-| S2 automatic capture | [UIKit assessment and SwiftUI preparation](Results/S2-coverage-remaining-preparation.json): C07/C08 close in exercised layouts, with inherited switch/pane attribution and split Home limits. Scroll-frame/comparator failures were harness errors. SwiftUI first-cell controls remain natively unqualified; prior diagnostics establish no SDK cause. |
+| S2 automatic capture | [UIKit assessment and SwiftUI preparation](Results/S2-coverage-remaining-preparation.json): C07/C08 close in exercised layouts, with inherited switch/pane attribution and split Home limits. Scroll-frame/comparator failures were harness errors. The [SwiftUI baseline](Results/S2-swiftui-readiness-20260930.json) stopped before prompts with no control identifiers and cleanup PASS. Supported accessibility-session integration remains unqualified; no SDK cause is established. |
 | Ordinary hosting / S2 H16 | [Saved assessment](Results/S2-H16-scoped-assessment.json) closes ordinary hosting parity. Original manual backend gap remains; no gesture, fold or S3 semantic claim. |
 | Duo/app acceptance | [F08 comparison](Results/S2-F08-candidate-comparison.json) qualifies finite app behavior and native/Browser owners. It cannot certify automatic tracking or physical Duo. [Pre-app boot failures](Results/S2-Duo-environment-readiness.json) have no established SDK cause. |
 | Networking QoS | [EXP204](Results/EXP-204-network-qos.json) establishes baseline recurrence with incomplete stacks, not root cause, harmlessness or sanitizer/performance clearance. Candidate-specific warnings remain in their results. |

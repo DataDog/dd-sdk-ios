@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "state": "STOPPED_BEFORE_HUMAN_INPUT",
+  "updated_at": "2026-09-30T08:30:12.591745+00:00",
+  "owner": "EXP-210",
+  "gates": [
+    "S2:C09",
+    "S2:C10",
+    "S2:H14"
+  ],
+  "selected": {
+    "build": "baseline-26.5",
+    "device": "duo",
+    "framework": "SwiftUI",
+    "layout": "stack",
+    "multiple_scenes": false
+  },
+  "plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01/runtime/runtime-plan.json",
+    "sha256": "4e119628412cce1bc128c9f19ab1275e70a756cb1574f2a7e5307b6029837565"
+  },
+  "admission": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01/runtime/native-admission.json",
+    "sha256": "23ec2cdb9c2a16950c3d20bb3932fdd45e6e36996308ca805cc9b098610441f5"
+  },
+  "original_summary": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/summary.json",
+    "sha256": "292e5433732f6b447122254afb92b61d39a1a7e2ff1310d5b106fafd90678b78"
+  },
+  "native_snapshot": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/input/initial.root.readiness/events.jsonl",
+    "sha256": "ce03b15124bf747eb9d488354ca13b113f5201c08a231d64a43e2a21d73feec1"
+  },
+  "supervisor": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01/runtime/baseline-26.5-duo-SwiftUI-stack-single-driver.supervisor.json",
+    "sha256": "64a23f64aef1ec5d3bd3fbcf5effc61b5804a60e04b51b9409a801c7c06febd8"
+  },
+  "scenario": "UNQUALIFIED",
+  "evidence": "INCOMPLETE",
+  "cleanup": "PASS",
+  "reason": "expected root is not observable",
+  "native_launches": 1,
+  "human_prompts": 0,
+  "human_inputs": 0,
+  "backend_queries": 0,
+  "qualified_cells": 0,
+  "gates_closed": [],
+  "release_acceptance": false,
+  "capture_facts": {
+    "event_rows": 15,
+    "accessibility_rows": 46,
+    "uiview_rows": 46,
+    "identified_rows": 0,
+    "labelled_rows": 0,
+    "owned_scrolls": 1,
+    "native_home_appearance": true
+  },
+  "restoration": {
+    "state": "PASS",
+    "task_app_absent": true,
+    "worker_absence": "PASS",
+    "initial_display": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/initial-displays.raw.json",
+      "sha256": "c3ffc933dda77ce1d1cbae251a43ee7e624ac42ec5e9f2b2708c4b08ba40e296"
+    },
+    "final_display": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/cleanup-display.raw.json",
+      "sha256": "bc359a6c51177a7c391a12f62080fe6f802e747ba2cdf7f6e6a0904ac219d2c6"
+    },
+    "display_signature": {
+      "uniqueId": "BAAB3204-E57C-46D5-896A-788BB64355CC",
+      "displayId": 1,
+      "nativeSize": [
+        1398,
+        2034
+      ],
+      "pointScale": 3,
+      "currentOrientation": "rot0",
+      "bounds": [
+        [
+          0,
+          0
+        ],
+        [
+          1398,
+          2034
+        ]
+      ]
+    },
+    "instruction_server_stopped": true,
+    "process": 89911
+  },
+  "classification": "Capture mechanism remains unqualified. No human gesture, behavioral comparison or established SDK cause. The prepared runner did not carry the supported interaction-session setup used before the richer saved restoration graph. That graph does not establish causality or native acceptance.",
+  "review": {
+    "reviewer": "/root/c06_runtime_plan",
+    "state": "REVIEWED_STOP",
+    "findings": [
+      "Native graph has no source-defined control identifiers; retain the strict root/control checks.",
+      "Review same-product supported-session request/response ordering; original external capture and cleanup failed, with separately successful restoration."
+    ],
+    "next_step": "Prepare a same-owner supported-session phase within the existing first baseline, using fresh StartSession, empty capture, actual returned artifacts and exact device/bundle/PID joins before native readiness. No new diagnostic launch or source/UI change."
+  },
+  "next_action": "Keep this consumed cell and both stopped mechanisms frozen. Complete offline session-lifecycle integration and focused controls, obtain designated review, then qualify the changed mechanism in the first required baseline before inviting further gestures."
+}
