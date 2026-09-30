@@ -114,10 +114,11 @@ The [bounded ancestry diagnostic](../../../DatadogRUM/MultiSceneSupport/Results/
 keeps missing-ancestry capture rejected while recording reciprocal parent membership.
 Its first Open snapshot preceded native resize; the preserved tail contains the
 later geometry, and cleanup passes. The attempt stays INVALID. A display switch
-alone is insufficient readiness for an app snapshot. A future adapter must observe
-fresh native geometry, then join a new owned snapshot and actual display readback
-within the original budget. The geometry hint cannot replace ownership assertions,
-classify an unobserved alias or qualify a release gate.
+alone is insufficient readiness for an app snapshot. The [offline repair](../../../DatadogRUM/MultiSceneSupport/Results/S2-fold-readiness-20260930.json)
+waits for fresh native geometry, then joins one new owned snapshot and actual
+display readback within a shared budget under the original cutoff. The geometry
+hint cannot replace ownership assertions, classify an unobserved alias or qualify
+a release gate. The exact original navigation prefix still needs qualification.
 
 `human_split.py` is the scoped candidate-only split continuation. Its comparison
 keeps actual pane layout, per-input owners and View inventory separate from the

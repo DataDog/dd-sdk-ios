@@ -220,3 +220,12 @@ snapshots have complete accessibility inventories. The earlier ancestry failure 
 therefore unresolved. Task-only cleanup and restoration pass; 218 artifact hashes
 and app/controller absence are verified. Next is offline event-driven fold readiness,
 not another admitted native run. All accepted cells and prior failures remain intact.
+
+The [fold-readiness repair](../Results/S2-fold-readiness-20260930.json) passes 15
+offline controls and independent review. A fresh append-only geometry hint now
+precedes one owned snapshot and a new actual-display read within one fixed
+post-hint budget. Stale streams, auxiliary-only matches, replaced owners, late
+reads and display changes reject; half-pixel coordinate roundoff is allowed.
+Saved-tail replay preserves the early snapshot failure. No new native run or
+gate credit: the exact original navigation prefix must qualify before another
+human invitation, since launch-state folding did not reproduce its alias.

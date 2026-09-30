@@ -17,7 +17,7 @@
     "instruction": "Continue without human input; remove heartbeat after safe morning checkpoint. This is not a native admission or deadline extension.",
     "removed_at": "2026-09-27T06:00:55.094691+00:00"
   },
-  "next_task": "The one ancestry diagnostic stopped at early geometry; cleanup PASS and app/controller absent. Prepare reviewed event-driven fold readiness offline; no repeat admission yet.",
+  "next_task": "Prepare and review one qualification bound to the exact original navigation prefix. Prove supported-tool input can drive that prefix before admission; launch-state folding cannot resolve the original alias. No native admission or human invitation is prepared.",
   "gate_closures": [
     "S2:H16",
     "S2:T10",
@@ -33,7 +33,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": "2026-09-30T14:14:36.687952+00:00",
+  "updated_at": "2026-09-30T14:37:33.299850+00:00",
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
@@ -314,7 +314,12 @@
     "authorized_seconds": 7200,
     "awake_until_utc": "2026-09-30T14:21:53.486126+00:00",
     "work_deadline": null,
-    "state": "RUNNING_USER_AUTHORIZED"
+    "state": "EXPIRED_VERIFIED_ABSENT",
+    "verification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-fold-readiness-yf66qjnm/awake-expired.json",
+      "sha256": "d3d60ae0dfa3919f26cc1e0c3172282a4afff7591aac3ff355235be2643f088b"
+    },
+    "renewed": false
   },
   "minimum_autonomous_work_until_utc": "2026-09-27T06:00:00+00:00",
   "latest_autonomous_checkpoint": "Results/autonomous-progress-20260927.json",

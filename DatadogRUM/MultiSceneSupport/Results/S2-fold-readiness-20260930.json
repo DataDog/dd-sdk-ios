@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "state": "REVIEWED_OFFLINE_READINESS",
+  "owner": "EXP-210",
+  "gates": [
+    "S2:C09",
+    "S2:C10",
+    "S2:H14"
+  ],
+  "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-fold-readiness-yf66qjnm",
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-fold-readiness-yf66qjnm/definition.json",
+    "sha256": "54e159e5d2a2bac8c59b116a020639b8bac9cdf4e79629195204d17d83b92349"
+  },
+  "native_admitted": false,
+  "native_runs": 0,
+  "new_builds": 0,
+  "gates_closed": [],
+  "next_action": "Prepare and review one qualification bound to the exact original navigation prefix. Prove supported-tool input can drive that prefix before admission; launch-state folding cannot resolve the original alias. No native admission or human invitation is prepared.",
+  "controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-fold-readiness-yf66qjnm/controls-r2.json",
+    "sha256": "2bfc8a6c7bb2342b84ff812ad1b759b1b3587fbf766ba5748ef3c718e3d695df"
+  },
+  "controls_count": 15,
+  "source": {
+    "tools/multi-scene/automatic-coverage/fold_readiness.py": "deaf3403fbd6d45bc3cf4a3099a7bd68c2ea3ef75e0317126c1e90ef5f946b2d",
+    "tools/multi-scene/automatic-coverage/human_ancestry_native.py": "3dd2fd49ab3d1842f54a2e1c63108b05f57051a6916a43410e1896aa212c5490",
+    "tools/multi-scene/automatic-coverage/test_fold_readiness.py": "820d4f635fa287cfde78dc070ab4a1d992c59223a5d6ce0b8cb23345ba0e6037"
+  },
+  "original_early_snapshot_preserved": true,
+  "updated_at": "2026-09-30T14:37:33.296169+00:00",
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-fold-readiness-yf66qjnm/review-r2.json",
+    "sha256": "4c814a4cb01a5ca813a4a9d8490d95dfd12c25cfc1e316c2bd57d1118189b144"
+  },
+  "prior_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-fold-readiness-yf66qjnm/review-r1.json",
+    "sha256": "e33cf081c3cbbaa05dbfce834028f634e059e837830f91d4fd9cd02db89fea63"
+  },
+  "finding_disposition": {
+    "FOLD-READINESS-001": "Resolved: a single post-hint budget covers persistence, snapshot, actual display read and final validation; the stalled-display control rejects without retry."
+  }
+}

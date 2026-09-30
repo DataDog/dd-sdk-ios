@@ -13,6 +13,7 @@ import uuid
 
 import human_ancestry_probe as build
 import human_supported_session as evidence
+import fold_readiness
 
 require = evidence.require
 
@@ -146,6 +147,28 @@ def screen(module, row, binding, display):
                     for a,b in zip(bounds[2:],pixels)), 'native geometry differs from actual display')
 
 
+def opened_snapshot(module, capture, folder, identifier, closed, opened, deadline, seconds):
+    gate = fold_readiness.Readiness(prefix=capture.prefix, before_sequence=closed['sequence'],
+                                  run=capture.run, binding=capture.binding, display=opened)
+    output = folder/'fold-readiness'; output.mkdir()
+
+    def snapshot(limit):
+        row, _ = capture.snapshot('opened','diagnostic.opened',limit)
+        return row, capture.prefix
+
+    def actual_display(limit):
+        actual = module.transport.display(identifier,output,'after-snapshot-display',limit)
+        return module.displays.active_display(json.loads(actual),identifier)
+
+    def persist(name, raw):
+        with (output/name).open('xb') as file:
+            file.write(raw)
+
+    return fold_readiness.collect(gate,read_events=lambda:(capture.documents/'events.jsonl').read_bytes(),
+        snapshot=snapshot,actual_display=actual_display,validate_owner=lambda row,binding,display:screen(module,row,binding,display),
+        persist=persist,live=capture.live,deadline=deadline,post_hint_seconds=seconds)
+
+
 def classify(row, binding):
     entries = row['payload']['topology']['accessibility']
     failures = [e for e in entries if 'capture_error' in e]
@@ -219,8 +242,8 @@ def run(root):
             if opened.get('primary') is False: break
             time.sleep(1)
         require(opened['uniqueId']!=old_display['uniqueId'] and opened['nativeSize']!=old_display['nativeSize'], 'no actual display transition')
-        after,rows=capture.snapshot('opened','diagnostic.opened',min(deadline,time.time()+plan['budgets']['passive_snapshot']))
-        screen(module,after,capture.binding,opened)
+        after=opened_snapshot(module,capture,folder,identifier,closed,opened,deadline,plan['budgets']['passive_snapshot'])
+        rows=module.oracle.rows(capture.prefix,plan['run_id'])
         require(after['sequence']>closed['sequence']
                 and not any(r['kind'] in ('human_callback','native_input','human_scroll_begin','human_scroll_end','native_background') for r in rows),
                 'unadmitted input or stale fold observation')
