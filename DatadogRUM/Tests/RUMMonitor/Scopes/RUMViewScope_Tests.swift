@@ -692,8 +692,7 @@ class RUMViewScope_Tests: XCTestCase {
                 hasAppHangsEnabled: true,
                 viewHitchesReaderFactory: {
                     ViewHitchesMock(hitchesDataModel: ([Hitch(start: 0, duration: 0.16.dd.toInt64Nanoseconds)], 0.16))
-                },
-                featureFlags: ff
+                }
             ),
             identity: identity,
             path: "view-a",
