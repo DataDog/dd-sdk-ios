@@ -14,6 +14,7 @@ run IDs and results belong to the owning experiment or fixture README.
 
 | Task | Read |
 | --- | --- |
+| Recover execution ownership, reviewer assignment or missing artifacts after restart | [Handoff recovery](Tooling/RESTART.md) |
 | Reconnect tools; qualify Xcode/runtime/device/authentication or app configuration | [Environment and access](Tooling/ENVIRONMENT.md) |
 | Freeze sources; build/test targets, collect XCTest or check public clients | [Builds and tests](Tooling/BUILD_TEST.md) |
 | Install, sign a physical app, deliver native input, prove topology or clean up | [Device interaction](Tooling/DEVICE_INTERACTION.md) |
@@ -71,8 +72,8 @@ timeouts bound work and cleanup without independently implying an SDK regression
     temporarily changed state. Keep a later
     cleanup proof separate from an earlier failed receipt.
 
-Sign local commits when available; the user's recorded-failure fallback permits
-local unsigned commits. All outgoing history must verify before a separately
+Local commits need no prefix and may be unsigned under the project's
+[commit authorization](Tooling/DELIVERY.md#repository-and-signing-safety). Re-sign and verify all outgoing history before a separately
 authorized push. This project does not infer publication, merge or TestFlight
 permission from a completed experiment.
 

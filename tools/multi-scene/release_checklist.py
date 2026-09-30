@@ -500,7 +500,11 @@ def main():
     gates = validate(register)
     import release_work
     remaining_path = base / 'REMAINING_WORK.md'
-    remaining = release_work.render(register, release_work.read_owners(base.parents[1]))
+    owners = release_work.read_owners(base.parents[1])
+    remaining = release_work.render(register, owners)
+    cursor_path = base.parents[1] / '.continue-here.md'
+    cursor_original = cursor_path.read_text()
+    cursor = release_work.render_cursor(cursor_original, owners['execution'])
     progress = progress_document(register, gates)
     counts = progress['counts']
     plan = base / 'PLAN.md'
@@ -510,8 +514,14 @@ def main():
         (base / 'Results').mkdir(exist_ok=True)
         (base / 'Results/release-progress.json').write_text(json.dumps(progress, indent=2) + '\n')
         remaining_path.write_text(remaining)
+        if cursor != cursor_original:
+            if cursor_path.read_text() != cursor_original:
+                raise ValueError('cursor changed during generation; reread before updating')
+            cursor_path.write_text(cursor)
     elif rendered != plan.read_text():
         raise ValueError('PLAN.md gate rows are stale; run --update')
+    if cursor_path.read_text() != cursor:
+        raise ValueError('cursor execution summary is stale; run --update')
     check_progress(base / 'Results/release-progress.json', progress)
     if not remaining_path.exists() or remaining_path.read_text() != remaining:
         raise ValueError('REMAINING_WORK.md is stale; run --update')

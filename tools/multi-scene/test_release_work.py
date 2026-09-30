@@ -30,6 +30,7 @@ class CurrentWorkTests(unittest.TestCase):
                           history={'snapshot': self.ref}, historical_reader_compatibility=dict(scope='HISTORICAL_READ_ONLY',
                           snapshot=self.ref, fields={k: dict(scope='HISTORICAL_READ_ONLY', sha256=work.digest(self.old[k]))
                                                     for k in work.HISTORICAL_SLOTS}), **{k: self.old[k] for k in work.HISTORICAL_SLOTS})
+        self.owner['execution'] = {'record': None}
 
     def test_current_preparation_ignores_immutable_historical_admission(self):
         self.assertEqual(work.validate_coverage(self.base, self.owner), self.prep)
@@ -60,10 +61,53 @@ class CurrentWorkTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'unknown current selector'): work.validate_coverage(self.base, changed)
 
     def test_selector_rejects_a_second_execution_queue(self):
-        for key in ('next_action', 'next_native', 'current_sitting', 'admission'):
+        for key in ('next_action', 'next_native', 'current_sitting', 'admission', 'readiness'):
             changed = copy.deepcopy(self.owner); changed['current'][key] = {'launch': 'old UIKit'}
             with self.subTest(key=key), self.assertRaisesRegex(ValueError, 'unexpected current authority'):
                 work.validate_coverage(self.base, changed)
+
+    def execution(self, state='RUNNING'):
+        record = dict(state=state, updated_at='2026-09-30T10:00:00Z',
+                      plan=self.owner['current']['plan'], gates=self.owner['current']['gates'])
+        path = self.base/'Results/execution.json'; path.write_text(json.dumps(record))
+        self.owner['execution'] = {'record': 'Results/execution.json'}
+        return path, record
+
+    def test_execution_is_independent_of_preparation_admission(self):
+        _, record = self.execution()
+        execution = work.read_execution(self.base, self.owner)
+        self.assertEqual(execution['record'], record)
+        self.assertFalse(self.owner['current']['native_admitted'])
+        self.assertIn('RUNNING', work.execution_text(execution))
+        self.assertNotIn('No native admission', work.execution_text(execution))
+        work.validate_coverage(self.base, self.owner)
+
+    def test_foreign_or_missing_execution_cannot_silently_supply_status(self):
+        path, original = self.execution()
+        for field, value in [('plan', {'path': 'other', 'sha256': 'c'*64}), ('gates', ['S3:H10']), ('state', '')]:
+            path.write_text(json.dumps(dict(original, **{field: value})))
+            with self.subTest(field=field), self.assertRaises(ValueError): work.read_execution(self.base, self.owner)
+        path.unlink()
+        with self.assertRaises(FileNotFoundError): work.read_execution(self.base, self.owner)
+        self.owner['execution']['record'] = '../../outside.json'
+        with self.assertRaises(ValueError): work.read_execution(self.base, self.owner)
+
+    def test_cursor_status_regenerates_from_execution_and_preserves_next_action(self):
+        path, record = self.execution()
+        cursor = 'Next: preserve this work.\n<!-- execution-status:start -->\nold\n<!-- execution-status:end -->\n'
+        running = work.render_cursor(cursor, work.read_execution(self.base, self.owner))
+        self.assertIn('RUNNING', running); self.assertTrue(running.startswith('Next: preserve this work.'))
+        record.update(state='STOPPED_BEFORE_HUMAN_INPUT', scenario='UNQUALIFIED', evidence='INCOMPLETE', cleanup='PASS')
+        path.write_text(json.dumps(record))
+        stopped = work.render_cursor(running, work.read_execution(self.base, self.owner))
+        self.assertNotEqual(running, stopped); self.assertNotIn('RUNNING', stopped)
+        self.assertIn('cleanup **PASS**', stopped)
+        self.assertEqual(work.render_cursor(stopped, work.read_execution(self.base, self.owner)), stopped)
+        with self.assertRaises(ValueError): work.render_cursor('No execution block', None)
+
+    def test_live_readiness_cannot_be_copied_back_into_preparation(self):
+        self.prep['readiness'] = 'WAITING_FOR_CONFIRMATION'
+        with self.assertRaisesRegex(ValueError, 'live readiness'): work.validate_coverage(self.base, self.owner)
 
     def test_frozen_reader_fields_must_be_unchanged_marked_and_allowlisted(self):
         for key in work.HISTORICAL_SLOTS:

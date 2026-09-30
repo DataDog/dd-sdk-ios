@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "state": "IMPLEMENTED_OFFLINE_VALIDATED",
+  "scope": "Requested cold-start recovery corrections 1 through 5; AGENTS.md remains unchanged.",
+  "starting_revision": "9313e6b8b7f66acc52af24a9e6accbf100935fdc",
+  "changes": [
+    "Separate preparation from its execution owner and derive cursor/remaining-work status from that record.",
+    "Update the repository test skill for discovered workspace identifiers, schemes, destinations and test plans.",
+    "Record project authorization for unsigned local commits without a prefix; require signed verified outgoing history before an authorized push.",
+    "Document controller/reviewer recovery and bind replacement automatic-coverage reviewers to the exact plan, independent implementer and availability observation.",
+    "Provide read-only artifact recovery checks, a source-only H10 fixture command and the bounded renderer compilation recipe."
+  ],
+  "validation": {
+    "documentation_and_artifact_tests": 38,
+    "reviewer_assignment_and_fixture_tests": 7,
+    "automatic_coverage_helper_tests": 102,
+    "reviewer_integration_tests": 2,
+    "total_unique_tests": 149,
+    "state": "PASS",
+    "selected_s2_artifact_references": 4,
+    "selected_h10_artifact_references": 1,
+    "selected_artifact_integrity": "PASS",
+    "artifact_scope": "Selected file hashes only; not a transitive product qualification.",
+    "initial_test_attempt": "Read-only sandbox could not create temporary fixtures; the authorized temporary-file runs passed."
+  },
+  "preservation": {
+    "sdk_source_changes": 0,
+    "builds": 0,
+    "native_runs": 0,
+    "backend_queries": 0,
+    "new_experiments": 0,
+    "gate_status_changes": 0,
+    "frozen_evidence_edits": 0,
+    "protected_paths_in_task_commit": 0,
+    "pushes": 0
+  },
+  "review_scope": "Implementation and focused offline checks only. A newly frozen runtime helper closure still needs its scoped independent review before native admission; historical reviewed helper copies and receipts are unchanged.",
+  "remaining": "Continue only the work selected by .continue-here.md. This correction supplies no native admission or release-gate credit."
+}

@@ -96,6 +96,17 @@ reader slots remain only for frozen helper compatibility and are hash-bound to i
 immutable snapshot. Preserve them until those helper closures are retired. Do not
 rebuild prepared products merely to migrate documentation.
 
+Preparation fields describe qualified inputs only. Its `execution.record` points
+to the separate current execution result, or is null before an execution owner is
+selected. Keep readiness, admission/process references and scenario/evidence/cleanup
+verdicts in that result; do not duplicate live readiness in preparation. The checker
+binds its plan and gates to the selected preparation and generates both the cursor's
+`execution-status` block and remaining-work text from it. Update the execution owner
+before `--update`; leave hand-written next-action prose outside the generated block.
+An active/terminal recorded state still requires live process/artifact inspection
+before taking ownership. A new plan must select its own execution record (or null),
+retaining the prior result as history. No generated text admits a run.
+
 For consolidation, separately verify protected paths and unchanged gate/evidence
 hashes against the saved pre-edit manifest. Commit only explicit documentation and
 checker paths, using [delivery/signing rules](DELIVERY.md#repository-and-signing-safety).

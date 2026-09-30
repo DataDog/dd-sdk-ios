@@ -12,7 +12,7 @@ HISTORICAL_SLOTS = ('uikit_gate_assessment', 'split_continuation', 'split_contin
 STALE_AUTHORITY = {'native_admitted', 'current_sitting', 'first_sitting', 'next_action', 'next_native', 'next_implementation'}
 CURRENT_FIELDS = {
     'swiftui_preparation': {'kind', 'evidence_level', 'native_admitted', 'native_cells_credited', 'gates_closed',
-                          'gates', 'plan', 'controls', 'review', 'master_plan', 'readiness', 'prerequisites', 'remaining_matrix'},
+                          'gates', 'plan', 'controls', 'review', 'master_plan', 'prerequisites', 'remaining_matrix'},
     'package_preparation': {'kind', 'evidence_level', 'native_admitted', 'native_cells_credited', 'gates_closed',
                            'package', 'preparation_owner', 'prerequisites'},
 }
@@ -54,6 +54,7 @@ def validate_coverage(base, owner):
     current = validate_selector(owner)
     require(current['kind'] == 'swiftui_preparation', 'current coverage must select SwiftUI preparation')
     prep = owner[current['kind']]
+    require('readiness' not in prep, 'live readiness belongs to the execution record, not preparation')
     require(prep['native_admitted'] is False and prep['new_native_runs'] == 0 and prep['gate_closures'] == [],
             'selected preparation contains native credit')
     for name in ('plan', 'controls', 'review', 'master_plan'):
@@ -84,6 +85,47 @@ def validate_coverage(base, owner):
     return prep
 
 
+def read_execution(base, owner):
+    """Read recorded execution independently of preparation; never grant admission."""
+    reference = owner['execution']
+    require(set(reference) == {'record'}, 'execution must reference one owning record')
+    name = reference['record']
+    if name is None:
+        return None
+    require(isinstance(name, str) and name.startswith('Results/') and name.endswith('.json')
+            and '..' not in Path(name).parts and not name.startswith('Results/History/'),
+            'execution record must be a current owned result')
+    path = base / name
+    require(path.resolve().is_relative_to((base / 'Results').resolve()) and not path.is_symlink(),
+            'execution record must not redirect outside Results')
+    record = json.loads(path.read_text())
+    require(record.get('plan') == owner['current']['plan'], 'execution and selected preparation plans differ')
+    require(record.get('gates') == owner['current']['gates'], 'execution and selected preparation gates differ')
+    for key in ('state', 'updated_at'):
+        require(isinstance(record.get(key), str) and record[key].strip(), 'execution missing ' + key)
+    return {'path': name, 'record': record}
+
+
+def execution_text(execution, prefix=''):
+    if execution is None:
+        return 'No execution record is selected. Preparation does not establish live process state.'
+    record = execution['record']
+    parts = ['Recorded execution: [' + record['state'] + '](' + prefix + execution['path'] + ').']
+    verdicts = [key + ' **' + record[key] + '**' for key in ('scenario', 'evidence', 'cleanup') if key in record]
+    if verdicts:
+        parts.append('; '.join(verdicts) + '.')
+    parts.append('Recheck actual admission, process and artifacts before taking ownership; this summary grants no launch.')
+    return ' '.join(parts)
+
+
+def render_cursor(text, execution):
+    marker = re.compile(r'<!-- execution-status:start -->.*?<!-- execution-status:end -->', re.S)
+    require(len(marker.findall(text)) == 1, 'cursor needs one generated execution-status block')
+    block = '\n'.join(['<!-- execution-status:start -->', execution_text(execution, BASE + '/'),
+                       '<!-- execution-status:end -->'])
+    return marker.sub(lambda _: block, text)
+
+
 def validate_residual(base, owner):
     current = validate_selector(owner)
     require(current['kind'] == 'package_preparation', 'current S3 selector is not a package')
@@ -102,9 +144,11 @@ def read_owners(repo):
         return json.loads((base / name).read_text())
     coverage, residual, physical = read(COVERAGE), read(RESIDUAL), read(PHYSICAL)
     prep = validate_coverage(base, coverage)
+    execution = read_execution(base, coverage)
     packages = validate_residual(base, residual)
     prepared = {p['id']: read(p['preparation_owner']) for p in packages.values() if p.get('preparation_owner')}
-    return dict(coverage=coverage, swiftui=prep, residual=residual, packages=packages, prepared=prepared, physical=physical)
+    return dict(coverage=coverage, swiftui=prep, execution=execution, residual=residual,
+                packages=packages, prepared=prepared, physical=physical)
 
 
 def remaining_requirements(register, release):
@@ -139,7 +183,8 @@ def render(register, owners):
             lines.append('| S2:' + ident + ' | ' + req['status'] + ' | ' + req['decisive_test'].replace('|', '\\|') + ' |')
     if swift_ids:
         lines.extend(['', 'The selected SwiftUI cell is: **' + ', '.join(str(owners['swiftui']['matrix'][0][k])
-                      for k in ('framework', 'layout', 'build', 'device')) + '**. No native admission is current.'])
+                      for k in ('framework', 'layout', 'build', 'device')) + '**.',
+                      execution_text(owners.get('execution'))])
     lines.extend(['', 'Required gate owners, dependencies and environments remain authoritative in the',
                   '[generated PLAN](PLAN.md#s2-release-gates). Reuse closed UIKit, Resource/Trace,',
                   'WebView, controlled-app, hosting and SwiftUI-transition evidence; do not repeat it.', '',

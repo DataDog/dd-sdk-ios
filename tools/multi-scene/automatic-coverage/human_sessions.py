@@ -225,7 +225,8 @@ def verify(root, plan, runner, seen=()):
 
 def reviewed(root, plan, runner):
     s = runner.shared; folder = root / 'runtime'; review = s.read(folder / 'review.json'); controls = s.read(folder / 'controls.json')
-    s.require(review['state'] == controls['state'] == 'PASS' and review['reviewer'] == '/root/c06_runtime_plan' and
+    runner.require_reviewer(review, s.sha(folder / 'runtime-plan.json'), folder)
+    s.require(review['state'] == controls['state'] == 'PASS' and
               review['plan_sha256'] == controls['plan_sha256'] == s.sha(folder / 'runtime-plan.json') and
               review['controls_sha256'] == s.sha(folder / 'controls.json') and controls['helpers'] == plan['helpers'],
               'session review/controls missing or stale')

@@ -2,6 +2,9 @@
   "schema_version": 2,
   "state": "UIKIT_VIEW_ACTION_GATES_CLOSED_SWIFTUI_REMAINS",
   "updated_at": "2026-09-30T08:30:12.591745+00:00",
+  "execution": {
+    "record": "Results/S2-swiftui-readiness-20260930.json"
+  },
   "current": {
     "kind": "swiftui_preparation",
     "evidence_level": "PREPARATION_ONLY",
@@ -29,7 +32,6 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/master/runtime/runtime-plan.json",
       "sha256": "8b56e529e8217cc733d43f804e2a7722e0fa0ba29ce516bc79277f05906f3063"
     },
-    "readiness": "BLOCKED_CAPTURE_MECHANISM_CONSUMED_CELL",
     "remaining_matrix": [
       {
         "build": "baseline-26.5",
@@ -170,7 +172,6 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/sitting-01/runtime/review.json",
       "sha256": "0ed8f0337f9ad0664fccd91d2040d919a812802eb28fa710e2d61443de85a09f"
     },
-    "readiness": "BLOCKED_CAPTURE_MECHANISM_CONSUMED_CELL",
     "master_plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/master/runtime/runtime-plan.json",
       "sha256": "8b56e529e8217cc733d43f804e2a7722e0fa0ba29ce516bc79277f05906f3063"

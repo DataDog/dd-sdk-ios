@@ -31,6 +31,7 @@ import human_candidate
 import human_remaining
 import human_split
 from acceptance_common import require
+from reviewer_assignment import require_reviewer
 import s2_hosting_workflow as shared
 import s2_webview_driver as transport
 
@@ -304,7 +305,8 @@ def cleanup(root,out,documents,identity,device_id,device,original,initial,pid,sc
 
 def reviewed(root):
     runtime=root/'runtime';plan=verify(root);review=shared.read(runtime/'review.json');controls=shared.read(runtime/'controls.json')
-    require(review.get('state')=='PASS' and review.get('reviewer')=='/root/c06_runtime_plan'
+    require_reviewer(review, shared.sha(runtime/'runtime-plan.json'), runtime)
+    require(review.get('state')=='PASS'
             and review.get('plan_sha256')==shared.sha(runtime/'runtime-plan.json')
             and review.get('controls_sha256')==shared.sha(runtime/'controls.json'),'complete runtime review missing or stale')
     require(controls.get('state')=='PASS' and controls.get('plan_sha256')==review['plan_sha256']

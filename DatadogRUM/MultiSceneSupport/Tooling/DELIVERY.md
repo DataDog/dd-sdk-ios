@@ -40,10 +40,15 @@ user-owned dirty path, including staged additions. Use explicit individual paths
 both staging and `git commit --only`; never use blanket staging or `git commit -a`.
 Do not include configuration, developer team/profile files or local artifacts.
 
-Use the repository commit skill and existing session authorization. Sign directly
-when available. The user permits local unsigned commits after a recorded signing
-failure/refusal/timeout; do not infer authorization to push unsigned history.
-All outgoing commits must verify before any separately authorized publication.
+Project authorization, updated September 30: agents may commit local checkpoints
+without another approval, without a ticket or any message prefix, and without a
+signature. A failed signing attempt is not required. Signing locally remains useful
+when readily available. Only publication requires signatures: before a separately
+authorized push, re-sign every unsigned outgoing commit and verify the entire
+outgoing range, including merges. Preserve source trees and existing evidence;
+re-signing does not require repeating unchanged accepted tests. Do not rewrite
+published/shared history or disturb another task's checkout without coordination.
+These project rules override the repository commit skill's defaults for this work.
 A restricted signature check can fail because it cannot create a temporary file;
 verify in the authorized user context before declaring a bad signature.
 

@@ -39,51 +39,63 @@ grep "test-ios-all" Makefile -A 20  # shows all iOS schemes used in CI
 
 ### 2. Xcode MCP — selective, fast, single test or class
 
-Requires **Xcode 26.3+** with the Xcode MCP server enabled in Claude Code settings.
+Discover the actual connected tool schemas first; a missing legacy tool name does
+not mean MCP is disabled. Inspect `xcode-select -p` and `xcodebuild -version`, then
+compare the intended toolchain with the bridge's workspace/destination. Do not
+change the user's default command-line tools to repair a mismatch.
 
-**Before using Xcode MCP**, verify the setup:
-1. Check Xcode version: `xcodebuild -version`
-   - If Xcode < 26.3 → ask the user to upgrade Xcode
-   - If Xcode ≥ 26.3 → check that `XcodeListWindows` is available
-2. If `XcodeListWindows` is unavailable → ask the user to enable the Xcode MCP server in Xcode settings
-
-`RunSomeTests` is limited to targets in the **currently active Xcode scheme**. The MCP has no tool to switch schemes — that must be done manually in Xcode.
-
-**Get the tabIdentifier** (identifies the open Xcode workspace window):
+**Discover and target the workspace:**
 ```
-XcodeListWindows()  # → tabIdentifier e.g. "windowtab1"
+XcodeListWorkspaces()  # match the returned path to the intended workspace
+XcodeListSchemes(workspaceIdentifier: <discovered workspace>)
 ```
 
-**Check available targets first:**
+If no intended workspace is open, use `XcodeOpenWorkspace` with its verified
+absolute project/workspace path, then use the returned identifier. Handle an
+actual access prompt if one occurs; do not request configuration changes just
+because an older tool such as `XcodeListWindows` is absent. Older bridges may
+expose `tabIdentifier`; use that only when their live schema actually requires it.
+
+`RunSomeTests` uses the active scheme and test plan. After securing the build/test
+lane, select the discovered scheme with `XcodeSwitchScheme(workspaceIdentifier,
+schemeName)` if needed. Inspect its returned destination and active test plan;
+scheme changes can select a different platform variant. Use
+`XcodeListRunDestinations`, `XcodeSwitchRunDestination`, `XcodeListTestPlans` and
+`XcodeSwitchTestPlan` when supported by the connected bridge. Do not change a
+workspace another task is using. If scheme selection is unavailable, use the
+explicit CLI fallback below rather than requiring a manual switch.
+
+**Discover exact selected tests:**
 ```
-GetTestList(tabIdentifier: <tabIdentifier>)
-# → lists targets in the active scheme only
+GetTestList(workspaceIdentifier: <discovered workspace>)
 ```
+Read `fullTestListPath` if the inline list is truncated. Use returned target names
+and identifiers; do not infer them from a historical naming convention.
 
 **If the test is in the active scheme**, run it directly:
 ```
 RunSomeTests(
-  tabIdentifier: <tabIdentifier>,
+  workspaceIdentifier: <discovered workspace>,
   tests: [{
     targetName: "<targetName from GetTestList>",
-    testIdentifier: "<TestClass>/<testMethod>()"
+    testIdentifier: "<identifier from GetTestList>"
   }]
 )
 ```
 
-**If the test is NOT in the active scheme**, use `xcodebuild -only-testing`:
+**CLI fallback**, using an explicitly discovered scheme and destination:
 ```bash
 xcodebuild test \
   -workspace Datadog.xcworkspace \
-  -scheme "<Module> <Platform>" \
+  -scheme "<discovered scheme>" \
   -destination 'platform=<Platform> Simulator,name=<Device>' \
   -only-testing:<TargetName>/<TestClass>/<testMethod>
 ```
 
 To find which module owns a test:
 ```
-XcodeGrep(tabIdentifier: <tabIdentifier>, pattern: "func <testName>", outputMode: "filesWithMatches")
-# path reveals the module: DatadogInternal/Tests/... → scheme "DatadogInternal iOS"
+XcodeGrep(workspaceIdentifier: <discovered workspace>, pattern: "func <testName>", outputMode: "filesWithMatches")
+# Locate the module, then discover its actual scheme and test identifier.
 ```
 
 ## Decision Guide
@@ -91,19 +103,19 @@ XcodeGrep(tabIdentifier: <tabIdentifier>, pattern: "func <testName>", outputMode
 ```
 Need to run tests?
 ├── Full module or CI replication?
-│   └── make test-ios SCHEME="<Module> iOS" DEVICE="<Device>"
+│   └── make test-ios SCHEME="<discovered scheme>" DEVICE="<Device>"
 └── Specific class or method?
     ├── Test is in the active Xcode scheme? (check GetTestList)
     │   └── RunSomeTests
     └── Test is in a different scheme?
-        └── xcodebuild -only-testing (or ask user to switch scheme in Xcode)
+        └── XcodeSwitchScheme and rediscover tests, or xcodebuild -only-testing
 ```
 
 ## Common Mistakes
 
 | Mistake | Fix |
 |---------|-----|
-| Assuming `RunSomeTests` works for any module | It only sees targets in the active Xcode scheme — MCP cannot switch schemes |
+| Assuming `RunSomeTests` works for any module | Select the discovered scheme/test plan, then rediscover its tests |
 | Not knowing which scheme owns the test | Grep for the function — file path reveals the module |
 | Running full module when only one test needed | Use `RunSomeTests` or `xcodebuild -only-testing` |
 | Running integration tests under feature module scheme | Integration tests use target `DatadogIntegrationTests iOS/tvOS` |
