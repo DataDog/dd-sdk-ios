@@ -6294,34 +6294,6 @@
 			path = Heatmaps;
 			sourceTree = "<group>";
 		};
-		6C845809306C93D200BA1FFF /* DDSketch 3 */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = "DDSketch 3";
-			sourceTree = "<group>";
-		};
-		6C84580A306C93D200BA1FFF /* Stats 3 */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = "Stats 3";
-			sourceTree = "<group>";
-		};
-		6C84580B306C93D200BA1FFF /* DDSketch 3 */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = "DDSketch 3";
-			sourceTree = "<group>";
-		};
-		6C84580C306C93D200BA1FFF /* Stats 3 */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = "Stats 3";
-			sourceTree = "<group>";
-		};
 		6C84580D306C93FF00BA1FFF /* DDSketch */ = {
 			isa = PBXGroup;
 			children = (
@@ -7063,8 +7035,6 @@
 				095AE9512F7D30BD00C332AE /* Sampling */,
 				61C5A87A24509A0C00DA608C /* Utils */,
 				D2023A952FFE606800A80981 /* TraceConfiguration+RemoteConfiguration.swift */,
-				6C845809306C93D200BA1FFF /* DDSketch 3 */,
-				6C84580A306C93D200BA1FFF /* Stats 3 */,
 				6C84580D306C93FF00BA1FFF /* DDSketch */,
 				6C845816306C93FF00BA1FFF /* Stats */,
 			);
@@ -7090,8 +7060,6 @@
 				D2023A992FFE60BD00A80981 /* TraceConfiguration+RemoteConfigurationTests.swift */,
 				6C845803306C93A900BA1FFF /* ClientStatsFeatureTests.swift */,
 				6C845807306C93A900BA1FFF /* StatsConcentratorTests.swift */,
-				6C84580B306C93D200BA1FFF /* DDSketch 3 */,
-				6C84580C306C93D200BA1FFF /* Stats 3 */,
 				6C84581F306C93FF00BA1FFF /* DDSketch */,
 				6C845828306C940000BA1FFF /* Stats */,
 			);
