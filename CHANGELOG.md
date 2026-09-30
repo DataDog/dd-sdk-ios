@@ -8,6 +8,7 @@
 - [IMPROVEMENT] Require Swift tools version 6.2 (Xcode 26) to resolve the package with Swift Package Manager. See [#3231][]
 - [FIX] Report slow frame and freeze rates for RUM views when navigation starts a new view without calling `stopView()` on the previous one.
 - [FIX] Traced requests and spans created immediately after the SDK is initialized now use the same sampling decision as the rest of the RUM session, and carry that session's ID. Previously they could be sampled independently of the session and sent without it. See [#3221][]
+- [FIX] Ensure repeated or concurrent URLSession task resumes apply request customization and start tracking only once per SDK instance.
 
 # 3.18.0 / 21-09-2026
 
