@@ -201,4 +201,11 @@ used the supported Device Hub Closed control after task-app removal; actual disp
 readback proves restoration. All 1,200 artifact hashes and the independent review pass.
 Only the SDK27.1 split baseline and candidate remain. Their unchanged-source
 [continuation](../Results/S2-swiftui-split271-20260930.json) reuses accepted builds
-and 64 focused controls. No SwiftUI or resize gate closes before those comparisons.
+and 64 focused controls. It stopped after 13 initial gesture effects at the first
+unfold: the public accessibility reader reported the same missing visual ancestry
+at the fold, failed cleanup and a later cleanup-only snapshot. This is persistent
+capture failure, not an SDK-regression result. Original attempt/cleanup remain
+INVALID. A separately reviewed nine-control restoration preserved evidence, proved
+native idle after Released, removed only the task app and restored actual Closed
+display; the app/controller/page are absent. The next task is capture repair before
+any human repeat. No SwiftUI or resize gate closes from this attempt.

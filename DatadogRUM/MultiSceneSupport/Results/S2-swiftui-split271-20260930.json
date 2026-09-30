@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "REVIEWED_SPLIT_CONTINUATION",
+  "state": "STOPPED_FOLD_CAPTURE_RESTORED",
   "owner": "EXP-210",
   "gates": [
     "S2:C09",
@@ -22,17 +22,91 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting/runtime/controls.json",
     "sha256": "4b27e18de8bd66b764862781c95207cd0a984f20db6edd9948cbef8c56f54c53"
   },
-  "native_admitted": false,
-  "native_runs": 0,
+  "native_admitted": true,
+  "native_runs": 1,
   "qualified_cells": 0,
   "scenario": "UNQUALIFIED",
   "evidence": "INCOMPLETE",
-  "cleanup": "NOT_RUN",
+  "cleanup": "INVALID",
   "gates_closed": [],
-  "updated_at": "2026-09-30T13:03:37.163859+00:00",
-  "next_action": "User is available and the instruction page is visible. Complete fresh environment preflight, then admit one automatic prefix; page Ready follows actual capture and idle qualification.",
+  "updated_at": "2026-09-30T13:27:14.676090+00:00",
+  "next_action": "Repair the persistent public-accessibility ancestry failure offline, review focused controls, and qualify corrected capture before another human invitation. Four accepted SwiftUI cells stay immutable; both SDK27.1 split cells remain.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting/runtime/review.json",
     "sha256": "077abf3f22847aa8547c60ef103912d2ea6f328e18018a95b404176e714f5fe5"
+  },
+  "admission": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting/runtime/native-admission.json",
+    "sha256": "f1392d6f8ee424d0772a4e823125a21dc3e69a4ae0cdb7ae23bedbdae0a492bf"
+  },
+  "controller": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting/runtime/controller.json",
+    "sha256": "18c191418baf409ad553b16fb3d72f7c68b8811ba857de4911cd79e9a641a061"
+  },
+  "preflight": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting/runtime/preflight-r2.json",
+    "sha256": "9742813d9ad5e7d37be15091c3977b4c9d168ddacd8ecb1bb124bbf4dba83c4b"
+  },
+  "preparation_failure": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting/runtime/preflight-preparation-failure.json",
+    "sha256": "1d6b4f0aa601d3c2d288168a4adc6768429e24b14c45a75ed0eb63068c2b6fe0"
+  },
+  "source_at_run": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting/runtime/source-at-run/manifest.json",
+    "sha256": "6f5a3ca696183449ff6e0587b97c157add862bc01a1cebc40ed511fc6b4b0195"
+  },
+  "summary": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting/runtime/cells/baseline-27.1-duo-SwiftUI-split-single/summary.json",
+    "sha256": "4f8a4aaa40b750d1e5da1e9dc599747c73ab6e0fb1c6b05217aa17fd3e2e1b17"
+  },
+  "original_verdict": "INVALID",
+  "failure": {
+    "phase": "open.effect",
+    "reason": "automatic human input: incomplete public accessibility inventory",
+    "operator_released": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting/runtime/cells/baseline-27.1-duo-SwiftUI-split-single/human-release/operator-released.json",
+      "sha256": "f79b4d417731af942b46e1084afcd334298f681f4e19ad08825d83e7f8938dd6"
+    },
+    "worker_quiescence": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting/runtime/baseline-27.1-duo-SwiftUI-split-single-driver.supervisor.json",
+      "sha256": "4a3194072e92b9229de41b48b22ed30c971dda7347a28825c9e923c80c7297e5"
+    }
+  },
+  "separate_restoration": {
+    "state": "PASS",
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/restoration/review.json",
+      "sha256": "4ec831ed11b531649cc59e40caaa6d9718e11b6721d1ba581acabc9786b275c2"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/restoration/controls.json",
+      "sha256": "dd939dfc24ca57ba3d174eec2f41af498fc09f5fcc0a47e427b64a15442911ab"
+    },
+    "result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/restoration/result.json",
+      "sha256": "f6ddf04f77bbdb2bedf9fdf91833da1cef22915c97a284314203a2f2f9498476"
+    },
+    "post_exit": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/restoration/post-exit.json",
+      "sha256": "4b395e7909d1771622bf9c2a06edfc6b5109d328ab82bdad3c6b73e8172821cb"
+    },
+    "scenario_credit": false
+  },
+  "observed": {
+    "completed_initial_gesture_effects": 13,
+    "recaptured_toggle_effects": 1,
+    "fold_input": "Open display transition observed; complete accessibility/ownership effect unqualified",
+    "missing_ancestry_sequences": [
+      182,
+      184,
+      186
+    ],
+    "same_missing_view_in_all_three": true,
+    "original_artifact_hashes_verified": 344,
+    "gate_credit": false
+  },
+  "failure_assessment_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/restoration/failure-assessment-review.json",
+    "sha256": "551d14c7cd52b6d74323acc42aba5e628cc58069630699e0527b1c4fa057d10f"
   }
 }

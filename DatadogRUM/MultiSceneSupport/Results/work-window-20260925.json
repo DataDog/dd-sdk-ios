@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "S2_SWIFTUI_SPLIT_271_PREPARED",
+  "state": "S2_SWIFTUI_SPLIT_CAPTURE_REPAIR",
   "authority": "Standing user instruction to continue autonomous plan execution until explicitly stopped; caffeinate has a separate finite duration",
   "started_at": 1790316486.131028,
   "work_deadline_utc": null,
@@ -17,7 +17,7 @@
     "instruction": "Continue without human input; remove heartbeat after safe morning checkpoint. This is not a native admission or deadline extension.",
     "removed_at": "2026-09-27T06:00:55.094691+00:00"
   },
-  "next_task": "Fresh preflight and one admitted SDK27.1 split baseline after the reviewed SDK26.5 baseline. User availability is current; no native run yet.",
+  "next_task": "Original split run is INVALID; separate restoration PASS. Repair capture offline before another human invitation. Caffeinate remains separately authorized until14:21 UTC; no work deadline.",
   "gate_closures": [
     "S2:H16",
     "S2:T10",
@@ -33,7 +33,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": "2026-09-30T13:03:37.164853+00:00",
+  "updated_at": "2026-09-30T13:27:14.676090+00:00",
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"

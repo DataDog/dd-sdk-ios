@@ -104,6 +104,12 @@ local/final summaries retain `NATIVE_EFFECT_RECAPTURED` and the failed-capture
 reference. A second incomplete observation stops. Cleanup captures cannot replace
 scenario evidence. The accepted SDK26.5 stack baseline includes one such recapture.
 
+The [SDK27.1 split attempt](../../../DatadogRUM/MultiSceneSupport/Results/S2-swiftui-split271-20260930.json)
+exposed a persistent missing-ancestry error after unfolding. Its failed scenario
+and cleanup remain immutable; separate reviewed restoration proves task removal
+and actual Closed display only. Do not widen recapture to folds or repeat the
+human cell without a source-backed correction and fresh capture qualification.
+
 `human_split.py` is the scoped candidate-only split continuation. Its comparison
 keeps actual pane layout, per-input owners and View inventory separate from the
 inherited Home limitation. Compare in-memory and persisted inventories through
