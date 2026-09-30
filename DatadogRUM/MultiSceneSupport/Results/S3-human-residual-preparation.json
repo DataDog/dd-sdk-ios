@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "state": "COMPONENT_PREPARATION_NATIVE_UNADMITTED",
-  "updated_at": "2026-09-30T07:53:42.093687+00:00",
+  "updated_at": "2026-09-30T17:17:03.448704+00:00",
   "current": {
     "kind": "package_preparation",
     "package": "isolated-background-foreground",
@@ -10,7 +10,7 @@
     "native_admitted": false,
     "native_cells_credited": 0,
     "gates_closed": [],
-    "prerequisites": "Compile the dormant H10 marker renderer, then compose native/display validation and bootstrap/backend/cleanup. Actual supported-source silent capture remains a separate native prerequisite. No human session is admitted."
+    "prerequisites": "H10 renderer compile and sealed backend collector qualify. Compose native/display validation, bootstrap and task-only cleanup; actual supported-source silent capture remains a separate native prerequisite. No human session is admitted."
   },
   "work_item": "Finite source-backed preparation of residual S3 human scenarios",
   "defined_at": "2026-09-28T13:49:45.760600+00:00",
