@@ -110,7 +110,8 @@ def verify_host(execution_root, destination):
     oracle_sha = sha(Path(cycle.__file__))
     cases = ['unchanged','wrong-identity','changed-seal-bytes','wrong-oracle-source','wrong-phase-proof',
              'changed-semantic-result','missing-capture','symlink-capture','foreign-prefix','terminal-mutated',
-             'missing-extension','extra-critical-work','rewritten-native-journal','boolean-sequence']
+             'missing-extension','extra-critical-work','rewritten-native-journal','boolean-sequence',
+             'wrong-final-invocation','boolean-final-invocation']
     results = []
 
     def encode(value): return json.dumps(value,sort_keys=True,separators=(',',':')).encode()
@@ -126,8 +127,15 @@ def verify_host(execution_root, destination):
         folder=destination/name;shutil.copytree(source/'evidence',folder)
         original=next(folder.glob('seal-*.json'));seal=json.loads(original.read_text())
         expected=copy.deepcopy(identity)
+        expected_challenge=copy.deepcopy(challenge)
         if name=='wrong-identity': expected['processID']+=1
         if name=='wrong-phase-proof':seal['challenge']['consumedPhaseReplies'].pop()
+        if name in ['wrong-final-invocation','boolean-final-invocation']:
+            expected_challenge['finalInvocationSequence'] = True if name=='boolean-final-invocation' else challenge['finalInvocationSequence']+1
+            seal['challenge']=copy.deepcopy(expected_challenge)
+            proof=json.loads(capture.decode(seal['semanticProof']))
+            proof['finalInvocationSequence']=expected_challenge['finalInvocationSequence']
+            seal['semanticProof']=bytes64(proof)
         if name in ['wrong-oracle-source','changed-semantic-result']:
             proof=json.loads(capture.decode(seal['semanticProof']))
             if name=='wrong-oracle-source':proof['oracleSourceSHA256']='e'*64
@@ -163,7 +171,7 @@ def verify_host(execution_root, destination):
         reference=put(folder,'seal',seal)
         if name=='changed-seal-bytes':(folder/reference['name']).write_bytes(b'changed')
         failure=None
-        try:capture.validate_seal(folder,reference,identity=expected,challenge=challenge,oracle_source_sha256=oracle_sha)
+        try:capture.validate_seal(folder,reference,identity=expected,challenge=expected_challenge,oracle_source_sha256=oracle_sha)
         except Exception as error:failure=type(error).__name__+': '+str(error)
         results.append(dict(name=name,passed=(failure is None)==(name=='unchanged'),failure=failure))
     value=dict(state='PASS' if all(r['passed'] for r in results) else 'FAIL',checks=results,

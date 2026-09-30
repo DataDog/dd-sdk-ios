@@ -279,6 +279,7 @@ For multi-phase captures, bind collection to all consumed phase replies and the
 last actual invocation. Revalidate the complete inspected prefix against a fresh
 snapshot before terminal success; retain every extension and cleanup tail. Allow
 delayed ordinary view revisions when ownership is unchanged, but reject extra
-critical work or changed owners. A display digest alone does not qualify display
+critical work or changed owners. Independently join the final invocation sequence
+and bind every raw transfer response/receipt in the checked manifest. A display digest alone does not qualify display
 evidence. The [H10 adapter](../../../tools/multi-scene/acceptance/README.md#h10-isolated-background-preparation)
 documents these component boundaries; its controls do not certify a native session.

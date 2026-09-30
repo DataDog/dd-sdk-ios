@@ -475,6 +475,12 @@ the inspected prefix against a fresh snapshot before sealing. The host reader
 `scene_background_capture.py` rechecks both complete prefixes and native journals.
 The renderer changes five existing copied members; the app compiles without
 changing original fixture membership. These are component qualifications only.
+`scene_background_protocol.py` checks the exact Swift phase protocol;
+`scene_background_host.py` uses the existing device receipt verifier for serialized
+transfers. It binds consumed permits, raw IO and capture artifacts in chained
+manifests, and independently joins the claimed final invocation to the recorded
+sequence. A supplied source-bound native/display validator must return actual
+artifacts for the current inspection before permit or seal; none is supplied yet.
 Benign focus/layout events are allowed;
 B background/disconnect, owner replacement and unknown events reject. Ownerless
 window events must match observed scene-bound non-fixture auxiliary identities;
@@ -488,9 +494,10 @@ tags and reject missing, duplicated or foreign work.
 
 The focused controls use synthetic observations; recorder lock checks use the
 actual recorder with minimal signal models. The display digest is a binding
-placeholder until actual source-bound display artifacts are verified. Host
-transport, native process/transfer, backend and safe cleanup integration remain
-unqualified. No component PASS grants native or release acceptance. Sealing allows
+placeholder until actual source-bound display artifacts are verified. Saved Swift
+bytes and synthetic transfer controls qualify the client only. Native bootstrap,
+physical transfers, backend and safe cleanup integration remain unqualified.
+No component PASS grants native or release acceptance. Sealing allows
 delayed ordinary view-document revisions, rejects additional work or changed
 owners, and precedes terminal success. Preserve post-terminal updates and cleanup
 as a separate tail; never discard them to satisfy the checker.

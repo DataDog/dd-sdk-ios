@@ -11,6 +11,15 @@ import scene_background_cycle as cycle
 MAXIMUM_BYTES = 16_777_216
 
 
+def final_invocation(signals):
+    rows = [row for row in signals if row.get('name') == 'h10.invoke.B.after-A-foreground']
+    require(len(rows) == 1 and rows[0].get('kind') == 'assertion'
+            and rows[0].get('evidenceSource') == 'probe' and rows[0].get('result') == 'PASS'
+            and type(rows[0].get('sequence')) is int and rows[0]['sequence'] > 0,
+            'missing or ambiguous H10 final invocation')
+    return rows[0]['sequence']
+
+
 def read_reference(directory, reference):
     directory = Path(directory)
     require(directory.is_dir() and not directory.is_symlink(), 'redirected H10 evidence directory')
@@ -69,6 +78,9 @@ def validate_seal(directory, reference, *, identity, challenge, oracle_source_sh
             and proof.get('finalInvocationSequence') == challenge.get('finalInvocationSequence'), 'H10 proof binding differs')
     old = read_capture(directory,seal['inspected'],identity)
     fresh = read_capture(directory,seal['fresh'],identity)
+    require(type(challenge.get('finalInvocationSequence')) is int
+            and challenge['finalInvocationSequence'] == final_invocation(old['signals'])
+            == final_invocation(fresh['signals']), 'H10 final invocation sequence differs')
     require(old['terminal'] is None and fresh['terminal'] is None
             and fresh['capture']['sequence'] > old['capture']['sequence']
             and fresh['raw_signals'][:len(old['raw_signals'])] == old['raw_signals'], 'changed H10 inspected prefix')
