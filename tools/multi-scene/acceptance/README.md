@@ -450,8 +450,11 @@ prefix for `windows.isolated-background-foreground` and the
 `physical-isolated-background-foreground` profile.
 
 The arm and before/invocation/after witnesses bind actual native owners, input
-state and an append-only lifecycle journal. UIKit notification names must come
-from the future typed native producer. Benign focus/layout events are allowed;
+state and an append-only lifecycle journal. `scene_background_fixture.py` appends
+the dormant typed witness to an isolated copy of the existing native observer.
+It returns actual UIKit notification names and owner-bound window/root interaction
+flags on MainActor. Its reviewed compiler check does not activate a scenario;
+arm/invocation guards, display and session composition remain. Benign focus/layout events are allowed;
 B background/disconnect, owner replacement and unknown events reject. Ownerless
 window events must match observed scene-bound non-fixture auxiliary identities;
 there is no window-count or private-class-name rule.

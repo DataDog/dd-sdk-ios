@@ -2,7 +2,7 @@
   "schema_version": 1,
   "work_item": "Isolated scene background and foreground with an unchanged usable peer",
   "gate": "S3:H10",
-  "state": "REVIEWED_OFFLINE_ORACLE_NATIVE_UNQUALIFIED",
+  "state": "REVIEWED_ORACLE_AND_NATIVE_WITNESS_SESSION_UNPREPARED",
   "owner": "Root",
   "reviewer": "/root/c06_runtime_plan",
   "defined_at": "2026-09-30T00:54:04.093738+00:00",
@@ -215,16 +215,16 @@
     "Late native/display evidence or dropped lifecycle journal rows"
   ],
   "next": [
-    "Implement the isolated native producer with actual UIKit notification names, fresh arm/invocation witnesses and window/root interaction state, preserving all H04/H06 inputs.",
+    "Compose the fresh arm and per-marker native admission with scene-context dispatch, preserving the reviewed witness/oracle and frozen H04/H06 inputs.",
     "Compose source/compiler/process/manifest identity, complete sealed capture and display with the physical mechanism and safe cleanup; obtain scoped review before native use.",
     "Native use waits for qualified physical input/display, fresh device/backend prerequisites and user availability. No automatic start at09:00."
   ],
-  "updated_at": "2026-09-30T01:21:20.020327+00:00",
+  "updated_at": "2026-09-30T02:04:09.764741+00:00",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/review-r2.json",
     "sha256": "d7435346784f04ada43626bbd95247abf2f47cee3a568d8e652bbe6c32eddb9a"
   },
-  "native_input_capture_gap": "The existing H04/H06 snapshot enabled flag describes the observer. H10 must add actual window/root interaction-enabled values in the isolated copied fixture; never edit the frozen H04/H06 source inputs.",
+  "native_input_capture_gap": "The isolated compiled witness now reports actual window/root interaction flags alongside the observer state. Arm/invocation sequencing and session wiring remain incomplete; frozen H04/H06 sources are unchanged.",
   "oracle_component": {
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/oracle-definition.json",
@@ -255,5 +255,43 @@
     ],
     "native_producer_implemented": false,
     "scope": "Offline component only; complete sealed source-bound transfer, typed native producer, display, composed runner and cleanup remain separate."
+  },
+  "native_witness": {
+    "state": "REVIEWED_DORMANT_COMPILER_QUALIFIED",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/native-witness-f85evzpf/definition.json",
+      "sha256": "ab8a68238e3569cff56f013a3800417b9724a0a36d5efa8593d007f2afdb9c66"
+    },
+    "verdict": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/native-witness-f85evzpf/verdict.json",
+      "sha256": "c64370c4e74c3bc5bc6baae43dedf3808ca3687f49cc4642464b2bd53825265b"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/native-witness-f85evzpf/review-final.json",
+      "sha256": "d1b0b3fe1f89b6712a7e97df73cd5ab6b0cb3efe9620aed8d9771850e5758217"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/native-witness-f85evzpf/renderer-controls-r2.json",
+      "sha256": "05e017e69e9a5a35519603d7aeb99ed56efd5a5bf058b4afb3816f2ba071f943"
+    },
+    "build": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/native-witness-f85evzpf/compiler-r1/unsigned-product.json",
+      "sha256": "bf640a57ad8c334764dd109b39e69d32f9b7b5a1d4f14d9c6e53d93410aa0e45"
+    },
+    "helper_files": [
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/acceptance/scene_background_witness.swift",
+        "sha256": "41f836bd9cccf747583e836a52de675156cc620011264c2b91b5415599b75925"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/acceptance/scene_background_fixture.py",
+        "sha256": "9220d25892b8bca6b1d26d2be2475a1f348fce5ca1389c278f8de8db366a55c0"
+      }
+    ],
+    "builds": 1,
+    "renderer_controls": 5,
+    "native_runs": 0,
+    "gates_closed": [],
+    "scope": "Actual typed UIKit names and native interaction flags compile in one isolated existing source member. No activation, arm/marker sequencing, display/session integration, signing or native admission."
   }
 }
