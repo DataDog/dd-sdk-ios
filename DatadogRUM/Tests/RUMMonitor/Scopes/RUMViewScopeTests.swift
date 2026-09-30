@@ -3020,7 +3020,8 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: false,
             parent: parent,
             dependencies: .mockWith(
-                viewHitchesReaderFactory: { ViewHitchesMock(hitchesDataModel: ([hitch], 0.16)) }
+                viewHitchesReaderFactory: { ViewHitchesMock(hitchesDataModel: ([hitch], 0.16)) },
+                featureFlags: [.viewUpdates: false]
             ),
             identity: identity,
             path: "view-a",
@@ -3098,7 +3099,8 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: .mockWith(
                 renderLoopObserver: renderLoopObserver,
-                viewHitchesReaderFactory: { reader }
+                viewHitchesReaderFactory: { reader },
+                featureFlags: [.viewUpdates: false]
             ),
             identity: identity,
             path: "view-a",
@@ -3162,7 +3164,8 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: .mockWith(
                 hasAppHangsEnabled: true,
-                viewHitchesReaderFactory: { ViewHitchesMock(hitchesDataModel: ([hitch], 0.16)) }
+                viewHitchesReaderFactory: { ViewHitchesMock(hitchesDataModel: ([hitch], 0.16)) },
+                featureFlags: [.viewUpdates: false]
             ),
             identity: identity,
             path: "view",
@@ -3220,7 +3223,8 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: .mockWith(
                 hasAppHangsEnabled: true,
-                viewHitchesReaderFactory: { ViewHitchesMock(hitchesDataModel: ([hitch], 0.16)) }
+                viewHitchesReaderFactory: { ViewHitchesMock(hitchesDataModel: ([hitch], 0.16)) },
+                featureFlags: [.viewUpdates: false]
             ),
             identity: identity,
             path: backgroundViewURL,
@@ -3260,7 +3264,8 @@ class RUMViewScopeTests: XCTestCase {
             parent: parent,
             dependencies: .mockWith(
                 hasAppHangsEnabled: true,
-                viewHitchesReaderFactory: { ViewHitchesMock(hitchesDataModel: ([Hitch(start: 0, duration: 0.16.dd.toInt64Nanoseconds)], 0.16)) }
+                viewHitchesReaderFactory: { ViewHitchesMock(hitchesDataModel: ([Hitch(start: 0, duration: 0.16.dd.toInt64Nanoseconds)], 0.16)) },
+                featureFlags: [.viewUpdates: false]
             ),
             identity: identity,
             path: launchViewURL,
@@ -3295,7 +3300,8 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: false,
             parent: parent,
             dependencies: .mockWith(
-                viewHitchesReaderFactory: { ViewHitchesMock(hitchesDataModel: ([Hitch(start: 0, duration: 0.16.dd.toInt64Nanoseconds)], 0.16)) }
+                viewHitchesReaderFactory: { ViewHitchesMock(hitchesDataModel: ([Hitch(start: 0, duration: 0.16.dd.toInt64Nanoseconds)], 0.16)) },
+                featureFlags: [.viewUpdates: false]
             ),
             identity: identity,
             path: "user-view",
@@ -3399,7 +3405,11 @@ class RUMViewScopeTests: XCTestCase {
             let scope = RUMViewScope(
                 isInitialView: false,
                 parent: parent,
-                dependencies: .mockWith(hasAppHangsEnabled: true, viewHitchesReaderFactory: { nil }),
+                dependencies: .mockWith(
+                    hasAppHangsEnabled: true,
+                    viewHitchesReaderFactory: { nil },
+                    featureFlags: [.viewUpdates: false]
+                ),
                 identity: identity,
                 path: "view",
                 name: "View",
