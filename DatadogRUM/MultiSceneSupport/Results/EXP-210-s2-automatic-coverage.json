@@ -511,7 +511,7 @@
     "sha256": "1e9f9c0b02d0ed0ef1331f53bddfdedef3fdd47d50f397fd6f5e179f6047fc10",
     "acceptance": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/host-review-acceptance.json"
   },
-  "updated_at": "2026-09-30T09:34:09.480373+00:00",
+  "updated_at": "2026-09-30T11:36:24.068081+00:00",
   "input_diagnostic_definition": {
     "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/D1-input-diagnostic-definition.json",
     "sha256": "e5c9a6f5743a120680de3e692837cbfff400fdfb2277dac8bed61b53dc8156a0",
@@ -1230,5 +1230,15 @@
   "s2_gates_closed": [
     "S2:C07",
     "S2:C08"
-  ]
+  ],
+  "current_swiftui_baselines": {
+    "owner": "Results/S2-coverage-remaining-preparation.json",
+    "records": [
+      "Results/S2-swiftui-effect-recapture-20260930.json",
+      "Results/S2-swiftui-stack271-20260930.json"
+    ],
+    "accepted_cells": 2,
+    "remaining_cells": 4,
+    "result": "Both baselines qualify capture, Home, cleanup and exact owners. Same 17 Views and 25 Actions; one source-classified scroll/swipe subtype difference. Candidate and split comparison remain; no gate closure."
+  }
 }

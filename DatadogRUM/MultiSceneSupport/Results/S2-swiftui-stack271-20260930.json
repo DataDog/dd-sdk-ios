@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "state": "NATIVE_BASELINE_QUALIFIED",
+  "owner": "EXP-210",
+  "gates": [
+    "S2:C09",
+    "S2:C10",
+    "S2:H14"
+  ],
+  "scope": "SDK27.1 SwiftUI stack baseline after fresh user availability; no human input ran in the preserved no-Ready attempt.",
+  "selected": {
+    "build": "baseline-27.1",
+    "device": "duo",
+    "framework": "SwiftUI",
+    "layout": "stack",
+    "multiple_scenes": false
+  },
+  "plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stack271-3wfdywlg/sitting/runtime/runtime-plan.json",
+    "sha256": "e9299ece5f3ded086112e15e4cfeac20c6d09d1695ec0ac8c0a108f43f030c26"
+  },
+  "controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stack271-3wfdywlg/sitting/runtime/controls.json",
+    "sha256": "b7edfae4025008525f89ac88f093aa116c15ae51f8adf10deeb98637907d990a"
+  },
+  "prior_attempt": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-continuation-20260930.json",
+    "sha256": "54ae7e5002320e44106aaa782c490055987b721c5c9e27f9f576ea0389a10b68"
+  },
+  "native_admitted": true,
+  "native_runs": 1,
+  "gates_closed": [],
+  "scenario": "PASS",
+  "evidence": "PASS",
+  "cleanup": "PASS",
+  "next_action": "Preserve this accepted baseline; the source-paired SDK27.1 candidate is next. Broader SwiftUI gates remain open until the finite stack/split comparisons qualify.",
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stack271-3wfdywlg/sitting/runtime/review.json",
+    "sha256": "a0f15145348a2968a798849d42cc05ed6e0974e8594676a3c8dbdcfb98d9eaf8"
+  },
+  "preflight": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stack271-3wfdywlg/sitting/runtime/preflight.json",
+    "sha256": "4ed7b9f0454852046b498a4a9cdc162916c3ae394510342037fbbdf1be3261b4"
+  },
+  "source_at_run": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stack271-3wfdywlg/sitting/runtime/source-at-run/bound-manifest.json",
+    "sha256": "d02b080a0974329aea2edc72abda5184a8de5874f46bde44b020650a84d2942b"
+  },
+  "admission": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stack271-3wfdywlg/sitting/runtime/native-admission.json",
+    "sha256": "ac2afda533867c3bcc01a569b53510c2dd3c15d77dd8925c14232d69c01f010c"
+  },
+  "controller": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stack271-3wfdywlg/sitting/runtime/controller.json",
+    "sha256": "0d376c0d632f5a837db13f06c2a1b4313543a1438dbe5fcf22ec39ae0514fb7a"
+  },
+  "run_id": "14732fd2-7f42-4660-8b50-90d3251eb5e2",
+  "updated_at": "2026-09-30T11:34:59.801089+00:00",
+  "native_launches": 1,
+  "source_at_admission": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stack271-3wfdywlg/sitting/runtime/source-at-run/manifest.json",
+    "sha256": "a66ba26bc67d58914031b49ff70a0ca01f70a838ba5d9b812dbef78f7593afac"
+  },
+  "source_manifest_projection": "Add exact original helper paths to the already frozen pre-admission copies. Original manifest and preflight stay unchanged; every copied and original byte hash still matches the reviewed plan.",
+  "original_summary": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stack271-3wfdywlg/sitting/runtime/cells/baseline-27.1-duo-SwiftUI-stack-single/summary.json",
+    "sha256": "1fcb6c838a0d68843ae93ea8e7df0b083284b526dac0a7b54d34b7ea4d09848b"
+  },
+  "local_result": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stack271-3wfdywlg/sitting/runtime/cells/baseline-27.1-duo-SwiftUI-stack-single/local-result.json",
+    "sha256": "57dd96c9e9af054ef1b8d3317e65f47e1a107e51122e26511525f17edf145b80"
+  },
+  "receipts": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stack271-3wfdywlg/sitting/runtime/cells/baseline-27.1-duo-SwiftUI-stack-single/receipts.json",
+    "sha256": "3142b72f1f55f07fc7900986dfc821cbe9b7e347140163074281cf43e5db2309"
+  },
+  "events": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stack271-3wfdywlg/sitting/runtime/cells/baseline-27.1-duo-SwiftUI-stack-single/events.jsonl",
+    "sha256": "4a3c1b59d7930a70b67a9f1ed945a4b020d6446363f48fd09886645301a6a529"
+  },
+  "post_exit": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stack271-3wfdywlg/sitting/runtime/post-exit.json",
+    "sha256": "3e854505ee8823cb4672230578457c462cf3f3e8372ad3f7342c4bef2221c839"
+  },
+  "recaptured_effects": [
+    {
+      "phase": "initial.detail.toggle.effect",
+      "observation_phase": "initial.detail.toggle.effect.recapture",
+      "state": "NATIVE_EFFECT_RECAPTURED",
+      "failed_observation": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stack271-3wfdywlg/sitting/runtime/cells/baseline-27.1-duo-SwiftUI-stack-single/input/initial.detail.toggle.effect/capture-failure.json",
+        "sha256": "b87b9f6fb741e3de5339da67745d5cec1bf99c25a6916c794f1c6641e32736b3"
+      }
+    }
+  ],
+  "qualified_cells": 1,
+  "baseline_comparison": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stack271-3wfdywlg/sitting/runtime/baseline-comparison.json",
+    "sha256": "3c02526648bcadafc2b4efa5191a58018f28ada589ecec0fce623f30a6322474"
+  },
+  "counts": {
+    "views": 17,
+    "automatic_actions": 25,
+    "native_effects": 29,
+    "folds": 3,
+    "home_boundaries": 1
+  },
+  "baseline_action_classification": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stack271-3wfdywlg/sitting/runtime/baseline-action-classification.json",
+    "sha256": "83751712aff1d1654bec917b432fe44969319f751c61f82a01c860bd2bb6b4c9"
+  },
+  "native_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stack271-3wfdywlg/sitting/runtime/native-review.json",
+    "sha256": "07a6ec53784e6f3253422ac7af3a4c255289da4ea96824e63e21437895f97def"
+  }
+}

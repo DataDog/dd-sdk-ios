@@ -8,12 +8,12 @@ selects current execution. A preparation PASS admits no native run or gate closu
 
 | Remaining work | Current preparation | Required evidence |
 | --- | --- | --- |
-| S2:C09, S2:C10, S2:H14 | [REVIEWED_PLAN_CONSUMED_WITHOUT_OPERATOR](Results/S2-coverage-remaining-preparation.json) | 5 SwiftUI stack/split cells: both compiler baselines and the candidate. View/Navigation/Action owners in each actual layout; first-cell live controls before prompts. |
+| S2:C09, S2:C10, S2:H14 | [REVIEWED_CANDIDATE_PREPARATION](Results/S2-coverage-remaining-preparation.json) | 4 SwiftUI stack/split cells: both compiler baselines and the candidate. View/Navigation/Action owners in each actual layout; first-cell live controls before prompts. |
 | S2:H11, S2:H13 | [REVIEWED_CANDIDATE_HARNESS_NATIVE_UNADMITTED](Results/S2-H11-H13-local-continuation.json) | One physical UIKit candidate; reuse the accepted baseline. Capture cancel/finish ownership and cleanup. |
 | S2:F06 | OPEN | Review the exact selected source, accepted evidence, baseline limitations and remaining hardware uncertainty. No unresolved attributable regression, API/wire/privacy change or required evidence gap. Preserve qualified compatibility/lifetime checks; sign outgoing history before separately authorized publication. The S2 acceptance contract governs behavioral and delivery evidence separately; no immediate background upload, physical-Duo or optional performance prerequisite. |
 
-The selected SwiftUI cell is: **SwiftUI, stack, baseline-27.1, duo**.
-Recorded execution: [STOPPED_NO_OPERATOR_READY](Results/S2-swiftui-continuation-20260930.json). scenario **UNQUALIFIED**; evidence **INCOMPLETE**; cleanup **PASS**. Recheck actual admission, process and artifacts before taking ownership; this summary grants no launch.
+The selected SwiftUI cell is: **SwiftUI, stack, candidate-27.1, duo**.
+Recorded execution: [REVIEWED_PREFLIGHT_COMPLETE](Results/S2-swiftui-stack-candidate-20260930.json). scenario **UNQUALIFIED**; evidence **INCOMPLETE**; cleanup **NOT_RUN**. Recheck actual admission, process and artifacts before taking ownership; this summary grants no launch.
 
 Required gate owners, dependencies and environments remain authoritative in the
 [generated PLAN](PLAN.md#s2-release-gates). Reuse closed UIKit, Resource/Trace,
@@ -29,7 +29,7 @@ qualification and gate-closing ownership evidence are different steps.
 | split-navigation / S3:H02 | [SOURCE_MAPPED_NOT_EXECUTABLE](Results/S3-human-residual-preparation.json) | Two real visible A/B chains; distinct RUM occurrences, exact per-scene navigation/action owners, no structural primary/placeholder view. |
 | peer-and-host-removal / S3:H03, S3:H08 | [SOURCE_MAPPED_NOT_EXECUTABLE](Results/S3-human-residual-preparation.json) | A-emitted work stays on A while B represents. B close preserves A. Separately, actual final A semantic-host removal stops/releases A once, rejects late resurrection and preserves B. |
 | focus-activation / S3:H04 | [FINAL_PLAN_REVIEWED_DEVICE_LOCKED](Results/S3-H04-activation-preparation.json) | Actual activation resolves each Action/Resource pair to the foreground scene and its fresh RUM view occurrence. |
-| isolated-background-foreground / S3:H10 | [REVIEWED_DISPLAY_COMPONENT_RENDERER_COMPILE_PENDING](Results/S3-H10-background-preparation.json) | A ends and restarts its view across one actual background/foreground cycle while B keeps its native owners and current RUM view; five Action/Resource pairs retain exact scene attribution. |
+| isolated-background-foreground / S3:H10 | [DISPLAY_RENDERER_COMPILE_PREPARED](Results/S3-H10-background-preparation.json) | A ends and restarts its view across one actual background/foreground cycle while B keeps its native owners and current RUM view; five Action/Resource pairs retain exact scene attribution. |
 | inferred-operations / S3:H06 | [REVIEWED_PRIMITIVES_NATIVE_SOURCE_AND_CAPTURE_UNQUALIFIED](Results/S3-H06-silent-capture.json) | Existing eight calls/four Operations: success A→B, failure A→B(error), parallel alpha A→A and beta B→B ending beta first. Preserve exact per-step view IDs and two visible native scenes through all calls. |
 | disconnect-and-remount / S3:H09 | [SOURCE_MAPPED_NOT_EXECUTABLE](Results/S3-human-residual-preparation.json) | OS-driven disconnect then live attachment/remount creates a fresh occurrence; stale callbacks stay rejected and peer identity/work continues. |
 | restoration / S3:H15 | [SOURCE_MAPPED_NOT_EXECUTABLE](Results/S3-human-residual-preparation.json) | Join prepare/relaunch process legs: both native sessions reconnect, each gets a fresh RUM view and neither emits old-run attributes. |

@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "state": "REVIEWED_PREFLIGHT_COMPLETE",
+  "owner": "EXP-210",
+  "gates": [
+    "S2:C09",
+    "S2:C10",
+    "S2:H14"
+  ],
+  "selected": {
+    "build": "candidate-27.1",
+    "device": "duo",
+    "framework": "SwiftUI",
+    "layout": "stack",
+    "multiple_scenes": false
+  },
+  "plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stackcandidate-0tf_u253/sitting/runtime/runtime-plan.json",
+    "sha256": "f5367058887df2fb092eb23f9a4fff330e039bf18a5588426ac119daf5b3a2d7"
+  },
+  "controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stackcandidate-0tf_u253/sitting/runtime/controls.json",
+    "sha256": "8ee42b5fa35c552a329bb0be0dffa20d8a69b374593b00c6096a26497ef7ce13"
+  },
+  "native_admitted": false,
+  "native_runs": 0,
+  "qualified_cells": 0,
+  "gates_closed": [],
+  "scenario": "UNQUALIFIED",
+  "evidence": "INCOMPLETE",
+  "cleanup": "NOT_RUN",
+  "updated_at": "2026-09-30T11:37:59.632696+00:00",
+  "next_action": "Await current operator availability, then use fresh environment preflight before supported capture and native Ready. No app has launched.",
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stackcandidate-0tf_u253/sitting/runtime/review.json",
+    "sha256": "617c17513465856ea6be5e456aedccc1ffb7ad2400a2d9edf96dd2043acd4d2e"
+  },
+  "preflight": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stackcandidate-0tf_u253/sitting/runtime/preflight.json",
+    "sha256": "7351d0e88efed30d8f80fe2c9cc602fa0ba31a21a39941b67e8d2512f18cf570"
+  },
+  "source_at_run": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stackcandidate-0tf_u253/sitting/runtime/source-at-run/manifest.json",
+    "sha256": "4decf63fe9c74ccd27b7d7549694d280f06353b144376addbf299127cf49e84c"
+  }
+}
