@@ -56,25 +56,47 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
 
         // If a stored bucket cannot be decoded there is no way to recover it, so we throw
         // and let the core drop the batch rather than uploading a partial payload.
-        let buckets = try events
-            .map { try decoder.decode(ExportedBucket.self, from: $0.data) }
-            .map(ClientStatsBucket.init)
+        let decoded = try events.map { try decoder.decode(ExportedBucket.self, from: $0.data) }
 
-        let clientStats = ClientStatsPayload(
-            // Always empty on mobile: there is no stable, meaningful device hostname
-            // (and reporting one would be a privacy concern), so `DatadogContext` exposes
-            // none. `Hostname` is a server-tracer field in the protobuf model; the intake
-            // accepts it empty. Matches the Android SDK.
-            hostname: "",
-            env: context.env,
-            version: context.version,
-            service: context.service,
-            tracerVersion: context.sdkVersion,
-            runtimeID: runtimeID,
-            sequenceNumber: sequenceNumberProvider.next(),
-            stats: buckets
-        )
-        let payload = StatsPayload(clientStats: [clientStats], splitPayload: false)
+        // A batch can mix buckets flushed under different deployment identities, for example when
+        // it spans an app upgrade. `env`, `version` and `service` live on `ClientStatsPayload`, not
+        // on the bucket, so buckets are grouped by identity and each group becomes its own client
+        // payload inside the envelope. Insertion order is preserved so payloads stay stable.
+        var bucketsByIdentity: [DeploymentIdentity: [ClientStatsBucket]] = [:]
+        var identityOrder: [DeploymentIdentity] = []
+        for bucket in decoded {
+            // Buckets written before this field existed fall back to the upload-time context,
+            // which is the previous behaviour and better than dropping the batch.
+            let identity = DeploymentIdentity(
+                env: bucket.env ?? context.env,
+                version: bucket.version ?? context.version,
+                service: bucket.service ?? context.service
+            )
+            if bucketsByIdentity[identity] == nil {
+                identityOrder.append(identity)
+            }
+            bucketsByIdentity[identity, default: []].append(ClientStatsBucket(bucket))
+        }
+
+        let clientStats = identityOrder.map { identity in
+            ClientStatsPayload(
+                // Always empty on mobile: there is no stable, meaningful device hostname
+                // (and reporting one would be a privacy concern), so `DatadogContext` exposes
+                // none. `Hostname` is a server-tracer field in the protobuf model; the intake
+                // accepts it empty. Matches the Android SDK.
+                hostname: "",
+                env: identity.env,
+                version: identity.version,
+                service: identity.service,
+                tracerVersion: context.sdkVersion,
+                runtimeID: runtimeID,
+                sequenceNumber: sequenceNumberProvider.next(),
+                stats: bucketsByIdentity[identity] ?? []
+            )
+        }
+        // `SplitPayload` marks a payload split across requests, which is not what this is: these
+        // client payloads all travel in one request.
+        let payload = StatsPayload(clientStats: clientStats, splitPayload: false)
         let body = try encoder.encode(payload)
 
         let builder = URLRequestBuilder(
@@ -102,4 +124,11 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
     func url(with context: DatadogContext) -> URL {
         customIntakeURL ?? context.site.endpoint.appendingPathComponent("api/v0.2/stats")
     }
+}
+
+/// The deployment identity a set of stats buckets was aggregated under.
+private struct DeploymentIdentity: Hashable {
+    let env: String
+    let version: String
+    let service: String
 }

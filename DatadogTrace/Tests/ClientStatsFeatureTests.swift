@@ -138,6 +138,93 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertNil(requestBuilder.customIntakeURL)
     }
 
+    // MARK: - Persisted deployment identity (RUM-17309)
+
+    func testWhenBucketCarriesItsOwnIdentity_itIsReportedUnderThatIdentityNotTheUploadContext() throws {
+        // Given: a bucket flushed under 1.2.3 that is uploaded after the app updated to 2.0.0.
+        let uploadContext: DatadogContext = .mockWith(service: "new-service", env: "prod", version: "2.0.0")
+        let bucket = makeExportedBucket(env: "staging", version: "1.2.3", service: "old-service")
+        let builder = makeRequestBuilder()
+
+        // When
+        let request = try builder.request(
+            for: [makeEvent(from: bucket)],
+            with: uploadContext,
+            execution: .init(previousResponseCode: nil, attempt: 0)
+        )
+
+        // Then
+        let clientStats = try firstClientStatsPayload(in: request)
+        XCTAssertEqual(clientStats["Env"] as? String, "staging")
+        XCTAssertEqual(clientStats["Version"] as? String, "1.2.3")
+        XCTAssertEqual(clientStats["Service"] as? String, "old-service")
+    }
+
+    func testWhenBatchMixesIdentities_itSplitsIntoOneClientPayloadPerIdentity() throws {
+        // Given: a batch spanning an app upgrade.
+        let builder = makeRequestBuilder()
+        let events = [
+            makeEvent(from: makeExportedBucket(start: 1_000, env: "prod", version: "1.0.0", service: "app")),
+            makeEvent(from: makeExportedBucket(start: 2_000, env: "prod", version: "2.0.0", service: "app")),
+            makeEvent(from: makeExportedBucket(start: 3_000, env: "prod", version: "1.0.0", service: "app"))
+        ]
+
+        // When
+        let request = try builder.request(
+            for: events,
+            with: .mockAny(),
+            execution: .init(previousResponseCode: nil, attempt: 0)
+        )
+
+        // Then: two payloads, and the two 1.0.0 buckets stay together.
+        let payloads = try allClientStatsPayloads(in: request)
+        XCTAssertEqual(payloads.count, 2)
+        XCTAssertEqual(payloads.map { $0["Version"] as? String }, ["1.0.0", "2.0.0"])
+        XCTAssertEqual((payloads[0]["Stats"] as? [Any?])?.count, 2)
+        XCTAssertEqual((payloads[1]["Stats"] as? [Any?])?.count, 1)
+        // Each client payload carries its own sequence number.
+        XCTAssertEqual(payloads.compactMap { $0["Sequence"] as? Int64 }, [1, 2])
+    }
+
+    func testWhenBucketPredatesIdentityPersistence_itFallsBackToTheUploadContext() throws {
+        // Given: a bucket written by an earlier build, with no persisted identity.
+        let uploadContext: DatadogContext = .mockWith(service: "ios-app", env: "staging", version: "1.2.3")
+        let builder = makeRequestBuilder()
+
+        // When
+        let request = try builder.request(
+            for: [makeEvent(from: makeExportedBucket())],
+            with: uploadContext,
+            execution: .init(previousResponseCode: nil, attempt: 0)
+        )
+
+        // Then: previous behaviour, rather than dropping the batch.
+        let clientStats = try firstClientStatsPayload(in: request)
+        XCTAssertEqual(clientStats["Env"] as? String, "staging")
+        XCTAssertEqual(clientStats["Version"] as? String, "1.2.3")
+        XCTAssertEqual(clientStats["Service"] as? String, "ios-app")
+    }
+
+    func testWhenFlushing_itStampsBucketsWithTheCurrentDeploymentIdentity() throws {
+        // Given
+        let core = FeatureRegistrationPassthroughCoreMock(
+            context: .mockWith(service: "ios-app", env: "staging", version: "1.2.3")
+        )
+        config.featureFlags[.clientSideStats] = true
+        Trace.enable(with: config, in: core)
+        let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
+        stats.concentrator.add(SpanSnapshot.mockWith(isTopLevel: true))
+
+        // When
+        stats.flush()
+
+        // Then
+        let bucket = try XCTUnwrap(core.exportedBuckets.first)
+        XCTAssertEqual(bucket.env, "staging")
+        XCTAssertEqual(bucket.version, "1.2.3")
+        XCTAssertEqual(bucket.service, "ios-app")
+    }
+
     // MARK: - Feature Name
 
     func testFeatureName() {
@@ -484,7 +571,10 @@ class ClientStatsFeatureTests: XCTestCase {
     private func makeExportedBucket(
         start: UInt64 = 1_000,
         duration: UInt64 = 10_000_000_000,
-        groupCount: Int = 1
+        groupCount: Int = 1,
+        env: String? = nil,
+        version: String? = nil,
+        service: String? = nil
     ) -> ExportedBucket {
         let stats = (0..<groupCount).map { index in
             ExportedGroupedStats(
@@ -506,7 +596,7 @@ class ClientStatsFeatureTests: XCTestCase {
                 serviceSource: "src"
             )
         }
-        return ExportedBucket(start: start, duration: duration, stats: stats)
+        return ExportedBucket(start: start, duration: duration, stats: stats, env: env, version: version, service: service)
     }
 
     private func decodeEnvelope(in request: URLRequest) throws -> [String: Any?] {
@@ -519,6 +609,12 @@ class ClientStatsFeatureTests: XCTestCase {
         let envelope = try decodeEnvelope(in: request)
         let clientStatsArray = try XCTUnwrap(envelope["Stats"] as? [Any?])
         return try mapFields(clientStatsArray[0])
+    }
+
+    private func allClientStatsPayloads(in request: URLRequest) throws -> [[String: Any?]] {
+        let envelope = try decodeEnvelope(in: request)
+        let clientStatsArray = try XCTUnwrap(envelope["Stats"] as? [Any?])
+        return try clientStatsArray.map { try mapFields($0) }
     }
 
     private func mapFields(_ value: Any?) throws -> [String: Any?] {
