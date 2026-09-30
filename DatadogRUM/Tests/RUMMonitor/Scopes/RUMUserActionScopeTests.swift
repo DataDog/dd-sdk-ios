@@ -96,6 +96,45 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(recordedAction.os?.name, "device-os")
     }
 
+    func testGivenActiveUserAction_whenAppRunsAsAppExtension_itSendsIsMainProcessFalse() throws {
+        let context: DatadogContext = .mockWith(
+            service: "test-service",
+            version: "test-version",
+            buildNumber: "test-build",
+            buildId: self.context.buildId,
+            applicationBundleType: .iOSAppExtension,
+            device: .mockWith(name: "device-name"),
+            os: .mockWith(name: "device-os")
+        )
+
+        let scope = RUMViewScope.mockWith(
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: .mockViewIdentifier(),
+            attributes: [:],
+            startTime: Date()
+        )
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
+            context: context,
+            writer: writer
+        )
+        let mockUserActionCmd = RUMAddUserActionCommand.mockAny()
+        _ = scope.process(
+            command: mockUserActionCmd,
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStopViewCommand.mockWith(identity: .mockViewIdentifier()),
+            context: context,
+            writer: writer
+        )
+
+        let recordedAction = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
+        XCTAssertEqual(recordedAction.session.isMainProcess, false)
+    }
+
     func testGivenActiveUserAction_whenNewViewStart_itSendsUserActionEvent() throws {
         let scope = RUMViewScope.mockWith(
             parent: parent,
