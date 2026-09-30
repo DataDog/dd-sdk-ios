@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "REVIEWED_PREPARATION",
+  "state": "STOPPED_NO_OPERATOR_READY",
   "owner": "EXP-210",
   "gates": [
     "S2:C09",
@@ -25,14 +25,14 @@
     "Use focused offline selection/reuse controls and the designated exact-source review before one planned human cell. No diagnostic launch or new SDK build.",
     "Keep existing operational budgets and one admission per plan; never extend an active deadline. No new timing acceptance rule."
   ],
-  "native_admitted": false,
-  "native_runs": 0,
+  "native_admitted": true,
+  "native_runs": 1,
   "gate_closures": [],
   "release_acceptance": false,
-  "scenario": "NOT_RUN",
-  "evidence": "PREPARATION_ONLY",
-  "cleanup": "NOT_REQUIRED",
-  "next_action": "Fresh native/build-lane and Duo preflight, supported automatic capture, then page Ready for the SDK27.1 SwiftUI stack baseline. Preserve the accepted SDK26.5 cell; no rebuild is needed.",
+  "scenario": "UNQUALIFIED",
+  "evidence": "INCOMPLETE",
+  "cleanup": "PASS",
+  "next_action": "Continue H10 renderer compilation while human input is unavailable. A later SwiftUI session needs fresh availability and a new reviewed preparation/admission for the same still-unconsumed SDK27.1 cell; preserve the SDK26.5 acceptance and this stopped run.",
   "plan": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/stack-baseline-271/runtime/runtime-plan.json",
     "sha256": "a5e44e227471e318ad799b55daf252330f6306e97db54a11ede726d328402726"
@@ -45,7 +45,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/stack-baseline-271/runtime/review.json",
     "sha256": "eb173e0b1d492b01c9659c973b590aa6090447698576408e16bed7c3172d4f86"
   },
-  "updated_at": "2026-09-30T10:46:08.196816+00:00",
+  "updated_at": "2026-09-30T11:03:39.405982+00:00",
   "selected": {
     "build": "baseline-27.1",
     "device": "duo",
@@ -61,5 +61,73 @@
   "selection_at_review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/stack-baseline-271/runtime/selection-at-review.json",
     "sha256": "32e825500397e2c000a6f67f0e91469b6078f0dadeb012461414cb729b62ed0b"
-  }
+  },
+  "controller": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/stack-baseline-271/runtime/controller.json",
+    "sha256": "bc85bba2ac7d279141836ca5aa3f93508e9e6e518f7ab4fbbe7d8f0011a9564f"
+  },
+  "admission": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/stack-baseline-271/runtime/native-admission.json",
+    "sha256": "6fd7da2701da4c0198aa0370e434960f05687cc6502bf092ce8cfb6377a1735c"
+  },
+  "source_at_run": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/stack-baseline-271/runtime/source-at-run/manifest.json",
+    "sha256": "c3e48db5ef08c6f76c4b8a4117b55e0bc3711ce9909e2a9285a77458fa93a9eb"
+  },
+  "native_launches": 1,
+  "human_prompts": 0,
+  "human_inputs": 0,
+  "supported_capture": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/stack-baseline-271/runtime/cells/baseline-27.1-duo-SwiftUI-stack-single/supported/capture/proof.json",
+    "sha256": "cb4d9f278de4d074980a53f00f3361108a469fe5be0f2cabfcef0396c1e98073"
+  },
+  "supported_end": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/stack-baseline-271/runtime/cells/baseline-27.1-duo-SwiftUI-stack-single/supported/ended.json",
+    "sha256": "2cd15d7762cd7595c1a6520ac19e7b2b4400ecad0bcf22b009d62254b9024509"
+  },
+  "tool_owner_completion": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/stack-baseline-271/runtime/cells/baseline-27.1-duo-SwiftUI-stack-single/supported/worker-completed.json",
+    "sha256": "d3190aebb4ed6017e7ad02fa14ae56abbeb606f56bae3580909916e79895fda9"
+  },
+  "ready_request": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/stack-baseline-271/runtime/cells/baseline-27.1-duo-SwiftUI-stack-single/operator-ready/request.json",
+    "sha256": "bbe3204eb2dfb5b7a6baa4444c73ca92957080465fc5f3ecf9c707c2abbabb26"
+  },
+  "readiness_proofs": {
+    "supported.before-end": {
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/stack-baseline-271/runtime/cells/baseline-27.1-duo-SwiftUI-stack-single/input/supported.before-end/controls-ready.json",
+        "sha256": "bf040fa5c942df641a5c2e08122fd8f2996801382a3541c929d38838e7ba358a"
+      },
+      "idle": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/stack-baseline-271/runtime/cells/baseline-27.1-duo-SwiftUI-stack-single/input/supported.before-end/input-idle/proof.json",
+        "sha256": "451ca403042f6cf71c02d271887a96432263f081785615321f1778061750f0f5"
+      }
+    },
+    "supported.after-end": {
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/stack-baseline-271/runtime/cells/baseline-27.1-duo-SwiftUI-stack-single/input/supported.after-end/controls-ready.json",
+        "sha256": "7f2e05bdf7e2a9ef5605447b264c28b131101656fcfa04725decd75c6e0a4e8f"
+      },
+      "idle": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/stack-baseline-271/runtime/cells/baseline-27.1-duo-SwiftUI-stack-single/input/supported.after-end/input-idle/proof.json",
+        "sha256": "b6084cce2fd86042f861f5816802f58f42be2a1fd361fc3089fa58109d764053"
+      }
+    }
+  },
+  "original_summary": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/stack-baseline-271/runtime/cells/baseline-27.1-duo-SwiftUI-stack-single/summary.json",
+    "sha256": "0dd5a4785138e782163dac034f482cf6354145b490f3564bc1dfc0de02259795"
+  },
+  "post_exit": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/stack-baseline-271/runtime/post-exit.json",
+    "sha256": "b050f295a6bdaad96b13f2b19ee6838b3fe484a6dfb7656bc99997d508ff6d74"
+  },
+  "diagnostic_events": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/stack-baseline-271/runtime/cells/baseline-27.1-duo-SwiftUI-stack-single/native-preserved/events.jsonl",
+    "sha256": "4a186c3ed9e5b343323faa60b1155953386ce77da6351ed8d52af1f9b84b24c3"
+  },
+  "qualified_cells": 0,
+  "instruction_server_stopped": true,
+  "classification": "Supported capture and native controls/idle passed. No page Ready arrived; no human gesture or full scenario ran. Original INVALID remains and does not establish an SDK failure."
 }

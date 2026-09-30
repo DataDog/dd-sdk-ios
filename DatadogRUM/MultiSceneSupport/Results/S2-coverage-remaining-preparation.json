@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "state": "UIKIT_VIEW_ACTION_GATES_CLOSED_SWIFTUI_REMAINS",
-  "updated_at": "2026-09-30T10:46:08.196816+00:00",
+  "updated_at": "2026-09-30T11:03:39.407503+00:00",
   "execution": {
     "record": "Results/S2-swiftui-continuation-20260930.json"
   },
@@ -69,7 +69,7 @@
         "multiple_scenes": false
       }
     ],
-    "prerequisites": "Fresh native/build-lane and Duo preflight, supported automatic capture, then page Ready for the SDK27.1 SwiftUI stack baseline. Preserve the accepted SDK26.5 cell; no rebuild is needed."
+    "prerequisites": "SDK27.1 stack remains unqualified: no page Ready arrived. Reuse reviewed source/products in a fresh preparation when the operator is available."
   },
   "owner": "root",
   "reviewer": "/root/c06_runtime_plan",
@@ -81,7 +81,7 @@
     "S2:H14"
   ],
   "swiftui_preparation": {
-    "state": "NEXT_BASELINE_REVIEWED",
+    "state": "REVIEWED_PLAN_CONSUMED_WITHOUT_OPERATOR",
     "owner": "Results/S2-coverage-remaining-preparation.json",
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-continuation-ypfevbgp/stack-baseline-271",
     "plan": {
@@ -167,7 +167,7 @@
     },
     "builds": 3,
     "scope": "One first-baseline adapter; existing products and frozen collector/oracle. Six SwiftUI cells remain. Execution state belongs to execution.record.",
-    "next_action": "Fresh native/build-lane and Duo preflight, supported automatic capture, then page Ready for the SDK27.1 SwiftUI stack baseline. Preserve the accepted SDK26.5 cell; no rebuild is needed.",
+    "next_action": "SDK27.1 stack remains unqualified: no page Ready arrived. Reuse reviewed source/products in a fresh preparation when the operator is available.",
     "effect_recapture": {
       "record": "Results/S2-swiftui-effect-recapture-20260930.json",
       "plan": {
