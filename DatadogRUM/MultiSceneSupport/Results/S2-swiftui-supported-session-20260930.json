@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "state": "PREPARED_REVIEWED_PENDING_NATIVE",
-  "updated_at": "2026-09-30T09:19:45.794005+00:00",
+  "state": "STOPPED_NATIVE_READINESS_SCHEMA",
+  "updated_at": "2026-09-30T09:27:11.898641+00:00",
   "owner": "EXP-210",
   "gates": [
     "S2:C09",
@@ -35,19 +35,60 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/definition.json",
     "sha256": "0881a6249eeb04e1468efba18271da38ab82153b21f0e6056fa5dce8be5dbc4c"
   },
-  "scenario": "NOT_RUN",
-  "evidence": "PREPARATION_ONLY",
-  "cleanup": "NOT_RUN",
-  "native_launches": 0,
+  "scenario": "UNQUALIFIED",
+  "evidence": "INCOMPLETE",
+  "cleanup": "PASS",
+  "native_launches": 1,
   "human_prompts": 0,
   "human_inputs": 0,
   "backend_queries": 0,
   "qualified_cells": 0,
   "gates_closed": [],
   "release_acceptance": false,
-  "controller": null,
-  "admission": null,
+  "controller": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4/runtime/controller.json",
+    "sha256": "a0032102b4f57aecacedf9efc0fe61009e9a2e999826ce3b8c47eebdc466dd6e"
+  },
+  "admission": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4/runtime/native-admission.json",
+    "sha256": "2de6fa7597369cedfc5dcc0dfc8aaa6460a9f82a68b158d3efbff662a4345c52"
+  },
   "reviewed_scope": "Same frozen SDK/compiler product and collector, oracle, gestures, Home and cleanup. One supported-session owner starts, captures without input, and ends before fresh Ready. Source/device/bundle/PID and actual returned artifacts are required.",
   "offline_controls": 25,
-  "next_action": "Verify live prerequisites and prior controller absence, record controller identity, then qualify the supported capture in this first required baseline. Do not invite gestures until native controls survive session closure and fresh Ready."
+  "next_action": "Replay saved native snapshots against the corrected input-idle adapter and review before a fresh baseline. Preserve this failed attempt and its cleanup PASS.",
+  "reason": "'input_state'",
+  "original_summary": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/summary.json",
+    "sha256": "fbdcf051deadeff7104ae6012eda2d8b8b25f362f3a01a257f30a95967084071"
+  },
+  "supervisor": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4/runtime/baseline-26.5-duo-SwiftUI-stack-single-driver.supervisor.json",
+    "sha256": "3d0d48039d3d6da9d7f607c124952c184ad0ec2fee2aba5878f057c973015d41"
+  },
+  "supported_capture": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/supported/capture/proof.json",
+    "sha256": "73173d310561595ac26c2a0ce6f459f1f42f0c06e67244dab1cddcbe1795b015"
+  },
+  "supported_end": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/supported/ended.json",
+    "sha256": "2a2d677591e3a62050750cd5536cb5ac17abd09e7f9548939416b800990ba08c"
+  },
+  "tool_owner_completion": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/supported/worker-completed.json",
+    "sha256": "4490c0b71ee778efc9f08bb5d7ea8c69aaf7eba5024401c88e25fc5867fcc777"
+  },
+  "native_snapshot": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/input/supported.before-end/events.jsonl",
+    "sha256": "6d307dbdfd9d9aa20c927968a77d7ea53cacfdaaba3ac610b6bae7fd29ff0b37"
+  },
+  "cleanup_idle": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/automatic-cleanup-idle/proof.json",
+    "sha256": "39011582adaf3b4db4f283a12c6083060e6aa5bbca280b9fb9a149992a2d5adf"
+  },
+  "instruction_server_stopped": true,
+  "classification": "Supported Start/capture/End succeeded with actual app controls. The host readiness check expected input_state in an ordinary snapshot; the frozen observer emits it only for cleanup.idle. No SDK failure or human input.",
+  "source_at_run": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r4/runtime/source-at-run/manifest.json",
+    "sha256": "ccce26642959e430e751a0a7236c1f2a907d41abb004190ed4c0e97d33bbe5a2"
+  }
 }

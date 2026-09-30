@@ -38,21 +38,39 @@ class ReadinessTests(unittest.TestCase):
             r.qualify(session,self.collector,self.out,self.stage,None)
         self.assertEqual(events,['capture','native','end','ready'])
 
+    def native_context(self, *, idle=True):
+        # Match the frozen observer: ordinary snapshots omit input_state;
+        # a separate cleanup.idle request supplies the actual native inventory.
+        self.collector.snapshot=lambda *_:({'payload':{'topology':{}}},self.out)
+        self.collector.evidence=[dict(kind='launch',payload={'bundle':'fixture'})]
+        def capture_idle(folder,identity,deadline):
+            self.assertEqual(identity,{'run_id':self.collector.run,'bundle':'fixture'})
+            self.assertEqual(deadline,self.collector.deadline)
+            if not idle:raise ValueError('native idle unproven')
+            return dict(state='NATIVE_INPUT_IDLE',run_id=self.collector.run,request_id='fresh-idle')
+        self.collector.cleanup_idle=Mock(side_effect=capture_idle)
+        return NS(journey=NS(ready_controls=lambda *_:dict(counter=0)),
+                  capture=NS(oracle=NS(one=lambda values,_:values[0])))
+
+    def test_ordinary_snapshot_requires_separate_idle_proof(self):
+        runner=self.native_context()
+        r.native_ready(self.collector,'phase',runner)
+        proof=r.supported.read(self.out/'input-idle/proof.json')
+        self.assertEqual(proof['request_id'],'fresh-idle')
+        self.assertTrue((self.out/'controls-ready.json').exists())
+
     def test_native_active_input_is_not_ready(self):
-        self.collector.snapshot=lambda *_:({'payload':{'input_state':{}}},self.out)
-        runner=NS(journey=NS(ready_controls=lambda *_:dict(counter=0)),
-                  capture=NS(human_release=NS(input_idle=lambda *_:False)))
-        with self.assertRaisesRegex(ValueError,'not idle'):r.native_ready(self.collector,'phase',runner)
+        runner=self.native_context(idle=False)
+        with self.assertRaisesRegex(ValueError,'idle unproven'):r.native_ready(self.collector,'phase',runner)
         self.assertFalse((self.out/'controls-ready.json').exists())
 
     def test_already_consumed_input_is_not_ready(self):
-        self.collector.snapshot=lambda *_:({'payload':{'input_state':{}}},self.out)
+        runner=self.native_context()
         for kind in ('human_callback','native_input','human_scroll_begin','human_scroll_end','native_background'):
             self.collector.evidence=[{'kind':kind}]
-            runner=NS(journey=NS(ready_controls=lambda *_:dict(counter=0)),
-                      capture=NS(human_release=NS(input_idle=lambda *_:True)))
             with self.subTest(kind=kind),self.assertRaisesRegex(ValueError,'input occurred'):
                 r.native_ready(self.collector,'phase',runner)
+        self.collector.cleanup_idle.assert_not_called()
 
     def test_stale_ready_ack_is_rejected_before_human_input(self):
         # Exercise the real acknowledgement validator already used by the page.

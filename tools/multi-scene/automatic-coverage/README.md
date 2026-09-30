@@ -70,9 +70,12 @@ designated review precede `admit --root NEW_ROOT --preflight FRESH_PREFLIGHT
 then one tool owner performs Start, one empty capture and End. Each actual returned
 observation is preserved and checked against the requested device, session, bundle
 and PID. No activation or input is permitted in this prefix. Native root, controls,
-counter and scroll ownership must qualify both before and after End. Only then does
-the live page request a fresh Ready acknowledgement and begin the unchanged journey.
-The [execution owner](../../../DatadogRUM/MultiSceneSupport/Results/S2-swiftui-supported-session-20260930.json)
+counter and scroll ownership must qualify both before and after End. Ordinary
+snapshots omit input state: each readiness check also requests the existing native
+`cleanup.idle` inventory under its own output folder. That reader is used before
+Home is armed and performs no input. The page then requests fresh Ready, followed
+by another control and input-idle check before the unchanged journey.
+The [execution owner](../../../DatadogRUM/MultiSceneSupport/Results/S2-swiftui-input-idle-20260930.json)
 records controller identity, admission and results. Failed setup stops before prompts;
 unresolved session closure blocks app teardown and preserves diagnostic evidence.
 Original failures remain unchanged. This is capture preparation, not SDK evidence.

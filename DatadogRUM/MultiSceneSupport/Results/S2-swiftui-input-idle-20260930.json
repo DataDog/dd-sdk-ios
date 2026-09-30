@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "state": "PREPARED_REVIEWED_PENDING_NATIVE",
+  "updated_at": "2026-09-30T09:34:09.480373+00:00",
+  "owner": "EXP-210",
+  "gates": [
+    "S2:C09",
+    "S2:C10",
+    "S2:H14"
+  ],
+  "selected": {
+    "build": "baseline-26.5",
+    "device": "duo",
+    "framework": "SwiftUI",
+    "layout": "stack",
+    "multiple_scenes": false
+  },
+  "plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/runtime-plan.json",
+    "sha256": "9b5f844c59e44a8546a68465ce5e0c747d279facc34537c044a3a146ed965d1c"
+  },
+  "controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/controls.json",
+    "sha256": "e626941f472620a6c938eae34ed1fcfcbfe47fc1bd32db3fea1a24e5d862cd09"
+  },
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/first-baseline-r5/runtime/review.json",
+    "sha256": "21e0530e5611713b80028c02b0f7f8254f66c03c3c624641dfd67620e9fa0f4b"
+  },
+  "previous_attempt": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-supported-session-20260930.json",
+    "sha256": "9d42b470ed1ff16ccd43165f5025f5d906abf1623e2f6afafe01ff646e8ede45"
+  },
+  "source_snapshot": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-readiness-20260930.json",
+    "sha256": "00853ad168c4d36597e206da7d03334a4a60767c7adf6d9c24ecd6ec6c2ad08a"
+  },
+  "saved_replay": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/schema-correction-replay/result.json",
+    "sha256": "1506a5aed60819f99437a1b4c446ea841ab96dd6af85a24b5844ba6b4b8688a1"
+  },
+  "scenario": "NOT_RUN",
+  "evidence": "PREPARATION_ONLY",
+  "cleanup": "NOT_RUN",
+  "native_launches": 0,
+  "human_prompts": 0,
+  "human_inputs": 0,
+  "backend_queries": 0,
+  "qualified_cells": 0,
+  "gates_closed": [],
+  "release_acceptance": false,
+  "controller": null,
+  "admission": null,
+  "offline_controls": 26,
+  "classification": "Host-only idle-schema correction. Ordinary controls and input inventory are separate native requests. Same product, source, oracle and journey.",
+  "next_action": "Run the corrected first baseline under fresh preflight and controller identity. Present Ready only after actual supported capture, session closure, controls and separate input-idle proof."
+}

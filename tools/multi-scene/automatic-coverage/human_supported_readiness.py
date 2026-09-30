@@ -172,8 +172,15 @@ def native_ready(collector, phase, runner):
     proof = runner.journey.ready_controls(snapshot, 'home', collector.binding, 'SwiftUI')
     require(proof['counter'] == 0 and not any(r['kind'] in ('human_callback','native_input','human_scroll_begin','human_scroll_end','native_background')
                                             for r in collector.evidence), 'input occurred before gesture readiness')
-    require(runner.capture.human_release.input_idle(snapshot['payload']['input_state'], collector.binding),
-            'native input is not idle')
+    # The frozen observer includes input_state only for cleanup.idle. Reuse its
+    # existing request-bound idle reader before input, while no Home task exists.
+    # Ordinary control snapshots deliberately do not have that payload member.
+    launch = runner.capture.oracle.one([r for r in collector.evidence if r['kind'] == 'launch'], 'native launch')['payload']
+    idle_folder = folder/'input-idle'
+    idle_folder.mkdir()
+    idle = collector.cleanup_idle(idle_folder, dict(run_id=collector.run, bundle=launch['bundle']), collector.deadline)
+    require(idle['state'] == 'NATIVE_INPUT_IDLE' and idle['run_id'] == collector.run, 'native input is not idle')
+    supported.save(idle_folder/'proof.json', idle)
     supported.save(folder/'controls-ready.json', proof)
     return proof
 
