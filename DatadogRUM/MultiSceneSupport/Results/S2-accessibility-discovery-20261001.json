@@ -43,8 +43,8 @@
   "qualified_cells": 0,
   "human_invitation": false,
   "gates_closed": [],
-  "next_action": "Prepare and review the first remaining baseline native plan using the two reviewed per-key products, exact historical reader snapshots and restored prefix comparison joins. Fresh supported interaction instructions and actual tool-owner readiness remain prerequisites. Candidate advancement needs its own reviewed successor; no stopped automatic-prefix retry.",
-  "updated_at": "2026-10-01T09:30:36.503439+00:00",
+  "next_action": "Finish exact first-baseline native-plan review, then use fresh actual delegated tool ownership/Xcode readiness at the next user-available simulator session. Current user availability ended12:00Paris; no physical iPad session before21:00. Instructions and reviewed preparation are retained; do not repeat accepted cells or stopped automatic prefix.",
+  "updated_at": "2026-10-01T10:06:27.953146+00:00",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/review-cycle2.json",
     "sha256": "a8fc5b80a69135d559b5fc8d1de8e8d97db0caefcb61cd36dac086afdc7e6f7c"
@@ -87,7 +87,7 @@
   "accepted_cells_preserved": 4,
   "native_prerequisites": [
     "Reviewed frozen runtime plan and focused controls",
-    "Fresh live supported interaction instructions/skill; the current tool inventory exposes Start/Capture/End but no skill export capability",
+    "Actual delegated interaction owner using the fresh exported and read device-interaction skill",
     "Fresh Xcode/native readiness and actual one-cell ownership; no reused tool sessions",
     "User simulator availability until12:00 Paris, no physical iPad session before21:00"
   ],
@@ -112,5 +112,66 @@
   "runtime_repair_definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/runtime-repair-definition-cycle2.json",
     "sha256": "099aa8cd7c08662ee1650c6224d96132d2c85c7c776d7f847d4f905f0e54ac93"
+  },
+  "live_instructions": {
+    "state": "EXPORTED_AND_READ",
+    "command": "xcrun agent skills export --output-dir <fresh-absolute-directory>",
+    "selected_developer_dir": "/Applications/Xcode_27.1.app/Contents/Developer",
+    "skill": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/xcode-skills-20261001-0950/device-interaction/SKILL.md",
+      "sha256": "fa6cc5115c15f43fd5b2718c8705bec6cc0d6932309bf0df47ede28c0592b044"
+    },
+    "requires_delegated_interaction_owner": true,
+    "correction": "MCP catalog absence did not establish CLI export absence; previous capability assessment was incorrect."
+  },
+  "plan_factory": {
+    "state": "REVIEWED_OFFLINE_COMPONENT",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/plan-factory-definition.json",
+      "sha256": "ad30b69983d5f36f2af12bd000698e2369a2a40c7ff38e80be1d9018c9a1a84c"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/plan-factory-controls-cycle3.json",
+      "sha256": "3601a0f7f28e363cd8da48dc0fd1412d524a281324178453ca5ba17a4cd36ff8"
+    },
+    "controls_count": 10,
+    "initial_failed_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/plan-factory-controls-cycle1.json",
+      "sha256": "fc24a88d21149858d304fc1076b4ea6b8b200b5a2367ea7560ebfd7b0b340133"
+    },
+    "native_admitted": false,
+    "human_invitation": false,
+    "repair_definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/plan-factory-repair-definition-cycle2.json",
+      "sha256": "c0921589f8e7a904d488e7373cebde2ff3a2cf1ba22cc3f266ce7694f28d013d"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/plan-factory-review-cycle2.json",
+      "sha256": "f4b53e62e02b300939c67257553363e557b6e18e3f58712e765d8f98abe4f7e0"
+    },
+    "review_history": [
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/plan-factory-review-cycle1.json",
+        "sha256": "3f76727f83c0ea275eb1c2fb60ec02afbcef8869fa7854a21b70e0a7dbfdb260"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/plan-factory-review-cycle2.json",
+        "sha256": "f4b53e62e02b300939c67257553363e557b6e18e3f58712e765d8f98abe4f7e0"
+      }
+    ],
+    "original_prepared_plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan/runtime/runtime-plan.json",
+      "sha256": "ed575b64e599f1504f8b5a291c501e8f80e9c7891676c176f1d03fd9b03fa8a7"
+    },
+    "plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle2/runtime/runtime-plan.json",
+      "sha256": "e83e7c177555caea4248ffcb7c8aa97ee5a57386fbff80ee001698dc33879ddd"
+    },
+    "plan_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle2/runtime/controls.json",
+      "sha256": "a0f96fd122232a053c91dbb038c3cde602cc2854a54f065c094992e4622d1129"
+    },
+    "plan_controls_count": 7,
+    "native_plan_review": "PENDING"
   }
 }

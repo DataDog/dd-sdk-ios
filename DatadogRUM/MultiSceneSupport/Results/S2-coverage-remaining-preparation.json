@@ -44,7 +44,7 @@
         "multiple_scenes": false
       }
     ],
-    "prerequisites": "Two-stage reader, two SDK27.1 builds and source-continuation component qualify offline. Prepare and review a fresh first-baseline native plan and supported tool-owner instructions before human readiness. Both remaining split cells remain unqualified; the original failed attempt/restoration are immutable and the stopped automatic prefix is not retried.",
+    "prerequisites": "Reviewed two-stage reader, two SDK27.1 builds and continuation component; live Xcode instructions exported/read and fresh baseline plan prepared. Final plan review and actual delegated tool ownership precede human readiness. Both remaining cells remain unqualified; original failed attempt/restoration and stopped automatic prefix are preserved.",
     "review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting/runtime/review.json",
       "sha256": "077abf3f22847aa8547c60ef103912d2ea6f328e18018a95b404176e714f5fe5"

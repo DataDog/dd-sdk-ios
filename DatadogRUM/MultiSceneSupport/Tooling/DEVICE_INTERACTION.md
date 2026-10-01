@@ -6,11 +6,11 @@ Read when an admitted scenario needs installation, native input or cleanup.
 
 ## Prepare before opening a session
 
-Read the live Xcode-provided interaction instructions. Export any required skill
-to a fresh absolute path and inspect it before interaction. Follow the live tool
-schema and any required delegation: the same owner must start, install, capture
-and end its session. Keys are scoped to the creating context. Missing supported
-interaction instructions are a workflow limit; do not invent commands.
+Read the live Xcode instructions before interaction. Xcode 27 exports them with
+`xcrun agent skills export --output-dir <fresh-absolute-directory>`; inspect `--help`, then the exported `device-interaction/SKILL.md`.
+MCP catalog absence does not prove CLI export absence; tool descriptions do not replace the skill.
+Follow its required subagent delegation: one actual owner starts, installs, captures and ends the session, whose key is context-scoped.
+Missing supported instructions are a workflow limit; do not invent commands.
 
 Finish source review, scenario choice, expected results and input strategy first.
 Start a workspace session with a fresh identifier, use the returned key exactly,

@@ -250,5 +250,8 @@ now validates physical ownership after public discovery, with independent review
 33 host controls and two qualified SDK27.1 builds. An opt-in continuation preserves
 the four accepted cells through exact historical reader snapshots; its 42 source
 and readiness controls pass with independent re-review. The stopped automatic
-prefix stays stopped. A reviewed fresh runtime plan and supported interaction
-instructions remain prerequisites; no new native attempt or gate closure follows.
+prefix stays stopped. Live Xcode instructions are exported/read through the supported
+CLI. A fresh baseline plan passes actual source/product/publication joins; final
+review and delegated native ownership remain. The preparation factory passes ten
+offline controls, including review/plan replacement during publication. Its original
+draft and plan are preserved; no new native attempt or gate closure follows.
