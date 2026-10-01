@@ -257,7 +257,7 @@ class RemoteConfigurationTests: XCTestCase {
         let rc = makeProvider(httpClient: HTTPClientMock(responseCode: 500), start: false)
         rc.start({ _ in }, telemetry: telemetry)
 
-        waitForTelemetryError(telemetry, messagePrefix: "[RemoteConfig] Failed to sync remote configuration")
+        waitForTelemetryError(telemetry, messagePrefix: "[RemoteConfig] Failed to sync remote configuration - httpError(500)")
 
         XCTAssertEqual(readConfiguration()?.rum?.applicationId, "existing-application-id", "Existing configuration must be preserved after non-2xx")
         withExtendedLifetime(rc) {}
@@ -269,7 +269,7 @@ class RemoteConfigurationTests: XCTestCase {
 
         rc.start({ _ in }, telemetry: telemetry)
 
-        waitForTelemetryError(telemetry, messagePrefix: "[RemoteConfig] Failed to sync remote configuration")
+        waitForTelemetryError(telemetry, messagePrefix: "[RemoteConfig] Failed to sync remote configuration - emptyBody")
 
         XCTAssertNil(readCache()?.configurationData, "An empty response body must never be cached as a configuration")
         withExtendedLifetime(rc) {}
