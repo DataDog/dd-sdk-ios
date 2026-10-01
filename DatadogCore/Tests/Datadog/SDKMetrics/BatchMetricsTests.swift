@@ -8,6 +8,10 @@ import XCTest
 @testable import DatadogCore
 
 class BatchMetricsTests: XCTestCase {
+    func testClientStatsUsesTraceTrack() {
+        XCTAssertEqual(BatchMetric.trackValue(for: "tracing-client-stats"), "trace")
+    }
+
     func testBatchRemovalReasonFormatting() {
         typealias RemovalReason = BatchDeletedMetric.RemovalReason
 
