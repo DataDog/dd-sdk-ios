@@ -19,10 +19,11 @@ internal final class RUMCommandDeviceTime {
     /// Device time of the command being processed, if its `time` was replaced with a cross-platform timestamp.
     private(set) var value: Date?
 
-    /// Runs `block` with `value` set to the given device time.
+    /// Runs `block` with `value` set to the given device time, then restores the previous value.
     func process<T>(deviceTime: Date?, _ block: () -> T) -> T {
+        let previousValue = value
         value = deviceTime
-        defer { value = nil }
+        defer { value = previousValue }
         return block()
     }
 }

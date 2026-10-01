@@ -39,12 +39,16 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     /// Handles resolution of `launchReason` during the app launch window (used primarily on tvOS and as a fallback on iOS).
     /// Buffers early RUM commands until the launch reason can be determined, then injects the resolved value and forwards them.
-    let launchReasonResolver = LaunchReasonResolver(launchWindowThreshold: LaunchReasonResolver.Constants.launchWindowThreshold)
+    let launchReasonResolver: LaunchReasonResolver
     /// Ensures the fallback to `launchReasonResolver` is logged only once when `launchReason` is unexpectedly `.uncertain` on iOS.
     private var didLogFallbackToResolver = false
 
     init(dependencies: RUMScopeDependencies) {
         self.dependencies = dependencies
+        self.launchReasonResolver = LaunchReasonResolver(
+            launchWindowThreshold: LaunchReasonResolver.Constants.launchWindowThreshold,
+            commandDeviceTime: dependencies.commandDeviceTime
+        )
 
         self.context = RUMContext(
             rumApplicationID: dependencies.rumApplicationID,
