@@ -15,6 +15,7 @@ import reviewer_assignment
 s = ready.supported
 require = s.require
 KIND = 'S2_TWO_STAGE_READER_CONTINUATION'
+OWNER_NOT_SUPPLIED = object()
 READER_PATHS = {refresh.READER, 'tools/multi-scene/interactive-transitions/test_accessibility_capture.py'}
 ADAPTERS = ready.ADAPTERS + [
     'tools/multi-scene/automatic-coverage/human_reader_continuation.py',
@@ -129,7 +130,13 @@ def compare_prefix(plans, old, stopped_reference):
                 == expected_product['product'], 'accepted original product changed')
 
 
-def verify(root, *, reviewed=True):
+def interaction_owner(owner, review):
+    require(isinstance(owner,str) and owner.startswith('/root/')
+            and owner not in (review['reviewer'],reviewer_assignment.LEGACY_REVIEWER),
+            'independent actual interaction owner required')
+
+
+def verify(root, *, reviewed=True, tool_owner=OWNER_NOT_SUPPLIED):
     runtime = Path(root)/'runtime'
     plan = s.read(runtime/'runtime-plan.json')
     require(plan['kind'] == KIND and plan['native_admitted'] is False and plan['gates_closed'] == [],
@@ -163,7 +170,28 @@ def verify(root, *, reviewed=True):
                 and review['plan_sha256'] == controls['plan_sha256'] == digest
                 and review['controls_sha256'] == s.sha(runtime/'controls.json')
                 and controls['helpers'] == plan['helpers'], 'missing or stale native review/controls')
+        if tool_owner is not OWNER_NOT_SUPPLIED: interaction_owner(tool_owner,review)
     return runner, plan
+
+
+def admit(args):
+    # Apply the assigned-role check inside the validated review boundary.
+    return ready.admit(args,verifier=lambda root: verify(root,tool_owner=args.tool_owner))
+
+
+def cell(args):
+    runtime = args.root.resolve()/'runtime'
+    stage_ref = s.reference(runtime/'native-admission.json')
+    review_ref = s.reference(runtime/'review.json')
+    stage = ready.bound_read(stage_ref)
+    runner, _ = verify(args.root,tool_owner=stage['tool_owner'])
+    def consumed_stage(actual):
+        binary(stage_ref); binary(review_ref)
+        require(actual == stage, 'native admission changed after owner qualification')
+        interaction_owner(actual['tool_owner'],ready.bound_read(review_ref))
+    binary(stage_ref); binary(review_ref)
+    with runner.human_processes.shared_commands(runner.shared):
+        return ready.execute(args,verifier=verify,stage_validator=consumed_stage)
 
 
 def main():
@@ -172,13 +200,11 @@ def main():
     parser.add_argument('--preflight', type=Path); parser.add_argument('--tool-owner')
     args = parser.parse_args()
     if args.command == 'verify': verify(args.root, reviewed=False)
-    elif args.command == 'admit': ready.admit(args, verifier=verify)
+    elif args.command == 'admit': admit(args)
     elif args.command == 'run': return ready.run(args, verifier=verify, entrypoint=__file__)
     else:
         signal.signal(signal.SIGTERM, lambda *_: (_ for _ in ()).throw(RuntimeError('supervisor stopped execution')))
-        runner, _ = verify(args.root)
-        with runner.human_processes.shared_commands(runner.shared):
-            return ready.execute(args, verifier=verify)
+        return cell(args)
     return 0
 
 

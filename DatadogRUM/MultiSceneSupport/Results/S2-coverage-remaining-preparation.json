@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
   "state": "UIKIT_VIEW_ACTION_GATES_CLOSED_SWIFTUI_REMAINS",
-  "updated_at": "2026-10-01T09:30:36.504240+00:00",
+  "updated_at": "2026-10-01T10:43:00Z",
   "execution": {
-    "record": "Results/S2-swiftui-split271-20260930.json"
+    "record": null
   },
   "current": {
     "kind": "swiftui_preparation",
@@ -17,12 +17,12 @@
       "S2:H14"
     ],
     "plan": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting/runtime/runtime-plan.json",
-      "sha256": "bd9ab15e7504cc8dc40d9f2a3eca7f4842e1dd27b63f18c296bc07a7cbe4841d"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime/runtime-plan.json",
+      "sha256": "c224f280799bb0df1885ead09970ca04e4f6b9557291805e2ce9da638ed96a26"
     },
     "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting/runtime/controls.json",
-      "sha256": "4b27e18de8bd66b764862781c95207cd0a984f20db6edd9948cbef8c56f54c53"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime/controls.json",
+      "sha256": "b1cc8d4ba73043e21042aa2df527d31588188cb722bda532d8683761916bace5"
     },
     "master_plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/master/runtime/runtime-plan.json",
@@ -44,10 +44,10 @@
         "multiple_scenes": false
       }
     ],
-    "prerequisites": "Reviewed two-stage reader, two SDK27.1 builds and continuation component; live Xcode instructions exported/read and fresh baseline plan prepared. Final plan review and actual delegated tool ownership precede human readiness. Both remaining cells remain unqualified; original failed attempt/restoration and stopped automatic prefix are preserved.",
+    "prerequisites": "First remaining SDK27.1 SwiftUI split baseline plan passes final independent review, fifty ownership/readiness controls and seven bound plan controls. Four accepted cells and two compiled products are retained. Native launch requires renewed availability, actual distinct delegated owner, fresh preflight and response publication. No native admission, gate closure or repeat of the stopped automatic prefix.",
     "review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting/runtime/review.json",
-      "sha256": "077abf3f22847aa8547c60ef103912d2ea6f328e18018a95b404176e714f5fe5"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime/review.json",
+      "sha256": "07bbba8b351b116e9171b50d85ff8f340cdf60435ae5b6f214a32a3e0f7f4ead"
     }
   },
   "owner": "root",
@@ -60,16 +60,16 @@
     "S2:H14"
   ],
   "swiftui_preparation": {
-    "state": "STOPPED_FOLD_CAPTURE_RESTORED",
+    "state": "REVIEWED_FIRST_BASELINE_PREPARATION",
     "owner": "Results/S2-coverage-remaining-preparation.json",
-    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3",
     "plan": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting/runtime/runtime-plan.json",
-      "sha256": "bd9ab15e7504cc8dc40d9f2a3eca7f4842e1dd27b63f18c296bc07a7cbe4841d"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime/runtime-plan.json",
+      "sha256": "c224f280799bb0df1885ead09970ca04e4f6b9557291805e2ce9da638ed96a26"
     },
     "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting/runtime/controls.json",
-      "sha256": "4b27e18de8bd66b764862781c95207cd0a984f20db6edd9948cbef8c56f54c53"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime/controls.json",
+      "sha256": "b1cc8d4ba73043e21042aa2df527d31588188cb722bda532d8683761916bace5"
     },
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/definition.json",
@@ -142,7 +142,7 @@
     },
     "builds": 3,
     "scope": "All three stack cells and the SDK26.5 split baseline qualify; only two SDK27.1 split cells remain.",
-    "next_action": "Offline capture repair and review; no repeat of the consumed split baseline.",
+    "next_action": "First remaining SDK27.1 SwiftUI split baseline plan passes final independent review, fifty ownership/readiness controls and seven bound plan controls. Four accepted cells and two compiled products are retained. Native launch requires renewed availability, actual distinct delegated owner, fresh preflight and response publication. No native admission, gate closure or repeat of the stopped automatic prefix.",
     "effect_recapture": {
       "record": "Results/S2-swiftui-effect-recapture-20260930.json",
       "plan": {
@@ -159,8 +159,8 @@
       }
     },
     "review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split271-4edzruov/sitting/runtime/review.json",
-      "sha256": "077abf3f22847aa8547c60ef103912d2ea6f328e18018a95b404176e714f5fe5"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime/review.json",
+      "sha256": "07bbba8b351b116e9171b50d85ff8f340cdf60435ae5b6f214a32a3e0f7f4ead"
     },
     "reader_continuation_preparation": "Results/S2-accessibility-discovery-20261001.json"
   },

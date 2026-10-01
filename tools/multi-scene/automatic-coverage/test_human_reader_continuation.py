@@ -1,5 +1,6 @@
 """Source substitution controls; no native actions or historical file mutations."""
 import copy
+from contextlib import nullcontext
 from pathlib import Path
 import tempfile
 from types import SimpleNamespace
@@ -141,6 +142,76 @@ class PrefixComparison(unittest.TestCase):
         self.inventory.return_value={'binary':'replaced'}
         with self.assertRaisesRegex(ValueError,'original product changed'):
             c.compare_prefix([self.plan],self.old,self.reference)
+
+
+class AssignedOwnerControls(unittest.TestCase):
+    def native_fixture(self,owner='/root/current-reviewer'):
+        temp=tempfile.TemporaryDirectory();self.addCleanup(temp.cleanup)
+        root=Path(temp.name);runtime=root/'runtime';runtime.mkdir()
+        c.s.save(runtime/'native-admission.json',{'tool_owner':owner})
+        c.s.save(runtime/'review.json',{'reviewer':'/root/current-reviewer'})
+        c.s.save(runtime/'runtime-plan.json',{})
+        runner=Mock();runner.human_processes.shared_commands.return_value=nullcontext()
+        return SimpleNamespace(root=root),runner,runtime
+
+    def test_review_only_current_owner_and_other_invalid_owners_reject(self):
+        review={'reviewer':'/root/current-designated-reviewer'}
+        for owner in (review['reviewer'],c.reviewer_assignment.LEGACY_REVIEWER,'/root','foreign',None):
+            with self.subTest(owner=owner),self.assertRaisesRegex(ValueError,'independent actual'):
+                c.interaction_owner(owner,review)
+
+    def test_distinct_subagent_owner_is_allowed(self):
+        c.interaction_owner('/root/actual-interaction-owner',{'reviewer':'/root/current-reviewer'})
+
+    def test_admission_checks_explicit_owner_before_dispatch(self):
+        args=SimpleNamespace(root=Path('/unconsumed'),tool_owner='/root/current-reviewer')
+        def check(root,**kwargs):
+            c.interaction_owner(kwargs['tool_owner'],{'reviewer':args.tool_owner})
+        def guarded_admit(args,*,verifier):return verifier(args.root)
+        with patch.object(c,'verify',side_effect=check),patch.object(c.ready,'admit',side_effect=guarded_admit):
+            with self.assertRaisesRegex(ValueError,'independent actual'):c.admit(args)
+
+    def test_cell_checks_admitted_owner_before_native_executor(self):
+        args,runner,runtime=self.native_fixture()
+        def check(root,**kwargs):
+            c.interaction_owner(kwargs['tool_owner'],{'reviewer':'/root/current-reviewer'})
+        with patch.object(c,'verify',side_effect=check),patch.object(c.ready,'execute') as execute:
+            with self.assertRaisesRegex(ValueError,'independent actual'):c.cell(args)
+            execute.assert_not_called()
+
+    def test_exact_consumed_admission_retains_executor_path(self):
+        args,runner,runtime=self.native_fixture('/root/actual-owner')
+        def execute(args,*,verifier,stage_validator):
+            stage_validator(c.s.read(runtime/'native-admission.json'));return 'DISPATCHED'
+        with patch.object(c,'verify',return_value=(runner,{})),patch.object(c.ready,'execute',side_effect=execute):
+            self.assertEqual(c.cell(args),'DISPATCHED')
+
+    def test_admission_mutation_after_initial_qualification_rejects(self):
+        args,runner,runtime=self.native_fixture('/root/actual-owner')
+        def qualified(*args,**kwargs):
+            (runtime/'native-admission.json').write_text('{"tool_owner":"/root/current-reviewer"}')
+            return runner,{}
+        with patch.object(c,'verify',side_effect=qualified),patch.object(c.ready,'execute') as execute:
+            with self.assertRaises(ValueError):c.cell(args)
+            execute.assert_not_called()
+
+    def test_actual_consumed_stage_replacement_rejects_before_effect(self):
+        args,runner,runtime=self.native_fixture('/root/actual-owner');effect=Mock()
+        def execute(args,*,verifier,stage_validator):
+            (runtime/'native-admission.json').write_text('{"tool_owner":"/root/current-reviewer"}')
+            stage_validator(c.s.read(runtime/'native-admission.json'));effect()
+        with patch.object(c,'verify',return_value=(runner,{})),patch.object(c.ready,'execute',side_effect=execute):
+            with self.assertRaises(ValueError):c.cell(args)
+        effect.assert_not_called()
+
+    def test_executor_validates_actual_stage_before_device_calls(self):
+        args,runner,runtime=self.native_fixture('/root/actual-owner')
+        validator=Mock(side_effect=ValueError('consumed stage invalid'))
+        with patch.object(c.ready.continuation,'current_selection'),patch.object(c.ready,'verify',return_value=(runner,{})):
+            with self.assertRaisesRegex(ValueError,'consumed stage invalid'):
+                c.ready.execute(args,stage_validator=validator)
+        validator.assert_called_once_with({'tool_owner':'/root/actual-owner'})
+        runner.device_snapshot.assert_not_called()
 
 
 if __name__ == '__main__':unittest.main()

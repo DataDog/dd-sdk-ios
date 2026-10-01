@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "owner": "EXP-210",
-  "state": "REVIEWED_READER_BUILDS_AND_CONTINUATION_COMPONENT_NATIVE_UNQUALIFIED",
+  "state": "REVIEWED_FIRST_BASELINE_PLAN_NATIVE_PREREQUISITES_REMAIN",
   "gates": [
     "S2:C09",
     "S2:C10",
@@ -43,8 +43,8 @@
   "qualified_cells": 0,
   "human_invitation": false,
   "gates_closed": [],
-  "next_action": "Finish exact first-baseline native-plan review, then use fresh actual delegated tool ownership/Xcode readiness at the next user-available simulator session. Current user availability ended12:00Paris; no physical iPad session before21:00. Instructions and reviewed preparation are retained; do not repeat accepted cells or stopped automatic prefix.",
-  "updated_at": "2026-10-01T10:06:27.953146+00:00",
+  "next_action": "Prepare candidate advancement offline while preserving the reviewed baseline closure. First-baseline native work requires renewed simulator availability, a distinct delegated interaction owner, fresh native preflight and the live response channel. No physical session before21:00Paris. Original stopped paths remain stopped.",
+  "updated_at": "2026-10-01T10:43:00Z",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/review-cycle2.json",
     "sha256": "a8fc5b80a69135d559b5fc8d1de8e8d97db0caefcb61cd36dac086afdc7e6f7c"
@@ -86,10 +86,9 @@
   "runtime_tests": 42,
   "accepted_cells_preserved": 4,
   "native_prerequisites": [
-    "Reviewed frozen runtime plan and focused controls",
-    "Actual delegated interaction owner using the fresh exported and read device-interaction skill",
-    "Fresh Xcode/native readiness and actual one-cell ownership; no reused tool sessions",
-    "User simulator availability until12:00 Paris, no physical iPad session before21:00"
+    "Renewed user simulator availability; October1 window ended12:00Paris; no physical session before21:00",
+    "Actual distinct delegated interaction owner using exported/read device-interaction instructions",
+    "Fresh native preflight, live response channel and one-cell admission; no reused session keys"
   ],
   "runtime_review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/runtime-component-review-cycle2.json",
@@ -164,14 +163,63 @@
       "sha256": "ed575b64e599f1504f8b5a291c501e8f80e9c7891676c176f1d03fd9b03fa8a7"
     },
     "plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime/runtime-plan.json",
+      "sha256": "c224f280799bb0df1885ead09970ca04e4f6b9557291805e2ce9da638ed96a26"
+    },
+    "plan_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime/controls.json",
+      "sha256": "b1cc8d4ba73043e21042aa2df527d31588188cb722bda532d8683761916bace5"
+    },
+    "plan_controls_count": 7,
+    "native_plan_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime/review.json",
+      "sha256": "07bbba8b351b116e9171b50d85ff8f340cdf60435ae5b6f214a32a3e0f7f4ead"
+    },
+    "blocked_plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle2/runtime/runtime-plan.json",
       "sha256": "e83e7c177555caea4248ffcb7c8aa97ee5a57386fbff80ee001698dc33879ddd"
     },
-    "plan_controls": {
+    "blocked_plan_controls": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle2/runtime/controls.json",
       "sha256": "a0f96fd122232a053c91dbb038c3cde602cc2854a54f065c094992e4622d1129"
     },
-    "plan_controls_count": 7,
-    "native_plan_review": "PENDING"
+    "blocked_native_plan_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle2/runtime/review.json",
+      "sha256": "fa7d5d3af7593e1bb2a4f3562b7b331dc82fef7cd40ac44b2334cb1784421a30"
+    }
+  },
+  "native_owner_repair": {
+    "state": "REVIEWED_OFFLINE_COMPONENT",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/runtime-owner-repair-definition.json",
+      "sha256": "4c3c2a6a5625bac4fa463d15d70d86d6fb985c73bcaa6a4bad657642a81a3fd9"
+    },
+    "consumed_stage_definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/runtime-owner-repair-definition-cycle2.json",
+      "sha256": "859d0663906e3d0bfba84bbe8489df6a1fa19662feec83c363e2d935db577bd9"
+    },
+    "initial_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/runtime-owner-component-review.json",
+      "sha256": "d99d09ea614c91b71254bb6c7e5fcca20afec5730862049bb6bcd2f0a0ee7c96"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/runtime-owner-controls-cycle2-final.json",
+      "sha256": "26b028d78c55b23971c1ac0f35a054831cbf2a006572a5bb2aec78de3274f291"
+    },
+    "controls_count": 50,
+    "initial_failed_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/runtime-owner-controls-cycle2.json",
+      "sha256": "1ac254d2f7a9fb4fdbc843ccdb1ab9e92692d86d01d4aa138719fbde7920e7d4"
+    },
+    "actual_preserved_prefix_rejoin": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/runtime-owner-actual-prefix-rejoin.json",
+      "sha256": "835ad93c17a1789a867be03d76309c9c90a0883a09225632301516299b7798d0"
+    },
+    "native_admitted": false,
+    "gates_closed": [],
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/runtime-owner-component-review-cycle2.json",
+      "sha256": "c6df5c22a08d7ef2af8beb030717a7f0e7a6538595660d9df7cc00537823a6fa"
+    }
   }
 }

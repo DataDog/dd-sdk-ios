@@ -288,13 +288,14 @@ def scenario(collector, runner, selected, out, installed, product):
     return terminal
 
 
-def execute(args, *, verifier=None):
+def execute(args, *, verifier=None, stage_validator=None):
     verifier = verify if verifier is None else verifier
     root = args.root.resolve()
     runtime = root/'runtime'
     runner, plan = verifier(root)
     continuation.current_selection(plan, supported.reference(runtime/'runtime-plan.json'))
     stage = supported.read(runtime/'native-admission.json')
+    if stage_validator is not None: stage_validator(stage)
     require(stage['runtime_plan_sha256'] == supported.sha(runtime/'runtime-plan.json')
             and stage['review_sha256'] == supported.sha(runtime/'review.json')
             and stage['execution_deadline']-stage['issued_at'] == plan['contract']['stage_execution_seconds']
