@@ -7,12 +7,19 @@
 import Foundation
 import DatadogInternal
 
+internal struct FlagsWrapperSource {
+    let sdkName: String
+    let sdkVersion: String
+    let nativeBridgeVersion: String
+}
+
 extension URLRequest {
     internal static func flagAssignmentsRequest(
         url: URL,
         evaluationContext: FlagsEvaluationContext,
         context: DatadogContext,
-        customHeaders: [String: String]?
+        customHeaders: [String: String]?,
+        wrapperSource: FlagsWrapperSource? = nil
     ) throws -> URLRequest {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -31,14 +38,24 @@ extension URLRequest {
             }
         }
 
+        // Older bridges cannot identify the loaded JavaScript reader.
+        let wrapper = wrapperSource ?? (context.source == "react-native"
+            ? FlagsWrapperSource(sdkName: "dd-sdk-reactnative", sdkVersion: "unknown", nativeBridgeVersion: "unknown")
+            : nil)
+        let nativeSDK = FlagAssignmentsRequestBody.SDK(
+            sdkName: FlagsSDKMetadata.name,
+            sdkVersion: FlagsSDKMetadata.version
+        )
         let requestBody = FlagAssignmentsRequestBody(
             environment: FlagAssignmentsRequestBody.Environment(
                 name: context.env,
                 datadogEnvironment: context.env
             ),
             source: FlagAssignmentsRequestBody.Source(
-                sdkName: "dd-sdk-ios",
-                sdkVersion: context.sdkVersion
+                sdkName: wrapper?.sdkName ?? nativeSDK.sdkName,
+                sdkVersion: wrapper?.sdkVersion ?? nativeSDK.sdkVersion,
+                nativeBridgeVersion: wrapper?.nativeBridgeVersion,
+                nativeSDK: wrapper == nil ? nil : nativeSDK
             ),
             subject: FlagAssignmentsRequestBody.Subject(
                 targetingKey: evaluationContext.targetingKey,
@@ -74,7 +91,7 @@ internal struct FlagAssignmentsRequestBody {
         let datadogEnvironment: String
     }
 
-    struct Source: Encodable {
+    struct SDK: Encodable {
         private enum CodingKeys: String, CodingKey {
             case sdkName = "sdk_name"
             case sdkVersion = "sdk_version"
@@ -82,6 +99,20 @@ internal struct FlagAssignmentsRequestBody {
 
         let sdkName: String
         let sdkVersion: String
+    }
+
+    struct Source: Encodable {
+        private enum CodingKeys: String, CodingKey {
+            case sdkName = "sdk_name"
+            case sdkVersion = "sdk_version"
+            case nativeBridgeVersion = "native_bridge_version"
+            case nativeSDK = "native_sdk"
+        }
+
+        let sdkName: String
+        let sdkVersion: String
+        let nativeBridgeVersion: String?
+        let nativeSDK: SDK?
     }
 
     let environment: Environment
