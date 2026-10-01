@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "owner": "EXP-210",
+  "state": "REVIEWED_OFFLINE_COMPILER_PREPARATION",
+  "gates": [
+    "S2:C09",
+    "S2:C10",
+    "S2:H14"
+  ],
+  "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki",
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/definition.json",
+    "sha256": "a657db8c3086e0bf539710db8f9bb3b75f2c18652a542b0672037a800bf9d6b7"
+  },
+  "correction_definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/repair-definition-cycle2.json",
+    "sha256": "0395cd8f8589a058d94990c8c08574bee6b8231cc4a19b3a61a8032314473d53"
+  },
+  "controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/controls-cycle2.json",
+    "sha256": "eb7b5ef652153e56f36e9e05d91d6de88ab10310ac4051d074ab90262420c0b2"
+  },
+  "review_history": [
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/review-cycle1.json",
+      "sha256": "ccbf9f643905acefc6b176a07af693651f89ae7369be13bf352a731670a305f6"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/review-cycle2.json",
+      "sha256": "a8fc5b80a69135d559b5fc8d1de8e8d97db0caefcb61cd36dac086afdc7e6f7c"
+    }
+  ],
+  "tests": 33,
+  "scope": "Public AX discovery precedes reciprocal physical ownership and visibility validation; every discovered UIView must be accounted for, including unrelated aliases. Semantic/native/RUM contracts unchanged.",
+  "original_evidence": "Three identical missing-view observations lack post-discovery reciprocal membership; no lazy-materialization or alias conclusion is proved.",
+  "original_attempt": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-split271-20260930.json",
+    "sha256": "c5727b48b3a9dd059695ff258354560ac8e3ea048dd102005ab9124d49f62106"
+  },
+  "native_admitted": false,
+  "native_runs": 0,
+  "builds": 0,
+  "qualified_cells": 0,
+  "human_invitation": false,
+  "gates_closed": [],
+  "next_action": "Review the bounded two-build compiler plan, then define and review a source-bound runtime continuation before any native invitation. Original cause remains unproved; the automatic prefix path stays stopped.",
+  "updated_at": "2026-10-01T08:50:52.503448+00:00",
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/review-cycle2.json",
+    "sha256": "a8fc5b80a69135d559b5fc8d1de8e8d97db0caefcb61cd36dac086afdc7e6f7c"
+  },
+  "compiler_definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/compiler-definition.json",
+    "sha256": "85eadfe2390fe1fd866a80d5cc15ec69ac00d45d5ae84fe275c10644b48602ae"
+  },
+  "compiler_plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/refresh/refresh-plan.json",
+    "sha256": "edbbdfb7b956515d0430f06ca3f3c986307348eae9f7838d0a449bdf1c08e29f"
+  }
+}

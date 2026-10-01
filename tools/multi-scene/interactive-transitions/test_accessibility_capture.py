@@ -12,6 +12,7 @@ import build
 import sys
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'automatic-coverage'))
 import human_contract
+import human_swiftui_refresh
 from acceptance_common import Rejected
 import accessibility_capture as capture
 
@@ -43,9 +44,29 @@ class UIView: NSObject, UIAccessibilityIdentification {
     var alpha: CGFloat = 1
     func convert(_ rect: CGRect, to window: UIWindow) -> CGRect { rect }
 }
+class UILabel: UIView { var text: String? }
 class CoordinateSpace { func convert(_ rect: CGRect, to window: UIWindow) -> CGRect { rect } }
 class Screen { let coordinateSpace = CoordinateSpace() }
 class UIWindow: UIView { let screen = Screen() }
+class GetterWindow: UIWindow {
+    var created: UIView?
+    override func accessibilityElementCount() -> Int {
+        if created == nil {
+            let child = UIView(); child.window = self; child.accessibilityIdentifier = "screen.home"
+            created = child; subviews.append(child)
+        }
+        return 1
+    }
+    override func accessibilityElement(at index: Int) -> Any? { created }
+}
+class PublicationMutationView: UIView {
+    var calls = 0
+    override func convert(_ rect: CGRect, to window: UIWindow) -> CGRect {
+        calls += 1
+        if calls == 2 { isHidden = true }
+        return rect
+    }
+}
 class UIAccessibilityElement: NSObject, UIAccessibilityIdentification { @objc var accessibilityIdentifier: String? }
 class PublicContainer: NSObject {}
 class PublicIdentifiedObject: NSObject, UIAccessibilityIdentification { @objc var accessibilityIdentifier: String? }
@@ -60,6 +81,14 @@ class MutatingContainer: PublicContainer {
     var changeAlpha = false
     override func accessibilityElementCount() -> Int {
         if changeParent { target?.superview = nil } else if changeAlpha { target?.alpha = .nan } else { target?.isHidden = true }
+        return 0
+    }
+}
+class RemovingContainer: PublicContainer {
+    weak var root: UIWindow?
+    weak var removed: UIView?
+    override func accessibilityElementCount() -> Int {
+        root?.subviews = []; removed?.superview = nil; removed?.window = nil
         return 0
     }
 }
@@ -89,7 +118,8 @@ func leaf(_ id: String) -> UIAccessibilityElement {
 }
 func inventory(_ scenario: String, framework: String = "SwiftUI") -> [[String: Any]] {
     Settings.framework = framework
-    let root = UIWindow(), marker = leaf("screen.home"), next = leaf("home.next")
+    let root: UIWindow = scenario == "getter_created_view" ? GetterWindow() : UIWindow()
+    let marker = leaf("screen.home"), next = leaf("home.next")
     switch scenario {
     case "direct": root.accessibilityElements = [marker, next]
     case "indexed":
@@ -132,6 +162,19 @@ func inventory(_ scenario: String, framework: String = "SwiftUI") -> [[String: A
     case "missing_visual_parent":
         let view = UIView(); view.window = root; view.accessibilityIdentifier = "screen.home"
         root.accessibilityElements = [view, next]
+    case "getter_created_view": root.accessibilityElements = [next]
+    case "nonreciprocal_view", "unrelated_nonreciprocal_view", "hidden_nonreciprocal_view":
+        let view = UIView(); view.window = root; view.superview = root
+        if scenario == "nonreciprocal_view" { view.accessibilityIdentifier = "screen.home" }
+        view.isHidden = scenario == "hidden_nonreciprocal_view"
+        root.accessibilityElements = [view, next]
+    case "mutation_before_publication":
+        let view = PublicationMutationView(); view.window = root; view.accessibilityIdentifier = "screen.home"
+        root.subviews = [view]; root.accessibilityElements = [view, next]
+    case "getter_detaches_unrelated_view":
+        let view = UIView(); view.window = root; root.subviews = [view]
+        let remover = RemovingContainer(); remover.root = root; remover.removed = view
+        root.accessibilityElements = [marker, next, remover]
     case "changed_visual_state", "changed_visual_parent", "changed_visual_alpha":
         let view = UIView(); view.window = root; view.accessibilityIdentifier = "screen.home"; root.subviews = [view]
         let mutator = MutatingContainer(); mutator.target = view; mutator.changeParent = scenario == "changed_visual_parent"
@@ -184,6 +227,8 @@ var results = [String: [[String: Any]]]()
 for name in ["direct", "indexed", "array", "automation", "generic", "selector_identifier", "nil_identifier", "empty_identifier",
              "wrong_identifier_type", "missing_identifier", "primitive_identifier", "duplicate_object", "cycle",
              "all_view_paths", "view_alias_visibility", "real_hidden_alias", "real_transparent_alias",
+             "getter_created_view", "nonreciprocal_view", "unrelated_nonreciprocal_view", "hidden_nonreciprocal_view", "mutation_before_publication",
+             "getter_detaches_unrelated_view",
              "missing_visual_parent", "changed_visual_state", "changed_visual_parent", "changed_visual_alpha", "visual_cycle", "foreign_visual_parent",
              "alpha_divergence", "alpha_cycle", "temporary_children", "duplicate_identifier", "malformed", "missing_index", "negative_count", "child_limit", "array_limit",
              "inventory_limit", "foreign_view", "hidden", "transparent", "conflicting_visibility", "nonfinite_alpha"] {
@@ -201,7 +246,9 @@ class PublicInventory(unittest.TestCase):
     def setUpClass(cls):
         cls.temp = tempfile.TemporaryDirectory(); cls.addClassCleanup(cls.temp.cleanup)
         folder = Path(cls.temp.name); raw = SOURCE.read_bytes()
-        rendered = capture.render_human(raw, hashlib.sha256(raw).hexdigest()).decode()
+        # Compile the automatic fixture's actual renderer. Its UIKit receipt
+        # field differs from the older interactive fixture body.
+        rendered = human_swiftui_refresh.render_observer(raw).decode()
         start = rendered.index(capture.START); end = rendered.index(capture.END, start)
         script = folder/'control.swift'; script.write_text(MOCKS + rendered[start:end] + SCENARIOS)
         env = dict(os.environ, DEVELOPER_DIR='/Applications/Xcode_27.1.app/Contents/Developer')
@@ -214,6 +261,28 @@ class PublicInventory(unittest.TestCase):
 
     def targets(self, key):
         return [r for r in self.rows[key] if r.get('identifier') in ['screen.home','home.next']]
+
+    def test_getter_created_reciprocal_view_qualifies_after_discovery(self):
+        item=self.actual_target(self.rows['getter_created_view'])
+        self.assertEqual(item['kind'],'UIView')
+        self.assertIn(item['view_state']['parent']+':subviews',item['container_edges'])
+
+    def test_owned_looking_nonreciprocal_views_still_reject_even_when_unrelated_or_hidden(self):
+        for name in ['nonreciprocal_view','unrelated_nonreciprocal_view','hidden_nonreciprocal_view']:
+            with self.subTest(name=name):
+                error=self.rows[name][0]
+                self.assertEqual(error['capture_error'],'public accessibility view has missing owned ancestry')
+                self.assertEqual(error['current_view']['reciprocal_memberships'],0)
+                self.assertEqual(error['current_view']['parent_children'],[])
+
+    def test_physical_mutation_after_discovery_before_publication_rejects(self):
+        self.assertIn('capture_error',self.rows['mutation_before_publication'][0])
+
+    def test_getter_detached_unrelated_view_cannot_disappear_when_subview_edges_refresh(self):
+        failure=self.rows['getter_detaches_unrelated_view'][0]
+        self.assertEqual(failure['capture_error'],'public accessibility view has missing owned ancestry')
+        self.assertEqual(failure['current_view']['parent'],'nil')
+        self.assertEqual(failure['current_view']['window'],'nil')
 
     def test_documented_container_paths_retain_exact_targets(self):
         for key in ['direct','indexed','array','automation','generic','cycle']:
@@ -242,7 +311,7 @@ class PublicInventory(unittest.TestCase):
     def test_malformed_missing_unbounded_and_foreign_children_fail_closed(self):
         for key in ['malformed','missing_index','negative_count','child_limit','array_limit','inventory_limit','foreign_view',
                     'conflicting_visibility','alpha_divergence','nonfinite_alpha','missing_visual_parent',
-                    'changed_visual_state','changed_visual_parent','changed_visual_alpha','visual_cycle','foreign_visual_parent']:
+                    'changed_visual_parent','changed_visual_alpha','visual_cycle','foreign_visual_parent']:
             with self.subTest(key=key):
                 self.assertEqual(len(self.rows[key]),1); self.assertIn('capture_error',self.rows[key][0])
 
@@ -360,14 +429,20 @@ class PublicInventory(unittest.TestCase):
             rows=copy.deepcopy(self.rows['view_alias_visibility']);target=next(r for r in rows if r.get('identifier')=='screen.home');change(target)
             with self.subTest(change=change),self.assertRaises(ValueError):self.actual_target(rows)
 
-    def test_changed_physical_ancestry_preserves_both_actual_observations(self):
-        for name,field in [('changed_visual_state','hidden'),('changed_visual_parent','parent'),('changed_visual_alpha','alpha')]:
+    def test_post_discovery_invalid_ancestry_and_hidden_target_remain_rejected(self):
+        # A hidden state established during discovery is observed as hidden at
+        # the new physical boundary; it cannot qualify an input target.
+        with self.assertRaisesRegex(ValueError,'target not visible'):
+            self.actual_target(self.rows['changed_visual_state'])
+        for name in ['changed_visual_parent','changed_visual_alpha']:
             with self.subTest(name=name):
                 failure=self.rows[name][0];self.assertIn('capture_error',failure)
-                self.assertEqual(failure['first_view']['id'],failure['current_view']['id'])
-                self.assertNotEqual(failure['first_view'][field],failure['current_view'][field])
+                self.assertIn('current_view',failure)
         self.assertIn('current_view',self.rows['missing_visual_parent'][0])
         self.assertEqual(self.rows['changed_visual_alpha'][0]['current_view']['alpha'],'nan')
+        failure=self.rows['mutation_before_publication'][0]
+        self.assertEqual(failure['first_view']['id'],failure['current_view']['id'])
+        self.assertNotEqual(failure['first_view']['hidden'],failure['current_view']['hidden'])
 
     def test_new_capture_cannot_mix_complete_and_missing_visual_records(self):
         rows=copy.deepcopy(self.rows['view_alias_visibility']);root=next(r for r in rows if 'nil:owned-window' in r['container_edges'])
@@ -383,14 +458,16 @@ class PublicInventory(unittest.TestCase):
         self.assertTrue(all('container_edges' not in r for r in self.rows['legacy_direct']))
 
     def test_overlay_is_source_bound_and_preserves_original_body(self):
-        raw=SOURCE.read_bytes();_,_,_,original=capture.original_function(raw)
-        rendered=capture.render_human(raw,hashlib.sha256(raw).hexdigest()).decode()
+        raw=SOURCE.read_bytes()
+        text=raw.decode();start=text.index(capture.START);end=text.index(capture.END,start);original=text[start:end]
+        self.assertEqual(hashlib.sha256(original.encode()).hexdigest(),human_swiftui_refresh.AUTOMATIC_FUNCTION_SHA256)
+        rendered=human_swiftui_refresh.render_observer(raw).decode()
         dispatched=original.replace(capture.START,capture.START+'\n        if Settings.framework == "SwiftUI" { return publicAccessibility(window) }',1)
         self.assertIn(dispatched,rendered);self.assertEqual(SOURCE.read_bytes(),raw)
         with self.assertRaises(ValueError):capture.render_human(raw,'foreign')
         changed=raw.replace(b'count <= 4096',b'count <= 8192')
-        with self.assertRaises(ValueError):capture.render_human(changed,hashlib.sha256(changed).hexdigest())
-        with self.assertRaises(ValueError):capture.render_human(rendered.encode(),hashlib.sha256(rendered.encode()).hexdigest())
+        with self.assertRaises((ValueError,Rejected)):human_swiftui_refresh.render_observer(changed)
+        with self.assertRaises((ValueError,Rejected)):human_swiftui_refresh.render_observer(rendered.encode())
 
 
 class OwnershipControls(unittest.TestCase):

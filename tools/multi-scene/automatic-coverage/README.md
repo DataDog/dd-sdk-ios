@@ -110,6 +110,12 @@ and cleanup remain immutable; separate reviewed restoration proves task removal
 and actual Closed display only. Do not widen recapture to folds or repeat the
 human cell without a source-backed correction and fresh capture qualification.
 
+The [two-stage reader preparation](../../../DatadogRUM/MultiSceneSupport/Results/S2-accessibility-discovery-20261001.json)
+discovers public getter results before validating the physical tree. Every discovered
+UIView must belong reciprocally to that tree, including hidden or unrelated aliases;
+no missing node may disappear when edges refresh. Source review and host controls
+pass. Compiler/runtime qualification remains; the original native cause is unproved.
+
 The [bounded ancestry diagnostic](../../../DatadogRUM/MultiSceneSupport/Results/S2-swiftui-ancestry-20260930.json)
 keeps missing-ancestry capture rejected while recording reciprocal parent membership.
 Its first Open snapshot preceded native resize; the preserved tail contains the

@@ -40,13 +40,81 @@ PUBLIC_CAPTURE = r'''    private func publicAccessibility(_ window: UIWindow) ->
             evidence["returned_string"] = true
             return (string as String, evidence, nil)
         }
+        // Public getters can materialize accessibility objects. Retain their
+        // actual results before assigning physical ownership or visibility.
+        typealias Discovered = (object: NSObject, record: [String: Any], children: [(NSObject, String)])
+        var discovered = [ObjectIdentifier: Discovered]()
+        var discoveryPending: [NSObject] = [window]
+        while let object = discoveryPending.popLast() {
+            let identity = ObjectIdentifier(object)
+            if discovered[identity] != nil { continue }
+            guard discovered.count < 4096 else {
+                return [["capture_error": "public accessibility inventory exceeded fixture bound"]]
+            }
+            let (actualIdentifier, identifierEvidence, identifierError) = identifier(object)
+            if let identifierError = identifierError {
+                return [["capture_error": identifierError, "object_id": Self.identity(object),
+                         "identifier_evidence": identifierEvidence]]
+            }
+            let frame: CGRect, kind: String
+            if let view = object as? UIView {
+                frame = view.convert(view.bounds, to: window); kind = "UIView"
+            } else {
+                frame = window.screen.coordinateSpace.convert(object.accessibilityFrame, to: window)
+                kind = object is UIAccessibilityElement ? "UIAccessibilityElement" : "UIAccessibilityObject"
+            }
+            let record: [String: Any] = ["id": Self.identity(object),
+                "identifier": actualIdentifier ?? "nil", "identifier_evidence": identifierEvidence,
+                "label": object.accessibilityLabel ?? "nil", "value": object.accessibilityValue ?? "nil",
+                "frame_in_window": Self.rect(frame), "kind": kind,
+                "accessibility_elements_hidden": object.accessibilityElementsHidden]
+            var children = [(NSObject, String)]()
+            var discoveryError: String?
+            func retain(_ values: [Any], _ edge: String) {
+                guard values.count <= 4096, children.count + values.count <= 4096 else {
+                    discoveryError = "public accessibility child inventory exceeded fixture bound"; return
+                }
+                for value in values {
+                    guard let child = value as? NSObject else {
+                        discoveryError = "public accessibility child is not an NSObject"; return
+                    }
+                    children.append((child, edge))
+                }
+            }
+            if let view = object as? UIView { retain(view.subviews, "subviews") }
+            if let values = object.accessibilityElements { retain(values, "accessibilityElements") }
+            if #available(iOS 17.0, *) {
+                if let values = object.automationElements { retain(values, "automationElements") }
+            }
+            let count = object.accessibilityElementCount()
+            guard count == NSNotFound || (count >= 0 && count <= 4096) else {
+                return [["capture_error": "invalid public accessibility indexed child count"]]
+            }
+            if count != NSNotFound && count > 0 {
+                for index in 0..<count {
+                    guard let child = object.accessibilityElement(at: index) else {
+                        return [["capture_error": "public accessibility indexed child missing"]]
+                    }
+                    retain([child], "accessibilityElementAtIndex")
+                    if discoveryError != nil { break }
+                }
+            }
+            if let discoveryError = discoveryError { return [["capture_error": discoveryError]] }
+            guard discoveryPending.count + children.count <= 4096 else {
+                return [["capture_error": "public accessibility child inventory exceeded fixture bound"]]
+            }
+            discovered[identity] = (object, record, children)
+            discoveryPending.append(contentsOf: children.map { $0.0 })
+        }
         typealias Visual = (view: UIView, parent: String, hidden: Bool, alpha: CGFloat,
-                            localHidden: Bool, localAlpha: CGFloat, children: [ObjectIdentifier])
+                            localHidden: Bool, localAlpha: CGFloat, children: [ObjectIdentifier], frame: CGRect)
         func actualView(_ view: UIView) -> [String: Any] {
             return ["id": Self.identity(view), "parent": Self.identity(view.superview),
                     "window": Self.identity(view.window), "hidden": view.isHidden,
                     "alpha": view.alpha.isFinite ? view.alpha as Any : String(describing: view.alpha),
-                    "children": view.subviews.map { Self.identity($0) }]
+                    "children": view.subviews.map { Self.identity($0) },
+                    "parent_children": (view.superview?.subviews ?? []).map { Self.identity($0) },
+                    "reciprocal_memberships": (view.superview?.subviews ?? []).filter { $0 === view }.count]
         }
         func capturedView(_ state: Visual) -> [String: Any] {
             return ["id": Self.identity(state.view), "parent": state.parent,
@@ -65,7 +133,7 @@ PUBLIC_CAPTURE = r'''    private func publicAccessibility(_ window: UIWindow) ->
             }
             let localHidden = view.isHidden, localAlpha = view.alpha
             guard localAlpha.isFinite, localAlpha >= 0, localAlpha <= 1 else {
-                return [["capture_error": "invalid owned view alpha"]]
+                return [["capture_error": "invalid owned view alpha", "current_view": actualView(view)]]
             }
             let hidden = inheritedHidden || localHidden, alpha = inheritedAlpha * localAlpha
             let children = view.subviews
@@ -73,7 +141,7 @@ PUBLIC_CAPTURE = r'''    private func publicAccessibility(_ window: UIWindow) ->
                 return [["capture_error": "owned view inventory exceeded fixture bound"]]
             }
             visual[identity] = (view, parent, hidden, alpha, localHidden, localAlpha,
-                                children.map { ObjectIdentifier($0) })
+                                children.map { ObjectIdentifier($0) }, view.convert(view.bounds, to: window))
             for child in children { viewPending.append((child, Self.identity(view), hidden, alpha)) }
         }
         func unchanged(_ state: Visual) -> Bool {
@@ -82,6 +150,24 @@ PUBLIC_CAPTURE = r'''    private func publicAccessibility(_ window: UIWindow) ->
                 && Self.identity(view.superview) == state.parent
                 && view.isHidden == state.localHidden && view.alpha == state.localAlpha
                 && view.subviews.map { ObjectIdentifier($0) } == state.children
+                && view.convert(view.bounds, to: window) == state.frame
+        }
+        for discovery in discovered.values {
+            if let view = discovery.object as? UIView, visual[ObjectIdentifier(view)] == nil {
+                    return [["capture_error": "public accessibility view has missing owned ancestry",
+                             "current_view": actualView(view)]]
+            }
+        }
+        // A getter-created child may have been discovered through a public AX
+        // edge. Physical subview edges must reflect the subsequent actual walk.
+        for (identity, state) in visual {
+            guard var discovery = discovered[identity], state.children.allSatisfy({ discovered[$0] != nil }) else {
+                return [["capture_error": "post-discovery physical view inventory incomplete"]]
+            }
+            discovery.children = discovery.children.filter { $0.1 != "subviews" }
+                + state.view.subviews.map { ($0 as NSObject, "subviews") }
+            discovery.record["frame_in_window"] = Self.rect(state.frame)
+            discovered[identity] = discovery
         }
         typealias Item = (object: NSObject, parent: String, edge: String, hidden: Bool, alpha: CGFloat)
         var pending: [Item] = [(window, "nil", "owned-window", false, 1)]
@@ -107,12 +193,15 @@ PUBLIC_CAPTURE = r'''    private func publicAccessibility(_ window: UIWindow) ->
         }
         while let item = pending.popLast() {
             let object = item.object, id = Self.identity(object)
+            guard let discovery = discovered[ObjectIdentifier(object)] else {
+                return [["capture_error": "public accessibility discovery incomplete"]]
+            }
             var hidden = item.hidden, alpha = item.alpha
             var pathHidden = hidden, pathAlpha = alpha
             var viewState: [String: Any]?
             if let view = object as? UIView {
                 guard let state = visual[ObjectIdentifier(view)] else {
-                    return [["capture_error": "public accessibility view has missing owned ancestry",
+                    return [["capture_error": "post-discovery owned view lookup changed",
                              "current_view": actualView(view)]]
                 }
                 guard unchanged(state) else {
@@ -151,50 +240,15 @@ PUBLIC_CAPTURE = r'''    private func publicAccessibility(_ window: UIWindow) ->
                 return [["capture_error": "public accessibility inventory exceeded fixture bound"]]
             }
             visibility[id] = (hidden, alpha); visibilityPaths[id] = visibilityPath; order.append(id)
-            let frame: CGRect
-            let kind: String
-            if let view = object as? UIView {
-                frame = view.convert(view.bounds, to: window); kind = "UIView"
-            } else {
-                frame = window.screen.coordinateSpace.convert(object.accessibilityFrame, to: window)
-                kind = object is UIAccessibilityElement ? "UIAccessibilityElement" : "UIAccessibilityObject"
-            }
-            let elementsHidden = object.accessibilityElementsHidden
-            let (actualIdentifier, identifierEvidence, identifierError) = identifier(object)
-            if let identifierError = identifierError {
-                return [["capture_error": identifierError, "object_id": id, "identifier_evidence": identifierEvidence]]
-            }
-            records[id] = ["id": id,
-                "identifier": actualIdentifier ?? "nil", "identifier_evidence": identifierEvidence,
-                "label": object.accessibilityLabel ?? "nil", "value": object.accessibilityValue ?? "nil",
-                "frame_in_window": Self.rect(frame), "hidden": hidden, "alpha": alpha, "kind": kind,
-                "visibility_basis": viewState == nil ? "container-path" : "view-hierarchy",
-                "accessibility_elements_hidden": elementsHidden]
+            let elementsHidden = discovery.record["accessibility_elements_hidden"] as? Bool ?? false
+            records[id] = discovery.record
+            records[id]?["hidden"] = hidden; records[id]?["alpha"] = alpha
+            records[id]?["visibility_basis"] = viewState == nil ? "container-path" : "view-hierarchy"
             if let viewState = viewState { records[id]?["view_state"] = viewState }
             let childrenHidden = hidden || elementsHidden
-            if let view = object as? UIView {
-                enqueue(view.subviews, parent: id, edge: "subviews", hidden: childrenHidden, alpha: alpha)
-            }
-            if let values = object.accessibilityElements {
-                enqueue(values, parent: id, edge: "accessibilityElements", hidden: childrenHidden, alpha: alpha)
-            }
-            if #available(iOS 17.0, *) {
-                if let values = object.automationElements {
-                    enqueue(values, parent: id, edge: "automationElements", hidden: childrenHidden, alpha: alpha)
-                }
-            }
-            let count = object.accessibilityElementCount()
-            guard count == NSNotFound || (count >= 0 && count <= 4096) else {
-                return [["capture_error": "invalid public accessibility indexed child count"]]
-            }
-            if count != NSNotFound && count > 0 {
-                for index in 0..<count {
-                    guard let child = object.accessibilityElement(at: index) else {
-                        return [["capture_error": "public accessibility indexed child missing"]]
-                    }
-                    enqueue([child], parent: id, edge: "accessibilityElementAtIndex", hidden: childrenHidden, alpha: alpha)
-                    if error != nil { break }
-                }
+            for (child, edge) in discovery.children {
+                enqueue([child], parent: id, edge: edge, hidden: childrenHidden, alpha: alpha)
+                if error != nil { break }
             }
             if let error = error { return [["capture_error": error]] }
         }
