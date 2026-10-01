@@ -2,6 +2,47 @@
 
 This document outlines breaking changes and migration steps between major versions of the project.
 
+## Migration from 3.x to 4.0
+
+This section describes the main changes introduced in SDK `4.0` compared to `3.x`.
+
+### Product Modules
+
+Starting with `4.0`, CocoaPods and Carthage are no longer supported as installation methods.
+Swift Package Manager is the only one. This follows the CocoaPods Trunk shutdown: `3.x` already
+stopped publishing new podspec versions and Carthage frameworks, while keeping the existing ones
+installable; `4.0` removes the podspecs and the Carthage toolchain from the repository entirely.
+
+<details>
+  <summary>SPM</summary>
+
+  ```swift
+  let package = Package(
+      ...
+      dependencies: [
+          .package(url: "https://github.com/DataDog/dd-sdk-ios", from: "4.0.0")
+      ],
+      targets: [
+          .target(
+              ...
+              dependencies: [
+                  .product(name: "DatadogCore", package: "dd-sdk-ios"),
+                  .product(name: "DatadogCrashReporting", package: "dd-sdk-ios"),
+                  .product(name: "DatadogLogs", package: "dd-sdk-ios"),
+                  .product(name: "DatadogRUM", package: "dd-sdk-ios"),
+                  .product(name: "DatadogSessionReplay", package: "dd-sdk-ios"),
+                  .product(name: "DatadogTrace", package: "dd-sdk-ios"),
+                  .product(name: "DatadogWebViewTracking", package: "dd-sdk-ios"),
+              ]
+          ),
+      ]
+  )
+  ```
+</details>
+
+If you're on a pre-`4.0` version installed via CocoaPods or Carthage, that version remains
+installable the same way it always did — neither change removes anything retroactively.
+
 ## Migration from 2.x to 3.0
 
 This section describes the main changes introduced in SDK `3.0` compared to `2.x`.

@@ -68,7 +68,6 @@ body:
       label: Integration Methods
       options:
         - SPM
-        - Cocoapods
         - XCFramework
         - Source
     validations:

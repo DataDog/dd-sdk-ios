@@ -1,0 +1,50 @@
+abstract_target 'Common' do
+  pod 'OpenTelemetry-Swift-Api', '2.5.0'
+  pod 'DatadogInternal', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :branch => 'sara/carthage-drop-customer-support'
+  pod 'DatadogCore', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :branch => 'sara/carthage-drop-customer-support'
+  pod 'DatadogLogs', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :branch => 'sara/carthage-drop-customer-support'
+  pod 'DatadogTrace', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :branch => 'sara/carthage-drop-customer-support'
+  pod 'DatadogRUM', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :branch => 'sara/carthage-drop-customer-support'
+  pod 'DatadogCore', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :branch => 'sara/carthage-drop-customer-support'
+  pod 'DatadogSessionReplay', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :branch => 'sara/carthage-drop-customer-support'
+  pod 'DatadogCrashReporting', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :branch => 'sara/carthage-drop-customer-support'
+  pod 'DatadogFlags', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :branch => 'sara/carthage-drop-customer-support'
+  pod 'DatadogProfiling', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :branch => 'sara/carthage-drop-customer-support'
+
+  target 'App Dynamic iOS' do
+    platform :ios, '15.0'
+    use_frameworks!
+    pod 'DatadogWebViewTracking', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :branch => 'sara/carthage-drop-customer-support'
+
+    target 'App Dynamic iOS Tests' do
+      inherit! :search_paths
+    end
+  end
+
+  target 'App Static iOS' do
+    platform :ios, '15.0'
+    pod 'DatadogWebViewTracking', :git => 'https://github.com/DataDog/dd-sdk-ios.git', :branch => 'sara/carthage-drop-customer-support'
+
+    target 'App Static iOS Tests' do
+      inherit! :search_paths
+    end
+  end
+
+  target 'App Dynamic tvOS' do
+    platform :tvos, '15.0'
+    use_frameworks!
+
+    target 'App Dynamic tvOS Tests' do
+      inherit! :search_paths
+    end
+  end
+
+  target 'App Static tvOS' do
+    platform :tvos, '15.0'
+
+    target 'App Static tvOS Tests' do
+      inherit! :search_paths
+    end
+  end
+
+end
