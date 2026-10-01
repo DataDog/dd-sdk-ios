@@ -8,29 +8,30 @@ import Foundation
 
 extension URLSessionTask: DatadogExtended {}
 extension DatadogExtension where ExtendedType: URLSessionTask {
-    /// Prepares this task once per feature instance before forwarding `resume()`.
+    /// Prepares this task once for the supplied identifier.
     ///
-    /// Concurrent resumes wait for preparation; different tasks prepare independently.
-    /// The task monitor can also make native `cancel()` wait until preparation finishes.
-    /// Weak feature identities let the task outlive an SDK instance without retaining it.
-    func prepareOnce(for feature: NetworkInstrumentationFeature, _ prepare: () -> Void) {
-        objc_sync_enter(type)
-        defer { objc_sync_exit(type) }
+    /// Reuse the identifier for the lifetime of the instrumentation instance. Identifiers remain
+    /// associated with the task until it is released, without retaining the instrumentation instance.
+    ///
+    /// Uses Objective-C's recursive per-object lock (`objc_sync_enter` / `objc_sync_exit`),
+    /// the same lock used by `@synchronized(task)`. Concurrent resumes of this task wait for
+    /// preparation; different tasks prepare independently. Native `cancel()` has also been observed
+    /// waiting on this lock, but that is not a documented `URLSession` guarantee.
+    /// See https://developer.apple.com/documentation/objectivec/objc_sync_enter
+    func prepareOnce(for identifier: UUID, _ prepare: () -> Void) {
+        let task = type
+        objc_sync_enter(task)
+        defer { objc_sync_exit(task) }
 
-        guard type.state != .completed else {
+        guard task.state != .completed else {
             return
         }
-        let preparedFeatures: NSHashTable<NetworkInstrumentationFeature>
-        if let existing = objc_getAssociatedObject(type, &preparedFeaturesKey) as? NSHashTable<NetworkInstrumentationFeature> {
-            preparedFeatures = existing
-        } else {
-            preparedFeatures = NSHashTable(options: [.weakMemory, .objectPointerPersonality])
-            objc_setAssociatedObject(type, &preparedFeaturesKey, preparedFeatures, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
-        }
-        guard !preparedFeatures.contains(feature) else {
+        var preparedIdentifiers = objc_getAssociatedObject(task, &preparedIdentifiersKey) as? Set<UUID> ?? []
+        guard !preparedIdentifiers.contains(identifier) else {
             return
         }
-        preparedFeatures.add(feature)
+        preparedIdentifiers.insert(identifier)
+        objc_setAssociatedObject(task, &preparedIdentifiersKey, preparedIdentifiers, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         prepare()
     }
 
@@ -106,7 +107,7 @@ extension DatadogExtension where ExtendedType: URLSessionTask {
 }
 
 private var hasCompletionKey: Void?
-private var preparedFeaturesKey: Void?
+private var preparedIdentifiersKey: Void?
 
 extension URLSessionTask {
     /// `URLSessionTask` subclasses that declare most of their inherited properties as `NS_UNAVAILABLE`
