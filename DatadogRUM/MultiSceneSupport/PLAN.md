@@ -31,6 +31,8 @@ The sole restart cursor is [.continue-here.md](../../.continue-here.md).
    matrix and physical Duo F04 when hardware exists. S3:F06 retains every original
    obligation. Full Duo hardware is unavailable before release; F09 records later
    targeted S2 confirmation without claiming untested hardware behavior.
+   S3 merges to develop only behind a runtime feature flag; the
+   [integration plan](#s3-feature-flag-integration) owns its contract and PR stack.
 
 [Extraction boundaries](DEFERRED_SINGLE_SCENE_EXTRACTION.md) and
 [human acceptance](HUMAN_ACCEPTANCE.md) define bounded work. No experiment is
@@ -83,7 +85,7 @@ qualification and gate-closing evidence; it does not admit a run.
 | --- | --- | --- | ---: | ---: | ---: |
 | S1 — Independent reliability fixes | TBD | Release each narrow fix independently after its candidate checks and F06. Required-gate counts describe selected E01 qualification only; its current-head CI/review and F06 remain open. The [S1 delivery queue](S1_DELIVERY_PLAN.md) records H00, DL01, E02 and E04 merged; E01, E03 and E05 remain open. Qualified packets proceed independently. | 16 | 15 | 1 |
 | S2 — Single-scene iPhone Duo readiness | 2026-10-16 | No worse RUM after SDK27 rebuild without major app changes, evaluated by the S2 semantic acceptance contract and six finite execution packages below. E01+DL01+E04 productionc9faed81 on62f64 retains qualified source/lifetime/compatibility evidence. Resource/Trace, WebView and integrated-app ownership qualify; automatic coverage, UIKit transitions and final review remain open. No new scene API, duplicate physical matrix or immediate background-upload requirement. The user-approved [E01 equivalence decision](../MULTI_SCENE_SUPPORT.md#e01-replacement-and-s2-evidence) preserves all original S2 built evidence and closed gates; replacement alone requires no rebuild, retest or reopening. | 27 | 21 | 6 |
-| S3 — Full multi-scene support | TBD | Complete exact scene APIs, full ownership/lifecycle/client/docs matrix, physical Duo F04 and S3:F06 after hardware release. Preserve all prior evidence boundaries. | 69 | 46 | 23 |
+| S3 — Full multi-scene support | TBD | Merge to develop only behind a default-off runtime flag after per-PR Off equivalence, CI and maintainer review; physical Duo is not an open/merge prerequisite. Release requires flagged-head On H-gate requalification, Off/On F03, physical Duo F04 and S3:F06. Provisional branch verdicts remain historical and source-bound. | 73 | 46 | 27 |
 
 ### S1 release gates
 
@@ -296,6 +298,115 @@ does not substitute for runtime, hardware or final release gates.
 | F08 | Datadog app candidate evaluation | SDK implementer + app owner | None | Freeze app and SDK source/build identity; compare ordinary journeys and exact telemetry expectations, long sessions, resources and WebView correlation. Include internal TestFlight evaluation after separate distribution authorization. | Controlled normal-mode Datadog app; probe RUM application43cbc59b-0626-438b-a3d9-c6417a4545a3; service ios-app-rum-release-validation; simulator/physical host | S1 follow-up OPEN, S2 required CLOSED, S3 follow-up OPEN | OPEN | Pending |
 | A02 | One prepared human acceptance session | Harness implementer + user device operator | None | Freeze ordered scenarios, automated reset/capture/assertions and source/input/topology proof before requesting one session. Preserve failed automation; no weaker oracle. | Single host; Duo simulator27.1 and connected eligible iPhone/iPad | S2 follow-up OPEN, S3 required OPEN | OPEN | Pending |
 | F09 | Later targeted physical-Duo confirmation | SDK implementer + device operator | None | Repeat stage2 affected ordinary app navigation/actions/fold-active-work journeys on actual Duo; record simulator/device differences and regressions explicitly. | Physical Duo after release; currently unavailable | S2 follow-up ENVIRONMENT BLOCKED | OPEN | Pending |
+| F10 | S3 runtime feature-flag contract and plumbing | SDK implementer + RUM API reviewers | F11, F01 | Default-off flag resolves once from explicit flag, multi-scene manifest and OS27+; exhaustive resolution matrix passes. Off retains develop behavior and every scene-taking SPI call falls back exactly once. Flag spelling/API approval precedes public merge. | Fresh develop checkout; deployment15 client builds and supported17.5/27 simulator/toolchains | S3 required OPEN | OPEN | Pending |
+| F11 | S3 production-hunk mapping onto develop | SDK implementer + independent reviewer | None | Every production hunk maps exactly once to PR1-13, an independently reproduced fix, existing develop/S1 implementation, or explicit drop; cross-module callers and swizzles accounted for. No code or hardware required. | Read-only exact branch and freshly pinned develop source comparison | S3 required OPEN | OPEN | Pending |
+| F12 | S3 per-PR flag-Off equivalence and On slice qualification | SDK implementer + independent reviewer | F10, F11 | For each of PR1-13: unmodified develop suites pass; Off tripwires prove no scene observer/lookup/handoff/new swizzle, differential command fixtures match develop events, On slice tests pass. Review Off allocations/locks. No strict timing or physical hardware prerequisite for opening/merging. | CI and supported simulator/toolchains; explicit per-PR source/fixture identities | S3 required OPEN | OPEN | Pending |
+| F13 | S3 flagged-develop H-gate requalification | SDK implementer + device operator | F12, H01, H02, H03, H04, H05, H06, H07, H08, H09, H10, H11, H12, H13, H14, H15, H16 | Freeze flagged develop source/product with flag On and qualify the finite H01-H16 matrix, exact ownership and cleanup. Historical94842cc8 verdicts do not qualify this head; reuse scenario/tests/fixtures and record per-gate accepted evidence. Physical Duo acceptance remains F04. | Duo27.1 simulator under Xcode27.1 plus physical iPadOS27+ for supported simultaneous-window obligations | S3 required OPEN | OPEN | Pending |
+
+## S3 feature-flag integration
+
+User decisions, October 1, 2026: S3 code merges to develop only behind a runtime
+feature flag. Because the flag keeps develop behavior when off, physical Duo is
+required neither to open nor to merge PRs; it remains required for release
+(S3:F04). A physical iPad supplies pre-release evidence for most multi-scene
+behaviors. This section is hand-maintained; it is not regenerated.
+
+### Flag contract
+
+| Item | Rule |
+| --- | --- |
+| Switch | New `RUM.Configuration.FeatureFlag` case, working name `multiSceneTracking`, default `false`, following the `viewUpdates` preview flag. Adding the case changes the public API surface; its spelling joins F01. |
+| Resolution | Resolved once in `RUMFeature` init: flag on, `UIApplicationSupportsMultipleScenes` declared, and iOS 27 or later. The result replaces `isMultiSceneApplication` (`RUMFeature.swift:70`) and all its consumers, and reaches scopes through `RUMScopeDependencies.featureFlags`. It never changes during a process. |
+| Off | Develop behavior: same commands, scopes, events, observers, swizzles and per-event work, plus at most a Bool check. Develop's tests pass unmodified. |
+| On | The S3 contract in [the overview](../MULTI_SCENE_SUPPORT.md), qualified by the S3 gates at the flagged develop head. |
+| Scene-taking APIs | The `@_spi(Experimental)` calls use their exactly-once legacy fallback whenever the resolved mode is off, as they already do below iOS 27. Objective-C prototypes stay behind `DD_SCENE_API_VALIDATION` until F01. |
+| Older systems | Earlier-iPad capabilities stay off until separately qualified, per the overview. A physical iPad exercises the On path only on iPadOS 27 or later. |
+
+### Off-path obligations
+
+Each row needs a flag check and an Off test. Rows marked *analysis* come from the
+September 30 source review and are confirmed or corrected by the P0 mapping.
+
+| Area | Branch behavior today | Off behavior |
+| --- | --- | --- |
+| View lifecycle | Four `UIScene` observers registered unconditionally (`RUMViewsHandler.swift:301-324`); per-scene stacks; starts skipped while a scene is inactive | Develop's single stack; no scene observers |
+| Session routing | Targeted `propagate` (`RUMSessionScope.swift:747`) replaces develop's `scopes(byPropagating:)` broadcast | Develop broadcast, including inactive views' pending actions |
+| Input attribution | Scene lookup on every touch (`UIEventCommandFactory`), scroll start and manual call (`currentExecutionTarget`) | No lookup; `.processRepresentative` |
+| Context handoff (*analysis*) | `RUMContextHandoff` lookups on requests, manual calls, logs and spans | Static fast path; no lock, TaskLocal or thread-dictionary read |
+| Resources (*analysis*) | Request-time start on the `resume()` thread | Develop timing |
+| Logs and WebView (*analysis*) | Log-time view/action pinning; scene key on every WebView message | Develop behavior |
+| Watchdog and crash (*analysis*) | Representative-only context and `clearView()` | Develop behavior |
+| Application scope (*analysis*) | Multi-view restoration; locked error-completion wrapper | Develop behavior |
+| SwiftUI | `RUMViewModifier.body` already branches on the gate (`SwiftUIViewModifier.swift:3999`); `SwiftUIActionModifier` lookup locks on each body evaluation (*analysis*) | Legacy body; no lock |
+
+### Off equivalence for every PR
+
+1. Develop's unit and integration suites pass unmodified with the default
+   configuration. Editing a develop test to pass requires its own reviewed fix.
+2. Off tripwires: no `UIScene` observer, scene lookup, handoff read or new swizzle
+   runs with the flag off.
+3. Differential tests replay command sequences through the Off path and compare the
+   events with fixtures recorded once from develop.
+4. On tests for the slice are ported from the branch and run with the flag on.
+5. Public API files change only in the flag PR and the post-F01 API PR; SPI is
+   excluded. No timing gate applies (September 25 rule); review Off paths for
+   added allocations and locks.
+
+### PR stack
+
+Rebuild on develop; do not extract commits. Develop already holds H00, DL01, E02
+and E04 in forms different from this branch; E01, E03 and E05 land first through
+S1. On September 30 the locally fetched develop was 286 commits past the branch
+base, with 26 production files changed on both sides.
+
+| # | PR | Contents | Off rule |
+| --- | --- | --- | --- |
+| P0 | Mapping (no code) | Map every production hunk of this branch to one PR below, a standalone fix or a drop; record S1 forms already on develop | Not applicable |
+| 1 | Flag plumbing | `FeatureFlag` case, resolution, `isMultiSceneApplication` consumers, scope dependencies; resolution-matrix tests | Every consumer off |
+| 2 | Data model | `RUMSceneIdentifier` (never serialized), command `target` defaulting to `.processRepresentative`, optional view-scope scene, nil ViewCache scene key, `expireIfNeeded` extraction | Unconditional, behavior-preserving |
+| 3 | Session and application routing | Targeted propagation, representative selection, multi-view restoration | Develop broadcast |
+| 4 | Monitor targets | `currentExecutionTarget`, per-command context snapshot, SPI routing | Legacy fallback |
+| 5 | UIKit view lifecycle | Per-scene stacks and `UIScene` observers in a new type beside develop's handler path | Develop handler path |
+| 6 | UIKit input | Touch and scroll scene lookup; handoff installation | No lookup |
+| 7 | Cross-module consumers | Internal URLSession `modify`, Trace, Logs, Flags, WebView | Static fast path |
+| 8 | Resource prestart | Request-time start | Develop timing |
+| 9 | Watchdog and crash | Representative context | Develop behavior |
+| 10 | Operations | View target and step resolution | Develop behavior |
+| 11 | SwiftUI tracking | Scene reader, trait publisher, state machine; split the 6.7k added lines of `SwiftUIViewModifier.swift` into reviewable files | Legacy body |
+| 12 | Semantic navigation (iOS 27 SPI) | Navigation host, transition arbiter, authority registry | Absent |
+| 13 | Public API after F01 | Approved Swift overloads and Objective-C selectors | Legacy fallback |
+
+Standalone candidates leave the flag only as reviewed fixes with a failing develop
+regression: Profiling `RUMVitalIdentity` key collisions, Operation identity
+collisions, and possibly targeted propagation (E03 bug class), watchdog clearing and
+background starts. Each one moved out removes its Off row.
+
+### Merge, enablement and release
+
+| Step | Requires |
+| --- | --- |
+| Open a PR | Off equivalence and slice tests; no hardware |
+| Merge to develop | CI, maintainer review and Off equivalence; no hardware |
+| Enable for testing | Flag on in fixtures and the probe app; S3 H-gates re-qualified at the flagged develop head on the Duo 27.1 simulator and an iPadOS 27 iPad |
+| Release | S3:F04 on physical Duo 27.1, F03 with the flag off and on, F06 review; the flag stays off by default until then |
+| Sunset | After one release with the flag on by default and no attributable regression, remove the Off paths in a separate PR |
+
+Branch evidence at provisional S3 `94842cc8` stays historical. S3 gates close only
+at the flagged develop head with the flag on; reuse branch tests and fixtures, not
+branch verdicts. F07's rule that a manifest flag is insufficient applies to S1/S2
+exclusion audits; S3 adopts runtime-flag delivery explicitly.
+
+### Risks
+
+| Risk | Mitigation |
+| --- | --- |
+| Drift while the stack is open | P0 first; land PRs 1-2 early; rebase weekly |
+| Two semantics double the test matrix | Keep develop code verbatim behind Off rather than parameterizing shared paths; limit On tests to scene suites |
+| `RUMViewsHandler` Off equivalence | Per-scene stacks in a new type; develop's path untouched when off |
+| Review size | Split the SwiftUI file; review the semantic engine across PRs 11-12 |
+
+Register follow-up: the flag contract, P0 mapping, per-PR Off equivalence and
+flagged-head H-gate re-qualification need register rows from the register owner.
 
 ## Stable product decisions
 

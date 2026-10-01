@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "state": "FINITE_DELIVERY_GATES_DEFINED",
+  "source": "PLAN.md#s3-feature-flag-integration",
+  "decision_date": "2026-10-01",
+  "gates": [
+    "S3:F10",
+    "S3:F11",
+    "S3:F12",
+    "S3:F13"
+  ],
+  "hand_authored_section_snapshot": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-replay-jqgxnt3s/s3-user-flag-section.md",
+    "sha256": "5984f44348e80e90ddee5fb6f9dc4e5da02d7d5df86c61db20730c91d54f7680"
+  },
+  "historical_branch": "94842cc8",
+  "flagged_develop_head": null,
+  "merge_hardware_required": false,
+  "release_physical_duo_required": true,
+  "implementation_started": false,
+  "native_runs": 0,
+  "gates_closed": [],
+  "next_action": "Start P0 production-hunk mapping against a freshly pinned develop; retain existing source-bound evidence. No source promotion or hardware waiver.",
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-replay-jqgxnt3s/s3-flag-gates-review-cycle1.json",
+    "sha256": "7beb6736a03df965978c0703d9609d88a089277b90b3485787928d1886b1b870"
+  }
+}

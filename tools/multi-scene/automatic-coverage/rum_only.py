@@ -35,6 +35,13 @@ class EvidenceError(RuntimeError):
 
 # Never downgraded to a diagnostic. InterruptedError (SIGTERM) is an OSError.
 HARD_STOPS = (EvidenceError, OSError)
+SUPERVISOR_STOP = 'supervisor stopped execution'
+
+
+def supervisor_stop(error):
+    # Current reviewed opt-in entrypoints use this explicit RuntimeError sentinel
+    # for SIGTERM. Preserve it without changing their frozen source bindings.
+    return isinstance(error, RuntimeError) and str(error) == SUPERVISOR_STOP
 
 
 def save(path, value):
@@ -67,6 +74,8 @@ def diagnose(collector, phase, check, action, *, allow_rejected=False):
         collector.live(collector.deadline)
         return None, record(collector, phase, check, error)['reason']
     except Exception as error:
+        if supervisor_stop(error):
+            raise
         collector.live(collector.deadline)
         return None, record(collector, phase, check, error)['reason']
 
@@ -80,6 +89,8 @@ def snapshot(collector, runner, phase, deadline):
     except (HARD_STOPS + (Rejected,)):
         raise
     except Exception as error:
+        if supervisor_stop(error):
+            raise
         result = recover(collector, runner, phase, error)
         collector.live(deadline)
         return result
@@ -102,6 +113,11 @@ def recover(collector, runner, phase, error):
                     and taken['payload'].get('request_sha256') == hashlib.sha256(request_bytes).hexdigest()
                     and binding['sequence'] < taken['sequence']
                     and type(taken['payload'].get('uptime_ns')) is int and taken['payload']['uptime_ns'] > 0)
+        # Reuse the unchanged source/window predicates. Only the accessibility
+        # inventory is omitted from this validation projection; the original
+        # captured topology and durable rows stay intact below.
+        owned_topology = dict(taken['payload']['topology'], accessibility=[])
+        oracle.topology(owned_topology, binding['payload'])
     except EvidenceError:
         raise
     except Exception as failure:
@@ -327,8 +343,12 @@ def compare(before, after):
         if a != b:
             result[family] = dict(status='DIFFERENCE_REQUIRES_CLASSIFICATION', before=a, after=b)
         elif family == 'actions':
-            limited = any(not found for _, found in b)
-            result[family] = dict(status='UNCHANGED_LIMITATION' if limited else 'UNCHANGED_OBSERVED_COVERAGE')
+            if not b:
+                result[family] = dict(status='INSUFFICIENT_OBSERVED_INPUT',
+                                     reasons=['no comparable input phases'])
+            else:
+                limited = any(not found for _, found in b)
+                result[family] = dict(status='UNCHANGED_LIMITATION' if limited else 'UNCHANGED_OBSERVED_COVERAGE')
         else:
             limited = not b or any('Fallback' in (name or '') for _, name, _ in b)
             result[family] = dict(status='UNCHANGED_LIMITATION' if limited else 'UNCHANGED_OBSERVED_COVERAGE')
@@ -362,7 +382,8 @@ def comparison_result(accepted, matrix):
                 for family, value in compare(accepted[cell_key(other)], accepted[key]).items():
                     # A difference carries normalized before/after inventories; cell keys stay distinct.
                     comparisons.append(dict(axis=axis, family=family, before_cell=cell_key(other), after_cell=key, **value))
-    pending = [c for c in comparisons if c['status'] in ('REVIEW_REQUIRED', 'DIFFERENCE_REQUIRES_CLASSIFICATION')]
+    pending = [c for c in comparisons if c['status'] in ('REVIEW_REQUIRED', 'DIFFERENCE_REQUIRES_CLASSIFICATION',
+                                                       'INSUFFICIENT_OBSERVED_INPUT')]
     state = ('REVIEW_REQUIRED' if pending else 'COMPLETE_LOCAL_COMPARISON' if len(accepted) == len(matrix)
              else 'PARTIAL_LOCAL_COMPARISON')
     return dict(mode=MODE, state=state, qualified_cells=len(accepted), required_cells=len(matrix),

@@ -136,6 +136,17 @@ automatic fixture, UIKit receipt text and SwiftUI accessibility labels are disti
 observations; a readable label cannot replace an omitted UILabel.text value. Keep
 callback, exact increment and owner checks. See the [fixture contract](../../../tools/multi-scene/automatic-coverage/README.md).
 
+For a new split sitting stopped only by input-proof validation, the user-authorized
+[RUM-only alternative](../Results/S2-rum-only-20261001.json) may replace another
+capture repair. Pin `rum_only.py` in a new plan and obtain designated review before
+native use. Enable it before qualification; run `ready_controls` through `diagnose`,
+use `run_journey`, then grade the complete local mapper inventory with `verdict`.
+INCOMPLETE stays fatal; pause the matrix to classify FAIL or insufficient comparable
+input. Window/source binding, durable evidence, process, interruption and cell
+cutoff remain fatal. Targets/counters/callback order are diagnostics. H14 still needs
+actual fold proof; without it a split cell can credit only C09/C10. Never rewrite an
+old verdict. The four-cell second-grader replay is offline evidence only.
+
 Keep UIKit views/actions and SwiftUI views/actions separate. Use unchanged app
 sources, public default predicates and qualified native input; semantic hosts,
 manual calls or marker actions cannot substitute. Compare genuine old/new build

@@ -197,6 +197,30 @@ class PerformControls(unittest.TestCase):
         with self.assertRaises(rum_only.EvidenceError):
             self.perform()
 
+    def test_changed_window_scene_or_source_is_fatal_despite_durable_prefix(self):
+        mutations = {
+            'window': lambda v: v.update(bound_window='foreign'),
+            'root': lambda v: v.update(bound_root='foreign'),
+            'scene': lambda v: v.update(bound_scene='foreign'),
+            'detached': lambda v: v.update(window_alive=False),
+            'root_lifetime': lambda v: v.update(root_alive=False),
+            'provenance': lambda v: v['scene_inventory'][0]['windows'][0].update(window_bundle='foreign'),
+            'key_window': lambda v: v['scene_inventory'][0]['windows'][0].update(key=False),
+            'auxiliary_owner': lambda v: v['scene_inventory'][0]['windows'].append(dict(WINDOW,id='extra',owned=True)),
+        }
+        for name, mutation in mutations.items():
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as folder:
+                collector = FakeCollector(folder)
+                original = collector.topology
+                def topology(phase):
+                    value = original(phase); mutation(value); return value
+                collector.topology = topology
+                with self.assertRaisesRegex(rum_only.EvidenceError, 'unrecoverable snapshot'):
+                    rum_only.perform(collector, runner(), TAP)
+                persisted = json.loads((Path(folder)/'initial.root.tap.before/events.jsonl').read_text().splitlines()[2])
+                self.assertEqual(persisted['kind'], 'human_snapshot')
+                self.assertFalse((Path(folder)/'initial.root.tap.before/rum-only-capture.json').exists())
+
     def test_process_loss_while_waiting_stops_the_cell(self):
         self.collector.human = lambda collector, phase: setattr(collector, 'dead', True)
         with self.assertRaisesRegex(Rejected, 'original app process ended'):
@@ -208,6 +232,31 @@ class PerformControls(unittest.TestCase):
         self.collector.human = interrupt
         with self.assertRaises(InterruptedError):
             self.perform()
+
+    def test_current_supervisor_stop_is_not_an_input_diagnostic(self):
+        rum_only.enable(self.collector, runner())
+        def stop():
+            raise RuntimeError('supervisor stopped execution')
+        with self.assertRaisesRegex(RuntimeError, 'supervisor stopped execution'):
+            rum_only.diagnose(self.collector, 'phase', 'check', stop)
+        self.assertEqual(self.collector.rum_only_diagnostics, [])
+
+    def test_current_supervisor_stop_after_durable_snapshot_is_fatal(self):
+        def stop(collector, phase):
+            raise RuntimeError('supervisor stopped execution')
+        self.collector.after_snapshot = stop
+        with self.assertRaisesRegex(RuntimeError, 'supervisor stopped execution'):
+            self.perform()
+        self.assertTrue((Path(self.folder.name)/'initial.root.tap.before/events.jsonl').is_file())
+        self.assertFalse((Path(self.folder.name)/'initial.root.tap.before/rum-only-capture.json').exists())
+
+    def test_ordinary_input_proof_runtime_error_remains_diagnostic(self):
+        rum_only.enable(self.collector, runner())
+        def unavailable():
+            raise RuntimeError('target observation unavailable')
+        value, reason = rum_only.diagnose(self.collector, 'phase', 'target', unavailable)
+        self.assertIsNone(value)
+        self.assertIn('target observation unavailable', reason)
 
     def test_missing_input_ends_only_the_step(self):
         self.collector.budget['human_step_seconds'] = 0.3
@@ -345,6 +394,21 @@ class VerdictControls(unittest.TestCase):
 
 
 class ComparisonControls(unittest.TestCase):
+    def test_all_unobserved_inputs_cannot_claim_observed_coverage(self):
+        missing = [(phase, False, []) for phase, _, _ in STEPS]
+        result = rum_only.compare(graded(missing), graded(missing))
+        self.assertEqual(result['actions']['status'], 'INSUFFICIENT_OBSERVED_INPUT')
+        self.assertEqual(result['actions']['excluded_phases'], [s[0] for s in sorted(missing)])
+
+    def test_complete_matrix_without_comparable_inputs_requires_review(self):
+        row = dict(device='duo', framework='SwiftUI', layout='stack', multiple_scenes=False)
+        matrix = [dict(row, build=b) for b in ('baseline-26.5','baseline-27.1','candidate-27.1')]
+        missing = [(phase, False, []) for phase, _, _ in STEPS]
+        accepted = {rum_only.cell_key(cell): graded(missing) for cell in matrix}
+        result = rum_only.comparison_result(accepted, matrix)
+        self.assertEqual(result['state'], 'REVIEW_REQUIRED')
+        self.assertTrue(any(c['status']=='INSUFFICIENT_OBSERVED_INPUT' for c in result['comparisons']))
+
     def test_identical_ownership_is_unchanged(self):
         result = rum_only.compare(graded(STEPS), graded(STEPS))
         self.assertEqual({v['status'] for v in result.values()}, {'UNCHANGED_OBSERVED_COVERAGE'})

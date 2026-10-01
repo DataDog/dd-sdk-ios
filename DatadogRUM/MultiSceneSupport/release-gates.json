@@ -1853,7 +1853,7 @@
       "evidence": "September23 user authorization permits full local implementation before RFC review. EXP-225 implements21 ordinary Swift overloads,20 Objective-C selectors and nullable factory at iOS15 availability, with qualified-runtime selection and exactly-once legacy fallback. Results/EXP-225-api-availability.json owns provisional results. Experimental exposure remains; attributable F01 approval and public promotion stay REVIEW BLOCKED. Results/S3-api-availability-plan.json maps the unchanged finite obligations.",
       "release_requirements": {
         "S3": {
-          "scope": "Stable API review",
+          "scope": "Stable API review including runtime flag spelling",
           "status": "REVIEW BLOCKED",
           "dependencies": [
             "S3:T01",
@@ -1951,7 +1951,7 @@
       "evidence": "Provisional SDK94842cc8 qualifies full RUM27/17.5, all nine non-RUM M01 schemes,20 platform builds and five existing-public-client configurations. Results/EXP-227-integration-fixture-result.json closes the final Integration component with280/280, exact source/compiler identity and cleanup/deletionPASS; original failures and8runtime warnings remain. EXP225 human setup controls/build are prepared; actual concurrent ownership, F01 approval, public scene exposure, remaining M10/M11 integration and final source promotion remain. F03 stays OPEN.",
       "release_requirements": {
         "S3": {
-          "scope": "Final compatibility build/test matrix",
+          "scope": "Final compatibility build/test matrix at flagged develop with Off and On qualified",
           "status": "OPEN",
           "dependencies": [
             "S3:F01",
@@ -1959,7 +1959,9 @@
             "S3:D02",
             "S3:D09",
             "S3:D11",
-            "S3:D12"
+            "S3:D12",
+            "S3:F10",
+            "S3:F12"
           ],
           "decisive_test": "All11 FINAL_COMPATIBILITY cells pass at the frozen F01-approved S3 candidate: unguarded ordinary Swift/ObjC deployment15 clients and17.5 fallback, qualified27 exact same-key routing, ObjC Release off-main safety, full affected modules/platforms, lint/API/docs. Replay scope remains crash-free coexistence and non-disruption only.",
           "environment": "CI + supported SDK toolchains",
@@ -2051,7 +2053,8 @@
             "S3:H13",
             "S3:H14",
             "S3:H15",
-            "S3:H16"
+            "S3:H16",
+            "S3:F13"
           ],
           "decisive_test": "Run the finite accepted scenario matrix on iPhone Duo iOS 27.1; exact mapper/backend owners and no SDK crash",
           "environment": "iPhone Duo iOS 27.1",
@@ -2437,7 +2440,11 @@
         "C07",
         "C08",
         "C09",
-        "C10"
+        "C10",
+        "F10",
+        "F11",
+        "F12",
+        "F13"
       ],
       "decisive_test": "Every required gate closed on reviewed source; performance thresholds hold; no unresolved correctness/release-review finding",
       "environment": "Review + CI",
@@ -2516,7 +2523,11 @@
             "S3:C08",
             "S3:C09",
             "S3:C10",
-            "S3:A02"
+            "S3:A02",
+            "S3:F10",
+            "S3:F11",
+            "S3:F12",
+            "S3:F13"
           ],
           "decisive_test": "Review exact source and applicable event attribution, View/Navigation/Action capture, ownership, lifetime, privacy, crash/API and compatibility evidence. No unresolved attributable regression or required evidence gap. Strict timing measurements and performance campaigns are not prerequisites under the September25 project rule. Signed outgoing history is required before separately authorized publication; Session Replay captured-content correctness remains excluded.",
           "environment": "Review + CI",
@@ -2876,6 +2887,142 @@
           "required": false
         }
       }
+    },
+    {
+      "id": "F10",
+      "deliverable": "S3 runtime feature-flag contract and plumbing",
+      "owner": "SDK implementer + RUM API reviewers",
+      "dependencies": [
+        "F11",
+        "F01"
+      ],
+      "decisive_test": "Default-off flag resolves once from explicit flag, multi-scene manifest and OS27+; exhaustive resolution matrix passes. Off retains develop behavior and every scene-taking SPI call falls back exactly once. Flag spelling/API approval precedes public merge.",
+      "environment": "Fresh develop checkout; deployment15 client builds and supported17.5/27 simulator/toolchains",
+      "completion_mode": null,
+      "status": "OPEN",
+      "evidence": "",
+      "release_requirements": {
+        "S3": {
+          "scope": "S3 runtime feature-flag contract and plumbing",
+          "status": "OPEN",
+          "dependencies": [
+            "S3:F11",
+            "S3:F01"
+          ],
+          "decisive_test": "Default-off flag resolves once from explicit flag, multi-scene manifest and OS27+; exhaustive resolution matrix passes. Off retains develop behavior and every scene-taking SPI call falls back exactly once. Flag spelling/API approval precedes public merge.",
+          "environment": "Fresh develop checkout; deployment15 client builds and supported17.5/27 simulator/toolchains",
+          "evidence": "",
+          "required": true
+        }
+      }
+    },
+    {
+      "id": "F11",
+      "deliverable": "S3 production-hunk mapping onto develop",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": [],
+      "decisive_test": "Every production hunk maps exactly once to PR1-13, an independently reproduced fix, existing develop/S1 implementation, or explicit drop; cross-module callers and swizzles accounted for. No code or hardware required.",
+      "environment": "Read-only exact branch and freshly pinned develop source comparison",
+      "completion_mode": null,
+      "status": "OPEN",
+      "evidence": "",
+      "release_requirements": {
+        "S3": {
+          "scope": "S3 production-hunk mapping onto develop",
+          "status": "OPEN",
+          "dependencies": [],
+          "decisive_test": "Every production hunk maps exactly once to PR1-13, an independently reproduced fix, existing develop/S1 implementation, or explicit drop; cross-module callers and swizzles accounted for. No code or hardware required.",
+          "environment": "Read-only exact branch and freshly pinned develop source comparison",
+          "evidence": "",
+          "required": true
+        }
+      }
+    },
+    {
+      "id": "F12",
+      "deliverable": "S3 per-PR flag-Off equivalence and On slice qualification",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": [
+        "F10",
+        "F11"
+      ],
+      "decisive_test": "For each of PR1-13: unmodified develop suites pass; Off tripwires prove no scene observer/lookup/handoff/new swizzle, differential command fixtures match develop events, On slice tests pass. Review Off allocations/locks. No strict timing or physical hardware prerequisite for opening/merging.",
+      "environment": "CI and supported simulator/toolchains; explicit per-PR source/fixture identities",
+      "completion_mode": null,
+      "status": "OPEN",
+      "evidence": "",
+      "release_requirements": {
+        "S3": {
+          "scope": "S3 per-PR flag-Off equivalence and On slice qualification",
+          "status": "OPEN",
+          "dependencies": [
+            "S3:F10",
+            "S3:F11"
+          ],
+          "decisive_test": "For each of PR1-13: unmodified develop suites pass; Off tripwires prove no scene observer/lookup/handoff/new swizzle, differential command fixtures match develop events, On slice tests pass. Review Off allocations/locks. No strict timing or physical hardware prerequisite for opening/merging.",
+          "environment": "CI and supported simulator/toolchains; explicit per-PR source/fixture identities",
+          "evidence": "",
+          "required": true
+        }
+      }
+    },
+    {
+      "id": "F13",
+      "deliverable": "S3 flagged-develop H-gate requalification",
+      "owner": "SDK implementer + device operator",
+      "dependencies": [
+        "F12",
+        "H01",
+        "H02",
+        "H03",
+        "H04",
+        "H05",
+        "H06",
+        "H07",
+        "H08",
+        "H09",
+        "H10",
+        "H11",
+        "H12",
+        "H13",
+        "H14",
+        "H15",
+        "H16"
+      ],
+      "decisive_test": "Freeze flagged develop source/product with flag On and qualify the finite H01-H16 matrix, exact ownership and cleanup. Historical94842cc8 verdicts do not qualify this head; reuse scenario/tests/fixtures and record per-gate accepted evidence. Physical Duo acceptance remains F04.",
+      "environment": "Duo27.1 simulator under Xcode27.1 plus physical iPadOS27+ for supported simultaneous-window obligations",
+      "completion_mode": null,
+      "status": "OPEN",
+      "evidence": "",
+      "release_requirements": {
+        "S3": {
+          "scope": "S3 flagged-develop H-gate requalification",
+          "status": "OPEN",
+          "dependencies": [
+            "S3:F12",
+            "S3:H01",
+            "S3:H02",
+            "S3:H03",
+            "S3:H04",
+            "S3:H05",
+            "S3:H06",
+            "S3:H07",
+            "S3:H08",
+            "S3:H09",
+            "S3:H10",
+            "S3:H11",
+            "S3:H12",
+            "S3:H13",
+            "S3:H14",
+            "S3:H15",
+            "S3:H16"
+          ],
+          "decisive_test": "Freeze flagged develop source/product with flag On and qualify the finite H01-H16 matrix, exact ownership and cleanup. Historical94842cc8 verdicts do not qualify this head; reuse scenario/tests/fixtures and record per-gate accepted evidence. Physical Duo acceptance remains F04.",
+          "environment": "Duo27.1 simulator under Xcode27.1 plus physical iPadOS27+ for supported simultaneous-window obligations",
+          "evidence": "",
+          "required": true
+        }
+      }
     }
   ],
   "reference_branch": "valpertui/multiple-windows-scenes",
@@ -3140,8 +3287,9 @@
       "id": "S3",
       "name": "Full multi-scene support",
       "deadline": null,
-      "shipping_rule": "Complete exact scene APIs, full ownership/lifecycle/client/docs matrix, physical Duo F04 and S3:F06 after hardware release. Preserve all prior evidence boundaries.",
-      "measurement_rule": "strategy_decision.project_measurement_rule"
+      "shipping_rule": "Merge to develop only behind a default-off runtime flag after per-PR Off equivalence, CI and maintainer review; physical Duo is not an open/merge prerequisite. Release requires flagged-head On H-gate requalification, Off/On F03, physical Duo F04 and S3:F06. Provisional branch verdicts remain historical and source-bound.",
+      "measurement_rule": "strategy_decision.project_measurement_rule",
+      "flag_integration_owner": "Results/S3-feature-flag-integration-plan.json"
     }
   ],
   "strategy_decision": {
@@ -3278,6 +3426,22 @@
       "preserve": "Keep actual source/build identities, observations, original verdicts and all closed S2 statuses. Do not rewrite old captures to claim replacement code was exercised.",
       "execution": "Do not require source reconciliation, a new candidate freeze, rebuilds, retests or gate reopening solely because of the E01 replacement. Continue the remaining finite S2 work; investigate E01 only upon concrete evidence of a regression.",
       "boundary": "This decision grants no new gate closure and does not replace current S1 CI, maintainer review or merge acceptance."
+    },
+    "s3_runtime_flag": {
+      "source": "PLAN.md#s3-feature-flag-integration",
+      "decision_date": "2026-10-01",
+      "default": false,
+      "merge_requires_flag": true,
+      "hardware_required_for_merge": false,
+      "hardware_required_for_release": "S3:F04",
+      "gates": [
+        "S3:F10",
+        "S3:F11",
+        "S3:F12",
+        "S3:F13"
+      ],
+      "historical_branch": "94842cc8",
+      "flagged_develop_head": null
     }
   }
 }

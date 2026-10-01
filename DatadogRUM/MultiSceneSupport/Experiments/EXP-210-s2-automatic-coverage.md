@@ -257,3 +257,10 @@ validation pass50 focused controls and re-review; seven bound plan controls pass
 Delegated native ownership, fresh readiness and renewed availability remain. The preparation factory passes ten
 offline controls, including review/plan replacement during publication. Its original
 draft and plan are preserved; no new native attempt or gate closure follows.
+
+The [RUM-only second grader](../Results/S2-rum-only-20261001.json) agrees on all four
+accepted cells; only the already-classified root scroll/swipe rebuild difference
+remains, with unchanged owner. The user-authorized alternative needs a new reviewed
+plan after any future input-proof-only stop; fold credit remains separate. Source/
+window, actual supervisor-stop and empty-comparison safeguards pass32 controls;
+independent re-review passes. Historical verdicts and native gate credit are unchanged.

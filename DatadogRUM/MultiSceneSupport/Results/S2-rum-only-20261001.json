@@ -1,0 +1,259 @@
+{
+  "schema_version": 1,
+  "owner": "EXP-210",
+  "state": "OFFLINE_SECOND_GRADER_REVIEWED",
+  "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-replay-jqgxnt3s",
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-replay-jqgxnt3s/definition.json",
+    "sha256": "0ab9068e7896bf06921e628e787efcbe69db3f5d6cadb364bd806930aab58f37"
+  },
+  "source_commit": "98514dc1e51804eaff8832b2d7de70374590d7da",
+  "local_commit": "b710bb36e76dd2478a5bda5fe6f157400cfdea89",
+  "qualified_inputs": 4,
+  "members": [
+    {
+      "selected": {
+        "build": "baseline-26.5",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "stack",
+        "multiple_scenes": false
+      },
+      "original_result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-effect-recapture-20260930.json",
+        "sha256": "86e282bd8531a4fe3d00a05b686a0cd35305fcb209a763b66743948ab73f1f39"
+      },
+      "events": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/events.jsonl",
+        "sha256": "94b83e444c211ca0f91db22a82e648904230cc6c23bbabae81f8432561fdf630"
+      },
+      "receipts": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-effect-recapture-o3pas2kn/first-baseline-r2/runtime/cells/baseline-26.5-duo-SwiftUI-stack-single/receipts.json",
+        "sha256": "6cb0007f234fe5202a0a8a94e99e458a6e48c951ba0ece3779c48001753cefe6"
+      },
+      "graded": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-replay-jqgxnt3s/baseline-26.5-duo-SwiftUI-stack-single.json",
+        "sha256": "53afb16dcfd2175c880f53560425fb2205de87e7661c59275320b454ac47c491"
+      },
+      "rum_verdict": "PASS",
+      "views": 17,
+      "actions": 25
+    },
+    {
+      "selected": {
+        "build": "baseline-27.1",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "stack",
+        "multiple_scenes": false
+      },
+      "original_result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-stack271-20260930.json",
+        "sha256": "2850adb4656c7d93eb3fb9ba6d99b55f92808c34e6b86d9e9b909d379f8f3f15"
+      },
+      "events": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stack271-3wfdywlg/sitting/runtime/cells/baseline-27.1-duo-SwiftUI-stack-single/events.jsonl",
+        "sha256": "4a3c1b59d7930a70b67a9f1ed945a4b020d6446363f48fd09886645301a6a529"
+      },
+      "receipts": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stack271-3wfdywlg/sitting/runtime/cells/baseline-27.1-duo-SwiftUI-stack-single/receipts.json",
+        "sha256": "3142b72f1f55f07fc7900986dfc821cbe9b7e347140163074281cf43e5db2309"
+      },
+      "graded": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-replay-jqgxnt3s/baseline-27.1-duo-SwiftUI-stack-single.json",
+        "sha256": "4427eb1b74288803e66fe6e0468bd1903ba11a45e03f4e9a8a27c29e33c6f7ed"
+      },
+      "rum_verdict": "PASS",
+      "views": 17,
+      "actions": 25
+    },
+    {
+      "selected": {
+        "build": "candidate-27.1",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "stack",
+        "multiple_scenes": false
+      },
+      "original_result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-stack-candidate-20260930.json",
+        "sha256": "5930e4621a7047569bdc70de1b650288be20dfd11e232e53dc369768ec8cb61e"
+      },
+      "events": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stackcandidate-0tf_u253/sitting/runtime/cells/candidate-27.1-duo-SwiftUI-stack-single/events.jsonl",
+        "sha256": "55df6bc7ec0616e954420380ee30504a0a28f3c91067535e64fe5297ccd5889e"
+      },
+      "receipts": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-stackcandidate-0tf_u253/sitting/runtime/cells/candidate-27.1-duo-SwiftUI-stack-single/receipts.json",
+        "sha256": "9be8d6a76edca1c613f3322921fccf2ac4dec223758dd311e3815d1f32f2e917"
+      },
+      "graded": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-replay-jqgxnt3s/candidate-27.1-duo-SwiftUI-stack-single.json",
+        "sha256": "2ff181570e3ce8970183c95816acbb3a02539cc3cf96266caf4ab0e7f61c1b8e"
+      },
+      "rum_verdict": "PASS",
+      "views": 17,
+      "actions": 25
+    },
+    {
+      "selected": {
+        "build": "baseline-26.5",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "split",
+        "multiple_scenes": false
+      },
+      "original_result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-split-20260930.json",
+        "sha256": "bc67dea7037b2debbacd69c8ad9e51c14251071ae56c32a10a2e595943798af8"
+      },
+      "events": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/cells/baseline-26.5-duo-SwiftUI-split-single/events.jsonl",
+        "sha256": "fc70ca16fea00e2ab78aea573319f559f37686d3d602c360dfc2555b3c4abb87"
+      },
+      "receipts": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-split-bd7mjaw7/sitting-r2/runtime/cells/baseline-26.5-duo-SwiftUI-split-single/receipts.json",
+        "sha256": "4861e43e5bc7e6d60d259102ed0f83fbc97edc4d3e8f117594e438af733fbc46"
+      },
+      "graded": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-replay-jqgxnt3s/baseline-26.5-duo-SwiftUI-split-single.json",
+        "sha256": "2841fd9e62ab2ea661e9ab0802cc2e70a215c6e4e49c8cddd64fda851d641c88"
+      },
+      "rum_verdict": "PASS",
+      "views": 17,
+      "actions": 25
+    }
+  ],
+  "comparison": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-replay-jqgxnt3s/comparison.json",
+    "sha256": "48dec22e6d4b9354f26b1c46f7b2c2c00922f037a1e8bab917905136ada590ae"
+  },
+  "native_runs": 0,
+  "native_admitted": false,
+  "gates_closed": [],
+  "adoption": "Only a future input-proof-only stop permits a newly bound RUM-only sitting after designated review. Evidence/process/deadline/interruption remain fatal; H14 still requires fold proof.",
+  "updated_at": "2026-10-01T11:25:00Z",
+  "classification": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-replay-jqgxnt3s/classification.json",
+    "sha256": "a46a6dc8df882ca55f24cc5319f3702f763a4e758b6d13075ad65595742b1787"
+  },
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-replay-jqgxnt3s/review-cycle2.json",
+    "sha256": "b0f3ae3bae0405d918e5313f31fef77a78bcf69ed9b9d95feebbb132e9adbae9"
+  },
+  "correction": {
+    "state": "OFFLINE_COMPONENT_REVIEWED",
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-replay-jqgxnt3s/controls-repair-cycle2.json",
+      "sha256": "d431344ac9d8176b9ea8ee32b36d8508d8d1ebd81049aa05bf21c36cfbb09a4c"
+    },
+    "controls_count": 32,
+    "initial_failed_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-replay-jqgxnt3s/controls-repair-cycle1.json",
+      "sha256": "8ffbd6b953017e724699474ce2cf0671805b5b3f68e09131881cb3205157b6c5"
+    },
+    "definitions": [
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-replay-jqgxnt3s/source-boundary-repair-definition.json",
+        "sha256": "517ac0f11de08f153ecba11befdb1cf0c20530898be7d2dc45b23f657c54fd14"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-replay-jqgxnt3s/interruption-repair-definition.json",
+        "sha256": "c27a7f0713c5bff19aafd8377f7c6f2d9bab126dcbed0467b30c811faceed60a"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-replay-jqgxnt3s/empty-comparison-repair-definition.json",
+        "sha256": "ffc7779319d20d8130a4c0cbdb57c6947bd9eb7739c02573bba0f0bbe4975cc1"
+      }
+    ],
+    "corrected_replay": [
+      {
+        "selected": {
+          "build": "baseline-26.5",
+          "device": "duo",
+          "framework": "SwiftUI",
+          "layout": "stack",
+          "multiple_scenes": false
+        },
+        "original_result": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-effect-recapture-20260930.json",
+          "sha256": "86e282bd8531a4fe3d00a05b686a0cd35305fcb209a763b66743948ab73f1f39"
+        },
+        "graded": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-replay-jqgxnt3s/corrected-replay/baseline-26.5-duo-SwiftUI-stack-single.json",
+          "sha256": "53afb16dcfd2175c880f53560425fb2205de87e7661c59275320b454ac47c491"
+        },
+        "rum_verdict": "PASS"
+      },
+      {
+        "selected": {
+          "build": "baseline-27.1",
+          "device": "duo",
+          "framework": "SwiftUI",
+          "layout": "stack",
+          "multiple_scenes": false
+        },
+        "original_result": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-stack271-20260930.json",
+          "sha256": "2850adb4656c7d93eb3fb9ba6d99b55f92808c34e6b86d9e9b909d379f8f3f15"
+        },
+        "graded": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-replay-jqgxnt3s/corrected-replay/baseline-27.1-duo-SwiftUI-stack-single.json",
+          "sha256": "4427eb1b74288803e66fe6e0468bd1903ba11a45e03f4e9a8a27c29e33c6f7ed"
+        },
+        "rum_verdict": "PASS"
+      },
+      {
+        "selected": {
+          "build": "candidate-27.1",
+          "device": "duo",
+          "framework": "SwiftUI",
+          "layout": "stack",
+          "multiple_scenes": false
+        },
+        "original_result": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-stack-candidate-20260930.json",
+          "sha256": "5930e4621a7047569bdc70de1b650288be20dfd11e232e53dc369768ec8cb61e"
+        },
+        "graded": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-replay-jqgxnt3s/corrected-replay/candidate-27.1-duo-SwiftUI-stack-single.json",
+          "sha256": "2ff181570e3ce8970183c95816acbb3a02539cc3cf96266caf4ab0e7f61c1b8e"
+        },
+        "rum_verdict": "PASS"
+      },
+      {
+        "selected": {
+          "build": "baseline-26.5",
+          "device": "duo",
+          "framework": "SwiftUI",
+          "layout": "split",
+          "multiple_scenes": false
+        },
+        "original_result": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-split-20260930.json",
+          "sha256": "bc67dea7037b2debbacd69c8ad9e51c14251071ae56c32a10a2e595943798af8"
+        },
+        "graded": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-replay-jqgxnt3s/corrected-replay/baseline-26.5-duo-SwiftUI-split-single.json",
+          "sha256": "2841fd9e62ab2ea661e9ab0802cc2e70a215c6e4e49c8cddd64fda851d641c88"
+        },
+        "rum_verdict": "PASS"
+      }
+    ],
+    "comparison": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-replay-jqgxnt3s/corrected-replay/comparison.json",
+      "sha256": "48dec22e6d4b9354f26b1c46f7b2c2c00922f037a1e8bab917905136ada590ae"
+    },
+    "same_four_cell_verdicts_and_comparison": true,
+    "native_admitted": false,
+    "gates_closed": [],
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-replay-jqgxnt3s/review-cycle2.json",
+      "sha256": "b0f3ae3bae0405d918e5313f31fef77a78bcf69ed9b9d95feebbb132e9adbae9"
+    }
+  },
+  "prior_blocked_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-replay-jqgxnt3s/review-cycle1.json",
+    "sha256": "c3dbb6208f339f0166285f94a0f5fce03a4c4fb9a8896d8b0452d29da97d8e38"
+  }
+}

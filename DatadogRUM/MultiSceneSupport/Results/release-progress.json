@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "candidate_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
-  "gate_count": 79,
+  "gate_count": 83,
   "counts": {
     "CLOSED": 53,
     "ENVIRONMENT BLOCKED": 4,
-    "OPEN": 21,
+    "OPEN": 25,
     "REVIEW BLOCKED": 1
   },
   "closed": [
@@ -331,7 +331,11 @@
         "C07",
         "C08",
         "C09",
-        "C10"
+        "C10",
+        "F10",
+        "F11",
+        "F12",
+        "F13"
       ]
     },
     {
@@ -357,6 +361,54 @@
       "status": "OPEN",
       "owner": "SDK implementer + device operator",
       "dependencies": []
+    },
+    {
+      "id": "F10",
+      "status": "OPEN",
+      "owner": "SDK implementer + RUM API reviewers",
+      "dependencies": [
+        "F11",
+        "F01"
+      ]
+    },
+    {
+      "id": "F11",
+      "status": "OPEN",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": []
+    },
+    {
+      "id": "F12",
+      "status": "OPEN",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": [
+        "F10",
+        "F11"
+      ]
+    },
+    {
+      "id": "F13",
+      "status": "OPEN",
+      "owner": "SDK implementer + device operator",
+      "dependencies": [
+        "F12",
+        "H01",
+        "H02",
+        "H03",
+        "H04",
+        "H05",
+        "H06",
+        "H07",
+        "H08",
+        "H09",
+        "H10",
+        "H11",
+        "H12",
+        "H13",
+        "H14",
+        "H15",
+        "H16"
+      ]
     }
   ],
   "release_progress": {
@@ -555,9 +607,9 @@
     "S3": {
       "name": "Full multi-scene support",
       "deadline": null,
-      "shipping_rule": "Complete exact scene APIs, full ownership/lifecycle/client/docs matrix, physical Duo F04 and S3:F06 after hardware release. Preserve all prior evidence boundaries.",
+      "shipping_rule": "Merge to develop only behind a default-off runtime flag after per-PR Off equivalence, CI and maintainer review; physical Duo is not an open/merge prerequisite. Release requires flagged-head On H-gate requalification, Off/On F03, physical Duo F04 and S3:F06. Provisional branch verdicts remain historical and source-bound.",
       "required": {
-        "count": 69,
+        "count": 73,
         "closed": 46,
         "remaining": [
           {
@@ -728,7 +780,9 @@
               "S3:D02",
               "S3:D09",
               "S3:D11",
-              "S3:D12"
+              "S3:D12",
+              "S3:F10",
+              "S3:F12"
             ]
           },
           {
@@ -751,7 +805,8 @@
               "S3:H13",
               "S3:H14",
               "S3:H15",
-              "S3:H16"
+              "S3:H16",
+              "S3:F13"
             ]
           },
           {
@@ -826,7 +881,11 @@
               "S3:C08",
               "S3:C09",
               "S3:C10",
-              "S3:A02"
+              "S3:A02",
+              "S3:F10",
+              "S3:F11",
+              "S3:F12",
+              "S3:F13"
             ]
           },
           {
@@ -835,6 +894,54 @@
             "owner": "Harness implementer + user device operator",
             "dependencies": [
               "S3:A01"
+            ]
+          },
+          {
+            "id": "S3:F10",
+            "status": "OPEN",
+            "owner": "SDK implementer + RUM API reviewers",
+            "dependencies": [
+              "S3:F11",
+              "S3:F01"
+            ]
+          },
+          {
+            "id": "S3:F11",
+            "status": "OPEN",
+            "owner": "SDK implementer + independent reviewer",
+            "dependencies": []
+          },
+          {
+            "id": "S3:F12",
+            "status": "OPEN",
+            "owner": "SDK implementer + independent reviewer",
+            "dependencies": [
+              "S3:F10",
+              "S3:F11"
+            ]
+          },
+          {
+            "id": "S3:F13",
+            "status": "OPEN",
+            "owner": "SDK implementer + device operator",
+            "dependencies": [
+              "S3:F12",
+              "S3:H01",
+              "S3:H02",
+              "S3:H03",
+              "S3:H04",
+              "S3:H05",
+              "S3:H06",
+              "S3:H07",
+              "S3:H08",
+              "S3:H09",
+              "S3:H10",
+              "S3:H11",
+              "S3:H12",
+              "S3:H13",
+              "S3:H14",
+              "S3:H15",
+              "S3:H16"
             ]
           }
         ]
