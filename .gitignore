@@ -4,8 +4,7 @@
 .swiftpm
 .spm.pods
 Package.resolved
-Carthage/Build
-Carthage/Checkouts
+/Dependencies
 
 xcuserdata/
 *.local.xcconfig

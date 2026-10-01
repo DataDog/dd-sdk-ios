@@ -11,7 +11,7 @@ set_description "Cleans up the local environment."
 define_arg "derived-data" "false" "Clean Xcode derived data." "store_true"
 define_arg "pods" "false" "Clean Pods." "store_true"
 define_arg "xcconfigs" "false" "Clean local xcconfigs." "store_true"
-define_arg "carthage" "false" "Clean Carthage cache." "store_true"
+define_arg "dependencies" "false" "Clean fetched third-party dependencies." "store_true"
 
 clean_dir() {
     local dir="$1"
@@ -43,9 +43,9 @@ if [[ "$xcconfigs" == "true" ]]; then
     rm -vf ./xcconfigs/Base.dev.local.xcconfig
 fi
 
-if [[ "$carthage" == "true" ]]; then
-    echo_subtitle "Cleaning Carthage cache"
-    clean_dir ~/Library/Caches/org.carthage.CarthageKit/dependencies/
-    clean_dir ./Carthage/Build
-    clean_dir ./Carthage/Checkouts
+if [[ "$dependencies" == "true" ]]; then
+    echo_subtitle "Cleaning fetched third-party dependencies"
+    # Removes the directory itself: it also holds a hidden version marker, which
+    # a `$dir/*` glob would leave behind.
+    rm -rfv ./Dependencies
 fi

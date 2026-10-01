@@ -14,8 +14,6 @@ function files {
 		-type f \( ! -name "Package.swift" \) \
 		-not -path "*/.build/*" \
 		-not -path "*Pods*" \
-		-not -path "*Carthage/Build/*" \
-		-not -path "*Carthage/Checkouts/*" \
 		-not -path "./tools/rum-models-generator/rum-events-format/*" \
 		-not -path "*/tools/dogfooding/venv/*" \
 		-not -path "*/tools/ci/venv/*" \

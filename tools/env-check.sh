@@ -40,11 +40,6 @@ check_if_installed swiftlint
 swiftlint --version
 
 echo ""
-echo_succ "carthage:"
-check_if_installed carthage
-carthage version
-
-echo ""
 echo_succ "gh:"
 check_if_installed gh
 gh --version

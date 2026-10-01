@@ -1,5 +1,4 @@
 // Base configuration for DatadogCrashReporting target.
-// Note: all configuration here will be applied to `DatadogCrashReporting.framework` produced by Carthage.
 
 // Include base config
 #include "../xcconfigs/Base.xcconfig"

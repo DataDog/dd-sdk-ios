@@ -2216,7 +2216,7 @@
 		3C0D5DEB2A54405A00446CF9 /* RUMViewEventsFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewEventsFilter.swift; sourceTree = "<group>"; };
 		3C0D5DF42A5443B100446CF9 /* DataFormatTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataFormatTests.swift; sourceTree = "<group>"; };
 		3C1890132ABDE99200CE9E73 /* DDURLSessionInstrumentationTests+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDURLSessionInstrumentationTests+apiTests.m"; sourceTree = "<group>"; };
-		3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = OpenTelemetryApi.xcframework; path = ../Carthage/Build/OpenTelemetryApi.xcframework; sourceTree = "<group>"; };
+		3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = OpenTelemetryApi.xcframework; path = ../Dependencies/OpenTelemetryApi.xcframework; sourceTree = "<group>"; };
 		3C32359C2B55386C000B4258 /* OTelSpanLink.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTelSpanLink.swift; sourceTree = "<group>"; };
 		3C32359F2B55387A000B4258 /* OTelSpanLinkTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTelSpanLinkTests.swift; sourceTree = "<group>"; };
 		3C3C9E2B2C64F3CA003AF22F /* Data+Crypto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Crypto.swift"; sourceTree = "<group>"; };
@@ -10890,7 +10890,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../Carthage/Build/",
+					"$(SRCROOT)/../Dependencies/",
 				);
 				INFOPLIST_FILE = TargetSupport/DatadogCore/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -10920,7 +10920,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../Carthage/Build/",
+					"$(SRCROOT)/../Dependencies/",
 				);
 				INFOPLIST_FILE = TargetSupport/DatadogCore/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -11248,7 +11248,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../Carthage/Build",
+					"$(SRCROOT)/../Dependencies",
 				);
 				INFOPLIST_FILE = TargetSupport/DatadogCrashReporting/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -11280,7 +11280,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../Carthage/Build",
+					"$(SRCROOT)/../Dependencies",
 				);
 				INFOPLIST_FILE = TargetSupport/DatadogCrashReporting/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -11311,7 +11311,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../Carthage/Build",
+					"$(SRCROOT)/../Dependencies",
 				);
 				INFOPLIST_FILE = TargetSupport/DatadogCrashReporting/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -11459,7 +11459,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/../Carthage/Build/",
+					"$(SRCROOT)/../Dependencies/",
 				);
 				INFOPLIST_FILE = TargetSupport/DatadogCore/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
