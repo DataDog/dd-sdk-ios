@@ -3,9 +3,9 @@
   "candidate_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
   "gate_count": 83,
   "counts": {
-    "CLOSED": 53,
+    "CLOSED": 54,
     "ENVIRONMENT BLOCKED": 4,
-    "OPEN": 25,
+    "OPEN": 24,
     "REVIEW BLOCKED": 1
   },
   "closed": [
@@ -61,7 +61,8 @@
     "E02",
     "E04",
     "E05",
-    "F07"
+    "F07",
+    "F11"
   ],
   "remaining": [
     {
@@ -372,12 +373,6 @@
       ]
     },
     {
-      "id": "F11",
-      "status": "OPEN",
-      "owner": "SDK implementer + independent reviewer",
-      "dependencies": []
-    },
-    {
       "id": "F12",
       "status": "OPEN",
       "owner": "SDK implementer + independent reviewer",
@@ -610,7 +605,7 @@
       "shipping_rule": "Merge to develop only behind a default-off runtime flag after per-PR Off equivalence, CI and maintainer review; physical Duo is not an open/merge prerequisite. Release requires flagged-head On H-gate requalification, Off/On F03, physical Duo F04 and S3:F06. Provisional branch verdicts remain historical and source-bound.",
       "required": {
         "count": 73,
-        "closed": 46,
+        "closed": 47,
         "remaining": [
           {
             "id": "S3:C06",
@@ -904,12 +899,6 @@
               "S3:F11",
               "S3:F01"
             ]
-          },
-          {
-            "id": "S3:F11",
-            "status": "OPEN",
-            "owner": "SDK implementer + independent reviewer",
-            "dependencies": []
           },
           {
             "id": "S3:F12",

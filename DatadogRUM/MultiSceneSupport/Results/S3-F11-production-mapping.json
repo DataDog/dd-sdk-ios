@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "PARTIAL_SOURCE_MAPPING_REVIEW_PENDING",
+  "state": "SOURCE_MAPPING_QUALIFIED",
   "gate": "S3:F11",
   "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-flag-p0-ox031_z0",
   "definition": {
@@ -20,14 +20,14 @@
     "sha256": "9df22f1569ba47cea74600e8536b86197b61c0ad08c5190c7d504d0ab522dd2c"
   },
   "draft": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-flag-p0-ox031_z0/mapping-draft-cycle9.json",
-    "sha256": "28274861d7a774ea61ad6482bd1b0494a3ecf9415ce606480b65bd968679af10"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-flag-p0-ox031_z0/mapping-draft-cycle11.json",
+    "sha256": "b1a8ed661a56f12b4d8473984c768db914431086f6e310dc04d6015318d27708"
   },
   "production_files": 46,
   "source_hunks": 274,
-  "draft_assigned_hunks": 273,
-  "unmapped_hunks": 1,
-  "reviewed_hunks": 0,
+  "draft_assigned_hunks": 274,
+  "unmapped_hunks": 0,
+  "reviewed_hunks": 274,
   "inventory_limits": [
     "SDK module Sources only; examples, harness, TestUtilities and non-production documents excluded.",
     "Fresh remote develop verified through GitHub connector; existing local exact objects imported into private bare store.",
@@ -38,7 +38,7 @@
     "Rebuild on surviving fresh-develop Profiling/UIKit files and final S1/E04 forms; never restore removed files, branch cache defaults or the old task-ID claim map.",
     "Unqualified Trace header-policy/helper rewrites have explicit proposed drop dispositions; final E05 optional request-time capture, user/account and sampling behavior remain prerequisites.",
     "Cycle7 partial review found fragmented mode/closure boundaries and cache scene propagation miscredited to E04. Cycle8/9 correct the draft; original BLOCKED receipts remain immutable and corrections need review.",
-    "The giant SwiftUI hunk is unassigned. Shared internal tracking machinery must precede the higher semantic engine; the proposed PR11/12 foundation split awaits full responsibility/compile-order review."
+    "All mapping findings are resolved at the corrected draft: complete Operation case PR10, complete response-plus-error predicate final S1:E03, complete UIKit/SwiftUI conditional boundaries and PR11 foundation before PR12 semantic hosts. Original blocked reviews remain immutable; implementation safety is separate."
   ],
   "first_batch_review": {
     "state": "BLOCKED",
@@ -51,8 +51,10 @@
   },
   "native_runs": 0,
   "sdk_edits": 0,
-  "gates_closed": [],
-  "next_action": "Review corrected whole-declaration partitions and proposed shared SwiftUI foundation against full current source; assign the last hunk only after responsibility/compile-order review. Preserve original blocked receipts and keep F11 open.",
+  "gates_closed": [
+    "S3:F11"
+  ],
+  "next_action": "Implement local PR1 flag plumbing on a fresh isolated develop checkout using the bound PR1 preparation. Preserve defaults and exactly-once frozen mode. F01/public merge, S1 landing, F12 Off/On tests and release runtime/hardware remain separate; never push.",
   "shared_foundation_proposal": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-flag-p0-ox031_z0/swiftui-foundation-boundary-proposal.json",
     "sha256": "8cea3ba5b9991551b3259a7bf79601a28b3c64782d15f5ff5bc9d0099130aa0c"
@@ -70,10 +72,61 @@
       "New cache scene initializer is PR2, never already-landed E04."
     ],
     "correction_draft": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-flag-p0-ox031_z0/mapping-draft-cycle9.json",
-      "sha256": "28274861d7a774ea61ad6482bd1b0494a3ecf9415ce606480b65bd968679af10"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-flag-p0-ox031_z0/mapping-draft-cycle10.json",
+      "sha256": "f6b6b48d19798ef05370206123715fa2abf0f2b8e0b37090e300da80082c1b5c"
     },
-    "correction_review": "PENDING"
+    "correction_review": "PASS_SCOPED_MAPPING_ONLY"
   },
-  "reviewed_hunks_definition": "Zero whole-mapping acceptance; source-specific examined counts and limits belong to immutable partial reviews."
+  "reviewed_hunks_definition": "All274 prospective source/disposition/dependency mappings accepted by full review plus bounded correction re-review. No implementation/compiler/native qualification.",
+  "shared_foundation_review": {
+    "state": "PASS_SCOPED_MAPPING_ONLY",
+    "receipt": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-flag-p0-ox031_z0/swiftui-foundation-review-cycle1.json",
+      "sha256": "71f8fd9c8476f6eddc28521c636688084c46ea1ba16e2469420963c8e5a1b036"
+    },
+    "gate_credit": false
+  },
+  "delivery_supplement": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-flag-p0-ox031_z0/delivery-slices-draft-cycle1.json",
+    "sha256": "83ddd2d16b7f87cbc0b7815e8976c320da0aee755325a17b6adfbff6d420faeb"
+  },
+  "structural_coverage": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-flag-p0-ox031_z0/mapping-cycle11-partition-coverage.json",
+    "sha256": "f31db29e5a6828af075dd650dcd454110c6418c7275535d3a8e8db0695ff7c48"
+  },
+  "whole_mapping_review": {
+    "state": "BLOCKED",
+    "examined_hunks": 274,
+    "receipt": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-flag-p0-ox031_z0/mapping-review-cycle3.json",
+      "sha256": "973b5c35c07650b7175202bb6747ae82a21d3b44dcdf657fbddfd6f95b45aa33"
+    },
+    "findings": [
+      "S3-P0-R3-01",
+      "S3-P0-R3-02",
+      "S3-P0-R3-03"
+    ],
+    "corrected_draft": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-flag-p0-ox031_z0/mapping-draft-cycle11.json",
+      "sha256": "b1a8ed661a56f12b4d8473984c768db914431086f6e310dc04d6015318d27708"
+    },
+    "correction_review": {
+      "state": "PASS_SOURCE_MAPPING_ONLY",
+      "receipt": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-flag-p0-ox031_z0/mapping-review-cycle4.json",
+        "sha256": "9d08b3afbdd219e5de93f257f057f8c99ce45c36730232474e1defc623e4a181"
+      },
+      "corrected_hunks": 4,
+      "unchanged_rejoined_hunks": 270,
+      "total_mapping_hunks": 274
+    }
+  },
+  "next_slice_preparation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-flag-p0-ox031_z0/pr1-preparation-definition.json",
+    "sha256": "39edd6b6a24140e97d49e4f9bef3a20bb78d152f894d206c4cb0fd2aa6cfa70b"
+  },
+  "qualification": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-flag-p0-ox031_z0/mapping-qualification.json",
+    "sha256": "0be4a692ec07f8df6fe13a77b17387de4308d395616718a46233fbe5b344ac0e"
+  }
 }
