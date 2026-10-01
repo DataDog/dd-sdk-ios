@@ -1256,5 +1256,6 @@
   "current_capture_readiness": "Results/S2-fold-readiness-20260930.json",
   "current_prefix_qualification": {
     "record": "Results/S2-prefix-ancestry-20260930.json"
-  }
+  },
+  "current_rum_only_runtime": "Results/S2-rum-only-runtime-20261001.json"
 }

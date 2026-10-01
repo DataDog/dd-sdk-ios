@@ -138,6 +138,19 @@ result and keep that path stopped. Future worker preparation must complete the
 service setup and publication check before admission. Prospective budgets must
 include observed inspection and orchestration costs, not only native call latency.
 
+`human_rum_only_runtime.py` is an opt-in continuation for an independently
+classified input-proof-only stop. Its new plan binds the stopped result and
+classification, the reviewed `rum_only.py` component, accepted cells, frozen
+products and complete helper closure. `prepare` does not admit native work.
+Require passing plan controls and the designated review before `admit`/`run`.
+The first-screen control inventory and step-effect checks become diagnostics;
+raw observations, durable prefixes, scene/window/source identity, idle state,
+process/deadline checks and cleanup remain required. A zero worker exit and a
+complete final PASS RUM grade are both required for overall acceptance. No old
+result is regraded. Fold diagnostics cannot grant H14; actual display evidence
+must qualify separately. The [current owner](../../../DatadogRUM/MultiSceneSupport/Results/S2-coverage-remaining-preparation.json)
+selects the exact plan and next cell.
+
 The [shared preflight repair](../../../DatadogRUM/MultiSceneSupport/Results/shared-capture-preflight-20260930.json)
 owns the prospective `tool_worker_service.py` integration and its review. It grants
 no further attempt on the stopped automatic path. For a separately reviewed future

@@ -246,21 +246,19 @@ the automated path stays stopped. Continue independent H10 work without another
 human invitation.
 
 The [October 1 reader preparation](../Results/S2-accessibility-discovery-20261001.json)
-now validates physical ownership after public discovery, with independent review,
-33 host controls and two qualified SDK27.1 builds. An opt-in continuation preserves
-the four accepted cells through exact historical reader snapshots; its 42 source
-and readiness controls pass with independent re-review. The stopped automatic
-prefix stays stopped. Live Xcode instructions are exported/read through the supported
-CLI. A fresh baseline plan passes actual source/product/publication joins; final
-independent review passes. Assigned-reviewer exclusion and consumed-admission
-validation pass50 focused controls and re-review; seven bound plan controls pass.
-Delegated native ownership, fresh readiness and renewed availability remain. The preparation factory passes ten
-offline controls, including review/plan replacement during publication. Its original
-draft and plan are preserved; no new native attempt or gate closure follows.
+qualifies source, builds and the supported capture prefix. Its
+[native attempt](../Results/S2-swiftui-reader-native-20261001.json) stopped after
+Enable because the strict adapter rejected two extra diagnostic fields. Independent
+review classifies the stop input-proof-only: native owners are unchanged, the
+original INVALID verdict remains and task-only cleanup/Closed restoration pass.
+No SDK regression or gate closure is established.
 
-The [RUM-only second grader](../Results/S2-rum-only-20261001.json) agrees on all four
-accepted cells; only the already-classified root scroll/swipe rebuild difference
-remains, with unchanged owner. The user-authorized alternative needs a new reviewed
-plan after any future input-proof-only stop; fold credit remains separate. Source/
-window, actual supervisor-stop and empty-comparison safeguards pass32 controls;
-independent re-review passes. Historical verdicts and native gate credit are unchanged.
+The [RUM-only second grader](../Results/S2-rum-only-20261001.json) agrees on the four
+accepted cells, preserving the classified scroll/swipe difference. The separately
+bound [runtime preparation](../Results/S2-rum-only-runtime-20261001.json) retains
+those cells and both products. Its 31 offline controls include the actual failed
+snapshot, trusted terminal/worker publication and helper-replacement negatives;
+exact independent integration re-review passes with no findings. Fresh native
+prerequisites and renewed availability remain.
+No strict-path retry, rebuild or new native run is admitted. H14 still requires
+actual fold proof; input diagnostics alone cannot close a release gate.

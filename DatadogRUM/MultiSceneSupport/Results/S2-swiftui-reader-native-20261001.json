@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "state": "STOPPED_INPUT_PROOF_ONLY",
+  "updated_at": "2026-10-01T15:25:48.563062+00:00",
+  "plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime/runtime-plan.json",
+    "sha256": "c224f280799bb0df1885ead09970ca04e4f6b9557291805e2ce9da638ed96a26"
+  },
+  "gates": [
+    "S2:C09",
+    "S2:C10",
+    "S2:H14"
+  ],
+  "selected": {
+    "build": "baseline-27.1",
+    "device": "duo",
+    "framework": "SwiftUI",
+    "layout": "split",
+    "multiple_scenes": false
+  },
+  "controller": {
+    "agent": "/root",
+    "pid": 77533,
+    "host": "COMP-D7Y69VHK4C",
+    "process_start": "Thu Oct  1 16:44:28 2026"
+  },
+  "interaction_owner": "/root/s2_split_input_owner",
+  "admission": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime/native-admission.json",
+    "sha256": "b1fd12c2a60f4624c151f79a9cc6a91e3ee19e3445b74405301d9838f844b49c"
+  },
+  "output_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime",
+  "scenario": "UNQUALIFIED",
+  "evidence": "INCOMPLETE",
+  "cleanup": "PASS",
+  "native_runs": 1,
+  "human_invitation": true,
+  "gates_closed": [],
+  "safe_checkpoint": "c2e6c47e2db39c827ab6529079bdedccc6f87705",
+  "page": "http://127.0.0.1:56121",
+  "next_action": "Fresh opt-in RUM-only baseline preparation and independent runtime review. Strict path remains stopped; original verdicts and accepted cells unchanged.",
+  "launch": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime/cells/baseline-27.1-duo-SwiftUI-split-single/launch.log",
+    "sha256": "df3846381d0f35ce4b83a329e0500a3784d9d2df60f2bd4fa00da184c8cbebf3"
+  },
+  "native_summary": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime/cells/baseline-27.1-duo-SwiftUI-split-single/summary.json"
+  },
+  "input_prompts": 2,
+  "supported_capture": "PASS",
+  "supported_end": "PASS",
+  "automatic_native_readiness": "PASS",
+  "capture_proof": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime/cells/baseline-27.1-duo-SwiftUI-split-single/supported/capture/proof.json",
+    "sha256": "737b15c354b0ecc413fd86d8bdeab3982451083d5009e5d10209df79027dc28a"
+  },
+  "end_proof": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime/cells/baseline-27.1-duo-SwiftUI-split-single/supported/ended.json",
+    "sha256": "9f2c44b7735e50df9cd303e9bbbf6dc9b86af3545f136c55c73371791502d621"
+  },
+  "ready_request": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime/cells/baseline-27.1-duo-SwiftUI-split-single/operator-ready/request.json",
+    "sha256": "9cfe19ebf926e3ab72e9717deaf6713674d7864321439d1d416440b1f4c0ed24"
+  },
+  "reason": "missing ancestry belongs to another window or malformed view",
+  "operator_ready_received": true,
+  "manual_pause": false,
+  "deadline_expired": false,
+  "readiness_timeout": false,
+  "post_exit": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime/post-exit.json",
+    "sha256": "cdfedb1177c74ebbbaff131da060c9a64383c5c1b87dbf2ba380d61a5b2f876f"
+  },
+  "original_summary": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime/cells/baseline-27.1-duo-SwiftUI-split-single/summary.json",
+    "sha256": "7430094b4106f436ce5286252f0a4eadd377f52fe5062ec05be621ce27cdc6f8"
+  },
+  "stop_classification": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime/stop-classification-review.json",
+    "sha256": "e16036ef02a1e43509be0cb0f860010e284613f0332c79dc3e262d091aed8b62"
+  }
+}

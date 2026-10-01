@@ -138,8 +138,10 @@ callback, exact increment and owner checks. See the [fixture contract](../../../
 
 For a new split sitting stopped only by input-proof validation, the user-authorized
 [RUM-only alternative](../Results/S2-rum-only-20261001.json) may replace another
-capture repair. Pin `rum_only.py` in a new plan and obtain designated review before
-native use. Enable it before qualification; run `ready_controls` through `diagnose`,
+capture repair. Use the separately bound `human_rum_only_runtime.py` continuation;
+its [fixture procedure](../../../tools/multi-scene/automatic-coverage/README.md) binds the original
+stop and classification. Pin `rum_only.py` in a new plan and obtain designated
+review before native use. Enable it before qualification; run `ready_controls` through `diagnose`,
 use `run_journey`, then grade the complete local mapper inventory with `verdict`.
 INCOMPLETE stays fatal; pause the matrix to classify FAIL or insufficient comparable
 input. Window/source binding, durable evidence, process, interruption and cell

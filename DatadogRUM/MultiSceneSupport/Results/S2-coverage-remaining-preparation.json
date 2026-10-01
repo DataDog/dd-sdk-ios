@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "state": "UIKIT_VIEW_ACTION_GATES_CLOSED_SWIFTUI_REMAINS",
-  "updated_at": "2026-10-01T10:43:00Z",
+  "updated_at": "2026-10-01T16:34:33.546831+00:00",
   "execution": {
     "record": null
   },
@@ -17,12 +17,12 @@
       "S2:H14"
     ],
     "plan": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime/runtime-plan.json",
-      "sha256": "c224f280799bb0df1885ead09970ca04e4f6b9557291805e2ce9da638ed96a26"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime/runtime-plan.json",
+      "sha256": "f59314ff7ef697474cfb3726ee1ff531b209d4813a8101c7538479f47515af07"
     },
     "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime/controls.json",
-      "sha256": "b1cc8d4ba73043e21042aa2df527d31588188cb722bda532d8683761916bace5"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime/controls.json",
+      "sha256": "a96f7d60f954d233ec45b734d45b31bc9b8f5ddd53a474caa0630664d5fd33b5"
     },
     "master_plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/master/runtime/runtime-plan.json",
@@ -44,14 +44,14 @@
         "multiple_scenes": false
       }
     ],
-    "prerequisites": "First remaining SDK27.1 SwiftUI split baseline plan passes final independent review, fifty ownership/readiness controls and seven bound plan controls. Four accepted cells and two compiled products are retained. Native launch requires renewed availability, actual distinct delegated owner, fresh preflight and response publication. No native admission, gate closure or repeat of the stopped automatic prefix.",
+    "prerequisites": "The opt-in RUM-only baseline plan passes 31 focused controls and exact independent review. Original strict INVALID attempt and cleanup PASS remain at their execution owner. After checkpoint, qualify fresh delegated native prerequisites and renewed availability. Four accepted cells and both frozen products remain unchanged; no native admission or H14 credit follows from preparation.",
     "review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime/review.json",
-      "sha256": "07bbba8b351b116e9171b50d85ff8f340cdf60435ae5b6f214a32a3e0f7f4ead"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime/review.json",
+      "sha256": "b6a9d2d4cfa3af67724d2673a0d52c7f90116847cf6db526e9a7aacb5ac0427b"
     }
   },
   "owner": "root",
-  "reviewer": "/root/c06_runtime_plan",
+  "reviewer": "/root/h10_backend_reviewer",
   "gates": [
     "S2:C07",
     "S2:C08",
@@ -60,16 +60,16 @@
     "S2:H14"
   ],
   "swiftui_preparation": {
-    "state": "REVIEWED_FIRST_BASELINE_PREPARATION",
+    "state": "REVIEWED_RUM_ONLY_BASELINE_PREPARATION",
     "owner": "Results/S2-coverage-remaining-preparation.json",
-    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10",
     "plan": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime/runtime-plan.json",
-      "sha256": "c224f280799bb0df1885ead09970ca04e4f6b9557291805e2ce9da638ed96a26"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime/runtime-plan.json",
+      "sha256": "f59314ff7ef697474cfb3726ee1ff531b209d4813a8101c7538479f47515af07"
     },
     "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime/controls.json",
-      "sha256": "b1cc8d4ba73043e21042aa2df527d31588188cb722bda532d8683761916bace5"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime/controls.json",
+      "sha256": "a96f7d60f954d233ec45b734d45b31bc9b8f5ddd53a474caa0630664d5fd33b5"
     },
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/definition.json",
@@ -142,7 +142,7 @@
     },
     "builds": 3,
     "scope": "All three stack cells and the SDK26.5 split baseline qualify; only two SDK27.1 split cells remain.",
-    "next_action": "First remaining SDK27.1 SwiftUI split baseline plan passes final independent review, fifty ownership/readiness controls and seven bound plan controls. Four accepted cells and two compiled products are retained. Native launch requires renewed availability, actual distinct delegated owner, fresh preflight and response publication. No native admission, gate closure or repeat of the stopped automatic prefix.",
+    "next_action": "The opt-in RUM-only baseline plan passes 31 focused controls and exact independent review. Original strict INVALID attempt and cleanup PASS remain at their execution owner. After checkpoint, qualify fresh delegated native prerequisites and renewed availability. Four accepted cells and both frozen products remain unchanged; no native admission or H14 credit follows from preparation.",
     "effect_recapture": {
       "record": "Results/S2-swiftui-effect-recapture-20260930.json",
       "plan": {
@@ -159,10 +159,11 @@
       }
     },
     "review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime/review.json",
-      "sha256": "07bbba8b351b116e9171b50d85ff8f340cdf60435ae5b6f214a32a3e0f7f4ead"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime/review.json",
+      "sha256": "b6a9d2d4cfa3af67724d2673a0d52c7f90116847cf6db526e9a7aacb5ac0427b"
     },
-    "reader_continuation_preparation": "Results/S2-accessibility-discovery-20261001.json"
+    "reader_continuation_preparation": "Results/S2-accessibility-discovery-20261001.json",
+    "rum_only_runtime_preparation": "Results/S2-rum-only-runtime-20261001.json"
   },
   "swiftui_capture_correction": {
     "state": "STOPPED_NATIVE_READINESS_INCOMPLETE",

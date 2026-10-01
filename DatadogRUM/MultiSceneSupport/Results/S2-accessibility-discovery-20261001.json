@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "owner": "EXP-210",
-  "state": "REVIEWED_FIRST_BASELINE_PLAN_NATIVE_PREREQUISITES_REMAIN",
+  "state": "FIRST_BASELINE_STOPPED_INPUT_PROOF_ONLY",
   "gates": [
     "S2:C09",
     "S2:C10",
@@ -43,8 +43,8 @@
   "qualified_cells": 0,
   "human_invitation": false,
   "gates_closed": [],
-  "next_action": "Checkpoint the reviewed RUM-only preparation and finite S3 flag gates, then begin P0 mapping against fresh develop. The strict first-baseline plan remains reviewed and unconsumed; renewed availability and fresh delegated native prerequisites remain. After a new input-proof-only stop, prepare a newly reviewed RUM-only sitting rather than another equivalent capture repair. Candidate runtime composition awaits the actual accepted baseline/mode. No physical session before21:00Paris.",
-  "updated_at": "2026-10-01T10:43:00Z",
+  "next_action": "Fresh opt-in RUM-only baseline preparation and independent runtime review. Strict path remains stopped; original verdicts and accepted cells unchanged.",
+  "updated_at": "2026-10-01T15:25:48.563062+00:00",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/review-cycle2.json",
     "sha256": "a8fc5b80a69135d559b5fc8d1de8e8d97db0caefcb61cd36dac086afdc7e6f7c"
@@ -255,5 +255,10 @@
   "candidate_runtime_definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/candidate-runtime-definition.json",
     "sha256": "660d23cfbf0464208193154a6af0495217db0ae51d73b512d117730fa6a2888c"
+  },
+  "execution_owner": "S2-swiftui-reader-native-20261001.json",
+  "stop_classification": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/first-baseline-plan-cycle3/runtime/stop-classification-review.json",
+    "sha256": "e16036ef02a1e43509be0cb0f860010e284613f0332c79dc3e262d091aed8b62"
   }
 }
