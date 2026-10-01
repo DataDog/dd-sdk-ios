@@ -18,7 +18,7 @@ RUM tracks user interactions, views, resources, errors, and performance metrics 
 
 **Platform**: iOS, tvOS, watchOS, visionOS — with platform-specific limitations:
 - **iOS / visionOS**: Full feature set.
-- **tvOS**: UIKit and SwiftUI view tracking, press-based action tracking for both frameworks through `uiKitActionsPredicate`, app hangs, long tasks, vitals, slow frames, memory warnings, watchdog terminations. `swiftUIActionsPredicate` is available in configuration but unused by tvOS action instrumentation; no scroll/swipe tracking.
+- **tvOS**: UIKit and SwiftUI view tracking, press-based action tracking for both frameworks through `uiKitActionsPredicate`, app hangs, long tasks, vitals, slow frames, memory warnings, and watchdog terminations. `swiftUIActionsPredicate` is accepted in configuration but is not used by tvOS action instrumentation. Scroll and swipe tracking is not supported.
 - **watchOS**: No automatic view/action tracking predicates (UIKit and SwiftUI), no memory warnings. URLSession tracking, event mappers, manual RUM instrumentation, session callbacks, and CPU/memory vitals are available. Refresh-rate and slow-frame data are unavailable (no DisplayLink on watchOS).
 
 ## Quick Start Example
@@ -251,7 +251,7 @@ monitor.stopView(key: "ProductList")
 
 ### Implementation
 - **`DatadogRUM/Sources/Feature/RUMFeature.swift`** - Internal feature implementation. Shows how configuration translates to behavior.
-- **`DatadogRUM/Sources/RUMVitals/RenderLoop/RenderLoopObserver.swift`** - Internal display-link lifetime and frame delivery. A weak callback target lets the observer and its readers release when their owning RUM graph is released.
+- **`DatadogRUM/Sources/RUMVitals/RenderLoop/RenderLoopObserver.swift`** - Internal display-link lifetime and frame delivery. A weak callback target lets the observer and its readers be released when their owning RUM graph is released.
 
 ## Configuration Categories
 
@@ -349,7 +349,8 @@ When `Datadog.Configuration.remoteConfiguration` is set, Core fetches and caches
   - `WebViewTracking.enable(webView:hosts:)` called on the native side
   - Web page instrumented with Datadog Browser SDK
   - See `DatadogWebViewTracking/Sources/WebViewTracking.swift`
-  - Native-view correlation retains the active view and starts its existing expiry window when the view becomes inactive. The cache remains bounded.
+
+WebView RUM events are linked to the most recent native view with Session Replay enabled that started before the event's timestamp. Active views stay available for this lookup. Once a view becomes inactive, the SDK keeps it for up to three minutes to handle delayed events, with at most 30 views cached.
 
 ## Additional Context
 

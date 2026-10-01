@@ -6,7 +6,7 @@
 - [FIX] Release the RUM display-link observer and its frame readers when their owner is released. See [#3216][]
 - [FIX] Pin KSCrash to exact version 2.5.1 via SPM to prevent silently resolving newer, unvetted releases. See [#3232][]
 - [FIX] Keep attributes isolated when returning to a previously tracked RUM view while its earlier resources are still pending. See [#3217][]
-- [IMPROVEMENT] Increase the maximum number of custom attributes per event from 256 to 1900 in RUM, Logs and Traces. In RUM the limit applies to `context`, `usr` and `account` independently; in Logs and Traces those attributes are encoded into a single JSON object, so they share one limit. Log `usr` and `account` extra attributes are now limited as well. See [#3198][]
+- [IMPROVEMENT] Increase the maximum number of custom attributes per event from 256 to 1900 in RUM, Logs, and Traces. In RUM, the limit applies to `context`, `usr`, and `account` independently; in Logs and Traces, those attributes are encoded into a single JSON object, so they share one limit. Log `usr` and `account` extra attributes are now limited as well. See [#3198][]
 - [IMPROVEMENT] Require Swift tools version 6.2 (Xcode 26) to resolve the package with Swift Package Manager. See [#3231][]
 - [FIX] Report slow frame and freeze rates for RUM views when navigation starts a new view without calling `stopView()` on the previous one. See [#3237][]
 - [FIX] Traced requests and spans created immediately after the SDK is initialized now use the same sampling decision as the rest of the RUM session, and carry that session's ID. Previously they could be sampled independently of the session and sent without it. See [#3221][]
@@ -14,13 +14,13 @@
 # 3.18.0 / 21-09-2026
 
 - [FIX] Preserve delayed WebView correlation for long-lived active native RUM views.
-- [FIX] Resolve the RUM session sampling decision synchronously in `RUM.enable()`, so WebViews instrumented immediately after initialization get a decision consistent with the session. See [#3183][]
 - [FEATURE] Add CPU-time samples alongside wall-time samples by default for application launch and Continuous Profiling. See [#3195][]
 - [IMPROVEMENT] Migrate `DatadogProfiling` to Swift 6. See [#3186][]
 - [FIX] Fix truncated profiler stacks on arm64e-capable devices by handling pointer authentication when unwinding stack frames. See [#3200][]
 - [FIX] Resolve the RUM session sampling decision synchronously in `RUM.enable()`, so WebViews instrumented immediately after initialization get a decision consistent with the session. See [#3183][]
 - [IMPROVEMENT] Populate RUM Resource `delivery_type` and `transfer_size` from network cache signals, replacing the mobile-only `local_cache_hit` field. See [#3187][]
 - [IMPROVEMENT] Add the `view.name` tag to spans enriched with a sampled-in RUM context, so APM spans can be searched and grouped by RUM view. A `view.name` already set on the span is preserved. See [#3208][]
+
 # 3.17.0 / 09-09-2026
 
 - [FEATURE] Add a configurable initialization timeout for the first Datadog Flags evaluation context. See [#3167][]

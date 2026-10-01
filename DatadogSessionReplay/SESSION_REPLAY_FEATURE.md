@@ -17,7 +17,7 @@ tracked_files:
 
 Session Replay records and replays user sessions as video-like reproductions. It captures the visual state of the app, user interactions, and navigation. Session Replay requires RUM to be enabled first.
 
-**Platform**: iOS, tvOS — the podspec supports both platforms, but recording APIs are compiled only for iOS. tvOS provides package compatibility without recording; recording is also unavailable on macOS, watchOS, and visionOS.
+**Platform**: Recording is available only on iOS. The podspec also supports tvOS for package compatibility, but recording APIs are not compiled for tvOS. Recording is not available on macOS, watchOS, or visionOS.
 
 ## Quick Start Example
 
@@ -158,7 +158,7 @@ SessionReplayPrivacyView(
   - `TextAndInputPrivacyLevel`: `.maskSensitiveInputs`, `.maskAllInputs`, `.maskAll`
   - `ImagePrivacyLevel`: `.maskNonBundledOnly`, `.maskAll`, `.maskNone`
   - `TouchPrivacyLevel`: `.show`, `.hide`
-  - Legacy `SessionReplayPrivacyLevel`: `.allow`, `.mask`, `.maskUserInput` remains exported; current configuration uses the fine-grained privacy levels above
+  - Legacy `SessionReplayPrivacyLevel`: `.allow`, `.mask`, or `.maskUserInput` remains exported; current configuration uses the fine-grained privacy levels above
   - `SessionReplayConfiguration`: shared protocol exposing the three privacy levels to other SDK features; distinct from the customer-facing `SessionReplay.Configuration` struct
 
 ### Implementation
