@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "state": "LOCAL_COMPONENT_QUALIFIED",
+  "gate": "S3:F10",
+  "delivery_slice": "PR1",
+  "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3",
+  "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/worktree",
+  "branch": "valpertui/s3-runtime-feature-flag",
+  "base": "19f260b26db3eee2c689b78d50df8b7c94f90503",
+  "source": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/source-cycle2.json",
+    "sha256": "6aaa7b4d6a401e6a351d7cdf504a3dccd2f205eab70c7a1003871b918525f68d"
+  },
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/rum-ios27-definition-cycle1.json",
+    "sha256": "5eeee60075a78e3a685abd09a3b57255a1ab286651c211a4f10b559eeb647a25"
+  },
+  "execution_process": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/rum-ios27-process-cycle1.json",
+    "sha256": "9324acb7a51982e8087e7a1f1e6973d9c4cce08f8bcb6de42f5c85bfa3d95a48"
+  },
+  "dependency_recovery": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/package-cache-recovery.json",
+    "sha256": "cb4338f12aef1ab6c3fcd68612c2937f8afbf01cd9a117bb38dc0c66a30fd8c2"
+  },
+  "original_package_resolution": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/package-resolution-result.json",
+    "sha256": "5957b122851e87f9ca50f9680426780b3955717b592e2a429bcef620d43044f8"
+  },
+  "changes": [
+    "Default-off multiSceneTracking flag; develop viewUpdates=true and scroll/swipe defaults preserved.",
+    "One-time explicit flag, exact nested manifest boolean and iOS27+ resolution, frozen in feature/scope dependencies.",
+    "No scene observer, lookup, owner, handoff, swizzle or routing behavior added."
+  ],
+  "tests": {
+    "new_methods": 5,
+    "resolution_cells": 60,
+    "discovery_enabled": 978,
+    "lint": "PASS_CHANGED_FILES",
+    "syntax": "PASS",
+    "xctest": "PASS_EXACT_SELECTION",
+    "ios27_cases": 926,
+    "ios27_invocations": 962,
+    "ios175_cases": 46,
+    "macos_cases": 45,
+    "failures": 0,
+    "skips": 0,
+    "runtime_warnings": 0
+  },
+  "review": {
+    "state": "PASS",
+    "reviewer": "/root/h10_backend_reviewer",
+    "receipt": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr1-review-cycle1.json",
+      "sha256": "9487f49a709fc8304f21e86325b302320d0fd3ce167741e462b24bb78d256ba2"
+    }
+  },
+  "implementation_started": true,
+  "public_merge_approved": false,
+  "flagged_develop_head": null,
+  "human_sessions": 0,
+  "xctest_runs": 3,
+  "gates_closed": [],
+  "next_action": "Prepare and implement PR2 inert target/scene data and dormant handoff contracts on the local PR1 head, following the qualified F11 dispositions. No owner activation or public promotion. Later per-slice F12/native/API/hardware gates remain separate.",
+  "qualification": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/qualification.json",
+    "sha256": "6d5ed4b669fac454d3da63f5a227e00f59e1a9dca1082d0234e4c21fdc47a318"
+  },
+  "checkpoint": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr1-checkpoint.json",
+    "sha256": "9bcd011586c0a8bc647ef6a0cf8f586e2f3c617adce5af097f9813560fc3de02"
+  },
+  "local_head": "21d6d9ceeb6a6764cee4ba5452e4c3977e7ec705"
+}

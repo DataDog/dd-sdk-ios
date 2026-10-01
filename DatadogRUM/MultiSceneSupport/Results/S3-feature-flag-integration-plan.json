@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "FINITE_DELIVERY_GATES_DEFINED",
+  "state": "LOCAL_DELIVERY_IN_PROGRESS",
   "source": "PLAN.md#s3-feature-flag-integration",
   "decision_date": "2026-10-01",
   "gates": [
@@ -17,12 +17,12 @@
   "flagged_develop_head": null,
   "merge_hardware_required": false,
   "release_physical_duo_required": true,
-  "implementation_started": false,
+  "implementation_started": true,
   "native_runs": 0,
   "gates_closed": [
     "S3:F11"
   ],
-  "next_action": "Implement and test local PR1 flag plumbing on isolated pinned develop, then progress the finite reviewed delivery stack. F01/public merge and hardware release acceptance remain separate; no push.",
+  "next_action": "Prepare PR2 inert data model and dormant contracts on the qualified local PR1 head. F01/public merge, S1 landing, whole per-PR F12 and hardware release acceptance remain separate; no push.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-replay-jqgxnt3s/s3-flag-gates-review-cycle1.json",
     "sha256": "7beb6736a03df965978c0703d9609d88a089277b90b3485787928d1886b1b870"
@@ -31,5 +31,8 @@
   "mapping_qualification": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-flag-p0-ox031_z0/mapping-qualification.json",
     "sha256": "0be4a692ec07f8df6fe13a77b17387de4308d395616718a46233fbe5b344ac0e"
-  }
+  },
+  "pr1_owner": "Results/S3-PR1-runtime-flag.json",
+  "local_stack_head": "21d6d9ceeb6a6764cee4ba5452e4c3977e7ec705",
+  "pr1_status": "LOCAL_COMPONENT_QUALIFIED"
 }
