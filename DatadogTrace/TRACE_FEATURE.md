@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-09-30
+last_updated: 2026-10-02
 sdk_version: 3.18.0
-verified_against_commit: 71e9b5b1e
+verified_against_commit: 2ad931544
 tracked_files:
   - DatadogTrace/Sources/Trace.swift
   - DatadogTrace/Sources/TraceConfiguration.swift
@@ -222,6 +222,8 @@ Re-exported from `DatadogInternal` so they are available with `import DatadogTra
 - **`TraceContextInjection`** — `.all`, `.sampled`
 
 ### Implementation
+
+- **`DatadogTrace/Sources/Span/SpanWriteContext.swift`** — Captures span context and applies the internal `RUMContextOverride`: preserve the writer's RUM context, remove it, or replace it with request-time context. Other context fields remain unchanged.
 - **`DatadogTrace/Sources/Feature/TraceFeature.swift`** — Internal feature implementation. Shows how configuration translates to behavior.
 
 ## Configuration Categories
@@ -331,4 +333,5 @@ Returned when `Datadog.initialize()` was not called or `Trace.enable()` was not 
 - The default tracer's `sampleRate` decides which spans are kept; manual `keepTrace()` / `dropTrace()` overrides that decision for the whole trace, and should be called on the root span right after creation so that propagation carries the correct sampling priority.
 - For the OpenTelemetry tracer provider, `instrumentationName`, `instrumentationVersion`, `schemaUrl` and `attributes` parameters are accepted for API compatibility but ignored — configure tags via `Trace.Configuration.tags`.
 - Automatic `URLSession` network instrumentation relies on swizzling; if your app already swizzles `URLSession` itself, validate behavior in integration tests.
+- `LazySpanWriteContext` defaults to `.preserve` for manual spans and requests without captured state. A captured request without a RUM owner uses `.remove`, so a view opened before completion cannot become its owner; a captured owner uses `.replace(context)`. This enum is internal Swift and does not change the Objective-C API.
 - Automatic URLSession spans sanitize inconsistent task timing by using `max(startTime, endTime)` for finish time, non-suspended-duration ranges, and background-state lookup.
