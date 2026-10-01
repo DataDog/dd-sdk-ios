@@ -198,16 +198,51 @@ extension ReflectionMirror {
 }
 
 extension ReflectionMirror {
-    /// Returns the descendant at the given path, or `nil` if it cannot be read.
+    /// Returns a specific descendant of the reflected subject, or `nil` if the
+    /// descendant does not exist or the path is unsupported.
+    ///
+    /// Pass a variadic list of string and integer arguments. Each string
+    /// argument selects the first child with a matching label. Each integer
+    /// argument selects the child at that offset.
     ///
     /// When traversing stored properties of a Swift class, paths must use property names.
     /// Intermediate structs are read in place. Unsupported intermediate layouts return
     /// `nil` without being copied.
     ///
+    /// For a path through structs and tuples, passing `1, "two", 3` as arguments to
+    /// `myMirror.descendant(_:_:)` selects the same descendant as:
+    ///
+    ///     var result: Any? = nil
+    ///     let children = myMirror.children
+    ///     if let i0 = children.index(
+    ///         children.startIndex, offsetBy: 1, limitedBy: children.endIndex),
+    ///         i0 != children.endIndex
+    ///     {
+    ///         let grandChildren = ReflectionMirror(reflecting: children[i0].value).children
+    ///         if let i1 = grandChildren.firstIndex(where: { $0.label == "two" }) {
+    ///             let greatGrandChildren =
+    ///                 ReflectionMirror(reflecting: grandChildren[i1].value).children
+    ///             if let i2 = greatGrandChildren.index(
+    ///                 greatGrandChildren.startIndex,
+    ///                 offsetBy: 3,
+    ///                 limitedBy: greatGrandChildren.endIndex),
+    ///                 i2 != greatGrandChildren.endIndex
+    ///             {
+    ///                 // Success!
+    ///                 result = greatGrandChildren[i2].value
+    ///             }
+    ///         }
+    ///     }
+    ///
+    /// The efficiency of finding each element depends on the reflected type and
+    /// the capabilities of each level's `children` collection. Looking up a named
+    /// field can require a linear search through runtime metadata.
+    ///
     /// - Parameters:
     ///   - first: The first mirror path component to access.
     ///   - rest: Any remaining mirror path components.
-    /// - Returns: The descendant, or `nil` if the path is missing or unsupported.
+    /// - Returns: The descendant of this mirror specified by the given mirror
+    ///   path components, or `nil` if the path is missing or unsupported.
     func descendant(_ first: Path, _ rest: Path...) -> Any? {
         descendant([first] + rest)
     }
