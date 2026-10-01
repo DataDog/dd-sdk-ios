@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
   "state": "UIKIT_VIEW_ACTION_GATES_CLOSED_SWIFTUI_REMAINS",
-  "updated_at": "2026-10-01T16:34:33.546831+00:00",
+  "updated_at": "2026-10-01T22:06:49.738714+00:00",
   "execution": {
-    "record": null
+    "record": "Results/S2-rum-only-native-20261002.json"
   },
   "current": {
     "kind": "swiftui_preparation",
@@ -44,7 +44,7 @@
         "multiple_scenes": false
       }
     ],
-    "prerequisites": "The opt-in RUM-only baseline plan passes 31 focused controls and exact independent review. Original strict INVALID attempt and cleanup PASS remain at their execution owner. After checkpoint, qualify fresh delegated native prerequisites and renewed availability. Four accepted cells and both frozen products remain unchanged; no native admission or H14 credit follows from preparation.",
+    "prerequisites": "Reviewed RUM-only baseline captured gestures, folds and Home, then terminal collection expired on a late active hosting View. Original UNQUALIFIED/INCOMPLETE and cleanup INVALID remain; separate reviewed restoration PASS. Saved 25 owned Actions/counters support foreground diagnosis only. Prepare and qualify the finite finalization correction before a successor invitation; candidate unexecuted. Four accepted cells and both products retained.",
     "review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime/review.json",
       "sha256": "b6a9d2d4cfa3af67724d2673a0d52c7f90116847cf6db526e9a7aacb5ac0427b"
@@ -142,7 +142,7 @@
     },
     "builds": 3,
     "scope": "All three stack cells and the SDK26.5 split baseline qualify; only two SDK27.1 split cells remain.",
-    "next_action": "The opt-in RUM-only baseline plan passes 31 focused controls and exact independent review. Original strict INVALID attempt and cleanup PASS remain at their execution owner. After checkpoint, qualify fresh delegated native prerequisites and renewed availability. Four accepted cells and both frozen products remain unchanged; no native admission or H14 credit follows from preparation.",
+    "next_action": "Prepare source-backed foreground finalization and AX-independent native-idle cleanup; preserve saved baseline gestures, require review and one automatic Home-only qualification before another human invitation.",
     "effect_recapture": {
       "record": "Results/S2-swiftui-effect-recapture-20260930.json",
       "plan": {

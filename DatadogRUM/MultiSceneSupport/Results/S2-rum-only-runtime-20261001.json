@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "owner": "EXP-210",
-  "state": "REVIEWED_RUM_ONLY_BASELINE_PREPARATION",
+  "state": "NATIVE_EXECUTION_STOPPED",
   "gates": [
     "S2:C09",
     "S2:C10",
@@ -36,9 +36,9 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime/review.json",
     "sha256": "b6a9d2d4cfa3af67724d2673a0d52c7f90116847cf6db526e9a7aacb5ac0427b"
   },
-  "native_admitted": false,
-  "native_runs": 0,
-  "human_invitation": false,
+  "native_admitted": true,
+  "native_runs": 1,
+  "human_invitation": true,
   "gates_closed": [],
   "accepted_cells_reused": 4,
   "builds": 0,
@@ -60,8 +60,8 @@
     "sha256": "12cefc23f7902ce6277b9a2fdb5cf9432cd4c158b005277676e5d555fa9190e8"
   },
   "scope": "Opt-in split baseline with diagnostic input proofs. Trusted in-memory executor terminal/receipt/diagnostic anchors, actual worker grade publication, RUM owners, complete helper joins and cleanup remain required. H14 needs separate actual fold proof.",
-  "next_action": "Safe local checkpoint (sign when available), then fresh native prerequisites and renewed simulator-human availability. Reuse both products and four accepted cells; strict path stays stopped.",
-  "updated_at": "2026-10-01T16:34:33.546831+00:00",
+  "next_action": "Separate restoration PASS is recorded by the execution owner; original Home failure remains. Prepare and qualify the finite finalization correction before candidate admission.",
+  "updated_at": "2026-10-01T22:58:56.779446+00:00",
   "blocked_integration_reviews": [
     {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-04/runtime/review.json",
@@ -85,5 +85,6 @@
     "state": "UNSIGNED_LOCAL_AGENT_UNAVAILABLE",
     "failure": "communication with agent failed",
     "outgoing_resigning_required": true
-  }
+  },
+  "execution_owner": "Results/S2-rum-only-native-20261002.json"
 }

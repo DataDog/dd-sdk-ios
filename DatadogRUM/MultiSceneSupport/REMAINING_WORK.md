@@ -13,7 +13,7 @@ selects current execution. A preparation PASS admits no native run or gate closu
 | S2:F06 | OPEN | Review the exact selected source, accepted evidence, baseline limitations and remaining hardware uncertainty. No unresolved attributable regression, API/wire/privacy change or required evidence gap. Preserve qualified compatibility/lifetime checks; sign outgoing history before separately authorized publication. The S2 acceptance contract governs behavioral and delivery evidence separately; no immediate background upload, physical-Duo or optional performance prerequisite. |
 
 The selected SwiftUI cell is: **SwiftUI, split, baseline-27.1, duo**.
-No execution record is selected. Preparation does not establish live process state.
+Recorded execution: [STOPPED_FINALIZATION_SEPARATE_RESTORATION_PASS](Results/S2-rum-only-native-20261002.json). scenario **UNQUALIFIED**; evidence **INCOMPLETE**; cleanup **INVALID**. Recheck actual admission, process and artifacts before taking ownership; this summary grants no launch.
 
 Required gate owners, dependencies and environments remain authoritative in the
 [generated PLAN](PLAN.md#s2-release-gates). Reuse closed UIKit, Resource/Trace,

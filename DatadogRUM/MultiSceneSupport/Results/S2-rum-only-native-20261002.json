@@ -1,0 +1,202 @@
+{
+  "schema_version": 1,
+  "state": "STOPPED_FINALIZATION_SEPARATE_RESTORATION_PASS",
+  "updated_at": "2026-10-01T22:58:56.778175+00:00",
+  "plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime/runtime-plan.json",
+    "sha256": "f59314ff7ef697474cfb3726ee1ff531b209d4813a8101c7538479f47515af07"
+  },
+  "gates": [
+    "S2:C09",
+    "S2:C10",
+    "S2:H14"
+  ],
+  "selected": {
+    "build": "baseline-27.1",
+    "device": "duo",
+    "framework": "SwiftUI",
+    "layout": "split",
+    "multiple_scenes": false
+  },
+  "controller": {
+    "agent": "/root",
+    "exec_session_id": 83528
+  },
+  "interaction_owner": "/root/s2_split_input_owner",
+  "admission": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime/native-admission.json",
+    "sha256": "e64d56a5b508527897050ff83ebeed469679d00f01fd7a3dc8c05c3f11196e5f"
+  },
+  "output_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime",
+  "scenario": "UNQUALIFIED",
+  "evidence": "INCOMPLETE",
+  "cleanup": "INVALID",
+  "native_runs": 1,
+  "human_invitation": true,
+  "gates_closed": [],
+  "safe_checkpoint": "31cc26b1c0432fab86c2e8c6594f068d5f25d8e4",
+  "page": "http://127.0.0.1:63569",
+  "app_pid": 68826,
+  "run_id": "142f426a-b6a1-4f6b-91ce-3b3dac39afc3",
+  "execution_deadline": 1790896311.450455,
+  "cleanup_deadline": 1790896911.450455,
+  "supported_capture": "PASS",
+  "supported_end": "PASS",
+  "automatic_native_readiness": "PASS",
+  "ready_request": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime/cells/baseline-27.1-duo-SwiftUI-split-single/operator-ready/request.json",
+    "sha256": "4be1df0172fc0b32c0e92a3817d0998e47832615a204d008adfe7f0cb99d2f69"
+  },
+  "capture_proof": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime/cells/baseline-27.1-duo-SwiftUI-split-single/supported/capture/proof.json",
+    "sha256": "073d63a0705c8c79c241c7dd9b9e31a535fd09c84a89426e462fc557051bf66f"
+  },
+  "end_proof": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime/cells/baseline-27.1-duo-SwiftUI-split-single/supported/ended.json",
+    "sha256": "f250f1d8048ad479f155dcfe90c8a931407c64f038330fc34efc099e2f4543d2"
+  },
+  "next_action": "Prepare source-backed foreground comparison finalization and AX-independent idle cleanup, using saved human evidence. Require focused controls, designated review and one automatic Home-only qualification before a successor human invitation. Candidate is unexecuted.",
+  "operator_ready_received": true,
+  "reason": "original collector deadline expired",
+  "cleanup_errors": [
+    "cleanup driver: automatic human input: incomplete public accessibility inventory"
+  ],
+  "summary": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime/cells/baseline-27.1-duo-SwiftUI-split-single/summary.json",
+    "sha256": "b184562022233ad655177037926cd7404f1de7dbb4949cf099474360ce7f9c7a"
+  },
+  "cell_result": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime/cells/baseline-27.1-duo-SwiftUI-split-single/cell-result.json",
+    "sha256": "a90b76f7c38768bcfcd9357d8c8c74240c3246968390997728d9249d66862fc2"
+  },
+  "operator_release": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime/cells/baseline-27.1-duo-SwiftUI-split-single/human-release/operator-released.json",
+    "sha256": "855d7df1e73449f36a7c797093391c777084b675b00e7b941c922a5ddb59b681"
+  },
+  "worker_quiescence": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime/cells/baseline-27.1-duo-SwiftUI-split-single/native-workers-before-cleanup.json",
+    "sha256": "c9247a3ff023ecc3d6da283ddba795db7803ac224602725fe4b76f23ef6f76aa"
+  },
+  "supervisor": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime/baseline-27.1-duo-SwiftUI-split-single-driver.supervisor.json",
+    "sha256": "d11790ff8b93aded901213ea1cf0ad70e3aeafbe7ce62c60928e20f68db69999"
+  },
+  "gestures_captured": true,
+  "home_notification_captured": true,
+  "rum_verdict": "NOT_PRODUCED",
+  "candidate_run": false,
+  "separate_restoration": {
+    "state": "PASS",
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/restoration-20261002/review-cycle3.json",
+      "sha256": "192e0d28030d8d5ae17b9d7ea4b8f43520fedf16eaa80b63d87f59799d2ee299"
+    },
+    "source": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/restoration-20261002/restore-cycle3.py",
+      "sha256": "fca1644c11f364fd60bbe9250f712636a67c3021ddcb97839df00809d976e9b5"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/restoration-20261002/controls-cycle3.json",
+      "sha256": "3b161f32d96532c259d61823d1f42c04987d1a624a600c544a1ff2771797d8d4"
+    },
+    "controls_count": 33,
+    "native_calls_in_controls": 0,
+    "owner": "/root/s2_split_input_owner",
+    "scenario_credit": false,
+    "result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/restoration-20261002/result.json",
+      "sha256": "a71927d7a5c47861873e0d6309214277d724abc55b06060c107e6fa23936fd2d"
+    },
+    "admission": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/restoration-20261002/admission.json",
+      "sha256": "c0b3c50579a805e186c4a78d28d01ce14de20a8f58a3913ec026300c38e1e2d4"
+    },
+    "task_removal": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/restoration-20261002/task-removed.json",
+      "sha256": "20e9c2260015618ad484d87336c01336bf68994ef4f846ff47ce02c3af8488db"
+    },
+    "original_verdicts_unchanged": true,
+    "task_absent": true,
+    "process_absent": true,
+    "app_inventory_unchanged": true,
+    "display_restored": true,
+    "device_state_restored": true,
+    "started_at": 1790895360.572588,
+    "finished_at": 1790895406.0865211,
+    "deadline": 1790895960.572588,
+    "post_exit": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/restoration-20261002/post-exit-proof.json",
+      "sha256": "f4e8a145635799399d4515d64b34776923e6699da23b4ec34652abfa79928aed"
+    },
+    "post_removal_observation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/restoration-20261002/device-hub-task-removed-return.json",
+      "sha256": "a936b7d21dd85e8675f1506174b63ed6ef01161b969ea2dde14b19c155e18da6"
+    },
+    "closed_action": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/restoration-20261002/device-hub-closed-action-return.json",
+      "sha256": "e58b0ffac25fc085f65ecc0f7e06cf269b2dec2dee121999bcdc48352276624b"
+    }
+  },
+  "finalization_observation": {
+    "home_sequence": 361,
+    "checkpoint_sequence": 372,
+    "late_active_view_sequences": [
+      371,
+      372
+    ],
+    "late_active_view_name": "NavigationStackHostingController",
+    "collection_budget_seconds": 120,
+    "stop_scope": "LOCAL_TERMINAL_COLLECTION_NOT_STAGE_DEADLINE",
+    "operator_delay_cause": false,
+    "original_cleanup_stop": "AX inventory was included in native owner validation despite idle input",
+    "review_status": "PASS_CLASSIFICATION_ONLY",
+    "sdk_regression_established": false
+  },
+  "stop_classification": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/diagnosis-20261002/review.json",
+    "sha256": "839ade14882c34b52e61608b0daff7f5e1e67d57897bd76bde51ec24b5e532c0"
+  },
+  "foreground_diagnostic": {
+    "scope": "SEPARATE_FOREGROUND_CONSISTENCY_DIAGNOSTIC_ONLY",
+    "views": 20,
+    "view_revisions": 63,
+    "unique_actions": 25,
+    "action_owners_and_counts": "MATCH",
+    "pre_home_occurrences_inactive": 18,
+    "accepted_baseline": false,
+    "gates_closed": []
+  },
+  "page_retirement": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/page-retirement-20261002/result.json",
+    "sha256": "3d3dfd062a6b0a711471c31c9b0ba5c1aa10605dffe1ef1cb807cf184f0a3b53"
+  },
+  "next_finite_task": {
+    "owner": "/root",
+    "gates": [
+      "S2:C09",
+      "S2:C10"
+    ],
+    "dependency": "Separate task-app restoration complete; current INVALID verdicts and classification retained",
+    "scope": "Prepare a source-backed foreground comparison cutoff and AX-independent native-idle cleanup before another human invitation. Assess reuse of the exact saved foreground inventory separately; never replace the failed Home verdict. H14 remains actual fold evidence only.",
+    "decisive_controls": [
+      "Captured late active hosting View after actual Home cannot masquerade as a terminal all-inactive inventory.",
+      "Delayed tap362 remains attributed through inactive owner revision363, with balanced unique action counts.",
+      "Foreign owner, incomplete revision, replaced prefix/request/process and active touches still reject.",
+      "No retrospective complete receipt or executor terminal anchor can be fabricated."
+    ],
+    "required_environment": "Offline saved-evidence controls and designated review, then one bounded automatic Home-only qualification on Duo using frozen products; no human gestures for mechanism qualification.",
+    "human_repeat_policy": "Do not repeat the baseline journey unless independent review shows its saved foreground inventory cannot support the finite comparison. No candidate admission before qualification.",
+    "native_admitted": false,
+    "gates_closed": []
+  },
+  "restoration_review_history": [
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/restoration-20261002/review-cycle1.json",
+      "sha256": "ff26c49a94633cf3d9c739911fe5ffc501977703fc3ae4a181fa51cff3fb6fe5"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/restoration-20261002/review-cycle2.json",
+      "sha256": "931b85b6c42ea095ed456eedddd917374bc442a1035362d2ee04acedb65b5ce3"
+    }
+  ]
+}

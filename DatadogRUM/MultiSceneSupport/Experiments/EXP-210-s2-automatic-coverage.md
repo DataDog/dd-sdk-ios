@@ -258,7 +258,15 @@ accepted cells, preserving the classified scroll/swipe difference. The separatel
 bound [runtime preparation](../Results/S2-rum-only-runtime-20261001.json) retains
 those cells and both products. Its 31 offline controls include the actual failed
 snapshot, trusted terminal/worker publication and helper-replacement negatives;
-exact independent integration re-review passes with no findings. Fresh native
-prerequisites and renewed availability remain.
-No strict-path retry, rebuild or new native run is admitted. H14 still requires
-actual fold proof; input diagnostics alone cannot close a release gate.
+exact independent integration re-review passes with no findings. The [fresh native baseline](../Results/S2-rum-only-native-20261002.json)
+captured the gestures, folds and Home but stopped during terminal inventory
+collection: a new active hosting View after Home kept the all-inactive oracle
+pending through its fixed 120s collection clock. Scenario UNQUALIFIED, evidence
+INCOMPLETE and cleanup INVALID remain;
+the actual page release was on time, then cleanup rejected the accessibility
+inventory. Separate restoration passes after 33 controls and exact review: fresh idle input,
+task-only removal and original Closed/Booted state are proven; all original files
+remain unchanged. The source-backed review retains 25 owned Actions and balanced
+foreground counters as diagnosis only. Prepare the finite finalization correction
+and automatic Home-only qualification before another human invitation; the
+candidate is unexecuted. No SDK regression or gate credit is established.

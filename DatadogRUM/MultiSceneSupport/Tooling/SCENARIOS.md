@@ -166,6 +166,13 @@ Home boundary; never discard later rows or promote restoration to scenario proof
 An opt-in comparison may seal its foreground prefix before cleanup, preserving the
 complete later stream separately. It must still prove release and fresh native
 idle; a comparison cutoff cannot authorize removal or qualify Home lifecycle.
+A background notification does not guarantee every automatic View is inactive:
+retain late appearance and mapper rows and classify the actual incomplete terminal
+condition. A collection timeout alone is not an SDK regression or operator delay.
+Qualify any changed finalization contract before requesting the whole journey again.
+Cleanup validates the original native owner and idle input independently of whether
+accessibility targets were captured; preserve those diagnostics without using them
+to bypass ownership, release or evidence integrity.
 
 Observe callbacks/value changes independently of RUM. End pending actions with a
 qualified real background boundary, not termination. Freeze pre-pose geometry and
