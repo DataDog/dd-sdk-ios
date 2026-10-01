@@ -3,12 +3,14 @@ import hashlib
 import importlib.util
 from pathlib import Path
 import time
+import types
 
 import physical_build as builds
 import physical_ownership as ownership
 import physical_transition
 import physical_io
 import geometry_contract
+import physical_setup
 import installed_code
 import s2_local_contract as contract
 from capture_io import atomic, encoded
@@ -123,6 +125,12 @@ def helper_members(runner, measurement):
     result = runner.helpers(); result[ORACLE] = measurement['rendered_sha256']; return result
 
 
+def expected_setup(basis):
+    value = types.ModuleType('physical_setup_baseline_oracle')
+    exec(compile(oracle(basis)[0], str(basis['root']/'helpers'/ORACLE), 'exec'), value.__dict__)
+    return physical_setup.baseline(basis, value)
+
+
 def activate(root, plan, runner):
     spec = importlib.util.spec_from_file_location('s2_physical_oracle', root/'helpers'/ORACLE)
     value = importlib.util.module_from_spec(spec); spec.loader.exec_module(value)
@@ -156,6 +164,7 @@ def prepare(args, runner):
         definition=basis['plan']['definition'], cells=candidate, build_root=basis['plan']['build_root'],
         build_plan_sha256=basis['plan']['build_plan_sha256'], signed_plan_sha256=basis['plan']['signed_plan_sha256'],
         udid=signed['udid'], device=basis['plan']['device'], required_os=basis['assessment']['source']['os'], helpers=members, measurement=measurement,
+        physical_setup=expected_setup(basis),
         protected=protected(), native_seconds=1800, backend_seconds=120, cleanup_seconds=300, pair_seconds=2400,
         collection='LOCAL_ONLY_NO_BACKEND_QUERY', scenario='stack', native_launches=0, gate_closures=[])
     runner.backend.common.transport.preflight(root)
@@ -178,6 +187,7 @@ def verify(root, plan, runner):
     for key in ['definition', 'build_root', 'build_plan_sha256', 'signed_plan_sha256', 'device', 'udid']:
         require(plan[key] == original[key], 'local original binding changed: '+key)
     require(plan['required_os'] == basis['assessment']['source']['os'], 'local baseline OS changed')
+    require(plan['physical_setup'] == expected_setup(basis), 'local baseline orientation binding changed')
     require(plan['protected'] == protected() and all(source['protected'][name] == value for name, value in protected().items()),
             'user-owned workspace changed')
     _, measurement = oracle(basis)

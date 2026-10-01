@@ -108,18 +108,20 @@ class Admission(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory(); self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name); (self.root/'cells').mkdir()
-        self.plan = dict(evidence_contract=local.contract.CONTRACT, device='physical-ipad', pair_seconds=2400)
+        self.plan = dict(evidence_contract=local.contract.CONTRACT, device='physical-ipad', pair_seconds=2400,
+                         physical_setup=dict(expected=dict(display={})))
         (self.root/'plan.json').write_bytes(encoded(self.plan)); (self.root/'review.json').write_bytes(encoded(dict(state='PASS')))
         digest = runtime.shared.sha(self.root/'plan.json'); now = time.time()
-        proof = self.root/'proof.json'; proof.write_bytes(encoded(dict(state='PASS')))
+        self.image = dict(path='/unused-test-image', sha256='unused')
+        proof = self.root/'setup.json'; proof.write_bytes(encoded(dict(state='PASS',device='physical-ipad',screenshot=self.image,display={})))
         self.preflight = dict(plan_sha256=digest, at=now, state='PASS', device='physical-ipad', backend='LOCAL_ONLY_NO_BACKEND_QUERY',
-            **{key:dict(path=str(proof),sha256=runtime.shared.sha(proof)) for key in ['xcode_workspace','device_receipt','initial_home']})
+            **{key:dict(path=str(proof),sha256=runtime.shared.sha(proof)) for key in ['xcode_workspace','device_receipt','initial_home','physical_setup']})
         self.operator = dict(plan_sha256=digest, at=now, kind='OPERATOR_READY', user_message_reference='fresh explicit readiness')
 
     def stage(self):
         a = self.root/'preflight.json'; a.write_bytes(encoded(self.preflight))
         b = self.root/'operator.json'; b.write_bytes(encoded(self.operator))
-        with patch.object(runtime,'reviewed',return_value=self.plan), contextlib.redirect_stdout(io.StringIO()):
+        with patch.object(runtime,'reviewed',return_value=self.plan), patch.object(runtime.physical_setup,'validate',return_value=dict(image=self.image)), contextlib.redirect_stdout(io.StringIO()):
             runtime.stage(SimpleNamespace(root=self.root,preflight=a,operator=b))
 
     def test_local_admission_needs_fresh_human_and_native_receipts_but_no_backend_auth(self):
@@ -135,7 +137,7 @@ class Admission(unittest.TestCase):
         with self.assertRaises(Rejected): self.stage()
 
     def test_altered_native_receipt_stops_before_admission(self):
-        (self.root/'proof.json').write_bytes(b'changed')
+        (self.root/'setup.json').write_bytes(b'changed')
         with self.assertRaises(Rejected): self.stage()
 
     def test_unknown_mode_cannot_use_local_admission(self):

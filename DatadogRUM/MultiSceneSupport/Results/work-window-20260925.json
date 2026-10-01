@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "SAFE_CHECKPOINT_NO_NATIVE_EXECUTION",
+  "state": "AUTONOMOUS_OFFLINE_PREPARATION_NO_NATIVE_EXECUTION",
   "authority": "Standing user instruction to continue autonomous plan execution until explicitly stopped; caffeinate has a separate finite duration",
   "started_at": 1790316486.131028,
   "work_deadline_utc": null,
@@ -17,7 +17,10 @@
     "instruction": "Continue without human input; remove heartbeat after safe morning checkpoint. This is not a native admission or deadline extension.",
     "removed_at": "2026-09-27T06:00:55.094691+00:00"
   },
-  "next_task": "Prepare the physical baseline-matched orientation preflight offline; recover H10's preserved unqualified still-source draft. No human invitation or native retry is admitted.",
+  "next_task": {
+    "owner": "Results/S2-swiftui-split271-20260930.json",
+    "scope": "Resolve simulator capture ownership prerequisite before inviting the available operator; physical sessions deferred until21:00. Orientation re-review and H10 source review proceed offline."
+  },
   "gate_closures": [
     "S2:H16",
     "S2:T10",
@@ -33,7 +36,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": "2026-09-30T23:33:02.223803+00:00",
+  "updated_at": "2026-10-01T07:50:00.391038+00:00",
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
@@ -340,8 +343,10 @@
   "latest_autonomous_checkpoint": "Results/autonomous-progress-20260927.json",
   "historical_entries_note": "Earlier attempt/preparation fields retain historical state. The restart cursor and latest_autonomous_checkpoint own current work; they do not renew old admissions.",
   "human_availability": {
-    "state": "CONSUMED_ATTEMPT_CHECKPOINTED",
-    "source": "The physical UIKit candidate stopped before any prompt. Future readiness cannot reuse this consumed admission."
+    "date": "2026-10-01",
+    "timezone": "Europe/Paris",
+    "simulator_until": "12:00",
+    "physical_ipad_not_before": "21:00"
   },
   "current_execution": "Results/S2-H11-H13-local-continuation.json",
   "safe_checkpoint": {

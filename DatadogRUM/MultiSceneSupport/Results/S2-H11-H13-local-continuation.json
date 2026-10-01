@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "state": "STOPPED_BEFORE_INPUT_CLEANUP_PASS",
-  "updated_at": "2026-09-30T23:33:02.223803+00:00",
+  "updated_at": "2026-10-01T07:51:25.690952+00:00",
   "owner": "root",
   "reviewer": "/root/h10_backend_reviewer",
   "gates": [
@@ -57,7 +57,7 @@
   "original_verdicts": "All original failed attempts and admissions remain immutable. This attempt is INVALID / evidence INCOMPLETE / cleanup PASS; the later read-only checkpoint verification is separate.",
   "release_acceptance": false,
   "gate_closures": [],
-  "next_action": "Prepare an offline preflight bound to the saved landscapeLeft baseline, actual orientation and screenshot/native axes before another invitation. Retain full owned scene/window/root/key and source-supported auxiliary-window checks. Do not blindly sort/swap axes, change the old oracle or repeat the consumed admission.",
+  "next_action": "Finish exact independent re-review, then obtain fresh actual landscapeLeft display/image/display setup before a physical invitation after21:00. Continue the unresolved SwiftUI simulator capture preparation during the current simulator window.",
   "superseded_preparation": {
     "runtime_plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/physical-candidate/runtime/plan.json",
@@ -233,5 +233,11 @@
     "source_change": "None; the orientation preflight repair is not implemented",
     "release_acceptance": false,
     "gate_closures": []
+  },
+  "orientation_readiness": {
+    "owner": "Results/S2-physical-orientation-20261001.json",
+    "state": "REVIEWED_OFFLINE_ORIENTATION_READINESS",
+    "controls": 24,
+    "native_admitted": false
   }
 }

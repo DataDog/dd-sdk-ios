@@ -307,6 +307,16 @@ rewrite the original INVALID result; paired source/environment review is separat
 The [continuation record](../../../DatadogRUM/MultiSceneSupport/Results/S2-H11-H13-local-continuation.json)
 owns the frozen preparation and remaining prerequisites.
 
+Local preparation also freezes `physical_setup.py`'s accepted baseline orientation:
+source-bound owned scene/window, actual display and screenshot axes. After review,
+run `physical_runtime.py setup --root <fresh-plan> --setup-output <unused-folder>
+--setup-deadline <fixed-cutoff>` before inviting the operator. The read-only capture
+preserves actual display/image/display responses and bounded child receipts. Its
+`setup.json` must be bound as preflight `physical_setup`; `initial_home` must reference
+that same image and display. Portrait, contradictory, changed or stale evidence
+stops admission. The cell checks again before installation. This setup check neither
+changes the scene/telemetry oracle nor qualifies native behavior or a release gate.
+
 
 `swiftui_duo_build.py` prepares only the four missing S2 SwiftUI stack cells. It
 reuses the original baseline product and copies its five qualified fixture files

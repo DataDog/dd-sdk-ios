@@ -22,6 +22,7 @@ import physical_automatic as automatic
 import runtime as original
 import installed_code
 import reviewer_assignment
+import physical_setup
 from capture_io import atomic, encoded
 
 shared=builds.shared
@@ -121,7 +122,14 @@ def stage(args):
     for value in [preflight,operator]:require(value['plan_sha256']==shared.sha(root/'plan.json') and 0<=now-value['at']<300,'stale physical readiness')
     require(preflight['state']=='PASS' and preflight['device']==plan['device'] and operator['kind']=='OPERATOR_READY' and
         operator['user_message_reference'],'missing physical operator prerequisite')
-    if local.mode(plan):require(preflight.get('backend')=='LOCAL_ONLY_NO_BACKEND_QUERY','wrong local backend scope')
+    if local.mode(plan):
+        require(preflight.get('backend')=='LOCAL_ONLY_NO_BACKEND_QUERY','wrong local backend scope')
+        setup_ref=preflight['physical_setup'];setup_path=Path(setup_ref['path'])
+        require(setup_path.name=='setup.json' and shared.sha(setup_path)==setup_ref['sha256'],'changed physical setup proof')
+        setup=physical_setup.validate(setup_path.parent,dict(plan,plan_sha256=shared.sha(root/'plan.json')),now)
+        home=physical_setup.bound(preflight['initial_home'])
+        require(home['device']==plan['device'] and home['screenshot']==setup['image']
+                and home['display']==plan['physical_setup']['expected']['display'],'Home and setup observations differ')
     for name in ['xcode_workspace','device_receipt','initial_home']+([] if local.mode(plan) else ['backend_auth']):
         item=preflight[name];require(shared.sha(item['path'])==item['sha256'],'physical access receipt changed')
     atomic(root/'native-admission.json',encoded(dict(plan_sha256=shared.sha(root/'plan.json'),review_sha256=shared.sha(root/'review.json'),
@@ -197,6 +205,9 @@ def cell(args):
         device=io.hardware(remote,plan['udid'],out,native);identity['os']=device['os']
         if local.mode(plan):require(identity['os']==plan['required_os'],'physical OS differs from reviewed local baseline')
         raw,_=remote.command(['device','info','displays'],'initial-display',native);initial=io.display(raw,plan['device'])
+        if local.mode(plan):
+            require(initial==plan['physical_setup']['expected']['display'],'SETUP_NOT_READY: initial display differs from the saved landscape setup')
+            physical_setup.capture(out/'orientation-preinstall',dict(plan,plan_sha256=shared.sha(root/'plan.json')),min(native,time.time()+120))
         remote.absence(bundle,'preinstall-app-absence',native)
         remote.command(['device','info','files','--domain-type','appDataContainer','--domain-identifier',bundle],'preinstall-container',native,check=False)
         owned=True;remote.command(['device','install','app',item['path']],'install',native,seconds=60)
@@ -310,7 +321,7 @@ def compare(root):
 
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser();parser.add_argument('action',choices=['prepare','prepare-local','verify','stage','cell','compare'])
+    parser=argparse.ArgumentParser();parser.add_argument('action',choices=['prepare','prepare-local','verify','setup','stage','cell','compare'])
     parser.add_argument('--root',type=Path,required=True);parser.add_argument('--build-root',type=Path)
     parser.add_argument('--rum-fields',action='store_true')
     parser.add_argument('--local-baseline',type=Path)
@@ -319,11 +330,17 @@ if __name__=='__main__':
     parser.add_argument('--finalization-only',action='store_true');parser.add_argument('--device');parser.add_argument('--framework',default='UIKit',choices=['UIKit','SwiftUI'])
     parser.add_argument('--tracking',default='automatic',choices=['automatic','manual']);parser.add_argument('--key')
     parser.add_argument('--preflight',type=Path);parser.add_argument('--operator',type=Path)
+    parser.add_argument('--setup-output',type=Path);parser.add_argument('--setup-deadline',type=float)
     for name in ['native','execution','cleanup']:parser.add_argument('--'+name+'-deadline',type=float)
     args=parser.parse_args()
     if args.action=='prepare-local':local.prepare(args,sys.modules[__name__])
     elif args.action=='prepare':prepare(args)
     elif args.action=='verify':verify(args.root)
+    elif args.action=='setup':
+        plan=reviewed(args.root);require(local.mode(plan),'setup capture is limited to the local S2 continuation')
+        require(args.setup_output is not None and args.setup_deadline is not None
+                and time.time()<args.setup_deadline<=time.time()+120,'missing or excessive setup capture budget')
+        print(json.dumps(physical_setup.capture(args.setup_output,dict(plan,plan_sha256=shared.sha(args.root/'plan.json')),args.setup_deadline)))
     elif args.action=='stage':stage(args)
     elif args.action=='compare':print(json.dumps(compare(args.root)))
     else:raise SystemExit(cell(args))

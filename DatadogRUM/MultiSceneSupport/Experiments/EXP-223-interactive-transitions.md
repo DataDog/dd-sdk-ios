@@ -614,3 +614,5 @@ tracking pairs, source/products, worker/session end and complete artifact invent
 Independent review closes only S2:H12 and supplies the SwiftUI portion of H13. Physical
 UIKit B still needs a valid comparison; no more SwiftUI or baseline gestures are due. The old strict
 failure and stopped matrix remain immutable; no S3 or physical Duo claim follows.
+
+[Physical orientation readiness](../Results/S2-physical-orientation-20261001.json) passes24 focused controls and independent re-review. Source-bound baseline/display/image axes are checked before invitation, admission and installation; original clocks and actual returned objects are retained. The old pre-input failure stays INVALID with cleanup PASS. No new native, backend or behavioral gate credit follows.

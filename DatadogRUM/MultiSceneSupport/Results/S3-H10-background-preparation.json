@@ -2,7 +2,7 @@
   "schema_version": 1,
   "work_item": "Isolated scene background and foreground with an unchanged usable peer",
   "gate": "S3:H10",
-  "state": "STILL_SOURCE_DRAFT_CHECKPOINTED_UNQUALIFIED",
+  "state": "STILL_SOURCE_REVIEW_FINDINGS_OPEN",
   "owner": "Root",
   "reviewer": "/root/c06_runtime_plan",
   "defined_at": "2026-09-30T00:54:04.093738+00:00",
@@ -215,10 +215,10 @@
     "Late native/display evidence or dropped lifecycle journal rows"
   ],
   "next": [
-    "Recover the exact privately preserved still-source draft, complete request/capture ordering and failure guards, add focused negative controls, and obtain designated review. Actual tool/source qualification follows only after that offline component passes.",
+    "Finish source-binding review and its cleanup/failure dispositions. Actual supported-source still capture and full runtime composition stay unqualified; no physical session before21:00 on2026-10-01.",
     "Compose actual native/display/bootstrap/backend/cleanup evidence before one bounded H10 admission. H06 continuous silent recording and physical Duo remain separate."
   ],
-  "updated_at": "2026-09-30T23:33:02.223803+00:00",
+  "updated_at": "2026-10-01T07:50:00.391038+00:00",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-preparation-75t99ytx/review-r2.json",
     "sha256": "d7435346784f04ada43626bbd95247abf2f47cee3a568d8e652bbe6c32eddb9a"
@@ -663,7 +663,7 @@
     }
   },
   "source_capture_preparation": {
-    "state": "UNQUALIFIED_DRAFT_PRESERVED",
+    "state": "REVIEW_FINDINGS_OPEN",
     "design": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-bootstrap-k40_0mn0/next-source-producer-design.json",
       "sha256": "c1053793c4ce991e88e88ebd5c7bc79ebd1c0a5bdcb20adb5255a91f4086c550"
@@ -681,8 +681,36 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-still-source-r5u9921j/checkpoint-draft/preservation.json",
       "sha256": "609d68e126c4324a090eb7e66cac9d0ca58938185f718de63c9019922ea421d6"
     },
-    "working_tree_draft_removed": true,
-    "tests": 0,
-    "review": "NOT_RUN"
+    "working_tree_draft_removed": false,
+    "tests": 17,
+    "review": "BLOCKED",
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-still-source-r5u9921j/controls-cycle1.json",
+      "sha256": "b266f73fa628f788605a3dc7c73a3f0e8a871db1e4339f3b4ddc41e8ae5b4461"
+    },
+    "recovery": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-h10-still-source-r5u9921j/recovery.json",
+      "sha256": "1d6ddd2a45532e9286c934636053a8797a4edd10ba4cfab0c7d34df257eb3cbd"
+    },
+    "review_findings": [
+      {
+        "id": "H10-SOURCE-C1-01",
+        "priority": "P2",
+        "finding": "Evidence integrity or failed publication can block End of the owned session",
+        "repair": "Cleanup-only frozen ownership join with original cutoff; source acceptance stays INVALID"
+      },
+      {
+        "id": "H10-SOURCE-C1-02",
+        "priority": "P2",
+        "finding": "Actual Start key extraction occurs after fallible publication",
+        "repair": "Retain cleanup-only actual returned ownership before publication; no Start/capture qualification"
+      },
+      {
+        "id": "H10-SOURCE-C1-03",
+        "priority": "P2",
+        "finding": "Detected mutation rejects without latching failure",
+        "repair": "Persist sticky INVALID mutation rejection; restoring bytes must not permit retry"
+      }
+    ]
   }
 }

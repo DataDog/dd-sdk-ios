@@ -2,7 +2,7 @@
   "schema_version": 2,
   "work_item": "S2 finite input preparation",
   "status": "TWO_REMAINING_INPUT_PACKAGES",
-  "updated_at": "2026-09-30T23:39:15.262442+00:00",
+  "updated_at": "2026-10-01T07:51:25.690952+00:00",
   "owner": "Harness implementer; root owns native lane",
   "scope_owner": "Results/S2-release-gate-review-20260925.json; release-gates.json releases.S2.execution_packages",
   "source_pair": {
@@ -146,5 +146,16 @@
   "repair_loop": "Results/human-harness-repair-loop-20260927.json",
   "current_capture_repair": "Results/S2-coverage-counter-observation-20260928.json",
   "current_home_capture_review": "Results/S2-coverage-home-collection-20260928.json",
-  "current_remaining_coverage_preparation": "Results/S2-coverage-remaining-preparation.json"
+  "current_remaining_coverage_preparation": "Results/S2-coverage-remaining-preparation.json",
+  "orientation_readiness": {
+    "owner": "Results/S2-physical-orientation-20261001.json",
+    "state": "REVIEWED_OFFLINE_ORIENTATION_READINESS",
+    "native_admitted": false
+  },
+  "user_availability": {
+    "date": "2026-10-01",
+    "timezone": "Europe/Paris",
+    "simulator_until": "12:00",
+    "physical_ipad_not_before": "21:00"
+  }
 }

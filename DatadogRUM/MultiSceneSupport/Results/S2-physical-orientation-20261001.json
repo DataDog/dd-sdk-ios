@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "state": "REVIEWED_OFFLINE_ORIENTATION_READINESS",
+  "owner": "/root",
+  "reviewer": "/root/h10_backend_reviewer",
+  "gates": [
+    "S2:H11",
+    "S2:H13"
+  ],
+  "defined_before_implementation": true,
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-orientation-80u7u761/definition.json",
+    "sha256": "0136db857577c2a3037cf43bd226f8cfe832ad904213f75daffcdf1c7919bfb9"
+  },
+  "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-orientation-80u7u761",
+  "source_pair": {
+    "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "candidate": "c9faed816a1d4828d7d8c4b64acae01119425889"
+  },
+  "runtime_plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-orientation-80u7u761/runtime-v2/plan.json",
+    "sha256": "455eda53e802a5fbed8cfe72606c757c041c76d0ae7ab7d58712d49893b27379"
+  },
+  "controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-orientation-80u7u761/controls-cycle2.json",
+    "sha256": "0b90bcc61cb0e9f56c5c7ac292110781f410779b5d0bb369df0759177bb81cfe"
+  },
+  "controls_count": 24,
+  "baseline_setup": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-orientation-80u7u761/baseline-setup.json",
+    "sha256": "4a189d50dfbd6e22c22a812132fbfb0fa79d23735b56607c11082fc091d5837c"
+  },
+  "saved_pose_replay": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-orientation-80u7u761/saved-pose-replay.json",
+    "sha256": "ae0a07c34ecf1d97cb9b589bf43be1ba892412bba40ce0d59211d2a7c81a4a50"
+  },
+  "observed_budget": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-orientation-80u7u761/observed-budget.json",
+    "sha256": "90e484e771ecd7a6f240b331418147c996c738497758fffeccdf78457aeac214"
+  },
+  "review_cycle1": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-orientation-80u7u761/review-cycle1.json",
+    "sha256": "4d3f12442c7e43e58b218c02bfe7ec58461bacf543d388b6dc61e69beff0ef61"
+  },
+  "resolved_findings": [
+    "S2-ORIENTATION-C1-01: actual final receipt freshness and frozen original setup admission cutoff",
+    "S2-ORIENTATION-C1-02: original actual returned objects/hash/bytes rejoined before adopting files"
+  ],
+  "scope": "Local physical S2 setup only, before invitation/admission/installation. Existing owned scene/window/root/key, action/view, cancellation and source assertions unchanged.",
+  "original_attempt": "Results/S2-H11-H13-local-continuation.json",
+  "original_verdicts_immutable": true,
+  "native_admitted": false,
+  "native_runs": 0,
+  "builds": 0,
+  "backend_queries": 0,
+  "release_acceptance": false,
+  "gate_closures": [],
+  "user_availability": {
+    "date": "2026-10-01",
+    "timezone": "Europe/Paris",
+    "simulator_until": "12:00",
+    "physical_ipad_not_before": "21:00"
+  },
+  "next_action": "Finish exact independent re-review, then obtain fresh actual landscapeLeft display/image/display setup before a physical invitation after21:00. Continue the unresolved SwiftUI simulator capture preparation during the current simulator window.",
+  "updated_at": "2026-10-01T07:51:25.690952+00:00",
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-orientation-80u7u761/runtime-v2/review.json",
+    "sha256": "b84937f95d241718fd7c5edd91f35958806b02b551e37cbc997e656e4f4ab7c2"
+  },
+  "reviewer_assignment": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-orientation-80u7u761/runtime-v2/reviewer-assignment.json",
+    "sha256": "d3c7ac5349cc2bc77f9d63b40feefdaa9643200aa5344cda3bd89cbdef8b5435"
+  }
+}

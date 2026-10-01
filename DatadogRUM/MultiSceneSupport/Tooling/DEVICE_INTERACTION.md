@@ -247,9 +247,9 @@ Presentation getters can inherit an ancestor's relationship: select reciprocal
 presenter/presented ownership before uniqueness, retaining the complete inventory.
 Do not infer extra presentations from inherited aliases or hardcode class names.
 An ordinary iPad may omit Duo's `active`; preflight its one lit primary integrated
-display with the physical parser. Compare actual orientation, screenshot and native
-axes with the saved baseline: panel bounds may retain native axes. Preserve owned
-scene/window/root/key checks; unrotated or blindly sorted dimensions cannot prove fill.
+display with the physical parser. The [orientation preflight](../../../tools/multi-scene/interactive-transitions/README.md) binds baseline/native/image axes before admission and installation.
+Use fresh actual display/image/display returns and original receipts/cutoffs; never renew outer clocks or adopt replaced files.
+Preserve owned scene/window/root/key checks; blindly sorted dimensions cannot prove fill.
 For public accessibility inventories, visual UIView ancestry and accessibility
 container paths are distinct evidence. Retain both; compute view hidden/alpha from
 its owned physical hierarchy, and require exact identifiers before target input.

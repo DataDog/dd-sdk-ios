@@ -326,7 +326,7 @@
     }
   ],
   "gate_closures": [],
-  "next_action": "Use the existing supervised human runner for this one candidate only after fresh matching physical iPad and operator readiness. Preserve release/native-idle cleanup on failure. Compare the full local inventory with the reviewed saved baseline and obtain paired source classification before any H11/H13 closure. While human input is unavailable, assess remaining source-matched saved evidence; do not repeat stopped input diagnostics.",
+  "next_action": "Finish physical orientation re-review and simulator ownership capture correction before inviting a human. Simulator available until12:00 Paris2026-10-01; physical iPad not before21:00. Reuse accepted baseline and products; preserve every stopped attempt, admission and restoration.",
   "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
   "review_adjustments": [
     "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
@@ -397,7 +397,7 @@
       "scope": "Fixture/native and local paired oracle only. Full runtime, backend, adaptive geometry and physical execution remain unqualified."
     }
   },
-  "updated_at": "2026-09-27T02:18:22.271614+00:00",
+  "updated_at": "2026-10-01T07:50:00.391038+00:00",
   "live_environment": {
     "observed_at": "2026-09-23T19:45:47.121281+00:00",
     "xcode": "27.1 (27A9269)",
@@ -2977,5 +2977,6 @@
     "gate_closures": [
       "S2:H12"
     ]
-  }
+  },
+  "orientation_readiness": "Results/S2-physical-orientation-20261001.json"
 }
