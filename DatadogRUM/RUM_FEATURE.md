@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-09-22
+last_updated: 2026-10-01
 sdk_version: 3.18.0
 verified_against_commit: 72b56e859
 tracked_files:
