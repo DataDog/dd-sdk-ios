@@ -1138,4 +1138,84 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let actualSampled = try XCTUnwrap(traceContext?.samplingPriority.isKept)
         XCTAssertEqual(actualSampled, expectedSampled, "Cross-SDK vector: handler must match composed rate Knuth decision")
     }
+
+    // MARK: - Client-Side Stats coverage of automatic requests (RUM-17382)
+
+    func testGivenClientSideStatsEnabled_whenSampledOutInterceptionCompletes_itDeliversSnapshotAndDoesNotSendSpan() throws {
+        // Given: stats enabled and a trace sample rate that rejects every request.
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: 0,
+            firstPartyHosts: .init(["www.example.com": [.datadog]]),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
+        )
+
+        var snapshots: [SpanSnapshot] = []
+        tracer.onSpanFinished = { snapshots.append($0) }
+
+        // No `modify(…)` call, so the interception carries no trace context and the handler has to
+        // build the span context itself. This is the path that used to return early.
+        let request: ImmutableRequest = .mockWith(httpMethod: "GET")
+        let interception = URLSessionTaskInterception(request: request, isFirstParty: true, trackingMode: .registeredDelegate)
+        interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
+        interception.register(
+            metrics: .mockWith(
+                fetch: .init(
+                    start: .mockDecember15th2019At10AMUTC(),
+                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 2)
+                )
+            )
+        )
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+
+        // Then: the span reaches the stats pipeline even though it is dropped for upload.
+        XCTAssertEqual(snapshots.count, 1, "Sampled-out automatic request must still be aggregated")
+        let snapshot = try XCTUnwrap(snapshots.first)
+        XCTAssertEqual(snapshot.operationName, "urlsession.request")
+        XCTAssertEqual(snapshot.spanKind, "client")
+        XCTAssertEqual(snapshot.httpStatusCode, 200)
+
+        let envelopes: [SpanEventsEnvelope] = core.events()
+        XCTAssertEqual(envelopes.count, 0, "Sampled-out automatic request must not be uploaded")
+    }
+
+    func testGivenClientSideStatsDisabled_whenSampledOutInterceptionCompletes_itDoesNotCreateSpan() throws {
+        // Given: stats disabled, so the early-return fast path must be preserved.
+        let expectation = expectation(description: "Do not open a write context")
+        expectation.isInverted = true
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: 0,
+            firstPartyHosts: .init(["www.example.com": [.datadog]]),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
+        )
+        XCTAssertNil(tracer.onSpanFinished)
+
+        let interception = URLSessionTaskInterception(request: .mockWith(httpMethod: "GET"), isFirstParty: true, trackingMode: .registeredDelegate)
+        interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
+        interception.register(
+            metrics: .mockWith(
+                fetch: .init(
+                    start: .mockDecember15th2019At10AMUTC(),
+                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 2)
+                )
+            )
+        )
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        let envelopes: [SpanEventsEnvelope] = core.events()
+        XCTAssertEqual(envelopes.count, 0)
+    }
 }

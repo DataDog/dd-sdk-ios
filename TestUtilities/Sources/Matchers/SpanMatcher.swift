@@ -128,6 +128,7 @@ public class SpanMatcher {
 
         public func tid()                  throws -> String { try matcher.meta(forKeyPath: "meta._dd.p.tid") }
         public func source()               throws -> String { try matcher.meta(forKeyPath: "meta._dd.source") }
+        public func computeStats()          throws -> String { try matcher.meta(forKeyPath: "meta._dd.compute_stats") }
         public func applicationVersion()   throws -> String { try matcher.meta(forKeyPath: "meta.version") }
         public func tracerVersion()        throws -> String { try matcher.meta(forKeyPath: "meta.tracer.version") }
 

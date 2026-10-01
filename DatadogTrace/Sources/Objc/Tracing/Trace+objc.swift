@@ -51,6 +51,11 @@ public final class objc_TraceConfiguration: NSObject {
         set { swiftConfig.customEndpoint = newValue }
         get { swiftConfig.customEndpoint }
     }
+
+    public var customStatsEndpoint: URL? {
+        set { swiftConfig.customStatsEndpoint = newValue }
+        get { swiftConfig.customStatsEndpoint }
+    }
 }
 
 @objc(DDTraceFirstPartyHostsTracing)

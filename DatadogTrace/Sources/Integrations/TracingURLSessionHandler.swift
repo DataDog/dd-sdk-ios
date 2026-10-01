@@ -269,9 +269,19 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
                 operationName: "urlsession.request",
                 startTime: startTime
             )
-        } else if Sampler(samplingRate: samplingRate).sample() {
+        } else if tracer.onSpanFinished != nil || Sampler(samplingRate: samplingRate).sample() {
             // Span context may not be injected on iOS13+ if `URLSession.dataTask(...)` for `URL`
             // was used to create the session task.
+            //
+            // When client-side stats is enabled this branch must be reached for every request,
+            // including sampled-out ones. `DDSpan.finish()` hands every finished span to the stats
+            // concentrator and gates only the *upload* on the sampling decision, so returning early
+            // here would leave the request out of the aggregate entirely. That is the sampling bias
+            // client-side stats exists to remove, and `_dd.compute_stats=0` stops the backend from
+            // compensating. `makeElementsForNewSpanContext` below already resolves keep/drop, so the
+            // sampler roll in this condition is just a fast path for when stats is off; testing the
+            // hook first also avoids rolling a second, independent sample that could disagree with
+            // the decision the helper is about to make.
             let newSpanElements = makeElementsForNewSpanContext(
                 tracer: tracer,
                 parentSpanContext: interception.activeSpanContext as? DDSpanContext,
