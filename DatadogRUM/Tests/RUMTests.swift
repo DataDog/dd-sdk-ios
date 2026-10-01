@@ -117,6 +117,109 @@ class RUMTests: XCTestCase {
         XCTAssertTrue(snapshot.isSampled, "A 0% configured rate must still be forced to 100% by `debugSDK`")
     }
 
+    func testMultiSceneTrackingResolutionRequiresFlagManifestAndSupportedOS() {
+        let manifests: [(Any?, Bool)] = [
+            (nil, false),
+            ("invalid", false),
+            ([:], false),
+            (["UIApplicationSupportsMultipleScenes": false], false),
+            (["UIApplicationSupportsMultipleScenes": "true"], false),
+            (["UIApplicationSupportsMultipleScenes": 1], false),
+            (["UIApplicationSupportsMultipleScenes": NSNumber(value: 1)], false),
+            (["UIApplicationSupportsMultipleScenes": true], true),
+            (["UIApplicationSupportsMultipleScenes": NSNumber(value: true)], true),
+            (["UIApplicationSceneConfigurations": ["UIApplicationSupportsMultipleScenes": true]], false)
+        ]
+        let requests: [Bool?] = [nil, false, true]
+
+        for (manifest, isMultiSceneManifest) in manifests {
+            for request in requests {
+                for isSupportedOS in [false, true] {
+                    var flags: RUM.Configuration.FeatureFlags = [.viewUpdates: false]
+                    flags[.multiSceneTracking] = request
+                    let resolved = RUMFeature.resolvedFeatureFlags(
+                        flags,
+                        bundle: .mockWith(UIApplicationSceneManifest: manifest),
+                        supportsMultiSceneTracking: isSupportedOS
+                    )
+                    XCTAssertEqual(
+                        resolved[.multiSceneTracking],
+                        request == true && isSupportedOS && isMultiSceneManifest,
+                        "request=\(String(describing: request)), manifest=\(String(describing: manifest)), supported=\(isSupportedOS)"
+                    )
+                    XCTAssertFalse(resolved[.viewUpdates])
+                    XCTAssertTrue(resolved[.trackScrollAndSwipeActions])
+                    var otherFlags = resolved
+                    otherFlags.removeValue(forKey: .multiSceneTracking)
+                    var requestedOtherFlags = flags
+                    requestedOtherFlags.removeValue(forKey: .multiSceneTracking)
+                    XCTAssertEqual(otherFlags, requestedOtherFlags)
+                }
+            }
+        }
+    }
+
+    func testDisabledMultiSceneTrackingDoesNotReadTheSceneManifest() {
+        let bundle = MutableSceneManifestBundle()
+        bundle.sceneManifest = ["UIApplicationSupportsMultipleScenes": true]
+
+        for flags: RUM.Configuration.FeatureFlags in [[:], [.multiSceneTracking: false]] {
+            let resolved = RUMFeature.resolvedFeatureFlags(flags, bundle: bundle, supportsMultiSceneTracking: true)
+            XCTAssertFalse(resolved[.multiSceneTracking])
+        }
+        _ = RUMFeature.resolvedFeatureFlags([.multiSceneTracking: true], bundle: bundle, supportsMultiSceneTracking: false)
+        XCTAssertEqual(bundle.sceneManifestReads, 0)
+    }
+
+    func testMultiSceneTrackingIsFrozenInFeatureAndScopeDependencies() throws {
+        let bundle = MutableSceneManifestBundle()
+        bundle.sceneManifest = ["UIApplicationSupportsMultipleScenes": true]
+        config.bundle = bundle
+        config.featureFlags = [.multiSceneTracking: true, .viewUpdates: false]
+
+        RUM.enable(with: config, in: core)
+
+        let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        let monitor = try XCTUnwrap(rum.monitor as? Monitor)
+        let expectedMode: Bool
+        #if os(iOS)
+        if #available(iOS 27.0, *) {
+            expectedMode = true
+        } else {
+            expectedMode = false
+        }
+        #else
+        expectedMode = false
+        #endif
+        let readsAfterEnable = bundle.sceneManifestReads
+        bundle.sceneManifest = ["UIApplicationSupportsMultipleScenes": false]
+        config.featureFlags = [.multiSceneTracking: false, .viewUpdates: true]
+
+        XCTAssertEqual(rum.isMultiSceneTrackingEnabled, expectedMode)
+        XCTAssertEqual(monitor.applicationScope.dependencies.isMultiSceneTrackingEnabled, expectedMode)
+        XCTAssertEqual(monitor.applicationScope.dependencies.featureFlags[.multiSceneTracking], expectedMode)
+        XCTAssertFalse(monitor.applicationScope.dependencies.featureFlags[.viewUpdates])
+        XCTAssertTrue(monitor.applicationScope.dependencies.featureFlags[.trackScrollAndSwipeActions])
+        XCTAssertTrue(rum.configuration.featureFlags[.multiSceneTracking], "The requested configuration remains unchanged")
+        XCTAssertEqual(bundle.sceneManifestReads, readsAfterEnable, "Reading frozen mode must not re-read the manifest")
+    }
+
+    func testMultiSceneTrackingWithoutManifestResolvesOffInScopeDependencies() throws {
+        config.bundle = .mockWith()
+        config.featureFlags = [.multiSceneTracking: true]
+
+        RUM.enable(with: config, in: core)
+
+        let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        let monitor = try XCTUnwrap(rum.monitor as? Monitor)
+        XCTAssertFalse(rum.isMultiSceneTrackingEnabled)
+        XCTAssertFalse(monitor.applicationScope.dependencies.isMultiSceneTrackingEnabled)
+        XCTAssertFalse(monitor.applicationScope.dependencies.featureFlags[.multiSceneTracking])
+        XCTAssertTrue(rum.configuration.featureFlags[.multiSceneTracking])
+        XCTAssertTrue(monitor.applicationScope.dependencies.featureFlags[.viewUpdates])
+        XCTAssertTrue(monitor.applicationScope.dependencies.featureFlags[.trackScrollAndSwipeActions])
+    }
+
     func testWhenEnabledWithDefaultConfiguration() throws {
         // Given
         let applicationID: String = .mockRandom()
@@ -642,5 +745,18 @@ class RUMTests: XCTestCase {
         let urlSessionHandler = try XCTUnwrap(feature.handlers.first as? URLSessionRUMResourcesHandler)
         XCTAssertEqual(urlSessionHandler.distributedTracing?.firstPartyHosts.hosts, hosts)
         XCTAssertEqual(urlSessionHandler.distributedTracing?.samplingRate, debugSDK ? 100.0 : sampleRate)
+    }
+}
+
+private final class MutableSceneManifestBundle: Bundle, @unchecked Sendable {
+    var sceneManifest: Any?
+    private(set) var sceneManifestReads = 0
+
+    override func object(forInfoDictionaryKey key: String) -> Any? {
+        guard key == "UIApplicationSceneManifest" else {
+            return super.object(forInfoDictionaryKey: key)
+        }
+        sceneManifestReads += 1
+        return sceneManifest
     }
 }
