@@ -25,16 +25,24 @@ internal final class LaunchReasonResolver {
 
     /// Launch window duration before resolving `.backgroundLaunch`.
     private let threshold: TimeInterval
-    /// Buffer of commands received while the launch reason is unresolved.
-    private var buffer: [(command: RUMCommand, context: DatadogContext, writer: Writer)] = []
+    /// Buffer of commands received while the launch reason is unresolved, with their device time (see `RUMCommandDeviceTime`).
+    private var buffer: [(command: RUMCommand, context: DatadogContext, writer: Writer, deviceTime: Date?)] = []
     /// Resolved launch reason, updated once a conclusive condition is met.
     private var resolvedReason: LaunchReason?
+    /// Device time of the command being processed, kept for each buffered command and restored when it is forwarded.
+    private let commandDeviceTime: RUMCommandDeviceTime
 
     /// Initializes the resolver with a custom or default threshold.
     ///
-    /// - Parameter launchWindowThreshold: Time window in seconds before resolving as background launch.
-    init(launchWindowThreshold: TimeInterval = Constants.launchWindowThreshold) {
+    /// - Parameters:
+    ///   - launchWindowThreshold: Time window in seconds before resolving as background launch.
+    ///   - commandDeviceTime: Device time of the command being processed.
+    init(
+        launchWindowThreshold: TimeInterval = Constants.launchWindowThreshold,
+        commandDeviceTime: RUMCommandDeviceTime = RUMCommandDeviceTime()
+    ) {
         self.threshold = launchWindowThreshold
+        self.commandDeviceTime = commandDeviceTime
     }
 
     /// Defers processing of a RUM command until `launchReason` is resolved.
@@ -71,7 +79,7 @@ internal final class LaunchReasonResolver {
         }
 
         // Otherwise, buffer the command for deferred resolution.
-        buffer.append((command, context, writer))
+        buffer.append((command, context, writer, commandDeviceTime.value))
 
         // Check whether this command leads to launch reason resolution.
         guard let reason = evaluateLaunchReason(command: command, context: context) else {
@@ -79,10 +87,12 @@ internal final class LaunchReasonResolver {
         }
 
         // If resolved, forward all buffered commands in FIFO order,
-        // injecting the resolved reason into each context.
-        for (bufferedCommand, bufferedContext, bufferedWriter) in buffer {
+        // injecting the resolved reason into each context and restoring each command's device time.
+        for (bufferedCommand, bufferedContext, bufferedWriter, bufferedDeviceTime) in buffer {
             let updatedContext = bufferedContext.replacing(launchReason: reason)
-            onReady(bufferedCommand, updatedContext, bufferedWriter)
+            commandDeviceTime.process(deviceTime: bufferedDeviceTime) {
+                onReady(bufferedCommand, updatedContext, bufferedWriter)
+            }
         }
 
         // Store resolved reason and clear the buffer (no further buffering needed)
