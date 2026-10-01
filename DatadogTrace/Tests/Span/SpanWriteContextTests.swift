@@ -10,13 +10,19 @@ import DatadogInternal
 @testable import DatadogTrace
 
 class SpanWriteContextTests: XCTestCase {
+    private struct OtherFeatureContext: AdditionalContext {
+        static let key = "other-feature"
+        let value: String
+    }
+
     private let featureScope = FeatureScopeMock()
 
     @MainActor
     func testWhenRequestingSpanWriteContext_itProvidesInitialCoreContext() {
         let retrieveContext = expectation(description: "provide core context")
 
-        let initialContext: DatadogContext = .mockRandom()
+        var initialContext: DatadogContext = .mockRandom()
+        initialContext.set(additionalContext: RUMCoreContext.mockRandom())
         featureScope.contextMock = initialContext
 
         // Given
@@ -32,6 +38,52 @@ class SpanWriteContextTests: XCTestCase {
         }
 
         waitForExpectations(timeout: 0.5)
+    }
+
+    @MainActor
+    func testWhenRemovingRUMContext_itPreservesOtherInitialContext() {
+        let retrieveContext = expectation(description: "provide context without RUM ownership")
+        var expectedContext: DatadogContext = .mockRandom()
+        expectedContext.set(additionalContext: OtherFeatureContext(value: "initial"))
+        var initialContext = expectedContext
+        initialContext.set(additionalContext: RUMCoreContext.mockRandom())
+        featureScope.contextMock = initialContext
+        let writer = LazySpanWriteContext(featureScope: featureScope, rumContextOverride: .remove)
+        let currentContext: DatadogContext = .mockRandom()
+        featureScope.contextMock = currentContext
+
+        writer.spanWriteContext { providedContext, _ in
+            XCTAssertNil(providedContext.additionalContext(ofType: RUMCoreContext.self))
+            DDAssertReflectionEqual(providedContext, expectedContext)
+            retrieveContext.fulfill()
+        }
+
+        waitForExpectations(timeout: 0.5)
+        DDAssertReflectionEqual(featureScope.contextMock, currentContext)
+    }
+
+    @MainActor
+    func testWhenReplacingRUMContext_itPreservesOtherInitialContext() {
+        let retrieveContext = expectation(description: "provide context with request-time RUM ownership")
+        let requestRUMContext: RUMCoreContext = .mockRandom()
+        var expectedContext: DatadogContext = .mockRandom()
+        expectedContext.set(additionalContext: OtherFeatureContext(value: "initial"))
+        expectedContext.set(additionalContext: requestRUMContext)
+        var initialContext = expectedContext
+        initialContext.set(additionalContext: RUMCoreContext.mockRandom())
+        featureScope.contextMock = initialContext
+        let writer = LazySpanWriteContext(featureScope: featureScope, rumContextOverride: .replace(requestRUMContext))
+        let currentContext: DatadogContext = .mockRandom()
+        featureScope.contextMock = currentContext
+
+        writer.spanWriteContext { providedContext, _ in
+            XCTAssertEqual(providedContext.additionalContext(ofType: RUMCoreContext.self), requestRUMContext)
+            DDAssertReflectionEqual(providedContext, expectedContext)
+            retrieveContext.fulfill()
+        }
+
+        waitForExpectations(timeout: 0.5)
+        DDAssertReflectionEqual(featureScope.contextMock, currentContext)
     }
 
     func testWhenWritingEvent_itDoesNotBypassConsent() {
