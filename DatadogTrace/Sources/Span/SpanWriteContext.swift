@@ -13,6 +13,16 @@ internal protocol SpanWriteContext {
     func spanWriteContext(_ block: @escaping (DatadogContext, Writer) -> Void)
 }
 
+/// Controls the RUM context attached to a span without changing its other context.
+internal enum RUMContextOverride {
+    /// Keep the RUM context captured when the span writer was created.
+    case preserve
+    /// Explicitly leave the span without RUM context.
+    case remove
+    /// Use the RUM context captured when the request started.
+    case replace(RUMCoreContext)
+}
+
 /// A `SpanWriteContext` that captures core context at the moment of initialization and provides it
 /// later when the actual span event is constructed.
 ///
@@ -26,12 +36,12 @@ internal final class LazySpanWriteContext: SpanWriteContext {
     /// The core context valid at the moment of creating `LazySpanWriteContext`.
     /// It doesn't require synchronization as it is accessed only from the core context queue.
     private var context: DatadogContext?
-    /// `nil` preserves the context captured by this writer. A present optional replaces only RUM context.
-    private let rumContext: RUMCoreContext??
+    /// The request-time override, or `.preserve` for spans that use the writer's captured context.
+    private let rumContextOverride: RUMContextOverride
 
-    init(featureScope: FeatureScope, rumContext: RUMCoreContext?? = nil) {
+    init(featureScope: FeatureScope, rumContextOverride: RUMContextOverride = .preserve) {
         self.featureScope = featureScope
-        self.rumContext = rumContext
+        self.rumContextOverride = rumContextOverride
 
         // Capture the core context valid at the moment of initialization:
         featureScope.context { [weak self] context in
@@ -45,7 +55,12 @@ internal final class LazySpanWriteContext: SpanWriteContext {
             guard var context = self.context else {
                 return // unexpected
             }
-            if let rumContext = self.rumContext {
+            switch self.rumContextOverride {
+            case .preserve:
+                break
+            case .remove:
+                context.removeContext(ofType: RUMCoreContext.self)
+            case .replace(let rumContext):
                 context.set(additionalContext: rumContext)
             }
             block(context, writer)

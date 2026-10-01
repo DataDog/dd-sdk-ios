@@ -314,7 +314,10 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
                 operationName: "urlsession.request",
                 startTime: startTime,
                 eventWriter: capturedRUMContext.map {
-                    LazySpanWriteContext(featureScope: tracer.featureScope, rumContext: .some($0.rumContext))
+                    LazySpanWriteContext(
+                        featureScope: tracer.featureScope,
+                        rumContextOverride: $0.rumContext.map(RUMContextOverride.replace) ?? .remove
+                    )
                 }
             )
         } else if Sampler(samplingRate: samplingRate).sample() {
@@ -352,7 +355,10 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
                 operationName: "urlsession.request",
                 startTime: startTime,
                 eventWriter: capturedRUMContext.map {
-                    LazySpanWriteContext(featureScope: tracer.featureScope, rumContext: .some($0.rumContext))
+                    LazySpanWriteContext(
+                        featureScope: tracer.featureScope,
+                        rumContextOverride: $0.rumContext.map(RUMContextOverride.replace) ?? .remove
+                    )
                 }
             )
         } else {
