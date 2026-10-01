@@ -244,3 +244,11 @@ ran. Actual End, native idle, task-only removal and Closed restoration pass; all
 had correct resized geometry. This attempt supplies no ancestry or gate conclusion;
 the automated path stays stopped. Continue independent H10 work without another
 human invitation.
+
+The [October 1 reader preparation](../Results/S2-accessibility-discovery-20261001.json)
+now validates physical ownership after public discovery, with independent review,
+33 host controls and two qualified SDK27.1 builds. An opt-in continuation preserves
+the four accepted cells through exact historical reader snapshots; its 42 source
+and readiness controls pass with independent re-review. The stopped automatic
+prefix stays stopped. A reviewed fresh runtime plan and supported interaction
+instructions remain prerequisites; no new native attempt or gate closure follows.

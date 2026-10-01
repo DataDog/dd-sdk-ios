@@ -178,8 +178,9 @@ def page(directory):
     return server
 
 
-def admit(args):
-    runner, plan = verify(args.root)
+def admit(args, *, verifier=None):
+    verifier = verify if verifier is None else verifier
+    runner, plan = verifier(args.root)
     runtime = args.root.resolve()/'runtime'
     continuation.current_selection(plan, supported.reference(runtime/'runtime-plan.json'))
     preflight = supported.read(args.preflight)
@@ -287,10 +288,11 @@ def scenario(collector, runner, selected, out, installed, product):
     return terminal
 
 
-def execute(args):
+def execute(args, *, verifier=None):
+    verifier = verify if verifier is None else verifier
     root = args.root.resolve()
     runtime = root/'runtime'
-    runner, plan = verify(root)
+    runner, plan = verifier(root)
     continuation.current_selection(plan, supported.reference(runtime/'runtime-plan.json'))
     stage = supported.read(runtime/'native-admission.json')
     require(stage['runtime_plan_sha256'] == supported.sha(runtime/'runtime-plan.json')
@@ -341,7 +343,7 @@ def execute(args):
         terminal = scenario(collector,runner,selected,out,installed,product)
         summary['recaptured_effects'] = human_effect_recapture.observation_summary(collector.receipts)
         summary.update(scenario='PASS',evidence='PASS')
-        verify(root)
+        verifier(root)
         require(time.time() < deadline, 'scenario completed outside fixed budget')
         summary['state']='PASS'
     except Exception as error:
@@ -382,7 +384,7 @@ def execute(args):
                 errors=runner.transport.cleanup_cell(root,out,documents,identity,device_id,device,original,initial,pid,None,
                     summary['scenario'],fixed,task_bundle=bundle,preserve_after_stop=True,
                     task_absent=lambda identifier:runner.shared.capture(['xcrun','simctl','get_app_container',identifier,bundle,'data'],check=False).returncode!=0,
-                    verify_source=lambda value:verify(value))
+                    verify_source=verifier)
             finally: runner.shared.devices=prior
         except Exception as error:
             errors.append('cleanup driver: '+str(error))
@@ -415,13 +417,14 @@ def execute(args):
     return 0 if summary['state']=='PASS' else 1
 
 
-def run(args):
-    runner,plan=verify(args.root);runtime=args.root.resolve()/'runtime'
+def run(args, *, verifier=None, entrypoint=None):
+    verifier = verify if verifier is None else verifier
+    runner,plan=verifier(args.root);runtime=args.root.resolve()/'runtime'
     stage=supported.read(runtime/'native-admission.json');key=runner.cell_key(plan['selected'])
     def message(value):
         print(json.dumps(value),flush=True)
         runner.human_operator.forward(runtime/'operator',value,context='Duo / SwiftUI '+plan['selected']['layout']+' / '+plan['selected']['build'])
-    argv=[sys.executable,'-B',str(Path(__file__).resolve()),'cell','--root',str(args.root.resolve())]
+    argv=[sys.executable,'-B',str(Path(__file__).resolve() if entrypoint is None else Path(entrypoint).resolve()),'cell','--root',str(args.root.resolve())]
     error=None
     try:
         code=runner.human_supervisor.supervise(argv,runtime/(key+'-driver.log'),message,stage['execution_deadline'],stage['cleanup_deadline'])

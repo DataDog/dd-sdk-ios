@@ -22,7 +22,16 @@ def successful(value):
             'completed cell is not fully qualified')
 
 
-def accepted(item, expected, prior):
+def preserved_source(reference, preserved_helpers):
+    candidates = [m for m in preserved_helpers if m['original'] == reference]
+    require(len(candidates) <= 1, 'duplicate historical helper binding')
+    if not candidates: return bound(reference, decode=False)
+    member = candidates[0]
+    require(member['copied']['sha256'] == reference['sha256'], 'historical helper bytes differ')
+    return bound(member['copied'], decode=False)
+
+
+def accepted(item, expected, prior, *, preserved_helpers=()):
     require(item['selected'] == expected, 'completed prefix is skipped, repeated or reordered')
     result = bound(item['result'])
     require(result['selected'] == expected and result['state'] in ('NATIVE_BASELINE_QUALIFIED', 'NATIVE_CELL_QUALIFIED')
@@ -45,7 +54,7 @@ def accepted(item, expected, prior):
     for name, reference in plan['helpers'].items():
         saved = by_original.get(reference['path'])
         if saved is None:
-            bound(reference, decode=False)
+            preserved_source(reference, preserved_helpers)
         else:
             snapshot_name, member = saved
             require(member['original'] == reference and member['copied']['sha256'] == reference['sha256'],
@@ -104,11 +113,11 @@ def accepted(item, expected, prior):
     return plan
 
 
-def selection(owner):
+def selection(owner, *, preserved_helpers=()):
     require(owner['swiftui_preparation']['universe'] == UNIVERSE, 'SwiftUI universe changed')
     completed = owner['completed_swiftui_cells']
     require(isinstance(completed, list) and 1 <= len(completed) < len(UNIVERSE), 'no untouched SwiftUI successor')
-    plans = [accepted(item, UNIVERSE[i], completed[:i]) for i, item in enumerate(completed)]
+    plans = [accepted(item, UNIVERSE[i], completed[:i], preserved_helpers=preserved_helpers) for i, item in enumerate(completed)]
     return UNIVERSE[len(completed)].copy(), completed, plans
 
 

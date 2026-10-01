@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "owner": "EXP-210",
-  "state": "REVIEWED_OFFLINE_COMPILER_PREPARATION",
+  "state": "REVIEWED_READER_BUILDS_AND_CONTINUATION_COMPONENT_NATIVE_UNQUALIFIED",
   "gates": [
     "S2:C09",
     "S2:C10",
@@ -39,12 +39,12 @@
   },
   "native_admitted": false,
   "native_runs": 0,
-  "builds": 0,
+  "builds": 2,
   "qualified_cells": 0,
   "human_invitation": false,
   "gates_closed": [],
-  "next_action": "Review the bounded two-build compiler plan, then define and review a source-bound runtime continuation before any native invitation. Original cause remains unproved; the automatic prefix path stays stopped.",
-  "updated_at": "2026-10-01T08:50:52.503448+00:00",
+  "next_action": "Prepare and review the first remaining baseline native plan using the two reviewed per-key products, exact historical reader snapshots and restored prefix comparison joins. Fresh supported interaction instructions and actual tool-owner readiness remain prerequisites. Candidate advancement needs its own reviewed successor; no stopped automatic-prefix retry.",
+  "updated_at": "2026-10-01T09:30:36.503439+00:00",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/review-cycle2.json",
     "sha256": "a8fc5b80a69135d559b5fc8d1de8e8d97db0caefcb61cd36dac086afdc7e6f7c"
@@ -56,5 +56,61 @@
   "compiler_plan": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/refresh/refresh-plan.json",
     "sha256": "edbbdfb7b956515d0430f06ca3f3c986307348eae9f7838d0a449bdf1c08e29f"
+  },
+  "compiler_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/compiler-review-cycle1.json",
+    "sha256": "62ae70f780e3a0f75c643ba6c5ca0b4ee0bc8999ad6ad1dd2fcbcd2bb4a5d0f4"
+  },
+  "build_receipts": [
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/refresh/baseline-27.1/build-result.json",
+      "sha256": "196b537eb45944d8667a1caa2ad917f001146d75c16f3ac5beb0f0f7e9a956dc"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/refresh/candidate-27.1/build-result.json",
+      "sha256": "6b66c03224810d348c38285253fa1af18d8370b99e8c8d8536f5fea5edf5d093"
+    }
+  ],
+  "runtime_definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/runtime-definition.json",
+    "sha256": "a67920814f50ef8d28f243c19c95df5e3706bb5f17381c462a6905ddee5e3b20"
+  },
+  "historical_binding_definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/runtime-historical-binding-definition.json",
+    "sha256": "eacdb694052aacdd8c406d78931c49829f3671cba8be7ca8f8c9b41b49639a98"
+  },
+  "runtime_controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/runtime-controls-cycle2.json",
+    "sha256": "96b4b7337859cad8bf720a1261c4f4f7abb429e148971ccbc3e552b02f7af4f2"
+  },
+  "runtime_tests": 42,
+  "accepted_cells_preserved": 4,
+  "native_prerequisites": [
+    "Reviewed frozen runtime plan and focused controls",
+    "Fresh live supported interaction instructions/skill; the current tool inventory exposes Start/Capture/End but no skill export capability",
+    "Fresh Xcode/native readiness and actual one-cell ownership; no reused tool sessions",
+    "User simulator availability until12:00 Paris, no physical iPad session before21:00"
+  ],
+  "runtime_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/runtime-component-review-cycle2.json",
+    "sha256": "592bf6cefc9404578054dee677d1ab45207e0c52c0feeb18bda7c34d49f2cda2"
+  },
+  "runtime_review_history": [
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/runtime-component-review-cycle1.json",
+      "sha256": "d893de662b68a4aa7f8ae42ef03b4287453944efbc8232310e06f3d95823c1a6"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/runtime-component-review-cycle2.json",
+      "sha256": "592bf6cefc9404578054dee677d1ab45207e0c52c0feeb18bda7c34d49f2cda2"
+    }
+  ],
+  "actual_source_rejoin": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/source-prefix-rejoin-cycle2.json",
+    "sha256": "3f563f0287e7f5e3ba23694d69a0d09a66e8e79aa02f3413bd1c595585af0942"
+  },
+  "runtime_repair_definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-ax-discovery-kqc16tki/runtime-repair-definition-cycle2.json",
+    "sha256": "099aa8cd7c08662ee1650c6224d96132d2c85c7c776d7f847d4f905f0e54ac93"
   }
 }
