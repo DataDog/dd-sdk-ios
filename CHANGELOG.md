@@ -1,6 +1,6 @@
 # Unreleased
 
-- [FEATURE] Add an optional event-only `onFirstFlags` creation callback and immutable `FlagsClientEvent` values with an event type and optional affected flag keys.
+- [FEATURE] Add an optional `onFirstFlags` creation callback receiving a usable client and its first configuration event and immutable `FlagsClientEvent` values with an event type and optional affected flag keys.
 
 - [IMPROVEMENT] Enable RUM view update (delta) events by default. Views that update often now send a smaller payload. See [#3233][]
 - [FIX] Release the RUM display-link observer and its frame readers when their owner is released.

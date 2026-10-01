@@ -1571,7 +1571,7 @@ public struct SessionReplayPrivacyView<Content: View>: View
 public final class FlagsClient
     public static let defaultName = "default"
     public static func create(name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol
-    public static func create(name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default,onFirstFlags: ((FlagsClientEvent) -> Void)?) -> FlagsClientProtocol
+    public static func create(name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default,onFirstFlags: ((FlagsClientProtocol, FlagsClientEvent) -> Void)?) -> FlagsClientProtocol
     public static func shared(named name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol
 [?] extension FlagsClient: FlagsClientProtocol
     public var state: FlagsStateObservable

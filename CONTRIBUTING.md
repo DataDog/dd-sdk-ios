@@ -54,12 +54,12 @@ blank value) skips the Flags example entirely. The app reuses its existing Core 
 The configured client token must have access to that flag environment; the sample does not create
 flags or provision access.
 
-The `onFirstFlags` closure schedules one evaluation on the main queue, after client creation and
-registration have completed. It logs the supplied flag keys directly (`[]` for an empty list,
+The `onFirstFlags` closure receives a fully constructed, registered client and evaluates directly
+using that argument, even if the callback runs before `create` returns. It logs the supplied flag keys directly (`[]` for an empty list,
 `not supplied` when absent), followed by the evaluation result or an explicit fallback warning,
 through the existing `[iOS App]` logger/console display. Context initialization still fetches the network
 configuration. The first notification may come from cache; a later refresh does not repeat the
-first-flags evaluation. The deferred evaluation reads the client's current configuration.
+first-flags evaluation. The evaluation reads the client's current configuration, not an assignment snapshot pinned by the event.
 
 
 #### Sources
