@@ -110,6 +110,31 @@ public final class FlagsClient {
         }
     }
 
+    /// Creates a client with an optional callback for its first installed flag configuration.
+    ///
+    /// The callback receives the first accepted cache or network configuration's complete keys,
+    /// including an empty array for an empty configuration. Missing or invalid cache does not notify.
+    /// It runs once on the installing thread, outside internal locks.
+    /// Network delivery follows the existing context completion and state notifications.
+    /// Creating an existing named client ignores the new callback.
+    ///
+    /// - Parameters:
+    ///   - name: A unique client name.
+    ///   - core: The Datadog SDK core instance.
+    ///   - onFirstFlags: Optional callback receiving only the first configuration-changed event, not a client reference.
+    ///     It may be invoked before `create` returns. Application code owns client-reference timing;
+    ///     defer client lookup or evaluation until creation and registration have finished.
+    @discardableResult
+    public static func create(
+        name: String = FlagsClient.defaultName,
+        in core: DatadogCoreProtocol = CoreRegistry.default,
+        onFirstFlags: ((FlagsClientEvent) -> Void)?
+    ) -> FlagsClientProtocol {
+        runOnMainThreadSync {
+            doCreate(name: name, in: core, onFirstFlags: onFirstFlags)
+        }
+    }
+
     /// Returns an existing `FlagsClient` instance by name.
     ///
     /// Use this method to retrieve a client that was previously created with ``create(name:in:)``.
@@ -154,7 +179,8 @@ public final class FlagsClient {
 
     internal static func doCreate(
         name: String,
-        in core: DatadogCoreProtocol
+        in core: DatadogCoreProtocol,
+        onFirstFlags: ((FlagsClientEvent) -> Void)? = nil
     ) -> FlagsClientProtocol {
         guard let feature = core.get(feature: FlagsFeature.self) else {
             reportIssue(
@@ -186,7 +212,8 @@ public final class FlagsClient {
                 flagAssignmentsFetcher: feature.flagAssignmentsFetcher,
                 dateProvider: SystemDateProvider(),
                 featureScope: featureScope,
-                initializationTimeout: feature.initializationTimeout
+                initializationTimeout: feature.initializationTimeout,
+                onFirstFlags: onFirstFlags
             ),
             exposureLogger: feature.makeExposureLogger(featureScope),
             evaluationLogger: feature.makeEvaluationLogger(featureScope),

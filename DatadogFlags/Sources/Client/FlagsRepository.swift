@@ -84,6 +84,9 @@ internal final class FlagsRepository {
     private let initializationTimeout: TimeInterval?
     private let scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler
 
+    private let installationLock = NSLock()
+    private var onFirstFlags: ((FlagsClientEvent) -> Void)?
+
     private let initializationLock = NSLock()
     private var didStartInitialization = false
 
@@ -117,6 +120,7 @@ internal final class FlagsRepository {
         dateProvider: any DateProvider,
         featureScope: any FeatureScope,
         initializationTimeout: TimeInterval? = Flags.Configuration.defaultInitializationTimeout,
+        onFirstFlags: ((FlagsClientEvent) -> Void)? = nil,
         scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler? = nil
     ) {
         self.clientName = clientName
@@ -124,6 +128,7 @@ internal final class FlagsRepository {
         self.dateProvider = dateProvider
         self.featureScope = featureScope
         self.initializationTimeout = initializationTimeout
+        self.onFirstFlags = onFirstFlags
         self.scheduleInitializationTimeout = scheduleInitializationTimeout ?? Self.scheduleInitializationTimeout
         readState()
     }
@@ -204,7 +209,7 @@ internal final class FlagsRepository {
                 }
                 return
             }
-            self.flagsData = data
+            let notifyFirstFlags = self.install(data)
 
             // Mark complete and grab pending callbacks atomically
             var callbacks: [() -> Void] = []
@@ -218,6 +223,8 @@ internal final class FlagsRepository {
             DispatchQueue.global(qos: .userInitiated).async {
                 readSemaphore.signal()
             }
+
+            notifyFirstFlags?()
 
             // Execute async callbacks outside the lock
             for callback in callbacks {
@@ -250,6 +257,19 @@ internal final class FlagsRepository {
         if shouldExecuteNow {
             callback()
         }
+    }
+
+    /// Claims the callback together with the first installation; the returned closure runs outside locks.
+    private func install(_ data: FlagsData?) -> (() -> Void)? {
+        installationLock.lock()
+        defer { installationLock.unlock() }
+        flagsData = data
+        guard let data, let onFirstFlags else {
+            return nil
+        }
+        self.onFirstFlags = nil
+        let event = FlagsClientEvent(type: .configurationChanged, flagsChanged: Array(data.flags.keys).sorted())
+        return { onFirstFlags(event) }
     }
 
     private func writeState() {
@@ -320,11 +340,11 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                         takeCompletion()?(.failure(.clientNotInitialized))
                         return
                     }
-                    self.flagsData = .init(
+                    let notifyFirstFlags = self.install(.init(
                         flags: flags,
                         context: context,
                         date: self.dateProvider.now
-                    )
+                    ))
                     self._flagsDataVersion.mutate { $0 += 1 }
                     self.writeState()
                     let operationCompletion = takeCompletion()
@@ -336,6 +356,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                         self.stateManager.updateState(.ready)
                         operationCompletion?(.success(()))
                     }
+                    notifyFirstFlags?()
                 case .failure(let error):
                     // Only update state if no newer request has succeeded.
                     // This prevents an older failing request from clearing data

@@ -46,6 +46,22 @@ $ make
 
 The workspace for SDK development and integration (tests, benchmarks, example app).
 
+To try the Example app's First Flags evaluation, select the `Example` scheme in Xcode and add
+`DD_FLAG_KEY` under **Run > Arguments > Environment Variables**. Its value must be the key of an
+existing **boolean** flag in the environment configured for the app's client token. No key (or a
+blank value) skips the Flags example entirely. The app reuses its existing Core configuration
+(`env: "tests"`) and evaluates for its existing sample user, `abcd-1234`, with a default of `false`.
+The configured client token must have access to that flag environment; the sample does not create
+flags or provision access.
+
+The `onFirstFlags` closure schedules one evaluation on the main queue, after client creation and
+registration have completed. It logs the supplied flag keys directly (`[]` for an empty list,
+`not supplied` when absent), followed by the evaluation result or an explicit fallback warning,
+through the existing `[iOS App]` logger/console display. Context initialization still fetches the network
+configuration. The first notification may come from cache; a later refresh does not repeat the
+first-flags evaluation. The deferred evaluation reads the client's current configuration.
+
+
 #### Sources
 
 `Datadog` source files

@@ -46,6 +46,15 @@ internal struct Environment {
         return !ProcessInfo.processInfo.arguments.contains(Argument.disableAppHangBacktraces)
     }
 
+    /// Set DD_FLAG_KEY in the Example scheme to an existing boolean flag key to opt in.
+    static func readFlagKey(from environment: [String: String] = ProcessInfo.processInfo.environment) -> String? {
+        guard let key = environment["DD_FLAG_KEY"]?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !key.isEmpty else {
+            return nil
+        }
+        return key
+    }
+
     // MARK: - Info.plist
 
     static func readClientToken() -> String {

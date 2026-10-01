@@ -1571,6 +1571,7 @@ public struct SessionReplayPrivacyView<Content: View>: View
 public final class FlagsClient
     public static let defaultName = "default"
     public static func create(name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol
+    public static func create(name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default,onFirstFlags: ((FlagsClientEvent) -> Void)?) -> FlagsClientProtocol
     public static func shared(named name: String = FlagsClient.defaultName,in core: DatadogCoreProtocol = CoreRegistry.default) -> FlagsClientProtocol
 [?] extension FlagsClient: FlagsClientProtocol
     public var state: FlagsStateObservable
@@ -1685,6 +1686,12 @@ public struct FlagSnapshot: Equatable, Encodable
     public let reason: String
     public init(value: AnyValue,variant: String,reason: String)
 public protocol FlagValue: Encodable
+public struct FlagsClientEvent: Equatable
+    public let type: FlagsClientEventType
+    public let flagsChanged: [String]?
+    public init(type: FlagsClientEventType, flagsChanged: [String]? = nil)
+public enum FlagsClientEventType: String
+    case configurationChanged = "CONFIGURATION_CHANGED"
 public enum FlagsError: Error
     case networkError(Error)
     case invalidResponse

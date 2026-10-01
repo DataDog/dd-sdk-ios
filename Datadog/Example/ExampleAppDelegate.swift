@@ -10,6 +10,7 @@ import DatadogLogs
 import DatadogTrace
 import DatadogRUM
 import DatadogCrashReporting
+import DatadogFlags
 import OpenTelemetryApi
 
 let serviceName = "ios-sdk-example-app"
@@ -124,6 +125,22 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         logger.addTag(withKey: "build_configuration", value: "release")
         #endif
 
+        // Opt in with an existing boolean flag from this app's configured environment.
+        if let flagKey = Environment.readFlagKey() {
+            Flags.enable()
+            let client = FlagsClient.create(onFirstFlags: { event in
+                // App-owned deferral: creation/registration finishes on main before this lookup.
+                DispatchQueue.main.async {
+                    Self.logFirstFlags(event, flagKey: flagKey, client: FlagsClient.shared(), logger: logger)
+                }
+            })
+            client.setEvaluationContext(FlagsEvaluationContext(targetingKey: "abcd-1234")) { result in
+                if case .failure = result {
+                    logger.warn("Flags example could not refresh its configuration; verify the configured client token and environment.")
+                }
+            }
+        }
+
         // Launch initial screen depending on the launch configuration
         #if os(iOS) || os(visionOS)
         let storyboard = UIStoryboard(name: "Main iOS", bundle: nil)
@@ -147,6 +164,20 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
             installConsoleOutputInterceptor()
         }
         return true
+    }
+
+    static func logFirstFlags(_ event: FlagsClientEvent, flagKey: String, client: FlagsClientProtocol, logger: LoggerProtocol) {
+        if let keys = event.flagsChanged {
+            logger.info("First flags keys: \(keys)")
+        } else {
+            logger.info("First flags keys: not supplied")
+        }
+        let details = client.getBooleanDetails(key: flagKey, defaultValue: false)
+        if details.error == nil {
+            logger.info("First flags: \(flagKey) = \(details.value)")
+        } else {
+            logger.warn("First flags: \(flagKey) could not be evaluated; using false.")
+        }
     }
 
     func launch(storyboard: UIStoryboard) {
