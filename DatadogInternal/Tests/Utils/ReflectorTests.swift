@@ -184,9 +184,7 @@ class ReflectorTests: XCTestCase {
         let subject = Subject(Payload(value: [key: object]))
 
         // When
-        let dictionary: [AnyHashable: Any] = try reflector(subject).descendant(
-            copyingIntermediates: false, "payload", "value"
-        )
+        let dictionary: [AnyHashable: Any] = try reflector(subject).descendant("payload", "value")
 
         // Then
         XCTAssertEqual(dictionary.count, 1)
@@ -199,7 +197,7 @@ class ReflectorTests: XCTestCase {
 
         // When
         XCTAssertThrowsError(try reflector(subject).descendant(
-            type: String.self, copyingIntermediates: false, "payload", "value"
+            type: String.self, "payload", "value"
         )) {
             // Then
             guard case let Reflector.Error.typeMismatch(_, expect: expected, got: actual) = $0 else {
@@ -210,22 +208,18 @@ class ReflectorTests: XCTestCase {
         }
     }
 
-    func testDefaultAndExplicitCopyingPreserveExistingTraversal() throws {
+    func testOwnedOptionalTraversal() throws {
         // Given
         let subject = Payload(value: Optional.some(Payload(value: "value")))
         let reader = reflector(subject)
 
         // When
-        let defaultCopying: String = try reader.descendant("value", "value")
+        let variadicPath: String = try reader.descendant("value", "value")
         let arrayPath: String = try reader.descendant(["value", "value"])
-        let explicitCopying: String = try reader.descendant(
-            copyingIntermediates: true, "value", "value"
-        )
 
         // Then
-        XCTAssertEqual(defaultCopying, "value")
+        XCTAssertEqual(variadicPath, "value")
         XCTAssertEqual(arrayPath, "value")
-        XCTAssertEqual(explicitCopying, "value")
     }
 
     func testReflectionConversion() throws {
@@ -234,32 +228,24 @@ class ReflectorTests: XCTestCase {
         let subject = Subject(Payload(value: Value(text: "value")))
 
         // When
-        let reflected: TextReflection = try reflector(subject).descendant(
-            copyingIntermediates: false, "payload", "value"
-        )
+        let reflected: TextReflection = try reflector(subject).descendant("payload", "value")
 
         // Then
         XCTAssertEqual(reflected.text, "value")
     }
 
-    func testUnsupportedLayoutIncludesContext() {
+    func testUnsupportedIntermediateThrowsNotFoundWithContext() {
         // Given
-        let subject = Payload(value: "value")
+        let subject = Subject(Optional.some(Payload(value: "value")))
 
         // When
-        XCTAssertThrowsError(try reflector(subject).descendant(
-            type: String.self, copyingIntermediates: false, "value"
-        )) {
+        XCTAssertThrowsError(try reflector(subject).descendant(type: String.self, "payload", "value")) {
             // Then
-            guard case let Reflector.Error.unsupportedLayout(context) = $0 else {
-                return XCTFail("Expected unsupported layout, got \($0)")
+            guard case let Reflector.Error.notFound(context) = $0 else {
+                return XCTFail("Expected an unsupported path to fail, got \($0)")
             }
-            XCTAssertTrue(context.subjectType == Payload<String>.self)
-            XCTAssertEqual(context.paths.count, 1)
-            guard case let .key(name)? = context.paths.first else {
-                return XCTFail("Expected a named property path")
-            }
-            XCTAssertEqual(name, "value")
+            XCTAssertTrue(context.subjectType == Subject<Payload<String>?>.self)
+            XCTAssertEqual(context.paths.count, 2)
         }
     }
 
@@ -269,7 +255,7 @@ class ReflectorTests: XCTestCase {
 
         // When
         XCTAssertThrowsError(try reflector(subject).descendant(
-            type: String.self, copyingIntermediates: false, "payload", "missing"
+            type: String.self, "payload", "missing"
         )) {
             // Then
             guard case Reflector.Error.notFound = $0 else {

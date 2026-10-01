@@ -38,11 +38,7 @@ extension DisplayList.ViewUpdater: Reflection {
     init(from reflector: Reflector) throws {
         // Copy only map to avoid copying unrelated caches that SwiftUI may update concurrently
         viewCache = .init(
-            map: try reflector.descendant(
-                copyingIntermediates: false,
-                "viewCache",
-                "map"
-            )
+            map: try reflector.descendant("viewCache", "map")
         )
         lastList = try reflector.descendant("lastList")
     }

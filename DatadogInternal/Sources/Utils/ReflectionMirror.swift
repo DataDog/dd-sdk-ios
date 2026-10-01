@@ -243,32 +243,60 @@ extension ReflectionMirror {
     /// - Returns: The descendant of this mirror specified by the given mirror
     ///   path components if such a descendant exists; otherwise, `nil`.
     func descendant(_ first: Path, _ rest: Path...) -> Any? {
-        var paths = [first] + rest
-        return descendant(paths: &paths)
+        descendant([first] + rest)
     }
 
+    /// Returns the descendant at the given path, or `nil` if it cannot be read.
+    ///
+    /// When traversing stored properties of a class, intermediate structs are read
+    /// in place. Unsupported intermediate layouts return `nil` without being copied.
+    ///
+    /// - Parameter paths: The path to the descendant.
+    /// - Returns: The descendant, or `nil` if the path is missing or unsupported.
     public func descendant(_ paths: [Path]) -> Any? {
-        var paths = paths
-        return descendant(paths: &paths)
-    }
+        guard let first = paths.first else {
+            return nil
+        }
+        let remainingPaths = Array(paths.dropFirst())
 
-    private func descendant(paths: inout [Path]) -> Any? {
-        let path = paths.removeFirst()
+        guard _MetadataKind(subjectType) == .class else {
+            // Value subjects are already owned by this mirror.
+            guard let child = descendant(path: first) else {
+                return nil
+            }
+            return remainingPaths.isEmpty ? child : ReflectionMirror(reflecting: child).descendant(remainingPaths)
+        }
 
-        guard let child = descendant(path: path) else {
+        guard case let .key(name) = first,
+              let field = _getStoredField(named: name, in: subjectType) else {
             return nil
         }
 
-        if paths.isEmpty {
-            return child
-        }
+        let owner = subject as AnyObject
+        return withExtendedLifetime(owner) {
+            if remainingPaths.isEmpty {
+                // Use the declaring class's local index when reading inherited fields.
+                return descendant(path: first)
+            }
 
-        return ReflectionMirror(reflecting: child)
-            .descendant(paths: &paths)
+            switch _MetadataKind(field.type) {
+            case .struct:
+                let address = UnsafeRawPointer(Unmanaged.passUnretained(owner).toOpaque())
+                return descendant(at: address.advanced(by: field.offset), type: field.type, paths: remainingPaths)
+            case .class:
+                // Retaining a class reference does not copy its stored properties.
+                guard let child = descendant(path: first) else {
+                    return nil
+                }
+                return ReflectionMirror(reflecting: child).descendant(remainingPaths)
+            default:
+                return nil
+            }
+        }
     }
 
     private func descendant(path: Path) -> Any? {
-        if case let .index(index) = path, index < children.count {
+        if case let .index(index) = path, index >= 0, index < children.count {
             return children[AnyIndex(index)].value
         }
 
@@ -278,69 +306,25 @@ extension ReflectionMirror {
 
         return superclassMirror?.descendant(path: path)
     }
-}
 
-extension ReflectionMirror {
-    enum Error: Swift.Error {
-        case unsupportedLayout
-    }
-
-    /// Returns a descendant, optionally copying only the final value along the path.
-    ///
-    /// - Parameters:
-    ///   - copyingIntermediates: Whether to copy intermediate values along the path.
-    ///   - paths: The path to the descendant.
-    /// - Returns: The descendant, or `nil` if it does not exist.
-    /// - Throws: `Error.unsupportedLayout`.
-    func descendant(copyingIntermediates: Bool, _ paths: [Path]) throws -> Any? {
-        if copyingIntermediates {
-            return descendant(paths)
-        }
-        guard !paths.isEmpty else {
+    private func descendant(at address: UnsafeRawPointer, type: Any.Type, paths: [Path]) -> Any? {
+        guard case let .key(name)? = paths.first,
+              let field = _getStoredField(named: name, in: type) else {
             return nil
         }
-        guard _MetadataKind(subjectType) == .class else {
-            throw Error.unsupportedLayout
+        let remainingPaths = Array(paths.dropFirst())
+
+        if remainingPaths.isEmpty {
+            return _getChild(at: address, type: type, index: field.index)
         }
 
-        let owner = subject as AnyObject
-        return try withExtendedLifetime(owner) {
-            var address = UnsafeRawPointer(Unmanaged.passUnretained(owner).toOpaque())
-            var parentType = subjectType
-
-            for (position, path) in paths.enumerated() {
-                guard case let .key(name) = path else {
-                    throw Error.unsupportedLayout
-                }
-                guard let field = try _getStoredField(named: name, in: parentType) else {
-                    return nil
-                }
-
-                if position == paths.count - 1 {
-                    let value: Any
-                    if position == 0 {
-                        // A direct class field has no intermediate struct to copy.
-                        guard let directValue = descendant(paths) else {
-                            return nil
-                        }
-                        value = directValue
-                    } else {
-                        value = _getChild(at: address, type: parentType, index: field.index)
-                    }
-                    // Swift reflection substitutes Void for fields it cannot copy.
-                    guard !(value is Void) || field.type == Void.self
-                        || _MetadataKind(field.type) == .existential else {
-                        throw Error.unsupportedLayout
-                    }
-                    return value
-                }
-
-                guard _MetadataKind(field.type) == .struct else {
-                    throw Error.unsupportedLayout
-                }
-                address = address.advanced(by: field.offset)
-                parentType = field.type
-            }
+        switch _MetadataKind(field.type) {
+        case .struct:
+            return descendant(at: address.advanced(by: field.offset), type: field.type, paths: remainingPaths)
+        case .class:
+            let child = _getChild(at: address, type: type, index: field.index)
+            return ReflectionMirror(reflecting: child).descendant(remainingPaths)
+        default:
             return nil
         }
     }
@@ -375,7 +359,9 @@ private func _getChildren<T>(of value: T, type: Any.Type, count: Int) -> any Col
 
 // Field lookup follows Swift's field enumeration implementation:
 // https://github.com/swiftlang/swift/blob/33ed3118bb034651a01d874eb6a61918b82c6df8/stdlib/public/core/ReflectionMirror.swift
-private func _getStoredField(named name: String, in type: Any.Type) throws -> (index: Int, offset: Int, type: Any.Type)? {
+//
+// Returns nil for missing fields or unsupported storage, without reading their values.
+private func _getStoredField(named name: String, in type: Any.Type) -> (offset: Int, index: Int, type: Any.Type)? {
     // Inherited fields precede the most derived class's fields.
     for index in (0..<_getRecursiveChildCount(type)).reversed() {
         var field = _FieldReflectionMetadata()
@@ -386,13 +372,13 @@ private func _getStoredField(named name: String, in type: Any.Type) throws -> (i
             continue
         }
         guard field.isStrong else {
-            throw ReflectionMirror.Error.unsupportedLayout
+            return nil
         }
         let offset = _getChildOffset(type, index: index)
         guard offset >= 0 else {
-            throw ReflectionMirror.Error.unsupportedLayout
+            return nil
         }
-        return (index: index, offset: offset, type: fieldType)
+        return (offset: offset, index: index, type: fieldType)
     }
     return nil
 }

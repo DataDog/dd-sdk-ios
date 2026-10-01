@@ -69,14 +69,12 @@ class ReflectionMirrorTests: XCTestCase {
             let text: String
         }
         let large = LargeValue(a: 1, b: 2, c: 3, d: 4, text: "large")
-        func read<Value>(_ value: Value) throws -> Any? {
-            try ReflectionMirror(reflecting: Subject(Payload(value: value))).descendant(
-                copyingIntermediates: false, ["payload", "value"]
-            )
+        func read<Value>(_ value: Value) -> Any? {
+            ReflectionMirror(reflecting: Subject(Payload(value: value))).descendant(["payload", "value"])
         }
 
         // When
-        let largeValue = try read(large)
+        let largeValue = read(large)
         let none = try XCTUnwrap(read(Optional<String>.none))
         let void = try XCTUnwrap(read(()))
 
@@ -95,19 +93,15 @@ class ReflectionMirrorTests: XCTestCase {
         let voidSubject = Subject(Payload(value: void))
 
         // When
-        let dictionary = try ReflectionMirror(reflecting: subject).descendant(
-            copyingIntermediates: false, ["payload", "value"]
-        )
-        let reflected = try XCTUnwrap(ReflectionMirror(reflecting: voidSubject).descendant(
-            copyingIntermediates: false, ["payload", "value"]
-        ))
+        let dictionary = ReflectionMirror(reflecting: subject).descendant(["payload", "value"])
+        let reflected = try XCTUnwrap(ReflectionMirror(reflecting: voidSubject).descendant(["payload", "value"]))
 
         // Then
         XCTAssertEqual(dictionary as? [Int: String], [42: "value"])
         XCTAssertTrue(reflected is Void)
     }
 
-    func testNestedAndInheritedStoredFields() throws {
+    func testNestedAndInheritedStoredFields() {
         // Given
         class Derived: Subject<Payload<Payload<String>>> {
             let otherValue = "other"
@@ -115,23 +109,19 @@ class ReflectionMirrorTests: XCTestCase {
         let subject = Derived(Payload(value: Payload(value: "leaf")))
 
         // When
-        let value = try ReflectionMirror(reflecting: subject).descendant(
-            copyingIntermediates: false, ["payload", "value", "value"]
-        )
+        let value = ReflectionMirror(reflecting: subject).descendant(["payload", "value", "value"])
 
         // Then
         XCTAssertEqual(value as? String, "leaf")
     }
 
-    func testDirectClassFieldAndOptionalRoot() throws {
+    func testDirectClassFieldAndOptionalRoot() {
         // Given
         class Owner { let value = 42 }
         let subject: Owner? = Owner()
 
         // When
-        let value = try ReflectionMirror(reflecting: subject as Any).descendant(
-            copyingIntermediates: false, ["value"]
-        )
+        let value = ReflectionMirror(reflecting: subject as Any).descendant(["value"])
 
         // Then
         XCTAssertEqual(value as? Int, 42)
@@ -143,13 +133,11 @@ class ReflectionMirrorTests: XCTestCase {
         weak var value: NSObject?
 
         // When
-        let descendant: Any? = try {
+        let descendant: Any? = {
             let subject = Subject(Payload(value: [42: NSObject()]))
             owner = subject
             value = subject.payload.value[42]
-            return try ReflectionMirror(reflecting: subject).descendant(
-                copyingIntermediates: false, ["payload", "value"]
-            )
+            return ReflectionMirror(reflecting: subject).descendant(["payload", "value"])
         }()
 
         // Then
@@ -159,51 +147,88 @@ class ReflectionMirrorTests: XCTestCase {
         XCTAssertTrue(retainedValue === value)
     }
 
-    func testUnsupportedRootsAndIntermediateLayouts() {
+    func testInheritedAndDerivedReferenceFields() {
         // Given
-        class ReferencePayload { let value = "value" }
-        let subjects: [Any] = [
-            Payload(value: "value"),
-            NSObject(),
-            Subject(ReferencePayload()),
-            Subject(Optional.some(Payload(value: "value"))),
-            Subject((Payload(value: "value"), 0))
-        ]
-
-        for subject in subjects {
-            // When
-            XCTAssertThrowsError(try ReflectionMirror(reflecting: subject).descendant(
-                copyingIntermediates: false, ["payload", "value"]
-            )) {
-                // Then
-                guard case ReflectionMirror.Error.unsupportedLayout = $0 else {
-                    return XCTFail("Expected unsupported layout, got \($0)")
-                }
-            }
-        }
-    }
-
-    func testIndexPathsAreRejected() {
-        // Given
-        let mirror = ReflectionMirror(reflecting: Subject(Payload(value: "value")))
+        class Base { let inherited = NSObject() }
+        class Derived: Base { let own = NSObject() }
+        let subject = Derived()
+        let mirror = ReflectionMirror(reflecting: subject)
 
         // When
-        XCTAssertThrowsError(try mirror.descendant(copyingIntermediates: false, ["payload", 1])) {
+        let inherited = mirror.descendant(["inherited"])
+        let own = mirror.descendant(["own"])
+
+        // Then
+        XCTAssertTrue(inherited as? NSObject === subject.inherited)
+        XCTAssertTrue(own as? NSObject === subject.own)
+    }
+
+    func testTraversalThroughClassReferences() {
+        // Given
+        let subject = Subject(Payload(value: Subject(Payload(value: "leaf"))))
+
+        // When
+        let value = ReflectionMirror(reflecting: subject).descendant(["payload", "value", "payload", "value"])
+
+        // Then
+        XCTAssertEqual(value as? String, "leaf")
+    }
+
+    func testUnsupportedIntermediateLayoutsAreRejected() {
+        // Given
+        enum Wrapper { case value(Payload<String>) }
+        let payload = Payload(value: "value")
+        func subjects<Value>(_ value: Value) -> [(Any, [ReflectionMirror.Path])] {
+            [
+                (Subject(value), ["payload", "value"]),
+                (Subject(Payload(value: value)), ["payload", "value", "value"])
+            ]
+        }
+        let cases = subjects(Optional.some(payload)) + subjects((payload, 0))
+            + subjects(Wrapper.value(payload)) + subjects(payload as Any)
+
+        for (subject, path) in cases {
+            // When
+            let value = ReflectionMirror(reflecting: subject).descendant(path)
+
             // Then
-            guard case ReflectionMirror.Error.unsupportedLayout = $0 else {
-                return XCTFail("Expected unsupported layout, got \($0)")
-            }
+            XCTAssertNil(value)
         }
     }
 
-    func testMissingAndEmptyPaths() throws {
+    func testIndexPathsIntoClassStorageAreRejected() {
+        // Given
+        let mirror = ReflectionMirror(reflecting: Subject(Payload(value: "value")))
+        let paths: [[ReflectionMirror.Path]] = [[0], ["payload", 1]]
+
+        for path in paths {
+            // When
+            let value = mirror.descendant(path)
+
+            // Then
+            XCTAssertNil(value)
+        }
+    }
+
+    func testClassReferencedByValueDoesNotCopyUnsupportedIntermediate() {
+        // Given
+        let subject = Payload(value: Subject(Optional.some(Payload(value: "value"))))
+
+        // When
+        let value = ReflectionMirror(reflecting: subject).descendant(["value", "payload", "value"])
+
+        // Then
+        XCTAssertNil(value)
+    }
+
+    func testMissingAndEmptyPaths() {
         // Given
         let mirror = ReflectionMirror(reflecting: Subject(Payload(value: "value")))
         let paths: [[ReflectionMirror.Path]] = [["missing"], ["payload", "missing"], []]
 
         for path in paths {
             // When
-            let value = try mirror.descendant(copyingIntermediates: false, path)
+            let value = mirror.descendant(path)
 
             // Then
             XCTAssertNil(value)
@@ -222,14 +247,32 @@ class ReflectionMirrorTests: XCTestCase {
 
         for subject in subjects {
             // When
-            XCTAssertThrowsError(try ReflectionMirror(reflecting: subject).descendant(
-                copyingIntermediates: false, ["payload", "value"]
-            )) {
-                // Then
-                guard case ReflectionMirror.Error.unsupportedLayout = $0 else {
-                    return XCTFail("Expected unsupported ownership, got \($0)")
-                }
-            }
+            let value = ReflectionMirror(reflecting: subject).descendant(["payload", "value"])
+
+            // Then
+            XCTAssertNil(value)
+        }
+    }
+
+    func testDirectWeakAndDanglingUnownedFieldsAreRejected() {
+        // Given
+        class UnownedSubject {
+            unowned let value: NSObject
+            init(_ value: NSObject) { self.value = value }
+        }
+        class WeakSubject { weak var value: NSObject? }
+        let unownedSubject: UnownedSubject = {
+            let object = NSObject()
+            return UnownedSubject(object)
+        }()
+        let subjects: [Any] = [unownedSubject, WeakSubject()]
+
+        for subject in subjects {
+            // When
+            let value = ReflectionMirror(reflecting: subject).descendant(["value"])
+
+            // Then
+            XCTAssertNil(value)
         }
     }
 }
