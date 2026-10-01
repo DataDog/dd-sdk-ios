@@ -198,58 +198,25 @@ extension ReflectionMirror {
 }
 
 extension ReflectionMirror {
-    /// Returns a specific descendant of the reflected subject, or `nil` if no
-    /// such descendant exists.
+    /// Returns the descendant at the given path, or `nil` if it cannot be read.
     ///
-    /// Pass a variadic list of string and integer arguments. Each string
-    /// argument selects the first child with a matching label. Each integer
-    /// argument selects the child at that offset. For example, passing
-    /// `1, "two", 3` as arguments to `myMirror.descendant(_:_:)` is equivalent
-    /// to:
-    ///
-    ///     var result: Any? = nil
-    ///     let children = myMirror.children
-    ///     if let i0 = children.index(
-    ///         children.startIndex, offsetBy: 1, limitedBy: children.endIndex),
-    ///         i0 != children.endIndex
-    ///     {
-    ///         let grandChildren = Mirror(reflecting: children[i0].value).children
-    ///         if let i1 = grandChildren.firstIndex(where: { $0.label == "two" }) {
-    ///             let greatGrandChildren =
-    ///                 Mirror(reflecting: grandChildren[i1].value).children
-    ///             if let i2 = greatGrandChildren.index(
-    ///                 greatGrandChildren.startIndex,
-    ///                 offsetBy: 3,
-    ///                 limitedBy: greatGrandChildren.endIndex),
-    ///                 i2 != greatGrandChildren.endIndex
-    ///             {
-    ///                 // Success!
-    ///                 result = greatGrandChildren[i2].value
-    ///             }
-    ///         }
-    ///     }
-    ///
-    /// This function is suitable for exploring the structure of a mirror in a
-    /// REPL or playground, but is not intended to be efficient. The efficiency
-    /// of finding each element in the argument list depends on the argument
-    /// type and the capabilities of the each level of the mirror's `children`
-    /// collections. Each string argument requires a linear search, and unless
-    /// the underlying collection supports random-access traversal, each integer
-    /// argument also requires a linear operation.
+    /// When traversing stored properties of a Swift class, paths must use property names.
+    /// Intermediate structs are read in place. Unsupported intermediate layouts return
+    /// `nil` without being copied.
     ///
     /// - Parameters:
     ///   - first: The first mirror path component to access.
     ///   - rest: Any remaining mirror path components.
-    /// - Returns: The descendant of this mirror specified by the given mirror
-    ///   path components if such a descendant exists; otherwise, `nil`.
+    /// - Returns: The descendant, or `nil` if the path is missing or unsupported.
     func descendant(_ first: Path, _ rest: Path...) -> Any? {
         descendant([first] + rest)
     }
 
     /// Returns the descendant at the given path, or `nil` if it cannot be read.
     ///
-    /// When traversing stored properties of a class, intermediate structs are read
-    /// in place. Unsupported intermediate layouts return `nil` without being copied.
+    /// When traversing stored properties of a Swift class, paths must use property names.
+    /// Intermediate structs are read in place. Unsupported intermediate layouts return
+    /// `nil` without being copied.
     ///
     /// - Parameter paths: The path to the descendant.
     /// - Returns: The descendant, or `nil` if the path is missing or unsupported.
