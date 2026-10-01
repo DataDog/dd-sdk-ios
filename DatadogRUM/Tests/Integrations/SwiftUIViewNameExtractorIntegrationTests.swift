@@ -10,7 +10,7 @@ import SwiftUI
 @testable import DatadogInternal
 
 class SwiftUIViewNameExtractorIntegrationTests: XCTestCase {
-    #if canImport(UIKit)
+    #if !os(watchOS) && canImport(UIKit)
     @MainActor
     func testNameFromRealHostingController() {
         // Given
