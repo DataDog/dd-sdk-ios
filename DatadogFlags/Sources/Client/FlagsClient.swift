@@ -110,6 +110,33 @@ public final class FlagsClient {
         }
     }
 
+    /// Creates a client with a callback for its first accepted cache or network configuration.
+    ///
+    /// The callback runs at most once per client lifetime, asynchronously on a background queue,
+    /// after installation and client registration. Use the supplied client; the caller's variable
+    /// may not yet have been assigned. The event keeps the first installed keys, while client reads
+    /// return the current configuration. A valid empty configuration also triggers the callback.
+    /// This callback does not change readiness, and is not called for missing or invalid cache data.
+    /// Swift errors thrown by the callback are caught; fatal errors and Objective-C exceptions are not.
+    /// Recreating an existing named client ignores the new callback, just like other creation options.
+    ///
+    /// - Parameters:
+    ///   - name: A unique client name.
+    ///   - core: The Datadog SDK core instance.
+    ///   - onFirstFlags: Receives the fully constructed client and first installation event.
+    @discardableResult
+    public static func create(
+        name: String = FlagsClient.defaultName,
+        in core: DatadogCoreProtocol = CoreRegistry.default,
+        onFirstFlags: @escaping (FlagsClientProtocol, FlagsClientEvent) throws -> Void
+    ) -> FlagsClientProtocol {
+        runOnMainThreadSync {
+            doCreate(name: name, in: core, firstFlags: FirstFlagsNotification { client, event, _ in
+                try onFirstFlags(client, event)
+            })
+        }
+    }
+
     /// Returns an existing `FlagsClient` instance by name.
     ///
     /// Use this method to retrieve a client that was previously created with ``create(name:in:)``.
@@ -154,7 +181,8 @@ public final class FlagsClient {
 
     internal static func doCreate(
         name: String,
-        in core: DatadogCoreProtocol
+        in core: DatadogCoreProtocol,
+        firstFlags: FirstFlagsNotification? = nil
     ) -> FlagsClientProtocol {
         guard let feature = core.get(feature: FlagsFeature.self) else {
             reportIssue(
@@ -186,7 +214,8 @@ public final class FlagsClient {
                 flagAssignmentsFetcher: feature.flagAssignmentsFetcher,
                 dateProvider: SystemDateProvider(),
                 featureScope: featureScope,
-                initializationTimeout: feature.initializationTimeout
+                initializationTimeout: feature.initializationTimeout,
+                firstFlags: firstFlags
             ),
             exposureLogger: feature.makeExposureLogger(featureScope),
             evaluationLogger: feature.makeEvaluationLogger(featureScope),
@@ -194,6 +223,7 @@ public final class FlagsClient {
         )
 
         feature.clientRegistry.register(client, named: name)
+        firstFlags?.activate(client: client)
         return client
     }
 }
@@ -294,5 +324,25 @@ extension FlagsClient: FlagsClientInternal {
     @_spi(Internal)
     public func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
         trackEvaluation(key: key, assignment: assignment, context: context)
+    }
+}
+
+// MARK: - First installation bridge
+
+extension FlagsClient {
+    /// Creates a client with a coherent first-installation snapshot for cross-platform bridges.
+    /// > Warning: This internal API can change in the future.
+    @_spi(Internal)
+    @discardableResult
+    public static func create(
+        name: String = FlagsClient.defaultName,
+        in core: DatadogCoreProtocol = CoreRegistry.default,
+        onFirstFlagsSnapshot: @escaping (FlagsClientProtocol, FlagsEvaluationContext, [String: FlagAssignment]) throws -> Void
+    ) -> FlagsClientProtocol {
+        runOnMainThreadSync {
+            doCreate(name: name, in: core, firstFlags: FirstFlagsNotification { client, _, snapshot in
+                try onFirstFlagsSnapshot(client, snapshot.context, snapshot.flags)
+            })
+        }
     }
 }

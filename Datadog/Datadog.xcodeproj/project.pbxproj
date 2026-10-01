@@ -1448,6 +1448,9 @@
 		EF5678AB9012CD345678EFAB /* CALayerSnapshotOcclusionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB7890CD1234EF567890ABCD /* CALayerSnapshotOcclusionTests.swift */; };
 		F603F12B2CAEA4FA0088E6B7 /* DDInternalLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F603F1282CAEA4E90088E6B7 /* DDInternalLoggerTests.swift */; };
 		F603F1302CAEA7620088E6B7 /* DDInternalLogger+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F603F12D2CAEA7590088E6B7 /* DDInternalLogger+apiTests.m */; };
+		A1F1A65B0000000000000000 /* FlagsClientEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F1A65F0000000000000000 /* FlagsClientEvent.swift */; };
+		A1F1A65B0000000000000001 /* FirstFlagsNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F1A65F0000000000000001 /* FirstFlagsNotification.swift */; };
+		A1F1A65B0000000000000002 /* FirstFlagsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F1A65F0000000000000002 /* FirstFlagsTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -3352,6 +3355,9 @@
 		F603F12D2CAEA7590088E6B7 /* DDInternalLogger+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDInternalLogger+apiTests.m"; sourceTree = "<group>"; };
 		F637AED12697404200516F32 /* UIKitRUMUserActionsPredicate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitRUMUserActionsPredicate.swift; sourceTree = "<group>"; };
 		FCD4671FE899787D04A9ADD6 /* EvaluationRequestBuilder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvaluationRequestBuilder.swift; sourceTree = "<group>"; };
+		A1F1A65F0000000000000000 /* FlagsClientEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClientEvent.swift; sourceTree = "<group>"; };
+		A1F1A65F0000000000000001 /* FirstFlagsNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstFlagsNotification.swift; sourceTree = "<group>"; };
+		A1F1A65F0000000000000002 /* FirstFlagsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstFlagsTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -4220,6 +4226,7 @@
 				5BB294AF2E82CCA100CAA44B /* ExposureRequestBuilderTests.swift */,
 				8DADC3C02E7CCF190060F558 /* FlagsClientTests.swift */,
 				5B1D026C2E8D078F00AB2391 /* FallbackFlagsClientTests.swift */,
+				A1F1A65F0000000000000002 /* FirstFlagsTests.swift */,
 				5B5B8CB52E8BCA5F00A6740E /* FlagsRepositoryTests.swift */,
 				5B1D02722E8D2EF300AB2391 /* FlagAssignmentsRequestTests.swift */,
 				5B1D02782E8D6DE400AB2391 /* FlagAssignmentsFetcherTests.swift */,
@@ -4315,6 +4322,8 @@
 				5B5B8CC42E8C14B200A6740E /* FlagsClientRegistry.swift */,
 				5B5B8CBE2E8BDB0D00A6740E /* FlagsData.swift */,
 				5B5B8CB82E8BD44000A6740E /* FlagsDataStore.swift */,
+				A1F1A65F0000000000000000 /* FlagsClientEvent.swift */,
+				A1F1A65F0000000000000001 /* FirstFlagsNotification.swift */,
 				5BD6C6552E8AC5E000F5D2CC /* FlagsRepository.swift */,
 				C63A979F48771C3277A41396 /* EvaluationLogger.swift */,
 				2B6A3B154836FEB32C07EB50 /* EvaluationAggregator.swift */,
@@ -8555,6 +8564,8 @@
 				5B9565FD2E86BBFA00EAF677 /* FlagDetails.swift in Sources */,
 				8D5ED4DE2F9F555100490CD6 /* FlagsClientState.swift in Sources */,
 				8D5ED4DF2F9F555100490CD6 /* FlagsStateManager.swift in Sources */,
+				A1F1A65B0000000000000000 /* FlagsClientEvent.swift in Sources */,
+				A1F1A65B0000000000000001 /* FirstFlagsNotification.swift in Sources */,
 				5BD6C6572E8AC5E900F5D2CC /* FlagsRepository.swift in Sources */,
 				5BB294BD2E82E66500CAA44B /* FlagValue.swift in Sources */,
 				5BB294AD2E8286B200CAA44B /* ExposureEvent.swift in Sources */,
@@ -8601,6 +8612,7 @@
 				5B1D026E2E8D079F00AB2391 /* FallbackFlagsClientTests.swift in Sources */,
 				5B1D027A2E8D6DE700AB2391 /* FlagAssignmentsFetcherTests.swift in Sources */,
 				5B16A3732E8434200046A863 /* ExposureMocks.swift in Sources */,
+				A1F1A65B0000000000000002 /* FirstFlagsTests.swift in Sources */,
 				5B5B8CB62E8BCA6A00A6740E /* FlagsRepositoryTests.swift in Sources */,
 				5B16A36B2E83E46F0046A863 /* AnyValueTests.swift in Sources */,
 				5BF802752E9CD28900097B0E /* RUMFlagEvaluationReporterTests.swift in Sources */,

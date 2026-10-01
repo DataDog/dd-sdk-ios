@@ -81,6 +81,7 @@ internal final class FlagsRepository {
     private let flagAssignmentsFetcher: any FlagAssignmentsFetching
     private let dateProvider: any DateProvider
     private let featureScope: any FeatureScope
+    private let firstFlags: FirstFlagsNotification?
     private let initializationTimeout: TimeInterval?
     private let scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler
 
@@ -90,10 +91,11 @@ internal final class FlagsRepository {
     @ReadWriteLock
     private var flagsData: FlagsData?
 
-    /// Version counter for `flagsData`. Incremented on every write to detect
-    /// when a newer request has succeeded while an older request was in-flight.
-    @ReadWriteLock
-    private var flagsDataVersion: UInt64 = 0
+    /// Serializes request acceptance, data installation and state publication.
+    /// Released before invoking application completions or state listeners.
+    private let requestLock = NSLock()
+    private var requestVersion: UInt64 = 0
+    private var resetVersion: UInt64 = 0
 
     /// Tracks disk read state and pending callbacks for async operations.
     /// When `isComplete` is false, callbacks are queued and executed once disk read finishes.
@@ -117,6 +119,7 @@ internal final class FlagsRepository {
         dateProvider: any DateProvider,
         featureScope: any FeatureScope,
         initializationTimeout: TimeInterval? = Flags.Configuration.defaultInitializationTimeout,
+        firstFlags: FirstFlagsNotification? = nil,
         scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler? = nil
     ) {
         self.clientName = clientName
@@ -124,6 +127,7 @@ internal final class FlagsRepository {
         self.dateProvider = dateProvider
         self.featureScope = featureScope
         self.initializationTimeout = initializationTimeout
+        self.firstFlags = firstFlags
         self.scheduleInitializationTimeout = scheduleInitializationTimeout ?? Self.scheduleInitializationTimeout
         readState()
     }
@@ -154,6 +158,7 @@ internal final class FlagsRepository {
     private func makeInitializationCompletion(
         _ completion: @escaping (Result<Void, FlagsError>) -> Void,
         context: FlagsEvaluationContext,
+        requestVersion: UInt64,
         beforeScheduling: () -> Void
     ) -> InitializationCompletion? {
         initializationLock.lock()
@@ -169,7 +174,6 @@ internal final class FlagsRepository {
               initializationTimeout > 0 else {
             return nil
         }
-
         beforeScheduling()
         let initializationCompletion = InitializationCompletion(completion: completion)
         let cancelTimeout = scheduleInitializationTimeout(initializationTimeout) { [weak self, initializationCompletion] in
@@ -180,14 +184,22 @@ internal final class FlagsRepository {
                 completion(.failure(.clientNotInitialized))
                 return
             }
+            self.requestLock.lock()
+            guard self.requestVersion == requestVersion else {
+                self.requestLock.unlock()
+                completion(.failure(.initializationTimedOut))
+                return
+            }
             let timeoutState: FlagsClientState = self.flagsData?.context == context ? .stale : .error
             let accepted = self.stateManager.updateState(
                 timeoutState,
                 unlessCurrentStateIs: [.ready, .stale]
             ) {
+                self.requestLock.unlock()
                 completion(.failure(.initializationTimedOut))
             }
             if !accepted {
+                self.requestLock.unlock()
                 completion(.failure(.initializationTimedOut))
             }
         }
@@ -196,6 +208,7 @@ internal final class FlagsRepository {
     }
 
     private func readState() {
+        let resetVersion = self.resetVersion
         featureScope.flagsDataStore.flagsData(forClientNamed: clientName) { [weak self, readSemaphore] data in
             guard let self else {
                 // Signal even if self is nil to unblock any waiting getters
@@ -204,7 +217,15 @@ internal final class FlagsRepository {
                 }
                 return
             }
-            self.flagsData = data
+            var claimedFirstInstallation = false
+            self.requestLock.lock()
+            if self.resetVersion == resetVersion {
+                self.flagsData = data
+                if let data {
+                    claimedFirstInstallation = self.firstFlags?.claim(data: data) ?? false
+                }
+            }
+            self.requestLock.unlock()
 
             // Mark complete and grab pending callbacks atomically
             var callbacks: [() -> Void] = []
@@ -217,6 +238,10 @@ internal final class FlagsRepository {
             // Signal semaphore for blocking getters (on elevated queue to avoid priority inversion)
             DispatchQueue.global(qos: .userInitiated).async {
                 readSemaphore.signal()
+            }
+
+            if claimedFirstInstallation {
+                self.firstFlags?.installed()
             }
 
             // Execute async callbacks outside the lock
@@ -291,93 +316,108 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
     ) {
-        let initializationCompletion = makeInitializationCompletion(completion, context: context) {
-            stateManager.updateState(.reconciling)
+        requestLock.lock()
+        requestVersion &+= 1
+        let version = requestVersion
+        requestLock.unlock()
+
+        let initializationCompletion = makeInitializationCompletion(completion, context: context, requestVersion: version) {
+            publishReconciling(for: version)
         }
         let takeCompletion: () -> ((Result<Void, FlagsError>) -> Void)? = {
             initializationCompletion?.take()
                 ?? (initializationCompletion == nil ? completion : nil)
         }
 
-        // Chain after disk read completes to ensure correct hadFlags determination
         whenFlagsDataRead { [weak self] in
             guard let self else {
                 takeCompletion()?(.failure(.clientNotInitialized))
                 return
             }
-
-            let hadFlags = self.flagsData != nil
-            let cachedContext = self.flagsData?.context
-            let versionAtStart = self.flagsDataVersion
             if initializationCompletion == nil {
-                self.stateManager.updateState(.reconciling)
+                self.publishReconciling(for: version)
             }
 
+            self.requestLock.lock()
+            guard self.requestVersion == version else {
+                self.requestLock.unlock()
+                takeCompletion()?(.failure(.clientNotInitialized))
+                return
+            }
+            self.requestLock.unlock()
+
             self.flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
+                guard let self else {
+                    takeCompletion()?(.failure(.clientNotInitialized))
+                    return
+                }
+                self.requestLock.lock()
+                guard self.requestVersion == version else {
+                    self.requestLock.unlock()
+                    // Obsolete operations still settle, but cannot publish data or state.
+                    takeCompletion()?(.failure(.clientNotInitialized))
+                    return
+                }
+                var claimedFirstInstallation = false
+                let newState: FlagsClientState
+                let completionResult: Result<Void, FlagsError>
                 switch result {
                 case .success(let flags):
-                    guard let self else {
-                        takeCompletion()?(.failure(.clientNotInitialized))
-                        return
-                    }
-                    self.flagsData = .init(
-                        flags: flags,
-                        context: context,
-                        date: self.dateProvider.now
-                    )
-                    self._flagsDataVersion.mutate { $0 += 1 }
+                    let data = FlagsData(flags: flags, context: context, date: self.dateProvider.now)
+                    self.flagsData = data
+                    claimedFirstInstallation = self.firstFlags?.claim(data: data) ?? false
                     self.writeState()
-                    let operationCompletion = takeCompletion()
-                    if initializationCompletion != nil {
-                        self.stateManager.updateState(.ready) {
-                            operationCompletion?(.success(()))
-                        }
-                    } else {
-                        self.stateManager.updateState(.ready)
-                        operationCompletion?(.success(()))
-                    }
+                    newState = .ready
+                    completionResult = .success(())
                 case .failure(let error):
-                    // Only update state if no newer request has succeeded.
-                    // This prevents an older failing request from clearing data
-                    // written by a newer successful request.
-                    guard self?.flagsDataVersion == versionAtStart else {
-                        takeCompletion()?(.failure(error))
-                        return
-                    }
-                    // State must be updated before calling completion —
-                    // dd-openfeature-provider-swift checks currentState in the callback.
-                    // Only use cached flags if they match the requested context to avoid
-                    // serving flags from a different user/context.
-                    let operationCompletion = takeCompletion()
-                    let newState: FlagsClientState
-                    if hadFlags && cachedContext == context {
+                    if self.flagsData?.context == context {
                         newState = .stale
                     } else {
-                        // Clear cached data to prevent cross-context flag leakage.
-                        // Without this, flagAssignment() could return the previous
-                        // user's flags while in .error state.
-                        self?.flagsData = nil
+                        self.flagsData = nil
                         newState = .error
                     }
-                    if initializationCompletion != nil {
-                        self?.stateManager.updateState(newState) {
-                            operationCompletion?(.failure(error))
-                        }
-                    } else {
-                        self?.stateManager.updateState(newState)
-                        operationCompletion?(.failure(error))
+                    completionResult = .failure(error)
+                }
+                let operationCompletion = takeCompletion()
+                // Publish state before completion: the Swift provider reads it to recognize cache fallback.
+                self.stateManager.updateState(newState) {
+                    self.requestLock.unlock()
+                    if claimedFirstInstallation {
+                        self.firstFlags?.installed()
                     }
+                    if initializationCompletion != nil {
+                        operationCompletion?(completionResult)
+                    }
+                }
+                if initializationCompletion == nil {
+                    operationCompletion?(completionResult)
                 }
             }
         }
     }
 
+    private func publishReconciling(for version: UInt64) {
+        requestLock.lock()
+        guard requestVersion == version else {
+            requestLock.unlock()
+            return
+        }
+        stateManager.updateState(.reconciling) {
+            self.requestLock.unlock()
+        }
+    }
+
     func reset() {
+        requestLock.lock()
+        requestVersion &+= 1
+        resetVersion &+= 1
         // Clear disk first, then memory, then update state.
         // This prevents race conditions where a listener reacts to the state
         // change and queries the data store before disk is cleared.
         featureScope.flagsDataStore.removeFlagsData(forClientNamed: clientName)
         flagsData = nil
-        stateManager.updateState(.notReady)
+        stateManager.updateState(.notReady) {
+            self.requestLock.unlock()
+        }
     }
 }
