@@ -9,9 +9,12 @@ This section describes the main changes introduced in SDK `4.0` compared to `3.x
 ### Product Modules
 
 Starting with `4.0`, CocoaPods and Carthage are no longer supported as installation methods.
-Swift Package Manager is the only one. This follows the CocoaPods Trunk shutdown: `3.x` already
-stopped publishing new podspec versions and Carthage frameworks, while keeping the existing ones
-installable; `4.0` removes the podspecs and the Carthage toolchain from the repository entirely.
+Swift Package Manager is the only supported package manager; the prebuilt XCFrameworks
+(`Datadog.xcframework.zip`, attached to every GitHub release) remain available as before, for
+projects that don't use a package manager at all. This follows the CocoaPods Trunk shutdown:
+`3.x` already stopped publishing new podspec versions and Carthage frameworks, while keeping the
+existing ones installable; `4.0` removes the podspecs and the Carthage toolchain from the
+repository entirely.
 
 <details>
   <summary>SPM</summary>
