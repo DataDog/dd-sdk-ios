@@ -20,9 +20,10 @@
   "implementation_started": false,
   "native_runs": 0,
   "gates_closed": [],
-  "next_action": "Start P0 production-hunk mapping against a freshly pinned develop; retain existing source-bound evidence. No source promotion or hardware waiver.",
+  "next_action": "Complete and review S3:F11 source mapping and its shared SwiftUI boundary proposal before SDK implementation. Draft assignments and blocked partial reviews close no gate.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-replay-jqgxnt3s/s3-flag-gates-review-cycle1.json",
     "sha256": "7beb6736a03df965978c0703d9609d88a089277b90b3485787928d1886b1b870"
-  }
+  },
+  "mapping_owner": "Results/S3-F11-production-mapping.json"
 }

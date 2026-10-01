@@ -2925,7 +2925,7 @@
       "environment": "Read-only exact branch and freshly pinned develop source comparison",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "",
+      "evidence": "Results/S3-F11-production-mapping.json owns fresh19f260b26/provisional94842 inventory (46 files/274 hunks), 273 draft assignments and one unresolved SwiftUI hunk. Independent partial review is BLOCKED; corrected partitions/shared-foundation proposal need review. No SDK/native changes or gate credit.",
       "release_requirements": {
         "S3": {
           "scope": "S3 production-hunk mapping onto develop",
@@ -2933,7 +2933,7 @@
           "dependencies": [],
           "decisive_test": "Every production hunk maps exactly once to PR1-13, an independently reproduced fix, existing develop/S1 implementation, or explicit drop; cross-module callers and swizzles accounted for. No code or hardware required.",
           "environment": "Read-only exact branch and freshly pinned develop source comparison",
-          "evidence": "",
+          "evidence": "Results/S3-F11-production-mapping.json owns fresh19f260b26/provisional94842 inventory (46 files/274 hunks), 273 draft assignments and one unresolved SwiftUI hunk. Independent partial review is BLOCKED; corrected partitions/shared-foundation proposal need review. No SDK/native changes or gate credit.",
           "required": true
         }
       }
