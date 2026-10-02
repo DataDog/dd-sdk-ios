@@ -2,7 +2,7 @@
   "schema_version": 1,
   "owner": "EXP-210",
   "state": "COMPONENT_REVIEWED_HOME_QUALIFICATION_PREPARING",
-  "updated_at": "2026-10-02T00:20:42.153063+00:00",
+  "updated_at": "2026-10-02T01:35:43.108963+00:00",
   "gates": [
     "S2:C09",
     "S2:C10"
@@ -77,7 +77,7 @@
     "h14_qualified": false
   },
   "native_qualification": {
-    "state": "REVIEW_BLOCKED_PRIVATE_PROTOCOL_CORRECTION_IN_PROGRESS",
+    "state": "EXACT_REVIEW_PASS_READ_ONLY_PREFLIGHT_PENDING",
     "mechanism": "One automatic Home-only qualification on Duo using the current frozen baseline SwiftUI split product.",
     "attempt_limit": 1,
     "execution_seconds": 600,
@@ -86,21 +86,21 @@
     "human_input_required": false,
     "release_acceptance": false,
     "definition": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification/definition.json",
-      "sha256": "8acb81e58b9122c807e4bf041583ad7f855220f31d7fe1b1b5fde898447a5993"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle6/definition.json",
+      "sha256": "fd277607d92648cee1238daa871881bb543339bddfa18b76a8cec08d733297f8"
     },
     "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification/controls.json",
-      "sha256": "c3a9140ad6e9da665edff697b1965ea3cfdf12ebb0454079556be95d7181a1ae"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle6/controls.json",
+      "sha256": "7ff8d1eae514bd33c380041f5ced055cf6b54ff49c16c6c26b9ae544317a790a"
     },
-    "controls_count": 18,
+    "controls_count": 50,
     "driver": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification/driver.py",
-      "sha256": "aa5be301f5ecb2d66bc21404f7f1f397def9092d9bc7f75f30f2260cbea03197"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle6/driver.py",
+      "sha256": "0181b855f89396fc2a3c48514b9b19e7e9c4ade71a65f2558c7a12c9037f9dc1"
     },
     "protocol": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification/protocol.py",
-      "sha256": "0acca19ec6e9d5da5e44753c90b71517b2d1054fd0ba30e6ca1c073a6ebf29cc"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle6/protocol.py",
+      "sha256": "209439a196e190c1eeff33de5c6c7128f3e3e7a3eb2b57738c6e1f725b6218da"
     },
     "native_calls_in_controls": 0,
     "interaction_owner": "/root/s2_split_input_owner",
@@ -109,14 +109,139 @@
       {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification/review.json",
         "sha256": "cdc96412b100fb59fecaf4e3b95318864a9d1442579b0400d8b42051efe2f7cb"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle2/review.json",
+        "sha256": "d2ef27e5fdce1bd7f71608f92af86dc6641524437a4cbd7c843e1c9fecf23f00"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle3/review.json",
+        "sha256": "06400eb58e27fe23459394b0c48d6a66f56472e568676e1d578acd4317c1a243"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle4/review.json",
+        "sha256": "274328755e4b4b920c69a74347efa1bcd2fa5eed6bf219d85f93e5e1f83aa599"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle4/review-supplemental.json",
+        "sha256": "93f027761dec116e5f6fad0de67c2d3be0d39c5beceb62d7dfcb187d278c87b5"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle5/review.json",
+        "sha256": "0c20bbd022b341d132069f17824089a7a217d3f354583c9305abcd1d66eb2355"
       }
     ],
-    "review_findings": [
+    "definition_history": [
+      {
+        "definition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification/definition.json",
+          "sha256": "8acb81e58b9122c807e4bf041583ad7f855220f31d7fe1b1b5fde898447a5993"
+        },
+        "controls": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification/controls.json",
+          "sha256": "c3a9140ad6e9da665edff697b1965ea3cfdf12ebb0454079556be95d7181a1ae"
+        },
+        "driver": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification/driver.py",
+          "sha256": "aa5be301f5ecb2d66bc21404f7f1f397def9092d9bc7f75f30f2260cbea03197"
+        },
+        "protocol": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification/protocol.py",
+          "sha256": "0acca19ec6e9d5da5e44753c90b71517b2d1054fd0ba30e6ca1c073a6ebf29cc"
+        }
+      },
+      {
+        "definition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle2/definition.json",
+          "sha256": "98b1e1d15d2d06019cdb6866c2e163fa57cf850daacbb03315e11de932d62fe9"
+        },
+        "controls": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle2/controls.json",
+          "sha256": "0ef47354d0fa25f6ce238e1fc2da5a7562a01e675ae0d02a6563713788e9767a"
+        },
+        "driver": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle2/driver.py",
+          "sha256": "eb30c296d5b53bef925ab7dca53382f87eb7f054f1ef3fc5cdaae2a00fd06ae2"
+        },
+        "protocol": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle2/protocol.py",
+          "sha256": "209439a196e190c1eeff33de5c6c7128f3e3e7a3eb2b57738c6e1f725b6218da"
+        }
+      },
+      {
+        "definition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle3/definition.json",
+          "sha256": "50470987e7404c9d33d650cb615f1002821919fe190e3e2c0c088be8e6838f4f"
+        },
+        "controls": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle3/controls.json",
+          "sha256": "81b9abd1230f654f5e5132e7ea668446fef7217cd89720204bfd3a2191d235bd"
+        },
+        "driver": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle3/driver.py",
+          "sha256": "c153387f19178c558d08873ffa42852277e87d2d2b717c71fde3eae729399d5a"
+        },
+        "protocol": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle3/protocol.py",
+          "sha256": "209439a196e190c1eeff33de5c6c7128f3e3e7a3eb2b57738c6e1f725b6218da"
+        }
+      },
+      {
+        "definition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle4/definition.json",
+          "sha256": "b3aa38a260ab453d097ad928b9480d4973f9e840bd959668038554cb75800413"
+        },
+        "controls": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle4/controls.json",
+          "sha256": "780e8a35ec1b12d7c701c1e9de300ea2a2daa878cdae4aba49d86c582af4ac3d"
+        },
+        "driver": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle4/driver.py",
+          "sha256": "3f73e9459f39d408ea0577e87917ca90f6b1a149223508559e61833b0bb4b04b"
+        },
+        "protocol": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle4/protocol.py",
+          "sha256": "209439a196e190c1eeff33de5c6c7128f3e3e7a3eb2b57738c6e1f725b6218da"
+        }
+      },
+      {
+        "definition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle5/definition.json",
+          "sha256": "931916754cf2e08f9fa2d1e6b2c29b7b93c8301851f2185f87d62128064c620a"
+        },
+        "controls": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle5/controls.json",
+          "sha256": "b7fe91d55b5a90e55f554aded2df89cdabfb9303a2960f377b777ee1f46638bf"
+        },
+        "driver": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle5/driver.py",
+          "sha256": "4b7a96421cf8e65d30f7c2bf266036b5eb426d88a78c8f5c756ac9f4b2219b23"
+        },
+        "protocol": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle5/protocol.py",
+          "sha256": "209439a196e190c1eeff33de5c6c7128f3e3e7a3eb2b57738c6e1f725b6218da"
+        }
+      }
+    ],
+    "corrected_review_findings": [
       "Reject expired live dispatch before the supported effect",
       "Wait for the actual End worker receipt within its unchanged deadline",
       "Bind actual returned and copied bytes before response publication",
       "Rejoin issued session evidence before and after final result publication"
-    ]
+    ],
+    "launch_ordering_requirement": "Durable actual controller/host/run/root receipt and owning execution before spawn; actual child/parent-start identity and owning execution before first effect. Final supervisor remains postexit.",
+    "bookkeeping_correction_scope": "Private prospective ownership publication/consumption/final-join cone only; preserve all sealed cycles and unchanged supported Home mechanism, protocol/components/helpers/SDK. No native admission or new clock.",
+    "review_state": "CYCLE6_PASS_PREPARATION_ONLY",
+    "addressed_cycle4_findings": [
+      "Retain exact validated controller raw proof in worker joins",
+      "Derive process raw/receipt references from actual memory before publication; reject replaced saved bytes",
+      "Correlate actual supervisor worker PID/group and rejoin retained ownership before and after parent postexit publication"
+    ],
+    "addressed_cycle5_finding": "Parent must consume an actual supervised child stdout ownership claim before first freezing postexit disk proofs; coherent later replacement must reject. Existing callback supports the narrow completion.",
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle6/review.json",
+      "sha256": "d482e9426e2d9a1e9250e65ab9cc75ca843826c9999d1aedd714ec6fdf6cc5de"
+    }
   },
   "native_admitted": false,
   "native_runs": 0,
