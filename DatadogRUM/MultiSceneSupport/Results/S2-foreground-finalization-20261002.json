@@ -2,7 +2,7 @@
   "schema_version": 1,
   "owner": "EXP-210",
   "state": "COMPONENT_REVIEWED_HOME_QUALIFICATION_PREPARING",
-  "updated_at": "2026-10-02T00:03:10.775495+00:00",
+  "updated_at": "2026-10-02T00:20:42.153063+00:00",
   "gates": [
     "S2:C09",
     "S2:C10"
@@ -77,14 +77,46 @@
     "h14_qualified": false
   },
   "native_qualification": {
-    "state": "PREPARING_NO_ADMISSION",
+    "state": "REVIEW_BLOCKED_PRIVATE_PROTOCOL_CORRECTION_IN_PROGRESS",
     "mechanism": "One automatic Home-only qualification on Duo using the current frozen baseline SwiftUI split product.",
     "attempt_limit": 1,
     "execution_seconds": 600,
     "cleanup_seconds": 600,
     "budget_basis": "Observed supported read 8.4s/Closed action 2.85s; original collection 120s. New clocks reserve bounded preparation/transfer/cleanup; no extension of any existing deadline.",
     "human_input_required": false,
-    "release_acceptance": false
+    "release_acceptance": false,
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification/definition.json",
+      "sha256": "8acb81e58b9122c807e4bf041583ad7f855220f31d7fe1b1b5fde898447a5993"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification/controls.json",
+      "sha256": "c3a9140ad6e9da665edff697b1965ea3cfdf12ebb0454079556be95d7181a1ae"
+    },
+    "controls_count": 18,
+    "driver": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification/driver.py",
+      "sha256": "aa5be301f5ecb2d66bc21404f7f1f397def9092d9bc7f75f30f2260cbea03197"
+    },
+    "protocol": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification/protocol.py",
+      "sha256": "0acca19ec6e9d5da5e44753c90b71517b2d1054fd0ba30e6ca1c073a6ebf29cc"
+    },
+    "native_calls_in_controls": 0,
+    "interaction_owner": "/root/s2_split_input_owner",
+    "reviewer": "/root/h10_backend_reviewer",
+    "review_history": [
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification/review.json",
+        "sha256": "cdc96412b100fb59fecaf4e3b95318864a9d1442579b0400d8b42051efe2f7cb"
+      }
+    ],
+    "review_findings": [
+      "Reject expired live dispatch before the supported effect",
+      "Wait for the actual End worker receipt within its unchanged deadline",
+      "Bind actual returned and copied bytes before response publication",
+      "Rejoin issued session evidence before and after final result publication"
+    ]
   },
   "native_admitted": false,
   "native_runs": 0,
@@ -141,6 +173,25 @@
     "required_environment": "Duo iOS27.1/Xcode27.1 plus one guided human simulator sitting after mechanism qualification",
     "native_admitted": false,
     "human_invitation": false,
-    "gates_closed": []
+    "gates_closed": [],
+    "composition_design": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-consumer-composition-design-cycle2.json",
+      "sha256": "859fcddfdcbf05c331e244a2d52ff6769f2fe863f35a4b1e2ba1347b3a22fd1d"
+    },
+    "composition_design_history": [
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-consumer-composition-design.json",
+        "sha256": "030abc28fde6427cff0816a8a10a6c619cdde89379fb817769a0e62f579096a2"
+      }
+    ],
+    "composition_design_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-consumer-composition-review.json",
+      "sha256": "19e01f9d070ffa8433f6b1d34e15d63d376e19927a66195c498ae2145506128e"
+    }
+  },
+  "component_checkpoint": {
+    "commit": "3225c814097904f617bd0b49591fef7f5bd3eb0e",
+    "signature": "AUTHORIZED_LOCAL_UNSIGNED_FALLBACK_AFTER_60S_SIGNING_TIMEOUT",
+    "pushed": false
   }
 }

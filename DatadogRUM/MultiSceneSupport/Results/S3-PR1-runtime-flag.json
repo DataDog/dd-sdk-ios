@@ -70,5 +70,9 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr1-checkpoint.json",
     "sha256": "9bcd011586c0a8bc647ef6a0cf8f586e2f3c617adce5af097f9813560fc3de02"
   },
-  "local_head": "21d6d9ceeb6a6764cee4ba5452e4c3977e7ec705"
+  "local_head": "21d6d9ceeb6a6764cee4ba5452e4c3977e7ec705",
+  "next_slice_preparation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr2-preparation/definition.json",
+    "sha256": "13c3ea058bbba11ac09259a7597847f1c9cc30700d53e4d0128a3ee3eb7d2d9a"
+  }
 }
