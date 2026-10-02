@@ -17,6 +17,7 @@ internal protocol FlagAssignmentsFetching {
 internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     let customEndpoint: URL?
     let customHeaders: [String: String]?
+    let wrapperSource: FlagsWrapperSource?
 
     private let featureScope: any FeatureScope
     private let fetch: (URLRequest, @escaping (Result<Data, Error>) -> Void) -> Void
@@ -26,7 +27,8 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
     convenience init(
         customEndpoint: URL?,
         customHeaders: [String: String]?,
-        featureScope: any FeatureScope
+        featureScope: any FeatureScope,
+        wrapperSource: FlagsWrapperSource? = nil
     ) {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.urlCache = nil
@@ -37,7 +39,8 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
             customEndpoint: customEndpoint,
             customHeaders: customHeaders,
             featureScope: featureScope,
-            fetch: urlSession.fetch
+            fetch: urlSession.fetch,
+            wrapperSource: wrapperSource
         )
     }
 
@@ -45,12 +48,14 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
         customEndpoint: URL?,
         customHeaders: [String: String]?,
         featureScope: any FeatureScope,
-        fetch: @escaping (URLRequest, @escaping (Result<Data, Error>) -> Void) -> Void
+        fetch: @escaping (URLRequest, @escaping (Result<Data, Error>) -> Void) -> Void,
+        wrapperSource: FlagsWrapperSource? = nil
     ) {
         self.customEndpoint = customEndpoint
         self.customHeaders = customHeaders
         self.featureScope = featureScope
         self.fetch = fetch
+        self.wrapperSource = wrapperSource
     }
 
     func flagAssignments(
@@ -67,7 +72,8 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                     url: self.url(with: context),
                     evaluationContext: evaluationContext,
                     context: context,
-                    customHeaders: self.customHeaders
+                    customHeaders: self.customHeaders,
+                    wrapperSource: self.wrapperSource
                 )
                 self.fetch(request) { [featureScope] result in
                     switch result {
