@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "LOCAL_E03_AND_CACHE_QUALIFIED_SEVEN_ROUTING_DELIVERABLES_REMAIN",
+  "state": "LOCAL_E03_AND_CACHE_QUALIFIED_ROUTING_DRAFT_UNDER_REVIEW",
   "delivery_slice": "PR3",
   "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation",
   "definition": {
@@ -26,7 +26,7 @@
     "E03 public landing remains open; reviewed local dependency qualified51 RUM+9integration cases on each runtime",
     "PR2 dormant contracts qualified on frozen fresh base; cache child independently source-reviewed and qualified11 component cases per runtime"
   ],
-  "next_action": "Implement the seven remaining PR3 state-machine deliverables in the defined three production/two test paths. Reuse accepted E03 and cache component cells. Independently review the new source and finite24 discriminating methods before any changed-surface qualification; no activation, human invitation or release credit follows.",
+  "next_action": "Finish exact independent review of the repaired five-file routing draft and24 controls before build/test admission. Preserve cycle1 BLOCKED review and original qualification receipts. Proposed64-case selection remains unexecuted; no release gate closes.",
   "native_runs": 0,
   "sdk_edits": 8,
   "gates_closed": [],
@@ -63,7 +63,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-finite-test-selection.json",
     "sha256": "22a9587ec9024f28ade0793005ed3a08e419b534fb3472bf2747e4c13b5dbeab"
   },
-  "updated_at": "2026-10-02T11:02:18.564512+00:00",
+  "updated_at": "2026-10-02T11:27:23.646056+00:00",
   "qualification_preparation": {
     "state": "PASS_E03_AND_CACHE_COMPONENTS_BOTH_RUNTIMES",
     "source_freeze": {
@@ -822,11 +822,41 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-state-machine-preparation-cycle1/definition.json",
       "sha256": "200de694ee32c9a938fd444d3b7c6364aaac06654fa8224ac5734055ebb79dd8"
     },
-    "state": "DEFINED_NOT_IMPLEMENTED",
+    "state": "REPAIRED_DRAFT_OFFLINE_CHECKS_PASS_SECOND_REVIEW_PENDING",
     "deliverables": 7,
     "new_tests": 24,
-    "sdk_edits": 0,
+    "sdk_edits": 3,
     "native_admitted": false,
-    "gates_closed": []
+    "gates_closed": [],
+    "source_review_input": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-state-machine-preparation-cycle2/source-review-input.json",
+      "sha256": "778e6338e74eb5a55d6fb9b587bcffdbf202c9a94c175065404becb342e01f95"
+    },
+    "proposed_selection": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-state-machine-preparation-cycle1/proposed-selection.json",
+      "sha256": "7593a71e9dc8ea848c2e248a66fcbced7ca647d15a169fea36880ddb0ab1260b"
+    },
+    "history": [
+      {
+        "state": "SOURCE_DRAFT_OFFLINE_CHECKS_PASS_INDEPENDENT_REVIEW_PENDING",
+        "source_review_input": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-state-machine-preparation-cycle1/source-review-input.json",
+          "sha256": "cb38e695bd0609415abd84c70e7aa1598b95d1537b565105e573c0064df99f33"
+        },
+        "proposed_selection": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-state-machine-preparation-cycle1/proposed-selection.json",
+          "sha256": "7593a71e9dc8ea848c2e248a66fcbced7ca647d15a169fea36880ddb0ab1260b"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-state-machine-preparation-cycle1/review.json",
+          "sha256": "221d8957d787f7aca1c7c83c81e6c154b0c7a3a9f7cae9c32a6e260b8021f95c"
+        }
+      }
+    ],
+    "finding_disposition": {
+      "reviewed_findings": 3,
+      "repaired_pending_independent_verification": 3,
+      "runtime_qualification": false
+    }
   }
 }
