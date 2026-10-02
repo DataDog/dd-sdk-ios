@@ -36,6 +36,3 @@ if [ -z "$1" ]; then usage; fi
 
 # Find all podspecs in dir and replace occurrence of '"*"' in lines containing 's.version '.
 find $DIRECTORY -maxdepth 1 -type f -name "*.podspec" -exec sed -i '' -e '/s\.version[[:space:]]/s/"[^"]*"/"'$1'"/' {} +
-
-# Ship the Flags package version without a second hand-edited constant.
-python3 "$(dirname "${BASH_SOURCE[0]}")/generate_flags_metadata.py" --root "$DIRECTORY"

@@ -140,8 +140,6 @@ Lint:
   script:
     - make clean repo-setup ENV=ci
     - make lint license-check
-    - python3 tools/generate_flags_metadata.py --check
-    - python3 -m unittest discover -s tools -p test_flags_sdk_version.py
     - make rum-models-verify sr-models-verify
 
 API Surface Verify:

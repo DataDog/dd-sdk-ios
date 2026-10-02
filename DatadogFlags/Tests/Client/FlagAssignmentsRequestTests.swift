@@ -13,6 +13,21 @@ import DatadogInternal
 final class FlagAssignmentsRequestTests: XCTestCase {
     private let testURL = URL(string: "https://test.example.com/precompute-assignments")!
 
+    func testNativeRequestUsesContextVersion() throws {
+        for version in ["3.18.0", "4.1.0-rc.1+build.42"] {
+            let request = try URLRequest.flagAssignmentsRequest(
+                url: testURL,
+                evaluationContext: .init(targetingKey: "athlete", attributes: ["sdk_version": .string("99.99.99")]),
+                context: .mockWith(source: "ios", sdkVersion: version),
+                customHeaders: nil
+            )
+            let source = try requestSource(request)
+            XCTAssertEqual(source["sdk_name"] as? String, "dd-sdk-ios")
+            XCTAssertEqual(source["sdk_version"] as? String, version)
+            XCTAssertEqual(source.count, 2)
+        }
+    }
+
     func testWrapperRequestReportsLoadedJavaScriptVersion() throws {
         let request = try URLRequest.flagAssignmentsRequest(
             url: testURL,
@@ -75,7 +90,7 @@ final class FlagAssignmentsRequestTests: XCTestCase {
               },
               "source" : {
                 "sdk_name" : "dd-sdk-ios",
-                "sdk_version" : "\(FlagsSDKMetadata.version)"
+                "sdk_version" : "3.5.1"
               },
               "subject" : {
                 "targeting_attributes" : {

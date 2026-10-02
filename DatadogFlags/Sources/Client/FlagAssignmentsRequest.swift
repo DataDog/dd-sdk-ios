@@ -47,8 +47,8 @@ extension URLRequest {
                 datadogEnvironment: context.env
             ),
             source: FlagAssignmentsRequestBody.Source(
-                sdkName: wrapper?.sdkName ?? FlagsSDKMetadata.name,
-                sdkVersion: wrapper?.sdkVersion ?? FlagsSDKMetadata.version
+                sdkName: wrapper?.sdkName ?? "dd-sdk-ios",
+                sdkVersion: wrapper?.sdkVersion ?? context.sdkVersion
             ),
             subject: FlagAssignmentsRequestBody.Subject(
                 targetingKey: evaluationContext.targetingKey,

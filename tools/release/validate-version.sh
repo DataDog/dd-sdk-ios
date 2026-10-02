@@ -50,4 +50,3 @@ check_podspec_versions () {
 
 check_sdk_version
 check_podspec_versions
-python3 "$REPO_PATH/tools/generate_flags_metadata.py" --root "$REPO_PATH" --check
