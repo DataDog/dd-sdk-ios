@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
   "state": "UIKIT_VIEW_ACTION_GATES_CLOSED_SWIFTUI_REMAINS",
-  "updated_at": "2026-10-02T00:03:10.776533+00:00",
+  "updated_at": "2026-10-02T23:43:41.121649+00:00",
   "execution": {
-    "record": "Results/S2-rum-only-native-20261002.json"
+    "record": null
   },
   "current": {
     "kind": "swiftui_preparation",
@@ -17,25 +17,18 @@
       "S2:H14"
     ],
     "plan": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime/runtime-plan.json",
-      "sha256": "f59314ff7ef697474cfb3726ee1ff531b209d4813a8101c7538479f47515af07"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/runtime-plan.json",
+      "sha256": "8ecffcc61ac6f541f38835a19346405aa720fe1f54d5a97d16e7f4e889fa1421"
     },
     "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime/controls.json",
-      "sha256": "a96f7d60f954d233ec45b734d45b31bc9b8f5ddd53a474caa0630664d5fd33b5"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/controls.json",
+      "sha256": "9f83c4e6450caf522c2138fb30ddd74a58401c3a754cc0b89ec806688c878970"
     },
     "master_plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-remainder-ps26lj5y/accessibility-refresh-h3w5ihjz/master/runtime/runtime-plan.json",
       "sha256": "8b56e529e8217cc733d43f804e2a7722e0fa0ba29ce516bc79277f05906f3063"
     },
     "remaining_matrix": [
-      {
-        "build": "baseline-27.1",
-        "device": "duo",
-        "framework": "SwiftUI",
-        "layout": "split",
-        "multiple_scenes": false
-      },
       {
         "build": "candidate-27.1",
         "device": "duo",
@@ -44,10 +37,10 @@
         "multiple_scenes": false
       }
     ],
-    "prerequisites": "Original SDK27.1 split baseline remains UNQUALIFIED/INCOMPLETE/cleanup INVALID; separate restoration PASS. Results/S2-foreground-finalization-20261002.json passes27 focused controls and exact component review. Saved18foregroundViews/25Actions can support a distinct compiler/source reference without repeating gestures; no native-baseline/Home/H14 credit. Complete one reviewed automatic Home-only qualification and a separately reviewed candidate-only consumer before invitation. Four accepted native cells and both products retained.",
+    "prerequisites": "Candidate-only consumed-idle sitting passes exact relocation review and source/product/helper verification;32 controls reused. Retain the four accepted native cells and distinct SDK27.1 foreground reference. Fresh human availability, tool/device/process preflight, automatic capture/idle qualification and actual Ready remain required; no native admission or gate credit.",
     "review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime/review.json",
-      "sha256": "b6a9d2d4cfa3af67724d2673a0d52c7f90116847cf6db526e9a7aacb5ac0427b"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/review.json",
+      "sha256": "316fe3377dd485f86562f331469d439785a5d60ef5f5ffe870ede1a32a8b02b2"
     }
   },
   "owner": "root",
@@ -60,16 +53,16 @@
     "S2:H14"
   ],
   "swiftui_preparation": {
-    "state": "REVIEWED_RUM_ONLY_BASELINE_PREPARATION",
+    "state": "REVIEWED_CANDIDATE_ONLY_FOREGROUND_PREPARATION",
     "owner": "Results/S2-coverage-remaining-preparation.json",
-    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp",
     "plan": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime/runtime-plan.json",
-      "sha256": "f59314ff7ef697474cfb3726ee1ff531b209d4813a8101c7538479f47515af07"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/runtime-plan.json",
+      "sha256": "8ecffcc61ac6f541f38835a19346405aa720fe1f54d5a97d16e7f4e889fa1421"
     },
     "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime/controls.json",
-      "sha256": "a96f7d60f954d233ec45b734d45b31bc9b8f5ddd53a474caa0630664d5fd33b5"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/controls.json",
+      "sha256": "9f83c4e6450caf522c2138fb30ddd74a58401c3a754cc0b89ec806688c878970"
     },
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-swiftui-session-contract-7qr79tsy/definition.json",
@@ -78,7 +71,7 @@
     "selection_profile": "SWIFTUI_ONLY",
     "matrix": [
       {
-        "build": "baseline-27.1",
+        "build": "candidate-27.1",
         "device": "duo",
         "framework": "SwiftUI",
         "layout": "split",
@@ -141,8 +134,8 @@
       "sha256": "8b56e529e8217cc733d43f804e2a7722e0fa0ba29ce516bc79277f05906f3063"
     },
     "builds": 3,
-    "scope": "All three stack cells and the SDK26.5 split baseline qualify; only two SDK27.1 split cells remain.",
-    "next_action": "Qualify the reviewed foreground finalization and AX-independent idle cleanup in one automatic Home-only run; then prepare a candidate-only consumer with the distinct saved reference and exact independent review.",
+    "scope": "Only the candidate SwiftUI split sitting remains executable; the saved SDK27.1 foreground reference is separate from accepted native baselines and supplies no Home/H14 credit.",
+    "next_action": "Use Results/S2-foreground-finalization-20261002.json:candidate_consumer for the reviewed single candidate and fresh human/native prerequisites.",
     "effect_recapture": {
       "record": "Results/S2-swiftui-effect-recapture-20260930.json",
       "plan": {
@@ -159,11 +152,14 @@
       }
     },
     "review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime/review.json",
-      "sha256": "b6a9d2d4cfa3af67724d2673a0d52c7f90116847cf6db526e9a7aacb5ac0427b"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/review.json",
+      "sha256": "316fe3377dd485f86562f331469d439785a5d60ef5f5ffe870ede1a32a8b02b2"
     },
     "reader_continuation_preparation": "Results/S2-accessibility-discovery-20261001.json",
-    "rum_only_runtime_preparation": "Results/S2-rum-only-runtime-20261001.json"
+    "rum_only_runtime_preparation": "Results/S2-rum-only-runtime-20261001.json",
+    "prerequisites": "Candidate-only consumed-idle sitting passes exact relocation review and source/product/helper verification;32 controls reused. Retain the four accepted native cells and distinct SDK27.1 foreground reference. Fresh human availability, tool/device/process preflight, automatic capture/idle qualification and actual Ready remain required; no native admission or gate credit.",
+    "foreground_candidate_owner": "Results/S2-foreground-finalization-20261002.json",
+    "accepted_native_prefix_unchanged": true
   },
   "swiftui_capture_correction": {
     "state": "STOPPED_NATIVE_READINESS_INCOMPLETE",
@@ -544,5 +540,15 @@
   },
   "prefix_qualification": {
     "record": "Results/S2-prefix-ancestry-20260930.json"
-  }
+  },
+  "selection_history": [
+    {
+      "scope": "HISTORICAL_RECORDED_SELECTION_ONLY",
+      "reference": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/preparation/former-coverage-selection.json",
+        "sha256": "9ec3512d37b1b55fe9a43e93509f22441b28cc25584693ba664c3d16dd5c6a80"
+      },
+      "original_execution": "Results/S2-rum-only-native-20261002.json"
+    }
+  ]
 }

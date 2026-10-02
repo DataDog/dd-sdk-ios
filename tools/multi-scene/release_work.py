@@ -171,8 +171,10 @@ def render(register, owners):
     if swift_ids:
         prep = owners['swiftui']
         lines.append('| ' + ', '.join('S2:' + i for i in swift_ids) + ' | [' + prep['state'] + '](' + COVERAGE + ') | '
-                     + str(len(owners['coverage']['current']['remaining_matrix'])) + ' SwiftUI stack/split cells: both compiler baselines and the candidate. '
-                     'View/Navigation/Action owners in each actual layout; first-cell live controls before prompts. |')
+                     + str(len(owners['coverage']['current']['remaining_matrix'])) + ' SwiftUI stack/split cell'
+                     + ('s' if len(owners['coverage']['current']['remaining_matrix']) != 1 else '')
+                     + '; baseline reuse and evidence limits belong to the preparation owner. '
+                     'View/Navigation/Action owners in each actual layout; live capture/idle qualification before prompts. |')
     physical_ids = [i for i in ('H11', 'H13') if i in remaining]
     if physical_ids:
         lines.append('| ' + ', '.join('S2:' + i for i in physical_ids) + ' | [' + owners['physical']['state'] + '](' + PHYSICAL
