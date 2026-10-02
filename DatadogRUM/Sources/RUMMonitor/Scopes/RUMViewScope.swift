@@ -45,6 +45,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     /// The value holding stable identity of this RUM View.
     let identity: ViewIdentifier
+    /// Scene ownership is absent on the process-wide path.
+    let sceneIdentifier: RUMSceneIdentifier?
     /// View attributes.
     private(set) var attributes: [AttributeKey: AttributeValue] = [:]
     /// Internal view attributes - used by cross platform frameworks and should not be propagated to events
@@ -153,13 +155,16 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         startTime: Date,
         serverTimeOffset: TimeInterval,
         interactionToNextViewMetric: INVMetricTracking?,
-        viewIndexInSession: Int
+        viewIndexInSession: Int,
+        sceneIdentifier: RUMSceneIdentifier? = nil,
+        didReceiveStartCommand: Bool = false
     ) {
         self.parent = parent
         self.dependencies = dependencies
         self.isInitialView = isInitialView
         self.hasReplay = false
         self.identity = identity
+        self.sceneIdentifier = sceneIdentifier
         self.customTimings = customTimings
         self.viewUUID = dependencies.rumUUIDGenerator.generateUnique()
         self.viewPath = path
@@ -168,6 +173,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.serverTimeOffset = serverTimeOffset
         self.interactionToNextViewMetric = interactionToNextViewMetric
         self.viewIndexInSession = viewIndexInSession
+        self.didReceiveStartCommand = didReceiveStartCommand
         self.accessibilityReader = dependencies.accessibilityReader
 
         self.vitalInfoSampler = dependencies.vitalsReaders.map {

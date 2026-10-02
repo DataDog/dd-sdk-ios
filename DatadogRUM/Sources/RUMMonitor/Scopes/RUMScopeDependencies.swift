@@ -65,6 +65,7 @@ internal struct RUMScopeDependencies {
     let appStateManager: AppStateManaging
     let watchdogTermination: WatchdogTerminationMonitor?
     let featureFlags: RUM.Configuration.FeatureFlags
+    let isMultiSceneTrackingEnabled: Bool
 
     /// A factory function that creates `ViewEndedMetricController` for each new view started.
     let viewEndedMetricFactory: () -> ViewEndedController
@@ -140,6 +141,7 @@ internal struct RUMScopeDependencies {
         self.appStateManager = appStateManager
         self.watchdogTermination = watchdogTermination
         self.featureFlags = featureFlags
+        self.isMultiSceneTrackingEnabled = featureFlags[.multiSceneTracking]
         self.networkSettledMetricFactory = networkSettledMetricFactory
         self.interactionToNextViewMetricFactory = interactionToNextViewMetricFactory
 

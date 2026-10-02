@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import CoreFoundation
 import DatadogInternal
 #if canImport(UIKit)
 import UIKit
@@ -25,6 +26,9 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
 
     let configuration: RUM.Configuration
 
+    /// The scene-tracking mode frozen when this feature is enabled.
+    let isMultiSceneTrackingEnabled: Bool
+
     let anonymousIdentifierManager: AnonymousIdentifierManaging
 
     /// Collects memory/CPU timeseries samples during the RUM session, if enabled. Retained here so it can be
@@ -44,6 +48,24 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
         configuration: RUM.Configuration
     ) throws {
         self.configuration = configuration
+
+        let supportsMultiSceneTracking: Bool
+        #if os(iOS)
+        if #available(iOS 27.0, *) {
+            supportsMultiSceneTracking = true
+        } else {
+            supportsMultiSceneTracking = false
+        }
+        #else
+        supportsMultiSceneTracking = false
+        #endif
+
+        let featureFlags = Self.resolvedFeatureFlags(
+            configuration.featureFlags,
+            bundle: configuration.bundle,
+            supportsMultiSceneTracking: supportsMultiSceneTracking
+        )
+        self.isMultiSceneTrackingEnabled = featureFlags[.multiSceneTracking]
 
         // Created first: the initial session identity is recorded into it further down, still inside
         // `RUM.enable()`, and `RUM.enableURLSessionTracking` wires the URLSession handler to it.
@@ -238,7 +260,7 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             },
             appStateManager: appStateManager,
             watchdogTermination: watchdogTermination,
-            featureFlags: configuration.featureFlags,
+            featureFlags: featureFlags,
             networkSettledMetricFactory: { viewStartDate, viewName in
                 return TNSMetric(
                     viewName: viewName,
@@ -476,6 +498,29 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
 
         // Manage anonymous identifier depending on the configuration.
         anonymousIdentifierManager.manageAnonymousIdentifier(shouldTrack: configuration.trackAnonymousUser)
+    }
+}
+
+extension RUMFeature {
+    /// Resolves the requested scene-tracking flag without changing other feature flags.
+    static func resolvedFeatureFlags(
+        _ requestedFlags: RUM.Configuration.FeatureFlags,
+        bundle: Bundle,
+        supportsMultiSceneTracking: Bool
+    ) -> RUM.Configuration.FeatureFlags {
+        var resolvedFlags = requestedFlags
+        resolvedFlags[.multiSceneTracking] = false
+
+        guard requestedFlags[.multiSceneTracking], supportsMultiSceneTracking,
+              let manifest = bundle.object(forInfoDictionaryKey: "UIApplicationSceneManifest") as? [String: Any],
+              let supportsMultipleScenes = manifest["UIApplicationSupportsMultipleScenes"] as? NSNumber,
+              CFGetTypeID(supportsMultipleScenes) == CFBooleanGetTypeID(),
+              supportsMultipleScenes.boolValue else {
+            return resolvedFlags
+        }
+
+        resolvedFlags[.multiSceneTracking] = true
+        return resolvedFlags
     }
 }
 

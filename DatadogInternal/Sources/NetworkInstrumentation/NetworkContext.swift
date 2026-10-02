@@ -6,6 +6,41 @@
 
 import Foundation
 
+/// Provides an optional lifetime token without requiring custom or NOP scopes to conform.
+@_spi(Internal)
+public protocol RUMContextHandoffOwnerProviding {
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? { get }
+}
+
+/// Declares request-local ownership; activation is supplied by the scene input layer.
+@_spi(Internal)
+public enum RUMContextHandoff {
+    /// A lifetime token that retains no core, feature or UI object.
+    public final class Owner: @unchecked Sendable {
+        @ReadWriteLock
+        private var isActive = true
+
+        public init() {}
+
+        public func invalidate() {
+            isActive = false
+        }
+
+        var isValid: Bool { isActive }
+    }
+
+    public struct CurrentValue {
+        public let rumContext: RUMCoreContext?
+        public let sceneIdentifier: String?
+        public let hasPendingUserAction: Bool
+        public let excludedUserActionID: String?
+    }
+
+    public static func owner(in scope: Any) -> Owner? {
+        (scope as? RUMContextHandoffOwnerProviding)?.rumContextHandoffOwner
+    }
+}
+
 /// Describes current Datadog SDK context, so the app state information can be attached to
 /// instrumented Network traces.
 public struct NetworkContext {

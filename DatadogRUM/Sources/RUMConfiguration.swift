@@ -882,6 +882,9 @@ extension RUM.Configuration {
         /// 5 updates so the view state can be reconstructed even if some deltas are lost in transit.
         /// Defaults to `true`.
         case viewUpdates
+        /// Enables scene-specific RUM tracking for multi-scene apps on iOS 27 or later.
+        /// Defaults to `false`. Requires `UIApplicationSupportsMultipleScenes` in the scene manifest.
+        case multiSceneTracking
     }
 }
 
@@ -890,7 +893,8 @@ extension RUM.Configuration.FeatureFlags {
     public static var defaults: Self {
         [
             .trackScrollAndSwipeActions: true,
-            .viewUpdates: true
+            .viewUpdates: true,
+            .multiSceneTracking: false
         ]
     }
 
