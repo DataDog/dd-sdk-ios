@@ -56,6 +56,18 @@ public networking reaches the changed code. Verify the actual `TEST_HOST` and ap
 bundle, then use a launchable host/runtime pair. Build success followed by not-run
 tests, a legacy-host startup trap or a nonexistent result bundle is not execution.
 
+An isolated checkout may lack the ignored test configuration. Bind the standard
+`DD_SDK_COMPILED_FOR_TESTING` condition from `tools/repo-setup/Base.ci.xcconfig.src`
+when existing test-only helpers require it; do not expose them in shipping builds.
+For a scheme that builds only for testing, query `-showBuildSettings` with the
+explicit `test` action and selected destination. The installed Xcode manual states
+that this metadata option does not build. Verify actual target host/loader settings;
+a hostless override is suitable only after reviewing the selected fixture contract.
+Discovery exit0 is insufficient: returned errors must be empty and every selected
+case must appear. The [PR3 owner](../Results/S3-PR3-routing-preparation.json) retains
+the original missing-condition, legacy-host and metadata-action stops; its hostless
+path remains unqualified until actual discovery and case results are accepted.
+
 The [finite package runner](../../../tools/multi-scene/compatibility/README.md)
 verifies copied Git object-store isolation and each private compiled object's
 actual link-list and final product membership. Preserve diagnostics preceding

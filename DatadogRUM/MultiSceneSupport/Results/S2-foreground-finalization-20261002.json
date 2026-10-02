@@ -2,7 +2,7 @@
   "schema_version": 1,
   "owner": "EXP-210",
   "state": "COMPONENT_REVIEWED_NATIVE_HOME_PATH_STOPPED",
-  "updated_at": "2026-10-02T02:59:07.760846+00:00",
+  "updated_at": "2026-10-02T09:11:44.116769+00:00",
   "gates": [
     "S2:C09",
     "S2:C10"
@@ -452,12 +452,12 @@
   "candidate_consumer": {
     "state": "REVIEWED_FOR_SINGLE_HUMAN_ADMISSION",
     "plan": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle3/runtime/runtime-plan.json",
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-1790931116/runtime/runtime-plan.json",
       "sha256": "29fcd45aad18ff1bcb52aa923584d3b57900c8b8c3dcc06c509235189e73d6a1"
     },
     "review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle3/runtime/review.json",
-      "sha256": "b3aa48bd0d41f0fdcaf20e9b85eb996d2dd0728e8f5cfc15a9660e395235ec6d"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-1790931116/runtime/review.json",
+      "sha256": "b3b93618321705b5be96eb248043e425825268ddc6a1cc9b4adf745ae06f8af3"
     },
     "selected": {
       "build": "candidate-27.1",
@@ -470,13 +470,13 @@
     "execution": null,
     "native_admitted": false,
     "human_invitation": false,
-    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle3",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-1790931116",
     "definition": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle3/definition.json",
-      "sha256": "653d0597578d7e11d7c625164763558d5ce0487a6a83129f2fb55b2c113c4357"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-1790931116/sitting-definition-proposal-cycle2.json",
+      "sha256": "0a6c002255510654535662518bf82482a206c05ef01dfa0306d7de86f900e5b0"
     },
     "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle3/runtime/controls.json",
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-1790931116/runtime/controls.json",
       "sha256": "cd27f661367e8273121d5d117245d755a2607b8a46035d77b7c5ed7b67ebc2cb"
     },
     "passed_offline_controls": 23,
@@ -494,6 +494,63 @@
       },
       "fresh_readiness_required": true,
       "native_admission": false
+    },
+    "source_definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle3/definition.json",
+      "sha256": "653d0597578d7e11d7c625164763558d5ce0487a6a83129f2fb55b2c113c4357"
+    },
+    "source_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle3/runtime/review.json",
+      "sha256": "b3aa48bd0d41f0fdcaf20e9b85eb996d2dd0728e8f5cfc15a9660e395235ec6d"
     }
-  }
+  },
+  "candidate_consumer_history": [
+    {
+      "state": "REVIEWED_FOR_SINGLE_HUMAN_ADMISSION",
+      "plan": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle3/runtime/runtime-plan.json",
+        "sha256": "29fcd45aad18ff1bcb52aa923584d3b57900c8b8c3dcc06c509235189e73d6a1"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle3/runtime/review.json",
+        "sha256": "b3aa48bd0d41f0fdcaf20e9b85eb996d2dd0728e8f5cfc15a9660e395235ec6d"
+      },
+      "selected": {
+        "build": "candidate-27.1",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "split",
+        "multiple_scenes": false
+      },
+      "interaction_owner": "/root/s2_split_input_owner",
+      "execution": null,
+      "native_admitted": false,
+      "human_invitation": false,
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle3",
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle3/definition.json",
+        "sha256": "653d0597578d7e11d7c625164763558d5ce0487a6a83129f2fb55b2c113c4357"
+      },
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle3/runtime/controls.json",
+        "sha256": "cd27f661367e8273121d5d117245d755a2607b8a46035d77b7c5ed7b67ebc2cb"
+      },
+      "passed_offline_controls": 23,
+      "limits": [
+        "Preparation grants no native admission",
+        "Fresh live preflight and actual human readiness remain required",
+        "Original failed attempts and separate restoration remain immutable",
+        "No repeat baseline or stopped automatic Home mechanism"
+      ],
+      "expired_operator_page_cleanup": {
+        "state": "PASS_SEPARATE_EXPIRED_PAGE_TERMINATION_ONLY",
+        "receipt": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle3/runtime/expired-page-termination-1790926426/receipt.json",
+          "sha256": "b3a04e7347a9aa10ec6d176a1a28dee6aeb9a2c9bf5504bb682d71ae8b220c51"
+        },
+        "fresh_readiness_required": true,
+        "native_admission": false
+      }
+    }
+  ]
 }

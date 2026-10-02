@@ -63,9 +63,9 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-finite-test-selection.json",
     "sha256": "22a9587ec9024f28ade0793005ed3a08e419b534fb3472bf2747e4c13b5dbeab"
   },
-  "updated_at": 1790916345.894719,
+  "updated_at": "2026-10-02T09:11:44.115536+00:00",
   "qualification_preparation": {
-    "state": "RUM51_BOTH_RUNTIMES_PASSED_INTEGRATION_HOSTLESS_PROPOSAL_REVIEW_PENDING",
+    "state": "RUM51_BOTH_RUNTIMES_PASSED_EXACT9_INTEGRATION_DISCOVERED_NATIVE_QUALIFICATION_REMAINS",
     "source_freeze": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-source-freeze.json",
       "sha256": "703a88258aa1cd9b4db1ad3734ffd9f035e5d6c944013aaad8826ccf993cc9c6"
@@ -317,7 +317,7 @@
         "sha256": "842463cfa51cfa9a6322bd2ac9daa149c455db4ab1085c4ff88f22a574d2eb07"
       }
     },
-    "next_action": "Review source-supported hostless test-target override after captured UIKit legacy-host bootstrap trap; discover/qualify nine loopback cases on27/17.5 before routing changes. Preserve original stops and both51-case passes.",
+    "next_action": "Use the exact discovered nine integration cases for reviewed hostless native qualification on iOS27 and17.5 after the S2 human opportunity; preserve accepted51 RUM cells/source. Then implement the eight finite PR3 routing/cache deliverables.",
     "integration_ios27_discovery_cycle2_execution": {
       "state": "UNQUALIFIED_DISCOVERY_HOST_BOOTSTRAP_TRAP",
       "owner": "/root",
@@ -355,6 +355,71 @@
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-discovery-cycle2/disposition.json",
         "sha256": "0d49763d8f9fee479daddac3ebad4b8094bf07b2b2f8882e083de7f1a11155d2"
       }
+    },
+    "integration_ios27_hostless_discovery_execution": {
+      "state": "STOPPED_CONTROLLER_PREREQUISITE_OR_TRANSPORT",
+      "owner": "/root",
+      "controller_pid": 44864,
+      "controller_pgid": 44864,
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-discovery-hostless/definition.json",
+        "sha256": "6063d7347d8f03160d07b7dad86753be1a16c86052bde313f06e69b4f20538bd"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-discovery-hostless/review.json",
+        "sha256": "d995f9eb7c5f8601b3cf413771cdf7c6aecd90444023234cc4cfb962352b3eb1"
+      },
+      "controller": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-discovery-hostless/controller.py",
+        "sha256": "574d6a2309b0b9a55bca786f6f0365ddd49e156ab0a67e0afb823754c22f2239"
+      },
+      "stop": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-discovery-hostless/controller-stop.json",
+        "sha256": "61cf1f0203adc8fdf3b18acf24f0ddbd907700cab7bb632ec2cf9826007d8f0f"
+      },
+      "disposition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-discovery-hostless/disposition.json",
+        "sha256": "51d0f961467601183f3945a38bbbe5637ddd165c2f47cd6da0b53ebb2a1289e9"
+      }
+    },
+    "integration_ios27_hostless_discovery_cycle2_execution": {
+      "state": "PASS_EXACT_NINE_HOSTLESS_DISCOVERY_ONLY",
+      "owner": "/root",
+      "controller_pid": 53628,
+      "controller_pgid": 53628,
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-discovery-hostless-cycle2/definition.json",
+        "sha256": "c63348b0822bd9743dc764d921849030ebd3b4680549c1aa3f722c0b7634d376"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-discovery-hostless-cycle2/review.json",
+        "sha256": "dd7b9bea79f7462bae7a5a825ea80ef4bfd792a1cf07ce49fe2c6d33fde54727"
+      },
+      "controller": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-discovery-hostless-cycle2/controller.py",
+        "sha256": "f2dd5d01c6843f70a8e7598f4979a14570cde1a7698c945035cbec0d1a28da47"
+      },
+      "admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-discovery-hostless-cycle2/admission.json",
+        "sha256": "3a0dcd5d7aa78888d9b0212922837e3fd5bb1f1f30198492bbde23d5bd1c16ee"
+      },
+      "child": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-discovery-hostless-cycle2/native-enumeration-start.json",
+        "sha256": "6ef2a829d65fa79c99fb092a956ec58c2279619b2cadfa301ae6009dfc6487a4"
+      },
+      "outcome": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-discovery-hostless-cycle2/native-enumeration-outcome.json",
+        "sha256": "e5a2c93f93c8197e4afa002adff651b8fef2bf6d7bf74f7bdfc8e2558ef19c1c"
+      },
+      "cleanup": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-discovery-hostless-cycle2/cleanup.json",
+        "sha256": "fd605d072cce813820a2eec5b24389bdd457cb9c40d3649f355ed365c0ef630e"
+      },
+      "discovery": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-discovery-hostless-cycle2/discovery.json",
+        "sha256": "3c23ab018230afb226a9e2c1c255874b9c7dda602278563f4337aa6ff1dc6bf2"
+      },
+      "tests_run": 0
     }
   }
 }
