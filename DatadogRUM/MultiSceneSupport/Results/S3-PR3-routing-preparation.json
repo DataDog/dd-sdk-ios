@@ -65,7 +65,7 @@
   },
   "updated_at": "2026-10-02T09:11:44.115536+00:00",
   "qualification_preparation": {
-    "state": "RUM51_BOTH_RUNTIMES_PASSED_EXACT9_INTEGRATION_DISCOVERED_NATIVE_QUALIFICATION_REMAINS",
+    "state": "PASS_FINAL_E03_COMPONENTS_BOTH_RUNTIMES",
     "source_freeze": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-source-freeze.json",
       "sha256": "703a88258aa1cd9b4db1ad3734ffd9f035e5d6c944013aaad8826ccf993cc9c6"
@@ -435,7 +435,7 @@
           "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-qualification/review.json",
           "sha256": "0a01e00a1431b687daf5b3218e085965df039d97515d2685514b6c561aa76336"
         },
-        "native_admitted": false
+        "native_admitted": true
       },
       "ios17_5": {
         "definition": {
@@ -450,12 +450,133 @@
           "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios17_5-qualification/review.json",
           "sha256": "20234dbb2e2758d2942e32a72d6debebb8e5720aae1a8315774333acb29ee2ce"
         },
-        "native_admitted": false
+        "native_admitted": true
       }
     },
     "s2_lane_release": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-1790931116/runtime/final-closure-observation/receipt.json",
       "sha256": "860f247c3ff23931cdc8c675b971b85bf2db66e101574552727e7f1236cb0b06"
+    },
+    "integration_ios27_component_execution": {
+      "state": "PASS_COMPONENT_QUALIFICATION_ONLY",
+      "owner": "/root",
+      "controller_pid": 92072,
+      "controller_pgid": 92072,
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-qualification/definition.json",
+        "sha256": "eecb100cdcc31a11828a9c88f5b5af16dad21790fb29cc388888ab634b45153c"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-qualification/review.json",
+        "sha256": "0a01e00a1431b687daf5b3218e085965df039d97515d2685514b6c561aa76336"
+      },
+      "controller": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-qualification/controller.py",
+        "sha256": "1dbba628a01b89da10fa07e0329fd96480e84d1bb0eecc3ce91a962ac62af387"
+      },
+      "admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-qualification/admission.json",
+        "sha256": "ec4511e2f3924c331306dc4880633437323c860ccf5bc5098c3bd48ba3b9bd1b"
+      },
+      "child": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-qualification/native-qualification-start.json",
+        "sha256": "d67bef91e74bbca9a46fdc684fab4bdfc626258cc2afa3ba515ad210f1739a99"
+      },
+      "outcome": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-qualification/native-qualification-outcome.json",
+        "sha256": "fe7a75bdbd3515a0d3b63aa9701cfd79ab02515745ec76cda57b924518f26091"
+      },
+      "cleanup": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-qualification/cleanup.json",
+        "sha256": "0a805d16b0e45b700e93f20d37b7803cbc5b9f1dde66b5b834e23e1a7ea7188e"
+      },
+      "qualification": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-qualification/qualification.json",
+        "sha256": "d3700616eeb91a262a021851f383fbdad6c6a238f23aaea3de83668d7dd04a99"
+      },
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0
+    },
+    "integration_ios17_5_component_execution": {
+      "state": "PASS_COMPONENT_QUALIFICATION_ONLY",
+      "owner": "/root",
+      "controller_pid": 95344,
+      "controller_pgid": 95344,
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios17_5-qualification/definition.json",
+        "sha256": "46c3fb8457bd8007df5d2a6018d75b80e7bec7b4c745e635bf6dd631f343a8a3"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios17_5-qualification/review.json",
+        "sha256": "20234dbb2e2758d2942e32a72d6debebb8e5720aae1a8315774333acb29ee2ce"
+      },
+      "controller": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios17_5-qualification/controller.py",
+        "sha256": "82e026a9971b41c94bae56f2dcf4b09f93c73b374a8f396b521e9c4f11de8a8e"
+      },
+      "admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios17_5-qualification/admission.json",
+        "sha256": "d0084558822bbc7d2b2c5d25571ccc8a81e5b55f988745f8400118429956ae86"
+      },
+      "child": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios17_5-qualification/native-qualification-start.json",
+        "sha256": "cb7575057d43ec2756fc0b7bdbae8f48968723c8f67cbcf38c79d57d9466eac6"
+      },
+      "outcome": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios17_5-qualification/native-qualification-outcome.json",
+        "sha256": "27b0b92fd5fc819f756721d97bda63579a208ab0d6796dcfc8d769e05d23bf6b"
+      },
+      "cleanup": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios17_5-qualification/cleanup.json",
+        "sha256": "c2d037940809bf30a6ac74415f0cbc7e158a12be16a79386151848a604a95883"
+      },
+      "qualification": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios17_5-qualification/qualification.json",
+        "sha256": "b50fc520466690501c7b1df07f79a3d9a4961874276cea3ee005b650a1464209"
+      },
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0
+    },
+    "final_e03_component_qualification": {
+      "state": "PASS_COMPONENT_QUALIFICATION_ONLY",
+      "source": "873c5055f8ab64f97b1c2238cbc8e18b0470b23b",
+      "per_runtime": {
+        "ios27": {
+          "rum_passed": 51,
+          "integration_passed": 9,
+          "integration_qualification": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-qualification/qualification.json",
+            "sha256": "d3700616eeb91a262a021851f383fbdad6c6a238f23aaea3de83668d7dd04a99"
+          }
+        },
+        "ios17_5": {
+          "rum_passed": 51,
+          "integration_passed": 9,
+          "integration_qualification": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios17_5-qualification/qualification.json",
+            "sha256": "b50fc520466690501c7b1df07f79a3d9a4961874276cea3ee005b650a1464209"
+          }
+        }
+      },
+      "failed": 0,
+      "skipped": 0,
+      "gates_closed": []
     }
+  },
+  "cache_implementation_preparation": {
+    "state": "IMPLEMENTED_REQUIRES_SOURCE_REVIEW_AND_XCTEST",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-cache-implementation-cycle1/definition.json",
+      "sha256": "63304d04c2cb0cc13fc9b832a59152765753271ebd0b483caf8dd4be91af4cd9"
+    },
+    "sdk_source_review_required": true,
+    "native_admitted": false,
+    "source_review_input": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-cache-implementation-cycle1/source-review-input.json",
+      "sha256": "f4a30e036e46a6ed81fe1809709a20f09addaf9b6b07e097f1f8363c433d03d3"
+    },
+    "selected_tests": 11
   }
 }

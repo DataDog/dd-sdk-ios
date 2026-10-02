@@ -2,7 +2,7 @@
   "schema_version": 1,
   "owner": "EXP-210",
   "state": "CANDIDATE_SCENARIO_PASS_EVIDENCE_INCOMPLETE_CLEANUP_PASS",
-  "updated_at": "2026-10-02T09:54:15.449688+00:00",
+  "updated_at": "2026-10-02T10:11:27.500768+00:00",
   "gates": [
     "S2:C09",
     "S2:C10"
@@ -327,7 +327,7 @@
   "human_invitation": false,
   "gates_closed": [],
   "candidate_run": true,
-  "next_action": "Correct the private prospective consumed-idle finalizer and review focused negative controls. The completed run remains INVALID; no retry, retrospective anchor or gate credit. Independent reviewed nine-case S3 qualifications may run after its proven lane release.",
+  "next_action": "The private consumed-idle finalizer passed 32 controls and exact independent review. Prepare a new candidate-only sitting only on renewed human availability with fresh prerequisites and relocation review; original INVALID/absent anchor remain. Continue independent finite SDK routing work.",
   "controls": {
     "state": "PASS",
     "test_count": 27,
@@ -603,5 +603,35 @@
         "native_admission": false
       }
     }
-  ]
+  ],
+  "prospective_candidate_consumer": {
+    "state": "REVIEWED_CONSUMED_IDLE_RETENTION_PREPARATION_ONLY",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle4/definition.json",
+      "sha256": "86eb119576ea798162699fbe55efed29d3014355578f441e7d538701cc3c5f76"
+    },
+    "plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle4/runtime/runtime-plan.json",
+      "sha256": "8ecffcc61ac6f541f38835a19346405aa720fe1f54d5a97d16e7f4e889fa1421"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle4/runtime/controls.json",
+      "sha256": "9f83c4e6450caf522c2138fb30ddd74a58401c3a754cc0b89ec806688c878970"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle4/runtime/review.json",
+      "sha256": "a06732b5db6af446a2781e89c4a114bc5a229f3a222a013be7564aa3e106e32a"
+    },
+    "source_verification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle4/source-verification.json",
+      "sha256": "2f0787cbc839fe599df872ff6d08fb7915d8b6e08a1e021f9ecf707688617f33"
+    },
+    "passed_offline_controls": 32,
+    "interaction_owner": "/root/s2_split_input_owner",
+    "native_admitted": false,
+    "human_invitation": false,
+    "original_invalid_unchanged": true,
+    "relocated_sitting_requires_exact_review": true,
+    "gates_closed": []
+  }
 }
