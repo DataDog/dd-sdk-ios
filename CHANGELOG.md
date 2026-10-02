@@ -1,5 +1,7 @@
 # Unreleased
 
+- [IMPROVEMENT] Flags: Report `CACHED` for disk-restored assignments while preserving evaluation telemetry.
+
 - [FIX] Keep automatic URLSession spans linked to the RUM view and session captured when each request starts. See [#3220][]
 - [FIX] Reduce the risk of SwiftUI crashes during Session Replay recording by avoiding copies of unrelated view cache data. See [#3245][]
 

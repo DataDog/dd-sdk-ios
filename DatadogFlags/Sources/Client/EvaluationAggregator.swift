@@ -61,7 +61,7 @@ internal final class EvaluationAggregator {
                 existing.lastEvaluation = now
                 aggregations[key] = existing
             } else {
-                let runtimeDefaultUsed = assignment.reason == "DEFAULT" || errorMessage != nil
+                let runtimeDefaultUsed = assignment.reasonForTelemetry == "DEFAULT" || errorMessage != nil
 
                 let aggregated = AggregatedEvaluation(
                     flagKey: flagKey,

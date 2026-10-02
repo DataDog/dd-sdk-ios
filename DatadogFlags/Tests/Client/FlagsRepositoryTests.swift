@@ -14,6 +14,122 @@ import DatadogInternal
 final class FlagsRepositoryTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
 
+    func testDiskProjectionPreservesPersistenceAndCapturedSPITelemetry() throws {
+        let context = FlagsEvaluationContext.mockAny()
+        let original = FlagAssignment(
+            allocationKey: "allocation",
+            variationKey: "variant",
+            variation: .boolean(true),
+            reason: "DEFAULT",
+            doLog: true,
+            serialID: 42
+        )
+        let diskData = FlagsData(flags: ["flag": original], context: context, date: .mockAny())
+        let diskBytes = try JSONEncoder().encode(diskData)
+        featureScope.dataStoreMock.setValue(diskBytes, forKey: "cached")
+        var network = original
+        network.reason = "TARGETING_MATCH"
+        let repository = FlagsRepository(
+            clientName: "cached",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in completion(.success(["flag": network])) },
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+        featureScope.dataStore.flush()
+        let aggregator = EvaluationAggregator(
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            flushInterval: 100
+        )
+        let exposures = ExposureLoggerMock()
+        let rum = RUMFlagEvaluationReporterMock()
+        let client = FlagsClient(
+            repository: repository,
+            exposureLogger: exposures,
+            evaluationLogger: EvaluationLogger(aggregator: aggregator),
+            rumFlagEvaluationReporter: rum
+        )
+        let captured = try XCTUnwrap(client.getFlagAssignments()?["flag"])
+        var expected = original
+        expected.reason = "CACHED"
+        XCTAssertEqual(captured, expected)
+        XCTAssertEqual(captured.reasonForTelemetry, "DEFAULT")
+        XCTAssertEqual(repository.context, context)
+        XCTAssertEqual(featureScope.dataStoreMock.storage["cached"]?.data(), diskBytes)
+        XCTAssertEqual(client.snapshot()?.assignments["flag"]?.reason, "CACHED")
+        XCTAssertTrue(exposures.logExposureCalls.isEmpty)
+        XCTAssertTrue(rum.sendFlagEvaluationCalls.isEmpty)
+        aggregator.sendEvaluations()
+        XCTAssertTrue(featureScope.eventsWritten.isEmpty)
+
+        let details = client.getDetails(key: "flag", defaultValue: false)
+        XCTAssertEqual(details.reason, "CACHED")
+        XCTAssertTrue(details.value)
+        XCTAssertNil(details.error)
+        aggregator.sendEvaluations()
+        let first = try XCTUnwrap(featureScope.eventsWritten(ofType: FlagEvaluationEvent.self).first)
+        XCTAssertEqual(first.runtimeDefaultUsed, true)
+        XCTAssertNil(first.variant)
+        XCTAssertNil(first.allocation)
+
+        let completed = expectation(description: "network")
+        repository.setEvaluationContext(context) { result in
+            if case .failure(let error) = result {
+                XCTFail("Unexpected network failure: \(error)")
+            }
+            completed.fulfill()
+        }
+        waitForExpectations(timeout: 1)
+        featureScope.dataStore.flush()
+        XCTAssertEqual(repository.flagAssignment(for: "flag"), network)
+        XCTAssertNil(repository.flagAssignment(for: "flag")?.reasonBeforeCacheProjection)
+        let persisted = try XCTUnwrap(featureScope.dataStoreMock.storage["cached"]?.data())
+        let restored = try JSONDecoder().decode(FlagsData.self, from: persisted)
+        XCTAssertEqual(restored.flags["flag"], network)
+        client.sendFlagEvaluation(key: "captured", assignment: captured, context: context)
+        _ = client.getDetails(key: "flag", defaultValue: false)
+        aggregator.sendEvaluations()
+        let events = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
+        let capturedEvent = try XCTUnwrap(events.first { $0.flag.key == "captured" })
+        XCTAssertEqual(capturedEvent.runtimeDefaultUsed, true)
+        XCTAssertNil(capturedEvent.variant)
+        XCTAssertNil(capturedEvent.allocation)
+        let networkEvent = try XCTUnwrap(events.last { $0.flag.key == "flag" })
+        XCTAssertNil(networkEvent.runtimeDefaultUsed)
+        XCTAssertEqual(networkEvent.variant?.key, "variant")
+        XCTAssertEqual(networkEvent.allocation?.key, "allocation")
+
+        let reloaded = FlagsRepository(
+            clientName: "cached",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+        featureScope.dataStore.flush()
+        XCTAssertEqual(reloaded.flagAssignment(for: "flag")?.reason, "CACHED")
+        XCTAssertEqual(reloaded.flagAssignment(for: "flag")?.reasonForTelemetry, "TARGETING_MATCH")
+        XCTAssertEqual(featureScope.dataStoreMock.storage["cached"]?.data(), persisted)
+    }
+
+    func testEmptyAndInvalidDiskRestoration() throws {
+        for valid in [true, false] {
+            let scope = FeatureScopeMock()
+            let data = valid
+                ? try JSONEncoder().encode(FlagsData(flags: [:], context: .mockAny(), date: .mockAny()))
+                : Data("invalid".utf8)
+            scope.dataStoreMock.setValue(data, forKey: "cached")
+            let repository = FlagsRepository(
+                clientName: "cached",
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
+                dateProvider: DateProviderMock(),
+                featureScope: scope
+            )
+            scope.dataStore.flush()
+            XCTAssertEqual(repository.flagAssignments(), valid ? [:] : nil)
+            XCTAssertEqual(repository.state.currentState, .notReady)
+        }
+    }
+
     func testInitAndReset() throws {
         // Given
         let initialState = FlagsData(
@@ -38,7 +154,9 @@ final class FlagsRepositoryTests: XCTestCase {
         // Then
         XCTAssertEqual(flagsRepository.clientName, .mockAny())
         XCTAssertEqual(flagsRepository.context, .mockAny())
-        XCTAssertEqual(flagsRepository.flagAssignment(for: "test"), .mockAny())
+        var cachedAssignment = FlagAssignment.mockAny()
+        cachedAssignment.reason = "CACHED"
+        XCTAssertEqual(flagsRepository.flagAssignment(for: "test"), cachedAssignment)
 
         // When
         flagsRepository.reset()
@@ -712,6 +830,8 @@ final class FlagsRepositoryTests: XCTestCase {
         // Then — should be .stale (not .error) because cached flags exist on disk
         waitForExpectations(timeout: 1)
         XCTAssertEqual(flagsRepository.state.currentState, .stale)
+        XCTAssertEqual(flagsRepository.flagAssignment(for: "cached")?.reason, "CACHED")
+        XCTAssertEqual(flagsRepository.flagAssignment(for: "cached")?.reasonForTelemetry, cachedData.flags["cached"]?.reason)
     }
 
     func testStateTransitionsToErrorOnFailureWithMismatchedCachedContext() {

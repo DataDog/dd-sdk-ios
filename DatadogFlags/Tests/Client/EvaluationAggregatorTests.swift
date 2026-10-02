@@ -14,6 +14,72 @@ import TestUtilities
 class EvaluationAggregatorTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
 
+    func testCachedReasonsPreserveDefaultAndErrorTelemetry() throws {
+        for originalReason in ["DEFAULT", "TARGETING_MATCH"] {
+            for cached in [false, true] {
+                for error in [nil, "TYPE_MISMATCH"] as [String?] {
+                    let scope = FeatureScopeMock()
+                    let aggregator = EvaluationAggregator(
+                        dateProvider: DateProviderMock(),
+                        featureScope: scope,
+                        flushInterval: 100
+                    )
+                    var assignment = FlagAssignment(
+                        allocationKey: "allocation",
+                        variationKey: "variant",
+                        variation: .boolean(true),
+                        reason: originalReason,
+                        doLog: false
+                    )
+                    if cached {
+                        assignment.reasonBeforeCacheProjection = originalReason
+                        assignment.reason = "CACHED"
+                    }
+                    aggregator.recordEvaluation(
+                        for: "flag",
+                        assignment: assignment,
+                        evaluationContext: .mockAny(),
+                        flagError: error
+                    )
+                    aggregator.sendEvaluations()
+                    let event = try XCTUnwrap(scope.eventsWritten(ofType: FlagEvaluationEvent.self).first)
+                    let isDefault = originalReason == "DEFAULT" || error != nil
+                    XCTAssertEqual(event.runtimeDefaultUsed, isDefault ? true : nil)
+                    XCTAssertEqual(event.variant?.key, isDefault ? nil : "variant")
+                    XCTAssertEqual(event.allocation?.key, isDefault ? nil : "allocation")
+                    XCTAssertEqual(event.error?.message, error)
+                }
+            }
+        }
+    }
+
+    func testCachedThenNetworkKeepsFirstRecordAggregationClassification() throws {
+        let aggregator = EvaluationAggregator(
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            flushInterval: 100
+        )
+        var assignment = FlagAssignment(
+            allocationKey: "allocation",
+            variationKey: "variant",
+            variation: .boolean(true),
+            reason: "CACHED",
+            doLog: true
+        )
+        assignment.reasonBeforeCacheProjection = "DEFAULT"
+        aggregator.recordEvaluation(for: "flag", assignment: assignment, evaluationContext: .mockAny(), flagError: nil)
+        assignment.reasonBeforeCacheProjection = nil
+        assignment.reason = "TARGETING_MATCH"
+        aggregator.recordEvaluation(for: "flag", assignment: assignment, evaluationContext: .mockAny(), flagError: nil)
+        aggregator.sendEvaluations()
+        let events = featureScope.eventsWritten(ofType: FlagEvaluationEvent.self)
+        XCTAssertEqual(events.count, 1)
+        XCTAssertEqual(events.first?.evaluationCount, 2)
+        XCTAssertEqual(events.first?.runtimeDefaultUsed, true)
+        XCTAssertNil(events.first?.variant)
+        XCTAssertNil(events.first?.allocation)
+    }
+
     // MARK: - Implementation Details
 
     func testGivenPendingAggregations_whenSendEvaluations_itClearsPending() {

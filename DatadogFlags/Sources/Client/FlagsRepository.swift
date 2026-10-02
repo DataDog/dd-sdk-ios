@@ -204,7 +204,14 @@ internal final class FlagsRepository {
                 }
                 return
             }
-            self.flagsData = data
+            var cachedData = data
+            cachedData?.flags = data?.flags.mapValues { assignment in
+                var cachedAssignment = assignment
+                cachedAssignment.reasonBeforeCacheProjection = assignment.reason
+                cachedAssignment.reason = "CACHED"
+                return cachedAssignment
+            } ?? [:]
+            self.flagsData = cachedData
 
             // Mark complete and grab pending callbacks atomically
             var callbacks: [() -> Void] = []
