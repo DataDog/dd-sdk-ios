@@ -101,6 +101,24 @@ For the full build-and-fix loop, see the `dd-sdk-ios:build-and-diagnose` skill.
 
 **6. Restore the user's state.** Switches persist in Xcode. Switch back to the recorded scheme, **then** the recorded destination — the scheme switch carries the current destination over.
 
+### UI integration tests — separate workspace
+
+Tests under `IntegrationTests/IntegrationScenarios/` are **not** in `Datadog.xcworkspace`. They live in `IntegrationTests/IntegrationTests.xcworkspace` (CocoaPods — run `make ui-test-podinstall` first), scheme `IntegrationScenarios`, with test plans in `IntegrationTests/xctestplans/` (`Default`, `RUM`, `CrashReporting`, `NetworkInstrumentation`).
+
+| Goal | Command |
+|------|---------|
+| One test plan | `make ui-test TEST_PLAN="<Plan>"` |
+| One test | `xcodebuild` below |
+
+```bash
+xcodebuild test \
+  -workspace IntegrationTests/IntegrationTests.xcworkspace \
+  -scheme IntegrationScenarios \
+  -testPlan <Plan> \
+  -destination 'platform=iOS Simulator,name=<Device>' \
+  -only-testing:IntegrationScenarios/<TestClass>/<testMethod>
+```
+
 ### 3. xcodebuild fallback — no Xcode MCP
 
 ```bash
@@ -117,6 +135,8 @@ xcodebuild test \
 Need to run tests?
 ├── Full module or CI replication?
 │   └── make test-ios SCHEME="<Module>" DEVICE="<Device>"
+├── UI integration test (IntegrationTests/IntegrationScenarios)?
+│   └── make ui-test TEST_PLAN="<Plan>", or xcodebuild -only-testing on IntegrationTests.xcworkspace
 └── Specific class or method?
     ├── Xcode MCP available?
     │   └── XcodeOpenWorkspace → XcodeGrep (owner) → record state → XcodeSwitchScheme

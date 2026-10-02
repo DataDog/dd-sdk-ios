@@ -64,7 +64,12 @@ UpdateTargetBuildSetting(
 
 **Per-file compiler flags** are a last resort. For Swift files they are usually ignored (Swift compiles per module) — use `OTHER_SWIFT_FLAGS` at target level instead.
 
-**Info.plist / entitlements:** SDK framework targets generate their Info.plist (`GENERATE_INFOPLIST_FILE = YES`) and have no entitlements. These tools matter for app targets (e.g. `Example`). Use `AddInfoPlist` for privacy usage strings and app metadata, `AddEntitlement` only for code-signing capabilities (App Groups, Keychain sharing, …).
+**Info.plist:** check the target's `INFOPLIST_FILE` with `GetTargetBuildSettings` first.
+- Most module targets generate their Info.plist (`GENERATE_INFOPLIST_FILE = YES`, empty `INFOPLIST_FILE`).
+- These targets use a checked-in plist under `Datadog/TargetSupport/`: `DatadogCore`, `DatadogCrashReporting`, `DatadogCrashReportingTests`, `Example`, and `DatadogCoreTests` + `DatadogIntegrationTests` (shared `TargetSupport/DatadogTests/Info.plist`).
+- Use `AddInfoPlist` for privacy usage strings and app metadata. For a checked-in plist, confirm the key landed in that file with `git diff`. Editing a plist shared by two targets changes both.
+
+**Entitlements:** SDK framework targets have none. Use `AddEntitlement` only for code-signing capabilities on app targets (App Groups, Keychain sharing, …).
 
 ## Common Mistakes
 
