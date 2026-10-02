@@ -20,9 +20,10 @@
 // CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-// Datadog's additions below are licensed under the Apache License Version 2.0.
-// The upstream fishhook implementation retains the BSD-3-Clause license above.
-// Based on facebook/fishhook commit aadc161ac3b80db07a9908851839a17ba63a9eb1.
+
+// Datadog modifications: Copyright 2019-Present Datadog, Inc.
+// Licensed under the Apache License Version 2.0.
+// Upstream: facebook/fishhook@aadc161ac3b80db07a9908851839a17ba63a9eb1.
 
 #include "fishhook.h"
 
