@@ -172,7 +172,9 @@ final class FlagsRepositoryMock: FlagsRepositoryProtocol {
     }
 
     func flagAssignments() -> [String: DatadogFlags.FlagAssignment]? {
-        guard let data = flagsData, data.obfuscation == nil else { return nil }
+        guard let data = flagsData, data.obfuscation == nil else {
+            return nil
+        }
         return data.flags
     }
 
