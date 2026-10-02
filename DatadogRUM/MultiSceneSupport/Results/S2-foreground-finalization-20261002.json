@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "owner": "EXP-210",
-  "state": "COMPONENT_REVIEWED_HOME_QUALIFICATION_PREPARING",
-  "updated_at": "2026-10-02T01:35:43.108963+00:00",
+  "state": "COMPONENT_REVIEWED_NATIVE_HOME_PATH_STOPPED",
+  "updated_at": "2026-10-02T02:09:07.811416+00:00",
   "gates": [
     "S2:C09",
     "S2:C10"
@@ -77,7 +77,7 @@
     "h14_qualified": false
   },
   "native_qualification": {
-    "state": "EXACT_REVIEW_PASS_READ_ONLY_PREFLIGHT_PENDING",
+    "state": "STOPPED_PRE_HOME_TASK_RESTORATION_PENDING",
     "mechanism": "One automatic Home-only qualification on Duo using the current frozen baseline SwiftUI split product.",
     "attempt_limit": 1,
     "execution_seconds": 600,
@@ -241,14 +241,71 @@
     "review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle6/review.json",
       "sha256": "d482e9426e2d9a1e9250e65ab9cc75ca843826c9999d1aedd714ec6fdf6cc5de"
-    }
+    },
+    "execution": {
+      "state": "STOPPED_CHILD_EXIT1_TASK_CLEANUP_PENDING",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle6",
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle6/definition.json",
+        "sha256": "fd277607d92648cee1238daa871881bb543339bddfa18b76a8cec08d733297f8"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle6/review.json",
+        "sha256": "d482e9426e2d9a1e9250e65ab9cc75ca843826c9999d1aedd714ec6fdf6cc5de"
+      },
+      "admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle6/admission.json",
+        "sha256": "8bb70c853fb9591ab286fdea452384aea8a55b5f27edd82cd0e9d9e059b49b41"
+      },
+      "run_id": "d56075a8-3e1d-4900-93a3-f1e897b33164",
+      "host": "COMP-D7Y69VHK4C",
+      "execution_deadline": 1790906233.34076,
+      "cleanup_deadline": 1790906833.34076,
+      "supervisor_receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle6/driver.supervisor.json",
+      "supervisor_state": "PASS_QUIESCENT_CHILD_EXIT1",
+      "controller": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle6/controller-start.json",
+        "sha256": "71127a7ba61c66729d37605230ba9713c7fcff52314a75ebfde5a77bde602d00"
+      },
+      "worker": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle6/worker-start.json",
+        "sha256": "165752951a539a487a3a49dd498eee3422b9c2a92d998ccce9df580c7ede377e"
+      },
+      "postexit": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle6/postexit.json",
+        "sha256": "965ebea06726faf42e740825c04c8c5b16ca9358e2325352b7518d1247376652"
+      },
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle6/out/result.json",
+        "sha256": "b238c3de6cb0c49a14d56784687c65cea00480ce088989406a5af6cb5be2ef02"
+      }
+    },
+    "qualification_result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle6/out/result.json",
+      "sha256": "b238c3de6cb0c49a14d56784687c65cea00480ce088989406a5af6cb5be2ef02"
+    },
+    "qualification_postexit": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle6/postexit.json",
+      "sha256": "965ebea06726faf42e740825c04c8c5b16ca9358e2325352b7518d1247376652"
+    },
+    "restoration_attempt": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-restoration-cycle6/owner-outcome.json",
+      "sha256": "3f6e4cabf44230e1084cd10a0be0f888c9ee00f4619a83534426b80cc84365cf"
+    },
+    "scenario": "INVALID",
+    "evidence": "INVALID",
+    "cleanup": "INVALID",
+    "home_input_commands": 0,
+    "retry_allowed": false,
+    "task_removed": false,
+    "session_absence_observation": "Actual cleanup End returned Session does not exist anymore; exact stopped predicate rejected. No outstanding owned invocation. Source-supported absence/restoration disposition pending."
   },
-  "native_admitted": false,
-  "native_runs": 0,
+  "native_admitted": true,
+  "native_runs": 1,
   "human_invitation": false,
   "gates_closed": [],
   "candidate_run": false,
-  "next_action": "Complete the separate Home-only definition/driver controls and exact designated review, then one automatic qualification. After qualification, prepare and independently review the candidate-only human consumer using the distinct saved reference; do not repeat baseline gestures.",
+  "next_action": "First finish distinct reviewed task-only restoration using actual session-absence evidence; preserve both failed cleanup verdicts. Stop automated Home qualification. Prepare the planned human-input foreground consumer/fallback with the saved reference and source review; no repeat baseline gestures or equivalent automatic retry.",
   "controls": {
     "state": "PASS",
     "test_count": 27,
