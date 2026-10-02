@@ -1223,12 +1223,16 @@ public struct RUMActionEvent: RUMDataModel, Equatable {
         /// UUID of the session
         public let id: String
 
+        /// Whether the SDK is initialised on the application's main or a secondary process
+        public let isMainProcess: Bool?
+
         /// Type of the session
         public let type: RUMSessionType
 
         public enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
+            case isMainProcess = "is_main_process"
             case type = "type"
         }
 
@@ -1237,14 +1241,17 @@ public struct RUMActionEvent: RUMDataModel, Equatable {
         /// - Parameters:
         ///   - hasReplay: Whether this session has a replay
         ///   - id: UUID of the session
+        ///   - isMainProcess: Whether the SDK is initialised on the application's main or a secondary process
         ///   - type: Type of the session
         public init(
             hasReplay: Bool? = nil,
             id: String,
+            isMainProcess: Bool? = nil,
             type: RUMSessionType
         ) {
             self.hasReplay = hasReplay
             self.id = id
+            self.isMainProcess = isMainProcess
             self.type = type
         }
     }
@@ -2728,12 +2735,16 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
         /// UUID of the session
         public let id: String
 
+        /// Whether the SDK is initialised on the application's main or a secondary process
+        public let isMainProcess: Bool?
+
         /// Type of the session
         public let type: RUMSessionType
 
         public enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
+            case isMainProcess = "is_main_process"
             case type = "type"
         }
 
@@ -2742,14 +2753,17 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
         /// - Parameters:
         ///   - hasReplay: Whether this session has a replay
         ///   - id: UUID of the session
+        ///   - isMainProcess: Whether the SDK is initialised on the application's main or a secondary process
         ///   - type: Type of the session
         public init(
             hasReplay: Bool? = nil,
             id: String,
+            isMainProcess: Bool? = nil,
             type: RUMSessionType
         ) {
             self.hasReplay = hasReplay
             self.id = id
+            self.isMainProcess = isMainProcess
             self.type = type
         }
     }
@@ -3877,12 +3891,16 @@ public struct RUMLongTaskEvent: RUMDataModel, Equatable {
         /// UUID of the session
         public let id: String
 
+        /// Whether the SDK is initialised on the application's main or a secondary process
+        public let isMainProcess: Bool?
+
         /// Type of the session
         public let type: RUMSessionType
 
         public enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
+            case isMainProcess = "is_main_process"
             case type = "type"
         }
 
@@ -3891,14 +3909,17 @@ public struct RUMLongTaskEvent: RUMDataModel, Equatable {
         /// - Parameters:
         ///   - hasReplay: Whether this session has a replay
         ///   - id: UUID of the session
+        ///   - isMainProcess: Whether the SDK is initialised on the application's main or a secondary process
         ///   - type: Type of the session
         public init(
             hasReplay: Bool? = nil,
             id: String,
+            isMainProcess: Bool? = nil,
             type: RUMSessionType
         ) {
             self.hasReplay = hasReplay
             self.id = id
+            self.isMainProcess = isMainProcess
             self.type = type
         }
     }
@@ -5125,12 +5146,16 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
         /// UUID of the session
         public let id: String
 
+        /// Whether the SDK is initialised on the application's main or a secondary process
+        public let isMainProcess: Bool?
+
         /// Type of the session
         public let type: RUMSessionType
 
         public enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
+            case isMainProcess = "is_main_process"
             case type = "type"
         }
 
@@ -5139,14 +5164,17 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
         /// - Parameters:
         ///   - hasReplay: Whether this session has a replay
         ///   - id: UUID of the session
+        ///   - isMainProcess: Whether the SDK is initialised on the application's main or a secondary process
         ///   - type: Type of the session
         public init(
             hasReplay: Bool? = nil,
             id: String,
+            isMainProcess: Bool? = nil,
             type: RUMSessionType
         ) {
             self.hasReplay = hasReplay
             self.id = id
+            self.isMainProcess = isMainProcess
             self.type = type
         }
     }
@@ -5947,12 +5975,16 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel, Equatable {
         /// UUID of the session
         public let id: String
 
+        /// Whether the SDK is initialised on the application's main or a secondary process
+        public let isMainProcess: Bool?
+
         /// Type of the session
         public let type: RUMSessionType
 
         public enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
+            case isMainProcess = "is_main_process"
             case type = "type"
         }
 
@@ -5961,14 +5993,17 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel, Equatable {
         /// - Parameters:
         ///   - hasReplay: Whether this session has a replay
         ///   - id: UUID of the session
+        ///   - isMainProcess: Whether the SDK is initialised on the application's main or a secondary process
         ///   - type: Type of the session
         public init(
             hasReplay: Bool? = nil,
             id: String,
+            isMainProcess: Bool? = nil,
             type: RUMSessionType
         ) {
             self.hasReplay = hasReplay
             self.id = id
+            self.isMainProcess = isMainProcess
             self.type = type
         }
     }
@@ -6606,12 +6641,16 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel, Equatable {
         /// UUID of the session
         public let id: String
 
+        /// Whether the SDK is initialised on the application's main or a secondary process
+        public let isMainProcess: Bool?
+
         /// Type of the session
         public let type: RUMSessionType
 
         public enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
+            case isMainProcess = "is_main_process"
             case type = "type"
         }
 
@@ -6620,14 +6659,17 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel, Equatable {
         /// - Parameters:
         ///   - hasReplay: Whether this session has a replay
         ///   - id: UUID of the session
+        ///   - isMainProcess: Whether the SDK is initialised on the application's main or a secondary process
         ///   - type: Type of the session
         public init(
             hasReplay: Bool? = nil,
             id: String,
+            isMainProcess: Bool? = nil,
             type: RUMSessionType
         ) {
             self.hasReplay = hasReplay
             self.id = id
+            self.isMainProcess = isMainProcess
             self.type = type
         }
     }
@@ -7680,6 +7722,9 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
         /// Whether this session is currently active. Set to false to manually stop a session
         public let isActive: Bool?
 
+        /// Whether the SDK is initialised on the application's main or a secondary process
+        public let isMainProcess: Bool?
+
         /// Whether this session has been sampled for replay
         public let sampledForReplay: Bool?
 
@@ -7690,6 +7735,7 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
             case hasReplay = "has_replay"
             case id = "id"
             case isActive = "is_active"
+            case isMainProcess = "is_main_process"
             case sampledForReplay = "sampled_for_replay"
             case type = "type"
         }
@@ -7700,18 +7746,21 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
         ///   - hasReplay: Whether this session has a replay
         ///   - id: UUID of the session
         ///   - isActive: Whether this session is currently active. Set to false to manually stop a session
+        ///   - isMainProcess: Whether the SDK is initialised on the application's main or a secondary process
         ///   - sampledForReplay: Whether this session has been sampled for replay
         ///   - type: Type of the session
         public init(
             hasReplay: Bool? = nil,
             id: String,
             isActive: Bool? = nil,
+            isMainProcess: Bool? = nil,
             sampledForReplay: Bool? = nil,
             type: RUMSessionType
         ) {
             self.hasReplay = hasReplay
             self.id = id
             self.isActive = isActive
+            self.isMainProcess = isMainProcess
             self.sampledForReplay = sampledForReplay
             self.type = type
         }
@@ -9931,6 +9980,9 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
         /// Whether this session is currently active. Set to false to manually stop a session
         public let isActive: Bool?
 
+        /// Whether the SDK is initialised on the application's main or a secondary process
+        public let isMainProcess: Bool?
+
         /// Whether this session has been sampled for replay
         public let sampledForReplay: Bool?
 
@@ -9941,6 +9993,7 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
             case hasReplay = "has_replay"
             case id = "id"
             case isActive = "is_active"
+            case isMainProcess = "is_main_process"
             case sampledForReplay = "sampled_for_replay"
             case type = "type"
         }
@@ -9951,18 +10004,21 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
         ///   - hasReplay: Whether this session has a replay
         ///   - id: UUID of the session
         ///   - isActive: Whether this session is currently active. Set to false to manually stop a session
+        ///   - isMainProcess: Whether the SDK is initialised on the application's main or a secondary process
         ///   - sampledForReplay: Whether this session has been sampled for replay
         ///   - type: Type of the session
         public init(
             hasReplay: Bool? = nil,
             id: String,
             isActive: Bool? = nil,
+            isMainProcess: Bool? = nil,
             sampledForReplay: Bool? = nil,
             type: RUMSessionType
         ) {
             self.hasReplay = hasReplay
             self.id = id
             self.isActive = isActive
+            self.isMainProcess = isMainProcess
             self.sampledForReplay = sampledForReplay
             self.type = type
         }
@@ -11950,12 +12006,16 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel, Equatable {
         /// UUID of the session
         public let id: String
 
+        /// Whether the SDK is initialised on the application's main or a secondary process
+        public let isMainProcess: Bool?
+
         /// Type of the session
         public let type: RUMSessionType
 
         public enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
+            case isMainProcess = "is_main_process"
             case type = "type"
         }
 
@@ -11964,14 +12024,17 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel, Equatable {
         /// - Parameters:
         ///   - hasReplay: Whether this session has a replay
         ///   - id: UUID of the session
+        ///   - isMainProcess: Whether the SDK is initialised on the application's main or a secondary process
         ///   - type: Type of the session
         public init(
             hasReplay: Bool? = nil,
             id: String,
+            isMainProcess: Bool? = nil,
             type: RUMSessionType
         ) {
             self.hasReplay = hasReplay
             self.id = id
+            self.isMainProcess = isMainProcess
             self.type = type
         }
     }
@@ -12674,12 +12737,16 @@ public struct RUMVitalDurationEvent: RUMDataModel, Equatable {
         /// UUID of the session
         public let id: String
 
+        /// Whether the SDK is initialised on the application's main or a secondary process
+        public let isMainProcess: Bool?
+
         /// Type of the session
         public let type: RUMSessionType
 
         public enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
+            case isMainProcess = "is_main_process"
             case type = "type"
         }
 
@@ -12688,14 +12755,17 @@ public struct RUMVitalDurationEvent: RUMDataModel, Equatable {
         /// - Parameters:
         ///   - hasReplay: Whether this session has a replay
         ///   - id: UUID of the session
+        ///   - isMainProcess: Whether the SDK is initialised on the application's main or a secondary process
         ///   - type: Type of the session
         public init(
             hasReplay: Bool? = nil,
             id: String,
+            isMainProcess: Bool? = nil,
             type: RUMSessionType
         ) {
             self.hasReplay = hasReplay
             self.id = id
+            self.isMainProcess = isMainProcess
             self.type = type
         }
     }
@@ -13358,12 +13428,16 @@ public struct RUMVitalOperationStepEvent: RUMDataModel, Equatable {
         /// UUID of the session
         public let id: String
 
+        /// Whether the SDK is initialised on the application's main or a secondary process
+        public let isMainProcess: Bool?
+
         /// Type of the session
         public let type: RUMSessionType
 
         public enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
+            case isMainProcess = "is_main_process"
             case type = "type"
         }
 
@@ -13372,14 +13446,17 @@ public struct RUMVitalOperationStepEvent: RUMDataModel, Equatable {
         /// - Parameters:
         ///   - hasReplay: Whether this session has a replay
         ///   - id: UUID of the session
+        ///   - isMainProcess: Whether the SDK is initialised on the application's main or a secondary process
         ///   - type: Type of the session
         public init(
             hasReplay: Bool? = nil,
             id: String,
+            isMainProcess: Bool? = nil,
             type: RUMSessionType
         ) {
             self.hasReplay = hasReplay
             self.id = id
+            self.isMainProcess = isMainProcess
             self.type = type
         }
     }
@@ -16535,4 +16612,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/75aac05f07c331fffa8598919931106ed24bee63
+// Generated from https://github.com/DataDog/rum-events-format/tree/0cff152a385f70b2cac82070aadf3bc5cb0ca126

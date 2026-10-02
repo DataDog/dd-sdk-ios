@@ -1122,6 +1122,10 @@ public class objc_RUMActionEventSession: NSObject {
         root.swiftModel.session.id
     }
 
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
+    }
+
     public var type: objc_RUMActionEventSessionRUMSessionType {
         .init(swift: root.swiftModel.session.type)
     }
@@ -3156,6 +3160,10 @@ public class objc_RUMErrorEventSession: NSObject {
         root.swiftModel.session.id
     }
 
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
+    }
+
     public var type: objc_RUMErrorEventSessionRUMSessionType {
         .init(swift: root.swiftModel.session.type)
     }
@@ -4520,6 +4528,10 @@ public class objc_RUMLongTaskEventSession: NSObject {
 
     public var id: String {
         root.swiftModel.session.id
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var type: objc_RUMLongTaskEventSessionRUMSessionType {
@@ -6263,6 +6275,10 @@ public class objc_RUMResourceEventSession: NSObject {
         root.swiftModel.session.id
     }
 
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
+    }
+
     public var type: objc_RUMResourceEventSessionRUMSessionType {
         .init(swift: root.swiftModel.session.type)
     }
@@ -7172,6 +7188,10 @@ public class objc_RUMTimeseriesCpuEventSession: NSObject {
 
     public var id: String {
         root.swiftModel.session.id
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var type: objc_RUMTimeseriesCpuEventSessionRUMSessionType {
@@ -8152,6 +8172,10 @@ public class objc_RUMTimeseriesMemoryEventSession: NSObject {
 
     public var id: String {
         root.swiftModel.session.id
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var type: objc_RUMTimeseriesMemoryEventSessionRUMSessionType {
@@ -9554,6 +9578,10 @@ public class objc_RUMViewEventSession: NSObject {
 
     public var isActive: NSNumber? {
         root.swiftModel.session.isActive as NSNumber?
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var sampledForReplay: NSNumber? {
@@ -11772,6 +11800,10 @@ public class objc_RUMViewUpdateEventSession: NSObject {
         root.swiftModel.session.isActive as NSNumber?
     }
 
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
+    }
+
     public var sampledForReplay: NSNumber? {
         root.swiftModel.session.sampledForReplay as NSNumber?
     }
@@ -13782,6 +13814,10 @@ public class objc_RUMVitalAppLaunchEventSession: NSObject {
         root.swiftModel.session.id
     }
 
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
+    }
+
     public var type: objc_RUMVitalAppLaunchEventSessionRUMSessionType {
         .init(swift: root.swiftModel.session.type)
     }
@@ -14997,6 +15033,10 @@ public class objc_RUMVitalDurationEventSession: NSObject {
         root.swiftModel.session.id
     }
 
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
+    }
+
     public var type: objc_RUMVitalDurationEventSessionRUMSessionType {
         .init(swift: root.swiftModel.session.type)
     }
@@ -16149,6 +16189,10 @@ public class objc_RUMVitalOperationStepEventSession: NSObject {
 
     public var id: String {
         root.swiftModel.session.id
+    }
+
+    public var isMainProcess: NSNumber? {
+        root.swiftModel.session.isMainProcess as NSNumber?
     }
 
     public var type: objc_RUMVitalOperationStepEventSessionRUMSessionType {
@@ -18178,4 +18222,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/75aac05f07c331fffa8598919931106ed24bee63
+// Generated from https://github.com/DataDog/rum-events-format/tree/0cff152a385f70b2cac82070aadf3bc5cb0ca126
