@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "LOCAL_E03_AND_CACHE_QUALIFIED_ROUTING_DRAFT_UNDER_REVIEW",
+  "state": "LOCAL_E03_CACHE_AND_ROUTING_SOURCE_QUALIFIED_RUNTIME_PENDING",
   "delivery_slice": "PR3",
   "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation",
   "definition": {
@@ -26,7 +26,7 @@
     "E03 public landing remains open; reviewed local dependency qualified51 RUM+9integration cases on each runtime",
     "PR2 dormant contracts qualified on frozen fresh base; cache child independently source-reviewed and qualified11 component cases per runtime"
   ],
-  "next_action": "Finish exact independent review of the repaired five-file routing draft and24 controls before build/test admission. Preserve cycle1 BLOCKED review and original qualification receipts. Proposed64-case selection remains unexecuted; no release gate closes.",
+  "next_action": "Prepare/review the minimum executable iOS17.5 comparison of the same64-case routing selection, retaining required iOS27 predecessor/source/cleanup bindings and fixed transport. The seven routing deliverables have iOS27 component evidence; minimum runtime and later activation/release acceptance remain open.",
   "native_runs": 0,
   "sdk_edits": 8,
   "gates_closed": [],
@@ -65,7 +65,7 @@
   },
   "updated_at": "2026-10-02T11:27:23.646056+00:00",
   "qualification_preparation": {
-    "state": "PASS_E03_AND_CACHE_COMPONENTS_BOTH_RUNTIMES",
+    "state": "ROUTING_IOS27_64_CASES_PASS_MINIMUM_RUNTIME_PENDING",
     "source_freeze": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-source-freeze.json",
       "sha256": "703a88258aa1cd9b4db1ad3734ffd9f035e5d6c944013aaad8826ccf993cc9c6"
@@ -677,6 +677,82 @@
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-cache-ios17_5-qualification-cycle2/qualification.json",
         "sha256": "f816a0261a628cdcb3a1510a9bf713f87906fdb6fd56e4cfb129d7a69f11a7f3"
       }
+    },
+    "routing_ios27_discovery_execution": {
+      "state": "PASS_COMPILATION_AND_EXACT_DISCOVERY_ONLY",
+      "owner": "/root",
+      "controller_pid": 59946,
+      "controller_pgid": 59946,
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-ios27-discovery-cycle1/definition.json",
+        "sha256": "2026f99cc4df45c8ddb2adbb457bf1a5ea4e4e7161fe1793289407337e871fdc"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-ios27-discovery-cycle1/review.json",
+        "sha256": "929aea29be97ebde733ec028031e42bd48ea0d70f384958efefea4a0dcd2af04"
+      },
+      "controller": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-ios27-discovery-cycle1/controller.py",
+        "sha256": "8261f39aeb848dc45ac057abe9aa9cfbe1046f256bb8114a24ebba07cd6df8ac"
+      },
+      "admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-ios27-discovery-cycle1/admission.json",
+        "sha256": "5b98a27394260db3ea3527e2b297afe4e3e177a15a6c6449c9eac293b0261f9c"
+      },
+      "child": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-ios27-discovery-cycle1/native-enumeration-start.json",
+        "sha256": "ccb64eaf031138b3512393625bb34fb743c283c5811c2485e2ab62bb954f6401"
+      },
+      "outcome": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-ios27-discovery-cycle1/native-enumeration-outcome.json",
+        "sha256": "51efd18b9c1aa090facfddb7541de06ed00a716f5f06479c870a7b4333a77a30"
+      },
+      "cleanup": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-ios27-discovery-cycle1/cleanup.json",
+        "sha256": "4d6660586aaac85b91b815464ece6f4b3c441ecf9263d9ccc7268059ba289d7b"
+      },
+      "discovery": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-ios27-discovery-cycle1/discovery.json",
+        "sha256": "11c36de48998dc69d62d1269acbbf5b866a746a1a69f54c6597581789338c9d7"
+      }
+    },
+    "routing_ios27_component_execution": {
+      "state": "PASS_COMPONENT_QUALIFICATION_ONLY",
+      "owner": "/root",
+      "controller_pid": 67493,
+      "controller_pgid": 67493,
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-ios27-qualification-cycle1/definition.json",
+        "sha256": "311bcef5e766fad8384e7f0f8bab75d53ce5dbdb7c7bcf1d14d4059c6e88ecd2"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-ios27-qualification-cycle1/review.json",
+        "sha256": "25a2634a0adac2e70654d91198657e88086bb3bc5dd62f85a8a3f29072332021"
+      },
+      "controller": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-ios27-qualification-cycle1/controller.py",
+        "sha256": "f454b497504423a1acaceeaa9cc435e95e4415554c22477f85282206549295ba"
+      },
+      "admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-ios27-qualification-cycle1/admission.json",
+        "sha256": "fc010b631c6dc3d8a91bd71659ed46eba291264e19398d40a970be060dadbfb4"
+      },
+      "child": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-ios27-qualification-cycle1/native-qualification-start.json",
+        "sha256": "c34f3072bfbf95f54ea67d5e848c7267437b25ed087840750cebee570804c1c3"
+      },
+      "outcome": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-ios27-qualification-cycle1/native-qualification-outcome.json",
+        "sha256": "079130dbfc4788c4c447531b4efaff187d9f0f254db79b44b3527cfe0c9051ec"
+      },
+      "cleanup": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-ios27-qualification-cycle1/cleanup.json",
+        "sha256": "87ae4136e5daff8be5bde825cb562c2244d322ca4af49db319c836ec17689f9b"
+      },
+      "qualification": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-ios27-qualification-cycle1/qualification.json",
+        "sha256": "c45151bda5547ef5a662aa476577ad4ecbb3367a6fd41ca142410d31bde69de5"
+      }
     }
   },
   "cache_implementation_preparation": {
@@ -822,7 +898,7 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-state-machine-preparation-cycle1/definition.json",
       "sha256": "200de694ee32c9a938fd444d3b7c6364aaac06654fa8224ac5734055ebb79dd8"
     },
-    "state": "REPAIRED_DRAFT_OFFLINE_CHECKS_PASS_SECOND_REVIEW_PENDING",
+    "state": "SOURCE_AND_IOS27_COMPONENT_QUALIFIED_MINIMUM_RUNTIME_PENDING",
     "deliverables": 7,
     "new_tests": 24,
     "sdk_edits": 3,
@@ -855,8 +931,37 @@
     ],
     "finding_disposition": {
       "reviewed_findings": 3,
-      "repaired_pending_independent_verification": 3,
-      "runtime_qualification": false
+      "resolved_source_review_only": 3,
+      "runtime_qualification": "IOS27_ONLY_64_PASS_MINIMUM_RUNTIME_PENDING"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-state-machine-preparation-cycle2/review.json",
+      "sha256": "a22256ce149bebf932fc07c5694084c4e2712b9495863ee6b1aadb75769a4bc7"
+    },
+    "source_freeze": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-state-machine-preparation-cycle2/source-freeze.json",
+      "sha256": "219e6742a66676d748619db1deb4cbcd7a297fc9cfcab31a8a106ad1304f432a"
+    },
+    "local_checkpoint": "2d3de2170248c386a5e7f7de4477ecd703e0c504",
+    "discovery_proposal": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-ios27-discovery-cycle1/definition.json",
+      "sha256": "2026f99cc4df45c8ddb2adbb457bf1a5ea4e4e7161fe1793289407337e871fdc"
+    },
+    "discovery": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-ios27-discovery-cycle1/discovery.json",
+      "sha256": "11c36de48998dc69d62d1269acbbf5b866a746a1a69f54c6597581789338c9d7"
+    },
+    "component_qualification_proposal": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-ios27-qualification-cycle1/definition.json",
+      "sha256": "311bcef5e766fad8384e7f0f8bab75d53ce5dbdb7c7bcf1d14d4059c6e88ecd2"
+    },
+    "ios27_qualification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-ios27-qualification-cycle1/qualification.json",
+      "sha256": "c45151bda5547ef5a662aa476577ad4ecbb3367a6fd41ca142410d31bde69de5"
+    },
+    "minimum_runtime_proposal": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/routing-ios17_5-qualification-cycle1/definition.json",
+      "sha256": "9b131dbe524e855b26a11caf17e7b3c73544b9fb50f5ed1af7036736ff63deda"
     }
   }
 }
