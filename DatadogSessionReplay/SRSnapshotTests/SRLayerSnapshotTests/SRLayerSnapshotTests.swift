@@ -45,6 +45,58 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
         )
     }
 
+    func testVideoPlayer() async throws {
+        try await takeLayerSnapshotFor(
+            VideoPlayerFixtureView(),
+            waitTime: 1.0,
+            shouldRecord: shouldRecord
+        )
+    }
+
+    func testSafari() async throws {
+        func containsVisibleHost(_ layer: CALayer) -> Bool {
+            guard let layerClass = NSClassFromString("CALayerHost"), !layer.isHidden, layer.opacity > 0 else {
+                return false
+            }
+            return (layer.isKind(of: layerClass) && !layer.bounds.isEmpty)
+                || layer.sublayers?.contains(where: containsVisibleHost) ?? false
+        }
+
+        let fixture = SafariFixtureViewController()
+        let ready = XCTNSPredicateExpectation(
+            predicate: NSPredicate { object, _ in
+                guard let fixture = object as? SafariFixtureViewController,
+                      let view = fixture.presentedViewController?.viewIfLoaded else {
+                    return false
+                }
+                return containsVisibleHost(view.layer)
+            },
+            object: fixture
+        )
+        ready.expectationDescription = "Safari remote content"
+
+        try await takeLayerSnapshotFor(
+            fixture,
+            beforeSnapshot: {
+                fixture.showSafari()
+                await self.fulfillment(of: [ready], timeout: 10.0)
+            },
+            shouldRecord: shouldRecord
+        )
+    }
+
+    func testShareSheet() async throws {
+        let fixture = ShareSheetFixtureViewController()
+        try await takeLayerSnapshotFor(
+            fixture,
+            waitTime: 1.0,
+            beforeSnapshot: {
+                await fixture.showShareSheet()
+            },
+            shouldRecord: shouldRecord
+        )
+    }
+
     func testTab() async throws {
         try await takeLayerSnapshotFor(
             TabFixtureView(),

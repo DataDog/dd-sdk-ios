@@ -31,8 +31,13 @@ internal protocol RUMCommandPublisher: AnyObject {
 
 /// Represents the type of instrumentation used to create different RUM commands.
 internal enum InstrumentationType: Equatable {
+    #if canImport(UIKit)
     /// Command issued through UIKit predicate-based instrumentation.
     case uikit
+    #elseif canImport(AppKit)
+    /// Command issued through AppKit predicate-based instrumentation.
+    case appkit
+    #endif
     /// Command issued through SwiftUI predicate-based instrumentation.
     case swiftuiAutomatic
     /// Command issued through SwiftUI-based instrumentation with view modifiers.
@@ -48,7 +53,11 @@ internal enum InstrumentationType: Equatable {
     /// from a lower-priority type (e.g., a SwiftUI button tap takes precedence over the touch on its containing UIKit table view cell).
     var priority: Int {
         switch self {
+            #if canImport(UIKit)
         case .uikit: return 0
+            #elseif canImport(AppKit)
+        case .appkit: return 0
+            #endif
         case .swiftuiAutomatic: return 1
         case .swiftui: return 2
         case .manual: return 3

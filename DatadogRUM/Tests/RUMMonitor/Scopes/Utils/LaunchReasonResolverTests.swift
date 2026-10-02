@@ -46,6 +46,7 @@ class LaunchReasonResolverTests: XCTestCase {
 
     // MARK: - User Launch
 
+    #if !os(macOS)
     func testUserLaunch_resolvesUserLaunchForSceneDelegateFlow() throws {
         let context: DatadogContext = .mockWith(
             launchInfo: baseLaunchInfo,
@@ -129,4 +130,5 @@ class LaunchReasonResolverTests: XCTestCase {
         let reason = try resolveAndValidate(context: context, commands: commands)
         XCTAssertEqual(reason, .prewarming, "Should leave launchReason as prewarming for prewarm context")
     }
+    #endif
 }

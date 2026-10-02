@@ -4,9 +4,9 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
-import TestUtilities
+#if !os(watchOS) && !os(macOS)
 import Testing
+import DatadogSDKTesting
 import DatadogInternal
 import UIKit
 

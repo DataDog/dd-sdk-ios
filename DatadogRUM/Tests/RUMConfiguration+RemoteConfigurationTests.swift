@@ -54,7 +54,11 @@ class RUMConfiguration_RemoteConfigurationTests: XCTestCase {
             XCTAssertEqual(configuration.urlSessionTracking != nil, try XCTUnwrap(rum.trackResources))
             #if !os(watchOS)
             XCTAssertEqual(configuration.trackMemoryWarnings, try XCTUnwrap(rum.trackMemoryWarnings))
+            #if os(macOS)
+            XCTAssertEqual(configuration.macOSActionsPredicate != nil, try XCTUnwrap(rum.trackUserInteractions))
+            #else
             XCTAssertEqual(configuration.uiKitActionsPredicate != nil, try XCTUnwrap(rum.trackUserInteractions))
+            #endif
             #endif
         }
     }
@@ -65,13 +69,17 @@ class RUMConfiguration_RemoteConfigurationTests: XCTestCase {
     func testWhenRemoteEnablesAlreadyConfiguredTracking_itPreservesInCodeValues() {
         // Given
         let customHost = "custom.example.com"
-        #if !os(watchOS)
+        #if os(macOS)
+        let predicate = MacOSRUMActionsPredicateMock()
+        #elseif !os(watchOS)
         let predicate = UIKitRUMActionsPredicateMock()
         #endif
 
         var configuration: RUM.Configuration = .mockWith { configuration in
             configuration.urlSessionTracking = .init(firstPartyHostsTracing: .trace(hosts: [customHost]))
-            #if !os(watchOS)
+            #if os(macOS)
+            configuration.macOSActionsPredicate = predicate
+            #elseif !os(watchOS)
             configuration.uiKitActionsPredicate = predicate
             #endif
         }
@@ -84,7 +92,9 @@ class RUMConfiguration_RemoteConfigurationTests: XCTestCase {
             return XCTFail("Expected in-code first-party hosts tracing to be preserved")
         }
         XCTAssertEqual(hosts, [customHost])
-        #if !os(watchOS)
+        #if os(macOS)
+        XCTAssertIdentical(configuration.macOSActionsPredicate as AnyObject, predicate)
+        #elseif !os(watchOS)
         XCTAssertIdentical(configuration.uiKitActionsPredicate as AnyObject, predicate)
         #endif
     }

@@ -343,10 +343,8 @@ class AppHangsMonitorTests: XCTestCase {
 
         // Then
         let sentRUMError = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self).first)
-        let usrInfoCount = sentRUMError.usr?.usrInfo.count ?? 0
-        let accountInfoCount = sentRUMError.account?.accountInfo.count ?? 0
         let contextInfoCount = sentRUMError.context?.contextInfo.count ?? 0
-        XCTAssertEqual(usrInfoCount + accountInfoCount + contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes)
+        XCTAssertEqual(contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes)
     }
 
     func testGivenPendingHangWithTooManyAttributes_whenStartedInAnotherProcess_itSanitizesRUMViewContextBeforeWriting() throws {
@@ -380,10 +378,8 @@ class AppHangsMonitorTests: XCTestCase {
 
         // Then
         let sentRUMView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).first)
-        let usrInfoCount = sentRUMView.usr?.usrInfo.count ?? 0
-        let accountInfoCount = sentRUMView.account?.accountInfo.count ?? 0
         let contextInfoCount = sentRUMView.context?.contextInfo.count ?? 0
-        XCTAssertEqual(usrInfoCount + accountInfoCount + contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes)
+        XCTAssertEqual(contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes)
     }
 
     // MARK: - Fatal App Hangs - Testing Uploaded Data

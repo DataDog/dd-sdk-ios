@@ -16,10 +16,11 @@ internal struct VitalsReaders {
 
     init(
         frequency: TimeInterval,
+        notificationCenterProvider: NotificationCenterProvider,
         telemetry: Telemetry = NOPTelemetry()
     ) {
         self.frequency = frequency
-        self.cpu = VitalCPUReader(notificationCenter: .default, telemetry: telemetry)
+        self.cpu = VitalCPUReader(notificationCenterProvider: notificationCenterProvider, telemetry: telemetry)
         self.memory = VitalMemoryReader()
         self.refreshRate = VitalRefreshRateReader()
     }
@@ -40,7 +41,7 @@ internal struct RUMScopeDependencies {
     let rumUUIDGenerator: RUMUUIDGenerator
     /// The session ID created synchronously in `RUM.enable()`, adopted by the initial session instead of
     /// generating a new one. This makes the session's deterministic sampler available through
-    /// `RUMSessionSamplerProvider` before `RUM.enable()` returns. `nil` restores the previous behaviour of
+    /// `SessionSampler` before `RUM.enable()` returns. `nil` restores the previous behaviour of
     /// generating it lazily.
     let initialSessionUUID: RUMUUID?
     let backtraceReporter: BacktraceReporting?

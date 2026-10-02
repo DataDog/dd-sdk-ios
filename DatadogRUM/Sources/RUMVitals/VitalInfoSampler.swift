@@ -5,7 +5,11 @@
  */
 
 import Foundation
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 internal protocol SamplingBasedVitalReader {
     func readVitalData() -> Double?
@@ -47,8 +51,10 @@ internal final class VitalInfoSampler {
             return 120.0 // Hardcoded to enable VisionOS compilation
             #elseif os(watchOS)
             return 60.0 // Default refresh rate for watchOS
-            #else
-            return Double(UIScreen.main.maximumFramesPerSecond)
+            #elseif canImport(UIKit)
+            return Double(DDScreen.main.maximumFramesPerSecond)
+            #elseif canImport(AppKit)
+            return Double(DDScreen.main.map { $0.maximumFramesPerSecond } ?? 60)
             #endif
         }
     }

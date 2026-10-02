@@ -71,6 +71,57 @@ final class AppStateManagerTests: XCTestCase {
         wait(for: [appStateExpectation], timeout: 0.1)
     }
 
+    #if os(macOS)
+    func testUpdateAppState_itUpdatesCorrectly() {
+        // Given
+        let dataStore = DataStoreAsyncMock()
+        let featureScope = FeatureScopeMock(dataStore: dataStore)
+        let initialStateQueue = DispatchQueue(label: "com.datadoghq.tests.initial-state-update")
+        let initialState = AppStateInfo.mockWith(wasTerminated: false, isActive: true)
+        featureScope.rumDataStore.setValue(initialState, forKey: .appStateKey)
+        dataStore.flush()
+
+        let appStateManager = AppStateManager(
+            featureScope: featureScope,
+            processId: .init(),
+            syntheticsEnvironment: false,
+            queue: initialStateQueue
+        )
+
+        let initialStateExpectation = expectation(description: "Initial state is loaded")
+        appStateManager.previousAppStateInfo { previousAppState in
+            XCTAssertEqual(previousAppState?.wasTerminated, false)
+            XCTAssertEqual(previousAppState?.isActive, true)
+            initialStateExpectation.fulfill()
+        }
+        wait(for: [initialStateExpectation], timeout: 0.1)
+
+        let transitions: [(state: AppState, isActive: Bool, wasTerminated: Bool)] = [
+            (.active, true, false),
+            (.inactive, false, false),
+            (.hidden, false, false),
+            (.lockScreen, false, false),
+            (.sleeping, false, false),
+            (.terminating, false, true)
+        ]
+
+        for transition in transitions {
+            // When
+            appStateManager.updateAppState(state: transition.state)
+            initialStateQueue.sync {}
+            dataStore.flush()
+
+            // Then
+            let stateExpectation = expectation(description: "App state is updated for \(transition.state)")
+            featureScope.rumDataStore.value(forKey: .appStateKey) { (appState: AppStateInfo?) in
+                XCTAssertEqual(appState?.isActive, transition.isActive)
+                XCTAssertEqual(appState?.wasTerminated, transition.wasTerminated)
+                stateExpectation.fulfill()
+            }
+            wait(for: [stateExpectation], timeout: 0.1)
+        }
+    }
+    #else
     func testUpdateAppState_itUpdatesCorrectly() {
         // Given
         let dataStore = DataStoreAsyncMock()
@@ -122,4 +173,5 @@ final class AppStateManagerTests: XCTestCase {
 
         wait(for: [isBackgroundedExpectation], timeout: 0.1)
     }
+    #endif
 }

@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-09-18
-sdk_version: 3.18.0
-verified_against_commit: e0e2888d9
+last_updated: 2026-09-30
+sdk_version: 3.19.0
+verified_against_commit: c7d0eba6b
 tracked_files:
   - DatadogRUM/Sources/RUM.swift
   - DatadogRUM/Sources/RUMConfiguration.swift
@@ -18,7 +18,7 @@ RUM tracks user interactions, views, resources, errors, and performance metrics 
 
 **Platform**: iOS, tvOS, watchOS, visionOS — with platform-specific limitations:
 - **iOS / visionOS**: Full feature set.
-- **tvOS**: UIKit and SwiftUI view tracking, UIKit action tracking (press-based), app hangs, long tasks, vitals, slow frames, memory warnings, watchdog terminations. No `swiftUIActionsPredicate` (tap-gesture path), no scroll/swipe tracking.
+- **tvOS**: UIKit and SwiftUI view tracking, press-based action tracking for both frameworks through `uiKitActionsPredicate`, app hangs, long tasks, vitals, slow frames, memory warnings, and watchdog terminations. `swiftUIActionsPredicate` is accepted in configuration but is not used by tvOS action instrumentation. Scroll and swipe tracking is not supported.
 - **watchOS**: No automatic view/action tracking predicates (UIKit and SwiftUI), no memory warnings. URLSession tracking, event mappers, manual RUM instrumentation, session callbacks, and CPU/memory vitals are available. Refresh-rate and slow-frame data are unavailable (no DisplayLink on watchOS).
 
 ## Quick Start Example
@@ -149,7 +149,10 @@ RUM.enable(
             modified.resource.url = scrubURL(modified.resource.url)
             return modified // or return nil to drop
         },
-        // Also available: errorEventMapper, actionEventMapper, longTaskEventMapper
+        // Default: nil (no modification) for each of these mappers
+        actionEventMapper: nil,
+        errorEventMapper: nil,
+        longTaskEventMapper: nil,
         
         // Session start callback
         // Note: this is a `@Sendable` closure (SessionListener) — it may be
@@ -184,11 +187,11 @@ RUM.enable(
         collectAccessibility: false,
         
         // RUM feature flags
-        // Default: .defaults ([.trackScrollAndSwipeActions: true])
+        // Default: .defaults ([.trackScrollAndSwipeActions: true, .viewUpdates: true])
         // Set [.trackScrollAndSwipeActions: false] to disable automatic
         // scroll/swipe action tracking and INV attribution for those gestures.
-        // Set [.viewUpdates: true] to send incremental view_update deltas
-        // instead of resending the full view event on every update
+        // Set [.viewUpdates: false] to always resend the full view event
+        // on every update, instead of incremental view_update deltas
         featureFlags: .defaults
     )
 )
@@ -231,16 +234,24 @@ monitor.stopView(key: "ProductList")
 - **`DatadogRUM/Sources/RUMConfiguration+RemoteConfiguration.swift`** - Applies Datadog Remote Configuration on top of the in-code `RUM.Configuration`, once, at `RUM.enable(with:)` time (see [Remote Configuration](#remote-configuration))
 
 ### Public API
-- **`DatadogRUM/Sources/RUMMonitor.swift`** - Access point for manual RUM tracking via `RUMMonitor.shared()`
+- **`DatadogRUM/Sources/RUMMonitor.swift`** - Access point for manual RUM tracking via `RUMMonitor.shared()`. Both `RUM.enable(with:in:)` and `RUMMonitor.shared(in:)` accept an optional Core instance and use the default instance when omitted.
 - **`DatadogRUM/Sources/RUMMonitorProtocol.swift`** - Full API for manual RUM instrumentation
-  - Views: `startView()`, `stopView()`
-  - Errors: `addError()`; sources are `.source`, `.network`, `.webview`, `.console`, `.logger`, and `.custom`
-  - Resources: `startResource()`, `stopResource()`
-  - Actions: `addAction()`, `startAction()`, `stopAction()`
-  - Current session ID, custom attributes, timings, and feature flags
+  - Views (inherited from `RUMMonitorViewProtocol`): `startView()`, `stopView()` by string key on all platforms, or by view controller except on watchOS; `addTiming(name:)`; experimental SPI `addViewLoadingTime(overwrite:)`
+  - View attributes: `addViewAttribute(forKey:value:)`, `addViewAttributes(_:)`, `removeViewAttribute(forKey:)`, `removeViewAttributes(forKeys:)` affect the current view
+  - Global attributes: `addAttribute(forKey:value:)`, `addAttributes(_:)`, `removeAttribute(forKey:)`, `removeAttributes(forKeys:)` affect subsequent RUM events
+  - Errors: `addError()` accepts a message or an `Error`; `RUMErrorSource` cases are `.source`, `.network`, `.webview`, `.console`, `.logger`, and `.custom`. Use a string value for `RUM.Attributes.errorFingerprint` to supply a custom error fingerprint.
+  - Resources: `startResource()` accepts a request, URL, or HTTP method and URL string; `addResourceMetrics()` adds URLSession timing; `stopResource()` accepts a response or status code and `RUMResourceType`; `stopResourceWithError()` accepts an `Error` or message
+  - Actions: `addAction()`, `startAction()`, `stopAction()`; `RUMActionType` cases are `.tap`, `.click`, `.scroll`, `.swipe`, and `.custom`
+  - Sessions: `currentSessionID(completion:)`; `stopSession()` ends the session, with the next `startView()` or `addAction()` starting a new one
+  - App launch: `reportAppFullyDisplayed()` records time to full display (TTFD)
+  - Feature flag evaluations: `addFeatureFlagEvaluation(name:value:)` records the result on the current view
+  - Operations (preview): `startOperation(name:operationKey:attributes:options:)`, `succeedOperation(name:operationKey:attributes:)`, `failOperation(name:operationKey:reason:attributes:)`. `RUMFeatureOperationFailureReason` cases are `.error`, `.abandoned`, and `.other`; `options` can supply profiling options (see `DatadogProfiling/PROFILING_FEATURE.md`).
+  - **Deprecated** operation aliases: `startFeatureOperation()`, `succeedFeatureOperation()`, and `failFeatureOperation()` remain available; use the corresponding operation methods above
+  - Debugging: `debug` (default: `false`) displays an outline identifying the active RUM view
 
 ### Implementation
 - **`DatadogRUM/Sources/Feature/RUMFeature.swift`** - Internal feature implementation. Shows how configuration translates to behavior.
+- **`DatadogRUM/Sources/RUMVitals/RenderLoop/RenderLoopObserver.swift`** - Internal display-link lifetime and frame delivery. A weak callback target lets the observer and its readers be released when their owning RUM graph is released.
 
 ## Configuration Categories
 
@@ -249,7 +260,8 @@ Requires configuration to be set, otherwise disabled by default:
 - **View tracking**: `uiKitViewsPredicate`, `swiftUIViewsPredicate` *(SwiftUI: experimental)*
 - **Action tracking**: `uiKitActionsPredicate`, `swiftUIActionsPredicate` *(SwiftUI: experimental, behavior differs on iOS 17 vs iOS 18+)*
 - **Resource tracking**: `urlSessionTracking` (automatic), optionally call `URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: YourSessionDelegate.self))` for detailed timing
-- **Header capture**: `urlSessionTracking.trackResourceHeaders` — `.disabled` (default), `.defaults` (common headers), or `.custom([rules])`
+- **Distributed tracing**: `urlSessionTracking.firstPartyHostsTracing` accepts `.trace(hosts:sampleRate:traceControlInjection:)` for Datadog and W3C headers, or `.traceWithHeaders(hostsWithHeaders:sampleRate:traceControlInjection:)` to select header types per host. Both default to a 100% trace sample rate and `.sampled` injection.
+- **Header capture**: `urlSessionTracking.trackResourceHeaders` — `.disabled` (default), `.defaults` (common headers), or `.custom([rules])`. Each `HeaderCaptureRule` is `.defaults` or `.matchHeaders([String])` (exact, case-insensitive header names).
 - **Resource disallow list**: `urlSessionTracking.disallowList` — URL patterns excluded from RUM resource tracking (`*` wildcards)
 
 ### Performance Monitoring
@@ -273,9 +285,10 @@ Event mappers allow modifying or dropping events before upload:
 **Note**: To filter views, use view predicates instead of the mapper.
 
 ### Feature Flags
-- `featureFlags` defaults to `.defaults`, currently `[.trackScrollAndSwipeActions: true]`.
+- `featureFlags` defaults to `.defaults`, currently `[.trackScrollAndSwipeActions: true, .viewUpdates: true]`.
+- Flags omitted from a custom dictionary fall back to their entry in `.defaults`, or `false` if no default is declared. An empty dictionary therefore still enables scroll/swipe tracking and view updates; set a flag explicitly to `false` to disable it.
 - `.trackScrollAndSwipeActions`: when set to `false`, disables automatic scroll and swipe action tracking done through `UIScrollView.delegate` swizzling. It has no effect unless `uiKitActionsPredicate` is configured. Disabling it also prevents scroll/swipe gestures from being considered for INV (Interaction-to-Next-View) attribution.
-- `.viewUpdates`: defaults to `false` (not set). When set to `true`, changes how view updates are reported: instead of resending the full view event on every update, the SDK sends one full event and then only the fields that changed since (as a `view_update` event). A full event is still sent every 5 updates so the view state can be fully reconstructed even if some updates are lost in transit.
+- `.viewUpdates`: defaults to `true`. When `true`, changes how view updates are reported: instead of resending the full view event on every update, the SDK sends one full event and then only the fields that changed since (as a `view_update` event). A full event is still sent every 5 updates so the view state can be fully reconstructed even if some updates are lost in transit. Set to `false` to opt out and always send full view events.
 - `.none`: no-op feature flag case kept in the public enum.
 
 ### Timeseries Collection (Experimental)
@@ -336,6 +349,8 @@ When `Datadog.Configuration.remoteConfiguration` is set, Core fetches and caches
   - `WebViewTracking.enable(webView:hosts:)` called on the native side
   - Web page instrumented with Datadog Browser SDK
   - See `DatadogWebViewTracking/Sources/WebViewTracking.swift`
+
+WebView RUM events are linked to the most recent native view with Session Replay enabled that started before the event's timestamp. Active views stay available for this lookup. Once a view becomes inactive, the SDK keeps it for up to three minutes to handle delayed events, with at most 30 views cached.
 
 ## Additional Context
 

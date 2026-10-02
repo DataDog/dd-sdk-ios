@@ -12,11 +12,11 @@ internal struct AppRunStep: Hashable {
     let uuid = UUID()
 
     /// The action to perform, provided with an `AppRunner` context.
-    let perform: (AppRunner) -> Void
+    let perform: @MainActor (AppRunner) -> Void
 
     /// Creates a new step with the given execution closure.
     /// - Parameter perform: The closure that defines the step logic using the `AppRunner`.
-    init(_ perform: @escaping (AppRunner) -> Void) {
+    init(_ perform: @MainActor @escaping (AppRunner) -> Void) {
         self.perform = perform
     }
 

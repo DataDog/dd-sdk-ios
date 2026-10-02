@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(tvOS) && !os(watchOS)
+#if !os(tvOS) && !os(watchOS) && !os(macOS)
 
 import UIKit
 

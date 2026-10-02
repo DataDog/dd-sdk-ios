@@ -71,7 +71,7 @@ class DatadogCoreTests: XCTestCase {
             site: .us1,
             directory: temporaryCoreDirectory.coreDirectory,
             httpClient: PendingHTTPClientMock(),
-            notificationCenter: NotificationCenter()
+            notificationCenterProvider: NotificationCenterProvider.makeTestProvider()
         )
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -414,7 +414,7 @@ class DatadogCoreTests: XCTestCase {
 
     func testWhenStoppingInstance_itStopsRemoteConfigurationProvider() throws {
         // Given
-        let notificationCenter = NotificationCenter()
+        let notificationCenterProvider = NotificationCenterProvider.makeTestProvider()
         let httpClient = PendingHTTPClientMock()
         weak var weakProvider: RemoteConfigurationProvider?
         let core = DatadogCore(
@@ -434,7 +434,7 @@ class DatadogCoreTests: XCTestCase {
                     site: .us1,
                     directory: temporaryCoreDirectory.coreDirectory,
                     httpClient: httpClient,
-                    notificationCenter: notificationCenter
+                    notificationCenterProvider: notificationCenterProvider
                 )
                 weakProvider = provider
                 return provider
@@ -442,8 +442,11 @@ class DatadogCoreTests: XCTestCase {
         )
 
         XCTAssertEqual(httpClient.requestsSent().count, 1)
-
-        notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+        #if os(macOS)
+        notificationCenterProvider.workspaceCenter.post(name: WorkspaceNotifications.didWake, object: nil)
+        #else
+        notificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+        #endif
         XCTAssertEqual(httpClient.requestsSent().count, 2)
 
         // When
@@ -452,7 +455,11 @@ class DatadogCoreTests: XCTestCase {
         // Then
         XCTAssertNotNil(core.remoteConfigurationProvider)
         XCTAssertNotNil(weakProvider)
-        notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+        #if os(macOS)
+        notificationCenterProvider.workspaceCenter.post(name: WorkspaceNotifications.didWake, object: nil)
+        #else
+        notificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+        #endif
         XCTAssertEqual(httpClient.requestsSent().count, 2)
     }
 

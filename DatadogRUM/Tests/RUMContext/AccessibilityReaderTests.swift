@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
- #if !os(watchOS)
+ #if !os(watchOS) && !os(macOS)
 
 @testable import DatadogRUM
 @testable import TestUtilities
@@ -48,7 +48,7 @@ final class AccessibilityReaderTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
 
-    #if !os(watchOS)
+    #if !os(watchOS) && !os(macOS)
     func testRegistersAllObservers() {
         // Given
         let mockNotificationCenter = MockNotificationCenter()

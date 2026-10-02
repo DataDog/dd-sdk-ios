@@ -153,8 +153,8 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         }
 
         var frustrations: [RUMActionEvent.Action.Frustration.FrustrationType]? = nil
-        if dependencies.trackFrustrations, errorsCount > 0, actionType == .tap {
-            frustrations = [.errorTap]
+        if dependencies.trackFrustrations, errorsCount > 0, actionType == errorFrustrationAction {
+            frustrations = [errorFrustrationType]
         }
 
         let actionEvent = RUMActionEvent(
@@ -232,6 +232,22 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
                 )
             }
         }
+    }
+
+    private var errorFrustrationType: RUMActionEvent.Action.Frustration.FrustrationType {
+        #if os(macOS)
+        .errorClick
+        #else
+        .errorTap
+        #endif
+    }
+
+    private var errorFrustrationAction: RUMActionType {
+        #if os(macOS)
+        .click
+        #else
+        .tap
+        #endif
     }
 
     // MARK: - Private

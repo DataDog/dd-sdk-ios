@@ -5,7 +5,11 @@
  */
 
 import Foundation
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 /// Facade for `CADisplayLink` to provide frame timestamps & device information
 /// It decouple FPS calculation from `CADisplayLink` implementation.
@@ -41,14 +45,18 @@ extension FrameInfoProvider {
 }
 
 #if !os(watchOS)
+
+#if canImport(UIKit)
 extension CADisplayLink: FrameInfoProvider {
     var maximumDeviceFramesPerSecond: Int {
         #if swift(>=5.9) && os(visionOS)
         // Hardcoded as for now there's no good way of extracting maximum FPS on VisionOS
         // https://developer.apple.com/documentation/visionos/analyzing-the-performance-of-your-visionos-app#Inspect-frame-rendering-performance
         90
-        #else
-        UIScreen.main.maximumFramesPerSecond
+        #elseif canImport(UIKit)
+        DDScreen.main.maximumFramesPerSecond
+        #elseif canImport(AppKit)
+        DDScreen.main.map { $0.maximumFramesPerSecond } ?? 60
         #endif
     }
 
@@ -56,4 +64,20 @@ extension CADisplayLink: FrameInfoProvider {
 
     var nextFrameTimestamp: CFTimeInterval { targetTimestamp }
 }
+#elseif canImport(AppKit)
+internal class NoopFrameInfoProvider: FrameInfoProvider {
+    var currentFrameTimestamp: CFTimeInterval { 0 }
+
+    var nextFrameTimestamp: CFTimeInterval { 1 }
+
+    var maximumDeviceFramesPerSecond: Int { 60 }
+
+    required init(target: Any, selector: Selector) { }
+
+    func add(to runloop: RunLoop, forMode mode: RunLoop.Mode) { }
+
+    func invalidate() { }
+}
+#endif
+
 #endif

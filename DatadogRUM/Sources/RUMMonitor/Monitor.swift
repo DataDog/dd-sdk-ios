@@ -4,7 +4,11 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 import DatadogInternal
 
 internal extension RUMMethod {
@@ -702,7 +706,7 @@ extension Monitor: RUMMonitorViewProtocol {
     }
 
     #if !os(watchOS)
-    func startView(viewController: UIViewController, name: String?, attributes: [AttributeKey: AttributeValue]) {
+    func startView(viewController: DDViewController, name: String?, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStartViewCommand(
                 time: dateProvider.now,
@@ -716,7 +720,7 @@ extension Monitor: RUMMonitorViewProtocol {
         )
     }
 
-    func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]) {
+    func stopView(viewController: DDViewController, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStopViewCommand(
                 time: dateProvider.now,

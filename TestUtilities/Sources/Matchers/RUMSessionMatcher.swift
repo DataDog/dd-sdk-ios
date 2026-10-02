@@ -101,17 +101,57 @@ public class RUMSessionMatcher {
         /// `RUMViewUpdate` (delta) events tracked during this visit.
         public fileprivate(set) var viewUpdateEvents: [RUMViewUpdateEvent] = []
 
-        /// Returns the most recent non-nil value for a given field across `viewUpdateEvents`, scanning newest-first.
-        /// Use this in `_Tests` variants when the field may have been set in an earlier delta and the stop-event delta carries `nil` (unchanged).
-        public func latestUpdateValue<T>(_ keyPath: KeyPath<RUMViewUpdateEvent, T?>) -> T? {
-            viewUpdateEvents.reversed().lazy.compactMap { $0[keyPath: keyPath] }.first
+        /// The fully reconstructed state of this view at every write, folding each `viewUpdateEvents` delta
+        /// onto its preceding full/reconstructed `RUMViewEvent`, in `dd.documentVersion` order.
+        ///
+        /// When `.viewUpdates` is on, only the first write (and any write following a baseline reset) is a
+        /// full `RUMViewEvent` — later writes are `RUMViewUpdateEvent` deltas that omit unchanged fields.
+        /// Reading a field off `viewEvents.last` alone therefore misses whatever was only ever sent as a
+        /// delta, and reading it off `viewEvents[i]` misses whatever changed in between two full events.
+        /// This property mirrors the production `update(from:)`/`apply(update:)` wire protocol
+        /// (see `RUMViewEvent.apply(update:)`) so callers can read any field directly off a single,
+        /// fully-merged `RUMViewEvent` per write, instead of writing a per-field `latestUpdateValue(...) ?? ...`
+        /// fallback (or a per-field forward-fill) at every call site.
+        public var reconstructedViewEvents: [RUMViewEvent] {
+            enum Entry {
+                case full(RUMViewEvent)
+                case update(RUMViewUpdateEvent)
+
+                var documentVersion: Int64 {
+                    switch self {
+                    case .full(let event): return event.dd.documentVersion
+                    case .update(let update): return update.dd.documentVersion
+                    }
+                }
+            }
+
+            let entries = (viewEvents.map { Entry.full($0) } + viewUpdateEvents.map { Entry.update($0) })
+                .sorted { $0.documentVersion < $1.documentVersion }
+
+            var current: RUMViewEvent?
+            var reconstructed: [RUMViewEvent] = []
+            for entry in entries {
+                switch entry {
+                case .full(let event):
+                    current = event
+                case .update(let update):
+                    current = current?.apply(update: update)
+                }
+                if let current = current {
+                    reconstructed.append(current)
+                }
+            }
+            return reconstructed
         }
 
-        /// Whether this view is currently active.
-        /// Checks `viewUpdateEvents` newest-first (delta — only non-nil when `isActive` changes), then falls back to `viewEvents.last`.
+        /// The fully reconstructed state of this view after its last write. See `reconstructedViewEvents`.
+        public var latestViewEvent: RUMViewEvent? {
+            reconstructedViewEvents.last
+        }
+
+        /// Whether this view is currently active, read off `latestViewEvent`.
         public var isActive: Bool? {
-            viewUpdateEvents.reversed().lazy.compactMap { $0.view.isActive }.first
-                ?? viewEvents.last?.view.isActive
+            latestViewEvent?.view.isActive
         }
     }
 
@@ -608,13 +648,9 @@ extension RUMSessionMatcher.View {
     /// The start of this view (as timestamp; milliseconds) defined as the start timestamp of the earliest view event in this view.
     public var startTimestampMs: Int64 { viewEvents.map({ $0.date }).min() ?? 0 }
 
-    /// The duration of this view, in nanoseconds.
-    /// When `viewUpdates` is on, the stop delta may carry nil `timeSpent` if it didn't change from the
-    /// previous delta (e.g. two events fired at the same mock timestamp). Scan newest-first for the
-    /// last non-nil value, then fall back to the initial full event.
+    /// The duration of this view, in nanoseconds, read off `latestViewEvent`.
     public var durationNs: Int64? {
-        viewUpdateEvents.reversed().lazy.compactMap { $0.view.timeSpent }.first
-            ?? viewEvents.last?.view.timeSpent
+        latestViewEvent?.view.timeSpent
     }
 
     /// The duration of this view, in seconds.

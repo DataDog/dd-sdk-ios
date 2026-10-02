@@ -73,37 +73,37 @@ class RUMNavigationControllerViewUpdatesScenarioTests: IntegrationTests, RUMComm
         XCTAssertEqual(session.views[1].name, "Screen1")
         XCTAssertEqual(session.views[1].path, "UIViewController")
         XCTAssertFalse(session.views[1].viewUpdateEvents.isEmpty)
-        XCTAssertEqual(session.views[1].latestUpdateValue(\.view.isActive), false) // go to "Screen2"
+        XCTAssertEqual(session.views[1].isActive, false) // go to "Screen2"
 
         XCTAssertEqual(session.views[2].name, "Screen2")
         XCTAssertEqual(session.views[2].path, "UIViewController")
         XCTAssertFalse(session.views[2].viewUpdateEvents.isEmpty)
-        XCTAssertEqual(session.views[2].latestUpdateValue(\.view.isActive), false) // go to "Screen3"
+        XCTAssertEqual(session.views[2].isActive, false) // go to "Screen3"
 
         XCTAssertEqual(session.views[3].name, "Screen3")
         XCTAssertEqual(session.views[3].path, "Runner.RUMNCSScreen3ViewController")
         XCTAssertFalse(session.views[3].viewUpdateEvents.isEmpty)
-        XCTAssertEqual(session.views[3].latestUpdateValue(\.view.isActive), false) // go to "Screen4"
+        XCTAssertEqual(session.views[3].isActive, false) // go to "Screen4"
 
         XCTAssertEqual(session.views[4].name, "Screen4")
         XCTAssertEqual(session.views[4].path, "UIViewController")
         XCTAssertFalse(session.views[4].viewUpdateEvents.isEmpty)
-        XCTAssertEqual(session.views[4].latestUpdateValue(\.view.isActive), false) // go to "Screen3"
+        XCTAssertEqual(session.views[4].isActive, false) // go to "Screen3"
 
         XCTAssertEqual(session.views[5].name, "Screen3")
         XCTAssertEqual(session.views[5].path, "Runner.RUMNCSScreen3ViewController")
         XCTAssertFalse(session.views[5].viewUpdateEvents.isEmpty)
-        XCTAssertEqual(session.views[5].latestUpdateValue(\.view.isActive), false) // go to "Screen1"
+        XCTAssertEqual(session.views[5].isActive, false) // go to "Screen1"
 
         XCTAssertEqual(session.views[6].name, "Screen1")
         XCTAssertEqual(session.views[6].path, "UIViewController")
         XCTAssertFalse(session.views[6].viewUpdateEvents.isEmpty)
-        XCTAssertEqual(session.views[6].latestUpdateValue(\.view.isActive), false) // go to "Screen2"
+        XCTAssertEqual(session.views[6].isActive, false) // go to "Screen2"
 
         XCTAssertEqual(session.views[7].name, "Screen2")
         XCTAssertEqual(session.views[7].path, "UIViewController")
         XCTAssertFalse(session.views[7].viewUpdateEvents.isEmpty)
-        XCTAssertEqual(session.views[7].latestUpdateValue(\.view.isActive), false) // swipe back to "Screen1"
+        XCTAssertEqual(session.views[7].isActive, false) // swipe back to "Screen1"
 
         XCTAssertEqual(session.views[8].name, "Screen1")
         XCTAssertEqual(session.views[8].path, "UIViewController")

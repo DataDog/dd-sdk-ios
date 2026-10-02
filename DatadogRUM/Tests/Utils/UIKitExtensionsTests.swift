@@ -4,11 +4,11 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 
 import Testing
+import DatadogSDKTesting
 import UIKit
-import TestUtilities
 @testable import DatadogRUM
 import SwiftUI
 
