@@ -2,7 +2,7 @@
   "schema_version": 1,
   "owner": "EXP-210",
   "state": "COMPONENT_REVIEWED_NATIVE_HOME_PATH_STOPPED",
-  "updated_at": "2026-10-02T02:09:07.811416+00:00",
+  "updated_at": "2026-10-02T02:59:07.760846+00:00",
   "gates": [
     "S2:C09",
     "S2:C10"
@@ -77,7 +77,7 @@
     "h14_qualified": false
   },
   "native_qualification": {
-    "state": "STOPPED_PRE_HOME_TASK_RESTORATION_PENDING",
+    "state": "STOPPED_PRE_HOME_TASK_REMOVED_SEPARATE_STATE_VERIFIED",
     "mechanism": "One automatic Home-only qualification on Duo using the current frozen baseline SwiftUI split product.",
     "attempt_limit": 1,
     "execution_seconds": 600,
@@ -243,7 +243,7 @@
       "sha256": "d482e9426e2d9a1e9250e65ab9cc75ca843826c9999d1aedd714ec6fdf6cc5de"
     },
     "execution": {
-      "state": "STOPPED_CHILD_EXIT1_TASK_CLEANUP_PENDING",
+      "state": "STOPPED_CHILD_EXIT1_SEPARATE_RESTORATION_VERIFIED",
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle6",
       "definition": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-qualification-cycle6/definition.json",
@@ -297,15 +297,37 @@
     "cleanup": "INVALID",
     "home_input_commands": 0,
     "retry_allowed": false,
-    "task_removed": false,
-    "session_absence_observation": "Actual cleanup End returned Session does not exist anymore; exact stopped predicate rejected. No outstanding owned invocation. Source-supported absence/restoration disposition pending."
+    "task_removed": true,
+    "session_absence_observation": "Actual End reported absence; designated source review joins that observation to the exact owned session. The original stopped-predicate rejection and INVALID verdicts remain unchanged.",
+    "later_task_restoration": {
+      "state": "INVALID_UNCHANGED",
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-task-restoration-20261002/result.json",
+        "sha256": "01cb4c0b5a2af6ff52eebee3f203e450f4bb5651b2c965d187851228cffae16c"
+      },
+      "reason": "Display classifier compared original command receipt rather than raw display evidence; no retry or historical verdict edit."
+    },
+    "separate_current_state_verification": {
+      "state": "PASS",
+      "scope": "CURRENT_RESTORED_STATE_ONLY_NO_QUALIFICATION_OR_GATE_CREDIT",
+      "reference": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/home-only-task-restoration-20261002/independent-read-only-final-verification/receipt.json",
+        "sha256": "8fac4c4529cbb9b8512e339faea12995e2966cf26fb6d41d82bf13902b045090"
+      },
+      "task_removed": true,
+      "original_closed_booted_restored": true,
+      "stable_evidence_copies": 2,
+      "files_per_copy": 18,
+      "owned_processes_absent": true,
+      "native_lane_released": true
+    }
   },
   "native_admitted": true,
   "native_runs": 1,
   "human_invitation": false,
   "gates_closed": [],
   "candidate_run": false,
-  "next_action": "First finish distinct reviewed task-only restoration using actual session-absence evidence; preserve both failed cleanup verdicts. Stop automated Home qualification. Prepare the planned human-input foreground consumer/fallback with the saved reference and source review; no repeat baseline gestures or equivalent automatic retry.",
+  "next_action": "Prepare and independently review the planned candidate-only human foreground consumer using the saved distinct reference. Automatic Home qualification stays stopped. Preserve original INVALID verdicts and separate state verification; no repeat baseline gestures.",
   "controls": {
     "state": "PASS",
     "test_count": 27,
@@ -330,7 +352,7 @@
     ]
   },
   "candidate_preparation": {
-    "state": "DESIGN_ONLY_NO_ADMISSION",
+    "state": "PRIVATE_CONSUMER_REVIEW_BLOCKED_CORRECTION_IN_PROGRESS",
     "selected": {
       "build": "candidate-27.1",
       "device": "duo",
@@ -340,9 +362,9 @@
     },
     "dependencies": [
       "Exact component and distinct saved-reference review",
-      "One reviewed automatic Home-only qualification",
       "Exact new candidate plan/helper closure and independent review",
-      "Fresh simulator readiness and operator availability"
+      "Fresh simulator readiness and operator availability",
+      "Reviewed human-input foreground consumer; automatic Home path stopped"
     ],
     "source_reuse": "Use the verified frozen reader source/product ancestry; retain the four accepted native cells and distinct saved baseline reference. Never append the stopped baseline to the native prefix.",
     "runtime_contract": "Opt-in new collector and foreground comparison hooks scoped to one execution. Preserve the unchanged writer-finish/END protocol and full raw stream. Prospective candidate must produce its own real complete receipt, executor anchor, release/idle proof and cleanup; saved reference produces none.",
@@ -352,7 +374,7 @@
       "Changed prefix/request/process, consumed phases, foreign ownership, active touches and interruption remain fatal",
       "Full evidence and cleanup are preserved independently; a failed input diagnostic alone cannot become an SDK regression"
     ],
-    "required_environment": "Duo iOS27.1/Xcode27.1 plus one guided human simulator sitting after mechanism qualification",
+    "required_environment": "Duo iOS27.1/Xcode27.1 plus one guided human simulator sitting after exact consumer review and fresh readiness",
     "native_admitted": false,
     "human_invitation": false,
     "gates_closed": [],
@@ -369,7 +391,34 @@
     "composition_design_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-consumer-composition-review.json",
       "sha256": "19e01f9d070ffa8433f6b1d34e15d63d376e19927a66195c498ae2145506128e"
-    }
+    },
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle1/definition.json",
+      "sha256": "9669513036ee19bd01cc676d588fe431a20654c37ec95b714ef56421fa438273"
+    },
+    "consumer_plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle1/runtime/runtime-plan.json",
+      "sha256": "62eb6ec408d179424c26e990dfa060196f0839ea67fa401dc5da7f403a5ae278"
+    },
+    "consumer_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle1/runtime/controls.json",
+      "sha256": "d41e04ae9e205cb6c6e333ad789196a095bb87590c9105deed155adb4727f99c"
+    },
+    "consumer_source_verification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle1/source-verification.json",
+      "sha256": "708a856c1d83de3671580f88d52e76266c617c7fff3f8743f533a0557b8cf706"
+    },
+    "consumer_test_count": 14,
+    "helper_count": 85,
+    "execution": null,
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle1/runtime/review.json",
+      "sha256": "cf5f6bd67b45b3d222e150b9dc98d5814a9e831d49a7fd64e25d18bde02cc136"
+    },
+    "remaining_review_findings": [
+      "Align actual supervisor path with final_cell and derive process exit from authoritative final result",
+      "Pin validated consumed Start/End/worker session bytes in executor anchor and join device, launch PID and key"
+    ]
   },
   "component_checkpoint": {
     "commit": "3225c814097904f617bd0b49591fef7f5bd3eb0e",

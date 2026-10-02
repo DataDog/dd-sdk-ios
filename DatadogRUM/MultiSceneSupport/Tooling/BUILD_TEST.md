@@ -69,6 +69,17 @@ ID. Intentionally unselected cases may be disabled. XCTest method filters and Sw
 Testing suite filters differ; verify the resulting discovery rather than the
 command text. Replay-content exclusions are neither passes nor OS skips.
 
+Xcode test discovery can list methods excluded from the selected platform by
+source conditional compilation. Reconcile a missing result with the frozen source
+and final test inventory; retain the original selection and record the exact
+platform exclusion. Do not count it as passed or rerun a valid suite to recover it.
+
+If MCP package resolution fails before XCTest and cannot bind an existing verified
+offline cache, preserve that build failure. Use the repository
+[test skill](../../../.claude/skills/running-tests/SKILL.md) CLI fallback with exact
+pins, artifact bytes, explicit cache flags and a new admission. Do not change
+package requirements or extend the failed attempt.
+
 UI-test enumeration can install and launch the test runner even when no test
 method executes. Record task-bundle/container absence before enumeration, verify
 any installed runner against the frozen build, then remove it and prove the clean
