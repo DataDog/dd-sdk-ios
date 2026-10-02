@@ -158,7 +158,7 @@ extension FlagsClientProtocol {
     /// ``getDetails(key:defaultValue:)`` for application logic that should be tracked.
     ///
     /// - Returns: A ``FlagsSnapshot`` if precomputed assignments are cached for the client,
-    ///   or `nil` if the client does not have cached assignments.
+    ///   or `nil` if the client does not have cached assignments or the cached keys are obfuscated.
     @available(*, message: "This API is in preview and may change in future releases")
     public func snapshot() -> FlagsSnapshot? {
         guard let assignments = (self as? FlagsClientInternal)?.getFlagAssignments() else {
