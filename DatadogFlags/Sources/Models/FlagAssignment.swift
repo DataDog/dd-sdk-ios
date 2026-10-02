@@ -23,6 +23,21 @@ public struct FlagAssignment: Equatable {
     public var doLog: Bool
     public var serialID: Int?
 
+    // Kept with the value so delayed SPI telemetry retains its original classification.
+    // This provenance is deliberately excluded from Codable and equality.
+    internal var reasonBeforeCacheProjection: String?
+
+    internal var reasonForTelemetry: String { reasonBeforeCacheProjection ?? reason }
+
+    public static func == (lhs: FlagAssignment, rhs: FlagAssignment) -> Bool {
+        lhs.allocationKey == rhs.allocationKey
+            && lhs.variationKey == rhs.variationKey
+            && lhs.variation == rhs.variation
+            && lhs.reason == rhs.reason
+            && lhs.doLog == rhs.doLog
+            && lhs.serialID == rhs.serialID
+    }
+
     func variation<T: FlagValue>(as type: T.Type) -> T? {
         switch self.variation {
         case .boolean(let value):

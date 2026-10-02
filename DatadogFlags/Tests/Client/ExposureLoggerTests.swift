@@ -14,6 +14,21 @@ import DatadogInternal
 final class ExposureLoggerTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
 
+    func testReasonOnlyChangeDoesNotCreateAnotherExposure() {
+        let logger = ExposureLogger(dateProvider: DateProviderMock(), featureScope: featureScope)
+        var assignment = FlagAssignment.mockAnyBoolean()
+        assignment.reasonBeforeCacheProjection = "DEFAULT"
+        assignment.reason = "CACHED"
+        logger.logExposure(for: "flag", assignment: assignment, evaluationContext: .mockAny())
+        assignment.reasonBeforeCacheProjection = nil
+        assignment.reason = "TARGETING_MATCH"
+        logger.logExposure(for: "flag", assignment: assignment, evaluationContext: .mockAny())
+        XCTAssertEqual(featureScope.eventsWritten.count, 1)
+        assignment.variationKey = "different"
+        logger.logExposure(for: "flag", assignment: assignment, evaluationContext: .mockAny())
+        XCTAssertEqual(featureScope.eventsWritten.count, 2)
+    }
+
     func testLogExposure() {
         // Given
         let logger = ExposureLogger(
