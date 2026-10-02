@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "owner": "EXP-210",
-  "state": "COMPONENT_REVIEWED_NATIVE_HOME_PATH_STOPPED",
-  "updated_at": "2026-10-02T09:11:44.116769+00:00",
+  "state": "CANDIDATE_SCENARIO_PASS_EVIDENCE_INCOMPLETE_CLEANUP_PASS",
+  "updated_at": "2026-10-02T09:54:15.449688+00:00",
   "gates": [
     "S2:C09",
     "S2:C10"
@@ -326,8 +326,8 @@
   "native_runs": 1,
   "human_invitation": false,
   "gates_closed": [],
-  "candidate_run": false,
-  "next_action": "Prepare the instruction page and fresh read-only prerequisites for the reviewed candidate-only human consumer. Start only after actual availability/readiness and an exact new admission; preserve the four accepted cells and distinct saved reference.",
+  "candidate_run": true,
+  "next_action": "Correct the private prospective consumed-idle finalizer and review focused negative controls. The completed run remains INVALID; no retry, retrospective anchor or gate credit. Independent reviewed nine-case S3 qualifications may run after its proven lane release.",
   "controls": {
     "state": "PASS",
     "test_count": 27,
@@ -450,7 +450,7 @@
     "pushed": false
   },
   "candidate_consumer": {
-    "state": "REVIEWED_FOR_SINGLE_HUMAN_ADMISSION",
+    "state": "STOPPED_POST_CLEANUP_LIVE_IDLE_LOOKUP",
     "plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-1790931116/runtime/runtime-plan.json",
       "sha256": "29fcd45aad18ff1bcb52aa923584d3b57900c8b8c3dcc06c509235189e73d6a1"
@@ -502,6 +502,57 @@
     "source_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle3/runtime/review.json",
       "sha256": "b3aa48bd0d41f0fdcaf20e9b85eb996d2dd0728e8f5cfc15a9660e395235ec6d"
+    },
+    "completed_execution": {
+      "state": "STOPPED_FINALIZATION_QUIESCENT_CLEANUP_PASS",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-1790931116/runtime",
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-1790931116/runtime/runtime-plan.json",
+        "sha256": "29fcd45aad18ff1bcb52aa923584d3b57900c8b8c3dcc06c509235189e73d6a1"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-1790931116/runtime/review.json",
+        "sha256": "b3b93618321705b5be96eb248043e425825268ddc6a1cc9b4adf745ae06f8af3"
+      },
+      "admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-1790931116/runtime/native-admission.json",
+        "sha256": "8c3e445e445fd93b617ef31e5161f09262fd3857527871fd55f8c459a67c1346"
+      },
+      "run_id": "ed1ab099-85c3-44ab-9734-b01efc7d9b6f",
+      "host": "COMP-D7Y69VHK4C",
+      "execution_deadline": 1790937274.755135,
+      "cleanup_deadline": 1790937874.755135,
+      "supervisor_receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-1790931116/runtime/candidate-27.1-duo-SwiftUI-split-single-driver.supervisor.json",
+      "supervisor_state": "PASS",
+      "controller": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-1790931116/runtime/controller-start.json",
+        "sha256": "aec9e7565d037075fea00ccaade61f1551b91f23aa6ecdfcf306c693761e90b4"
+      },
+      "worker": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-1790931116/runtime/worker-start.json",
+        "sha256": "6f9f2988c748ff1d51b98050ac7e6ad29894db6f0ad81193ac32f0d727fb79e2"
+      },
+      "published_live_state": "WORKER_RECORDED_BEFORE_INSTALL",
+      "supervisor_result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-1790931116/runtime/candidate-27.1-duo-SwiftUI-split-single-driver.supervisor.json",
+        "sha256": "e14aa6140315be5020cc7fae7fd6f86b993636fb5459f4d007fd6c404c8c701f"
+      },
+      "postexit": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-1790931116/runtime/postexit.json",
+        "sha256": "2317757acee48728da15653b36f49cdc0e68ce45e4a470005b53be0e3fcac89c"
+      }
+    },
+    "original_result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-1790931116/runtime/cells/candidate-27.1-duo-SwiftUI-split-single/cell-result.json",
+      "sha256": "4a553d7351a27e853f416fafaf3487ee16e2a9fb79be6627944becc15c2f3206"
+    },
+    "closure": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-1790931116/runtime/final-closure-observation/receipt.json",
+      "sha256": "860f247c3ff23931cdc8c675b971b85bf2db66e101574552727e7f1236cb0b06"
+    },
+    "failure_classification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-1790931116/runtime/final-closure-observation/failure-classification.json",
+      "sha256": "d3c7fa4196429429e2cdcffe791d8b19510cccc707cd8d172d5cc067ace711a3"
     }
   },
   "candidate_consumer_history": [

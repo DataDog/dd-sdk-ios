@@ -420,6 +420,42 @@
         "sha256": "3c23ab018230afb226a9e2c1c255874b9c7dda602278563f4337aa6ff1dc6bf2"
       },
       "tests_run": 0
+    },
+    "integration_qualification_proposals": {
+      "ios27": {
+        "definition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-qualification/definition.json",
+          "sha256": "eecb100cdcc31a11828a9c88f5b5af16dad21790fb29cc388888ab634b45153c"
+        },
+        "controller": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-qualification/controller.py",
+          "sha256": "1dbba628a01b89da10fa07e0329fd96480e84d1bb0eecc3ce91a962ac62af387"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios27-qualification/review.json",
+          "sha256": "0a01e00a1431b687daf5b3218e085965df039d97515d2685514b6c561aa76336"
+        },
+        "native_admitted": false
+      },
+      "ios17_5": {
+        "definition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios17_5-qualification/definition.json",
+          "sha256": "46c3fb8457bd8007df5d2a6018d75b80e7bec7b4c745e635bf6dd631f343a8a3"
+        },
+        "controller": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios17_5-qualification/controller.py",
+          "sha256": "82e026a9971b41c94bae56f2dcf4b09f93c73b374a8f396b521e9c4f11de8a8e"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-integration-ios17_5-qualification/review.json",
+          "sha256": "20234dbb2e2758d2942e32a72d6debebb8e5720aae1a8315774333acb29ee2ce"
+        },
+        "native_admitted": false
+      }
+    },
+    "s2_lane_release": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-1790931116/runtime/final-closure-observation/receipt.json",
+      "sha256": "860f247c3ff23931cdc8c675b971b85bf2db66e101574552727e7f1236cb0b06"
     }
   }
 }
