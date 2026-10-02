@@ -64,12 +64,7 @@ UpdateTargetBuildSetting(
 
 **Per-file compiler flags** are a last resort. For Swift files they are usually ignored (Swift compiles per module) — use `OTHER_SWIFT_FLAGS` at target level instead.
 
-**Info.plist:** check the target's `INFOPLIST_FILE` with `GetTargetBuildSettings` first.
-- Most module targets generate their Info.plist (`GENERATE_INFOPLIST_FILE = YES`, empty `INFOPLIST_FILE`).
-- These targets use a checked-in plist under `Datadog/TargetSupport/`: `DatadogCore`, `DatadogCrashReporting`, `DatadogCrashReportingTests`, `Example`, and `DatadogCoreTests` + `DatadogIntegrationTests` (shared `TargetSupport/DatadogTests/Info.plist`).
-- Use `AddInfoPlist` for privacy usage strings and app metadata. For a checked-in plist, confirm the key landed in that file with `git diff`. Editing a plist shared by two targets changes both.
-
-**Entitlements:** SDK framework targets have none. Use `AddEntitlement` only for code-signing capabilities on app targets (App Groups, Keychain sharing, …).
+**Info.plist / entitlements:** changes only come up for the `Example` app. Use `AddInfoPlist` / `AddEntitlement` rather than editing the files.
 
 ## Common Mistakes
 
@@ -78,5 +73,4 @@ UpdateTargetBuildSetting(
 | Grepping / editing `project.pbxproj` | `GetTargetBuildSettings` / `UpdateTargetBuildSetting` |
 | Changing a shared setting on one target | Edit `xcconfigs/Base.xcconfig` |
 | Changing only `DatadogLogs` when all modules need it | Use the xcconfig, or update every module target |
-| Adding an Info.plist privacy key as an entitlement | Privacy strings are `AddInfoPlist` |
 | Per-file flags on a `.swift` file | Target-level `OTHER_SWIFT_FLAGS` |
