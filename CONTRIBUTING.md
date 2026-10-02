@@ -71,3 +71,11 @@ $ ./tools/lint/run-linter.sh --fix
 #### Dependency manager tests
 
 Isolated example apps using `cocoapods`, `carthage` and `spm` to ensure SDK is well integrated with all supported dependency managers.
+
+### First-flags Example
+
+Set the Example scheme environment variable `DD_FLAG_KEY` to an existing boolean flag key to enable
+the optional Flags flow. Without a nonblank key it is skipped. The example logs the first installed
+keys and evaluates that flag once with `false` as the fallback. Disk replay can be synchronous and
+precede the new context request; evaluations use current assignments and do not imply readiness.
+The app-lifetime registration discards unregister; shorter-lived consumers should retain and invoke it.

@@ -5,6 +5,7 @@
 */
 
 import UIKit
+import DatadogFlags
 import DatadogCore
 import DatadogLogs
 import DatadogTrace
@@ -117,6 +118,19 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         )
 
         logger.addAttribute(forKey: "device-model", value: UIDevice.current.model)
+
+        if let flagKey = Environment.readFlagKey() {
+            Flags.enable()
+            let client = FlagsClient.create()
+            // App-lifetime registration: intentionally discard unregister and avoid a client retain cycle.
+            client.onFirstFlags { [weak client] event in
+                guard let client else { return }
+                logger.info("First flag keys: \(event.flagsChanged.map { String(describing: $0) } ?? "unavailable")")
+                let details = client.getBooleanDetails(key: flagKey, defaultValue: false)
+                logger.info("Flag \(flagKey): \(details.value), reason: \(details.reason ?? "unavailable"), error: \(String(describing: details.error))")
+            }
+            client.setEvaluationContext(FlagsEvaluationContext(targetingKey: "abcd-1234"))
+        }
 
         #if DEBUG
         logger.addTag(withKey: "build_configuration", value: "debug")

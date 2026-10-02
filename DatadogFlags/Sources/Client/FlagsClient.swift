@@ -199,6 +199,11 @@ public final class FlagsClient {
 }
 
 extension FlagsClient: FlagsClientProtocol {
+    @discardableResult
+    public func onFirstFlags(_ callback: @escaping (FlagsClientEvent) -> Void) -> () -> Void {
+        repository.onFirstFlags(callback)
+    }
+
     public var state: FlagsStateObservable {
         repository.state
     }
