@@ -31,7 +31,9 @@ repository entirely.
               dependencies: [
                   .product(name: "DatadogCore", package: "dd-sdk-ios"),
                   .product(name: "DatadogCrashReporting", package: "dd-sdk-ios"),
+                  .product(name: "DatadogFlags", package: "dd-sdk-ios"),
                   .product(name: "DatadogLogs", package: "dd-sdk-ios"),
+                  .product(name: "DatadogProfiling", package: "dd-sdk-ios"),
                   .product(name: "DatadogRUM", package: "dd-sdk-ios"),
                   .product(name: "DatadogSessionReplay", package: "dd-sdk-ios"),
                   .product(name: "DatadogTrace", package: "dd-sdk-ios"),
