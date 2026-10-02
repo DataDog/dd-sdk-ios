@@ -107,6 +107,46 @@ class LaunchReasonResolverTests: XCTestCase {
         XCTAssertEqual(reason, .backgroundLaunch, "Should resolve to backgroundLaunch after threshold")
     }
 
+    // MARK: - Command Device Time
+
+    func testWhenBufferedCommandsAreForwarded_itRestoresTheDeviceTimeOfEachCommand() {
+        let commandDeviceTime = RUMCommandDeviceTime()
+        let resolver = LaunchReasonResolver(launchWindowThreshold: threshold, commandDeviceTime: commandDeviceTime)
+        let context: DatadogContext = .mockWith(
+            launchInfo: baseLaunchInfo,
+            applicationStateHistory: .mockWith(
+                initialState: .background,
+                date: baseLaunchInfo.processLaunchDate
+            )
+        )
+        let launchDate = baseLaunchInfo.processLaunchDate
+        let deviceTime = launchDate + 0.3 * threshold
+        var forwardedDeviceTimes: [Date?] = []
+
+        // Given: a command with device time is buffered (e.g. one whose time was replaced with a cross-platform timestamp)
+        commandDeviceTime.process(deviceTime: deviceTime) {
+            resolver.deferUntilLaunchReasonResolved(
+                command: RUMCommandMock(time: launchDate - RUMSessionScope.Constants.sessionTimeoutDuration),
+                context: context,
+                writer: writer
+            ) { _, _, _ in forwardedDeviceTimes.append(commandDeviceTime.value) }
+        }
+        XCTAssertTrue(forwardedDeviceTimes.isEmpty, "The command should be buffered")
+
+        // When: a command without device time resolves the launch reason
+        commandDeviceTime.process(deviceTime: nil) {
+            resolver.deferUntilLaunchReasonResolved(
+                command: RUMCommandMock(time: launchDate + threshold),
+                context: context,
+                writer: writer
+            ) { _, _, _ in forwardedDeviceTimes.append(commandDeviceTime.value) }
+        }
+
+        // Then
+        XCTAssertEqual(forwardedDeviceTimes, [deviceTime, nil], "Each command should be forwarded with its own device time")
+        XCTAssertNil(commandDeviceTime.value)
+    }
+
     // MARK: - Pre-set Launch Reason
 
     func testPrewarmingContext_forwardsAllCommandsUnchanged() throws {
