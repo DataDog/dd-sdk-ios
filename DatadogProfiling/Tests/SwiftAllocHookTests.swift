@@ -44,7 +44,7 @@ private enum SwiftAllocationRecorder {
     static func recordAllocation(
         address: UnsafeRawPointer?,
         size: UInt64,
-        metadata: UnsafeRawPointer?,
+        metadata: OpaquePointer?,
         resolveName: dd_swift_class_name_resolver_t?
     ) {
         guard let address, let metadata else {
@@ -96,7 +96,7 @@ private enum SwiftAllocationRecorder {
 private func observeSwiftAllocation(
     _ address: UnsafeRawPointer?,
     _ size: UInt64,
-    _ metadata: UnsafeRawPointer?,
+    _ metadata: OpaquePointer?,
     _ resolveName: dd_swift_class_name_resolver_t?
 ) {
     SwiftAllocationRecorder.recordAllocation(
@@ -333,7 +333,7 @@ final class SwiftAllocHookTests: XCTestCase {
             lock.unlock()
         }
 
-        static func observeAllocation(_ metadata: UnsafeRawPointer?) {
+        static func observeAllocation(_ metadata: OpaquePointer?) {
             guard let metadata else {
                 return
             }

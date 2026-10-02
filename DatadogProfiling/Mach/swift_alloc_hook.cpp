@@ -13,16 +13,16 @@
 #include "fishhook.h"
 
 #include <atomic>
+#include <condition_variable>
 #include <cstddef>
 #include <cstdint>
-#include <condition_variable>
 #include <dlfcn.h>
 #include <mutex>
+#include <new>
 
 namespace {
 
 struct HeapObject;
-struct HeapMetadata;
 
 using AllocFn = HeapObject *(*)(HeapMetadata *, size_t, size_t);
 using DeallocFn = void (*)(HeapObject *, size_t, size_t);
@@ -32,111 +32,157 @@ struct SwiftTypeName {
 };
 using GetTypeNameFn = SwiftTypeName (*)(const HeapMetadata *, bool);
 
-std::mutex g_install_mutex;
-std::mutex g_drain_mutex;
-std::condition_variable g_drain_condition;
-enum class InstallState : std::uint8_t { neverAttempted, installed, failed };
-InstallState g_install_state = InstallState::neverAttempted;
-dd_swift_alloc_hook_status_t g_failure_status =
-    DD_SWIFT_ALLOC_HOOK_FAILED_REBIND;
+class SwiftAllocHook {
+public:
+  SwiftAllocHook() = default;
+  ~SwiftAllocHook() = default;
+  SwiftAllocHook(const SwiftAllocHook &) = delete;
+  SwiftAllocHook &operator=(const SwiftAllocHook &) = delete;
+  SwiftAllocHook(SwiftAllocHook &&) = delete;
+  SwiftAllocHook &operator=(SwiftAllocHook &&) = delete;
 
-constexpr uint64_t kObservationEnabled = 0x8000000000000000ULL;
-constexpr uint64_t kInFlightMask = ~kObservationEnabled;
-// The enabled bit and callback count share one atomic so stop cannot miss a
-// callback admitted just before it disables observation.
-std::atomic<uint64_t> g_observation_state{0};
-// A trampoline can pause in the Swift runtime across stop and restart. Such a
-// call must not enter the replacement observer session when it resumes.
-std::atomic<uint64_t> g_observation_generation{0};
-std::atomic<dd_swift_allocation_observer_t> g_allocation_observer{nullptr};
-std::atomic<dd_swift_deallocation_observer_t> g_deallocation_observer{nullptr};
-std::atomic<AllocFn> g_runtime_alloc{nullptr};
-std::atomic<DeallocFn> g_runtime_class_dealloc{nullptr};
-std::atomic<DeallocFn> g_runtime_object_dealloc{nullptr};
-std::atomic<GetTypeNameFn> g_get_type_name{nullptr};
+  dd_swift_alloc_hook_status_t
+  start(dd_swift_allocation_observer_t allocation_observer,
+        dd_swift_deallocation_observer_t deallocation_observer);
+  void stop();
+  dd_swift_alloc_hook_diagnostics_t diagnostics() const;
 
-// fishhook keeps these pointers for rebinding future images. Atomic builtins
-// are also used by fishhook.c, so callback and hook threads can read safely.
-void *g_first_alloc = nullptr;
-void *g_first_class_dealloc = nullptr;
-void *g_first_object_dealloc = nullptr;
-uint64_t g_alloc_patches = 0;
-uint64_t g_class_dealloc_patches = 0;
-uint64_t g_object_dealloc_patches = 0;
-uint64_t g_alloc_conflicts = 0;
-uint64_t g_class_dealloc_conflicts = 0;
-uint64_t g_object_dealloc_conflicts = 0;
-uint64_t g_alloc_failures = 0;
-uint64_t g_class_dealloc_failures = 0;
-uint64_t g_object_dealloc_failures = 0;
+  HeapObject *interceptAlloc(HeapMetadata *metadata, size_t size,
+                             size_t alignment_mask);
+  void interceptClassDealloc(HeapObject *object, size_t size,
+                             size_t alignment_mask);
+  void interceptObjectDealloc(HeapObject *object, size_t size,
+                              size_t alignment_mask);
+  dd_swift_class_name_t resolveClassName(const HeapMetadata *metadata) const;
 
-std::atomic<uint64_t> g_allocations{0};
-std::atomic<uint64_t> g_class_deallocations{0};
-std::atomic<uint64_t> g_object_deallocations{0};
-std::atomic<uint64_t> g_reentrant_skips{0};
-thread_local bool t_observing = false;
+private:
+  enum class InstallState : std::uint8_t { neverAttempted, installed, failed };
+  static constexpr uint64_t kObservationEnabled = 0x8000000000000000ULL;
+  static constexpr uint64_t kInFlightMask = ~kObservationEnabled;
 
-uint64_t load_count(const uint64_t *count) {
+  static uint64_t loadCount(const uint64_t *count);
+  uint64_t conflictCount() const;
+  uint64_t failureCount() const;
+  bool observing() const;
+  void releaseObservation();
+  bool beginObservation(uint64_t generation);
+  void disableAndDrainObservation();
+  template <typename Function>
+  static Function previous(void *const *slot,
+                           const std::atomic<Function> &runtime);
+  static bool hasNominalType(const HeapMetadata *metadata);
+  void observeDeallocation(const HeapObject *object,
+                           std::atomic<uint64_t> &counter);
+
+  std::mutex install_mutex_;
+  std::mutex drain_mutex_;
+  std::condition_variable drain_condition_;
+  InstallState install_state_ = InstallState::neverAttempted;
+  dd_swift_alloc_hook_status_t failure_status_ =
+      DD_SWIFT_ALLOC_HOOK_FAILED_REBIND;
+
+  // The enabled bit and callback count share one atomic so stop cannot miss a
+  // callback admitted just before it disables observation.
+  std::atomic<uint64_t> observation_state_{0};
+  // A trampoline can pause in the Swift runtime across stop and restart. Such
+  // a call must not enter the replacement observer session when it resumes.
+  std::atomic<uint64_t> observation_generation_{0};
+  std::atomic<dd_swift_allocation_observer_t> allocation_observer_{nullptr};
+  std::atomic<dd_swift_deallocation_observer_t> deallocation_observer_{nullptr};
+  std::atomic<AllocFn> runtime_alloc_{nullptr};
+  std::atomic<DeallocFn> runtime_class_dealloc_{nullptr};
+  std::atomic<DeallocFn> runtime_object_dealloc_{nullptr};
+  std::atomic<GetTypeNameFn> get_type_name_{nullptr};
+
+  // fishhook retains these addresses for future images. The instance must
+  // remain alive after stop and until process exit.
+  void *first_alloc_ = nullptr;
+  void *first_class_dealloc_ = nullptr;
+  void *first_object_dealloc_ = nullptr;
+  uint64_t alloc_patches_ = 0;
+  uint64_t class_dealloc_patches_ = 0;
+  uint64_t object_dealloc_patches_ = 0;
+  uint64_t alloc_conflicts_ = 0;
+  uint64_t class_dealloc_conflicts_ = 0;
+  uint64_t object_dealloc_conflicts_ = 0;
+  uint64_t alloc_failures_ = 0;
+  uint64_t class_dealloc_failures_ = 0;
+  uint64_t object_dealloc_failures_ = 0;
+
+  std::atomic<uint64_t> allocations_{0};
+  std::atomic<uint64_t> class_deallocations_{0};
+  std::atomic<uint64_t> object_deallocations_{0};
+  std::atomic<uint64_t> reentrant_skips_{0};
+  static thread_local bool observing_callback_;
+};
+
+thread_local bool SwiftAllocHook::observing_callback_ = false;
+
+// Fishhook and observer callbacks are defined after the class implementation.
+HeapObject *intercept_alloc(HeapMetadata *, size_t, size_t);
+void intercept_class_dealloc(HeapObject *, size_t, size_t);
+void intercept_object_dealloc(HeapObject *, size_t, size_t);
+dd_swift_class_name_t resolve_class_name(const HeapMetadata *);
+
+uint64_t SwiftAllocHook::loadCount(const uint64_t *count) {
   return __atomic_load_n(count, __ATOMIC_ACQUIRE);
 }
 
-uint64_t conflict_count() {
-  return load_count(&g_alloc_conflicts) +
-         load_count(&g_class_dealloc_conflicts) +
-         load_count(&g_object_dealloc_conflicts);
+uint64_t SwiftAllocHook::conflictCount() const {
+  return loadCount(&alloc_conflicts_) + loadCount(&class_dealloc_conflicts_) +
+         loadCount(&object_dealloc_conflicts_);
 }
 
-uint64_t failure_count() {
-  return load_count(&g_alloc_failures) +
-         load_count(&g_class_dealloc_failures) +
-         load_count(&g_object_dealloc_failures);
+uint64_t SwiftAllocHook::failureCount() const {
+  return loadCount(&alloc_failures_) + loadCount(&class_dealloc_failures_) +
+         loadCount(&object_dealloc_failures_);
 }
 
-bool observing() {
-  return (g_observation_state.load(std::memory_order_acquire) &
+bool SwiftAllocHook::observing() const {
+  return (observation_state_.load(std::memory_order_acquire) &
           kObservationEnabled) != 0 &&
-         conflict_count() == 0 && failure_count() == 0;
+         conflictCount() == 0 && failureCount() == 0;
 }
 
-void release_observation() {
+void SwiftAllocHook::releaseObservation() {
   const uint64_t prior =
-      g_observation_state.fetch_sub(1, std::memory_order_acq_rel);
-  if ((prior & kInFlightMask) == 1 &&
-      (prior & kObservationEnabled) == 0) {
-    std::lock_guard<std::mutex> lock(g_drain_mutex);
-    g_drain_condition.notify_all();
+      observation_state_.fetch_sub(1, std::memory_order_acq_rel);
+  if ((prior & kInFlightMask) == 1 && (prior & kObservationEnabled) == 0) {
+    std::lock_guard<std::mutex> lock(drain_mutex_);
+    drain_condition_.notify_all();
   }
 }
 
-bool begin_observation(uint64_t generation) {
-  if ((g_observation_state.load(std::memory_order_acquire) &
+bool SwiftAllocHook::beginObservation(uint64_t generation) {
+  if ((observation_state_.load(std::memory_order_acquire) &
        kObservationEnabled) == 0) {
     return false;
   }
   const uint64_t prior =
-      g_observation_state.fetch_add(1, std::memory_order_acq_rel);
+      observation_state_.fetch_add(1, std::memory_order_acq_rel);
   if ((prior & kObservationEnabled) != 0 &&
-      g_observation_generation.load(std::memory_order_acquire) == generation) {
+      observation_generation_.load(std::memory_order_acquire) == generation) {
     return true;
   }
   // Stop or restart changed the observer session before admission.
-  release_observation();
+  releaseObservation();
   return false;
 }
 
-// Call only while holding g_install_mutex. Start uses the same drain before
+// Call only while holding install_mutex_. Start uses the same drain before
 // replacing observers, so an admitted callback cannot switch to a new one.
-void disable_and_drain_observation() {
-  g_observation_state.fetch_and(kInFlightMask, std::memory_order_acq_rel);
-  std::unique_lock<std::mutex> lock(g_drain_mutex);
-  g_drain_condition.wait(lock, [] {
-    return (g_observation_state.load(std::memory_order_acquire) &
+void SwiftAllocHook::disableAndDrainObservation() {
+  observation_state_.fetch_and(kInFlightMask, std::memory_order_acq_rel);
+  std::unique_lock<std::mutex> lock(drain_mutex_);
+  drain_condition_.wait(lock, [this] {
+    return (observation_state_.load(std::memory_order_acquire) &
             kInFlightMask) == 0;
   });
 }
 
 template <typename Function>
-Function previous(void *const *slot, const std::atomic<Function> &runtime) {
+Function SwiftAllocHook::previous(void *const *slot,
+                                  const std::atomic<Function> &runtime) {
   void *prior = __atomic_load_n(slot, __ATOMIC_ACQUIRE);
   return prior != nullptr ? reinterpret_cast<Function>(prior)
                           : runtime.load(std::memory_order_acquire);
@@ -145,7 +191,7 @@ Function previous(void *const *slot, const std::atomic<Function> &runtime) {
 // Swift's heap-local-variable and error-object metadata have no nominal type.
 // The first metadata word is a small kind value; class metadata starts with an
 // isa pointer. This mirrors the guard exercised in the memory-profiling PoC.
-bool has_nominal_type(const HeapMetadata *metadata) {
+bool SwiftAllocHook::hasNominalType(const HeapMetadata *metadata) {
   if (metadata == nullptr) {
     return false;
   }
@@ -153,121 +199,116 @@ bool has_nominal_type(const HeapMetadata *metadata) {
   return kind < 0x400 || kind >= 0x800;
 }
 
-dd_swift_class_name_t resolve_class_name(const void *metadata) {
-  auto get_name = g_get_type_name.load(std::memory_order_acquire);
-  if (get_name == nullptr ||
-      !has_nominal_type(static_cast<const HeapMetadata *>(metadata))) {
+dd_swift_class_name_t
+SwiftAllocHook::resolveClassName(const HeapMetadata *metadata) const {
+  auto get_name = get_type_name_.load(std::memory_order_acquire);
+  if (get_name == nullptr || !hasNominalType(metadata)) {
     return {nullptr, 0};
   }
-  SwiftTypeName name =
-      get_name(static_cast<const HeapMetadata *>(metadata), false);
+  SwiftTypeName name = get_name(metadata, false);
   return name.data != nullptr ? dd_swift_class_name_t{name.data, name.length}
                               : dd_swift_class_name_t{nullptr, 0};
 }
 
-HeapObject *intercept_alloc(HeapMetadata *metadata, size_t size,
-                            size_t alignment_mask) {
+HeapObject *SwiftAllocHook::interceptAlloc(HeapMetadata *metadata, size_t size,
+                                           size_t alignment_mask) {
   const uint64_t generation =
-      g_observation_generation.load(std::memory_order_acquire);
-  AllocFn original = previous(&g_first_alloc, g_runtime_alloc);
+      observation_generation_.load(std::memory_order_acquire);
+  AllocFn original = previous(&first_alloc_, runtime_alloc_);
   HeapObject *object = original(metadata, size, alignment_mask);
-  if (!observing() || object == nullptr || !has_nominal_type(metadata)) {
+  if (!observing() || object == nullptr || !hasNominalType(metadata)) {
     return object;
   }
-  if (t_observing) {
-    g_reentrant_skips.fetch_add(1, std::memory_order_relaxed);
+  if (observing_callback_) {
+    reentrant_skips_.fetch_add(1, std::memory_order_relaxed);
     return object;
   }
-  if (!begin_observation(generation)) {
+  if (!beginObservation(generation)) {
     return object;
   }
 
-  t_observing = true;
-  g_allocations.fetch_add(1, std::memory_order_relaxed);
-  auto observer = g_allocation_observer.load(std::memory_order_acquire);
+  observing_callback_ = true;
+  allocations_.fetch_add(1, std::memory_order_relaxed);
+  auto observer = allocation_observer_.load(std::memory_order_acquire);
   if (observer != nullptr) {
     observer(object, static_cast<uint64_t>(size), metadata, resolve_class_name);
   }
-  t_observing = false;
-  release_observation();
+  observing_callback_ = false;
+  releaseObservation();
   return object;
 }
 
-void observe_deallocation(const HeapObject *object,
-                          std::atomic<uint64_t> &counter) {
+void SwiftAllocHook::observeDeallocation(const HeapObject *object,
+                                         std::atomic<uint64_t> &counter) {
   const uint64_t generation =
-      g_observation_generation.load(std::memory_order_acquire);
+      observation_generation_.load(std::memory_order_acquire);
   if (!observing() || object == nullptr) {
     return;
   }
-  if (t_observing) {
-    g_reentrant_skips.fetch_add(1, std::memory_order_relaxed);
+  if (observing_callback_) {
+    reentrant_skips_.fetch_add(1, std::memory_order_relaxed);
     return;
   }
-  if (!begin_observation(generation)) {
+  if (!beginObservation(generation)) {
     return;
   }
 
-  t_observing = true;
+  observing_callback_ = true;
   counter.fetch_add(1, std::memory_order_relaxed);
-  auto observer = g_deallocation_observer.load(std::memory_order_acquire);
+  auto observer = deallocation_observer_.load(std::memory_order_acquire);
   if (observer != nullptr) {
     // These entry points may run before storage is freed if unowned references
     // remain. Both can report an address, so observers must deduplicate it.
     observer(object);
   }
-  t_observing = false;
-  release_observation();
+  observing_callback_ = false;
+  releaseObservation();
 }
 
-void intercept_class_dealloc(HeapObject *object, size_t size,
-                             size_t alignment_mask) {
-  observe_deallocation(object, g_class_deallocations);
-  DeallocFn original =
-      previous(&g_first_class_dealloc, g_runtime_class_dealloc);
+void SwiftAllocHook::interceptClassDealloc(HeapObject *object, size_t size,
+                                           size_t alignment_mask) {
+  observeDeallocation(object, class_deallocations_);
+  DeallocFn original = previous(&first_class_dealloc_, runtime_class_dealloc_);
   original(object, size, alignment_mask);
 }
 
-void intercept_object_dealloc(HeapObject *object, size_t size,
-                              size_t alignment_mask) {
-  observe_deallocation(object, g_object_deallocations);
+void SwiftAllocHook::interceptObjectDealloc(HeapObject *object, size_t size,
+                                            size_t alignment_mask) {
+  observeDeallocation(object, object_deallocations_);
   DeallocFn original =
-      previous(&g_first_object_dealloc, g_runtime_object_dealloc);
+      previous(&first_object_dealloc_, runtime_object_dealloc_);
   original(object, size, alignment_mask);
 }
 
-} // namespace
-
-extern "C" dd_swift_alloc_hook_status_t dd_swift_alloc_hook_start(
-    dd_swift_allocation_observer_t allocation_observer,
-    dd_swift_deallocation_observer_t deallocation_observer) {
+dd_swift_alloc_hook_status_t
+SwiftAllocHook::start(dd_swift_allocation_observer_t allocation_observer,
+                      dd_swift_deallocation_observer_t deallocation_observer) {
   if (allocation_observer == nullptr || deallocation_observer == nullptr) {
     return DD_SWIFT_ALLOC_HOOK_FAILED_INVALID_OBSERVER;
   }
 
-  std::lock_guard<std::mutex> lock(g_install_mutex);
-  if (g_install_state == InstallState::installed) {
-    disable_and_drain_observation();
-    if (failure_count() != 0) {
-      g_install_state = InstallState::failed;
-      g_failure_status = DD_SWIFT_ALLOC_HOOK_FAILED_REBIND;
-      return g_failure_status;
+  std::lock_guard<std::mutex> lock(install_mutex_);
+  if (install_state_ == InstallState::installed) {
+    disableAndDrainObservation();
+    if (failureCount() != 0) {
+      install_state_ = InstallState::failed;
+      failure_status_ = DD_SWIFT_ALLOC_HOOK_FAILED_REBIND;
+      return failure_status_;
     }
-    if (conflict_count() != 0) {
-      g_install_state = InstallState::failed;
-      g_failure_status = DD_SWIFT_ALLOC_HOOK_FAILED_CONFLICT;
-      return g_failure_status;
+    if (conflictCount() != 0) {
+      install_state_ = InstallState::failed;
+      failure_status_ = DD_SWIFT_ALLOC_HOOK_FAILED_CONFLICT;
+      return failure_status_;
     }
-    g_allocation_observer.store(allocation_observer, std::memory_order_release);
-    g_deallocation_observer.store(deallocation_observer,
-                                  std::memory_order_release);
-    g_observation_generation.fetch_add(1, std::memory_order_acq_rel);
-    g_observation_state.fetch_or(kObservationEnabled,
+    allocation_observer_.store(allocation_observer, std::memory_order_release);
+    deallocation_observer_.store(deallocation_observer,
                                  std::memory_order_release);
+    observation_generation_.fetch_add(1, std::memory_order_acq_rel);
+    observation_state_.fetch_or(kObservationEnabled, std::memory_order_release);
     return DD_SWIFT_ALLOC_HOOK_ALREADY_INSTALLED;
   }
-  if (g_install_state == InstallState::failed) {
-    return g_failure_status;
+  if (install_state_ == InstallState::failed) {
+    return failure_status_;
   }
 
   // Resolve every forward target before any import slot can point at a
@@ -285,78 +326,131 @@ extern "C" dd_swift_alloc_hook_status_t dd_swift_alloc_hook_start(
       object_dealloc == nullptr || get_name == nullptr) {
     return DD_SWIFT_ALLOC_HOOK_FAILED_NO_SYMBOL;
   }
-  g_runtime_alloc.store(alloc, std::memory_order_release);
-  g_runtime_class_dealloc.store(class_dealloc, std::memory_order_release);
-  g_runtime_object_dealloc.store(object_dealloc, std::memory_order_release);
-  g_get_type_name.store(get_name, std::memory_order_release);
+  runtime_alloc_.store(alloc, std::memory_order_release);
+  runtime_class_dealloc_.store(class_dealloc, std::memory_order_release);
+  runtime_object_dealloc_.store(object_dealloc, std::memory_order_release);
+  get_type_name_.store(get_name, std::memory_order_release);
 
   // first_replaced is published before a slot is patched. fishhook leaves
   // slots with a different previous implementation untouched, because a
   // single trampoline cannot safely forward through two different chains.
   struct rebinding bindings[] = {
-      {"swift_allocObject", reinterpret_cast<void *>(intercept_alloc), nullptr,
-       &g_first_alloc, &g_alloc_patches, &g_alloc_conflicts,
-       &g_alloc_failures, alloc_symbol,
+      {
+          "swift_allocObject",
+          reinterpret_cast<void *>(intercept_alloc),
+          nullptr,
+          &first_alloc_,
+          &alloc_patches_,
+          &alloc_conflicts_,
+          &alloc_failures_,
+          alloc_symbol,
       },
-      {"swift_deallocClassInstance",
-       reinterpret_cast<void *>(intercept_class_dealloc), nullptr,
-       &g_first_class_dealloc, &g_class_dealloc_patches,
-       &g_class_dealloc_conflicts, &g_class_dealloc_failures,
-       class_dealloc_symbol,
+      {
+          "swift_deallocClassInstance",
+          reinterpret_cast<void *>(intercept_class_dealloc),
+          nullptr,
+          &first_class_dealloc_,
+          &class_dealloc_patches_,
+          &class_dealloc_conflicts_,
+          &class_dealloc_failures_,
+          class_dealloc_symbol,
       },
-      {"swift_deallocObject",
-       reinterpret_cast<void *>(intercept_object_dealloc), nullptr,
-       &g_first_object_dealloc, &g_object_dealloc_patches,
-       &g_object_dealloc_conflicts, &g_object_dealloc_failures,
-       object_dealloc_symbol,
+      {
+          "swift_deallocObject",
+          reinterpret_cast<void *>(intercept_object_dealloc),
+          nullptr,
+          &first_object_dealloc_,
+          &object_dealloc_patches_,
+          &object_dealloc_conflicts_,
+          &object_dealloc_failures_,
+          object_dealloc_symbol,
       },
   };
   int result = rebind_symbols(bindings, sizeof(bindings) / sizeof(bindings[0]));
-  g_install_state =
+  install_state_ =
       InstallState::failed; // fishhook cannot unregister a partial install
-  if (result != 0 || failure_count() != 0 ||
-      load_count(&g_alloc_patches) == 0 ||
-      load_count(&g_class_dealloc_patches) == 0) {
-    g_failure_status = DD_SWIFT_ALLOC_HOOK_FAILED_REBIND;
+  if (result != 0 || failureCount() != 0 || loadCount(&alloc_patches_) == 0 ||
+      loadCount(&class_dealloc_patches_) == 0) {
+    failure_status_ = DD_SWIFT_ALLOC_HOOK_FAILED_REBIND;
     return DD_SWIFT_ALLOC_HOOK_FAILED_REBIND;
   }
-  if (conflict_count() != 0) {
-    g_failure_status = DD_SWIFT_ALLOC_HOOK_FAILED_CONFLICT;
+  if (conflictCount() != 0) {
+    failure_status_ = DD_SWIFT_ALLOC_HOOK_FAILED_CONFLICT;
     return DD_SWIFT_ALLOC_HOOK_FAILED_CONFLICT;
   }
 
-  g_allocation_observer.store(allocation_observer, std::memory_order_release);
-  g_deallocation_observer.store(deallocation_observer,
-                                std::memory_order_release);
-  g_install_state = InstallState::installed;
-  g_observation_generation.fetch_add(1, std::memory_order_acq_rel);
-  g_observation_state.fetch_or(kObservationEnabled,
+  allocation_observer_.store(allocation_observer, std::memory_order_release);
+  deallocation_observer_.store(deallocation_observer,
                                std::memory_order_release);
+  install_state_ = InstallState::installed;
+  observation_generation_.fetch_add(1, std::memory_order_acq_rel);
+  observation_state_.fetch_or(kObservationEnabled, std::memory_order_release);
   return DD_SWIFT_ALLOC_HOOK_OK;
 }
 
-extern "C" void dd_swift_alloc_hook_stop(void) {
+void SwiftAllocHook::stop() {
   // Never restore patched import slots: another rebinder may now own them.
-  std::lock_guard<std::mutex> lock(g_install_mutex);
-  disable_and_drain_observation();
+  std::lock_guard<std::mutex> lock(install_mutex_);
+  disableAndDrainObservation();
 }
+
+dd_swift_alloc_hook_diagnostics_t SwiftAllocHook::diagnostics() const {
+  dd_swift_alloc_hook_diagnostics_t result{};
+  result.allocations = allocations_.load(std::memory_order_relaxed);
+  result.class_deallocations =
+      class_deallocations_.load(std::memory_order_relaxed);
+  result.object_deallocations =
+      object_deallocations_.load(std::memory_order_relaxed);
+  result.reentrant_skips = reentrant_skips_.load(std::memory_order_relaxed);
+  result.alloc_slots_patched = loadCount(&alloc_patches_);
+  result.class_dealloc_slots_patched = loadCount(&class_dealloc_patches_);
+  result.object_dealloc_slots_patched = loadCount(&object_dealloc_patches_);
+  result.conflicting_slots = conflictCount();
+  result.failed_slot_writes = failureCount();
+  result.is_enabled = observing();
+  return result;
+}
+
+// Rebindings persist for the process lifetime. Construct before the first
+// rebind, and intentionally never destroy the state used by its trampolines.
+SwiftAllocHook &hook() {
+  alignas(SwiftAllocHook) static unsigned char storage[sizeof(SwiftAllocHook)];
+  static auto *instance = new (storage) SwiftAllocHook();
+  return *instance;
+}
+
+HeapObject *intercept_alloc(HeapMetadata *metadata, size_t size,
+                            size_t alignment_mask) {
+  return hook().interceptAlloc(metadata, size, alignment_mask);
+}
+
+void intercept_class_dealloc(HeapObject *object, size_t size,
+                             size_t alignment_mask) {
+  hook().interceptClassDealloc(object, size, alignment_mask);
+}
+
+void intercept_object_dealloc(HeapObject *object, size_t size,
+                              size_t alignment_mask) {
+  hook().interceptObjectDealloc(object, size, alignment_mask);
+}
+
+dd_swift_class_name_t resolve_class_name(const HeapMetadata *metadata) {
+  return hook().resolveClassName(metadata);
+}
+
+} // namespace
+
+extern "C" dd_swift_alloc_hook_status_t dd_swift_alloc_hook_start(
+    dd_swift_allocation_observer_t allocation_observer,
+    dd_swift_deallocation_observer_t deallocation_observer) {
+  return hook().start(allocation_observer, deallocation_observer);
+}
+
+extern "C" void dd_swift_alloc_hook_stop(void) { hook().stop(); }
 
 extern "C" dd_swift_alloc_hook_diagnostics_t
 dd_swift_alloc_hook_diagnostics(void) {
-  dd_swift_alloc_hook_diagnostics_t result{};
-  result.allocations = g_allocations.load(std::memory_order_relaxed);
-  result.class_deallocations =
-      g_class_deallocations.load(std::memory_order_relaxed);
-  result.object_deallocations =
-      g_object_deallocations.load(std::memory_order_relaxed);
-  result.reentrant_skips = g_reentrant_skips.load(std::memory_order_relaxed);
-  result.alloc_slots_patched = load_count(&g_alloc_patches);
-  result.class_dealloc_slots_patched = load_count(&g_class_dealloc_patches);
-  result.object_dealloc_slots_patched = load_count(&g_object_dealloc_patches);
-  result.conflicting_slots = conflict_count();
-  result.failed_slot_writes = failure_count();
-  result.is_enabled = observing();
-  return result;
+  return hook().diagnostics();
 }
 
 #endif // !TARGET_OS_WATCH
