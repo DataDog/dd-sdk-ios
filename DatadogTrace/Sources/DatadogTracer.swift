@@ -143,7 +143,13 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
         )
     }
 
-    internal func startSpan(spanContext: DDSpanContext, operationName: String, tags: [String: OTTagValue]? = nil, startTime: Date? = nil) -> OTSpan {
+    internal func startSpan(
+        spanContext: DDSpanContext,
+        operationName: String,
+        tags: [String: OTTagValue]? = nil,
+        startTime: Date? = nil,
+        eventWriter: SpanWriteContext? = nil
+    ) -> OTSpan {
         var combinedTags = self.tags
         if let userTags = tags {
             combinedTags.merge(userTags) { $1 }
@@ -152,7 +158,7 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
         // Initialize `LazySpanWriteContext` here in `startSpan()` so it captures the `DatadogContext` valid
         // for this moment of time. Added in RUM-699 to ensure spans are correctly linked with RUM information
         // available on the caller thread.
-        let writer = LazySpanWriteContext(featureScope: featureScope)
+        let writer = eventWriter ?? LazySpanWriteContext(featureScope: featureScope)
         let span = DDSpan(
             tracer: self,
             context: spanContext,

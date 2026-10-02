@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-09-30
+last_updated: 2026-10-01
 sdk_version: 3.19.0
 verified_against_commit: c7d0eba6b
 tracked_files:
@@ -342,7 +342,7 @@ When `Datadog.Configuration.remoteConfiguration` is set, Core fetches and caches
 ## Feature Interactions
 
 - **Crash Reporting**: Enhances App Hang monitoring with stack traces. Set `CrashReporting.Configuration.appHangBacktraceEnabled` to `false` to keep crash reports but drop App Hang stack traces
-- **Tracing**: Network resources can create distributed traces via `firstPartyHostsTracing`
+- **Tracing**: Network resources can create distributed traces via `firstPartyHostsTracing`. When Trace owns automatic URLSession spans, captured RUM ownership remains tied to the request start. Avoid overlapping RUM and Trace URLSession tracking for the same requests.
 - **Remote Configuration**: when configured, drives RUM's distributed-tracing enablement (`trace` namespace) instead of Trace's own remote configuration — see [Remote Configuration](#remote-configuration)
 - **Session Replay**: RUM must be enabled for Session Replay to work
 - **WebView Tracking**: Enables RUM tracking in web views. Requires:

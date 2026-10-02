@@ -1,5 +1,8 @@
 # Unreleased
 
+- [FIX] Keep automatic URLSession spans linked to the RUM view and session captured when each request starts. See [#3220][]
+- [FIX] Reduce the risk of SwiftUI crashes during Session Replay recording by avoiding copies of unrelated view cache data. See [#3245][]
+
 # 3.19.0 / 30-09-2026
 
 - [IMPROVEMENT] Enable RUM view update (delta) events by default. Views that update often now send a smaller payload. See [#3233][]
@@ -9,7 +12,7 @@
 - [IMPROVEMENT] Increase the maximum number of custom attributes per event from 256 to 1900 in RUM, Logs, and Traces. In RUM, the limit applies to `context`, `usr`, and `account` independently; in Logs and Traces, those attributes are encoded into a single JSON object, so they share one limit. Log `usr` and `account` extra attributes are now limited as well. See [#3198][]
 - [IMPROVEMENT] Require Swift tools version 6.2 (Xcode 26) to resolve the package with Swift Package Manager. See [#3231][]
 - [FIX] Report slow frame and freeze rates for RUM views when navigation starts a new view without calling `stopView()` on the previous one. See [#3237][]
-- [FIX] Traced requests and spans created immediately after the SDK is initialized now use the same sampling decision as the rest of the RUM session, and carry that session's ID. Previously they could be sampled independently of the session and sent without it. See [#3221][]
+- [FIX] Traced requests created immediately after SDK initialization now use the RUM session's sampling decision and inject that session's ID. Automatic URLSession spans no longer receive an independently sampled decision while waiting for RUM context. See [#3221][]
 
 # 3.18.0 / 21-09-2026
 
@@ -1267,6 +1270,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3167]: https://github.com/DataDog/dd-sdk-ios/pull/3167
 [#3183]: https://github.com/DataDog/dd-sdk-ios/pull/3183
 [#3198]: https://github.com/DataDog/dd-sdk-ios/pull/3198
+[#3220]: https://github.com/DataDog/dd-sdk-ios/pull/3220
 [#3221]: https://github.com/DataDog/dd-sdk-ios/pull/3221
 [#3186]: https://github.com/DataDog/dd-sdk-ios/pull/3186
 [#3195]: https://github.com/DataDog/dd-sdk-ios/pull/3195
@@ -1279,6 +1283,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3217]: https://github.com/DataDog/dd-sdk-ios/pull/3217
 [#3232]: https://github.com/DataDog/dd-sdk-ios/pull/3232
 [#3237]: https://github.com/DataDog/dd-sdk-ios/pull/3237
+[#3245]: https://github.com/DataDog/dd-sdk-ios/pull/3245
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
