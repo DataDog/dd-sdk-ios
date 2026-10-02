@@ -79,7 +79,7 @@ XcodeSwitchRunDestination(workspaceIdentifier: <id>, displayTitle: "iPhone 17 Pr
 ```
 GetTestList(workspaceIdentifier: <id>)
 ```
-Test targets are `<Module>Tests` (e.g. `DatadogLogsTests`, `DatadogIntegrationTests`). Identifiers look like `<TestClass>/<testMethod>()`. If the response is `truncated` (capped at 100), grep `fullTestListPath` for `TEST_IDENTIFIER` / `TEST_FILE_PATH`.
+Use the `targetName` from `GetTestList` — don't build it from the scheme name. Most test targets are `<Module>Tests` (`DatadogLogsTests`), but the `DatadogIntegrationTests` scheme's target is also `DatadogIntegrationTests`. Identifiers look like `<TestClass>/<testMethod>()`. If the response is `truncated` (capped at 100), grep `fullTestListPath` for `TEST_IDENTIFIER` / `TEST_FILE_PATH`.
 
 **5. Run.** Blocks until results are in:
 ```
@@ -108,7 +108,14 @@ Tests under `IntegrationTests/IntegrationScenarios/` are **not** in `Datadog.xcw
 | Goal | Command |
 |------|---------|
 | One test plan | `make ui-test TEST_PLAN="<Plan>"` |
-| One test | `xcodebuild` below |
+| Anything in the `CrashReporting` plan | `make ui-test TEST_PLAN="CrashReporting"` — never raw `xcodebuild` |
+| One non-crashing test | `xcodebuild` below |
+
+`make ui-test` runs `tools/ui-test.sh`, which does setup a raw `xcodebuild` skips: `pod install`, generating the mock-server config, and unloading macOS `ReportCrash` so the "Runner quit unexpectedly" alert doesn't block tests that crash the app. Before a raw `xcodebuild` run, do the first two yourself:
+```bash
+(cd IntegrationTests && bundle exec pod install)
+./tools/config/generate-http-server-mock-config.sh
+```
 
 ```bash
 xcodebuild test \
@@ -126,8 +133,9 @@ xcodebuild test \
   -workspace Datadog.xcworkspace \
   -scheme "<Module>" \
   -destination 'platform=<Platform> Simulator,name=<Device>' \
-  -only-testing:<Module>Tests/<TestClass>/<testMethod>
+  -only-testing:<TestTarget>/<TestClass>/<testMethod>
 ```
+`<TestTarget>` is usually `<Module>Tests`, except `DatadogIntegrationTests` (scheme and target share the name). List targets with `xcodebuild -list -project Datadog/Datadog.xcodeproj` if unsure.
 
 ## Decision Guide
 
@@ -136,7 +144,8 @@ Need to run tests?
 ├── Full module or CI replication?
 │   └── make test-ios SCHEME="<Module>" DEVICE="<Device>"
 ├── UI integration test (IntegrationTests/IntegrationScenarios)?
-│   └── make ui-test TEST_PLAN="<Plan>", or xcodebuild -only-testing on IntegrationTests.xcworkspace
+│   └── make ui-test TEST_PLAN="<Plan>" (always for CrashReporting),
+│       or setup + xcodebuild -only-testing on IntegrationTests.xcworkspace
 └── Specific class or method?
     ├── Xcode MCP available?
     │   └── XcodeOpenWorkspace → XcodeGrep (owner) → record state → XcodeSwitchScheme
@@ -154,5 +163,7 @@ Need to run tests?
 | Running a test outside the active scheme | `XcodeSwitchScheme` to the owning module first |
 | Running iOS tests on `My Mac` | `XcodeSwitchRunDestination` to an iOS simulator |
 | Using `"DatadogCore iOS"` style names | Schemes are `DatadogCore`; test targets are `DatadogCoreTests` |
+| Appending `Tests` to `DatadogIntegrationTests` | Its target is `DatadogIntegrationTests` — take `targetName` from `GetTestList` |
+| Raw `xcodebuild` for a crashing UI test | `make ui-test TEST_PLAN="CrashReporting"` |
 | Reading only the inline `GetTestList` output | It's capped at 100 — grep `fullTestListPath` |
 | Leaving Xcode on a different scheme | Switch back to the scheme/destination the user had |
