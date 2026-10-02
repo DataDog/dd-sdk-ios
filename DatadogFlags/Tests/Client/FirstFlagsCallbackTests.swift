@@ -14,7 +14,7 @@ import DatadogInternal
 final class FirstFlagsCallbackTests: XCTestCase {
     private func data(_ keys: [String]) -> FlagsData {
         FlagsData(
-            flags: Dictionary(uniqueKeysWithValues: keys.map { ($0, FlagAssignment(allocationKey: "allocation", variationKey: "variation", variation: .boolean(true), reason: "TARGETING_MATCH", doLog: false)) }),
+            flags: Dictionary(uniqueKeysWithValues: keys.map { ($0, FlagAssignment.mockAny()) }),
             context: .mockAny(),
             date: .mockAny()
         )
@@ -29,12 +29,8 @@ final class FirstFlagsCallbackTests: XCTestCase {
         var factoryReturned = false
         var events: [FlagsClientEvent] = []
 
-        let client = FlagsClient.create(name: "test", in: core) { callbackClient, event in
+        let client = FlagsClient.create(name: "test", in: core) { event in
             XCTAssertFalse(factoryReturned)
-            XCTAssertIdentical(callbackClient, FlagsClient.shared(named: "test", in: core))
-            XCTAssertIdentical(callbackClient, FlagsClient.create(name: "test", in: core))
-            XCTAssertTrue(callbackClient.getBooleanValue(key: "cached", defaultValue: false))
-            XCTAssertEqual(callbackClient.state.currentState, .notReady)
             events.append(event)
         }
         factoryReturned = true
@@ -43,33 +39,33 @@ final class FirstFlagsCallbackTests: XCTestCase {
         XCTAssertIdentical(client, FlagsClient.shared(named: "test", in: core))
         XCTAssertIdentical(client, FlagsClient.create(name: "test", in: core))
         XCTAssertIdentical(client, FlagsClient.create(name: "test", in: core, onFirstFlags: nil))
-        FlagsClient.create(name: "test", in: core) { _, _ in XCTFail("Duplicate callback") }
+        FlagsClient.create(name: "test", in: core) { _ in XCTFail("Duplicate callback") }
         XCTAssertTrue(scope.eventsWritten.isEmpty)
     }
 
-    func testDelayedCacheCallbackSuppliesRegisteredUsableClientWithoutMainQueueHandoff() throws {
-        for keys in [["cached"], []] {
-            let store = FirstFlagsCallbackStore()
-            let scope = FeatureScopeMock(dataStore: store)
-            let core = SingleFeatureCoreMock<FlagsFeature>()
-            core.featureScopeOverride = scope
-            Flags.enable(in: core)
-            let notified = expectation(description: "Delayed cache callback")
-            let client = FlagsClient.create(name: "test", in: core) { client, event in
-                XCTAssertFalse(Thread.isMainThread)
-                XCTAssertIdentical(client, FlagsClient.shared(named: "test", in: core))
-                XCTAssertEqual(event.flagsChanged, keys)
-                XCTAssertEqual(client.getBooleanValue(key: "cached", defaultValue: false), !keys.isEmpty)
-                XCTAssertEqual(client.state.currentState, .notReady)
-                notified.fulfill()
+    func testEventArrivingAfterCreationReachesApplicationMainQueueHandoff() throws {
+        let store = FirstFlagsCallbackStore()
+        let core = SingleFeatureCoreMock<FlagsFeature>()
+        core.featureScopeOverride = FeatureScopeMock(dataStore: store)
+        Flags.enable(in: core)
+        let delivered = expectation(description: "Application receives delayed event")
+        var factoryReturned = false
+        let client = FlagsClient.create(name: "test", in: core) { event in
+            DispatchQueue.main.async {
+                XCTAssertTrue(factoryReturned)
+                XCTAssertEqual(event.flagsChanged, [])
+                let registeredClient = FlagsClient.shared(named: "test", in: core)
+                XCTAssertFalse(registeredClient.getBooleanValue(key: "missing", defaultValue: false))
+                delivered.fulfill()
             }
-            XCTAssertIdentical(client, FlagsClient.shared(named: "test", in: core))
-            let encoded = try JSONEncoder().encode(data(keys))
-            DispatchQueue.global().async {
-                store.readCompletion?(.value(encoded, dataStoreDefaultKeyVersion))
-            }
-            waitForExpectations(timeout: 5)
         }
+        factoryReturned = true
+        XCTAssertIdentical(client, FlagsClient.shared(named: "test", in: core))
+        let encoded = try JSONEncoder().encode(data([]))
+        DispatchQueue.global().async {
+            store.readCompletion?(.value(encoded, dataStoreDefaultKeyVersion))
+        }
+        waitForExpectations(timeout: 5)
     }
 
     func testEmptyCacheNotifiesWithoutChangingReadiness() throws {

@@ -128,8 +128,11 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         // Opt in with an existing boolean flag from this app's configured environment.
         if let flagKey = Environment.readFlagKey() {
             Flags.enable()
-            let client = FlagsClient.create(onFirstFlags: { client, event in
-                Self.logFirstFlags(event, flagKey: flagKey, client: client, logger: logger)
+            let client = FlagsClient.create(onFirstFlags: { event in
+                // App-owned deferral: creation/registration finishes on main before this lookup.
+                DispatchQueue.main.async {
+                    Self.logFirstFlags(event, flagKey: flagKey, client: FlagsClient.shared(), logger: logger)
+                }
             })
             client.setEvaluationContext(FlagsEvaluationContext(targetingKey: "abcd-1234")) { result in
                 if case .failure = result {

@@ -12,7 +12,6 @@ import DatadogInternal
 @testable import DatadogFlags
 
 #if !os(watchOS)
-import Network
 @testable import Example
 @testable import DatadogLogs
 #endif
@@ -111,10 +110,8 @@ final class FlagsEvaluationIntegrationTests: XCTestCase {
 
         // A new public client reads the configuration written by the real repository/data store.
         let restored = expectation(description: "Persisted configuration")
-        let client = FlagsClient.create(in: core) { callbackClient, event in
+        let client = FlagsClient.create(in: core) { event in
             XCTAssertEqual(event.flagsChanged, ["test-flag"])
-            XCTAssertIdentical(callbackClient, FlagsClient.shared(in: core))
-            XCTAssertTrue(callbackClient.getBooleanValue(key: "test-flag", defaultValue: false))
             restored.fulfill()
         }
         waitForExpectations(timeout: 5)
@@ -130,56 +127,6 @@ final class FlagsEvaluationIntegrationTests: XCTestCase {
     }
 
     #if !os(watchOS)
-    func testPublicNetworkFirstCallbackEvaluatesAndReentersWithRegisteredClient() throws {
-        let response = try JSONEncoder().encode(FlagAssignmentsResponse(flags: Fixtures.flagsData.flags))
-        let parameters = NWParameters.tcp
-        parameters.requiredLocalEndpoint = .hostPort(host: "127.0.0.1", port: .any)
-        let server = try NWListener(using: parameters)
-        defer { server.cancel() }
-        let listening = expectation(description: "Local assignments endpoint")
-        let serverQueue = DispatchQueue(label: "first-flags-test-server")
-        server.stateUpdateHandler = { state in
-            if case .ready = state { listening.fulfill() }
-        }
-        server.newConnectionHandler = { connection in
-            connection.start(queue: serverQueue)
-            connection.receive(minimumIncompleteLength: 1, maximumLength: 65_536) { _, _, _, _ in
-                var bytes = Data("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: \(response.count)\r\nConnection: close\r\n\r\n".utf8)
-                bytes.append(response)
-                connection.send(content: bytes, completion: .contentProcessed { _ in connection.cancel() })
-            }
-        }
-        server.start(queue: serverQueue)
-        waitForExpectations(timeout: 5)
-        let port = try XCTUnwrap(server.port).rawValue
-        let core = DatadogCoreProxy(context: .mockWith(trackingConsent: .granted))
-        defer { try? core.flushAndTearDown() }
-        Flags.enable(with: .init(customFlagsEndpoint: URL(string: "http://127.0.0.1:\(port)/assignments")), in: core)
-        let notified = expectation(description: "Usable public client after network installation")
-        let refreshed = expectation(description: "Reentrant refresh")
-        var calls = 0
-        var initialCompleted = false
-        let client = FlagsClient.create(in: core) { client, event in
-            calls += 1
-            XCTAssertTrue(initialCompleted)
-            XCTAssertIdentical(client, FlagsClient.shared(in: core))
-            XCTAssertEqual(event.flagsChanged, ["test-flag"])
-            XCTAssertTrue(client.getBooleanValue(key: "test-flag", defaultValue: false))
-            XCTAssertEqual(client.state.currentState, .ready)
-            client.setEvaluationContext(Fixtures.flagsData.context) { result in
-                if case .failure = result { XCTFail("Expected successful reentrant refresh") }
-                refreshed.fulfill()
-            }
-            notified.fulfill()
-        }
-        client.setEvaluationContext(Fixtures.flagsData.context) { result in
-            if case .failure = result { XCTFail("Expected successful initialization") }
-            initialCompleted = true
-        }
-        waitForExpectations(timeout: 5)
-        XCTAssertEqual(calls, 1)
-    }
-
     func testExampleFlagKeyRequiresExplicitNonblankOptIn() {
         XCTAssertNil(Environment.readFlagKey(from: [:]))
         XCTAssertNil(Environment.readFlagKey(from: ["DD_FLAG_KEY": ""]))
@@ -187,7 +134,7 @@ final class FlagsEvaluationIntegrationTests: XCTestCase {
         XCTAssertEqual(Environment.readFlagKey(from: ["DD_FLAG_KEY": " test-flag "]), "test-flag")
     }
 
-    func testFirstCachedFlagsSuppliesUsableClientToExampleAndLogsOneEvaluation() throws {
+    func testFirstCachedFlagsHandsOffRegisteredClientToExampleAndLogsOneEvaluation() throws {
         let core = DatadogCoreProxy(context: .mockWith(trackingConsent: .granted))
         defer { try? core.flushAndTearDown() }
         Flags.enable(with: .init(trackEvaluations: true), in: core)
@@ -197,13 +144,19 @@ final class FlagsEvaluationIntegrationTests: XCTestCase {
         scope.flagsDataStore.setFlagsData(Fixtures.flagsData, forClientNamed: FlagsClient.defaultName)
         scope.dataStore.flush()
         let delivered = expectation(description: "Application handoff")
-        FlagsClient.create(in: core) { client, event in
-            XCTAssertIdentical(client, FlagsClient.shared(in: core))
-            XCTAssertEqual(event.type, .configurationChanged)
-            XCTAssertEqual(event.flagsChanged, ["test-flag"])
-            XCTAssertEqual(client.state.currentState, .notReady)
-            ExampleAppDelegate.logFirstFlags(event, flagKey: "test-flag", client: client, logger: logger)
-            delivered.fulfill()
+        var createdClient: FlagsClientProtocol?
+
+        createdClient = FlagsClient.create(in: core) { event in
+            DispatchQueue.main.async {
+                let registeredClient = FlagsClient.shared(in: core)
+                XCTAssertIdentical(registeredClient, createdClient)
+                XCTAssertEqual(event.type, .configurationChanged)
+                XCTAssertEqual(event.flagsChanged, ["test-flag"])
+                XCTAssertEqual(registeredClient.state.currentState, .notReady)
+                XCTAssertTrue(core.waitAndReturnEvents(ofFeature: FlagsFeature.name, ofType: ExposureEvent.self).isEmpty)
+                ExampleAppDelegate.logFirstFlags(event, flagKey: "test-flag", client: registeredClient, logger: logger)
+                delivered.fulfill()
+            }
         }
         waitForExpectations(timeout: 5)
         core.flush()
@@ -230,11 +183,12 @@ final class FlagsEvaluationIntegrationTests: XCTestCase {
         )
         scope.dataStore.flush()
         let delivered = expectation(description: "Empty cache handoff")
-        FlagsClient.create(in: core) { client, event in
-            XCTAssertIdentical(client, FlagsClient.shared(in: core))
-            XCTAssertEqual(event.flagsChanged, [])
-            ExampleAppDelegate.logFirstFlags(event, flagKey: "missing", client: client, logger: logger)
-            delivered.fulfill()
+        FlagsClient.create(in: core) { event in
+            DispatchQueue.main.async {
+                XCTAssertEqual(event.flagsChanged, [])
+                ExampleAppDelegate.logFirstFlags(event, flagKey: "missing", client: FlagsClient.shared(in: core), logger: logger)
+                delivered.fulfill()
+            }
         }
         waitForExpectations(timeout: 5)
         core.flush()

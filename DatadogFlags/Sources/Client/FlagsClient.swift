@@ -114,22 +114,21 @@ public final class FlagsClient {
     ///
     /// The callback receives the first accepted cache or network configuration's complete keys,
     /// including an empty array for an empty configuration. Missing or invalid cache does not notify.
-    /// It runs once outside internal locks, on the installing thread or the creating thread if cache
-    /// installation finishes before the client is constructed and registered.
+    /// It runs once on the installing thread, outside internal locks.
     /// Network delivery follows the existing context completion and state notifications.
     /// Creating an existing named client ignores the new callback.
     ///
     /// - Parameters:
     ///   - name: A unique client name.
     ///   - core: The Datadog SDK core instance.
-    ///   - onFirstFlags: Optional callback receiving the fully constructed, registered client and its first
-    ///     configuration-changed event. The supplied client supports immediate evaluation and reentrant calls.
-    ///     The callback may run before `create` returns; use its client argument instead of capturing the return value.
+    ///   - onFirstFlags: Optional callback receiving only the first configuration-changed event, not a client reference.
+    ///     It may be invoked before `create` returns. Application code owns client-reference timing;
+    ///     defer client lookup or evaluation until creation and registration have finished.
     @discardableResult
     public static func create(
         name: String = FlagsClient.defaultName,
         in core: DatadogCoreProtocol = CoreRegistry.default,
-        onFirstFlags: ((FlagsClientProtocol, FlagsClientEvent) -> Void)?
+        onFirstFlags: ((FlagsClientEvent) -> Void)?
     ) -> FlagsClientProtocol {
         runOnMainThreadSync {
             doCreate(name: name, in: core, onFirstFlags: onFirstFlags)
@@ -181,7 +180,7 @@ public final class FlagsClient {
     internal static func doCreate(
         name: String,
         in core: DatadogCoreProtocol,
-        onFirstFlags: ((FlagsClientProtocol, FlagsClientEvent) -> Void)? = nil
+        onFirstFlags: ((FlagsClientEvent) -> Void)? = nil
     ) -> FlagsClientProtocol {
         guard let feature = core.get(feature: FlagsFeature.self) else {
             reportIssue(
@@ -207,7 +206,6 @@ public final class FlagsClient {
         }
 
         let featureScope = core.scope(for: FlagsFeature.self)
-        let delivery = onFirstFlags.map { FirstFlagsDelivery(callback: $0) }
         let client = FlagsClient(
             repository: FlagsRepository(
                 clientName: name,
@@ -215,7 +213,7 @@ public final class FlagsClient {
                 dateProvider: SystemDateProvider(),
                 featureScope: featureScope,
                 initializationTimeout: feature.initializationTimeout,
-                onFirstFlags: delivery.map { delivery in { event in delivery.deliver(event: event) } }
+                onFirstFlags: onFirstFlags
             ),
             exposureLogger: feature.makeExposureLogger(featureScope),
             evaluationLogger: feature.makeEvaluationLogger(featureScope),
@@ -223,7 +221,6 @@ public final class FlagsClient {
         )
 
         feature.clientRegistry.register(client, named: name)
-        delivery?.deliver(client: client)
         return client
     }
 }
@@ -324,31 +321,5 @@ extension FlagsClient: FlagsClientInternal {
     @_spi(Internal)
     public func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
         trackEvaluation(key: key, assignment: assignment, context: context)
-    }
-}
-
-/// Joins first installation with public-client registration without retaining assignments or the client.
-private final class FirstFlagsDelivery {
-    private let lock = NSLock()
-    private weak var client: FlagsClient?
-    private var event: FlagsClientEvent?
-    private var callback: ((FlagsClientProtocol, FlagsClientEvent) -> Void)?
-
-    init(callback: @escaping (FlagsClientProtocol, FlagsClientEvent) -> Void) {
-        self.callback = callback
-    }
-
-    func deliver(client: FlagsClient? = nil, event: FlagsClientEvent? = nil) {
-        lock.lock()
-        if let client { self.client = client }
-        if let event { self.event = event }
-        guard let client = self.client, let event = self.event, let callback else {
-            lock.unlock()
-            return
-        }
-        self.callback = nil
-        self.event = nil
-        lock.unlock()
-        callback(client, event)
     }
 }
