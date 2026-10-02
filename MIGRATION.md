@@ -45,8 +45,7 @@ repository entirely.
   ```
 </details>
 
-If you're on a pre-`4.0` version installed via CocoaPods or Carthage, that version remains
-installable the same way it always did — neither change removes anything retroactively.
+If you're on a pre-`4.0` version installed through CocoaPods or Carthage, this change does not remove anything retroactively. You can continue to install older versions the same way as before.
 
 ## Migration from 2.x to 3.0
 
