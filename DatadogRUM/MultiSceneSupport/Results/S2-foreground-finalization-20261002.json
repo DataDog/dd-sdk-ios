@@ -485,6 +485,15 @@
       "Fresh live preflight and actual human readiness remain required",
       "Original failed attempts and separate restoration remain immutable",
       "No repeat baseline or stopped automatic Home mechanism"
-    ]
+    ],
+    "expired_operator_page_cleanup": {
+      "state": "PASS_SEPARATE_EXPIRED_PAGE_TERMINATION_ONLY",
+      "receipt": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle3/runtime/expired-page-termination-1790926426/receipt.json",
+        "sha256": "b3a04e7347a9aa10ec6d176a1a28dee6aeb9a2c9bf5504bb682d71ae8b220c51"
+      },
+      "fresh_readiness_required": true,
+      "native_admission": false
+    }
   }
 }
