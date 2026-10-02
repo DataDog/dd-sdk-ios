@@ -2060,3 +2060,301 @@ final class RUMResourceCompletionFixture {
         XCTAssertEqual(action.action.frustration != nil, errors > 0, file: file, line: line)
     }
 }
+
+extension RUMSessionScopeTests {
+    private var sceneATarget: RUMCommandTarget { .scene(RUMSceneIdentifier(rawValue: "scene-a")) }
+    private var sceneBTarget: RUMCommandTarget { .scene(RUMSceneIdentifier(rawValue: "scene-b")) }
+    private var routingStart: Date { Date(timeIntervalSince1970: 1_600_000_000) }
+
+    private func sceneSession(enabled: Bool = true, capacity: Int = 30, dateProvider: DateProviderMock? = nil) -> RUMSessionScope {
+        let cache = ViewCache(dateProvider: dateProvider ?? DateProviderMock(now: routingStart), capacity: capacity, isMultiSceneTrackingEnabled: enabled)
+        return .mockWith(
+            isInitialSession: false,
+            parent: parent,
+            startTime: routingStart,
+            dependencies: .mockWith(viewCache: cache, featureFlags: [.multiSceneTracking: enabled])
+        )
+    }
+
+    private func route(_ command: RUMCommand, through scope: RUMSessionScope) {
+        _ = scope.process(command: command, context: context, writer: writer)
+    }
+
+    @discardableResult
+    private func startOwnedView(_ scope: RUMSessionScope, target: RUMCommandTarget, key: String, after seconds: TimeInterval = 0) -> RUMViewScope? {
+        let command = RUMStartViewCommand(
+            time: routingStart.addingTimeInterval(seconds),
+            identity: ViewIdentifier(key),
+            name: key,
+            path: key,
+            globalAttributes: [:],
+            attributes: [:],
+            instrumentationType: .manual,
+            target: target
+        )
+        route(command, through: scope)
+        return scope.viewScopes.last(where: { $0.isActiveView && $0.viewName == key })
+    }
+
+    private func startOwnedResource(_ scope: RUMSessionScope, target: RUMCommandTarget, key: String, after seconds: TimeInterval = 0) {
+        var command = RUMStartResourceCommand.mockWith(resourceKey: key, time: routingStart.addingTimeInterval(seconds))
+        command.target = target
+        route(command, through: scope)
+    }
+
+    private func startOwnedAction(_ scope: RUMSessionScope, target: RUMCommandTarget, after seconds: TimeInterval = 0) {
+        var command = RUMStartUserActionCommand.mockWith(time: routingStart.addingTimeInterval(seconds), name: "owned-action")
+        command.target = target
+        route(command, through: scope)
+    }
+
+    func testMultiSceneStart_keepsPeerViewAndSameSceneOccurrencesSeparate() throws {
+        for cachedTarget in [false, true] {
+            let scope = sceneSession(capacity: 2)
+            let firstA = try XCTUnwrap(startOwnedView(scope, target: sceneATarget, key: "same"))
+            startOwnedResource(scope, target: sceneATarget, key: "retained")
+            let peer = try XCTUnwrap(startOwnedView(scope, target: sceneBTarget, key: "same", after: 1))
+            let target: RUMCommandTarget = cachedTarget ? .view(firstA.viewUUID) : sceneATarget
+            let nextA = try XCTUnwrap(startOwnedView(scope, target: target, key: "same", after: 2))
+            XCTAssertFalse(firstA.isActiveView)
+            XCTAssertTrue(peer.isActiveView)
+            XCTAssertTrue(nextA.isActiveView)
+            XCTAssertNotEqual(firstA.viewUUID, nextA.viewUUID)
+            XCTAssertEqual(scope.viewScopes.filter { $0.isActiveView }.count, 2)
+            XCTAssertEqual(nextA.sceneIdentifier, firstA.sceneIdentifier)
+            XCTAssertNotEqual(firstA.sceneIdentifier, peer.sceneIdentifier)
+            XCTAssertEqual(scope.dependencies.viewCache.ownership(forViewID: firstA.viewUUID.toRUMDataFormat), .unknown)
+            var stop = RUMStopViewCommand.mockWith(time: routingStart.addingTimeInterval(3), identity: ViewIdentifier("same"))
+            stop.target = .view(nextA.viewUUID)
+            route(stop, through: scope)
+            XCTAssertFalse(nextA.isActiveView)
+            XCTAssertTrue(peer.isActiveView)
+        }
+    }
+
+    func testMultiSceneStop_withSameKey_stopsOnlyOwnedScene() throws {
+        let scope = sceneSession()
+        let viewA = try XCTUnwrap(startOwnedView(scope, target: sceneATarget, key: "same"))
+        let viewB = try XCTUnwrap(startOwnedView(scope, target: sceneBTarget, key: "same", after: 1))
+        var stop = RUMStopViewCommand.mockWith(time: routingStart.addingTimeInterval(2), identity: ViewIdentifier("same"))
+        stop.target = sceneATarget
+        route(stop, through: scope)
+        XCTAssertFalse(viewA.isActiveView)
+        XCTAssertTrue(viewB.isActiveView)
+        XCTAssertEqual(scope.context.activeViewID, viewB.viewUUID)
+    }
+
+    func testMultiSceneViewMutations_updateOnlySelectedOwner() throws {
+        let scope = sceneSession()
+        let viewA = try XCTUnwrap(startOwnedView(scope, target: sceneATarget, key: "a"))
+        let viewB = try XCTUnwrap(startOwnedView(scope, target: sceneBTarget, key: "b", after: 1))
+        var mutation = RUMAddViewAttributesCommand.mockWith(time: routingStart.addingTimeInterval(2), attributes: ["owner": "a"])
+        mutation.target = sceneATarget
+        route(mutation, through: scope)
+        XCTAssertEqual(viewA.attributes["owner"] as? String, "a")
+        XCTAssertNil(viewB.attributes["owner"])
+        var timing = RUMAddViewTimingCommand.mockWith(time: routingStart.addingTimeInterval(3), timingName: "owned")
+        timing.target = .view(viewA.viewUUID)
+        route(timing, through: scope)
+        XCTAssertNotNil(viewA.customTimings["owned"])
+        XCTAssertNil(viewB.customTimings["owned"])
+    }
+
+    func testMultiSceneActionAndError_updateOnlySelectedOwner() throws {
+        let scope = sceneSession()
+        let viewA = try XCTUnwrap(startOwnedView(scope, target: sceneATarget, key: "a"))
+        let viewB = try XCTUnwrap(startOwnedView(scope, target: sceneBTarget, key: "b", after: 1))
+        startOwnedAction(scope, target: sceneATarget, after: 2)
+        XCTAssertNotNil(viewA.userActionScope)
+        XCTAssertNil(viewB.userActionScope)
+        var error = RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: routingStart.addingTimeInterval(3), message: "owned-error")
+        error.target = sceneATarget
+        error.userActionTarget = .captured(nil)
+        route(error, through: scope)
+        let events = writer.events(ofType: RUMErrorEvent.self)
+        XCTAssertEqual(events.count, 1)
+        XCTAssertEqual(events.first?.view.id, viewA.viewUUID.toRUMDataFormat)
+        XCTAssertNil(events.first?.action)
+        var stop = RUMStopUserActionCommand.mockWith(time: routingStart.addingTimeInterval(4))
+        stop.target = .view(viewA.viewUUID)
+        route(stop, through: scope)
+        XCTAssertEqual(writer.events(ofType: RUMActionEvent.self).first?.action.error?.count, 0)
+    }
+
+    func testMultiSceneLegacyCommands_followLastInteractedRepresentative() throws {
+        let scope = sceneSession()
+        let viewA = try XCTUnwrap(startOwnedView(scope, target: sceneATarget, key: "a"))
+        let viewB = try XCTUnwrap(startOwnedView(scope, target: sceneBTarget, key: "b", after: 1))
+        var action = RUMAddUserActionCommand.mockWith(time: routingStart.addingTimeInterval(2), actionType: .custom, name: "select-a")
+        action.target = sceneATarget
+        route(action, through: scope)
+        XCTAssertEqual(scope.context.activeViewID, viewA.viewUUID)
+        route(RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: routingStart.addingTimeInterval(3)), through: scope)
+        XCTAssertEqual(writer.events(ofType: RUMErrorEvent.self).last?.view.id, viewA.viewUUID.toRUMDataFormat)
+        XCTAssertTrue(viewB.isActiveView)
+        XCTAssertEqual(scope.dependencies.viewCache.ownership(forViewID: viewB.viewUUID.toRUMDataFormat), .scene(RUMSceneIdentifier(rawValue: "scene-b")))
+    }
+
+    func testMultiSceneUnknownDirectTarget_doesNotBorrowPeer() {
+        let scope = sceneSession()
+        startOwnedView(scope, target: sceneATarget, key: "a")
+        startOwnedView(scope, target: sceneBTarget, key: "b", after: 1)
+        for target: RUMCommandTarget in [.none, .scene(RUMSceneIdentifier(rawValue: "missing")), .view(DefaultRUMUUIDGenerator().generateUnique())] {
+            var error = RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: routingStart.addingTimeInterval(2))
+            error.target = target
+            route(error, through: scope)
+        }
+        XCTAssertTrue(writer.events(ofType: RUMErrorEvent.self).isEmpty)
+        XCTAssertEqual(scope.viewScopes.filter { $0.isActiveView }.count, 2)
+    }
+
+    func testMultiSceneInvalidOptionalOverride_preservesInferredOwner() throws {
+        let scope = sceneSession()
+        let oldA = try XCTUnwrap(startOwnedView(scope, target: sceneATarget, key: "old-a"))
+        let nextA = try XCTUnwrap(startOwnedView(scope, target: sceneATarget, key: "next-a", after: 1))
+        let viewB = try XCTUnwrap(startOwnedView(scope, target: sceneBTarget, key: "b", after: 2))
+        for id in [DefaultRUMUUIDGenerator().generateUnique(), oldA.viewUUID] {
+            var error = RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: routingStart.addingTimeInterval(3))
+            error.target = sceneBTarget
+            error.explicitTarget = .view(id)
+            route(error, through: scope)
+            XCTAssertEqual(writer.events(ofType: RUMErrorEvent.self).last?.view.id, viewB.viewUUID.toRUMDataFormat)
+        }
+        XCTAssertFalse(writer.events(ofType: RUMErrorEvent.self).contains { $0.view.id == nextA.viewUUID.toRUMDataFormat })
+        var valid = RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: routingStart.addingTimeInterval(4))
+        valid.target = sceneBTarget
+        valid.explicitTarget = .view(nextA.viewUUID)
+        route(valid, through: scope)
+        XCTAssertEqual(writer.events(ofType: RUMErrorEvent.self).last?.view.id, nextA.viewUUID.toRUMDataFormat)
+    }
+
+    func testMultiSceneHistoricalViewTarget_usesKnownSceneWithoutPeerFallback() throws {
+        let dateProvider = DateProviderMock(now: routingStart)
+        let scope = sceneSession(dateProvider: dateProvider)
+        let oldA = try XCTUnwrap(startOwnedView(scope, target: sceneATarget, key: "old-a"))
+        let newA = try XCTUnwrap(startOwnedView(scope, target: sceneATarget, key: "new-a", after: 1))
+        startOwnedView(scope, target: sceneBTarget, key: "b", after: 2)
+        var error = RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: routingStart.addingTimeInterval(3))
+        error.target = .view(oldA.viewUUID)
+        route(error, through: scope)
+        XCTAssertEqual(writer.events(ofType: RUMErrorEvent.self).last?.view.id, newA.viewUUID.toRUMDataFormat)
+        let count = writer.events(ofType: RUMErrorEvent.self).count
+        dateProvider.now = routingStart.addingTimeInterval(181)
+        error.time = routingStart.addingTimeInterval(182)
+        route(error, through: scope)
+        XCTAssertEqual(scope.dependencies.viewCache.ownership(forViewID: oldA.viewUUID.toRUMDataFormat), .unknown)
+        XCTAssertEqual(writer.events(ofType: RUMErrorEvent.self).count, count)
+    }
+
+    func testMultiSceneResourceCompletion_preservesCapturedOwnerAcrossPeerNavigation() throws {
+        let scope = sceneSession()
+        let oldA = try XCTUnwrap(startOwnedView(scope, target: sceneATarget, key: "a"))
+        startOwnedResource(scope, target: sceneATarget, key: "request")
+        let peer = try XCTUnwrap(startOwnedView(scope, target: sceneBTarget, key: "b", after: 1))
+        startOwnedView(scope, target: sceneATarget, key: "next-a", after: 2)
+        var stop = RUMStopResourceCommand.mockWith(resourceKey: "request", time: routingStart.addingTimeInterval(3))
+        stop.isAutomatic = true
+        stop.owningViewIDs = [oldA.viewUUID]
+        stop.target = .view(peer.viewUUID)
+        route(stop, through: scope)
+        XCTAssertEqual(writer.events(ofType: RUMResourceEvent.self).last?.view.id, oldA.viewUUID.toRUMDataFormat)
+        XCTAssertTrue(oldA.resourceScopes.isEmpty)
+        XCTAssertTrue(peer.resourceScopes.isEmpty)
+    }
+
+    func testMultiSceneAmbiguousResourceCompletion_settlesAllCapturedOwnersOnly() throws {
+        let scope = sceneSession()
+        let viewA = try XCTUnwrap(startOwnedView(scope, target: sceneATarget, key: "a"))
+        startOwnedResource(scope, target: sceneATarget, key: "shared")
+        let viewB = try XCTUnwrap(startOwnedView(scope, target: sceneBTarget, key: "b", after: 1))
+        startOwnedResource(scope, target: sceneBTarget, key: "shared", after: 1)
+        route(RUMStopResourceCommand.mockWith(resourceKey: "shared", time: routingStart.addingTimeInterval(2)), through: scope)
+        XCTAssertEqual(Set(writer.events(ofType: RUMResourceEvent.self).map { $0.view.id }), Set([viewA.viewUUID.toRUMDataFormat, viewB.viewUUID.toRUMDataFormat]))
+        XCTAssertTrue(viewA.resourceScopes.isEmpty)
+        XCTAssertTrue(viewB.resourceScopes.isEmpty)
+    }
+
+    func testMultiSceneUnknownAutomaticCompletion_doesNotMutateRepresentativeAction() {
+        let scope = sceneSession()
+        startOwnedView(scope, target: sceneATarget, key: "a")
+        startOwnedAction(scope, target: sceneATarget)
+        var stop = RUMStopResourceCommand.mockWith(resourceKey: "missing", time: routingStart.addingTimeInterval(1))
+        stop.isAutomatic = true
+        route(stop, through: scope)
+        var end = RUMStopUserActionCommand.mockWith(time: routingStart.addingTimeInterval(2))
+        end.target = sceneATarget
+        route(end, through: scope)
+        XCTAssertEqual(writer.events(ofType: RUMActionEvent.self).last?.action.resource?.count, 0)
+        XCTAssertTrue(writer.events(ofType: RUMResourceEvent.self).isEmpty)
+    }
+
+    func testMultiSceneUnknownManualCompletion_preservesLegacyActionCounts() {
+        let scope = sceneSession()
+        startOwnedView(scope, target: sceneATarget, key: "a")
+        startOwnedAction(scope, target: sceneATarget)
+        route(RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "missing", time: routingStart.addingTimeInterval(1)), through: scope)
+        var end = RUMStopUserActionCommand.mockWith(time: routingStart.addingTimeInterval(2))
+        end.target = sceneATarget
+        route(end, through: scope)
+        XCTAssertEqual(writer.events(ofType: RUMActionEvent.self).last?.action.error?.count, 1)
+        XCTAssertEqual(writer.events(ofType: RUMActionEvent.self).last?.action.resource?.count, 0)
+    }
+
+    func testMultiSceneForeignWork_expiresPeerActionWithoutCopyingAttributes() throws {
+        let scope = sceneSession()
+        let viewA = try XCTUnwrap(startOwnedView(scope, target: sceneATarget, key: "a"))
+        startOwnedAction(scope, target: sceneATarget)
+        startOwnedView(scope, target: sceneBTarget, key: "b", after: 1)
+        var command = RUMAddUserActionCommand.mockWith(time: routingStart.addingTimeInterval(11), attributes: ["foreign": "b"], actionType: .custom, name: "peer")
+        command.target = sceneBTarget
+        route(command, through: scope)
+        XCTAssertNil(viewA.userActionScope)
+        let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first(where: { $0.view.id == viewA.viewUUID.toRUMDataFormat }))
+        XCTAssertNil(event.context?.contextInfo["foreign"])
+        XCTAssertEqual(event.action.target?.name, "owned-action")
+    }
+
+    func testMultiSceneNavigation_keepsInteractionMetricHistoryInOwnedScene() {
+        var metrics: [INVMetricMock] = []
+        let scope = sceneSession()
+        let dependencies = scope.dependencies.replacing(interactionToNextViewMetricFactory: {
+            let metric = INVMetricMock()
+            metrics.append(metric)
+            return metric
+        })
+        let routed = RUMSessionScope.mockWith(isInitialSession: false, parent: parent, startTime: routingStart, dependencies: dependencies)
+        startOwnedView(routed, target: sceneATarget, key: "a")
+        startOwnedView(routed, target: sceneBTarget, key: "b", after: 1)
+        startOwnedView(routed, target: sceneATarget, key: "next-a", after: 2)
+        XCTAssertEqual(metrics.count, 2)
+        XCTAssertEqual(metrics.first?.trackedViewStarts.map { $0.viewName }, ["a", "next-a"])
+        XCTAssertEqual(metrics.last?.trackedViewStarts.map { $0.viewName }, ["b"])
+    }
+
+    func testDefaultMode_sceneTargetsPreserveLegacyDispatchAndExpiry() throws {
+        let scope = sceneSession(enabled: false)
+        let old = try XCTUnwrap(startOwnedView(scope, target: sceneATarget, key: "a"))
+        startOwnedResource(scope, target: sceneATarget, key: "retained")
+        let current = try XCTUnwrap(startOwnedView(scope, target: sceneBTarget, key: "b", after: 1))
+        startOwnedAction(scope, target: sceneBTarget, after: 2)
+        XCTAssertNotNil(current.userActionScope)
+        XCTAssertFalse(old.isActiveView)
+        XCTAssertTrue(current.isActiveView)
+        XCTAssertNil(old.sceneIdentifier)
+        XCTAssertNil(current.sceneIdentifier)
+        var completion = RUMStopResourceCommand.mockWith(resourceKey: "retained", time: routingStart.addingTimeInterval(13))
+        completion.isAutomatic = true
+        completion.owningViewIDs = [old.viewUUID]
+        completion.attributes = ["foreign": "retained-owner"]
+        route(completion, through: scope)
+        XCTAssertNil(current.userActionScope)
+        XCTAssertNil(current.attributes["foreign"])
+        let expired = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
+        XCTAssertEqual(expired.view.id, current.viewUUID.toRUMDataFormat)
+        XCTAssertEqual(expired.action.resource?.count, 0)
+        var action = RUMAddUserActionCommand.mockWith(time: routingStart.addingTimeInterval(14), actionType: .custom, name: "legacy")
+        action.target = .scene(RUMSceneIdentifier(rawValue: "missing"))
+        route(action, through: scope)
+        XCTAssertEqual(writer.events(ofType: RUMActionEvent.self).last?.view.id, current.viewUUID.toRUMDataFormat)
+    }
+}

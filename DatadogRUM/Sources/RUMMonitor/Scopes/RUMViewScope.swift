@@ -87,6 +87,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         didSet {
             if oldValue && !isActiveView {
                 networkSettledMetric.trackViewWasStopped()
+                if dependencies.isMultiSceneTrackingEnabled {
+                    dependencies.viewCache.markInactive(id: viewUUID.toRUMDataFormat)
+                }
             }
         }
     }
@@ -231,11 +234,18 @@ extension RUMViewScope {
         needsViewUpdate = false
 
         // Propagate to User Action scope
-        userActionScope = userActionScope?.scope(
-            byPropagating: command,
-            context: context,
-            writer: writer
-        )
+        if dependencies.isMultiSceneTrackingEnabled,
+           let error = command as? RUMAddCurrentViewErrorCommand,
+           case .captured(let actionID) = error.userActionTarget,
+           actionID == nil || actionID != userActionScope?.actionUUID {
+            expireActionIfNeeded(on: command, context: context, writer: writer)
+        } else {
+            userActionScope = userActionScope?.scope(
+                byPropagating: command,
+                context: context,
+                writer: writer
+            )
+        }
 
         let hasSentNoViewUpdatesYet = version == 0
         if isInitialView, hasSentNoViewUpdatesYet {
@@ -394,6 +404,28 @@ extension RUMViewScope {
         }
 
         return !shouldComplete
+    }
+
+    /// Advance only expiration for a nonrecipient; never propagate foreign local attributes.
+    func expireActionIfNeeded(on command: RUMCommand, context: DatadogContext, writer: Writer) {
+        guard dependencies.isMultiSceneTrackingEnabled, let action = userActionScope else {
+            return
+        }
+        needsViewUpdate = false
+        let tick = RUMKeepSessionAliveCommand(time: command.time, globalAttributes: command.globalAttributes, attributes: [:])
+        if action.expireIfNeeded(on: tick, context: context, writer: writer) {
+            userActionScope = nil
+            if needsViewUpdate {
+                sendViewUpdateEvent(on: tick, context: context, writer: writer)
+            }
+        }
+    }
+
+    func emitRestoredBaseline(on command: RUMCommand, context: DatadogContext, writer: Writer) {
+        guard dependencies.isMultiSceneTrackingEnabled else {
+            return
+        }
+        sendViewUpdateEvent(on: command, context: context, writer: writer)
     }
 
     private func addViewLoadingTime(on command: RUMAddViewLoadingTime) {
@@ -805,6 +837,15 @@ extension RUMViewScope {
 
         let profiling = context.additionalContext(ofType: ProfilingContext.self)?.ddProfiling
 
+        let actionID: RUMUUID?
+        if dependencies.isMultiSceneTrackingEnabled,
+           let error = command as? RUMAddCurrentViewErrorCommand,
+           case .captured(let capturedID) = error.userActionTarget {
+            actionID = capturedID
+        } else {
+            actionID = self.context.activeUserActionID
+        }
+
         let errorEvent = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -816,7 +857,7 @@ extension RUMViewScope {
                 )
             ),
             account: .init(context: context),
-            action: self.context.activeUserActionID.map { rumUUID in
+            action: actionID.map { rumUUID in
                 .init(id: .string(value: rumUUID.toRUMDataFormat))
             },
             application: .init(id: self.context.rumApplicationID),
