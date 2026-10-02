@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+@_spi(Internal)
 import DatadogInternal
 @_spi(Internal)
 @testable import DatadogCore
@@ -56,6 +57,28 @@ class DatadogCoreTests: XCTestCase {
     override func tearDown() {
         temporaryCoreDirectory.delete()
         super.tearDown()
+    }
+
+    func testCoreAndFeatureScopeHaveNoHandoffOwnerBeforeActivation() {
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .notGranted,
+            performance: .mockAny(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: 1,
+            backgroundTasksEnabled: false
+        )
+        defer { core.stop() }
+        let scope = core.scope(for: FeatureMock.self)
+
+        XCTAssertNil(RUMContextHandoff.owner(in: core))
+        XCTAssertNil(RUMContextHandoff.owner(in: scope))
+        core.stop()
+        XCTAssertNil(RUMContextHandoff.owner(in: scope))
     }
 
     func testGivenRemoteConfigurationProvider_whenReadingRemoteConfiguration_itReturnsCachedValue() throws {
