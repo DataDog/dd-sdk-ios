@@ -224,6 +224,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
 extension RUMViewScope {
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
+        let command = command.resolvingResourceOwners(in: [self])
         let wasActiveView = isActiveView
 
         // Tells if the View did change and an update event should be send.
