@@ -63,9 +63,9 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-finite-test-selection.json",
     "sha256": "22a9587ec9024f28ade0793005ed3a08e419b534fb3472bf2747e4c13b5dbeab"
   },
-  "updated_at": "2026-10-02T15:01:08.266102+00:00",
+  "updated_at": 1790955214.6735098,
   "qualification_preparation": {
-    "state": "FULL_CURRENT_RUM27_QUALIFIED_OTHER_OFF_OBLIGATIONS_OPEN",
+    "state": "FULL_CURRENT_RUM_BOTH_RUNTIMES_QUALIFIED_OFF_FIXTURES_OPEN",
     "source_freeze": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-source-freeze.json",
       "sha256": "703a88258aa1cd9b4db1ad3734ffd9f035e5d6c944013aaad8826ccf993cc9c6"
@@ -889,6 +889,47 @@
       "tests_run": 1018,
       "logical_cases": 982,
       "execution_complete": true
+    },
+    "default_off_full_target_ios17_5_execution": {
+      "state": "PASS_FULL_RUM_TARGET_QUALIFICATION_ONLY",
+      "owner": "/root",
+      "controller_pid": 75227,
+      "controller_pgid": 75227,
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-full-target-ios17_5-qualification-cycle1/definition.json",
+        "sha256": "54e224b7c2511ee8cc50de7809827e73a6dc62549724ef2ec6d842675daa7341"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-full-target-ios17_5-qualification-cycle1/review.json",
+        "sha256": "0ae57ca694bc2f96413bf13252d66a516ed468ea2ce28ca3862a283712fcd90f"
+      },
+      "controller": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-full-target-ios17_5-qualification-cycle1/controller.py",
+        "sha256": "1589bade1c62481ddae13140e553908857582c1f0e5e9b3b203c6b74a3704bc1"
+      },
+      "admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-full-target-ios17_5-qualification-cycle1/admission.json",
+        "sha256": "c5c1673106ab46d7f5c9735eb73fc320fe3ed23bc278af993afc255906464309"
+      },
+      "child": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-full-target-ios17_5-qualification-cycle1/native-qualification-start.json",
+        "sha256": "022af94cfbce224216b1af71b7145d79c9e8efa993b6e8c02516265001603b76"
+      },
+      "outcome": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-full-target-ios17_5-qualification-cycle1/native-qualification-outcome.json",
+        "sha256": "58a5f2b6156da351e166736f819fb48680b7a076fc1a48f7fdf0f0ffcf35b17e"
+      },
+      "cleanup": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-full-target-ios17_5-qualification-cycle1/cleanup.json",
+        "sha256": "92652c625438935f63c9acfc3fbcb14836bfd9d2a66a7e5c2c7173be299a7631"
+      },
+      "qualification": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-full-target-ios17_5-qualification-cycle1/qualification.json",
+        "sha256": "99f89564d595d12b14c909061cce4cb1468dff2c48e2bdc209a1770fe5dd6d26"
+      },
+      "tests_run": 1018,
+      "logical_cases": 982,
+      "execution_complete": true
     }
   },
   "cache_implementation_preparation": {
@@ -1113,7 +1154,7 @@
     }
   },
   "default_off_qualification_preparation": {
-    "state": "FULL_CURRENT_RUM27_QUALIFIED_OLDER_SUITE_AND_OFF_FIXTURES_PENDING",
+    "state": "FULL_CURRENT_RUM_BOTH_RUNTIMES_QUALIFIED_OFF_FIXTURES_REVIEW_PENDING",
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/definition.json",
       "sha256": "bd868a9eac2d6e67fe6ececae9c98eb5a5a8e5991b98ab4a75361f96b973ec8f"
@@ -1147,7 +1188,7 @@
     },
     "native_admitted": false,
     "gates_closed": [],
-    "next_action": "Qualify reviewed full17.5 currentRUM target; qualify four identical parent/current Off fixture cells and current27 zero14helper counters/nilstate, using reviewed31control attachment reader and48control semantic grader. No human sitting admitted.",
+    "next_action": "Obtain exact per-cell review and fresh admission for parent27 five-method/eight-attachment native fixture. Qualify actual export/source/compiler/results/cleanup, then reuse that channel for remaining three Off cells and current27 zero14helper counters/nilstate. No human sitting admitted.",
     "preceding_blocked_fixture_reviews": [
       {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-correction-cycle2/review.json",
@@ -1269,11 +1310,10 @@
     },
     "qualification_progress": {
       "current_full_target_runtimes_qualified": [
-        "27.0"
-      ],
-      "current_full_target_runtimes_remaining": [
+        "27.0",
         "17.5"
       ],
+      "current_full_target_runtimes_remaining": [],
       "ios27_logical_methods": 982,
       "ios27_actual_invocations": 1018,
       "ios27_declared_parameter_combinations": 40,
@@ -1284,7 +1324,10 @@
       "exclusive_off_paired_cells_qualified": 0,
       "exclusive_off_paired_cells_remaining": 4,
       "exclusive_off_tripwire_qualified": false,
-      "gates_closed": []
+      "gates_closed": [],
+      "ios17_5_logical_methods": 982,
+      "ios17_5_actual_invocations": 1018,
+      "ios17_5_declared_parameter_combinations": 40
     },
     "older_full_suite_proposal": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-full-target-ios17_5-qualification-cycle1/definition.json",
@@ -1302,6 +1345,27 @@
       "state": "PASS_SOURCE_APPEND_AND_STRICT_LINT_ONLY",
       "typecheck_native_and_export_qualified": false,
       "production_project_bytes_unchanged": true
+    },
+    "full_current_ios17_5_qualification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-full-target-ios17_5-qualification-cycle1/qualification.json",
+      "sha256": "99f89564d595d12b14c909061cce4cb1468dff2c48e2bdc209a1770fe5dd6d26"
+    },
+    "older_full_suite_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-full-target-ios17_5-qualification-cycle1/review.json",
+      "sha256": "0ae57ca694bc2f96413bf13252d66a516ed468ea2ce28ca3862a283712fcd90f"
+    },
+    "finite_deliverable_status": {
+      "unchanged_default_suites": "PASS_LOCAL_PR3_SCOPE_BOTH_RUNTIMES",
+      "off_command_differential": "OPEN_FOUR_NATIVE_CELLS",
+      "off_state_and_lookup_tripwires": "OPEN_EXCLUSIVE_OFF_CURRENT27_EVIDENCE"
+    },
+    "paired_fixture_proposals": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/paired-fixture-runtime-preparation-cycle1/review-input.json",
+      "sha256": "e26e29d02e4f4a3255dfb8b466621bf56a13a16af9cd6963b21e0cbb6ac76cb9"
+    },
+    "paired_fixture_proposal_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/paired-fixture-runtime-preparation-cycle1/review.json",
+      "sha256": "4d2804527e55651186d9dc0a007174e87c60dc4039df391d264953510d9a9498"
     }
   }
 }
