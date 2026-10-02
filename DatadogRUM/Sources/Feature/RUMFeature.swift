@@ -235,7 +235,10 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             vitalsReaders: vitalsReaders,
             accessibilityReader: accessibilityReader,
             onSessionUpdate: onSessionUpdate,
-            viewCache: ViewCache(dateProvider: configuration.dateProvider),
+            viewCache: ViewCache(
+                dateProvider: configuration.dateProvider,
+                isMultiSceneTrackingEnabled: featureFlags[.multiSceneTracking]
+            ),
             fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope),
             sessionEndedMetric: sessionEndedMetric,
             viewEndedMetricFactory: {
