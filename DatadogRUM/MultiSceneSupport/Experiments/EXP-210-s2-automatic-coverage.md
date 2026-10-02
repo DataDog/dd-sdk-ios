@@ -270,3 +270,11 @@ remain unchanged. The source-backed review retains 25 owned Actions and balanced
 foreground counters as diagnosis only. Prepare the finite finalization correction
 and automatic Home-only qualification before another human invitation; the
 candidate is unexecuted. No SDK regression or gate credit is established.
+
+The [foreground correction](../Results/S2-foreground-finalization-20261002.json)
+passes27 focused controls and exact component review after repairing omitted fold
+boundaries, empty-fold comparison records and supported scroll classification.
+All actual requests and later rows remain retained; the saved18foregroundViews and
+25Actions support a distinct compiler/source reference, not native baseline credit.
+One automatic Home-only qualification and the separate candidate consumer review
+remain before another invitation. No baseline gesture repeat is required.

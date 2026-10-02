@@ -151,6 +151,18 @@ result is regraded. Fold diagnostics cannot grant H14; actual display evidence
 must qualify separately. The [current owner](../../../DatadogRUM/MultiSceneSupport/Results/S2-coverage-remaining-preparation.json)
 selects the exact plan and next cell.
 
+The opt-in `foreground_capture.py` and `foreground_finalization.py` keep the
+actual Home-start cutoff separate from later automatic View occurrences. Grade
+pre-Home View/Action ownership only after delayed Actions and owner counters drain;
+retain the entire later stream and use the unchanged native writer finish protocol.
+Comparison boundaries come from every actual `.before` snapshot and its original
+request bytes, including folds whose operator receipts have different labels.
+Saved assessments create no complete receipt, executor anchor or Home acceptance.
+Require exact component/plan review and one automatic Home-only qualification
+before human use; [the correction owner](../../../DatadogRUM/MultiSceneSupport/Results/S2-foreground-finalization-20261002.json)
+records qualification and candidate prerequisites. Fresh native idle and release
+remain independent cleanup requirements; AX target errors stay diagnostic.
+
 The [shared preflight repair](../../../DatadogRUM/MultiSceneSupport/Results/shared-capture-preflight-20260930.json)
 owns the prospective `tool_worker_service.py` integration and its review. It grants
 no further attempt on the stopped automatic path. For a separately reviewed future

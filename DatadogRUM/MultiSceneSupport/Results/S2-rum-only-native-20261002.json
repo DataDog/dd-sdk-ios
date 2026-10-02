@@ -55,7 +55,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime/cells/baseline-27.1-duo-SwiftUI-split-single/supported/ended.json",
     "sha256": "f250f1d8048ad479f155dcfe90c8a931407c64f038330fc34efc099e2f4543d2"
   },
-  "next_action": "Prepare source-backed foreground comparison finalization and AX-independent idle cleanup, using saved human evidence. Require focused controls, designated review and one automatic Home-only qualification before a successor human invitation. Candidate is unexecuted.",
+  "next_action": "Foreground correction passes27 offline controls and exact component review; saved gestures support a distinct candidate reference. Complete separately reviewed Home-only qualification and candidate-only consumer before another invitation. Original failed verdicts and separate successful restoration remain unchanged.",
   "operator_ready_received": true,
   "reason": "original collector deadline expired",
   "cleanup_errors": [
@@ -187,7 +187,8 @@
     "required_environment": "Offline saved-evidence controls and designated review, then one bounded automatic Home-only qualification on Duo using frozen products; no human gestures for mechanism qualification.",
     "human_repeat_policy": "Do not repeat the baseline journey unless independent review shows its saved foreground inventory cannot support the finite comparison. No candidate admission before qualification.",
     "native_admitted": false,
-    "gates_closed": []
+    "gates_closed": [],
+    "preparation_owner": "Results/S2-foreground-finalization-20261002.json"
   },
   "restoration_review_history": [
     {

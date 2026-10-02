@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "state": "UIKIT_VIEW_ACTION_GATES_CLOSED_SWIFTUI_REMAINS",
-  "updated_at": "2026-10-01T22:06:49.738714+00:00",
+  "updated_at": "2026-10-02T00:03:10.776533+00:00",
   "execution": {
     "record": "Results/S2-rum-only-native-20261002.json"
   },
@@ -44,7 +44,7 @@
         "multiple_scenes": false
       }
     ],
-    "prerequisites": "Reviewed RUM-only baseline captured gestures, folds and Home, then terminal collection expired on a late active hosting View. Original UNQUALIFIED/INCOMPLETE and cleanup INVALID remain; separate reviewed restoration PASS. Saved 25 owned Actions/counters support foreground diagnosis only. Prepare and qualify the finite finalization correction before a successor invitation; candidate unexecuted. Four accepted cells and both products retained.",
+    "prerequisites": "Original SDK27.1 split baseline remains UNQUALIFIED/INCOMPLETE/cleanup INVALID; separate restoration PASS. Results/S2-foreground-finalization-20261002.json passes27 focused controls and exact component review. Saved18foregroundViews/25Actions can support a distinct compiler/source reference without repeating gestures; no native-baseline/Home/H14 credit. Complete one reviewed automatic Home-only qualification and a separately reviewed candidate-only consumer before invitation. Four accepted native cells and both products retained.",
     "review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/sitting-10/runtime/review.json",
       "sha256": "b6a9d2d4cfa3af67724d2673a0d52c7f90116847cf6db526e9a7aacb5ac0427b"
@@ -142,7 +142,7 @@
     },
     "builds": 3,
     "scope": "All three stack cells and the SDK26.5 split baseline qualify; only two SDK27.1 split cells remain.",
-    "next_action": "Prepare source-backed foreground finalization and AX-independent native-idle cleanup; preserve saved baseline gestures, require review and one automatic Home-only qualification before another human invitation.",
+    "next_action": "Qualify the reviewed foreground finalization and AX-independent idle cleanup in one automatic Home-only run; then prepare a candidate-only consumer with the distinct saved reference and exact independent review.",
     "effect_recapture": {
       "record": "Results/S2-swiftui-effect-recapture-20260930.json",
       "plan": {

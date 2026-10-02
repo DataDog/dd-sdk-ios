@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "owner": "EXP-210",
+  "state": "COMPONENT_REVIEWED_HOME_QUALIFICATION_PREPARING",
+  "updated_at": "2026-10-02T00:03:10.775495+00:00",
+  "gates": [
+    "S2:C09",
+    "S2:C10"
+  ],
+  "definition_owner": "Results/S2-rum-only-native-20261002.json:next_finite_task",
+  "definition_checkpoint": "f0dc55f32ea8afeb69e5967ba243e7d97297dd27",
+  "original_execution": "Results/S2-rum-only-native-20261002.json",
+  "original_verdicts_unchanged": true,
+  "separate_restoration": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/restoration-20261002/result.json",
+    "sha256": "a71927d7a5c47861873e0d6309214277d724abc55b06060c107e6fa23936fd2d"
+  },
+  "scope": "Finite foreground automatic View/Action attribution comparison; actual Home-start boundary separates retained post-Home occurrences. No SDK, predicate, fixture, build or API change.",
+  "source_supported_rules": [
+    "Include delayed pre-Home Actions and their exact inactive owner revisions.",
+    "Keep complete raw post-Home rows and classify late active zero-action occurrences separately; no Home lifecycle credit.",
+    "Foreign event identity, View revision or action-count gaps, replaced request/prefix/native owner/process and active input remain fatal.",
+    "Use exact original snapshot request bytes for phase boundaries; create no retrospective complete receipt or executor anchor.",
+    "Cleanup proves original topology/key/public provenance and native-input idle independently of AX target-capture diagnostics."
+  ],
+  "new_helpers": [
+    "tools/multi-scene/automatic-coverage/foreground_finalization.py",
+    "tools/multi-scene/automatic-coverage/test_foreground_finalization.py",
+    "tools/multi-scene/automatic-coverage/foreground_capture.py",
+    "tools/multi-scene/automatic-coverage/test_foreground_capture.py"
+  ],
+  "review": {
+    "role": "rum-runtime-reviewer",
+    "reviewer": "/root/h10_backend_reviewer",
+    "state": "PASS_OFFLINE_COMPONENT_ONLY",
+    "reference": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/component-review-cycle4.json",
+      "sha256": "7b9826b04ec1ab360c18cf45f697da743316a0496e2f2330e1e1003b346dab69"
+    },
+    "review_history": [
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/component-review.json",
+        "sha256": "f6812fdcd50ba46457b1299d973d52258df644e030845795d0821b5f2e87419c"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/component-review-cycle3.json",
+        "sha256": "105820071ec1fcbfd8114e32ae32adf83eee10ed5dcfbeb1b9d60c70c562d227"
+      }
+    ],
+    "corrected_findings": [
+      "All actual request-bound fold boundaries retained; incomplete phase sets reject",
+      "Empty non-action fold rows excluded only for declared cross-profile equality; real fold Actions retained",
+      "Supported scroll/swipe velocity classification retained exactly; custom/unknown Actions reject"
+    ]
+  },
+  "saved_assessment": {
+    "state": "REVIEWED_DISTINCT_FOREGROUND_REFERENCE",
+    "scope": "SAVED_FOREGROUND_ASSESSMENT",
+    "baseline_promoted": false,
+    "original_home_qualified": false,
+    "reference": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/saved-foreground-assessment-cycle4.json",
+      "sha256": "65e749c9acfd7d1009a7bd44389060c983640c80cdfcb394ad8fca9a1bf310df"
+    },
+    "evaluation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/saved-foreground-evaluation.json",
+      "sha256": "b5ff06e02bb34a308dd4dafad637ce3d08d349adc6363dba33e9ffb3dabf1e3d"
+    },
+    "foreground_views": 18,
+    "unique_actions": 25,
+    "retained_post_home_views": 2,
+    "original_run_verdict": "INVALID",
+    "executor_anchor_created": false,
+    "complete_receipt_created": false,
+    "candidate_only_comparison_supported": true,
+    "device_axis_qualified": false,
+    "h14_qualified": false
+  },
+  "native_qualification": {
+    "state": "PREPARING_NO_ADMISSION",
+    "mechanism": "One automatic Home-only qualification on Duo using the current frozen baseline SwiftUI split product.",
+    "attempt_limit": 1,
+    "execution_seconds": 600,
+    "cleanup_seconds": 600,
+    "budget_basis": "Observed supported read 8.4s/Closed action 2.85s; original collection 120s. New clocks reserve bounded preparation/transfer/cleanup; no extension of any existing deadline.",
+    "human_input_required": false,
+    "release_acceptance": false
+  },
+  "native_admitted": false,
+  "native_runs": 0,
+  "human_invitation": false,
+  "gates_closed": [],
+  "candidate_run": false,
+  "next_action": "Complete the separate Home-only definition/driver controls and exact designated review, then one automatic qualification. After qualification, prepare and independently review the candidate-only human consumer using the distinct saved reference; do not repeat baseline gestures.",
+  "controls": {
+    "state": "PASS",
+    "test_count": 27,
+    "native_calls": 0,
+    "reference": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/component-controls-cycle4.json",
+      "sha256": "e11d0b8461fd85a45aae0046dc9bbabb5409a2fd5c62889c6d47aeb63458f520"
+    },
+    "history": [
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/component-controls.json",
+        "sha256": "d0e9345221ac6f0fac30dce49f24f4d6ad61e8644c0095b180027acd0319a198"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/component-controls-cycle2.json",
+        "sha256": "c6320b9133c1fd87b724c9259d426d186c2a3122816875172dd5b6251a411751"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/component-controls-cycle3.json",
+        "sha256": "b77f12568874be9093bd2d4d1b735c7f260ec6644e79d747efd4b05195df20ba"
+      }
+    ]
+  },
+  "candidate_preparation": {
+    "state": "DESIGN_ONLY_NO_ADMISSION",
+    "selected": {
+      "build": "candidate-27.1",
+      "device": "duo",
+      "framework": "SwiftUI",
+      "layout": "split",
+      "multiple_scenes": false
+    },
+    "dependencies": [
+      "Exact component and distinct saved-reference review",
+      "One reviewed automatic Home-only qualification",
+      "Exact new candidate plan/helper closure and independent review",
+      "Fresh simulator readiness and operator availability"
+    ],
+    "source_reuse": "Use the verified frozen reader source/product ancestry; retain the four accepted native cells and distinct saved baseline reference. Never append the stopped baseline to the native prefix.",
+    "runtime_contract": "Opt-in new collector and foreground comparison hooks scoped to one execution. Preserve the unchanged writer-finish/END protocol and full raw stream. Prospective candidate must produce its own real complete receipt, executor anchor, release/idle proof and cleanup; saved reference produces none.",
+    "decisive_controls": [
+      "Current candidate source/product and fresh launch/window/event identity precede Home and all critical input",
+      "Actual phase requests assign every captured Action to its exact observed View; omissions/differences are classified against the saved reference",
+      "Changed prefix/request/process, consumed phases, foreign ownership, active touches and interruption remain fatal",
+      "Full evidence and cleanup are preserved independently; a failed input diagnostic alone cannot become an SDK regression"
+    ],
+    "required_environment": "Duo iOS27.1/Xcode27.1 plus one guided human simulator sitting after mechanism qualification",
+    "native_admitted": false,
+    "human_invitation": false,
+    "gates_closed": []
+  }
+}

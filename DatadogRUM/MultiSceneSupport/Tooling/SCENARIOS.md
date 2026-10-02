@@ -148,6 +148,9 @@ input. Window/source binding, durable evidence, process, interruption and cell
 cutoff remain fatal. Targets/counters/callback order are diagnostics. H14 still needs
 actual fold proof; without it a split cell can credit only C09/C10. Never rewrite an
 old verdict. The four-cell second-grader replay is offline evidence only.
+Automatic scroll gestures can report `scroll` or `swipe` according to velocity.
+Retain the exact captured type for comparison and classify a difference; neither
+supported type alone makes an otherwise valid capture incomplete.
 
 Keep UIKit views/actions and SwiftUI views/actions separate. Use unchanged app
 sources, public default predicates and qualified native input; semantic hosts,
