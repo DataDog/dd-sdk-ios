@@ -719,8 +719,11 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     func testAutomaticMode_whenTaskSuspendsAndResumes_itKeepsOnePreparedLifecycle() throws {
-        let url = URL(string: "https://192.0.2.0:9999/suspend-resume")!
-        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["192.0.2.0": [.datadog]])
+        #if os(watchOS)
+        throw XCTSkip("watchOS ignores URLProtocol stubs; this test must keep native transport pending.")
+        #else
+        let url = URL(string: "https://example.com/suspend-resume")!
+        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])
         handler.shouldInterceptRequest = { $0.url == url }
         let mutations = ReadWriteLock(wrappedValue: 0)
         handler.onRequestMutation = { [weak handler = handler] request, _, _ in
@@ -738,32 +741,21 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.onInterceptionDidStart = { _ in started.fulfill() }
         handler.onInterceptionDidComplete = { _ in completed.fulfill() }
         try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
-        let session = URLSession(configuration: .ephemeral)
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [PendingRequestURLProtocol.self]
+        let session = URLSession(configuration: configuration)
         defer { session.invalidateAndCancel() }
-        // TEST-NET-1 keeps a real task in flight until the explicit cancellation.
         let task = session.dataTask(with: url) { _, _, error in
             XCTAssertEqual((error as NSError?)?.code, NSURLErrorCancelled)
             appCompleted.fulfill()
         }
 
-        let firstRunning = expectation(for: NSPredicate { object, _ in
-            (object as? URLSessionTask)?.state == .running
-        }, evaluatedWith: task)
         task.resume()
-        wait(for: [firstRunning], timeout: 5)
-        XCTAssertEqual(task.state, .running)
-        let suspended = expectation(for: NSPredicate { object, _ in
-            (object as? URLSessionTask)?.state == .suspended
-        }, evaluatedWith: task)
+        waitForState(.running, of: task)
         task.suspend()
-        wait(for: [suspended], timeout: 5)
-        XCTAssertEqual(task.state, .suspended)
-        let secondRunning = expectation(for: NSPredicate { object, _ in
-            (object as? URLSessionTask)?.state == .running
-        }, evaluatedWith: task)
+        waitForState(.suspended, of: task)
         task.resume()
-        wait(for: [secondRunning], timeout: 5)
-        XCTAssertEqual(task.state, .running)
+        waitForState(.running, of: task)
         task.cancel()
         wait(for: [started, completed, appCompleted], timeout: 5)
         core.get(feature: NetworkInstrumentationFeature.self)?.flush()
@@ -772,6 +764,14 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual(handler.interceptions.count, 1)
         XCTAssertEqual(task.currentRequest?.value(forHTTPHeaderField: "X-Preparation"), "retained")
         XCTAssertNotNil(handler.interceptions.first?.value.completion)
+        #endif
+    }
+
+    /// Waits for `task` to report `state`. URLSession can publish a state change after `resume()` or `suspend()` returns.
+    private func waitForState(_ state: URLSessionTask.State, of task: URLSessionTask) {
+        let reached = expectation(description: "Task reaches state \(state.rawValue)")
+        wait(until: { task.state == state }, andThenFulfill: reached)
+        wait(for: [reached], timeout: 5)
     }
 
     func testAutomaticMode_whenResumeIsConcurrent_itPreparesBeforeForwardingEitherCall() throws {
