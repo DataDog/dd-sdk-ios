@@ -36,6 +36,16 @@ internal protocol RenderLoopObserver {
 internal class DisplayLinker {
     @ReadWriteLock
     private var renderLoopReaders: [RenderLoopReader] = []
+    private final class DisplayLinkTarget: NSObject {
+        weak var owner: DisplayLinker?
+
+        @objc
+        func didUpdateFrame() {
+            owner?.didUpdateFrame()
+        }
+    }
+
+    private let displayLinkTarget = DisplayLinkTarget()
     private var displayLink: FrameInfoProvider?
     private let notificationCenter: NotificationCenter
     private let frameInfoProviderFactory: (Any, Selector) -> FrameInfoProvider
@@ -77,6 +87,7 @@ internal class DisplayLinker {
             object: nil
         )
 
+        displayLinkTarget.owner = self
         start()
     }
 
@@ -90,7 +101,7 @@ internal class DisplayLinker {
             return
         }
 
-        displayLink = frameInfoProviderFactory(self, #selector(self.didUpdateFrame))
+        displayLink = frameInfoProviderFactory(displayLinkTarget, #selector(DisplayLinkTarget.didUpdateFrame))
 
         // NOTE: RUMM-1544 `.default` mode doesn't get fired while scrolling the UI, `.common` does.
         displayLink?.add(to: .main, forMode: .common)

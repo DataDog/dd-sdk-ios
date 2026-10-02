@@ -7,6 +7,7 @@
 #if os(iOS)
 import Foundation
 import Testing
+import DatadogSDKTesting
 import TestUtilities
 
 @testable import DatadogInternal

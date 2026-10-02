@@ -8,8 +8,8 @@
 @_spi(Internal)
 import DatadogInternal
 import QuartzCore
-import TestUtilities
 import Testing
+import DatadogSDKTesting
 import WebKit
 
 @testable import DatadogSessionReplay

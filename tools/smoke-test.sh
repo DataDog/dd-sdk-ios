@@ -28,7 +28,13 @@ parse_args "$@"
 # already covers SmokeTests sources.
 export SKIP_LINT=1
 
+reports_path=""
+if [ "$CI" = "true" ]; then
+    reports_path="$(pwd)/artifacts/smoke-test-reports/${test_directory:t}"
+    mkdir -p "$reports_path"
+fi
+
 echo_subtitle "Run 'make clean install test OS=\"$os\" PLATFORM=\"$platform\" DEVICE=\"$device\"' in '$test_directory'"
 echo_succ "Smoke testing for git ref: '$(current_git_ref)'"
-cd "$test_directory" && make clean install test OS="$os" PLATFORM="$platform" DEVICE="$device"
+cd "$test_directory" && make clean install test OS="$os" PLATFORM="$platform" DEVICE="$device" JUNIT_REPORTS_PATH="$reports_path"
 cd -

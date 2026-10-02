@@ -45,6 +45,9 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
     /// Callback called when `eventWriteContext` closure is executed.
     public var onEventWriteContext: ((Bool) -> Void)?
 
+    /// Callback called after additional context is set, allowing tests to simulate core broadcasts.
+    public var onContextSet: ((DatadogContext) -> Void)?
+
     /// Creates a Passthrough core mock.
     ///
     /// - Parameters:
@@ -82,6 +85,7 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
 
     public func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
         _context.mutate { $0.set(additionalContext: context()) }
+        onContextSet?(self.context)
     }
 
     public func send(message: FeatureMessage, else fallback: () -> Void) {

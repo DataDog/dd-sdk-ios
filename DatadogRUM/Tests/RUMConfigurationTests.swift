@@ -48,6 +48,18 @@ class RUMConfigurationTests: XCTestCase {
         XCTAssertTrue(config.featureFlags[.trackScrollAndSwipeActions])
     }
 
+    func testFeatureFlagsSubscriptFallsBackToDefaults() {
+        // When
+        let emptyFlags: RUM.Configuration.FeatureFlags = [:]
+        let overriddenFlags: RUM.Configuration.FeatureFlags = [.trackScrollAndSwipeActions: false]
+
+        // Then
+        XCTAssertTrue(emptyFlags[.trackScrollAndSwipeActions], "should fall back to `.defaults` when not set")
+        XCTAssertFalse(overriddenFlags[.trackScrollAndSwipeActions], "should use the explicitly set value")
+        XCTAssertTrue(emptyFlags[.viewUpdates], "should fall back to `.defaults` when not set")
+        XCTAssertFalse(emptyFlags[.none], "should be `false` when the flag has no default")
+    }
+
     func testDefaultURLSessionTrackingConfiguration() {
         // When
         let tracking = RUM.Configuration.URLSessionTracking()

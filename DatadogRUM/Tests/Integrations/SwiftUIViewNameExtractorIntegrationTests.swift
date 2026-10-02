@@ -10,6 +10,51 @@ import SwiftUI
 @testable import DatadogInternal
 
 class SwiftUIViewNameExtractorIntegrationTests: XCTestCase {
+    #if !os(watchOS) && canImport(UIKit)
+    @MainActor
+    func testNameFromRealHostingController() {
+        // Given
+        let controller = UIHostingController(rootView: ReflectionTestView())
+        controller.loadViewIfNeeded()
+        let extractor = SwiftUIReflectionBasedViewNameExtractor()
+
+        // When
+        let name = extractor.extractName(from: controller)
+
+        // Then
+        XCTAssertEqual(name, "ReflectionTestView")
+    }
+
+    @MainActor
+    func testNameFromRealModifiedHostingControllerFallsBack() {
+        // Given
+        let controller = UIHostingController(rootView: ReflectionTestView().padding())
+        controller.loadViewIfNeeded()
+        let extractor = SwiftUIReflectionBasedViewNameExtractor()
+
+        // When
+        let name = extractor.extractName(from: controller)
+
+        // Then
+        XCTAssertEqual(name, "AutoTracked_HostingController_Fallback")
+    }
+
+    @MainActor
+    func testNameFromRealTypeErasedHostingController() {
+        // Given
+        let controller = UIHostingController(rootView: AnyView(ReflectionTestView()).padding())
+        controller.loadViewIfNeeded()
+        let extractor = SwiftUIReflectionBasedViewNameExtractor()
+
+        // When
+        let name = extractor.extractName(from: controller)
+
+        // Then
+        XCTAssertEqual(name, "ReflectionTestView")
+    }
+
+    #endif
+
     // MARK: SwiftUIViewPath Tests
 
     // - Hosting Controllers
@@ -240,4 +285,8 @@ private class MockReflector: TopLevelReflector {
 
         return nil
     }
+}
+
+private struct ReflectionTestView: View {
+    var body: some View { Text("Reflection") }
 }

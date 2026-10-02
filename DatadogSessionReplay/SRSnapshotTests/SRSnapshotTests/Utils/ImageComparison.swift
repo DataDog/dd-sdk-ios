@@ -29,17 +29,11 @@ internal struct ImageLocation {
     }
 }
 
-internal struct SnapshotSimulator {
+internal struct SnapshotSimulator: Decodable {
     static let viewTree = SnapshotSimulator(
         modelIdentifier: "iPhone15,4",
         name: "iPhone 15",
         osVersion: "17.5"
-    )
-
-    static let layerTree = SnapshotSimulator(
-        modelIdentifier: "iPhone18,3",
-        name: "iPhone 17",
-        osVersion: "26.0.1"
     )
 
     let modelIdentifier: String?
