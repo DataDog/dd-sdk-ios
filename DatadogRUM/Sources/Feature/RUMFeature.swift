@@ -12,7 +12,7 @@ import UIKit
 import AppKit
 #endif
 
-internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider {
+internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
     static var name: String { Feature.rum }
 
     let requestBuilder: FeatureRequestBuilder
@@ -31,9 +31,8 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
     /// flushed alongside other instrumentation in `flush()`.
     let timeseriesCollector: TimeseriesCollecting?
 
-    /// Used by WebViewTracking to obtain the RUM session sampler synchronously.
-    @ReadWriteLock
-    private(set) var rumSessionSampler: DeterministicSampler?
+    /// The synchronous source of truth for the RUM session identity and its sampling decisions.
+    let sessionSamplingStore: RUMSessionSamplingStore
 
     /// Overrides the max file age.
     let performanceOverride: PerformancePresetOverride? = PerformancePresetOverride(
@@ -45,6 +44,12 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
         configuration: RUM.Configuration
     ) throws {
         self.configuration = configuration
+
+        // Created first: the initial session identity is recorded into it further down, still inside
+        // `RUM.enable()`, and `RUM.enableURLSessionTracking` wires the URLSession handler to it.
+        let sessionSamplingStore = RUMSessionSamplingStore()
+        self.sessionSamplingStore = sessionSamplingStore
+
         let eventsMapper = RUMEventsMapper(
             viewEventMapper: configuration.viewEventMapper,
             errorEventMapper: configuration.errorEventMapper,
@@ -118,12 +123,14 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             }
         }()
 
-        let onSessionUpdate: RUM.SessionUpdater = { [onSessionStart = configuration.onSessionStart, _rumSessionSampler] sessionScope in
-            _rumSessionSampler.mutate { $0 = sessionScope?.sampler }
+        let onSessionUpdate: RUM.SessionUpdater = { [onSessionStart = configuration.onSessionStart, sessionSamplingStore] sessionScope in
             if let sessionScope {
                 let sessionID = sessionScope.sessionUUID.toRUMDataFormat
+                sessionSamplingStore.setSession(id: sessionID, sampler: sessionScope.sampler)
                 let isDiscarded = !sessionScope.sampler.isSampled
                 onSessionStart?(sessionID, isDiscarded)
+            } else {
+                sessionSamplingStore.clearSession()
             }
         }
 
@@ -146,6 +153,19 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
         }()
 
         let sessionSampleRate = configuration.debugSDK ? 100 : configuration.sessionSampleRate
+
+        // Create the initial session identity here, synchronously, while still on the main thread inside
+        // `RUM.enable()`. The session scope is created asynchronously further down the line and adopts this
+        // ID, so recording the identity now makes it readable as soon as `RUM.enable()` returns rather than
+        // once the initial session exists.
+        //
+        // Note this derives the sampler in a second place: `RUMSessionScope` derives its own for every other
+        // session, from the same UUID and sampling rate, so the two always agree.
+        let initialSessionUUID = configuration.uuidGenerator.generateUnique()
+        sessionSamplingStore.setSession(
+            id: initialSessionUUID.toRUMDataFormat,
+            sampler: DeterministicSampler(uuid: initialSessionUUID.rawValue, samplingRate: sessionSampleRate)
+        )
 
         let timeseriesCollector: TimeseriesCollecting? = configuration.timeseries.flatMap { timeseries -> TimeseriesCollecting? in
             let effectiveCollectTypes = timeseries.effectiveCollectTypes
@@ -235,6 +255,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 )
             },
             sessionType: configuration.sessionTypeOverride.flatMap { RUMSessionType(rawValue: $0) },
+            initialSessionUUID: initialSessionUUID,
             timeseriesCollector: timeseriesCollector
         )
 
@@ -272,7 +293,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 rumActionsPredicate: configuration.macOSActionsPredicate,
                 swiftUIRUMViewsPredicate: configuration.swiftUIViewsPredicate
             ),
-            trackScrollAndSwipeActions: configuration.featureFlags[.trackScrollAndSwipeActions, default: true],
+            trackScrollAndSwipeActions: configuration.featureFlags[.trackScrollAndSwipeActions],
             longTaskThreshold: configuration.longTaskThreshold,
             appHangThreshold: configuration.appHangThreshold,
             mainQueue: configuration.mainQueue,
@@ -326,7 +347,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 swiftUIRUMViewsPredicate: configuration.swiftUIViewsPredicate,
                 swiftUIRUMActionsPredicate: configuration.swiftUIActionsPredicate
             ),
-            trackScrollAndSwipeActions: configuration.featureFlags[.trackScrollAndSwipeActions, default: true],
+            trackScrollAndSwipeActions: configuration.featureFlags[.trackScrollAndSwipeActions],
             longTaskThreshold: configuration.longTaskThreshold,
             appHangThreshold: configuration.appHangThreshold,
             mainQueue: configuration.mainQueue,
@@ -353,6 +374,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             TelemetryInterceptor(sessionEndedMetric: sessionEndedMetric),
             TelemetryReceiver(
                 featureScope: featureScope,
+                applicationID: configuration.applicationID,
                 dateProvider: configuration.dateProvider,
                 sampler: Sampler(samplingRate: configuration.telemetrySampleRate),
                 configurationExtraSampler: Sampler(samplingRate: configuration.configurationTelemetrySampleRate)
@@ -482,6 +504,14 @@ private extension NextViewActionPredicate {
         default:
             return nil
         }
+    }
+}
+
+extension RUMFeature {
+    // MARK: - SessionSampler
+
+    func decision(for policy: SamplingRatePolicy, rate: SampleRate) -> SessionSamplingDecision? {
+        sessionSamplingStore.decision(for: policy, rate: rate)
     }
 }
 

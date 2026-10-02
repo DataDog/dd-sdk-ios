@@ -51,4 +51,4 @@ endif
 	@$(ECHO_INFO) "Using SCHEME='$(SCHEME)'"
 	set -eo pipefail; \
 	xcodebuild -version; \
-	xcodebuild -project "SPMProject.xcodeproj" -destination "$(DESTINATION)" -scheme "$(SCHEME)" test | xcbeautify
+	xcodebuild -project "SPMProject.xcodeproj" -destination "$(DESTINATION)" -scheme "$(SCHEME)" test | $(call XCBEAUTIFY)

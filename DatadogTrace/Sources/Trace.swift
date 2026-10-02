@@ -97,7 +97,8 @@ public enum Trace {
                 firstPartyHosts: firstPartyHosts,
                 traceContextInjection: traceContextInjection,
                 telemetry: core.telemetry,
-                redactedStatusCodes: urlSessionTracking.redactedStatusCodes
+                redactedStatusCodes: urlSessionTracking.redactedStatusCodes,
+                sessionSampler: core.sessionSampler
             )
 
             try core.register(urlSessionHandler: urlSessionHandler)

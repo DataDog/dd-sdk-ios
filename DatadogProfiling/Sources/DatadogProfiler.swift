@@ -44,10 +44,15 @@ internal final class DatadogProfiler: ProfilingHandler, @unchecked Sendable {
     let encoder: JSONEncoder
     let dateProvider: DateProvider
 
+    private var lastProfilingContext: ProfilingContext?
+
     @ReadWriteLock
     private(set) var attributes: [String: AttributeValue] = [:]
+    /// Whether TTID has been received.
     @ReadWriteLock
     private var hasReceivedAppLaunchVital = false
+    /// Whether TTID has reached the profiler queue.
+    private var hasProcessedAppLaunchVital = false
     // Interval between device and server time.
     @ReadWriteLock
     private(set) var currentServerTimeOffset: TimeInterval = .zero
@@ -289,7 +294,7 @@ private extension DatadogProfiler {
 
                     if currentRUMVitals.hasCompletedAllOperations(),
                        isCustomProfiling,
-                       hasReceivedAppLaunchVital || !shouldWaitForAppLaunchVital {
+                       hasProcessedAppLaunchVital || !shouldWaitForAppLaunchVital {
                         let customProfilingDuration = dateProvider.now.timeIntervalSince(profileStartDate)
                         let fireInterval = customProfilingDuration < minProfileDuration ? minProfileDuration - customProfilingDuration : 0
                         fireTimer(after: fireInterval)
@@ -428,7 +433,12 @@ private extension DatadogProfiler {
         dd_profiler_set_server_time_offset_ns(message.ttid.serverTimeOffset.dd.toInt64Nanoseconds)
 
         queue.async { [weak self] in
-            guard let self, isTrackingConsentAllowed else {
+            guard let self else {
+                return
+            }
+            hasProcessedAppLaunchVital = true
+
+            guard isTrackingConsentAllowed else {
                 return
             }
             let shouldHarvestAppLaunchProfile = shouldHarvestAppLaunchProfileOnTTID
@@ -524,6 +534,16 @@ private extension DatadogProfiler {
 // MARK: - Helpers
 
 private extension DatadogProfiler {
+    func updateProfilingContext(quotaReason: DDProfiling.QuotaReason? = nil) {
+        let context = ProfilingContext(status: .current, quotaReason: quotaReason)
+        guard lastProfilingContext?.status != context.status || lastProfilingContext?.quotaReason != context.quotaReason else {
+            return
+        }
+
+        lastProfilingContext = context
+        featureScope.set(context: context)
+    }
+
     var profileDropReason: ProfilingSessionMetric.ProfileDropReason {
         quotaChecker.isRejectedByQuota ? .quotaRejected(quotaChecker.quotaResult?.reason) : .noProfiledEvents
     }
@@ -573,7 +593,7 @@ private extension DatadogProfiler {
             && isTrackingConsentAllowed
             && !quotaChecker.isRejectedByQuota
             && hasConditionsToProfile
-            && hasReceivedAppLaunchVital == false
+            && hasProcessedAppLaunchVital == false
             && dateProvider.now.timeIntervalSince(profileStartDate) < Constants.cutOffTime
     }
 
@@ -596,7 +616,7 @@ private extension DatadogProfiler {
         // TTID may still be attached to continuous/custom profiles when standalone
         // app-launch upload is disabled; this gate only decides standalone launch harvesting.
         guard hasAppLaunchProfileToHarvest
-                && hasReceivedAppLaunchVital
+                && hasProcessedAppLaunchVital
                 && !quotaChecker.isRejectedByQuota else {
             return false
         }

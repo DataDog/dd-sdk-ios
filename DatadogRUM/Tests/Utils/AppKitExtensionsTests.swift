@@ -7,7 +7,7 @@
 #if os(macOS)
 import AppKit
 import Testing
-import TestUtilities
+import DatadogSDKTesting
 @testable import DatadogRUM
 
 @Suite(.datadogTesting)

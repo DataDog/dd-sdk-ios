@@ -11,12 +11,23 @@ public struct HeatmapIdentifierRegistryMock: @unchecked Sendable, HeatmapIdentif
     @ReadWriteLock
     public var identifiers: [ObjectIdentifier: HeatmapIdentifier]
 
-    public init(identifiers: [ObjectIdentifier: HeatmapIdentifier] = [:]) {
+    @ReadWriteLock
+    public var requiresDescendantLookup: Bool
+
+    public init(
+        identifiers: [ObjectIdentifier: HeatmapIdentifier] = [:],
+        requiresDescendantLookup: Bool = false
+    ) {
         self.identifiers = identifiers
+        self.requiresDescendantLookup = requiresDescendantLookup
     }
 
-    public func setHeatmapIdentifiers(_ heatmapIdentifiers: [ObjectIdentifier: HeatmapIdentifier]) {
+    public func setHeatmapIdentifiers(
+        _ heatmapIdentifiers: [ObjectIdentifier: HeatmapIdentifier],
+        requiresDescendantLookup: Bool
+    ) {
         identifiers = heatmapIdentifiers
+        self.requiresDescendantLookup = requiresDescendantLookup
     }
 
     public func heatmapIdentifier(for objectIdentifier: ObjectIdentifier) -> HeatmapIdentifier? {

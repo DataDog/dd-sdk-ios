@@ -46,7 +46,9 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         monitor.stopSession()
 
         // Then
-        let metricAttributes = try XCTUnwrap(core.waitAndReturnSessionEndedMetricEvent()?.attributes)
+        let event = try XCTUnwrap(core.waitAndReturnSessionEndedMetricEvent())
+        XCTAssertEqual(event.application?.id, rumConfig.applicationID, "It must report `application.id` even though the session no longer exists")
+        let metricAttributes = try XCTUnwrap(event.attributes)
         XCTAssertTrue(metricAttributes.wasStopped)
     }
 

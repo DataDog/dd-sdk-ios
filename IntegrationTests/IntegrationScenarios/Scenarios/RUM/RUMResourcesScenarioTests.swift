@@ -314,6 +314,16 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts, URLSessionT
                 200,
                 "The 'revalidate' request is transparently served as `200` to the app, even though `304` was exchanged on the wire"
             )
+
+            XCTAssertEqual(
+                revalidateResource.resource.deliveryType,
+                .cache,
+                "A `304`-revalidated response should be reported as a cache delivery"
+            )
+            XCTAssertNotNil(
+                revalidateResource.resource.transferSize,
+                "A `304`-revalidated response's `transferSize` should reflect measured or fallback header bytes, not be omitted"
+            )
         }
 
         // Assert there were no tracing `Spans` sent

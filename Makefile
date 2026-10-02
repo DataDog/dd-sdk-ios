@@ -87,11 +87,6 @@ DEFAULT_SR_SNAPSHOT_TESTS_OS := 17.5
 DEFAULT_SR_SNAPSHOT_TESTS_PLATFORM := iOS Simulator
 DEFAULT_SR_SNAPSHOT_TESTS_DEVICE := iPhone 15
 
-# Test env for running SR layer snapshot tests in local:
-DEFAULT_SR_LAYER_SNAPSHOT_TESTS_OS := 26.0.1
-DEFAULT_SR_LAYER_SNAPSHOT_TESTS_PLATFORM := iOS Simulator
-DEFAULT_SR_LAYER_SNAPSHOT_TESTS_DEVICE := iPhone 17
-
 # Default location for deploying artifacts
 DEFAULT_ARTIFACTS_PATH := artifacts
 
@@ -208,6 +203,7 @@ test-macos-all:
 	@$(MAKE) test-macos SCHEME="DatadogLogs"
 	@$(MAKE) test-macos SCHEME="DatadogTrace"
 	@$(MAKE) test-macos SCHEME="DatadogCrashReporting"
+	@$(MAKE) test-macos SCHEME="DatadogWebViewTracking"
 	@$(MAKE) test-macos SCHEME="DatadogFlags"
 
 # Run UI tests for specified TEST_PLAN
@@ -314,8 +310,10 @@ spm-build-watchos:
 	# Build only compatible schemes for watchOS:
 	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="generic/platform=watchOS"
 
-# Builds SPM package for macOS
+# Builds SPM package for macOS (and Mac Catalyst)
 spm-build-macos:
+	# Whole package for Mac Catalyst:
+	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="platform=macOS,variant=Mac Catalyst"
 	# Only macOS-compatible product schemes (DatadogInternal is built transitively as a
 	# dependency of these; it is not a package product, so it has no scheme of its own):
 	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogCore"
@@ -417,12 +415,12 @@ sr-snapshots-pull:
 # Pushes current SR layer snapshots to snapshots repo
 sr-layer-snapshots-push:
 	@$(ECHO_TITLE) "make sr-layer-snapshots-push"
-	./tools/sr-snapshot-test.sh --suite layer-tree --push
+	./tools/sr-snapshot-test.sh --suite layer-tree --push $(if $(SNAPSHOT_ENV),--snapshot-env "$(SNAPSHOT_ENV)")
 
 # Pulls SR layer snapshots from snapshots repo
 sr-layer-snapshots-pull:
 	@$(ECHO_TITLE) "make sr-layer-snapshots-pull"
-	./tools/sr-snapshot-test.sh --suite layer-tree --pull
+	./tools/sr-snapshot-test.sh --suite layer-tree --pull $(if $(SNAPSHOT_ENV),--snapshot-env "$(SNAPSHOT_ENV)")
 
 # Run Session Replay snapshot tests
 sr-snapshot-test:
@@ -436,13 +434,12 @@ sr-snapshot-test:
 
 # Run Session Replay layer snapshot tests
 sr-layer-snapshot-test:
-	@:$(eval OS ?= $(DEFAULT_SR_LAYER_SNAPSHOT_TESTS_OS))
-	@:$(eval PLATFORM ?= $(DEFAULT_SR_LAYER_SNAPSHOT_TESTS_PLATFORM))
-	@:$(eval DEVICE ?= $(DEFAULT_SR_LAYER_SNAPSHOT_TESTS_DEVICE))
 	@:$(eval ARTIFACTS_PATH ?= $(DEFAULT_ARTIFACTS_PATH))
-	@$(ECHO_TITLE) "make sr-layer-snapshot-test OS='$(OS)' PLATFORM='$(PLATFORM)' DEVICE='$(DEVICE)' ARTIFACTS_PATH='$(ARTIFACTS_PATH)'"
+	@$(ECHO_TITLE) "make sr-layer-snapshot-test SNAPSHOT_ENV='$(SNAPSHOT_ENV)' ARTIFACTS_PATH='$(ARTIFACTS_PATH)'"
 	./tools/sr-snapshot-test.sh \
-		--suite layer-tree --test --os "$(OS)" --device "$(DEVICE)" --platform "$(PLATFORM)" --artifacts-path "$(ARTIFACTS_PATH)"
+		--suite layer-tree --test $(if $(SNAPSHOT_ENV),--snapshot-env "$(SNAPSHOT_ENV)") \
+		$(if $(OS),--os "$(OS)") $(if $(DEVICE),--device "$(DEVICE)") $(if $(PLATFORM),--platform "$(PLATFORM)") \
+		--artifacts-path "$(ARTIFACTS_PATH)"
 
 # Opens `SRSnapshotTests` project with passing required ENV variables
 sr-snapshot-tests-open:
