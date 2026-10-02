@@ -63,9 +63,9 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-finite-test-selection.json",
     "sha256": "22a9587ec9024f28ade0793005ed3a08e419b534fb3472bf2747e4c13b5dbeab"
   },
-  "updated_at": 1790955889.8962188,
+  "updated_at": 1790982948.490564,
   "qualification_preparation": {
-    "state": "COMPONENT_TESTS_RETURNED_REQUIRES_RECONCILIATION",
+    "state": "PAUSED_AT_SAFE_USER_CHECKPOINT",
     "source_freeze": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-source-freeze.json",
       "sha256": "703a88258aa1cd9b4db1ad3734ffd9f035e5d6c944013aaad8826ccf993cc9c6"
@@ -971,6 +971,88 @@
       "execution_complete": true,
       "tests_run": 5,
       "failed_methods": 5
+    },
+    "default_off_fixture_parent_ios27_execution_cycle2": {
+      "state": "PASS_DEFAULT_OFF_FIXTURE_CELL_ONLY",
+      "owner": "/root",
+      "controller_pid": 97731,
+      "controller_pgid": 97731,
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-parent-ios27-qualification-cycle2/definition.json",
+        "sha256": "9998d1c5548363f7bee539ff35b9f2bb36dcedecabb80a9cde4574810a1b6d96"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-parent-ios27-qualification-cycle2/review.json",
+        "sha256": "956185c43943fa9ac5b0c03b7ae589216b3b66d317a50901a0a88fc799956b38"
+      },
+      "controller": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-parent-ios27-qualification-cycle2/controller.py",
+        "sha256": "b4b9c0fbac7ef5099bc704d00e3a57e95096c05de0a9680b4d7a07f3976fe0fa"
+      },
+      "admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-parent-ios27-qualification-cycle2/admission.json",
+        "sha256": "12c9c8d69662ee24ca8e68be123edfe43400ac887ced4bfe25df858b31305757"
+      },
+      "child": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-parent-ios27-qualification-cycle2/native-qualification-start.json",
+        "sha256": "735456292fa768800992489fb6e834da5ba432b91c3dd81b9e59ed6ebfca8ed5"
+      },
+      "outcome": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-parent-ios27-qualification-cycle2/native-qualification-outcome.json",
+        "sha256": "0b827f070055701c71ed4fc726436ff52402aa4716cf4c2950ec12cda3781dc3"
+      },
+      "cleanup": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-parent-ios27-qualification-cycle2/cleanup.json",
+        "sha256": "727c7ad0700d7e75b48b7a70fe653e441d7244b1f3711ba5daf751004475f79d"
+      },
+      "execution_complete": true,
+      "qualification": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-parent-ios27-qualification-cycle2/qualification.json",
+        "sha256": "76062d72c3652c7809503086253f33d8465d594091277abc39bbf6f8edda292b"
+      },
+      "tests_run": 5,
+      "attachment_scenarios": 8
+    },
+    "default_off_fixture_current_ios27_execution_cycle2": {
+      "state": "PASS_DEFAULT_OFF_FIXTURE_CELL_ONLY",
+      "owner": "/root",
+      "controller_pid": 52127,
+      "controller_pgid": 52127,
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-current-ios27-qualification-cycle2/definition.json",
+        "sha256": "8b8f897f37bf359e566a3383e49d73a508d138690255a8a4743757f551326aea"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-current-ios27-qualification-cycle2/review.json",
+        "sha256": "7e13096b0019c72ccc8bc8989f7207e9a680ce14de81f898455b8a558114fe4f"
+      },
+      "controller": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-current-ios27-qualification-cycle2/controller.py",
+        "sha256": "b862404114becf5195971eb24693709f47e03e034c43ccdfa24a7a398b6d3fac"
+      },
+      "admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-current-ios27-qualification-cycle2/admission.json",
+        "sha256": "812a63b15618cd8e5e24b50fdf7c3cfa557ab183933cc5d896ec1524b0d2abb6"
+      },
+      "child": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-current-ios27-qualification-cycle2/native-qualification-start.json",
+        "sha256": "a6ea150cad75616fb9188af1777c5d7ceab88cdcfe431516d3a6d86ab55d9909"
+      },
+      "outcome": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-current-ios27-qualification-cycle2/native-qualification-outcome.json",
+        "sha256": "23398357fbd44484f52d5b9a9148a36dd9856ad3e21b5e28ac2b3323ae17ca8f"
+      },
+      "cleanup": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-current-ios27-qualification-cycle2/cleanup.json",
+        "sha256": "2ca438628af1b93e8230a5a52f41dac14daa43e43163395630f1654c3bd51114"
+      },
+      "qualification": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-current-ios27-qualification-cycle2/qualification.json",
+        "sha256": "f027ef54eb552aa26e992ed90472c5ad45e1b4c53e1e6a19fdd4e7083cb3f59f"
+      },
+      "tests_run": 5,
+      "attachment_scenarios": 8,
+      "execution_complete": true
     }
   },
   "cache_implementation_preparation": {
@@ -1195,7 +1277,7 @@
     }
   },
   "default_off_qualification_preparation": {
-    "state": "STOPPED_PARENT_FIXTURE_METADATA_JSON_NULL_NO_SDK_IMPLICATION",
+    "state": "PAUSED_USER_REQUEST_TWO_IOS27_OFF_CELLS_QUALIFIED",
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/definition.json",
       "sha256": "bd868a9eac2d6e67fe6ececae9c98eb5a5a8e5991b98ab4a75361f96b973ec8f"
@@ -1229,7 +1311,7 @@
     },
     "native_admitted": false,
     "gates_closed": [],
-    "next_action": "Review the two-line fragmentsAllowed metadata recorder correction and offline codec controls; preserve5/5failed first-parent fixture and cleanupPASS. No remaining Off cell admitted; qualified full current suites remain accepted.",
+    "next_action": "On userresume, grade saved current27 coverage with reviewed14detectors; do not repeatnative. Then freshadmission of alreadyreviewed parent/current17.5cells, semanticdifferential and finalPR3component review/checkpoint. Fullcurrent27/17.5suites andboth27Offcells are accepted; no reruns merelyresume. F12whole13PRgate remainsOPEN.",
     "preceding_blocked_fixture_reviews": [
       {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-correction-cycle2/review.json",
@@ -1368,7 +1450,11 @@
       "gates_closed": [],
       "ios17_5_logical_methods": 982,
       "ios17_5_actual_invocations": 1018,
-      "ios17_5_declared_parameter_combinations": 40
+      "ios17_5_declared_parameter_combinations": 40,
+      "off_fixture_channel": "PASS_LOCAL_PARENT_AND_CURRENT_IOS27",
+      "off_ios27_differential": "PASS_EIGHT_SCENARIOS_INCREMENTAL_PR3_ONLY",
+      "off_ios17_5_differential": "OPEN_TWO_NOT_ADMITTED_CELLS",
+      "off_known_on_helpers": "OPEN_SAVED_CURRENT27_COVERAGE_EXPORT_AND_14ZERO_COUNTERS"
     },
     "older_full_suite_proposal": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-full-target-ios17_5-qualification-cycle1/definition.json",
@@ -1443,7 +1529,110 @@
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-verification-copies-cycle2/appended-members-lint.json",
         "sha256": "366cc8701c28011be73e8acdd1d2c5dd0f95e5f8f8a403c7afab59e41284ea3c"
       },
-      "scope": "10offlineFoundationcontrols/two-line fixture correction only; no native or gate credit"
+      "scope": "10offlineFoundationcontrols/two-line fixture correction only; no native or gate credit",
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-correction-cycle6/review.json",
+        "sha256": "a97271f3e370e299a84ec8fb3c9b3a4fea15cd3e9e1e2c7c480b09c4f8b36ce9"
+      }
+    },
+    "corrected_fixture_cells": [
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-parent-ios27-qualification-cycle2/review-input.json",
+        "sha256": "1133ced5fcf08d9d51859a6ccc7beb034ccd56a68741cffca2acbdc62423bbd5"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-parent-ios17_5-qualification-cycle2/review-input.json",
+        "sha256": "81f2968c385e72d6c33561a340a6ce7a17adc4ac8382c8778a83b3b4665923b2"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-current-ios27-qualification-cycle2/review-input.json",
+        "sha256": "6f907e3e05deafee56bc6f3639ecb1c567e97f3574fd92a32b110a0f8ae8f354"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-current-ios17_5-qualification-cycle2/review-input.json",
+        "sha256": "365ac6437a3d2ec3ecbc918ce343384f0a84c3e845009e02cd5373e600a40b2c"
+      }
+    ],
+    "corrected_fixture_cell_reviews": [
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-parent-ios27-qualification-cycle2/review.json",
+        "sha256": "956185c43943fa9ac5b0c03b7ae589216b3b66d317a50901a0a88fc799956b38"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-parent-ios17_5-qualification-cycle2/review.json",
+        "sha256": "c363ba7eee90b055f6ff846678deb5927b9a9806039cea8c352759b7211fc4ad"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-current-ios27-qualification-cycle2/review.json",
+        "sha256": "7e13096b0019c72ccc8bc8989f7207e9a680ce14de81f898455b8a558114fe4f"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-current-ios17_5-qualification-cycle2/review.json",
+        "sha256": "29ef9d70c49ecd77e948113c5689a5220f948e554e3427529e89b55d9dd9d35a"
+      }
+    ],
+    "evidence_consumer_preparation": {
+      "original_blocked_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/paired-fixture-runtime-preparation-cycle1/consumer-review.json",
+        "sha256": "8735c14fda8dcc3b39c3d5b72f099392450bc4fa0f30c638c1dae9a5d02028c6"
+      },
+      "corrected_input": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/paired-fixture-consumer-preparation-cycle4/consumer-review-input.json",
+        "sha256": "63291745113d6814b1bae1dc6c97d248be0037af702c3acec9cdafcd711a4d53"
+      },
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/paired-fixture-consumer-preparation-cycle4/consumer-controls.json",
+        "sha256": "7c1213fc18c776e3260b4f01202a0cacae13481ed2df1c4e033a7a843b2e8d4a"
+      },
+      "scope": "15offlinefirstread/publication/readback/HEAD/status/symlink/atomicreplacementcontrols; firstparentnative returned0cleanupPASS, source/channel acceptance pending exactconsumerreview. No native rerun.",
+      "preceding_blocked_reviews": [
+        {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/paired-fixture-runtime-preparation-cycle2/consumer-review.json",
+          "sha256": "5a915c50d9e446a9f2206821d0428c0dd69bde7c825c57c70171c281f30d5727"
+        },
+        {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/paired-fixture-consumer-preparation-cycle3/consumer-review.json",
+          "sha256": "7e0e90f6919b9fec0e6deaa9bc4a873b4cfd7ef455d7cea07fdf41c352665441"
+        }
+      ],
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/paired-fixture-consumer-preparation-cycle4/consumer-review.json",
+        "sha256": "17e2bb7f39e9cd14b86150a780e843585f20db0e3d9795e0d396b41b34754f20"
+      }
+    },
+    "first_corrected_parent_ios27_qualification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-parent-ios27-qualification-cycle2/qualification.json",
+      "sha256": "76062d72c3652c7809503086253f33d8465d594091277abc39bbf6f8edda292b"
+    },
+    "first_corrected_parent_consumption": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-parent-ios27-qualification-cycle2/consumer-execution-receipt.json",
+      "sha256": "91f82cdd5383ffdd2084debc29237a5d29797f7b04fd12285c90e241b90cdc60"
+    },
+    "corrected_current_ios27_qualification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-current-ios27-qualification-cycle2/qualification.json",
+      "sha256": "f027ef54eb552aa26e992ed90472c5ad45e1b4c53e1e6a19fdd4e7083cb3f59f"
+    },
+    "current_ios27_consumption": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-current-ios27-qualification-cycle2/consumer-execution-receipt.json",
+      "sha256": "844baa91e25e8c9925ee83d2d1fd715185f2ab6db9a03d19d9296794b44ccad5"
+    },
+    "off_ios27_differential": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-current-ios27-qualification-cycle2/off-differential-ios27.json",
+      "sha256": "38af71dacb40b042053629b679397bd95a16a0cdde79d9bcbe0c9f03d8a282ec"
+    },
+    "pause": {
+      "requested_by": "user",
+      "at": 1790982948.490517,
+      "new_native_admissions": false,
+      "pending_human_session": false,
+      "remaining_native_cells": [
+        "fixture-parent-ios17_5-qualification-cycle2",
+        "fixture-current-ios17_5-qualification-cycle2"
+      ],
+      "quiescence_receipt": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/pause-checkpoint-1790983014.json",
+        "sha256": "d19ae65fba394c5533855d04d9ee55b27055560a15cfc10cd604b0abe105e1c5"
+      }
     }
   }
 }
