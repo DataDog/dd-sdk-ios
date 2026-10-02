@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "state": "LOCAL_E03_DEPENDENCY_INTEGRATED_SOURCE_REVIEW_PENDING",
+  "delivery_slice": "PR3",
+  "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation",
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/definition.json",
+    "sha256": "97a6783c1018aa7550441791bc894341747b590391b4eee9940a508ffa566c21"
+  },
+  "source_inventory": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/selected-source-inventory.json",
+    "sha256": "464b69e473b0853570a42017ff1573aec8174aed7b680fac05942c298d877651"
+  },
+  "source_mapping": "Results/S3-F11-production-mapping.json",
+  "prior_qualification": "Results/S3-PR1-runtime-flag.json",
+  "base": "720159320a9528765cc134b813de58529c87a6ac",
+  "production_paths": [
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMApplicationScope.swift",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift"
+  ],
+  "deliverable_count": 8,
+  "dependency_limits": [
+    "E04 merged and exact fresh source available",
+    "E03 remains open; local integration/review required before PR3 implementation",
+    "PR2 has component qualification only; replay on fresh base requires exact source verification"
+  ],
+  "next_action": "Obtain designated exact-source review of the local final E03 prerequisite, then prepare its finite selected test admission and mapped PR3 routing implementation. Prioritize the candidate human consumer re-review/native session when ready; no parallel native/build lane.",
+  "native_runs": 0,
+  "sdk_edits": 6,
+  "gates_closed": [],
+  "foundation_replay": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/foundation-replay.json",
+    "sha256": "a8ff6b2f3b5a3be7a371ea1d56c3e62e6ef22915a2204b94e546e11597e47104"
+  },
+  "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/worktree",
+  "branch": "valpertui/s3-session-routing",
+  "local_head": "1de5fda163f5ce064baee5266ae983201c12c66f",
+  "prerequisite_source_audit": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-source-audit.json",
+    "sha256": "80686c66474a6a47d1a307d7f69a8862d144101ccafd407d9be1631a383ed13e"
+  },
+  "prerequisite_resolution": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-conflict-resolution.json",
+    "sha256": "3be8be4d2a68d900f0a116207d2205fe24bb97cdb83a63d51a2519d510eee8b5"
+  },
+  "routing_edits": 0,
+  "syntax": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/e03-static-validation/result.json",
+    "sha256": "3865b866f1922279f2233e9d382afca54de1dac8ee40941e29f81307a4639f22",
+    "scope": "10 files parsed under Swift5/iOS15 target; no build/test/behavioral credit"
+  }
+}

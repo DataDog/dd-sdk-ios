@@ -327,7 +327,7 @@
   "human_invitation": false,
   "gates_closed": [],
   "candidate_run": false,
-  "next_action": "Prepare and independently review the planned candidate-only human foreground consumer using the saved distinct reference. Automatic Home qualification stays stopped. Preserve original INVALID verdicts and separate state verification; no repeat baseline gestures.",
+  "next_action": "Prepare the instruction page and fresh read-only prerequisites for the reviewed candidate-only human consumer. Start only after actual availability/readiness and an exact new admission; preserve the four accepted cells and distinct saved reference.",
   "controls": {
     "state": "PASS",
     "test_count": 27,
@@ -418,11 +418,73 @@
     "remaining_review_findings": [
       "Align actual supervisor path with final_cell and derive process exit from authoritative final result",
       "Pin validated consumed Start/End/worker session bytes in executor anchor and join device, launch PID and key"
-    ]
+    ],
+    "next_cycle_preparation": {
+      "state": "REVIEW_BLOCKED_CLEANUP_RECOVERY_CORRECTION_IN_PROGRESS",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle2",
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle2/definition.json",
+        "sha256": "cdb93efadb5565d7305aadb674eb450837510d00e58a2c520b3897d281e5d4c9"
+      },
+      "plan": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle2/runtime/runtime-plan.json",
+        "sha256": "27cb6521e49b6955cd7b63847367f5dcfd02ae20bdffa776b5715ba3a3e84190"
+      },
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle2/runtime/controls.json",
+        "sha256": "262b33aa0c7d16da8e2360f8da755db2774726ba2d04415404f9eb2462d71efe"
+      },
+      "passed_offline_controls": 21,
+      "native_runs": 0,
+      "human_invitation": false,
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle2/runtime/review.json",
+        "sha256": "e3376754a8884053ffc697c000b0e0e2b0298f7d152fd5e6bcc452bb86fd282d"
+      },
+      "remaining_finding": "Cleanup recovery of a valid published Start missed by polling must retain/rejoin the original actual response before owned End, without promoting Start or extending its cutoff"
+    }
   },
   "component_checkpoint": {
     "commit": "3225c814097904f617bd0b49591fef7f5bd3eb0e",
     "signature": "AUTHORIZED_LOCAL_UNSIGNED_FALLBACK_AFTER_60S_SIGNING_TIMEOUT",
     "pushed": false
+  },
+  "candidate_consumer": {
+    "state": "REVIEWED_FOR_SINGLE_HUMAN_ADMISSION",
+    "plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle3/runtime/runtime-plan.json",
+      "sha256": "29fcd45aad18ff1bcb52aa923584d3b57900c8b8c3dcc06c509235189e73d6a1"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle3/runtime/review.json",
+      "sha256": "b3aa48bd0d41f0fdcaf20e9b85eb996d2dd0728e8f5cfc15a9660e395235ec6d"
+    },
+    "selected": {
+      "build": "candidate-27.1",
+      "device": "duo",
+      "framework": "SwiftUI",
+      "layout": "split",
+      "multiple_scenes": false
+    },
+    "interaction_owner": "/root/s2_split_input_owner",
+    "execution": null,
+    "native_admitted": false,
+    "human_invitation": false,
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle3",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle3/definition.json",
+      "sha256": "653d0597578d7e11d7c625164763558d5ce0487a6a83129f2fb55b2c113c4357"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle3/runtime/controls.json",
+      "sha256": "cd27f661367e8273121d5d117245d755a2607b8a46035d77b7c5ed7b67ebc2cb"
+    },
+    "passed_offline_controls": 23,
+    "limits": [
+      "Preparation grants no native admission",
+      "Fresh live preflight and actual human readiness remain required",
+      "Original failed attempts and separate restoration remain immutable",
+      "No repeat baseline or stopped automatic Home mechanism"
+    ]
   }
 }
