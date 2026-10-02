@@ -58,7 +58,7 @@ final class FlagsRepositoryTests: XCTestCase {
         let flagsRepository = FlagsRepository(
             clientName: .mockAny(),
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
-                completion(.success(flags))
+                completion(.success(.init(flags: flags)))
             },
             dateProvider: dateProvider,
             featureScope: featureScope
@@ -124,7 +124,7 @@ final class FlagsRepositoryTests: XCTestCase {
 
     func testInitializationTimeoutReturnsFailureAndAllowsLateReadyState() throws {
         // Given
-        var fetchCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+        var fetchCompletion: ((Result<FlagAssignmentsResponse, FlagsError>) -> Void)?
         var timeoutAction: (() -> Void)?
         var scheduledTimeout: TimeInterval?
         var callbackResults: [Result<Void, FlagsError>] = []
@@ -162,7 +162,7 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertEqual(flagsRepository.state.currentState, .error)
 
         // When
-        try XCTUnwrap(fetchCompletion)(.success(["test": .mockAny()]))
+        try XCTUnwrap(fetchCompletion)(.success(.init(flags: ["test": .mockAny()])))
 
         // Then
         XCTAssertEqual(callbackResults.count, 1)
@@ -263,7 +263,7 @@ final class FlagsRepositoryTests: XCTestCase {
             JSONEncoder().encode(cachedData),
             forKey: .mockAny()
         )
-        var fetchCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+        var fetchCompletion: ((Result<FlagAssignmentsResponse, FlagsError>) -> Void)?
         var timeoutAction: (() -> Void)?
         let flagsRepository = FlagsRepository(
             clientName: .mockAny(),
@@ -302,7 +302,7 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertTrue(exposureLogger.logExposureCalls.isEmpty)
 
         // When a late response finishes the same request
-        try XCTUnwrap(fetchCompletion)(.success(["promotion": .mockRandom()]))
+        try XCTUnwrap(fetchCompletion)(.success(.init(flags: ["promotion": .mockRandom()])))
 
         // Then the requested context becomes readable
         XCTAssertEqual(flagsRepository.context, requestedContext)
@@ -311,7 +311,7 @@ final class FlagsRepositoryTests: XCTestCase {
 
     func testInitializationTimeoutDoesNotReplaceReadyStateFromANewerRequest() throws {
         // Given
-        var fetchCompletions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+        var fetchCompletions: [(Result<FlagAssignmentsResponse, FlagsError>) -> Void] = []
         var timeoutAction: (() -> Void)?
         var firstResult: Result<Void, FlagsError>?
         let flagsRepository = FlagsRepository(
@@ -333,7 +333,7 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertEqual(fetchCompletions.count, 2)
 
         // When
-        fetchCompletions[1](.success(["newer": .mockAny()]))
+        fetchCompletions[1](.success(.init(flags: ["newer": .mockAny()])))
         XCTAssertEqual(flagsRepository.state.currentState, .ready)
         try XCTUnwrap(timeoutAction)()
 
@@ -346,7 +346,7 @@ final class FlagsRepositoryTests: XCTestCase {
 
     func testInitializationSuccessClaimsCompletionBeforeReadyListeners() throws {
         // Given
-        var fetchCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+        var fetchCompletion: ((Result<FlagAssignmentsResponse, FlagsError>) -> Void)?
         var timeoutAction: (() -> Void)?
         var callbackResult: Result<Void, FlagsError>?
         let flagsRepository = FlagsRepository(
@@ -372,7 +372,7 @@ final class FlagsRepositoryTests: XCTestCase {
         flagsRepository.setEvaluationContext(.mockAny()) { callbackResult = $0 }
 
         // When
-        try XCTUnwrap(fetchCompletion)(.success([:]))
+        try XCTUnwrap(fetchCompletion)(.success(.init(flags: [:])))
 
         // Then
         XCTAssertNoThrow(try XCTUnwrap(callbackResult).get())
@@ -425,7 +425,7 @@ final class FlagsRepositoryTests: XCTestCase {
             let flagsRepository = FlagsRepository(
                 clientName: .mockAny(),
                 flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
-                    completion(.success([:]))
+                    completion(.success(.init(flags: [:])))
                 },
                 dateProvider: DateProviderMock(),
                 featureScope: featureScope,
@@ -455,7 +455,7 @@ final class FlagsRepositoryTests: XCTestCase {
         let flagsRepository = FlagsRepository(
             clientName: .mockAny(),
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
-                completion(.success([:]))
+                completion(.success(.init(flags: [:])))
             },
             dateProvider: DateProviderMock(),
             featureScope: featureScope,
@@ -483,7 +483,7 @@ final class FlagsRepositoryTests: XCTestCase {
         let flagsRepository = FlagsRepository(
             clientName: .mockAny(),
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
-                completion(.success([:]))
+                completion(.success(.init(flags: [:])))
             },
             dateProvider: DateProviderMock(),
             featureScope: featureScope,
@@ -511,7 +511,7 @@ final class FlagsRepositoryTests: XCTestCase {
         let flagsRepository = FlagsRepository(
             clientName: .mockAny(),
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
-                completion(.success([:]))
+                completion(.success(.init(flags: [:])))
             },
             dateProvider: DateProviderMock(),
             featureScope: featureScope,
@@ -552,7 +552,7 @@ final class FlagsRepositoryTests: XCTestCase {
         let flagsRepository = FlagsRepository(
             clientName: .mockAny(),
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
-                completion(.success(["test": .mockAny()]))
+                completion(.success(.init(flags: ["test": .mockAny()])))
             },
             dateProvider: DateProviderMock(),
             featureScope: featureScope
@@ -596,7 +596,7 @@ final class FlagsRepositoryTests: XCTestCase {
     func testStateTransitionsToStaleOnFailureWithCache() {
         // Given — first set context successfully to populate cache
         let fetcherMock = FlagAssignmentsFetcherMock { _, completion in
-            completion(.success(["test": .mockAny()]))
+            completion(.success(.init(flags: ["test": .mockAny()])))
         }
         let flagsRepository = FlagsRepository(
             clientName: .mockAny(),
@@ -631,7 +631,7 @@ final class FlagsRepositoryTests: XCTestCase {
 
     func testStateTransitionsToReconcilingDuringFetch() {
         // Given
-        var capturedCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+        var capturedCompletion: ((Result<FlagAssignmentsResponse, FlagsError>) -> Void)?
         let flagsRepository = FlagsRepository(
             clientName: .mockAny(),
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
@@ -649,7 +649,7 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertEqual(flagsRepository.state.currentState, .reconciling)
 
         // Complete the fetch
-        capturedCompletion?(.success(["test": .mockAny()]))
+        capturedCompletion?(.success(.init(flags: ["test": .mockAny()])))
         XCTAssertEqual(flagsRepository.state.currentState, .ready)
     }
 
@@ -658,7 +658,7 @@ final class FlagsRepositoryTests: XCTestCase {
         let flagsRepository = FlagsRepository(
             clientName: .mockAny(),
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
-                completion(.success(["test": .mockAny()]))
+                completion(.success(.init(flags: ["test": .mockAny()])))
             },
             dateProvider: DateProviderMock(),
             featureScope: featureScope
@@ -720,7 +720,7 @@ final class FlagsRepositoryTests: XCTestCase {
         let contextB = FlagsEvaluationContext(targetingKey: "user-B", attributes: [:])
 
         let fetcherMock = FlagAssignmentsFetcherMock { _, completion in
-            completion(.success(["test": .mockAny()]))
+            completion(.success(.init(flags: ["test": .mockAny()])))
         }
         let flagsRepository = FlagsRepository(
             clientName: .mockAny(),
@@ -755,7 +755,7 @@ final class FlagsRepositoryTests: XCTestCase {
     func testStateRecoveryFromStaleToReady() {
         // Given — first succeed, then fail (stale), then succeed again
         let fetcherMock = FlagAssignmentsFetcherMock { _, completion in
-            completion(.success(["test": .mockAny()]))
+            completion(.success(.init(flags: ["test": .mockAny()])))
         }
         let flagsRepository = FlagsRepository(
             clientName: .mockAny(),
@@ -781,7 +781,7 @@ final class FlagsRepositoryTests: XCTestCase {
 
         // Recover to ready
         fetcherMock.flagAssignmentsStub = { _, completion in
-            completion(.success(["test": .mockAny()]))
+            completion(.success(.init(flags: ["test": .mockAny()])))
         }
         let third = expectation(description: "third")
         flagsRepository.setEvaluationContext(.mockAny()) { _ in third.fulfill() }
@@ -798,7 +798,7 @@ final class FlagsRepositoryTests: XCTestCase {
         // 3. Request A fails (should NOT clear request B's flags)
 
         // Given — a fetcher that captures completions so we can control timing
-        var capturedCompletions: [(context: FlagsEvaluationContext, completion: (Result<[String: FlagAssignment], FlagsError>) -> Void)] = []
+        var capturedCompletions: [(context: FlagsEvaluationContext, completion: (Result<FlagAssignmentsResponse, FlagsError>) -> Void)] = []
         let fetcherMock = FlagAssignmentsFetcherMock { context, completion in
             capturedCompletions.append((context, completion))
         }
@@ -831,7 +831,7 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertEqual(capturedCompletions.count, 2)
 
         // When — request B completes successfully first (writes flags)
-        capturedCompletions[1].completion(.success(flagsForB))
+        capturedCompletions[1].completion(.success(.init(flags: flagsForB)))
 
         // When — request A fails after B succeeded
         capturedCompletions[0].completion(.failure(.networkError(URLError(.notConnectedToInternet))))
@@ -855,7 +855,7 @@ final class FlagsRepositoryTests: XCTestCase {
         let flagsRepository = FlagsRepository(
             clientName: .mockAny(),
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
-                completion(.success(["test": .mockAny()]))
+                completion(.success(.init(flags: ["test": .mockAny()])))
             },
             dateProvider: DateProviderMock(),
             featureScope: featureScope

@@ -25,6 +25,7 @@ final class FlagAssignmentsRequestTests: XCTestCase {
         let context = DatadogContext.mockWith(
             clientToken: "test-token",
             env: "production",
+            source: "ios",
             sdkVersion: "3.5.1",
             additionalContext: [RUMCoreContext.mockWith(applicationID: "test-app-id")]
         )
@@ -40,6 +41,9 @@ final class FlagAssignmentsRequestTests: XCTestCase {
               "source" : {
                 "sdk_name" : "dd-sdk-ios",
                 "sdk_version" : "3.5.1"
+              },
+              "supported_capabilities": {
+                "assignment_encodings": ["flag-key-sha256-v1"]
               },
               "subject" : {
                 "targeting_attributes" : {

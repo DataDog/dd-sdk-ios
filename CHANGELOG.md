@@ -1,5 +1,6 @@
 # Unreleased
 
+- [FEATURE] Support obfuscated keys in precomputed Flags assignments without changing evaluation calls or telemetry keys. The preview snapshot API returns `nil` for obfuscated assignments.
 - [IMPROVEMENT] Enable RUM view update (delta) events by default. Views that update often now send a smaller payload. See [#3233][]
 - [FIX] Release the RUM display-link observer and its frame readers when their owner is released.
 - [FIX] Pin KSCrash to exact version 2.5.1 via SPM to prevent silently resolving newer, unvetted releases.

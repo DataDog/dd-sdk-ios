@@ -90,6 +90,17 @@ internal final class FlagsRepository {
     @ReadWriteLock
     private var flagsData: FlagsData?
 
+    // A missing or delayed context must not expose encoded assignments to legacy bridges.
+    @ReadWriteLock
+    private var supportsFlagKeyObfuscation = false
+
+    private var readableFlagsData: FlagsData? {
+        guard let data = flagsData, data.obfuscation == nil || supportsFlagKeyObfuscation else {
+            return nil
+        }
+        return data
+    }
+
     /// Version counter for `flagsData`. Incremented on every write to detect
     /// when a newer request has succeeded while an older request was in-flight.
     @ReadWriteLock
@@ -125,6 +136,9 @@ internal final class FlagsRepository {
         self.featureScope = featureScope
         self.initializationTimeout = initializationTimeout
         self.scheduleInitializationTimeout = scheduleInitializationTimeout ?? Self.scheduleInitializationTimeout
+        featureScope.context { [weak self] context in
+            self?.supportsFlagKeyObfuscation = FlagKeyObfuscation.isSupported(source: context.source)
+        }
         readState()
     }
 
@@ -180,7 +194,7 @@ internal final class FlagsRepository {
                 completion(.failure(.clientNotInitialized))
                 return
             }
-            let timeoutState: FlagsClientState = self.flagsData?.context == context ? .stale : .error
+            let timeoutState: FlagsClientState = self.readableFlagsData?.context == context ? .stale : .error
             let accepted = self.stateManager.updateState(
                 timeoutState,
                 unlessCurrentStateIs: [.ready, .stale]
@@ -268,7 +282,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         guard stateManager.currentState != .error else {
             return nil
         }
-        return flagsData?.context
+        return readableFlagsData?.context
     }
 
     func flagAssignment(for key: String) -> FlagAssignment? {
@@ -276,15 +290,17 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         guard stateManager.currentState != .error else {
             return nil
         }
-        return flagsData?.flags[key]
+        return readableFlagsData?.flagAssignment(for: key)
     }
 
     func flagAssignments() -> [String: FlagAssignment]? {
         waitForFlagsDataRead()
-        guard stateManager.currentState != .error else {
+        guard stateManager.currentState != .error,
+              let data = readableFlagsData,
+              data.obfuscation == nil else {
             return nil
         }
-        return flagsData?.flags
+        return data.flags
     }
 
     func setEvaluationContext(
@@ -306,8 +322,9 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 return
             }
 
-            let hadFlags = self.flagsData != nil
-            let cachedContext = self.flagsData?.context
+            let cachedData = self.readableFlagsData
+            let hadFlags = cachedData != nil
+            let cachedContext = cachedData?.context
             let versionAtStart = self.flagsDataVersion
             if initializationCompletion == nil {
                 self.stateManager.updateState(.reconciling)
@@ -315,15 +332,16 @@ extension FlagsRepository: FlagsRepositoryProtocol {
 
             self.flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
                 switch result {
-                case .success(let flags):
+                case .success(let response):
                     guard let self else {
                         takeCompletion()?(.failure(.clientNotInitialized))
                         return
                     }
                     self.flagsData = .init(
-                        flags: flags,
+                        flags: response.flags,
                         context: context,
-                        date: self.dateProvider.now
+                        date: self.dateProvider.now,
+                        obfuscation: response.obfuscation
                     )
                     self._flagsDataVersion.mutate { $0 += 1 }
                     self.writeState()

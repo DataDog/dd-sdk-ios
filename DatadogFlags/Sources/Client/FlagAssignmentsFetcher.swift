@@ -10,7 +10,7 @@ import DatadogInternal
 internal protocol FlagAssignmentsFetching {
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
-        completion: @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
+        completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     )
 }
 
@@ -55,7 +55,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
 
     func flagAssignments(
         for evaluationContext: FlagsEvaluationContext,
-        completion: @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
+        completion: @escaping (Result<FlagAssignmentsResponse, FlagsError>) -> Void
     ) {
         featureScope.context { [weak self] context in
             guard let self else {
@@ -74,6 +74,9 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                     case .success(let data):
                         do {
                             let response = try Self.decoder.decode(FlagAssignmentsResponse.self, from: data)
+                            guard response.obfuscation == nil || FlagKeyObfuscation.isSupported(source: context.source) else {
+                                throw FlagsError.invalidResponse
+                            }
 
                             // Log any flags that failed to decode to telemetry
                             if !response.failedFlags.isEmpty {
@@ -93,7 +96,7 @@ internal final class FlagAssignmentsFetcher: FlagAssignmentsFetching {
                                 }
                             }
 
-                            completion(.success(response.flags))
+                            completion(.success(response))
                         } catch {
                             featureScope.telemetry.error(
                                 "Failed to decode \(FlagAssignmentsResponse.self) from flag assignments response",
