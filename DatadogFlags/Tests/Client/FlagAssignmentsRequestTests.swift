@@ -13,6 +13,42 @@ import DatadogInternal
 final class FlagAssignmentsRequestTests: XCTestCase {
     private let testURL = URL(string: "https://test.example.com/precompute-assignments")!
 
+    func testWrapperRequestReportsLoadedJavaScriptVersion() throws {
+        let request = try URLRequest.flagAssignmentsRequest(
+            url: testURL,
+            evaluationContext: .init(targetingKey: "athlete", attributes: ["sdk_version": .string("99.99.99")]),
+            context: .mockWith(source: "react-native", sdkVersion: "88.88.88"),
+            customHeaders: nil,
+            wrapperSource: FlagsWrapperSource(
+                sdkName: "dd-sdk-reactnative", sdkVersion: "4.2.0-js.1"
+            )
+        )
+        let source = try requestSource(request)
+        XCTAssertEqual(source["sdk_name"] as? String, "dd-sdk-reactnative")
+        XCTAssertEqual(source["sdk_version"] as? String, "4.2.0-js.1")
+        XCTAssertEqual(source.count, 2)
+    }
+
+    func testLegacyWrapperDoesNotClaimNativeOnlySupport() throws {
+        let request = try URLRequest.flagAssignmentsRequest(
+            url: testURL,
+            evaluationContext: .init(targetingKey: "athlete", attributes: [:]),
+            context: .mockWith(source: "react-native", sdkVersion: "88.88.88"),
+            customHeaders: nil
+        )
+        let source = try requestSource(request)
+        XCTAssertEqual(source["sdk_name"] as? String, "dd-sdk-reactnative")
+        XCTAssertEqual(source["sdk_version"] as? String, "unknown")
+        XCTAssertEqual(source.count, 2)
+    }
+
+    private func requestSource(_ request: URLRequest) throws -> [String: Any] {
+        let body = try XCTUnwrap(JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as? [String: Any])
+        let data = try XCTUnwrap(body["data"] as? [String: Any])
+        let attributes = try XCTUnwrap(data["attributes"] as? [String: Any])
+        return try XCTUnwrap(attributes["source"] as? [String: Any])
+    }
+
     func testFlagAssignmentsRequest() throws {
         // Given
         let evaluationContext = FlagsEvaluationContext(
@@ -39,7 +75,7 @@ final class FlagAssignmentsRequestTests: XCTestCase {
               },
               "source" : {
                 "sdk_name" : "dd-sdk-ios",
-                "sdk_version" : "3.5.1"
+                "sdk_version" : "\(FlagsSDKMetadata.version)"
               },
               "subject" : {
                 "targeting_attributes" : {

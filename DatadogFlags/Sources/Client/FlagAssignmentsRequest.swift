@@ -7,12 +7,18 @@
 import Foundation
 import DatadogInternal
 
+internal struct FlagsWrapperSource {
+    let sdkName: String
+    let sdkVersion: String
+}
+
 extension URLRequest {
     internal static func flagAssignmentsRequest(
         url: URL,
         evaluationContext: FlagsEvaluationContext,
         context: DatadogContext,
-        customHeaders: [String: String]?
+        customHeaders: [String: String]?,
+        wrapperSource: FlagsWrapperSource? = nil
     ) throws -> URLRequest {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -31,14 +37,18 @@ extension URLRequest {
             }
         }
 
+        // Older bridges cannot identify the loaded JavaScript reader.
+        let wrapper = wrapperSource ?? (context.source == "react-native"
+            ? FlagsWrapperSource(sdkName: "dd-sdk-reactnative", sdkVersion: "unknown")
+            : nil)
         let requestBody = FlagAssignmentsRequestBody(
             environment: FlagAssignmentsRequestBody.Environment(
                 name: context.env,
                 datadogEnvironment: context.env
             ),
             source: FlagAssignmentsRequestBody.Source(
-                sdkName: "dd-sdk-ios",
-                sdkVersion: context.sdkVersion
+                sdkName: wrapper?.sdkName ?? FlagsSDKMetadata.name,
+                sdkVersion: wrapper?.sdkVersion ?? FlagsSDKMetadata.version
             ),
             subject: FlagAssignmentsRequestBody.Subject(
                 targetingKey: evaluationContext.targetingKey,
