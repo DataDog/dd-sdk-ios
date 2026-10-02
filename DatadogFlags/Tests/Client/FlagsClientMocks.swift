@@ -141,6 +141,12 @@ extension AnyValue: AnyMockable, RandomMockable {
 }
 
 final class FlagsRepositoryMock: FlagsRepositoryProtocol {
+    var firstFlags = FirstFlagsCallbacks()
+
+    func onFirstFlags(_ callback: @escaping (FlagsClientEvent) -> Void) -> () -> Void {
+        firstFlags.register(callback)
+    }
+
     var clientName: String
     var flagsData: FlagsData?
     let state: FlagsStateObservable = NOPStateObservable.notReady

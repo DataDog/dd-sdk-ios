@@ -23,6 +23,8 @@ internal protocol FlagsRepositoryProtocol {
 
     func flagAssignments() -> [String: FlagAssignment]?
 
+    func onFirstFlags(_ callback: @escaping (FlagsClientEvent) -> Void) -> () -> Void
+
     func reset()
 }
 
@@ -83,6 +85,9 @@ internal final class FlagsRepository {
     private let featureScope: any FeatureScope
     private let initializationTimeout: TimeInterval?
     private let scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler
+
+    private let installationLock = NSLock()
+    private let firstFlags = FirstFlagsCallbacks()
 
     private let initializationLock = NSLock()
     private var didStartInitialization = false
@@ -211,7 +216,10 @@ internal final class FlagsRepository {
                 cachedAssignment.reason = "CACHED"
                 return cachedAssignment
             } ?? [:]
+            self.installationLock.lock()
             self.flagsData = cachedData
+            let publish = cachedData.flatMap { self.firstFlags.reserve(keys: Array($0.flags.keys)) }
+            self.installationLock.unlock()
 
             // Mark complete and grab pending callbacks atomically
             var callbacks: [() -> Void] = []
@@ -221,15 +229,14 @@ internal final class FlagsRepository {
                 state.pendingCallbacks = []
             }
 
-            // Signal semaphore for blocking getters (on elevated queue to avoid priority inversion)
-            DispatchQueue.global(qos: .userInitiated).async {
-                readSemaphore.signal()
-            }
+            // Release one waiting getter before invoking application callbacks.
+            readSemaphore.signal()
 
             // Execute async callbacks outside the lock
             for callback in callbacks {
                 callback()
             }
+            publish?()
         }
     }
 
@@ -269,6 +276,10 @@ internal final class FlagsRepository {
 
 extension FlagsRepository: FlagsRepositoryProtocol {
     var state: FlagsStateObservable { stateManager }
+
+    func onFirstFlags(_ callback: @escaping (FlagsClientEvent) -> Void) -> () -> Void {
+        firstFlags.register(callback)
+    }
 
     var context: FlagsEvaluationContext? {
         waitForFlagsDataRead()
@@ -327,12 +338,16 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                         takeCompletion()?(.failure(.clientNotInitialized))
                         return
                     }
+                    let date = self.dateProvider.now
+                    self.installationLock.lock()
                     self.flagsData = .init(
                         flags: flags,
                         context: context,
-                        date: self.dateProvider.now
+                        date: date
                     )
                     self._flagsDataVersion.mutate { $0 += 1 }
+                    let publish = self.firstFlags.reserve(keys: Array(flags.keys))
+                    self.installationLock.unlock()
                     self.writeState()
                     let operationCompletion = takeCompletion()
                     if initializationCompletion != nil {
@@ -343,6 +358,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                         self.stateManager.updateState(.ready)
                         operationCompletion?(.success(()))
                     }
+                    publish?()
                 case .failure(let error):
                     // Only update state if no newer request has succeeded.
                     // This prevents an older failing request from clearing data
@@ -386,5 +402,95 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         featureScope.flagsDataStore.removeFlagsData(forClientNamed: clientName)
         flagsData = nil
         stateManager.updateState(.notReady)
+    }
+}
+
+/// Retains the first event independently of registrations. Only the reserving installer may publish it.
+internal final class FirstFlagsCallbacks {
+    private let lock = NSLock()
+    private var event: FlagsClientEvent?
+    private var isPublished = false
+    private var pending: [Registration] = []
+
+    deinit {
+        lock.lock()
+        let registrations = pending
+        pending = []
+        lock.unlock()
+        registrations.forEach { $0.cancel() }
+    }
+
+    func reserve(keys: [String]) -> (() -> Void)? {
+        lock.lock()
+        guard event == nil else {
+            lock.unlock()
+            return nil
+        }
+        event = FlagsClientEvent(type: .configurationChanged, flagsChanged: keys)
+        lock.unlock()
+        return { [weak self] in self?.publish() }
+    }
+
+    func register(_ callback: @escaping (FlagsClientEvent) -> Void) -> () -> Void {
+        let registration = Registration(callback: callback, owner: self)
+        lock.lock()
+        let replay = isPublished ? event : nil
+        if replay == nil {
+            pending.append(registration)
+        }
+        lock.unlock()
+        if let replay {
+            registration.deliver(replay)
+        }
+        return { registration.cancel() }
+    }
+
+    private func publish() {
+        lock.lock()
+        guard !isPublished, let event else {
+            lock.unlock()
+            return
+        }
+        isPublished = true
+        let registrations = pending
+        pending = []
+        lock.unlock()
+        registrations.forEach { $0.deliver(event) }
+    }
+
+    private func remove(_ registration: Registration) {
+        lock.lock()
+        pending.removeAll { $0 === registration }
+        lock.unlock()
+    }
+
+    private final class Registration {
+        private let lock = NSLock()
+        private var callback: ((FlagsClientEvent) -> Void)?
+        private weak var owner: FirstFlagsCallbacks?
+
+        init(callback: @escaping (FlagsClientEvent) -> Void, owner: FirstFlagsCallbacks) {
+            self.callback = callback
+            self.owner = owner
+        }
+
+        func cancel() {
+            lock.lock()
+            let released = callback
+            callback = nil
+            lock.unlock()
+            owner?.remove(self)
+            // Captured objects may run application code in deinit; release them outside both locks.
+            withExtendedLifetime(released) {}
+        }
+
+        func deliver(_ event: FlagsClientEvent) {
+            lock.lock()
+            // Taking the callback is the delivery-start boundary shared with cancellation.
+            let claimed = callback
+            callback = nil
+            lock.unlock()
+            claimed?(event)
+        }
     }
 }

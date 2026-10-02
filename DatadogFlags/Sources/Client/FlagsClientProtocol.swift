@@ -19,6 +19,23 @@ public protocol FlagsClientProtocol: AnyObject {
     /// ``FlagsClientState/stale``, or ``FlagsClientState/error``.
     var state: FlagsStateObservable { get }
 
+    /// Calls the handler once with the first installed disk or network configuration's keys.
+    ///
+    /// Valid empty configurations complete this notification; missing or failed loads do not.
+    /// The first event is retained across subsequent updates and resets. Evaluations in the handler
+    /// use current assignments, which may differ from that first configuration. This is not readiness.
+    /// If already available, replay is synchronous before this method returns; otherwise the handler
+    /// runs on the installing thread after installation bookkeeping. Dispatch UI work as needed.
+    ///
+    /// The returned unregister closure is thread-safe, idempotent and affects only this registration.
+    /// It releases a pending handler and suppresses delivery until that handler is atomically claimed.
+    /// It neither interrupts nor waits for claimed delivery, clears the first event, nor cancels loading.
+    /// Discarding unregister does not cancel. Pending captures are released on delivery, cancellation,
+    /// or destruction of the client repository. Avoid strongly capturing the client in a pending handler.
+    /// Synchronous replay may finish before the unregister closure is returned.
+    @discardableResult
+    func onFirstFlags(_ callback: @escaping (FlagsClientEvent) -> Void) -> () -> Void
+
     /// Sets the evaluation context for flag targeting.
     ///
     /// The evaluation context includes user or session information used to determine which flag
@@ -81,6 +98,12 @@ public protocol FlagsClientProtocol: AnyObject {
 }
 
 extension FlagsClientProtocol {
+    /// Compatibility default for conformers that do not produce first-flags notifications.
+    @discardableResult
+    public func onFirstFlags(_ callback: @escaping (FlagsClientEvent) -> Void) -> () -> Void {
+        return {}
+    }
+
     /// Default state observable for backward compatibility with external conformers.
     ///
     /// External implementations of ``FlagsClientProtocol`` that don't provide their own

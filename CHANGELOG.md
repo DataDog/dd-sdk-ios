@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FEATURE] Flags: Add retained first-flags client events with per-registration cancellation.
+
 - [IMPROVEMENT] Flags: Report `CACHED` for disk-restored assignments while preserving evaluation telemetry.
 
 - [FIX] Keep automatic URLSession spans linked to the RUM view and session captured when each request starts. See [#3220][]
