@@ -21,7 +21,7 @@ final class ProfilingQuotaCheckerTests: XCTestCase {
                 data: quotaResponse(admitted: true, reason: .quotaOk)
             )
         )
-        let checker = ProfilingQuotaChecker(urlSession: server.getInterceptedURLSession())
+        let checker = quotaChecker(for: server)
         let sessionID: UUID = .mockAny()
         let context = DatadogContext.mockWith(
             site: .us1,
@@ -53,7 +53,7 @@ final class ProfilingQuotaCheckerTests: XCTestCase {
                 data: quotaResponse(admitted: true, reason: .quotaOk)
             )
         )
-        let checker = ProfilingQuotaChecker(urlSession: server.getInterceptedURLSession())
+        let checker = quotaChecker(for: server)
 
         // When
         _ = checker.receive(
@@ -74,7 +74,7 @@ final class ProfilingQuotaCheckerTests: XCTestCase {
                 data: quotaResponse(admitted: true, reason: .quotaOk)
             )
         )
-        let checker = ProfilingQuotaChecker(urlSession: server.getInterceptedURLSession())
+        let checker = quotaChecker(for: server)
 
         // When
         [TrackingConsent.pending, .notGranted].forEach { trackingConsent in
@@ -99,7 +99,7 @@ final class ProfilingQuotaCheckerTests: XCTestCase {
                 data: quotaResponse(admitted: true, reason: .quotaOk)
             )
         )
-        let checker = ProfilingQuotaChecker(urlSession: server.getInterceptedURLSession())
+        let checker = quotaChecker(for: server)
         let context = DatadogContext.mockWith(
             trackingConsent: .granted,
             additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: 0)]
@@ -121,7 +121,7 @@ final class ProfilingQuotaCheckerTests: XCTestCase {
                 data: quotaResponse(admitted: true, reason: .quotaOk)
             )
         )
-        let checker = ProfilingQuotaChecker(urlSession: server.getInterceptedURLSession())
+        let checker = quotaChecker(for: server)
         let rumContext = RUMCoreContext.mockWith(sessionSampleRate: .maxSampleRate)
         let pendingConsentContext = DatadogContext.mockWith(
             trackingConsent: .pending,
@@ -138,6 +138,180 @@ final class ProfilingQuotaCheckerTests: XCTestCase {
 
         // Then
         XCTAssertEqual(server.waitAndReturnRequests(count: 1).count, 1)
+    }
+
+    func testDoesNotCheckQuotaWhenContinuousProfilingSamplesOut() {
+        // Given: RUM samples in, but its continuous profiling child does not.
+        let server = quotaServer()
+        let (checker, provider, receiver) = quotaReceiver(for: server, continuousSampleRate: 50)
+        let sessionID = UUID(uuidString: "A1B2C3D4-E5F6-7890-ABCD-D860B2B9437A")!
+        let context = DatadogContext.mockWith(
+            trackingConsent: .granted,
+            additionalContext: [RUMCoreContext.mockWith(sessionID: sessionID, sessionSampleRate: 100)]
+        )
+
+        // When
+        _ = receiver.receive(message: .context(context), from: PassthroughCoreMock())
+
+        // Then
+        XCTAssertEqual(provider.continuousProfilingSampled, false)
+        XCTAssertEqual(server.waitAndReturnRequests(count: 0, timeout: 0.1).count, 0)
+        XCTAssertNil(checker.quotaResult)
+    }
+
+    func testChecksQuotaForAppLaunchWhenContinuousProfilingSamplesOut() {
+        // Given: RUM samples in and has an available launch profile, but continuous profiling samples out.
+        let server = quotaServer()
+        let (_, provider, receiver) = quotaReceiver(
+            for: server,
+            continuousSampleRate: 50,
+            appLaunchSampleRate: 100
+        )
+        let sessionID = UUID(uuidString: "A1B2C3D4-E5F6-7890-ABCD-D860B2B9437A")!
+        let context = DatadogContext.mockWith(
+            trackingConsent: .granted,
+            additionalContext: [RUMCoreContext.mockWith(sessionID: sessionID, sessionSampleRate: 100)]
+        )
+
+        // When
+        _ = receiver.receive(message: .context(context), from: PassthroughCoreMock())
+
+        // Then
+        XCTAssertEqual(provider.appLaunchProfilingSampled, true)
+        XCTAssertEqual(provider.continuousProfilingSampled, false)
+        XCTAssertEqual(server.waitAndReturnRequests(count: 1).count, 1)
+    }
+
+    func testChecksQuotaForAppLaunchWhenContinuousProfilingIsDisabled() {
+        // Given
+        let server = ServerMock(
+            delivery: .success(
+                response: .mockResponseWith(statusCode: 200),
+                data: quotaResponse(admitted: false, reason: .quotaExceeded)
+            )
+        )
+        let (checker, provider, receiver) = quotaReceiver(
+            for: server,
+            continuousSampleRate: 0,
+            appLaunchSampleRate: 100
+        )
+        let rejected = expectation(description: "app-launch quota rejected")
+        checker.onQuotaResultUpdate = { result in
+            if result?.decision == .quotaKO {
+                rejected.fulfill()
+            }
+        }
+        let context = DatadogContext.mockWith(
+            trackingConsent: .granted,
+            additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: 100)]
+        )
+
+        // When
+        _ = receiver.receive(message: .context(context), from: PassthroughCoreMock())
+
+        // Then
+        XCTAssertEqual(provider.continuousProfilingSampled, false)
+        XCTAssertEqual(server.waitAndReturnRequests(count: 1).count, 1)
+        wait(for: [rejected], timeout: 1.0)
+        XCTAssertEqual(checker.quotaResult, .init(decision: .quotaKO, reason: .quotaExceeded))
+    }
+
+    func testDoesNotCheckQuotaForAppLaunchWhenRUMSessionSamplesOut() {
+        // Given
+        let server = quotaServer()
+        let (_, provider, receiver) = quotaReceiver(
+            for: server,
+            continuousSampleRate: 100,
+            appLaunchSampleRate: 100
+        )
+        let context = DatadogContext.mockWith(
+            trackingConsent: .granted,
+            additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: 0)]
+        )
+
+        // When
+        _ = receiver.receive(message: .context(context), from: PassthroughCoreMock())
+
+        // Then
+        XCTAssertEqual(provider.continuousProfilingSampled, false)
+        XCTAssertEqual(server.waitAndReturnRequests(count: 0, timeout: 0.1).count, 0)
+    }
+
+    func testZeroContinuousRateDoesNotCheckQuotaEvenForOperationStart() {
+        // Given
+        let server = quotaServer()
+        let (_, _, receiver) = quotaReceiver(for: server, continuousSampleRate: 0)
+        let core = PassthroughCoreMock()
+        let context = DatadogContext.mockWith(
+            trackingConsent: .granted,
+            additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: 100)]
+        )
+        let start = OperationMessage(attributes: [:], operation: .mockWith(stepType: .start))
+
+        // When
+        _ = receiver.receive(message: .context(context), from: core)
+        _ = receiver.receive(message: .payload(start), from: core)
+        _ = receiver.receive(message: .payload(start), from: core)
+        _ = receiver.receive(message: .context(context), from: core)
+
+        // Then
+        XCTAssertEqual(server.waitAndReturnRequests(count: 0, timeout: 0.1).count, 0)
+    }
+
+    func testChecksQuotaWhenContinuousSamplingDecisionArrivesAfterInitialContext() {
+        // Given
+        let server = quotaServer()
+        let (_, provider, receiver) = quotaReceiver(for: server, continuousSampleRate: 100)
+        let core = PassthroughCoreMock()
+        let initialContext = DatadogContext.mockWith(trackingConsent: .granted, additionalContext: [])
+        let rumContext = DatadogContext.mockWith(
+            trackingConsent: .granted,
+            additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: 100)]
+        )
+
+        // When
+        _ = receiver.receive(message: .context(initialContext), from: core)
+
+        // Then
+        XCTAssertNil(provider.continuousProfilingSampled)
+
+        // When
+        _ = receiver.receive(message: .context(rumContext), from: core)
+
+        // Then
+        XCTAssertEqual(provider.continuousProfilingSampled, true)
+        XCTAssertEqual(server.waitAndReturnRequests(count: 1).count, 1)
+    }
+
+    func testNewSampledInSessionChecksQuotaOnceAfterSampledOutSession() {
+        // Given
+        let server = quotaServer()
+        let (_, _, receiver) = quotaReceiver(for: server, continuousSampleRate: 100)
+        let core = PassthroughCoreMock()
+        let firstSessionID = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
+        let sampledOutSessionID = UUID(uuidString: "00000000-0000-0000-0000-000000000002")!
+        let nextSessionID = UUID(uuidString: "00000000-0000-0000-0000-000000000003")!
+        let firstContext = DatadogContext.mockWith(
+            trackingConsent: .granted,
+            additionalContext: [RUMCoreContext.mockWith(sessionID: firstSessionID, sessionSampleRate: 100)]
+        )
+        let sampledOutContext = DatadogContext.mockWith(
+            trackingConsent: .granted,
+            additionalContext: [RUMCoreContext.mockWith(sessionID: sampledOutSessionID, sessionSampleRate: 0)]
+        )
+        let nextContext = DatadogContext.mockWith(
+            trackingConsent: .granted,
+            additionalContext: [RUMCoreContext.mockWith(sessionID: nextSessionID, sessionSampleRate: 100)]
+        )
+
+        // When
+        _ = receiver.receive(message: .context(firstContext), from: core)
+        _ = receiver.receive(message: .context(sampledOutContext), from: core)
+        _ = receiver.receive(message: .context(nextContext), from: core)
+        _ = receiver.receive(message: .context(nextContext), from: core)
+
+        // Then
+        XCTAssertEqual(server.waitAndReturnRequests(count: 2).count, 2)
     }
 
     func testMapResponse_returnsQuotaKO_forQuotaExceeded() {
@@ -232,7 +406,7 @@ final class ProfilingQuotaCheckerTests: XCTestCase {
                 data: quotaResponse(admitted: true, reason: .quotaOk)
             )
         )
-        let checker = ProfilingQuotaChecker(urlSession: server.getInterceptedURLSession())
+        let checker = quotaChecker(for: server)
         let context = DatadogContext.mockWith(
             site: .us1,
             clientToken: "test-client-token",
@@ -256,7 +430,7 @@ final class ProfilingQuotaCheckerTests: XCTestCase {
                 data: quotaResponse(admitted: true, reason: .quotaOk)
             )
         )
-        let checker = ProfilingQuotaChecker(urlSession: server.getInterceptedURLSession())
+        let checker = quotaChecker(for: server)
         let firstContext = DatadogContext.mockWith(
             site: .us1,
             clientToken: "test-client-token",
@@ -286,7 +460,7 @@ final class ProfilingQuotaCheckerTests: XCTestCase {
                 data: quotaResponse(admitted: true, reason: .quotaOk)
             )
         )
-        let checker = ProfilingQuotaChecker(urlSession: server.getInterceptedURLSession())
+        let checker = quotaChecker(for: server)
         let core = PassthroughCoreMock()
         let context = DatadogContext.mockWith(
             trackingConsent: .granted,
@@ -311,6 +485,44 @@ final class ProfilingQuotaCheckerTests: XCTestCase {
 }
 
 private extension ProfilingQuotaCheckerTests {
+    func quotaServer() -> ServerMock {
+        ServerMock(
+            delivery: .success(
+                response: .mockResponseWith(statusCode: 200),
+                data: quotaResponse(admitted: true, reason: .quotaOk)
+            )
+        )
+    }
+
+    func quotaChecker(for server: ServerMock) -> ProfilingQuotaChecker {
+        let provider = ProfilingSamplerProvider(continuousSampleRate: 100)
+        provider.updateWith(deterministicSampler: DeterministicSampler(seed: 1, samplingRate: 100))
+        return ProfilingQuotaChecker(
+            profilingSamplerProvider: provider,
+            urlSession: server.getInterceptedURLSession()
+        )
+    }
+
+    func quotaReceiver(
+        for server: ServerMock,
+        continuousSampleRate: SampleRate,
+        appLaunchSampleRate: SampleRate = 0
+    ) -> (ProfilingQuotaChecker, ProfilingSamplerProvider, CombinedFeatureMessageReceiver) {
+        let provider = ProfilingSamplerProvider(
+            continuousSampleRate: continuousSampleRate,
+            appLaunchSampleRate: appLaunchSampleRate
+        )
+        let checker = ProfilingQuotaChecker(
+            profilingSamplerProvider: provider,
+            urlSession: server.getInterceptedURLSession()
+        )
+        let receiver = CombinedFeatureMessageReceiver([
+            ProfilingContextMessageReceiver(profilingSamplerProvider: provider),
+            checker
+        ])
+        return (checker, provider, receiver)
+    }
+
     private func quotaResponse(admitted: Bool, reason: DDProfiling.QuotaReason) -> Data {
         quotaResponse(admitted: admitted, rawReason: reason.rawValue)
     }
