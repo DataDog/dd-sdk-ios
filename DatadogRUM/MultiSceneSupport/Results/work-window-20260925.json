@@ -33,7 +33,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": 1791048964.4361632,
+  "updated_at": 1791051393.921695,
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
@@ -393,7 +393,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target175-cycle1-postexit-quiescence.json",
     "sha256": "6866c6558632476c2b931caa11608b21d08e558954821d6e9ee81069bb33ffdc"
   },
-  "next_action": "Complete independent On-only input source/control review and actual UIKit host suitability before any fresh native admission. Awake period remains expired; no human session, renewal or work deadline.",
+  "next_action": "Review exact67On27/48older headless RUM input proposals before native admission, including four typed UIKit controls in the same target. Genuine scene composition remains held. Awake expired; no renewal, human sitting or user work deadline.",
   "deadline_checkpoint": {
     "awake_absence": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-unattended-20261003-fjap711a/deadline-awake-absence.json",
@@ -421,7 +421,15 @@
     }
   },
   "input_preparation": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-source-cycle1/preparation.json",
-    "sha256": "e948ce4b8ffe5067c30dcb2aa024024782aa0510f942278c20e36c89e35541e6"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-source-cycle3/preparation.json",
+    "sha256": "ef6b47b776e7b6c5d6473bf02785848e315fd680a44bcdce813a609574f6114e"
+  },
+  "input_source_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-source-cycle3/review.json",
+    "sha256": "06d41884b7aff0a5f838121dd8fdb10ccd68ae0b456cf97d7ce86bd9aa315003"
+  },
+  "input_rum_native_proposal": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-rum-qualification/proposal-cycle2.json",
+    "sha256": "56d547a66b04c3679932869a631d8407ab37a457250b4b716016ff57d533b845"
   }
 }
