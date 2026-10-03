@@ -389,6 +389,14 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             isAppHangBacktraceEnabled: isAppHangBacktraceEnabled
         )
         #endif
+        #if os(iOS)
+        if dependencies.isMultiSceneTrackingEnabled {
+            let handler: AnyObject = instrumentation.viewsHandler
+            if let handler = handler as? any RUMSceneTargetedManualViewHandling {
+                monitor.bind(sceneTargetedManualViewHandler: handler)
+            }
+        }
+        #endif
         self.requestBuilder = RequestBuilder(
             customIntakeURL: configuration.customEndpoint,
             eventsFilter: RUMViewEventsFilter(telemetry: core.telemetry),
