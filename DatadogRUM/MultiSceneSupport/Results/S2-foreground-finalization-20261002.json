@@ -2,7 +2,7 @@
   "schema_version": 1,
   "owner": "EXP-210",
   "state": "CANDIDATE_ONLY_STOPPED_BEFORE_LAUNCH",
-  "updated_at": 1790991246.97559,
+  "updated_at": 1790994691.977951,
   "gates": [
     "S2:C09",
     "S2:C10"
@@ -450,7 +450,7 @@
     "pushed": false
   },
   "candidate_consumer": {
-    "state": "QUIESCENT_SERVICE_CORRECTION_REVIEW_PENDING",
+    "state": "QUIESCENT_PREARMED_SERVICE_REVIEWED_WAIT_FRESH_HUMAN",
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp",
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/sitting-definition.json",
@@ -738,6 +738,15 @@
   },
   "prospective_owner_service": {
     "record": "Results/S2-prearmed-owner-preparation-20261003.json",
-    "state": "BLOCKED_OWNED_END_SOURCE_REVIEW"
+    "state": "REVIEWED_OFFLINE_NO_NATIVE_ADMISSION",
+    "plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-prearmed-cycle4-3y1yjjsz/runtime/runtime-plan.json",
+      "sha256": "928a9068d91781c062256399d7f9316aadb6b8e81d4d6768f6c0ed78e0f2fd10"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-prearmed-cycle4-3y1yjjsz/runtime/review.json",
+      "sha256": "b732432b48986713501b70e64c88bcb0e3652f014137ff3b35f7083f91d63be5"
+    },
+    "next_action": "One fresh candidate sitting after10:00 Paris only with current user readiness; actual composition still unqualified."
   }
 }

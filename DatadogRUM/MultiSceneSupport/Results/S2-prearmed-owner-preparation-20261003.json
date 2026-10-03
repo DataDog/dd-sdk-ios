@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "BLOCKED_OWNED_END_SOURCE_REVIEW",
+  "state": "REVIEWED_OFFLINE_FOR_SINGLE_FRESH_HUMAN_ADMISSION",
   "owner": "/root",
   "interaction_owner": "/root/s2_split_input_owner",
   "reviewer": "/root/h10_backend_reviewer",
@@ -10,106 +10,53 @@
     "S2:H14"
   ],
   "plan": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-prearmed-sitting-9fr6pm4m/runtime/runtime-plan.json",
-    "sha256": "d97dd7cd5a3a18b2d3ae19e459c6dd274c9a8dd1d8a0a0f9f2a328924d1ee10c"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-prearmed-cycle4-3y1yjjsz/runtime/runtime-plan.json",
+    "sha256": "928a9068d91781c062256399d7f9316aadb6b8e81d4d6768f6c0ed78e0f2fd10"
   },
   "controls": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-prearmed-sitting-9fr6pm4m/runtime/controls.json",
-    "sha256": "594f372d348a193549f60d74613c46484a6bce5975827839db9f97599e87cb32"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-prearmed-cycle4-3y1yjjsz/runtime/controls.json",
+    "sha256": "6d74939ef1a3cb6d162432ec406cde72558cf7dff26c3c4fa7020e525b25c403"
   },
   "review": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-prearmed-sitting-9fr6pm4m/runtime/review.json",
-    "sha256": "7a8158ff4a2bbb87557c2d30e5c68db6a7890abcbdfd7555903e922fffe4644c"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-prearmed-cycle4-3y1yjjsz/runtime/review.json",
+    "sha256": "b732432b48986713501b70e64c88bcb0e3652f014137ff3b35f7083f91d63be5"
   },
   "assignment": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-prearmed-sitting-9fr6pm4m/runtime/reviewer-assignment.json",
-    "sha256": "a4a6d4cb1f026f2218a400b946441b61e8d986b6628fd6e286f6b187a85791d9"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-prearmed-cycle4-3y1yjjsz/runtime/reviewer-assignment.json",
+    "sha256": "368ecfe1d02666c3c26248373ff68eb7eafb9bd9f48eb10d362b7c662e7af4f4"
   },
   "composition": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-prearmed-sitting-9fr6pm4m/preparation/composition-check.json",
-    "sha256": "59f3cc37a7461d014ad0c2a8ae01a86365f5c31fd855ffe66353940fdd52f253"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-prearmed-cycle4-3y1yjjsz/preparation/composition-check.json",
+    "sha256": "1953ce751f66caefe72212567c0e1eb69ee7e2ae85e342e0594f98235040bff9"
   },
   "service": {
     "profile": "PREARMED_SUPPORTED_OWNER_ONLY_V1",
+    "source_preparation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/supported-owner-bridge-cycle4-20261003/preparation.json",
+      "sha256": "7a767dd131901dcec4a211bc5ef29ae7d126c6a01eac6fe7115c8cf83d4f0bf3"
+    },
     "sources": {
       "bridge.py": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/supported-owner-bridge-preparation-20261003/bridge.py",
-        "sha256": "af7ae6b38efb2209c4f988455dc08311a23b305ceba73539eedb543feca03310"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/supported-owner-bridge-cycle4-20261003/bridge.py",
+        "sha256": "109754bae718aaf7927b4e93a314d99a0e45684263eacc4e264efe059c1f3cc6"
       },
       "pump.js": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/supported-owner-bridge-preparation-20261003/pump.js",
-        "sha256": "5d2e402a49511ba09d570043ab8cb3db61cb0e751b5e6c44a89e40dc71eec376"
-      },
-      "test_bridge.py": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/supported-owner-bridge-preparation-20261003/test_bridge.py",
-        "sha256": "22213e97a2f8795078d331e495055465f186d3575a0244ef01019a913b784a3c"
-      },
-      "test_pump.js": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/supported-owner-bridge-preparation-20261003/test_pump.js",
-        "sha256": "7117d0dce41db30fe5606d2d3baadc53b428961711d16ea9add62acd21a23b82"
-      },
-      "qualify.py": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/supported-owner-bridge-preparation-20261003/qualify.py",
-        "sha256": "d92fea10f61e6215d57ec2af0efd7e130d4777b39e7b12c1fcd2e89819b05f54"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/supported-owner-bridge-cycle4-20261003/pump.js",
+        "sha256": "6f4e21db27a8f9b01a874b5ab0ecc3d1f1b5f261decb155bf27aef6750934988"
       },
       "admit.py": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-prearmed-sitting-9fr6pm4m/preparation/admit.py",
         "sha256": "5aa4695bbe5eb058783b5b834b6120a0dd1a090bbd9ebfe6bc86e154e63d6590"
-      },
-      "test_admit.py": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-prearmed-sitting-9fr6pm4m/preparation/test_admit.py",
-        "sha256": "f0d0bf4f66a0b92054aadcb223f9f8ebe2b7c42fbc49eeece405fd0d9b5a7127"
       }
     },
-    "watcher_readiness": "runtime/owner-service/watch-ready.json",
-    "pump_attachment": "runtime/owner-service/pump-attached.json",
-    "admission_owner_service": {
-      "required_fields": [
-        "nonce",
-        "readiness",
-        "attachment",
-        "configuration",
-        "guard"
-      ],
-      "actual_alive_receipts_required": true
+    "latest_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/supported-owner-bridge-cycle4-20261003/controls.json",
+      "sha256": "171212f14b618d6523c382e87d9207b908a19e68ea3a513073349825ef99c7ab"
     },
-    "tools": [
-      "DeviceInteractionStartSession",
-      "DeviceInteractionSynthesize",
-      "DeviceInteractionEndSession"
-    ],
-    "capture_command": "",
     "phase_seconds": 120,
     "attempt_limit": 1,
-    "normal_input_route": "HUMAN_ONLY",
-    "native_acceptance": false,
-    "atomic_admission_wrapper_required": true,
-    "controls": {
-      "service": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/supported-owner-bridge-preparation-20261003/controls.json",
-        "sha256": "c9b06f3bd7c120205a9a23a556ab3008912b4cfb0081a2eb2bdd41dc2587ba86"
-      },
-      "admission": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-prearmed-sitting-9fr6pm4m/preparation/admit-controls.json",
-        "sha256": "0ea5ec24ad9c7f5f8fa2ba88f173ff98a75360da832cb1682fd7b05731396be2"
-      }
-    },
-    "actual_channel": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/supported-owner-bridge-preparation-20261003/actual-channel.json",
-      "sha256": "89b459187ea6828452503063c1f02545415ea9d0aa503201a476e0ab4fa4ee2a"
-    },
-    "quiescence": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/supported-owner-bridge-preparation-20261003/actual-owned-process-absence.json",
-      "sha256": "91bbdcf5f02d6dcfaa09de9cc0b8aded70e7cf9493a061211363778760e22dfa"
-    },
-    "skill": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-prearmed-sitting-9fr6pm4m/preparation/xcode-skills/device-interaction/SKILL.md",
-      "sha256": "fa6cc5115c15f43fd5b2718c8705bec6cc0d6932309bf0df47ede28c0592b044"
-    },
-    "live_tools": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-prearmed-sitting-9fr6pm4m/preparation/live-tool-metadata.json",
-      "sha256": "fb4e8b54a6eaf123529bd71a1efb1a42c8f3e179a62fd5656d9edbe0f58cf3d0"
-    }
+    "full_contract": "Exact runtime plan owner_service holds all publisher, critical joins, failure-only End, tool and lineage bindings.",
+    "native_acceptance": false
   },
   "source": "c9faed816a1d4828d7d8c4b64acae01119425889",
   "frozen_helpers": 85,
@@ -118,20 +65,53 @@
   "controls_new": 44,
   "controls_reused": 32,
   "original_execution_record": "Results/S2-swiftui-split-candidate-20261003.json",
-  "findings": [
-    {
-      "id": "PREARMED-OWNER-R1-01",
-      "priority": "P2",
-      "title": "Damaged phase evidence disables original owned End",
-      "disposition": "CORRECTION_IN_PROGRESS_OFFLINE_ONLY",
-      "correction": "Retain sticky scenario rejection and original Start-key/owner/run/source/cleanup authority; one End-only cleanup path independent of damaged scenario publication. No retry, input, deadline renewal or scenario acceptance from cleanup."
-    }
-  ],
+  "findings": [],
   "native_admitted": false,
   "native_runs": 0,
   "native_calls": 0,
   "human_invitation": false,
   "gates_closed": [],
-  "next_action": "Complete the new cleanup-only service source/controls and exact composition re-review. Preserve this BLOCKED plan/review. First planned candidate human cell may qualify native composition only after fresh user readiness; no invitation before10:00 Paris.",
-  "updated_at": 1790991246.9752162
+  "next_action": "After10:00 Paris and fresh user readiness, rediscover native prerequisites and pre-arm actual supported tool owner before one fresh candidate human sitting. This exact review permits preparation only; no page, clock, admission or native call while user sleeps.",
+  "updated_at": 1790994691.976945,
+  "previous_blocked_reviews": [
+    {
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-prearmed-sitting-9fr6pm4m/runtime/review.json",
+        "sha256": "7a8158ff4a2bbb87557c2d30e5c68db6a7890abcbdfd7555903e922fffe4644c"
+      },
+      "state": "BLOCKED",
+      "finding_ids": [
+        "PREARMED-OWNER-R1-01"
+      ]
+    },
+    {
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-prearmed-cycle2-slh9luzo/runtime/review.json",
+        "sha256": "4666a95c8c5d64b1f43fbd674f8161f362b6dbf276b846aef612b0a2990e6987"
+      },
+      "state": "BLOCKED",
+      "finding_ids": [
+        "PREARMED-OWNER-R2-01",
+        "PREARMED-OWNER-R2-02",
+        "PREARMED-OWNER-R2-03"
+      ]
+    },
+    {
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-prearmed-cycle3-mr5b0lqj/runtime/review.json",
+        "sha256": "2cfe389654d2dbf6450e80ffae154076d63ca9152fd38cfb9494742fe79798ae"
+      },
+      "state": "BLOCKED",
+      "finding_ids": [
+        "PREARMED-OWNER-R3-01"
+      ]
+    }
+  ],
+  "controls_new_latest": 3,
+  "controls_new_lineage": [
+    44,
+    38,
+    9,
+    3
+  ]
 }

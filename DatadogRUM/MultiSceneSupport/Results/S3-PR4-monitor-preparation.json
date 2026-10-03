@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "state": "SOURCE_IMPLEMENTED_INDEPENDENT_REVIEW_PENDING",
+  "delivery_slice": "PR4",
+  "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v",
+  "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/worktree",
+  "base": "2d3de2170248c386a5e7f7de4477ecd703e0c504",
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/definition.json",
+    "sha256": "6a8f1c9de5834964f9085212778d885e900e11997bfecb3c00de14573bd15c2d"
+  },
+  "dependencies": [
+    "PR3 local source/components and bounded Off obligations qualified",
+    "PR6 is future handoff activation; PR5 future real manual-handler conformance; PR13 future public wrappers"
+  ],
+  "next_action": "Complete independent source review, then one source-bound selective discovery/qualification per supported runtime. Actual handoff/manual-handler activation and public APIs remain later slices.",
+  "native_admitted": false,
+  "native_runs": 0,
+  "sdk_edits": 5,
+  "gates_closed": [],
+  "updated_at": 1790994691.979669,
+  "source_preparation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/source-preparation-cycle3/preparation.json",
+    "sha256": "c4a4e04e966c1ae5cae066bbd5fa55147257462f10f48e3aef2cc2c6ec1b44ca"
+  },
+  "source_freeze": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/source-preparation-cycle3/source-freeze.json",
+    "sha256": "7c24ea7d3cd1f347a64f074e8c869d16d04ef9b5dd8f9e44c5767e73ec3dfbb5"
+  },
+  "test_files": 2,
+  "selected_cases": 40,
+  "new_cases": 26,
+  "lint": "Both repository configurations zero violations for explicit task paths"
+}

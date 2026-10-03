@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
-  "state": "PREARMED_SERVICE_REVIEW_BLOCKED",
-  "updated_at": 1790991304.2964659,
+  "state": "PREARMED_SERVICE_REVIEWED_OFFLINE_WAIT_FRESH_HUMAN",
+  "updated_at": 1790994691.978708,
   "execution": {
     "record": "Results/S2-swiftui-split-candidate-20261003.json"
   },
@@ -37,7 +37,7 @@
         "multiple_scenes": false
       }
     ],
-    "prerequisites": "The pre-armed service exact review is BLOCKED on owned End after damaged evidence; the correction proceeds offline in Results/S2-prearmed-owner-preparation-20261003.json. The original prelaunch UNQUALIFIED/INCOMPLETE/INVALID and separate restoration PASS stay immutable. No live S2 worker/session is active. Reuse frozen products,85helpers,32controls,four accepted cells and distinct saved baseline; no human invitation while user sleeps.",
+    "prerequisites": "The pre-armed service passes exact offline review after owned-End, request-lineage, quiescence and Start-publication corrections. Original failed verdicts and separate restoration stay immutable. No S2 worker/session is active. Actual composition still needs one fresh candidate human sitting after10:00 Paris; reuse accepted four cells and distinct saved baseline. Current user readiness and pre-armed actual tool owner are prerequisites.",
     "review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/review.json",
       "sha256": "316fe3377dd485f86562f331469d439785a5d60ef5f5ffe870ede1a32a8b02b2"
@@ -550,5 +550,9 @@
       },
       "original_execution": "Results/S2-rum-only-native-20261002.json"
     }
-  ]
+  ],
+  "prearmed_service_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-prearmed-cycle4-3y1yjjsz/runtime/review.json",
+    "sha256": "b732432b48986713501b70e64c88bcb0e3652f014137ff3b35f7083f91d63be5"
+  }
 }

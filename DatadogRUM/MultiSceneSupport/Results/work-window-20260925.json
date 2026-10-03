@@ -17,8 +17,9 @@
     "instruction": "No human prerequisites. Coordinate through current task/cursor; finish cleanup/checkpoint and remove at deadline."
   },
   "next_task": {
-    "owner": "Results/S2-prearmed-owner-preparation-20261003.json",
-    "scope": "Finish cleanup-only capture service correction and review; independent next PR4 source/plan preparation after local PR3 Off closure. No human prerequisites."
+    "owner": "Results/S3-PR4-monitor-preparation.json",
+    "task": "Reviewed isolated PR4 source/selective component qualification; S2 pre-armed service is reviewed offline and awaits user after10:00 Paris",
+    "human_required_before_deadline": false
   },
   "gate_closures": [
     "S2:H16",
@@ -35,7 +36,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": 1790991573.2707462,
+  "updated_at": 1790994691.979851,
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
