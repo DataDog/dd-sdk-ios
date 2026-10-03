@@ -431,6 +431,117 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertNil(RUMContextHandoff.current(for: owner))
     }
 
+    func testHandoffCallbackScopeCopiesSyncBindingIntoExternalTaskGroup() async {
+        guard supportsHandoffScope else {
+            return
+        }
+        let owner = RUMContextHandoff.Owner()
+        let peer = RUMContextHandoff.Owner()
+        let gate = HandoffAsyncScopeTestGate()
+        var calls = 0
+        let actual = await withTaskGroup(of: String?.self) { group in
+            let result = RUMContextHandoff.withValue(handoffValue("outer"), for: owner) {
+                let result = RUMContextHandoff.withValue(handoffValue("callback"), for: owner) {
+                    calls += 1
+                    group.addTask {
+                        await gate.wait()
+                        XCTAssertNil(RUMContextHandoff.current(for: peer))
+                        return RUMContextHandoff.current(for: owner)?.sceneIdentifier
+                    }
+                    return false
+                }
+                XCTAssertEqual(RUMContextHandoff.current(for: owner)?.sceneIdentifier, "outer")
+                return result
+            }
+            XCTAssertFalse(result)
+            XCTAssertEqual(calls, 1)
+            XCTAssertNil(RUMContextHandoff.current(for: owner))
+            await gate.waitUntilWaiting()
+            await gate.release()
+            return await group.next()!
+        }
+        XCTAssertEqual(actual, "callback")
+        XCTAssertNil(RUMContextHandoff.current(for: owner))
+    }
+
+    func testHandoffCallbackScopeCopiesAsyncBindingIntoExternalTaskGroup() async {
+        guard supportsHandoffScope else {
+            return
+        }
+        let owner = RUMContextHandoff.Owner()
+        let peer = RUMContextHandoff.Owner()
+        let gate = HandoffAsyncScopeTestGate()
+        var calls = 0
+        let actual = await withTaskGroup(of: String?.self) { group in
+            let result = await RUMContextHandoff.withValue(handoffValue("outer"), for: owner) {
+                let result = await RUMContextHandoff.withValue(handoffValue("callback"), for: owner) {
+                    calls += 1
+                    group.addTask {
+                        await gate.wait()
+                        XCTAssertNil(RUMContextHandoff.current(for: peer))
+                        return RUMContextHandoff.current(for: owner)?.sceneIdentifier
+                    }
+                    await gate.waitUntilWaiting()
+                    return false
+                }
+                XCTAssertEqual(RUMContextHandoff.current(for: owner)?.sceneIdentifier, "outer")
+                return result
+            }
+            XCTAssertFalse(result)
+            XCTAssertEqual(calls, 1)
+            XCTAssertNil(RUMContextHandoff.current(for: owner))
+            await gate.release()
+            return await group.next()!
+        }
+        XCTAssertEqual(actual, "callback")
+        XCTAssertNil(RUMContextHandoff.current(for: owner))
+    }
+
+    func testHandoffCallbackScopePreservesTasklessMainActorLifetimeAndInheritedTask() async {
+        guard #available(iOS 17.0, tvOS 17.0, macOS 14.0, watchOS 10.0, *) else {
+            return
+        }
+        let owner = RUMContextHandoff.Owner()
+        let gate = HandoffAsyncScopeTestGate()
+        let value = handoffValue("callback")
+        let child: Task<String?, Never> = await withCheckedContinuation { continuation in
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated {
+                    XCTAssertTrue(withUnsafeCurrentTask { $0 == nil })
+                    MainActor.assertIsolated()
+                    var calls = 0
+                    let (result, child) = RUMContextHandoff.withValue(value, for: owner) {
+                        MainActor.assertIsolated()
+                        calls += 1
+                        XCTAssertEqual(RUMContextHandoff.current(for: owner)?.sceneIdentifier, self.supportsHandoffScope ? "callback" : nil)
+                        var reference: HandoffCallbackMainActorTestReference? = HandoffCallbackMainActorTestReference()
+                        weak var released = reference
+                        XCTAssertEqual(reference?.value, 23)
+                        reference = nil
+                        XCTAssertNil(released)
+                        let child = Task { @MainActor in
+                            await gate.wait()
+                            MainActor.assertIsolated()
+                            return RUMContextHandoff.current(for: owner)?.sceneIdentifier
+                        }
+                        return (false, child)
+                    }
+                    MainActor.assertIsolated()
+                    XCTAssertTrue(withUnsafeCurrentTask { $0 == nil })
+                    XCTAssertFalse(result)
+                    XCTAssertEqual(calls, 1)
+                    XCTAssertNil(RUMContextHandoff.current(for: owner))
+                    continuation.resume(returning: child)
+                }
+            }
+        }
+        await gate.waitUntilWaiting()
+        await gate.release()
+        let actual = await child.value
+        XCTAssertEqual(actual, supportsHandoffScope ? "callback" : nil)
+        XCTAssertNil(RUMContextHandoff.current(for: owner))
+    }
+
     @MainActor
     func testHandoffAsyncExecutionScopePreservesMainActorAndNonSendableResultAcrossSuspension() async {
         guard #available(iOS 17.0, tvOS 17.0, macOS 14.0, watchOS 10.0, *) else {
@@ -1785,4 +1896,8 @@ private actor HandoffAsyncScopeTestActor {
         assertIsolated()
         XCTAssertNil(RUMContextHandoff.current(for: owner))
     }
+}
+@MainActor
+private final class HandoffCallbackMainActorTestReference {
+    let value = 23
 }
