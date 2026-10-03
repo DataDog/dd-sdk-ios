@@ -33,7 +33,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": 1791051393.921695,
+  "updated_at": 1791053132.772597,
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
@@ -421,15 +421,19 @@
     }
   },
   "input_preparation": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-source-cycle3/preparation.json",
-    "sha256": "ef6b47b776e7b6c5d6473bf02785848e315fd680a44bcdce813a609574f6114e"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-source-cycle4/preparation.json",
+    "sha256": "24984c9b74eeed3b7ecfb5f0aa44fdab197a138d4730e0845fa299b27696bf22"
   },
   "input_source_review": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-source-cycle3/review.json",
-    "sha256": "06d41884b7aff0a5f838121dd8fdb10ccd68ae0b456cf97d7ce86bd9aa315003"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-source-cycle4/review.json",
+    "sha256": "a313264b0254117695fb0eb823f8cdbefd0b81bc3b15e90cdf45096a8f3ce467"
   },
   "input_rum_native_proposal": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-rum-qualification/proposal-cycle2.json",
-    "sha256": "56d547a66b04c3679932869a631d8407ab37a457250b4b716016ff57d533b845"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-rum-qualification/proposal-cycle3.json",
+    "sha256": "893de0479e638006d258ed4e57e2e2c2b4451ef3333407cfdc9f5b8d1386e876"
+  },
+  "input_compiler_stop": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_void_datadogrum_ios27_cycle2/compiler-stop.json",
+    "sha256": "7bd81c5386af2ae66af6d198b0b3bd1244dd21a69fab0ee793777a1bdad854c1"
   }
 }
