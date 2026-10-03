@@ -16,7 +16,7 @@
     "until_utc": "2026-10-03T08:00:00+00:00",
     "instruction": "No human prerequisites. Coordinate through current task/cursor; finish cleanup/checkpoint and remove at deadline."
   },
-  "next_task": "Finite PR5 scene-handler implementation/review from qualified local PR4 parent06e87120c; no human input until10:00Paris.",
+  "next_task": "Results/S3-PR5-scene-handler-preparation.json",
   "gate_closures": [
     "S2:H16",
     "S2:T10",
@@ -32,7 +32,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": 1791003650.321174,
+  "updated_at": 1791012618.1844149,
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
@@ -322,21 +322,21 @@
   ],
   "current_awake": {
     "state": "RUNNING_USER_AUTHORIZED",
-    "pid": 11460,
-    "process": "11460 Thu Oct  1 00:46:15 2026     /usr/bin/caffeinate -di -t 7200",
-    "started_at": "2026-09-30T22:46:15+00:00",
-    "authorized_seconds": 7200,
-    "awake_until_utc": "2026-10-01T00:46:15+00:00",
-    "authority": "User: Connected and ready; caffeinate 2 hours",
-    "work_deadline": null,
-    "observed_at": "2026-09-30T22:47:48.978569+00:00",
+    "pid": 35995,
+    "process": "35995 Sat Oct  3 03:18:57 2026     /usr/bin/caffeinate -di -t 24063",
+    "started_at": "2026-10-03T01:18:57.629008+00:00",
+    "authorized_seconds": 24063,
+    "awake_until_utc": "2026-10-03T08:00:00+00:00",
+    "authority": "User: caffeinate and continue without human intervention until 10:00 am Paris time",
+    "work_deadline": "2026-10-03T08:00:00+00:00",
+    "observed_at": "2026-10-03T05:53:51.817273+00:00",
     "receipt": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/awake.json",
-      "sha256": "a35c6cede824eda024e93c52570e46fdaf6efb951b5cae2b1f2886a7feb87cd9"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-unattended-20261003-fjap711a/awake.json",
+      "sha256": "3e31ecac6486423a6ceb5cf13d5e7eb5151bf3c76576ba2382531a3c60843592"
     }
   },
   "minimum_autonomous_work_until_utc": "2026-09-27T06:00:00+00:00",
-  "latest_autonomous_checkpoint": "Results/autonomous-progress-20260927.json",
+  "latest_autonomous_checkpoint": "Results/S3-PR5-scene-handler-preparation.json",
   "historical_entries_note": "Earlier attempt/preparation fields retain historical state. The restart cursor and latest_autonomous_checkpoint own current work; they do not renew old admissions.",
   "human_availability": {
     "date": "2026-10-01",
@@ -376,7 +376,8 @@
   },
   "native_owner": null,
   "last_native_quiescence": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/component175-cycle2-postexit-quiescence.json",
-    "sha256": "00bcf1b74a9eb77b73ba90e3ac559e623621e8c278be458c74102dc2fb03446a"
-  }
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target175-cycle1-postexit-quiescence.json",
+    "sha256": "6866c6558632476c2b931caa11608b21d08e558954821d6e9ee81069bb33ffdc"
+  },
+  "next_action": "Continue finite PR6 action/handoff design and source-backed Off/activation obligations from qualified PR5 parent before08:00UTC. No human prerequisites or accepted test reruns."
 }

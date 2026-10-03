@@ -1,0 +1,401 @@
+{
+  "schema_version": 1,
+  "state": "QUALIFIED_PRIVATE_COMPONENT_AND_FULL_CURRENT_RUM_LOCAL_CHECKPOINT",
+  "delivery_slice": "PR5",
+  "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9",
+  "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/worktree",
+  "base": "06e87120c8d88204f32b6821840ef8a4f0c6c41d",
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/definition.json",
+    "sha256": "0a4401de0abd08d76d48f96553f8519530767fc58aec6f7e12b0e8574aa938e2"
+  },
+  "parent_checkpoint": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/sdk-checkpoint/checkpoint.json",
+    "sha256": "71ec904bc9167f70b6f854d66a623a3956671390d92d15ef1cca7808405a666c"
+  },
+  "design_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/next-pr5-design-review.json",
+    "sha256": "01ec81d5973247250dd2a3c4a1227fbe8e6ef882a6bcd27a8b6dcea92f576bd6"
+  },
+  "next_action": "Prepare finite PR6 action/handoff design from the qualified PR5 parent, resolve On-only owner activation and default-Off obligations before implementation; do not repeat accepted components/full suites or infer whole F12 closure.",
+  "native_admitted": false,
+  "native_runs": 4,
+  "sdk_edits": 5,
+  "gates_closed": [],
+  "updated_at": 1791012618.182251,
+  "source_preparation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/source-preparation-cycle5/preparation.json",
+    "sha256": "2da8f3015af27ca360c5bb88aba47ccf08a167be829926a7f2e6e7a8357ca0b0"
+  },
+  "source_freeze": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/source-preparation-cycle5/source-freeze.json",
+    "sha256": "53042ddf878b4e70047dd423acff3962f3dc28aa65f8246508589ad87a4dfbe2"
+  },
+  "selection": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/source-preparation-cycle5/selection.json",
+    "sha256": "8d56e3cd7c5d559117ef32aa7b789fb1fb7b3bbcfc6a2a2fb0d77325513f2e3f"
+  },
+  "selected_cases": 64,
+  "new_cases": 29,
+  "preserved_cases": 35,
+  "build_inputs": {
+    "framework": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/build-inputs/framework.json",
+      "sha256": "7267e1da63b27c656768f57a1e12d2729a8fc066b61e46832a591fc07e843d2f"
+    },
+    "cache": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/build-inputs/cache.json",
+      "sha256": "82a5d4ee967d843accba076a6636cf68b4786e05f90ab818d7236caeb70ef582"
+    },
+    "cache_reuse": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/build-inputs/cache-reuse.json",
+      "sha256": "74f50727bdfa18873d3ca3b0c745a4b2fd1e4976b58eba6dbaed43f915df757a"
+    }
+  },
+  "consumer_stops": [
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/source-preparation-cycle1/consumer-stop.json",
+      "sha256": "33966613a3a6a664c2dfb5b3f41eeb103eb64d66140fff1b3a3df84180f54fbd"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/source-preparation-cycle2/consumer-stop.json",
+      "sha256": "1d34cbbb22f6e9919fce54f19fdecfe47068b1e73e89167cc7c83431b70612a9"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/build-inputs/consumer-stop.json",
+      "sha256": "b0aff91cc4ccf4af30e28bc2a7a1417fdb17145c2f5ad923495f01173a7de7f6"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/sdk-checkpoint/consumer-stop.json",
+      "sha256": "e55345f91c97f077d2b4fb0a80942c8a45b65c02157524d9a4a71279af3ac906"
+    }
+  ],
+  "previous_blocked_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/source-preparation-cycle3/review.json",
+    "sha256": "db5fa6d452493bc2f7058b4fb1e74804754b01a9b66f1e98728c8b62194f0b9f"
+  },
+  "qualification_preparation": {
+    "state": "COMPONENT_TESTS_RETURNED_REQUIRES_RECONCILIATION",
+    "definitions": {
+      "ios27": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/scene-handler-ios27-qualification-cycle1/definition.json",
+        "sha256": "d092a384dccba44ac834a8d8c44d580e8cfcb040e66fdf047ed59410ebf03d94"
+      },
+      "ios175": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/scene-handler-ios175-qualification-cycle1/definition.json",
+        "sha256": "807e544535683ded89adfc43aec2733c6124f936ae5ceb3eb2a6869d0d12cea2"
+      }
+    },
+    "reviews": {
+      "ios27": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/scene-handler-ios27-qualification-cycle1/review.json",
+        "sha256": "6db475bfb1901eed48e023c319d39d3390bbcb56336dcad71ffdde6054f66e4a"
+      },
+      "ios175": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/scene-handler-ios175-qualification-cycle1/review.json",
+        "sha256": "46db0b82b8a85006b768a64f4ee0922d12a7965a7136777ecad329d4fcd8df27"
+      }
+    },
+    "component_ios27_cycle1": {
+      "state": "COMPONENT_TESTS_RETURNED_REQUIRES_RECONCILIATION",
+      "owner": "/root",
+      "controller_pid": 55480,
+      "controller_pgid": 55480,
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/scene-handler-ios27-qualification-cycle1/definition.json",
+        "sha256": "d092a384dccba44ac834a8d8c44d580e8cfcb040e66fdf047ed59410ebf03d94"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/scene-handler-ios27-qualification-cycle1/review.json",
+        "sha256": "6db475bfb1901eed48e023c319d39d3390bbcb56336dcad71ffdde6054f66e4a"
+      },
+      "controller": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/scene-handler-ios27-qualification-cycle1/controller.py",
+        "sha256": "8fd490b2ff8707987fcf912a4598b5b3db7c5ab314ccb329f2b7cb4b75f4eaa8"
+      },
+      "admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/scene-handler-ios27-qualification-cycle1/admission.json",
+        "sha256": "d8e93ecb6d07051ef4a0665c2d7e1853f61580032497afa8cedaee29257413e3"
+      },
+      "child": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/scene-handler-ios27-qualification-cycle1/native-qualification-start.json",
+        "sha256": "d2756429dec66cd4fc169b4b2b0b5e3461fd90d8c5fb2ff8ff490e5c91da89ef"
+      },
+      "outcome": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/scene-handler-ios27-qualification-cycle1/native-qualification-outcome.json",
+        "sha256": "599e82586827c17b6b074a4104791bf0a65019c2bfe17cf86f0790fa0717d36d"
+      },
+      "cleanup": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/scene-handler-ios27-qualification-cycle1/cleanup.json",
+        "sha256": "c3a01559bc0fea7ca7d1c6a373549e3b58128158455c28dbaad197e1e78e57b5"
+      }
+    },
+    "component_ios175_cycle1": {
+      "state": "COMPONENT_TESTS_RETURNED_REQUIRES_RECONCILIATION",
+      "owner": "/root",
+      "controller_pid": 58604,
+      "controller_pgid": 58604,
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/scene-handler-ios175-qualification-cycle1/definition.json",
+        "sha256": "807e544535683ded89adfc43aec2733c6124f936ae5ceb3eb2a6869d0d12cea2"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/scene-handler-ios175-qualification-cycle1/review.json",
+        "sha256": "46db0b82b8a85006b768a64f4ee0922d12a7965a7136777ecad329d4fcd8df27"
+      },
+      "controller": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/scene-handler-ios175-qualification-cycle1/controller.py",
+        "sha256": "47812de147a9c46d68911637573e6dc3a43b7a2440f26ff258371537876ea306"
+      },
+      "admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/scene-handler-ios175-qualification-cycle1/admission.json",
+        "sha256": "000f9327b88f7f1dc1429a92cc559735e64f1c00fe5608f1bc289414ec444694"
+      },
+      "child": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/scene-handler-ios175-qualification-cycle1/native-qualification-start.json",
+        "sha256": "d1673c0eb6167c8b3bb03988342dc3b0652f39d3c1d9b33312c1ad379978ae73"
+      },
+      "outcome": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/scene-handler-ios175-qualification-cycle1/native-qualification-outcome.json",
+        "sha256": "22f628d9d6394802ad418ba4d87c133c101e744a3090fd0faed6ecb97dc965e5"
+      },
+      "cleanup": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/scene-handler-ios175-qualification-cycle1/cleanup.json",
+        "sha256": "bdd28f33ec642c96bc956156bd84ed536955cf5aeeae0917a71063171b773dd9"
+      }
+    },
+    "full_target_ios27_cycle1": {
+      "state": "COMPONENT_TESTS_RETURNED_REQUIRES_RECONCILIATION",
+      "owner": "/root",
+      "controller_pid": 68371,
+      "controller_pgid": 68371,
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-ios27-qualification-cycle1/definition.json",
+        "sha256": "0ad8633f919e339d06ba557b817dab6f437244814e48eb0b2ac9a9a6fb22ddf4"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-ios27-qualification-cycle1/review.json",
+        "sha256": "8c52f87d374876135ee0b95877d4d872d75278e559e1fa43e74f9c7beeac0ba6"
+      },
+      "controller": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-ios27-qualification-cycle1/controller.py",
+        "sha256": "190dedc0710d305e2c5134c7842f30b7c65136b9602eee3554d109978c675c7c"
+      },
+      "admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-ios27-qualification-cycle1/admission.json",
+        "sha256": "fd27f437137f7f9b0a25584944d3d5b2653174f8a35f1f0c042928862255a545"
+      },
+      "child": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-ios27-qualification-cycle1/native-qualification-start.json",
+        "sha256": "b3e6a5648020051fee255e74eb4d084066f54ed2582c9835665e92a1b1aee5e4"
+      },
+      "outcome": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-ios27-qualification-cycle1/native-qualification-outcome.json",
+        "sha256": "3153e3be555ad184332be70d346600298eac4c2dda6784aed0017271e81d9385"
+      },
+      "cleanup": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-ios27-qualification-cycle1/cleanup.json",
+        "sha256": "47593c3df284b90517b84deb5da094988fc64d06841250f5895889597bda7895"
+      }
+    },
+    "full_target_ios175_cycle1": {
+      "state": "COMPONENT_TESTS_RETURNED_REQUIRES_RECONCILIATION",
+      "owner": "/root",
+      "controller_pid": 70057,
+      "controller_pgid": 70057,
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-ios175-qualification-cycle1/definition.json",
+        "sha256": "103f582e4f630f1a7b84b32b331006689c6eac20ed057758cdb468cce279e8f1"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-ios175-qualification-cycle1/review.json",
+        "sha256": "acd973cb49b63bc51bb527e3966ed956ddcfc6a8e1cf7c55e2620cd948a8ce27"
+      },
+      "controller": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-ios175-qualification-cycle1/controller.py",
+        "sha256": "1ef0d54d623cc16afeb217de628d199bb60e697e48c595613116eaea40b82954"
+      },
+      "admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-ios175-qualification-cycle1/admission.json",
+        "sha256": "5c27b6dfba5dbd319a365ed66d8323b239bee33187705b9508a0fe3e89477ef6"
+      },
+      "child": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-ios175-qualification-cycle1/native-qualification-start.json",
+        "sha256": "a4a82b3f74e8b9c6c405e31e713be0339dc0d67bd6c7fe5ab192e74932cf2949"
+      },
+      "outcome": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-ios175-qualification-cycle1/native-qualification-outcome.json",
+        "sha256": "7d86e7b49463322bd220e3b10714be0b89e5deb8731cd232978f6f3470742549"
+      },
+      "cleanup": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-ios175-qualification-cycle1/cleanup.json",
+        "sha256": "2013327967f53a366fb6cbca7fbaa1e08976b291503433845e88ae3d822304a1"
+      }
+    }
+  },
+  "component_mechanism": {
+    "proposal": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/component-mechanism-proposal.json",
+      "sha256": "8a52f379fa193755367a4cf19983e625850b5d70f93cd8a0d95596b7d517a89a"
+    },
+    "focused_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/component-mechanism-controls.json",
+      "sha256": "3f51256ae6559d40e849e5962c7b23b0b5567d820dd9501df7700b6e9f9bd11e"
+    },
+    "native_credit": false,
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/component-mechanism-review.json",
+      "sha256": "215709be7f46ffcb574a938d05e26f57b96804c84dc9926d91923c1eace433fd"
+    }
+  },
+  "previous_blocked_reviews": [
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/source-preparation-cycle3/review.json",
+      "sha256": "db5fa6d452493bc2f7058b4fb1e74804754b01a9b66f1e98728c8b62194f0b9f"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/source-preparation-cycle4/review.json",
+      "sha256": "c335e12ca41662c04ad4ac2475f74c5df2d15a213a927089cdbc2ffb2b958c6e"
+    }
+  ],
+  "source_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/source-preparation-cycle5/review.json",
+    "sha256": "c5b40fbec2194a2740e333437963d979c6234b186dd2137dd40afd6f36d6b1d9"
+  },
+  "postexit_quiescence": {
+    "ios27": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/component27-cycle1-postexit-quiescence.json",
+      "sha256": "b63120352eb7a99d328450b85645de761a8f56d1c6135db7e1b1d33e377d9e61"
+    },
+    "ios175": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/component175-cycle1-postexit-quiescence.json",
+      "sha256": "5fcb4ce28176dcd6030ce9fa7df3e837ee6e10533ae9024dc3cd1c6c9e03126f"
+    }
+  },
+  "qualifications": {
+    "ios27": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/scene-handler-ios27-qualification-cycle1/qualification.json",
+      "sha256": "f578de3f085eff5c968cda3893a08acb6358d0ed3d4be5d35f07d4726c20820c"
+    },
+    "ios175": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/scene-handler-ios175-qualification-cycle1/qualification.json",
+      "sha256": "2b13e037d3b3bc5a2732458a910d755db0afd1869c94c9feff658c31b08526ec"
+    }
+  },
+  "component_completion_proposal": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/component-completion-proposal.json",
+    "sha256": "380212a6faa2e3d8ce0c186228b88a7f6e75655f8f40251ae37327e5c562614c"
+  },
+  "component_completion_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/component-completion-review.json",
+    "sha256": "77816c947bb257a66f340079c3ac83bf69d2fdfd7bce2c71666978126a53824e"
+  },
+  "deliverable_disposition": {
+    "ids": [
+      "P5D1",
+      "P5D2",
+      "P5D3",
+      "P5D4",
+      "P5D5",
+      "P5D6",
+      "P5D7",
+      "P5D8"
+    ],
+    "state": "QUALIFIED_PRIVATE_COMPONENT_ONLY",
+    "basis": "Designated source5 and final component review;64exactcase PASS each17.5/27, no whole-release credit."
+  },
+  "full_target_qualification_preparation": {
+    "state": "QUALIFIED_FULL_CURRENT_RUM_COMPONENT_ONLY",
+    "mechanism_proposal": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-preparation-cycle1/mechanism-proposal.json",
+      "sha256": "d6868212576b06b177f3433dcf397bd32280d1ae6e83a3de0ca34340bf2852d7"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-preparation-cycle1/controls.json",
+      "sha256": "f32634c90b9b746fbc3de4afb0707e4c3f88af320f8ed16b73c4c47493aaf63d"
+    },
+    "definitions": [
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-ios27-qualification-cycle1/definition.json",
+        "sha256": "0ad8633f919e339d06ba557b817dab6f437244814e48eb0b2ac9a9a6fb22ddf4"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-ios175-qualification-cycle1/definition.json",
+        "sha256": "103f582e4f630f1a7b84b32b331006689c6eac20ed057758cdb468cce279e8f1"
+      }
+    ],
+    "owner_publication_stop": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-preparation-cycle1/owner-publication-consumer-stop.json",
+      "sha256": "f4219f722aeebfb7c2b2999e5ad36a6d0e2ce74df90f9158e9463f756379b6dc"
+    },
+    "native_admitted": false,
+    "gates_closed": [],
+    "mechanism_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-preparation-cycle1/mechanism-review.json",
+      "sha256": "4bdda3e4abb05b5270cf5a61ea5c3c05cf944ea54fdf1c751f1b4310573aae40"
+    },
+    "reviews": [
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-ios27-qualification-cycle1/review.json",
+        "sha256": "8c52f87d374876135ee0b95877d4d872d75278e559e1fa43e74f9c7beeac0ba6"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-ios175-qualification-cycle1/review.json",
+        "sha256": "acd973cb49b63bc51bb527e3966ed956ddcfc6a8e1cf7c55e2620cd948a8ce27"
+      }
+    ],
+    "postexit_quiescence": {
+      "ios27": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target27-cycle1-postexit-quiescence.json",
+        "sha256": "5a4fb13791c76fd4710dd66bbfa68fa165a644eea14e87a4905d1015f72e113b"
+      },
+      "ios175": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target175-cycle1-postexit-quiescence.json",
+        "sha256": "6866c6558632476c2b931caa11608b21d08e558954821d6e9ee81069bb33ffdc"
+      }
+    },
+    "native_runs": 2,
+    "preserved_consumer_stop": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-reconciliation-cycle2/preserved-consumer-stop.json",
+      "sha256": "ac29b9ff490a38112fd0f5b19c09ae477c1e268c8c42b7c9235e85b948bf3e2d"
+    },
+    "count_repair_proposal": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-reconciliation-cycle2/proposal.json",
+      "sha256": "2b9a4b860b8b1e9ae478087e48f40d37778b21348a22dd8051f7cf4778131fcb"
+    },
+    "count_repair_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-reconciliation-cycle2/controls.json",
+      "sha256": "b470a87f0cca55311bf3ecc3a2da84af1d9fe35fd12e1c1dda621b9195b1a13e"
+    },
+    "count_repair_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-reconciliation-cycle2/review.json",
+      "sha256": "a39e68e0972a6f78783f2e3007a103d9055e2d9e7883de7e0fbaf611508db01c"
+    },
+    "qualifications": {
+      "ios27": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-ios27-qualification-cycle1/qualification.json",
+        "sha256": "80bdc211af113c146d47c537e47fbc5580954a7939272286bfb18496de9022f0"
+      },
+      "ios175": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target-ios175-qualification-cycle1/qualification.json",
+        "sha256": "1b5940210008ca4990073d70a2cae59274a6c57ef282bbf4544b7b65435c8254"
+      }
+    },
+    "logical_cases_per_runtime": 1041,
+    "invocations_per_runtime": 1077,
+    "failed": 0,
+    "skipped": 0,
+    "expected_failures": 0,
+    "runtime_warnings": 0,
+    "saved_exports_consumed": true,
+    "native_runs_repeated_for_count_correction": 0
+  },
+  "native_runs_scope": "Two focused private-component and two full-current target executions; no behavioral H-gate or human run.",
+  "source_checkpoint": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/sdk-checkpoint-cycle2/checkpoint.json",
+    "sha256": "4b83e7d2a21eba49da9b399fc5bc316f9c65085f8846c60a83993e9e22ef9566"
+  },
+  "sdk_head": "8cd7793d31fdde07b3b1821dd1413fc69cfe3070",
+  "signature_status": "N",
+  "pushed": false
+}
