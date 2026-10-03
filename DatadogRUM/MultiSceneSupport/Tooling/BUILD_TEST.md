@@ -148,6 +148,14 @@ failures by target and selector when classes share names. `No result`, `notRun`,
 missing selected tests or an unexpected restarted process invalidates the claimed
 complete run. Preserve the first exception before a restarted suite's later pass.
 
+`xcresulttool get test-results` can create a derived SQLite index inside its input
+bundle. Export from an exact, separately owned copy of the finalized same-run
+result, and preserve the original native bundle. Bind original payload members,
+returned raw bytes and the complete copy after export through final publication.
+A consumer stop is separate from native failure; classify saved exports without
+repeating tests. The [PR4 owner](../Results/S3-PR4-monitor-preparation.json) retains
+the observed metadata effect and focused controls.
+
 An MCP-exported xcresult can be an incomplete copy even when its test list is complete. Preserve it; use the actual same-run console path to locate and separately retain the finalized original. Verify its exact selected test tree, device and diagnostics without rerunning tests.
 
 Keep XCTest asynchronous while host bridges serve requests. Collect both immediate
