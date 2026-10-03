@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "CALLBACK_PATTERNS_COMPONENT_CHECKPOINTED_WAIT_INPUT_DESIGN_REVIEW",
+  "state": "INPUT_SOURCE_22_CONTROLS_PREPARED_WAIT_INDEPENDENT_SOURCE_REVIEW",
   "delivery_slice": "PR6",
   "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9",
   "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/worktree",
@@ -28,13 +28,13 @@
   ],
   "controls_defined": 22,
   "design_reviewer": "/root/h10_backend_reviewer",
-  "next_action": "Designated review of On-only installation-selected input design at signed7ef091c48; then source/control review and separately admitted focused native qualification. Reuse accepted suites; no wholePR6/F12 closure.",
+  "next_action": "Complete designated source/control review, correct the Off construction capability query and resolve actual UIKit test-host suitability. Then freeze a fresh reviewed native proposal for the smallest useful unit slice. No human/native input admitted or release gate closed.",
   "implementation_admitted": true,
   "native_admitted": false,
   "native_runs": 6,
   "sdk_edits": 6,
   "gates_closed": [],
-  "updated_at": 1791044420.0922759,
+  "updated_at": 1791048914.902812,
   "previous_definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/next-pr6-controls-definition.json",
     "sha256": "7b374396fc3b8a33818520301d7a2ca3a56c53e7be70360e25fdfd154ece0e4e"
@@ -1138,7 +1138,21 @@
     "sha256": "0b31e6e4897706a3d69d88cbe1796349e80f9bfee2875be9969b0114fff90538"
   },
   "next_input_design": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/next-input-design-cycle3.json",
-    "sha256": "70130095411d653aa10ee4f9e8d26b3faa57e615b2ad9f0e2df509783a8e043d"
-  }
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/next-input-design-cycle5.json",
+    "sha256": "d19099ed03f9d42401a8d8f0e4f0f724976dde211eabe6a7cd41d12595a9f992"
+  },
+  "input_design_analysis": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/next-input-design-analysis-cycle3.json",
+    "sha256": "a97d5b1bc195b61e037b237a67246e136d61ff627146645ca03820a60dedb4ea"
+  },
+  "input_source_preparation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-source-cycle1/preparation.json",
+    "sha256": "e948ce4b8ffe5067c30dcb2aa024024782aa0510f942278c20e36c89e35541e6"
+  },
+  "input_host_metadata": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-host-metadata-cycle1/metadata.json",
+    "sha256": "fa1dbff9974f1ccf25d17c1d3c75b19b13cb2e480aeaefad0f73d7c4bc630275"
+  },
+  "input_native_runs": 0,
+  "input_active_execution": null
 }
