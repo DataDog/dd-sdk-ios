@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "INPUT_REGISTERED_HOST_SUCCESSOR_REVIEWED",
+  "state": "INPUT_REGISTERED_HOST_RESOURCE_BUILD_STOPPED",
   "delivery_slice": "PR6",
   "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9",
   "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/worktree",
@@ -28,13 +28,13 @@
   ],
   "controls_defined": 22,
   "design_reviewer": "/root/h10_backend_reviewer",
-  "next_action": "Admit the independently reviewed registered-host staged build and only the four unqualified UIKit methods. Source5 six SDK paths remain unchanged and accepted63/48 are reused. Review joins all203 controls and exact actual-host compiler/context contracts. Require generated product checkpoint before native, complete results and cleanup, then separate actual-context review and final component review. Preserve original hosted stop/cleanupINVALID and separate restoration; no release gate closes from preparation.",
+  "next_action": "Resolve the task host Info.plist duplicate copy/process output with a source-supported target-only resource membership correction in a fresh fixture. Preserve the old fixture, build exit65, scenarioUNQUALIFIED/evidenceINCOMPLETE/cleanupINVALID and separate Shutdown/quiescencePASS; no app absence/removal claim or SDK regression evidence. No compilation/native test child ran. Reuse Source5 accepted63/48 and unchanged reviewed staged transport; new fixture/build binding needs exact review before another admission.",
   "implementation_admitted": true,
   "native_admitted": false,
   "native_runs": 6,
   "sdk_edits": 6,
   "gates_closed": [],
-  "updated_at": 1791071458.99722,
+  "updated_at": 1791071701.199641,
   "previous_definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/next-pr6-controls-definition.json",
     "sha256": "7b374396fc3b8a33818520301d7a2ca3a56c53e7be70360e25fdfd154ece0e4e"
@@ -709,6 +709,40 @@
       "cleanup": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_hosted_four_runtime_cycle3/cleanup.json",
         "sha256": "8fd1adf8fa959f64a56528fbac201ae1ac93b362bc31e30a91b77b14babc2815"
+      },
+      "actual_test_command": null,
+      "scenario": "UNQUALIFIED",
+      "failure": "AssertionError"
+    },
+    "input_hosted_four_registered_cycle1": {
+      "state": "HOSTED_RETURNED_REQUIRES_RECONCILIATION",
+      "controller_pid": 13099,
+      "controller_pgid": 13099,
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-hosted-runtime-mechanism-cycle6/definition.json",
+        "sha256": "ede44ccc46de6b4cc04c10edce55a739017f1431f41c6784f143ba7e5e508e91"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-hosted-runtime-mechanism-cycle6/review.json",
+        "sha256": "8f71514834223971adf78405b5306b63e802656e108d1125938371e4f7095d71"
+      },
+      "controller": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-hosted-runtime-mechanism-cycle6/hosted_controller.py",
+        "sha256": "75ffb93f3c0e5812b076320e431ab1084fa126d0cb992b78fb1fd809e84555d9"
+      },
+      "admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_hosted_four_registered_runtime_cycle2/admission.json",
+        "sha256": "20f730bf8c1e970234c625a28d21693efb27ca96cc030c20d6bdec6d3bc36517"
+      },
+      "produced_host": null,
+      "build_outcome": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_hosted_four_registered_runtime_cycle2/hosted-build-outcome.json",
+        "sha256": "1be228f94e0eaedc6577e5da98622e1cb4abf50b74491f3e64ef7e6e1b833151"
+      },
+      "native_outcome": null,
+      "cleanup": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_hosted_four_registered_runtime_cycle2/cleanup.json",
+        "sha256": "4d516f5d6ba72d1da85099585e40a596dab88a5526ddc194c649689f10b4ff37"
       },
       "actual_test_command": null,
       "scenario": "UNQUALIFIED",
@@ -1547,7 +1581,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-hosted-four-host-resolution-stop-cycle1/stop.json",
     "sha256": "5ac3a51002ed0ef29e941be09ff8650c1e8e9e89d58f29ca7aab82e49c9dac06"
   },
-  "input_hosted_build_attempts": 1,
+  "input_hosted_build_attempts": 2,
   "input_hosted_test_children": 0,
   "input_hosted_registered_preparation_history": [
     {
@@ -1612,5 +1646,9 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-hosted-runtime-mechanism-cycle5/review.json",
       "sha256": "37f5ba68fed5a747d4aed9c6ee2c42fb2069803e12e7a205285bbfda26e8547f"
     }
-  ]
+  ],
+  "input_hosted_registered_actual_stop": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-registered-host-resource-stop-cycle1/stop.json",
+    "sha256": "3f7c6a57bb47d68780b20dd7b020af883490af3772962068040818c82b50846b"
+  }
 }
