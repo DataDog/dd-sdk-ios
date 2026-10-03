@@ -13,23 +13,12 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include "swift_class_name.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct {
-  const char *data;
-  uint64_t length;
-} dd_swift_class_name_t;
-
-// Opaque Swift runtime metadata. Only the runtime knows its layout.
-typedef struct HeapMetadata HeapMetadata;
-
-/// Invoke the resolver only for sampled allocations. Its result is owned by
-/// the Swift runtime; callers must copy the length-delimited bytes if needed.
-typedef dd_swift_class_name_t (*dd_swift_class_name_resolver_t)(
-    const HeapMetadata *metadata);
 typedef void (*dd_swift_allocation_observer_t)(
     const void *address, uint64_t size, const HeapMetadata *metadata,
     dd_swift_class_name_resolver_t resolve_name);
