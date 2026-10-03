@@ -2,7 +2,7 @@
   "schema_version": 1,
   "owner": "EXP-210",
   "state": "CANDIDATE_ONLY_STOPPED_BEFORE_LAUNCH",
-  "updated_at": "2026-10-03T00:50:23.109407+00:00",
+  "updated_at": 1790991246.97559,
   "gates": [
     "S2:C09",
     "S2:C10"
@@ -327,7 +327,7 @@
   "human_invitation": false,
   "gates_closed": [],
   "candidate_run": true,
-  "next_action": "Review and qualify the pre-armed owner phase service, then prepare one fresh candidate-only sitting. Preserve the stopped attempt and separate restoration; no message-driven retry or repeated baseline.",
+  "next_action": "Complete the new cleanup-only service source/controls and exact composition re-review. Preserve this BLOCKED plan/review. First planned candidate human cell may qualify native composition only after fresh user readiness; no invitation before10:00 Paris.",
   "controls": {
     "state": "PASS",
     "test_count": 27,
@@ -450,7 +450,7 @@
     "pushed": false
   },
   "candidate_consumer": {
-    "state": "STOPPED_BEFORE_SUPPORTED_START_DISPATCH",
+    "state": "QUIESCENT_SERVICE_CORRECTION_REVIEW_PENDING",
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp",
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/sitting-definition.json",
@@ -476,40 +476,7 @@
       "multiple_scenes": false
     },
     "interaction_owner": "/root/s2_split_input_owner",
-    "execution": {
-      "state": "TERMINAL_WORKER_EXIT_RECORDED",
-      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime",
-      "definition": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/runtime-plan.json",
-        "sha256": "8ecffcc61ac6f541f38835a19346405aa720fe1f54d5a97d16e7f4e889fa1421"
-      },
-      "review": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/review.json",
-        "sha256": "316fe3377dd485f86562f331469d439785a5d60ef5f5ffe870ede1a32a8b02b2"
-      },
-      "admission": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/native-admission.json",
-        "sha256": "f4b4fc37cf6536251a771837ec7f12f2cf8881b9403de19d7658169616cb5c2a"
-      },
-      "run_id": "606c7e88-1ecc-4d76-8e66-f74ad4f16f96",
-      "host": "COMP-D7Y69VHK4C",
-      "execution_deadline": 1790990461.478487,
-      "cleanup_deadline": 1790991061.478487,
-      "supervisor_receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/candidate-27.1-duo-SwiftUI-split-single-driver.supervisor.json",
-      "supervisor_state": "PASS",
-      "controller": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/controller-start.json",
-        "sha256": "e920cd0f90744a4f533986c384a11d166572634d2528b7aefc21e3c09629057a"
-      },
-      "worker": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/worker-start.json",
-        "sha256": "1b06e355be102cb3042b4a68131976d9529f7eb8edb40f1b0e2dba0bc13b46a4"
-      },
-      "postexit": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/postexit.json",
-        "sha256": "6e0fcd7be8a2c22479cc960660c09c456cdd951927a0df8b3e1c7722fd2fa74d"
-      }
-    },
+    "execution": null,
     "native_admitted": false,
     "human_invitation": false,
     "passed_offline_controls": 32,
@@ -548,7 +515,7 @@
     },
     "accepted_prefix_unchanged": true,
     "gates_closed": [],
-    "next_action": "Review and qualify the pre-armed owner phase service, then prepare one fresh candidate-only sitting. Preserve the stopped attempt and separate restoration; no message-driven retry or repeated baseline.",
+    "next_action": "Complete the new cleanup-only service source/controls and exact composition re-review. Preserve this BLOCKED plan/review. First planned candidate human cell may qualify native composition only after fresh user readiness; no invitation before10:00 Paris.",
     "limits": [
       "Preparation supplies no native, Home lifecycle, physical Duo or release credit",
       "Keep previous candidate scenario PASS/evidence INCOMPLETE/cleanup PASS and original verdict immutable",
@@ -570,6 +537,10 @@
       "pointer": "/separate_restoration",
       "state": "PASS",
       "original_cleanup": "INVALID"
+    },
+    "lane_handoff": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-unattended-20261003-fjap711a/fresh-s2-quiescence.json",
+      "sha256": "a20b7776bb581dc34cb661943c4a93cd0a857829940a2dacd74bf37dde8e669c"
     }
   },
   "candidate_consumer_history": [
@@ -725,6 +696,14 @@
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-1790931116/runtime/final-closure-observation/failure-classification.json",
         "sha256": "d3c7fa4196429429e2cdcffe791d8b19510cccc707cd8d172d5cc067ace711a3"
       }
+    },
+    {
+      "record": "Results/S2-swiftui-split-candidate-20261003.json",
+      "owner_snapshot": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-unattended-20261003-fjap711a/prior-candidate-consumer.json",
+        "sha256": "00633ef1d6edce525d379fa1f270da50a920be2328f9f7cfd088055e262c569b"
+      },
+      "scope": "TERMINAL_ORIGINAL_VERDICTS_AND_SEPARATE_RESTORATION_PRESERVED"
     }
   ],
   "prospective_candidate_consumer": {
@@ -756,5 +735,9 @@
     "original_invalid_unchanged": true,
     "relocated_sitting_requires_exact_review": true,
     "gates_closed": []
+  },
+  "prospective_owner_service": {
+    "record": "Results/S2-prearmed-owner-preparation-20261003.json",
+    "state": "BLOCKED_OWNED_END_SOURCE_REVIEW"
   }
 }

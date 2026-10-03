@@ -17,8 +17,8 @@
     "instruction": "No human prerequisites. Coordinate through current task/cursor; finish cleanup/checkpoint and remove at deadline."
   },
   "next_task": {
-    "owner": "Results/S2-foreground-finalization-20261002.json",
-    "scope": "Finish pre-armed capture service exact review without native/human admission; then independent reviewed S3 Off coverage and17.5 differential cells. No gestures, authentication or replies while user sleeps."
+    "owner": "Results/S2-prearmed-owner-preparation-20261003.json",
+    "scope": "Finish cleanup-only capture service correction and review; independent next PR4 source/plan preparation after local PR3 Off closure. No human prerequisites."
   },
   "gate_closures": [
     "S2:H16",
@@ -35,7 +35,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": "2026-10-03T01:24:59.837044+00:00",
+  "updated_at": 1790991573.2707462,
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
@@ -376,5 +376,12 @@
   "previous_window_receipt": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-unattended-20261003-fjap711a/previous-work-window.json",
     "sha256": "fae77fd778b4a633fb4d969abfd1fc9f5b653cd65c4d0bd1ca9b5c35455cac77"
+  },
+  "native_owner": {
+    "record": "Results/S3-PR3-routing-preparation.json",
+    "pointer": "/qualification_preparation/default_off_fixture_current_ios17_5_execution_cycle2",
+    "scope": "REVIEWED_AUTOMATED_CURRENT_IOS17_5_OFF_CELL_NO_HUMAN_INPUT",
+    "exec_session_id": 56703,
+    "state": "TERMINAL_QUALIFIED_AND_RESTORED"
   }
 }
