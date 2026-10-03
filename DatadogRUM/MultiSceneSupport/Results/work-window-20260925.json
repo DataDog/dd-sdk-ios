@@ -1,25 +1,24 @@
 {
   "schema_version": 1,
-  "state": "AUTONOMOUS_OFFLINE_PREPARATION_NO_NATIVE_EXECUTION",
-  "authority": "Standing user instruction to continue autonomous plan execution until explicitly stopped; caffeinate has a separate finite duration",
+  "state": "UNATTENDED_OFFLINE_AND_REVIEWED_AUTOMATED_WORK",
+  "authority": "User requested caffeinate and no human intervention until10:00 Paris2026-10-03",
   "started_at": 1790316486.131028,
-  "work_deadline_utc": null,
+  "work_deadline_utc": "2026-10-03T08:00:00+00:00",
   "caffeinate": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-readiness-n9kxi0pu/awake.json",
-    "sha256": "a35c6cede824eda024e93c52570e46fdaf6efb951b5cae2b1f2886a7feb87cd9"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-unattended-20261003-fjap711a/awake.json",
+    "sha256": "3e31ecac6486423a6ceb5cf13d5e7eb5151bf3c76576ba2382531a3c60843592"
   },
   "previous_window": "unattended-work-20260924.json",
   "automation": {
-    "state": "REMOVED",
-    "id": "rum-autonomous-release-progress",
+    "state": "ACTIVE",
+    "id": "rum-unattended-progress-until-10-00-paris",
     "kind": "heartbeat",
-    "minimum_work_until_utc": "2026-09-27T06:00:00+00:00",
-    "instruction": "Continue without human input; remove heartbeat after safe morning checkpoint. This is not a native admission or deadline extension.",
-    "removed_at": "2026-09-27T06:00:55.094691+00:00"
+    "until_utc": "2026-10-03T08:00:00+00:00",
+    "instruction": "No human prerequisites. Coordinate through current task/cursor; finish cleanup/checkpoint and remove at deadline."
   },
   "next_task": {
-    "owner": "Results/S2-swiftui-split271-20260930.json",
-    "scope": "Resolve simulator capture ownership prerequisite before inviting the available operator; physical sessions deferred until21:00. Orientation re-review and H10 source review proceed offline."
+    "owner": "Results/S2-foreground-finalization-20261002.json",
+    "scope": "Finish pre-armed capture service exact review without native/human admission; then independent reviewed S3 Off coverage and17.5 differential cells. No gestures, authentication or replies while user sleeps."
   },
   "gate_closures": [
     "S2:H16",
@@ -36,7 +35,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": "2026-10-01T07:50:00.391038+00:00",
+  "updated_at": "2026-10-03T01:24:59.837044+00:00",
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
@@ -123,7 +122,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automated-scope-rww2sb_g/webview-backend-continuation/summary.json",
     "sha256": "c67b680daecad3400c1ffc85ce8e56ba26629a167932e2b6f7cc0a687ab45543"
   },
-  "awake_until_utc": "2026-10-01T00:46:15+00:00",
+  "awake_until_utc": "2026-10-03T08:00:00+00:00",
   "deadline_correction": {
     "at": "2026-09-25T12:43:44.248636+00:00",
     "previous_inferred_work_deadline_utc": "2026-09-25T12:42:56.993742+00:00",
@@ -373,5 +372,9 @@
     },
     "at": "2026-09-30T23:33:02.223803+00:00",
     "caffeinate": "Retain only the existing authorized assertion until 2026-10-01T00:46:15Z; no extension"
+  },
+  "previous_window_receipt": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-unattended-20261003-fjap711a/previous-work-window.json",
+    "sha256": "fae77fd778b4a633fb4d969abfd1fc9f5b653cd65c4d0bd1ca9b5c35455cac77"
   }
 }

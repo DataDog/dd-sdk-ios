@@ -26,7 +26,7 @@
     "E03 public landing remains open; reviewed local dependency qualified51 RUM+9integration cases on each runtime",
     "PR2 dormant contracts qualified on frozen fresh base; cache child independently source-reviewed and qualified11 component cases per runtime"
   ],
-  "next_action": "Prepare the bounded PR3 F12 default-Off qualification: unchanged existing target suites, source-backed Off tripwires and differential command fixtures before further routing expansion. Reuse accepted64-case On/preservation and11-case cache evidence; no repeat human sitting, activation/public API or release credit.",
+  "next_action": "Execute the two reviewed17.5 parent/current Off cells after fresh source/device/output/worker and S2-quiescence admission checks. Reuse accepted27 pair and all14 positive/zero counters; no repeat suites or wholeF12 closure.",
   "native_runs": 0,
   "sdk_edits": 8,
   "gates_closed": [],
@@ -63,7 +63,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/final-e03-finite-test-selection.json",
     "sha256": "22a9587ec9024f28ade0793005ed3a08e419b534fb3472bf2747e4c13b5dbeab"
   },
-  "updated_at": 1790982948.490564,
+  "updated_at": 1790990750.817062,
   "qualification_preparation": {
     "state": "PAUSED_AT_SAFE_USER_CHECKPOINT",
     "source_freeze": {
@@ -1311,7 +1311,7 @@
     },
     "native_admitted": false,
     "gates_closed": [],
-    "next_action": "On userresume, grade saved current27 coverage with reviewed14detectors; do not repeatnative. Then freshadmission of alreadyreviewed parent/current17.5cells, semanticdifferential and finalPR3component review/checkpoint. Fullcurrent27/17.5suites andboth27Offcells are accepted; no reruns merelyresume. F12whole13PRgate remainsOPEN.",
+    "next_action": "Execute the two reviewed17.5 parent/current Off cells after fresh source/device/output/worker and S2-quiescence admission checks. Reuse accepted27 pair and all14 positive/zero counters; no repeat suites or wholeF12 closure.",
     "preceding_blocked_fixture_reviews": [
       {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/fixture-correction-cycle2/review.json",
@@ -1444,9 +1444,9 @@
       "skipped": 0,
       "runtime_warnings": 0,
       "full_suite_cleanup": "PASS",
-      "exclusive_off_paired_cells_qualified": 0,
-      "exclusive_off_paired_cells_remaining": 4,
-      "exclusive_off_tripwire_qualified": false,
+      "exclusive_off_paired_cells_qualified": 2,
+      "exclusive_off_paired_cells_remaining": 2,
+      "exclusive_off_tripwire_qualified": true,
       "gates_closed": [],
       "ios17_5_logical_methods": 982,
       "ios17_5_actual_invocations": 1018,
@@ -1454,7 +1454,7 @@
       "off_fixture_channel": "PASS_LOCAL_PARENT_AND_CURRENT_IOS27",
       "off_ios27_differential": "PASS_EIGHT_SCENARIOS_INCREMENTAL_PR3_ONLY",
       "off_ios17_5_differential": "OPEN_TWO_NOT_ADMITTED_CELLS",
-      "off_known_on_helpers": "OPEN_SAVED_CURRENT27_COVERAGE_EXPORT_AND_14ZERO_COUNTERS"
+      "off_known_on_helpers": "PASS_SAME_RUN_CURRENT27_14_ZERO_COUNTERS"
     },
     "older_full_suite_proposal": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-full-target-ios17_5-qualification-cycle1/definition.json",
@@ -1483,8 +1483,8 @@
     },
     "finite_deliverable_status": {
       "unchanged_default_suites": "PASS_LOCAL_PR3_SCOPE_BOTH_RUNTIMES",
-      "off_command_differential": "OPEN_FOUR_NATIVE_CELLS",
-      "off_state_and_lookup_tripwires": "OPEN_EXCLUSIVE_OFF_CURRENT27_EVIDENCE"
+      "off_command_differential": "PASS_LOCAL_IOS27_OPEN_IOS17_5_PAIR",
+      "off_state_and_lookup_tripwires": "PASS_PR3_EXCLUSIVE_OFF_CURRENT27_SOURCE_AND_COVERAGE"
     },
     "paired_fixture_proposals": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/paired-fixture-runtime-preparation-cycle1/review-input.json",
@@ -1633,6 +1633,10 @@
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/pause-checkpoint-1790983014.json",
         "sha256": "d19ae65fba394c5533855d04d9ee55b27055560a15cfc10cd604b0abe105e1c5"
       }
+    },
+    "exclusive_off_tripwire_assessment": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/default-off-qualification-preparation-cycle1/saved-current27-off-coverage-20261003/zero-assessment.json",
+      "sha256": "b5f4f5f8285c7650e0c90f13da5c827320cd9e641ffd24f32efd540541b7de49"
     }
   }
 }
