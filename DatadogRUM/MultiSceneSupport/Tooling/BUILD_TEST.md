@@ -24,7 +24,7 @@ for reviewed reclassification; it does not justify repeating accepted tests.
 When copying generated projects, include module maps and their resolved umbrella
 headers in that inventory. Review exact root relocation before building; never
 repair dependency sources for a stale generated path. Non-compiler package/Git
-state needs an explicit disposition and a build path that cannot regenerate it.
+state needs an explicit disposition and a build path that cannot regenerate it. Bind the checkout's compiler floor separately from the installed compiler, language mode and deployment target. Before availability-sensitive forwarding, check the minimum-version public declaration and typecheck the actor-sensitive shape without linking. Retain deprecations; newer-interface/probe evidence cannot replace minimum-compiler or deployed-runtime qualification.
 
 Use fresh per-arm output directories. When reusing a binary, retain its original
 build, source, configuration and complete product fingerprint. Freeze every Mach-O,
