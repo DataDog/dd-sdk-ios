@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 /// The message-bus sends messages to a set of registered receivers.
@@ -69,6 +70,16 @@ internal final class MessageBus {
     ///   - key: The key associated with the receiver.
     func connect(_ receiver: FeatureMessageReceiver, forKey key: String) {
         queue.async { self.bus[key] = receiver }
+    }
+
+    /// On-only registration: a queued connection cannot outlive its issued lifetime.
+    func connect(_ receiver: FeatureMessageReceiver, forKey key: String, while owner: RUMContextHandoff.Owner) {
+        queue.async {
+            guard owner.isValid else {
+                return
+            }
+            self.bus[key] = receiver
+        }
     }
 
     /// Removes the given key and its associated receiver from the bus.

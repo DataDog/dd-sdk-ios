@@ -12,6 +12,21 @@ public protocol RUMContextHandoffOwnerProviding {
     var rumContextHandoffOwner: RUMContextHandoff.Owner? { get }
 }
 
+/// Synchronous activation capability implemented by the built-in Core only.
+/// Custom and NOP cores need not implement this SPI.
+@_spi(Internal)
+public protocol RUMContextHandoffActivating: RUMContextHandoffOwnerProviding {
+    func activateRUMContextHandoff() throws -> RUMContextHandoff.Owner
+    func deactivateRUMContextHandoff(owner: RUMContextHandoff.Owner)
+    func registerRUMContextHandoff<T>(feature: T, owner: RUMContextHandoff.Owner) throws where T: DatadogFeature
+}
+
+/// Receives activation directly, independently of asynchronous context messages.
+@_spi(Internal)
+public protocol RUMContextHandoffReceiving: AnyObject {
+    func receiveRUMContextHandoff(owner: RUMContextHandoff.Owner, active: Bool)
+}
+
 /// Declares request-local ownership; activation is supplied by the scene input layer.
 @_spi(Internal)
 public enum RUMContextHandoff {
@@ -26,7 +41,7 @@ public enum RUMContextHandoff {
             isActive = false
         }
 
-        var isValid: Bool { isActive }
+        public var isValid: Bool { isActive }
     }
 
     public struct CurrentValue {

@@ -6,6 +6,7 @@
 
 import Foundation
 import CoreFoundation
+@_spi(Internal)
 import DatadogInternal
 #if canImport(UIKit)
 import UIKit
@@ -28,6 +29,7 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
 
     /// The scene-tracking mode frozen when this feature is enabled.
     let isMultiSceneTrackingEnabled: Bool
+    let rumContextHandoffOwner: RUMContextHandoff.Owner?
 
     let anonymousIdentifierManager: AnonymousIdentifierManaging
 
@@ -66,6 +68,23 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             supportsMultiSceneTracking: supportsMultiSceneTracking
         )
         self.isMultiSceneTrackingEnabled = featureFlags[.multiSceneTracking]
+
+        let activationCore: RUMContextHandoffActivating?
+        let issuedOwner: RUMContextHandoff.Owner?
+        if featureFlags[.multiSceneTracking] {
+            activationCore = core as? RUMContextHandoffActivating
+            issuedOwner = try activationCore?.activateRUMContextHandoff()
+        } else {
+            activationCore = nil
+            issuedOwner = nil
+        }
+        rumContextHandoffOwner = issuedOwner
+        var initializationCompleted = false
+        defer {
+            if !initializationCompleted, let owner = issuedOwner {
+                activationCore?.deactivateRUMContextHandoff(owner: owner)
+            }
+        }
 
         // Created first: the initial session identity is recorded into it further down, still inside
         // `RUM.enable()`, and `RUM.enableURLSessionTracking` wires the URLSession handler to it.
@@ -510,6 +529,7 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
 
         // Manage anonymous identifier depending on the configuration.
         anonymousIdentifierManager.manageAnonymousIdentifier(shouldTrack: configuration.trackAnonymousUser)
+        initializationCompleted = true
     }
 }
 

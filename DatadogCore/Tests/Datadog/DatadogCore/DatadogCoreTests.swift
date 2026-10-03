@@ -7,7 +7,7 @@
 import XCTest
 import TestUtilities
 @_spi(Internal)
-import DatadogInternal
+@testable import DatadogInternal
 @_spi(Internal)
 @testable import DatadogCore
 
@@ -79,6 +79,312 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertNil(RUMContextHandoff.owner(in: scope))
         core.stop()
         XCTAssertNil(RUMContextHandoff.owner(in: scope))
+    }
+
+    private func makeHandoffCore() -> DatadogCore {
+        DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .notGranted,
+            performance: .mockAny(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: 1,
+            backgroundTasksEnabled: false
+        )
+    }
+
+    func testHandoffActivationPublishesToExistingProviderWithoutLosingContext() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let provider = NetworkContextCoreProvider()
+        let receiver = HandoffReceiver(provider: provider)
+        try core.register(feature: HandoffFeature(receiver: receiver))
+        provider.currentNetworkContext = NetworkContext(rumContext: .mockAny())
+        let context = provider.currentNetworkContext?.rumContext
+
+        let owner = try core.activateRUMContextHandoff()
+
+        XCTAssertTrue(provider.rumContextHandoffOwner === owner)
+        XCTAssertTrue(RUMContextHandoff.owner(in: core.scope(for: HandoffFeature.self)) === owner)
+        XCTAssertEqual(provider.currentNetworkContext?.rumContext?.viewID, context?.viewID)
+        XCTAssertTrue(provider.receive(message: .context(.mockAny()), from: core))
+        XCTAssertTrue(provider.rumContextHandoffOwner === owner)
+    }
+
+    func testProviderRegisteredAfterActivationReceivesSameOwner() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let owner = try core.activateRUMContextHandoff()
+        let provider = NetworkContextCoreProvider()
+        try core.register(feature: HandoffFeature(receiver: HandoffReceiver(provider: provider)))
+        XCTAssertTrue(provider.rumContextHandoffOwner === owner)
+    }
+
+    func testDuplicateActivationAndForeignRollbackPreserveExistingLifetime() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let owner = try core.activateRUMContextHandoff()
+        let foreign = RUMContextHandoff.Owner()
+        XCTAssertThrowsError(try core.activateRUMContextHandoff())
+        core.deactivateRUMContextHandoff(owner: foreign)
+        XCTAssertTrue(core.rumContextHandoffOwner === owner)
+        XCTAssertTrue(owner.isValid)
+        XCTAssertTrue(foreign.isValid)
+    }
+
+    func testDelayedActivePublicationCannotReplaceNewLifetime() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let provider = NetworkContextCoreProvider()
+        let receiver = HandoffReceiver(provider: provider)
+        try core.register(feature: HandoffFeature(receiver: receiver))
+        var replacement: RUMContextHandoff.Owner?
+        receiver.beforePublication = { owner, active in
+            guard active else {
+                return
+            }
+            receiver.beforePublication = nil
+            // Reentrant Core mutation proves receiver callbacks run outside its lock.
+            core.deactivateRUMContextHandoff(owner: owner)
+            replacement = try? core.activateRUMContextHandoff()
+        }
+        let old = try core.activateRUMContextHandoff()
+        XCTAssertFalse(old.isValid)
+        XCTAssertNotNil(replacement)
+        XCTAssertTrue(provider.rumContextHandoffOwner === replacement)
+        provider.receiveRUMContextHandoff(owner: old, active: false)
+        XCTAssertTrue(provider.rumContextHandoffOwner === replacement)
+    }
+
+    func testRegistrationAndContextUpdateDuringPausedPublicationKeepOwner() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let firstProvider = NetworkContextCoreProvider()
+        let receiver = HandoffReceiver(provider: firstProvider)
+        try core.register(feature: HandoffFeature(receiver: receiver))
+        let entered = expectation(description: "publication entered")
+        let finished = expectation(description: "activation completed")
+        let release = DispatchSemaphore(value: 0)
+        receiver.beforePublication = { _, active in
+            if active {
+                entered.fulfill()
+                XCTAssertEqual(release.wait(timeout: .now() + 5), .success)
+            }
+        }
+        DispatchQueue.global().async {
+            defer { finished.fulfill() }
+            do {
+                _ = try core.activateRUMContextHandoff()
+            } catch {
+                XCTFail("Activation unexpectedly failed")
+            }
+        }
+        wait(for: [entered], timeout: 5)
+        let owner = try XCTUnwrap(core.rumContextHandoffOwner)
+        let secondProvider = NetworkContextCoreProvider()
+        try core.register(feature: OtherHandoffFeature(receiver: HandoffReceiver(provider: secondProvider)))
+        firstProvider.currentNetworkContext = NetworkContext(rumContext: .mockAny())
+        let viewID = firstProvider.currentNetworkContext?.rumContext?.viewID
+        release.signal()
+        wait(for: [finished], timeout: 5)
+        XCTAssertTrue(firstProvider.rumContextHandoffOwner === owner)
+        XCTAssertTrue(secondProvider.rumContextHandoffOwner === owner)
+        XCTAssertEqual(firstProvider.currentNetworkContext?.rumContext?.viewID, viewID)
+    }
+
+    func testStopInvalidatesOwnerAndRejectsFurtherActivation() throws {
+        let core = makeHandoffCore()
+        let provider = NetworkContextCoreProvider()
+        try core.register(feature: HandoffFeature(receiver: HandoffReceiver(provider: provider)))
+        let owner = try core.activateRUMContextHandoff()
+        let scope = core.scope(for: HandoffFeature.self)
+        core.stop()
+        XCTAssertFalse(owner.isValid)
+        XCTAssertNil(provider.rumContextHandoffOwner)
+        XCTAssertNil(RUMContextHandoff.owner(in: scope))
+        XCTAssertThrowsError(try core.activateRUMContextHandoff())
+        provider.receiveRUMContextHandoff(owner: owner, active: true)
+        XCTAssertNil(provider.rumContextHandoffOwner)
+    }
+
+    func testRollbackRemovesOnlyIssuedOwnerAndAllowsFreshActivation() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let provider = NetworkContextCoreProvider()
+        try core.register(feature: HandoffFeature(receiver: HandoffReceiver(provider: provider)))
+        let old = try core.activateRUMContextHandoff()
+        core.deactivateRUMContextHandoff(owner: old)
+        XCTAssertFalse(old.isValid)
+        XCTAssertNil(provider.rumContextHandoffOwner)
+        let current = try core.activateRUMContextHandoff()
+        core.deactivateRUMContextHandoff(owner: old)
+        XCTAssertTrue(provider.rumContextHandoffOwner === current)
+        XCTAssertTrue(current.isValid)
+    }
+
+    func testDefaultCoreRegistrationDoesNotActivateHandoff() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let provider = NetworkContextCoreProvider()
+        let receiver = HandoffReceiver(provider: provider)
+        try core.register(feature: HandoffFeature(receiver: receiver))
+        XCTAssertNil(core.rumContextHandoffOwner)
+        XCTAssertNil(provider.rumContextHandoffOwner)
+        XCTAssertEqual(receiver.publications, 0)
+    }
+
+    func testCoreDeallocationInvalidatesExternallyRetainedOwner() throws {
+        var core: DatadogCore? = makeHandoffCore()
+        weak var weakCore = core
+        let owner = try XCTUnwrap(core).activateRUMContextHandoff()
+        core?.flush()
+        core = nil
+        XCTAssertNil(weakCore)
+        XCTAssertFalse(owner.isValid)
+    }
+
+    func testPausedOldPublicationCannotOverwriteReinitializedCoreOwner() throws {
+        let oldCore = makeHandoffCore()
+        let newCore = makeHandoffCore()
+        defer { oldCore.stop(); newCore.stop() }
+        let provider = NetworkContextCoreProvider()
+        let receiver = HandoffReceiver(provider: provider)
+        try oldCore.register(feature: HandoffFeature(receiver: receiver))
+        let entered = expectation(description: "old publication entered")
+        let finished = expectation(description: "old activation returned")
+        let release = DispatchSemaphore(value: 0)
+        receiver.beforePublication = { _, active in
+            if active {
+                entered.fulfill()
+                XCTAssertEqual(release.wait(timeout: .now() + 5), .success)
+            }
+        }
+        DispatchQueue.global().async {
+            defer { finished.fulfill() }
+            do {
+                _ = try oldCore.activateRUMContextHandoff()
+            } catch {
+                XCTFail("Activation unexpectedly failed")
+            }
+        }
+        wait(for: [entered], timeout: 5)
+        let old = try XCTUnwrap(oldCore.rumContextHandoffOwner)
+        oldCore.stop()
+        try newCore.register(feature: HandoffFeature(receiver: HandoffReceiver(provider: provider)))
+        let fresh = try newCore.activateRUMContextHandoff()
+        release.signal()
+        wait(for: [finished], timeout: 5)
+        XCTAssertFalse(old.isValid)
+        XCTAssertTrue(fresh.isValid)
+        XCTAssertTrue(provider.rumContextHandoffOwner === fresh)
+    }
+
+    func testRegistrationAfterStopRejectsFeatureAndRemovesOnlyCreatedStore() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let owner = try core.activateRUMContextHandoff()
+        let entered = expectation(description: "registration prepared its store")
+        let finished = expectation(description: "registration returned")
+        let release = DispatchSemaphore(value: 0)
+        let feature = PausedHandoffRemoteFeature {
+            entered.fulfill()
+            XCTAssertEqual(release.wait(timeout: .now() + 5), .success)
+        }
+        DispatchQueue.global().async {
+            defer { finished.fulfill() }
+            do {
+                try core.registerRUMContextHandoff(feature: feature, owner: owner)
+                XCTFail("Registration unexpectedly succeeded after stop")
+            } catch {
+                // Rejection after the terminal stop is required.
+            }
+        }
+        wait(for: [entered], timeout: 5)
+        core.stop()
+        release.signal()
+        wait(for: [finished], timeout: 5)
+        XCTAssertFalse(owner.isValid)
+        XCTAssertNil(core.get(feature: PausedHandoffRemoteFeature.self))
+        XCTAssertNil(core.stores[PausedHandoffRemoteFeature.name])
+        core.flush()
+    }
+
+    func testStoppedOwnerSkipsQueuedConnectionAndInitialContext() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let owner = try core.activateRUMContextHandoff()
+        let activeReceiver = HandoffReceiver(provider: NetworkContextCoreProvider())
+        try core.registerRUMContextHandoff(feature: HandoffFeature(receiver: activeReceiver), owner: owner)
+        core.contextProvider.flush()
+        core.bus.flush()
+        XCTAssertGreaterThan(activeReceiver.messages, 0)
+
+        let entered = expectation(description: "bus queue held before registration")
+        let release = DispatchSemaphore(value: 0)
+        core.bus.queue.async {
+            entered.fulfill()
+            XCTAssertEqual(release.wait(timeout: .now() + 5), .success)
+        }
+        wait(for: [entered], timeout: 5)
+        let stoppedReceiver = HandoffReceiver(provider: NetworkContextCoreProvider())
+        // The registry commit succeeds while connect and initial context await the bus.
+        try core.registerRUMContextHandoff(feature: OtherHandoffFeature(receiver: stoppedReceiver), owner: owner)
+        XCTAssertNotNil(core.get(feature: OtherHandoffFeature.self))
+        core.contextProvider.flush()
+        // This probe precedes stop's removal, so an unguarded connection is observable.
+        core.send(message: .context(.mockAny()), else: {})
+        core.stop()
+        XCTAssertFalse(owner.isValid)
+        release.signal()
+        core.bus.flush()
+        XCTAssertEqual(stoppedReceiver.messages, 0)
+        XCTAssertNil(stoppedReceiver.provider.rumContextHandoffOwner)
+    }
+
+    func testForeignAndExpiredRegistrationPreserveAcceptedStoreAndFeature() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let owner = try core.activateRUMContextHandoff()
+        try core.registerRUMContextHandoff(feature: FeatureMock(), owner: owner)
+        let acceptedStore = try XCTUnwrap(core.stores[FeatureMock.name])
+        let acceptedUploader = try XCTUnwrap(acceptedStore.upload.uploader as? DataUploadWorker)
+        let foreign = RUMContextHandoff.Owner()
+        let expired = RUMContextHandoff.Owner()
+        expired.invalidate()
+        for rejectedOwner in [foreign, expired] {
+            XCTAssertThrowsError(try core.registerRUMContextHandoff(feature: FeatureMock(), owner: rejectedOwner))
+            let currentStore = try XCTUnwrap(core.stores[FeatureMock.name])
+            XCTAssertTrue(currentStore.storage.authorizedFilesOrchestrator === acceptedStore.storage.authorizedFilesOrchestrator)
+            XCTAssertTrue(currentStore.storage.unauthorizedFilesOrchestrator === acceptedStore.storage.unauthorizedFilesOrchestrator)
+            XCTAssertTrue(try XCTUnwrap(currentStore.upload.uploader as? DataUploadWorker) === acceptedUploader)
+            XCTAssertNotNil(core.get(feature: FeatureMock.self))
+            XCTAssertTrue(core.rumContextHandoffOwner === owner)
+        }
+        let writeCompleted = expectation(description: "accepted scope remains usable")
+        core.scope(for: FeatureMock.self).eventWriteContext { _, writer in
+            writer.write(value: FeatureMock.Event(event: "retained-owner"))
+            writeCompleted.fulfill()
+        }
+        wait(for: [writeCompleted], timeout: 5)
+        core.flush()
+    }
+
+    func testReplacingFeatureReleasesItAfterRegistryUnlock() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        var released = false
+        var feature: ReentrantDeinitFeature? = ReentrantDeinitFeature {
+            // A registry lookup here would deadlock if destruction held its write lock.
+            XCTAssertNotNil(core.get(feature: ReentrantDeinitFeature.self))
+            released = true
+        }
+        try core.register(feature: XCTUnwrap(feature))
+        feature = nil
+        try core.register(feature: ReentrantDeinitFeature {})
+        XCTAssertTrue(released)
     }
 
     func testGivenRemoteConfigurationProvider_whenReadingRemoteConfiguration_itReturnsCachedValue() throws {
@@ -795,4 +1101,55 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertEqual(userAfter.name, "user-name")
         XCTAssertEqual(userAfter.email, "user-email")
     }
+}
+
+private struct HandoffFeature: DatadogFeature {
+    static let name = "handoff-test"
+    let receiver: HandoffReceiver
+    var messageReceiver: FeatureMessageReceiver { receiver }
+}
+
+private struct OtherHandoffFeature: DatadogFeature {
+    static let name = "other-handoff-test"
+    let receiver: HandoffReceiver
+    var messageReceiver: FeatureMessageReceiver { receiver }
+}
+
+private final class HandoffReceiver: FeatureMessageReceiver, RUMContextHandoffReceiving {
+    let provider: NetworkContextCoreProvider
+    var beforePublication: ((RUMContextHandoff.Owner, Bool) -> Void)?
+    private(set) var publications = 0
+    private(set) var messages = 0
+
+    init(provider: NetworkContextCoreProvider) { self.provider = provider }
+
+    func receiveRUMContextHandoff(owner: RUMContextHandoff.Owner, active: Bool) {
+        beforePublication?(owner, active)
+        publications += 1
+        provider.receiveRUMContextHandoff(owner: owner, active: active)
+    }
+
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+        messages += 1
+        return false
+    }
+}
+
+private struct PausedHandoffRemoteFeature: DatadogRemoteFeature {
+    static let name = "paused-handoff-registration"
+    let beforeReceiverRead: () -> Void
+    var requestBuilder: FeatureRequestBuilder { FeatureRequestBuilderMock() }
+    var performanceOverride: PerformancePresetOverride? { nil }
+    var messageReceiver: FeatureMessageReceiver {
+        beforeReceiverRead()
+        return NOPFeatureMessageReceiver()
+    }
+}
+
+private final class ReentrantDeinitFeature: DatadogFeature {
+    static let name = "reentrant-deinit-test"
+    let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
+    let onDeinit: () -> Void
+    init(onDeinit: @escaping () -> Void) { self.onDeinit = onDeinit }
+    deinit { onDeinit() }
 }
