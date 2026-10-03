@@ -338,11 +338,16 @@
     "main_head": "bde45188343747ed80a0489c5c58fe0b4c1d8ed8",
     "main_signature": "N",
     "status": "M Datadog/Datadog.xcodeproj/project.pbxproj\nA  xcconfigs/Datadog.local.xcconfig\n?? DatadogRUM/MultiSceneSupport/RUM_NAVIGATION_HOST_INTEGRATION.md",
-    "state": "RUNNING_USER_AUTHORIZED",
+    "state": "EXPIRED_VERIFIED_ABSENT",
     "receipt": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/awake.json",
       "sha256": "9df884e34d06a04becc6c9dea3536de1efe57cca22034619c4aaaf3e59672d0c"
-    }
+    },
+    "verification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/awake-expiry.json",
+      "sha256": "a0d9139dd5b4a64f19351896f171115d6b6dc2657a2b4fda5aa5d8e4571681ae"
+    },
+    "renewed": false
   },
   "minimum_autonomous_work_until_utc": "2026-09-27T06:00:00+00:00",
   "latest_autonomous_checkpoint": "Results/S3-PR6-action-preparation.json",
@@ -388,7 +393,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target175-cycle1-postexit-quiescence.json",
     "sha256": "6866c6558632476c2b931caa11608b21d08e558954821d6e9ee81069bb33ffdc"
   },
-  "next_action": "Continue bounded P6D4 execution-scope design/source preparation from qualified P6D5; no active human/native admission.",
+  "next_action": "Review finite async execution-scope design from qualified synchronous checkpoint; no awake renewal or human sitting. Fresh native admission only after source and proposal review.",
   "deadline_checkpoint": {
     "awake_absence": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-unattended-20261003-fjap711a/deadline-awake-absence.json",
@@ -402,7 +407,7 @@
     "gates_closed": []
   },
   "latest_component_checkpoint": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/component-closure/sdk-checkpoint.json",
-    "sha256": "0b04e4d62e218efe20ae2720e8f14e0d7b52bf1757e6b1ed61f878a9c8aa6f62"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/execution-scope-component-closure/sdk-checkpoint.json",
+    "sha256": "e6834d2c8193e233d77824e259f24ae3fe8aaa12ee531898bf999c5b02db8ece"
   }
 }
