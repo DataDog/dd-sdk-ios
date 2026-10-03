@@ -108,6 +108,39 @@ private func observeSwiftDeallocation(_ address: UnsafeRawPointer?) {
     SwiftAllocationRecorder.recordDeallocation(address: address)
 }
 
+private enum SwiftLiveSetBridge {
+    nonisolated(unsafe) static var table: OpaquePointer?
+    nonisolated(unsafe) static var generation: UInt64 = 0
+    nonisolated(unsafe) static var targetMetadata: UInt = 0
+}
+
+private func observeLiveSwiftAllocation(
+    _ address: UnsafeRawPointer?,
+    _ size: UInt64,
+    _ metadata: OpaquePointer?,
+    _ resolveName: dd_swift_class_name_resolver_t?
+) {
+    guard let address, let metadata, let table = SwiftLiveSetBridge.table,
+          UInt(bitPattern: metadata) == SwiftLiveSetBridge.targetMetadata else {
+        return
+    }
+    var sample = dd_memory_live_sample_t()
+    sample.address = address
+    sample.size = size
+    sample.weight = 1
+    sample.swift_metadata = metadata
+    sample.swift_name_resolver = resolveName
+    sample.source = DD_MEMORY_LIVE_SAMPLE_SOURCE_SWIFT
+    _ = dd_memory_live_set_insert(table, SwiftLiveSetBridge.generation, &sample)
+}
+
+private func observeLiveSwiftDeallocation(_ address: UnsafeRawPointer?) {
+    guard let table = SwiftLiveSetBridge.table else {
+        return
+    }
+    _ = dd_memory_live_set_remove(table, SwiftLiveSetBridge.generation, address)
+}
+
 final class SwiftAllocHookTests: XCTestCase {
     override func setUp() {
         super.setUp()
@@ -122,6 +155,63 @@ final class SwiftAllocHookTests: XCTestCase {
     override func tearDown() {
         dd_swift_alloc_hook_stop()
         super.tearDown()
+    }
+
+    func testLiveSetTracksRealARCAndResolvesSwiftName() throws {
+        let table = try XCTUnwrap(dd_memory_live_set_create())
+        let generation = dd_memory_live_set_start(table)
+        XCTAssertNotEqual(generation, 0)
+        SwiftLiveSetBridge.table = table
+        SwiftLiveSetBridge.generation = generation
+        SwiftLiveSetBridge.targetMetadata = UInt(
+            bitPattern: unsafeBitCast(PureSwiftAllocationFixture.self, to: UnsafeRawPointer.self)
+        )
+        defer {
+            dd_swift_alloc_hook_stop()
+            SwiftLiveSetBridge.table = nil
+            dd_memory_live_set_destroy(table)
+        }
+        XCTAssertEqual(
+            dd_swift_alloc_hook_start(observeLiveSwiftAllocation, observeLiveSwiftDeallocation),
+            DD_SWIFT_ALLOC_HOOK_ALREADY_INSTALLED
+        )
+
+        var retained: PureSwiftAllocationFixture? = PureSwiftAllocationFixture()
+        let address = UInt(bitPattern: Unmanaged.passUnretained(try XCTUnwrap(retained)).toOpaque())
+        let output = UnsafeMutablePointer<dd_memory_live_sample_t>.allocate(capacity: 4)
+        output.initialize(repeating: dd_memory_live_sample_t(), count: 4)
+        defer {
+            output.deinitialize(count: 4)
+            output.deallocate()
+        }
+        var count = 0
+        withExtendedLifetime(retained) {
+            XCTAssertTrue(dd_memory_live_set_snapshot(
+                table, generation, output, 4, nil, 0, &count, nil
+            ))
+            XCTAssertEqual(count, 1)
+        }
+        var sample = try XCTUnwrap(count == 1 ? output.pointee : nil)
+        XCTAssertEqual(UInt(bitPattern: sample.address), address)
+        XCTAssertNil(sample.class_name)
+        let className = dd_memory_live_sample_class_name(output)
+        let nameBytes = try XCTUnwrap(className.data)
+        let nameBuffer = UnsafeRawBufferPointer(start: nameBytes, count: Int(className.length))
+        let name = String(decoding: nameBuffer, as: UTF8.self)
+        XCTAssertTrue(name.contains("PureSwiftAllocationFixture"))
+
+        retained = nil
+        XCTAssertTrue(dd_memory_live_set_snapshot(
+            table, generation, output, 4, nil, 0, &count, nil
+        ))
+        XCTAssertEqual(count, 0)
+        dd_swift_alloc_hook_stop()
+        let nameAfterRelease = dd_memory_live_sample_class_name(&sample)
+        let bytesAfterRelease = try XCTUnwrap(nameAfterRelease.data)
+        let releasedLength = Int(nameAfterRelease.length)
+        let releasedBuffer = UnsafeRawBufferPointer(start: bytesAfterRelease, count: releasedLength)
+        let resolvedAfterRelease = String(decoding: releasedBuffer, as: UTF8.self)
+        XCTAssertEqual(resolvedAfterRelease, name)
     }
 
     func testInstallPatchesRequiredSlots() {

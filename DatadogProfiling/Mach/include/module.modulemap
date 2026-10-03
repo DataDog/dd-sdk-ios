@@ -3,6 +3,7 @@ module DatadogMachProfiler {
   header "dd_pprof.h"
   header "swift_alloc_hook.h"
   header "objc_alloc_hook.h"
+  header "memory_live_set.h"
   export *
 
   explicit module Cxx {
@@ -25,6 +26,7 @@ module DatadogMachProfiler {
       header "safe_read_testing.h"
       header "swift_alloc_hook_testing.h"
       header "objc_alloc_hook_testing.h"
+      header "memory_live_set_testing.h"
       export *
   }
 }
