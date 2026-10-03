@@ -17,6 +17,10 @@ path sets and bytes, not a manifest hash alone. Reject unexpected files and
 symlinks. For tracked directory symlinks, check mode, Git blob and literal target
 separately. Recheck source/helper identity before assertions and after execution.
 Generated outputs must be explicitly inventoried outside the admitted source roots.
+Parse compiler flags as argv; accept exact joined/separate defines. Inventory target
+version C separately, binding source/object/link bytes and the object variant from
+actual compiler sanitizer flags. A read-only verifier stop preserves native results
+for reviewed reclassification; it does not justify repeating accepted tests.
 When copying generated projects, include module maps and their resolved umbrella
 headers in that inventory. Review exact root relocation before building; never
 repair dependency sources for a stale generated path. Non-compiler package/Git

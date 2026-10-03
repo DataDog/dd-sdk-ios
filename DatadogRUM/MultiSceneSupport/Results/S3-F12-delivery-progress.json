@@ -98,10 +98,10 @@
       "off_contract": "Current DDApplication/DDEvent swizzle calls previous IMP once; no new installation/scene lookup/handoff read/owner allocation",
       "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
       "rebuild_obligation": "Core capability declared PR2; allocate only after resolved On, propagate to already-existing network provider without module imports or extra Off locks",
-      "status": "ACTIVATION_DESIGN_REVIEWED_NOT_IMPLEMENTED",
+      "status": "P6D5_PRIVATE_COMPONENT_QUALIFIED",
       "owning_record": "Results/S3-PR6-action-preparation.json",
       "whole_F12_closed": false,
-      "remaining": "Implement/qualify reviewed P6D5 transaction and provider foundation first; then existing finite input, scroll, lifetime, platform and source-paired Off obligations."
+      "remaining": "P6D5 is checkpointed with42cases perOS and exact compiler/product/result/cleanup joins. Execution scope, input/scroll, platform and source-paired Off obligations remain before whole PR6 qualification."
     },
     {
       "id": "PR7",
@@ -223,5 +223,5 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": 1791013182.62228
+  "updated_at": 1791027553.984697
 }

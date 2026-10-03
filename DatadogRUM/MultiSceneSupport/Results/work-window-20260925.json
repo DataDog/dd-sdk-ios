@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "state": "UNATTENDED_WINDOW_COMPLETE_SAFE_CHECKPOINT",
-  "authority": "User requested caffeinate and no human intervention until10:00 Paris2026-10-03",
+  "state": "CONTINUING_USER_AUTHORIZED",
+  "authority": "User: Continue; you can caffeinate until14:00 Paris time",
   "started_at": 1790316486.131028,
-  "work_deadline_utc": "2026-10-03T08:00:00+00:00",
+  "work_deadline_utc": null,
   "caffeinate": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-unattended-20261003-fjap711a/awake.json",
     "sha256": "3e31ecac6486423a6ceb5cf13d5e7eb5151bf3c76576ba2382531a3c60843592"
@@ -120,7 +120,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automated-scope-rww2sb_g/webview-backend-continuation/summary.json",
     "sha256": "c67b680daecad3400c1ffc85ce8e56ba26629a167932e2b6f7cc0a687ab45543"
   },
-  "awake_until_utc": "2026-10-03T08:00:00+00:00",
+  "awake_until_utc": "2026-10-03T12:00:00+00:00",
   "deadline_correction": {
     "at": "2026-09-25T12:43:44.248636+00:00",
     "previous_inferred_work_deadline_utc": "2026-09-25T12:42:56.993742+00:00",
@@ -322,24 +322,27 @@
     }
   ],
   "current_awake": {
-    "state": "EXPIRED_VERIFIED_ABSENT",
-    "pid": 35995,
-    "process": "35995 Sat Oct  3 03:18:57 2026     /usr/bin/caffeinate -di -t 24063",
-    "started_at": "2026-10-03T01:18:57.629008+00:00",
-    "authorized_seconds": 24063,
-    "awake_until_utc": "2026-10-03T08:00:00+00:00",
-    "authority": "User: caffeinate and continue without human intervention until 10:00 am Paris time",
-    "work_deadline": "2026-10-03T08:00:00+00:00",
-    "observed_at": "2026-10-03T05:53:51.817273+00:00",
+    "pid": 163,
+    "pgid": 163,
+    "command": [
+      "/usr/bin/caffeinate",
+      "-di",
+      "-t",
+      "10176"
+    ],
+    "started_at": "2026-10-03T09:10:24.093986+00:00",
+    "until_utc": "2026-10-03T12:00:00+00:00",
+    "until_paris": "2026-10-03T14:00:00+02:00",
+    "authority": "User: Continue; you can caffeinate until14:00 Paris",
+    "protected_state_verified": true,
+    "main_head": "bde45188343747ed80a0489c5c58fe0b4c1d8ed8",
+    "main_signature": "N",
+    "status": "M Datadog/Datadog.xcodeproj/project.pbxproj\nA  xcconfigs/Datadog.local.xcconfig\n?? DatadogRUM/MultiSceneSupport/RUM_NAVIGATION_HOST_INTEGRATION.md",
+    "state": "RUNNING_USER_AUTHORIZED",
     "receipt": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-unattended-20261003-fjap711a/awake.json",
-      "sha256": "3e31ecac6486423a6ceb5cf13d5e7eb5151bf3c76576ba2382531a3c60843592"
-    },
-    "verification": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-unattended-20261003-fjap711a/deadline-awake-absence.json",
-      "sha256": "29d9bdd4ddbceed9c410cd117af25bd38c094ac5745a51a8167b5a202d43db1d"
-    },
-    "renewed": false
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/awake.json",
+      "sha256": "9df884e34d06a04becc6c9dea3536de1efe57cca22034619c4aaaf3e59672d0c"
+    }
   },
   "minimum_autonomous_work_until_utc": "2026-09-27T06:00:00+00:00",
   "latest_autonomous_checkpoint": "Results/S3-PR6-action-preparation.json",
@@ -377,15 +380,15 @@
     "caffeinate": "Retain only the existing authorized assertion until 2026-10-01T00:46:15Z; no extension"
   },
   "previous_window_receipt": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-unattended-20261003-fjap711a/previous-work-window.json",
-    "sha256": "fae77fd778b4a633fb4d969abfd1fc9f5b653cd65c4d0bd1ca9b5c35455cac77"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/previous-work-window.json",
+    "sha256": "368f074634275f479c53fedc8d87645dd1bd10efe1a9ea58a917731d1e9bfcbd"
   },
   "native_owner": null,
   "last_native_quiescence": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target175-cycle1-postexit-quiescence.json",
     "sha256": "6866c6558632476c2b931caa11608b21d08e558954821d6e9ee81069bb33ffdc"
   },
-  "next_action": "Resume the reviewed finite PR6 transactional activation/provider foundation in a fresh isolated checkout at8cd7793d3. Exact design/control reviews and7deliverables/22controls are recorded. The unattended window ended; no active human/native sitting and no old deadline is renewed.",
+  "next_action": "Continue bounded P6D4 execution-scope design/source preparation from qualified P6D5; no active human/native admission.",
   "deadline_checkpoint": {
     "awake_absence": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-unattended-20261003-fjap711a/deadline-awake-absence.json",
@@ -397,5 +400,9 @@
     },
     "new_admissions_after_deadline": 0,
     "gates_closed": []
+  },
+  "latest_component_checkpoint": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/component-closure/sdk-checkpoint.json",
+    "sha256": "0b04e4d62e218efe20ae2720e8f14e0d7b52bf1757e6b1ed61f878a9c8aa6f62"
   }
 }
