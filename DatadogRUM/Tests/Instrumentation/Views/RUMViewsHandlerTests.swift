@@ -808,3 +808,398 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 0)
     }
 }
+
+#if os(iOS)
+import UIKit
+
+@MainActor
+class RUMSceneViewsHandlerTests: XCTestCase {
+    private final class CountingPredicate: UIKitRUMViewsPredicate {
+        var calls = 0
+        func rumView(for viewController: UIViewController) -> RUMView? {
+            calls += 1
+            return .init(name: "View")
+        }
+    }
+
+    private final class Sentinel {}
+
+    private let date = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
+    private let subscriber = RUMCommandSubscriberMock()
+    private let center = NotificationCenter()
+    private let sceneA = RUMSceneIdentifier(rawValue: "scene-a")
+    private let sceneB = RUMSceneIdentifier(rawValue: "scene-b")
+    private var owners: [ObjectIdentifier: RUMSceneIdentifier] = [:]
+    private var contexts: [ObjectIdentifier: RUMSceneViewsHandler.UIKitSplitViewContext] = [:]
+    private var scheduled: [() -> Void] = []
+
+    private func makeHandler(
+        predicate: UIKitRUMViewsPredicate? = UIKitRUMViewsPredicateMock(result: .init(name: "View")),
+        initial: [RUMSceneIdentifier: Bool]? = nil,
+        initialProvider: (() -> [RUMSceneIdentifier: Bool])? = nil,
+        sceneProvider: ((UIViewController) -> RUMSceneIdentifier?)? = nil
+    ) -> RUMSceneViewsHandler {
+        let initial = initial ?? [sceneA: true, sceneB: true]
+        let handler = RUMSceneViewsHandler(
+            dateProvider: date,
+            uiKitPredicate: predicate,
+            swiftUIPredicate: nil,
+            swiftUIViewNameExtractor: nil,
+            notificationCenterProvider: .init(applicationCenter: center),
+            isMultiSceneApplication: true,
+            sceneIdentifierProvider: sceneProvider ?? { self.owners[ObjectIdentifier($0)] },
+            sceneIdentifierFromNotification: { notification in
+                (notification.object as? NSString).map { RUMSceneIdentifier(rawValue: $0 as String) }
+            },
+            initialSceneActivityProvider: initialProvider ?? { initial },
+            uiKitSplitViewContextProvider: { self.contexts[ObjectIdentifier($0)] },
+            scheduleUIKitSplitViewReconciliation: { self.scheduled.append($0) }
+        )
+        handler.publish(to: subscriber)
+        return handler
+    }
+
+    private func appear(_ view: UIViewController, in scene: RUMSceneIdentifier?, using handler: RUMSceneViewsHandler) {
+        owners[ObjectIdentifier(view)] = scene
+        handler.notify_viewDidAppear(viewController: view, animated: false)
+    }
+
+    private func post(_ name: Notification.Name, scene: RUMSceneIdentifier) {
+        center.post(name: name, object: scene.rawValue as NSString)
+    }
+
+    private func assertCommands(
+        _ expected: [(Bool, ViewIdentifier, RUMCommandTarget)],
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) throws {
+        XCTAssertEqual(subscriber.receivedCommands.count, expected.count, file: file, line: line)
+        guard subscriber.receivedCommands.count == expected.count else {
+            return
+        }
+        for (command, value) in zip(subscriber.receivedCommands, expected) {
+            if value.0 {
+                let start = try XCTUnwrap(command as? RUMStartViewCommand, file: file, line: line)
+                XCTAssertEqual(start.identity, value.1, file: file, line: line)
+                XCTAssertEqual(start.target, value.2, file: file, line: line)
+            } else {
+                let stop = try XCTUnwrap(command as? RUMStopViewCommand, file: file, line: line)
+                XCTAssertEqual(stop.identity, value.1, file: file, line: line)
+                XCTAssertEqual(stop.target, value.2, file: file, line: line)
+            }
+        }
+    }
+
+    func testUIKitAppearance_keepsIndependentSceneOwners() throws {
+        let handler = makeHandler()
+        let a = UIViewController(), b = UIViewController()
+        appear(a, in: sceneA, using: handler)
+        appear(b, in: sceneB, using: handler)
+        try assertCommands([(true, ViewIdentifier(a), .scene(sceneA)), (true, ViewIdentifier(b), .scene(sceneB))])
+    }
+
+    func testControllerMovement_stopsCapturedOwnerAndStartsNewOwner() throws {
+        let predicate = CountingPredicate()
+        let handler = makeHandler(predicate: predicate)
+        let view = UIViewController()
+        appear(view, in: sceneA, using: handler)
+        appear(view, in: sceneB, using: handler)
+        try assertCommands([(true, ViewIdentifier(view), .scene(sceneA)), (false, ViewIdentifier(view), .scene(sceneA)), (true, ViewIdentifier(view), .scene(sceneB))])
+        XCTAssertEqual(predicate.calls, 1)
+    }
+
+    func testDetachedDisappearance_usesCapturedOwnerWithoutSceneLookup() throws {
+        var reads = 0
+        let handler = makeHandler(sceneProvider: { _ in reads += 1; return self.sceneA })
+        let view = UIViewController()
+        handler.notify_viewDidAppear(viewController: view, animated: false)
+        handler.notify_viewDidDisappear(viewController: view, animated: false)
+        XCTAssertEqual(reads, 1)
+        try assertCommands([(true, ViewIdentifier(view), .scene(sceneA)), (false, ViewIdentifier(view), .scene(sceneA))])
+    }
+
+    func testManualSameKey_inTwoScenesDoesNotStopPeer() throws {
+        let handler = makeHandler()
+        handler.startView(key: "same", name: nil, attributes: [:], sceneIdentifier: sceneA)
+        handler.startView(key: "same", name: nil, attributes: [:], sceneIdentifier: sceneB)
+        handler.stopView(key: "same", attributes: ["stop": "a"], sceneIdentifier: sceneA)
+        try assertCommands([(true, ViewIdentifier("same"), .scene(sceneA)), (true, ViewIdentifier("same"), .scene(sceneB)), (false, ViewIdentifier("same"), .scene(sceneA))])
+        XCTAssertEqual((subscriber.receivedCommands.last as? RUMStopViewCommand)?.attributes["stop"] as? String, "a")
+    }
+
+    func testManualStop_wrongKeyOrSceneCannotStopOwner() throws {
+        let handler = makeHandler()
+        handler.startView(key: "owned", name: nil, attributes: [:], sceneIdentifier: sceneA)
+        handler.stopView(key: "owned", attributes: [:], sceneIdentifier: sceneB)
+        handler.stopView(key: "foreign", attributes: [:], sceneIdentifier: sceneA)
+        try assertCommands([(true, ViewIdentifier("owned"), .scene(sceneA))])
+    }
+
+    func testNestedManualAuthority_stagesPlatformBelowOwningSuffix() throws {
+        let handler = makeHandler()
+        let root = UIViewController(), next = UIViewController(), peer = UIViewController()
+        appear(root, in: sceneA, using: handler)
+        appear(peer, in: sceneB, using: handler)
+        handler.startView(key: "outer", name: nil, attributes: [:], sceneIdentifier: sceneA)
+        handler.startView(key: "inner", name: nil, attributes: [:], sceneIdentifier: sceneA)
+        appear(next, in: sceneA, using: handler)
+        handler.stopView(key: "inner", attributes: [:], sceneIdentifier: sceneA)
+        handler.stopView(key: "outer", attributes: [:], sceneIdentifier: sceneA)
+        try assertCommands([
+            (true, ViewIdentifier(root), .scene(sceneA)), (true, ViewIdentifier(peer), .scene(sceneB)),
+            (false, ViewIdentifier(root), .scene(sceneA)), (true, ViewIdentifier("outer"), .scene(sceneA)),
+            (false, ViewIdentifier("outer"), .scene(sceneA)), (true, ViewIdentifier("inner"), .scene(sceneA)),
+            (false, ViewIdentifier("inner"), .scene(sceneA)), (true, ViewIdentifier("outer"), .scene(sceneA)),
+            (false, ViewIdentifier("outer"), .scene(sceneA)), (true, ViewIdentifier(next), .scene(sceneA)),
+        ])
+    }
+
+    func testManualAuthority_retainsImmediatePlatformUntilMatchingStop() throws {
+        let handler = makeHandler()
+        let view = UIViewController()
+        appear(view, in: sceneA, using: handler)
+        handler.startView(key: "manual", name: nil, attributes: [:], sceneIdentifier: sceneA)
+        handler.notify_viewDidDisappear(viewController: view, animated: false)
+        handler.stopView(key: "manual", attributes: [:], sceneIdentifier: sceneA)
+        try assertCommands([(true, ViewIdentifier(view), .scene(sceneA)), (false, ViewIdentifier(view), .scene(sceneA)), (true, ViewIdentifier("manual"), .scene(sceneA)), (false, ViewIdentifier("manual"), .scene(sceneA)), (true, ViewIdentifier(view), .scene(sceneA))])
+    }
+
+    func testSourceLessSwiftUIRemoval_matchesOnlyProcessStack() throws {
+        let handler = makeHandler()
+        handler.startView(key: "same", name: nil, attributes: [:], sceneIdentifier: sceneA)
+        handler.notify_onAppear(identity: "same", name: "Process", path: "Process", attributes: [:])
+        handler.notify_onDisappear(identity: "same")
+        try assertCommands([(true, ViewIdentifier("same"), .scene(sceneA)), (true, ViewIdentifier("same"), .processRepresentative), (false, ViewIdentifier("same"), .processRepresentative)])
+    }
+
+    func testMissingUIKitScene_usesProcessFallback() throws {
+        let handler = makeHandler()
+        let view = UIViewController()
+        appear(view, in: nil, using: handler)
+        handler.notify_viewDidDisappear(viewController: view, animated: false)
+        try assertCommands([(true, ViewIdentifier(view), .processRepresentative), (false, ViewIdentifier(view), .processRepresentative)])
+    }
+
+    func testSceneBackgroundAndForeground_doNotAffectPeerOrRepeat() throws {
+        let handler = makeHandler(initial: [sceneA: true, sceneB: true])
+        let a = UIViewController(), b = UIViewController()
+        appear(a, in: sceneA, using: handler); appear(b, in: sceneB, using: handler)
+        post(UIScene.didEnterBackgroundNotification, scene: sceneA)
+        post(UIScene.didEnterBackgroundNotification, scene: sceneA)
+        post(UIScene.willEnterForegroundNotification, scene: sceneA)
+        post(UIScene.willEnterForegroundNotification, scene: sceneA)
+        try assertCommands([(true, ViewIdentifier(a), .scene(sceneA)), (true, ViewIdentifier(b), .scene(sceneB)), (false, ViewIdentifier(a), .scene(sceneA)), (true, ViewIdentifier(a), .scene(sceneA))])
+    }
+
+    func testInitialBackgroundScene_waitsForOwnForeground() throws {
+        let handler = makeHandler(initial: [sceneA: false])
+        let view = UIViewController()
+        appear(view, in: sceneA, using: handler)
+        XCTAssertTrue(subscriber.receivedCommands.isEmpty)
+        post(UIScene.willEnterForegroundNotification, scene: sceneA)
+        try assertCommands([(true, ViewIdentifier(view), .scene(sceneA))])
+    }
+
+    func testInitialSceneInventory_isConsumedOnce() {
+        var reads = 0
+        let handler = makeHandler(initialProvider: { reads += 1; return [self.sceneA: true] })
+        XCTAssertEqual(reads, 0)
+        let view = UIViewController()
+        appear(view, in: sceneA, using: handler)
+        appear(view, in: sceneA, using: handler)
+        post(UIScene.didEnterBackgroundNotification, scene: sceneA)
+        XCTAssertEqual(reads, 1)
+    }
+
+    func testConnectBeforeFirstView_requiresOwnForeground() throws {
+        let handler = makeHandler(initial: [:])
+        post(UIScene.willConnectNotification, scene: sceneA)
+        let view = UIViewController()
+        appear(view, in: sceneA, using: handler)
+        XCTAssertTrue(subscriber.receivedCommands.isEmpty)
+        post(UIScene.willEnterForegroundNotification, scene: sceneA)
+        try assertCommands([(true, ViewIdentifier(view), .scene(sceneA))])
+    }
+
+    func testUnknownScene_afterObservedLifecycleCannotPublish() {
+        let handler = makeHandler(initial: [:])
+        post(UIScene.willConnectNotification, scene: sceneA)
+        appear(UIViewController(), in: sceneB, using: handler)
+        handler.startView(key: "unknown", name: nil, attributes: [:], sceneIdentifier: sceneB)
+        XCTAssertTrue(subscriber.receivedCommands.isEmpty)
+    }
+
+    func testUnknownScene_beforeLifecycleCannotPublishOrStopPeer() throws {
+        let handler = makeHandler(initial: [sceneA: true])
+        handler.startView(key: "peer", name: nil, attributes: [:], sceneIdentifier: sceneA)
+        appear(UIViewController(), in: sceneB, using: handler)
+        handler.startView(key: "unknown", name: nil, attributes: [:], sceneIdentifier: sceneB)
+        handler.stopView(key: "peer", attributes: [:], sceneIdentifier: sceneB)
+        post(UIScene.willEnterForegroundNotification, scene: sceneB)
+        handler.startView(key: "late-unknown", name: nil, attributes: [:], sceneIdentifier: sceneB)
+        try assertCommands([(true, ViewIdentifier("peer"), .scene(sceneA))])
+    }
+
+    func testForegroundAfterDisconnect_withoutConnectionCannotPublishOrStopPeer() throws {
+        let handler = makeHandler(initial: [sceneA: true, sceneB: true])
+        handler.startView(key: "owner", name: nil, attributes: [:], sceneIdentifier: sceneA)
+        handler.startView(key: "peer", name: nil, attributes: [:], sceneIdentifier: sceneB)
+        post(UIScene.didDisconnectNotification, scene: sceneA)
+        post(UIScene.willEnterForegroundNotification, scene: sceneA)
+        appear(UIViewController(), in: sceneA, using: handler)
+        handler.startView(key: "late", name: nil, attributes: [:], sceneIdentifier: sceneA)
+        handler.stopView(key: "peer", attributes: [:], sceneIdentifier: sceneA)
+        try assertCommands([(true, ViewIdentifier("owner"), .scene(sceneA)), (true, ViewIdentifier("peer"), .scene(sceneB)), (false, ViewIdentifier("owner"), .scene(sceneA))])
+    }
+
+    func testDisconnect_stopsOnlyOwnerAndRejectsLateCallbacks() throws {
+        let handler = makeHandler(initial: [sceneA: true, sceneB: true])
+        let a = UIViewController(), b = UIViewController()
+        appear(a, in: sceneA, using: handler); appear(b, in: sceneB, using: handler)
+        post(UIScene.didDisconnectNotification, scene: sceneA)
+        appear(a, in: sceneA, using: handler)
+        handler.stopView(key: "foreign", attributes: [:], sceneIdentifier: sceneA)
+        handler.notify_viewDidDisappear(viewController: a, animated: false)
+        try assertCommands([(true, ViewIdentifier(a), .scene(sceneA)), (true, ViewIdentifier(b), .scene(sceneB)), (false, ViewIdentifier(a), .scene(sceneA))])
+    }
+
+    func testReconnect_sameIdentifierNeedsConnectionAndForeground() throws {
+        let handler = makeHandler(initial: [sceneA: true])
+        handler.startView(key: "old", name: nil, attributes: [:], sceneIdentifier: sceneA)
+        post(UIScene.didDisconnectNotification, scene: sceneA)
+        handler.startView(key: "late", name: nil, attributes: [:], sceneIdentifier: sceneA)
+        post(UIScene.willConnectNotification, scene: sceneA)
+        handler.startView(key: "new", name: nil, attributes: [:], sceneIdentifier: sceneA)
+        post(UIScene.willEnterForegroundNotification, scene: sceneA)
+        try assertCommands([(true, ViewIdentifier("old"), .scene(sceneA)), (false, ViewIdentifier("old"), .scene(sceneA)), (true, ViewIdentifier("new"), .scene(sceneA))])
+    }
+
+    func testApplicationForeground_resumesOnlyProcessFallback() throws {
+        let handler = makeHandler(initial: [sceneA: true])
+        handler.startView(key: "scene", name: nil, attributes: [:], sceneIdentifier: sceneA)
+        handler.notify_onAppear(identity: "process", name: "Process", path: "Process", attributes: [:])
+        center.post(name: ApplicationNotifications.didEnterBackground, object: nil)
+        center.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+        XCTAssertEqual(subscriber.receivedCommands.count, 7)
+        XCTAssertEqual((subscriber.receivedCommands[4] as? RUMHandleAppLifecycleEventCommand)?.event, .didEnterBackground)
+        XCTAssertEqual((subscriber.receivedCommands[5] as? RUMStartViewCommand)?.target, .processRepresentative)
+        XCTAssertEqual((subscriber.receivedCommands[6] as? RUMHandleAppLifecycleEventCommand)?.event, .willEnterForeground)
+        post(UIScene.willEnterForegroundNotification, scene: sceneA)
+        XCTAssertEqual((subscriber.receivedCommands.last as? RUMStartViewCommand)?.target, .scene(sceneA))
+    }
+
+    func testSplitSuccessor_preservesOwnerAndCapturedRemovalTime() throws {
+        let handler = makeHandler()
+        let outgoing = UIViewController(), incoming = UIViewController(), split = UIViewController()
+        let context = RUMSceneViewsHandler.UIKitSplitViewContext(splitViewController: ObjectIdentifier(split), column: 2)
+        contexts[ObjectIdentifier(outgoing)] = context; contexts[ObjectIdentifier(incoming)] = context
+        appear(outgoing, in: sceneA, using: handler)
+        let removedAt = date.now
+        handler.notify_viewDidDisappear(viewController: outgoing, animated: false)
+        date.advance(bySeconds: 1)
+        appear(incoming, in: sceneA, using: handler)
+        scheduled.forEach { $0() }
+        try assertCommands([(true, ViewIdentifier(outgoing), .scene(sceneA)), (false, ViewIdentifier(outgoing), .scene(sceneA)), (true, ViewIdentifier(incoming), .scene(sceneA))])
+        XCTAssertEqual((subscriber.receivedCommands[1] as? RUMStopViewCommand)?.time, removedAt)
+    }
+
+    func testSplitRevertedAppearance_doesNotReplaceOccurrenceOnSupportedRuntime() throws {
+        let handler = makeHandler()
+        let view = UIViewController(), split = UIViewController()
+        contexts[ObjectIdentifier(view)] = .init(splitViewController: ObjectIdentifier(split), column: 2)
+        appear(view, in: sceneA, using: handler)
+        handler.notify_viewDidDisappear(viewController: view, animated: false)
+        appear(view, in: sceneA, using: handler)
+        scheduled.forEach { $0() }
+        if #available(iOS 27.0, *) {
+            try assertCommands([(true, ViewIdentifier(view), .scene(sceneA))])
+        } else {
+            try assertCommands([(true, ViewIdentifier(view), .scene(sceneA)), (false, ViewIdentifier(view), .scene(sceneA)), (true, ViewIdentifier(view), .scene(sceneA))])
+            XCTAssertTrue(scheduled.isEmpty)
+        }
+    }
+
+    func testSplitPendingDisconnect_invalidatesScheduledRemovalAfterReconnect() throws {
+        let handler = makeHandler(initial: [sceneA: true])
+        let view = UIViewController(), split = UIViewController()
+        contexts[ObjectIdentifier(view)] = .init(splitViewController: ObjectIdentifier(split), column: 2)
+        appear(view, in: sceneA, using: handler)
+        handler.notify_viewDidDisappear(viewController: view, animated: false)
+        post(UIScene.didDisconnectNotification, scene: sceneA)
+        post(UIScene.willConnectNotification, scene: sceneA)
+        post(UIScene.willEnterForegroundNotification, scene: sceneA)
+        appear(view, in: sceneA, using: handler)
+        scheduled.forEach { $0() }
+        try assertCommands([(true, ViewIdentifier(view), .scene(sceneA)), (false, ViewIdentifier(view), .scene(sceneA)), (true, ViewIdentifier(view), .scene(sceneA))])
+    }
+
+    func testSplitPendingWork_isIndependentPerSceneAndBounded() {
+        let handler = makeHandler(initial: [sceneA: true, sceneB: true])
+        let a = UIViewController(), b = UIViewController(), split = UIViewController()
+        for view in [a, b] { contexts[ObjectIdentifier(view)] = .init(splitViewController: ObjectIdentifier(split), column: 2) }
+        appear(a, in: sceneA, using: handler); appear(b, in: sceneB, using: handler)
+        handler.notify_viewDidDisappear(viewController: a, animated: false)
+        handler.notify_viewDidDisappear(viewController: a, animated: false)
+        handler.notify_viewDidDisappear(viewController: b, animated: false)
+        if #available(iOS 27.0, *) { XCTAssertEqual(scheduled.count, 2) } else { XCTAssertTrue(scheduled.isEmpty) }
+        scheduled.forEach { $0() }
+        XCTAssertEqual(subscriber.receivedCommands.count, 4)
+        XCTAssertEqual((subscriber.receivedCommands[2] as? RUMStopViewCommand)?.target, .scene(sceneA))
+        XCTAssertEqual((subscriber.receivedCommands[3] as? RUMStopViewCommand)?.target, .scene(sceneB))
+    }
+
+    func testUnexpectedBackgroundCallbacks_readNoUIKitProviderOrSceneState() {
+        var reads = 0
+        let handler = makeHandler(sceneProvider: { _ in reads += 1; return self.sceneA })
+        let view = UIViewController()
+        let finished = expectation(description: "unsupported callbacks returned")
+        DispatchQueue.global().async {
+            handler.notify_viewDidAppear(viewController: view, animated: false)
+            handler.notify_viewDidDisappear(viewController: view, animated: false)
+            handler.notify_onAppear(identity: "background", name: "Background", path: "Background", attributes: [:])
+            handler.notify_onDisappear(identity: "background")
+            finished.fulfill()
+        }
+        wait(for: [finished], timeout: 5)
+        XCTAssertEqual(reads, 0)
+        XCTAssertTrue(subscriber.receivedCommands.isEmpty)
+    }
+    func testInitialProvider_releasesCaptureAfterFirstInventory() {
+        var sentinel: Sentinel? = Sentinel()
+        weak var weakSentinel = sentinel
+        let handler = makeHandler(initialProvider: { [held = sentinel] in
+            _ = held
+            return [self.sceneA: true]
+        })
+        sentinel = nil
+        XCTAssertNotNil(weakSentinel)
+        appear(UIViewController(), in: sceneA, using: handler)
+        XCTAssertNil(weakSentinel)
+    }
+
+    func testSubscriber_isWeakAndReleaseDoesNotRetainMonitor() throws {
+        let handler = makeHandler()
+        var owned: RUMCommandSubscriberMock? = RUMCommandSubscriberMock()
+        weak var weakSubscriber = owned
+        handler.publish(to: try XCTUnwrap(owned))
+        owned = nil
+        XCTAssertNil(weakSubscriber)
+        XCTAssertNil(handler.subscriber)
+    }
+    func testControllerMovement_duringManualAuthorityCannotRestoreForeignController() throws {
+        let handler = makeHandler()
+        let view = UIViewController()
+        appear(view, in: sceneA, using: handler)
+        handler.startView(key: "manual", name: nil, attributes: [:], sceneIdentifier: sceneA)
+        appear(view, in: sceneB, using: handler)
+        handler.stopView(key: "manual", attributes: [:], sceneIdentifier: sceneA)
+        try assertCommands([
+            (true, ViewIdentifier(view), .scene(sceneA)),
+            (false, ViewIdentifier(view), .scene(sceneA)),
+            (true, ViewIdentifier("manual"), .scene(sceneA)),
+            (true, ViewIdentifier(view), .scene(sceneB)),
+            (false, ViewIdentifier("manual"), .scene(sceneA)),
+        ])
+    }
+}
+#endif

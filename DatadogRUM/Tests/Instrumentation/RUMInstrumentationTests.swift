@@ -432,3 +432,57 @@ internal func DDAssertActiveSwizzlings(_ expectedSwizzledSelectors: [String], fi
     }
 }
 #endif
+
+#if os(iOS)
+extension RUMInstrumentationTests {
+    private func makeSceneInstrumentation(isEnabled: Bool) -> RUMInstrumentation {
+        RUMInstrumentation(
+            featureScope: NOPFeatureScope(),
+            predicates: makePredicates(),
+            longTaskThreshold: nil,
+            appHangThreshold: nil,
+            mainQueue: .main,
+            dateProvider: SystemDateProvider(),
+            backtraceReporter: BacktraceReporterMock(),
+            fatalErrorContext: FatalErrorContextNotifierMock(),
+            processID: .mockAny(),
+            notificationCenterProvider: .init(applicationCenter: NotificationCenter()),
+            bundleType: .iOSApp,
+            watchdogTermination: nil,
+            memoryWarningMonitor: nil,
+            uuidGenerator: RUMUUIDGeneratorMock(),
+            heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock(),
+            isMultiSceneTrackingEnabled: isEnabled
+        )
+    }
+
+    func testMultiSceneOff_constructsLegacyHandlerAndPreservesProcessPublication() throws {
+        let instrumentation = makeSceneInstrumentation(isEnabled: false)
+        XCTAssertTrue(instrumentation.viewsHandler is RUMViewsHandler)
+        XCTAssertFalse(instrumentation.viewsHandler is any RUMSceneTargetedManualViewHandling)
+        let subscriber = RUMCommandSubscriberMock()
+        instrumentation.publish(to: subscriber)
+        XCTAssertIdentical(instrumentation.viewsHandler.subscriber, subscriber)
+        instrumentation.viewsHandler.notify_onAppear(identity: "legacy", name: "Legacy", path: "Legacy", attributes: [:])
+        instrumentation.viewsHandler.notify_onDisappear(identity: "legacy")
+        XCTAssertEqual(subscriber.receivedCommands.count, 2)
+        XCTAssertEqual(try XCTUnwrap(subscriber.receivedCommands.first as? RUMStartViewCommand).target, .processRepresentative)
+        XCTAssertEqual(try XCTUnwrap(subscriber.receivedCommands.last as? RUMStopViewCommand).target, .processRepresentative)
+    }
+
+    func testMultiSceneOn_constructsManualCapabilityAndKeepsWeakSubscriber() throws {
+        let instrumentation = makeSceneInstrumentation(isEnabled: true)
+        XCTAssertTrue(instrumentation.viewsHandler is RUMSceneViewsHandler)
+        XCTAssertFalse(instrumentation.viewsHandler is RUMViewsHandler)
+        let subscriber = RUMCommandSubscriberMock()
+        instrumentation.publish(to: subscriber)
+        XCTAssertIdentical(instrumentation.viewsHandler.subscriber, subscriber)
+        _ = try XCTUnwrap(instrumentation.viewsHandler as? any RUMSceneTargetedManualViewHandling)
+        instrumentation.viewsHandler.notify_onAppear(identity: "process", name: "Process", path: "Process", attributes: [:])
+        instrumentation.viewsHandler.notify_onDisappear(identity: "process")
+        XCTAssertEqual(subscriber.receivedCommands.count, 2)
+        XCTAssertEqual(try XCTUnwrap(subscriber.receivedCommands.first as? RUMStartViewCommand).target, .processRepresentative)
+        XCTAssertEqual(try XCTUnwrap(subscriber.receivedCommands.last as? RUMStopViewCommand).target, .processRepresentative)
+    }
+}
+#endif
