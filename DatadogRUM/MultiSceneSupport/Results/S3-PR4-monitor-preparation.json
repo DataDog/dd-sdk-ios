@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "CORRECTED_FIXTURES_REVIEWED_WAIT_COMPONENT_QUALIFICATION",
+  "state": "QUALIFIED_PRIVATE_COMPONENT_CHECKPOINTED",
   "delivery_slice": "PR4",
   "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v",
   "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/worktree",
@@ -13,12 +13,12 @@
     "PR3 local source/components and bounded Off obligations qualified",
     "PR6 is future handoff activation; PR5 future real manual-handler conformance; PR13 future public wrappers"
   ],
-  "next_action": "Review two prospective native plans, then qualify corrected44cases on27/17.5 sequentially. Reuse actual discovery only for unchanged identifiers; originalfailedrun remains41passed/threefixturefailures.",
+  "next_action": "Prepare PR5 from the actual qualified PR4 local commit, then implement/review its finite scene-handler deliverables. WholeF12, public API, activation and hardware gates remain separate.",
   "native_admitted": false,
-  "native_runs": 1,
-  "sdk_edits": 5,
+  "native_runs": 5,
+  "sdk_edits": 7,
   "gates_closed": [],
-  "updated_at": 1791001716.100597,
+  "updated_at": 1791003650.320075,
   "source_preparation": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/source-preparation-cycle8/preparation.json",
     "sha256": "1f8d1ab03d60e5101c63a849bd789bcd28a276b7c629523ea09268217556b0b2"
@@ -45,7 +45,7 @@
     "sha256": "caa5c81154cf5b4ae0d237d6c8d8bf520c09705528974e84f93518a948853ff2"
   },
   "qualification_preparation": {
-    "state": "ORIGINAL_COMPONENT_FAILURE_PRESERVED_FIXTURE_CORRECTION_PENDING",
+    "state": "COMPONENT_TESTS_RETURNED_REQUIRES_RECONCILIATION",
     "discovery_ios27_plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/monitor-ios27-discovery-cycle3/definition.json",
       "sha256": "38f7a3d39a71a6a351f9b0e3fc3611b7860aab2de6785e73a2e6df804264a254"
@@ -177,6 +177,82 @@
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/monitor-ios175-qualification-cycle2/definition.json",
         "sha256": "fef6c6329603131340f098c15edf6fea10da8939b69ab1f443b8c3189a7f08e9"
       }
+    },
+    "component_ios27_cycle2": {
+      "state": "COMPONENT_TESTS_RETURNED_REQUIRES_RECONCILIATION",
+      "owner": "/root",
+      "controller_pid": 25209,
+      "controller_pgid": 25209,
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/monitor-ios27-qualification-cycle2/definition.json",
+        "sha256": "704f40406f61d28faeb509cdeda9b01a1b56f7b236da50c637a0bb86672cab7d"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/monitor-ios27-qualification-cycle2/review.json",
+        "sha256": "0c687aee2f533877b8b56b0efca183fda7d89a32d8e136dec11e562dff16295a"
+      },
+      "controller": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/monitor-ios27-qualification-cycle2/controller.py",
+        "sha256": "3c8be3349a05bc06e3fc30c9f8392155632f539fd68e871ee398022b0388303a"
+      },
+      "admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/monitor-ios27-qualification-cycle2/admission.json",
+        "sha256": "5012d7f03a62588f90108c6e6cbf63f194a88d8243cd2eed68d488efc3b12162"
+      },
+      "child": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/monitor-ios27-qualification-cycle2/native-qualification-start.json",
+        "sha256": "d31d331126d2554471f247171e4c857bff57db7cd77500de04488a4cabdea523"
+      },
+      "outcome": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/monitor-ios27-qualification-cycle2/native-qualification-outcome.json",
+        "sha256": "1a186b38b561e641744cc05bf710d78051ad555ac9403db8a9ad8c03e91877ef"
+      },
+      "cleanup": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/monitor-ios27-qualification-cycle2/cleanup.json",
+        "sha256": "0c3e1df18192a96a2f4999de626302fa0404d2bfb80fadd593629ec4157ecef4"
+      }
+    },
+    "actual_component27_cycle2_qualification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/monitor-ios27-qualification-cycle2/qualification.json",
+      "sha256": "2a391af2364b6a25c15400b511f61b5c257a8ebe203784489bf282827b375285"
+    },
+    "component_ios175_cycle2": {
+      "state": "COMPONENT_TESTS_RETURNED_REQUIRES_RECONCILIATION",
+      "owner": "/root",
+      "controller_pid": 29588,
+      "controller_pgid": 29588,
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/monitor-ios175-qualification-cycle2/definition.json",
+        "sha256": "fef6c6329603131340f098c15edf6fea10da8939b69ab1f443b8c3189a7f08e9"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/monitor-ios175-qualification-cycle2/review.json",
+        "sha256": "c02f45c29d093941853d7ae6db3c8d01b33e86972af8873ddbe4256ae6f831d2"
+      },
+      "controller": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/monitor-ios175-qualification-cycle2/controller.py",
+        "sha256": "1b22224f68e393b5a8bc7ee840fdfaf0897139017ef0b1707d057dd3d928bb26"
+      },
+      "admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/monitor-ios175-qualification-cycle2/admission.json",
+        "sha256": "4a979ef99957a53fc72b033e64fde665daeef1413e953e29bf93105b8f9901a7"
+      },
+      "child": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/monitor-ios175-qualification-cycle2/native-qualification-start.json",
+        "sha256": "19d9ad32881b2e6d3b47f9a1f4869ea2ec1946657210de2f6669c5a416ef76a7"
+      },
+      "outcome": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/monitor-ios175-qualification-cycle2/native-qualification-outcome.json",
+        "sha256": "e2a644eae9900bc02db2bfa47cd23d7a4fbd4b9d7021ebbfeea609606396ce5b"
+      },
+      "cleanup": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/monitor-ios175-qualification-cycle2/cleanup.json",
+        "sha256": "bad233b0a03cb8cea2937f050581633f834ccfd07d8bd7d7cb594c354ae6bed7"
+      }
+    },
+    "actual_component175_cycle2_qualification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/monitor-ios175-qualification-cycle2/qualification.json",
+      "sha256": "f82ac4f9d9150761ab7205b0176ffffd908bdefea8f03676fd7b478189de277e"
     }
   },
   "source_usage_audit": {
@@ -202,5 +278,45 @@
   "superseded_source_review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/source-preparation-cycle6/review.json",
     "sha256": "f4bb3817643140a98a144d960dda3159d04552f09ee934d3d4e9fd2f61fce2ee"
+  },
+  "component_completion_proposal": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/component-completion-proposal.json",
+    "sha256": "1899269ec9e62cdb3fd2fbf44091346dee1f5131d77e644b7bdeabc829038bf5"
+  },
+  "next_slice_design": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/next-pr5-implementation-design.json",
+    "sha256": "8c03cca383798bc540e27a1a6278146f30d249978cc9ffb5c66ffe0105234963"
+  },
+  "native_run_inventory": {
+    "actual_discovery_commands": 2,
+    "actual_component_commands": 3,
+    "current_corrected_component_cases": 88,
+    "current_corrected_passed": 88,
+    "earlier_failed_component_cases": 44,
+    "earlier_failed_component_passed": 41,
+    "earlier_failed_component_failed": 3,
+    "scope": "Actual native command counts; discovery ran zero tests, prior failures immutable"
+  },
+  "component_completion_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/component-completion-review.json",
+    "sha256": "b2b7350e8c52c648c4d51236d1c7714dde43b7d5829692e4fbcfe8bf1a6cb0c0"
+  },
+  "local_sdk_checkpoint": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/sdk-checkpoint/checkpoint.json",
+    "sha256": "71ec904bc9167f70b6f854d66a623a3956671390d92d15ef1cca7808405a666c"
+  },
+  "deliverable_disposition": {
+    "ids": [
+      "D1",
+      "D2",
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "D7",
+      "D8"
+    ],
+    "state": "QUALIFIED_PRIVATE_COMPONENT_ONLY",
+    "basis": "Reuse exact independent source8 review and changed-surface qualification:44 exact selected cases each on iOS27.0 and17.5. Original NOT_IMPLEMENTED strings remain historical pre-implementation definition text; no historical input rewritten."
   }
 }
