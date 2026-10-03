@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "state": "STOPPED_SUPPORTED_START_RECEIPT_MISSING",
+  "updated_at": "2026-10-03T00:50:23.109407+00:00",
+  "plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/runtime-plan.json",
+    "sha256": "8ecffcc61ac6f541f38835a19346405aa720fe1f54d5a97d16e7f4e889fa1421"
+  },
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/review.json",
+    "sha256": "316fe3377dd485f86562f331469d439785a5d60ef5f5ffe870ede1a32a8b02b2"
+  },
+  "gates": [
+    "S2:C09",
+    "S2:C10",
+    "S2:H14"
+  ],
+  "selected": {
+    "build": "candidate-27.1",
+    "device": "duo",
+    "framework": "SwiftUI",
+    "layout": "split",
+    "multiple_scenes": false
+  },
+  "output_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime",
+  "source_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-consumer-cycle4",
+  "interaction_owner": "/root/s2_split_input_owner",
+  "controller": {
+    "agent": "/root",
+    "exec_session_id": 2496,
+    "receipt": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/controller-start.json",
+      "sha256": "e920cd0f90744a4f533986c384a11d166572634d2528b7aefc21e3c09629057a"
+    }
+  },
+  "page": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/operator/server.json",
+    "sha256": "6185ff8bfb6bf21d81ac47c40481f2211539c433300a447123e05f6372485cf3"
+  },
+  "preparation_contract": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/preparation/resume-1790985521129695000/live-contract-check.json",
+    "sha256": "4fe98eea4ba481d4c4bb4fdebcafb2883c1bf675ff52b4f89cffaa14453ccfaf"
+  },
+  "native_runs": 1,
+  "scenario": "UNQUALIFIED",
+  "evidence": "INCOMPLETE",
+  "cleanup": "INVALID",
+  "gates_closed": [],
+  "next_action": "Review and qualify the pre-armed owner phase service, then prepare one fresh candidate-only sitting. Preserve the stopped attempt and separate restoration; no message-driven retry or repeated baseline.",
+  "admission": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/native-admission.json",
+    "sha256": "f4b4fc37cf6536251a771837ec7f12f2cf8881b9403de19d7658169616cb5c2a"
+  },
+  "run_id": "606c7e88-1ecc-4d76-8e66-f74ad4f16f96",
+  "execution_deadline": 1790990461.478487,
+  "cleanup_deadline": 1790991061.478487,
+  "worker": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/worker-start.json",
+    "sha256": "1b06e355be102cb3042b4a68131976d9529f7eb8edb40f1b0e2dba0bc13b46a4"
+  },
+  "execution_owner": {
+    "state": "TERMINAL_WORKER_EXIT_RECORDED",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/runtime-plan.json",
+      "sha256": "8ecffcc61ac6f541f38835a19346405aa720fe1f54d5a97d16e7f4e889fa1421"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/review.json",
+      "sha256": "316fe3377dd485f86562f331469d439785a5d60ef5f5ffe870ede1a32a8b02b2"
+    },
+    "admission": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/native-admission.json",
+      "sha256": "f4b4fc37cf6536251a771837ec7f12f2cf8881b9403de19d7658169616cb5c2a"
+    },
+    "run_id": "606c7e88-1ecc-4d76-8e66-f74ad4f16f96",
+    "host": "COMP-D7Y69VHK4C",
+    "execution_deadline": 1790990461.478487,
+    "cleanup_deadline": 1790991061.478487,
+    "supervisor_receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/candidate-27.1-duo-SwiftUI-split-single-driver.supervisor.json",
+    "supervisor_state": "PASS",
+    "controller": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/controller-start.json",
+      "sha256": "e920cd0f90744a4f533986c384a11d166572634d2528b7aefc21e3c09629057a"
+    },
+    "worker": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/worker-start.json",
+      "sha256": "1b06e355be102cb3042b4a68131976d9529f7eb8edb40f1b0e2dba0bc13b46a4"
+    },
+    "postexit": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/postexit.json",
+      "sha256": "6e0fcd7be8a2c22479cc960660c09c456cdd951927a0df8b3e1c7722fd2fa74d"
+    }
+  },
+  "human_invitation": true,
+  "reason": "supported start response unavailable before its fixed deadline",
+  "original_result": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/cells/candidate-27.1-duo-SwiftUI-split-single/cell-result.json",
+    "sha256": "0c710470b726e37e4d362dfe95aec463b5bef1d7a24bc8c5fa3df014f7bb5c58"
+  },
+  "summary": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/cells/candidate-27.1-duo-SwiftUI-split-single/summary.json",
+    "sha256": "31639b49fc303b3fbdfde352758684c9cc72fa22d3bc1f14a81277a4e66bd5a4"
+  },
+  "postexit": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/postexit.json",
+    "sha256": "6e0fcd7be8a2c22479cc960660c09c456cdd951927a0df8b3e1c7722fd2fa74d"
+  },
+  "supervisor": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/candidate-27.1-duo-SwiftUI-split-single-driver.supervisor.json",
+    "sha256": "387dbb1b5feb4771fd8c41e0fce720d8049e86915a57fe676ecbb2d0aa918687"
+  },
+  "human_ready_received": false,
+  "human_gestures": 0,
+  "app_launch": false,
+  "owner_quiescence": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/separate-restoration/owner-outcome.json",
+    "sha256": "ac4eff68194ed9e1d40ea7f19f50c71f50480a8d50b5abace547b08a10ec7160"
+  },
+  "installed_only": true,
+  "native_app_runs": 0,
+  "sdk_started": false,
+  "transport_disposition": "Actual service journal has no MCP invocation. Request servicing reached its shell guard after the original phase cutoff; unsampled original assertion is not replaced by retrospective values.",
+  "separate_restoration": {
+    "state": "PASS",
+    "scope": "SEPARATE_UNLAUNCHED_TASK_RESTORATION",
+    "plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/separate-restoration/restoration-plan.json",
+      "sha256": "fb174d8988d762ebf3552e98ce357d030338c4cab1694d0e792c2647522cffd2"
+    },
+    "source": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/separate-restoration/restore.py",
+      "sha256": "359f853add9fc88458d00340bd07a7a8aaeb0a5b2c06fcd22346b5befe853f34"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/separate-restoration/restoration-review-cycle4.json",
+      "sha256": "32ee7bfbcc8cd9427c8dc6b80a6ec03b231ff22d6f4413c30b10ca0c7fba36ed"
+    },
+    "admission": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/separate-restoration/restoration-admission.json",
+      "sha256": "070543590c95a5c66377b354fb4b92b594d7cb6f2caeb5b2711373a61560aa83"
+    },
+    "controller": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/separate-restoration/controller-start.json",
+      "sha256": "8f71579610287926003ce25ebfe4fe91d2ec0fa4a063cf08b7429c5526467e9c"
+    },
+    "result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/separate-restoration/restoration-result.json",
+      "sha256": "72b7b5bdfddfe72d82188d6d3d9e0a6218bae0ef16383e1555099ea115a3e8d1"
+    },
+    "postexit": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/separate-restoration/postexit-and-page-retirement.json",
+      "sha256": "053ad83e710fcb9c1d72a56365d61f72646ae37cb697880bf31a07107645629e"
+    },
+    "original_cleanup": "INVALID",
+    "original_verdict_unchanged": true,
+    "scenario_credit": 0,
+    "gates_closed": []
+  }
+}

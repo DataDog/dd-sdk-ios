@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
   "state": "UIKIT_VIEW_ACTION_GATES_CLOSED_SWIFTUI_REMAINS",
-  "updated_at": "2026-10-02T23:43:41.121649+00:00",
+  "updated_at": "2026-10-03T00:50:23.109407+00:00",
   "execution": {
-    "record": null
+    "record": "Results/S2-swiftui-split-candidate-20261003.json"
   },
   "current": {
     "kind": "swiftui_preparation",
@@ -37,7 +37,7 @@
         "multiple_scenes": false
       }
     ],
-    "prerequisites": "Candidate-only consumed-idle sitting passes exact relocation review and source/product/helper verification;32 controls reused. Retain the four accepted native cells and distinct SDK27.1 foreground reference. Fresh human availability, tool/device/process preflight, automatic capture/idle qualification and actual Ready remain required; no native admission or gate credit.",
+    "prerequisites": "The candidate-only Start servicing attempt stopped before launch/Ready/gestures; original UNQUALIFIED/INCOMPLETE/INVALID remain. Separate reviewed restoration PASS proves task removal, original Closed/Booted state and quiescence. A pre-armed owner phase service needs source/channel/composition review before one fresh sitting. Reuse32 controls, exact frozen products/helpers, four accepted cells and the distinct SDK27.1 foreground reference; no repeat baseline or gate credit.",
     "review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/review.json",
       "sha256": "316fe3377dd485f86562f331469d439785a5d60ef5f5ffe870ede1a32a8b02b2"
@@ -157,7 +157,7 @@
     },
     "reader_continuation_preparation": "Results/S2-accessibility-discovery-20261001.json",
     "rum_only_runtime_preparation": "Results/S2-rum-only-runtime-20261001.json",
-    "prerequisites": "Candidate-only consumed-idle sitting passes exact relocation review and source/product/helper verification;32 controls reused. Retain the four accepted native cells and distinct SDK27.1 foreground reference. Fresh human availability, tool/device/process preflight, automatic capture/idle qualification and actual Ready remain required; no native admission or gate credit.",
+    "prerequisites": "The candidate-only Start servicing attempt stopped before launch/Ready/gestures; original UNQUALIFIED/INCOMPLETE/INVALID remain. Separate reviewed restoration PASS proves task removal, original Closed/Booted state and quiescence. A pre-armed owner phase service needs source/channel/composition review before one fresh sitting. Reuse32 controls, exact frozen products/helpers, four accepted cells and the distinct SDK27.1 foreground reference; no repeat baseline or gate credit.",
     "foreground_candidate_owner": "Results/S2-foreground-finalization-20261002.json",
     "accepted_native_prefix_unchanged": true
   },
