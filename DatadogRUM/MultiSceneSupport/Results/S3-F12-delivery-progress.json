@@ -101,7 +101,7 @@
       "status": "P6D5_SYNC_ASYNC_AND_CALLBACK_FOUNDATIONS_QUALIFIED",
       "owning_record": "Results/S3-PR6-action-preparation.json",
       "whole_F12_closed": false,
-      "remaining": "Foundations qualified. Input67:8failedcases/22assertions,cleanupPASS; fixture roots corrected and source5 reviewed. Minimal scene-host source reviewed; original build wrapper blocked. Corrected wrapper23 offline controls pass; build review/actual host/native remain held. Scroll/platform/Off/minimum6.2/wholePR6/F12 open."
+      "remaining": "Foundations qualified. Input67:8failed/22assertions,cleanupPASS; fixtures corrected/source5reviewed. Fresh63On27/48older headless qualification pending exactreview; allsixSwift mandatory. FourUIKit runtime controls held. Minimalhost build/metadata pass; linkedSDK15, no rebuilt27policy credit. Hostedcleanup/runtime,scroll/platform/Off/minimum6.2/wholePR6/F12 open."
     },
     {
       "id": "PR7",
@@ -223,5 +223,5 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": 1791056425.116404
+  "updated_at": 1791058239.3626041
 }
