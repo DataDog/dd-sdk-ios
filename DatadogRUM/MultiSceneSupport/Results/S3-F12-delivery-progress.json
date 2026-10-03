@@ -98,10 +98,10 @@
       "off_contract": "Current DDApplication/DDEvent swizzle calls previous IMP once; no new installation/scene lookup/handoff read/owner allocation",
       "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
       "rebuild_obligation": "Core capability declared PR2; allocate only after resolved On, propagate to already-existing network provider without module imports or extra Off locks",
-      "status": "P6D5_SYNC_ASYNC_AND_CALLBACK_FOUNDATIONS_QUALIFIED",
+      "status": "FOUNDATIONS_AND_INPUT_HANDLER_WIRING_COMPONENTS_QUALIFIED",
       "owning_record": "Results/S3-PR6-action-preparation.json",
       "whole_F12_closed": false,
-      "remaining": "Foundations qualified. Input67:8failed/22assertions,cleanupPASS; fixtures corrected/source5reviewed. Fresh63On27/48older headless qualification pending exactreview; allsixSwift mandatory. FourUIKit runtime controls held. Minimalhost build/metadata pass; linkedSDK15, no rebuilt27policy credit. Hostedcleanup/runtime,scroll/platform/Off/minimum6.2/wholePR6/F12 open."
+      "remaining": "Input handler/wiring qualifies63On27/48fallback17.5, with exact source/build/result joins, final review and cleanup PASS. Four compiled UIKit runtime controls remain unqualified. Minimal host linkedSDK15: primitive-only, no rebuilt27 policy credit. Hosted runtime/cleanup, genuine attached ownership, scroll/platform/source-paired Off/minimum6.2/wholePR6/F12 remain open. Original failed67 preserved."
     },
     {
       "id": "PR7",
@@ -223,5 +223,5 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": 1791058239.3626041
+  "updated_at": 1791060990.161257
 }

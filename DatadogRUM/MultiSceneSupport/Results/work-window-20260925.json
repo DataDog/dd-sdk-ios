@@ -33,7 +33,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": 1791058239.361411,
+  "updated_at": 1791060990.161847,
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
@@ -479,5 +479,18 @@
   "input_host_test_metadata": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-host-wiring-metadata-cycle3/metadata.json",
     "sha256": "a23459a9c861b28f1ba20004358bb944b846ad2147538bd95f2fdf864c55953f"
-  }
+  },
+  "input_headless_component_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-headless-component-closure/review.json",
+    "sha256": "4dc577a18f98a6f4a489131f99f89561a0156284c58b4223efc4342920260be5"
+  },
+  "input_headless_qualified_cases": {
+    "ios27": 63,
+    "ios175": 48
+  },
+  "input_hosted_runtime_preparation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-hosted-runtime-preparation-cycle1/preparation.json",
+    "sha256": "720f8a642293d0675b031f0bfd2ca91ef95eebcfad6e8cbedd4a28b75c45f4ba"
+  },
+  "input_next_action": "Hosted-four mechanism preparation/review; no repeat accepted63/48, no human sitting or awake renewal. WholePR6/F12 remains held."
 }
