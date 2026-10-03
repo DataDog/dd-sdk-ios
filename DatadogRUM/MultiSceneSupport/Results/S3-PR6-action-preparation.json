@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "INPUT_HANDLER_AND_WIRING_COMPONENT_QUALIFIED_HOSTED_FOUR_PREPARATION",
+  "state": "INPUT_REGISTERED_HOST_SUCCESSOR_WAIT_REVIEW",
   "delivery_slice": "PR6",
   "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9",
   "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/worktree",
@@ -28,13 +28,13 @@
   ],
   "controls_defined": 22,
   "design_reviewer": "/root/h10_backend_reviewer",
-  "next_action": "Resolve the source-backed Xcode test-host prerequisite after the one reviewed build-for-testing attempt rejected the supplied existing host before compilation or boot. Do not repeat this unchanged mechanism. Preserve original scenarioUNQUALIFIED/evidenceINCOMPLETE/cleanupINVALID and separate laterShutdown/quiescencePASS; no task-app absence/removal claim. Source5/63/48 reused; fourUIKit methods unqualified. SDK source unchanged; designated read-only prerequisite assessment underway.",
+  "next_action": "Complete exact independent review of the registered-host successor, checkpoint, then admit one bounded staged build and the four unqualified UIKit methods. Preserve previous host-resolution stop and cleanupINVALID plus separate Shutdown/quiescencePASS; reuse Source5 63/48. No native admission until exact review. Host relationship/effective simulator metadata are preparation only; 13 partition/membership controls pass, 172 unchanged controls reused. SDK implementation unchanged.",
   "implementation_admitted": true,
   "native_admitted": false,
   "native_runs": 6,
   "sdk_edits": 6,
   "gates_closed": [],
-  "updated_at": 1791066611.334035,
+  "updated_at": 1791070600.936178,
   "previous_definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/next-pr6-controls-definition.json",
     "sha256": "7b374396fc3b8a33818520301d7a2ca3a56c53e7be70360e25fdfd154ece0e4e"
@@ -1503,12 +1503,12 @@
     "sha256": "6ff80439fd3b5e52d2830f619c4ae3b45cd3d22e0f76900d7930cb7570dff79c"
   },
   "input_hosted_mechanism_preparation": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-hosted-runtime-mechanism-cycle3/review-packet.json",
-    "sha256": "b3a5b43859ffb8893b7468efda6fcf4e5d861dc9473c1fb9cfdf98f59f32e83b"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-hosted-runtime-mechanism-cycle5/preparation.json",
+    "sha256": "3b47e81b77451b1ae91055983597c93260c8182102711421516a73a5f59809c5"
   },
   "input_hosted_mechanism_definition": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-hosted-runtime-mechanism-cycle3/definition.json",
-    "sha256": "4666b27dca6c1b7f1d876ad06aa5358b4da0033addc9f5605f79174812656d8d"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-hosted-runtime-mechanism-cycle5/definition.json",
+    "sha256": "a563915c7a1fe88ed06f66c660b526bcef22bb075b7bcef8900c085f9ff7ab6b"
   },
   "input_hosted_current_focused_controls": {
     "count": 160,
@@ -1583,5 +1583,48 @@
     "sha256": "5ac3a51002ed0ef29e941be09ff8650c1e8e9e89d58f29ca7aab82e49c9dac06"
   },
   "input_hosted_build_attempts": 1,
-  "input_hosted_test_children": 0
+  "input_hosted_test_children": 0,
+  "input_hosted_registered_preparation_history": [
+    {
+      "key": "input_hosted_mechanism_definition",
+      "preserved": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-hosted-runtime-mechanism-cycle3/definition.json",
+        "sha256": "4666b27dca6c1b7f1d876ad06aa5358b4da0033addc9f5605f79174812656d8d"
+      }
+    },
+    {
+      "key": "input_hosted_mechanism_preparation",
+      "preserved": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-hosted-runtime-mechanism-cycle3/review-packet.json",
+        "sha256": "b3a5b43859ffb8893b7468efda6fcf4e5d861dc9473c1fb9cfdf98f59f32e83b"
+      }
+    },
+    {
+      "key": "input_hosted_mechanism_review",
+      "preserved": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-hosted-runtime-mechanism-cycle3/review.json",
+        "sha256": "d8aeac1e647c43f7a9b79d23c702b285ff963c9c0ad996eb4dfcdac05da9c261"
+      }
+    }
+  ],
+  "input_hosted_registered_review_packet": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-hosted-runtime-mechanism-cycle5/review-packet.json",
+    "sha256": "2465e0455690cb0c29142ff34629e551fe0470b518eafa715f5bd6646bb05c1a"
+  },
+  "input_hosted_registered_fixture": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-registered-host-fixture-cycle1/fixture.json",
+    "sha256": "572bffeda6b5a3c1f0027b0ea889f832f1e4604d898bd4f506e4e2ff8b324eca"
+  },
+  "input_hosted_registered_effective_settings": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-registered-host-fixture-cycle1/effective-settings-cycle1/metadata.json",
+    "sha256": "9506c145f66cd4b684797bdc22073410a5f1b87100e9d7987e79b5e70f0dcdb5"
+  },
+  "input_hosted_registered_focused_controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-hosted-runtime-mechanism-cycle5/partition-controls.json",
+    "sha256": "9aa71f820e42f79d18c478ceaa65d70d55cba783b310efc2df9c689fd5751dad"
+  },
+  "input_hosted_registered_context_preparer": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/prepare-hosted-four-context-cycle3.py",
+    "sha256": "b0ef2ad30dc203ef79185ed2071c76eb8f8de59fa525752fbb8aa262d8b5322f"
+  }
 }
