@@ -81,6 +81,13 @@ ID. Intentionally unselected cases may be disabled. XCTest method filters and Sw
 Testing suite filters differ; verify the resulting discovery rather than the
 command text. Replay-content exclusions are neither passes nor OS skips.
 
+Reconcile logical test cases and expanded parameter invocations separately. Xcode's
+summary can count parents while per-device counts include their argument results.
+Require exact source-declared argument tuples, each ordinary result once, and both
+count models consistent with failures/skips. Duplicate, foreign or missing rows
+still fail. The [PR5 owner](../Results/S3-PR5-scene-handler-preparation.json) retains
+the reviewed saved-export correction; do not rerun tests for a grader repair.
+
 Xcode test discovery can list methods excluded from the selected platform by
 source conditional compilation. Reconcile a missing result with the frozen source
 and final test inventory; retain the original selection and record the exact

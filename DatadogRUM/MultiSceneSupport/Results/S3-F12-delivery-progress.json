@@ -1,0 +1,227 @@
+{
+  "schema_version": 1,
+  "state": "FINITE_DELIVERY_PROGRESS_ONLY",
+  "gate": "F12",
+  "delivery_definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-flag-p0-ox031_z0/delivery-slices-draft-cycle1.json",
+    "sha256": "83ddd2d16b7f87cbc0b7815e8976c320da0aee755325a17b6adfbff6d420faeb"
+  },
+  "rows": [
+    {
+      "id": "PR1",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": [],
+      "deliverable": "Frozen flag resolution and existing consumers",
+      "decisive_test": "Resolution truth table for flag/manifest/OS, defaults-aware lookup and once-only injection; preserve existing viewUpdates default true",
+      "off_contract": "Default false; unavailable OS and absent manifest false; no activation or scene allocation",
+      "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
+      "rebuild_obligation": "RUM.Configuration flag spelling is F01/public-merge review blocked; local prototype authorized",
+      "status": "PRIVATE_COMPONENT_QUALIFIED",
+      "owning_record": "Results/S3-PR1-runtime-flag.json",
+      "whole_F12_closed": false,
+      "remaining": "Retain qualified dormant/default flag component evidence and prefix PR3 Off evidence; whole delivery/source promotion and CI remain separate."
+    },
+    {
+      "id": "PR2",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": [
+        "PR1"
+      ],
+      "deliverable": "Dormant targets, optional scene data, handoff contracts and expiry helper",
+      "decisive_test": "ProcessRepresentative/nil defaults, unchanged expiry boundaries, encoder no scene data; custom/NOP nil capability",
+      "off_contract": "No owner allocation, owner lock, TaskLocal or thread dictionary access",
+      "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
+      "rebuild_obligation": "Declare inert Core/DatadogInternal activation capability and live-provider propagation seam for later PR6; no feature import",
+      "status": "PRIVATE_COMPONENT_QUALIFIED",
+      "owning_record": "Results/S3-PR1-runtime-flag.json",
+      "whole_F12_closed": false,
+      "remaining": "Retain qualified dormant/default flag component evidence and prefix PR3 Off evidence; whole delivery/source promotion and CI remain separate."
+    },
+    {
+      "id": "PR3",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": [
+        "PR2",
+        "S1:E03",
+        "S1:E04"
+      ],
+      "deliverable": "On session/application routing and cache retention",
+      "decisive_test": "Two scene owners, representative selection, inactive pending action/resource broadcast and restoration; final E03 response-plus-error and E04 retention",
+      "off_contract": "Keep fresh develop broadcast/application path/cache defaults and single-lock purge",
+      "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
+      "rebuild_obligation": "No Operation or crash helper forward type dependence; retained state/lifetime controls",
+      "status": "LOCAL_ON_COMPONENTS_AND_OFF_OBLIGATIONS_QUALIFIED",
+      "owning_record": "Results/S3-PR3-routing-preparation.json",
+      "whole_F12_closed": false,
+      "remaining": "No repeat accepted local PR3 qualification; whole cumulative delivery/source promotion and CI remain separate."
+    },
+    {
+      "id": "PR4",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": [
+        "PR3"
+      ],
+      "deliverable": "Monitor inferred/explicit targets and private capabilities",
+      "decisive_test": "Exactly-once custom/NOP fallback, background call no UIKit access, single snapshot command attribution",
+      "off_contract": "Legacy dispatch and existing storage; no two extra context locks/dictionaries or scene/handoff reads",
+      "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
+      "rebuild_obligation": "Private protocols before conformances; stable public wrappers remain PR13",
+      "status": "PRIVATE_COMPONENT_QUALIFIED",
+      "owning_record": "Results/S3-PR4-monitor-preparation.json",
+      "whole_F12_closed": false,
+      "remaining": "Exclusive-Off differential/tripwire/footprint obligations, final CI and source promotion remain; full suites do not substitute exclusive-Off evidence."
+    },
+    {
+      "id": "PR5",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": [
+        "PR4"
+      ],
+      "deliverable": "Separate On UIKit view handler and scene lifecycle",
+      "decisive_test": "Scene-bound stacks/lifecycle/manual suffix ownership; foreign or disconnected scenes cannot stop another owner",
+      "off_contract": "Construct only existing develop handler, with no new observers/maps/stacks/suppression callback",
+      "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
+      "rebuild_obligation": "Shared SwiftUI hooks dormant until PR11; do not resurrect removed develop types",
+      "status": "PRIVATE_COMPONENT_QUALIFIED",
+      "owning_record": "Results/S3-PR5-scene-handler-preparation.json",
+      "whole_F12_closed": false,
+      "remaining": "Exclusive-Off differential/tripwire/footprint obligations, final CI and source promotion remain; full suites do not substitute exclusive-Off evidence."
+    },
+    {
+      "id": "PR6",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": [
+        "PR5"
+      ],
+      "deliverable": "UIKit input and On-only handoff activation",
+      "decisive_test": "Touch/scroll owner binding, nested dispatch/reentry, On activation before input and lifetime invalidation; provider enabled-before-RUM and RUM-before-provider",
+      "off_contract": "Current DDApplication/DDEvent swizzle calls previous IMP once; no new installation/scene lookup/handoff read/owner allocation",
+      "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
+      "rebuild_obligation": "Core capability declared PR2; allocate only after resolved On, propagate to already-existing network provider without module imports or extra Off locks",
+      "status": "ACTIVATION_DESIGN_REVIEWED_NOT_IMPLEMENTED",
+      "owning_record": "Results/S3-PR6-action-preparation.json",
+      "whole_F12_closed": false,
+      "remaining": "Implement/qualify reviewed P6D5 transaction and provider foundation first; then existing finite input, scroll, lifetime, platform and source-paired Off obligations."
+    },
+    {
+      "id": "PR7",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": [
+        "PR6",
+        "S1:E01",
+        "S1:E05"
+      ],
+      "deliverable": "Cross-module request, Trace, Logs, Flags and WebView consumers",
+      "decisive_test": "Authoritative nil vs absent handoff, optional request-time final E05 correlation, delayed WebView owner and accepted action merge",
+      "off_contract": "Static fast path; final E01/E05 headers/sampling/user/account expressions and fresh develop no handoff or scene lookup",
+      "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
+      "rebuild_obligation": "Drop unqualified empty-header, existing-header suppression and helper rewrites; networking wire policy unchanged",
+      "status": "DEFINED_NOT_IMPLEMENTED",
+      "owning_record": null
+    },
+    {
+      "id": "PR8",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": [
+        "PR7",
+        "S1:E03"
+      ],
+      "deliverable": "Request-time Resource owner/start",
+      "decisive_test": "Automatic and registered request-start owner through later view/session change; success/metrics/error response preserve final E03 Error1/Resource0",
+      "off_contract": "Develop start/correlation timing; no owner map/lock or early UUID/command allocation",
+      "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
+      "rebuild_obligation": "Not a standalone fix without a fresh develop failing reproduction",
+      "status": "DEFINED_NOT_IMPLEMENTED",
+      "owning_record": null
+    },
+    {
+      "id": "PR9",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": [
+        "PR3"
+      ],
+      "deliverable": "On representative watchdog/crash context",
+      "decisive_test": "Stopped/disconnected scene representative, crash full final view and no foreign overwrite",
+      "off_contract": "Develop watchdog clear/start and fatal context behavior",
+      "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
+      "rebuild_obligation": "No standalone watchdog/background-start change without reproduced develop regression",
+      "status": "DEFINED_NOT_IMPLEMENTED",
+      "owning_record": null
+    },
+    {
+      "id": "PR10",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": [
+        "PR4",
+        "PR7"
+      ],
+      "deliverable": "Operations and Profiling identity consumer",
+      "decisive_test": "Exact per-step owner, duplicate keys distinct lifetime, targeted completion and released retained snapshots",
+      "off_contract": "Develop Operation/profiling keying and flow",
+      "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
+      "rebuild_obligation": "Rebuild consolidated DatadogProfiler.swift, never restore removed AppLaunchProfiler.swift; standalone remains unqualified",
+      "status": "DEFINED_NOT_IMPLEMENTED",
+      "owning_record": null
+    },
+    {
+      "id": "PR11",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": [
+        "PR5",
+        "PR6"
+      ],
+      "deliverable": "SwiftUI ordinary tracking and shared internal foundation",
+      "decisive_test": "Keyed/ordinary tracking, scene reader/traits, authority/interactive arbitration lifetime and reader fallback; split full declarations into reviewable files",
+      "off_contract": "Legacy modifier body and no reader/authority/arbiter/state allocation or body lock",
+      "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
+      "rebuild_obligation": "Proposed shared foundation 5-4820 and removed legacy modifier lines; complete closures, visibility and conditional scopes need independent disposition",
+      "status": "DEFINED_NOT_IMPLEMENTED",
+      "owning_record": null
+    },
+    {
+      "id": "PR12",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": [
+        "PR11"
+      ],
+      "deliverable": "iOS27 semantic navigation engine and SPI hosts",
+      "decisive_test": "Observed navigation/presentation outcome, cancellation/no duplicate ownership, host teardown and simultaneous visible columns",
+      "off_contract": "Semantic hooks absent; no install/observer/callback",
+      "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
+      "rebuild_obligation": "iOS27 availability and pre-cycle fallback; F01 governs public promotion; foundation must precede engine",
+      "status": "DEFINED_NOT_IMPLEMENTED",
+      "owning_record": null
+    },
+    {
+      "id": "PR13",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": [
+        "PR8",
+        "PR9",
+        "PR10",
+        "PR12",
+        "F01"
+      ],
+      "deliverable": "Approved public Swift/Objective-C APIs",
+      "decisive_test": "Existing and unguarded deployment15 Swift/ObjC clients, API diff and exact-once fallback for unsupported/Off/custom/NOP",
+      "off_contract": "Exactly-once legacy fallback preserving callbacks/attributes/options",
+      "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
+      "rebuild_obligation": "Public merge only after attributable F01 approval; ObjC prototypes DD_SCENE_API_VALIDATION until then",
+      "status": "DEFINED_NOT_IMPLEMENTED",
+      "owning_record": null
+    }
+  ],
+  "qualified_private_component_slices": [
+    "PR1",
+    "PR2",
+    "PR3",
+    "PR4",
+    "PR5"
+  ],
+  "locally_qualified_off_scope": "PR3 prefix only; no blanket later-slice equivalence claim",
+  "next_slice": "PR6",
+  "sdk_edits": 0,
+  "native_runs": 0,
+  "gates_closed": [],
+  "updated_at": 1791013182.62228
+}

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "UNATTENDED_OFFLINE_AND_REVIEWED_AUTOMATED_WORK",
+  "state": "UNATTENDED_WINDOW_COMPLETE_SAFE_CHECKPOINT",
   "authority": "User requested caffeinate and no human intervention until10:00 Paris2026-10-03",
   "started_at": 1790316486.131028,
   "work_deadline_utc": "2026-10-03T08:00:00+00:00",
@@ -10,13 +10,14 @@
   },
   "previous_window": "unattended-work-20260924.json",
   "automation": {
-    "state": "ACTIVE",
+    "state": "DELETED_AT_DEADLINE",
     "id": "rum-unattended-progress-until-10-00-paris",
     "kind": "heartbeat",
     "until_utc": "2026-10-03T08:00:00+00:00",
-    "instruction": "No human prerequisites. Coordinate through current task/cursor; finish cleanup/checkpoint and remove at deadline."
+    "instruction": "No human prerequisites. Coordinate through current task/cursor; finish cleanup/checkpoint and remove at deadline.",
+    "deleted": true
   },
-  "next_task": "Results/S3-PR5-scene-handler-preparation.json",
+  "next_task": "Results/S3-PR6-action-preparation.json",
   "gate_closures": [
     "S2:H16",
     "S2:T10",
@@ -32,7 +33,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": 1791012618.1844149,
+  "updated_at": 1791014573.7975638,
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
@@ -321,7 +322,7 @@
     }
   ],
   "current_awake": {
-    "state": "RUNNING_USER_AUTHORIZED",
+    "state": "EXPIRED_VERIFIED_ABSENT",
     "pid": 35995,
     "process": "35995 Sat Oct  3 03:18:57 2026     /usr/bin/caffeinate -di -t 24063",
     "started_at": "2026-10-03T01:18:57.629008+00:00",
@@ -333,10 +334,15 @@
     "receipt": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-unattended-20261003-fjap711a/awake.json",
       "sha256": "3e31ecac6486423a6ceb5cf13d5e7eb5151bf3c76576ba2382531a3c60843592"
-    }
+    },
+    "verification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-unattended-20261003-fjap711a/deadline-awake-absence.json",
+      "sha256": "29d9bdd4ddbceed9c410cd117af25bd38c094ac5745a51a8167b5a202d43db1d"
+    },
+    "renewed": false
   },
   "minimum_autonomous_work_until_utc": "2026-09-27T06:00:00+00:00",
-  "latest_autonomous_checkpoint": "Results/S3-PR5-scene-handler-preparation.json",
+  "latest_autonomous_checkpoint": "Results/S3-PR6-action-preparation.json",
   "historical_entries_note": "Earlier attempt/preparation fields retain historical state. The restart cursor and latest_autonomous_checkpoint own current work; they do not renew old admissions.",
   "human_availability": {
     "date": "2026-10-01",
@@ -379,5 +385,17 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target175-cycle1-postexit-quiescence.json",
     "sha256": "6866c6558632476c2b931caa11608b21d08e558954821d6e9ee81069bb33ffdc"
   },
-  "next_action": "Continue finite PR6 action/handoff design and source-backed Off/activation obligations from qualified PR5 parent before08:00UTC. No human prerequisites or accepted test reruns."
+  "next_action": "Resume the reviewed finite PR6 transactional activation/provider foundation in a fresh isolated checkout at8cd7793d3. Exact design/control reviews and7deliverables/22controls are recorded. The unattended window ended; no active human/native sitting and no old deadline is renewed.",
+  "deadline_checkpoint": {
+    "awake_absence": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-unattended-20261003-fjap711a/deadline-awake-absence.json",
+      "sha256": "29d9bdd4ddbceed9c410cd117af25bd38c094ac5745a51a8167b5a202d43db1d"
+    },
+    "native_quiescence": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-unattended-20261003-fjap711a/pre-deadline-quiescence.json",
+      "sha256": "047928208c802f45b473faa6cb2b5cfc51c3ee971b0efd2ccb821d54cd0c98a0"
+    },
+    "new_admissions_after_deadline": 0,
+    "gates_closed": []
+  }
 }

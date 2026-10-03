@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "state": "ACTIVATION_DESIGN_REVIEWED_IMPLEMENTATION_NOT_STARTED",
+  "delivery_slice": "PR6",
+  "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9",
+  "checkout": null,
+  "qualified_parent_head": "8cd7793d31fdde07b3b1821dd1413fc69cfe3070",
+  "qualified_parent": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/sdk-checkpoint-cycle2/checkpoint.json",
+    "sha256": "4b83e7d2a21eba49da9b399fc5bc316f9c65085f8846c60a83993e9e22ef9566"
+  },
+  "source_assessment": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/next-pr6-source-assessment.json",
+    "sha256": "820c07fec26a333521074ba4d18f183a0bf003871d9df89dfaa4207b396b55e7"
+  },
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/next-pr6-controls-definition-cycle2.json",
+    "sha256": "9ead38ea28ab010d6b51d6b36d82f64a1084dc72881a1e7e9444d1066b549c56"
+  },
+  "deliverables": [
+    "P6D1",
+    "P6D2",
+    "P6D3",
+    "P6D4",
+    "P6D5",
+    "P6D6",
+    "P6D7"
+  ],
+  "controls_defined": 22,
+  "design_reviewer": "/root/h10_backend_reviewer",
+  "next_action": "Implement the smallest P6D5 transaction/provider foundation in a fresh isolated checkout at8cd7793d3. Declare exact Internal/Core/RUM initialization source/test paths first; preserve Off ordering and current platform types. Qualify pre-install activation, both provider orderings, exact rollback, after-unlock old-generation delivery and zero extra Off reads/locks. Then continue the remaining finite PR6 controls; no human prerequisite.",
+  "implementation_admitted": false,
+  "native_admitted": false,
+  "native_runs": 0,
+  "sdk_edits": 0,
+  "gates_closed": [],
+  "updated_at": 1791013996.341717,
+  "previous_definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/next-pr6-controls-definition.json",
+    "sha256": "7b374396fc3b8a33818520301d7a2ca3a56c53e7be70360e25fdfd154ece0e4e"
+  },
+  "activation_design_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/next-pr6-activation-design-review.json",
+    "sha256": "b0c142b02d5224d165328a4e4530c268d1f1239fb1fbad2049b113e629e1ed9f"
+  },
+  "controls_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/next-pr6-controls-review-cycle2.json",
+    "sha256": "5d3fe177222387e66c010a758a8b9ebca429acdbe86a835afb741d4868390056"
+  }
+}
