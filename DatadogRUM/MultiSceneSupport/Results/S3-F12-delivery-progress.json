@@ -98,10 +98,10 @@
       "off_contract": "Current DDApplication/DDEvent swizzle calls previous IMP once; no new installation/scene lookup/handoff read/owner allocation",
       "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
       "rebuild_obligation": "Core capability declared PR2; allocate only after resolved On, propagate to already-existing network provider without module imports or extra Off locks",
-      "status": "P6D5_SYNC_AND_ASYNC_P6D4_FOUNDATIONS_QUALIFIED",
+      "status": "P6D5_SYNC_ASYNC_AND_CALLBACK_FOUNDATIONS_QUALIFIED",
       "owning_record": "Results/S3-PR6-action-preparation.json",
       "whole_F12_closed": false,
-      "remaining": "P6D5 at4dea98a95, sync scope at1d2846f71 and async scope at aefa2f108 are qualified components. Async6On27/2direct-fallback17.5 passes with exact source/compiler/product/result joins, final independent review and original-state cleanup PASS. Automatic callback-pattern safety, actual minimum6.2 execution, input/scroll/platform/source-paired Off and whole PR6/F12 remain open."
+      "remaining": "P6D5, sync and async foundations retain qualified evidence. Bounded callback3On27/1fallback17.5 qualifies at signed7ef091c48 with exact joins, final independent review and original-state cleanup PASS. Next: On-only input design/source/control/runtime review. Minimum6.2 execution, input/scroll/platform/source-paired Off and wholePR6/F12 remain open."
     },
     {
       "id": "PR7",
@@ -223,5 +223,5 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": 1791039651.484086
+  "updated_at": 1791044467.534979
 }

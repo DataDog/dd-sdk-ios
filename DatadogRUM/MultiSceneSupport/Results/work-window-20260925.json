@@ -33,7 +33,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-physical-input-gcc5x7j8/physical-setup-outcome.json",
     "sha256": "9ee0a72864cb7594a4d64467589854d4565ffca9bb38f953b4ce19e9d0fbc7f2"
   },
-  "updated_at": 1791039651.4851048,
+  "updated_at": 1791044467.535318,
   "physical_human_result": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-awake-20260925-irafc51e/human-uikit/physical-human-outcome.json",
     "sha256": "74bb01b0202e96f0352aec07defb030d7cb77527a5acf129b001e715b314631b"
@@ -393,7 +393,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/full-target175-cycle1-postexit-quiescence.json",
     "sha256": "6866c6558632476c2b931caa11608b21d08e558954821d6e9ee81069bb33ffdc"
   },
-  "next_action": "Review finite callback-pattern controls, then source implementation/review and a separately admitted native qualification. No human sitting, active native worker or caffeinate renewal.",
+  "next_action": "Review finite On-only input design/source/controls before native admission. No human sitting or native worker. Awake authorization expired; no renewal.",
   "deadline_checkpoint": {
     "awake_absence": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-unattended-20261003-fjap711a/deadline-awake-absence.json",
@@ -407,7 +407,17 @@
     "gates_closed": []
   },
   "latest_component_checkpoint": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/async-execution-scope-component-closure/sdk-checkpoint.json",
-    "sha256": "868d6521c2d5abaa6a0ff31c32ce9af9d84204fabaded29aef5a475a97612980"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/callback-runtime-component-closure/sdk-checkpoint.json",
+    "sha256": "298dc45fc67d5334056cba90f67c0e2315fef37db0328d23c20cd633754c7b29"
+  },
+  "callback_native_quiescence": {
+    "callback_scope_datadogcore_ios27_cycle1": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/callback_scope_datadogcore_ios27_cycle1/controller-return.json",
+      "sha256": "ec3d31140d64f4a8b106e212af20d279e910399b8f85e1445338ad22f7aa7518"
+    },
+    "callback_scope_datadogcore_ios175_cycle1": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/callback_scope_datadogcore_ios175_cycle1/controller-return.json",
+      "sha256": "44672721fec833e24737e5b671c32965f7bccce84089c89e66eaf1a9e97df50e"
+    }
   }
 }
