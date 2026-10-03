@@ -105,6 +105,21 @@ public enum RUMContextHandoff {
         return try $binding.withValue(Binding(owner: owner, value: value), operation: operation)
     }
 
+    /// Binds an asynchronous operation using the caller's isolation and restores the prior binding.
+    /// Unsupported systems and absent or invalid owners execute the operation directly.
+    /// Automatic customer-callback integration requires separate qualification.
+    public static func withValue<T>(
+        _ value: CurrentValue,
+        for owner: Owner?,
+        isolation: isolated (any Actor)? = #isolation,
+        operation: () async throws -> T
+    ) async rethrows -> T {
+        guard supportsExecutionScope, let owner = owner, owner.isValid else {
+            return try await operation()
+        }
+        return try await $binding.withValue(Binding(owner: owner, value: value), operation: operation, isolation: isolation)
+    }
+
     public static func owner(in scope: Any) -> Owner? {
         (scope as? RUMContextHandoffOwnerProviding)?.rumContextHandoffOwner
     }
