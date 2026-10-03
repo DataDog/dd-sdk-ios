@@ -49,6 +49,60 @@ public enum RUMContextHandoff {
         public let sceneIdentifier: String?
         public let hasPendingUserAction: Bool
         public let excludedUserActionID: String?
+
+        public init(
+            rumContext: RUMCoreContext?,
+            sceneIdentifier: String?,
+            hasPendingUserAction: Bool,
+            excludedUserActionID: String?
+        ) {
+            self.rumContext = rumContext
+            self.sceneIdentifier = sceneIdentifier
+            self.hasPendingUserAction = hasPendingUserAction
+            self.excludedUserActionID = excludedUserActionID
+        }
+    }
+
+    // All stored values are immutable. RUMCoreContext contains only scalar/string
+    // values and an immutable Sendable sampler, but does not declare Sendable.
+    private struct Binding: @unchecked Sendable {
+        let owner: Owner
+        let value: CurrentValue
+    }
+
+    @TaskLocal private static var binding: Binding?
+
+    private static var supportsExecutionScope: Bool {
+        #if os(iOS)
+        if #available(iOS 27.0, *) {
+            return true
+        }
+        #endif
+        return false
+    }
+
+    /// Looks up only the current binding for the exact valid Core lifetime.
+    /// A returned value with nil RUM context remains an authoritative override.
+    public static func current(for owner: Owner?) -> CurrentValue? {
+        guard supportsExecutionScope, let owner = owner, owner.isValid,
+              let binding = binding, binding.owner === owner else {
+            return nil
+        }
+        return binding.value
+    }
+
+    /// Binds a synchronous operation and restores the prior binding on return or throw.
+    /// Unsupported systems and absent or invalid owners execute the operation directly.
+    /// This primitive does not authorize automatic customer-callback integration.
+    public static func withValue<T>(
+        _ value: CurrentValue,
+        for owner: Owner?,
+        operation: () throws -> T
+    ) rethrows -> T {
+        guard supportsExecutionScope, let owner = owner, owner.isValid else {
+            return try operation()
+        }
+        return try $binding.withValue(Binding(owner: owner, value: value), operation: operation)
     }
 
     public static func owner(in scope: Any) -> Owner? {
