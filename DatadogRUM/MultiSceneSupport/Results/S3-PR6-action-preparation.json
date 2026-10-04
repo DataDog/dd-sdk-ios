@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "PRIVATE_SCROLL_QUALIFIED_SC21_SOURCE_ORACLES_CORRECTED_WAIT_REVIEW",
+  "state": "PRIVATE_SCROLL_QUALIFIED_SC21_LOCAL_PIN_SOURCE_PASS_NATIVE_REVIEW_PENDING",
   "delivery_slice": "PR6",
   "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9",
   "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/worktree",
@@ -28,13 +28,13 @@
   ],
   "controls_defined": 22,
   "design_reviewer": "/root/h10_backend_reviewer",
-  "next_action": "Review corrected SC21 paired source/oracles, then exact bounded four-cell Off native proposals and consumer. Preserve original BLOCKED getter/trace fixture review. Reuse saved positive27 counters; no On rerun. Allocation/performance, SC22 and genuine attached ownership remain held.",
+  "next_action": "Review exact locally pinned four-cell SC21 successor proposals and source-bound consumer. Then execute each once serially and qualify actual same-run source/compiler/products/results/cleanup before semantic/counter/layout comparison. Original blocked proposals remain retired/unadmitted. Allocation/performance, SC22, genuine attached ownership and broader holds unchanged.",
   "implementation_admitted": true,
   "native_admitted": false,
   "native_runs": 6,
   "sdk_edits": 6,
   "gates_closed": [],
-  "updated_at": 1791089260.817775,
+  "updated_at": 1791092508.8178968,
   "previous_definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/next-pr6-controls-definition.json",
     "sha256": "7b374396fc3b8a33818520301d7a2ca3a56c53e7be70360e25fdfd154ece0e4e"
@@ -2127,8 +2127,8 @@
     "sha256": "2dcb8786d2cd427a660f6488a9ce0048416168353f9c81831bbdb5ae1fe58b97"
   },
   "scroll_sc21_source_preparation": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-off-source-freeze-cycle2/preparation.json",
-    "sha256": "9847ffd2385010e5996013829c357e0fe27828632eb3c111199e13abbd0303b9"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-off-source-freeze-cycle3/preparation.json",
+    "sha256": "2c40f8323023337b54a227dc8cfd324467f085a46bbe7a692358710d854b0803"
   },
   "scroll_sc21_corrected_fixture": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-off-fixture-draft-cycle3/preparation.json",
@@ -2143,12 +2143,12 @@
     "sha256": "08e64a7f446e1eaeb0e45ec36a4d2b90ef696809b113eef4b2079e4ee01ffe77"
   },
   "scroll_sc21_consumer_preparation": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-off-qualification-mechanism-cycle2/preparation.json",
-    "sha256": "1aeb109adf1e67106a19eaa3c5afb8527208ab8e7aa8dbfccaa9b54f063db481"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-off-qualification-mechanism-cycle3/preparation.json",
+    "sha256": "ca271d916d5c1d4f0cf45a0b9251cfe7ef3b30075a8313e2f8f183c781d87099"
   },
   "scroll_sc21_consumer_controls": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-off-qualification-mechanism-cycle2/controls.json",
-    "sha256": "78866287ce63c496f6ab4ed0da5695a18b2fbc46ca245ffb44f29e2e2f52b50c"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-off-qualification-mechanism-cycle3/controls.json",
+    "sha256": "88fb82651fed83423ef42a5af53dd9f5c2b3d75eef7e5f39abebabeee46afd18"
   },
   "scroll_sc21_off_native_runs": 0,
   "scroll_sc21_fixture_review_disposition": {
@@ -2156,5 +2156,56 @@
     "correction": "Fresh identical appendix in two append-only source copies restores owned getter and captures actual full commands/callbacks with safe count guard;67 semantic controls and25 source-selection controls pass offline only.",
     "native_admitted": false,
     "gates_closed": []
+  },
+  "scroll_sc21_source_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-off-source-freeze-cycle3/review.json",
+    "sha256": "ceb98b312664d85ae90fef8525a20fc5487662aa6dcb59c098c5f4d8ee142cf9"
+  },
+  "scroll_sc21_context_preparer": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/prepare-scroll-off-headless-context-cycle2.py",
+    "sha256": "ac665772288f63c7deb40b0a5e873b7e4027b6f4c7204f027af50c207f415a61"
+  },
+  "scroll_sc21_previous_source_preparation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-off-source-freeze-cycle2/preparation.json",
+    "sha256": "9847ffd2385010e5996013829c357e0fe27828632eb3c111199e13abbd0303b9"
+  },
+  "scroll_sc21_blocked_native_proposal": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-off-headless-proposal-cycle1/proposal.json",
+    "sha256": "6fe477e9c329a524123156f54ad6a7cbc28687530ded43819c946c147fed5eca"
+  },
+  "scroll_sc21_blocked_native_proposal_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-off-headless-proposal-cycle1/mechanism-review.json",
+    "sha256": "6f40f94c7a9db837a0e70f9c54197bee1e69d55bea2edffae9450339fdba58f4"
+  },
+  "scroll_sc21_blocked_native_proposal_retirement": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-off-headless-proposal-cycle1/retirement.json",
+    "sha256": "cdbfb8ad94b3eacc2765ddc5a627165debfeee1fc77f68c426e5987ee2d42df6"
+  },
+  "scroll_sc21_local_pin_guard": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-local-pin-guard-cycle1/guard.py",
+    "sha256": "1c58e784b4de6a6aadf02e5041916591c244c4e7ace1818a3fef23caa95b91a0"
+  },
+  "scroll_sc21_local_pin_guard_controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-local-pin-guard-cycle1/controls.json",
+    "sha256": "d55be2d675a15f6ad39d8028755906617896b8646d819224141e9c7406cff977"
+  },
+  "scroll_sc21_source_equivalence": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-local-pin-guard-cycle1/source-equivalence.json",
+    "sha256": "e77fb9d5d4c13f0a333256df9fbb46f6239aedaf2f3c51ed1911c6d00b46b159"
+  },
+  "scroll_sc21_binding_correction": {
+    "original_finding": "SC21-OFF-PROPOSAL-R1-01: copied workspaces lacked own Package.resolved while controller validated original workspace pins.",
+    "correction": "Fresh identical2436 tracked manifests/155-line appendix; exact existing two-pin local copies and per-copy cache refs;12 guard negative controls and25 rebound selection controls PASS offline. New native proposals pending.",
+    "sdk_edits": 0,
+    "native_runs": 0,
+    "gates_closed": []
+  },
+  "scroll_sc21_previous_source_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-off-source-freeze-cycle2/review.json",
+    "sha256": "10f7d415a57b50d52e16b008f69930d81571b29052856f16fc456c8d1e311a87"
+  },
+  "scroll_sc21_native_proposal": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-off-headless-proposal-cycle2/proposal.json",
+    "sha256": "b033c0a7001906445a5f702b42be2f0ba06962b55e50c948641e4d75e2fc3ad0"
   }
 }
