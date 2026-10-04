@@ -100,8 +100,10 @@ is excluded. Current S2 source/lifetime proof belongs to
   records the shared parser/replay/runner and bounded review eligibility. Constructor
   ordering and concrete Off reachability/counters/lifetime now pass source-backed
   review; no failure-injection seam is required. The corrected five-case configured
-  attached UIKit fixture passes source review; its native adapter awaits review and
-  Xcode workspace access. Actual minimum Swift6.2 remains held. No timing campaign,
+  attached UIKit fixture passes source review. The original native proposal is
+  BLOCKED on six capture/custody/cleanup issues; its separate consolidated correction
+  passes40 offline controls and independent proposal review; Xcode workspace
+  access and native qualification remain. No native acceptance follows from these controls. Actual minimum Swift6.2 remains held. No timing campaign,
   universal callback-safety or rebuilt-source runtime credit follows.
 
 - P2's single automatic composition stopped before tool dispatch on missing bridge
@@ -110,8 +112,8 @@ is excluded. Current S2 source/lifetime proof belongs to
   restoration verifies, with no original complete-app-inventory claim. The offline
   correction is reviewed; the route stays stopped. The distinct workspace route
   has a fresh linked source tree, but complete composition review found nine
-  orchestration issues. Correct them together and re-review before any native
-  qualification. No human session is qualified.
+  orchestration issues. Cycle3 passes63 offline controls but re-review retains three
+  import/retirement/partial-allocation findings; cycle4 corrections and native qualification remain. No human session is qualified.
 
 - P5 has one source-paired Monitor/legacy-factory Off fixture in linked verification
   worktrees at PR3/PR4/PR5. Transport/consumer review findings are corrected
@@ -125,3 +127,8 @@ is excluded. Current S2 source/lifetime proof belongs to
   cell is rerun.
   The owning progress records a finite seven-item PR6 exit packet. Accepted suites are preserved; no release gate or universal footprint
   claim follows from preparation.
+
+- [PR9 owner](Results/S3-PR9-representative-preparation.json) records an On-only full
+  representative fatal/watchdog projection in four private uncommitted SDK/test paths.
+  Source review is underway; six methods are defined but unexecuted. No real watchdog
+  termination, Off compatibility or release credit is established.

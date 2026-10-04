@@ -186,12 +186,32 @@
         "integration": "NOT_QUALIFIED"
       },
       "remaining_assertion": "P6R1/P6R2 configured attached component and P6R7 final applicability; P6R5/P6R6 explicit environment holds.",
-      "next_action": "Review the five-case configured-host adapter and collect fresh Xcode metadata after workspace access is approved; preserve accepted suites and component results.",
+      "next_action": "Use reviewed cycle3 adapter only after pending workspace access and fresh actual metadata/admission; run one configured component and final applicability review. Preserve accepted suites.",
       "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit.",
       "off_qualification_scope": "Concrete accepted input/scroll Off reachability, raw9/27 helper-zero/positive controls and lifetime/source joins only; no universal allocation, class-size or whole SDK Off claim.",
       "source_dispositions_review": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-source-dispositions/review.json",
         "sha256": "e3c51ba52e29c68e9c4aca17c0275db27c083685b4a94f93b642da15f05112f9"
+      },
+      "configured_native_blocked_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-configured-host-cycle1/native-review.json",
+        "sha256": "2a6510392d5af85ad3e0792df85054778d94735fd91e4b88a99ecc4327c78652"
+      },
+      "configured_correction_proposal": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-native-adapter-cycle3/review-packet.json",
+        "sha256": "17ea95517aa8a3e0cca7c2befdd993d098d5be8cfd870911bf1363cdaaf836c7"
+      },
+      "preserved_cycle2_correction_proposal": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-native-adapter-cycle2/review-packet.json",
+        "sha256": "5c7b67ccfa7f3a710924200d363f3a34e5e88e39da57bc94547aaa8997c1196b"
+      },
+      "preserved_cycle2_blocked_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-native-adapter-cycle2/review.json",
+        "sha256": "85697d883deebfae6519d37a7b1ce19a4e537a3ff3e70096cd6e4ccf8da7fda3"
+      },
+      "configured_correction_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-native-adapter-cycle3/review.json",
+        "sha256": "bac12bb1e648a3524853d344740e115bc0a0f028006064ace742a5b5d462a269"
       }
     },
     {
@@ -260,7 +280,7 @@
       "off_contract": "Develop watchdog clear/start and fatal context behavior",
       "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
       "rebuild_obligation": "No standalone watchdog/background-start change without reproduced develop regression",
-      "status": "DEFINED_NOT_IMPLEMENTED",
+      "status": "PRIVATE_SOURCE_PROPOSED_REVIEW_PENDING",
       "owning_record": null,
       "source_head": null,
       "obligation": "BEFORE_SLICE_MERGE",
@@ -272,8 +292,10 @@
         "integration": "NOT_QUALIFIED"
       },
       "remaining_assertion": "Stopped/disconnected scene representative, crash full final view and no foreign overwrite Off: Develop watchdog clear/start and fatal context behavior",
-      "next_action": "Implement only this declared slice once its named dependencies are qualified; retain private exposure until F01 for PR13.",
-      "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit."
+      "next_action": "Designated source review and focused representative/Off tests before explicit four-path SDK checkpoint; no native qualification yet.",
+      "evidence_source_scope": "Qualified PR3 dependency; source head plus four uncommitted task paths bound by owning proposal. Six focused tests defined, none executed.",
+      "preparation_base_head": "e1b6d5e5af36bbbad48ee74dccf7675f86376b9a",
+      "preparation_record": "Results/S3-PR9-representative-preparation.json"
     },
     {
       "id": "PR10",
@@ -398,5 +420,5 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": 1791154076.3095129
+  "updated_at": "2026-10-04T23:52:43.615412+00:00"
 }

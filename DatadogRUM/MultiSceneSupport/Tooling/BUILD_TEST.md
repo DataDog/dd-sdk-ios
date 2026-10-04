@@ -1,12 +1,12 @@
 # Builds, tests and public clients
 
-Read for an admitted build/test/API check. Use [environment preflight](ENVIRONMENT.md) and the [common evidence contract](EVIDENCE.md); exact commands, counts, thresholds
-and budgets come from the owning definition or fixture README.
+Read for an admitted build/test/API check. Use [environment preflight](ENVIRONMENT.md) and the [common evidence contract](EVIDENCE.md); exact commands, counts, thresholds and budgets come from the owning definition or fixture README.
 
-Before native admission, compare fixture configuration values used by the oracle
-with the hash-bound source contract and actual compiler inputs. Configuration
+Before native admission, compare fixture configuration values used by the oracle with the hash-bound source contract and actual compiler inputs. Configuration
 identity checks belong in preflight; a stale expected constant must not consume
 human input. Preserve an original failure and any corrected saved replay separately.
+
+Keep exact returned stream/outcome refs and join digests before parsing or cleanup; pre-gate callbacks cannot prove child receipt. Seal native result members at command return and consume that original seal after cleanup/export. Restore the original device from retained admission custody even when app/source evidence fails; unknown app identity still prohibits removal and incomplete evidence prevents acceptance. Use isolated unoptimized Python startup and compile only sealed raw helper bytes, including explicit file-loader paths; `-B` alone does not reject existing bytecode or ambient startup imports. The [PR6 owner](../Results/S3-PR6-action-preparation.json) records the reviewed proposal and pending qualification.
 
 ## Freeze inputs before work
 

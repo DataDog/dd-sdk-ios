@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "state": "PRIVATE_IMPLEMENTED_SOURCE_REVIEW_PENDING_TESTS_NOT_EXECUTED",
+  "delivery_slice": "PR9",
+  "owner": "/root SDK implementer + /root/rum_runtime_reviewer",
+  "dependency": "Qualified PR3 private routing",
+  "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/worktree",
+  "branch": "valpertui/s3-handoff-activation",
+  "source_head": "e1b6d5e5af36bbbad48ee74dccf7675f86376b9a",
+  "linked_common_dir": "/Users/valentin.pertuisot/work/dd-sdk-ios/.git",
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-representative-projection-cycle1/definition.json",
+    "sha256": "188feceec0fd3d0d517f1ab9e05cb46ead4294b32617d14dfcfa6eb715066c06"
+  },
+  "source_preparation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-representative-projection-cycle1/source-review-packet.json",
+    "sha256": "69f855d60f2084f024271f40ae1730c6969385f716dbf79084428b5e6c5624c8"
+  },
+  "actual_xcode_metadata": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-representative-projection-cycle1/actual-xcode-metadata.json",
+    "sha256": "e4cfaf166153be357fb8c6792fe85cdb52871257c92f548bdbf9c7a2e03a6d3c"
+  },
+  "task_paths": [
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift",
+    "DatadogRUM/Sources/Instrumentation/WatchdogTerminations/WatchdogTerminationMonitor.swift",
+    "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift"
+  ],
+  "source_discriminator": "Any active view can write full fatal context and every mapped view update can write watchdog context. On process representative must own that snapshot; source-backed gap, no runtime reproduction claim.",
+  "qualification": {
+    "implementation": "NOT_IMPLEMENTED",
+    "component": "NOT_EXECUTED",
+    "off": "NOT_EXECUTED",
+    "integration": "NOT_QUALIFIED"
+  },
+  "next_action": "Finish designated source review, correct relevant findings together, then qualify focused representative/Off semantics using the existing reviewed runner and exact source; commit explicit task paths.",
+  "sdk_edits": 3,
+  "test_edits": 1,
+  "focused_methods_defined": 6,
+  "tests_run": 0,
+  "native_runs": 0,
+  "gates_closed": [],
+  "limits": [
+    "No real watchdog termination/hardware acceptance",
+    "No watchdog detection/start/background redesign",
+    "No public API, generated model, dependency or wire-format change",
+    "PR6 configured fixture source remains frozen at its original e1b6"
+  ],
+  "updated_at": "2026-10-04T23:52:43.615412+00:00",
+  "implementation_preparation": "Four private uncommitted source/test paths; delivery implementation remains NOT_IMPLEMENTED until exact reviewed SDK checkpoint"
+}
