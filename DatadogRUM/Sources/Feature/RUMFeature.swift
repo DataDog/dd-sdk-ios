@@ -305,7 +305,8 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
 
         self.monitor = Monitor(
             dependencies: dependencies,
-            dateProvider: configuration.dateProvider
+            dateProvider: configuration.dateProvider,
+            executionContextProvider: featureFlags[.multiSceneTracking] ? RUMContextHandoff.current(for:) : nil
         )
 
         timeseriesCollector?.activeContextReader = monitor
@@ -406,6 +407,8 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             uuidGenerator: configuration.uuidGenerator,
             heatmapIdentifierRegistry: heatmapIdentifierStore,
             isMultiSceneTrackingEnabled: dependencies.isMultiSceneTrackingEnabled,
+            rumContextHandoffOwner: issuedOwner,
+            handoffMonitor: dependencies.isMultiSceneTrackingEnabled ? monitor : nil,
             isAppHangBacktraceEnabled: isAppHangBacktraceEnabled
         )
         #endif

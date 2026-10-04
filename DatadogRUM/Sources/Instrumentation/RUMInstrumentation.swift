@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 #if canImport(UIKit)
@@ -105,6 +106,8 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         uuidGenerator: RUMUUIDGenerator,
         heatmapIdentifierRegistry: any HeatmapIdentifierRegistry,
         isMultiSceneTrackingEnabled: Bool = false,
+        rumContextHandoffOwner: RUMContextHandoff.Owner? = nil,
+        handoffMonitor: Monitor? = nil,
         isAppHangBacktraceEnabled: @escaping @Sendable () -> Bool = { true }
     ) {
         // Always create views handler (we can't know if it will be used by SwiftUI manual instrumentation)
@@ -159,6 +162,25 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
                 macOSPredicate: predicates.rumActionsPredicate
             )
             #else
+            #if os(iOS)
+            if isMultiSceneTrackingEnabled, #available(iOS 27.0, *),
+               let owner = rumContextHandoffOwner, owner.isValid, let monitor = handoffMonitor {
+                let factory: UIEventCommandFactory? = predicates.shouldEnableActionsInstrumentation ? UITouchCommandFactory(
+                    dateProvider: dateProvider,
+                    heatmapIdentifierRegistry: heatmapIdentifierRegistry,
+                    uiKitPredicate: predicates.rumActionsPredicate,
+                    swiftUIPredicate: predicates.swiftUIRUMActionsPredicate,
+                    swiftUIDetector: SwiftUIComponentFactory.createDetector()
+                ) : nil
+                return RUMSceneActionsHandler(
+                    legacyHandler: RUMActionsHandler(dateProvider: dateProvider, eventCommandsFactory: factory),
+                    eventCommandsFactory: factory,
+                    dateProvider: dateProvider,
+                    owner: owner,
+                    expectedMonitor: monitor
+                )
+            }
+            #endif
             return RUMActionsHandler(
                 dateProvider: dateProvider,
                 heatmapIdentifierRegistry: heatmapIdentifierRegistry,
@@ -173,6 +195,12 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             do {
                 // Enable event interception if either UIKit or SwiftUI automatic action tracking is enabled
                 if predicates.shouldEnableActionsInstrumentation {
+                    #if os(iOS)
+                    if isMultiSceneTrackingEnabled, #available(iOS 27.0, *),
+                       let handler = actionsHandler as? RUMSceneActionsHandling {
+                        return try DDSceneApplicationInstrumentation(handler: handler)
+                    }
+                    #endif
                     return try DDApplicationInstrumentation(handler: actionsHandler)
                 }
             } catch {
