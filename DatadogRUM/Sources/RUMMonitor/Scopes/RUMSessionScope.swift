@@ -5,7 +5,7 @@
  */
 
 import Foundation
-import DatadogInternal
+@_spi(Internal) import DatadogInternal
 
 internal class RUMSessionScope: RUMScope, RUMContextProvider {
     struct Constants {
@@ -398,7 +398,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 // command doesn't need to be propagated to other scopes
                 return true
             default:
-                if !hasActiveView && (sceneState == nil || command.target == .processRepresentative) {
+                if !hasActiveView && (sceneState == nil || offViewTarget(of: command) == .processRepresentative) {
                     handleOffViewCommand(command: command, context: context, writer: writer)
                 }
             }
@@ -565,7 +565,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             case .legacy: return .ownedScene(representative)
             case .unknown: return .unresolved
             }
-        case .none, .allActiveViews:
+        case .none, .allActiveViews, .continuousAction:
             return .unresolved
         }
     }
@@ -633,6 +633,28 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         sceneState.restoredViews.removeAll()
     }
 
+    /// Keep source-less automatic Start eligible for the existing off-view fallback.
+    private func offViewTarget(of command: RUMCommand) -> RUMCommandTarget {
+        if command is RUMStartUserActionCommand, case .continuousAction(let ownership) = command.target {
+            return ownership.sourceTarget
+        }
+        return command.target
+    }
+
+    /// Queue-only join, before application-level session creation or refresh.
+    func ownsContinuousAction(_ ownership: RUMContinuousActionOwnership, at date: Date) -> Bool {
+        guard isActive, ownership.owner.isValid, !ownership.isClosed,
+              !Self.hasExpired(sessionStartTime: sessionStartTime, currentTime: date),
+              !Self.hasTimedOut(lastInteractionTime: lastInteractionTime, currentTime: date),
+              let claim = ownership.claim, claim.sessionID == sessionUUID else {
+            return false
+        }
+        return viewScopes.contains { view in
+            view.viewUUID == claim.viewID && view.userActionScope?.isContinuous == true
+                && view.userActionScope?.actionUUID == claim.actionID
+        }
+    }
+
     private func effectiveTarget(of command: RUMCommand) -> RUMCommandTarget {
         let explicit = (command as? RUMExplicitViewTargetCommand)?.explicitTarget
             ?? (command as? RUMUserActionCommand)?.explicitTarget
@@ -651,7 +673,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
     private func activeRecipients(for target: RUMCommandTarget) -> [RUMViewScope] {
         switch target {
-        case .none:
+        case .none, .continuousAction:
             return []
         case .allActiveViews:
             return viewScopes.filter { $0.isActiveView }
@@ -675,6 +697,18 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     }
 
     private func recipients(for command: RUMCommand) -> [RUMViewScope] {
+        if case .continuousAction(let ownership) = command.target {
+            if command is RUMStartUserActionCommand, ownership.canClaim {
+                return activeRecipients(for: ownership.sourceTarget)
+            }
+            if command is RUMStopUserActionCommand,
+               ownsContinuousAction(ownership, at: command.time), let claim = ownership.claim {
+                return viewScopes.filter {
+                    $0.viewUUID == claim.viewID && $0.userActionScope?.actionUUID == claim.actionID
+                }
+            }
+            return []
+        }
         if let completion = command as? RUMResourceCompletionCommand {
             if let ids = completion.owningViewIDs, !ids.isEmpty {
                 return viewScopes.filter { ids.contains($0.viewUUID) }

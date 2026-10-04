@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 /// Identifies a scene for in-process routing; never encoded into RUM events.
@@ -19,6 +20,59 @@ internal enum RUMCommandTarget: Equatable {
     case scene(RUMSceneIdentifier)
     case view(RUMUUID)
     case allActiveViews
+    case continuousAction(RUMContinuousActionOwnership)
+}
+
+/// Private receipt for one automatic continuous action. Mutable state is confined to
+/// the existing event-write queue; input callbacks retain only its identity/source.
+internal final class RUMContinuousActionOwnership: Equatable {
+    struct Claim {
+        let sessionID: RUMUUID
+        let viewID: RUMUUID
+        let actionID: RUMUUID
+    }
+
+    let sceneIdentifier: RUMSceneIdentifier?
+    let owner: RUMContextHandoff.Owner
+    private(set) var claim: Claim?
+    private(set) var isClosed = false
+    private var hasAppliedStart = false
+    private var isApplyingStart = false
+
+    init(sceneIdentifier: RUMSceneIdentifier?, owner: RUMContextHandoff.Owner) {
+        self.sceneIdentifier = sceneIdentifier
+        self.owner = owner
+    }
+
+    /// Immutable selection; reading it does not inspect queued admission state.
+    var sourceTarget: RUMCommandTarget {
+        sceneIdentifier.map(RUMCommandTarget.scene) ?? .processRepresentative
+    }
+
+    /// A dropped or deferred Start must not be retried against a later view/action.
+    func beginStart() -> Bool {
+        guard !isClosed, !hasAppliedStart, owner.isValid else { return false }
+        hasAppliedStart = true
+        isApplyingStart = true
+        return true
+    }
+
+    func finishStart() { isApplyingStart = false }
+
+    /// Called only while applying the first actual Start on the event-write queue.
+    var canClaim: Bool { isApplyingStart && !isClosed && claim == nil && owner.isValid }
+
+    func claimAction(sessionID: RUMUUID, viewID: RUMUUID, actionID: RUMUUID) {
+        guard canClaim else { return }
+        claim = Claim(sessionID: sessionID, viewID: viewID, actionID: actionID)
+    }
+
+    /// Called at actual post-launch-resolution terminal application, never at enqueue.
+    func close() { isClosed = true; isApplyingStart = false }
+
+    static func == (lhs: RUMContinuousActionOwnership, rhs: RUMContinuousActionOwnership) -> Bool {
+        lhs === rhs
+    }
 }
 
 /// Carries an explicit view selection separately from inferred ownership.

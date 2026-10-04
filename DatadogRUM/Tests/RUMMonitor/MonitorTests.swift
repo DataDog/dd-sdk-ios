@@ -854,3 +854,462 @@ private final class MonitorManualHandler: RUMSceneTargetedManualViewHandling {
     }
 }
 #endif
+
+#if os(iOS)
+
+@available(iOS 27.0, *)
+final class AutomaticContinuousActionOwnershipTests: XCTestCase {
+    func testContinuousActionOwnership_claimsGeneratedActionAndCompletesOnce() throws {
+        let f = ScrollActionFixture()
+        let view = try f.view("a")
+        let receipt = f.receipt()
+        f.start(receipt)
+        let action = try XCTUnwrap(view.userActionScope)
+        let claim = try XCTUnwrap(receipt.claim)
+        XCTAssertEqual(claim.sessionID, f.monitor.applicationScope.activeSession?.sessionUUID)
+        XCTAssertEqual(claim.viewID, view.viewUUID)
+        XCTAssertEqual(claim.actionID, action.actionUUID)
+        f.start(receipt)
+        XCTAssertTrue(view.userActionScope === action)
+        f.stop(receipt)
+        f.stop(receipt)
+        XCTAssertTrue(receipt.isClosed)
+        XCTAssertNil(view.userActionScope)
+        let event = try XCTUnwrap(f.events.first)
+        XCTAssertEqual(f.events.count, 1)
+        XCTAssertEqual(event.action.id, claim.actionID.toRUMDataFormat)
+        XCTAssertEqual(event.view.id, claim.viewID.toRUMDataFormat)
+        XCTAssertEqual(event.session.id, claim.sessionID.toRUMDataFormat)
+        XCTAssertEqual(event.action.target?.name, "scroll-stop")
+        XCTAssertEqual(event.action.type, .swipe)
+        XCTAssertEqual(event.context?.contextInfo["action.gesture.direction"] as? String, "down")
+    }
+
+    func testContinuousActionOwnership_ignoredStartDoesNotFinishManualAction() throws {
+        let f = ScrollActionFixture()
+        let view = try f.view("a")
+        f.manualStart()
+        let manual = try XCTUnwrap(view.userActionScope)
+        let receipt = f.receipt()
+        f.start(receipt)
+        XCTAssertNil(receipt.claim)
+        f.stop(receipt)
+        XCTAssertTrue(view.userActionScope === manual)
+        XCTAssertEqual(manual.name, "manual")
+        XCTAssertEqual(manual.actionType, .custom)
+        XCTAssertTrue(f.events.isEmpty)
+    }
+
+    func testContinuousActionOwnership_staleStopDoesNotFinishReplacementInSameView() throws {
+        let f = ScrollActionFixture()
+        let view = try f.view("a")
+        let receipt = f.receipt()
+        f.start(receipt)
+        let admitted = try XCTUnwrap(receipt.claim)
+        var direct = RUMStopUserActionCommand.mockWith(time: f.clock.now)
+        direct.target = .view(view.viewUUID)
+        f.monitor.process(command: direct)
+        f.manualStart()
+        let replacement = try XCTUnwrap(view.userActionScope)
+        XCTAssertNotEqual(replacement.actionUUID, admitted.actionID)
+        f.stop(receipt)
+        XCTAssertTrue(view.userActionScope === replacement)
+        XCTAssertEqual(replacement.name, "manual")
+        XCTAssertEqual(f.events.count, 1)
+    }
+
+    func testContinuousActionOwnership_navigationCannotStopNewViewAction() throws {
+        let f = ScrollActionFixture()
+        let first = try f.view("a")
+        let receipt = f.receipt()
+        f.start(receipt)
+        let next = try f.view("next-a")
+        f.manualStart()
+        let nextAction = try XCTUnwrap(next.userActionScope)
+        f.stop(receipt)
+        XCTAssertTrue(next.userActionScope === nextAction)
+        XCTAssertEqual(f.events.count, 1)
+        XCTAssertEqual(f.events.first?.view.id, first.viewUUID.toRUMDataFormat)
+        XCTAssertNotEqual(receipt.claim?.viewID, next.viewUUID)
+    }
+
+    func testContinuousActionOwnership_missingViewStartCannotAdoptLaterView() throws {
+        let f = ScrollActionFixture()
+        _ = try f.view("b", scene: "b")
+        let receipt = f.receipt()
+        f.start(receipt)
+        XCTAssertNil(receipt.claim)
+        let later = try f.view("a")
+        let sessionID = f.monitor.applicationScope.activeSession?.sessionUUID
+        f.start(receipt)
+        XCTAssertNil(later.userActionScope)
+        XCTAssertEqual(f.monitor.applicationScope.activeSession?.sessionUUID, sessionID)
+        f.stop(receipt)
+        XCTAssertTrue(receipt.isClosed)
+        XCTAssertTrue(f.events.isEmpty)
+    }
+
+    func testContinuousActionOwnership_terminalBeforeStartCannotCreateSession() {
+        let f = ScrollActionFixture()
+        let receipt = f.receipt()
+        f.stop(receipt)
+        XCTAssertTrue(receipt.isClosed)
+        XCTAssertTrue(f.monitor.applicationScope.sessionScopes.isEmpty)
+        f.start(receipt)
+        XCTAssertNil(receipt.claim)
+        XCTAssertTrue(f.monitor.applicationScope.sessionScopes.isEmpty)
+    }
+
+    func testContinuousActionOwnership_expiredSessionStopCannotRefreshOrAdopt() throws {
+        for maximumDuration in [false, true] {
+            let f = ScrollActionFixture()
+            let view = try f.view("a")
+            let receipt = f.receipt()
+            f.start(receipt)
+            var resource = RUMStartResourceCommand.mockWith(resourceKey: "held", time: f.clock.now)
+            resource.target = .scene(.init(rawValue: "a"))
+            f.monitor.process(command: resource)
+            let action = try XCTUnwrap(view.userActionScope)
+            let session = try XCTUnwrap(f.monitor.applicationScope.activeSession)
+            if maximumDuration {
+                for minute in Array(stride(from: 14, through: 238, by: 14)) + [239] {
+                    f.clock.now = session.sessionStartTime.addingTimeInterval(TimeInterval(minute * 60))
+                    var interaction = RUMAddUserActionCommand.mockWith(time: f.clock.now, actionType: .custom, name: "activity")
+                    interaction.target = .scene(.init(rawValue: "a"))
+                    f.monitor.process(command: interaction)
+                    XCTAssertTrue(f.monitor.applicationScope.activeSession === session)
+                    XCTAssertEqual(session.lastInteractionTime, f.clock.now)
+                    XCTAssertNil(session.endReason)
+                }
+                f.clock.now = session.sessionStartTime.addingTimeInterval(4 * 60 * 60 + 1)
+                XCTAssertFalse(RUMSessionScope.hasTimedOut(lastInteractionTime: session.lastInteractionTime, currentTime: f.clock.now))
+                XCTAssertTrue(RUMSessionScope.hasExpired(sessionStartTime: session.sessionStartTime, currentTime: f.clock.now))
+            } else {
+                f.clock.now = session.lastInteractionTime.addingTimeInterval(15 * 60)
+                XCTAssertTrue(RUMSessionScope.hasTimedOut(lastInteractionTime: session.lastInteractionTime, currentTime: f.clock.now))
+                XCTAssertFalse(RUMSessionScope.hasExpired(sessionStartTime: session.sessionStartTime, currentTime: f.clock.now))
+            }
+            f.stop(receipt)
+            XCTAssertTrue(receipt.isClosed)
+            XCTAssertTrue(f.monitor.applicationScope.activeSession === session)
+            XCTAssertTrue(view.userActionScope === action)
+            XCTAssertEqual(action.name, "scroll-start")
+            XCTAssertNil(session.endReason)
+        }
+    }
+
+    func testContinuousActionOwnership_expiredActionCannotAdoptLaterAction() throws {
+        let f = ScrollActionFixture()
+        let view = try f.view("a")
+        let receipt = f.receipt()
+        f.start(receipt)
+        let claim = try XCTUnwrap(receipt.claim)
+        let sessionID = f.monitor.applicationScope.activeSession?.sessionUUID
+        f.clock.now = f.clock.now.addingTimeInterval(11)
+        f.stop(receipt)
+        XCTAssertNil(view.userActionScope)
+        XCTAssertEqual(f.monitor.applicationScope.activeSession?.sessionUUID, sessionID)
+        XCTAssertEqual(f.events.first?.action.id, claim.actionID.toRUMDataFormat)
+        XCTAssertEqual(f.events.first?.action.target?.name, "scroll-start")
+        f.manualStart()
+        let replacement = view.userActionScope
+        f.stop(receipt)
+        XCTAssertTrue(view.userActionScope === replacement)
+        XCTAssertEqual(f.events.count, 1)
+    }
+
+    func testContinuousActionOwnership_foreignAndInvalidatedLifetimesCannotAdopt() throws {
+        let a = ScrollActionFixture()
+        let b = ScrollActionFixture()
+        let view = try b.view("a")
+        let foreign = a.receipt()
+        b.start(foreign)
+        XCTAssertTrue(foreign.isClosed)
+        XCTAssertNil(view.userActionScope)
+        let invalid = b.receipt()
+        b.owner.invalidate()
+        b.start(invalid)
+        b.stop(invalid)
+        XCTAssertTrue(invalid.isClosed)
+        XCTAssertNil(view.userActionScope)
+        XCTAssertTrue(b.events.isEmpty)
+    }
+
+    func testContinuousActionOwnership_nonActionAndSnapshotCannotBorrowRecipient() throws {
+        let f = ScrollActionFixture()
+        let view = try f.view("a")
+        let receipt = f.receipt()
+        XCTAssertNil(f.monitor.rumContextSnapshot(for: .continuousAction(receipt)))
+        var error = RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: f.clock.now)
+        error.target = .continuousAction(receipt)
+        f.monitor.process(command: error)
+        let nav = RUMStartViewCommand(time: f.clock.now, identity: ViewIdentifier("foreign"), name: "foreign", path: "foreign", globalAttributes: [:], attributes: [:], instrumentationType: .manual, target: .continuousAction(receipt))
+        f.monitor.process(command: nav)
+        if case .unresolved? = RUMSessionScope.resolveNavigationDestination(on: nav, representative: .init(rawValue: "a"), cache: f.monitor.applicationScope.dependencies.viewCache) {} else { XCTFail("Receipt navigation must stay unresolved") }
+        XCTAssertTrue(view.isActiveView)
+        XCTAssertNil(receipt.claim)
+        XCTAssertTrue(f.mockScope.eventsWritten(ofType: RUMErrorEvent.self).isEmpty)
+    }
+
+    func testContinuousActionOwnership_actualQueueClaimsAfterNilSnapshotWithoutBorrowingNavigation() throws {
+        let clock = DateProviderMock(now: ScrollActionFixture.startDate)
+        let context = ScrollActionFixture.context(at: clock.now)
+        let core = DatadogCoreProxy(context: context)
+        defer { try? core.flushAndTearDown() }
+        try core.register(feature: DatadogRemoteFeatureMock())
+        let scope = ScrollActionScope(base: core.scope(for: DatadogRemoteFeatureMock.self))
+        let f = ScrollActionFixture(scope: scope, clock: clock)
+        let blocked = expectation(description: "actual context queue blocked")
+        let released = DispatchSemaphore(value: 0)
+        scope.context { _ in
+            blocked.fulfill()
+            XCTAssertEqual(released.wait(timeout: .now() + 5), .success)
+        }
+        defer { released.signal() }
+        wait(for: [blocked], timeout: 2)
+        f.enqueueView("a")
+        XCTAssertNil(f.monitor.rumContextSnapshot(for: .scene(.init(rawValue: "a"))))
+        let receipt = f.receipt()
+        f.start(receipt)
+        f.enqueueView("next-a")
+        f.manualStart()
+        f.stop(receipt)
+        let finished = expectation(description: "actual ordered receipt application")
+        scope.context { _ in
+            let claim = receipt.claim
+            XCTAssertNotNil(claim)
+            let next = f.monitor.applicationScope.activeSession?.viewScopes.last(where: { $0.isActiveView })
+            XCTAssertNotEqual(claim?.viewID, next?.viewUUID)
+            XCTAssertEqual(next?.userActionScope?.name, "manual")
+            XCTAssertNotEqual(claim?.actionID, next?.userActionScope?.actionUUID)
+            XCTAssertTrue(receipt.isClosed)
+            finished.fulfill()
+        }
+        released.signal()
+        wait(for: [finished], timeout: 5)
+        let events = core.waitAndReturnEvents(ofFeature: DatadogRemoteFeatureMock.name, ofType: RUMActionEvent.self, timeout: .now() + 2)
+        XCTAssertEqual(events.count, 1)
+        XCTAssertEqual(events.first?.action.target?.name, "scroll-start")
+    }
+
+    func testContinuousActionOwnership_launchDeferralClosesOnlyWhenActuallyApplied() throws {
+        for terminalFirst in [false, true] {
+            var context = ScrollActionFixture.context(at: ScrollActionFixture.startDate)
+            context.launchInfo.launchReason = .uncertain
+            context.applicationStateHistory = .mockWith(initialState: .background, date: ScrollActionFixture.startDate)
+            let scope = ScrollActionScope(base: FeatureScopeMock(context: context))
+            let f = ScrollActionFixture(scope: scope)
+            let receipt = f.receipt()
+            if terminalFirst { f.stop(receipt) }
+            f.enqueueView("a")
+            f.start(receipt)
+            if !terminalFirst { f.stop(receipt) }
+            XCTAssertFalse(receipt.isClosed)
+            XCTAssertNil(receipt.claim)
+            XCTAssertTrue(f.monitor.applicationScope.sessionScopes.isEmpty)
+            f.monitor.process(command: RUMHandleAppLifecycleEventCommand(time: f.clock.now, globalAttributes: [:], attributes: [:], event: .willEnterForeground))
+            XCTAssertTrue(receipt.isClosed)
+            XCTAssertEqual(receipt.claim == nil, terminalFirst)
+            XCTAssertEqual(f.events.count, terminalFirst ? 0 : 1)
+        }
+    }
+
+    func testContinuousActionOwnership_stoppedSessionCannotRefreshOnLateTerminal() throws {
+        let f = ScrollActionFixture()
+        let view = try f.view("a")
+        let receipt = f.receipt()
+        f.start(receipt)
+        var resource = RUMStartResourceCommand.mockWith(resourceKey: "held", time: f.clock.now)
+        resource.target = .scene(.init(rawValue: "a"))
+        f.monitor.process(command: resource)
+        let stopped = try XCTUnwrap(f.monitor.applicationScope.activeSession)
+        f.monitor.process(command: RUMStopSessionCommand(time: f.clock.now))
+        XCTAssertNil(f.monitor.applicationScope.activeSession)
+        let sessions = f.monitor.applicationScope.sessionScopes.map(\.sessionUUID)
+        let action = view.userActionScope
+        f.stop(receipt)
+        XCTAssertNil(f.monitor.applicationScope.activeSession)
+        XCTAssertEqual(f.monitor.applicationScope.sessionScopes.map(\.sessionUUID), sessions)
+        XCTAssertTrue(view.userActionScope === action)
+        XCTAssertFalse(stopped.isActive)
+        XCTAssertTrue(receipt.isClosed)
+    }
+
+    func testContinuousActionOwnership_retainedInactiveOrRemovedViewCannotAdoptNewAction() throws {
+        for retainResource in [false, true] {
+            let f = ScrollActionFixture()
+            let first = try f.view("a")
+            let receipt = f.receipt()
+            f.start(receipt)
+            if retainResource {
+                var resource = RUMStartResourceCommand.mockWith(resourceKey: "held", time: f.clock.now)
+                resource.target = .scene(.init(rawValue: "a"))
+                f.monitor.process(command: resource)
+            }
+            let next = try f.view("next-a")
+            XCTAssertFalse(first.isActiveView)
+            XCTAssertEqual(f.monitor.applicationScope.activeSession?.viewScopes.contains(where: { $0 === first }), retainResource)
+            XCTAssertNil(first.userActionScope)
+            f.manualStart()
+            let replacement = try XCTUnwrap(next.userActionScope)
+            f.stop(receipt)
+            XCTAssertTrue(next.userActionScope === replacement)
+            XCTAssertEqual(f.events.count, 1)
+            XCTAssertTrue(receipt.isClosed)
+        }
+    }
+
+    func testContinuousActionOwnership_actualQueueConsumesMissingViewAndEarlierTerminal() throws {
+        for earlierTerminal in [false, true] {
+            let clock = DateProviderMock(now: ScrollActionFixture.startDate)
+            let core = DatadogCoreProxy(context: ScrollActionFixture.context(at: clock.now))
+            defer { try? core.flushAndTearDown() }
+            try core.register(feature: DatadogRemoteFeatureMock())
+            let scope = ScrollActionScope(base: core.scope(for: DatadogRemoteFeatureMock.self))
+            let f = ScrollActionFixture(scope: scope, clock: clock)
+            let entered = expectation(description: "actual context queue entered")
+            let release = DispatchSemaphore(value: 0)
+            scope.context { _ in entered.fulfill(); XCTAssertEqual(release.wait(timeout: .now() + 5), .success) }
+            defer { release.signal() }
+            wait(for: [entered], timeout: 2)
+            let receipt = f.receipt()
+            XCTAssertNil(f.monitor.rumContextSnapshot(for: .scene(.init(rawValue: "a"))))
+            if earlierTerminal { f.stop(receipt) }
+            else { f.enqueueView("b", scene: "b"); f.start(receipt) }
+            let firstApplied = expectation(description: "first receipt boundary applied")
+            scope.context { _ in
+                if earlierTerminal {
+                    XCTAssertTrue(receipt.isClosed)
+                    XCTAssertTrue(f.monitor.applicationScope.sessionScopes.isEmpty)
+                } else {
+                    XCTAssertNil(receipt.claim)
+                    XCTAssertFalse(receipt.isClosed)
+                }
+                firstApplied.fulfill()
+            }
+            f.enqueueView("a")
+            f.start(receipt)
+            f.stop(receipt)
+            let finished = expectation(description: "late view cannot be adopted")
+            scope.context { _ in
+                XCTAssertNil(receipt.claim)
+                XCTAssertTrue(receipt.isClosed)
+                XCTAssertNil(f.monitor.applicationScope.activeSession?.viewScopes.last(where: { $0.viewName == "a" })?.userActionScope)
+                finished.fulfill()
+            }
+            release.signal()
+            wait(for: [firstApplied, finished], timeout: 5)
+            XCTAssertTrue(core.waitAndReturnEvents(ofFeature: DatadogRemoteFeatureMock.name, ofType: RUMActionEvent.self, timeout: .now() + 0.1).isEmpty)
+        }
+    }
+
+    func testContinuousActionOwnership_actualQueueRejectsOwnerInvalidatedAfterEnqueue() throws {
+        let clock = DateProviderMock(now: ScrollActionFixture.startDate)
+        let core = DatadogCoreProxy(context: ScrollActionFixture.context(at: clock.now))
+        defer { try? core.flushAndTearDown() }
+        try core.register(feature: DatadogRemoteFeatureMock())
+        let scope = ScrollActionScope(base: core.scope(for: DatadogRemoteFeatureMock.self))
+        let f = ScrollActionFixture(scope: scope, clock: clock)
+        let entered = expectation(description: "actual context queue entered")
+        let release = DispatchSemaphore(value: 0)
+        scope.context { _ in entered.fulfill(); XCTAssertEqual(release.wait(timeout: .now() + 5), .success) }
+        defer { release.signal() }
+        wait(for: [entered], timeout: 2)
+        f.enqueueView("a")
+        let receipt = f.receipt()
+        f.start(receipt)
+        f.owner.invalidate()
+        let finished = expectation(description: "stale lifetime rejected on queue")
+        scope.context { _ in
+            XCTAssertNil(receipt.claim)
+            XCTAssertTrue(receipt.isClosed)
+            XCTAssertNil(f.monitor.applicationScope.activeSession?.viewScopes.last?.userActionScope)
+            finished.fulfill()
+        }
+        release.signal()
+        wait(for: [finished], timeout: 5)
+    }
+
+    func testContinuousActionOwnership_sourceLessStartPreservesBackgroundEligibility() throws {
+        var context = ScrollActionFixture.context(at: ScrollActionFixture.startDate)
+        context.launchInfo.launchReason = .backgroundLaunch
+        context.applicationStateHistory = .mockWith(initialState: .background, date: ScrollActionFixture.startDate)
+        let f = ScrollActionFixture(scope: ScrollActionScope(base: FeatureScopeMock(context: context)), background: true)
+        let receipt = f.receipt(scene: nil)
+        f.start(receipt)
+        let claim = try XCTUnwrap(receipt.claim)
+        let view = try XCTUnwrap(f.monitor.applicationScope.activeSession?.viewScopes.first(where: { $0.viewUUID == claim.viewID }))
+        XCTAssertEqual(view.viewPath, RUMOffViewEventsHandlingRule.Constants.backgroundViewURL)
+        f.stop(receipt)
+        XCTAssertEqual(f.events.first?.view.id, claim.viewID.toRUMDataFormat)
+    }
+}
+
+@available(iOS 27.0, *)
+private final class ScrollActionFixture {
+    static let startDate = Date(timeIntervalSince1970: 1_600_000_000)
+    let clock: DateProviderMock
+    let scope: ScrollActionScope
+    let monitor: Monitor
+    var owner: RUMContextHandoff.Owner { scope.owner }
+    var mockScope: FeatureScopeMock { scope.base as! FeatureScopeMock }
+    var events: [RUMActionEvent] { mockScope.eventsWritten(ofType: RUMActionEvent.self) }
+
+    static func context(at date: Date) -> DatadogContext {
+        .mockWith(sdkInitDate: date, launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: date), applicationStateHistory: .mockWith(initialState: .active, date: date))
+    }
+
+    init(scope: ScrollActionScope? = nil, clock: DateProviderMock? = nil, background: Bool = false) {
+        self.clock = clock ?? DateProviderMock(now: Self.startDate)
+        self.scope = scope ?? ScrollActionScope(base: FeatureScopeMock(context: Self.context(at: self.clock.now)))
+        monitor = Monitor(dependencies: .mockWith(featureScope: self.scope, trackBackgroundEvents: background, viewCache: ViewCache(dateProvider: self.clock, isMultiSceneTrackingEnabled: true), featureFlags: [.multiSceneTracking: true]), dateProvider: self.clock)
+    }
+
+    func receipt(scene: String? = "a") -> RUMContinuousActionOwnership {
+        .init(sceneIdentifier: scene.map { .init(rawValue: $0) }, owner: owner)
+    }
+
+    func enqueueView(_ key: String, scene: String = "a") {
+        monitor.process(command: RUMStartViewCommand(time: clock.now, identity: ViewIdentifier(key), name: key, path: key, globalAttributes: [:], attributes: [:], instrumentationType: .manual, target: .scene(.init(rawValue: scene))))
+    }
+
+    func view(_ key: String, scene: String = "a") throws -> RUMViewScope {
+        enqueueView(key, scene: scene)
+        return try XCTUnwrap(monitor.applicationScope.activeSession?.viewScopes.last(where: { $0.isActiveView && $0.viewName == key }))
+    }
+
+    func start(_ receipt: RUMContinuousActionOwnership) {
+        var command = RUMStartUserActionCommand.mockWith(time: clock.now, instrumentation: .uikit, actionType: .scroll, name: "scroll-start")
+        command.target = .continuousAction(receipt)
+        monitor.process(command: command)
+    }
+
+    func stop(_ receipt: RUMContinuousActionOwnership) {
+        var command = RUMStopUserActionCommand.mockWith(time: clock.now, actionType: .swipe, name: "scroll-stop")
+        command.attributes = ["action.gesture.direction": "down"]
+        command.target = .continuousAction(receipt)
+        monitor.process(command: command)
+    }
+
+    func manualStart() {
+        var command = RUMStartUserActionCommand.mockWith(time: clock.now, actionType: .custom, name: "manual")
+        command.target = .scene(.init(rawValue: "a"))
+        monitor.process(command: command)
+    }
+}
+
+private final class ScrollActionScope: FeatureScope, RUMContextHandoffOwnerProviding, @unchecked Sendable {
+    let base: FeatureScope
+    let owner = RUMContextHandoff.Owner()
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? { owner }
+    var dataStore: DataStore { base.dataStore }
+    var telemetry: Telemetry { base.telemetry }
+    init(base: FeatureScope) { self.base = base }
+    func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) { base.eventWriteContext(bypassConsent: bypassConsent, block) }
+    func context(_ block: @escaping (DatadogContext) -> Void) { base.context(block) }
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext { base.set(context: context) }
+    func set(anonymousId: String?) { base.set(anonymousId: anonymousId) }
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) { base.send(message: message, else: fallback) }
+}
+
+#endif

@@ -7,7 +7,7 @@
 #if !os(watchOS)
 
 import XCTest
-import TestUtilities
+@testable import TestUtilities
 @testable import DatadogInternal
 @testable import DatadogRUM
 
@@ -483,6 +483,99 @@ extension RUMInstrumentationTests {
         XCTAssertEqual(subscriber.receivedCommands.count, 2)
         XCTAssertEqual(try XCTUnwrap(subscriber.receivedCommands.first as? RUMStartViewCommand).target, .processRepresentative)
         XCTAssertEqual(try XCTUnwrap(subscriber.receivedCommands.last as? RUMStopViewCommand).target, .processRepresentative)
+    }
+}
+#endif
+
+#if os(iOS)
+@_spi(Internal) import DatadogInternal
+
+@MainActor
+final class ScrollFactoryWiringTests: XCTestCase {
+    func testScrollFactory_defaultAndExplicitOffPublishThroughLegacyWithoutOwnerReads() throws {
+        let modes: [Bool?] = [nil, false]
+        for enabled in modes {
+            let owner = RUMContextHandoff.Owner()
+            let monitor = ScrollFactoryMonitor(owner: owner)
+            let instrumentation = makeInstrumentation(enabled: enabled, owner: owner, monitor: monitor)
+            let legacy = try XCTUnwrap(instrumentation.scrollHandler)
+            let subscriber = RUMCommandSubscriberMock()
+            instrumentation.publish(to: subscriber)
+            XCTAssertIdentical(legacy.subscriber, subscriber)
+            XCTAssertEqual(monitor.ownerReads, 0)
+            XCTAssertNotNil(instrumentation.scrollViewSwizzler)
+        }
+    }
+
+    @available(iOS 27.0, *)
+    func testScrollFactory_resolvedOnKeepsConcreteLegacyFieldAndWeakAdapterBridge() throws {
+        let owner = RUMContextHandoff.Owner()
+        let monitor = ScrollFactoryMonitor(owner: owner)
+        var instrumentation: RUMInstrumentation? = makeInstrumentation(enabled: true, owner: owner, monitor: monitor)
+        let legacy: RUMScrollHandler = try XCTUnwrap(instrumentation?.scrollHandler)
+        weak var weakAdapter = legacy.subscriber as? RUMSceneScrollHandler
+        XCTAssertNotNil(weakAdapter)
+        instrumentation?.publish(to: monitor)
+        XCTAssertIdentical(legacy.subscriber, weakAdapter)
+        let foreign = RUMCommandSubscriberMock()
+        instrumentation?.publish(to: foreign)
+        XCTAssertIdentical(legacy.subscriber, weakAdapter)
+        instrumentation = nil
+        XCTAssertNil(weakAdapter)
+        XCTAssertNil(legacy.subscriber)
+    }
+
+    func testScrollFactory_missingOrInvalidOwnerRetainsLegacyPublication() throws {
+        for missingOwner in [false, true] {
+            let owner = RUMContextHandoff.Owner()
+            owner.invalidate()
+            let monitor = ScrollFactoryMonitor(owner: owner)
+            let instrumentation = makeInstrumentation(enabled: true, owner: missingOwner ? nil : owner, monitor: monitor)
+            let subscriber = RUMCommandSubscriberMock()
+            instrumentation.publish(to: subscriber)
+            XCTAssertIdentical(instrumentation.scrollHandler?.subscriber, subscriber)
+            XCTAssertEqual(monitor.ownerReads, 0)
+        }
+    }
+
+    func testScrollFactory_disabledScrollOrMissingPredicateCreatesNoScrollHandler() {
+        for missingPredicate in [false, true] {
+            let instrumentation = makeInstrumentation(enabled: false, tracksScroll: missingPredicate, hasPredicate: !missingPredicate)
+            XCTAssertNil(instrumentation.scrollHandler)
+            XCTAssertNil(instrumentation.scrollViewSwizzler)
+        }
+    }
+
+    func testScrollFactory_missingMonitorUsesLegacyAndOlderOnHasNoAdapter() throws {
+        let owner = RUMContextHandoff.Owner()
+        let instrumentation = makeInstrumentation(enabled: true, owner: owner)
+        let subscriber = RUMCommandSubscriberMock()
+        instrumentation.publish(to: subscriber)
+        XCTAssertIdentical(instrumentation.scrollHandler?.subscriber, subscriber)
+        if #available(iOS 27.0, *) { return }
+        let monitor = ScrollFactoryMonitor(owner: owner)
+        let older = makeInstrumentation(enabled: true, owner: owner, monitor: monitor)
+        older.publish(to: subscriber)
+        XCTAssertIdentical(older.scrollHandler?.subscriber, subscriber)
+        XCTAssertEqual(monitor.ownerReads, 0)
+    }
+
+    private func makeInstrumentation(enabled: Bool?, owner: RUMContextHandoff.Owner? = nil, monitor: Monitor? = nil, tracksScroll: Bool = true, hasPredicate: Bool = true) -> RUMInstrumentation {
+        let predicates = RUMInstrumentation.Predicates(rumViewsPredicate: nil, rumActionsPredicate: hasPredicate ? DefaultUIKitRUMActionsPredicate() : nil, swiftUIRUMViewsPredicate: nil, swiftUIRUMActionsPredicate: nil)
+        if let enabled {
+            return RUMInstrumentation(featureScope: NOPFeatureScope(), predicates: predicates, trackScrollAndSwipeActions: tracksScroll, longTaskThreshold: nil, appHangThreshold: nil, mainQueue: .main, dateProvider: DateProviderMock(), backtraceReporter: BacktraceReporterMock(), fatalErrorContext: FatalErrorContextNotifierMock(), processID: .mockAny(), notificationCenterProvider: .init(applicationCenter: NotificationCenter()), bundleType: .iOSApp, watchdogTermination: nil, memoryWarningMonitor: nil, uuidGenerator: RUMUUIDGeneratorMock(), heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock(), isMultiSceneTrackingEnabled: enabled, rumContextHandoffOwner: owner, handoffMonitor: monitor)
+        }
+        return RUMInstrumentation(featureScope: NOPFeatureScope(), predicates: predicates, trackScrollAndSwipeActions: tracksScroll, longTaskThreshold: nil, appHangThreshold: nil, mainQueue: .main, dateProvider: DateProviderMock(), backtraceReporter: BacktraceReporterMock(), fatalErrorContext: FatalErrorContextNotifierMock(), processID: .mockAny(), notificationCenterProvider: .init(applicationCenter: NotificationCenter()), bundleType: .iOSApp, watchdogTermination: nil, memoryWarningMonitor: nil, uuidGenerator: RUMUUIDGeneratorMock(), heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock(), rumContextHandoffOwner: owner, handoffMonitor: monitor)
+    }
+}
+
+private final class ScrollFactoryMonitor: Monitor {
+    let issuedOwner: RUMContextHandoff.Owner
+    var ownerReads = 0
+    override var rumContextHandoffOwner: RUMContextHandoff.Owner? { ownerReads += 1; return issuedOwner }
+    init(owner: RUMContextHandoff.Owner) {
+        issuedOwner = owner
+        super.init(dependencies: .mockWith(featureFlags: [.multiSceneTracking: true]), dateProvider: DateProviderMock())
     }
 }
 #endif

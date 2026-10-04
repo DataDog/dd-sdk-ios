@@ -7,7 +7,7 @@
 #if os(iOS) || os(visionOS)
 
 import XCTest
-import TestUtilities
+@testable import TestUtilities
 @testable import DatadogRUM
 
 class UIScrollViewSwizzlerTests: XCTestCase {
@@ -278,4 +278,92 @@ private class MockScrollViewHandler: UIScrollViewHandler {
 private class MockScrollViewDelegate: NSObject, UIScrollViewDelegate {
 }
 
+#endif
+
+#if os(iOS)
+@_spi(Internal) import DatadogInternal
+
+@available(iOS 27.0, *)
+@MainActor
+final class SharedScrollDelegateOwnershipTests: XCTestCase {
+    func testSharedDelegate_keepsOneProxyThroughOffOnOffAndFreshLifetime() throws {
+        let selector = #selector(getter: UIScrollView.delegate)
+        let method = try XCTUnwrap(class_getInstanceMethod(UIScrollView.self, selector))
+        typealias Getter = @convention(c) (UIScrollView, Selector) -> UIScrollViewDelegate?
+        let originalGetter = unsafeBitCast(method_getImplementation(method), to: Getter.self)
+        let a = UIScrollView(), b = UIScrollView()
+        var delegate: MockScrollViewDelegate? = MockScrollViewDelegate()
+        weak var weakDelegate = delegate
+        var proxy: UIScrollViewDelegateProxy?
+        weak var weakProxy: UIScrollViewDelegateProxy?
+        let clock = DateProviderMock()
+        let off = RUMScrollHandler(dateProvider: clock, predicate: UITouchRUMActionsPredicateMock())
+        let owner = RUMContextHandoff.Owner()
+        let monitor = SharedScrollMonitor(owner: owner, clock: clock)
+        let on = RUMSceneScrollHandler(legacyHandler: RUMScrollHandler(dateProvider: clock, predicate: UITouchRUMActionsPredicateMock()), dateProvider: clock, owner: owner, expectedMonitor: monitor)
+        on.publish(to: monitor)
+        let freshOwner = RUMContextHandoff.Owner()
+        let freshMonitor = SharedScrollMonitor(owner: freshOwner, clock: clock)
+        let freshOn = RUMSceneScrollHandler(legacyHandler: RUMScrollHandler(dateProvider: clock, predicate: UITouchRUMActionsPredicateMock()), dateProvider: clock, owner: freshOwner, expectedMonitor: freshMonitor)
+        freshOn.publish(to: freshMonitor)
+        var active: UIScrollViewSwizzler?
+        defer { active?.unswizzle() }
+        let handlers: [UIScrollViewHandler] = [off, on, off, freshOn]
+        for handler in handlers {
+            active?.unswizzle()
+            active = try UIScrollViewSwizzler(handler: handler)
+            active?.swizzle()
+            a.delegate = delegate
+            if proxy == nil {
+                b.delegate = delegate
+                proxy = try XCTUnwrap(originalGetter(a, selector) as? UIScrollViewDelegateProxy)
+                weakProxy = proxy
+            }
+            XCTAssertIdentical(originalGetter(a, selector), proxy)
+            XCTAssertIdentical(originalGetter(b, selector), proxy, "Updating one receiver must not replace the shared delegate's only strong proxy owner")
+            XCTAssertIdentical(proxy?.handler, handler)
+            XCTAssertIdentical(a.delegate, delegate)
+            XCTAssertIdentical(b.delegate, delegate)
+            a.delegate = nil
+            XCTAssertNil(originalGetter(a, selector))
+            XCTAssertIdentical(originalGetter(b, selector), proxy)
+            a.delegate = proxy
+            XCTAssertIdentical(originalGetter(a, selector), proxy)
+            XCTAssertIdentical(a.delegate, delegate)
+        }
+        proxy = nil
+        delegate = nil
+        XCTAssertNil(weakDelegate)
+        XCTAssertNil(weakProxy)
+        XCTAssertNil(originalGetter(a, selector))
+        XCTAssertNil(originalGetter(b, selector))
+    }
+
+    func testScrollSwizzler_publicationUsesRetainedAdapterBridge() throws {
+        let clock = DateProviderMock()
+        let owner = RUMContextHandoff.Owner()
+        let monitor = SharedScrollMonitor(owner: owner, clock: clock)
+        let legacy = RUMScrollHandler(dateProvider: clock, predicate: UITouchRUMActionsPredicateMock())
+        let adapter = RUMSceneScrollHandler(legacyHandler: legacy, dateProvider: clock, owner: owner, expectedMonitor: monitor)
+        let swizzler = try UIScrollViewSwizzler(handler: adapter)
+        swizzler.publish(to: monitor)
+        XCTAssertIdentical(legacy.subscriber, adapter)
+        swizzler.publish(to: RUMCommandSubscriberMock())
+        XCTAssertIdentical(legacy.subscriber, adapter)
+        let off = RUMScrollHandler(dateProvider: clock, predicate: UITouchRUMActionsPredicateMock())
+        let offSwizzler = try UIScrollViewSwizzler(handler: off)
+        let subscriber = RUMCommandSubscriberMock()
+        offSwizzler.publish(to: subscriber)
+        XCTAssertIdentical(off.subscriber, subscriber)
+    }
+}
+
+private final class SharedScrollMonitor: Monitor {
+    let issuedOwner: RUMContextHandoff.Owner
+    override var rumContextHandoffOwner: RUMContextHandoff.Owner? { issuedOwner }
+    init(owner: RUMContextHandoff.Owner, clock: DateProvider) {
+        issuedOwner = owner
+        super.init(dependencies: .mockWith(featureFlags: [.multiSceneTracking: true]), dateProvider: clock)
+    }
+}
 #endif

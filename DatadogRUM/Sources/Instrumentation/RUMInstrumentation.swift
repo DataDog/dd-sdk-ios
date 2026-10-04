@@ -223,9 +223,23 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
                 predicate: uiKitRUMActionsPredicate
             )
             scrollHandler = handler
+            let delegateHandler: UIScrollViewHandler
+            #if os(iOS)
+            if isMultiSceneTrackingEnabled, #available(iOS 27.0, *),
+               let owner = rumContextHandoffOwner, owner.isValid, let monitor = handoffMonitor {
+                delegateHandler = RUMSceneScrollHandler(
+                    legacyHandler: handler, dateProvider: dateProvider,
+                    owner: owner, expectedMonitor: monitor
+                )
+            } else {
+                delegateHandler = handler
+            }
+            #else
+            delegateHandler = handler
+            #endif
             scrollViewSwizzler = {
                 do {
-                    return try UIScrollViewSwizzler(handler: handler)
+                    return try UIScrollViewSwizzler(handler: delegateHandler)
                 } catch {
                     consolePrint(
                         "🔥 Datadog SDK error: RUM scroll tracking can't be enabled due to error: \(error)",
@@ -341,7 +355,11 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         viewsHandler.publish(to: subscriber)
         actionsHandler.publish(to: subscriber)
         #if !os(watchOS) && !os(tvOS) && !os(macOS)
-        scrollHandler?.publish(to: subscriber)
+        if let scrollViewSwizzler {
+            scrollViewSwizzler.publish(to: subscriber)
+        } else {
+            scrollHandler?.publish(to: subscriber)
+        }
         #endif
         longTasks?.publish(to: subscriber)
         appHangs?.nonFatalHangsHandler.publish(to: subscriber)
