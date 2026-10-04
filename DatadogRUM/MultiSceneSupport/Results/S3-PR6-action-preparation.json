@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "SC21_OFF_COMPONENT_OBLIGATIONS_COMPLETE_INPUT_OFF_NATIVE_MATRIX_PENDING",
+  "state": "SC21_AND_SAFE_INPUT_OFF_COMPONENT_OBLIGATIONS_COMPLETE_PLATFORM_PREPARATION_PENDING",
   "delivery_slice": "PR6",
   "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9",
   "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/worktree",
@@ -28,13 +28,13 @@
   ],
   "controls_defined": 22,
   "design_reviewer": "/root/h10_backend_reviewer",
-  "next_action": "Admit parent27,current27,parent17.5,current17.5 input Off cells serially through the reviewed launcher and original cutoff. After each return prove owned-worker absence and original Shutdown restoration, freeze the same-run context, and require independent read-only packet review before metadata exports. Then review the accepted-artifact semantic/helper-zero comparison. No accepted suite repeats or whole PR6/F12 credit.",
+  "next_action": "Review finite P6C19 platform source assessment, then prepare the smallest generic macOS Core/RUM compile slice with exact source/compiler/product/dependency joins and a bounded reviewed build mechanism. No accepted native/suite repeats. Configured automatic input, genuine attached scene/window, SC22, allocation/performance, minimumSwift6.2 and wholePR6/F12 remain held.",
   "implementation_admitted": true,
   "native_admitted": false,
   "native_runs": 6,
   "sdk_edits": 6,
   "gates_closed": [],
-  "updated_at": 1791112247.7998679,
+  "updated_at": 1791115033.5040529,
   "previous_definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/next-pr6-controls-definition.json",
     "sha256": "7b374396fc3b8a33818520301d7a2ca3a56c53e7be70360e25fdfd154ece0e4e"
@@ -1149,6 +1149,142 @@
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_notify_current_ios27_cycle2/cleanup.json",
         "sha256": "d9323274793ef7b6224123634f02df868f3d53d6b6eb90a6dedc2f35053f87f2"
       }
+    },
+    "input_off_parent_ios27_cycle1": {
+      "state": "COMPONENT_TESTS_RETURNED_REQUIRES_RECONCILIATION",
+      "owner": "/root",
+      "controller_pid": 92094,
+      "controller_pgid": 92094,
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_parent_ios27_cycle1/definition.json",
+        "sha256": "ad6c3d350951f79435294c7d7b39a4c55891e6d86ab80214eb324444738a4c63"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_parent_ios27_cycle1/review.json",
+        "sha256": "a31152237fb9c77e30042b21236d3d24bfd3eab79884939d5931dc5a8b1a2394"
+      },
+      "controller": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_parent_ios27_cycle1/controller.py",
+        "sha256": "0fa71aeeccd26555bb81c74e4d0bd86c0e432aba007a4c08e82fbaea2a3e7dd5"
+      },
+      "admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_parent_ios27_cycle1/admission.json",
+        "sha256": "a779486af177d946aa4fc5aced6bf56792ddb75d1a91a68889e423128e0162e7"
+      },
+      "child": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_parent_ios27_cycle1/native-qualification-start.json",
+        "sha256": "98e2f5c7ad7b2de41804a324990c0e434f52cf9d28407db87c396fc5f47ed3d8"
+      },
+      "outcome": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_parent_ios27_cycle1/native-qualification-outcome.json",
+        "sha256": "643e90afef8ea81f864561c6d6d0f953292b2b0d582019cc78feefa5e234a9cc"
+      },
+      "cleanup": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_parent_ios27_cycle1/cleanup.json",
+        "sha256": "a43c37e8ea2bb1f3b8695b7b5e4f1ff05f5ceb0d717b031a94be5f5461155125"
+      }
+    },
+    "input_off_current_ios27_cycle1": {
+      "state": "COMPONENT_TESTS_RETURNED_REQUIRES_RECONCILIATION",
+      "owner": "/root",
+      "controller_pid": 94153,
+      "controller_pgid": 94153,
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_current_ios27_cycle1/definition.json",
+        "sha256": "6aa19791205c56f4161776166fb847825a559cd38d1f41446cac0c550d3db9ad"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_current_ios27_cycle1/review.json",
+        "sha256": "28618a12a4f83c2cfa4a7dbf110cfc48f78dd8eb243f12992520cfa137e96a85"
+      },
+      "controller": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_current_ios27_cycle1/controller.py",
+        "sha256": "173508dddd58a7ae407001485093fd1d8c1564504fe52d75c49734c5e36718da"
+      },
+      "admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_current_ios27_cycle1/admission.json",
+        "sha256": "f90206e38ae6b7983d50c4432b4583965895cf07fcd4b383d482f1a1e1d46ef9"
+      },
+      "child": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_current_ios27_cycle1/native-qualification-start.json",
+        "sha256": "4d0e342f3506f1479b5efa3c4c4b93252577d8d7b37e16c95ea62ae9e940ff84"
+      },
+      "outcome": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_current_ios27_cycle1/native-qualification-outcome.json",
+        "sha256": "3bf2964f73b44e8009aa94d3f7506d2a71e8a1f5c42ab44e364d90559b5397e0"
+      },
+      "cleanup": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_current_ios27_cycle1/cleanup.json",
+        "sha256": "49ab7eafc1e0c3f8735c66b27cfb381f15452d5bd965f33f540cc6404dae711f"
+      }
+    },
+    "input_off_parent_ios175_cycle1": {
+      "state": "COMPONENT_TESTS_RETURNED_REQUIRES_RECONCILIATION",
+      "owner": "/root",
+      "controller_pid": 96236,
+      "controller_pgid": 96236,
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_parent_ios175_cycle1/definition.json",
+        "sha256": "7276a10ae1cf765fe50ed76577219d25909a63e88e2d25c0bb428555a563e860"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_parent_ios175_cycle1/review.json",
+        "sha256": "97a5f37beb102470d8ae1581f344626484822c1f61bddd07c123f91da72d7ec3"
+      },
+      "controller": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_parent_ios175_cycle1/controller.py",
+        "sha256": "af48cfa267e6826603949f82d7185c74673d592c5ace78fbcaa986c134eb9d89"
+      },
+      "admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_parent_ios175_cycle1/admission.json",
+        "sha256": "2c5af54cfc7128611fd930a9dbf8f2200e079b9b4adc07d110f813a30ba381e5"
+      },
+      "child": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_parent_ios175_cycle1/native-qualification-start.json",
+        "sha256": "349c0fb580cbdbee29e7c1ca82745791321e72a687b4b008b1e854c8936dbfec"
+      },
+      "outcome": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_parent_ios175_cycle1/native-qualification-outcome.json",
+        "sha256": "9951ee8f7655fc116191c099070e2f5f837cab24a6d732edc9ef3a61f46e0174"
+      },
+      "cleanup": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_parent_ios175_cycle1/cleanup.json",
+        "sha256": "71e50106a6b9e89f400795654a0f37c2a234964fea65a5bf2534deac7e6bd021"
+      }
+    },
+    "input_off_current_ios175_cycle1": {
+      "state": "COMPONENT_TESTS_RETURNED_REQUIRES_RECONCILIATION",
+      "owner": "/root",
+      "controller_pid": 98392,
+      "controller_pgid": 98392,
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_current_ios175_cycle1/definition.json",
+        "sha256": "023599df7bcd0212df3d02c0275f952c0231fca1cadbe5fff3ba762ea45ce7cb"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_current_ios175_cycle1/review.json",
+        "sha256": "f67b703f7d40e00b04d724b2ca91dd9ce33cb172dad004a63ecd9961c866a91a"
+      },
+      "controller": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_current_ios175_cycle1/controller.py",
+        "sha256": "d304b8bfa08df5255d77662520dacb8c78b2e3cea9bd2972db2410f8c96717d2"
+      },
+      "admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_current_ios175_cycle1/admission.json",
+        "sha256": "2923bd3762b9de5f093b5c0efd81d4da09a37bed80d1419108baad31e11abaea"
+      },
+      "child": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_current_ios175_cycle1/native-qualification-start.json",
+        "sha256": "acca758fda155ab25c780d15bb7f28d8bc1c2a9cd7ce75b17af151edd046a403"
+      },
+      "outcome": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_current_ios175_cycle1/native-qualification-outcome.json",
+        "sha256": "e04e460fc6da495cfd9b93cabb3af0ee7ef46393d6bb14adc9106bcaf6dcd5bb"
+      },
+      "cleanup": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_current_ios175_cycle1/cleanup.json",
+        "sha256": "188793e262b69b82da1030c767fb1adb8e014fe4ef2100a75fdc8e046f6694ca"
+      }
     }
   },
   "source_review": {
@@ -2158,7 +2294,7 @@
     "sha256": "92668c89c57b4f31476ac0c6f044942a1df43eef4cfb35bcc9edc8c6c937802b"
   },
   "input_sdk_head": "b19953812e83da63571b2d771d88e28d6389c6be",
-  "input_qualified_scope": "Private source input adapter/feature wiring, preserved legacy/fallback and actual typed Void UIApplication forwarding/lifecycle:115 invocations/67 distinct cases. Genuine attached source, scroll/platform, source-paired Off and wholePR6/F12/API/hardware remain held.",
+  "input_qualified_scope": "Private source input adapter/feature wiring, preserved legacy/fallback and actual typed Void UIApplication forwarding/lifecycle:115 invocations/67 distinct cases. Safe no-auto-predicate factory/manual plus direct legacy eligible/keyboard-private/filter touch probes additionally match parent/current default/explicitOff on27/17.5; all9 new input helper counters zero oncurrent27 with separate8saved/1new positive witnesses. Configured automatic native input, genuine attached scene/window, allocation/performance/platform and wholePR6/F12/API/hardware remain held.",
   "next_scroll_design_preparation": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-design-review-cycle3/design.json",
     "sha256": "047756c7138eea6054c18b8676ed831adb4887e202d545e54310bf20f482aa21"
@@ -2718,7 +2854,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-saved-on-inspection-controls-cycle2/controls.json",
     "sha256": "40332a25699e648b0c087992d00530c986109157c85db27eb7404073830b787c"
   },
-  "input_source_paired_off_native_runs": 0,
+  "input_source_paired_off_native_runs": 4,
   "input_source_paired_off_active_execution": null,
   "input_saved_on_inspection_previous_proposal": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-saved-on-inspection-proposal-cycle1/definition.json",
@@ -2932,7 +3068,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-notify-actual-inspection-cycle1/review.json",
     "sha256": "3b08f2f8b62e284c050068c4789d2eb33bac7ab26fc02b63c4431f56bf725de5"
   },
-  "input_off_state": "FOUR_SOURCE_PAIRED_OFF_PROPOSALS_REVIEW_PASS_READY_FOR_SERIAL_FRESH_PREFLIGHT",
+  "input_off_state": "SAFE_INPUT_OFF_SEMANTICS_AND_NINE_ZERO_COUNTERS_COMPONENT_REVIEW_PASS",
   "input_off_launch_review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-off-launch-controls-cycle4/review.json",
     "sha256": "c3379cd71ee4dc6832e9bfec9df8f3bfffc78230a614e732c41e7660e3222f41"
@@ -2953,7 +3089,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-off-comparison-positive-binding-controls-cycle1/controls.json",
     "sha256": "81f819907627e3340d5f275e0f99012de8bc34ae4d8aad84e96f71a041aa589f"
   },
-  "input_off_comparison_state": "SOURCE_DRAFT_TEN_NEW_POSITIVE_BINDING_CONTROLS_PASS_NO_ARTIFACT_INSPECTION_ADMISSION",
+  "input_off_comparison_state": "ACCEPTED_COMPONENT_COMPARISON_ONLY_NO_FULL_GATE_CREDIT",
   "input_off_native_reviews": {
     "input_off_parent_ios27_cycle1": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_parent_ios27_cycle1/review.json",
@@ -2979,5 +3115,117 @@
   "input_off_preparation_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-off-pre-native-main-checkpoint-cycle1/checkpoint.json",
     "sha256": "d686e7723923bdfb967a05b7ff40ac9613222e85a6bafc9dae75822e282e065b"
-  }
+  },
+  "input_off_actual_contexts": {
+    "input_off_parent_ios27_cycle1": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_parent_ios27_cycle1-context/packet.json",
+      "sha256": "d736dff00bbfcd8eb987092c2c1af51c911ce81349bdd406fd7ebc3793b631d7"
+    },
+    "input_off_current_ios27_cycle1": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_current_ios27_cycle1-context/packet.json",
+      "sha256": "2ffb5af5a672c21987026ce51ab4d53bca388d409b48e86a2eea1de4539bd30e"
+    },
+    "input_off_parent_ios175_cycle1": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_parent_ios175_cycle1-context/packet.json",
+      "sha256": "699e8274dd620a73250871044b86002e3c0610b4c417e51798767d249e3dcd4f"
+    },
+    "input_off_current_ios175_cycle1": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_current_ios175_cycle1-context/packet.json",
+      "sha256": "392b8587b254eae1865622d029af17554271100d98016c0aa89eb40cfa1d47c4"
+    }
+  },
+  "input_off_postexits": {
+    "input_off_parent_ios27_cycle1": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_parent_ios27_cycle1-postexit/postexit.json",
+      "sha256": "7f9448a482c49b6556196577628bcca56ace62a9aa247d49fc780da6eb18d25a"
+    },
+    "input_off_current_ios27_cycle1": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_current_ios27_cycle1-postexit/postexit.json",
+      "sha256": "bf891660be48a96120938a429b79226e3b098cb9defbe9490561525d45d2c6a9"
+    },
+    "input_off_parent_ios175_cycle1": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_parent_ios175_cycle1-postexit/postexit.json",
+      "sha256": "2a0eba5d2bcd50d33c7efbf54a73e263631922e58b85764210784ba5b8afd131"
+    },
+    "input_off_current_ios175_cycle1": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_current_ios175_cycle1-postexit/postexit.json",
+      "sha256": "4ee4e385b0ec336fe5be09aee89912a0adaec89b1b2daa0ad489fc07767989ff"
+    }
+  },
+  "input_off_local_semantic_observations": {
+    "ios27": {
+      "semantic_verdict": "PASS_SOURCE_PAIRED_SAFE_INPUT_OFF_SEMANTICS_ONLY",
+      "scope": "Actual no-auto-predicate factory/manual; direct legacy event-factory eligible/keyboard-window privacy/filter. Configured automatic factory/native delivery not claimed.",
+      "timing": "Finite format only; excluded from comparison",
+      "floating_attributes": "Finite numeric attributes rounded to6decimalplaces",
+      "gates_closed": []
+    },
+    "ios175": {
+      "semantic_verdict": "PASS_SOURCE_PAIRED_SAFE_INPUT_OFF_SEMANTICS_ONLY",
+      "scope": "Actual no-auto-predicate factory/manual; direct legacy event-factory eligible/keyboard-window privacy/filter. Configured automatic factory/native delivery not claimed.",
+      "timing": "Finite format only; excluded from comparison",
+      "floating_attributes": "Finite numeric attributes rounded to6decimalplaces",
+      "gates_closed": []
+    }
+  },
+  "input_off_actual_context_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-off-native-proposal-cycle1/context-review.json",
+    "sha256": "3888ab11ba63453018578ed1f09d44585fe95127c1e3f19219e6e19af6c50a14"
+  },
+  "input_off_qualifications": {
+    "input_off_parent_ios27_cycle1": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_parent_ios27_cycle1/qualification.json",
+      "sha256": "2a1c32204b0a895518643847b439ed62c65d72d2b6731bbc60684c32cfb242b6"
+    },
+    "input_off_parent_ios175_cycle1": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_parent_ios175_cycle1/qualification.json",
+      "sha256": "3f63651362c28898d8fb7d72f473ef66684c9743c6ecc6d845a71c8053470c16"
+    },
+    "input_off_current_ios27_cycle1": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_current_ios27_cycle1/qualification.json",
+      "sha256": "cbb5ed4e454cc3c35a9262004f856e5bf9d02f20046ede4b6f26b83b5ac61702"
+    },
+    "input_off_current_ios175_cycle1": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_current_ios175_cycle1/qualification.json",
+      "sha256": "4e60077f7b3fda6ca4eb9e78356f2f1e76f356f5b05e37a23daf193618cf7408"
+    }
+  },
+  "input_off_qualified_cells": 4,
+  "input_off_inspection_definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-off-inspection-proposal-cycle1/definition.json",
+    "sha256": "ceef4492c81d01fa7ac3b757912435214602f9c952e92c4e7221d3c5a25ec7fd"
+  },
+  "input_off_inspection_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-off-inspection-proposal-cycle1/review.json",
+    "sha256": "7269566882f3dc812a97960f429aa96bb1f5e382eb9ec18e0cb58036081be929"
+  },
+  "input_off_comparison_receipt": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-off-actual-comparison-cycle1/receipt.json",
+    "sha256": "e03e9f55d8971d48ac857da8dc0b964b4fa1b7440a5387dfaf7340d9f8c3a04d"
+  },
+  "input_off_comparison_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-off-actual-comparison-cycle1/review.json",
+    "sha256": "2cac752f6ca751bd750089e35174b5d0a3226b52059c6cedd948d77b20da4319"
+  },
+  "input_off_metadata_export_postexit": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-off-qualification-export-postexit-cycle1/postexit.json",
+    "sha256": "be57b572d6763b43ac61c2e3c9f845d35c716efcca450f2d4d172621a95be675"
+  },
+  "input_off_coverage_export_postexit": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-off-coverage-export-postexit-cycle2/postexit.json",
+    "sha256": "e998919593835862bb5760af082492f6c69e14284eafc619ebdc91fde6dd3386"
+  },
+  "input_off_completed_sub_obligations": [
+    "Default/explicitOff actual RUMInstrumentation factory selection and manual forwarding with automatic predicates absent preserve full command semantics on27/17.5.",
+    "Direct legacy UITouch factory eligible/keyboard-window-private/predicate-filtered probes preserve actual event/target identities, predicate counts, publication suppression and factory-output/command identity.",
+    "Complete17 raw command fields/six flags/attribute maps are retained; comparison covers16 normalized fields after excluding finite diagnostic clocks and rounding finite numeric attributes to6 decimal digits.",
+    "The actual safe fixtures leave sendEvent IMP unchanged and observe zero Monitor owner getter/command activity for both Off configurations.",
+    "All nine predefined source/symbol/body counters are zero in the qualified current27 Off report, matched to the accepted eight saved and one new notify source-specific positive witnesses.",
+    "Four actual one-case qualifiers passed with originalShutdown cleanup; complete original/qualified/coverage copies, source/compiler/CObjC/object/link/products/dependencies and owned retirement remain joined."
+  ],
+  "platform_source_assessment": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-source-audit-cycle1/assessment.json",
+    "sha256": "bbc0672f7e39e3c0b490d1d332baa48e6e0182828bcba22a93c5c5f4bec65e76"
+  },
+  "platform_state": "SOURCE_ASSESSMENT_REVIEW_PENDING_NO_BUILD_ADMISSION"
 }
