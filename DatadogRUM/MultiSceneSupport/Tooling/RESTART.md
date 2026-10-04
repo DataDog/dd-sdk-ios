@@ -116,6 +116,28 @@ receipt and verify the full selected closure before using a fresh runtime. Never
 rewrite original hashes, admissions, failed outcomes or temporary tool paths to
 make a relocated run appear current.
 
+The user-authorized storage cleanup on 2026-10-04 retired **205 DerivedData
+folders and 16 dependency-cache copies** across two passes. Before treating an old
+build path as missing evidence, consult the
+[first-pass report](/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/derived-data-retirement-20261004-be724mrs/README.md) and
+[second-pass report](/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/build-retirement-pass2-20261004-ldy40f5p/README.md).
+Their `deleted-directories.txt` files and `receipts/*.json` identify the exact retired
+roots and preserved archives; `manifests/*.json` bind individual file contents.
+The first pass's retained list is historical: the second pass supersedes it for
+listed paths, including the completed F08 app builds. **63 current/pending build
+folders** remained at their original identities at the final check, and the entire
+`rum-continue-20261003-fp13e2hd` evidence root was excluded.
+
+For a listed retired root, verify its archive and manifest hashes before recovery.
+First-pass archives are standalone; second-pass dependency copies share archive
+`001` plus per-copy differences. Keep that second-pass bundle together and follow
+its report's `restore.py` instructions; its receipt numbers apply only to that pass.
+Recover required content into a new location, record the old-to-new mapping and
+verify the selected closure as above. Only the named regenerable caches were
+omitted; SDK/app worktrees, original verdicts and sibling evidence were preserved.
+Retirement alone is not a reason to rerun accepted suites. Recovery grants no
+native admission and changes no evidence verdict or release gate.
+
 If evidence is missing or changed, retain that result. Reconstruct source and new
 preparation from the selected Git revision and checked-in renderer where possible;
 new products need new identity/qualification receipts. Lost native evidence cannot

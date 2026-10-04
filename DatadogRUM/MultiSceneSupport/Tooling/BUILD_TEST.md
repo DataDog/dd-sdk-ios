@@ -1,7 +1,6 @@
 # Builds, tests and public clients
 
-Read for an admitted build/test/API check. Use [environment preflight](ENVIRONMENT.md)
-and the [common evidence contract](EVIDENCE.md); exact commands, counts, thresholds
+Read for an admitted build/test/API check. Use [environment preflight](ENVIRONMENT.md) and the [common evidence contract](EVIDENCE.md); exact commands, counts, thresholds
 and budgets come from the owning definition or fixture README.
 
 Before native admission, compare fixture configuration values used by the oracle
@@ -189,6 +188,7 @@ Never kill or exclude an unrelated process to repair a guard. An owned simulator
 `launchd_sim` is its control daemon, not an XCTest worker. Bind the observed
 executable and owned bootstrap path; a UDID substring alone cannot classify a worker.
 
+Launch wrappers retain validated authority and controller identity before release, then wait within the original cutoff. After possible release, evidence/stdin failures must preserve cleanup authority; never terminate only the leader. Qualify publication and retirement failures offline. Retain uncertain group absence separately.
 Include process-inventory latency in the fixed cleanup reservation and retain the
 actual rows or partial timeout output. An empty reaped group needs one inventory.
 If quiescence is unproven, defer simulator teardown. Read a failed run's result

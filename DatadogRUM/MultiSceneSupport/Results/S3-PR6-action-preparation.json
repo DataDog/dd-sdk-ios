@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "SC21_OFF_COMPONENT_OBLIGATIONS_COMPLETE_INPUT_OFF_VISIBILITY_PREREQUISITE_OPEN",
+  "state": "SC21_OFF_COMPONENT_OBLIGATIONS_COMPLETE_INPUT_OFF_NATIVE_MATRIX_PENDING",
   "delivery_slice": "PR6",
   "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9",
   "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/worktree",
@@ -28,13 +28,13 @@
   ],
   "controls_defined": 22,
   "design_reviewer": "/root/h10_backend_reviewer",
-  "next_action": "Review the frozen one-case current27 notify native proposal, then qualify that one new witness with separate semantic and compiler-counter evidence. Compose all9 source-specific positive entries before the four prepared Off cells. No accepted suite or saved export repeat.",
+  "next_action": "Complete scoped review of the four exact source-paired input Off proposals and same-run context adapter, checkpoint, then admit serially within the new proposal cutoff. Reuse accepted On suites and both positive reports; preserve all original failures. Component semantics and helper-zero inspection remain separate from whole PR6/F12 release acceptance.",
   "implementation_admitted": true,
   "native_admitted": false,
   "native_runs": 6,
   "sdk_edits": 6,
   "gates_closed": [],
-  "updated_at": 1791107371.019596,
+  "updated_at": 1791111940.159272,
   "previous_definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/next-pr6-controls-definition.json",
     "sha256": "7b374396fc3b8a33818520301d7a2ca3a56c53e7be70360e25fdfd154ece0e4e"
@@ -1114,6 +1114,40 @@
       "cleanup": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll_off_current_ios175_cycle3/cleanup.json",
         "sha256": "71ca12af7e913e19d697be7f9e3d8562cb9bda277fec353ddc2ea5b2fe0a0484"
+      }
+    },
+    "input_notify_current_ios27_cycle2": {
+      "state": "COMPONENT_TESTS_RETURNED_REQUIRES_RECONCILIATION",
+      "owner": "/root",
+      "controller_pid": 56703,
+      "controller_pgid": 56703,
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_notify_current_ios27_cycle2/definition.json",
+        "sha256": "bc54909c622795c6e252b0130b7d0931851e5669f37cf97df831529ab7f3945c"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_notify_current_ios27_cycle2/review.json",
+        "sha256": "352f85f6133a5421c3199974e2fa272e9f91aa2e6373f0847b6467e595c2c0b4"
+      },
+      "controller": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_notify_current_ios27_cycle2/controller.py",
+        "sha256": "27bc9d709aa907656996eb4679f657fab02aa914160d21adc77f39ca9aa91d5f"
+      },
+      "admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_notify_current_ios27_cycle2/admission.json",
+        "sha256": "5a77e4a25f00739fb7ce511dc80168cf50a5c0b4f329ccd335a914b4ee339811"
+      },
+      "child": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_notify_current_ios27_cycle2/native-qualification-start.json",
+        "sha256": "5d42885d4f64b40401c12a5ae3cffa98945178d69fc36ba35bf54da845d722a2"
+      },
+      "outcome": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_notify_current_ios27_cycle2/native-qualification-outcome.json",
+        "sha256": "aaaf263e2a1805236f3c02482937c9b8effcbdae04dfe1ccfb38d6d8ca54750a"
+      },
+      "cleanup": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_notify_current_ios27_cycle2/cleanup.json",
+        "sha256": "d9323274793ef7b6224123634f02df868f3d53d6b6eb90a6dedc2f35053f87f2"
       }
     }
   },
@@ -2719,7 +2753,7 @@
     "sha256": "145ed0f328f57df48db828221aa2bebd5c01f4ba32892e511997d71966bdbf8b"
   },
   "input_saved_on_exports_run": 1,
-  "input_saved_on_visibility_state": "EIGHT_SAVED_POSITIVE_DECLARATION_BODY_MAPPING_REVIEW_PASS_NEW_NOTIFY_NATIVE_WITNESS_PENDING",
+  "input_saved_on_visibility_state": "ALL_NINE_PREDEFINED_ENTRIES_POSITIVE_WITH_SEPARATE_EIGHT_SAVED_ONE_NEW_PROVENANCE",
   "input_notify_positive_control_definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-notify-positive-control-definition-cycle1.json",
     "sha256": "0a3c7772258bda6bb15829e490eabc84bcaa61ecb9b0efff3f325fb6ad9930a7"
@@ -2740,7 +2774,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-coverage-detector-cycle1/preparation.json",
     "sha256": "8e3c7e4a05dc06dcb23f3f65bda8deff6406d188a0f34249a1924223c63dbea9"
   },
-  "input_coverage_detector_state": "28_OFFLINE_CONTROLS_AND_SOURCE_BOUND_DETECTOR_REVIEW_PASS_EIGHT_SAVED_POSITIVE_NOTIFY_PENDING",
+  "input_coverage_detector_state": "ALL_NINE_SOURCE_SPECIFIC_POSITIVES_REVIEW_PASS_NOTIFY_NEW_COUNT1_EIGHT_SAVED_REUSED",
   "input_notify_positive_design_review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-notify-positive-control-design-review-cycle1.json",
     "sha256": "dcab061884b9f50d047a03b08eac8736c3b9ccf33dd855ef165f81e57c97fa4e"
@@ -2785,8 +2819,8 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-notify-qualification-mechanism-cycle2/controls.json",
     "sha256": "67d19c316489adb763ae9a805822849565caf5dcbd416dc4aef47621ceabeec6"
   },
-  "input_notify_state": "SOURCE2_ORACLE_DETECTOR_QUALIFIER_REVIEW_PASS_ONE_CASE_NATIVE_PROPOSAL_REVIEW_PENDING",
-  "input_notify_native_runs": 0,
+  "input_notify_state": "ONE_NATIVE_QUALIFIED_SEMANTIC_AND_NINE_SOURCE_SPECIFIC_POSITIVE_WITNESSES_FINAL_REVIEW_PASS",
+  "input_notify_native_runs": 1,
   "input_notify_active_execution": null,
   "input_notify_corrected_source_review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-notify-source-freeze-cycle2/review.json",
@@ -2816,5 +2850,108 @@
   "input_notify_native_original_blocked_review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_notify_current_ios27_cycle1/review.json",
     "sha256": "a5c0384503014e16988d8640199a5d21d95d5564c1b87924f25509bd46f10d54"
-  }
+  },
+  "input_notify_native_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_notify_current_ios27_cycle2/review.json",
+    "sha256": "352f85f6133a5421c3199974e2fa272e9f91aa2e6373f0847b6467e595c2c0b4"
+  },
+  "input_notify_native_mechanism_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-notify-native-proposal-cycle2/mechanism-review.json",
+    "sha256": "34573e06a41f8f312a1f70f8f52fca58f9a4a5ab1c6c71d70aba77fc45771710"
+  },
+  "input_notify_postexit": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_notify_current_ios27_cycle2-postexit/postexit.json",
+    "sha256": "af3c54914a56f14ac9d61f10a64982f3e5cd48709ea2bbcfc2ad93ab5d7aed25"
+  },
+  "input_notify_launch_review_gap": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-notify-launch-gap-cycle1/receipt.json",
+    "sha256": "cb9299fa1035bc9fce28067d93966204d258c128827d3e53ba1cfde1353828e8"
+  },
+  "input_notify_actual_semantic_observation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-notify-actual-semantic-cycle1/observation.json",
+    "sha256": "e780ae8741aba56190baa27af2db7fd498d64decdb728067c7479001e7c939c2"
+  },
+  "input_notify_actual_packet": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_notify_current_ios27_cycle2-context/packet.json",
+    "sha256": "22b82f1af2d361b6cea7dd7c971461481304f3dad02ba87d10b1135e4f5bdcd6"
+  },
+  "input_off_launch_controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-off-launch-controls-cycle2/controls.json",
+    "sha256": "8ed2973efdf988eac6114a1ba685a0d815a3dd2e70781bbd0eb4ec771e9cd8f5"
+  },
+  "input_off_launch_template_stop": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-off-launch-controls-template-stop-cycle1/stop.json",
+    "sha256": "46437b4e34fe98d5b36a0867dc7e37fff06e2abeaae1b496f418d1e1a742ba84"
+  },
+  "input_notify_qualification": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_notify_current_ios27_cycle2/qualification.json",
+    "sha256": "d080906e2cc979cdd395b9ecb55c61573bfa8a636cf14b5adf6b2ea4da35c39e"
+  },
+  "input_notify_actual_context_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_notify_current_ios27_cycle2-context/review.json",
+    "sha256": "2f4e3f37ce751eabf983da12c65656642742de8a1dffa4fe02b60f795cd8a3c9"
+  },
+  "input_notify_actual_inspection_proposal": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-notify-actual-inspection-proposal-cycle1/definition.json",
+    "sha256": "b211be54a299264e1a394576590370d309c8d45e03b73d625fd760f1f2530429"
+  },
+  "input_notify_actual_inspection_controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-notify-actual-inspector-controls-cycle1/controls.json",
+    "sha256": "de671034ba904cd7ab14314779ff1dc941bfa6933c1bd7ce3b07108c490745f0"
+  },
+  "input_off_launch_original_blocked_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-off-launch-controls-cycle2/review.json",
+    "sha256": "f8d08a2756f2bdcd3793cf4ae3b1ac801011f2364662601fefd25cb3dd409cd3"
+  },
+  "input_off_launch_successor_controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-off-launch-controls-cycle3/controls.json",
+    "sha256": "fbe4948357a1c0f2de38796746e4ff7e8cd884095aff430fef645b37d9473c80"
+  },
+  "input_off_launch_state": "18_CONTROLS_AND_INDEPENDENT_FUTURE_LAUNCH_WRAPPER_REVIEW_PASS",
+  "input_notify_actual_inspection_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-notify-actual-inspection-proposal-cycle1/review.json",
+    "sha256": "fa052b9b84778b2fd1e1931d930831d80c6a33ba3c8be11ce995f759a416c66b"
+  },
+  "input_notify_actual_positive_receipt": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-notify-actual-inspection-cycle1/receipt.json",
+    "sha256": "acb97bc1208b5b95bb1085c75ff4d67b502c4faa3f7651156a0fdb53c4cec59e"
+  },
+  "input_notify_actual_export_postexit": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-notify-actual-inspection-cycle1/export-postexit/postexit.json",
+    "sha256": "c1910863d05d397a2c15ac80e205f5133f73ada4e50b08691f81978ade07aeca"
+  },
+  "input_off_launch_original_successor_blocked_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-off-launch-controls-cycle3/review.json",
+    "sha256": "d867753f4c5b9d049851450962080d7a36479957db593259c73a83b55f940a0d"
+  },
+  "input_off_launch_current_controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-off-launch-controls-cycle4/controls.json",
+    "sha256": "d69746c5b46e4472988461ca9706e8b3b2db07886c6e29f26138849947187236"
+  },
+  "input_notify_actual_final_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-notify-actual-inspection-cycle1/review.json",
+    "sha256": "3b08f2f8b62e284c050068c4789d2eb33bac7ab26fc02b63c4431f56bf725de5"
+  },
+  "input_off_state": "FOUR_SOURCE_PAIRED_OFF_PROPOSALS_FROZEN_SCOPED_REVIEW_PENDING_NO_NATIVE_ADMISSION",
+  "input_off_launch_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-off-launch-controls-cycle4/review.json",
+    "sha256": "c3379cd71ee4dc6832e9bfec9df8f3bfffc78230a614e732c41e7660e3222f41"
+  },
+  "input_off_native_proposal": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-off-native-proposal-cycle1/proposal.json",
+    "sha256": "fc146819b159be85ba1f46dbed17af351f4e8c4f313e5868134b472f7d1dd700"
+  },
+  "input_off_context_preparer": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/prepare-input-off-headless-context-cycle1.py",
+    "sha256": "2c229b065783a96946f12a39f2ae14c0fc6e19a288a73bdc2e835cf6364f7fea"
+  },
+  "input_off_comparison_draft": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/prepare-input-off-comparison-cycle1.py",
+    "sha256": "1be3d79187503c10d24196a3a2670bcbb8a4673bc56925863987c4adb4aebf22"
+  },
+  "input_off_comparison_positive_binding_controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-off-comparison-positive-binding-controls-cycle1/controls.json",
+    "sha256": "81f819907627e3340d5f275e0f99012de8bc34ae4d8aad84e96f71a041aa589f"
+  },
+  "input_off_comparison_state": "SOURCE_DRAFT_TEN_NEW_POSITIVE_BINDING_CONTROLS_PASS_NO_ARTIFACT_INSPECTION_ADMISSION"
 }
