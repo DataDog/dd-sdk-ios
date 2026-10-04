@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "PRIVATE_SCROLL_COMPONENTS_QUALIFIED_SC21_NEXT",
+  "state": "PRIVATE_SCROLL_QUALIFIED_SC21_SOURCE_ORACLES_CORRECTED_WAIT_REVIEW",
   "delivery_slice": "PR6",
   "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9",
   "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/worktree",
@@ -28,13 +28,13 @@
   ],
   "controls_defined": 22,
   "design_reviewer": "/root/h10_backend_reviewer",
-  "next_action": "Prepare exact parent/current SC21 source copies, reuse saved source-matched27 positive counters, review paired fixture/oracles and fixed native plans before four finite Off cells. SC22 constructor-failure, allocations/performance and genuine attached ownership remain held.",
+  "next_action": "Review corrected SC21 paired source/oracles, then exact bounded four-cell Off native proposals and consumer. Preserve original BLOCKED getter/trace fixture review. Reuse saved positive27 counters; no On rerun. Allocation/performance, SC22 and genuine attached ownership remain held.",
   "implementation_admitted": true,
   "native_admitted": false,
   "native_runs": 6,
   "sdk_edits": 6,
   "gates_closed": [],
-  "updated_at": 1791085248.212642,
+  "updated_at": 1791089260.817775,
   "previous_definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/next-pr6-controls-definition.json",
     "sha256": "7b374396fc3b8a33818520301d7a2ca3a56c53e7be70360e25fdfd154ece0e4e"
@@ -2121,5 +2121,40 @@
   "scroll_sc21_coverage_controls": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-coverage-detector-draft-cycle1/controls.json",
     "sha256": "6855e212f6da699fa5fbcfa53d9f7f61064014346f387d6c1cbd623cae688376"
+  },
+  "scroll_sc21_original_blocked_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-off-source-freeze-cycle1/review.json",
+    "sha256": "2dcb8786d2cd427a660f6488a9ce0048416168353f9c81831bbdb5ae1fe58b97"
+  },
+  "scroll_sc21_source_preparation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-off-source-freeze-cycle2/preparation.json",
+    "sha256": "9847ffd2385010e5996013829c357e0fe27828632eb3c111199e13abbd0303b9"
+  },
+  "scroll_sc21_corrected_fixture": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-off-fixture-draft-cycle3/preparation.json",
+    "sha256": "aa2a757a07fdf80b9e018d1d7f951ee7f6200f5861cee60679ac655876794953"
+  },
+  "scroll_sc21_corrected_oracle": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-off-oracle-draft-cycle2/preparation.json",
+    "sha256": "ba4ade7ac56c5d64b1efc3cb2fe85d4f622ccd4ca9f45cde703d3301b17b60c7"
+  },
+  "scroll_sc21_corrected_oracle_controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-off-oracle-draft-cycle2/controls.json",
+    "sha256": "08e64a7f446e1eaeb0e45ec36a4d2b90ef696809b113eef4b2079e4ee01ffe77"
+  },
+  "scroll_sc21_consumer_preparation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-off-qualification-mechanism-cycle2/preparation.json",
+    "sha256": "1aeb109adf1e67106a19eaa3c5afb8527208ab8e7aa8dbfccaa9b54f063db481"
+  },
+  "scroll_sc21_consumer_controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-off-qualification-mechanism-cycle2/controls.json",
+    "sha256": "78866287ce63c496f6ab4ed0da5695a18b2fbc46ca245ffb44f29e2e2f52b50c"
+  },
+  "scroll_sc21_off_native_runs": 0,
+  "scroll_sc21_fixture_review_disposition": {
+    "original": "BLOCKED before native: transparent getter hid actual proxy; trace omitted actual attributes/callback arguments and count guard. Original review and sources immutable.",
+    "correction": "Fresh identical appendix in two append-only source copies restores owned getter and captures actual full commands/callbacks with safe count guard;67 semantic controls and25 source-selection controls pass offline only.",
+    "native_admitted": false,
+    "gates_closed": []
   }
 }
