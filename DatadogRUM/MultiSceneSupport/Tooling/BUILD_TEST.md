@@ -26,7 +26,8 @@ headers in that inventory. Review exact root relocation before building; never
 repair dependency sources for a stale generated path. Non-compiler package/Git
 state needs an explicit disposition and a build path that cannot regenerate it. Bind the checkout's compiler floor separately from the installed compiler, language mode and deployment target. Before availability-sensitive forwarding, check the minimum-version public declaration and typecheck the actor-sensitive shape without linking. Retain deprecations; newer-interface/probe evidence cannot replace minimum-compiler or deployed-runtime qualification.
 
-Use fresh per-arm output directories. When reusing a binary, retain its original
+Use fresh per-arm output directories. Measure available disk space before admission and workload release against the definition’s observed build/export sizes plus cleanup reserve. ENOSPC before XCTest is an environment stop. Recovery uses reviewed exact task-cache paths and durable removal records, preserving source/dependencies, objects/link/source lists, DerivedSources, products/results and prior receipts; never widen deletion or repeat accepted cells. The [PR6 owner](../Results/S3-PR6-action-preparation.json) retains the failed cell and separate recovery.
+When reusing a binary, retain its original
 build, source, configuration and complete product fingerprint. Freeze every Mach-O,
 including the Debug dylib; a launcher stub hash alone cannot distinguish static-SDK
 arms. Bind final linker search paths and resolved SDK archives. Reclassify a saved
@@ -53,7 +54,6 @@ actual SwiftPM target directories (which may end in `-t.build`) to exact module
 list basenames. Xcode's prebuilt XCTest runner has its own SDK/deployment metadata:
 verify it against the selected Xcode template and executable architecture slice,
 then check the app and compiled test bundle against their intended build settings.
-
 Inventory the actual changed modules on each platform. RUM-only macOS builds do
 not prove Trace/Internal compilation. Include the separate Integration target when
 public networking reaches the changed code. Verify the actual `TEST_HOST` and app
