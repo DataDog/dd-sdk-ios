@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "SC21_AND_SAFE_INPUT_OFF_COMPONENT_OBLIGATIONS_COMPLETE_PLATFORM_PREPARATION_PENDING",
+  "state": "SAFE_INPUT_OFF_REVIEWED_PLATFORM_BUILD_CORRECTIONS_REVIEW_PENDING",
   "delivery_slice": "PR6",
   "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9",
   "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/worktree",
@@ -28,13 +28,13 @@
   ],
   "controls_defined": 22,
   "design_reviewer": "/root/h10_backend_reviewer",
-  "next_action": "Review finite P6C19 platform source assessment, then prepare the smallest generic macOS Core/RUM compile slice with exact source/compiler/product/dependency joins and a bounded reviewed build mechanism. No accepted native/suite repeats. Configured automatic input, genuine attached scene/window, SC22, allocation/performance, minimumSwift6.2 and wholePR6/F12 remain held.",
+  "next_action": "Review the corrected two-command macOS Core/RUM build proposal and23 focused offline controls. The original four pre-effect review findings remain immutable; no build has run. Bind current frozene1b6, versioned frameworks, actual compiler sources/Debug flags and child deadlines within the original cutoff. Then execute one serial compile lane and independently review actual evidence. Reuse accepted suites; runtime/performance/minSwift6.2/wholePR6/F12 remain held.",
   "implementation_admitted": true,
   "native_admitted": false,
   "native_runs": 6,
   "sdk_edits": 6,
   "gates_closed": [],
-  "updated_at": 1791115033.5040529,
+  "updated_at": 1791117185.6011279,
   "previous_definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/next-pr6-controls-definition.json",
     "sha256": "7b374396fc3b8a33818520301d7a2ca3a56c53e7be70360e25fdfd154ece0e4e"
@@ -3224,8 +3224,59 @@
     "Four actual one-case qualifiers passed with originalShutdown cleanup; complete original/qualified/coverage copies, source/compiler/CObjC/object/link/products/dependencies and owned retirement remain joined."
   ],
   "platform_source_assessment": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-source-audit-cycle1/assessment.json",
-    "sha256": "bbc0672f7e39e3c0b490d1d332baa48e6e0182828bcba22a93c5c5f4bec65e76"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-source-audit-cycle2/assessment.json",
+    "sha256": "19ca7446d6de4bc0741c5f5d870c58453b833ad633c57482c086a58299ab9bfe"
   },
-  "platform_state": "SOURCE_ASSESSMENT_REVIEW_PENDING_NO_BUILD_ADMISSION"
+  "platform_state": "SOURCE_REVIEW_PASS_MACOS_BUILD_CORRECTIONS_CONTROLLED_REVIEW_PENDING_NO_ADMISSION",
+  "platform_source_original_blocked_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-source-audit-cycle1/review.json",
+    "sha256": "00c0241a37810952095c564d7d921ee78b29ac22092bb7fb85f9466ea815981b"
+  },
+  "platform_source_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-source-audit-cycle2/review.json",
+    "sha256": "4ee0025bd834de89a9a2dfe2837d998d973e393dd62e64f35dea6ee0acb5b88a"
+  },
+  "platform_xcode_metadata": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-source-audit-cycle2/xcode-metadata.json",
+    "sha256": "7d33c70a58532e70fc342befa3a85fdf078d17707fcdc972d5279a06fa2799be"
+  },
+  "platform_build_definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-build-definition-cycle4/definition.json",
+    "sha256": "abc949e1564ae1c16656af922e2f1faa9f918440fa40abe1a7e4f6d9678f3211"
+  },
+  "platform_build_executor": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-build-definition-cycle4/build-platform.py",
+    "sha256": "f6b1bd11e79de0d109ce92b6cba4a7add30a0909818865ba4f273826a2c1d0a9"
+  },
+  "platform_build_controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-build-definition-cycle4/controls.json",
+    "sha256": "fe94348a105d5a38fe3389854dde35c30e337f98550f529896975ca2d0f1454f"
+  },
+  "platform_build_preparation": {
+    "platform_macos_core_rum_cycle1": {
+      "state": "SUCCESSOR_PROPOSED_NOT_ADMITTED",
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-build-definition-cycle4/definition.json",
+        "sha256": "abc949e1564ae1c16656af922e2f1faa9f918440fa40abe1a7e4f6d9678f3211"
+      },
+      "executor": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-build-definition-cycle4/build-platform.py",
+        "sha256": "f6b1bd11e79de0d109ce92b6cba4a7add30a0909818865ba4f273826a2c1d0a9"
+      },
+      "review": null,
+      "source_head": "e1b6d5e5af36bbbad48ee74dccf7675f86376b9a",
+      "output_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-build-cycle1",
+      "commands_run": 0,
+      "attempts": 0,
+      "gates_closed": [],
+      "previous_blocked_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-build-definition-cycle3/review.json",
+        "sha256": "b9cd602a8139a5f8546a2843fe453805219115dc1ebcdb6d52399755829a463d"
+      }
+    }
+  },
+  "platform_build_original_blocked_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-build-definition-cycle3/review.json",
+    "sha256": "b9cd602a8139a5f8546a2843fe453805219115dc1ebcdb6d52399755829a463d"
+  }
 }
