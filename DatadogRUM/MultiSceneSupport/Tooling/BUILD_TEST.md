@@ -125,6 +125,8 @@ When current sources add/remove tests, reconcile every changed method against th
 frozen source before another invocation. Retain the original pre-assertion stop.
 A historical suite count cannot silently omit a newer failure.
 
+Compiler evidence must follow the actual tool output. Preserve exact architecture, platform, deployment and SDK checks when accepting a documented canonical target spelling such as `macos`/`macosx`. Parse Swift conditions from outer argv; each `-Xcc` forwards one separate Clang argument. A driver need not print `-parse-as-library`: qualify library output through the actual linker command, complete source/output-map/object/link membership and produced Mach-O/platform metadata. A saved-artifact checker correction preserves the original stop and does not require another build.
+
 ## Bounded XCTest collection
 
 An availability annotation on an XCTest class does not prevent selector discovery
@@ -305,14 +307,11 @@ current admission.
 
 ## Integration lifecycle qualification
 
-The [EXP227 fixture repair](../Results/EXP-227-integration-fixture-repair-definition.json)
-uses a fresh qualification plan, controls and review bound to the exact full-target
-selection. Require the four changed fixtures in both project and actual compiler
-membership, with diagnostics disabled. Consumed diagnostic roots remain immutable
-evidence and cannot be replayed or supply a qualification admission. During future
-cleanup only, lingering ibtoold may settle within the original budget; preserve each
-actual process inventory and require an empty worker set. Active builds/tests and
-preflight still stop immediately.
+The [EXP227 owner](../Results/EXP-227-integration-fixture-repair-definition.json)
+binds the fresh plan, controls, review and four changed fixtures to actual full-target
+membership with diagnostics disabled. Preserve consumed diagnostic roots; they grant
+no replay admission. Only cleanup may let lingering ibtoold settle within its original
+budget: retain actual inventories and require no workers. Builds/preflight stop immediately.
 
 Cross-language transport controls must preserve actual native payload bytes.
 Canonical encoding may bind identity-only envelopes; do not require Python to

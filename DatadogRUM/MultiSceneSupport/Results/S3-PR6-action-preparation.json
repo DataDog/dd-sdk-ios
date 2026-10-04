@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "SAFE_INPUT_OFF_REVIEWED_PLATFORM_BUILD_CORRECTIONS_REVIEW_PENDING",
+  "state": "PLATFORM_MACOS_COMPONENT_REVIEWED_NEXT_TVOS_PREPARATION",
   "delivery_slice": "PR6",
   "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9",
   "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/worktree",
@@ -28,13 +28,13 @@
   ],
   "controls_defined": 22,
   "design_reviewer": "/root/h10_backend_reviewer",
-  "next_action": "Review the corrected two-command macOS Core/RUM build proposal and23 focused offline controls. The original four pre-effect review findings remain immutable; no build has run. Bind current frozene1b6, versioned frameworks, actual compiler sources/Debug flags and child deadlines within the original cutoff. Then execute one serial compile lane and independently review actual evidence. Reuse accepted suites; runtime/performance/minSwift6.2/wholePR6/F12 remain held.",
+  "next_action": "Prepare and review the finite two-command tvOS Core/RUM build successor, using the accepted cutoff/custody and actual compiler/object/link/dylib contract. Fresh installed SDK supportsarm64/minimum15; no native admission yet. Then watchOS/visionOS compilation. Reuse accepted macOS/input/scroll/suites; runtime/performance/minSwift6.2/wholePR6/F12 remain held.",
   "implementation_admitted": true,
   "native_admitted": false,
   "native_runs": 6,
   "sdk_edits": 6,
   "gates_closed": [],
-  "updated_at": 1791117185.6011279,
+  "updated_at": "2026-10-04T13:23:10.354727+00:00",
   "previous_definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/next-pr6-controls-definition.json",
     "sha256": "7b374396fc3b8a33818520301d7a2ca3a56c53e7be70360e25fdfd154ece0e4e"
@@ -3227,7 +3227,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-source-audit-cycle2/assessment.json",
     "sha256": "19ca7446d6de4bc0741c5f5d870c58453b833ad633c57482c086a58299ab9bfe"
   },
-  "platform_state": "SOURCE_REVIEW_PASS_MACOS_BUILD_CORRECTIONS_CONTROLLED_REVIEW_PENDING_NO_ADMISSION",
+  "platform_state": "MACOS_ARM64_SOURCE_COMPILATION_COMPONENT_REVIEWED_OTHER_PLATFORMS_HELD",
   "platform_source_original_blocked_review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-source-audit-cycle1/review.json",
     "sha256": "00c0241a37810952095c564d7d921ee78b29ac22092bb7fb85f9466ea815981b"
@@ -3254,7 +3254,7 @@
   },
   "platform_build_preparation": {
     "platform_macos_core_rum_cycle1": {
-      "state": "SUCCESSOR_PROPOSED_NOT_ADMITTED",
+      "state": "REVIEWED_MACOS_COMPILE_COMPONENT_ONLY",
       "definition": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-build-definition-cycle4/definition.json",
         "sha256": "abc949e1564ae1c16656af922e2f1faa9f918440fa40abe1a7e4f6d9678f3211"
@@ -3263,20 +3263,121 @@
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-build-definition-cycle4/build-platform.py",
         "sha256": "f6b1bd11e79de0d109ce92b6cba4a7add30a0909818865ba4f273826a2c1d0a9"
       },
-      "review": null,
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-build-definition-cycle4/review.json",
+        "sha256": "35360850a488ad5bc1e974cd6e3556cd0b383dcdbf044b77f6ae771d65a13df1"
+      },
       "source_head": "e1b6d5e5af36bbbad48ee74dccf7675f86376b9a",
       "output_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-build-cycle1",
-      "commands_run": 0,
-      "attempts": 0,
+      "commands_run": 2,
+      "attempts": 1,
       "gates_closed": [],
       "previous_blocked_review": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-build-definition-cycle3/review.json",
         "sha256": "b9cd602a8139a5f8546a2843fe453805219115dc1ebcdb6d52399755829a463d"
-      }
+      },
+      "admitted_at": 1791118702.8471098,
+      "original_cutoff": 1791123328.594003,
+      "controller_pid": 47151,
+      "controller_pgid": 47151,
+      "command_index": 1,
+      "outcomes": [
+        {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-build-cycle1/build-0-outcome.json",
+          "sha256": "0ee719f8d6c8edade611042fde3802e99b445f38f62d2d3cad7ba145767c572f"
+        },
+        {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-build-cycle1/build-1-outcome.json",
+          "sha256": "057ffb4525273149856501beeabb6dd8a0386a050d41ca72b8513f9a6fe76288"
+        }
+      ],
+      "stop": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-build-cycle1/build-stop.json",
+        "sha256": "b16d2997e83e439896f3d4be94a95162a0cc2cd7354a437383e028c41d8c29fe"
+      },
+      "execution_exit_code": 1,
+      "build_returncodes": [
+        0,
+        0
+      ],
+      "controller_and_child_groups_absent": true,
+      "evidence": "PASS_SEPARATE_SAVED_ARTIFACT_REVIEW",
+      "cleanup": "PASS_FRESH_GROUP_ABSENCE",
+      "original_checker_stop": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-build-cycle1/build-stop.json",
+        "sha256": "b16d2997e83e439896f3d4be94a95162a0cc2cd7354a437383e028c41d8c29fe"
+      },
+      "postexit": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-postexit-cycle1/postexit.json",
+        "sha256": "22b7350a87d6f728f155b99ab87f7e8dd63ab266c3cf1cdbbbee245fb214f280"
+      },
+      "final_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-saved-consumer-cycle2/review.json",
+        "sha256": "5e1710ca7e99f8364ab628642dd25d617820990260f65a0b2ce3307230f7b0dc"
+      },
+      "original_execution_evidence": "STOPPED_CHECKER_ASSERTION_PRESERVED"
     }
   },
   "platform_build_original_blocked_review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-build-definition-cycle3/review.json",
     "sha256": "b9cd602a8139a5f8546a2843fe453805219115dc1ebcdb6d52399755829a463d"
+  },
+  "platform_build_proposal_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-build-definition-cycle4/review.json",
+    "sha256": "35360850a488ad5bc1e974cd6e3556cd0b383dcdbf044b77f6ae771d65a13df1"
+  },
+  "platform_original_checker_stop": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-build-cycle1/build-stop.json",
+    "sha256": "b16d2997e83e439896f3d4be94a95162a0cc2cd7354a437383e028c41d8c29fe"
+  },
+  "platform_saved_consumer_first_stop": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-saved-consumer-cycle1/diagnostic-stop.json",
+    "sha256": "e9878bfe23cfc1a2b5302401ca51532ba2c4d8f89735eff31541b7949a7a39ac"
+  },
+  "platform_postexit": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-postexit-cycle1/postexit.json",
+    "sha256": "22b7350a87d6f728f155b99ab87f7e8dd63ab266c3cf1cdbbbee245fb214f280"
+  },
+  "platform_saved_compilation_context": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-saved-consumer-cycle2/receipt.json",
+    "sha256": "b1da1668ab68bf7d6756c2085172bdf2156820f9867313332cefab16787779eb"
+  },
+  "platform_saved_context_controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-saved-consumer-cycle2/controls.json",
+    "sha256": "fdfa6730f252f1116708797c2580f376d7a6d45323b1f8d3e8ddbc231599abc1"
+  },
+  "platform_compilation_final_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-macos-saved-consumer-cycle2/review.json",
+    "sha256": "5e1710ca7e99f8364ab628642dd25d617820990260f65a0b2ce3307230f7b0dc"
+  },
+  "platform_completed_sub_obligations": {
+    "macOS_arm64_compilation": "Independent source/compiler/object/link/product/result/timeliness/cleanup review PASS for Internal/Core/RUM at e1b6, two original completed builds and zero tests.",
+    "Swift_membership": {
+      "DatadogInternal": 160,
+      "DatadogCore": 79,
+      "DatadogRUM": 145
+    },
+    "CObjC_membership": {
+      "DatadogInternal": 0,
+      "DatadogCore": 2,
+      "DatadogRUM": 1
+    },
+    "complete_link_membership": {
+      "DatadogInternal": 161,
+      "DatadogCore": 82,
+      "DatadogRUM": 147
+    },
+    "scope": "Compile component only; no runtime, universal architecture, other platform, minimumSwift6.2,wholeP6D6/PR6/F12/performance/API/hardware credit.",
+    "original_failures_preserved": true,
+    "builds_repeated": 0,
+    "gates_closed": []
+  },
+  "remaining_platform_metadata": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/remaining-platform-metadata-cycle1/xcode-metadata.json",
+    "sha256": "2518f11f3a4199ea95bf42e24ad65bd2a84b0e5e3d4d54c9f41e54897b3f3c3e"
+  },
+  "next_platform_build_definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-tvos-build-definition-cycle1/definition.json",
+    "sha256": "48bbdf105422c4e32dee2612e5174f2fdbaecfa9fb04ba49546bab72d7881846"
   }
 }
