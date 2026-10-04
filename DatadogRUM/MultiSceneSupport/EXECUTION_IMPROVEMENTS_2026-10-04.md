@@ -32,7 +32,7 @@ Verified on 4 October 2026:
 | /Users/valentin.pertuisot/work/dd-sdk-ios | valpertui/multiple-windows-scenes | f4faf99c76ae6a1534cae11949ee52dc57dbb8ff at handoff inspection; main session remains active until its checkpoint | Main plan, evidence records and historical project branch |
 | /Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/worktree | valpertui/s3-handoff-activation | e1b6d5e5af36bbbad48ee74dccf7675f86376b9a | Current rebuilt, feature-flagged S3 SDK source |
 
-The SDK directory is a separate Git repository with its own .git directory, despite being named "worktree". Its SDK commit objects are absent from the main repository. Therefore git log, including --all, in the main checkout cannot display this source history. The SDK repository was clean at inspection. These commits have not been integrated into the main repository by this handoff.
+At the original handoff, the SDK directory was a separate Git repository with its own .git directory, and its commit objects were absent from the main repository. On 4 October, the user explicitly requested linking it to the main checkout. It is now a registered worktree on `valpertui/s3-handoff-activation`; its history is visible from the main repository. Both detached fixture worktrees were registered with their files and indices preserved. The original Git metadata and verification receipt are retained under `rum-continue-20261003-fp13e2hd/git-link-main-20261004-cycle1/`. This metadata linkage did not merge branches or resume execution.
 
 The audited SDK range is 2d3de2170248c386a5e7f7de4477ecd703e0c504..e1b6d5e5af36bbbad48ee74dccf7675f86376b9a:
 
@@ -56,7 +56,7 @@ git -C /Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-contin
 git -C /Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/worktree diff --stat 2d3de2170248c386a5e7f7de4477ecd703e0c504 e1b6d5e5af36bbbad48ee74dccf7675f86376b9a
 ```
 
-P1 must keep this source-location map visible. Do not merge, fetch into shared state, relocate, delete or publish this repository merely to improve visibility. Preserve the actual source before any separately reviewed promotion.
+P1 must keep this source-location map visible. The explicitly requested local linkage is complete; do not merge, relocate, delete or publish the SDK worktree merely to improve visibility. Preserve the actual source before any separately reviewed promotion.
 
 ## Assessment baseline
 
