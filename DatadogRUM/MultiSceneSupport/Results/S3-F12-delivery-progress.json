@@ -98,10 +98,10 @@
       "off_contract": "Current DDApplication/DDEvent swizzle calls previous IMP once; no new installation/scene lookup/handoff read/owner allocation",
       "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
       "rebuild_obligation": "Core capability declared PR2; allocate only after resolved On, propagate to already-existing network provider without module imports or extra Off locks",
-      "status": "FOUNDATIONS_AND_INPUT_HANDLER_WIRING_COMPONENTS_QUALIFIED",
+      "status": "FOUNDATIONS_AND_PRIVATE_INPUT_COMPONENTS_QUALIFIED",
       "owning_record": "Results/S3-PR6-action-preparation.json",
       "whole_F12_closed": false,
-      "remaining": "Input handler/wiring qualifies63On27/48fallback17.5, with exact source/build/result joins, final review and cleanup PASS. Four compiled UIKit runtime controls remain unqualified. Minimal host linkedSDK15: primitive-only, no rebuilt27 policy credit. Hosted runtime/cleanup, genuine attached ownership, scroll/platform/source-paired Off/minimum6.2/wholePR6/F12 remain open. Original failed67 preserved."
+      "remaining": "Input adapter/wiring and typed UIKit runtime component qualifies115invocations/67methods at signedb19953812, with exact source/build/result joins, final review and cleanup PASS. Registered host linkedSDK15: primitive-only, no rebuilt27 policy credit; console duplicates retained/no warning-free claim. Next source-backed scroll design must resolve shared proxy reuse and terminal start-view ownership. Genuine attached ownership, scroll/platform/source-paired Off/minimum6.2/wholePR6/F12 remain open. Prior stops and separate restoration preserved."
     },
     {
       "id": "PR7",
@@ -223,5 +223,5 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": 1791060990.161257
+  "updated_at": 1791076554.192395
 }

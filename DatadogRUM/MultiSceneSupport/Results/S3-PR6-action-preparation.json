@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "INPUT_COMPONENT_CHECKPOINTED_NEXT_SCROLL_DESIGN",
+  "state": "SCROLL_PRIVATE_IMPLEMENTATION",
   "delivery_slice": "PR6",
   "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9",
   "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/worktree",
@@ -28,13 +28,13 @@
   ],
   "controls_defined": 22,
   "design_reviewer": "/root/h10_backend_reviewer",
-  "next_action": "Admit the exact reviewed target-only resource correction and four UIKit test selectors. Require actual generated host Info/custody before native and finalized selected results/cleanup, then actual-context and final component review. Source5/accepted63/48 reused; original stops remain immutable. No wholePR6/F12/API/hardware credit.",
+  "next_action": "Implement only the reviewed P6D3 private scroll slice and22 finite controls in the isolated SDK checkout; obtain exact source/control review before compiler/native admission. Preserve stable proxy identity, queue-only actual generated action claim and terminal preflight, nil captured context, legacy Off behavior and accepted source-paired limitations. Reuse qualified input evidence.",
   "implementation_admitted": true,
   "native_admitted": false,
   "native_runs": 6,
   "sdk_edits": 6,
   "gates_closed": [],
-  "updated_at": 1791073218.023722,
+  "updated_at": 1791077207.1909618,
   "previous_definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/next-pr6-controls-definition.json",
     "sha256": "7b374396fc3b8a33818520301d7a2ca3a56c53e7be70360e25fdfd154ece0e4e"
@@ -1835,7 +1835,17 @@
   "input_sdk_head": "b19953812e83da63571b2d771d88e28d6389c6be",
   "input_qualified_scope": "Private source input adapter/feature wiring, preserved legacy/fallback and actual typed Void UIApplication forwarding/lifecycle:115 invocations/67 distinct cases. Genuine attached source, scroll/platform, source-paired Off and wholePR6/F12/API/hardware remain held.",
   "next_scroll_design_preparation": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/next-scroll-design-questions-cycle2.json",
-    "sha256": "38f59213e04bd7931c7bca35a190ae02ab1eb1c01ba59d79ec61803374c1be33"
-  }
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-design-review-cycle3/design.json",
+    "sha256": "047756c7138eea6054c18b8676ed831adb4887e202d545e54310bf20f482aa21"
+  },
+  "next_scroll_design_decisions_remaining": [],
+  "scroll_design_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-design-review-cycle3/design-review.json",
+    "sha256": "74854dd59d909ce4ae9d3169f77b862a6a8d09dad6587101f3bfa45df41b6842"
+  },
+  "scroll_implementation_definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-implementation-cycle1/definition.json",
+    "sha256": "f5c04965e5a6c765ead6e5523fdd8646d270488b39cd4064f69618417bff5597"
+  },
+  "scroll_native_admitted": false
 }
