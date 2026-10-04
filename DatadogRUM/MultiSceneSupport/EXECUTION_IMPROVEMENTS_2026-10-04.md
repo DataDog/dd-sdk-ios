@@ -1,6 +1,6 @@
 # S2/S3 execution improvements — 4 October 2026
 
-Status: approved for implementation when the user manually resumes the main session. Do not start implementation before that resume.
+Status: implementation resumed by the user on 4 October. Current P1–P5 state and decisive evidence are owned by [implementation progress](Results/execution-improvements-20261004.json).
 
 This document preserves the five proposals reviewed in the side conversation and converts them into bounded implementation tasks. It does not change any release verdict or qualify an SDK build.
 
@@ -126,7 +126,7 @@ Every unfinished item has one unambiguous next action; S2 has no added campaign;
 
 Owner: harness implementer and designated independent reviewer.
 Dependency: P1 acceptance boundaries.
-Status: approved for manual-resume implementation; not started by side conversation.
+Status: composition implemented and reviewed; the single automatic qualification stopped before tool dispatch. The path remains stopped; no human invitation is qualified.
 
 Scope:
 - Existing automatic-coverage human_rum_only_runtime.py, human_supported_readiness/continuation and foreground capture/finalization paths as needed.
@@ -159,7 +159,7 @@ If the mechanism fails its one native qualification, stop that automated path. P
 
 Owner: tooling implementer and designated reviewer.
 Dependency: P1; independent of human availability.
-Status: approved for manual-resume implementation; not started by side conversation.
+Status: implemented and qualified by the required visionOS build and independent actual-output review; accepted macOS output also passes saved replay. Compilation credit only.
 
 Scope:
 - Existing build/test orchestration and actual-output consumers used by current PR6 platform work.
@@ -189,7 +189,7 @@ The next supported platform runs through parameters and a bounded adapter, witho
 
 Owner: main implementer and designated reviewer.
 Dependency: P1; apply during ordinary checkpoints.
-Status: approved for manual-resume implementation; not started by side conversation.
+Status: implemented and reviewed for bounded platform parameter-only eligibility. This grants no new native authority or deadline extension.
 
 Scope:
 - Existing reviewer assignment/manifest validation.
@@ -219,7 +219,7 @@ Routine runs reuse reviewed machinery while consequential changes retain indepen
 
 Owner: SDK implementer and independent reviewer; API reviewers own F01.
 Dependency: P1; P3/P4 help execution but must not become an indefinite prerequisite.
-Status: approved for manual-resume implementation; not started by side conversation.
+Status: PR4/PR5 exclusive-Off fixture implemented in linked verification copies; native comparison and final review remain.
 
 Scope:
 - Existing PR1–13 rebuilt feature-flag delivery chain and its tests.

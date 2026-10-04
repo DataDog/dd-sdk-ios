@@ -292,28 +292,28 @@ reads with phase boundaries and distinguish app-process CPU/hangs from global
 physical-display FPS estimates/hitches. Strict offline decoder controls cannot
 qualify native exported formats, installed code, recorder readiness or cleanup.
 
-The physical runner binds runtime helpers separately when a reviewed host-only
-correction leaves fixture/compiler/product bytes unchanged. Keep the original
-build plan and failed attempts. CoreDevice launch options must precede the bundle
-ID, after which tokens are app arguments. A clean install and matching pre-SDK
-receipt cannot substitute for recorder readiness; stop failed qualification before
-claiming workload or performance evidence. Bind the launched PID and executable/app
-directory to the installed product, then retain one current process inventory just
-before attachment. This proves point-in-time visibility only; the process can still
-disappear before the recorder starts. On failed attachment, preserve the original
-error and one bounded process read before cleanup. Neither snapshot can substitute
-for recorder readiness or the trace's exact process lifetime. See the owner for
-current admission.
+The physical runner binds reviewed host-only helpers separately when fixture, compiler and product bytes stay unchanged.
+Preserve original plans and failures. CoreDevice launch options precede the bundle ID; later tokens are app arguments. Clean
+installation and pre-SDK receipts cannot replace recorder readiness. Bind fresh launched PID/executable to the installed
+product before attachment; point-in-time visibility does not prove recorder readiness or exact process lifetime. On
+attachment failure retain the original error and one bounded process read before cleanup.
 
 ## Integration lifecycle qualification
 
-The [EXP227 owner](../Results/EXP-227-integration-fixture-repair-definition.json)
-binds the fresh plan, controls, review and four changed fixtures to actual full-target
-membership with diagnostics disabled. Preserve consumed diagnostic roots; they grant
-no replay admission. Only cleanup may let lingering ibtoold settle within its original
-budget: retain actual inventories and require no workers. Builds/preflight stop immediately.
+The [EXP227 owner](../Results/EXP-227-integration-fixture-repair-definition.json) binds the fresh plan, controls, review and
+four changed fixtures to actual full-target membership with diagnostics disabled. Preserve consumed diagnostic roots; they
+grant no replay admission. Only cleanup may let lingering ibtoold settle within its original budget: retain actual
+inventories and require no workers. Builds/preflight stop immediately.
 
-Cross-language transport controls must preserve actual native payload bytes.
-Canonical encoding may bind identity-only envelopes; do not require Python to
-reserialize Swift floating-point geometry identically. The [H06 fixture contract](../../../tools/multi-scene/acceptance/README.md#h06-operation-preparation)
-separates file-channel qualification from app wiring and post-setup View ownership.
+Cross-language transport controls must preserve actual native payload bytes. Canonical encoding may bind identity-only
+envelopes; do not require Python to reserialize Swift floating-point geometry identically. The [H06 fixture
+contract](../../../tools/multi-scene/acceptance/README.md#h06-operation-preparation) separates file-channel qualification
+from app wiring and post-setup View ownership.
+
+ ## Parameterized platform qualification
+
+`tools/multi-scene/platform_qualification.py` consumes owning definition/review refs, serializes Core/RUM builds, retains
+owned outcomes and grades complete source/compiler/ object/link/product/result inventories. `replay <receipt-path> <sha256>
+<fresh-output-file>` grades saved bytes without rebuilding or reissuing a clock; command success and evidence completeness
+stay separate. [P3](../Results/execution-improvements-20261004.json) owns actual positive replay/native qualification;
+watchOS nominal9/binary26 remains explicit.

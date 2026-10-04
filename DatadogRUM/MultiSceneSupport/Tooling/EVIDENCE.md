@@ -288,3 +288,15 @@ Display markers must bind the existing one-use host request and exact native
 witness. Fresh decoded owner pixels qualify only that anchor; they do not prove
 whole-window visibility, uninterrupted usability or lifecycle continuity. Keep
 those native obligations and actual supported-source qualification separate.
+
+
+## Bounded reuse of design review
+
+The [execution-improvement owner](../Results/execution-improvements-20261004.json)
+binds the reviewed platform reuse policy to exact code, controls and source.
+Only fresh sibling output paths, creation time and the corresponding operational
+cutoff/command output arguments may differ. Source, scope, assertions, lifecycle,
+process control or cleanup changes require independent review. Eligibility grants
+no admission, repeat attempt, release credit or extension of an issued deadline.
+Give the designated reviewer one complete consequential packet; write facts once
+at the owner and regenerate derived progress at a meaningful checkpoint.

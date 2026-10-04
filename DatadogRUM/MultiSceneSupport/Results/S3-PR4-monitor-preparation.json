@@ -13,7 +13,7 @@
     "PR3 local source/components and bounded Off obligations qualified",
     "PR6 is future handoff activation; PR5 future real manual-handler conformance; PR13 future public wrappers"
   ],
-  "next_action": "Prepare PR5 from the actual qualified PR4 local commit, then implement/review its finite scene-handler deliverables. WholeF12, public API, activation and hardware gates remain separate.",
+  "next_action": "Complete the source-paired exclusive-Off contract under execution-improvements-20261004.json. Reuse accepted components and full suites; PR6 follows only after these obligations qualify.",
   "native_admitted": false,
   "native_runs": 5,
   "sdk_edits": 7,

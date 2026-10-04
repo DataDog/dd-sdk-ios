@@ -282,39 +282,36 @@ inventory against actual writer and END_REQUESTED receipts. This is not an SDK
 queue-drain promise. Qualify the Home-only mechanism before repeating operator
 gestures; later foreground activation or restoration cannot repair the old run.
 
-Export app JSONL, runner checkpoints/hierarchy/images, console and partial xcresult
-before uninstall. Bind each to this run and contiguous sequence. Preserve raw
-bytes even if parsing fails; ignore foreign receipts and reject symlinks. Cleanup
-must run after attempted boot/install, including preparation failures, and retain
-capture errors alongside the primary failure.
+Export app JSONL, runner checkpoints/hierarchy/images, console and partial xcresult before uninstall. Bind each to this run
+and contiguous sequence. Preserve raw bytes even if parsing fails; ignore foreign receipts and reject symlinks. Cleanup must
+run after attempted boot/install, including preparation failures, and retain capture errors alongside the primary failure.
 
-Reap matched task processes, remove only task bundles, prove absence and restore
-owned state. Keep failed cleanup and later restoration separate. During cleanup
-reactivation, a same-owner inactive snapshot stays pending within the fixed budget;
-only active topology plus native-input idle permits teardown, never Home credit.
-Preserve errors and stable identity; only declared inventory usage/size may vary.
+Reap matched task processes, remove only task bundles, prove absence and restore owned state. Keep failed cleanup and later
+restoration separate. During cleanup reactivation, a same-owner inactive snapshot stays pending within the fixed budget; only
+active topology plus native-input idle permits teardown, never Home credit. Preserve errors and stable identity; only
+declared inventory usage/size may vary.
 
-After reconnecting a physical device, resolve its installed bundle and fresh PID.
-A reused PID alone does not identify the old run. Verify a different process before
-termination, then read a fresh inventory proving absence. Transport loss leaves
-cleanup unverified; continue cleanup after reconnection without repeating a passing
-capture. Restore temporarily authorized system preferences, and stop only the
-owned keep-awake process at the agreed boundary.
+After reconnecting a physical device, resolve its installed bundle and fresh PID. A reused PID alone does not identify the
+old run. Verify a different process before termination, then read a fresh inventory proving absence. Transport loss leaves
+cleanup unverified; continue cleanup after reconnection without repeating a passing capture. Restore temporarily authorized
+system preferences, and stop only the owned keep-awake process at the agreed boundary.
 
-On pause, preserve source/definition/helpers/controls and the original deadline.
-Close the attempt, release the host and write the sole next action in the cursor.
-A later execution needs fresh discovery and a separate bounded admission; it does
+On pause, preserve source/definition/helpers/controls and the original deadline. Close the attempt, release the host and
+write the sole next action in the cursor. A later execution needs fresh discovery and a separate bounded admission; it does
 not silently extend the old run or repeat accepted tests.
 
-For generic accessibility objects, retain exact public identifier provenance. A
-nonconforming object may expose the documented getter: verify selector support and
-object-return ABI before invoking it, then accept only an actual string. Labels,
-frames, private selectors and KVC cannot replace a missing fixture identifier.
-Fixture compilation and mock controls remain separate from native qualification.
+For generic accessibility objects, retain exact public identifier provenance. Check selector support and object-return ABI
+before the documented getter; accept only actual strings. Labels, frames, private selectors or KVC do not replace
+identifiers. Fixture compilation and mocks do not qualify native behavior.
 
-An explicitly reviewed physical supported-input mode uses remote PID/executable
-identity and actual device/session observations. Never reuse simulator process
-checks or invent operator readiness. Its [fixture procedure](../../../tools/multi-scene/interactive-transitions/README.md)
-binds every ordered effect and independently completed worker before collection.
-The final Home may follow native idle only as a contact-free command; failed input
+Reviewed physical supported-input mode binds remote PID/executable and actual device/session observations; never reuse
+simulator process checks or invent readiness. The [fixture procedure](../../../tools/multi-scene/interactive-
+transitions/README.md) binds ordered effects and completed workers. Contact-free Home requires native idle; failed input
 needs separate cleanup-only idle proof. Uncertain delivery defers teardown.
+
+## Current complete-path qualification boundary
+
+[P2](../Results/execution-improvements-20261004.json) stopped before tool dispatch on missing bridge configuration; no app
+launch/SDK defect. The offline fix does not reopen it. Preserve INVALID verdicts and separate limited restoration. A
+materially distinct supported route must qualify Start/return/persist/End/seal/saved grading/task cleanup before humans. Keep
+preparation/operator/scenario clocks separate; no deadline extension.

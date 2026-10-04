@@ -28,7 +28,7 @@
   ],
   "controls_defined": 22,
   "design_reviewer": "/root/h10_backend_reviewer",
-  "next_action": "Wait for the user manual resume. Then read EXECUTION_IMPROVEMENTS_2026-10-04.md completely and implement P1 then P2, useful P3/P5 when human prerequisites absent, P4 at ordinary checkpoints. PR6/platform queue is backlog for reconciliation; no automatic successor build or human sitting.",
+  "next_action": "P5: complete PR4/PR5 exclusive-Off, then current_exit_packet. VisionOS compile component is reviewed; minimum Swift6.2, configured automatic/attached input, SC22 and concrete Off obligations remain.",
   "implementation_admitted": true,
   "native_admitted": false,
   "native_runs": 6,
@@ -3403,6 +3403,54 @@
         "sha256": "88359546e37c7f9c11fc6beb6c8498d65d8b3ea61203d2269f05c021c565f276"
       },
       "original_execution_evidence": "STOPPED_CHECKER_ASSERTION_PRESERVED"
+    },
+    "p3_parameterized_visionos_20261004": {
+      "state": "REVIEWED_VISIONOS_COMPILE_COMPONENT_ONLY",
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p3-p4-visionos-definition/definition.json",
+        "sha256": "4bba1b7bb0480adc29c1c07c5de9c827e52aa549d6a7bd951d3f6814b47398af"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p3-p4-visionos-definition/review.json",
+        "sha256": "80c8b8b9c0b1abe9f6a2b62b2fe5fba2eed416afc3b2667d8cefa9da8fa048e9"
+      },
+      "executor": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/platform_qualification.py",
+        "sha256": "6c5a2f2985b556905c3e69a255291cf87003c1b4f4d4125e85fdca279554e615"
+      },
+      "source_head": "e1b6d5e5af36bbbad48ee74dccf7675f86376b9a",
+      "output_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p3-visionos-build",
+      "gates_closed": [],
+      "attempts": 1,
+      "controller_pid": 89621,
+      "controller_pgid": 89621,
+      "command_index": 1,
+      "outcomes": [
+        {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p3-visionos-build/build-0-outcome.json",
+          "sha256": "5825bcdec89b1f528f616a07b2e4bb92c771cbdbfa0deb20e6177a46afe0eace"
+        },
+        {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p3-visionos-build/build-1-outcome.json",
+          "sha256": "4b6f78f878eb0b3d8d25c297167af75eb81d2e167d1775c85e86ffb8f96330ef"
+        }
+      ],
+      "receipt": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p3-visionos-build/receipt.json",
+        "sha256": "eb34e8011d2fb05bbf9fe4c1fad0fbbfd32f07106bb3814c3ff6e289b0f1f819"
+      },
+      "actual_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p3-visionos-build/review.json",
+        "sha256": "3c731f1796cc1913dae20d2e57b46c4db6fc3f5347bef439ef801da24ab57eb8"
+      },
+      "postexit": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p3-visionos-build/postexit.json",
+        "sha256": "075b0e3bf061375c0c821518e4a05e853d3c20a4b3d56115efc1bcee3b228416"
+      },
+      "commands_run": 2,
+      "controller_and_child_groups_absent": true,
+      "evidence": "PASS_COMPILATION_ONLY",
+      "cleanup": "PASS_FRESH_GROUP_ABSENCE"
     }
   },
   "platform_build_original_blocked_review": {
@@ -3566,14 +3614,15 @@
   },
   "current_exit_packet": {
     "plan": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
-      "sha256": "92016adbadf1c433c083d5ae1c4912fb503c885eda13fecb1d066f71271b1fb0"
+      "path": "DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
+      "sha256": "dc9551e10c134c123dcbbe1f4403f9ef3269b09eecee45a2937ba651e2d32c5c"
     },
     "dependency": "PR4/PR5 exclusive-Off",
     "source_head": "e1b6d5e5af36bbbad48ee74dccf7675f86376b9a",
     "reused": [
       "Accepted input/scroll/SC21 component and Off semantics at recorded sources",
-      "Accepted macOS/tvOS/watchOS compile evidence and explicit watchOS floor limitation"
+      "Accepted macOS/tvOS/watchOS compile evidence and explicit watchOS floor limitation",
+      "Reviewed visionOS arm64 compilation at frozen e1b6; no runtime claim"
     ],
     "missing": [
       "Configured automatic factory/native callthrough",

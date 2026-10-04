@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "state": "P1_COMPLETE_P2_IMPLEMENTATION_SELECTED",
+  "state": "P1_P3_P4_COMPLETE_P2_STOPPED_P5_OFF_FIXTURE_REVIEW_PENDING",
   "owner": "/root",
   "plan": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
-    "sha256": "92016adbadf1c433c083d5ae1c4912fb503c885eda13fecb1d066f71271b1fb0"
+    "path": "DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
+    "sha256": "dc9551e10c134c123dcbbe1f4403f9ef3269b09eecee45a2937ba651e2d32c5c"
   },
-  "selected": "P2",
-  "native_admitted": false,
-  "native_runs": 0,
+  "selected": "P5_EXCLUSIVE_OFF",
+  "native_admitted": true,
+  "native_runs": 2,
   "gates_closed": [],
-  "next_action": "Compose separate preparation/operator/scenario clocks and sealed finalization with the existing prearmed service; qualify once automatically before human invitation.",
+  "next_action": "Review and qualify the shared PR4/PR5 exclusive-Off fixture, then finish the finite PR6 exit packet. P2 requires a materially distinct supported route; no invitation or equivalent retry.",
   "p1": {
     "required_s2_tasks": 3,
     "required_s3_tasks": 20,
@@ -37,5 +37,130 @@
     },
     "gates_closed": [],
     "protected_state": "UNCHANGED"
+  },
+  "p2": {
+    "state": "STOPPED_AUTOMATIC_QUALIFICATION_UNQUALIFIED",
+    "plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-composition-qualified-identity/runtime/runtime-plan.json",
+      "sha256": "3e8200cfb0d7163867983c237ff896e0d00ddf1fb9dc9fa2306873ecded50a80"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-stopped-correction-tests.txt",
+      "sha256": "e5d5607335fd2b9b815fca6b902e74a1e36652f2313b196f8eb78b60951110d6"
+    },
+    "focused_tests_passed": 28,
+    "pre_admission_stop": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-pre-admission-stop.json",
+      "sha256": "e1ca09061f889a080794f7e9d1431cc3ea911b9d6bc3e3825382195188f048de"
+    },
+    "stopped_owner": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-composition-final2/runtime/owner-service/owner-outcome.json",
+      "sha256": "96a1848ab0bccb349463e885a257adb7cfe25b868e5f901ceb7f1e11b356b0f2"
+    },
+    "native_calls": 0,
+    "native_qualifications": 1,
+    "remaining": [
+      "Use a materially distinct documented supported capture route; automatic path remains stopped",
+      "Actual complete capture-to-saved-grading/cleanup qualification before human invitation",
+      "Physical orientation and UIKit candidate"
+    ],
+    "gates_closed": [],
+    "qualification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-composition-qualified-identity/runtime/qualification.json",
+      "sha256": "fe9bc41bfc578827d338cc3f9f87bb1e7122f118a6b7a6ceb11c8f585e560a42"
+    },
+    "actual_owner": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-composition-qualified-identity/runtime/owner-service/owner-outcome.json",
+      "sha256": "7bf3f7e7b1c4181d55a68d455c555fb054cb517ccd887af779576174757796f3"
+    },
+    "separate_restoration": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-composition-qualified-identity/runtime/separate-restoration/restoration.json",
+      "sha256": "12f70bc8f262040c19e16304ab663bd5afa4e319463ab747bb418c4a0fc772b1"
+    },
+    "subsequent_restoration_verification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-composition-qualified-identity/runtime/post-restoration-verification/receipt.json",
+      "sha256": "61dc52110622b37eed78cc404447ed2dc56e8143ffce1797bf9b2b1c479bd8a6"
+    },
+    "original_source_preservation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-original-source-preservation/mapping.json",
+      "sha256": "c3777aabf35860c3e647c391bcd1db1091bfbf5c7dedc53fcce1fbd31694fda7"
+    },
+    "failure": "Missing bridge configuration.bundle stopped the watcher before dispatch; zero MCP invocations, no app launch. Offline correction does not authorize an equivalent retry.",
+    "restoration_limit": "Original complete installed-app metadata was not persisted; subsequent verification proves task absence, original device/display identity and worker absence only.",
+    "offline_correction_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-stopped-correction-review.json",
+      "sha256": "d16086cc4679eda3e066438196e6b5b9555f682c6794cbb996f6d18fa42f28c5"
+    }
+  },
+  "p3": {
+    "state": "QUALIFIED_VISIONOS_COMPILATION_ONLY",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p3-p4-visionos-definition/definition.json",
+      "sha256": "4bba1b7bb0480adc29c1c07c5de9c827e52aa549d6a7bd951d3f6814b47398af"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p3-p4-tests.txt",
+      "sha256": "c3199936583dcb61e73c20d2053a28f6be30e301be247f185194ab87d72b43bb"
+    },
+    "focused_tests_passed": 21,
+    "actual_saved_macos_replay": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p3-p4-saved-macos-replay.json",
+      "sha256": "db05cffd46997c35f626cb947ed9d125fce13b82812702366d6885b7f48b0223"
+    },
+    "native_runs_added": 2,
+    "remaining": [],
+    "gates_closed": [],
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p3-p4-visionos-definition/review.json",
+      "sha256": "80c8b8b9c0b1abe9f6a2b62b2fe5fba2eed416afc3b2667d8cefa9da8fa048e9"
+    },
+    "actual_visionos_receipt": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p3-visionos-build/receipt.json",
+      "sha256": "eb34e8011d2fb05bbf9fe4c1fad0fbbfd32f07106bb3814c3ff6e289b0f1f819"
+    },
+    "postexit": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p3-visionos-build/postexit.json",
+      "sha256": "075b0e3bf061375c0c821518e4a05e853d3c20a4b3d56115efc1bcee3b228416"
+    },
+    "actual_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p3-visionos-build/review.json",
+      "sha256": "3c731f1796cc1913dae20d2e57b46c4db6fc3f5347bef439ef801da24ab57eb8"
+    },
+    "builds": 2,
+    "frameworks": 3,
+    "linked_objects": 390,
+    "warning_limit": "Inherited compiler warnings retained; no runtime, deployment-floor or release-gate claim."
+  },
+  "p4": {
+    "state": "REVIEWED_BOUNDED_PARAMETER_REUSE",
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p3-p4-visionos-definition/review.json",
+      "sha256": "80c8b8b9c0b1abe9f6a2b62b2fe5fba2eed416afc3b2667d8cefa9da8fa048e9"
+    },
+    "scope": "Platform design-review eligibility only; output/timestamp changes under the exact approved policy. Source/code/scope/assertion/cleanup changes require review; no native authority or deadline extension.",
+    "gates_closed": []
+  },
+  "p5": {
+    "state": "EXCLUSIVE_OFF_FIXTURE_IMPLEMENTED_REVIEW_PENDING",
+    "source_heads": [
+      "2d3de2170248c386a5e7f7de4477ecd703e0c504",
+      "06e87120c8d88204f32b6821840ef8a4f0c6c41d",
+      "8cd7793d31fdde07b3b1821dd1413fc69cfe3070"
+    ],
+    "scope": "One common deterministic Monitor plus legacy instrumentation Off fixture, reused PR4 middle cell for both adjacent comparisons; source-matched accepted full suites preserved.",
+    "sdk_edits": 0,
+    "tests_run": 0,
+    "gates_closed": [],
+    "fixture": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/DefaultOffMonitorTraceTests.swift",
+      "sha256": "37b862bf69c3a56ebf86c019a37fa1ab25aa020587429f368e0446d890f06386"
+    },
+    "source_locations": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/source-locations.json",
+      "sha256": "05e942c351485621907c965850cd5ef0d25f1f19a0d2ff20c2e20f802611c1ac"
+    },
+    "test_methods": 6,
+    "scenarios": 9,
+    "planned_cells": 6
   }
 }

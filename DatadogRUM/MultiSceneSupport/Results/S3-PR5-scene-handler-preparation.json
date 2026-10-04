@@ -17,7 +17,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/next-pr5-design-review.json",
     "sha256": "01ec81d5973247250dd2a3c4a1227fbe8e6ef882a6bcd27a8b6dcea92f576bd6"
   },
-  "next_action": "Prepare finite PR6 action/handoff design from the qualified PR5 parent, resolve On-only owner activation and default-Off obligations before implementation; do not repeat accepted components/full suites or infer whole F12 closure.",
+  "next_action": "Complete the source-paired exclusive-Off contract under execution-improvements-20261004.json. Reuse accepted components and full suites; PR6 follows only after these obligations qualify.",
   "native_admitted": false,
   "native_runs": 4,
   "sdk_edits": 5,
