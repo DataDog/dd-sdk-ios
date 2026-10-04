@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "PLATFORM_MACOS_COMPONENT_REVIEWED_NEXT_TVOS_PREPARATION",
+  "state": "PLATFORM_COMPILE_SUBOBLIGATIONS_PROGRESSING",
   "delivery_slice": "PR6",
   "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9",
   "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/worktree",
@@ -28,13 +28,13 @@
   ],
   "controls_defined": 22,
   "design_reviewer": "/root/h10_backend_reviewer",
-  "next_action": "Prepare and review the finite two-command tvOS Core/RUM build successor, using the accepted cutoff/custody and actual compiler/object/link/dylib contract. Fresh installed SDK supportsarm64/minimum15; no native admission yet. Then watchOS/visionOS compilation. Reuse accepted macOS/input/scroll/suites; runtime/performance/minSwift6.2/wholePR6/F12 remain held.",
+  "next_action": "Independent watchOS proposal review, then one finite two-command compile-only lane. VisionOS follows. Preserve both accepted platform builds; no complete P6D6/PR6/F12 or runtime credit.",
   "implementation_admitted": true,
   "native_admitted": false,
   "native_runs": 6,
   "sdk_edits": 6,
   "gates_closed": [],
-  "updated_at": "2026-10-04T13:23:10.354727+00:00",
+  "updated_at": 1791122397.1914098,
   "previous_definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/next-pr6-controls-definition.json",
     "sha256": "7b374396fc3b8a33818520301d7a2ca3a56c53e7be70360e25fdfd154ece0e4e"
@@ -3227,7 +3227,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-source-audit-cycle2/assessment.json",
     "sha256": "19ca7446d6de4bc0741c5f5d870c58453b833ad633c57482c086a58299ab9bfe"
   },
-  "platform_state": "MACOS_ARM64_SOURCE_COMPILATION_COMPONENT_REVIEWED_OTHER_PLATFORMS_HELD",
+  "platform_state": "MACOS_AND_TVOS_COMPILE_COMPONENTS_REVIEWED_WATCHOS_PROPOSED",
   "platform_source_original_blocked_review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-source-audit-cycle1/review.json",
     "sha256": "00c0241a37810952095c564d7d921ee78b29ac22092bb7fb85f9466ea815981b"
@@ -3316,6 +3316,66 @@
         "sha256": "5e1710ca7e99f8364ab628642dd25d617820990260f65a0b2ce3307230f7b0dc"
       },
       "original_execution_evidence": "STOPPED_CHECKER_ASSERTION_PRESERVED"
+    },
+    "platform_tvos_core_rum_cycle1": {
+      "state": "REVIEWED_TVOS_COMPILE_COMPONENT_ONLY",
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-tvos-build-definition-cycle1/definition.json",
+        "sha256": "02a8aba2e8b2aa525a83e38caf225d092c352d5751b72cbc288a0067a769f95d"
+      },
+      "executor": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-tvos-build-definition-cycle1/build-platform.py",
+        "sha256": "f7de916615e518e09b950e023adc6001da160b04a717f77e23522144ab4e25dc"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-tvos-build-definition-cycle1/review.json",
+        "sha256": "1b649139c380baf2ab94eb580e95f72d57ad849f63e3a8b564895908ed8e73ed"
+      },
+      "source_head": "e1b6d5e5af36bbbad48ee74dccf7675f86376b9a",
+      "output_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-tvos-build-cycle1",
+      "commands_run": 2,
+      "attempts": 1,
+      "gates_closed": [],
+      "admitted_at": 1791121602.308237,
+      "original_cutoff": 1791127342.14206,
+      "controller_pid": 69615,
+      "controller_pgid": 69615,
+      "command_index": 1,
+      "outcomes": [
+        {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-tvos-build-cycle1/build-0-outcome.json",
+          "sha256": "3b81cb5bb357b0f42e577d5a0f2141b0cf58632b13e9eb5915c5ba10045008cb"
+        },
+        {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-tvos-build-cycle1/build-1-outcome.json",
+          "sha256": "e224bded5529b151cb4ad61b70139fcc36be06605ddf413a2b7e87ac6c219fc9"
+        }
+      ],
+      "receipt": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-tvos-build-cycle1/receipt.json",
+        "sha256": "f0f2e03d0b5b571d7300eda011bd416c9f4ee5d4b0f24c51a59d3cc46985a0da"
+      },
+      "actual_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-tvos-build-cycle1/review.json",
+        "sha256": "632a8c1696e04c7e9b3bdb2d82aa973701cbf4f188494b87e49b8b66d7853d53"
+      }
+    },
+    "platform_watchos_core_rum_cycle1": {
+      "state": "PROPOSED_NOT_ADMITTED",
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-watchos-build-definition-cycle1/definition.json",
+        "sha256": "092d70687bcd97e4929da96d278efb61cf5c07f61aef0819b2522b1d6a9fa9a1"
+      },
+      "executor": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-watchos-build-definition-cycle1/build-platform.py",
+        "sha256": "83d17ff23d1c3af601d6b768d4a04e039727d5bdf93e38a3eb896206ad8aa632"
+      },
+      "review": null,
+      "source_head": "e1b6d5e5af36bbbad48ee74dccf7675f86376b9a",
+      "output_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-watchos-build-cycle1",
+      "commands_run": 0,
+      "attempts": 0,
+      "gates_closed": []
     }
   },
   "platform_build_original_blocked_review": {
@@ -3370,14 +3430,51 @@
     "scope": "Compile component only; no runtime, universal architecture, other platform, minimumSwift6.2,wholeP6D6/PR6/F12/performance/API/hardware credit.",
     "original_failures_preserved": true,
     "builds_repeated": 0,
-    "gates_closed": []
+    "gates_closed": [],
+    "tvOS_arm64_compilation": "Independent source/compiler/object/link/product/result/timeliness/cleanup review PASS for Internal/Core/RUM at e1b6, two original completed builds and zero tests."
   },
   "remaining_platform_metadata": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/remaining-platform-metadata-cycle1/xcode-metadata.json",
     "sha256": "2518f11f3a4199ea95bf42e24ad65bd2a84b0e5e3d4d54c9f41e54897b3f3c3e"
   },
   "next_platform_build_definition": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-tvos-build-definition-cycle1/definition.json",
-    "sha256": "48bbdf105422c4e32dee2612e5174f2fdbaecfa9fb04ba49546bab72d7881846"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-watchos-build-definition-cycle1/definition.json",
+    "sha256": "092d70687bcd97e4929da96d278efb61cf5c07f61aef0819b2522b1d6a9fa9a1"
+  },
+  "next_platform_build_executor": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-watchos-build-definition-cycle1/build-platform.py",
+    "sha256": "83d17ff23d1c3af601d6b768d4a04e039727d5bdf93e38a3eb896206ad8aa632"
+  },
+  "next_platform_build_controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-watchos-build-definition-cycle1/controls.json",
+    "sha256": "db14a07693a014be1a9f045cd5a14f43004f072685890f56bd310f505d4a7164"
+  },
+  "tvos_build_proposal_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-tvos-build-definition-cycle1/review.json",
+    "sha256": "1b649139c380baf2ab94eb580e95f72d57ad849f63e3a8b564895908ed8e73ed"
+  },
+  "tvos_build_postexit": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-tvos-postexit-cycle1/postexit.json",
+    "sha256": "af67e32cf09a00f8f68bf829f84c00f8c45bea85be9b869a4c4754ffd73cac44"
+  },
+  "tvos_build_component_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-tvos-build-cycle1/review.json",
+    "sha256": "632a8c1696e04c7e9b3bdb2d82aa973701cbf4f188494b87e49b8b66d7853d53"
+  },
+  "tvos_build_actual_receipt": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-tvos-build-cycle1/receipt.json",
+    "sha256": "f0f2e03d0b5b571d7300eda011bd416c9f4ee5d4b0f24c51a59d3cc46985a0da"
+  },
+  "watchos_build_definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-watchos-build-definition-cycle1/definition.json",
+    "sha256": "092d70687bcd97e4929da96d278efb61cf5c07f61aef0819b2522b1d6a9fa9a1"
+  },
+  "watchos_build_executor": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-watchos-build-definition-cycle1/build-platform.py",
+    "sha256": "83d17ff23d1c3af601d6b768d4a04e039727d5bdf93e38a3eb896206ad8aa632"
+  },
+  "watchos_build_controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/platform-watchos-build-definition-cycle1/controls.json",
+    "sha256": "db14a07693a014be1a9f045cd5a14f43004f072685890f56bd310f505d4a7164"
   }
 }
