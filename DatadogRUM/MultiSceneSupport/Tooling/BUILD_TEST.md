@@ -31,7 +31,7 @@ When reusing a binary, retain its original
 build, source, configuration and complete product fingerprint. Freeze every Mach-O,
 including the Debug dylib; a launcher stub hash alone cannot distinguish static-SDK
 arms. Bind final linker search paths and resolved SDK archives. Reclassify a saved
-artifact offline when possible rather than rebuilding to repair its classifier.
+artifact offline when possible rather than rebuilding to repair its classifier. If the original checkout advanced, recover its exact qualified bytes from the accepted checkpoint and record a reviewed source-only mapping. Keep original compiler paths, objects, products, results and clocks; a new saved-artifact inspection window grants no native rerun.
 
 The repository's SPM helper can rename the workspace. Use an isolated package for
 checks that would disturb protected workspace state. Do not modify build scripts
