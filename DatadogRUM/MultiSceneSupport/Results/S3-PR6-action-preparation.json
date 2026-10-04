@@ -2777,7 +2777,7 @@
     "scope": "SC21 sub-obligations only. Allocation/performance,SC22,genuine attached/platform/minSwift6.2,wholePR6/F12/API/hardware remain held.",
     "gates_closed": []
   },
-  "scroll_sc21_next": "No accepted cell/suite rerun. Define remaining allocation/performance and actual-constructor-failure disposition separately; continue finite inputOff source/detector review now.",
+  "scroll_sc21_next": "SC21 and paired inputOff semantic/helper-zero evidence are accepted at their recorded source. Reuse without reruns. Retain concrete Off state, allocation, lock and lifetime review plus SC22 constructor-failure disposition; timing/performance campaigns are excluded. The P1/P5 current exit packet selects PR4/PR5 exclusive-Off first, then the fixed PR6 residual assertions.",
   "scroll_sc21_last_execution": {
     "state": "QUALIFIED_ORIGINAL_CLEANUP_PASS_POST_CONSUMER_GROUPS_ABSENT",
     "key": "scroll_off_current_ios175_cycle3",
@@ -3540,7 +3540,7 @@
   },
   "execution_improvement_plan": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
-    "sha256": "c0a3a3e2204e5a66f39b10ca4b5c261a16a95a8071ebc23958dbef4c3691b901"
+    "sha256": "92016adbadf1c433c083d5ae1c4912fb503c885eda13fecb1d066f71271b1fb0"
   },
   "backlog_visionos_proposal": {
     "definition": {
@@ -3563,5 +3563,29 @@
   "backlog_manual_platform_rollup": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/manual-platform-rollup-preparation-cycle1/packet.json",
     "sha256": "6a2f401f069921ff40f270d55192117c98dc407a5b380aea5b299b0fe35f854b"
+  },
+  "current_exit_packet": {
+    "plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
+      "sha256": "92016adbadf1c433c083d5ae1c4912fb503c885eda13fecb1d066f71271b1fb0"
+    },
+    "dependency": "PR4/PR5 exclusive-Off",
+    "source_head": "e1b6d5e5af36bbbad48ee74dccf7675f86376b9a",
+    "reused": [
+      "Accepted input/scroll/SC21 component and Off semantics at recorded sources",
+      "Accepted macOS/tvOS/watchOS compile evidence and explicit watchOS floor limitation"
+    ],
+    "missing": [
+      "Configured automatic factory/native callthrough",
+      "Genuine attached ownership",
+      "SC22 constructor-failure disposition",
+      "Concrete Off allocation/state/lock/lifetime disposition",
+      "Remaining platform/minimum Swift6.2 assertions"
+    ],
+    "excluded": [
+      "Timing/performance campaign",
+      "Accepted suite or cell reruns",
+      "Whole PR6/F12 closure from components"
+    ]
   }
 }

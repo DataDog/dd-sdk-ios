@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "state": "P1_COMPLETE_P2_IMPLEMENTATION_SELECTED",
+  "owner": "/root",
+  "plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
+    "sha256": "92016adbadf1c433c083d5ae1c4912fb503c885eda13fecb1d066f71271b1fb0"
+  },
+  "selected": "P2",
+  "native_admitted": false,
+  "native_runs": 0,
+  "gates_closed": [],
+  "next_action": "Compose separate preparation/operator/scenario clocks and sealed finalization with the existing prearmed service; qualify once automatically before human invitation.",
+  "p1": {
+    "required_s2_tasks": 3,
+    "required_s3_tasks": 20,
+    "delivery_slices": 13,
+    "tests": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p1-tests.txt",
+      "sha256": "44d4341d304d19e18fa2239e7a50879faa373d5eb6c073b67aaa9f21ab59983e"
+    },
+    "focused_tests_passed": 40,
+    "review_findings_addressed": [
+      "PR1 exact owning head restored",
+      "Current qualification schema, contradictory states and foreign source controls",
+      "PR6 accepted input/SC21 selectors and concrete footprint limits",
+      "EXP-195 stopped input route retained"
+    ],
+    "state": "PASS",
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p1-review.json",
+      "sha256": "644422480bde861b502a3e98bffe2d3d784aeba9da5d1f2e26dc6ff20d4bd4e4"
+    },
+    "derived_generation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p1-generation.txt",
+      "sha256": "d7f676326b76bde74b95257113b0c1defcba1df909c11d55b9432d70aacaa126"
+    },
+    "gates_closed": [],
+    "protected_state": "UNCHANGED"
+  }
+}

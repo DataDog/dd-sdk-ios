@@ -52,6 +52,43 @@ class ReleaseChecklistTests(unittest.TestCase):
                    "decisive_test": "follow-up", "environment": "Duo", "evidence": None, "required": False}}
         return register
 
+    def remaining_register(self):
+        register = self.release_register()
+        register['source_locations'] = {'S2': dict(repository='/release/source', branch='owner/source',
+             head='a' * 40, scope='Frozen production', promotion='Private')}
+        register['releases'][1]['remaining_tasks'] = [dict(id='candidate', gates=['S2:C07'],
+            owner='Implementer', owner_record='Results/candidate.json', dependencies=[], source_scope='S2',
+            missing_assertion='Candidate occurrence owner', next_action='Capture one candidate', reuse=['Accepted baseline'],
+            environment='Duo simulator', exit='Exact ownership and cleanup', obligation='RELEASE_BLOCKING')]
+        return register
+
+    def test_remaining_tasks_cover_required_open_gates_without_granting_credit(self):
+        register = self.remaining_register()
+        CHECKLIST.validate(register)
+        self.assertEqual(register['gates'][1]['release_requirements']['S2']['status'], 'OPEN')
+        register['releases'][1]['remaining_tasks'][0]['gates_closed'] = ['S2:C07']
+        with self.assertRaisesRegex(ValueError, 'cannot declare admission or verdict'): CHECKLIST.validate(register)
+
+    def test_remaining_tasks_reject_missing_fields_optional_scope_and_duplicate_next_actions(self):
+        for key in ['owner', 'owner_record', 'missing_assertion', 'next_action', 'exit', 'environment']:
+            register = self.remaining_register(); del register['releases'][1]['remaining_tasks'][0][key]
+            with self.subTest(key=key), self.assertRaisesRegex(ValueError, 'missing ' + key): CHECKLIST.validate(register)
+        register = self.remaining_register(); register['releases'][1]['remaining_tasks'][0]['obligation'] = 'OPTIONAL_DIAGNOSTIC'
+        with self.assertRaisesRegex(ValueError, 'cannot become optional'): CHECKLIST.validate(register)
+        register = self.remaining_register(); duplicate = copy.deepcopy(register['releases'][1]['remaining_tasks'][0]); duplicate['id']='other'
+        register['releases'][1]['remaining_tasks'].append(duplicate)
+        with self.assertRaisesRegex(ValueError, 'duplicate next actions'): CHECKLIST.validate(register)
+
+    def test_remaining_tasks_reject_stale_source_and_missing_required_gate(self):
+        register = self.remaining_register(); register['source_locations']['S2']['head']='old label'
+        with self.assertRaisesRegex(ValueError, 'invalid source identity'): CHECKLIST.validate(register)
+        register = self.remaining_register(); register['releases'][1]['remaining_tasks'][0]['source_scope']='S3'
+        with self.assertRaisesRegex(ValueError, 'stale or foreign'): CHECKLIST.validate(register)
+        register = self.remaining_register(); register['releases'][1]['remaining_tasks'][0]['gates']=['S2:F04']
+        with self.assertRaisesRegex(ValueError, 'foreign or optional'): CHECKLIST.validate(register)
+        register = self.remaining_register(); register['gates'][4]['release_requirements']['S2']['required']=True
+        with self.assertRaisesRegex(ValueError, 'missing a finite next action'): CHECKLIST.validate(register)
+
     def test_closed_gate_requires_evidence_and_known_dependencies(self):
         register = self.register()
         register["gates"][0]["status"] = "CLOSED"

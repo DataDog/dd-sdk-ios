@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 import release_work as work
 
 
@@ -132,6 +133,70 @@ class CurrentWorkTests(unittest.TestCase):
         changed = copy.deepcopy(self.owner); changed['current']['remaining_matrix'] = self.matrix[1:]
         changed['swiftui_preparation']['matrix'] = self.matrix[1:2]
         work.validate_coverage(self.base, changed)
+
+    def delivery(self):
+        for ident, (name, field, artifact_field) in work.DELIVERY_SOURCES.items():
+            path = self.base / name
+            owner = json.loads(path.read_text()) if path.exists() else {}
+            value = 'a' * 40
+            if artifact_field:
+                checkpoint = self.base / (ident + '-checkpoint.json')
+                checkpoint.write_text(json.dumps({artifact_field: value}))
+                value = dict(path=str(checkpoint), sha256=hashlib.sha256(checkpoint.read_bytes()).hexdigest())
+            owner[field] = value
+            path.write_text(json.dumps(owner))
+        return dict(rows=[dict(id='PR' + str(i), source_head='a' * 40 if i <= 6 else None,
+            owning_record=work.DELIVERY_SOURCES['PR' + str(i)][0] if i <= 6 else None,
+            qualification=dict(implementation='PRIVATE_IMPLEMENTED' if i <= 6 else 'NOT_IMPLEMENTED',
+                               component='QUALIFIED' if i <= 6 else 'NOT_EXECUTED',
+                               off='PARTIAL_QUALIFIED' if i <= 6 else 'NOT_EXECUTED', integration='NOT_QUALIFIED'),
+            whole_F12_closed=False, next_action='Complete exact Off evidence', remaining_assertion='Helper-zero')
+                         for i in range(1, 14)])
+
+    def test_delivery_dimensions_do_not_inherit_release_or_integration_credit(self):
+        progress=self.delivery(); work.validate_delivery_progress(progress, self.base)
+        progress['rows'][0]['qualification']['integration']='QUALIFIED'
+        with self.assertRaisesRegex(ValueError, 'contradicts'): work.validate_delivery_progress(progress, self.base)
+        progress=self.delivery(); progress['rows'][0]['whole_F12_closed']=True
+        with self.assertRaisesRegex(ValueError, 'cannot close whole F12'): work.validate_delivery_progress(progress, self.base)
+
+    def test_delivery_source_and_missing_dimensions_reject(self):
+        progress=self.delivery(); progress['rows'][0]['source_head']='short head'
+        with self.assertRaisesRegex(ValueError, 'source head'): work.validate_delivery_progress(progress, self.base)
+        for dimension in ('off', None):
+            progress=self.delivery()
+            if dimension: del progress['rows'][0]['qualification'][dimension]
+            else: del progress['rows'][0]['qualification']
+            with self.subTest(dimension=dimension), self.assertRaisesRegex(ValueError, 'dimensions missing'):
+                work.validate_delivery_progress(progress, self.base)
+        progress=self.delivery(); progress['rows'].append(copy.deepcopy(progress['rows'][0]))
+        with self.assertRaisesRegex(ValueError, 'finite PR1-13'): work.validate_delivery_progress(progress, self.base)
+
+    def test_delivery_rejects_null_implemented_source_foreign_sha_and_contradictory_states(self):
+        for change in (dict(source_head=None), dict(source_head='b' * 40), dict(owning_record='Results/foreign.json')):
+            progress=self.delivery(); progress['rows'][0].update(change)
+            with self.subTest(change=change), self.assertRaises(ValueError): work.validate_delivery_progress(progress, self.base)
+        for key, value in (('implementation', 'NOT_IMPLEMENTED'), ('off', 'MADE_UP'), ('component', 'QUALIFIED')):
+            progress=self.delivery(); row=progress['rows'][0 if key != 'component' else 6]
+            row['qualification'][key]=value
+            with self.subTest(key=key), self.assertRaises(ValueError): work.validate_delivery_progress(progress, self.base)
+        progress=self.delivery(); (self.base / 'PR4-checkpoint.json').write_text(json.dumps({'head': 'b' * 40}))
+        with self.assertRaisesRegex(ValueError, 'checkpoint changed'): work.validate_delivery_progress(progress, self.base)
+
+    def test_source_map_rejects_stale_inventory_live_head_and_unlinked_git_directory(self):
+        root=self.base / 'repository'; results=root / work.BASE / 'Results'; results.mkdir(parents=True)
+        member=dict(branch='owner/source', path=str(self.base / 'source'), linked=True, head_at_verification='a' * 40)
+        (results / 'git-delivery-worktree-inventory.json').write_text(json.dumps({'registered_named_worktrees': [member]}))
+        register=dict(source_locations={'S2': dict(repository=member['path'], branch=member['branch'], head='a' * 40)})
+        with patch('subprocess.check_output', side_effect=['a' * 40, member['branch'], str(root / '.git')]):
+            work.validate_source_locations(root, register)
+        register['source_locations']['S2']['head']='b' * 40
+        with self.assertRaisesRegex(ValueError, 'linked inventory'): work.validate_source_locations(root, register)
+        register['source_locations']['S2']['head']='a' * 40
+        with patch('subprocess.check_output', side_effect=['b' * 40]), self.assertRaisesRegex(ValueError, 'advanced'):
+            work.validate_source_locations(root, register)
+        with patch('subprocess.check_output', side_effect=['a' * 40, member['branch'], str(root / 'standalone/.git')]), self.assertRaisesRegex(ValueError, 'not linked'):
+            work.validate_source_locations(root, register)
 
     def residual(self):
         return dict(schema_version=2, current=dict(kind='package_preparation', package='background',

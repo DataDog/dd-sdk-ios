@@ -96,7 +96,7 @@ Strict timing/performance campaigns, optional networking benchmarks, unrelated C
 
 Owner: main implementer; user reviews material acceptance/product changes.
 Dependency: none.
-Status: approved for manual-resume implementation; not started by side conversation.
+Status: implemented; validation and independent review are recorded in the owning implementation progress.
 
 Scope:
 - release-gates.json and owning result records.

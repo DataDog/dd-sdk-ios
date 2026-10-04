@@ -617,25 +617,25 @@
           },
           {
             "id": "S3:C07",
-            "status": "ENVIRONMENT BLOCKED",
+            "status": "OPEN",
             "owner": "SDK implementer",
             "dependencies": []
           },
           {
             "id": "S3:C08",
-            "status": "ENVIRONMENT BLOCKED",
+            "status": "OPEN",
             "owner": "SDK implementer",
             "dependencies": []
           },
           {
             "id": "S3:C09",
-            "status": "ENVIRONMENT BLOCKED",
+            "status": "OPEN",
             "owner": "SDK implementer",
             "dependencies": []
           },
           {
             "id": "S3:C10",
-            "status": "ENVIRONMENT BLOCKED",
+            "status": "OPEN",
             "owner": "SDK implementer",
             "dependencies": []
           },

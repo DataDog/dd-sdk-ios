@@ -261,11 +261,11 @@
       "release_requirements": {
         "S3": {
           "scope": "UIKit automatic view non-regression after an iOS 27 rebuild",
-          "status": "ENVIRONMENT BLOCKED",
+          "status": "OPEN",
           "dependencies": [],
           "decisive_test": "EXP-195 fixed automatic-only stack/split matrix: paired pre-scene/current SDK and genuine SDK26.5/27.1 builds on regular iPhone27.0 and Duo27.1. Qualify actual inputs and geometry; preserve existing view/action detection, names, counts and owner relationships; classify every difference and close only with no new unexplained degradation. Also execute the separately defined eight SDK27 Duo source-paired cells with only the manifest flag true and exactly one actual native scene; no other UI families added.",
-          "environment": "Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04",
-          "evidence": "EXP-195 qualifies16 regular cells,16 SDK27 Duo cells across both scene-manifest settings and the bounded split replay2. SDK27 source pairs show no new foreground detection/name/owner loss in these fixtures; UIKit manifest-true Detail ownership improves and baseline SwiftUI generic fold churn varies. Original old-build Duo matrix remains8 cells short. Both modern XCTest probes lose their runner after Open; the bounded external collector stops after its initial button tap because the switch produces no native effect. Original failures, unchanged app identities and cleanup are retained. No SDK defect or old-app usability verdict; resume only with a materially changed input environment. Results/EXP-195-automatic-tracking.json owns the four classified inventories and all limits.",
+          "environment": "Available Xcode26.6 SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators. Physical Duo remains F04.",
+          "evidence": "EXP-195 qualifies16 regular cells,16 SDK27 Duo cells across both scene-manifest settings and the bounded split replay2. SDK27 source pairs show no new foreground detection/name/owner loss in these fixtures; UIKit manifest-true Detail ownership improves and baseline SwiftUI generic fold churn varies. Original old-build Duo matrix remains8 cells short. Both modern XCTest probes lose their runner after Open; the bounded external collector stops after its initial button tap because the switch produces no native effect. Original failures, unchanged app identities and cleanup are retained. No SDK defect or old-app usability verdict; resume only with a materially changed input environment. Results/EXP-195-automatic-tracking.json owns the four classified inventories and all limits. P1 fresh4October discovery confirms installed toolchains and available Duo27.1/older17.5 runtimes. This removes the stale environment label only; final flagged-source coverage remains unexecuted.",
           "required": true
         },
         "S2": {
@@ -296,11 +296,11 @@
       "release_requirements": {
         "S3": {
           "scope": "UIKit automatic action non-regression after an iOS 27 rebuild",
-          "status": "ENVIRONMENT BLOCKED",
+          "status": "OPEN",
           "dependencies": [],
           "decisive_test": "EXP-195 fixed automatic-only stack/split matrix: paired pre-scene/current SDK and genuine SDK26.5/27.1 builds on regular iPhone27.0 and Duo27.1. Qualify actual inputs and geometry; preserve existing view/action detection, names, counts and owner relationships; classify every difference and close only with no new unexplained degradation. Also execute the separately defined eight SDK27 Duo source-paired cells with only the manifest flag true and exactly one actual native scene; no other UI families added.",
-          "environment": "Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04",
-          "evidence": "EXP-195 qualifies16 regular cells,16 SDK27 Duo cells across both scene-manifest settings and the bounded split replay2. SDK27 source pairs show no new foreground detection/name/owner loss in these fixtures; UIKit manifest-true Detail ownership improves and baseline SwiftUI generic fold churn varies. Original old-build Duo matrix remains8 cells short. Both modern XCTest probes lose their runner after Open; the bounded external collector stops after its initial button tap because the switch produces no native effect. Original failures, unchanged app identities and cleanup are retained. No SDK defect or old-app usability verdict; resume only with a materially changed input environment. Results/EXP-195-automatic-tracking.json owns the four classified inventories and all limits.",
+          "environment": "Available Xcode26.6 SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators. Physical Duo remains F04.",
+          "evidence": "EXP-195 qualifies16 regular cells,16 SDK27 Duo cells across both scene-manifest settings and the bounded split replay2. SDK27 source pairs show no new foreground detection/name/owner loss in these fixtures; UIKit manifest-true Detail ownership improves and baseline SwiftUI generic fold churn varies. Original old-build Duo matrix remains8 cells short. Both modern XCTest probes lose their runner after Open; the bounded external collector stops after its initial button tap because the switch produces no native effect. Original failures, unchanged app identities and cleanup are retained. No SDK defect or old-app usability verdict; resume only with a materially changed input environment. Results/EXP-195-automatic-tracking.json owns the four classified inventories and all limits. P1 fresh4October discovery confirms installed toolchains and available Duo27.1/older17.5 runtimes. This removes the stale environment label only; final flagged-source coverage remains unexecuted.",
           "required": true
         },
         "S2": {
@@ -331,11 +331,11 @@
       "release_requirements": {
         "S3": {
           "scope": "SwiftUI automatic view non-regression after an iOS 27 rebuild",
-          "status": "ENVIRONMENT BLOCKED",
+          "status": "OPEN",
           "dependencies": [],
           "decisive_test": "EXP-195 fixed automatic-only stack/split matrix: paired pre-scene/current SDK and genuine SDK26.5/27.1 builds on regular iPhone27.0 and Duo27.1. Qualify actual inputs and geometry; preserve existing view/action detection, names, counts and owner relationships; classify every difference and close only with no new unexplained degradation. Also execute the separately defined eight SDK27 Duo source-paired cells with only the manifest flag true and exactly one actual native scene; no other UI families added.",
-          "environment": "Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04",
-          "evidence": "EXP-195 qualifies16 regular cells,16 SDK27 Duo cells across both scene-manifest settings and the bounded split replay2. SDK27 source pairs show no new foreground detection/name/owner loss in these fixtures; UIKit manifest-true Detail ownership improves and baseline SwiftUI generic fold churn varies. Original old-build Duo matrix remains8 cells short. Both modern XCTest probes lose their runner after Open; the bounded external collector stops after its initial button tap because the switch produces no native effect. Original failures, unchanged app identities and cleanup are retained. No SDK defect or old-app usability verdict; resume only with a materially changed input environment. Results/EXP-195-automatic-tracking.json owns the four classified inventories and all limits.",
+          "environment": "Available Xcode26.6 SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators. Physical Duo remains F04.",
+          "evidence": "EXP-195 qualifies16 regular cells,16 SDK27 Duo cells across both scene-manifest settings and the bounded split replay2. SDK27 source pairs show no new foreground detection/name/owner loss in these fixtures; UIKit manifest-true Detail ownership improves and baseline SwiftUI generic fold churn varies. Original old-build Duo matrix remains8 cells short. Both modern XCTest probes lose their runner after Open; the bounded external collector stops after its initial button tap because the switch produces no native effect. Original failures, unchanged app identities and cleanup are retained. No SDK defect or old-app usability verdict; resume only with a materially changed input environment. Results/EXP-195-automatic-tracking.json owns the four classified inventories and all limits. P1 fresh4October discovery confirms installed toolchains and available Duo27.1/older17.5 runtimes. This removes the stale environment label only; final flagged-source coverage remains unexecuted.",
           "required": true
         },
         "S2": {
@@ -366,11 +366,11 @@
       "release_requirements": {
         "S3": {
           "scope": "SwiftUI automatic action non-regression after an iOS 27 rebuild",
-          "status": "ENVIRONMENT BLOCKED",
+          "status": "OPEN",
           "dependencies": [],
           "decisive_test": "EXP-195 fixed automatic-only stack/split matrix: paired pre-scene/current SDK and genuine SDK26.5/27.1 builds on regular iPhone27.0 and Duo27.1. Qualify actual inputs and geometry; preserve existing view/action detection, names, counts and owner relationships; classify every difference and close only with no new unexplained degradation. Also execute the separately defined eight SDK27 Duo source-paired cells with only the manifest flag true and exactly one actual native scene; no other UI families added.",
-          "environment": "Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04",
-          "evidence": "EXP-195 qualifies16 regular cells,16 SDK27 Duo cells across both scene-manifest settings and the bounded split replay2. SDK27 source pairs show no new foreground detection/name/owner loss in these fixtures; UIKit manifest-true Detail ownership improves and baseline SwiftUI generic fold churn varies. Original old-build Duo matrix remains8 cells short. Both modern XCTest probes lose their runner after Open; the bounded external collector stops after its initial button tap because the switch produces no native effect. Original failures, unchanged app identities and cleanup are retained. No SDK defect or old-app usability verdict; resume only with a materially changed input environment. Results/EXP-195-automatic-tracking.json owns the four classified inventories and all limits.",
+          "environment": "Available Xcode26.6 SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators. Physical Duo remains F04.",
+          "evidence": "EXP-195 qualifies16 regular cells,16 SDK27 Duo cells across both scene-manifest settings and the bounded split replay2. SDK27 source pairs show no new foreground detection/name/owner loss in these fixtures; UIKit manifest-true Detail ownership improves and baseline SwiftUI generic fold churn varies. Original old-build Duo matrix remains8 cells short. Both modern XCTest probes lose their runner after Open; the bounded external collector stops after its initial button tap because the switch produces no native effect. Original failures, unchanged app identities and cleanup are retained. No SDK defect or old-app usability verdict; resume only with a materially changed input environment. Results/EXP-195-automatic-tracking.json owns the four classified inventories and all limits. P1 fresh4October discovery confirms installed toolchains and available Duo27.1/older17.5 runtimes. This removes the stale environment label only; final flagged-source coverage remains unexecuted.",
           "required": true
         },
         "S2": {
@@ -3281,7 +3281,99 @@
           "evidence_owner": "release-gates.json"
         }
       ],
-      "measurement_rule": "strategy_decision.project_measurement_rule"
+      "measurement_rule": "strategy_decision.project_measurement_rule",
+      "remaining_tasks": [
+        {
+          "id": "swiftui-split-candidate",
+          "gates": [
+            "S2:C09",
+            "S2:C10",
+            "S2:H14"
+          ],
+          "owner": "SDK implementer; Device operator + SDK implementer",
+          "owner_record": "Results/S2-coverage-remaining-preparation.json",
+          "dependencies": [
+            "S2:A01",
+            "S2:F07"
+          ],
+          "source_scope": "S2",
+          "missing_assertion": "One final SwiftUI split candidate has no complete native capture/terminal grading with actual fold proof.",
+          "next_action": "P2 qualifies the complete automatic capture path; then invite only for the existing candidate cell.",
+          "reuse": [
+            "Four accepted SwiftUI cells; separate saved baseline",
+            "Results/S2-foreground-finalization-20261002.json"
+          ],
+          "environment": "Duo27.1 simulator under Xcode27.1; fresh human availability only after automatic bootstrap qualification.",
+          "exit": "Selected assertions, complete scoped evidence and cleanup accepted; named gate verdict assessed separately.",
+          "obligation": "RELEASE_BLOCKING"
+        },
+        {
+          "id": "uikit-transition-candidate",
+          "gates": [
+            "S2:H11",
+            "S2:H13"
+          ],
+          "owner": "Device operator + SDK implementer",
+          "owner_record": "Results/S2-H11-H13-local-continuation.json",
+          "dependencies": [
+            "S2:A01",
+            "S2:F07"
+          ],
+          "source_scope": "S2",
+          "missing_assertion": "Candidate cancel/finish pop and sheet ownership against the accepted physical baseline remains incomplete.",
+          "next_action": "P2 applies reviewed landscape readiness and qualifies capture/sealing/cleanup; then run only the physical UIKit candidate.",
+          "reuse": [
+            "Accepted physical baseline and completed SwiftUI/hosting transitions"
+          ],
+          "environment": "Connected eligible physical iPad; landscapeLeft and working silent capture before invitation.",
+          "exit": "Selected assertions, complete scoped evidence and cleanup accepted; named gate verdict assessed separately.",
+          "obligation": "RELEASE_BLOCKING"
+        },
+        {
+          "id": "final-review",
+          "gates": [
+            "S2:F06"
+          ],
+          "owner": "RUM maintainers",
+          "owner_record": "release-gates.json",
+          "dependencies": [
+            "S2:C01",
+            "S2:C02",
+            "S2:C03",
+            "S2:C04",
+            "S2:C05",
+            "S2:C06",
+            "S2:P03",
+            "S2:P04",
+            "S2:A01",
+            "S2:F02",
+            "S2:F03",
+            "S2:F07",
+            "S2:C07",
+            "S2:C08",
+            "S2:C09",
+            "S2:C10",
+            "S2:H11",
+            "S2:H12",
+            "S2:H13",
+            "S2:H14",
+            "S2:H16",
+            "S2:T03",
+            "S2:T08",
+            "S2:T10",
+            "S2:F08"
+          ],
+          "source_scope": "S2",
+          "missing_assertion": "Final candidate review awaits the two remaining behavioral items.",
+          "next_action": "Review exact S2 source and accepted evidence once both candidate results are sufficient.",
+          "reuse": [
+            "Closed S2 compatibility, lifetime, UIKit, Resource/Trace, WebView, app and hosting evidence"
+          ],
+          "environment": "Source/evidence review; no physical Duo or optional timing campaign.",
+          "exit": "All required S2 verdicts reviewed with no unresolved attributable regression or required evidence gap.",
+          "obligation": "RELEASE_BLOCKING"
+        }
+      ]
     },
     {
       "id": "S3",
@@ -3289,7 +3381,540 @@
       "deadline": null,
       "shipping_rule": "Merge to develop only behind a default-off runtime flag after per-PR Off equivalence, CI and maintainer review; physical Duo is not an open/merge prerequisite. Release requires flagged-head On H-gate requalification, Off/On F03, physical Duo F04 and S3:F06. Provisional branch verdicts remain historical and source-bound.",
       "measurement_rule": "strategy_decision.project_measurement_rule",
-      "flag_integration_owner": "Results/S3-feature-flag-integration-plan.json"
+      "flag_integration_owner": "Results/S3-feature-flag-integration-plan.json",
+      "remaining_tasks": [
+        {
+          "id": "split-navigation",
+          "gates": [
+            "S3:H02"
+          ],
+          "owner": "Device operator + SDK implementer",
+          "owner_record": "Results/S3-human-residual-preparation.json",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "source_scope": "S3",
+          "missing_assertion": "Two real visible A/B chains; distinct RUM occurrences, exact per-scene navigation/action owners, no structural primary/placeholder view.",
+          "next_action": "Map this fixed scenario to the final rebuilt flagged source after its implementing slices; qualify only the missing actual native ownership/assertion.",
+          "reuse": [
+            "Existing fixture/scenario definition and immutable reference evidence; not final-head acceptance"
+          ],
+          "environment": "Physical iPad with two concurrently visible windows and required regular split geometry; physical Duo remains F04.",
+          "exit": "Selected assertions, complete scoped evidence and cleanup accepted; named gate verdict assessed separately.",
+          "obligation": "RELEASE_BLOCKING"
+        },
+        {
+          "id": "peer-and-host-removal",
+          "gates": [
+            "S3:H03",
+            "S3:H08"
+          ],
+          "owner": "Device operator + SDK implementer",
+          "owner_record": "Results/S3-human-residual-preparation.json",
+          "dependencies": [
+            "S3:A01",
+            "S3:D03",
+            "S3:D07"
+          ],
+          "source_scope": "S3",
+          "missing_assertion": "A-emitted work stays on A while B represents. B close preserves A. Separately, actual final A semantic-host removal stops/releases A once, rejects late resurrection and preserves B.",
+          "next_action": "Map this fixed scenario to the final rebuilt flagged source after its implementing slices; qualify only the missing actual native ownership/assertion.",
+          "reuse": [
+            "Existing fixture/scenario definition and immutable reference evidence; not final-head acceptance"
+          ],
+          "environment": "Physical iPad with two visible windows; semantic host requires iOS27.",
+          "exit": "Selected assertions, complete scoped evidence and cleanup accepted; named gate verdict assessed separately.",
+          "obligation": "RELEASE_BLOCKING"
+        },
+        {
+          "id": "focus-activation",
+          "gates": [
+            "S3:H04"
+          ],
+          "owner": "Device operator + SDK implementer",
+          "owner_record": "Results/S3-H04-activation-preparation.json",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "source_scope": "S3",
+          "missing_assertion": "Actual activation resolves each Action/Resource pair to the foreground scene and its fresh RUM view occurrence.",
+          "next_action": "Map this fixed scenario to the final rebuilt flagged source after its implementing slices; qualify only the missing actual native ownership/assertion.",
+          "reuse": [
+            "Existing fixture/scenario definition and immutable reference evidence; not final-head acceptance"
+          ],
+          "environment": "Physical iPad; serial activation of two retained scenes.",
+          "exit": "Selected assertions, complete scoped evidence and cleanup accepted; named gate verdict assessed separately.",
+          "obligation": "RELEASE_BLOCKING"
+        },
+        {
+          "id": "isolated-background-foreground",
+          "gates": [
+            "S3:H10"
+          ],
+          "owner": "Device operator + SDK implementer",
+          "owner_record": "Results/S3-H10-background-preparation.json",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "source_scope": "S3",
+          "missing_assertion": "A ends and restarts its view across one actual background/foreground cycle while B keeps its native owners and current RUM view; five Action/Resource pairs retain exact scene attribution.",
+          "next_action": "Map this fixed scenario to the final rebuilt flagged source after its implementing slices; qualify only the missing actual native ownership/assertion.",
+          "reuse": [
+            "Existing fixture/scenario definition and immutable reference evidence; not final-head acceptance"
+          ],
+          "environment": "Physical iPad windowing that backgrounds only A while B remains visible and usable.",
+          "exit": "Selected assertions, complete scoped evidence and cleanup accepted; named gate verdict assessed separately.",
+          "obligation": "RELEASE_BLOCKING"
+        },
+        {
+          "id": "inferred-operations",
+          "gates": [
+            "S3:H06"
+          ],
+          "owner": "Device operator + SDK implementer",
+          "owner_record": "Results/S3-H06-silent-capture.json",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "source_scope": "S3",
+          "missing_assertion": "Existing eight calls/four Operations: success A\u2192B, failure A\u2192B(error), parallel alpha A\u2192A and beta B\u2192B ending beta first. Preserve exact per-step view IDs and two visible native scenes through all calls.",
+          "next_action": "Map this fixed scenario to the final rebuilt flagged source after its implementing slices; qualify only the missing actual native ownership/assertion.",
+          "reuse": [
+            "Existing fixture/scenario definition and immutable reference evidence; not final-head acceptance"
+          ],
+          "environment": "Physical iPad with simultaneous visible windows and authenticated raw/reduced RUM Operation retrieval.",
+          "exit": "Selected assertions, complete scoped evidence and cleanup accepted; named gate verdict assessed separately.",
+          "obligation": "RELEASE_BLOCKING"
+        },
+        {
+          "id": "disconnect-and-remount",
+          "gates": [
+            "S3:H09"
+          ],
+          "owner": "Device operator + SDK implementer",
+          "owner_record": "Results/S3-human-residual-preparation.json",
+          "dependencies": [
+            "S3:A01",
+            "S3:D03",
+            "S3:D08",
+            "S3:P03"
+          ],
+          "source_scope": "S3",
+          "missing_assertion": "OS-driven disconnect then live attachment/remount creates a fresh occurrence; stale callbacks stay rejected and peer identity/work continues.",
+          "next_action": "Map this fixed scenario to the final rebuilt flagged source after its implementing slices; qualify only the missing actual native ownership/assertion.",
+          "reuse": [
+            "Existing fixture/scenario definition and immutable reference evidence; not final-head acceptance"
+          ],
+          "environment": "Physical iPad with genuine OS scene disconnect/reconnect, peer remaining alive.",
+          "exit": "Selected assertions, complete scoped evidence and cleanup accepted; named gate verdict assessed separately.",
+          "obligation": "RELEASE_BLOCKING"
+        },
+        {
+          "id": "restoration",
+          "gates": [
+            "S3:H15"
+          ],
+          "owner": "Device operator + SDK implementer",
+          "owner_record": "Results/S3-human-residual-preparation.json",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "source_scope": "S3",
+          "missing_assertion": "Join prepare/relaunch process legs: both native sessions reconnect, each gets a fresh RUM view and neither emits old-run attributes.",
+          "next_action": "Map this fixed scenario to the final rebuilt flagged source after its implementing slices; qualify only the missing actual native ownership/assertion.",
+          "reuse": [
+            "Existing fixture/scenario definition and immutable reference evidence; not final-head acceptance"
+          ],
+          "environment": "Physical iPad preserving two native scene sessions across an actual process restart.",
+          "exit": "Selected assertions, complete scoped evidence and cleanup accepted; named gate verdict assessed separately.",
+          "obligation": "RELEASE_BLOCKING"
+        },
+        {
+          "id": "interactive-navigation",
+          "gates": [
+            "S3:H11",
+            "S3:H12",
+            "S3:H13"
+          ],
+          "owner": "Device operator + SDK implementer",
+          "owner_record": "Results/S3-human-residual-preparation.json",
+          "dependencies": [
+            "S3:A01",
+            "S3:D10"
+          ],
+          "source_scope": "S3",
+          "missing_assertion": "Recognized cancel preserves the outgoing occurrence; recognized completion yields the correct fresh underlying occurrence and callback-work owner. Peer stays unchanged. Cover pop and sheet cancel/finish per declared mode.",
+          "next_action": "Map this fixed scenario to the final rebuilt flagged source after its implementing slices; qualify only the missing actual native ownership/assertion.",
+          "reuse": [
+            "Existing fixture/scenario definition and immutable reference evidence; not final-head acceptance"
+          ],
+          "environment": "Physical iPad human gestures; UIKit automatic and SwiftUI semantic navigation on iOS27, with a live peer.",
+          "exit": "Selected assertions, complete scoped evidence and cleanup accepted; named gate verdict assessed separately.",
+          "obligation": "RELEASE_BLOCKING"
+        },
+        {
+          "id": "hosted-semantic-navigation",
+          "gates": [
+            "S3:H16"
+          ],
+          "owner": "Device operator + SDK implementer",
+          "owner_record": "Results/S3-human-residual-preparation.json",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "source_scope": "S3",
+          "missing_assertion": "The same semantic navigation/lifecycle/work ownership and release behavior under both mounting forms; no duplicate ordinary tracking or cross-scene owner.",
+          "next_action": "Map this fixed scenario to the final rebuilt flagged source after its implementing slices; qualify only the missing actual native ownership/assertion.",
+          "reuse": [
+            "Existing fixture/scenario definition and immutable reference evidence; not final-head acceptance"
+          ],
+          "environment": "Physical iPad on iOS27; matching semantic content in WindowGroup and UIHostingController with a live peer.",
+          "exit": "Selected assertions, complete scoped evidence and cleanup accepted; named gate verdict assessed separately.",
+          "obligation": "RELEASE_BLOCKING"
+        },
+        {
+          "id": "ordinary-api-compatibility",
+          "gates": [
+            "S3:C06"
+          ],
+          "owner": "SDK implementer",
+          "owner_record": "Results/S3-F03-candidate-preparation.json",
+          "dependencies": [
+            "S3:F01"
+          ],
+          "source_scope": "S3",
+          "missing_assertion": "Approved ordinary Swift/ObjC clients and exact-once fallback at the final flagged candidate.",
+          "next_action": "After F01, compile deployment15 clients and execute the already-defined17.5 family fallback cases; disclose15/16 runtime limits.",
+          "reuse": [
+            "Existing compatibility definitions and source-matched component evidence"
+          ],
+          "environment": "Xcode27.1 deployment15 builds; actual iOS17.5(21F79) iPad simulator; exact older-scene behavior stays disabled unless its finite family cases are separately qualified",
+          "exit": "Selected assertions, complete scoped evidence and cleanup accepted; named gate verdict assessed separately.",
+          "obligation": "RELEASE_BLOCKING"
+        },
+        {
+          "id": "api-approval",
+          "gates": [
+            "S3:F01"
+          ],
+          "owner": "RUM API reviewers",
+          "owner_record": "Results/S3-api-availability-plan.json",
+          "dependencies": [
+            "S3:T01",
+            "S3:T02",
+            "S3:T03",
+            "S3:T04",
+            "S3:T05",
+            "S3:T06",
+            "S3:T07",
+            "S3:T15",
+            "S3:R06"
+          ],
+          "source_scope": "S3",
+          "missing_assertion": "Attributable API/flag spelling approval remains absent.",
+          "next_action": "Submit the already-proposed contract for API reviewer disposition; continue private implementation independently.",
+          "reuse": [
+            "Provisional API availability/source audit; no approval credit"
+          ],
+          "environment": "API review; subsequent implementation/qualification in S3:C06 and F03 M02/M03/M10",
+          "exit": "Selected assertions, complete scoped evidence and cleanup accepted; named gate verdict assessed separately.",
+          "obligation": "RELEASE_BLOCKING"
+        },
+        {
+          "id": "support-docs",
+          "gates": [
+            "S3:F02"
+          ],
+          "owner": "SDK implementer",
+          "owner_record": "Results/F02-guide-ownership-audit.json",
+          "dependencies": [
+            "S3:F01"
+          ],
+          "source_scope": "S3",
+          "missing_assertion": "Approved examples and source-matched feature/support documentation.",
+          "next_action": "After F01, adopt approved examples and compile/update docs at the final candidate.",
+          "reuse": [
+            "15-family guide/source audit"
+          ],
+          "environment": "Source/doc review",
+          "exit": "Selected assertions, complete scoped evidence and cleanup accepted; named gate verdict assessed separately.",
+          "obligation": "RELEASE_BLOCKING"
+        },
+        {
+          "id": "final-compatibility",
+          "gates": [
+            "S3:F03"
+          ],
+          "owner": "SDK implementer",
+          "owner_record": "Results/S3-F03-candidate-preparation.json",
+          "dependencies": [
+            "S3:F01",
+            "S3:D01",
+            "S3:D02",
+            "S3:D09",
+            "S3:D11",
+            "S3:D12",
+            "S3:F10",
+            "S3:F12"
+          ],
+          "source_scope": "S3",
+          "missing_assertion": "Final source joins for the fixed11 compatibility cells, approved clients/API and integration.",
+          "next_action": "Complete only missing/changed-source cells after the delivery stack and F01; reuse unchanged membership evidence explicitly.",
+          "reuse": [
+            "Reference runtime/module/platform/client/lint/API results within original source bounds"
+          ],
+          "environment": "CI + supported SDK toolchains",
+          "exit": "Selected assertions, complete scoped evidence and cleanup accepted; named gate verdict assessed separately.",
+          "obligation": "RELEASE_BLOCKING"
+        },
+        {
+          "id": "physical-duo-acceptance",
+          "gates": [
+            "S3:F04"
+          ],
+          "owner": "Device operator",
+          "owner_record": "release-gates.json",
+          "dependencies": [
+            "S3:H01",
+            "S3:H02",
+            "S3:H03",
+            "S3:H04",
+            "S3:H05",
+            "S3:H06",
+            "S3:H07",
+            "S3:H08",
+            "S3:H09",
+            "S3:H10",
+            "S3:H11",
+            "S3:H12",
+            "S3:H13",
+            "S3:H14",
+            "S3:H15",
+            "S3:H16",
+            "S3:F13"
+          ],
+          "source_scope": "S3",
+          "missing_assertion": "The finite native matrix is not accepted on physical Duo.",
+          "next_action": "After the frozen flagged source and simulator qualification, run the same finite scenario matrix on physical Duo.",
+          "reuse": [
+            "Duo simulator capability assessment; not physical equivalence"
+          ],
+          "environment": "iPhone Duo iOS 27.1",
+          "exit": "Selected assertions, complete scoped evidence and cleanup accepted; named gate verdict assessed separately.",
+          "obligation": "RELEASE_BLOCKING"
+        },
+        {
+          "id": "final-release-review",
+          "gates": [
+            "S3:F06"
+          ],
+          "owner": "RUM maintainers",
+          "owner_record": "release-gates.json",
+          "dependencies": [
+            "S3:C01",
+            "S3:C02",
+            "S3:C03",
+            "S3:C04",
+            "S3:C05",
+            "S3:C06",
+            "S3:P03",
+            "S3:P04",
+            "S3:R01",
+            "S3:R02",
+            "S3:R03",
+            "S3:R04",
+            "S3:R05",
+            "S3:R06",
+            "S3:A01",
+            "S3:T01",
+            "S3:T02",
+            "S3:T03",
+            "S3:T04",
+            "S3:T05",
+            "S3:T06",
+            "S3:T07",
+            "S3:T08",
+            "S3:T09",
+            "S3:T10",
+            "S3:T11",
+            "S3:T12",
+            "S3:T13",
+            "S3:T14",
+            "S3:T15",
+            "S3:H01",
+            "S3:H02",
+            "S3:H03",
+            "S3:H04",
+            "S3:H05",
+            "S3:H06",
+            "S3:H07",
+            "S3:H08",
+            "S3:H09",
+            "S3:H10",
+            "S3:H11",
+            "S3:H12",
+            "S3:H13",
+            "S3:H14",
+            "S3:H15",
+            "S3:H16",
+            "S3:F01",
+            "S3:F02",
+            "S3:F03",
+            "S3:F04",
+            "S3:F05",
+            "S3:D01",
+            "S3:D02",
+            "S3:D03",
+            "S3:D04",
+            "S3:D05",
+            "S3:D06",
+            "S3:D07",
+            "S3:D08",
+            "S3:D09",
+            "S3:D10",
+            "S3:D11",
+            "S3:D12",
+            "S3:C07",
+            "S3:C08",
+            "S3:C09",
+            "S3:C10",
+            "S3:A02",
+            "S3:F10",
+            "S3:F11",
+            "S3:F12",
+            "S3:F13"
+          ],
+          "source_scope": "S3",
+          "missing_assertion": "Required final-source semantic, lifetime, privacy, compatibility/API and hardware evidence.",
+          "next_action": "Review final source after all required gates; exclude optional timing and Replay content checks.",
+          "reuse": [
+            "All accepted source-scoped components and native receipts"
+          ],
+          "environment": "Review + CI",
+          "exit": "Selected assertions, complete scoped evidence and cleanup accepted; named gate verdict assessed separately.",
+          "obligation": "RELEASE_BLOCKING"
+        },
+        {
+          "id": "residual-session-readiness",
+          "gates": [
+            "S3:A02"
+          ],
+          "owner": "Harness implementer + user device operator",
+          "owner_record": "Results/S3-human-residual-preparation.json",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "source_scope": "S3",
+          "missing_assertion": "One executable ordered residual route with full capture-to-cleanup composition.",
+          "next_action": "Reuse P2 bootstrap qualification; freeze only declared missing gestures/topologies against the final source.",
+          "reuse": [
+            "Reviewed shared capture primitives; not native composition"
+          ],
+          "environment": "Single host; Duo simulator27.1 and connected eligible iPhone/iPad",
+          "exit": "Selected assertions, complete scoped evidence and cleanup accepted; named gate verdict assessed separately.",
+          "obligation": "RELEASE_BLOCKING"
+        },
+        {
+          "id": "runtime-flag-contract",
+          "gates": [
+            "S3:F10"
+          ],
+          "owner": "SDK implementer + RUM API reviewers",
+          "owner_record": "Results/S3-PR1-runtime-flag.json",
+          "dependencies": [
+            "S3:F11",
+            "S3:F01"
+          ],
+          "source_scope": "S3",
+          "missing_assertion": "Final flag/API approval, Off fallback and current-source resolution join.",
+          "next_action": "Reuse qualified flag/dormant truth tables; review changed current consumers and F01 spelling before promotion.",
+          "reuse": [
+            "312 per-runtime dormant/flag cases at1c103b609; PR3 source-bound Off result"
+          ],
+          "environment": "Fresh develop checkout; deployment15 client builds and supported17.5/27 simulator/toolchains",
+          "exit": "Selected assertions, complete scoped evidence and cleanup accepted; named gate verdict assessed separately.",
+          "obligation": "RELEASE_BLOCKING"
+        },
+        {
+          "id": "delivery-stack",
+          "gates": [
+            "S3:F12"
+          ],
+          "owner": "SDK implementer + independent reviewer",
+          "owner_record": "Results/S3-F12-delivery-progress.json",
+          "dependencies": [
+            "S3:F10",
+            "S3:F11"
+          ],
+          "source_scope": "S3",
+          "missing_assertion": "PR4/PR5 exclusive-Off and remaining PR6-13 fixed slice obligations.",
+          "next_action": "Finish PR4/PR5 exclusive-Off; close the finite PR6 exit packet, then advance the declared slice dependencies.",
+          "reuse": [
+            "PR1-5 private components and PR3 Off; PR6 scoped input/scroll/sync/async/callback/platform receipts"
+          ],
+          "environment": "CI and supported simulator/toolchains; explicit per-PR source/fixture identities",
+          "exit": "Selected assertions, complete scoped evidence and cleanup accepted; named gate verdict assessed separately.",
+          "obligation": "RELEASE_BLOCKING"
+        },
+        {
+          "id": "final-native-requalification",
+          "gates": [
+            "S3:F13"
+          ],
+          "owner": "SDK implementer + device operator",
+          "owner_record": "Results/S3-human-residual-preparation.json",
+          "dependencies": [
+            "S3:F12",
+            "S3:H01",
+            "S3:H02",
+            "S3:H03",
+            "S3:H04",
+            "S3:H05",
+            "S3:H06",
+            "S3:H07",
+            "S3:H08",
+            "S3:H09",
+            "S3:H10",
+            "S3:H11",
+            "S3:H12",
+            "S3:H13",
+            "S3:H14",
+            "S3:H15",
+            "S3:H16"
+          ],
+          "source_scope": "S3",
+          "missing_assertion": "H01-H16 ownership evidence at one frozen rebuilt flagged candidate.",
+          "next_action": "Map/reuse scenario definitions, freeze complete flagged source/product, then execute only required final-source assertions.",
+          "reuse": [
+            "Historical94842cc8 native definitions/controls remain references only"
+          ],
+          "environment": "Duo27.1 simulator under Xcode27.1 plus physical iPadOS27+ for supported simultaneous-window obligations",
+          "exit": "Selected assertions, complete scoped evidence and cleanup accepted; named gate verdict assessed separately.",
+          "obligation": "RELEASE_BLOCKING"
+        },
+        {
+          "id": "automatic-coverage",
+          "gates": [
+            "S3:C07",
+            "S3:C08",
+            "S3:C09",
+            "S3:C10"
+          ],
+          "owner": "SDK implementer",
+          "owner_record": "Results/EXP-195-automatic-tracking.json",
+          "dependencies": [],
+          "source_scope": "S3",
+          "missing_assertion": "Automatic UIKit/SwiftUI no-loss comparisons at final flagged source, including the fixed eight manifest=true single-scene cells.",
+          "next_action": "After the affected UIKit/SwiftUI slices, qualify a materially changed supported input route before the fixed final-source coverage cells. EXP-195 equivalent Open-input retries remain stopped; installed toolchains are not a new discriminator.",
+          "reuse": [
+            "Accepted S2/rebuild journeys and fixed coverage definitions; source applicability remains explicit",
+            "EXP-195 original eight-cell UNQUALIFIED_INPUT blocker and stopped equivalent retries remain immutable"
+          ],
+          "environment": "Available Xcode26.6 SDK26.5 and Xcode27.1; regular iPhone27 and Duo27.1 simulators.",
+          "exit": "Within-run owners and all differences assessed; no timing equality or new UI family.",
+          "obligation": "RELEASE_BLOCKING"
+        }
+      ]
     }
   ],
   "strategy_decision": {
@@ -3443,5 +4068,31 @@
       "historical_branch": "94842cc8",
       "flagged_develop_head": null
     }
+  },
+  "source_locations": {
+    "S2": {
+      "repository": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/s2-rum-lifetime",
+      "branch": "valpertui/s2-rum-lifetime",
+      "head": "7604da24bfb757e8d19314e7183b840fa17d858f",
+      "production_head": "c9faed816a1d4828d7d8c4b64acae01119425889",
+      "scope": "E01+DL01+E04 production; documentation-only successor. Accepted S2 source limits unchanged.",
+      "promotion": "Local release-source worktree; public landing/final review separate."
+    },
+    "S3": {
+      "repository": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/worktree",
+      "branch": "valpertui/s3-handoff-activation",
+      "head": "e1b6d5e5af36bbbad48ee74dccf7675f86376b9a",
+      "scope": "Rebuilt flagged PR1-6 private SDK source; component evidence remains at its recorded exact head, not blanket final-head credit.",
+      "promotion": "Private local implementation only; F01/public promotion and F04 physical acceptance remain open."
+    }
+  },
+  "execution_policy": {
+    "obligations": {
+      "RELEASE_BLOCKING": "Required release assertions and explicitly retained compatibility/lifetime/privacy/ownership checks.",
+      "BEFORE_SLICE_MERGE": "Fixed per-PR On, Off, affected suites and independent review; flag/private API merge rules remain.",
+      "OPTIONAL_DIAGNOSTIC": "Timing/performance campaigns, unrelated CI flakes, optional networking benchmarks and Replay content correctness cannot expand remaining tasks."
+    },
+    "suite_reuse": "Retain fixed per-PR qualification. Reuse unchanged accepted source/compiler/test/product memberships only with an explicit equivalence join; changed behavior/inputs or missing captured evidence requires selected checks. No blanket batching or final-head credit.",
+    "selection": "Every selected action must identify an existing gate/dependency, expected new evidence and finite exit. Preparation never grants release closure."
   }
 }

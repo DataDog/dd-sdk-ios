@@ -19,7 +19,19 @@
       "status": "PRIVATE_COMPONENT_QUALIFIED",
       "owning_record": "Results/S3-PR1-runtime-flag.json",
       "whole_F12_closed": false,
-      "remaining": "Retain qualified dormant/default flag component evidence and prefix PR3 Off evidence; whole delivery/source promotion and CI remain separate."
+      "remaining": "Retain qualified dormant/default flag component evidence and prefix PR3 Off evidence; whole delivery/source promotion and CI remain separate.",
+      "source_head": "21d6d9ceeb6a6764cee4ba5452e4c3977e7ec705",
+      "obligation": "BEFORE_SLICE_MERGE",
+      "qualification": {
+        "implementation": "PRIVATE_IMPLEMENTED",
+        "component": "QUALIFIED",
+        "off": "PREFIX_SOURCE_BOUND",
+        "integration": "NOT_QUALIFIED"
+      },
+      "remaining_assertion": "Final-stack source applicability and promotion/CI joins; reuse accepted slice and source-bound Off evidence.",
+      "next_action": "Retain the accepted source/receipt; inspect only changed final-stack bindings before promotion.",
+      "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit.",
+      "off_source_limit": "Prefix Off evidence belongs to PR3 at 2d3de2170248c386a5e7f7de4477ecd703e0c504 and its paired parent source. It is not exclusive Off or integration credit for this earlier slice."
     },
     {
       "id": "PR2",
@@ -35,7 +47,19 @@
       "status": "PRIVATE_COMPONENT_QUALIFIED",
       "owning_record": "Results/S3-PR1-runtime-flag.json",
       "whole_F12_closed": false,
-      "remaining": "Retain qualified dormant/default flag component evidence and prefix PR3 Off evidence; whole delivery/source promotion and CI remain separate."
+      "remaining": "Retain qualified dormant/default flag component evidence and prefix PR3 Off evidence; whole delivery/source promotion and CI remain separate.",
+      "source_head": "1c103b6096820d7ce5471ed3d2aff0bf026270a3",
+      "obligation": "BEFORE_SLICE_MERGE",
+      "qualification": {
+        "implementation": "PRIVATE_IMPLEMENTED",
+        "component": "QUALIFIED",
+        "off": "PREFIX_SOURCE_BOUND",
+        "integration": "NOT_QUALIFIED"
+      },
+      "remaining_assertion": "Final-stack source applicability and promotion/CI joins; reuse accepted slice and source-bound Off evidence.",
+      "next_action": "Retain the accepted source/receipt; inspect only changed final-stack bindings before promotion.",
+      "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit.",
+      "off_source_limit": "Prefix Off evidence belongs to PR3 at 2d3de2170248c386a5e7f7de4477ecd703e0c504 and its paired parent source. It is not exclusive Off or integration credit for this earlier slice."
     },
     {
       "id": "PR3",
@@ -53,7 +77,18 @@
       "status": "LOCAL_ON_COMPONENTS_AND_OFF_OBLIGATIONS_QUALIFIED",
       "owning_record": "Results/S3-PR3-routing-preparation.json",
       "whole_F12_closed": false,
-      "remaining": "No repeat accepted local PR3 qualification; whole cumulative delivery/source promotion and CI remain separate."
+      "remaining": "No repeat accepted local PR3 qualification; whole cumulative delivery/source promotion and CI remain separate.",
+      "source_head": "2d3de2170248c386a5e7f7de4477ecd703e0c504",
+      "obligation": "BEFORE_SLICE_MERGE",
+      "qualification": {
+        "implementation": "PRIVATE_IMPLEMENTED",
+        "component": "QUALIFIED",
+        "off": "QUALIFIED",
+        "integration": "NOT_QUALIFIED"
+      },
+      "remaining_assertion": "Final-stack source applicability and promotion/CI joins; reuse accepted slice and source-bound Off evidence.",
+      "next_action": "Retain the accepted source/receipt; inspect only changed final-stack bindings before promotion.",
+      "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit."
     },
     {
       "id": "PR4",
@@ -69,7 +104,18 @@
       "status": "PRIVATE_COMPONENT_QUALIFIED",
       "owning_record": "Results/S3-PR4-monitor-preparation.json",
       "whole_F12_closed": false,
-      "remaining": "Exclusive-Off differential/tripwire/footprint obligations, final CI and source promotion remain; full suites do not substitute exclusive-Off evidence."
+      "remaining": "Exclusive-Off differential/tripwire/footprint obligations, final CI and source promotion remain; full suites do not substitute exclusive-Off evidence.",
+      "source_head": "06e87120c8d88204f32b6821840ef8a4f0c6c41d",
+      "obligation": "BEFORE_SLICE_MERGE",
+      "qualification": {
+        "implementation": "PRIVATE_IMPLEMENTED",
+        "component": "QUALIFIED",
+        "off": "NOT_EXECUTED",
+        "integration": "NOT_QUALIFIED"
+      },
+      "remaining_assertion": "Exclusive-Off full commands, helper-zero/positive witnesses and absence of new owner state/locks; component/full-suite evidence already accepted.",
+      "next_action": "Qualify one source-paired Off fixture on27/17.5 and review concrete footprint; reuse accepted component suites.",
+      "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit."
     },
     {
       "id": "PR5",
@@ -85,7 +131,18 @@
       "status": "PRIVATE_COMPONENT_QUALIFIED",
       "owning_record": "Results/S3-PR5-scene-handler-preparation.json",
       "whole_F12_closed": false,
-      "remaining": "Exclusive-Off differential/tripwire/footprint obligations, final CI and source promotion remain; full suites do not substitute exclusive-Off evidence."
+      "remaining": "Exclusive-Off differential/tripwire/footprint obligations, final CI and source promotion remain; full suites do not substitute exclusive-Off evidence.",
+      "source_head": "8cd7793d31fdde07b3b1821dd1413fc69cfe3070",
+      "obligation": "BEFORE_SLICE_MERGE",
+      "qualification": {
+        "implementation": "PRIVATE_IMPLEMENTED",
+        "component": "QUALIFIED",
+        "off": "NOT_EXECUTED",
+        "integration": "NOT_QUALIFIED"
+      },
+      "remaining_assertion": "Exclusive-Off full commands, helper-zero/positive witnesses and absence of new owner state/locks; component/full-suite evidence already accepted.",
+      "next_action": "Qualify one source-paired Off fixture on27/17.5 and review concrete footprint; reuse accepted component suites.",
+      "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit."
     },
     {
       "id": "PR6",
@@ -101,7 +158,18 @@
       "status": "FOUNDATIONS_AND_PRIVATE_INPUT_SCROLL_COMPONENTS_QUALIFIED",
       "owning_record": "Results/S3-PR6-action-preparation.json",
       "whole_F12_closed": false,
-      "remaining": "Private input qualifies115invocations/67methods at signedb19953812; private scroll qualifies124invocations/78methods at e1b6d5e5a, authorized local unsigned fallback. Exact source/compiler/product/result joins, final independent reviews and original-state cleanup PASS. Scroll SC01\u201320 component assertions executed; SC21 source-paired Off/helper-zero/layout/allocation/performance and SC22 actual construction-failure remain partial. Saved source-matched27 positive counters avoid a repeated detector run; paired fixtures and native plans require review. Genuine attached ownership, platform/minimumSwift6.2, wholePR6/F12 and public/hardware gates remain open; original stopped/blocked records preserved."
+      "remaining": "Configured automatic previous-IMP/input callthrough, real attached scene/window ownership, relevant constructor failure (SC22), remaining Off state/locks and supported platform/minimumSwift6.2. Timing/performance campaign excluded; watchOS arm64 binary floor26 versus nominal9 remains explicit.",
+      "source_head": "e1b6d5e5af36bbbad48ee74dccf7675f86376b9a",
+      "obligation": "BEFORE_SLICE_MERGE",
+      "qualification": {
+        "implementation": "PRIVATE_IMPLEMENTED",
+        "component": "PARTIAL_QUALIFIED",
+        "off": "PARTIAL_QUALIFIED",
+        "integration": "NOT_QUALIFIED"
+      },
+      "remaining_assertion": "Configured automatic/native and genuine attached ownership; concrete Off state/allocations/locks/lifetime; SC22 constructor-failure disposition; remaining platform and minimum Swift6.2. Timing campaigns excluded.",
+      "next_action": "After PR4/PR5 exclusive-Off, complete the fixed PR6 exit packet from accepted source-bound input/SC21 evidence plus the missing configured factory, attached owner, constructor failure, Off footprint and remaining platform/minimum-compiler assertions. No accepted-cell rerun.",
+      "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit."
     },
     {
       "id": "PR7",
@@ -117,7 +185,19 @@
       "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
       "rebuild_obligation": "Drop unqualified empty-header, existing-header suppression and helper rewrites; networking wire policy unchanged",
       "status": "DEFINED_NOT_IMPLEMENTED",
-      "owning_record": null
+      "owning_record": null,
+      "source_head": null,
+      "obligation": "BEFORE_SLICE_MERGE",
+      "whole_F12_closed": false,
+      "qualification": {
+        "implementation": "NOT_IMPLEMENTED",
+        "component": "NOT_EXECUTED",
+        "off": "NOT_EXECUTED",
+        "integration": "NOT_QUALIFIED"
+      },
+      "remaining_assertion": "Authoritative nil vs absent handoff, optional request-time final E05 correlation, delayed WebView owner and accepted action merge Off: Static fast path; final E01/E05 headers/sampling/user/account expressions and fresh develop no handoff or scene lookup",
+      "next_action": "Implement only this declared slice once its named dependencies are qualified; retain private exposure until F01 for PR13.",
+      "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit."
     },
     {
       "id": "PR8",
@@ -132,7 +212,19 @@
       "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
       "rebuild_obligation": "Not a standalone fix without a fresh develop failing reproduction",
       "status": "DEFINED_NOT_IMPLEMENTED",
-      "owning_record": null
+      "owning_record": null,
+      "source_head": null,
+      "obligation": "BEFORE_SLICE_MERGE",
+      "whole_F12_closed": false,
+      "qualification": {
+        "implementation": "NOT_IMPLEMENTED",
+        "component": "NOT_EXECUTED",
+        "off": "NOT_EXECUTED",
+        "integration": "NOT_QUALIFIED"
+      },
+      "remaining_assertion": "Automatic and registered request-start owner through later view/session change; success/metrics/error response preserve final E03 Error1/Resource0 Off: Develop start/correlation timing; no owner map/lock or early UUID/command allocation",
+      "next_action": "Implement only this declared slice once its named dependencies are qualified; retain private exposure until F01 for PR13.",
+      "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit."
     },
     {
       "id": "PR9",
@@ -146,7 +238,19 @@
       "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
       "rebuild_obligation": "No standalone watchdog/background-start change without reproduced develop regression",
       "status": "DEFINED_NOT_IMPLEMENTED",
-      "owning_record": null
+      "owning_record": null,
+      "source_head": null,
+      "obligation": "BEFORE_SLICE_MERGE",
+      "whole_F12_closed": false,
+      "qualification": {
+        "implementation": "NOT_IMPLEMENTED",
+        "component": "NOT_EXECUTED",
+        "off": "NOT_EXECUTED",
+        "integration": "NOT_QUALIFIED"
+      },
+      "remaining_assertion": "Stopped/disconnected scene representative, crash full final view and no foreign overwrite Off: Develop watchdog clear/start and fatal context behavior",
+      "next_action": "Implement only this declared slice once its named dependencies are qualified; retain private exposure until F01 for PR13.",
+      "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit."
     },
     {
       "id": "PR10",
@@ -161,7 +265,19 @@
       "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
       "rebuild_obligation": "Rebuild consolidated DatadogProfiler.swift, never restore removed AppLaunchProfiler.swift; standalone remains unqualified",
       "status": "DEFINED_NOT_IMPLEMENTED",
-      "owning_record": null
+      "owning_record": null,
+      "source_head": null,
+      "obligation": "BEFORE_SLICE_MERGE",
+      "whole_F12_closed": false,
+      "qualification": {
+        "implementation": "NOT_IMPLEMENTED",
+        "component": "NOT_EXECUTED",
+        "off": "NOT_EXECUTED",
+        "integration": "NOT_QUALIFIED"
+      },
+      "remaining_assertion": "Exact per-step owner, duplicate keys distinct lifetime, targeted completion and released retained snapshots Off: Develop Operation/profiling keying and flow",
+      "next_action": "Implement only this declared slice once its named dependencies are qualified; retain private exposure until F01 for PR13.",
+      "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit."
     },
     {
       "id": "PR11",
@@ -176,7 +292,19 @@
       "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
       "rebuild_obligation": "Proposed shared foundation 5-4820 and removed legacy modifier lines; complete closures, visibility and conditional scopes need independent disposition",
       "status": "DEFINED_NOT_IMPLEMENTED",
-      "owning_record": null
+      "owning_record": null,
+      "source_head": null,
+      "obligation": "BEFORE_SLICE_MERGE",
+      "whole_F12_closed": false,
+      "qualification": {
+        "implementation": "NOT_IMPLEMENTED",
+        "component": "NOT_EXECUTED",
+        "off": "NOT_EXECUTED",
+        "integration": "NOT_QUALIFIED"
+      },
+      "remaining_assertion": "Keyed/ordinary tracking, scene reader/traits, authority/interactive arbitration lifetime and reader fallback; split full declarations into reviewable files Off: Legacy modifier body and no reader/authority/arbiter/state allocation or body lock",
+      "next_action": "Implement only this declared slice once its named dependencies are qualified; retain private exposure until F01 for PR13.",
+      "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit."
     },
     {
       "id": "PR12",
@@ -190,7 +318,19 @@
       "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
       "rebuild_obligation": "iOS27 availability and pre-cycle fallback; F01 governs public promotion; foundation must precede engine",
       "status": "DEFINED_NOT_IMPLEMENTED",
-      "owning_record": null
+      "owning_record": null,
+      "source_head": null,
+      "obligation": "BEFORE_SLICE_MERGE",
+      "whole_F12_closed": false,
+      "qualification": {
+        "implementation": "NOT_IMPLEMENTED",
+        "component": "NOT_EXECUTED",
+        "off": "NOT_EXECUTED",
+        "integration": "NOT_QUALIFIED"
+      },
+      "remaining_assertion": "Observed navigation/presentation outcome, cancellation/no duplicate ownership, host teardown and simultaneous visible columns Off: Semantic hooks absent; no install/observer/callback",
+      "next_action": "Implement only this declared slice once its named dependencies are qualified; retain private exposure until F01 for PR13.",
+      "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit."
     },
     {
       "id": "PR13",
@@ -208,7 +348,19 @@
       "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
       "rebuild_obligation": "Public merge only after attributable F01 approval; ObjC prototypes DD_SCENE_API_VALIDATION until then",
       "status": "DEFINED_NOT_IMPLEMENTED",
-      "owning_record": null
+      "owning_record": null,
+      "source_head": null,
+      "obligation": "BEFORE_SLICE_MERGE",
+      "whole_F12_closed": false,
+      "qualification": {
+        "implementation": "NOT_IMPLEMENTED",
+        "component": "NOT_EXECUTED",
+        "off": "NOT_EXECUTED",
+        "integration": "NOT_QUALIFIED"
+      },
+      "remaining_assertion": "Existing and unguarded deployment15 Swift/ObjC clients, API diff and exact-once fallback for unsupported/Off/custom/NOP Off: Exactly-once legacy fallback preserving callbacks/attributes/options",
+      "next_action": "Implement only this declared slice once its named dependencies are qualified; retain private exposure until F01 for PR13.",
+      "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit."
     }
   ],
   "qualified_private_component_slices": [
@@ -219,9 +371,9 @@
     "PR5"
   ],
   "locally_qualified_off_scope": "PR3 prefix only; no blanket later-slice equivalence claim",
-  "next_slice": "PR6",
+  "next_slice": "PR4_PR5_EXCLUSIVE_OFF_THEN_PR6_EXIT",
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": 1791087297.2597811
+  "updated_at": "2026-10-04T16:27:17.091623+00:00"
 }

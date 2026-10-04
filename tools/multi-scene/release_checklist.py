@@ -132,6 +132,55 @@ def _validate_execution_packages(register):
             raise ValueError('required open gates missing from execution packages')
 
 
+def validate_remaining_tasks(register):
+    """A finite next-action queue covers required gates without granting credit."""
+    sources = register.get('source_locations', {})
+    for release in register.get('releases', []):
+        if 'remaining_tasks' not in release:
+            continue
+        rid = release['id']
+        source = sources.get(rid, {})
+        _require_nonempty(source, ['repository', 'branch', 'head', 'scope', 'promotion'], rid)
+        if not Path(source['repository']).is_absolute() or not re.fullmatch(r'[0-9a-f]{40}', source['head']):
+            raise ValueError(rid + ': invalid source identity')
+        requirements = {rid + ':' + g['id']: g['release_requirements'][rid]
+                        for g in register['gates'] if rid in g['release_requirements']}
+        tasks = release['remaining_tasks']
+        if not isinstance(tasks, list) or not tasks:
+            raise ValueError(rid + ': remaining tasks missing')
+        ids, assigned = set(), set()
+        for task in tasks:
+            _require_nonempty(task, ['id', 'owner', 'owner_record', 'source_scope', 'missing_assertion',
+                                    'next_action', 'environment', 'exit', 'obligation'])
+            if task['id'] in ids:
+                raise ValueError(rid + ': duplicate remaining task')
+            ids.add(task['id'])
+            if task['source_scope'] != rid:
+                raise ValueError(rid + ': stale or foreign source reference')
+            if task['obligation'] != 'RELEASE_BLOCKING':
+                raise ValueError(rid + ': required task cannot become optional diagnostics')
+            if any(k in task for k in ('native_admitted', 'gates_closed', 'status')):
+                raise ValueError(rid + ': task cannot declare admission or verdict')
+            if not isinstance(task.get('reuse'), list) or not task['reuse']:
+                raise ValueError(rid + ': reusable evidence must be explicit')
+            if not isinstance(task.get('dependencies'), list):
+                raise ValueError(rid + ': task dependencies missing')
+            if not isinstance(task.get('gates'), list) or not task['gates']:
+                raise ValueError(rid + ': task gates missing')
+            for ident in task['gates']:
+                if ident not in requirements or not requirements[ident]['required']:
+                    raise ValueError(rid + ': foreign or optional task gate')
+                if ident in assigned:
+                    raise ValueError(rid + ': gate has duplicate next actions')
+                assigned.add(ident)
+            for dependency in task['dependencies']:
+                if dependency not in requirements:
+                    raise ValueError(rid + ': unknown task dependency')
+        remaining = {i for i, r in requirements.items() if r['required'] and r['status'] != 'CLOSED'}
+        if not remaining <= assigned:
+            raise ValueError(rid + ': required open gate missing a finite next action')
+
+
 def validate(register):
     gates = register['gates']
     by_id = {g['id']: g for g in gates}
@@ -162,6 +211,7 @@ def validate(register):
         visit(ident, set())
     _validate_release_requirements(gates, _validate_releases(register))
     _validate_execution_packages(register)
+    validate_remaining_tasks(register)
     return by_id
 
 
@@ -500,7 +550,7 @@ def main():
     gates = validate(register)
     import release_work
     remaining_path = base / 'REMAINING_WORK.md'
-    owners = release_work.read_owners(base.parents[1])
+    owners = release_work.read_owners(base.parents[1], register)
     remaining = release_work.render(register, owners)
     cursor_path = base.parents[1] / '.continue-here.md'
     cursor_original = cursor_path.read_text()
