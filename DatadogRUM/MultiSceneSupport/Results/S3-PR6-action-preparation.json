@@ -28,13 +28,13 @@
   ],
   "controls_defined": 22,
   "design_reviewer": "/root/h10_backend_reviewer",
-  "next_action": "Complete scoped review of the four exact source-paired input Off proposals and same-run context adapter, checkpoint, then admit serially within the new proposal cutoff. Reuse accepted On suites and both positive reports; preserve all original failures. Component semantics and helper-zero inspection remain separate from whole PR6/F12 release acceptance.",
+  "next_action": "Admit parent27,current27,parent17.5,current17.5 input Off cells serially through the reviewed launcher and original cutoff. After each return prove owned-worker absence and original Shutdown restoration, freeze the same-run context, and require independent read-only packet review before metadata exports. Then review the accepted-artifact semantic/helper-zero comparison. No accepted suite repeats or whole PR6/F12 credit.",
   "implementation_admitted": true,
   "native_admitted": false,
   "native_runs": 6,
   "sdk_edits": 6,
   "gates_closed": [],
-  "updated_at": 1791111940.159272,
+  "updated_at": 1791112247.7998679,
   "previous_definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/next-pr6-controls-definition.json",
     "sha256": "7b374396fc3b8a33818520301d7a2ca3a56c53e7be70360e25fdfd154ece0e4e"
@@ -2932,7 +2932,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-notify-actual-inspection-cycle1/review.json",
     "sha256": "3b08f2f8b62e284c050068c4789d2eb33bac7ab26fc02b63c4431f56bf725de5"
   },
-  "input_off_state": "FOUR_SOURCE_PAIRED_OFF_PROPOSALS_FROZEN_SCOPED_REVIEW_PENDING_NO_NATIVE_ADMISSION",
+  "input_off_state": "FOUR_SOURCE_PAIRED_OFF_PROPOSALS_REVIEW_PASS_READY_FOR_SERIAL_FRESH_PREFLIGHT",
   "input_off_launch_review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-off-launch-controls-cycle4/review.json",
     "sha256": "c3379cd71ee4dc6832e9bfec9df8f3bfffc78230a614e732c41e7660e3222f41"
@@ -2953,5 +2953,31 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-off-comparison-positive-binding-controls-cycle1/controls.json",
     "sha256": "81f819907627e3340d5f275e0f99012de8bc34ae4d8aad84e96f71a041aa589f"
   },
-  "input_off_comparison_state": "SOURCE_DRAFT_TEN_NEW_POSITIVE_BINDING_CONTROLS_PASS_NO_ARTIFACT_INSPECTION_ADMISSION"
+  "input_off_comparison_state": "SOURCE_DRAFT_TEN_NEW_POSITIVE_BINDING_CONTROLS_PASS_NO_ARTIFACT_INSPECTION_ADMISSION",
+  "input_off_native_reviews": {
+    "input_off_parent_ios27_cycle1": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_parent_ios27_cycle1/review.json",
+      "sha256": "a31152237fb9c77e30042b21236d3d24bfd3eab79884939d5931dc5a8b1a2394"
+    },
+    "input_off_current_ios27_cycle1": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_current_ios27_cycle1/review.json",
+      "sha256": "28618a12a4f83c2cfa4a7dbf110cfc48f78dd8eb243f12992520cfa137e96a85"
+    },
+    "input_off_parent_ios175_cycle1": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_parent_ios175_cycle1/review.json",
+      "sha256": "97a5f37beb102470d8ae1581f344626484822c1f61bddd07c123f91da72d7ec3"
+    },
+    "input_off_current_ios175_cycle1": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input_off_current_ios175_cycle1/review.json",
+      "sha256": "f67b703f7d40e00b04d724b2ca91dd9ce33cb172dad004a63ecd9961c866a91a"
+    }
+  },
+  "input_off_native_mechanism_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-off-native-proposal-cycle1/mechanism-review.json",
+    "sha256": "883e83db277c0196054f54ff5789a11606cb12c8fab1b3cdc62a78fd27788fe1"
+  },
+  "input_off_preparation_checkpoint": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/input-off-pre-native-main-checkpoint-cycle1/checkpoint.json",
+    "sha256": "d686e7723923bdfb967a05b7ff40ac9613222e85a6bafc9dae75822e282e065b"
+  }
 }
