@@ -97,16 +97,21 @@ is excluded. Current S2 source/lifetime proof belongs to
   scopes, callbacks, private input/scroll and bounded Off components at their actual
   sources. macOS/tvOS/watchOS/visionOS compilation components are reviewed; watchOS
   nominal9/binary26 stays explicit. The [execution-improvement owner](Results/execution-improvements-20261004.json)
-  records the shared parser/replay/runner and bounded review eligibility. Configured
-  automatic callthrough, genuine attached owners, minimum Swift6.2, SC22 constructor
-  failure and concrete Off state/lock/lifetime remain before whole PR6/F12. No timing
-  campaign, universal callback-safety or rebuilt-source runtime credit follows.
+  records the shared parser/replay/runner and bounded review eligibility. Constructor
+  ordering and concrete Off reachability/counters/lifetime now pass source-backed
+  review; no failure-injection seam is required. The corrected five-case configured
+  attached UIKit fixture passes source review; its native adapter awaits review and
+  Xcode workspace access. Actual minimum Swift6.2 remains held. No timing campaign,
+  universal callback-safety or rebuilt-source runtime credit follows.
 
 - P2's single automatic composition stopped before tool dispatch on missing bridge
   configuration. Original scenarioUNQUALIFIED/evidenceINCOMPLETE/cleanupINVALID and
   the separate INVALID restoration remain. Later actual task/device/display/worker
   restoration verifies, with no original complete-app-inventory claim. The offline
-  correction is reviewed; the route stays stopped. No human session is qualified.
+  correction is reviewed; the route stays stopped. The distinct workspace route
+  has a fresh linked source tree, but complete composition review found nine
+  orchestration issues. Correct them together and re-review before any native
+  qualification. No human session is qualified.
 
 - P5 has one source-paired Monitor/legacy-factory Off fixture in linked verification
   worktrees at PR3/PR4/PR5. Transport/consumer review findings are corrected

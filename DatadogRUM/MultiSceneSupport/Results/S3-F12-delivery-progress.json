@@ -176,18 +176,23 @@
       "status": "FOUNDATIONS_AND_PRIVATE_INPUT_SCROLL_COMPONENTS_QUALIFIED",
       "owning_record": "Results/S3-PR6-action-preparation.json",
       "whole_F12_closed": false,
-      "remaining": "Configured automatic previous-IMP/input callthrough, real attached scene/window ownership, relevant constructor failure (SC22), remaining Off state/locks and supported platform/minimumSwift6.2. Timing/performance campaign excluded; watchOS arm64 binary floor26 versus nominal9 remains explicit.",
+      "remaining": "Configured factory/callthrough and genuine attached ownership native component; final exact slice review. Actual Swift6.2 and watchOS nominal9/binary26 distribution/runtime remain held. Source-backed constructor safety and concrete Off disposition pass independent review.",
       "source_head": "e1b6d5e5af36bbbad48ee74dccf7675f86376b9a",
       "obligation": "BEFORE_SLICE_MERGE",
       "qualification": {
         "implementation": "PRIVATE_IMPLEMENTED",
         "component": "PARTIAL_QUALIFIED",
-        "off": "PARTIAL_QUALIFIED",
+        "off": "QUALIFIED",
         "integration": "NOT_QUALIFIED"
       },
-      "remaining_assertion": "Configured automatic/native and genuine attached ownership; concrete Off state/allocations/locks/lifetime; SC22 constructor-failure disposition; remaining platform and minimum Swift6.2. Timing campaigns excluded.",
-      "next_action": "PR4/PR5 concrete exclusive-Off dependency is satisfied. Complete the fixed seven-item PR6 exit packet from accepted evidence plus the missing configured factory, genuine attached owner, SC22 failure, concrete Off and compiler/platform assertions.",
-      "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit."
+      "remaining_assertion": "P6R1/P6R2 configured attached component and P6R7 final applicability; P6R5/P6R6 explicit environment holds.",
+      "next_action": "Review the five-case configured-host adapter and collect fresh Xcode metadata after workspace access is approved; preserve accepted suites and component results.",
+      "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit.",
+      "off_qualification_scope": "Concrete accepted input/scroll Off reachability, raw9/27 helper-zero/positive controls and lifetime/source joins only; no universal allocation, class-size or whole SDK Off claim.",
+      "source_dispositions_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-source-dispositions/review.json",
+        "sha256": "e3c51ba52e29c68e9c4aca17c0275db27c083685b4a94f93b642da15f05112f9"
+      }
     },
     {
       "id": "PR7",
@@ -393,5 +398,5 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": 1791150216.0765598
+  "updated_at": 1791154076.3095129
 }
