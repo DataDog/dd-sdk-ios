@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "state": "P1_P3_P4_COMPLETE_P2_STOPPED_P5_OFF_FIXTURE_REVIEW_PENDING",
+  "state": "P1_P3_P4_COMPLETE_P2_STOPPED_P5_IOS27_OFF_COMPONENTS_PASS",
   "owner": "/root",
   "plan": {
     "path": "DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
     "sha256": "dc9551e10c134c123dcbbe1f4403f9ef3269b09eecee45a2937ba651e2d32c5c"
   },
   "selected": "P5_EXCLUSIVE_OFF",
-  "native_admitted": true,
-  "native_runs": 2,
+  "native_admitted": false,
+  "native_runs": 5,
   "gates_closed": [],
-  "next_action": "Review and qualify the shared PR4/PR5 exclusive-Off fixture, then finish the finite PR6 exit packet. P2 requires a materially distinct supported route; no invitation or equivalent retry.",
+  "next_action": "Execute the reviewed three fresh unconsumed iOS17.5 cells once, seal adjacent comparisons, then independently assess PR4/PR5 concrete Off applicability and the finite PR6 exit packet.",
   "p1": {
     "required_s2_tasks": 3,
     "required_s3_tasks": 20,
@@ -90,6 +90,32 @@
     "offline_correction_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-stopped-correction-review.json",
       "sha256": "d16086cc4679eda3e066438196e6b5b9555f682c6794cbb996f6d18fa42f28c5"
+    },
+    "workspace_alternative": {
+      "state": "REVIEWED_SOURCE_CONTRACT_ONLY_NO_NATIVE_AUTHORITY",
+      "packet": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-workspace-alternative-preparation/preparation-cycle2.json",
+        "sha256": "ef3d9c716d94374f5b48b29cfeb4053106399dbb01fb6d6ec8b3b2e5da3dbd68"
+      },
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-workspace-alternative-preparation/controls-cycle2.json",
+        "sha256": "2a56baa253379c1b12ab11e9413b16aa9acd30de920c3c8c0648d143ac76d2c8"
+      },
+      "focused_tests_passed": 44,
+      "review_lineage": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-workspace-alternative-preparation/review-lineage-cycle2.json",
+        "sha256": "79d75b05461cc5d10bcc627001e8e6a5b343967830ad6d4f2fdf3ce1314ff283"
+      },
+      "native_calls": 0,
+      "remaining": [
+        "Typed supervised cleanup finalizer and actual collector composition",
+        "Fresh linked workspace/build/process inventories",
+        "Complete one-time documented tool qualification before human invitation"
+      ],
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-workspace-alternative-preparation/review-cycle2.json",
+        "sha256": "3abde579eec7bc8c27b0e279d60f0b382492064684dc840c8ab07aa95590dbbe"
+      }
     }
   },
   "p3": {
@@ -141,7 +167,7 @@
     "gates_closed": []
   },
   "p5": {
-    "state": "EXCLUSIVE_OFF_FIXTURE_IMPLEMENTED_REVIEW_PENDING",
+    "state": "IOS27_COMPONENT_PAIR_PASS_IOS175_FRESH_RESERVATION_REVIEWED",
     "source_heads": [
       "2d3de2170248c386a5e7f7de4477ecd703e0c504",
       "06e87120c8d88204f32b6821840ef8a4f0c6c41d",
@@ -149,7 +175,7 @@
     ],
     "scope": "One common deterministic Monitor plus legacy instrumentation Off fixture, reused PR4 middle cell for both adjacent comparisons; source-matched accepted full suites preserved.",
     "sdk_edits": 0,
-    "tests_run": 0,
+    "tests_run": 18,
     "gates_closed": [],
     "fixture": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/DefaultOffMonitorTraceTests.swift",
@@ -161,6 +187,82 @@
     },
     "test_methods": 6,
     "scenarios": 9,
-    "planned_cells": 6
-  }
+    "planned_cells": 6,
+    "proposal": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/review-packet.json",
+      "sha256": "ed32fc1ce7a068d4e2824deb22d2f19237588a8bd1e8cf5ac66c692deb515446"
+    },
+    "original_blocked_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/original-unadmitted-review-stop/findings.json",
+      "sha256": "de1d24f7b17e11c1ac53e01a6fe092949c75f131ab68b1706e83c64263775063"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/second-composed-controls-canonical.txt",
+      "sha256": "c5ed5dea71ee67a2bd87397f1d0250cf435378f456ec83e57f8556cc635647ca"
+    },
+    "focused_tests_passed": 37,
+    "native_runs_added": 3,
+    "finite_pr6_exit": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-finite-exit-packet.json",
+      "sha256": "95b60c9f269d9c588133b535c2ee9b81ab3640fceccd0bb27206b1fd89161806"
+    },
+    "second_blocked_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/original-unadmitted-review-stop-2/findings.json",
+      "sha256": "0474b300b3b58899d5ad2df049217d811224dcdb2fb3ec6335cc8a142f5308e1"
+    },
+    "active_cell": null,
+    "proposal_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/proposal-review.json",
+      "sha256": "c9872c8a67b8952fecc33e2097ac6abd1a4f48cbf94fb1d4a3cbcf9f4e9ad3be"
+    },
+    "baseline_original_incomplete": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/pr3-ios27/qualification.json",
+      "sha256": "048fbe37429ba590b8df848e507db8c1f7e315d4f0e1fd9feb3615d36acf66e8"
+    },
+    "baseline_collection": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/pr3-ios27/collection.json",
+      "sha256": "718d8fd8dcd80d7d87168bc18691198db782b0ce61bf40fc6536ee4cf8a02b6c"
+    },
+    "saved_condition_packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/saved-condition-reconciliation/packet-corrected.json",
+      "sha256": "0c49b33ec42d8e51c000cf476ba0325b652578dcd24aaec65715325a84924480"
+    },
+    "saved_condition_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/saved-condition-reconciliation/controls-final.txt",
+      "sha256": "0c27a203e010dbe8230c63d249f76e85485ba6df39eea6eafce72029a743f06b"
+    },
+    "saved_condition_controls_passed": 5,
+    "qualified_cells": 3,
+    "remaining_cells": 3,
+    "interpretation_limit": "All three iOS27 Monitor/legacy-factory cells qualify; both adjacent pairs preserve all9scenarios. Original baseline INCOMPLETE remains immutable beside its reviewed saved-only correction. No universal Off footprint/integration/release credit.",
+    "ios27_comparison": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/ios27-comparison.json",
+      "sha256": "d8496a65827992ef2136d3e5d396b629b83132a0deee0d43863a374e619353c4"
+    },
+    "saved_condition_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/saved-condition-reconciliation/review.json",
+      "sha256": "0cc8803afc1960c3eb6a6f0302ce102331686774c12c717ea83ee2666d86ecd2"
+    },
+    "baseline_separate_qualification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/pr3-ios27/saved-config-qualification.json",
+      "sha256": "4d53fe2020ba257069e317564b436aff65e5a667d355870605e0ab5b7b7aae1d"
+    },
+    "corrected_unconsumed_proposal_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/unconsumed-compiler-correction/review.json",
+      "sha256": "94c5e0a0fd62038582fd639f3e6a03cf43ad6228455fe399b2370ac24511e50f"
+    },
+    "fresh_ios175_packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/ios175-fresh-reservation/packet.json",
+      "sha256": "97b229cd6ff1bce42e538cce9cf8aa2147e8c837f8d773544a32789f779802cb"
+    },
+    "old_ios175_reservation_disposition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/original-unconsumed-reservation-disposition.json",
+      "sha256": "b09a94be4b77567849e2a57deabd7bf27ec47bf3087cd125132bdc57d2c65a87"
+    },
+    "fresh_ios175_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/ios175-fresh-reservation/review.json",
+      "sha256": "40fefae0bca0488db0dc50b77b88927b38a9fc791fe22511695ede501d908804"
+    }
+  },
+  "updated_at": 1791148147.667874
 }

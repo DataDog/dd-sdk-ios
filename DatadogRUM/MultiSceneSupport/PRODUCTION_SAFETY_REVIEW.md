@@ -108,7 +108,12 @@ is excluded. Current S2 source/lifetime proof belongs to
   restoration verifies, with no original complete-app-inventory claim. The offline
   correction is reviewed; the route stays stopped. No human session is qualified.
 
-- P5 now has one source-paired Monitor/legacy-factory Off fixture in linked detached
-  verification worktrees at PR3/PR4/PR5. Native comparison and final review remain;
-  accepted full RUM suites are preserved. API approval, hardware and final-source
-  integration remain external or later release obligations.
+- P5 has one source-paired Monitor/legacy-factory Off fixture in linked verification
+  worktrees at PR3/PR4/PR5. Transport/consumer review findings are corrected
+  together and 37 focused offline controls pass with independent proposal review.
+  The three iOS27 cells and both nine-scenario adjacent comparisons qualify with
+  original-state cleanup. The baseline's original INCOMPLETE remains beside its
+  independently reviewed saved-only correction. Three unconsumed iOS17.5 cells
+  now have reviewed fresh reservations; complete Off applicability remains separate.
+  The owning progress records a finite seven-item PR6 exit packet. Accepted suites are preserved; no release gate or universal footprint
+  claim follows from preparation.

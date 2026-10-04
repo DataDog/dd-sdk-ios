@@ -3635,6 +3635,12 @@
       "Timing/performance campaign",
       "Accepted suite or cell reruns",
       "Whole PR6/F12 closure from components"
-    ]
+    ],
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-finite-exit-packet.json",
+      "sha256": "95b60c9f269d9c588133b535c2ee9b81ab3640fceccd0bb27206b1fd89161806"
+    },
+    "residual_items": 7,
+    "state": "PREPARED_DEPENDS_ON_EXCLUSIVE_OFF_NO_NATIVE_AUTHORITY"
   }
 }
