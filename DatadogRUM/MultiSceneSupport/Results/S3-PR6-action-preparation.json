@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "SCROLL_PRIVATE_IMPLEMENTATION",
+  "state": "CORRECTED_SCROLL_SOURCE_AND_CONTROLS_WAIT_EXACT_REVIEW",
   "delivery_slice": "PR6",
   "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9",
   "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/worktree",
@@ -28,13 +28,13 @@
   ],
   "controls_defined": 22,
   "design_reviewer": "/root/h10_backend_reviewer",
-  "next_action": "Implement only the reviewed P6D3 private scroll slice and22 finite controls in the isolated SDK checkout; obtain exact source/control review before compiler/native admission. Preserve stable proxy identity, queue-only actual generated action claim and terminal preflight, nil captured context, legacy Off behavior and accepted source-paired limitations. Reuse qualified input evidence.",
+  "next_action": "Review corrected cycle2 scroll controls: max-duration activity cadence and three testable imports; preserve cycle1 BLOCKED. No compiler/native admission. Prepare exact78On27/46fallback17.5 bounded headless proposal after source approval; source-paired Off/layout/allocation and construction-failure execution remain held. Reuse accepted input suites.",
   "implementation_admitted": true,
   "native_admitted": false,
   "native_runs": 6,
   "sdk_edits": 6,
   "gates_closed": [],
-  "updated_at": 1791077207.1909618,
+  "updated_at": 1791082874.4819782,
   "previous_definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/next-pr6-controls-definition.json",
     "sha256": "7b374396fc3b8a33818520301d7a2ca3a56c53e7be70360e25fdfd154ece0e4e"
@@ -1847,5 +1847,42 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-implementation-cycle1/definition.json",
     "sha256": "f5c04965e5a6c765ead6e5523fdd8646d270488b39cd4064f69618417bff5597"
   },
-  "scroll_native_admitted": false
+  "scroll_native_admitted": false,
+  "scroll_production_audit": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-production-pre-review-cycle1/source-audit.json",
+    "sha256": "c4f8d4a421a9a712086cd4c4f571fd78c2bb5208535f4ffbe66b2e2e471e1199"
+  },
+  "scroll_source_preparation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-source-cycle2/preparation.json",
+    "sha256": "3bd43cb03a7e13f4631d85e6284dfa5af5c1787804b68a91dc9ba08ee2aa1c01"
+  },
+  "scroll_source_freeze": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-source-cycle2/source-freeze.json",
+    "sha256": "061cf6123db0e65728a065073fb4027e41fa83f3983235ec6935b41d61f957d9"
+  },
+  "scroll_source_selection": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-source-cycle2/selection.json",
+    "sha256": "273e640611cda8d89e5055ef21797c21e74d7558b7e85e9538944d185784ee44"
+  },
+  "scroll_source_controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-source-cycle2/controls.json",
+    "sha256": "423113bad1c34b1550b54de246cfb059e592ba39dd8b4c7cdaa5b3ab9fb7049b"
+  },
+  "scroll_sdk_edits": 10,
+  "scroll_test_edits": 5,
+  "scroll_new_test_declarations": 41,
+  "scroll_native_runs": 0,
+  "scroll_tests_run": 0,
+  "scroll_prior_blocked_source_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-source-cycle1/review.json",
+    "sha256": "4dcbc9a3d641a59867b36b5444bf88092d7343225135e23f7bb1a67a33aa30d3"
+  },
+  "scroll_prior_source_preparation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-source-cycle1/preparation.json",
+    "sha256": "b96a2cca16a486efee0e2562e9f87164d630f1054e9b03e87b06aae663ed6c63"
+  },
+  "scroll_correction": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-correction-cycle1/correction.json",
+    "sha256": "d0856ffe55eb05d12ddf34d3e504fcc03b37ff1de9cffe04fdabe7c38f042e32"
+  }
 }
