@@ -310,10 +310,11 @@ envelopes; do not require Python to reserialize Swift floating-point geometry id
 contract](../../../tools/multi-scene/acceptance/README.md#h06-operation-preparation) separates file-channel qualification
 from app wiring and post-setup View ownership.
 
- ## Parameterized platform qualification
+## Shared qualification paths
 
-`tools/multi-scene/platform_qualification.py` consumes owning definition/review refs, serializes Core/RUM builds, retains
-owned outcomes and grades complete source/compiler/ object/link/product/result inventories. `replay <receipt-path> <sha256>
-<fresh-output-file>` grades saved bytes without rebuilding or reissuing a clock; command success and evidence completeness
-stay separate. [P3](../Results/execution-improvements-20261004.json) owns actual positive replay/native qualification;
-watchOS nominal9/binary26 remains explicit.
+`tools/multi-scene/platform_qualification.py` binds owning refs and grades full build custody. `replay <receipt-path> <sha256> <fresh-output-file>` consumes saved bytes without a rebuild or new clock.
+[P3/P5](../Results/execution-improvements-20261004.json) own actual qualifications; watchOS nominal9/binary26 stays explicit.
+
+`default_off_native.py` collects each reviewed cell once; `default_off_saved_config.py` requires a separate exact review
+before correcting a saved compiler expectation. Keep SDK/runtime distinct, original INCOMPLETE immutable and cleanup separate.
+`default_off.py` compares nine Monitor/legacy-factory traces per adjacent source pair; command success alone is insufficient.

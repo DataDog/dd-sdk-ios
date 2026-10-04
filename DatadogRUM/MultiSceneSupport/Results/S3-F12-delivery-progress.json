@@ -101,21 +101,30 @@
       "off_contract": "Legacy dispatch and existing storage; no two extra context locks/dictionaries or scene/handoff reads",
       "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
       "rebuild_obligation": "Private protocols before conformances; stable public wrappers remain PR13",
-      "status": "PRIVATE_COMPONENT_QUALIFIED",
+      "status": "PRIVATE_COMPONENT_AND_CONCRETE_OFF_QUALIFIED",
       "owning_record": "Results/S3-PR4-monitor-preparation.json",
       "whole_F12_closed": false,
-      "remaining": "Exclusive-Off differential/tripwire/footprint obligations, final CI and source promotion remain; full suites do not substitute exclusive-Off evidence.",
+      "remaining": "CI, source promotion and final integration/release prerequisites remain separate; all required concrete exclusive-Off assertions qualify at the recorded source.",
       "source_head": "06e87120c8d88204f32b6821840ef8a4f0c6c41d",
       "obligation": "BEFORE_SLICE_MERGE",
       "qualification": {
         "implementation": "PRIVATE_IMPLEMENTED",
         "component": "QUALIFIED",
-        "off": "NOT_EXECUTED",
+        "off": "QUALIFIED",
         "integration": "NOT_QUALIFIED"
       },
-      "remaining_assertion": "Exclusive-Off full commands, helper-zero/positive witnesses and absence of new owner state/locks; component/full-suite evidence already accepted.",
-      "next_action": "Qualify one source-paired Off fixture on27/17.5 and review concrete footprint; reuse accepted component suites.",
-      "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit."
+      "remaining_assertion": "No required concrete exclusive-Off helper/state/lock/lifetime assertion remains at this source. Final integration and current-stack acceptance remain.",
+      "next_action": "Advance the fixed PR6 exit packet; reuse accepted components, full suites and six native Off cells.",
+      "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit.",
+      "off_component_evidence": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/matrix-comparison.json",
+        "sha256": "80ce9fb0a14d050155e14cb9361bc855e08c91712bcb2fca74ad319f8c81eb24"
+      },
+      "off_applicability_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/final-review.json",
+        "sha256": "7d4a8adc2665202b183d349f64b1678cc4e9425b496ba231f8bc335e4561226b"
+      },
+      "off_qualification_scope": "Concrete exclusive-Off source scope only; numeric coverage/universal allocation/class size/current-stack integration remain unclaimed."
     },
     {
       "id": "PR5",
@@ -128,21 +137,30 @@
       "off_contract": "Construct only existing develop handler, with no new observers/maps/stacks/suppression callback",
       "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
       "rebuild_obligation": "Shared SwiftUI hooks dormant until PR11; do not resurrect removed develop types",
-      "status": "PRIVATE_COMPONENT_QUALIFIED",
+      "status": "PRIVATE_COMPONENT_AND_CONCRETE_OFF_QUALIFIED",
       "owning_record": "Results/S3-PR5-scene-handler-preparation.json",
       "whole_F12_closed": false,
-      "remaining": "Exclusive-Off differential/tripwire/footprint obligations, final CI and source promotion remain; full suites do not substitute exclusive-Off evidence.",
+      "remaining": "CI, source promotion and final integration/release prerequisites remain separate; all required concrete exclusive-Off assertions qualify at the recorded source.",
       "source_head": "8cd7793d31fdde07b3b1821dd1413fc69cfe3070",
       "obligation": "BEFORE_SLICE_MERGE",
       "qualification": {
         "implementation": "PRIVATE_IMPLEMENTED",
         "component": "QUALIFIED",
-        "off": "NOT_EXECUTED",
+        "off": "QUALIFIED",
         "integration": "NOT_QUALIFIED"
       },
-      "remaining_assertion": "Exclusive-Off full commands, helper-zero/positive witnesses and absence of new owner state/locks; component/full-suite evidence already accepted.",
-      "next_action": "Qualify one source-paired Off fixture on27/17.5 and review concrete footprint; reuse accepted component suites.",
-      "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit."
+      "remaining_assertion": "No required concrete exclusive-Off helper/state/lock/lifetime assertion remains at this source. Final integration and current-stack acceptance remain.",
+      "next_action": "Advance the fixed PR6 exit packet; reuse accepted components, full suites and six native Off cells.",
+      "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit.",
+      "off_component_evidence": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/matrix-comparison.json",
+        "sha256": "80ce9fb0a14d050155e14cb9361bc855e08c91712bcb2fca74ad319f8c81eb24"
+      },
+      "off_applicability_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/final-review.json",
+        "sha256": "7d4a8adc2665202b183d349f64b1678cc4e9425b496ba231f8bc335e4561226b"
+      },
+      "off_qualification_scope": "Concrete exclusive-Off source scope only; numeric coverage/universal allocation/class size/current-stack integration remain unclaimed."
     },
     {
       "id": "PR6",
@@ -168,7 +186,7 @@
         "integration": "NOT_QUALIFIED"
       },
       "remaining_assertion": "Configured automatic/native and genuine attached ownership; concrete Off state/allocations/locks/lifetime; SC22 constructor-failure disposition; remaining platform and minimum Swift6.2. Timing campaigns excluded.",
-      "next_action": "After PR4/PR5 exclusive-Off, complete the fixed PR6 exit packet from accepted source-bound input/SC21 evidence plus the missing configured factory, attached owner, constructor failure, Off footprint and remaining platform/minimum-compiler assertions. No accepted-cell rerun.",
+      "next_action": "PR4/PR5 concrete exclusive-Off dependency is satisfied. Complete the fixed seven-item PR6 exit packet from accepted evidence plus the missing configured factory, genuine attached owner, SC22 failure, concrete Off and compiler/platform assertions.",
       "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit."
     },
     {
@@ -370,10 +388,10 @@
     "PR4",
     "PR5"
   ],
-  "locally_qualified_off_scope": "PR3 prefix only; no blanket later-slice equivalence claim",
-  "next_slice": "PR4_PR5_EXCLUSIVE_OFF_THEN_PR6_EXIT",
+  "locally_qualified_off_scope": "PR1-PR3 accepted prefix plus PR4/PR5 concrete exclusive-Off at their recorded heads; no blanket later-slice or current-stack equivalence claim",
+  "next_slice": "PR6_FINITE_EXIT",
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": "2026-10-04T16:27:17.091623+00:00"
+  "updated_at": 1791150216.0765598
 }

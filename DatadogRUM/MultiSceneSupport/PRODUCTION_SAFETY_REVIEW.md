@@ -91,7 +91,7 @@ is excluded. Current S2 source/lifetime proof belongs to
 [EXP216](Results/EXP-216-s2-composition-promotion.json), not the original reference review.
 - [PR4 monitor targeting](Results/S3-PR4-monitor-preparation.json): private D1-D8 component qualifies44/44 on27 and17.5, with exact source/compiler/case/products evidence, separate cleanup PASS and designated final review. Local source checkpoint06e87120c uses the authorized unsigned fallback. Earlier compiler, fixture and consumer failures remain immutable; wholeF12, activation, API and hardware stay open.
 
-- [PR5 scene handler](Results/S3-PR5-scene-handler-preparation.json): unknown/disconnected eligibility and the invented-scene factory fixture are corrected and independently re-reviewed. All64 exact components pass on27 and17.5; source/compiler/products, native results and separate original-state cleanup join. Final P5D1-P5D8 component review passes. Full-current RUM suites also qualify1041cases/1077invocations on each runtime; the reviewed count correction grades existing exports without repeating tests. Qualified source is locally checkpointed at8cd7793d3 using the authorized unsigned fallback. ExclusiveOff, genuine OS ordering, activation, wholeF12, API and hardware remain separate. Original BLOCKED reviews and consumer stops stay immutable.
+- [PR5 scene handler](Results/S3-PR5-scene-handler-preparation.json): unknown/disconnected eligibility and the invented-scene factory fixture are corrected and independently re-reviewed. All64 exact components pass on27 and17.5; source/compiler/products, native results and separate original-state cleanup join. Final P5D1-P5D8 component review passes. Full-current RUM suites also qualify1041cases/1077invocations on each runtime; the reviewed count correction grades existing exports without repeating tests. Qualified source is locally checkpointed at8cd7793d3 using the authorized unsigned fallback. Concrete exclusive-Off now independently qualifies at this source; genuine OS ordering, activation, wholeF12, API and hardware remain separate. Original BLOCKED reviews and consumer stops stay immutable.
 
 - [PR6 owner](Results/S3-PR6-action-preparation.json) retains accepted activation,
   scopes, callbacks, private input/scroll and bounded Off components at their actual
@@ -111,9 +111,12 @@ is excluded. Current S2 source/lifetime proof belongs to
 - P5 has one source-paired Monitor/legacy-factory Off fixture in linked verification
   worktrees at PR3/PR4/PR5. Transport/consumer review findings are corrected
   together and 37 focused offline controls pass with independent proposal review.
-  The three iOS27 cells and both nine-scenario adjacent comparisons qualify with
+  All six cells and 36 adjacent scenario comparisons qualify with component-lane
   original-state cleanup. The baseline's original INCOMPLETE remains beside its
-  independently reviewed saved-only correction. Three unconsumed iOS17.5 cells
-  now have reviewed fresh reservations; complete Off applicability remains separate.
+  independently reviewed saved-only correction. Final independent review qualifies
+  concrete PR4/PR5 dispatch/read/state/lock/lifetime and exclusive-factory obligations
+  through source reachability and accepted On witnesses; numeric complete-helper
+  coverage, universal allocation and class size are not claimed. No suite or native
+  cell is rerun.
   The owning progress records a finite seven-item PR6 exit packet. Accepted suites are preserved; no release gate or universal footprint
   claim follows from preparation.

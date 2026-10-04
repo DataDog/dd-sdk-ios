@@ -219,7 +219,7 @@ Routine runs reuse reviewed machinery while consequential changes retain indepen
 
 Owner: SDK implementer and independent reviewer; API reviewers own F01.
 Dependency: P1; P3/P4 help execution but must not become an indefinite prerequisite.
-Status: PR4/PR5 exclusive-Off fixture implemented in linked verification copies; native comparison and final review remain.
+Status: PR4/PR5 concrete exclusive-Off obligations qualify after six native cells and independent applicability review. The fixed seven-item PR6 exit packet is selected; later slices and final integration remain.
 
 Scope:
 - Existing PR1–13 rebuilt feature-flag delivery chain and its tests.

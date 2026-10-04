@@ -28,13 +28,13 @@
   ],
   "controls_defined": 22,
   "design_reviewer": "/root/h10_backend_reviewer",
-  "next_action": "P5: complete PR4/PR5 exclusive-Off, then current_exit_packet. VisionOS compile component is reviewed; minimum Swift6.2, configured automatic/attached input, SC22 and concrete Off obligations remain.",
+  "next_action": "Complete the selected seven-item PR6 exit packet. First review the configured automatic-input/genuine attached-window fixture and SC22 failure-control design; accepted component/Off/full-suite/platform results are reused, not rerun. Actual minimum Swift6.2 remains environment-held.",
   "implementation_admitted": true,
   "native_admitted": false,
   "native_runs": 6,
   "sdk_edits": 6,
   "gates_closed": [],
-  "updated_at": 1791123653.580329,
+  "updated_at": 1791150216.0765598,
   "previous_definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/next-pr6-controls-definition.json",
     "sha256": "7b374396fc3b8a33818520301d7a2ca3a56c53e7be70360e25fdfd154ece0e4e"
@@ -3614,8 +3614,8 @@
   },
   "current_exit_packet": {
     "plan": {
-      "path": "DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
-      "sha256": "dc9551e10c134c123dcbbe1f4403f9ef3269b09eecee45a2937ba651e2d32c5c"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
+      "sha256": "124e31ba7624d0acd88af34f748414bbfb7271746825acfb9ef9a5fd940dcf96"
     },
     "dependency": "PR4/PR5 exclusive-Off",
     "source_head": "e1b6d5e5af36bbbad48ee74dccf7675f86376b9a",
@@ -3641,6 +3641,11 @@
       "sha256": "95b60c9f269d9c588133b535c2ee9b81ab3640fceccd0bb27206b1fd89161806"
     },
     "residual_items": 7,
-    "state": "PREPARED_DEPENDS_ON_EXCLUSIVE_OFF_NO_NATIVE_AUTHORITY"
+    "state": "SELECTED_FINITE_EXIT_NO_NEW_NATIVE_AUTHORITY",
+    "dependency_state": "SATISFIED_CONCRETE_PR4_PR5_OFF",
+    "dependency_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/final-review.json",
+      "sha256": "7d4a8adc2665202b183d349f64b1678cc4e9425b496ba231f8bc335e4561226b"
+    }
   }
 }

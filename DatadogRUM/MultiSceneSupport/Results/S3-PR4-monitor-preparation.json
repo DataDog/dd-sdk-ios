@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "QUALIFIED_PRIVATE_COMPONENT_CHECKPOINTED",
+  "state": "QUALIFIED_PRIVATE_COMPONENT_AND_CONCRETE_EXCLUSIVE_OFF",
   "delivery_slice": "PR4",
   "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v",
   "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/worktree",
@@ -13,12 +13,12 @@
     "PR3 local source/components and bounded Off obligations qualified",
     "PR6 is future handoff activation; PR5 future real manual-handler conformance; PR13 future public wrappers"
   ],
-  "next_action": "Complete the source-paired exclusive-Off contract under execution-improvements-20261004.json. Reuse accepted components and full suites; PR6 follows only after these obligations qualify.",
+  "next_action": "Proceed with the fixed PR6 exit packet. Preserve accepted source-matched suites and cells; CI, source promotion, final integration and release approval remain separate.",
   "native_admitted": false,
   "native_runs": 5,
   "sdk_edits": 7,
   "gates_closed": [],
-  "updated_at": 1791003650.320075,
+  "updated_at": 1791150216.0765598,
   "source_preparation": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/source-preparation-cycle8/preparation.json",
     "sha256": "1f8d1ab03d60e5101c63a849bd789bcd28a276b7c629523ea09268217556b0b2"
@@ -318,5 +318,49 @@
     ],
     "state": "QUALIFIED_PRIVATE_COMPONENT_ONLY",
     "basis": "Reuse exact independent source8 review and changed-surface qualification:44 exact selected cases each on iOS27.0 and17.5. Original NOT_IMPLEMENTED strings remain historical pre-implementation definition text; no historical input rewritten."
+  },
+  "exclusive_off_disposition": {
+    "state": "QUALIFIED_CONCRETE_OFF_AT_RECORDED_SOURCE",
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/final-review.json",
+      "sha256": "7d4a8adc2665202b183d349f64b1678cc4e9425b496ba231f8bc335e4561226b"
+    },
+    "matrix": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/matrix-comparison.json",
+      "sha256": "80ce9fb0a14d050155e14cb9361bc855e08c91712bcb2fca74ad319f8c81eb24"
+    },
+    "source_head": null,
+    "sub_obligations": {
+      "legacy_dispatch_and_event_context": "PASS:18 PR3-to-PR4 adjacent scenario comparisons across both runtimes; public wrappers, command processing/context publication, navigation, resources, rollover and completion grammar match.",
+      "execution_and_handoff_reads": "PASS:all selected trace phases have owner_reads0. currentExecutionTarget exits at the false mode before reading currentExecutionContext; currentExecutionContext and rumContextHandoffOwner also guard Off. Reused explicit-Off test asserts both ownerReads0 and supplied provider reads0; On test asserts ownerReads2/provider owners2. This is a read tripwire, not a count of every fast-path getter entry.",
+      "snapshot_state_dictionary_and_lock": "PASS:sceneContextSnapshots is nil at every PR4/PR5 phase. Its sole constructor is gated in Monitor.init; dictionary and new ReadWriteLock belong to that unconstructed holder. Both makeCoreContext call sites and snapshot writes require the holder; optional clear cannot reach it. Reused On two-owner snapshots establish detector visibility. Existing legacy locks remain; no added scene snapshot lock or owner dictionary is allocated/used Off.",
+      "execution_provider_retention": "PASS:immutable executionContextProvider is nil Off. Reused testResolvedOff_discardsExecutionProviderCapture proves a supplied closure capture releases while Monitor remains alive.",
+      "manual_scene_route_and_handler_lifetime": "PASS:default legacy matrix leaves the weak handler and route optionals nil. Exact reused explicit-Off manual scene test emits two process commands and zero handler calls; bound-On and released-handler tests prove route visibility and weak release. An explicit scene SPI fallback can cache false in an Optional Bool; this receipt does not claim zero bytes for added scalar/reference slots.",
+      "controller_scene_lookup": "PASS_SOURCE_REACHABILITY:sceneTarget(for:) returns processRepresentative before any UIKit view/window/scene access when mode is false. Reused background controller read spy also asserts reads0 for Off and On. No numeric count of the sceneTarget fast-path entry is claimed."
+    },
+    "named_helper_zero_positive": "Satisfied for the concrete On operations by nil immutable holder/provider, exact guarded-only call sites, cumulative read tripwires and recorded On-positive tests. No missing required named helper assertion for this bounded source scope.",
+    "limits": [
+      {
+        "id": "NUMERIC_COMPLETE_HELPER_COVERAGE",
+        "state": "NOT_MEASURED_NOT_CLAIMED",
+        "detail": "No per-symbol/function/coverage-region numeric zero or positive inventory was exported. Source-backed zero reachability is limited to the named concrete On paths above; getter/guard helper entries may execute Off. Saved coverage export is not necessary to this concrete disposition."
+      },
+      {
+        "id": "UNIVERSAL_ZERO_ALLOCATION",
+        "state": "NOT_MEASURED_NOT_CLAIMED",
+        "detail": "Nil specific owner holders/provider and exclusive legacy factory do not prove zero temporary/heap allocations for the entire SDK or every command."
+      },
+      {
+        "id": "CLASS_SIZE_LAYOUT",
+        "state": "NOT_MEASURED_NOT_CLAIMED",
+        "detail": "Added optional/reference/Bool slots can change instance layout; no byte-size equality, class-size or universal footprint claim."
+      },
+      {
+        "id": "COMPLETE_COMMAND_OR_CONFIGURED_INPUT_COVERAGE",
+        "state": "NOT_CLAIMED",
+        "detail": "Nine scenarios and accepted affected suites are finite witnesses, not exhaustive execution of every API/configuration. No new configured touch/scroll/fold/automatic-input native integration acceptance."
+      }
+    ],
+    "gates_closed": []
   }
 }

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "QUALIFIED_PRIVATE_COMPONENT_AND_FULL_CURRENT_RUM_LOCAL_CHECKPOINT",
+  "state": "QUALIFIED_PRIVATE_COMPONENT_AND_CONCRETE_EXCLUSIVE_OFF",
   "delivery_slice": "PR5",
   "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9",
   "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/worktree",
@@ -17,12 +17,12 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/next-pr5-design-review.json",
     "sha256": "01ec81d5973247250dd2a3c4a1227fbe8e6ef882a6bcd27a8b6dcea92f576bd6"
   },
-  "next_action": "Complete the source-paired exclusive-Off contract under execution-improvements-20261004.json. Reuse accepted components and full suites; PR6 follows only after these obligations qualify.",
+  "next_action": "Proceed with the fixed PR6 exit packet. Preserve accepted source-matched suites and cells; CI, source promotion, final integration and release approval remain separate.",
   "native_admitted": false,
   "native_runs": 4,
   "sdk_edits": 5,
   "gates_closed": [],
-  "updated_at": 1791012618.182251,
+  "updated_at": 1791150216.0765598,
   "source_preparation": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/source-preparation-cycle5/preparation.json",
     "sha256": "2da8f3015af27ca360c5bb88aba47ccf08a167be829926a7f2e6e7a8357ca0b0"
@@ -397,5 +397,48 @@
   },
   "sdk_head": "8cd7793d31fdde07b3b1821dd1413fc69cfe3070",
   "signature_status": "N",
-  "pushed": false
+  "pushed": false,
+  "exclusive_off_disposition": {
+    "state": "QUALIFIED_CONCRETE_OFF_AT_RECORDED_SOURCE",
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/final-review.json",
+      "sha256": "7d4a8adc2665202b183d349f64b1678cc4e9425b496ba231f8bc335e4561226b"
+    },
+    "matrix": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/matrix-comparison.json",
+      "sha256": "80ce9fb0a14d050155e14cb9361bc855e08c91712bcb2fca74ad319f8c81eb24"
+    },
+    "source_head": "8cd7793d31fdde07b3b1821dd1413fc69cfe3070",
+    "sub_obligations": {
+      "legacy_factory_and_dispatch": "PASS:18 PR4-to-PR5 adjacent scenario comparisons across both runtimes. Actual default-Off public fixture constructs RUMViewsHandler, publishes Monitor, and preserves events/callbacks/context publication; reused explicit-Off factory test asserts no scene capability and two process commands.",
+      "new_scene_constructor_observers_maps_stacks": "PASS_SOURCE_REACHABILITY:the sole production RUMSceneViewsHandler construction is the true branch of the exclusive factory. Off returns the final legacy type; its implementation is byte-identical to PR4. New scene stacks/activity maps, pending reconciliation state, initial scene inventory and four UIScene observers are instance paths of the unconstructed On class. Reused On factory/capability and scene inventory tests provide positive visibility.",
+      "scene_lookup_and_manual_suppression": "PASS_SOURCE_REACHABILITY:scene providers, split/manual authority reconciliation and suppression belong to the unconstructed On instance. RUMFeature binds the private manual capability only when resolved On; the Off legacy class does not conform. Existing legacy stack/observers continue unchanged.",
+      "swizzle_selection": "PASS_CONCRETE_SCOPE:the factory changes the selected handler only in the true branch; existing predicate-based view/scroll swizzler construction is unchanged. The nil-predicate matrix asserts both swizzlers nil; source-matched configured legacy/On component tests are reused. No configured automatic-input integration credit.",
+      "locks_and_retention": "PASS_CONCRETE_SCOPE:no new lock/map/scene handler exists on the exclusive Off path. Legacy subscriber remains weak. Reused actual manual-handler release, weak scene subscriber release and initial-provider capture release tests qualify the affected lifetime mechanisms; no universal heap or object-layout measurement."
+    },
+    "named_helper_zero_positive": "Satisfied for the concrete new instance paths by exclusive factory reachability, actual Off legacy-type observations, unchanged final legacy body and source-matched On factory/capability/scene tests. No missing required named helper assertion for this bounded source scope.",
+    "limits": [
+      {
+        "id": "NUMERIC_COMPLETE_HELPER_COVERAGE",
+        "state": "NOT_MEASURED_NOT_CLAIMED",
+        "detail": "No per-symbol/function/coverage-region numeric zero or positive inventory was exported. Source-backed zero reachability is limited to the named concrete On paths above; getter/guard helper entries may execute Off. Saved coverage export is not necessary to this concrete disposition."
+      },
+      {
+        "id": "UNIVERSAL_ZERO_ALLOCATION",
+        "state": "NOT_MEASURED_NOT_CLAIMED",
+        "detail": "Nil specific owner holders/provider and exclusive legacy factory do not prove zero temporary/heap allocations for the entire SDK or every command."
+      },
+      {
+        "id": "CLASS_SIZE_LAYOUT",
+        "state": "NOT_MEASURED_NOT_CLAIMED",
+        "detail": "Added optional/reference/Bool slots can change instance layout; no byte-size equality, class-size or universal footprint claim."
+      },
+      {
+        "id": "COMPLETE_COMMAND_OR_CONFIGURED_INPUT_COVERAGE",
+        "state": "NOT_CLAIMED",
+        "detail": "Nine scenarios and accepted affected suites are finite witnesses, not exhaustive execution of every API/configuration. No new configured touch/scroll/fold/automatic-input native integration acceptance."
+      }
+    ],
+    "gates_closed": []
+  }
 }

@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "state": "P1_P3_P4_COMPLETE_P2_STOPPED_P5_IOS27_OFF_COMPONENTS_PASS",
+  "state": "P1_P3_P4_COMPLETE_P2_STOPPED_PR4_PR5_OFF_QUALIFIED_PR6_SELECTED",
   "owner": "/root",
   "plan": {
-    "path": "DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
-    "sha256": "dc9551e10c134c123dcbbe1f4403f9ef3269b09eecee45a2937ba651e2d32c5c"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
+    "sha256": "124e31ba7624d0acd88af34f748414bbfb7271746825acfb9ef9a5fd940dcf96"
   },
-  "selected": "P5_EXCLUSIVE_OFF",
+  "selected": "P5_PR6_FINITE_EXIT",
   "native_admitted": false,
-  "native_runs": 5,
+  "native_runs": 8,
   "gates_closed": [],
-  "next_action": "Execute the reviewed three fresh unconsumed iOS17.5 cells once, seal adjacent comparisons, then independently assess PR4/PR5 concrete Off applicability and the finite PR6 exit packet.",
+  "next_action": "Complete the fixed PR6 residual assertions, starting with configured automatic factory/callthrough and genuine attached ownership in the existing registered host. P2 corrected typed cleanup/actual workspace dispatch composition is still offline and unqualified; no human invitation.",
   "p1": {
     "required_s2_tasks": 3,
     "required_s3_tasks": 20,
@@ -167,7 +167,7 @@
     "gates_closed": []
   },
   "p5": {
-    "state": "IOS27_COMPONENT_PAIR_PASS_IOS175_FRESH_RESERVATION_REVIEWED",
+    "state": "PR4_PR5_CONCRETE_OFF_QUALIFIED_PR6_FINITE_EXIT_SELECTED",
     "source_heads": [
       "2d3de2170248c386a5e7f7de4477ecd703e0c504",
       "06e87120c8d88204f32b6821840ef8a4f0c6c41d",
@@ -175,7 +175,7 @@
     ],
     "scope": "One common deterministic Monitor plus legacy instrumentation Off fixture, reused PR4 middle cell for both adjacent comparisons; source-matched accepted full suites preserved.",
     "sdk_edits": 0,
-    "tests_run": 18,
+    "tests_run": 36,
     "gates_closed": [],
     "fixture": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/DefaultOffMonitorTraceTests.swift",
@@ -201,7 +201,7 @@
       "sha256": "c5ed5dea71ee67a2bd87397f1d0250cf435378f456ec83e57f8556cc635647ca"
     },
     "focused_tests_passed": 37,
-    "native_runs_added": 3,
+    "native_runs_added": 6,
     "finite_pr6_exit": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-finite-exit-packet.json",
       "sha256": "95b60c9f269d9c588133b535c2ee9b81ab3640fceccd0bb27206b1fd89161806"
@@ -232,9 +232,9 @@
       "sha256": "0c27a203e010dbe8230c63d249f76e85485ba6df39eea6eafce72029a743f06b"
     },
     "saved_condition_controls_passed": 5,
-    "qualified_cells": 3,
-    "remaining_cells": 3,
-    "interpretation_limit": "All three iOS27 Monitor/legacy-factory cells qualify; both adjacent pairs preserve all9scenarios. Original baseline INCOMPLETE remains immutable beside its reviewed saved-only correction. No universal Off footprint/integration/release credit.",
+    "qualified_cells": 6,
+    "remaining_cells": 0,
+    "interpretation_limit": "All six cells and36adjacent comparisons qualify. Independent review closes required concrete PR4/PR5 dispatch/read/state/lock/lifetime/exclusive-factory obligations at recorded heads through source reachability and exact reused On/lifetime witnesses. Numeric complete-helper coverage, universal allocation/class size, configured input/current-stack integration and release credit are not claimed. Original baseline INCOMPLETE remains immutable beside separate reviewed saved correction.",
     "ios27_comparison": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/ios27-comparison.json",
       "sha256": "d8496a65827992ef2136d3e5d396b629b83132a0deee0d43863a374e619353c4"
@@ -262,7 +262,29 @@
     "fresh_ios175_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/ios175-fresh-reservation/review.json",
       "sha256": "40fefae0bca0488db0dc50b77b88927b38a9fc791fe22511695ede501d908804"
+    },
+    "scenario_captures": 54,
+    "adjacent_comparisons_passed": 36,
+    "matrix_comparison": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/matrix-comparison.json",
+      "sha256": "80ce9fb0a14d050155e14cb9361bc855e08c91712bcb2fca74ad319f8c81eb24"
+    },
+    "final_applicability_packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/final-applicability-packet.json",
+      "sha256": "d0ff184b7a63fdd2661dea84c1c6cf1e6c8b18b408bbd8557d001a87111a3e8c"
+    },
+    "final_applicability_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/final-review.json",
+      "sha256": "7d4a8adc2665202b183d349f64b1678cc4e9425b496ba231f8bc335e4561226b"
+    },
+    "pr6_residual_design": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-residual-design-cycle1/packet.json",
+      "sha256": "adf33d0c6168f9d60c1e70a53eca001fba3330f1b241336a3751630d043e975c"
+    },
+    "publication_schema_stop": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/post-review-publication-validation-stop/stop.json",
+      "sha256": "3b8444c4634ef2f1c61b97264d5bd6d5a301520d7d8e32e5727f4ffd6a6b915c"
     }
   },
-  "updated_at": 1791148147.667874
+  "updated_at": 1791150216.0765598
 }
