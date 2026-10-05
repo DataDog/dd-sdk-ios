@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "state": "CURRENT_USER_AUTHORITY_NO_ATTEMPT_CAP",
+  "literal_user_instruction": "You have no limits of attempts anymore",
+  "recorded_at": 1791217947.527593,
+  "owner": "/root",
+  "project_attempt_limit": null,
+  "authorization": "Fresh attempts and retries within the existing authorized S2/S3 task scope need no new approval solely because a prior attempt stopped or failed. This later instruction supersedes historical project or mechanism attempt caps.",
+  "execution_contract": [
+    "Each fresh run has its own immutable source/command/evidence identity and execution/cleanup deadlines",
+    "Retain every old result, consumed run and separate restoration; never reopen an old attempt or extend its deadline",
+    "One build/test release per runner cell is an execution unit, not a limit on the number of future attempts",
+    "Reuse accepted source-matched evidence; each selected task still closes an existing gate or investigates a concrete regression",
+    "Consequential runner/oracle/source changes retain designated review before native use",
+    "Human input/readiness, authentication, authorized caffeinate duration and publication remain separate prerequisites"
+  ],
+  "gates_closed": []
+}

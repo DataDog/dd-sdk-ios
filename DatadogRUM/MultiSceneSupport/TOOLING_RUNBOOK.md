@@ -125,8 +125,10 @@ count, console PASS or a not-run target cannot substitute.
   physical acceptance are separate. A different environment cannot silently close
   the required one. FBC is Flutter-only downstream.
 - Native input without the expected effect, semantic boot failure and unfinalized
-  XCTest are not SDK acceptance. Respect the admitted retry limit and preserve
-  skipped arms. A changed prerequisite needs a separately bounded continuation.
+  XCTest are not SDK acceptance. The user's [5 October directive](Results/attempt-policy-20261005.json)
+  removes attempt caps for the authorized work. Start each retry as a fresh bounded
+  run, preserve skipped arms and prior verdicts, and never extend an old deadline.
+  Repaired prerequisites and consequential changes still need current evidence and review.
 - When desktop/device access fails, retain and clean the partial run, request the
   missing prerequisite once and continue independent work. Caffeinate requires a
   user-authorized duration and cannot unlock an existing lock.

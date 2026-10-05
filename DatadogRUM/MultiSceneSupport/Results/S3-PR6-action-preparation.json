@@ -28,7 +28,7 @@
   ],
   "controls_defined": 22,
   "design_reviewer": "/root/h10_backend_reviewer",
-  "next_action": "Materialize one fresh exact continuation using the reviewed selected-workspace dependency correction, then obtain its required new native/awake authority. The consumed attempt made one failed build and zero tests; no retry or cutoff extension. P2 human preparation is reviewed; actual fresh post-plan inputs/authority/readiness and exact materialized review precede invitation.",
+  "next_action": "Use the current unlimited-attempt authority to continue the SDK-free control in a fresh exact-reviewed cell with the repaired selected-workspace dependency. Obtain only the missing sufficient awake duration; no renewed attempt approval. Preserve old attempts and deadlines. P2 human preparation remains reviewed, with actual fresh readiness/materialization required before its residual candidate.",
   "implementation_admitted": true,
   "native_admitted": false,
   "native_runs": 6,
@@ -3990,5 +3990,9 @@
   "matched_lifetime_control_unissued_continuation": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-bound-continuation/proposal.json",
     "sha256": "9512e1a92cd4190a6ff3d706b9583f1a1b85049f53ec585de5d23a1363b4c836"
+  },
+  "current_attempt_authority": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/attempt-policy-20261005.json",
+    "sha256": "4a455a7d817bd900f2f7ca21cc403c2ee934f825b4e7d0c2ba9eb575787f2411"
   }
 }

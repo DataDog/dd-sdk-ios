@@ -109,7 +109,7 @@ is excluded. Current S2 source/lifetime proof belongs to
   verified another worktree. Original UNQUALIFIED/INCOMPLETE/INVALID and separately reviewed scoped Shutdown/worker/Xcode
   restoration stay distinct. A two-assertion workspace-binding repair passes10 offline controls and designated source-only
   review; the identical141-file local dependency now verifies at the selected destination. A separately bounded continuation
-  needs fresh exact module/receipt parameters and native/awake authority. No control result or SDK cause follows.
+  needs fresh exact module/receipt parameters and awake authority; retries are now authorized by the user’s5October directive. No control result or SDK cause follows.
   Original INCOMPLETE grading stays beside the reviewed saved-only FAIL reconciliation. MinimumSwift6.2, watch floor,
   final-source integration and release acceptance remain open.
 
