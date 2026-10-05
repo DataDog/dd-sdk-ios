@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "FOUR_CONFIGURED_METHODS_PARTIAL_QUALIFIED_LIFETIME_DISCRIMINATOR_UNEXECUTED",
+  "state": "PRIVATE_COMPONENTS_QUALIFIED_CONFIGURED_ATTACHED_AND_LIFETIME_DISCRIMINATOR_REVIEWED_FINAL_APPLICABILITY_PENDING",
   "delivery_slice": "PR6",
   "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9",
   "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/worktree",
@@ -28,13 +28,13 @@
   ],
   "controls_defined": 22,
   "design_reviewer": "/root/h10_backend_reviewer",
-  "next_action": "Use the current unlimited-attempt authority to continue the SDK-free control in a fresh exact-reviewed cell with the repaired selected-workspace dependency. Obtain only the missing sufficient awake duration; no renewed attempt approval. Preserve old attempts and deadlines. P2 human preparation remains reviewed, with actual fresh readiness/materialization required before its residual candidate.",
+  "next_action": "Complete P6R7 finite source applicability and qualified/held dispositions; then advance the declared PR7 consumer source design. A human SwiftUI split candidate remains separately prepared.",
   "implementation_admitted": true,
   "native_admitted": false,
   "native_runs": 6,
   "sdk_edits": 6,
   "gates_closed": [],
-  "updated_at": 1791212434.803689,
+  "updated_at": 1791231647.728889,
   "previous_definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/next-pr6-controls-definition.json",
     "sha256": "7b374396fc3b8a33818520301d7a2ca3a56c53e7be70360e25fdfd154ece0e4e"
@@ -1674,7 +1674,7 @@
     "P6D5"
   ],
   "partial_subcases": {
-    "P6D4": "Owner invalidation, sync/async scopes and bounded3On27/1fallback17.5 callback patterns qualified. Automatic previous-IMP/input call-site integration and wholeP6D4 remain held."
+    "P6D4": "Owner invalidation, sync/async scopes, bounded callback patterns and selected configured previous-IMP/input call-site assertions qualify at their recorded sources. Original instrumented lifetime FAIL remains; SDK reference release/key restoration passes and matching SDK-free immediate UI failures establish fixture confounding. Whole P6D4/current-stack/minimum-compiler acceptance remains held."
   },
   "next_scope_design": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/next-execution-scope-design-cycle2.json",
@@ -2294,7 +2294,7 @@
     "sha256": "92668c89c57b4f31476ac0c6f044942a1df43eef4cfb35bcc9edc8c6c937802b"
   },
   "input_sdk_head": "b19953812e83da63571b2d771d88e28d6389c6be",
-  "input_qualified_scope": "Private source input adapter/feature wiring, preserved legacy/fallback and actual typed Void UIApplication forwarding/lifecycle:115 invocations/67 distinct cases. Safe no-auto-predicate factory/manual plus direct legacy eligible/keyboard-private/filter touch probes additionally match parent/current default/explicitOff on27/17.5; all9 new input helper counters zero oncurrent27 with separate8saved/1new positive witnesses. Configured automatic native input, genuine attached scene/window, allocation/performance/platform and wholePR6/F12/API/hardware remain held.",
+  "input_qualified_scope": "Accepted private input/feature wiring, legacy fallback and typed Void forwarding remain. Four genuine attached configured tap/scroll methods qualify at e1. SDK Monitor/handler/proxy release and host-key restoration pass in the preserved failed lifetime method; matching SDK-free window/controller/scroll failures establish only immediate-boundary fixture confounding. No eventual UIKit release, whole PR6/current-stack/API/hardware/release claim.",
   "next_scroll_design_preparation": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/scroll-design-review-cycle3/design.json",
     "sha256": "047756c7138eea6054c18b8676ed831adb4887e202d545e54310bf20f482aa21"
@@ -3625,8 +3625,7 @@
       "Reviewed visionOS arm64 compilation at frozen e1b6; no runtime claim"
     ],
     "missing": [
-      "Configured owned-window lifetime cause through one matched SDK-free UIKit fixture control",
-      "P6R7 final exact slice applicability review"
+      "P6R7 final finite exact slice applicability review"
     ],
     "excluded": [
       "Timing/performance campaign",
@@ -3638,7 +3637,7 @@
       "sha256": "95b60c9f269d9c588133b535c2ee9b81ab3640fceccd0bb27206b1fd89161806"
     },
     "residual_items": 7,
-    "state": "FOUR_CONFIGURED_METHODS_PARTIAL_QUALIFIED_ONE_LIFETIME_DISCRIMINATOR",
+    "state": "CONFIGURED_ATTACHED_METHODS_AND_SDK_FREE_DISCRIMINATOR_REVIEWED_FINAL_APPLICABILITY_PENDING",
     "dependency_state": "SATISFIED_CONCRETE_PR4_PR5_OFF",
     "dependency_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/final-review.json",
@@ -3791,6 +3790,18 @@
     "lifetime_host_current_preparation": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/host-current-preparation.json",
       "sha256": "52d638811f557103ef219d8251f0703d4b2b0557996d727a3c04a612036e4eae"
+    },
+    "actual_lifetime_discriminator": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR6-lifetime-discriminator-20261005.json",
+      "sha256": "997bd7a0d7cfef14d5d37c14f866641666d59e39b61b1ee1757e62ba93c447cd"
+    },
+    "actual_lifetime_discriminator_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-bound-continuation/current-parameters-cf8c9c8369/actual-review.json",
+      "sha256": "ba5502909119b1b1d23d2b587041ba0d9fcb9644977614262ca743d337b5d451"
+    },
+    "final_applicability_packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-bound-continuation/current-parameters-cf8c9c8369/finite-pr6-exit-packet.json",
+      "sha256": "3ffaecb432aff0b15f9460f0c2eb74e2c49bb3ca5a2dfc6306c419df36a63126"
     }
   },
   "native_parameters_disposition": {
@@ -3994,5 +4005,13 @@
   "current_attempt_authority": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/attempt-policy-20261005.json",
     "sha256": "4a455a7d817bd900f2f7ca21cc403c2ee934f825b4e7d0c2ba9eb575787f2411"
+  },
+  "matched_lifetime_control_actual_discriminator": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR6-lifetime-discriminator-20261005.json",
+    "sha256": "997bd7a0d7cfef14d5d37c14f866641666d59e39b61b1ee1757e62ba93c447cd"
+  },
+  "matched_lifetime_control_actual_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-bound-continuation/current-parameters-cf8c9c8369/actual-review.json",
+    "sha256": "ba5502909119b1b1d23d2b587041ba0d9fcb9644977614262ca743d337b5d451"
   }
 }

@@ -93,25 +93,15 @@ is excluded. Current S2 source/lifetime proof belongs to
 
 - [PR5 scene handler](Results/S3-PR5-scene-handler-preparation.json): unknown/disconnected eligibility and the invented-scene factory fixture are corrected and independently re-reviewed. All64 exact components pass on27 and17.5; source/compiler/products, native results and separate original-state cleanup join. Final P5D1-P5D8 component review passes. Full-current RUM suites also qualify1041cases/1077invocations on each runtime; the reviewed count correction grades existing exports without repeating tests. Qualified source is locally checkpointed at8cd7793d3 using the authorized unsigned fallback. Concrete exclusive-Off now independently qualifies at this source; genuine OS ordering, activation, wholeF12, API and hardware remain separate. Original BLOCKED reviews and consumer stops stay immutable.
 
-- [PR6 owner](Results/S3-PR6-action-preparation.json) retains accepted activation, scopes, callbacks, private input/scroll,
-  bounded Off and platform components at their actual sources. Four genuine attached configured tap/scroll methods now
-  qualify at e1 through independent actual review; lifetime/overall attempt FAIL, cleanup PASS. SDK monitor/handler/proxy
-  references release and the host key restores. Immediate UIKit window/controller/scroll retention and appearance warnings require the SDK-free discriminator;
-  no SDK retention cause follows. The matching SDK-free control and saved consumer pass
-  source review with27 consumer controls. The isolated linked control and identical UIKit host are now applied;
-  the original manifest is a frozen read-only input. Seven new binding controls pass. Review found one missing test-host build edge,
-  corrected through Xcode Host Application and verified in Target Dependencies; the successor passes the same-finding
-  source/policy review. Fresh one-hour authority and exact parameter review led to one dispatch, which stopped before
-  admission/build/test on a missing inherited selection field. Parent retirement, unchanged Shutdown and Xcode selection
-  restoration are verified separately. The one-line selector correction passes10 controls/source review. Corrected exact parameters/static trust pass but stayed
-  unadmitted when the full original reservation no longer fit. A fresh one-hour grant led to one build, which stopped
-  before boot/test/install because the selected worktree lacked the existing OpenTelemetryApi framework; the older receipt
-  verified another worktree. Original UNQUALIFIED/INCOMPLETE/INVALID and separately reviewed scoped Shutdown/worker/Xcode
-  restoration stay distinct. A two-assertion workspace-binding repair passes10 offline controls and designated source-only
-  review; the identical141-file local dependency now verifies at the selected destination. A separately bounded continuation
-  needs fresh exact module/receipt parameters and awake authority; retries are now authorized by the user’s5October directive. No control result or SDK cause follows.
-  Original INCOMPLETE grading stays beside the reviewed saved-only FAIL reconciliation. MinimumSwift6.2, watch floor,
-  final-source integration and release acceptance remain open.
+- [PR6 owner](Results/S3-PR6-action-preparation.json) retains accepted activation, scopes, callbacks, input/scroll,
+  concrete Off and platform components. Four genuine attached configured methods qualify at e1. The
+  [SDK-free discriminator](Results/S3-PR6-lifetime-discriminator-20261005.json) independently confirms fixture
+  confounding at the immediate UI-release boundary: window/controller/scroll assertions also fail without instrumentation.
+  Original instrumented/control FAIL remain; SDK Monitor/handler/proxy release and host-key restoration pass.
+  Actual control evidence is COMPLETE and cleanup PASS, with task removal and original device/worker/Xcode state verified.
+  No SDK retention cause, eventual UIKit release or current102d final-stack claim follows. P6R7 final applicability,
+  real minimumSwift6.2, watch runtime/distribution and release acceptance remain open. Earlier failed admissions,
+  missing-dependency stop and INVALID cleanup remain at their owning records; no equivalent control is needed.
 
 - [P2 progress](Results/execution-improvements-20261004.json) preserves original failed routes and separate
   restoration. The ordering/dispatcher correction has28 reviewed controls. The extra one-attempt grant is now consumed:

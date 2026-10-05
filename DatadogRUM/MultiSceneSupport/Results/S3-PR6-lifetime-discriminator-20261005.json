@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "state": "REVIEWED_SDK_FREE_CONTROL_FIXTURE_CONFOUNDING_AT_IMMEDIATE_UI_RELEASE_BOUNDARY",
+  "existing_gate": "S3:F12",
+  "finite_items": [
+    "P6R1",
+    "P6R2",
+    "P6R7"
+  ],
+  "source_head": "e1b6d5e5af36bbbad48ee74dccf7675f86376b9a",
+  "actual_packet": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-bound-continuation/current-parameters-cf8c9c8369/actual-result-packet.json",
+    "sha256": "68e2b140d4553cc32d5ecb9f0bda428d2ffefe7aeee1730145032691182e1af7"
+  },
+  "actual_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-bound-continuation/current-parameters-cf8c9c8369/actual-review.json",
+    "sha256": "ba5502909119b1b1d23d2b587041ba0d9fcb9644977614262ca743d337b5d451"
+  },
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-bound-continuation/current-parameters-cf8c9c8369/definition.json",
+    "sha256": "22f7c0b830fa4b68e68b6f15c38ee69e60b9929d5af260ac28af52c50ec221b7"
+  },
+  "parameter_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-bound-continuation/current-parameters-cf8c9c8369/review.json",
+    "sha256": "f8b4815e3ac9ffef18d374afc73caa71d8eee1ef51fde83c6e2736ee62d72632"
+  },
+  "parent_return": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-bound-continuation/current-parameters-cf8c9c8369/parent-return.json",
+    "sha256": "b947d0b803dd4944dbbc396f53c613b62b6d17e4b6d0a67fb13648f8f69e2c6c"
+  },
+  "saved_grade_return": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-bound-continuation/current-parameters-cf8c9c8369/grade-actual-return.json",
+    "sha256": "0943e29a64b4949717f5649bac419102f57b3a98f16b9baabf0abccaef5a1473"
+  },
+  "saved_grade": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-bound-continuation/current-parameters-cf8c9c8369/grade.stdout",
+    "sha256": "81efaedf30b5205f0897389472f75947eb46920c772f1554658f9bfbedf54df7"
+  },
+  "cleanup": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-bound-continuation/current-parameters-cf8c9c8369/runtime/cleanup.json",
+    "sha256": "8da8f9868ef30dc010be01f8048cfa663d12bd23584df6b403cd2cca52f6784f"
+  },
+  "restoration": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-bound-continuation/current-parameters-cf8c9c8369/postreturn-retirement.json",
+    "sha256": "cd7806f98e822d36de18e7a8247bd16deb13fb7fda66326e39592d7c41a86cbc"
+  },
+  "source_boundary": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-bound-continuation/current-parameters-cf8c9c8369/pr6-to-current-source-boundary.json",
+    "sha256": "00ba42fd8ecf4c98173aeda1912d543ba1be0bf375240ddbd939cd3e11211bf0"
+  },
+  "minimum_toolchain_inventory": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-bound-continuation/current-parameters-cf8c9c8369/current-minimum-toolchain-inventory.json",
+    "sha256": "02f009223097c32b9b215a75c394c24a0367c660772e607c07d0cd4b1f5c8655"
+  },
+  "scenario": "FAIL",
+  "evidence": "COMPLETE",
+  "cleanup_verdict": "PASS",
+  "same_failed_assertions": [
+    "weakWindow",
+    "weakController",
+    "weakScroll"
+  ],
+  "conclusion": "The same immediate UI release assertions fail without instrumentation; this boundary does not establish SDK-caused retention. Original instrumented FAIL and accepted SDK reference-release/host-key assertions remain.",
+  "builds": 1,
+  "native_tests": 1,
+  "sdk_edits": 0,
+  "accepted_suites_rerun": 0,
+  "gates_closed": [],
+  "final_applicability_packet": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-bound-continuation/current-parameters-cf8c9c8369/finite-pr6-exit-packet.json",
+    "sha256": "3ffaecb432aff0b15f9460f0c2eb74e2c49bb3ca5a2dfc6306c419df36a63126"
+  },
+  "final_applicability_review": null,
+  "next_action": "Complete P6R7 finite source applicability and qualified/held dispositions; then advance the declared PR7 consumer source design. A human SwiftUI split candidate remains separately prepared.",
+  "limits": [
+    "No eventual UIKit release, UIKit root cause, SDK regression or universal lifetime claim",
+    "No current102d final-stack or whole PR6/F12/release credit",
+    "Actual Swift6.2 and watch nominal9/binary26 runtime/distribution remain held"
+  ],
+  "updated_at": 1791231647.7262669
+}

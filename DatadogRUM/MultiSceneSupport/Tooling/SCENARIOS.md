@@ -54,6 +54,12 @@ is insufficient. Do not add a synchronous MainActor XCTest wait that can itself
 retain native hosts: keep a matched SDK-off control and condition-based async checks.
 Start weak-release deadlines at the ownership-ending call, before event collection.
 
+An immediate weak UIKit release failure needs a matched fixture without SDK
+instrumentation before attribution. Compare the exact failed source assertions and
+SDK-owned release witnesses; matching UI failures qualify only fixture confounding
+at that boundary. Preserve both FAIL results. Do not infer eventual release, a UIKit
+root cause or SDK retention, or repeat equivalent controls without a new discriminator.
+
 Separate inherited traits from accepted reader mounts. Reject disconnected
 publication without consuming a generation. Reconnect callbacks must restore latest
 accepted state before immediate Resource/Log markers, preserving peer continuity,
@@ -195,7 +201,8 @@ and failures. Same-source variability, exact foreground owners and callback sequ
 come before SDK attribution. A delayed stack sample may arrive near recovery; retain
 its timestamp. Idle app stacks and XCTest snapshot work do not qualify performance.
 Collector disappearance with a responsive app is partial input evidence; a successful
-button does not qualify switches/scrolls. Stop at the declared attempt limit.
+button does not qualify switches/scrolls. Preserve each cell’s fixed command release and deadlines. Fresh attempts follow
+current user authority; historical project caps do not limit a newly admitted cell.
 
 Passive input observations must not change the stimulus. A passing native test can
 still fail the diagnostic ownership/boundary oracle. Do not loosen that oracle or
