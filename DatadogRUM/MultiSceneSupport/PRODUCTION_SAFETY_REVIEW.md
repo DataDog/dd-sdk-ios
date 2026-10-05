@@ -59,7 +59,7 @@ to the linked results and [delivery queue](Results/S1-delivery-queue.json).
 
 | Observation / obligation | Disposition and evidence limit |
 | --- | --- |
-| S2 automatic capture | [Coverage owner](Results/S2-coverage-remaining-preparation.json) preserves accepted UIKit evidence, four SwiftUI cells and the distinct saved split reference. Original candidate failure and separate restoration remain immutable. [Pre-armed service](Results/S2-prearmed-owner-preparation-20261003.json) now passes exact offline composition review after owned-End, request lineage, quiescence and Start-publication corrections. P2 requires one complete automatic supported-tool capture-to-grading/cleanup qualification before a human invitation; C09/C10 and actual H14 fold proof remain open. |
+| S2 automatic capture | [Coverage owner](Results/S2-coverage-remaining-preparation.json) preserves accepted UIKit evidence, four SwiftUI cells and the distinct saved split reference. Original candidate failure and separate restoration remain immutable. [Pre-armed service](Results/S2-prearmed-owner-preparation-20261003.json) now passes exact offline composition review after owned-End, request lineage, quiescence and Start-publication corrections. P2 automatic capture composition is independently qualified. The complete human workspace/Home-terminal/saved-publication/restoration preparation passes designated re-review after the circular readiness binding is corrected with9 actual-shape controls;26 earlier controls remain accepted. Fresh actual materialization/authority/readiness and native evidence remain required; C09/C10 and actual H14 fold proof remain open. |
 | Ordinary hosting / S2 H16 | [Saved assessment](Results/S2-H16-scoped-assessment.json) closes ordinary hosting parity. Original manual backend gap remains; no gesture, fold or S3 semantic claim. |
 | Duo/app acceptance | [F08 comparison](Results/S2-F08-candidate-comparison.json) qualifies finite app behavior and native/Browser owners. It cannot certify automatic tracking or physical Duo. [Pre-app boot failures](Results/S2-Duo-environment-readiness.json) have no established SDK cause. |
 | Networking QoS | [EXP204](Results/EXP-204-network-qos.json) establishes baseline recurrence with incomplete stacks, not root cause, harmlessness or sanitizer/performance clearance. Candidate-specific warnings remain in their results. |
@@ -96,13 +96,17 @@ is excluded. Current S2 source/lifetime proof belongs to
 - [PR6 owner](Results/S3-PR6-action-preparation.json) retains accepted activation, scopes, callbacks, private input/scroll,
   bounded Off and platform components at their actual sources. Four genuine attached configured tap/scroll methods now
   qualify at e1 through independent actual review; lifetime/overall attempt FAIL, cleanup PASS. SDK monitor/handler/proxy
-  references release and the host key restores. Immediate UIKit window/controller/scroll retention is fixture-confounded,
-  with appearance warnings; no SDK retention cause follows. The matching SDK-free control and saved consumer pass
+  references release and the host key restores. Immediate UIKit window/controller/scroll retention and appearance warnings require the SDK-free discriminator;
+  no SDK retention cause follows. The matching SDK-free control and saved consumer pass
   source review with27 consumer controls. The isolated linked control and identical UIKit host are now applied;
   the original manifest is a frozen read-only input. Seven new binding controls pass. Review found one missing test-host build edge,
   corrected through Xcode Host Application and verified in Target Dependencies; the successor passes the same-finding
-  source/policy review. No native control outcome or admission follows;
-  fresh awake authority and executable parameter receipt remain, and the original lifetime failure is unchanged.
+  source/policy review. Fresh one-hour authority and exact parameter review led to one dispatch, which stopped before
+  admission/build/test on a missing inherited selection field. Parent retirement, unchanged Shutdown and Xcode selection
+  restoration are verified separately. The one-line selector correction passes10 controls/source review. Corrected exact parameters/static trust pass but stayed
+  unadmitted when the full original reservation no longer fit. A fresh one-hour grant now covers the still-unexecuted
+  single control; a separate integrity-check build must retire before refreshed admission. No control result follows,
+  and the original lifetime failure is unchanged.
   Original INCOMPLETE grading stays beside the reviewed saved-only FAIL reconciliation. MinimumSwift6.2, watch floor,
   final-source integration and release acceptance remain open.
 
@@ -112,7 +116,9 @@ is excluded. Current S2 source/lifetime proof belongs to
   cleanup and original app/device/display/Xcode restoration independently qualified. Separate saved-only grading passes
   21rows/3view owners; it does not reconstruct the missing original standalone native grade return. Exact TTY equality
   remains false with only Darwin PENDIN differing. This is automatic capture-composition credit only; residual
-  human/gesture/Home/fold and physical orientation assertions remain unqualified. No SDK regression or release closure follows.
+  human/gesture/Home/fold and physical orientation assertions remain unqualified. Complete human preparation passes
+  designated re-review after the sole circular readiness binding is corrected with9 actual-shape controls. Actual
+  materialized inputs/readiness/authority and native evidence remain; no SDK regression or release closure follows.
 
 - P5 has one source-paired Monitor/legacy-factory Off fixture in linked verification
   worktrees at PR3/PR4/PR5. Transport/consumer review findings are corrected
