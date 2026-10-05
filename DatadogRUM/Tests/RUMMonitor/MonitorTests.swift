@@ -328,6 +328,95 @@ extension MonitorTests {
     private var sceneA: RUMSceneIdentifier { .init(rawValue: "scene-a") }
     private var sceneB: RUMSceneIdentifier { .init(rawValue: "scene-b") }
 
+    @MainActor
+    func testSceneDisconnect_projectsPeerThroughHandlerAndMonitorWithoutRevivingRetainedOwner() throws {
+        XCTAssertTrue(Thread.isMainThread)
+        for keepPeerActive in [true, false] {
+            let clock = DateProviderMock(now: snapshotDate)
+            let feature = FeatureScopeMock(context: .mockWith(sdkInitDate: snapshotDate))
+            let fatal = FatalErrorContextNotifierMock()
+            let manager = AppStateManager(featureScope: feature, processId: UUID(), syntheticsEnvironment: false)
+            let watchdog = WatchdogTerminationMonitor(
+                appStateManager: manager,
+                checker: WatchdogTerminationChecker(appStateManager: manager, featureScope: feature),
+                storage: nil,
+                feature: feature,
+                reporter: WatchdogTerminationReporterMock(didSend: XCTestExpectation(description: "no watchdog termination"))
+            )
+            watchdog.currentState = .started
+            let monitor = Monitor(
+                dependencies: .mockWith(
+                    featureScope: feature,
+                    trackBackgroundEvents: false,
+                    viewCache: ViewCache(dateProvider: clock, isMultiSceneTrackingEnabled: true),
+                    fatalErrorContext: fatal,
+                    watchdogTermination: watchdog,
+                    featureFlags: [.multiSceneTracking: true, .viewUpdates: false]
+                ),
+                dateProvider: clock
+            )
+            let center = NotificationCenter()
+            let handler = RUMSceneViewsHandler(
+                dateProvider: clock,
+                uiKitPredicate: nil,
+                swiftUIPredicate: nil,
+                swiftUIViewNameExtractor: nil,
+                notificationCenterProvider: .init(applicationCenter: center),
+                isMultiSceneApplication: true,
+                sceneIdentifierProvider: { _ in nil },
+                sceneIdentifierFromNotification: { notification in
+                    (notification.object as? NSString).map { RUMSceneIdentifier(rawValue: $0 as String) }
+                },
+                initialSceneActivityProvider: { [self.sceneA: true, self.sceneB: true] }
+            )
+            handler.publish(to: monitor)
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = .sortedKeys
+            func assertSnapshot(_ expected: Data?) throws {
+                var stored: RUMViewEvent?
+                feature.rumDataStore.value(forKey: .watchdogRUMViewEvent) { (event: RUMViewEvent?) in stored = event }
+                XCTAssertEqual(try fatal.view.map { try encoder.encode($0) }, expected)
+                XCTAssertEqual(try stored.map { try encoder.encode($0) }, expected)
+            }
+            handler.startView(key: "peer", name: "peer", attributes: [:], sceneIdentifier: sceneA)
+            let peerID = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA))?.viewID)
+            let peerSnapshot = try encoder.encode(XCTUnwrap(fatal.view))
+            clock.now = snapshotDate.addingTimeInterval(1)
+            handler.startView(key: "owner", name: "owner", attributes: [:], sceneIdentifier: sceneB)
+            let ownerID = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB))?.viewID)
+            XCTAssertNotEqual(ownerID, peerID)
+            XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, ownerID)
+            XCTAssertEqual(fatal.view?.view.id, ownerID)
+            try assertSnapshot(encoder.encode(XCTUnwrap(fatal.view)))
+            var resource = RUMStartResourceCommand.mockWith(resourceKey: "owned-resource", time: clock.now)
+            resource.target = .scene(sceneB)
+            monitor.process(command: resource)
+            clock.now = snapshotDate.addingTimeInterval(2)
+            center.post(name: UIScene.didDisconnectNotification, object: sceneB.rawValue as NSString)
+            XCTAssertNil(monitor.rumContextSnapshot(for: .scene(sceneB))?.viewID)
+            XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, peerID)
+            let retained = try XCTUnwrap(monitor.applicationScope.activeSession?.viewScopes.first { $0.viewUUID.toRUMDataFormat == ownerID })
+            XCTAssertFalse(retained.isActiveView)
+            try assertSnapshot(peerSnapshot)
+            center.post(name: UIScene.willEnterForegroundNotification, object: sceneB.rawValue as NSString)
+            handler.startView(key: "disconnected", name: nil, attributes: [:], sceneIdentifier: sceneB)
+            XCTAssertNil(monitor.rumContextSnapshot(for: .scene(sceneB))?.viewID)
+            try assertSnapshot(peerSnapshot)
+            if !keepPeerActive {
+                clock.now = snapshotDate.addingTimeInterval(3)
+                handler.stopView(key: "peer", attributes: [:], sceneIdentifier: sceneA)
+                XCTAssertNil(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID)
+                try assertSnapshot(nil)
+            }
+            var completion = RUMStopResourceCommand.mockWith(resourceKey: "owned-resource", time: snapshotDate.addingTimeInterval(4))
+            completion.target = .scene(sceneB)
+            monitor.process(command: completion)
+            XCTAssertEqual(feature.eventsWritten(ofType: RUMResourceEvent.self).last?.view.id, ownerID)
+            XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, keepPeerActive ? peerID : nil)
+            try assertSnapshot(keepPeerActive ? peerSnapshot : nil)
+        }
+    }
+
     private func sceneMonitor(scope: FeatureScope, clock: DateProviderMock, enabled: Bool = true) -> Monitor {
         Monitor(
             dependencies: .mockWith(
