@@ -113,7 +113,8 @@ is excluded. Current S2 source/lifetime proof belongs to
   correction is reviewed; the route stays stopped. The distinct workspace route
   has a fresh linked source tree, but complete composition review found nine
   orchestration issues. Cycle3 passes63 offline controls but re-review retains three
-  import/retirement/partial-allocation findings; cycle4 corrections and native qualification remain. No human session is qualified.
+  import/retirement/partial-allocation findings. Their consolidated cycle4 correction passes
+  four incremental controls/ten subcases and full composition review; actual access/qualification remain. No human session is qualified.
 
 - P5 has one source-paired Monitor/legacy-factory Off fixture in linked verification
   worktrees at PR3/PR4/PR5. Transport/consumer review findings are corrected
@@ -128,7 +129,9 @@ is excluded. Current S2 source/lifetime proof belongs to
   The owning progress records a finite seven-item PR6 exit packet. Accepted suites are preserved; no release gate or universal footprint
   claim follows from preparation.
 
-- [PR9 owner](Results/S3-PR9-representative-preparation.json) records an On-only full
-  representative fatal/watchdog projection in four private uncommitted SDK/test paths.
-  Source review is underway; six methods are defined but unexecuted. No real watchdog
-  termination, Off compatibility or release credit is established.
+- [PR9 owner](Results/S3-PR9-representative-preparation.json) records the private On
+  representative fatal/watchdog projection at c6fbf17a. Eight focused iOS27.0 unit
+  methods pass, including the legacy Off final-view control. Source/result applicability
+  review qualifies those unit controls partially; retained-stop, disconnect, full Off/platform/watchdog
+  and release acceptance remain open.
+  Original Mac and changed-test iOS compiler failures and separate restorations are preserved.

@@ -147,6 +147,7 @@ DELIVERY_SOURCES = {
     'PR4': ('Results/S3-PR4-monitor-preparation.json', 'local_sdk_checkpoint', 'head'),
     'PR5': ('Results/S3-PR5-scene-handler-preparation.json', 'sdk_head', None),
     'PR6': ('Results/S3-PR6-action-preparation.json', 'scroll_sdk_head', None),
+    'PR9': ('Results/S3-PR9-representative-preparation.json', 'local_sdk_checkpoint', 'head'),
 }
 QUALIFICATION_STATES = {
     'implementation': {'NOT_IMPLEMENTED', 'PRIVATE_IMPLEMENTED'},

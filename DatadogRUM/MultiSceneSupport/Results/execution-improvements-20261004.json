@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "state": "P1_P3_P4_COMPLETE_P2_CYCLE4_CORRECTION_PR6_PROPOSAL_PASS_PR9_PRIVATE_PREPARATION",
+  "state": "P1_P3_P4_COMPLETE_P2_PR6_ACCESS_PENDING_PR9_PARTIAL_UNIT_QUALIFIED",
   "owner": "/root",
   "plan": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
     "sha256": "124e31ba7624d0acd88af34f748414bbfb7271746825acfb9ef9a5fd940dcf96"
   },
-  "selected": "P5_PR6_FINITE_EXIT",
+  "selected": "P5_PR9_RETAINED_REPRESENTATIVE_ASSERTION",
   "native_admitted": false,
   "native_runs": 8,
   "gates_closed": [],
-  "next_action": "PR6 reviewed five-case adapter awaits approved Xcode workspace access. P2 cycle3 review retained three import/retirement/partial-allocation findings; owner is correcting them together in cycle4. Advance PR9 private representative context source review and selected tests independently; no human invitation.",
+  "next_action": "Close the retained stopped-representative/late-completion assertion with one focused new unit case; reuse unchanged disconnect and develop Off witnesses before admitting further native work. P2 and PR6 await the already-requested Xcode workspace access.",
   "p1": {
     "required_s2_tasks": 3,
     "required_s3_tasks": 20,
@@ -36,7 +36,11 @@
       "sha256": "d7f676326b76bde74b95257113b0c1defcba1df909c11d55b9432d70aacaa126"
     },
     "gates_closed": [],
-    "protected_state": "UNCHANGED"
+    "protected_state": "UNCHANGED",
+    "source_binding_incremental_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/main-pr9-binding-controls/receipt.json",
+      "sha256": "bcfb01a41e5ac753a2c68e1e84f2cb9e2317c51edffa1b5dc82d7096c67223ce"
+    }
   },
   "p2": {
     "state": "STOPPED_AUTOMATIC_QUALIFICATION_UNQUALIFIED",
@@ -164,7 +168,7 @@
       "next_action": "Owner corrects all three together in a new private cycle4; full review and one actual supported-tool qualification remain."
     },
     "distinct_workspace_cycle4": {
-      "state": "FOUR_INCREMENTAL_CONTROLS_TEN_SUBCASES_PASS_FULL_REVIEW_PENDING",
+      "state": "REVIEWED_OFFLINE_COMPOSITION_PASS_WORKSPACE_ACCESS_PENDING",
       "preparation": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-workspace-alternative-preparation/cleanup-finalizer-cycle4/preparation.json",
         "sha256": "e201a8a09da608bdc5ea5ab3f9aa2a2b2cbbd231f91fb994056df0d167a31939"
@@ -187,7 +191,25 @@
       "predecessor_control_methods": 63,
       "predecessor_not_rerun": true,
       "native_runs": 0,
-      "gates_closed": []
+      "gates_closed": [],
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-workspace-alternative-preparation/cleanup-finalizer-cycle4/findings.json",
+        "sha256": "54b9674cdf3f7c40eb354ac01e1337183692476a92de0940d9d8555b7cc94cbd"
+      },
+      "workspace_access_observation": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-workspace-open-observation.json",
+        "sha256": "4ef11ee84dc7ab049f830aed2a85d0497695122a4c6f2124434333cb23c189c2"
+      },
+      "remaining": [
+        "Approve actual Xcode project access and discover current scheme/destination/effective settings",
+        "Complete the prepared unadmitted template with actual frozen build/product/PID/plan/owning admission joins",
+        "One automatic supported capture-to-saved-grading/cleanup qualification before human invitation"
+      ],
+      "concrete_template": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-workspace-alternative-preparation/concrete-template-20261005-a2cd4a93/template-packet.json",
+        "sha256": "c4377314a19910032658e5bb483a82e4389b8209258adda4d7abec9bc03f881c"
+      },
+      "template_scope": "Exact reviewed composition instantiated as unadmitted templates only; no run key, device, product, PID or clocks fabricated. Native qualification waits for actual Xcode access, metadata/build and owning admission."
     }
   },
   "p3": {
@@ -445,10 +467,30 @@
     },
     "pr7_preparation_scope": "Source-only six-flow/fifteen-file gap inventory, no implementation or native credit; PR6 exit dependency remains.",
     "pr9_private_preparation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-representative-projection-cycle3/source-review-packet.json",
+      "sha256": "8d1064e62b8b1f33ea55646a5ad87d78d8250bb06f08951bb3fbd185f3a85f71"
+    },
+    "pr9_scope": "Private c6fbf17a implementation; seven On and one Off unit method independently qualify partially, with returned artifacts and restoration. Remaining retained-stop/disconnect/default-Off/compatibility/integration assertions remain finite; no full slice or release credit.",
+    "pr9_original_source_preparation": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-representative-projection-cycle1/source-review-packet.json",
       "sha256": "69f855d60f2084f024271f40ae1730c6969385f716dbf79084428b5e6c5624c8"
     },
-    "pr9_scope": "Four uncommitted private SDK/test paths; source discriminator only, six focused methods not executed, source review pending. No gate or real watchdog termination credit."
+    "pr9_source_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-representative-projection-cycle3/review.json",
+      "sha256": "69355f93a6402f8f046939577c0e3d784d4db205ed1c300094eb6f37a448e0ec"
+    },
+    "pr9_sdk_checkpoint": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/checkpoint-pr9-private-representative-context/checkpoint.json",
+      "sha256": "92845066a772e0f817589f6029e782f4a73f96bdcee22e9b9c99b7b39f36ed25"
+    },
+    "pr9_unit_result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-focused-ios-diagnostic-cycle2/result.json",
+      "sha256": "17ded1ec478781beef7c7b42aebfe5a0fce682325a12e8aa6676155a1d2ef8cf"
+    },
+    "pr9_applicability_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-private-applicability/review.json",
+      "sha256": "7709f7c95ffb12e86b671b9a17bbe554e811037b2b87550ae5e83abcb93c0438"
+    }
   },
-  "updated_at": "2026-10-04T23:52:43.615412+00:00"
+  "updated_at": "2026-10-05T00:51:20.905733+00:00"
 }

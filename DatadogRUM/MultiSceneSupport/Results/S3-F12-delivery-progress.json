@@ -280,20 +280,20 @@
       "off_contract": "Develop watchdog clear/start and fatal context behavior",
       "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
       "rebuild_obligation": "No standalone watchdog/background-start change without reproduced develop regression",
-      "status": "PRIVATE_SOURCE_PROPOSED_REVIEW_PENDING",
-      "owning_record": null,
-      "source_head": null,
+      "status": "PRIVATE_IMPLEMENTED_PARTIAL_ON_AND_OFF_UNIT_EVIDENCE",
+      "owning_record": "Results/S3-PR9-representative-preparation.json",
+      "source_head": "c6fbf17a2ffa6824f3e0aac8d0321717984716c3",
       "obligation": "BEFORE_SLICE_MERGE",
       "whole_F12_closed": false,
       "qualification": {
-        "implementation": "NOT_IMPLEMENTED",
-        "component": "NOT_EXECUTED",
-        "off": "NOT_EXECUTED",
+        "implementation": "PRIVATE_IMPLEMENTED",
+        "component": "PARTIAL_QUALIFIED",
+        "off": "PARTIAL_QUALIFIED",
         "integration": "NOT_QUALIFIED"
       },
-      "remaining_assertion": "Stopped/disconnected scene representative, crash full final view and no foreign overwrite Off: Develop watchdog clear/start and fatal context behavior",
-      "next_action": "Designated source review and focused representative/Off tests before explicit four-path SDK checkpoint; no native qualification yet.",
-      "evidence_source_scope": "Qualified PR3 dependency; source head plus four uncommitted task paths bound by owning proposal. Six focused tests defined, none executed.",
+      "remaining_assertion": "Stopped representative itself retained by a pending resource, then late completion cannot overwrite the active peer or revive cleared context; Concrete scene disconnect/removal path through existing view handler and owned stop routing; Develop/default-Off watchdog clear/start/previous-report and fatal behavior beyond the qualified final-view control; Declared compatibility and final frozen integration",
+      "next_action": "Close the retained stopped-representative/late-completion assertion with one focused new unit case; reuse unchanged disconnect and develop Off witnesses before admitting further native work.",
+      "evidence_source_scope": "Reviewed private c6fbf17a checkpoint; seven On unit methods and one explicit-Off final-view control qualify partially at runtime27.0/SDK27.1. Exact returned artifacts/source/restoration verified; full Off/platform/watchdog/integration and release credit remain open.",
       "preparation_base_head": "e1b6d5e5af36bbbad48ee74dccf7675f86376b9a",
       "preparation_record": "Results/S3-PR9-representative-preparation.json"
     },
@@ -420,5 +420,5 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": "2026-10-04T23:52:43.615412+00:00"
+  "updated_at": "2026-10-05T00:51:20.905733+00:00"
 }
