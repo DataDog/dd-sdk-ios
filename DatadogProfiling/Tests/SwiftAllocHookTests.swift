@@ -171,6 +171,20 @@ final class SwiftAllocHookTests: XCTestCase {
         XCTAssertTrue(snapshot.deallocations.contains(address))
     }
 
+    func testFailedInitializationRemovesPartiallyInitializedClassAllocations() {
+        SwiftAllocationRecorder.reset(for: FailableBeforeInitialization.self)
+        XCTAssertNil(FailableBeforeInitialization(shouldFail: true))
+        let failable = SwiftAllocationRecorder.snapshot()
+        XCTAssertEqual(failable.allocations.count, 1)
+        XCTAssertEqual(failable.matchedDeallocations, 1)
+
+        SwiftAllocationRecorder.reset(for: ThrowingBeforeInitialization.self)
+        XCTAssertThrowsError(try ThrowingBeforeInitialization(shouldThrow: true))
+        let throwing = SwiftAllocationRecorder.snapshot()
+        XCTAssertEqual(throwing.allocations.count, 1)
+        XCTAssertEqual(throwing.matchedDeallocations, 1)
+    }
+
     func testStopAndRestartKeepForwardingWithoutDuplicateObservation() {
         SwiftAllocationRecorder.reset(for: PureSwiftAllocationFixture.self)
         dd_swift_alloc_hook_stop()
@@ -313,6 +327,32 @@ final class SwiftAllocHookTests: XCTestCase {
         let object = PureSwiftAllocationFixture()
         object.payload.0 = 42
         return UInt(bitPattern: Unmanaged.passUnretained(object).toOpaque())
+    }
+
+    private final class FailableBeforeInitialization {
+        let payload: String
+
+        init?(shouldFail: Bool) {
+            if shouldFail {
+                return nil
+            }
+            payload = "ready"
+        }
+    }
+
+    private enum InitializationError: Error {
+        case expected
+    }
+
+    private final class ThrowingBeforeInitialization {
+        let payload: String
+
+        init(shouldThrow: Bool) throws {
+            if shouldThrow {
+                throw InitializationError.expected
+            }
+            payload = "ready"
+        }
     }
 
     private enum DrainObserver {
