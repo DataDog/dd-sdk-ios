@@ -4081,7 +4081,7 @@
     "S3": {
       "repository": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/worktree",
       "branch": "valpertui/s3-handoff-activation",
-      "head": "c6fbf17a2ffa6824f3e0aac8d0321717984716c3",
+      "head": "8b71b5516a1c67d80cb13b5b71b84813e82477e6",
       "scope": "Rebuilt flagged PR1-6 and private PR9 representative-context SDK source. Original component evidence remains at each recorded exact head; no blanket final-source/release credit.",
       "promotion": "Private local implementation only; F01/public promotion and F04 physical acceptance remain open."
     }

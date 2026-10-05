@@ -282,7 +282,7 @@
       "rebuild_obligation": "No standalone watchdog/background-start change without reproduced develop regression",
       "status": "PRIVATE_IMPLEMENTED_PARTIAL_ON_AND_OFF_UNIT_EVIDENCE",
       "owning_record": "Results/S3-PR9-representative-preparation.json",
-      "source_head": "c6fbf17a2ffa6824f3e0aac8d0321717984716c3",
+      "source_head": "8b71b5516a1c67d80cb13b5b71b84813e82477e6",
       "obligation": "BEFORE_SLICE_MERGE",
       "whole_F12_closed": false,
       "qualification": {
@@ -291,9 +291,9 @@
         "off": "PARTIAL_QUALIFIED",
         "integration": "NOT_QUALIFIED"
       },
-      "remaining_assertion": "Stopped representative itself retained by a pending resource, then late completion cannot overwrite the active peer or revive cleared context; Concrete scene disconnect/removal path through existing view handler and owned stop routing; Develop/default-Off watchdog clear/start/previous-report and fatal behavior beyond the qualified final-view control; Declared compatibility and final frozen integration",
-      "next_action": "Close the retained stopped-representative/late-completion assertion with one focused new unit case; reuse unchanged disconnect and develop Off witnesses before admitting further native work.",
-      "evidence_source_scope": "Reviewed private c6fbf17a checkpoint; seven On unit methods and one explicit-Off final-view control qualify partially at runtime27.0/SDK27.1. Exact returned artifacts/source/restoration verified; full Off/platform/watchdog/integration and release credit remain open.",
+      "remaining_assertion": "Combined scene disconnect/removal through handler -> Monitor/Session -> representative projection; Develop/default-Off fatal-context, start, stored-view reporting and persistence contract beyond qualified final-view control; Declared compatibility and final frozen integration",
+      "next_action": "Define focused default-Off and legacy watchdog persistence assertions from source before adding tests; preserve reused disconnect/start/report witnesses. Configured combined integration and compatibility remain open.",
+      "evidence_source_scope": "Private implementation c6fbf17a and test-only successor8b71b551; nine selected unit methods qualify partially, including retained-stop subcases. Unchanged disconnect/start/report boundaries reused under independent review. Combined/current-stack Off/compatibility/integration and release acceptance stay open.",
       "preparation_base_head": "e1b6d5e5af36bbbad48ee74dccf7675f86376b9a",
       "preparation_record": "Results/S3-PR9-representative-preparation.json"
     },
@@ -420,5 +420,5 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": "2026-10-05T00:51:20.905733+00:00"
+  "updated_at": "2026-10-05T01:18:02.330987+00:00"
 }

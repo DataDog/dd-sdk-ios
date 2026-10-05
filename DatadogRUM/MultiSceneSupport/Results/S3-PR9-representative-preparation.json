@@ -6,7 +6,7 @@
   "dependency": "Qualified PR3 private routing",
   "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/worktree",
   "branch": "valpertui/s3-handoff-activation",
-  "source_head": "c6fbf17a2ffa6824f3e0aac8d0321717984716c3",
+  "source_head": "8b71b5516a1c67d80cb13b5b71b84813e82477e6",
   "linked_common_dir": "/Users/valentin.pertuisot/work/dd-sdk-ios/.git",
   "definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-representative-projection-cycle1/definition.json",
@@ -33,12 +33,12 @@
     "off": "PARTIAL_QUALIFIED",
     "integration": "NOT_QUALIFIED"
   },
-  "next_action": "Close the retained stopped-representative/late-completion assertion with one focused new unit case; reuse unchanged disconnect and develop Off witnesses before admitting further native work.",
+  "next_action": "Define focused default-Off and legacy watchdog persistence assertions from source before adding tests; preserve reused disconnect/start/report witnesses. Configured combined integration and compatibility remain open.",
   "sdk_edits": 3,
   "test_edits": 1,
-  "focused_methods_defined": 8,
-  "tests_run": 8,
-  "native_runs": 1,
+  "focused_methods_defined": 9,
+  "tests_run": 9,
+  "native_runs": 2,
   "gates_closed": [],
   "limits": [
     "No real watchdog termination/hardware acceptance",
@@ -46,7 +46,7 @@
     "No public API, generated model, dependency or wire-format change",
     "PR6 configured fixture source remains frozen at its original e1b6"
   ],
-  "updated_at": "2026-10-05T00:51:20.905733+00:00",
+  "updated_at": "2026-10-05T01:18:02.330987+00:00",
   "implementation_preparation": "Four reviewed source/test paths now committed; exact source checkpoint local only, unsigned authorized fallback.",
   "original_source_preparation": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-representative-projection-cycle1/source-review-packet.json",
@@ -65,8 +65,8 @@
     "sha256": "5c05544bbbf5a2f244bca005c89bfe56b9505f3814d842dd6695ac5b06c23641"
   },
   "local_sdk_checkpoint": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/checkpoint-pr9-private-representative-context/checkpoint.json",
-    "sha256": "92845066a772e0f817589f6029e782f4a73f96bdcee22e9b9c99b7b39f36ed25"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/checkpoint-pr9-retained-test/checkpoint.json",
+    "sha256": "96a0bc20c52adab24cd281ea7fe152ab9f8558e3a163703b7823ebfba18251f9"
   },
   "previous_corrected_source_preparation": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-representative-projection-cycle2/source-review-packet.json",
@@ -104,7 +104,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-representative-projection-cycle3/diagnostic-eligibility-review.json",
     "sha256": "d12fae0c7d7d8a62a83541b0d9d33af55402db47646e98076ecee2043ce79904"
   },
-  "mcp_diagnostic_attempts": 3,
+  "mcp_diagnostic_attempts": 4,
   "full_native_qualification_runs": 0,
   "original_mac_focused_test_proposal": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-representative-projection-cycle2/focused-test-proposal.json",
@@ -115,9 +115,31 @@
     "sha256": "7709f7c95ffb12e86b671b9a17bbe554e811037b2b87550ae5e83abcb93c0438"
   },
   "remaining_assertions": [
-    "Stopped representative itself retained by a pending resource, then late completion cannot overwrite the active peer or revive cleared context",
-    "Concrete scene disconnect/removal path through existing view handler and owned stop routing",
-    "Develop/default-Off watchdog clear/start/previous-report and fatal behavior beyond the qualified final-view control",
+    "Combined scene disconnect/removal through handler -> Monitor/Session -> representative projection",
+    "Develop/default-Off fatal-context, start, stored-view reporting and persistence contract beyond qualified final-view control",
     "Declared compatibility and final frozen integration"
+  ],
+  "implementation_sdk_checkpoint": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/checkpoint-pr9-private-representative-context/checkpoint.json",
+    "sha256": "92845066a772e0f817589f6029e782f4a73f96bdcee22e9b9c99b7b39f36ed25"
+  },
+  "retained_unit_result": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-retained-representative/result.json",
+    "sha256": "d9e9d27d9b847a9964c313ccee06226e46332213f15c33c0478435603038060e"
+  },
+  "retained_unit_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-retained-representative/result-review.json",
+    "sha256": "d33018d3c3317b4a9cfd52bcecf28587e589125a39a723185ccbaa895ca99e75"
+  },
+  "retained_unit_restoration": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-retained-representative/restoration.json",
+    "sha256": "d13c171b05d65186b071687428394929111213a5eab4cad6cd1e003f35c73c7b"
+  },
+  "unchanged_witness_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-unchanged-witnesses/review.json",
+    "sha256": "6d2a835445ee2cd2b6dd0b42ec43fa7ee4897d7712d216ffb31a1ca227e820e6"
+  },
+  "qualified_assertions": [
+    "PR9-C-RETAINED-STOPPED-OWNER: selected unit scope; both active-peer and no-peer cases pass"
   ]
 }

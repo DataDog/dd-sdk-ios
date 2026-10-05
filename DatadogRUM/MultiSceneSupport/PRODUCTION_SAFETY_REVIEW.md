@@ -130,8 +130,9 @@ is excluded. Current S2 source/lifetime proof belongs to
   claim follows from preparation.
 
 - [PR9 owner](Results/S3-PR9-representative-preparation.json) records the private On
-  representative fatal/watchdog projection at c6fbf17a. Eight focused iOS27.0 unit
-  methods pass, including the legacy Off final-view control. Source/result applicability
-  review qualifies those unit controls partially; retained-stop, disconnect, full Off/platform/watchdog
-  and release acceptance remain open.
-  Original Mac and changed-test iOS compiler failures and separate restorations are preserved.
+  representative fatal/watchdog projection at c6fbf17a and test-only successor8b71b551.
+  Nine focused iOS27.0 unit methods pass, including retained stopped-owner/late-completion
+  with and without an active peer, plus the legacy Off final-view control. Independent review
+  qualifies those selected unit assertions partially and reuses unchanged disconnect/start/report
+  boundaries. Combined disconnect, full Off/compatibility/integration and release acceptance
+  remain open. Original compiler failures and separate restorations remain immutable.
