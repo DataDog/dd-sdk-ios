@@ -11,7 +11,6 @@ import UIKit
 import SwiftUI
 import DatadogInternal
 
-@available(iOS 13, tvOS 13, *)
 internal class UIHostingViewRecorder: NodeRecorder {
     let identifier: UUID
 

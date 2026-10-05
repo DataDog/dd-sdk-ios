@@ -26,6 +26,50 @@ internal protocol FlagsRepositoryProtocol {
     func reset()
 }
 
+internal typealias FlagsInitializationTimeoutCancellation = () -> Void
+internal typealias FlagsInitializationTimeoutScheduler = (
+    TimeInterval,
+    @escaping () -> Void
+) -> FlagsInitializationTimeoutCancellation
+
+private final class InitializationCompletion {
+    typealias Completion = (Result<Void, FlagsError>) -> Void
+
+    private let lock = NSLock()
+    private var completion: Completion?
+    private var cancelTimeout: FlagsInitializationTimeoutCancellation?
+
+    init(completion: @escaping Completion) {
+        self.completion = completion
+    }
+
+    func armTimeoutCancellation(_ cancellation: @escaping FlagsInitializationTimeoutCancellation) {
+        lock.lock()
+        if completion == nil {
+            lock.unlock()
+            cancellation()
+        } else {
+            cancelTimeout = cancellation
+            lock.unlock()
+        }
+    }
+
+    func take() -> Completion? {
+        lock.lock()
+        guard let completion else {
+            lock.unlock()
+            return nil
+        }
+        self.completion = nil
+        let cancelTimeout = self.cancelTimeout
+        self.cancelTimeout = nil
+        lock.unlock()
+
+        cancelTimeout?()
+        return completion
+    }
+}
+
 internal final class FlagsRepository {
     private enum Constants {
         static let readTimeout: TimeInterval = 0.1
@@ -37,6 +81,11 @@ internal final class FlagsRepository {
     private let flagAssignmentsFetcher: any FlagAssignmentsFetching
     private let dateProvider: any DateProvider
     private let featureScope: any FeatureScope
+    private let initializationTimeout: TimeInterval?
+    private let scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler
+
+    private let initializationLock = NSLock()
+    private var didStartInitialization = false
 
     @ReadWriteLock
     private var flagsData: FlagsData?
@@ -66,13 +115,84 @@ internal final class FlagsRepository {
         clientName: String,
         flagAssignmentsFetcher: any FlagAssignmentsFetching,
         dateProvider: any DateProvider,
-        featureScope: any FeatureScope
+        featureScope: any FeatureScope,
+        initializationTimeout: TimeInterval? = Flags.Configuration.defaultInitializationTimeout,
+        scheduleInitializationTimeout: FlagsInitializationTimeoutScheduler? = nil
     ) {
         self.clientName = clientName
         self.flagAssignmentsFetcher = flagAssignmentsFetcher
         self.dateProvider = dateProvider
         self.featureScope = featureScope
+        self.initializationTimeout = initializationTimeout
+        self.scheduleInitializationTimeout = scheduleInitializationTimeout ?? Self.scheduleInitializationTimeout
         readState()
+    }
+
+    private static func scheduleInitializationTimeout(
+        _ timeout: TimeInterval,
+        _ action: @escaping () -> Void
+    ) -> FlagsInitializationTimeoutCancellation {
+        let workItem = DispatchWorkItem(block: action)
+        DispatchQueue.global(qos: .userInitiated).asyncAfter(
+            deadline: initializationTimeoutDeadline(after: timeout),
+            execute: workItem
+        )
+        return { workItem.cancel() }
+    }
+
+    internal static func initializationTimeoutDeadline(
+        after timeout: TimeInterval,
+        from start: DispatchTime = .now()
+    ) -> DispatchTime {
+        guard timeout.isFinite, timeout > 0 else {
+            return start
+        }
+        let maximumSeconds = TimeInterval(UInt64.max - start.uptimeNanoseconds) / TimeInterval(NSEC_PER_SEC)
+        return timeout < maximumSeconds ? start + timeout : DispatchTime(uptimeNanoseconds: UInt64.max)
+    }
+
+    private func makeInitializationCompletion(
+        _ completion: @escaping (Result<Void, FlagsError>) -> Void,
+        context: FlagsEvaluationContext,
+        beforeScheduling: () -> Void
+    ) -> InitializationCompletion? {
+        initializationLock.lock()
+        guard !didStartInitialization else {
+            initializationLock.unlock()
+            return nil
+        }
+        didStartInitialization = true
+        initializationLock.unlock()
+
+        guard let initializationTimeout,
+              initializationTimeout.isFinite,
+              initializationTimeout > 0 else {
+            return nil
+        }
+
+        beforeScheduling()
+        let initializationCompletion = InitializationCompletion(completion: completion)
+        let cancelTimeout = scheduleInitializationTimeout(initializationTimeout) { [weak self, initializationCompletion] in
+            guard let completion = initializationCompletion.take() else {
+                return
+            }
+            guard let self else {
+                completion(.failure(.clientNotInitialized))
+                return
+            }
+            let timeoutState: FlagsClientState = self.flagsData?.context == context ? .stale : .error
+            let accepted = self.stateManager.updateState(
+                timeoutState,
+                unlessCurrentStateIs: [.ready, .stale]
+            ) {
+                completion(.failure(.initializationTimedOut))
+            }
+            if !accepted {
+                completion(.failure(.initializationTimedOut))
+            }
+        }
+        initializationCompletion.armTimeoutCancellation(cancelTimeout)
+        return initializationCompletion
     }
 
     private func readState() {
@@ -145,16 +265,25 @@ extension FlagsRepository: FlagsRepositoryProtocol {
 
     var context: FlagsEvaluationContext? {
         waitForFlagsDataRead()
+        guard stateManager.currentState != .error else {
+            return nil
+        }
         return flagsData?.context
     }
 
     func flagAssignment(for key: String) -> FlagAssignment? {
         waitForFlagsDataRead()
+        guard stateManager.currentState != .error else {
+            return nil
+        }
         return flagsData?.flags[key]
     }
 
     func flagAssignments() -> [String: FlagAssignment]? {
         waitForFlagsDataRead()
+        guard stateManager.currentState != .error else {
+            return nil
+        }
         return flagsData?.flags
     }
 
@@ -162,23 +291,33 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
     ) {
+        let initializationCompletion = makeInitializationCompletion(completion, context: context) {
+            stateManager.updateState(.reconciling)
+        }
+        let takeCompletion: () -> ((Result<Void, FlagsError>) -> Void)? = {
+            initializationCompletion?.take()
+                ?? (initializationCompletion == nil ? completion : nil)
+        }
+
         // Chain after disk read completes to ensure correct hadFlags determination
         whenFlagsDataRead { [weak self] in
             guard let self else {
-                completion(.failure(.clientNotInitialized))
+                takeCompletion()?(.failure(.clientNotInitialized))
                 return
             }
 
             let hadFlags = self.flagsData != nil
             let cachedContext = self.flagsData?.context
             let versionAtStart = self.flagsDataVersion
-            self.stateManager.updateState(.reconciling)
+            if initializationCompletion == nil {
+                self.stateManager.updateState(.reconciling)
+            }
 
             self.flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
                 switch result {
                 case .success(let flags):
                     guard let self else {
-                        completion(.failure(.clientNotInitialized))
+                        takeCompletion()?(.failure(.clientNotInitialized))
                         return
                     }
                     self.flagsData = .init(
@@ -188,30 +327,46 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     )
                     self._flagsDataVersion.mutate { $0 += 1 }
                     self.writeState()
-                    self.stateManager.updateState(.ready)
-                    completion(.success(()))
+                    let operationCompletion = takeCompletion()
+                    if initializationCompletion != nil {
+                        self.stateManager.updateState(.ready) {
+                            operationCompletion?(.success(()))
+                        }
+                    } else {
+                        self.stateManager.updateState(.ready)
+                        operationCompletion?(.success(()))
+                    }
                 case .failure(let error):
                     // Only update state if no newer request has succeeded.
                     // This prevents an older failing request from clearing data
                     // written by a newer successful request.
                     guard self?.flagsDataVersion == versionAtStart else {
-                        completion(.failure(error))
+                        takeCompletion()?(.failure(error))
                         return
                     }
                     // State must be updated before calling completion —
                     // dd-openfeature-provider-swift checks currentState in the callback.
                     // Only use cached flags if they match the requested context to avoid
                     // serving flags from a different user/context.
+                    let operationCompletion = takeCompletion()
+                    let newState: FlagsClientState
                     if hadFlags && cachedContext == context {
-                        self?.stateManager.updateState(.stale)
+                        newState = .stale
                     } else {
                         // Clear cached data to prevent cross-context flag leakage.
                         // Without this, flagAssignment() could return the previous
                         // user's flags while in .error state.
                         self?.flagsData = nil
-                        self?.stateManager.updateState(.error)
+                        newState = .error
                     }
-                    completion(.failure(error))
+                    if initializationCompletion != nil {
+                        self?.stateManager.updateState(newState) {
+                            operationCompletion?(.failure(error))
+                        }
+                    } else {
+                        self?.stateManager.updateState(newState)
+                        operationCompletion?(.failure(error))
+                    }
                 }
             }
         }

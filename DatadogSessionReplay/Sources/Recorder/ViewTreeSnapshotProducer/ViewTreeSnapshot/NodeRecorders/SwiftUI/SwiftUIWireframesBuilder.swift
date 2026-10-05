@@ -11,7 +11,6 @@ import UIKit
 import DatadogInternal
 import SwiftUI
 
-@available(iOS 13.0, *)
 internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
     internal struct Context {
         var frame: CGRect
@@ -260,7 +259,6 @@ internal struct SwiftUIWireframesBuilder: NodeWireframesBuilder {
     }
 }
 
-@available(iOS 13.0, *)
 internal extension SwiftUIWireframesBuilder.Context {
     func convert(frame: CGRect) -> CGRect {
         frame.offsetBy(
@@ -277,7 +275,6 @@ internal extension SwiftUIWireframesBuilder.Context {
     }
 }
 
-@available(iOS 13.0, *)
 internal extension ImagePrivacyLevel {
     var shouldRecordGraphicsImagePredicate: (_ graphicImage: GraphicsImage) -> Bool {
         switch self {

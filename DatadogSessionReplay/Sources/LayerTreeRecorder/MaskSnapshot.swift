@@ -9,7 +9,6 @@ import Foundation
 import UIKit
 
 /// Rendered mask for one layer snapshot.
-@available(iOS 13.0, tvOS 13.0, *)
 internal final class MaskSnapshot: Sendable {
     let image: UIImage
 
@@ -19,7 +18,6 @@ internal final class MaskSnapshot: Sendable {
 }
 
 /// A mask snapshot and the layer state used to render it.
-@available(iOS 13.0, tvOS 13.0, *)
 internal struct MaskSnapshotData: Sendable {
     let snapshot: MaskSnapshot
 
@@ -34,6 +32,5 @@ internal struct MaskSnapshotData: Sendable {
 }
 
 /// Result of rendering one layer mask snapshot.
-@available(iOS 13.0, tvOS 13.0, *)
 internal typealias MaskSnapshotResult = Result<MaskSnapshot, ImageSnapshotError>
 #endif

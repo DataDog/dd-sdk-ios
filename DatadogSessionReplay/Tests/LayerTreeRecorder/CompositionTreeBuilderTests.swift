@@ -6,9 +6,10 @@
 
 #if os(iOS)
 import DatadogInternal
-import TestUtilities
 import QuartzCore
+import SwiftUI
 import Testing
+import DatadogSDKTesting
 import UIKit
 
 @_spi(Internal)
@@ -17,7 +18,6 @@ import UIKit
 @Suite(.datadogTesting)
 @MainActor
 struct CompositionTreeBuilderTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates background and content references for container")
     func buildCreatesBackgroundAndContentReferencesForContainer() throws {
         // Given
@@ -45,6 +45,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [],
+            embeddedContentSlots: [:],
             imageSnapshots: .init()
         )
 
@@ -67,7 +68,6 @@ struct CompositionTreeBuilderTests {
         #expect(output.resources.isEmpty)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build creates fallback and content references for automatic capsule")
     func buildCreatesFallbackAndContentReferencesForAutomaticCapsule() throws {
         // Given
@@ -86,6 +86,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [],
+            embeddedContentSlots: [:],
             imageSnapshots: .init()
         )
 
@@ -102,7 +103,137 @@ struct CompositionTreeBuilderTests {
         ])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
+    @Test(
+        "Build uses recorded corners for platform glass",
+        arguments: [
+            CALayerSnapshot.CornerRadii(
+                cornerRadius: 12,
+                maskedCorners: [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+            ),
+            CALayerSnapshot.CornerRadii(
+                topLeft: CGSize(width: 4, height: 4),
+                topRight: CGSize(width: 8, height: 8),
+                bottomLeft: CGSize(width: 12, height: 12),
+                bottomRight: CGSize(width: 16, height: 16)
+            )
+        ]
+    )
+    func buildUsesRecordedCornersForPlatformGlass(cornerRadii: CALayerSnapshot.CornerRadii) throws {
+        // Given
+        let frame = CGRect(x: 10, y: 20, width: 100, height: 40)
+        let content = CALayerSnapshot.mockWith(
+            replayID: 3,
+            absoluteFrame: frame,
+            backgroundColor: UIColor.red.cgColor
+        )
+        let glass = CALayerSnapshot.mockWith(
+            replayID: 2,
+            absoluteFrame: frame,
+            observation: .init(semantics: .visualEffect(.platformGlass)),
+            cornerRadii: cornerRadii,
+            masksToBounds: false,
+            sublayers: [content]
+        )
+        let builder = CompositionTreeBuilder(
+            root: .mockRoot(sublayers: [glass]),
+            webViewSlotIDs: [],
+            embeddedContentSlots: [:],
+            imageSnapshots: .init()
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        let layer = try #require(output.compositionTree.layers?.first { $0.id == glass.replayID })
+        let clipPath = SwiftUI.Path(
+            roundedRect: CGRect(origin: .zero, size: frame.size),
+            cornerRadii: cornerRadii,
+            cornerCurve: .circular
+        ).dd.svgString
+        #expect(glass.requiresCompositionLayer)
+        #expect(layer.modifiers == [
+            .compositionLayerClipModifier(value: .init(path: clipPath)),
+            .compositionLayerShadowModifier(value: .init(
+                color: hexString(from: UIColor.black.withAlphaComponent(0.125).cgColor)!,
+                offsetX: 0,
+                offsetY: 0,
+                radius: 8
+            ))
+        ])
+        #expect(layer.children == [
+            .init(id: .init(namespace: .shape, replayID: glass.replayID), type: .wireframe),
+            .init(id: .init(namespace: .shape, replayID: content.replayID), type: .wireframe)
+        ])
+        let background = try #require(output.wireframes.first)
+        guard case .shapeWireframe(let wireframe) = background else {
+            Issue.record("Expected a glass background wireframe")
+            return
+        }
+        #expect(wireframe.shapeStyle == .init(
+            backgroundColor: hexString(from: UIColor.systemBackground.cgColor),
+            cornerRadius: cornerRadii.uniformCornerRadius.map(Double.init)
+        ))
+    }
+
+    @Test("Build preserves descendant clipping for platform glass without corners")
+    func buildPreservesDescendantClippingForPlatformGlassWithoutCorners() throws {
+        // Given
+        let frame = CGRect(x: 13, y: 305, width: 375, height: 560)
+        let content = CALayerSnapshot.mockWith(
+            replayID: 4,
+            absoluteFrame: frame,
+            observation: .init(semantics: .unsupported("Remote content"))
+        )
+        let cornerRadii = CALayerSnapshot.CornerRadii(
+            cornerRadius: 34,
+            maskedCorners: [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+        )
+        let container = CALayerSnapshot.mockWith(
+            replayID: 3,
+            absoluteFrame: frame,
+            cornerRadii: cornerRadii,
+            masksToBounds: true,
+            sublayers: [content]
+        )
+        let glass = CALayerSnapshot.mockWith(
+            replayID: 2,
+            absoluteFrame: frame,
+            observation: .init(semantics: .visualEffect(.platformGlass)),
+            opacity: 0.5,
+            sublayers: [container]
+        )
+        let builder = CompositionTreeBuilder(
+            root: .mockRoot(sublayers: [glass]),
+            webViewSlotIDs: [],
+            embeddedContentSlots: [:],
+            imageSnapshots: .init()
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        let glassLayer = try #require(output.compositionTree.layers?.first { $0.id == glass.replayID })
+        #expect(glassLayer.modifiers == [.compositionLayerOpacityModifier(value: .init(value: 0.5))])
+        #expect(glassLayer.children == [.init(id: container.replayID, type: .layer)])
+
+        let containerLayer = try #require(output.compositionTree.layers?.first { $0.id == container.replayID })
+        let clipPath = SwiftUI.Path(
+            roundedRect: CGRect(origin: .zero, size: frame.size),
+            cornerRadii: cornerRadii,
+            cornerCurve: .circular
+        ).dd.svgString
+        #expect(containerLayer.modifiers == [.compositionLayerClipModifier(value: .init(path: clipPath))])
+        #expect(output.wireframes.count == 1)
+        let wireframe = try #require(output.wireframes.first)
+        guard case .placeholderWireframe(let placeholder) = wireframe else {
+            Issue.record("Expected a remote content placeholder")
+            return
+        }
+        #expect(placeholder.label == "Remote content")
+    }
+
     @Test("Build creates composition layer for leaf with modifiers")
     func buildCreatesCompositionLayerForLeafWithModifiers() throws {
         // Given
@@ -120,6 +251,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [],
+            embeddedContentSlots: [:],
             imageSnapshots: .init()
         )
 
@@ -139,7 +271,6 @@ struct CompositionTreeBuilderTests {
         #expect(output.wireframes.count == 1)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Build applies inherited visual effect to descendant wireframe")
     func buildAppliesInheritedVisualEffectToDescendantWireframe() throws {
         // Given
@@ -158,6 +289,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [],
+            embeddedContentSlots: [:],
             imageSnapshots: .init()
         )
 
@@ -179,7 +311,119 @@ struct CompositionTreeBuilderTests {
         #expect(shapeWireframe.shapeStyle?.cornerRadius == 12)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Build includes embedded content visibility state")
+    func buildIncludesEmbeddedContentVisibilityState() throws {
+        // Given
+        let visibleReplayID: Int64 = 2
+        let hiddenReplayID: Int64 = 3
+        let visibleSnapshot = CALayerSnapshot.mockWith(
+            replayID: visibleReplayID,
+            absoluteFrame: CGRect(x: 10, y: 20, width: 30, height: 40),
+            observation: .init(semantics: .embeddedContent(.init(slotID: "visible-slot")))
+        )
+        let builder = CompositionTreeBuilder(
+            root: .mockRoot(sublayers: [visibleSnapshot]),
+            webViewSlotIDs: [],
+            embeddedContentSlots: [
+                visibleReplayID: "visible-slot",
+                hiddenReplayID: "hidden-slot"
+            ],
+            imageSnapshots: .init()
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        let visibleWireframeID = Int64(namespace: .embeddedContent, replayID: visibleReplayID)
+        let hiddenWireframeID = Int64(namespace: .embeddedContent, replayID: hiddenReplayID)
+        #expect(output.compositionTree.root.children == [
+            .init(id: visibleWireframeID, type: .wireframe)
+        ])
+        try #require(output.wireframes.count == 2)
+
+        guard
+            case .embeddedContentWireframe(let hiddenWireframe) = output.wireframes[0],
+            case .embeddedContentWireframe(let visibleWireframe) = output.wireframes[1]
+        else {
+            Issue.record("Expected embedded content wireframes")
+            return
+        }
+
+        #expect(hiddenWireframe.id == hiddenWireframeID)
+        #expect(hiddenWireframe.slotId == "hidden-slot")
+        #expect(hiddenWireframe.isVisible == false)
+        #expect(visibleWireframe.id == visibleWireframeID)
+        #expect(visibleWireframe.slotId == "visible-slot")
+        #expect(visibleWireframe.isVisible == true)
+    }
+
+    @Test("Build computes heatmap identifiers from layer paths")
+    func buildComputesHeatmapIdentifiersFromLayerPaths() throws {
+        // Given
+        let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+        rootView.accessibilityIdentifier = "root"
+
+        let containerView = UIView(frame: CGRect(x: 10, y: 20, width: 80, height: 60))
+        containerView.accessibilityIdentifier = "container"
+        containerView.backgroundColor = .blue
+        rootView.addSubview(containerView)
+
+        let leafView = UIView(frame: CGRect(x: 10, y: 10, width: 40, height: 20))
+        leafView.accessibilityIdentifier = "button"
+        leafView.backgroundColor = .red
+        containerView.addSubview(leafView)
+
+        let root = try #require(
+            CALayerSnapshot(from: rootView.layer, in: .mockAny(heatmapsEnabled: true))
+        )
+        let container = try #require(root.sublayers.first)
+        let leaf = try #require(container.sublayers.first)
+        let builder = CompositionTreeBuilder(
+            root: root,
+            webViewSlotIDs: [],
+            embeddedContentSlots: [:],
+            imageSnapshots: .init(),
+            screenName: "Home",
+            bundleIdentifier: "com.example.app"
+        )
+
+        // When
+        let output = builder.build()
+
+        // Then
+        let containerIdentifier = HeatmapIdentifier(
+            elementPath: ["root", "container"],
+            screenName: "Home",
+            bundleIdentifier: "com.example.app"
+        )
+        let leafIdentifier = HeatmapIdentifier(
+            elementPath: ["root", "container", "button"],
+            screenName: "Home",
+            bundleIdentifier: "com.example.app"
+        )
+        #expect(output.heatmapIdentifiers == [
+            container.layer.identifier: containerIdentifier,
+            leaf.layer.identifier: leafIdentifier
+        ])
+
+        let containerWireframe = try #require(output.wireframes.first {
+            $0.id == Int64(namespace: .shape, replayID: container.replayID)
+        })
+        let leafWireframe = try #require(output.wireframes.first {
+            $0.id == Int64(namespace: .shape, replayID: leaf.replayID)
+        })
+        guard
+            case .shapeWireframe(let containerShape) = containerWireframe,
+            case .shapeWireframe(let leafShape) = leafWireframe
+        else {
+            Issue.record("Expected shape wireframes")
+            return
+        }
+        #expect(containerShape.permanentId == containerIdentifier.rawValue)
+        #expect(leafShape.permanentId == leafIdentifier.rawValue)
+    }
+
     @Test("Build can be reused without accumulating output state")
     func buildCanBeReusedWithoutAccumulatingOutputState() throws {
         // Given
@@ -195,6 +439,7 @@ struct CompositionTreeBuilderTests {
         let builder = CompositionTreeBuilder(
             root: root,
             webViewSlotIDs: [slotID, hiddenSlotID],
+            embeddedContentSlots: [:],
             imageSnapshots: .init()
         )
 
@@ -215,17 +460,14 @@ struct CompositionTreeBuilderTests {
         #expect(secondOutput.resources.isEmpty)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     private func visibleWebViewSlotIDs(in wireframes: [SRWireframe]) -> [String] {
         webViewSlotIDs(in: wireframes, isVisible: true)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     private func hiddenWebViewSlotIDs(in wireframes: [SRWireframe]) -> [String] {
         webViewSlotIDs(in: wireframes, isVisible: false)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     private func webViewSlotIDs(in wireframes: [SRWireframe], isVisible: Bool) -> [String] {
         wireframes.compactMap { wireframe in
             guard case .webviewWireframe(let value) = wireframe, value.isVisible == isVisible else {

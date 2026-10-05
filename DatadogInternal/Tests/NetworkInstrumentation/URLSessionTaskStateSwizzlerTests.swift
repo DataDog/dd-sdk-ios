@@ -136,7 +136,6 @@ class URLSessionTaskStateSwizzlerTests: XCTestCase {
         XCTAssertEqual(interceptionCount, countAfterTask1, "Task2 should not be intercepted after unswizzle")
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     func testSwizzling_setState_interceptsAsyncAwaitTasks() async throws {
         let completionExpectation = self.expectation(description: "setState for async/await")
         completionExpectation.assertForOverFulfill = false // Allow multiple setState calls with same state

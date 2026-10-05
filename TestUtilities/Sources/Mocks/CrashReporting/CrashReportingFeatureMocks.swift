@@ -146,6 +146,7 @@ extension CrashContext {
         lastRUMSessionState: RUMSessionState? = nil,
         lastIsAppInForeground: Bool = .mockAny(),
         appLaunchDate: Date? = .mockRandomInThePast(),
+        remoteConfigurationId: String? = nil,
         lastRUMAttributes: RUMEventAttributes? = nil,
         lastLogAttributes: LogEventAttributes? = nil
     ) -> Self {
@@ -169,7 +170,8 @@ extension CrashContext {
             lastRUMViewEvent: lastRUMViewEvent,
             lastRUMSessionState: lastRUMSessionState,
             lastRUMAttributes: lastRUMAttributes,
-            lastLogAttributes: lastLogAttributes
+            lastLogAttributes: lastLogAttributes,
+            remoteConfigurationId: remoteConfigurationId
         )
     }
 
@@ -194,7 +196,8 @@ extension CrashContext {
             lastRUMViewEvent: .mockRandom(),
             lastRUMSessionState: .mockRandom(),
             lastRUMAttributes: .mockRandom(),
-            lastLogAttributes: .mockRandom()
+            lastLogAttributes: .mockRandom(),
+            remoteConfigurationId: .mockRandom()
         )
     }
 

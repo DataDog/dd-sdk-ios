@@ -18,6 +18,9 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
 
     /// RUM feature scope.
     let featureScope: FeatureScope
+    /// The RUM application ID. It is known upfront, so telemetry can be attributed to the application
+    /// even when no RUM session exists (e.g. after the session expired or was stopped).
+    let applicationID: String
     let dateProvider: DateProvider
 
     /// Sampler for all telemetry events.
@@ -41,16 +44,19 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     ///
     /// - Parameters:
     ///   - featureScope: RUM feature scope.
+    ///   - applicationID: The RUM application ID.
     ///   - dateProvider: Current device time provider.
     ///   - sampler: Telemetry events sampler.
     ///   - configurationExtraSampler: Extra sampler for configuration events (applied on top of `sampler`).
     init(
         featureScope: FeatureScope,
+        applicationID: String,
         dateProvider: DateProvider,
         sampler: Sampler,
         configurationExtraSampler: Sampler
     ) {
         self.featureScope = featureScope
+        self.applicationID = applicationID
         self.dateProvider = dateProvider
         self.sampler = sampler
         self.configurationExtraSampler = configurationExtraSampler
@@ -124,7 +130,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
             let event = TelemetryDebugEvent(
                 dd: .init(),
                 action: rum?.userActionID.map { .init(id: .string(value: $0)) },
-                application: rum.map { .init(id: $0.applicationID) },
+                application: .init(id: self.applicationID),
                 date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
                 effectiveSampleRate: Double(self.sampler.samplingRate),
                 experimentalFeatures: nil,
@@ -170,7 +176,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
             let event = TelemetryErrorEvent(
                 dd: .init(),
                 action: rum?.userActionID.map { .init(id: .string(value: $0)) },
-                application: rum.map { .init(id: $0.applicationID) },
+                application: .init(id: self.applicationID),
                 date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
                 effectiveSampleRate: Double(self.sampler.samplingRate),
                 experimentalFeatures: nil,
@@ -201,7 +207,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
             let event = TelemetryUsageEvent(
                 dd: .init(),
                 action: rum?.userActionID.map { .init(id: .string(value: $0)) },
-                application: rum.map { .init(id: $0.applicationID) },
+                application: .init(id: self.applicationID),
                 date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
                 effectiveSampleRate: Double(usage.sampleRate.composed(with: self.sampler.samplingRate)),
                 experimentalFeatures: nil,
@@ -241,7 +247,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
             let event = TelemetryConfigurationEvent(
                 dd: .init(),
                 action: rum?.userActionID.map { .init(id: .string(value: $0)) },
-                application: rum.map { .init(id: $0.applicationID) },
+                application: .init(id: self.applicationID),
                 date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
                 effectiveSampleRate: Double(self.configurationExtraSampler.samplingRate.composed(with: self.sampler.samplingRate)),
                 experimentalFeatures: nil,
@@ -285,7 +291,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
             let event = TelemetryDebugEvent(
                 dd: .init(),
                 action: rum?.userActionID.map { .init(id: .string(value: $0)) },
-                application: rum.map { .init(id: $0.applicationID) },
+                application: .init(id: self.applicationID),
                 date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.dd.toInt64Milliseconds,
                 effectiveSampleRate: Double(effectiveSampleRate),
                 experimentalFeatures: nil,
@@ -381,6 +387,10 @@ private extension TelemetryUsageEvent.Telemetry.Usage {
             self = .telemetryMobileFeaturesUsage(
                 value: .trackWebView(value: .init())
             )
+        case .timeseries:
+            self = .telemetryMobileFeaturesUsage(
+                value: .timeseries(value: .init())
+            )
         }
     }
 }
@@ -424,6 +434,7 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             premiumSampleRate: nil,
             reactNativeVersion: nil,
             reactVersion: nil,
+            remoteConfiguration: configuration.remoteConfiguration.map { .init($0) },
             replaySampleRate: nil,
             selectedTracingPropagators: nil,
             sessionPersistence: nil,
@@ -478,6 +489,19 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             useTracing: configuration.useTracing,
             useWorkerUrl: nil,
             viewTrackingStrategy: nil
+        )
+    }
+}
+
+private extension TelemetryConfigurationEvent.Telemetry.Configuration.RemoteConfiguration {
+    init(_ remoteConfiguration: DatadogInternal.ConfigurationTelemetry.RemoteConfiguration) {
+        self.init(
+            configId: remoteConfiguration.configId,
+            firstApplied: remoteConfiguration.firstApplied?.timeIntervalSince1970.dd.toInt64Milliseconds,
+            lastModified: remoteConfiguration.lastModified?.timeIntervalSince1970.dd.toInt64Milliseconds,
+            lastSynced: remoteConfiguration.lastSynced?.timeIntervalSince1970.dd.toInt64Milliseconds,
+            syncId: remoteConfiguration.syncId,
+            versionId: remoteConfiguration.versionId
         )
     }
 }

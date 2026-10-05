@@ -78,6 +78,10 @@ public class objc_RUMActionEvent: NSObject {
         root.swiftModel.display != nil ? objc_RUMActionEventDisplay(root: root) : nil
     }
 
+    public var executionContext: objc_RUMActionEventExecutionContext? {
+        root.swiftModel.executionContext != nil ? objc_RUMActionEventExecutionContext(root: root) : nil
+    }
+
     public var os: objc_RUMActionEventOperatingSystem? {
         root.swiftModel.os != nil ? objc_RUMActionEventOperatingSystem(root: root) : nil
     }
@@ -280,6 +284,10 @@ public class objc_RUMActionEventDDConfiguration: NSObject {
 
     public var profilingSampleRate: NSNumber? {
         root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
+    }
+
+    public var sessionReplayExperimentalFeatures: [String]? {
+        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
     }
 
     public var sessionReplaySampleRate: NSNumber? {
@@ -1022,6 +1030,53 @@ public class objc_RUMActionEventDisplayViewport: NSObject {
     }
 }
 
+@objc(DDRUMActionEventExecutionContext)
+@objcMembers
+@_spi(objc)
+public class objc_RUMActionEventExecutionContext: NSObject {
+    internal let root: objc_RUMActionEvent
+
+    internal init(root: objc_RUMActionEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.executionContext!.id
+    }
+
+    public var name: String? {
+        root.swiftModel.executionContext!.name
+    }
+
+    public var type: objc_RUMActionEventExecutionContextExecutionContextType {
+        .init(swift: root.swiftModel.executionContext!.type)
+    }
+}
+
+@objc(DDRUMActionEventExecutionContextExecutionContextType)
+@_spi(objc)
+public enum objc_RUMActionEventExecutionContextExecutionContextType: Int {
+    internal init(swift: RUMActionEvent.ExecutionContext.ExecutionContextType) {
+        switch swift {
+        case .mainProcess: self = .mainProcess
+        case .rendererProcess: self = .rendererProcess
+        case .utilityProcess: self = .utilityProcess
+        }
+    }
+
+    internal var toSwift: RUMActionEvent.ExecutionContext.ExecutionContextType {
+        switch self {
+        case .mainProcess: return .mainProcess
+        case .rendererProcess: return .rendererProcess
+        case .utilityProcess: return .utilityProcess
+        }
+    }
+
+    case mainProcess
+    case rendererProcess
+    case utilityProcess
+}
+
 @objc(DDRUMActionEventOperatingSystem)
 @objcMembers
 @_spi(objc)
@@ -1255,6 +1310,10 @@ public class objc_RUMActionEventView: NSObject {
         root.swiftModel.view.inForeground as NSNumber?
     }
 
+    public var isFake: NSNumber? {
+        root.swiftModel.view.isFake as NSNumber?
+    }
+
     public var name: String? {
         set { root.swiftModel.view.name = newValue }
         get { root.swiftModel.view.name }
@@ -1340,6 +1399,10 @@ public class objc_RUMErrorEvent: NSObject {
 
     public var error: objc_RUMErrorEventError {
         objc_RUMErrorEventError(root: root)
+    }
+
+    public var executionContext: objc_RUMErrorEventExecutionContext? {
+        root.swiftModel.executionContext != nil ? objc_RUMErrorEventExecutionContext(root: root) : nil
     }
 
     public var featureFlags: objc_RUMErrorEventFeatureFlags? {
@@ -1462,6 +1525,10 @@ public class objc_RUMErrorEventDDConfiguration: NSObject {
 
     public var profilingSampleRate: NSNumber? {
         root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
+    }
+
+    public var sessionReplayExperimentalFeatures: [String]? {
+        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
     }
 
     public var sessionReplaySampleRate: NSNumber? {
@@ -2272,6 +2339,10 @@ public class objc_RUMErrorEventError: NSObject {
     public var wasTruncated: NSNumber? {
         root.swiftModel.error.wasTruncated as NSNumber?
     }
+
+    public var wasmModules: [objc_RUMErrorEventErrorWasmModules]? {
+        root.swiftModel.error.wasmModules?.map { objc_RUMErrorEventErrorWasmModules(swiftModel: $0) }
+    }
 }
 
 @objc(DDRUMErrorEventErrorBinaryImages)
@@ -2859,6 +2930,7 @@ public enum objc_RUMErrorEventErrorSourceType: Int {
         case nil: self = .none
         case .android?: self = .android
         case .browser?: self = .browser
+        case .browserWasm?: self = .browserWasm
         case .ios?: self = .ios
         case .reactNative?: self = .reactNative
         case .flutter?: self = .flutter
@@ -2870,6 +2942,7 @@ public enum objc_RUMErrorEventErrorSourceType: Int {
         case .macos?: self = .macos
         case .linux?: self = .linux
         case .maui?: self = .maui
+        case .nodejs?: self = .nodejs
         }
     }
 
@@ -2878,6 +2951,7 @@ public enum objc_RUMErrorEventErrorSourceType: Int {
         case .none: return nil
         case .android: return .android
         case .browser: return .browser
+        case .browserWasm: return .browserWasm
         case .ios: return .ios
         case .reactNative: return .reactNative
         case .flutter: return .flutter
@@ -2889,12 +2963,14 @@ public enum objc_RUMErrorEventErrorSourceType: Int {
         case .macos: return .macos
         case .linux: return .linux
         case .maui: return .maui
+        case .nodejs: return .nodejs
         }
     }
 
     case none
     case android
     case browser
+    case browserWasm
     case ios
     case reactNative
     case flutter
@@ -2906,6 +2982,7 @@ public enum objc_RUMErrorEventErrorSourceType: Int {
     case macos
     case linux
     case maui
+    case nodejs
 }
 
 @objc(DDRUMErrorEventErrorThreads)
@@ -2934,6 +3011,73 @@ public class objc_RUMErrorEventErrorThreads: NSObject {
     public var state: String? {
         root.swiftModel.state
     }
+}
+
+@objc(DDRUMErrorEventErrorWasmModules)
+@objcMembers
+@_spi(objc)
+public class objc_RUMErrorEventErrorWasmModules: NSObject {
+    internal var swiftModel: RUMErrorEvent.Error.WasmModules
+    internal var root: objc_RUMErrorEventErrorWasmModules { self }
+
+    internal init(swiftModel: RUMErrorEvent.Error.WasmModules) {
+        self.swiftModel = swiftModel
+    }
+
+    public var buildId: String {
+        root.swiftModel.buildId
+    }
+
+    public var url: String {
+        root.swiftModel.url
+    }
+}
+
+@objc(DDRUMErrorEventExecutionContext)
+@objcMembers
+@_spi(objc)
+public class objc_RUMErrorEventExecutionContext: NSObject {
+    internal let root: objc_RUMErrorEvent
+
+    internal init(root: objc_RUMErrorEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.executionContext!.id
+    }
+
+    public var name: String? {
+        root.swiftModel.executionContext!.name
+    }
+
+    public var type: objc_RUMErrorEventExecutionContextExecutionContextType {
+        .init(swift: root.swiftModel.executionContext!.type)
+    }
+}
+
+@objc(DDRUMErrorEventExecutionContextExecutionContextType)
+@_spi(objc)
+public enum objc_RUMErrorEventExecutionContextExecutionContextType: Int {
+    internal init(swift: RUMErrorEvent.ExecutionContext.ExecutionContextType) {
+        switch swift {
+        case .mainProcess: self = .mainProcess
+        case .rendererProcess: self = .rendererProcess
+        case .utilityProcess: self = .utilityProcess
+        }
+    }
+
+    internal var toSwift: RUMErrorEvent.ExecutionContext.ExecutionContextType {
+        switch self {
+        case .mainProcess: return .mainProcess
+        case .rendererProcess: return .rendererProcess
+        case .utilityProcess: return .utilityProcess
+        }
+    }
+
+    case mainProcess
+    case rendererProcess
+    case utilityProcess
 }
 
 @objc(DDRUMErrorEventFeatureFlags)
@@ -3200,6 +3344,10 @@ public class objc_RUMErrorEventView: NSObject {
         root.swiftModel.view.inForeground as NSNumber?
     }
 
+    public var isFake: NSNumber? {
+        root.swiftModel.view.isFake as NSNumber?
+    }
+
     public var name: String? {
         set { root.swiftModel.view.name = newValue }
         get { root.swiftModel.view.name }
@@ -3281,6 +3429,10 @@ public class objc_RUMLongTaskEvent: NSObject {
 
     public var display: objc_RUMLongTaskEventDisplay? {
         root.swiftModel.display != nil ? objc_RUMLongTaskEventDisplay(root: root) : nil
+    }
+
+    public var executionContext: objc_RUMLongTaskEventExecutionContext? {
+        root.swiftModel.executionContext != nil ? objc_RUMLongTaskEventExecutionContext(root: root) : nil
     }
 
     public var longTask: objc_RUMLongTaskEventLongTask {
@@ -3387,6 +3539,10 @@ public class objc_RUMLongTaskEventDDConfiguration: NSObject {
 
     public var profilingSampleRate: NSNumber? {
         root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
+    }
+
+    public var sessionReplayExperimentalFeatures: [String]? {
+        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
     }
 
     public var sessionReplaySampleRate: NSNumber? {
@@ -4107,6 +4263,53 @@ public class objc_RUMLongTaskEventDisplayViewport: NSObject {
     }
 }
 
+@objc(DDRUMLongTaskEventExecutionContext)
+@objcMembers
+@_spi(objc)
+public class objc_RUMLongTaskEventExecutionContext: NSObject {
+    internal let root: objc_RUMLongTaskEvent
+
+    internal init(root: objc_RUMLongTaskEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.executionContext!.id
+    }
+
+    public var name: String? {
+        root.swiftModel.executionContext!.name
+    }
+
+    public var type: objc_RUMLongTaskEventExecutionContextExecutionContextType {
+        .init(swift: root.swiftModel.executionContext!.type)
+    }
+}
+
+@objc(DDRUMLongTaskEventExecutionContextExecutionContextType)
+@_spi(objc)
+public enum objc_RUMLongTaskEventExecutionContextExecutionContextType: Int {
+    internal init(swift: RUMLongTaskEvent.ExecutionContext.ExecutionContextType) {
+        switch swift {
+        case .mainProcess: self = .mainProcess
+        case .rendererProcess: self = .rendererProcess
+        case .utilityProcess: self = .utilityProcess
+        }
+    }
+
+    internal var toSwift: RUMLongTaskEvent.ExecutionContext.ExecutionContextType {
+        switch self {
+        case .mainProcess: return .mainProcess
+        case .rendererProcess: return .rendererProcess
+        case .utilityProcess: return .utilityProcess
+        }
+    }
+
+    case mainProcess
+    case rendererProcess
+    case utilityProcess
+}
+
 @objc(DDRUMLongTaskEventLongTask)
 @objcMembers
 @_spi(objc)
@@ -4503,6 +4706,10 @@ public class objc_RUMLongTaskEventView: NSObject {
         root.swiftModel.view.id
     }
 
+    public var isFake: NSNumber? {
+        root.swiftModel.view.isFake as NSNumber?
+    }
+
     public var name: String? {
         set { root.swiftModel.view.name = newValue }
         get { root.swiftModel.view.name }
@@ -4584,6 +4791,10 @@ public class objc_RUMResourceEvent: NSObject {
 
     public var display: objc_RUMResourceEventDisplay? {
         root.swiftModel.display != nil ? objc_RUMResourceEventDisplay(root: root) : nil
+    }
+
+    public var executionContext: objc_RUMResourceEventExecutionContext? {
+        root.swiftModel.executionContext != nil ? objc_RUMResourceEventExecutionContext(root: root) : nil
     }
 
     public var os: objc_RUMResourceEventOperatingSystem? {
@@ -4698,6 +4909,10 @@ public class objc_RUMResourceEventDDConfiguration: NSObject {
 
     public var profilingSampleRate: NSNumber? {
         root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
+    }
+
+    public var sessionReplayExperimentalFeatures: [String]? {
+        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
     }
 
     public var sessionReplaySampleRate: NSNumber? {
@@ -5274,6 +5489,53 @@ public class objc_RUMResourceEventDisplayViewport: NSObject {
     public var width: NSNumber {
         root.swiftModel.display!.viewport!.width as NSNumber
     }
+}
+
+@objc(DDRUMResourceEventExecutionContext)
+@objcMembers
+@_spi(objc)
+public class objc_RUMResourceEventExecutionContext: NSObject {
+    internal let root: objc_RUMResourceEvent
+
+    internal init(root: objc_RUMResourceEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.executionContext!.id
+    }
+
+    public var name: String? {
+        root.swiftModel.executionContext!.name
+    }
+
+    public var type: objc_RUMResourceEventExecutionContextExecutionContextType {
+        .init(swift: root.swiftModel.executionContext!.type)
+    }
+}
+
+@objc(DDRUMResourceEventExecutionContextExecutionContextType)
+@_spi(objc)
+public enum objc_RUMResourceEventExecutionContextExecutionContextType: Int {
+    internal init(swift: RUMResourceEvent.ExecutionContext.ExecutionContextType) {
+        switch swift {
+        case .mainProcess: self = .mainProcess
+        case .rendererProcess: self = .rendererProcess
+        case .utilityProcess: self = .utilityProcess
+        }
+    }
+
+    internal var toSwift: RUMResourceEvent.ExecutionContext.ExecutionContextType {
+        switch self {
+        case .mainProcess: return .mainProcess
+        case .rendererProcess: return .rendererProcess
+        case .utilityProcess: return .utilityProcess
+        }
+    }
+
+    case mainProcess
+    case rendererProcess
+    case utilityProcess
 }
 
 @objc(DDRUMResourceEventOperatingSystem)
@@ -6185,6 +6447,10 @@ public class objc_RUMResourceEventView: NSObject {
         root.swiftModel.view.id
     }
 
+    public var isFake: NSNumber? {
+        root.swiftModel.view.isFake as NSNumber?
+    }
+
     public var name: String? {
         set { root.swiftModel.view.name = newValue }
         get { root.swiftModel.view.name }
@@ -6258,6 +6524,10 @@ public class objc_RUMTimeseriesCpuEvent: NSObject {
 
     public var display: objc_RUMTimeseriesCpuEventDisplay? {
         root.swiftModel.display != nil ? objc_RUMTimeseriesCpuEventDisplay(root: root) : nil
+    }
+
+    public var executionContext: objc_RUMTimeseriesCpuEventExecutionContext? {
+        root.swiftModel.executionContext != nil ? objc_RUMTimeseriesCpuEventExecutionContext(root: root) : nil
     }
 
     public var os: objc_RUMTimeseriesCpuEventOperatingSystem? {
@@ -6352,6 +6622,10 @@ public class objc_RUMTimeseriesCpuEventDDConfiguration: NSObject {
 
     public var profilingSampleRate: NSNumber? {
         root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
+    }
+
+    public var sessionReplayExperimentalFeatures: [String]? {
+        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
     }
 
     public var sessionReplaySampleRate: NSNumber? {
@@ -6808,6 +7082,53 @@ public class objc_RUMTimeseriesCpuEventDisplayViewport: NSObject {
     }
 }
 
+@objc(DDRUMTimeseriesCpuEventExecutionContext)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesCpuEventExecutionContext: NSObject {
+    internal let root: objc_RUMTimeseriesCpuEvent
+
+    internal init(root: objc_RUMTimeseriesCpuEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.executionContext!.id
+    }
+
+    public var name: String? {
+        root.swiftModel.executionContext!.name
+    }
+
+    public var type: objc_RUMTimeseriesCpuEventExecutionContextExecutionContextType {
+        .init(swift: root.swiftModel.executionContext!.type)
+    }
+}
+
+@objc(DDRUMTimeseriesCpuEventExecutionContextExecutionContextType)
+@_spi(objc)
+public enum objc_RUMTimeseriesCpuEventExecutionContextExecutionContextType: Int {
+    internal init(swift: RUMTimeseriesCpuEvent.ExecutionContext.ExecutionContextType) {
+        switch swift {
+        case .mainProcess: self = .mainProcess
+        case .rendererProcess: self = .rendererProcess
+        case .utilityProcess: self = .utilityProcess
+        }
+    }
+
+    internal var toSwift: RUMTimeseriesCpuEvent.ExecutionContext.ExecutionContextType {
+        switch self {
+        case .mainProcess: return .mainProcess
+        case .rendererProcess: return .rendererProcess
+        case .utilityProcess: return .utilityProcess
+        }
+    }
+
+    case mainProcess
+    case rendererProcess
+    case utilityProcess
+}
+
 @objc(DDRUMTimeseriesCpuEventOperatingSystem)
 @objcMembers
 @_spi(objc)
@@ -7106,6 +7427,10 @@ public class objc_RUMTimeseriesCpuEventView: NSObject {
         root.swiftModel.view!.id
     }
 
+    public var isFake: NSNumber? {
+        root.swiftModel.view!.isFake as NSNumber?
+    }
+
     public var name: String? {
         set { root.swiftModel.view!.name = newValue }
         get { root.swiftModel.view!.name }
@@ -7179,6 +7504,10 @@ public class objc_RUMTimeseriesMemoryEvent: NSObject {
 
     public var display: objc_RUMTimeseriesMemoryEventDisplay? {
         root.swiftModel.display != nil ? objc_RUMTimeseriesMemoryEventDisplay(root: root) : nil
+    }
+
+    public var executionContext: objc_RUMTimeseriesMemoryEventExecutionContext? {
+        root.swiftModel.executionContext != nil ? objc_RUMTimeseriesMemoryEventExecutionContext(root: root) : nil
     }
 
     public var os: objc_RUMTimeseriesMemoryEventOperatingSystem? {
@@ -7273,6 +7602,10 @@ public class objc_RUMTimeseriesMemoryEventDDConfiguration: NSObject {
 
     public var profilingSampleRate: NSNumber? {
         root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
+    }
+
+    public var sessionReplayExperimentalFeatures: [String]? {
+        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
     }
 
     public var sessionReplaySampleRate: NSNumber? {
@@ -7729,6 +8062,53 @@ public class objc_RUMTimeseriesMemoryEventDisplayViewport: NSObject {
     }
 }
 
+@objc(DDRUMTimeseriesMemoryEventExecutionContext)
+@objcMembers
+@_spi(objc)
+public class objc_RUMTimeseriesMemoryEventExecutionContext: NSObject {
+    internal let root: objc_RUMTimeseriesMemoryEvent
+
+    internal init(root: objc_RUMTimeseriesMemoryEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.executionContext!.id
+    }
+
+    public var name: String? {
+        root.swiftModel.executionContext!.name
+    }
+
+    public var type: objc_RUMTimeseriesMemoryEventExecutionContextExecutionContextType {
+        .init(swift: root.swiftModel.executionContext!.type)
+    }
+}
+
+@objc(DDRUMTimeseriesMemoryEventExecutionContextExecutionContextType)
+@_spi(objc)
+public enum objc_RUMTimeseriesMemoryEventExecutionContextExecutionContextType: Int {
+    internal init(swift: RUMTimeseriesMemoryEvent.ExecutionContext.ExecutionContextType) {
+        switch swift {
+        case .mainProcess: self = .mainProcess
+        case .rendererProcess: self = .rendererProcess
+        case .utilityProcess: self = .utilityProcess
+        }
+    }
+
+    internal var toSwift: RUMTimeseriesMemoryEvent.ExecutionContext.ExecutionContextType {
+        switch self {
+        case .mainProcess: return .mainProcess
+        case .rendererProcess: return .rendererProcess
+        case .utilityProcess: return .utilityProcess
+        }
+    }
+
+    case mainProcess
+    case rendererProcess
+    case utilityProcess
+}
+
 @objc(DDRUMTimeseriesMemoryEventOperatingSystem)
 @objcMembers
 @_spi(objc)
@@ -8031,6 +8411,10 @@ public class objc_RUMTimeseriesMemoryEventView: NSObject {
         root.swiftModel.view!.id
     }
 
+    public var isFake: NSNumber? {
+        root.swiftModel.view!.isFake as NSNumber?
+    }
+
     public var name: String? {
         set { root.swiftModel.view!.name = newValue }
         get { root.swiftModel.view!.name }
@@ -8108,6 +8492,10 @@ public class objc_RUMViewEvent: NSObject {
 
     public var display: objc_RUMViewEventDisplay? {
         root.swiftModel.display != nil ? objc_RUMViewEventDisplay(root: root) : nil
+    }
+
+    public var executionContext: objc_RUMViewEventExecutionContext? {
+        root.swiftModel.executionContext != nil ? objc_RUMViewEventExecutionContext(root: root) : nil
     }
 
     public var featureFlags: objc_RUMViewEventFeatureFlags? {
@@ -8245,6 +8633,10 @@ public class objc_RUMViewEventDDConfiguration: NSObject {
 
     public var remoteConfigurationId: String? {
         root.swiftModel.dd.configuration!.remoteConfigurationId
+    }
+
+    public var sessionReplayExperimentalFeatures: [String]? {
+        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
     }
 
     public var sessionReplaySampleRate: NSNumber? {
@@ -9013,6 +9405,53 @@ public class objc_RUMViewEventDisplayViewport: NSObject {
     }
 }
 
+@objc(DDRUMViewEventExecutionContext)
+@objcMembers
+@_spi(objc)
+public class objc_RUMViewEventExecutionContext: NSObject {
+    internal let root: objc_RUMViewEvent
+
+    internal init(root: objc_RUMViewEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.executionContext!.id
+    }
+
+    public var name: String? {
+        root.swiftModel.executionContext!.name
+    }
+
+    public var type: objc_RUMViewEventExecutionContextExecutionContextType {
+        .init(swift: root.swiftModel.executionContext!.type)
+    }
+}
+
+@objc(DDRUMViewEventExecutionContextExecutionContextType)
+@_spi(objc)
+public enum objc_RUMViewEventExecutionContextExecutionContextType: Int {
+    internal init(swift: RUMViewEvent.ExecutionContext.ExecutionContextType) {
+        switch swift {
+        case .mainProcess: self = .mainProcess
+        case .rendererProcess: self = .rendererProcess
+        case .utilityProcess: self = .utilityProcess
+        }
+    }
+
+    internal var toSwift: RUMViewEvent.ExecutionContext.ExecutionContextType {
+        switch self {
+        case .mainProcess: return .mainProcess
+        case .rendererProcess: return .rendererProcess
+        case .utilityProcess: return .utilityProcess
+        }
+    }
+
+    case mainProcess
+    case rendererProcess
+    case utilityProcess
+}
+
 @objc(DDRUMViewEventFeatureFlags)
 @objcMembers
 @_spi(objc)
@@ -9451,6 +9890,10 @@ public class objc_RUMViewEventView: NSObject {
 
     public var isActive: NSNumber? {
         root.swiftModel.view.isActive as NSNumber?
+    }
+
+    public var isFake: NSNumber? {
+        root.swiftModel.view.isFake as NSNumber?
     }
 
     public var isSlowRendered: NSNumber? {
@@ -10267,6 +10710,10 @@ public class objc_RUMViewUpdateEvent: NSObject {
         root.swiftModel.display != nil ? objc_RUMViewUpdateEventDisplay(root: root) : nil
     }
 
+    public var executionContext: objc_RUMViewUpdateEventExecutionContext? {
+        root.swiftModel.executionContext != nil ? objc_RUMViewUpdateEventExecutionContext(root: root) : nil
+    }
+
     public var featureFlags: objc_RUMViewUpdateEventFeatureFlags? {
         root.swiftModel.featureFlags != nil ? objc_RUMViewUpdateEventFeatureFlags(root: root) : nil
     }
@@ -10402,6 +10849,10 @@ public class objc_RUMViewUpdateEventDDConfiguration: NSObject {
 
     public var remoteConfigurationId: String? {
         root.swiftModel.dd.configuration!.remoteConfigurationId
+    }
+
+    public var sessionReplayExperimentalFeatures: [String]? {
+        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
     }
 
     public var sessionReplaySampleRate: NSNumber? {
@@ -11170,6 +11621,53 @@ public class objc_RUMViewUpdateEventDisplayViewport: NSObject {
     }
 }
 
+@objc(DDRUMViewUpdateEventExecutionContext)
+@objcMembers
+@_spi(objc)
+public class objc_RUMViewUpdateEventExecutionContext: NSObject {
+    internal let root: objc_RUMViewUpdateEvent
+
+    internal init(root: objc_RUMViewUpdateEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.executionContext!.id
+    }
+
+    public var name: String? {
+        root.swiftModel.executionContext!.name
+    }
+
+    public var type: objc_RUMViewUpdateEventExecutionContextExecutionContextType {
+        .init(swift: root.swiftModel.executionContext!.type)
+    }
+}
+
+@objc(DDRUMViewUpdateEventExecutionContextExecutionContextType)
+@_spi(objc)
+public enum objc_RUMViewUpdateEventExecutionContextExecutionContextType: Int {
+    internal init(swift: RUMViewUpdateEvent.ExecutionContext.ExecutionContextType) {
+        switch swift {
+        case .mainProcess: self = .mainProcess
+        case .rendererProcess: self = .rendererProcess
+        case .utilityProcess: self = .utilityProcess
+        }
+    }
+
+    internal var toSwift: RUMViewUpdateEvent.ExecutionContext.ExecutionContextType {
+        switch self {
+        case .mainProcess: return .mainProcess
+        case .rendererProcess: return .rendererProcess
+        case .utilityProcess: return .utilityProcess
+        }
+    }
+
+    case mainProcess
+    case rendererProcess
+    case utilityProcess
+}
+
 @objc(DDRUMViewUpdateEventFeatureFlags)
 @objcMembers
 @_spi(objc)
@@ -11608,6 +12106,10 @@ public class objc_RUMViewUpdateEventView: NSObject {
 
     public var isActive: NSNumber? {
         root.swiftModel.view.isActive as NSNumber?
+    }
+
+    public var isFake: NSNumber? {
+        root.swiftModel.view.isFake as NSNumber?
     }
 
     public var isSlowRendered: NSNumber? {
@@ -12424,6 +12926,10 @@ public class objc_RUMVitalAppLaunchEvent: NSObject {
         root.swiftModel.display != nil ? objc_RUMVitalAppLaunchEventDisplay(root: root) : nil
     }
 
+    public var executionContext: objc_RUMVitalAppLaunchEventExecutionContext? {
+        root.swiftModel.executionContext != nil ? objc_RUMVitalAppLaunchEventExecutionContext(root: root) : nil
+    }
+
     public var os: objc_RUMVitalAppLaunchEventOperatingSystem? {
         root.swiftModel.os != nil ? objc_RUMVitalAppLaunchEventOperatingSystem(root: root) : nil
     }
@@ -12520,6 +13026,10 @@ public class objc_RUMVitalAppLaunchEventDDConfiguration: NSObject {
 
     public var profilingSampleRate: NSNumber? {
         root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
+    }
+
+    public var sessionReplayExperimentalFeatures: [String]? {
+        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
     }
 
     public var sessionReplaySampleRate: NSNumber? {
@@ -13180,6 +13690,53 @@ public class objc_RUMVitalAppLaunchEventDisplayViewport: NSObject {
     }
 }
 
+@objc(DDRUMVitalAppLaunchEventExecutionContext)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalAppLaunchEventExecutionContext: NSObject {
+    internal let root: objc_RUMVitalAppLaunchEvent
+
+    internal init(root: objc_RUMVitalAppLaunchEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.executionContext!.id
+    }
+
+    public var name: String? {
+        root.swiftModel.executionContext!.name
+    }
+
+    public var type: objc_RUMVitalAppLaunchEventExecutionContextExecutionContextType {
+        .init(swift: root.swiftModel.executionContext!.type)
+    }
+}
+
+@objc(DDRUMVitalAppLaunchEventExecutionContextExecutionContextType)
+@_spi(objc)
+public enum objc_RUMVitalAppLaunchEventExecutionContextExecutionContextType: Int {
+    internal init(swift: RUMVitalAppLaunchEvent.ExecutionContext.ExecutionContextType) {
+        switch swift {
+        case .mainProcess: self = .mainProcess
+        case .rendererProcess: self = .rendererProcess
+        case .utilityProcess: self = .utilityProcess
+        }
+    }
+
+    internal var toSwift: RUMVitalAppLaunchEvent.ExecutionContext.ExecutionContextType {
+        switch self {
+        case .mainProcess: return .mainProcess
+        case .rendererProcess: return .rendererProcess
+        case .utilityProcess: return .utilityProcess
+        }
+    }
+
+    case mainProcess
+    case rendererProcess
+    case utilityProcess
+}
+
 @objc(DDRUMVitalAppLaunchEventOperatingSystem)
 @objcMembers
 @_spi(objc)
@@ -13409,6 +13966,10 @@ public class objc_RUMVitalAppLaunchEventView: NSObject {
         root.swiftModel.view.id
     }
 
+    public var isFake: NSNumber? {
+        root.swiftModel.view.isFake as NSNumber?
+    }
+
     public var name: String? {
         set { root.swiftModel.view.name = newValue }
         get { root.swiftModel.view.name }
@@ -13580,6 +14141,10 @@ public class objc_RUMVitalDurationEvent: NSObject {
         root.swiftModel.display != nil ? objc_RUMVitalDurationEventDisplay(root: root) : nil
     }
 
+    public var executionContext: objc_RUMVitalDurationEventExecutionContext? {
+        root.swiftModel.executionContext != nil ? objc_RUMVitalDurationEventExecutionContext(root: root) : nil
+    }
+
     public var os: objc_RUMVitalDurationEventOperatingSystem? {
         root.swiftModel.os != nil ? objc_RUMVitalDurationEventOperatingSystem(root: root) : nil
     }
@@ -13676,6 +14241,10 @@ public class objc_RUMVitalDurationEventDDConfiguration: NSObject {
 
     public var profilingSampleRate: NSNumber? {
         root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
+    }
+
+    public var sessionReplayExperimentalFeatures: [String]? {
+        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
     }
 
     public var sessionReplaySampleRate: NSNumber? {
@@ -14336,6 +14905,53 @@ public class objc_RUMVitalDurationEventDisplayViewport: NSObject {
     }
 }
 
+@objc(DDRUMVitalDurationEventExecutionContext)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalDurationEventExecutionContext: NSObject {
+    internal let root: objc_RUMVitalDurationEvent
+
+    internal init(root: objc_RUMVitalDurationEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.executionContext!.id
+    }
+
+    public var name: String? {
+        root.swiftModel.executionContext!.name
+    }
+
+    public var type: objc_RUMVitalDurationEventExecutionContextExecutionContextType {
+        .init(swift: root.swiftModel.executionContext!.type)
+    }
+}
+
+@objc(DDRUMVitalDurationEventExecutionContextExecutionContextType)
+@_spi(objc)
+public enum objc_RUMVitalDurationEventExecutionContextExecutionContextType: Int {
+    internal init(swift: RUMVitalDurationEvent.ExecutionContext.ExecutionContextType) {
+        switch swift {
+        case .mainProcess: self = .mainProcess
+        case .rendererProcess: self = .rendererProcess
+        case .utilityProcess: self = .utilityProcess
+        }
+    }
+
+    internal var toSwift: RUMVitalDurationEvent.ExecutionContext.ExecutionContextType {
+        switch self {
+        case .mainProcess: return .mainProcess
+        case .rendererProcess: return .rendererProcess
+        case .utilityProcess: return .utilityProcess
+        }
+    }
+
+    case mainProcess
+    case rendererProcess
+    case utilityProcess
+}
+
 @objc(DDRUMVitalDurationEventOperatingSystem)
 @objcMembers
 @_spi(objc)
@@ -14565,6 +15181,10 @@ public class objc_RUMVitalDurationEventView: NSObject {
         root.swiftModel.view.id
     }
 
+    public var isFake: NSNumber? {
+        root.swiftModel.view.isFake as NSNumber?
+    }
+
     public var name: String? {
         set { root.swiftModel.view.name = newValue }
         get { root.swiftModel.view.name }
@@ -14675,6 +15295,10 @@ public class objc_RUMVitalOperationStepEvent: NSObject {
         root.swiftModel.display != nil ? objc_RUMVitalOperationStepEventDisplay(root: root) : nil
     }
 
+    public var executionContext: objc_RUMVitalOperationStepEventExecutionContext? {
+        root.swiftModel.executionContext != nil ? objc_RUMVitalOperationStepEventExecutionContext(root: root) : nil
+    }
+
     public var os: objc_RUMVitalOperationStepEventOperatingSystem? {
         root.swiftModel.os != nil ? objc_RUMVitalOperationStepEventOperatingSystem(root: root) : nil
     }
@@ -14771,6 +15395,10 @@ public class objc_RUMVitalOperationStepEventDDConfiguration: NSObject {
 
     public var profilingSampleRate: NSNumber? {
         root.swiftModel.dd.configuration!.profilingSampleRate as NSNumber?
+    }
+
+    public var sessionReplayExperimentalFeatures: [String]? {
+        root.swiftModel.dd.configuration!.sessionReplayExperimentalFeatures
     }
 
     public var sessionReplaySampleRate: NSNumber? {
@@ -15431,6 +16059,53 @@ public class objc_RUMVitalOperationStepEventDisplayViewport: NSObject {
     }
 }
 
+@objc(DDRUMVitalOperationStepEventExecutionContext)
+@objcMembers
+@_spi(objc)
+public class objc_RUMVitalOperationStepEventExecutionContext: NSObject {
+    internal let root: objc_RUMVitalOperationStepEvent
+
+    internal init(root: objc_RUMVitalOperationStepEvent) {
+        self.root = root
+    }
+
+    public var id: String {
+        root.swiftModel.executionContext!.id
+    }
+
+    public var name: String? {
+        root.swiftModel.executionContext!.name
+    }
+
+    public var type: objc_RUMVitalOperationStepEventExecutionContextExecutionContextType {
+        .init(swift: root.swiftModel.executionContext!.type)
+    }
+}
+
+@objc(DDRUMVitalOperationStepEventExecutionContextExecutionContextType)
+@_spi(objc)
+public enum objc_RUMVitalOperationStepEventExecutionContextExecutionContextType: Int {
+    internal init(swift: RUMVitalOperationStepEvent.ExecutionContext.ExecutionContextType) {
+        switch swift {
+        case .mainProcess: self = .mainProcess
+        case .rendererProcess: self = .rendererProcess
+        case .utilityProcess: self = .utilityProcess
+        }
+    }
+
+    internal var toSwift: RUMVitalOperationStepEvent.ExecutionContext.ExecutionContextType {
+        switch self {
+        case .mainProcess: return .mainProcess
+        case .rendererProcess: return .rendererProcess
+        case .utilityProcess: return .utilityProcess
+        }
+    }
+
+    case mainProcess
+    case rendererProcess
+    case utilityProcess
+}
+
 @objc(DDRUMVitalOperationStepEventOperatingSystem)
 @objcMembers
 @_spi(objc)
@@ -15658,6 +16333,10 @@ public class objc_RUMVitalOperationStepEventView: NSObject {
 
     public var id: String {
         root.swiftModel.view.id
+    }
+
+    public var isFake: NSNumber? {
+        root.swiftModel.view.isFake as NSNumber?
     }
 
     public var name: String? {
@@ -16153,6 +16832,10 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
         get { root.swiftModel.telemetry.configuration.reactVersion }
     }
 
+    public var remoteConfiguration: objc_TelemetryConfigurationEventTelemetryConfigurationRemoteConfiguration? {
+        root.swiftModel.telemetry.configuration.remoteConfiguration != nil ? objc_TelemetryConfigurationEventTelemetryConfigurationRemoteConfiguration(root: root) : nil
+    }
+
     public var remoteConfigurationId: String? {
         set { root.swiftModel.telemetry.configuration.remoteConfigurationId = newValue }
         get { root.swiftModel.telemetry.configuration.remoteConfigurationId }
@@ -16439,6 +17122,10 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.useSecureSessionCookie as NSNumber?
     }
 
+    public var useTraceSamplingRules: NSNumber? {
+        root.swiftModel.telemetry.configuration.useTraceSamplingRules as NSNumber?
+    }
+
     public var useTracing: NSNumber? {
         root.swiftModel.telemetry.configuration.useTracing as NSNumber?
     }
@@ -16533,6 +17220,47 @@ public class objc_TelemetryConfigurationEventTelemetryConfigurationPlugins: NSOb
     public var pluginsInfo: [String: Any] {
         set { root.swiftModel.pluginsInfo = newValue.dd.swiftAttributes }
         get { root.swiftModel.pluginsInfo.dd.objCAttributes }
+    }
+}
+
+@objc(DDTelemetryConfigurationEventTelemetryConfigurationRemoteConfiguration)
+@objcMembers
+@_spi(objc)
+public class objc_TelemetryConfigurationEventTelemetryConfigurationRemoteConfiguration: NSObject {
+    internal let root: objc_TelemetryConfigurationEvent
+
+    internal init(root: objc_TelemetryConfigurationEvent) {
+        self.root = root
+    }
+
+    public var configId: String? {
+        set { root.swiftModel.telemetry.configuration.remoteConfiguration!.configId = newValue }
+        get { root.swiftModel.telemetry.configuration.remoteConfiguration!.configId }
+    }
+
+    public var firstApplied: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.remoteConfiguration!.firstApplied = newValue?.int64Value }
+        get { root.swiftModel.telemetry.configuration.remoteConfiguration!.firstApplied as NSNumber? }
+    }
+
+    public var lastModified: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.remoteConfiguration!.lastModified = newValue?.int64Value }
+        get { root.swiftModel.telemetry.configuration.remoteConfiguration!.lastModified as NSNumber? }
+    }
+
+    public var lastSynced: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.remoteConfiguration!.lastSynced = newValue?.int64Value }
+        get { root.swiftModel.telemetry.configuration.remoteConfiguration!.lastSynced as NSNumber? }
+    }
+
+    public var syncId: String? {
+        set { root.swiftModel.telemetry.configuration.remoteConfiguration!.syncId = newValue }
+        get { root.swiftModel.telemetry.configuration.remoteConfiguration!.syncId }
+    }
+
+    public var versionId: String? {
+        set { root.swiftModel.telemetry.configuration.remoteConfiguration!.versionId = newValue }
+        get { root.swiftModel.telemetry.configuration.remoteConfiguration!.versionId }
     }
 }
 
@@ -17450,4 +18178,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/f3006920dbce58ebf21d6299016ffc5805164bbe
+// Generated from https://github.com/DataDog/rum-events-format/tree/75aac05f07c331fffa8598919931106ed24bee63

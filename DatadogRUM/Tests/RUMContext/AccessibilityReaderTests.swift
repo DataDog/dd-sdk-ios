@@ -4,13 +4,12 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
- #if !os(watchOS)
+ #if !os(watchOS) && !os(macOS)
 
 @testable import DatadogRUM
 @testable import TestUtilities
 import XCTest
 
-@available(iOS 13.0, tvOS 13.0, *)
 final class AccessibilityReaderTests: XCTestCase {
     @MainActor
     func testInitialStateIsPopulated() {
@@ -42,19 +41,14 @@ final class AccessibilityReaderTests: XCTestCase {
             XCTAssertNotNil(state.speakSelectionEnabled)
             XCTAssertNotNil(state.rtlEnabled)
 
-            if #available(iOS 14.0, tvOS 14.0, *) {
-                XCTAssertNotNil(state.buttonShapesEnabled)
-                XCTAssertNotNil(state.reducedAnimationsEnabled)
-            } else {
-                XCTAssertNil(state.buttonShapesEnabled)
-                XCTAssertNil(state.reducedAnimationsEnabled)
-            }
+            XCTAssertNotNil(state.buttonShapesEnabled)
+            XCTAssertNotNil(state.reducedAnimationsEnabled)
             expectation.fulfill()
         }
         wait(for: [expectation], timeout: 1.0)
     }
 
-    #if !os(watchOS)
+    #if !os(watchOS) && !os(macOS)
     func testRegistersAllObservers() {
         // Given
         let mockNotificationCenter = MockNotificationCenter()
@@ -83,7 +77,6 @@ final class AccessibilityReaderTests: XCTestCase {
         XCTAssertTrue(observerNames.contains(UIAccessibility.onOffSwitchLabelsDidChangeNotification))
     }
 
-    @available(iOS 14.0, tvOS 14.0, *)
     func testRegistersIOS14Observers() {
         // Given
         let mockNotificationCenter = MockNotificationCenter()

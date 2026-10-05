@@ -171,7 +171,7 @@ class RequestBuilderTests: XCTestCase {
         XCTAssertEqual(eventFile.data, event.data)
 
         let pprofFile = multipartSpy.formFiles[1]
-        XCTAssertEqual(pprofFile.filename, "wall.pprof")
+        XCTAssertEqual(pprofFile.filename, "profile.pprof")
         XCTAssertEqual(pprofFile.mimeType, "application/octet-stream")
         XCTAssertEqual(pprofFile.data, pprof)
 
@@ -205,7 +205,10 @@ class RequestBuilderTests: XCTestCase {
         let builder = RequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
 
         // When, Then
-        XCTAssertThrowsError(try builder.request(for: .mockAny(count: 2), with: .mockAny(), execution: .mockAny()))
+        XCTAssertThrowsError(try builder.request(for: .mockAny(count: 2), with: .mockAny(), execution: .mockAny())) { error in
+            XCTAssertEqual(error as? ProfilingRequestBuilderError, .unexpectedEventCount(count: 2))
+            XCTAssertEqual(TelemetrySanitizedError(sanitizing: error).message, "Profiling batch holds 2 events, expected exactly 1")
+        }
     }
 
     func testWhenBatchDataIsMissingMetadata() {
@@ -217,7 +220,10 @@ class RequestBuilderTests: XCTestCase {
             for: [.mockWith(data: .mockRandom(), metadata: nil)],
             with: .mockAny(),
             execution: .mockAny()
-        ))
+        )) { error in
+            XCTAssertEqual(error as? ProfilingRequestBuilderError, .missingAttachments)
+            XCTAssertEqual(TelemetrySanitizedError(sanitizing: error).message, "Profiling event is missing its attachments metadata")
+        }
     }
 
     func testItSetsRetryQueryParameters() throws {

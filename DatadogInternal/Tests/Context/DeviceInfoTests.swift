@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(macOS)
 import XCTest
 import TestUtilities
 import DatadogInternal
@@ -75,3 +76,4 @@ class DeviceInfoTests: XCTestCase {
         XCTAssertEqual(when(systemVersion: "18").versionMajor, "18")
     }
 }
+#endif

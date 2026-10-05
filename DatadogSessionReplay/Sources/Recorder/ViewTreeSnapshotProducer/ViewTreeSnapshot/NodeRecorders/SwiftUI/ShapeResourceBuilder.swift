@@ -14,7 +14,6 @@ import SwiftUI
 /// `ShapeResourceBuilder` implements a multi-level caching strategy to eliminate expensive
 /// recomputations during UI updates and scrolling animations. This addresses performance
 /// issues that can occur when the same shapes are rendered repeatedly in Session Replay.
-@available(iOS 13.0, *)
 internal final class ShapeResourceBuilder {
     /// Cache key for SwiftUI path data, used to avoid redundant SVG path string generation.
     private class PathKey: NSObject {

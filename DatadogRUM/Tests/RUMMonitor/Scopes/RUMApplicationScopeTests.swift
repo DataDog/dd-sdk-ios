@@ -144,6 +144,8 @@ class RUMApplicationScopeTests: XCTestCase {
         let transferredViewScope = try XCTUnwrap(nextSession.viewScopes.first)
         XCTAssertNotEqual(initialViewScope.viewUUID, transferredViewScope.viewUUID, "Transferred view scope must have different view id")
         XCTAssertTrue(transferredViewScope.identity == ViewIdentifier(view), "Transferred view scope must track the same view")
+        XCTAssertTrue(transferredViewScope.isActiveView)
+        XCTAssertEqual(nextSession.viewScopes.filter(\.isActiveView).count, 1)
         XCTAssertFalse(nextSession.isInitialSession, "Any next session in the application must be marked as 'not initial'")
     }
     #endif
@@ -154,7 +156,8 @@ class RUMApplicationScopeTests: XCTestCase {
         let currentTime = Date()
         let scope = createRUMApplicationScope(
             dependencies: .mockWith(
-                samplingRate: 100
+                samplingRate: 100,
+                featureFlags: [.viewUpdates: false]
             )
         )
 
@@ -401,6 +404,7 @@ class RUMApplicationScopeTests: XCTestCase {
         )
     }
 
+    #if !os(macOS)
     func testGivenAppLaunchInBackgroundAndNoPrewarming_whenInitialSessionIsStarted() throws {
         // Given
         let sdkContext: DatadogContext = .mockWith(
@@ -458,6 +462,7 @@ class RUMApplicationScopeTests: XCTestCase {
             "It should not start any view"
         )
     }
+    #endif
 
     func testGivenInactiveSession_whenNewOneIsStarted_itSetsInactivityTimeoutPrecondition() {
         // Given
@@ -535,6 +540,7 @@ class RUMApplicationScopeTests: XCTestCase {
         XCTAssertEqual(scope.activeSession?.context.sessionPrecondition, .explicitStop)
     }
 
+    #if !os(macOS)
     func testGivenInactiveSession_whenNewOneIsStartedInBackground_itSetsBackgroundLaunchPrecondition() {
         // Given
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
@@ -731,4 +737,5 @@ class RUMApplicationScopeTests: XCTestCase {
         // And no error telemetry is fired for .userLaunch in background (it is a valid scenario)
         XCTAssertNil(featureScope.telemetryMock.messages.firstError())
     }
+    #endif
 }

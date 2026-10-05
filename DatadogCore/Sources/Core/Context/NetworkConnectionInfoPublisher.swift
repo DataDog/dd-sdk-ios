@@ -59,12 +59,7 @@ extension NetworkConnectionInfo {
             supportsIPv4: path.supportsIPv4,
             supportsIPv6: path.supportsIPv6,
             isExpensive: path.isExpensive,
-            isConstrained: {
-                guard #available(iOS 13, tvOS 13, *) else {
-                    return nil
-                }
-                return path.isConstrained
-            }(),
+            isConstrained: path.isConstrained,
             linkQuality: {
                 #if compiler(>=6.2)
                 guard #available(iOS 26.0, tvOS 26.0, macOS 26.0, watchOS 26.0, visionOS 26.0, *) else {

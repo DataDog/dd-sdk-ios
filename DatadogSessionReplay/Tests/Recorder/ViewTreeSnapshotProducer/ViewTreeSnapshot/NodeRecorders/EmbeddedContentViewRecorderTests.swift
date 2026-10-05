@@ -6,6 +6,7 @@
 
 #if os(iOS)
 import Testing
+import DatadogSDKTesting
 import UIKit
 
 @_spi(Internal)
@@ -18,7 +19,6 @@ import UIKit
 @Suite(.datadogTesting)
 @MainActor
 struct EmbeddedContentViewRecorderTests {
-    @available(iOS 13.0, *)
     @Test("Leaves views without a slot ID to other recorders")
     func viewsWithoutSlotIDAreNotRecorded() {
         // Given
@@ -38,14 +38,13 @@ struct EmbeddedContentViewRecorderTests {
         #expect(context.embeddedContentViewCache.count == 0)
     }
 
-    @available(iOS 13.0, *)
     @Test("Uses the opaque slot ID independently from the generated wireframe ID")
     func embeddedContentViewsUseIndependentSlotAndWireframeIDs() throws {
         // Given
         let recorder = EmbeddedContentViewRecorder(identifier: UUID())
         let context = ViewTreeRecordingContext.mockWith()
         let embeddedContentView = UIView()
-        embeddedContentView.dd.sessionReplaySlotID = "opaque-slot"
+        embeddedContentView.dd.setSessionReplaySlotID("opaque-slot")
 
         // When
         let semantics = try #require(
@@ -82,7 +81,6 @@ struct EmbeddedContentViewRecorderTests {
         }
     }
 
-    @available(iOS 13.0, *)
     @Test("Stops traversal below embedded content views")
     func embeddedContentViewSubtreesAreIgnored() {
         // Given
@@ -94,7 +92,7 @@ struct EmbeddedContentViewRecorderTests {
             )
         })
         let embeddedContentView = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
-        embeddedContentView.dd.sessionReplaySlotID = "opaque-slot"
+        embeddedContentView.dd.setSessionReplaySlotID("opaque-slot")
         embeddedContentView.addSubview(UIView(frame: embeddedContentView.bounds))
         let context = ViewTreeRecordingContext.mockWith(coordinateSpace: embeddedContentView)
         let viewTreeRecorder = ViewTreeRecorder(nodeRecorders: [recorder, fallbackRecorder])
@@ -107,13 +105,12 @@ struct EmbeddedContentViewRecorderTests {
         #expect(fallbackRecorder.queriedViews.isEmpty)
     }
 
-    @available(iOS 13.0, *)
     @Test("Uses the native hidden placeholder without discarding a previously recorded embedded slot")
     func hiddenEmbeddedContentViewsUseNativePlaceholderAndKeepCachedSlot() throws {
         // Given
         let embeddedContentRecorder = EmbeddedContentViewRecorder(identifier: UUID())
         let embeddedContentView = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
-        embeddedContentView.dd.sessionReplaySlotID = "opaque-slot"
+        embeddedContentView.dd.setSessionReplaySlotID("opaque-slot")
         let context = ViewTreeRecordingContext.mockWith(coordinateSpace: embeddedContentView)
         _ = embeddedContentRecorder.semantics(
             of: embeddedContentView,
@@ -148,14 +145,13 @@ struct EmbeddedContentViewRecorderTests {
         )
     }
 
-    @available(iOS 13.0, *)
     @Test("Produces no visible wireframe for invisible embedded content views")
     func invisibleEmbeddedContentViewsProduceNoVisibleWireframe() throws {
         // Given
         let recorder = EmbeddedContentViewRecorder(identifier: UUID())
         let context = ViewTreeRecordingContext.mockWith()
         let embeddedContentView = UIView()
-        embeddedContentView.dd.sessionReplaySlotID = "opaque-slot"
+        embeddedContentView.dd.setSessionReplaySlotID("opaque-slot")
 
         // When
         let semantics = try #require(
@@ -180,16 +176,15 @@ struct EmbeddedContentViewRecorderTests {
         )
     }
 
-    @available(iOS 13.0, *)
     @Test("Keeps slots independent for multiple embedded content views")
     func embeddedContentViewsKeepIndependentSlots() throws {
         // Given
         let recorder = EmbeddedContentViewRecorder(identifier: UUID())
         let context = ViewTreeRecordingContext.mockWith()
         let firstEmbeddedContentView = UIView()
-        firstEmbeddedContentView.dd.sessionReplaySlotID = "first-slot"
+        firstEmbeddedContentView.dd.setSessionReplaySlotID("first-slot")
         let secondEmbeddedContentView = UIView()
-        secondEmbeddedContentView.dd.sessionReplaySlotID = "second-slot"
+        secondEmbeddedContentView.dd.setSessionReplaySlotID("second-slot")
 
         // When
         let firstSemantics = try #require(

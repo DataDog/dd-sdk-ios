@@ -477,7 +477,7 @@ internal class SessionEndedMetric {
 
             if sessionStart < sessionEnd { // sanity check
                 let sessionDuration = sessionEnd.timeIntervalSince(sessionStart)
-                let foregroundDuration = context.applicationStateHistory.foregroundDuration(during: sessionStart...sessionEnd)
+                let foregroundDuration = context.applicationStateHistory.applicationNotSuspendedDuration(during: sessionStart...sessionEnd)
                 let foregroundCoverage = round(Double(foregroundDuration / sessionDuration) * 1_000) / 1_000
 
                 let stateAtStart = context.applicationStateHistory.state(at: sessionStart) ?? context.applicationStateHistory.initialState
@@ -604,17 +604,40 @@ private extension Int64 {
 }
 
 extension InstrumentationType: Encodable {
+    /// Native instrumentation types keep encoding as their original `Int` wire values for backward compatibility
+    /// with existing telemetry consumers; only cross-platform types are encoded as their raw string value.
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+#if canImport(UIKit)
+        case .uikit: try container.encode(0)
+#elseif canImport(AppKit)
+        case .appkit: try container.encode(0)
+#endif
+        case .swiftuiAutomatic: try container.encode(1)
+        case .swiftui: try container.encode(2)
+        case .manual: try container.encode(3)
+        case .crossPlatform(let value): try container.encode(value)
+        }
+    }
+
     var metricKey: String {
         switch self {
+#if canImport(UIKit)
         case .uikit: return "uikit"
+#elseif canImport(AppKit)
+        case .appkit: return "appkit"
+#endif
         case .swiftuiAutomatic: return "swiftuiAutomatic"
         case .swiftui: return "swiftui"
         case .manual: return "manual"
+        case .crossPlatform(let value): return value
         }
     }
 }
 
 private extension AppState {
+    #if !os(macOS)
     var toString: String {
         switch self {
         case .active: return "active"
@@ -623,4 +646,16 @@ private extension AppState {
         case .terminated: return "terminated"
         }
     }
+    #else
+    var toString: String {
+        switch self {
+        case .active: return "active"
+        case .inactive: return "inactive"
+        case .hidden: return "hidden"
+        case .lockScreen: return "lock screen"
+        case .sleeping: return "sleeping"
+        case .terminating: return "terminating"
+        }
+    }
+    #endif
 }

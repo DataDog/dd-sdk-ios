@@ -1,0 +1,20 @@
+{
+    "title": "DynamicOption",
+    "description": "Schema with strategy-discriminated anyOf",
+    "anyOf": [
+        {
+            "type": "object",
+            "properties": {
+                "strategy": { "type": "string", "const": "js" },
+                "path": { "type": "string" }
+            }
+        },
+        {
+            "type": "object",
+            "properties": {
+                "strategy": { "type": "string", "const": "cookie" },
+                "name": { "type": "string" }
+            }
+        }
+    ]
+}

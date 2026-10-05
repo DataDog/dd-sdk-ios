@@ -8,7 +8,6 @@
 
 import SwiftUI
 
-@available(iOS 13.0, tvOS 13.0, *)
 internal enum GraphicsFilter {
     case colorMultiply(Color._Resolved)
     case unknown

@@ -11,7 +11,6 @@ import CoreGraphics
 import SwiftUI
 @testable import DatadogSessionReplay
 
-@available(iOS 13.0, tvOS 13.0, *)
 class TextReflectionTests: XCTestCase {
     func testStyledTextContentViewReflection() throws {
         let styledTextContent: StyledTextContentView = .mockRandom()

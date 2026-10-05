@@ -57,7 +57,10 @@ internal struct ViewTreeSnapshotBuilder {
             embeddedContentSlots: embeddedContentSlots()
         )
         if let heatmapCache {
-            core?.heatmapIdentifierRegistry?.setHeatmapIdentifiers(heatmapCache.identifiers)
+            core?.heatmapIdentifierRegistry?.setHeatmapIdentifiers(
+                heatmapCache.identifiers,
+                requiresDescendantLookup: false
+            )
         }
         return snapshot
     }
@@ -123,9 +126,7 @@ internal func createDefaultNodeRecorders(featureFlags: SessionReplay.Configurati
         UIActivityIndicatorRecorder(identifier: UUID()),
     ]
 
-    if #available(iOS 13, tvOS 13, *) {
-        recorders.append(UIHostingViewRecorder(identifier: UUID()))
-    }
+    recorders.append(UIHostingViewRecorder(identifier: UUID()))
 
     return recorders
 }

@@ -6,7 +6,6 @@
 
 import TestUtilities
 import XCTest
-import UIKit
 
 @testable import DatadogRUM
 

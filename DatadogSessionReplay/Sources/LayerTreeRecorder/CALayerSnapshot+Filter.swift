@@ -8,7 +8,6 @@
 import Foundation
 import QuartzCore
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
     /// Captured subset of Core Animation filters that affect layer rendering.
     enum Filter: Sendable, Equatable {
@@ -23,7 +22,6 @@ extension CALayerSnapshot {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.Filter {
     /// Reads a supported layer filter. Unknown enabled filters are kept by name.
     init?(_ filterValue: Any) {
@@ -78,7 +76,6 @@ extension CALayerSnapshot.Filter {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
     /// A 4-by-5 color transform matrix used by layer filters.
     struct ColorMatrix: Sendable, Equatable {
@@ -108,7 +105,6 @@ extension CALayerSnapshot {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
     struct CompositingFilter: Sendable, Hashable, RawRepresentable {
         let rawValue: String
@@ -126,7 +122,6 @@ extension CALayerSnapshot {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.CompositingFilter {
     static let normal = Self(rawValue: "normalBlendMode")
     static let plusDarker = Self(rawValue: "plusD")

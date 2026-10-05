@@ -18,7 +18,7 @@ internal struct RecordingComponents {
         resourcesWriter: any ResourcesWriting,
         srContextPublisher: SRContextPublisher
     ) throws {
-        if #available(iOS 13.0, tvOS 13.0, *), configuration.featureFlags[.layerTreeRecording] {
+        if configuration.featureFlags[.compositionTreeRecording] {
             // This is purely defensive, as `SessionReplay.enable()` initializes on the main thread
             self = try runOnMainThreadSync {
                 try .layerTreeRecordingComponents(
@@ -106,7 +106,6 @@ internal struct RecordingComponents {
         )
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @MainActor
     private static func layerTreeRecordingComponents(
         core: DatadogCoreProtocol,
@@ -134,6 +133,9 @@ internal struct RecordingComponents {
             recordWriter: RecordWriter(core: core),
             resourceProcessor: resourceProcessor,
             replayContextPublisher: srContextPublisher,
+            heatmapIdentifierRegistry: configuration.featureFlags[.heatmaps]
+                ? core.heatmapIdentifierRegistry
+                : nil,
             telemetry: telemetry
         )
 
@@ -141,7 +143,10 @@ internal struct RecordingComponents {
         let touchSnapshotProducer = WindowTouchSnapshotProducer(windowObserver: keyWindowObserver)
         let screenChangeFilter = ScreenChangeFilter()
         let layerRecorder = LayerRecorder(
-            snapshotBuilder: LayerTreeSnapshotBuilder(layerProvider: keyWindowObserver),
+            snapshotBuilder: LayerTreeSnapshotBuilder(
+                layerProvider: keyWindowObserver,
+                heatmapsEnabled: configuration.featureFlags[.heatmaps]
+            ),
             uiApplicationSwizzler: try UIApplicationSwizzler(handler: touchSnapshotProducer),
             touchSnapshotProducer: touchSnapshotProducer,
             imageSnapshotter: ImageSnapshotter(

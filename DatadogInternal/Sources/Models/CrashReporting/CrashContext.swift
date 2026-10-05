@@ -71,6 +71,9 @@ public struct CrashContext: Codable, Equatable {
     /// The last _"Is app in foreground?"_ information from crashed app process.
     public let lastIsAppInForeground: Bool
 
+    /// The identifier of the remote configuration the SDK was configured with.
+    public let remoteConfigurationId: String?
+
     /// The last RUM view in crashed app process.
     public var lastRUMViewEvent: RUMViewEvent?
 
@@ -105,7 +108,8 @@ public struct CrashContext: Codable, Equatable {
         lastRUMViewEvent: RUMViewEvent?,
         lastRUMSessionState: RUMSessionState?,
         lastRUMAttributes: RUMEventAttributes?,
-        lastLogAttributes: LogEventAttributes?
+        lastLogAttributes: LogEventAttributes?,
+        remoteConfigurationId: String? = nil
     ) {
         self.serverTimeOffset = serverTimeOffset
         self.service = service.sanitizedToDDTags()
@@ -123,6 +127,7 @@ public struct CrashContext: Codable, Equatable {
         self.carrierInfo = carrierInfo
         self.lastIsAppInForeground = lastIsAppInForeground
         self.appLaunchDate = appLaunchDate
+        self.remoteConfigurationId = remoteConfigurationId
         self.lastRUMViewEvent = lastRUMViewEvent
         self.lastRUMSessionState = lastRUMSessionState
         self.lastRUMAttributes = lastRUMAttributes
@@ -151,6 +156,7 @@ public struct CrashContext: Codable, Equatable {
         self.networkConnectionInfo = context.networkConnectionInfo
         self.carrierInfo = context.carrierInfo
         self.lastIsAppInForeground = context.applicationStateHistory.currentState.isRunningInForeground
+        self.remoteConfigurationId = context.remoteConfigurationId
 
         self.lastRUMViewEvent = lastRUMViewEvent
         self.lastRUMSessionState = lastRUMSessionState

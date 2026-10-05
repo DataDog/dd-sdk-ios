@@ -12,7 +12,6 @@ import SwiftUI
 import TestUtilities
 @testable import DatadogSessionReplay
 
-@available(iOS 13.0, tvOS 13.0, *)
 class GraphicsImageReflectionTests: XCTestCase {
     // MARK: Object Behavior tests
     func testGraphicsImageContentsEquality() {

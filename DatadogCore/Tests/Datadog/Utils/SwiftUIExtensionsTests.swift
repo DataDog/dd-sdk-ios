@@ -13,36 +13,27 @@ import SwiftUI
 @testable import DatadogCore
 @testable import DatadogInternal
 
-class CustomViewController: UIViewController {}
+class CustomViewController: DDViewController {}
 
-@available(iOS 13, tvOS 13, *)
 final class TestView: View {
     var body = EmptyView()
 }
 
 class SwiftUIExtensionsTests: XCTestCase {
     func testSwiftUIViewTypeDescription() {
-        guard #available(iOS 13, tvOS 13, *) else {
-            return
-        }
-
         let view = TestView().cornerRadius(8)
         XCTAssertEqual(view.typeDescription, "ModifiedContent<TestView, _ClipEffect<RoundedRectangle>>")
     }
 
     func testBundleIsSwiftUI() {
-        guard #available(iOS 13, tvOS 13, *) else {
-            return
-        }
-
         // Given
         let someSwiftUITypes: [AnyClass] = [
-            UIHostingController<AnyView>.self // The only class in SwiftUI
+            DDHostingController<AnyView>.self // The only class in SwiftUI
         ]
 
         let someNonSwiftUITypes: [AnyClass] = [
             TestView.self,
-            UIViewController.self,
+            DDViewController.self,
             OperationQueue.self,
             CustomViewController.self
         ]

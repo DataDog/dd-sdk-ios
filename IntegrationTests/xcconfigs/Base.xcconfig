@@ -8,5 +8,5 @@ SWIFT_VERSION=5.9
 #include? "../xcconfigs/DatadogSDKTesting.local.xcconfig"
 
 // Override minimum deployment targets for building integration tests:
-IPHONEOS_DEPLOYMENT_TARGET=13.0
-TVOS_DEPLOYMENT_TARGET=13.0
+IPHONEOS_DEPLOYMENT_TARGET=15.0
+TVOS_DEPLOYMENT_TARGET=15.0

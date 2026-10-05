@@ -132,15 +132,8 @@ private func _DDAssertJSONEqual<T, U>(_ expression1: @autoclosure () throws -> T
     let encoder = JSONEncoder()
     encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
 
-    let data1: Data
-    let data2: Data
-    if #available(iOS 13.0, *) {
-        data1 = try encoder.encode(value1)
-        data2 = try encoder.encode(value2)
-    } else {
-        data1 = try encoder.encode(EncodingContainer(value1))
-        data2 = try encoder.encode(EncodingContainer(value2))
-    }
+    let data1 = try encoder.encode(value1)
+    let data2 = try encoder.encode(value2)
     let string1 = data1.utf8String
     let string2 = data2.utf8String
     guard string1 == string2 else {

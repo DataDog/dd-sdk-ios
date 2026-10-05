@@ -15,7 +15,6 @@ import TestUtilities
 @testable import DatadogSessionReplay
 @testable import DatadogInternal
 
-@available(iOS 13.0, *)
 class UnsupportedViewRecorderTests: XCTestCase {
     func testWhenViewIsUnsupportedViewControllersRootView() throws {
         let recorder = UnsupportedViewRecorder(identifier: UUID(), featureFlags: .defaults)

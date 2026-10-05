@@ -147,7 +147,7 @@ public:
      * @brief Construct a new profile aggregator
      * @param sampling_interval_ns Sampling interval in nanoseconds
      */
-    explicit profile(uint64_t sampling_interval_ns);
+    explicit profile(uint64_t sampling_interval_ns, bool record_cpu_time = false);
     ~profile() = default;
     
     profile(const profile&) = delete;
@@ -189,9 +189,15 @@ public:
     
     /** @brief Get cached string ID for "wall-time" */
     uint32_t wall_time_str_id() const { return _wall_time_str_id; }
+
+    /** @brief Get cached string ID for "cpu-time" */
+    uint32_t cpu_time_str_id() const { return _cpu_time_str_id; }
     
     /** @brief Get cached string ID for "nanoseconds" */
     uint32_t nanoseconds_str_id() const { return _nanoseconds_str_id; }
+
+    /** @brief Whether samples include a CPU-time value in addition to wall-time */
+    bool cpu_time_enabled() const { return _record_cpu_time; }
 
     /** @brief Number of labels exported for the sample */
     size_t label_count(const sample_t& sample) const { return sample.labels.size() + 1; }
@@ -238,12 +244,18 @@ private:
     
     /** @brief Profile sampling interval in nanoseconds */
     uint64_t _sampling_interval_ns;
+
+    /** @brief Whether samples include CPU time as a second value */
+    bool _record_cpu_time;
     
     /** @brief Cached string ID for empty string */
     uint32_t _empty_str_id;
     
     /** @brief Cached string ID for "wall-time" */
     uint32_t _wall_time_str_id;
+
+    /** @brief Cached string ID for "cpu-time" */
+    uint32_t _cpu_time_str_id;
     
     /** @brief Cached string ID for "nanoseconds" */
     uint32_t _nanoseconds_str_id;

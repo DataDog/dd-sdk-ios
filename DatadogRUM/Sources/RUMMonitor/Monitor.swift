@@ -4,7 +4,11 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 import DatadogInternal
 
 internal extension RUMMethod {
@@ -96,6 +100,27 @@ internal enum RUMInternalErrorSource: String, Decodable {
 /// A mobile-specific category of the error. It provides a high-level grouping for different types of errors.
 internal typealias RUMErrorCategory = RUMErrorEvent.Error.Category
 
+/// Exposes monitor state for readers that operate outside the `RUMCommand` pipeline
+/// (e.g. the timer-driven `TimeseriesSessionCollector`), which otherwise have no access to
+/// `command.globalAttributes`, the scope tree's active view, or `RUMSessionScope`'s own session
+/// lifetime rules.
+internal protocol RUMActiveContextReader: AnyObject {
+    /// The current global attributes set through `addAttribute(forKey:value:)` / `addAttributes(_:)`.
+    /// Conformers must guarantee this is safe to read from any thread.
+    var globalAttributes: [AttributeKey: AttributeValue] { get }
+    /// The currently active view, if any. Conformers must guarantee this is safe to read from any thread.
+    var activeView: (id: String?, path: String?, name: String?) { get }
+    /// The most recently observed `DatadogContext.hasReplay` value, or `nil` if no command has been
+    /// processed yet. Conformers must guarantee this is safe to read from any thread.
+    var hasReplay: Bool? { get }
+    /// Whether the session identified by `sessionID` has expired (exceeded its max duration or inactivity
+    /// timeout) as of `date`, evaluated against a live, single source of truth instead of a shadow copy of
+    /// that state. Returns `false` if `sessionID` doesn't match the currently active session (e.g. a session
+    /// transition is still propagating), so callers should treat that as "skip the check for now", not
+    /// "not expired". Conformers must guarantee this is safe to call from any thread.
+    func isSessionExpired(sessionID: String, at date: Date) -> Bool
+}
+
 internal class Monitor: RUMCommandSubscriber {
     /// RUM feature scope.
     let featureScope: FeatureScope
@@ -107,6 +132,22 @@ internal class Monitor: RUMCommandSubscriber {
 
     @ReadWriteLock
     private var attributes: [AttributeKey: AttributeValue] = [:]
+
+    @ReadWriteLock
+    private var activeViewSnapshot: (id: String?, path: String?, name: String?) = (nil, nil, nil)
+
+    @ReadWriteLock
+    private var sessionActivitySnapshot: (sessionID: String?, sessionStartTime: Date?, lastInteractionTime: Date?) = (nil, nil, nil)
+
+    @ReadWriteLock
+    private var hasReplaySnapshot: Bool? = nil
+
+    /// Updates the replay state snapshot exposed through `RUMActiveContextReader`. Called both from
+    /// `process(command:)` and from `HasReplayMessageReceiver`, since Session Replay toggles `hasReplay`
+    /// through the core context bus, not through a `RUMCommand`.
+    func update(hasReplay: Bool?) {
+        hasReplaySnapshot = hasReplay
+    }
 
     private let fatalErrorContext: FatalErrorContextNotifying
     private let rumUUIDGenerator: RUMUUIDGenerator
@@ -134,11 +175,38 @@ internal class Monitor: RUMCommandSubscriber {
             }
 
             let transformedCommand = self.transform(command: command)
+            let previousSessionID = self.sessionActivitySnapshot.sessionID
 
             _ = self.applicationScope.process(command: transformedCommand, context: context, writer: writer)
 
+            if self.applicationScope.dependencies.timeseriesCollector != nil {
+                let currentSessionID = self.applicationScope.activeSession?.sessionUUID.toRUMDataFormat
+                // If a session boundary was just crossed, `context.hasReplay` still reflects the previous
+                // session's Session Replay decision (SR hasn't recomputed it for the new session yet), so
+                // carrying it over would leak stale replay state into the new session.
+                let didStartNewSession = previousSessionID != nil && currentSessionID != previousSessionID
+                self.update(hasReplay: didStartNewSession ? nil : context.hasReplay)
+            }
+
             if let debugging = self.debugging {
                 debugging.debug(applicationScope: self.applicationScope)
+            }
+
+            if let activeSession = self.applicationScope.activeSession {
+                let viewContext = activeSession.viewScopes.last(where: { $0.isActiveView })?.context ?? activeSession.context
+                self.activeViewSnapshot = (
+                    id: viewContext.activeViewID?.toRUMDataFormat,
+                    path: viewContext.activeViewPath,
+                    name: viewContext.activeViewName
+                )
+                self.sessionActivitySnapshot = (
+                    sessionID: activeSession.sessionUUID.toRUMDataFormat,
+                    sessionStartTime: activeSession.sessionStartTime,
+                    lastInteractionTime: activeSession.lastInteractionTime
+                )
+            } else {
+                self.activeViewSnapshot = (nil, nil, nil)
+                self.sessionActivitySnapshot = (nil, nil, nil)
             }
         }
 
@@ -153,7 +221,8 @@ internal class Monitor: RUMCommandSubscriber {
                     return nil
                 }
 
-                let context = activeSession.viewScopes.last?.context ?? activeSession.context
+                let activeViewScope = activeSession.viewScopes.last(where: { $0.isActiveView })
+                let context = activeViewScope?.context ?? activeSession.context
 
                 return RUMCoreContext(
                     applicationID: context.rumApplicationID,
@@ -161,8 +230,9 @@ internal class Monitor: RUMCommandSubscriber {
                     sessionSampler: activeSession.sampler,
                     viewID: context.activeViewID?.toRUMDataFormat,
                     userActionID: context.activeUserActionID?.toRUMDataFormat,
-                    viewServerTimeOffset: activeSession.viewScopes.last?.serverTimeOffset,
-                    viewPath: context.activeViewPath
+                    viewServerTimeOffset: activeViewScope?.serverTimeOffset,
+                    viewPath: context.activeViewPath,
+                    viewName: context.activeViewName
                 )
             }
         )
@@ -188,6 +258,23 @@ internal class Monitor: RUMCommandSubscriber {
 
     private func didUpdateAttributes() {
         fatalErrorContext.globalAttributes = attributes
+    }
+}
+
+extension Monitor: RUMActiveContextReader {
+    var globalAttributes: [AttributeKey: AttributeValue] { attributes }
+    var activeView: (id: String?, path: String?, name: String?) { activeViewSnapshot }
+    var hasReplay: Bool? { hasReplaySnapshot }
+
+    func isSessionExpired(sessionID: String, at date: Date) -> Bool {
+        let activity = sessionActivitySnapshot
+        guard activity.sessionID == sessionID,
+              let sessionStartTime = activity.sessionStartTime,
+              let lastInteractionTime = activity.lastInteractionTime else {
+            return false
+        }
+        return RUMSessionScope.hasExpired(sessionStartTime: sessionStartTime, currentTime: date)
+            || RUMSessionScope.hasTimedOut(lastInteractionTime: lastInteractionTime, currentTime: date)
     }
 }
 
@@ -619,7 +706,7 @@ extension Monitor: RUMMonitorViewProtocol {
     }
 
     #if !os(watchOS)
-    func startView(viewController: UIViewController, name: String?, attributes: [AttributeKey: AttributeValue]) {
+    func startView(viewController: DDViewController, name: String?, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStartViewCommand(
                 time: dateProvider.now,
@@ -633,7 +720,7 @@ extension Monitor: RUMMonitorViewProtocol {
         )
     }
 
-    func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]) {
+    func stopView(viewController: DDViewController, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStopViewCommand(
                 time: dateProvider.now,

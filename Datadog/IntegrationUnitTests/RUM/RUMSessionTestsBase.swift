@@ -12,6 +12,7 @@ import TestUtilities
 
 /// Base class for RUM session tests.
 /// Provides common fixtures and helpers for simulating test scenarios.
+@MainActor
 class RUMSessionTestsBase: XCTestCase {
     /// Timestamp representing when the app process was spawned.
     let processLaunchDate = Date()

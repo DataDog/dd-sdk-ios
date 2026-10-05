@@ -9,6 +9,7 @@ import CoreGraphics
 @_spi(Internal)
 import DatadogInternal
 import Testing
+import DatadogSDKTesting
 @_spi(Internal)
 import TestUtilities
 import UIKit
@@ -17,7 +18,6 @@ import UIKit
 
 @Suite(.datadogTesting)
 struct LayerSnapshotProcessorTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("First layer tree snapshot starts a segment and processes resources")
     func firstLayerTreeSnapshotStartsSegmentAndProcessesResources() throws {
         // Given
@@ -53,7 +53,41 @@ struct LayerSnapshotProcessorTests {
         #expect(fixture.core.recordsCountByViewID == ["view-id": 3])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Publishes heatmap identifiers with descendant lookup")
+    @MainActor
+    func publishesHeatmapIdentifiersWithDescendantLookup() throws {
+        // Given
+        let fixture = Fixture()
+        let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+        rootView.accessibilityIdentifier = "root"
+
+        let button = UIView(frame: CGRect(x: 10, y: 20, width: 30, height: 40))
+        button.accessibilityIdentifier = "button"
+        button.backgroundColor = .red
+        rootView.addSubview(button)
+
+        let root = try #require(
+            CALayerSnapshot(from: rootView.layer, in: .mockAny(heatmapsEnabled: true))
+        )
+        let snapshot = LayerTreeSnapshot.mockWith(root: root)
+
+        // When
+        fixture.processor.process(
+            layerTreeSnapshot: snapshot,
+            imageSnapshots: .init(),
+            touchSnapshot: nil
+        )
+
+        // Then
+        #expect(fixture.heatmapIdentifierRegistry.requiresDescendantLookup)
+        #expect(fixture.heatmapIdentifierRegistry.identifiers.count == 1)
+        #expect(
+            fixture.heatmapIdentifierRegistry.heatmapIdentifier(
+                for: ObjectIdentifier(button.layer)
+            ) != nil
+        )
+    }
+
     @Test("Same context writes wireframe, composition tree, viewport, and touch records in order")
     func sameContextWritesMutationViewportAndTouchRecordsInOrder() throws {
         // Given
@@ -123,7 +157,6 @@ struct LayerSnapshotProcessorTests {
         #expect(fixture.core.recordsCountByViewID == ["view-id": 7])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("RUM context change starts a new segment")
     func rumContextChangeStartsNewSegment() throws {
         // Given
@@ -151,7 +184,6 @@ struct LayerSnapshotProcessorTests {
         #expect(fixture.core.recordsCountByViewID == ["view-1": 3, "view-2": 3])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Wireframe type changes use incremental mutations and update state")
     func wireframeTypeChangesUseIncrementalMutationsAndUpdateState() throws {
         // Given
@@ -216,11 +248,11 @@ struct LayerSnapshotProcessorTests {
 }
 
 private extension LayerSnapshotProcessorTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     final class Fixture {
         let core = PassthroughCoreMock()
         let recordWriter = RecordWriterMock()
         let resourceProcessor = ResourceProcessorSpy()
+        let heatmapIdentifierRegistry = HeatmapIdentifierRegistryMock()
         let telemetry = TelemetryMock()
         let processor: LayerSnapshotProcessor
 
@@ -230,6 +262,7 @@ private extension LayerSnapshotProcessorTests {
                 recordWriter: recordWriter,
                 resourceProcessor: resourceProcessor,
                 replayContextPublisher: SRContextPublisher(core: core),
+                heatmapIdentifierRegistry: heatmapIdentifierRegistry,
                 telemetry: telemetry
             )
         }

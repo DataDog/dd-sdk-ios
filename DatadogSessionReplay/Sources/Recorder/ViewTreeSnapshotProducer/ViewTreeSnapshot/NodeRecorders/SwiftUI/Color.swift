@@ -9,7 +9,6 @@
 import Foundation
 import SwiftUI
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension SwiftUI.Color {
     struct _Resolved: Hashable {
         let linearRed: Float
@@ -33,12 +32,10 @@ extension SwiftUI.Color {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 internal struct ColorView {
     let color: SwiftUI.Color._ResolvedHDR
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 internal struct ResolvedPaint: Hashable {
     let paint: SwiftUI.Color._Resolved?
 }

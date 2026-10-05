@@ -13,6 +13,7 @@ import DatadogInternal
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
+@MainActor
 class ViewTreeSnapshotBuilderTests: XCTestCase {
     func testWhenQueryingNodeRecorders_itPassesAppropriateContext() throws {
         // Given
@@ -94,7 +95,7 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         XCTAssertEqual(queryContext.recorder.date, randomRecorderContext.date)
     }
 
-    func testWhenCreatingSnapshot_itWritesHeatmapIdentifiersToRegistry() throws {
+    func testWhenCreatingSnapshot_itWritesHeatmapIdentifiersToRegistryByLayer() throws {
         // Given
         let view = UIView.mock(withFixture: .visible(.someAppearance))
         let core = FeatureRegistrationCoreMock()
@@ -113,7 +114,9 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         _ = builder.createSnapshot(of: view, with: context)
 
         // Then
-        XCTAssertFalse(registry.identifiers.isEmpty)
+        XCTAssertNotNil(registry.identifiers[ObjectIdentifier(view.layer)])
+        XCTAssertNil(registry.identifiers[ObjectIdentifier(view)])
+        XCTAssertFalse(registry.requiresDescendantLookup)
     }
 
     func testWhenCreatingSnapshot_withNoViewPath_itDoesNotWriteToRegistry() throws {
@@ -164,9 +167,9 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         // Given
         let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 320, height: 480))
         let firstEmbeddedContentView = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
-        firstEmbeddedContentView.dd.sessionReplaySlotID = "first-slot"
+        firstEmbeddedContentView.dd.setSessionReplaySlotID("first-slot")
         let secondEmbeddedContentView = UIView(frame: CGRect(x: 100, y: 0, width: 100, height: 100))
-        secondEmbeddedContentView.dd.sessionReplaySlotID = "second-slot"
+        secondEmbeddedContentView.dd.setSessionReplaySlotID("second-slot")
         rootView.addSubview(firstEmbeddedContentView)
         rootView.addSubview(secondEmbeddedContentView)
         let builder = ViewTreeSnapshotBuilder(
@@ -188,7 +191,7 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 320, height: 480))
         let embeddedContentLabel = UILabel(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
         embeddedContentLabel.text = "Native label"
-        embeddedContentLabel.dd.sessionReplaySlotID = "embedded-slot"
+        embeddedContentLabel.dd.setSessionReplaySlotID("embedded-slot")
         rootView.addSubview(embeddedContentLabel)
         let builder = ViewTreeSnapshotBuilder(
             additionalNodeRecorders: [],
@@ -209,7 +212,7 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         // Given
         let rootView = UIView(frame: CGRect(x: 0, y: 0, width: 320, height: 480))
         let embeddedContentView = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
-        embeddedContentView.dd.sessionReplaySlotID = "retained-slot"
+        embeddedContentView.dd.setSessionReplaySlotID("retained-slot")
         rootView.addSubview(embeddedContentView)
         let builder = ViewTreeSnapshotBuilder(
             additionalNodeRecorders: [],
@@ -239,7 +242,7 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         var initialSlots: [WireframeID: String] = [:]
         autoreleasepool {
             let embeddedContentView = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
-            embeddedContentView.dd.sessionReplaySlotID = "released-slot"
+            embeddedContentView.dd.setSessionReplaySlotID("released-slot")
             weakEmbeddedContentView = embeddedContentView
             rootView.addSubview(embeddedContentView)
             initialSlots = builder.createSnapshot(of: rootView, with: .mockAny()).embeddedContentSlots

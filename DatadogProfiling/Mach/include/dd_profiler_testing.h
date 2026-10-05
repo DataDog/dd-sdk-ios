@@ -11,6 +11,7 @@
 #include <TargetConditionals.h>
 #if !TARGET_OS_WATCH
 
+#include <mach/mach_types.h>
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -23,6 +24,15 @@ extern "C" {
  * @return true if profiling is enabled, false otherwise
  */
 bool dd_is_profiling_enabled(void);
+
+/**
+ * Returns the system-wide unique identifier for a Mach thread port.
+ *
+ * @param thread Mach thread port to inspect
+ * @param thread_id Receives the 64-bit system thread identifier
+ * @return true when the identifier was retrieved
+ */
+bool dd_profiler_get_thread_id_for_testing(mach_port_t thread, uint64_t* thread_id);
 
 /**
  * Deletes the profiling defaults from UserDefaults.

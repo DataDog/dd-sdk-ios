@@ -5,8 +5,8 @@
  */
 
 #if os(iOS)
-import TestUtilities
 import Testing
+import DatadogSDKTesting
 import UIKit
 
 @_spi(Internal)
@@ -15,7 +15,6 @@ import UIKit
 @Suite(.datadogTesting)
 @MainActor
 struct UIViewSessionReplaySlotIDTests {
-    @available(iOS 13.0, *)
     @Test
     func slotIDIsNilByDefault() {
         // given
@@ -28,7 +27,6 @@ struct UIViewSessionReplaySlotIDTests {
         #expect(slotID == nil)
     }
 
-    @available(iOS 13.0, *)
     @Test
     func slotIDIsStoredPerView() {
         // given
@@ -36,25 +34,77 @@ struct UIViewSessionReplaySlotIDTests {
         let otherView = UIView()
 
         // when
-        view.dd.sessionReplaySlotID = "renderer-slot"
+        view.dd.setSessionReplaySlotID("renderer-slot")
 
         // then
         #expect(view.dd.sessionReplaySlotID == "renderer-slot")
         #expect(otherView.dd.sessionReplaySlotID == nil)
     }
 
-    @available(iOS 13.0, *)
     @Test
     func settingSlotIDToNilClearsIt() {
         // given
         let view = UIView()
-        view.dd.sessionReplaySlotID = "renderer-slot"
+        view.dd.setSessionReplaySlotID("renderer-slot")
 
         // when
-        view.dd.sessionReplaySlotID = nil
+        view.dd.setSessionReplaySlotID(nil)
 
         // then
         #expect(view.dd.sessionReplaySlotID == nil)
+    }
+
+    @Test
+    func changingSlotIDMarksTheViewAsNeedingLayout() {
+        // given
+        let view = LayoutSpyView()
+        view.layoutIfNeeded()
+        view.setNeedsLayoutCount = 0
+
+        // when
+        view.dd.setSessionReplaySlotID("renderer-slot")
+
+        // then
+        #expect(view.setNeedsLayoutCount == 1)
+    }
+
+    @Test
+    func settingSameSlotIDDoesNotMarkTheViewAsNeedingLayout() {
+        // given
+        let view = LayoutSpyView()
+        view.dd.setSessionReplaySlotID("renderer-slot")
+        view.layoutIfNeeded()
+        view.setNeedsLayoutCount = 0
+
+        // when
+        view.dd.setSessionReplaySlotID("renderer-slot")
+
+        // then
+        #expect(view.setNeedsLayoutCount == 0)
+    }
+
+    @Test
+    func clearingSlotIDMarksTheViewAsNeedingLayout() {
+        // given
+        let view = LayoutSpyView()
+        view.dd.setSessionReplaySlotID("renderer-slot")
+        view.layoutIfNeeded()
+        view.setNeedsLayoutCount = 0
+
+        // when
+        view.dd.setSessionReplaySlotID(nil)
+
+        // then
+        #expect(view.setNeedsLayoutCount == 1)
+    }
+}
+
+private final class LayoutSpyView: UIView {
+    var setNeedsLayoutCount = 0
+
+    override func setNeedsLayout() {
+        setNeedsLayoutCount += 1
+        super.setNeedsLayout()
     }
 }
 #endif

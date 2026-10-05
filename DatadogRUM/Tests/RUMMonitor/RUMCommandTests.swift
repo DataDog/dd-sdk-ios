@@ -88,6 +88,31 @@ class RUMCommandTests: XCTestCase {
         XCTAssertEqual(defaultCommand2.errorSourceType, .ios)
     }
 
+    func testWhenRUMStartViewCommand_isPassedInstrumentationTypeAttribute() {
+        let flutter: RUMStartViewCommand = .mockWith(attributes: [CrossPlatformAttributes.instrumentationType: "flutter"])
+        XCTAssertEqual(flutter.instrumentationType, .crossPlatform("flutter"))
+        XCTAssertTrue(flutter.attributes.isEmpty)
+
+        let anyFutureCPSDK: RUMStartViewCommand = .mockWith(attributes: [CrossPlatformAttributes.instrumentationType: "some-future-cp-sdk"])
+        XCTAssertEqual(anyFutureCPSDK.instrumentationType, .crossPlatform("some-future-cp-sdk"))
+        XCTAssertTrue(anyFutureCPSDK.attributes.isEmpty)
+
+        let empty: RUMStartViewCommand = .mockWith(attributes: [CrossPlatformAttributes.instrumentationType: ""], instrumentationType: .manual)
+        XCTAssertEqual(empty.instrumentationType, .manual)
+        XCTAssertTrue(empty.attributes.isEmpty)
+
+        let missing: RUMStartViewCommand = .mockWith(attributes: [:], instrumentationType: .manual)
+        XCTAssertEqual(missing.instrumentationType, .manual)
+
+        #if canImport(UIKit)
+        let uikit: RUMStartViewCommand = .mockWith(attributes: [:], instrumentationType: .uikit)
+        XCTAssertEqual(uikit.instrumentationType, .uikit)
+        #elseif canImport(AppKit)
+        let appkit: RUMStartViewCommand = .mockWith(attributes: [:], instrumentationType: .appkit)
+        XCTAssertEqual(appkit.instrumentationType, .appkit)
+        #endif
+    }
+
     func testWhenRUMAddCurrentViewErrorCommand_isPassedErrorIsCrashAttribute() {
         let command1: RUMAddCurrentViewErrorCommand = .mockWithErrorObject(attributes: [CrossPlatformAttributes.errorIsCrash: true])
 

@@ -5,11 +5,12 @@
  */
 
 #if os(iOS)
+import AVFoundation
 import DatadogInternal
 import QuartzCore
 import SwiftUI
-import TestUtilities
 import Testing
+import DatadogSDKTesting
 import UIKit
 import WebKit
 
@@ -39,7 +40,6 @@ struct SemanticObservationTests {
         }
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records plain layer semantics")
     func recordsPlainLayerSemantics() {
         // Given
@@ -52,7 +52,82 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Records remote content as unsupported and ignores sublayers")
+    func recordsRemoteContentAsUnsupportedAndIgnoresSublayers() throws {
+        // Given
+        let layerClass = try #require(NSClassFromString("CALayerHost") as? CALayer.Type)
+        let layer = layerClass.init()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(
+            semantics: .unsupported("Remote content"),
+            ignoresSublayers: true
+        ))
+    }
+
+    @Test("Records video as unsupported and ignores sublayers")
+    func recordsVideoAsUnsupportedAndIgnoresSublayers() {
+        // Given
+        let layer = AVPlayerLayer()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(
+            semantics: .unsupported("Video"),
+            ignoresSublayers: true
+        ))
+    }
+
+    @Test("Records camera preview as unsupported and ignores sublayers")
+    func recordsCameraPreviewAsUnsupportedAndIgnoresSublayers() {
+        // Given
+        let layer = AVCaptureVideoPreviewLayer()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(
+            semantics: .unsupported("Camera preview"),
+            ignoresSublayers: true
+        ))
+    }
+
+    @Test("Records sample buffer video as unsupported and ignores sublayers")
+    func recordsSampleBufferVideoAsUnsupportedAndIgnoresSublayers() {
+        // Given
+        let layer = AVSampleBufferDisplayLayer()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(
+            semantics: .unsupported("Video"),
+            ignoresSublayers: true
+        ))
+    }
+
+    @Test("Records Metal content as unsupported and ignores sublayers")
+    func recordsMetalContentAsUnsupportedAndIgnoresSublayers() {
+        // Given
+        let layer = CAMetalLayer()
+
+        // When
+        let observation = CALayerSnapshot.SemanticObservation(layer: layer, context: .mockAny())
+
+        // Then
+        #expect(observation == .init(
+            semantics: .unsupported("Metal"),
+            ignoresSublayers: true
+        ))
+    }
+
     @Test("Records linear gradient semantics")
     func recordsLinearGradientSemantics() throws {
         // Given
@@ -80,7 +155,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .gradient(gradient)))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records unsupported gradient as plain layer semantics")
     func recordsUnsupportedGradientAsPlainLayerSemantics() {
         // Given
@@ -95,7 +169,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records masked leaf gradient as plain layer semantics")
     func recordsMaskedLeafGradientAsPlainLayerSemantics() {
         // Given
@@ -110,7 +183,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records visual effect backdrop semantics and ignores sublayers")
     func recordsVisualEffectBackdropSemanticsAndIgnoresSublayers() throws {
         // Given
@@ -132,7 +204,7 @@ struct SemanticObservationTests {
     }
 
     @available(iOS 26.0, *)
-    @Test("Records scroll pockets with their rect edge and ignores sublayers")
+    @Test("Records scroll pockets without image snapshots")
     func recordsScrollPocketsWithTheirRectEdgeAndIgnoresSublayers() throws {
         // Given
         let viewController = UIHostingController(rootView: ScrollPocketFixture())
@@ -143,20 +215,17 @@ struct SemanticObservationTests {
         viewController.view.layoutIfNeeded()
         defer { window.isHidden = true }
 
-        let scrollPockets = try [UIRectEdge.top, .bottom].map { edge in
-            try #require(
-                window.layer.firstDescendant { layer in
-                    guard
-                        let delegate = layer.delegate as? NSObject,
-                        NSStringFromClass(type(of: delegate)) == "_UIScrollPocket",
-                        let value = delegate.value(forKey: "edge") as? NSNumber
-                    else {
-                        return false
-                    }
-                    return UIRectEdge(rawValue: value.uintValue) == edge
-                }
-            )
+        let scrollView = try #require(window.firstDescendant { $0 is UIScrollView } as? UIScrollView)
+        // Both pockets are visible away from the start and end of the content.
+        scrollView.contentOffset.y += 240
+        viewController.view.layoutIfNeeded()
+
+        let scrollPockets = window.allSubviewsMatching {
+            ["_UIScrollPocket", "UIKit.ScrollEdgeEffectView"].contains(NSStringFromClass(type(of: $0)))
         }
+            .sorted { $0.convert($0.bounds, to: window).minY < $1.convert($1.bounds, to: window).minY }
+            .map(\.layer)
+        try #require(scrollPockets.count == 2)
 
         // When
         let observations = scrollPockets.map {
@@ -168,6 +237,47 @@ struct SemanticObservationTests {
             .init(semantics: .visualEffect(.scrollPocket(.top)), ignoresSublayers: true),
             .init(semantics: .visualEffect(.scrollPocket(.bottom)), ignoresSublayers: true)
         ])
+        for layer in scrollPockets {
+            let snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny(imagePrivacyLevel: .maskNone)))
+            #expect(snapshot.sublayers.isEmpty)
+            #expect(snapshot.imageSnapshotRequests(for: .init(), cache: ImageSnapshotCache()).isEmpty)
+        }
+    }
+
+    @Test("Infers scroll pocket edges through offset wrappers and rejects ambiguous geometry")
+    func infersScrollPocketEdges() {
+        // Given
+        let scrollView = UIScrollView(frame: CGRect(x: 20, y: 30, width: 200, height: 400))
+        scrollView.bounds.origin = CGPoint(x: 11, y: 70)
+        let wrapper = UIView(frame: CGRect(x: 31, y: 53, width: 200, height: 400))
+        wrapper.bounds.origin = CGPoint(x: -7, y: 9)
+        scrollView.addSubview(wrapper)
+        let innerWrapper = UIView(frame: CGRect(x: 5, y: 17, width: 200, height: 400))
+        wrapper.addSubview(innerWrapper)
+        let effect = UIView()
+        innerWrapper.addSubview(effect)
+
+        let cases: [(frame: CGRect, edge: UIRectEdge?)] = [
+            (CGRect(x: 0, y: 0, width: 200, height: 30), .top),
+            (CGRect(x: 0, y: 370, width: 200, height: 30), .bottom),
+            (CGRect(x: 0, y: 0.1, width: 200, height: 30), .top),
+            (CGRect(x: 0, y: 150, width: 200, height: 30), nil),
+            (CGRect(x: 0, y: 0, width: 30, height: 400), nil),
+            (CGRect(x: 0, y: 0, width: 200, height: 400), nil)
+        ]
+
+        for testCase in cases {
+            effect.frame = innerWrapper.convert(
+                testCase.frame.offsetBy(dx: scrollView.bounds.minX, dy: scrollView.bounds.minY),
+                from: scrollView
+            )
+
+            // When / Then
+            #expect(effect.layer.scrollPocketEdge == testCase.edge)
+        }
+
+        effect.removeFromSuperview()
+        #expect(effect.layer.scrollPocketEdge == nil)
     }
 
     @available(iOS 26.0, *)
@@ -200,8 +310,8 @@ struct SemanticObservationTests {
     }
 
     @available(iOS 26.0, *)
-    @Test("Records tab bar platter as an automatic capsule and records sublayers")
-    func recordsTabBarPlatterAsAutomaticCapsuleAndRecordsSublayers() throws {
+    @Test("Records tab bar platter and selection backdrop semantics")
+    func recordsTabBarPlatterAndSelectionBackdropSemantics() throws {
         // Given
         let tabBarController = UITabBarController()
         tabBarController.viewControllers = (0..<3).map { index in
@@ -237,8 +347,8 @@ struct SemanticObservationTests {
     }
 
     @available(iOS 26.0, *)
-    @Test("Records platform glass interaction as an automatic capsule and records sublayers")
-    func recordsPlatformGlassInteractionAsAutomaticCapsuleAndRecordsSublayers() throws {
+    @Test("Records platform glass semantics and records sublayers")
+    func recordsPlatformGlassAndRecordsSublayers() throws {
         // Given
         let viewController = UIHostingController(rootView: ScrollPocketFixture())
 
@@ -264,7 +374,7 @@ struct SemanticObservationTests {
         )
 
         // Then
-        #expect(observation == .init(semantics: .visualEffect(.automaticCapsule)))
+        #expect(observation == .init(semantics: .visualEffect(.platformGlass)))
     }
 
     @available(iOS 26.0, *)
@@ -398,7 +508,6 @@ struct SemanticObservationTests {
         ))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records application DestOutView as plain layer semantics")
     func recordsApplicationDestOutViewAsPlainLayerSemantics() {
         // Given
@@ -411,7 +520,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Rejects gradient semantics with fewer than two colors")
     func rejectsGradientSemanticsWithFewerThanTwoColors() {
         // Given
@@ -430,7 +538,6 @@ struct SemanticObservationTests {
         #expect(gradient == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Rejects gradient semantics with mismatched locations")
     func rejectsGradientSemanticsWithMismatchedLocations() {
         // Given
@@ -449,7 +556,6 @@ struct SemanticObservationTests {
         #expect(gradient == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records activity indicators as plain layers and ignores sublayers")
     func recordsActivityIndicatorsAsPlainLayersAndIgnoresSublayers() {
         // Given
@@ -462,7 +568,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer, ignoresSublayers: true))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records label semantics and ignores sublayers")
     func recordsLabelSemanticsAndIgnoresSublayers() {
         // Given
@@ -494,7 +599,6 @@ struct SemanticObservationTests {
         ))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records single run attributed label semantics")
     func recordsSingleRunAttributedLabelSemantics() {
         // Given
@@ -526,7 +630,6 @@ struct SemanticObservationTests {
         ))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records bold labels as layer semantics")
     func recordsBoldLabelsAsLayerSemantics() {
         // Given
@@ -541,7 +644,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records non-regular system font labels as layer semantics")
     func recordsNonRegularSystemFontLabelsAsLayerSemantics() {
         // Given
@@ -556,7 +658,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records italic labels as layer semantics")
     func recordsItalicLabelsAsLayerSemantics() {
         // Given
@@ -571,7 +672,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records non-system font labels as layer semantics")
     func recordsNonSystemFontLabelsAsLayerSemantics() {
         // Given
@@ -586,7 +686,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records underlined single run attributed labels as layer semantics")
     func recordsUnderlinedSingleRunAttributedLabelsAsLayerSemantics() {
         // Given
@@ -606,7 +705,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records multi run attributed label as layer semantics")
     func recordsMultiRunAttributedLabelAsLayerSemantics() {
         // Given
@@ -623,7 +721,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records image semantics and ignores sublayers")
     func recordsImageSemanticsAndIgnoresSublayers() {
         // Given
@@ -642,7 +739,6 @@ struct SemanticObservationTests {
         ))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records progress view as layer semantics ignoring image privacy")
     func recordsProgressViewAsLayerSemanticsIgnoringImagePrivacy() {
         // Given
@@ -656,7 +752,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer, ignoresImagePrivacy: true))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records slider as layer semantics ignoring image privacy")
     func recordsSliderAsLayerSemanticsIgnoringImagePrivacy() {
         // Given
@@ -674,7 +769,6 @@ struct SemanticObservationTests {
         #expect(observation == expected)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records button as layer semantics ignoring image privacy")
     func recordsButtonAsLayerSemanticsIgnoringImagePrivacy() {
         // Given
@@ -687,7 +781,6 @@ struct SemanticObservationTests {
         #expect(observation == .init(semantics: .layer, ignoresImagePrivacy: true))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records stepper as layer semantics ignoring image privacy")
     func recordsStepperAsLayerSemanticsIgnoringImagePrivacy() {
         // Given
@@ -703,7 +796,6 @@ struct SemanticObservationTests {
         ))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records text view input semantics and records sublayers")
     func recordsTextViewInputSemanticsAndRecordsSublayers() {
         // Given
@@ -725,7 +817,6 @@ struct SemanticObservationTests {
         )))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records empty text view input semantics")
     func recordsEmptyTextViewInputSemantics() {
         // Given
@@ -744,7 +835,6 @@ struct SemanticObservationTests {
         )))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records nil text view input semantics")
     func recordsNilTextViewInputSemantics() {
         // Given
@@ -764,7 +854,6 @@ struct SemanticObservationTests {
         )))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records text field input semantics and records sublayers")
     func recordsTextFieldInputSemanticsAndRecordsSublayers() {
         // Given
@@ -789,7 +878,6 @@ struct SemanticObservationTests {
         ))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records empty text field input semantics")
     func recordsEmptyTextFieldInputSemantics() {
         // Given
@@ -812,7 +900,6 @@ struct SemanticObservationTests {
         ))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records switch as layer semantics")
     func recordsSwitchAsLayerSemantics() {
         // Given
@@ -830,7 +917,6 @@ struct SemanticObservationTests {
         #expect(observation == expected)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Records web view semantics and caches web view")
     func recordsWebViewSemanticsAndCachesWebView() {
         // Given

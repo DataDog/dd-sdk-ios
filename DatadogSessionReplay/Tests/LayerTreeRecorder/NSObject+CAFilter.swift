@@ -7,7 +7,6 @@
 #if os(iOS)
 import Foundation
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension NSObject {
     static func makeCAFilter(type: String) throws -> NSObject {
         guard

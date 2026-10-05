@@ -76,6 +76,8 @@ public final class DatadogCoreProxy: DatadogCoreProtocol {
         }
     }
 
+    public var remoteConfiguration: RemoteConfiguration? { core.remoteConfiguration }
+
     public func register<T>(feature: T) throws where T: DatadogFeature {
         try core.register(feature: feature)
     }

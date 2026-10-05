@@ -23,7 +23,7 @@ DatadogInternal (shared protocols, types — Foundation only, no external deps)
 - Feature modules MUST NOT import each other
 - Only `DatadogCore` orchestrates feature lifecycles
 - `DatadogInternal` is the ONLY allowed place for shared types — it defines interfaces; `DatadogCore` provides concrete implementations
-- Platform support: iOS 12.0+, tvOS 12.0+, macOS 12.6+, watchOS 7.0+ (limited modules), visionOS 1.0+ (limited modules)
+- Platform support: iOS 15.0+, tvOS 15.0+, macOS 12.6+, watchOS 9.0+ (limited modules), visionOS 1.0+ (limited modules)
 
 ### Call Site Synchronization
 
@@ -61,7 +61,7 @@ Common oversights:
 4. RUM context provides session IDs and deterministic session sampling; Profiling composes `continuousSampleRate` with the active RUM session sampler for Continuous Profiling.
 5. For Custom Profiling, RUM composes `ProfilingOptions(sampleRate:)` with the active session sampler before sending sampled operation payloads to Profiling.
 6. RUM payload messages provide TTID, operation, app hang, and long task data for profile correlation.
-7. `ProfilingHandler` serializes a `ProfileEvent` plus `wall.pprof` and optional `rum-mobile-events.json` attachments.
+7. `ProfilingHandler` serializes a `ProfileEvent` plus `profile.pprof` and optional `rum-mobile-events.json` attachments.
 8. `RequestBuilder` sends one multipart upload per profile to `/api/v2/profile`.
 
 ### Storage Pipeline

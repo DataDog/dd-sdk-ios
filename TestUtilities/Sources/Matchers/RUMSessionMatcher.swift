@@ -97,6 +97,62 @@ public class RUMSessionMatcher {
 
         /// `RUMVitalAppLaunch` events tracked during this visit.
         public fileprivate(set) var appLaunchEvents: [RUMVitalAppLaunchEvent] = []
+
+        /// `RUMViewUpdate` (delta) events tracked during this visit.
+        public fileprivate(set) var viewUpdateEvents: [RUMViewUpdateEvent] = []
+
+        /// The fully reconstructed state of this view at every write, folding each `viewUpdateEvents` delta
+        /// onto its preceding full/reconstructed `RUMViewEvent`, in `dd.documentVersion` order.
+        ///
+        /// When `.viewUpdates` is on, only the first write (and any write following a baseline reset) is a
+        /// full `RUMViewEvent` — later writes are `RUMViewUpdateEvent` deltas that omit unchanged fields.
+        /// Reading a field off `viewEvents.last` alone therefore misses whatever was only ever sent as a
+        /// delta, and reading it off `viewEvents[i]` misses whatever changed in between two full events.
+        /// This property mirrors the production `update(from:)`/`apply(update:)` wire protocol
+        /// (see `RUMViewEvent.apply(update:)`) so callers can read any field directly off a single,
+        /// fully-merged `RUMViewEvent` per write, instead of writing a per-field `latestUpdateValue(...) ?? ...`
+        /// fallback (or a per-field forward-fill) at every call site.
+        public var reconstructedViewEvents: [RUMViewEvent] {
+            enum Entry {
+                case full(RUMViewEvent)
+                case update(RUMViewUpdateEvent)
+
+                var documentVersion: Int64 {
+                    switch self {
+                    case .full(let event): return event.dd.documentVersion
+                    case .update(let update): return update.dd.documentVersion
+                    }
+                }
+            }
+
+            let entries = (viewEvents.map { Entry.full($0) } + viewUpdateEvents.map { Entry.update($0) })
+                .sorted { $0.documentVersion < $1.documentVersion }
+
+            var current: RUMViewEvent?
+            var reconstructed: [RUMViewEvent] = []
+            for entry in entries {
+                switch entry {
+                case .full(let event):
+                    current = event
+                case .update(let update):
+                    current = current?.apply(update: update)
+                }
+                if let current = current {
+                    reconstructed.append(current)
+                }
+            }
+            return reconstructed
+        }
+
+        /// The fully reconstructed state of this view after its last write. See `reconstructedViewEvents`.
+        public var latestViewEvent: RUMViewEvent? {
+            reconstructedViewEvents.last
+        }
+
+        /// Whether this view is currently active, read off `latestViewEvent`.
+        public var isActive: Bool? {
+            latestViewEvent?.view.isActive
+        }
     }
 
     /// RUM application ID for this session.
@@ -112,6 +168,7 @@ public class RUMSessionMatcher {
     public let allEvents: [RUMEventMatcher]
 
     public let viewEventMatchers: [RUMEventMatcher]
+    public let viewUpdateEventMatchers: [RUMEventMatcher]
     public let actionEventMatchers: [RUMEventMatcher]
     public let resourceEventMatchers: [RUMEventMatcher]
     public let errorEventMatchers: [RUMEventMatcher]
@@ -121,6 +178,9 @@ public class RUMSessionMatcher {
 
     /// `RUMView` events tracked in this session.
     public let viewEvents: [RUMViewEvent]
+
+    /// `RUMViewUpdate` (delta) events tracked in this session.
+    public let viewUpdateEvents: [RUMViewUpdateEvent]
 
     /// `RUMAction` events tracked in this session.
     public let actionEvents: [RUMActionEvent]
@@ -158,6 +218,7 @@ public class RUMSessionMatcher {
         self.sessionID = sessionID
         self.allEvents = sessionEventMatchers
         self.viewEventMatchers = eventsMatchersByType["view"] ?? []
+        self.viewUpdateEventMatchers = eventsMatchersByType["view_update"] ?? []
         self.actionEventMatchers = eventsMatchersByType["action"] ?? []
         self.resourceEventMatchers = eventsMatchersByType["resource"] ?? []
         self.errorEventMatchers = eventsMatchersByType["error"] ?? []
@@ -171,7 +232,11 @@ public class RUMSessionMatcher {
             return vitalType == "app_launch"
         }
 
-        let viewEvents: [RUMViewEvent] = try viewEventMatchers.map { matcher in try matcher.model() }
+        let viewEvents: [RUMViewEvent] = try viewEventMatchers
+            .map { matcher in try matcher.model() }
+
+        let viewUpdateEvents: [RUMViewUpdateEvent] = try viewUpdateEventMatchers
+            .map { matcher in try matcher.model() }
 
         let actionEvents: [RUMActionEvent] = try actionEventMatchers
             .map { matcher in try matcher.model() }
@@ -282,6 +347,16 @@ public class RUMSessionMatcher {
             }
         }
 
+        try viewUpdateEvents.forEach { rumEvent in
+            if let visit = visitsByViewID[rumEvent.view.id] {
+                visit.viewUpdateEvents.append(rumEvent)
+            } else {
+                throw RUMSessionConsistencyException(
+                    description: "Cannot link RUM view_update Event to `RUMSessionMatcher.ViewVisit` by `view.id`."
+                )
+            }
+        }
+
         // Sort visits by time
         let visitsEventOrderedByTime = visits.sorted { firstVisit, secondVisit in
             let firstVisitTime = firstVisit.viewEvents[0].date
@@ -297,9 +372,8 @@ public class RUMSessionMatcher {
 
         // Sort view events in each visit by document version
         visits.forEach { visit in
-            visit.viewEvents = visit.viewEvents.sorted { viewUpdate1, viewUpdate2 in
-                viewUpdate1.dd.documentVersion < viewUpdate2.dd.documentVersion
-            }
+            visit.viewEvents = visit.viewEvents.sorted { $0.dd.documentVersion < $1.dd.documentVersion }
+            visit.viewUpdateEvents = visit.viewUpdateEvents.sorted { $0.dd.documentVersion < $1.dd.documentVersion }
         }
 
         // Validate ViewVisit's view.isActive for each events
@@ -323,6 +397,7 @@ public class RUMSessionMatcher {
 
         self.views = visitsEventOrderedByTime
         self.viewEvents = viewEvents
+        self.viewUpdateEvents = viewUpdateEvents
         self.actionEvents = actionEvents
         self.resourceEvents = resourceEvents
         self.errorEvents = errorEvents
@@ -573,8 +648,10 @@ extension RUMSessionMatcher.View {
     /// The start of this view (as timestamp; milliseconds) defined as the start timestamp of the earliest view event in this view.
     public var startTimestampMs: Int64 { viewEvents.map({ $0.date }).min() ?? 0 }
 
-    /// The duration of this view, in nanoseconds.
-    public var durationNs: Int64? { viewEvents.last?.view.timeSpent }
+    /// The duration of this view, in nanoseconds, read off `latestViewEvent`.
+    public var durationNs: Int64? {
+        latestViewEvent?.view.timeSpent
+    }
 
     /// The duration of this view, in seconds.
     public var duration: TimeInterval? { durationNs.map { TimeInterval.ddFromNanoseconds( $0) } }
@@ -590,7 +667,17 @@ extension RUMSessionMatcher: CustomStringConvertible {
     private var sessionStartTimestampNs: Int64? { sessionStartTimestampMs.map { $0 * 1_000_000 } }
 
     /// The end of this session (as timestamp; nanoseconds) defined as the end timestamp of the latest view in this session.
-    private var sessionEndTimestampNs: Int64? { viewEvents.map({ $0.date * 1_000_000 + $0.view.timeSpent }).max() }
+    /// Uses per-view `durationNs` so that `viewUpdates` deltas (which carry the final `timeSpent`) are accounted for.
+    private var sessionEndTimestampNs: Int64? {
+        views
+            .compactMap { view -> Int64? in
+                guard let startMs = view.viewEvents.first?.date, let durationNs = view.durationNs else {
+                    return nil
+                }
+                return startMs * 1_000_000 + durationNs
+            }
+            .max()
+    }
 
     public var sessionStartDate: Date? { sessionStartTimestampMs.map { Date(millisecondsSince1970: $0) } }
 

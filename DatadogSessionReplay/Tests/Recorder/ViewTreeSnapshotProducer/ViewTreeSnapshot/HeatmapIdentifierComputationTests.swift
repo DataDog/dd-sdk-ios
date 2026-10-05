@@ -6,6 +6,7 @@
 
 #if os(iOS)
 import Testing
+import DatadogSDKTesting
 import UIKit
 import DatadogInternal
 
@@ -18,7 +19,6 @@ import DatadogInternal
 @Suite(.datadogTesting)
 @MainActor
 struct HeatmapIdentifierComputationTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Uses accessibility identifier as path component when set")
     func accessibilityIdentifierComponent() {
         // Given
@@ -47,7 +47,6 @@ struct HeatmapIdentifierComputationTests {
         #expect(nodes.first?.heatmapIdentifier == expected)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Uses cls:ClassName#typeIndex when accessibility identifier is not set")
     func classNameComponent() {
         // Given
@@ -75,7 +74,6 @@ struct HeatmapIdentifierComputationTests {
         #expect(nodes.first?.heatmapIdentifier == expected)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Computes correct type indices for same-type siblings")
     func sameTypeSiblingTypeIndices() {
         // Given
@@ -127,7 +125,6 @@ struct HeatmapIdentifierComputationTests {
         #expect(firstButtonIdentifier != secondButtonIdentifier)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Populates heatmap cache during traversal")
     func registryPopulation() {
         // Given
@@ -152,12 +149,14 @@ struct HeatmapIdentifierComputationTests {
         _ = recorder.record(parent, in: context)
 
         // Then
-        #expect(heatmapCache.identifiers[ObjectIdentifier(parent)] != nil)
-        #expect(heatmapCache.identifiers[ObjectIdentifier(child)] != nil)
-        #expect(heatmapCache.identifiers[ObjectIdentifier(parent)] != heatmapCache.identifiers[ObjectIdentifier(child)])
+        #expect(heatmapCache.identifiers[ObjectIdentifier(parent.layer)] != nil)
+        #expect(heatmapCache.identifiers[ObjectIdentifier(child.layer)] != nil)
+        #expect(
+            heatmapCache.identifiers[ObjectIdentifier(parent.layer)]
+                != heatmapCache.identifiers[ObjectIdentifier(child.layer)]
+        )
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Skips heatmap cache write for views that produce no rendered nodes")
     func skipsCacheForViewsWithEmptySemantics() {
         // Given
@@ -181,11 +180,10 @@ struct HeatmapIdentifierComputationTests {
         _ = recorder.record(parent, in: context)
 
         // Then
-        #expect(heatmapCache.identifiers[ObjectIdentifier(parent)] == nil)
-        #expect(heatmapCache.identifiers[ObjectIdentifier(child)] != nil)
+        #expect(heatmapCache.identifiers[ObjectIdentifier(parent.layer)] == nil)
+        #expect(heatmapCache.identifiers[ObjectIdentifier(child.layer)] != nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Skips heatmap computation when viewPath is nil")
     func noViewPath() {
         // Given
@@ -210,7 +208,6 @@ struct HeatmapIdentifierComputationTests {
         #expect(heatmapCache.identifiers.isEmpty)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Wireframes carry permanentId from their node")
     func wireframePermanentId() {
         // Given
@@ -246,7 +243,6 @@ struct HeatmapIdentifierComputationTests {
         #expect(permanentId == "abc123")
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Skips heatmap computation when heatmapCache is nil")
     func heatmapsDisabled() {
         // Given
@@ -269,7 +265,6 @@ struct HeatmapIdentifierComputationTests {
         #expect(nodes.first?.heatmapIdentifier == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Wireframes have nil permanentId when no heatmap identifier")
     func wireframeNoPermanentId() {
         // Given

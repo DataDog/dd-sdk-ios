@@ -19,6 +19,7 @@ internal class RUMAppLaunchManager {
     private unowned let parent: RUMContextProvider
     private let dependencies: RUMScopeDependencies
     private let telemetryController: AppLaunchMetricController
+    private let sanitizer = RUMEventSanitizer()
 
     private var timeToInitialDisplay: Double?
     private var timeToFullDisplay: (
@@ -237,8 +238,9 @@ private extension RUMAppLaunchManager {
             vital: vital
         )
 
-        writer.write(value: vitalEvent)
-        telemetryController.track(ttidEvent: vitalEvent, context: context)
+        let sanitizedVitalEvent = sanitizer.sanitize(event: vitalEvent)
+        writer.write(value: sanitizedVitalEvent)
+        telemetryController.track(ttidEvent: sanitizedVitalEvent, context: context)
     }
 
     func sendTTIDMessageToProfiler(vital: Vital) {

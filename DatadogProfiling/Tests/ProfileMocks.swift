@@ -29,11 +29,12 @@ extension binary_image_t {
 
 extension stack_trace_t {
     static func mockWith(
-        tid: UInt32,
+        tid: UInt64,
         addresses: [UInt64],
         threadName: StaticString = "TestThread",
         timestamp: UInt64? = nil,
         samplingIntervalNanos: UInt64 = 10_000_000,
+        cpuTimeNanos: UInt64 = 0,
         binaryImage: binary_image_t = .mockAny()
     ) -> stack_trace_t {
         let frameCount = UInt32(addresses.count)
@@ -56,6 +57,7 @@ extension stack_trace_t {
             thread_name: UnsafeRawPointer(threadName.utf8Start).assumingMemoryBound(to: CChar.self),
             timestamp: timestamp ?? UInt64(Date().timeIntervalSince1970 * 1_000_000_000),
             sampling_interval_nanos: samplingIntervalNanos,
+            cpu_time_nanos: cpuTimeNanos,
             frames: frames,
             frame_count: frameCount
         )

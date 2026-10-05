@@ -33,13 +33,22 @@ public struct DataFormat {
     /// - Parameter data: The data sequence.
     /// - Returns: the formatted data.
     public func format(_ data: [Data]) -> Data {
-        // add prefix
-        prefixData +
-        // concat data
-        data.reduce(.init()) { $0 + $1 + [separatorByte] }
-        // drop last separator
-        .dropLast() +
-        // add suffix
-        suffixData
+        let dataSize = data.reduce(0) { $0 + $1.count }
+        let separatorsSize = data.isEmpty ? 0 : data.count - 1
+        let capacity = prefixData.count + dataSize + separatorsSize + suffixData.count
+
+        // Append to a single buffer to avoid copying the entire payload for every event.
+        var formattedData = Data(capacity: capacity)
+        formattedData.append(prefixData)
+
+        for (index, event) in data.enumerated() {
+            if index > 0 {
+                formattedData.append(separatorByte)
+            }
+            formattedData.append(event)
+        }
+
+        formattedData.append(suffixData)
+        return formattedData
     }
 }

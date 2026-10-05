@@ -8,12 +8,13 @@
 import Foundation
 import QuartzCore
 import Testing
+import DatadogSDKTesting
 
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 @MainActor
 struct CALayerSnapshotPortalTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Resolves a position-matched portal and removes the original source subtree")
     func resolvesPositionMatchedPortalAndRemovesOriginalSourceSubtree() throws {
         // Given
@@ -70,7 +71,6 @@ struct CALayerSnapshotPortalTests {
         #expect(resolvedSource.sublayers.map(\.replayID) == [sourceContent.replayID])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Positions unmatched portal content relative to the portal")
     func positionsUnmatchedPortalContentRelativeToPortal() throws {
         // Given
@@ -121,7 +121,6 @@ struct CALayerSnapshotPortalTests {
         )
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Omits portal content when its unmatched source transform cannot be represented")
     func omitsPortalContentForUnsupportedUnmatchedSourceTransform() throws {
         // Given
@@ -156,7 +155,6 @@ struct CALayerSnapshotPortalTests {
         #expect(unresolvedPortal.sublayers.isEmpty)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Stops resolving when portal sources form a cycle")
     func stopsResolvingPortalSourceCycles() throws {
         // Given
@@ -198,7 +196,6 @@ struct CALayerSnapshotPortalTests {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 private extension CALayerSnapshot.SemanticObservation {
     static func portal(
         sourceReplayID: Int64,

@@ -5,11 +5,16 @@
  */
 
 #if !os(watchOS)
-import UIKit
 
-internal extension UIViewController {
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
+
+internal extension DDViewController {
     /// The canonical class name for this view controller.
-    /// If this `UIViewController` class is defined in Swift module, it will be prefixed by the module name, e.g. `Foo.CheckoutViewController`. 
+    /// If this `DDViewController` class is defined in Swift module, it will be prefixed by the module name, e.g. `Foo.CheckoutViewController`.
     var canonicalClassName: String {
         return NSStringFromClass(type(of: self))
     }
@@ -17,14 +22,18 @@ internal extension UIViewController {
     /// `true` if the view controller is an instance of `UIAlertController` or one of its subclasses,
     /// `false` otherwise.
     var isUIAlertController: Bool {
+        #if canImport(UIKit)
         self is UIAlertController
+        #elseif canImport(AppKit)
+        false
+        #endif
     }
 }
 
-internal extension UIView {
+internal extension DDView {
     /// Traverses the hierarchy of this view from bottom-up to find any parent view matching
     /// the given predicate. It starts from `self`.
-    func findInParentHierarchy(viewMatching predicate: (UIView) -> Bool) -> UIView? {
+    func findInParentHierarchy(viewMatching predicate: (DDView) -> Bool) -> DDView? {
         if predicate(self) {
             return self
         } else if let superview = superview {
@@ -34,16 +43,26 @@ internal extension UIView {
         }
     }
 
+    #if os(macOS)
+    /// Determines if capturing this view is safe for user privacy
+    @objc var isSafeForPrivacy: Bool {
+        guard self.window != nil else {
+            return false // The view is not on a window hierarchy, we can't determine if it's safe
+        }
+        return true
+    }
+    #else
     /// Determines if capturing this view is safe for user privacy
     @objc var isSafeForPrivacy: Bool {
         guard let window = self.window else {
-            return false // The view is invisible, we can't determine if it's safe
+            return false // The view is not on a window hierarchy, we can't determine if it's safe
         }
         guard !NSStringFromClass(type(of: window)).contains("Keyboard") else {
             return false // The window class name suggests that it's the on-screen keyboard
         }
         return true
     }
+    #endif
 
     @objc var isSwiftUIView: Bool {
         return NSStringFromClass(type(of: self)).contains("SwiftUI")

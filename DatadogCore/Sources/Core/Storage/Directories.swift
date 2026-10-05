@@ -9,20 +9,20 @@ import DatadogInternal
 
 /// Indicates the main directory for a given instance of the SDK.
 /// Each instance of `DatadogCore` creates its own `CoreDirectory` to manage data for registered Features.
-/// The core directory is created under `/Library/Caches` and uses a name that identifies the certain instance
-/// of the SDK (`<sdk-instance-uuid>`):
+/// The core directory is created under a caller-provided OS root (`osDirectory`) and uses a name that
+/// identifies the certain instance of the SDK (`<sdk-instance-uuid>`):
 ///
 /// ```
-/// /Library/Cache/com.datadoghq/v2/<sdk-instance-uuid>/
+/// <osDirectory>/com.datadoghq/v2/<sdk-instance-uuid>/
 /// ```
 ///
-/// Note: System may delete data in `/Library/Cache` to free up disk space which reduces the impact on devices working
-/// under heavy space pressure. This is intentional for Datadog SDK to have its data purged when system needs more memory
-/// for other apps.
+/// The root is usually `/Library/Caches` for purgeable Feature data; the system may delete data there to free up
+/// disk space, which is intentional for the Datadog SDK. Data that must survive such purges (e.g. remote
+/// configuration) is created under `/Library/Application Support` instead.
 internal struct CoreDirectory {
-    /// A known OS location the core directory is created within:`/Library/Cache`.
+    /// The OS location the core directory is created within (e.g. `/Library/Caches` or `/Library/Application Support`).
     let osDirectory: Directory
-    /// The core directory specific to this instance of the SDK: `/Library/Cache/com.datadoghq/v2/<sdk-instance-uuid>`.
+    /// The core directory specific to this instance of the SDK: `<osDirectory>/com.datadoghq/v2/<sdk-instance-uuid>`.
     let coreDirectory: Directory
 
     /// Obtains subdirectories for managing batch files for given Feature  (creates if don't exist).

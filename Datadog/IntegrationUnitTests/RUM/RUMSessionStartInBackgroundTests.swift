@@ -10,6 +10,7 @@ import TestUtilities
 @testable import DatadogCore
 @testable import DatadogRUM
 
+@MainActor
 class RUMSessionStartInBackgroundTests: RUMSessionTestsBase {
     // MARK: - Scenarios for enabling RUM in background
 

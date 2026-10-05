@@ -290,6 +290,39 @@ class DatadogCrashReportFilterTests: XCTestCase {
         XCTAssertEqual(ddReport.threads[1].stack, ddReport.stack, "Crashed thread stack should match main stack")
     }
 
+    private var systemBinaryImagePath: String {
+        #if os(macOS)
+        "/System/Library/Frameworks/Foundation.framework/Foundation"
+        #else
+        "/Contents/Developer/Platforms/Frameworks/Foundation.framework/Foundation"
+        #endif
+    }
+
+    private var appBinaryImagePath: String {
+        #if os(macOS)
+        "/Applications/MyApp/MyApp"
+        #else
+        "/var/containers/Bundle/Application/MyApp/MyApp"
+        #endif
+    }
+
+    #if os(macOS)
+    func testBinaryImage_DetectsMacOSSystemDylib() throws {
+        // Given
+        let image = BinaryImage(
+            libraryName: "libSystem.B.dylib",
+            uuid: "12345678-1234-1234-1234-123456789ABC",
+            architecture: "arm64",
+            path: "/usr/lib/libSystem.B.dylib",
+            loadAddress: 4_096,
+            maxAddress: 8_192
+        )
+
+        // Then
+        XCTAssertTrue(image.isSystemLibrary)
+    }
+    #endif
+
     func testFilterReports_DetectsSystemVsUserBinaryImages() throws {
         // Given
         let contextData = Data("test".utf8).base64EncodedString()
@@ -310,7 +343,7 @@ class DatadogCrashReportFilterTests: XCTestCase {
             },
             "binary_images": [
                 {
-                    "name": "/Contents/Developer/Platforms/Frameworks/Foundation.framework/Foundation",
+                    "name": "\(systemBinaryImagePath)",
                     "uuid": "12345678-1234-1234-1234-123456789ABC",
                     "image_addr": 4096,
                     "image_size": 8192,
@@ -318,7 +351,7 @@ class DatadogCrashReportFilterTests: XCTestCase {
                     "cpu_subtype": 0
                 },
                 {
-                    "name": "/var/containers/Bundle/Application/MyApp/MyApp",
+                    "name": "\(appBinaryImagePath)",
                     "uuid": "ABCDEF01-2345-6789-ABCD-EF0123456789",
                     "image_addr": 16384,
                     "image_size": 32768,

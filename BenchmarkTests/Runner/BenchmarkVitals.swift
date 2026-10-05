@@ -36,17 +36,39 @@ internal final class Vitals {
         }
     }
 
+    @MainActor
     @discardableResult
-    func observeCPU() -> ObservableInstrumentSdk {
+    func observeCPU() -> [ObservableInstrumentSdk] {
         let cpu = CPU(queue: queue)
-        return meter.gaugeBuilder(name: "ios.benchmark.cpu").buildWithCallback { measurement in
+
+        let total = meter.gaugeBuilder(name: "ios.benchmark.cpu").buildWithCallback { measurement in
             // report the average cpu usage that was recorded during push interval
-            if let value = cpu.aggregation?.avg {
+            if let value = cpu.total.aggregation?.avg {
                 measurement.record(value: value)
             }
 
-            cpu.reset()
+            cpu.total.reset()
         }
+
+        let main = meter.gaugeBuilder(name: "ios.benchmark.cpu.main").buildWithCallback { measurement in
+            // report the average main-thread cpu usage that was recorded during push interval
+            if let value = cpu.main.aggregation?.avg {
+                measurement.record(value: value)
+            }
+
+            cpu.main.reset()
+        }
+
+        let background = meter.gaugeBuilder(name: "ios.benchmark.cpu.background").buildWithCallback { measurement in
+            // report the average background cpu usage that was recorded during push interval
+            if let value = cpu.background.aggregation?.avg {
+                measurement.record(value: value)
+            }
+
+            cpu.background.reset()
+        }
+
+        return [total, main, background]
     }
 
     @discardableResult

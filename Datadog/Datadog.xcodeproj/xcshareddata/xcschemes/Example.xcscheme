@@ -59,6 +59,10 @@
             argument = "DD_DEBUG_RUM"
             isEnabled = "NO">
          </CommandLineArgument>
+         <CommandLineArgument
+            argument = "DD_DISABLE_APP_HANG_BACKTRACES"
+            isEnabled = "NO">
+         </CommandLineArgument>
       </CommandLineArguments>
    </LaunchAction>
    <ProfileAction

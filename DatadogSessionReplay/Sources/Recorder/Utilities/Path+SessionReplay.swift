@@ -10,10 +10,8 @@ import DatadogInternal
 import Foundation
 import SwiftUI
 
-@available(iOS 13.0, *)
 extension SwiftUI.Path: DatadogExtended {}
 
-@available(iOS 13.0, *)
 extension DatadogExtension where ExtendedType == SwiftUI.Path {
     var svgString: String {
         var d = ""
@@ -47,7 +45,7 @@ extension CGFloat: DatadogExtended {}
 
 extension DatadogExtension where ExtendedType == CGFloat {
     internal var svgString: String {
-        String(format: "%.3f", locale: .init(identifier: "en_US_POSIX"), type)
+        String(format: "%.3f", type)
     }
 }
 

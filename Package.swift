@@ -1,4 +1,4 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 6.2
 
 import PackageDescription
 import Foundation
@@ -9,10 +9,10 @@ let internalSwiftSettings: [SwiftSetting] = ProcessInfo.processInfo.environment[
 let package = Package(
     name: "Datadog",
     platforms: [
-        .iOS(.v12),
-        .tvOS(.v12),
-        .macOS("12.6"),
-        .watchOS(.v7),
+        .iOS(.v15),
+        .tvOS(.v15),
+        .macOS("12.0"),
+        .watchOS(.v9),
         .visionOS(.v1)
     ],
     products: [
@@ -54,8 +54,9 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/kstenerud/KSCrash.git", from: "2.5.1"),
+        .package(url: "https://github.com/kstenerud/KSCrash.git", exact: "2.5.1"),
         .package(url: "https://github.com/open-telemetry/opentelemetry-swift-core", .upToNextMinor(from: "2.5.0")),
+        .package(url: "https://github.com/DataDog/dd-sdk-swift-testing.git", .upToNextMinor(from: "2.7.11")),
     ],
     targets: [
         .target(
@@ -86,6 +87,7 @@ let package = Package(
             dependencies: [
                 .target(name: "DatadogInternal"),
                 .target(name: "TestUtilities"),
+                .product(name: "DatadogSDKTesting", package: "dd-sdk-swift-testing"),
             ],
             path: "DatadogInternal/Tests"
         ),
@@ -151,6 +153,7 @@ let package = Package(
             dependencies: [
                 .target(name: "DatadogRUM"),
                 .target(name: "TestUtilities"),
+                .product(name: "DatadogSDKTesting", package: "dd-sdk-swift-testing"),
             ],
             path: "DatadogRUM/Tests"
         ),
@@ -203,6 +206,7 @@ let package = Package(
             dependencies: [
                 .target(name: "DatadogSessionReplay"),
                 .target(name: "TestUtilities"),
+                .product(name: "DatadogSDKTesting", package: "dd-sdk-swift-testing"),
             ],
             path: "DatadogSessionReplay/Tests",
             resources: [
@@ -221,7 +225,7 @@ let package = Package(
             resources: [
                 .copy("Resources/PrivacyInfo.xcprivacy")
             ],
-            swiftSettings: internalSwiftSettings
+            swiftSettings: [.swiftLanguageMode(.v6)] + internalSwiftSettings
         ),
         .target(
             name: "DatadogMachProfiler",
@@ -235,7 +239,7 @@ let package = Package(
                 .target(name: "TestUtilities"),
             ],
             path: "DatadogProfiling/Tests",
-            swiftSettings: [.interoperabilityMode(.Cxx)] + internalSwiftSettings
+            swiftSettings: [.interoperabilityMode(.Cxx), .swiftLanguageMode(.v6)] + internalSwiftSettings
         ),
 
         .target(
