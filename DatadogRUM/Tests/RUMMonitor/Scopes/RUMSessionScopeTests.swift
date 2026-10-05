@@ -2447,6 +2447,45 @@ extension RUMSessionScopeTests {
         XCTAssertNil(watchdogView(in: feature))
     }
 
+    func testMultiSceneFatalContext_retainedStoppedRepresentativeCannotOverwritePeerOrRestoreClearedSnapshot() throws {
+        for keepPeerActive in [true, false] {
+            let (scope, feature) = representativeSession()
+            let peer = try XCTUnwrap(startOwnedView(scope, target: sceneATarget, key: "peer"))
+            let peerSnapshot = try fullSnapshot(scope.dependencies.fatalErrorContext.view)
+            let owner = try XCTUnwrap(startOwnedView(scope, target: sceneBTarget, key: "owner", after: 1))
+            startOwnedResource(scope, target: sceneBTarget, key: "pending-owner-resource", after: 2)
+            var stop = RUMStopViewCommand.mockWith(time: routingStart.addingTimeInterval(3), identity: ViewIdentifier("owner"))
+            stop.target = sceneBTarget
+            route(stop, through: scope)
+            XCTAssertTrue(scope.viewScopes.contains { $0 === owner })
+            XCTAssertFalse(owner.isActiveView)
+            XCTAssertEqual(scope.context.activeViewID, peer.viewUUID)
+            XCTAssertEqual(try fullSnapshot(scope.dependencies.fatalErrorContext.view), peerSnapshot)
+            XCTAssertEqual(try fullSnapshot(watchdogView(in: feature)), peerSnapshot)
+            if !keepPeerActive {
+                stop = RUMStopViewCommand.mockWith(time: routingStart.addingTimeInterval(4), identity: ViewIdentifier("peer"))
+                stop.target = sceneATarget
+                route(stop, through: scope)
+                XCTAssertNil(scope.context.activeViewID)
+                XCTAssertNil(scope.dependencies.fatalErrorContext.view)
+                XCTAssertNil(watchdogView(in: feature))
+            }
+            var completion = RUMStopResourceCommand.mockWith(resourceKey: "pending-owner-resource", time: routingStart.addingTimeInterval(5))
+            completion.target = sceneBTarget
+            route(completion, through: scope)
+            XCTAssertEqual(writer.events(ofType: RUMResourceEvent.self).last?.view.id, owner.viewUUID.toRUMDataFormat)
+            if keepPeerActive {
+                XCTAssertEqual(scope.context.activeViewID, peer.viewUUID)
+                XCTAssertEqual(try fullSnapshot(scope.dependencies.fatalErrorContext.view), peerSnapshot)
+                XCTAssertEqual(try fullSnapshot(watchdogView(in: feature)), peerSnapshot)
+            } else {
+                XCTAssertNil(scope.context.activeViewID)
+                XCTAssertNil(scope.dependencies.fatalErrorContext.view)
+                XCTAssertNil(watchdogView(in: feature))
+            }
+        }
+    }
+
     func testMultiSceneFatalContext_invalidMappedOwnerCannotBorrowPeerSnapshot() throws {
         let (scope, feature) = representativeSession()
         _ = startOwnedView(scope, target: sceneATarget, key: "a")
