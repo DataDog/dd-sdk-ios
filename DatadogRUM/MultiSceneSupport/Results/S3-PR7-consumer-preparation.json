@@ -144,7 +144,7 @@
   "gates_closed": [],
   "whole_pr7_qualified": false,
   "next_action": "Reconcile the ten source-selector candidates with fresh live test discovery and prepare exact compiler/product/host/output custody plus designated review before one composed-source affected-component qualification. Consumer capture and accepted-action design remain; no accepted-suite repeat.",
-  "updated_at": 1791241699.2553332,
+  "updated_at": 1791242525.577185,
   "sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/sdk-checkpoint.json",
     "sha256": "8de6f4600357cbe88a003bb7d235945a3fda02af056f4e021f20540b19c82749"
@@ -152,5 +152,10 @@
   "affected_component_selection_preparation": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-source-selection-20261006/packet.json",
     "sha256": "e4a12a2ce8f9bc66b59e2b4f92b81bb406f6e3941c391db5b02dbf33f63c4312"
-  }
+  },
+  "actual_metadata_preparation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-source-selection-20261006/actual-mcp-metadata.json",
+    "sha256": "700dfba9d449fc7bcaf05c827a973eaa6bac41aa94f836bb8b12e8f7239392f7"
+  },
+  "actual_metadata_disposition": "Supported metadata only; original DatadogCore/MyMac restored and owned workspace closed before human lane. No test discovery, build, test or admission. Rediscover opaque handle on continuation."
 }
