@@ -1,6 +1,6 @@
 {
   "state": "ALL_CURRENT_S2_S3_DELIVERY_SOURCE_WORKTREES_LINKED",
-  "verified_on": "2026-10-05T01:18:02.330987+00:00",
+  "verified_on": "2026-10-05T01:51:43.691072+00:00",
   "main_repository": "/Users/valentin.pertuisot/work/dd-sdk-ios",
   "required_delivery_branches": [
     "valpertui/s2-rum-lifetime",
@@ -46,8 +46,12 @@
     {
       "branch": "valpertui/s3-handoff-activation",
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/worktree",
-      "head_at_verification": "8b71b5516a1c67d80cb13b5b71b84813e82477e6",
-      "linked": true
+      "head_at_verification": "102d02e349a577ec29a0088da030f4a36b6f84c6",
+      "linked": true,
+      "latest_local_checkpoint": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/checkpoint-pr9-disconnect-test/checkpoint.json",
+        "sha256": "19046c889ac49e81e6bcc2d9f783e1284f5a55c14b4018f96cb867e41f706e8b"
+      }
     },
     {
       "branch": "valpertui/resume-deferral-test-witness",
@@ -142,7 +146,7 @@
   ],
   "future_rule": "Create every future S2/S3 PR-source checkout with git worktree add from the main repository; keep its branch registered and independently visible. Do not use standalone clones for delivery sources.",
   "latest_s3_checkpoint": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/checkpoint-pr9-retained-test/checkpoint.json",
-    "sha256": "96a0bc20c52adab24cd281ea7fe152ab9f8558e3a163703b7823ebfba18251f9"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/checkpoint-pr9-disconnect-test/checkpoint.json",
+    "sha256": "19046c889ac49e81e6bcc2d9f783e1284f5a55c14b4018f96cb867e41f706e8b"
   }
 }

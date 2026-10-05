@@ -313,7 +313,7 @@ from app wiring and post-setup View ownership.
 ## Shared qualification paths
 
 `tools/multi-scene/platform_qualification.py` binds owning refs and grades full build custody. `replay <receipt-path> <sha256> <fresh-output-file>` consumes saved bytes without a rebuild or new clock.
-[P3/P5](../Results/execution-improvements-20261004.json) own actual qualifications; watchOS nominal9/binary26 stays explicit.
+[P3/P5](../Results/execution-improvements-20261004.json) own actual qualifications; watchOS nominal9/binary26 stays explicit. Bind `SDKSettings.SupportedTargets` to the intended platform explicitly; native macOS uses `macosx`, not `iosmac` or the first entry.
 
 `default_off_native.py` collects each reviewed cell once; `default_off_saved_config.py` requires a separate exact review
 before correcting a saved compiler expectation. Keep SDK/runtime distinct, original INCOMPLETE immutable and cleanup separate.

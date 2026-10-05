@@ -129,10 +129,4 @@ is excluded. Current S2 source/lifetime proof belongs to
   The owning progress records a finite seven-item PR6 exit packet. Accepted suites are preserved; no release gate or universal footprint
   claim follows from preparation.
 
-- [PR9 owner](Results/S3-PR9-representative-preparation.json) records the private On
-  representative fatal/watchdog projection at c6fbf17a and test-only successor8b71b551.
-  Nine focused iOS27.0 unit methods pass, including retained stopped-owner/late-completion
-  with and without an active peer, plus the legacy Off final-view control. Independent review
-  qualifies those selected unit assertions partially and reuses unchanged disconnect/start/report
-  boundaries. Combined disconnect, full Off/compatibility/integration and release acceptance
-  remain open. Original compiler failures and separate restorations remain immutable.
+- [PR9 owner](Results/S3-PR9-representative-preparation.json) records private source c6fbf17a and clean test-only successor102d. Twelve selected unit methods pass on27.0 and17.5, including retained owners, modeled legacy Off snapshot retention and injected-identity handler/Monitor disconnect. Saved coverage qualifies dormancy of three named On helpers with positive visibility. Eight current-source framework commands qualify four-platform compilation through independent actual-context review and verified worker retirement. MinimumSwift6.2, watch9 binary/runtime, complete Off/final-stack integration and release acceptance remain open; internal injectedOn17.5 does not establish public eligibility. Original failures and separate restorations remain immutable.

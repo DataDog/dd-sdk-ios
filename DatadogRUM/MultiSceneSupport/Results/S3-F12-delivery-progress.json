@@ -280,9 +280,9 @@
       "off_contract": "Develop watchdog clear/start and fatal context behavior",
       "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
       "rebuild_obligation": "No standalone watchdog/background-start change without reproduced develop regression",
-      "status": "PRIVATE_IMPLEMENTED_PARTIAL_ON_AND_OFF_UNIT_EVIDENCE",
+      "status": "PRIVATE_IMPLEMENTED_PARTIAL_ON_OFF_AND_COMPILATION_EVIDENCE",
       "owning_record": "Results/S3-PR9-representative-preparation.json",
-      "source_head": "8b71b5516a1c67d80cb13b5b71b84813e82477e6",
+      "source_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
       "obligation": "BEFORE_SLICE_MERGE",
       "whole_F12_closed": false,
       "qualification": {
@@ -291,11 +291,15 @@
         "off": "PARTIAL_QUALIFIED",
         "integration": "NOT_QUALIFIED"
       },
-      "remaining_assertion": "Combined scene disconnect/removal through handler -> Monitor/Session -> representative projection; Develop/default-Off fatal-context, start, stored-view reporting and persistence contract beyond qualified final-view control; Declared compatibility and final frozen integration",
-      "next_action": "Define focused default-Off and legacy watchdog persistence assertions from source before adding tests; preserve reused disconnect/start/report witnesses. Configured combined integration and compatibility remain open.",
-      "evidence_source_scope": "Private implementation c6fbf17a and test-only successor8b71b551; nine selected unit methods qualify partially, including retained-stop subcases. Unchanged disconnect/start/report boundaries reused under independent review. Combined/current-stack Off/compatibility/integration and release acceptance stay open.",
+      "remaining_assertion": "Actual minimum Swift6.2 compatibility; watchOS9 binary/distribution/runtime boundary remains unqualified; Required complete pre-merge Off applicability and final frozen flagged-stack integration under F12/F13",
+      "next_action": "Resume PR6 configured attached-input or P2 complete capture qualification after fresh Xcode access/metadata and new unconsumed parameters. PR9 minimumSwift6.2 and final frozen-stack Off/integration remain separate; preserve all accepted selected tests/builds.",
+      "evidence_source_scope": "Twelve selected current-source unit methods qualify each27.0/17.5 (24 executions), modeled Off retention, handler/Monitor disconnect and named-three-helper Off dormancy. Four current102d platform cells (eight commands) qualify compilation only; minimumSwift6.2, watch9 binary/runtime, wholeOff/finalstack remain held.",
       "preparation_base_head": "e1b6d5e5af36bbbad48ee74dccf7675f86376b9a",
-      "preparation_record": "Results/S3-PR9-representative-preparation.json"
+      "preparation_record": "Results/S3-PR9-representative-preparation.json",
+      "platform_compilation_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-platform-compatibility/actual-review.json",
+        "sha256": "6a08849c1b8b30c4de58866481c8b18116b83c130dc1396b4b2c00b9c5d73d00"
+      }
     },
     {
       "id": "PR10",
@@ -420,5 +424,5 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": "2026-10-05T01:18:02.330987+00:00"
+  "updated_at": "2026-10-05T03:01:54.115972+00:00"
 }

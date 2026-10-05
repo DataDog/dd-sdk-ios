@@ -3847,10 +3847,10 @@
             "S3:F11"
           ],
           "source_scope": "S3",
-          "missing_assertion": "PR4/PR5 exclusive-Off and remaining PR6-13 fixed slice obligations.",
-          "next_action": "Finish PR4/PR5 exclusive-Off; close the finite PR6 exit packet, then advance the declared slice dependencies.",
+          "missing_assertion": "Remaining PR6-13 fixed slice obligations and final flagged-stack integration.",
+          "next_action": "After pending Xcode workspace access, qualify the finite PR6 configured attached-input exit and exact applicability; then advance its declared slice dependencies. Preserve qualified PR4/PR5 exclusive-Off evidence.",
           "reuse": [
-            "PR1-5 private components and PR3 Off; PR6 scoped input/scroll/sync/async/callback/platform receipts"
+            "PR1-5 private components; PR3 Off and qualified PR4/PR5 exclusive-Off; PR6 source-scoped input/scroll/sync/async/callback/platform receipts; selected PR9 component/Off/compilation evidence"
           ],
           "environment": "CI and supported simulator/toolchains; explicit per-PR source/fixture identities",
           "exit": "Selected assertions, complete scoped evidence and cleanup accepted; named gate verdict assessed separately.",
@@ -4081,8 +4081,8 @@
     "S3": {
       "repository": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/worktree",
       "branch": "valpertui/s3-handoff-activation",
-      "head": "8b71b5516a1c67d80cb13b5b71b84813e82477e6",
-      "scope": "Rebuilt flagged PR1-6 and private PR9 representative-context SDK source. Original component evidence remains at each recorded exact head; no blanket final-source/release credit.",
+      "head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
+      "scope": "Privatec6fb implementation and clean102d test-only successor:12 selected unit methods each27.0/17.5, modeled Off retention, three named helper dormancy and four platform compilation cells reviewed. Earlier components keep exact source scopes; no wholeOff/finalstack/public/release credit.",
       "promotion": "Private local implementation only; F01/public promotion and F04 physical acceptance remain open."
     }
   },

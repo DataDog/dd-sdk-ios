@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "state": "PRIVATE_IMPLEMENTED_PARTIAL_ON_AND_OFF_UNIT_EVIDENCE",
+  "state": "PRIVATE_IMPLEMENTED_PARTIAL_ON_OFF_AND_COMPILATION_EVIDENCE",
   "delivery_slice": "PR9",
   "owner": "/root SDK implementer + /root/rum_runtime_reviewer",
   "dependency": "Qualified PR3 private routing",
   "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/worktree",
   "branch": "valpertui/s3-handoff-activation",
-  "source_head": "8b71b5516a1c67d80cb13b5b71b84813e82477e6",
+  "source_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
   "linked_common_dir": "/Users/valentin.pertuisot/work/dd-sdk-ios/.git",
   "definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-representative-projection-cycle1/definition.json",
@@ -24,7 +24,9 @@
     "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift",
     "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift",
     "DatadogRUM/Sources/Instrumentation/WatchdogTerminations/WatchdogTerminationMonitor.swift",
-    "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift"
+    "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+    "DatadogRUM/Tests/Instrumentation/WatchdogTerminations/WatchdogTerminationMonitorTests.swift",
+    "DatadogRUM/Tests/RUMMonitor/MonitorTests.swift"
   ],
   "source_discriminator": "Any active view can write full fatal context and every mapped view update can write watchdog context. On process representative must own that snapshot; source-backed gap, no runtime reproduction claim.",
   "qualification": {
@@ -33,12 +35,12 @@
     "off": "PARTIAL_QUALIFIED",
     "integration": "NOT_QUALIFIED"
   },
-  "next_action": "Define focused default-Off and legacy watchdog persistence assertions from source before adding tests; preserve reused disconnect/start/report witnesses. Configured combined integration and compatibility remain open.",
+  "next_action": "Resume PR6 configured attached-input or P2 complete capture qualification after fresh Xcode access/metadata and new unconsumed parameters. PR9 minimumSwift6.2 and final frozen-stack Off/integration remain separate; preserve all accepted selected tests/builds.",
   "sdk_edits": 3,
-  "test_edits": 1,
-  "focused_methods_defined": 9,
-  "tests_run": 9,
-  "native_runs": 2,
+  "test_edits": 3,
+  "focused_methods_defined": 12,
+  "tests_run": 24,
+  "native_runs": 5,
   "gates_closed": [],
   "limits": [
     "No real watchdog termination/hardware acceptance",
@@ -46,7 +48,7 @@
     "No public API, generated model, dependency or wire-format change",
     "PR6 configured fixture source remains frozen at its original e1b6"
   ],
-  "updated_at": "2026-10-05T01:18:02.330987+00:00",
+  "updated_at": "2026-10-05T03:01:54.115972+00:00",
   "implementation_preparation": "Four reviewed source/test paths now committed; exact source checkpoint local only, unsigned authorized fallback.",
   "original_source_preparation": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-representative-projection-cycle1/source-review-packet.json",
@@ -65,8 +67,8 @@
     "sha256": "5c05544bbbf5a2f244bca005c89bfe56b9505f3814d842dd6695ac5b06c23641"
   },
   "local_sdk_checkpoint": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/checkpoint-pr9-retained-test/checkpoint.json",
-    "sha256": "96a0bc20c52adab24cd281ea7fe152ab9f8558e3a163703b7823ebfba18251f9"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/checkpoint-pr9-disconnect-test/checkpoint.json",
+    "sha256": "19046c889ac49e81e6bcc2d9f783e1284f5a55c14b4018f96cb867e41f706e8b"
   },
   "previous_corrected_source_preparation": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-representative-projection-cycle2/source-review-packet.json",
@@ -104,7 +106,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-representative-projection-cycle3/diagnostic-eligibility-review.json",
     "sha256": "d12fae0c7d7d8a62a83541b0d9d33af55402db47646e98076ecee2043ce79904"
   },
-  "mcp_diagnostic_attempts": 4,
+  "mcp_diagnostic_attempts": 7,
   "full_native_qualification_runs": 0,
   "original_mac_focused_test_proposal": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-representative-projection-cycle2/focused-test-proposal.json",
@@ -115,9 +117,8 @@
     "sha256": "7709f7c95ffb12e86b671b9a17bbe554e811037b2b87550ae5e83abcb93c0438"
   },
   "remaining_assertions": [
-    "Combined scene disconnect/removal through handler -> Monitor/Session -> representative projection",
-    "Develop/default-Off fatal-context, start, stored-view reporting and persistence contract beyond qualified final-view control",
-    "Declared compatibility and final frozen integration"
+    "Actual minimum Swift6.2 compatibility; watchOS9 binary/distribution/runtime boundary remains unqualified",
+    "Required complete pre-merge Off applicability and final frozen flagged-stack integration under F12/F13"
   ],
   "implementation_sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/checkpoint-pr9-private-representative-context/checkpoint.json",
@@ -140,6 +141,286 @@
     "sha256": "6d2a835445ee2cd2b6dd0b42ec43fa7ee4897d7712d216ffb31a1ca227e820e6"
   },
   "qualified_assertions": [
-    "PR9-C-RETAINED-STOPPED-OWNER: selected unit scope; both active-peer and no-peer cases pass"
-  ]
+    "PR9-C-RETAINED-STOPPED-OWNER: selected unit scope; both active-peer and no-peer cases pass",
+    "Default and explicit Off late-resource/fatal-context selected unit assertions",
+    "Legacy watchdog modeled start/report/full-snapshot retention/replacement/stopped guards",
+    "PR9-C-DISCONNECT-COMPOSITION: actual handler\u2192Monitor\u2192Application/Session representative projection and no revival; injected-identity/manual resource-key unit scope",
+    "PR9-C-OLDER-RUNTIME: twelve selected current-source unit methods on17.5; internal injectedOn eligibility limit retained",
+    "PR9-O-HELPERS: named3 context helpers unused in saved exclusiveOff2methodrun; positiveOn visibility and exact production-source reuse reviewed",
+    "PR9-C-PLATFORMS: exact current102d Core/RUM framework compilation on macOS/tvOS/watchOS/visionOS; nominal watch9 and binary26 remain separate"
+  ],
+  "retained_sdk_checkpoint": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/checkpoint-pr9-retained-test/checkpoint.json",
+    "sha256": "96a0bc20c52adab24cd281ea7fe152ab9f8558e3a163703b7823ebfba18251f9"
+  },
+  "off_contract_result": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-off-legacy-contract/result.json",
+    "sha256": "7c4336e0df4dbfc621a127139b71988bd63559f9a00770f0381f9555061a41fb"
+  },
+  "off_contract_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-off-legacy-contract/result-review.json",
+    "sha256": "b993be81ba5bd7f37eb001a7043e50e7e8cc1814463d54890a4d8c705b6d51af"
+  },
+  "off_contract_checkpoint_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-off-legacy-contract/checkpoint-review.json",
+    "sha256": "91275025b78778e2bbb12cc04baeebe99f453d3e279a6b53a456805ee9914d97"
+  },
+  "off_contract_definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-off-legacy-contract/definition.json",
+    "sha256": "004087350270fb4e7e6c3ae8f65441ed2917909345567d01664db8f0c7fd50a5"
+  },
+  "off_contract_disposition": "Legacy reporter reads/reports and retains its saved full snapshot until the next accepted started update; deletion is not required by source. Mock-store/model-start result does not establish disk/OS termination.",
+  "disconnect_composition_preparation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-disconnect-composition/cycle2/packet.json",
+    "sha256": "69665b4ee3c15e68147692942dd59b671322c83c02ac980c8b8a1a6196e579bd"
+  },
+  "disconnect_composition_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-disconnect-composition/cycle2/review.json",
+    "sha256": "5961face6d7b38b88f7b5a0e46044c2eb12efb4429404645cc296af827be3a0a"
+  },
+  "disconnect_composition_result": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-disconnect-composition/cycle2/result.json",
+    "sha256": "415c128fb4a39a96bd2ec8967b54c2d1b241a0005fcfc3f3ea6b70b3b3686454"
+  },
+  "disconnect_composition_result_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-disconnect-composition/cycle2/result-review.json",
+    "sha256": "e3e7e0ac76f79a1f46f193969571ad5267d0ad2adf0e0ebdcd56ecb77d01fdd8"
+  },
+  "disconnect_composition_restoration": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-disconnect-composition/cycle2/restoration.json",
+    "sha256": "523288b993fe7499f607eaf0d5fc767bf17d72cac7d4ce5d639f204bf4276f74"
+  },
+  "older_runtime_preparation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-older-runtime-compatibility/parameters.json",
+    "sha256": "57c5a2e3da0298830ae9e98c2857a54fc9bdc39441443e075482dd059fcdbc7a"
+  },
+  "platform_compatibility_preparation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-platform-compatibility/packet.json",
+    "sha256": "514a945ff66a69fa4f5594deefba2c6e0310c141e79769ae04a36842fa67edd5"
+  },
+  "off_sdk_checkpoint": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/checkpoint-pr9-off-tests/checkpoint.json",
+    "sha256": "3b8d1410a8268847b7a42eedd450c95d60b532181421fbc3abc0b87a139eeb56"
+  },
+  "unique_methods_passed": 12,
+  "accepted_runtime_method_counts": {
+    "27.0": 12,
+    "17.5": 12
+  },
+  "older_runtime_result": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-older-runtime-compatibility/result.json",
+    "sha256": "248aea91f64618e970c3493aa94110cd647e2ebb7ac0426b8aab12d8820c51bd"
+  },
+  "older_runtime_restoration": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-older-runtime-compatibility/restoration.json",
+    "sha256": "11f161684a5920bc958f0e77c52c3dab511b505192c5c10213e5dad376623eb0"
+  },
+  "older_runtime_result_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-older-runtime-compatibility/result-review.json",
+    "sha256": "dcd49a1a569aac3afd5be73cac789d6579c3366cd1c3f260e51ec96883cd4311"
+  },
+  "off_dormancy_preparation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-off-saved-helper-coverage/analysis.json",
+    "sha256": "b3ea5000dcbd9360278869e819dae225d5679c856d527c49985e2785c9f33e51"
+  },
+  "platform_parameters_preparation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-platform-compatibility/parameters-packet-cycle2.json",
+    "sha256": "9c58fd61867c4b74a642307a943ead71d247854f9b1f7f38d38c8be37ea37f84"
+  },
+  "platform_build_preparation": {
+    "current_source_macos": {
+      "state": "QUALIFIED_COMPILATION_ONLY",
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-platform-compatibility/macos-definition-cycle2.json",
+        "sha256": "02385c15c43336000b466bac7cb0583b2e07f994b2c4a8885269125431c7cc79"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-platform-compatibility/macos-review.json",
+        "sha256": "196f043daf0dd7eab85c56cd98a5bba23d75f377c4116554ec0dcd0b757cf5ee"
+      },
+      "executor": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/platform_qualification.py",
+        "sha256": "6c5a2f2985b556905c3e69a255291cf87003c1b4f4d4125e85fdca279554e615"
+      },
+      "source_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
+      "native_admissions": 1,
+      "gates_closed": [],
+      "controller_pid": 54338,
+      "controller_pgid": 54338,
+      "command_index": 1,
+      "outcomes": [
+        {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-macos-build/build-0-outcome.json",
+          "sha256": "98247f936c3958b9ab604b5b06098a16b245ce671d1efad867ac821e86e4520e"
+        },
+        {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-macos-build/build-1-outcome.json",
+          "sha256": "80a2e1712f91426784bd18949d3d48ef922129bb5900d969563e9627e6ba65f5"
+        }
+      ],
+      "receipt": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-macos-build/receipt.json",
+        "sha256": "c10eefd75f0e72659a23d2741b65079bbdd85213daf3b60d1cdd8abb8568be1d"
+      },
+      "framework_build_commands": 2,
+      "postexit": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-macos-build/postexit.json",
+        "sha256": "100c43cf3a2787b0dd20fab95b375780c6d684155cab482dfbc7c52e8d914a9e"
+      },
+      "actual_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-platform-compatibility/actual-review.json",
+        "sha256": "6a08849c1b8b30c4de58866481c8b18116b83c130dc1396b4b2c00b9c5d73d00"
+      }
+    },
+    "current_source_tvos": {
+      "state": "QUALIFIED_COMPILATION_ONLY",
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-platform-compatibility/tvos-definition.json",
+        "sha256": "c337f9f91093bd036c6a7b01fdd3cdcf3f51d72b681c152c6b51b5cb3630c0a3"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-platform-compatibility/tvos-review.json",
+        "sha256": "40eccf1bbe43eacc05b615c1e6a12cb36518ec3688e08e3fba237f8cbd553b9b"
+      },
+      "executor": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/platform_qualification.py",
+        "sha256": "6c5a2f2985b556905c3e69a255291cf87003c1b4f4d4125e85fdca279554e615"
+      },
+      "source_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
+      "native_admissions": 1,
+      "gates_closed": [],
+      "controller_pid": 56520,
+      "controller_pgid": 56520,
+      "command_index": 1,
+      "outcomes": [
+        {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-tvos-build/build-0-outcome.json",
+          "sha256": "3a41176089fc8a332af14e2898f9c08de75a4dc2d5baa06ae04ecda76283d720"
+        },
+        {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-tvos-build/build-1-outcome.json",
+          "sha256": "43ac24d85df144789c44a2a7c5efeb1892568ddacccd0c298296ca903e89dbe3"
+        }
+      ],
+      "receipt": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-tvos-build/receipt.json",
+        "sha256": "28269d60c2f96f6030e407c1faf01aeabc187bd33224e0f3cabd9fa4f0217f8f"
+      },
+      "framework_build_commands": 2,
+      "postexit": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-tvos-build/postexit.json",
+        "sha256": "b41b588cdbb2e29227d01b29ccb1112a80f64f99a8f6f86cc288672177889aaa"
+      },
+      "actual_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-platform-compatibility/actual-review.json",
+        "sha256": "6a08849c1b8b30c4de58866481c8b18116b83c130dc1396b4b2c00b9c5d73d00"
+      }
+    },
+    "current_source_watchos": {
+      "state": "QUALIFIED_COMPILATION_ONLY",
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-platform-compatibility/watchos-definition.json",
+        "sha256": "33dac11c6b8dcf86ae0f0abf9b567e7dd4e26db769d63791d7ac283303ecf236"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-platform-compatibility/watchos-review.json",
+        "sha256": "d6a472f19cd804052fdb2fb9090d950426ed44c34956f5057d6af4879484f358"
+      },
+      "executor": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/platform_qualification.py",
+        "sha256": "6c5a2f2985b556905c3e69a255291cf87003c1b4f4d4125e85fdca279554e615"
+      },
+      "source_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
+      "native_admissions": 1,
+      "gates_closed": [],
+      "controller_pid": 57512,
+      "controller_pgid": 57512,
+      "command_index": 1,
+      "outcomes": [
+        {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-watchos-build/build-0-outcome.json",
+          "sha256": "9c1060bcd9948535163cb5be1798b4a19da5fc72bb37d1d4a48a9b5d42b577d2"
+        },
+        {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-watchos-build/build-1-outcome.json",
+          "sha256": "d94e8b122ac08c41330c56138f760ff7a26116cc449d675308e0cd9396c95b1f"
+        }
+      ],
+      "receipt": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-watchos-build/receipt.json",
+        "sha256": "7609520950af9502c28db27be3a67af3cc40deb33d0d50aef2c452e24d3a9bf9"
+      },
+      "framework_build_commands": 2,
+      "postexit": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-watchos-build/postexit.json",
+        "sha256": "55abbb40c18371dd50450be59694eb747db298108426580f694087da4d1e6796"
+      },
+      "actual_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-platform-compatibility/actual-review.json",
+        "sha256": "6a08849c1b8b30c4de58866481c8b18116b83c130dc1396b4b2c00b9c5d73d00"
+      }
+    },
+    "current_source_visionos": {
+      "state": "QUALIFIED_COMPILATION_ONLY",
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-platform-compatibility/visionos-definition.json",
+        "sha256": "2b48f28cc1b98467b481c6300ef4b67e7fd184afc48b10678dfb428691293392"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-platform-compatibility/visionos-review.json",
+        "sha256": "6c96b4d351ae14ca278e787cae96435331b2c64204d142c3370781893672001e"
+      },
+      "executor": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/platform_qualification.py",
+        "sha256": "6c5a2f2985b556905c3e69a255291cf87003c1b4f4d4125e85fdca279554e615"
+      },
+      "source_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
+      "native_admissions": 1,
+      "gates_closed": [],
+      "controller_pid": 58911,
+      "controller_pgid": 58911,
+      "command_index": 1,
+      "outcomes": [
+        {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-visionos-build/build-0-outcome.json",
+          "sha256": "4504a949dce05581c8bf930af3b4a24e083eb5a713de295e0cf9a62cf6c6946d"
+        },
+        {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-visionos-build/build-1-outcome.json",
+          "sha256": "7a605ade2814efe310c825a684d81ef7cc3c15a60252ef8dcfc105064eab30aa"
+        }
+      ],
+      "receipt": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-visionos-build/receipt.json",
+        "sha256": "e5f77bf8cc21e4d79c01ecf440bb60f7cc99c7efd3b170ff69b0a3ce0a6d1342"
+      },
+      "framework_build_commands": 2,
+      "postexit": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-visionos-build/postexit.json",
+        "sha256": "1fd6f83cbe141b58aba50a9c5c4d13a6dbbc20d06ce301281d2cbfda4b265962"
+      },
+      "actual_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-platform-compatibility/actual-review.json",
+        "sha256": "6a08849c1b8b30c4de58866481c8b18116b83c130dc1396b4b2c00b9c5d73d00"
+      }
+    }
+  },
+  "off_dormancy_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-off-saved-helper-coverage/review.json",
+    "sha256": "9f43c3abfd5f2242567caedfabd6c9d27a9525205e34e1c289973e782873fe76"
+  },
+  "platform_compilation_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-platform-compatibility/actual-review.json",
+    "sha256": "6a08849c1b8b30c4de58866481c8b18116b83c130dc1396b4b2c00b9c5d73d00"
+  },
+  "platform_compilation_packet": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-platform-compatibility/actual-review-packet.json",
+    "sha256": "50d05092afec3e826e62971f3cd20ba0d1c6276760ac6d9b451f195d91e5fb99"
+  },
+  "platform_build_cells": 4,
+  "framework_build_commands": 8,
+  "workspace_access_frontier": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/final-workspace-access-observation.json",
+    "sha256": "fd49495a0a9520726263c96d5067f2a51108416bd68a88313f53bfa1b0fc9d60"
+  }
 }

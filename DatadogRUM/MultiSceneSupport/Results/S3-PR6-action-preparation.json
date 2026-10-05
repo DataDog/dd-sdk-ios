@@ -3705,5 +3705,14 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-native-adapter-cycle3/review.json",
       "sha256": "bac12bb1e648a3524853d344740e115bc0a0f028006064ace742a5b5d462a269"
     }
+  },
+  "native_parameters_disposition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-native-adapter-cycle3/unconsumed-reservation-disposition.json",
+    "sha256": "c589f81fcc6c35bd408f0f119160094dad9d48a6576fb4033348f39ede59a537"
+  },
+  "native_parameter_refresh_required": true,
+  "fresh_workspace_access_observation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/final-workspace-access-observation.json",
+    "sha256": "fd49495a0a9520726263c96d5067f2a51108416bd68a88313f53bfa1b0fc9d60"
   }
 }
