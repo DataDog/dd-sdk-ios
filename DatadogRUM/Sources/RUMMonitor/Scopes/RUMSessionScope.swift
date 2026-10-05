@@ -7,7 +7,12 @@
 import Foundation
 @_spi(Internal) import DatadogInternal
 
-internal class RUMSessionScope: RUMScope, RUMContextProvider {
+/// Receives complete mapped view events on the RUM queue before representative projection.
+internal protocol RUMMappedViewContextUpdating: AnyObject {
+    func recordMappedViewEvent(_ event: RUMViewEvent, for viewID: RUMUUID)
+}
+
+internal class RUMSessionScope: RUMScope, RUMContextProvider, RUMMappedViewContextUpdating {
     struct Constants {
         /// If no interaction is registered within this period, a new session is started.
         static let sessionTimeoutDuration: TimeInterval = 15 * 60 // 15 minutes
@@ -76,6 +81,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         var representativeViewID: RUMUUID?
         var interactionMetrics: [RUMSceneIdentifier: INVMetricTracking?] = [:]
         var restoredViews: [RUMViewScope] = []
+        var mappedViewEvents: [RUMUUID: RUMViewEvent] = [:]
+        var projectedViewID: RUMUUID?
+        var projectedViewVersion: Int64?
+        var hasProjectedView = false
+        var projectedWatchdogViewID: RUMUUID?
+        var projectedWatchdogViewVersion: Int64?
+        var hasProjectedWatchdogView = false
     }
 
     private let sceneState: SceneState?
@@ -412,7 +424,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             viewScopes = viewScopes.scopes(byPropagating: command, context: context, writer: writer)
         }
 
-        if (isActive || deactivating) && !hasActiveView {
+        if sceneState == nil && (isActive || deactivating) && !hasActiveView {
             // If this session is active and there is no active view, update fatal error context accordingly, so eventual
             // error won't be associated to an inactive view and instead we will consider starting background view to track it.
             // We also want to send this as a session is being stopped.
@@ -749,6 +761,45 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             // A peer's time advances, but the foreign command cannot change its attributes/counters.
             view.expireActionIfNeeded(on: command, context: context, writer: writer)
             return view
+        }
+        updateRepresentativeFatalErrorContext()
+    }
+
+    func recordMappedViewEvent(_ event: RUMViewEvent, for viewID: RUMUUID) {
+        guard let sceneState else { return }
+        guard viewScopes.contains(where: { $0.viewUUID == viewID && $0.isActiveView }),
+              event.view.id == viewID.toRUMDataFormat,
+              event.session.id == sessionUUID.toRUMDataFormat else {
+            sceneState.mappedViewEvents.removeValue(forKey: viewID)
+            return
+        }
+        sceneState.mappedViewEvents[viewID] = event
+    }
+
+    private func updateRepresentativeFatalErrorContext() {
+        guard let sceneState else { return }
+        let activeIDs = Set(viewScopes.lazy.filter { $0.isActiveView }.map { $0.viewUUID })
+        sceneState.mappedViewEvents = sceneState.mappedViewEvents.filter { activeIDs.contains($0.key) }
+        let viewID = activeView?.viewUUID
+        let event = viewID.flatMap { sceneState.mappedViewEvents[$0] }
+        let mappedViewID = event == nil ? nil : viewID
+        let version = event?.dd.documentVersion
+        if !sceneState.hasProjectedView || sceneState.projectedViewID != mappedViewID
+            || sceneState.projectedViewVersion != version {
+            sceneState.hasProjectedView = true
+            sceneState.projectedViewID = mappedViewID
+            sceneState.projectedViewVersion = version
+            dependencies.fatalErrorContext.view = event
+        }
+        if !sceneState.hasProjectedWatchdogView || sceneState.projectedWatchdogViewID != mappedViewID
+            || sceneState.projectedWatchdogViewVersion != version {
+            // A startup guard may defer this update while the previous report consumes its snapshot.
+            // Retain only accepted projections so an unchanged later command retries the current view.
+            if dependencies.watchdogTermination?.updateRepresentativeView(viewEvent: event) == true {
+                sceneState.hasProjectedWatchdogView = true
+                sceneState.projectedWatchdogViewID = mappedViewID
+                sceneState.projectedWatchdogViewVersion = version
+            }
         }
     }
 

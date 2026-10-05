@@ -770,7 +770,9 @@ extension RUMViewScope {
 
             // Only update fatal error context when this event describes the still-active view,
             // an inactive view's terminal event must not clobber the active view's pointer.
-            if isActiveView {
+            if dependencies.isMultiSceneTrackingEnabled {
+                (parent as? RUMMappedViewContextUpdating)?.recordMappedViewEvent(event, for: viewUUID)
+            } else if isActiveView {
                 dependencies.fatalErrorContext.view = event
             }
 
@@ -793,7 +795,9 @@ extension RUMViewScope {
             // Update the state of the view in watchdog termination monitor
             // if a watchdog termination occurs in this session, in the next session
             // a watchdog termination event will be sent using saved view event.
-            dependencies.watchdogTermination?.update(viewEvent: event)
+            if !dependencies.isMultiSceneTrackingEnabled {
+                dependencies.watchdogTermination?.update(viewEvent: event)
+            }
         } else { // if event was dropped by mapper
             version -= 1
             completionHandler()
