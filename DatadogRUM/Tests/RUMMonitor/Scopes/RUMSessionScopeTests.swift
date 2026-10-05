@@ -2557,6 +2557,46 @@ extension RUMSessionScopeTests {
         XCTAssertNil(watchdogView(in: feature))
     }
 
+    func testDefaultModeFatalContext_lateResourcesKeepActiveViewAndCannotReviveStoppedContext() throws {
+        let flagModes: [RUM.Configuration.FeatureFlags] = [.defaults, [.multiSceneTracking: false]]
+        for flags in flagModes {
+            let (seed, feature) = representativeSession(enabled: false)
+            let scope = RUMSessionScope.mockWith(
+                isInitialSession: false,
+                parent: parent,
+                startTime: routingStart,
+                dependencies: seed.dependencies.replacing(featureFlags: flags)
+            )
+            XCTAssertFalse(scope.dependencies.isMultiSceneTrackingEnabled)
+            let owner = try XCTUnwrap(startOwnedView(scope, target: .none, key: "owner"))
+            startOwnedResource(scope, target: .none, key: "first-resource", after: 1)
+            startOwnedResource(scope, target: .none, key: "late-resource", after: 2)
+            let active = try XCTUnwrap(startOwnedView(scope, target: .none, key: "active", after: 3))
+            XCTAssertFalse(owner.isActiveView)
+            XCTAssertTrue(scope.viewScopes.contains { $0 === owner })
+            let activeSnapshot = try fullSnapshot(scope.dependencies.fatalErrorContext.view)
+            var completion = RUMStopResourceCommand.mockWith(resourceKey: "first-resource", time: routingStart.addingTimeInterval(4))
+            completion.target = .none
+            route(completion, through: scope)
+            XCTAssertEqual(writer.events(ofType: RUMResourceEvent.self).last?.view.id, owner.viewUUID.toRUMDataFormat)
+            XCTAssertEqual(scope.context.activeViewID, active.viewUUID)
+            XCTAssertEqual(try fullSnapshot(scope.dependencies.fatalErrorContext.view), activeSnapshot)
+            var stop = RUMStopViewCommand.mockWith(time: routingStart.addingTimeInterval(5), identity: ViewIdentifier("active"))
+            stop.target = .none
+            route(stop, through: scope)
+            XCTAssertNil(scope.dependencies.fatalErrorContext.view)
+            completion = RUMStopResourceCommand.mockWith(resourceKey: "late-resource", time: routingStart.addingTimeInterval(6))
+            completion.target = .none
+            route(completion, through: scope)
+            XCTAssertEqual(writer.events(ofType: RUMResourceEvent.self).last?.view.id, owner.viewUUID.toRUMDataFormat)
+            XCTAssertNil(scope.context.activeViewID)
+            XCTAssertNil(scope.dependencies.fatalErrorContext.view)
+            XCTAssertEqual(watchdogView(in: feature)?.view.id, owner.viewUUID.toRUMDataFormat)
+            XCTAssertEqual(watchdogView(in: feature)?.view.isActive, false)
+            XCTAssertEqual(watchdogView(in: feature)?.view.resource.count, 2)
+        }
+    }
+
     func testDefaultModeFatalContext_keepsLegacyWatchdogFinalViewAfterStop() throws {
         let (scope, feature) = representativeSession(enabled: false)
         let view = try XCTUnwrap(startOwnedView(scope, target: .none, key: "legacy"))
