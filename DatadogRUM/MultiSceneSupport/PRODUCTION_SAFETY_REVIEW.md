@@ -93,32 +93,22 @@ is excluded. Current S2 source/lifetime proof belongs to
 
 - [PR5 scene handler](Results/S3-PR5-scene-handler-preparation.json): unknown/disconnected eligibility and the invented-scene factory fixture are corrected and independently re-reviewed. All64 exact components pass on27 and17.5; source/compiler/products, native results and separate original-state cleanup join. Final P5D1-P5D8 component review passes. Full-current RUM suites also qualify1041cases/1077invocations on each runtime; the reviewed count correction grades existing exports without repeating tests. Qualified source is locally checkpointed at8cd7793d3 using the authorized unsigned fallback. Concrete exclusive-Off now independently qualifies at this source; genuine OS ordering, activation, wholeF12, API and hardware remain separate. Original BLOCKED reviews and consumer stops stay immutable.
 
-- [PR6 owner](Results/S3-PR6-action-preparation.json) retains accepted activation,
-  scopes, callbacks, private input/scroll and bounded Off components at their actual
-  sources. macOS/tvOS/watchOS/visionOS compilation components are reviewed; watchOS
-  nominal9/binary26 stays explicit. The [execution-improvement owner](Results/execution-improvements-20261004.json)
-  records the shared parser/replay/runner and bounded review eligibility. Constructor
-  ordering and concrete Off reachability/counters/lifetime now pass source-backed
-  review; no failure-injection seam is required. The corrected five-case configured
-  attached UIKit fixture passes source review. The original native proposal is
-  BLOCKED on six capture/custody/cleanup issues; its separate consolidated correction
-  passes40 offline controls and independent proposal review; actual workspace
-  access is confirmed, while fresh RUM parameters and native qualification remain. No native acceptance follows from these controls. Actual minimum Swift6.2 remains held. No timing campaign,
-  universal callback-safety or rebuilt-source runtime credit follows.
+- [PR6 owner](Results/S3-PR6-action-preparation.json) retains accepted activation, scopes, callbacks, private input/scroll,
+  bounded Off and platform components at their actual sources. Four genuine attached configured tap/scroll methods now
+  qualify at e1 through independent actual review; lifetime/overall attempt FAIL, cleanup PASS. SDK monitor/handler/proxy
+  references release and the host key restores. Immediate UIKit window/controller/scroll retention is fixture-confounded,
+  with appearance warnings; no SDK retention cause follows. One SDK-free identical lifecycle discriminator remains.
+  Original INCOMPLETE grading stays beside the reviewed saved-only FAIL reconciliation. MinimumSwift6.2, watch floor,
+  final-source integration and release acceptance remain open.
 
-- [P2 progress](Results/execution-improvements-20261004.json) preserves the original
-  failed route and restoration. The distinct reviewed workspace qualification also
-  stopped before native dispatch: existing-file publication used an exclusive-create
-  helper, and failed withdrawal left a daemon stdin reader blocked at interpreter
-  shutdown. No SDK/app/session effect occurred. Actual owned groups/resources retired
-  and original Xcode selection verifies after independent actual-failure review;
-  the original TTY receipt proves a successful restoration call, without readback.
-  Normal qualification remains UNQUALIFIED
-  with INCOMPLETE evidence. Both defects now pass a scoped independent offline
-  repair review and ten focused controls. Guarded publication requires exclusive
-  owner freeze; new TTY readback excludes only Darwin PENDIN. The consumed route
-  stays stopped. No retry, human invitation or release credit follows from controls
-  or local retirement.
+- [P2 progress](Results/execution-improvements-20261004.json) preserves every original failed route and separate
+  restoration. Publication/reader defects have a reviewed offline repair. The corrected attempt returned all four calls,
+  but End stopped the fixture before terminal collection: UNQUALIFIED/INCOMPLETE/automatic cleanupINVALID. Separate
+  task/device/display/Xcode restoration and observed process/resource retirement pass independent actual review.
+  Exact current parent exit is unproven; the embedded fatal output was historical and has a separate lineage correction.
+  The ordering/dispatcher successor passes independent offline review with28 controls:8 new and20 unchanged reused.
+  All three findings are resolved; first blocked evidence remains. Explicit continuation is needed for one fresh native qualification.
+  Neither local parent exit0 nor modeled capture/idle/finalization qualifies native composition or authorizes another run.
 
 - P5 has one source-paired Monitor/legacy-factory Off fixture in linked verification
   worktrees at PR3/PR4/PR5. Transport/consumer review findings are corrected

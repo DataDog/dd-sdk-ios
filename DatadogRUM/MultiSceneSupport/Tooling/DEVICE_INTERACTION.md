@@ -314,7 +314,7 @@ needs separate cleanup-only idle proof. Uncertain delivery defers teardown.
 
 ## Current complete-path qualification boundary
 
-[P2](../Results/execution-improvements-20261004.json) stopped before tool dispatch on missing bridge configuration; no app
-launch/SDK defect. The offline fix does not reopen it. Preserve INVALID verdicts and separate limited restoration. A
-materially distinct supported route must qualify Start/return/persist/End/seal/saved grading/task cleanup before humans. Keep
-preparation/operator/scenario clocks separate; no deadline extension.
+[P2](../Results/execution-improvements-20261004.json) collects terminal rows and genuine bound idle while the writer is live, before End.
+After End, seal/grade saved bytes. Stopped-task cleanup needs same-session End and fresh exact PID/executable absence.
+Persist each actual return before failure handling; isolate per-attempt stores/command receipts. Preserve originals and separate restoration.
+New reviewed bindings/admission must qualify the complete path before humans; keep clocks separate and never extend a stopped attempt.

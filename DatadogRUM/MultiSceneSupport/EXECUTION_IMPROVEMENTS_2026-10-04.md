@@ -126,7 +126,7 @@ Every unfinished item has one unambiguous next action; S2 has no added campaign;
 
 Owner: harness implementer and designated independent reviewer.
 Dependency: P1 acceptance boundaries.
-Status: the workspace qualification stopped before native dispatch on existing-file publication and abnormal parent shutdown. Both defects now have a scoped independent offline repair review and ten focused controls; original failure and separate local retirement remain immutable. The consumed automatic route stays stopped. Actual capture qualification and a qualifying continuation remain; no human invitation is admitted.
+Status: the one corrected attempt returned Start/install/capture/End, then End stopped the live writer before terminal collection. Independent actual review preserves UNQUALIFIED/INCOMPLETE/automatic cleanupINVALID and separately verified restoration. Current parent raw return/exit is unproven; its embedded shutdown output was historical. The five-file ordering correction and narrow dispatcher successor now pass independent offline review:28 controls, including8 new controls and20 unchanged controls reused. Observed nonzero exit blocks buffered effects; DONE plus returned exit0 consumes completion once, and the current procedure is pinned. The first blocked packet remains. Native composition is still unqualified; the consumed grant requires explicit continuation before one new qualification. No human invitation is admitted.
 
 Scope:
 - Existing automatic-coverage human_rum_only_runtime.py, human_supported_readiness/continuation and foreground capture/finalization paths as needed.
@@ -219,7 +219,7 @@ Routine runs reuse reviewed machinery while consequential changes retain indepen
 
 Owner: SDK implementer and independent reviewer; API reviewers own F01.
 Dependency: P1; P3/P4 help execution but must not become an indefinite prerequisite.
-Status: PR4/PR5 concrete exclusive-Off obligations qualify after six native cells and independent applicability review. The fixed seven-item PR6 exit packet is selected, and actual workspace access is confirmed. Fresh RUM settings/source/parameters and configured native qualification remain; later slices and final integration remain.
+Status: concrete PR4/PR5 exclusive-Off obligations are qualified. Four exact configured PR6 tap/scroll methods now qualify at e1b6d5e5a through independent actual review; the lifetime method and overall attempt FAIL, with cleanup PASS. All SDK weak references release; immediate UIKit-object retention is fixture-confounded and needs one SDK-free lifecycle discriminator before a cause or repair is inferred. Swift6.2, watch floor and final-stack boundaries remain held.
 
 Scope:
 - Existing PR1–13 rebuilt feature-flag delivery chain and its tests.
