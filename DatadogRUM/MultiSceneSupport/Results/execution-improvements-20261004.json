@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "P1_P3_P4_COMPLETE_P2_HUMAN_PREPARATION_REVIEWED_PR6_FINITE_APPLICABILITY_COMPLETE_WITH_HOLDS",
+  "state": "P2_HUMAN_STOPPED_BEFORE_GESTURES_SEPARATELY_RESTORED_NAMESPACE_REPAIR_REVIEWED",
   "owner": "/root",
   "plan": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
@@ -10,7 +10,7 @@
   "native_admitted": false,
   "native_runs": 16,
   "gates_closed": [],
-  "next_action": "Obtain actual visible-page reply for the prepared candidate-only SwiftUI split, bind the exact post-plan operator inputs in final independent review, then issue one fresh4800-second execution/cleanup reservation and exclusive owner freeze. No app/session is active.",
+  "next_action": "Materialize the reviewed private readiness namespace correction and candidate-only SwiftUI split. Reuse accepted source/products and saved baseline; require fresh actual page readiness, exact operator-bound final review and original-budget fit before admission. The prior harness stop gives no SDK or release verdict.",
   "p1": {
     "required_s2_tasks": 3,
     "required_s3_tasks": 20,
@@ -95,20 +95,20 @@
       "sha256": "d16086cc4679eda3e066438196e6b5b9555f682c6794cbb996f6d18fa42f28c5"
     },
     "workspace_alternative": {
-      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2300/runtime",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/runtime",
       "plan": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2300/runtime/runtime-plan.json",
-        "sha256": "ec3af95e3fa6c6a12cfa4f4966d3be752c5e6f648adcdb1c354a7bf70f8305b0"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/runtime/runtime-plan.json",
+        "sha256": "a016730df1cfa41e18ebe33d742e91f43d9500fc4e2482dac02bad0b53146b33"
       },
       "definition": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2300/runtime/definition.json",
-        "sha256": "42be4ae365475af6af1b6bbcc788a6409c571349f7cf611bfcd176430b28be9e"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/runtime/definition.json",
+        "sha256": "c43cecd4d1dbf4800aac85c81afec6418e04e1195055a803b72d4af37060398b"
       },
       "review": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2300/runtime/review.json",
-        "sha256": "c818bf052b25d94ca47cbf71b440322380ddce81c6dfa2e5221981e904397a46"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/runtime/review.json",
+        "sha256": "7985aa49b2b5f44d58782402de14b340fd16a3c31facedee26f2751b5692a899"
       },
-      "native_admitted": true,
+      "native_admitted": false,
       "execution": {
         "kind": "P2_ACTUAL_WORKSPACE_EXECUTION",
         "context": {
@@ -135,40 +135,40 @@
               "sha256": "0466c4c038985933b2c432a74d922c585b68a694fb675f925ca26a98b9442440"
             }
           },
-          "run_id": "fc6b7789-878c-47ac-9e20-8368cbef9fc5",
-          "plan_sha256": "ec3af95e3fa6c6a12cfa4f4966d3be752c5e6f648adcdb1c354a7bf70f8305b0",
-          "issued_at": 1791234884.688915,
-          "execution_deadline": 1791239084.688915,
-          "cleanup_deadline": 1791239684.688915
+          "run_id": "a0a3e825-bc65-45d8-aefc-23473a8ab51a",
+          "plan_sha256": "a016730df1cfa41e18ebe33d742e91f43d9500fc4e2482dac02bad0b53146b33",
+          "issued_at": 1791236375.859137,
+          "execution_deadline": 1791240575.859137,
+          "cleanup_deadline": 1791241175.859137
         },
         "roles": {
-          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2300/runtime/actual-controller-worker.json",
-          "sha256": "113d86e9520de07491cbb443661aff83f9160d7925b1c1dfe9ee99e4e05b351f"
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/runtime/actual-controller-worker.json",
+          "sha256": "9f8f095ad095de81b952afd692e687526071e6153378f350f99128f158982c54"
         },
-        "controller_pid": 48836,
-        "worker_pid": 48837,
+        "controller_pid": 61917,
+        "worker_pid": 61918,
         "host": "COMP-D7Y69VHK4C",
         "definition": {
-          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2300/runtime/definition.json",
-          "sha256": "42be4ae365475af6af1b6bbcc788a6409c571349f7cf611bfcd176430b28be9e"
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/runtime/definition.json",
+          "sha256": "c43cecd4d1dbf4800aac85c81afec6418e04e1195055a803b72d4af37060398b"
         },
         "review": {
-          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2300/runtime/review.json",
-          "sha256": "c818bf052b25d94ca47cbf71b440322380ddce81c6dfa2e5221981e904397a46"
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/runtime/review.json",
+          "sha256": "7985aa49b2b5f44d58782402de14b340fd16a3c31facedee26f2751b5692a899"
         },
         "plan": {
-          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2300/runtime/runtime-plan.json",
-          "sha256": "ec3af95e3fa6c6a12cfa4f4966d3be752c5e6f648adcdb1c354a7bf70f8305b0"
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/runtime/runtime-plan.json",
+          "sha256": "a016730df1cfa41e18ebe33d742e91f43d9500fc4e2482dac02bad0b53146b33"
         },
         "admission": {
-          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2300/runtime/native-admission.json",
-          "sha256": "cd3f8a97ae4d9f6119df0d828d04df1eb0aa3531c34f97da791dec55888ec2ac"
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/runtime/native-admission.json",
+          "sha256": "b32ff224d39212692c6e612a1921350a51976ba2da1e5dcfc24a6377303c29fa"
         },
         "worker_start": {
-          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2300/runtime/owned-worker-start.json",
-          "sha256": "38678185ce9c9ac00c579de52c009f8f63d271a13fc0078bb56c39fdc84667d7"
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/runtime/owned-worker-start.json",
+          "sha256": "6f340b5b38240bf41c0dfcfb7a3145574427484938f2eea64ab0dbbf1b645746"
         },
-        "at": 1791234948.4042828
+        "at": 1791236415.856309
       },
       "context": {
         "operation_profile": "S2_WORKSPACE_HUMAN_FOREGROUND_END_LAST_V1",
@@ -194,36 +194,21 @@
             "sha256": "0466c4c038985933b2c432a74d922c585b68a694fb675f925ca26a98b9442440"
           }
         },
-        "run_id": "fc6b7789-878c-47ac-9e20-8368cbef9fc5",
-        "plan_sha256": "ec3af95e3fa6c6a12cfa4f4966d3be752c5e6f648adcdb1c354a7bf70f8305b0",
-        "issued_at": 1791234884.688915,
-        "execution_deadline": 1791239084.688915,
-        "cleanup_deadline": 1791239684.688915
+        "run_id": "a0a3e825-bc65-45d8-aefc-23473a8ab51a",
+        "plan_sha256": "a016730df1cfa41e18ebe33d742e91f43d9500fc4e2482dac02bad0b53146b33",
+        "issued_at": 1791236375.859137,
+        "execution_deadline": 1791240575.859137,
+        "cleanup_deadline": 1791241175.859137
       },
-      "owner_freeze": "ROOT_EXCLUSIVE_THROUGH_RETIREMENT_AND_ORIGINAL_RESTORATION",
-      "state": "STOPPED_BEFORE_NATIVE_READINESS_EXPIRED",
-      "actual_closure": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2300/runtime/closure.json",
-        "sha256": "69a056dafb7d0ce32b4b84fd072aa1efd7467f706b3ce4a8af77cf12e52c449e"
+      "owner_freeze": false,
+      "retired": true,
+      "separate_restoration": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/runtime/separate-restoration/closure.json",
+        "sha256": "1a54b0f2afea7a1b6e0e6a614cb3e84b527b82cd5fbba340a837e0dd08dfa014"
       },
-      "actual_startup_stop": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2300/runtime/startup-stop-worker.json",
-        "sha256": "eb5bd4a64e6977f822f9702b089e5288307191edeb38a8cd9c99a67fa4777471"
-      },
-      "actual_dispatch_stop": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2300/runtime/actual-dispatch-stop.json",
-        "sha256": "1b095de59ce994044a4fd66340d74f14a21a282b020664a201d2dc8a19148305"
-      },
-      "native_calls": 0,
-      "builds": 0,
-      "scenario": "UNQUALIFIED",
-      "evidence": "INCOMPLETE",
-      "cleanup": "PASS_LOCAL_RETIREMENT_AND_UNCHANGED_STATE_ONLY",
-      "freeze_released": true,
-      "gates_closed": [],
-      "independent_stop_review": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2300/runtime/actual-review.json",
-        "sha256": "ff94f522897e8457f196b8724035b0ea2c6984e948b4ddbe517199a0a099b878"
+      "actual_restoration_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/runtime/separate-restoration/actual-review.json",
+        "sha256": "b6c36b3a628bee6f5937893138cf73810b0ecb16152896d6ad7e7a38f0e9c509"
       }
     },
     "distinct_workspace_cycle3": {
@@ -477,6 +462,10 @@
       {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2300/runtime/historical-workspace-selection.json",
         "sha256": "e4e9ac7217c057c1cb5efff20672c42529ff7035ca319cb8321fef6727e841db"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/runtime/historical-workspace-selection.json",
+        "sha256": "7e14f9ae3c4af43b2199e61ea5f9abc62e32debd94392cd953d61b6b0a0a40cf"
       }
     ],
     "ordering_successor": {
@@ -716,7 +705,7 @@
       "next": "Complete unchanged-source successor review and dispatch preparation before fresh visible-page confirmation; no baseline or accepted-suite repeat."
     },
     "pending_human_successor": {
-      "state": "STATIC_REVIEW_PASS_AWAIT_GENUINE_VISIBLE_PAGE_CONFIRMATION",
+      "state": "STOPPED_PRIVATE_READINESS_PATH_NAMESPACE_BEFORE_GESTURES",
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318",
       "packet": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/preparation/packet.json",
@@ -736,17 +725,130 @@
       },
       "owner_dispatch_prepared": true,
       "operator_ready": null,
-      "final_review": null,
-      "issued_clocks": null,
-      "native_admitted": false,
-      "native_calls": 0,
+      "final_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/runtime/review.json",
+        "sha256": "7985aa49b2b5f44d58782402de14b340fd16a3c31facedee26f2751b5692a899"
+      },
+      "issued_clocks": {
+        "operation_profile": "S2_WORKSPACE_HUMAN_FOREGROUND_END_LAST_V1",
+        "owner": "/root/s2_split_input_owner",
+        "source": "c9faed816a1d4828d7d8c4b64acae01119425889",
+        "bundle": "com.datadoghq.s2.automatic.candidate.sdk271.swiftui",
+        "layout": "split",
+        "scheme": "Coverage",
+        "workspace": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-workspace-source-cycle1/client/AutomaticCoverage.xcodeproj",
+        "device": "F91CCE46-2704-4E8B-9093-A6A0EF250B1A",
+        "tool_workspace_identifier": "workspace-uanW3al82g",
+        "tool_workspace_binding": {
+          "workspace_list": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2300/preparation/workspace-list.json",
+            "sha256": "eea8e89eb3854afb213a52db8c43ad7e474d17470db94f7a6af9ebbd2b2afa50"
+          },
+          "configuration": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2300/preparation/workspace-configuration.json",
+            "sha256": "efa066867fe7f88f0d62a36679bcf1779cafc736795d29db4d55e79ca484824c"
+          },
+          "tool_metadata": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2300/preparation/owner-live-tool-metadata.json",
+            "sha256": "0466c4c038985933b2c432a74d922c585b68a694fb675f925ca26a98b9442440"
+          }
+        },
+        "run_id": "a0a3e825-bc65-45d8-aefc-23473a8ab51a",
+        "plan_sha256": "a016730df1cfa41e18ebe33d742e91f43d9500fc4e2482dac02bad0b53146b33",
+        "issued_at": 1791236375.859137,
+        "execution_deadline": 1791240575.859137,
+        "cleanup_deadline": 1791241175.859137
+      },
+      "native_admitted": true,
+      "native_calls": 4,
       "builds": 0,
       "gates_closed": [],
       "awake_authority": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-awake-20261005.json",
-        "sha256": "e5a5deeda16093a59e34b313b95cd2c8bc7a336ed3a3353f195e1a70bb6e4dfd"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/runtime/fresh-awake-authority.json",
+        "sha256": "b914dfe3b007d0710cf9a4b7901d6f3b0c810825559ec64e85e0e4d930ca1eba"
       },
-      "prior_stop_preserved": true
+      "prior_stop_preserved": true,
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/runtime/definition.json",
+        "sha256": "c43cecd4d1dbf4800aac85c81afec6418e04e1195055a803b72d4af37060398b"
+      },
+      "admission": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/runtime/native-admission.json",
+        "sha256": "b32ff224d39212692c6e612a1921350a51976ba2da1e5dcfc24a6377303c29fa"
+      },
+      "operator_inputs": {
+        "plan": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/runtime/runtime-plan.json",
+          "sha256": "a016730df1cfa41e18ebe33d742e91f43d9500fc4e2482dac02bad0b53146b33"
+        },
+        "readiness": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/runtime/operator/ready.json",
+          "sha256": "e83b736a3494e8f3d969953f8281107dcb834b4c3b028abef40f9a882cfde2b5"
+        },
+        "server": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/runtime/operator/server.json",
+          "sha256": "783d50afd98c049e6c1a22fbdacb152af30dc366b9c2948c416d7dbc8bdd8343"
+        },
+        "page": {
+          "state": "BOUND_OPERATOR_PAGE",
+          "pid": 51820,
+          "url": "http://127.0.0.1:63730",
+          "started_at": 1791235197.151671,
+          "seconds": 6000,
+          "native_launches": 0,
+          "directory": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/runtime/operator",
+          "nonce": "9648310f-6f64-4f1a-8423-48e8250cde3c"
+        }
+      },
+      "successful_supported_calls": 3,
+      "scenario": "UNQUALIFIED",
+      "evidence": "INCOMPLETE",
+      "cleanup": "INVALID",
+      "human_gestures": 0,
+      "actual_dispatch_stop": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/runtime/actual-dispatch-stop.json",
+        "sha256": "98d8a7910067928999af31b083e0f263b677be7a6ddc8b7cde0fe8df834472bd"
+      },
+      "owner_stop": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/runtime/owner-stop-observation.json",
+        "sha256": "b558a7115c264eab01209c04bd12907768316d4e4fe82b214f99127ac734fb04"
+      },
+      "separate_restoration": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/runtime/separate-restoration/closure.json",
+        "sha256": "1a54b0f2afea7a1b6e0e6a614cb3e84b527b82cd5fbba340a837e0dd08dfa014"
+      },
+      "separate_restoration_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/runtime/separate-restoration/actual-review.json",
+        "sha256": "b6c36b3a628bee6f5937893138cf73810b0ecb16152896d6ad7e7a38f0e9c509"
+      },
+      "original_outcome_immutable": true,
+      "native_call_accounting": "Three actual supported successes, one rejected original End; later cleanup-only End confirms session already absent and is separate.",
+      "remaining": "Private composition binds Path; next candidate needs new reviewed materialization/readiness/admission, no baseline repeat.",
+      "frozen_owner_lineage": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2318/runtime/separate-restoration/frozen-owner-lineage.json",
+        "sha256": "3ed0953ce3edf0b86af40c1f4b73a5336790014303b5f539c6d2672f8a2fefa9"
+      }
+    },
+    "human_namespace_correction": {
+      "state": "PASS_PREPARATION_ONLY_REVIEWED_NO_NATIVE_CREDIT",
+      "packet": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-workspace-human-successor-20261005/readiness-namespace-correction/packet.json",
+        "sha256": "e58ef70b9583cc4c05aa064144004f46f62dd7a390bcde1af3cdd669c0b85c89"
+      },
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-workspace-human-successor-20261005/readiness-namespace-correction/controls.json",
+        "sha256": "2b8f8bba09597f75c3c29654bf79bd764c02eed23b1cb4b1d2fb7312b3f65f80"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-workspace-human-successor-20261005/readiness-namespace-correction/runtime/review.json",
+        "sha256": "2ec1dd3b269906bf5616a8321c8a81d11a7385dd72979156930add6e50a873a8"
+      },
+      "changed_roles": [
+        "human_grade"
+      ],
+      "focused_controls_passed": 10,
+      "native_calls": 0,
+      "gates_closed": []
     }
   },
   "p3": {
@@ -1483,7 +1585,7 @@
       "sha256": "71a2bd15b9f0c0e408a64f498dc4e234d89e3d54fdb216eb24ce69a8d25ca66f"
     }
   },
-  "updated_at": 1791233226.542568,
+  "updated_at": 1791238179.58405,
   "native_run_accounting": {
     "P3_required_platform_build": 1,
     "P5_PR3_PR4_PR5_off_cells": 6,
@@ -1504,11 +1606,11 @@
     "PR6_SDK_free_control_evidence": "COMPLETE",
     "PR6_SDK_free_control_cleanup": "PASS"
   },
-  "selected_task": "P7D0_EXACT_COMPOSITION_REVIEW_AND_AFFECTED_QUALIFICATION_PREPARATION",
+  "selected_task": "P2_RESIDUAL_SWIFTUI_SPLIT_CANDIDATE_C09_C10_H14",
   "execution_frontier": {
-    "primary": "Obtain actual visible-page reply for the prepared candidate-only SwiftUI split, bind the exact post-plan operator inputs in final independent review, then issue one fresh4800-second execution/cleanup reservation and exclusive owner freeze. No app/session is active.",
+    "primary": "Materialize the reviewed private readiness namespace correction and candidate-only SwiftUI split. Reuse accepted source/products and saved baseline; require fresh actual page readiness, exact operator-bound final review and original-budget fit before admission. The prior harness stop gives no SDK or release verdict.",
     "required_paths": [
-      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-workspace-human-successor-20261005/readiness-binding-correction/packet.json"
+      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-workspace-human-successor-20261005/readiness-namespace-correction/packet.json"
     ],
     "independent_boundary": "MinimumSwift6.2 unavailable; downstream PR7/PR11 depend on PR6 qualification",
     "no_live_native_admission": true,
@@ -1637,5 +1739,6 @@
   "current_attempt_authority": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/attempt-policy-20261005.json",
     "sha256": "4a455a7d817bd900f2f7ca21cc403c2ee934f825b4e7d0c2ba9eb575787f2411"
-  }
+  },
+  "independent_selected_task": "P7D0_EXACT_COMPOSITION_REVIEW_AND_AFFECTED_QUALIFICATION_PREPARATION"
 }
