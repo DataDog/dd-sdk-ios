@@ -28,13 +28,13 @@
   ],
   "controls_defined": 22,
   "design_reviewer": "/root/h10_backend_reviewer",
-  "next_action": "Finish reviewed SDK-free control UIKit/test bindings in the approved isolated MAIN-linked fixture after the sole P2 lane. Reuse reviewed hosted-product/failed-case consumer with exact future trust/source/parameters. One matched control after fresh bounded admission; preserve original failed lifetime/attempt, four exacte1 partial passes and cleanup. MinimumSwift6.2/watch/final-stack remain held.",
+  "next_action": "With fresh sufficient awake authority/current prerequisites, seal/review exact executable parameters and run the one SDK-free lifetime control only. Implemented source/parameter policy and the supported Xcode host dependency pass review. Preserve the original five-case lifetime FAIL, separate saved reconciliation and SDK weak release observations; no automatic retry or SDK-retention inference.",
   "implementation_admitted": true,
   "native_admitted": false,
   "native_runs": 6,
   "sdk_edits": 6,
   "gates_closed": [],
-  "updated_at": 1791205316.078712,
+  "updated_at": 1791208201.346956,
   "previous_definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/next-pr6-controls-definition.json",
     "sha256": "7b374396fc3b8a33818520301d7a2ca3a56c53e7be70360e25fdfd154ece0e4e"
@@ -3825,5 +3825,33 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-native-adapter-cycle3/unconsumed-reservation-disposition.json",
       "sha256": "c589f81fcc6c35bd408f0f119160094dad9d48a6576fb4033348f39ede59a537"
     }
-  ]
+  ],
+  "matched_lifetime_control_implemented_binding": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/implemented-binding/review-packet.json",
+    "sha256": "3af650ab17e1da2d541dde662c2ff2187539aa116a8d7bfac8f3ffd52dd94775"
+  },
+  "matched_lifetime_control_definition_template": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/implemented-binding/host-edge-correction/definition-template.json",
+    "sha256": "b277aaeae3ebfef4d433274c773eac7c283ceadd8d38b2209d39f8c8af6e3e6d"
+  },
+  "matched_lifetime_control_source_freeze": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/implemented-binding/host-edge-correction/source-freeze.json",
+    "sha256": "c054df22e6d46f6e360faf40a17f87b8e6086ac8ffd7acd3bbffb46769555c6f"
+  },
+  "matched_lifetime_control_new_controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/implemented-binding/controls.json",
+    "sha256": "ea590e0daaff568a57e4e2f57bb2370189638cd0ea8f5a9b263e6b248fa26cea"
+  },
+  "matched_lifetime_control_implemented_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/implemented-binding/review.json",
+    "sha256": "da3df6fd530b13a7b269869dfc3ee38faf828dc0e62116bf8f0ba30c513dfb16"
+  },
+  "matched_lifetime_control_host_edge_correction": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/implemented-binding/host-edge-correction/review-packet.json",
+    "sha256": "18a3f20fc4ab6a896262923b224de5e2fbdb1d788a8a21dfa0a5144fb08dc70b"
+  },
+  "matched_lifetime_control_host_edge_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/implemented-binding/host-edge-correction/review.json",
+    "sha256": "380deec927719ad8fcb9efa0e26e95555b0cb364f5784e07063e3a3598f6a130"
+  }
 }
