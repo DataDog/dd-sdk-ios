@@ -34,7 +34,7 @@
   "native_runs": 6,
   "sdk_edits": 6,
   "gates_closed": [],
-  "updated_at": 1791202025.503724,
+  "updated_at": 1791205316.078712,
   "previous_definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/next-pr6-controls-definition.json",
     "sha256": "7b374396fc3b8a33818520301d7a2ca3a56c53e7be70360e25fdfd154ece0e4e"
@@ -3588,7 +3588,7 @@
   },
   "execution_improvement_plan": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
-    "sha256": "82df2413b836b03bf2de19a9de2b2a141456dbe5679b1386072872d6b8f8b14f"
+    "sha256": "70bedb83f022117657516b76d4d786c5d4184cb9943bf608af8e89de05d6ce24"
   },
   "backlog_visionos_proposal": {
     "definition": {
@@ -3814,6 +3814,10 @@
     {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-native-qualification-20261005-6d6ee16b/owning-plan-history/b932d731667c681875d8550de50b5927b8dcef56a53b44f8d7b3a00d692df55f.md",
       "sha256": "b932d731667c681875d8550de50b5927b8dcef56a53b44f8d7b3a00d692df55f"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-native-qualification-20261005-6d6ee16b/owning-plan-history/b77973de087b1a5631f4e3685cd3958edbf92631bc1661a81d571ceac1a3ed6f.md",
+      "sha256": "b77973de087b1a5631f4e3685cd3958edbf92631bc1661a81d571ceac1a3ed6f"
     }
   ],
   "native_parameters_disposition_history": [

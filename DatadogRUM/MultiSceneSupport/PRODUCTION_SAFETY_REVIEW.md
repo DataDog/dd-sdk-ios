@@ -103,14 +103,13 @@ is excluded. Current S2 source/lifetime proof belongs to
   Original INCOMPLETE grading stays beside the reviewed saved-only FAIL reconciliation. MinimumSwift6.2, watch floor,
   final-source integration and release acceptance remain open.
 
-- [P2 progress](Results/execution-improvements-20261004.json) preserves every original failed route and separate
-  restoration. Publication/reader defects have a reviewed offline repair. The corrected attempt returned all four calls,
-  but End stopped the fixture before terminal collection: UNQUALIFIED/INCOMPLETE/automatic cleanupINVALID. Separate
-  task/device/display/Xcode restoration and observed process/resource retirement pass independent actual review.
-  Exact current parent exit is unproven; the embedded fatal output was historical and has a separate lineage correction.
-  The ordering/dispatcher successor passes independent offline review with28 controls:8 new and20 unchanged reused.
-  All three findings are resolved; first blocked evidence remains. Extra continuation is authorized for one fresh qualification; parameters are preparing.
-  Neither local parent exit0 nor modeled capture/idle/finalization qualifies native composition or authorizes another run.
+- [P2 progress](Results/execution-improvements-20261004.json) preserves original failed routes and separate
+  restoration. The ordering/dispatcher correction has28 reviewed controls. The extra one-attempt grant is now consumed:
+  four actual calls completed, with terminal inventory/native idle before End, current parent/worker exit0, task-only
+  cleanup and original app/device/display/Xcode restoration independently qualified. Separate saved-only grading passes
+  21rows/3view owners; it does not reconstruct the missing original standalone native grade return. Exact TTY equality
+  remains false with only Darwin PENDIN differing. This is automatic capture-composition credit only; residual
+  human/gesture/Home/fold and physical orientation assertions remain unqualified. No SDK regression or release closure follows.
 
 - P5 has one source-paired Monitor/legacy-factory Off fixture in linked verification
   worktrees at PR3/PR4/PR5. Transport/consumer review findings are corrected
