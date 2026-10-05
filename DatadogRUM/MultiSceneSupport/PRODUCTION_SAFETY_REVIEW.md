@@ -97,7 +97,9 @@ is excluded. Current S2 source/lifetime proof belongs to
   bounded Off and platform components at their actual sources. Four genuine attached configured tap/scroll methods now
   qualify at e1 through independent actual review; lifetime/overall attempt FAIL, cleanup PASS. SDK monitor/handler/proxy
   references release and the host key restores. Immediate UIKit window/controller/scroll retention is fixture-confounded,
-  with appearance warnings; no SDK retention cause follows. One SDK-free identical lifecycle discriminator remains.
+  with appearance warnings; no SDK retention cause follows. The matching SDK-free control and saved consumer pass
+  source review with27 consumer controls; Xcode access is approved and its isolated target created. UIKit/test/source/parameters remain. No native control
+  outcome follows, and the original lifetime failure remains.
   Original INCOMPLETE grading stays beside the reviewed saved-only FAIL reconciliation. MinimumSwift6.2, watch floor,
   final-source integration and release acceptance remain open.
 
@@ -107,7 +109,7 @@ is excluded. Current S2 source/lifetime proof belongs to
   task/device/display/Xcode restoration and observed process/resource retirement pass independent actual review.
   Exact current parent exit is unproven; the embedded fatal output was historical and has a separate lineage correction.
   The ordering/dispatcher successor passes independent offline review with28 controls:8 new and20 unchanged reused.
-  All three findings are resolved; first blocked evidence remains. Explicit continuation is needed for one fresh native qualification.
+  All three findings are resolved; first blocked evidence remains. Extra continuation is authorized for one fresh qualification; parameters are preparing.
   Neither local parent exit0 nor modeled capture/idle/finalization qualifies native composition or authorizes another run.
 
 - P5 has one source-paired Monitor/legacy-factory Off fixture in linked verification

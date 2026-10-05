@@ -28,13 +28,13 @@
   ],
   "controls_defined": 22,
   "design_reviewer": "/root/h10_backend_reviewer",
-  "next_action": "Reuse the four accepted configured tap/scroll methods at exacte1 source. Prepare one SDK-free identical UIKit lifecycle control for the failed immediate weak assertions before attributing an SDK defect or changing production. Preserve original attempt/grade, separate reviewed reconciliation and cleanup; minimumSwift6.2, watch floor and final-stack review remain.",
+  "next_action": "Finish reviewed SDK-free control UIKit/test bindings in the approved isolated MAIN-linked fixture after the sole P2 lane. Reuse reviewed hosted-product/failed-case consumer with exact future trust/source/parameters. One matched control after fresh bounded admission; preserve original failed lifetime/attempt, four exacte1 partial passes and cleanup. MinimumSwift6.2/watch/final-stack remain held.",
   "implementation_admitted": true,
   "native_admitted": false,
   "native_runs": 6,
   "sdk_edits": 6,
   "gates_closed": [],
-  "updated_at": 1791198816.0126421,
+  "updated_at": 1791202025.503724,
   "previous_definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/next-pr6-controls-definition.json",
     "sha256": "7b374396fc3b8a33818520301d7a2ca3a56c53e7be70360e25fdfd154ece0e4e"
@@ -3615,7 +3615,7 @@
   "current_exit_packet": {
     "plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
-      "sha256": "40dbbb8d203132d16e0ed1c3276c7279c7e7381c5211a13f2727a7d72df172a0"
+      "sha256": "b77973de087b1a5631f4e3685cd3958edbf92631bc1661a81d571ceac1a3ed6f"
     },
     "dependency": "PR4/PR5 exclusive-Off",
     "source_head": "e1b6d5e5af36bbbad48ee74dccf7675f86376b9a",
@@ -3783,7 +3783,15 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/owning-selection-lineage.json",
       "sha256": "e99a3e7f7c54c71d495f42799d2d7b9bb2816b6133bb11089935dc9f66a31e33"
     },
-    "gates_closed": []
+    "gates_closed": [],
+    "lifetime_control_preparation_exit": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-prospective-exit.json",
+      "sha256": "1a58ba5733ec05ec0bd72175a764d86fc686ffacb74b2f56c2692cb1252697d0"
+    },
+    "lifetime_host_current_preparation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/host-current-preparation.json",
+      "sha256": "52d638811f557103ef219d8251f0703d4b2b0557996d727a3c04a612036e4eae"
+    }
   },
   "native_parameters_disposition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/consumed-parameter-disposition.json",

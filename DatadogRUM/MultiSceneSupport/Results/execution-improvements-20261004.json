@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "state": "P1_P3_P4_COMPLETE_P2_REVIEWED_AWAITING_NATIVE_CONTINUATION_PR6_PARTIAL",
+  "state": "P1_P3_P4_COMPLETE_P2_AUTHORIZED_PARAMETERS_PREPARING_PR6_SOURCE_REVIEWED",
   "owner": "/root",
   "plan": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
-    "sha256": "40dbbb8d203132d16e0ed1c3276c7279c7e7381c5211a13f2727a7d72df172a0"
+    "sha256": "b77973de087b1a5631f4e3685cd3958edbf92631bc1661a81d571ceac1a3ed6f"
   },
-  "selected": "P2_COMPLETE_PATH_QUALIFICATION_AUTHORITY_PENDING",
+  "selected": "P2_AUTHORIZED_CORRECTED_COMPLETE_PATH_QUALIFICATION_PREPARATION",
   "native_admitted": false,
   "native_runs": 16,
   "gates_closed": [],
-  "next_action": "Request explicit continuation for one independently reviewed complete P2 native qualification with fresh parameters; prior grant is consumed. While pending, prepare the single SDK-free matched UIKit lifetime discriminator for PR6. No human invitation or SDK edit.",
+  "next_action": "Prepare and independently review fresh exact P2 source/parameters under the extra user-authorized one-attempt grant; root then issues the original600+600 bounds. PR6 isolated target access is approved; its remaining UIKit/test/source/parameter preparation resumes after the sole P2 lane. No admission or human invitation yet.",
   "p1": {
     "required_s2_tasks": 3,
     "required_s3_tasks": 20,
@@ -43,7 +43,7 @@
     }
   },
   "p2": {
-    "state": "ACTUAL_FAILED_ROUTE_RESTORED_OFFLINE_SUCCESSOR_REVIEWED_NATIVE_HELD",
+    "state": "REVIEWED_CORRECTED_QUALIFICATION_AUTHORIZED_FRESH_PARAMETERS_PREPARING",
     "plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-composition-qualified-identity/runtime/runtime-plan.json",
       "sha256": "3e8200cfb0d7163867983c237ff896e0d00ddf1fb9dc9fa2306873ecded50a80"
@@ -64,7 +64,7 @@
     "native_calls": 4,
     "native_qualifications": 1,
     "remaining": [
-      "Explicit continuation and fresh bounded admission for one reviewed complete native qualification",
+      "Fresh exact parameter review/admission and one complete P2 native qualification under extra authority",
       "Residual SwiftUI candidate C09/C10/H14 after actual path qualification",
       "Residual physical UIKit candidate H11/H13 after its capture/orientation prerequisites"
     ],
@@ -517,8 +517,7 @@
       "native_calls": 0,
       "gates_closed": [],
       "remaining": [
-        "Explicit continuation after consumed failed native grant",
-        "Fresh exact workspace/tool/device/product/readiness/owner applicability and bounded admission",
+        "Fresh exact workspace/tool/device/product/readiness/owner applicability and bounded admission under the extra grant",
         "One complete actual capture-to-saved-grading and cleanup qualification before any human invitation"
       ],
       "scope": "Offline preparation only; modeled native stages and local pipe exit0 do not qualify actual composition or new TTY behavior"
@@ -558,7 +557,11 @@
           "sha256": "154428fcdd6d94965eb098ba8741e3eb8ce4f022d341da7d8121a68b72bb7da0"
         }
       }
-    ]
+    ],
+    "extra_authorized_continuation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-native-qualification-20261005-6d6ee16b/continuations/corrected-composition-071b49d2/authorization.json",
+      "sha256": "681e6a9640fe67ebe52309308690de2452bccd7d221371a80168961d92fd4d15"
+    }
   },
   "p3": {
     "state": "QUALIFIED_VISIONOS_COMPILATION_ONLY",
@@ -949,6 +952,16 @@
       "lifetime_discriminator": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-discriminator-preparation.json",
         "sha256": "cbe32729ee7595e847c9382f4453f7a6196a2551d40681d9813a973a88ed3e62"
+      },
+      "lifetime_control_preparation_exit": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-prospective-exit.json",
+        "sha256": "1a58ba5733ec05ec0bd72175a764d86fc686ffacb74b2f56c2692cb1252697d0"
+      },
+      "lifetime_control_state": "SOURCE_CONSUMER_REVIEWED_ISOLATED_TARGET_CREATED_UIKIT_BINDING_PENDING",
+      "prospective_consumer_controls_passed": 27,
+      "lifetime_host_current_preparation": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/host-current-preparation.json",
+        "sha256": "52d638811f557103ef219d8251f0703d4b2b0557996d727a3c04a612036e4eae"
       }
     },
     "pr7_consumer_source_preparation": {
@@ -1055,7 +1068,7 @@
       "sha256": "b3ea5000dcbd9360278869e819dae225d5679c856d527c49985e2785c9f33e51"
     }
   },
-  "updated_at": 1791200037.656995,
+  "updated_at": 1791202025.501151,
   "native_run_accounting": {
     "P3_required_platform_build": 1,
     "P5_PR3_PR4_PR5_off_cells": 6,
@@ -1070,17 +1083,13 @@
     "P5_PR6_configured_methods_passed": 4,
     "P5_PR6_configured_methods_failed": 1
   },
-  "selected_task": "P2_COMPLETE_PATH_QUALIFICATION_AUTHORITY_PENDING",
+  "selected_task": "P2_AUTHORIZED_CORRECTED_COMPLETE_PATH_QUALIFICATION_PREPARATION",
   "execution_frontier": {
-    "primary": "P2 dispatcher/order corrections pass independent offline review with28 controls; explicit continuation needed for one complete native qualification. PR6 four methods partially qualify; one SDK-free matched lifetime discriminator remains.",
+    "primary": "One corrected P2 qualification explicitly authorized; fresh source/parameter preparation precedes sole native lane. PR6 control/consumer reviewed and isolated target created after Xcode approval; actual UIKit/test binding pending.",
     "required_paths": [
       "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-workspace-source-cycle1/client/AutomaticCoverage.xcodeproj",
-      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-configured-host-cycle1/worktree/Datadog.xcworkspace"
+      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/worktree/Datadog.xcworkspace"
     ],
-    "observation": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-access-after-p2-retirement-20261005/receipt.json",
-      "sha256": "aae252cd4b823e59d1345b9ef6dcbe11f75290419b73b365676610e9e59570eb"
-    },
     "independent_boundary": "MinimumSwift6.2 unavailable; downstream PR7/PR11 depend on PR6 qualification",
     "no_live_native_admission": true,
     "human_invitation_qualified": false,
@@ -1100,6 +1109,18 @@
     "p2_successor_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-native-qualification-20261005-6d6ee16b/continuations/workspace-14b5aa55/offline-ordering-repair-cycle2/review.json",
       "sha256": "bb7b9b05f1b697f78e5260619898cfcd976ac9e7016b80b9c5d393125862e6dc"
+    },
+    "pr6_lifetime_control_preparation_exit": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-prospective-exit.json",
+      "sha256": "1a58ba5733ec05ec0bd72175a764d86fc686ffacb74b2f56c2692cb1252697d0"
+    },
+    "current_pr6_access_observation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/host-current-preparation.json",
+      "sha256": "52d638811f557103ef219d8251f0703d4b2b0557996d727a3c04a612036e4eae"
+    },
+    "historical_access_observation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-access-after-p2-retirement-20261005/receipt.json",
+      "sha256": "aae252cd4b823e59d1345b9ef6dcbe11f75290419b73b365676610e9e59570eb"
     }
   },
   "plan_history": [
@@ -1122,6 +1143,26 @@
     {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-native-qualification-20261005-6d6ee16b/owning-plan-history/82df2413b836b03bf2de19a9de2b2a141456dbe5679b1386072872d6b8f8b14f.md",
       "sha256": "82df2413b836b03bf2de19a9de2b2a141456dbe5679b1386072872d6b8f8b14f"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-native-qualification-20261005-6d6ee16b/owning-plan-history/40dbbb8d203132d16e0ed1c3276c7279c7e7381c5211a13f2727a7d72df172a0.md",
+      "sha256": "40dbbb8d203132d16e0ed1c3276c7279c7e7381c5211a13f2727a7d72df172a0"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-native-qualification-20261005-6d6ee16b/owning-plan-history/d767c933f7c32b5349281daf0fe8234df246387937fb2a34c80aa811fbf5a772.md",
+      "sha256": "d767c933f7c32b5349281daf0fe8234df246387937fb2a34c80aa811fbf5a772"
     }
-  ]
+  ],
+  "awake_window": {
+    "state": "NEW_ONE_HOUR_P2_AUTHORIZATION_ACTIVE",
+    "authorization": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-native-qualification-20261005-6d6ee16b/continuations/corrected-composition-071b49d2/authorization.json",
+      "sha256": "681e6a9640fe67ebe52309308690de2452bccd7d221371a80168961d92fd4d15"
+    },
+    "previous_completion_observation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-native-qualification-20261005-6d6ee16b/caffeinate-completion-observation-20261005.json",
+      "sha256": "faac3c6dd852b001d5ce3e058f3093a8845e92e9c275b29eff070fc35b63e32a"
+    },
+    "native_admitted": false
+  }
 }
