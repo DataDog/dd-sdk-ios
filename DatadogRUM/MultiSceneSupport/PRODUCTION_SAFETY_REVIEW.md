@@ -99,8 +99,8 @@ is excluded. Current S2 source/lifetime proof belongs to
   confounding at the immediate UI-release boundary: window/controller/scroll assertions also fail without instrumentation.
   Original instrumented/control FAIL remain; SDK Monitor/handler/proxy release and host-key restoration pass.
   Actual control evidence is COMPLETE and cleanup PASS, with task removal and original device/worker/Xcode state verified.
-  No SDK retention cause, eventual UIKit release or current102d final-stack claim follows. P6R7 final applicability,
-  real minimumSwift6.2, watch runtime/distribution and release acceptance remain open. Earlier failed admissions,
+  No SDK retention cause, eventual UIKit release or current102d final-stack claim follows. P6R7 finite applicability
+  review passes with explicit holds; real minimumSwift6.2, watch runtime/distribution and release acceptance remain open. Earlier failed admissions,
   missing-dependency stop and INVALID cleanup remain at their owning records; no equivalent control is needed.
 
 - [P2 progress](Results/execution-improvements-20261004.json) preserves original failed routes and separate

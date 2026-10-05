@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "P1_P3_P4_COMPLETE_P2_HUMAN_PREPARATION_REVIEWED_PR6_LIFETIME_DISCRIMINATOR_REVIEWED",
+  "state": "P1_P3_P4_COMPLETE_P2_HUMAN_PREPARATION_REVIEWED_PR6_FINITE_APPLICABILITY_COMPLETE_WITH_HOLDS",
   "owner": "/root",
   "plan": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
@@ -10,7 +10,7 @@
   "native_admitted": false,
   "native_runs": 16,
   "gates_closed": [],
-  "next_action": "Complete P6R7 finite source applicability and qualified/held dispositions; then advance the declared PR7 consumer source design. A human SwiftUI split candidate remains separately prepared.",
+  "next_action": "Review and compose the exact final S1 E01 dependency in a MAIN-linked PR7 worktree, retaining byte-exact final E05; then review the smallest caller-thread capture capability and Off path before consumer implementation.",
   "p1": {
     "required_s2_tasks": 3,
     "required_s3_tasks": 20,
@@ -694,7 +694,7 @@
     "gates_closed": []
   },
   "p5": {
-    "state": "PR4_PR5_OFF_AND_FOUR_CONFIGURED_PR6_METHODS_QUALIFIED_LIFETIME_DISCRIMINATOR_REMAINS",
+    "state": "PR4_PR5_OFF_PR6_SCOPED_APPLICABILITY_COMPLETE_PR7_SOURCE_DESIGN_ACTIVE",
     "source_heads": [
       "2d3de2170248c386a5e7f7de4477ecd703e0c504",
       "06e87120c8d88204f32b6821840ef8a4f0c6c41d",
@@ -1074,7 +1074,7 @@
       },
       "matched_control_new_controls_passed": 7,
       "matched_control_prior27_rerun": false,
-      "prospective_state": "P6R7_FINITE_APPLICABILITY_REVIEW_PENDING",
+      "prospective_state": "P6R7_FINITE_APPLICABILITY_REVIEW_COMPLETE_WITH_HOLDS",
       "matched_control_implemented_review": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/implemented-binding/review.json",
         "sha256": "da3df6fd530b13a7b269869dfc3ee38faf828dc0e62116bf8f0ba30c513dfb16"
@@ -1247,7 +1247,7 @@
       },
       "matched_control_actual_discriminator": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR6-lifetime-discriminator-20261005.json",
-        "sha256": "997bd7a0d7cfef14d5d37c14f866641666d59e39b61b1ee1757e62ba93c447cd"
+        "sha256": "c0e5c786ed292bdcb81220b18e5f4a213cad1ec545d909ed7eb1419abc2a3d00"
       },
       "matched_control_actual_review": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-bound-continuation/current-parameters-cf8c9c8369/actual-review.json",
@@ -1256,13 +1256,17 @@
       "matched_control_final_applicability_packet": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-bound-continuation/current-parameters-cf8c9c8369/finite-pr6-exit-packet.json",
         "sha256": "3ffaecb432aff0b15f9460f0c2eb74e2c49bb3ca5a2dfc6306c419df36a63126"
+      },
+      "final_applicability_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-bound-continuation/current-parameters-cf8c9c8369/finite-pr6-exit-review.json",
+        "sha256": "d107bb8050ce36ccaabb12a8fd30b86df5f59649fc54ef4f7fe2deff3ffd1a2c"
       }
     },
     "pr7_consumer_source_preparation": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-consumer-source-preparation/packet.json",
       "sha256": "57e376768a17b85993c54af64fcfb4f63048738ae0976e386760c5831f0c4a5b"
     },
-    "pr7_preparation_scope": "Source-only six-flow/fifteen-file gap inventory, no implementation or native credit; PR6 exit dependency remains.",
+    "pr7_preparation_scope": "PR6 finite applicability review complete with explicit holds. Final E05 three-file production source matches current102d; final E01 five-file dependency is missing. Review its exact source composition before consumer capture implementation.",
     "pr9_private_preparation": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-representative-projection-cycle3/source-review-packet.json",
       "sha256": "8d1064e62b8b1f33ea55646a5ad87d78d8250bb06f08951bb3fbd185f3a85f71"
@@ -1360,9 +1364,13 @@
     "pr9_off_dormancy_preparation": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-off-saved-helper-coverage/analysis.json",
       "sha256": "b3ea5000dcbd9360278869e819dae225d5679c856d527c49985e2785c9f33e51"
+    },
+    "pr7_dependency_design": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/packet.json",
+      "sha256": "8abe7997c48bfb657d0963e26dc8b22858c5c189f03b741650fd54459b72c3a8"
     }
   },
-  "updated_at": 1791231647.727212,
+  "updated_at": 1791232571.853872,
   "native_run_accounting": {
     "P3_required_platform_build": 1,
     "P5_PR3_PR4_PR5_off_cells": 6,
@@ -1383,9 +1391,9 @@
     "PR6_SDK_free_control_evidence": "COMPLETE",
     "PR6_SDK_free_control_cleanup": "PASS"
   },
-  "selected_task": "PR6_FINITE_APPLICABILITY_REVIEW",
+  "selected_task": "PR7_DEPENDENCY_SOURCE_COMPOSITION_REVIEW",
   "execution_frontier": {
-    "primary": "Use the current unlimited-attempt authority to continue the SDK-free control in a fresh exact-reviewed cell with the repaired selected-workspace dependency. Obtain only the missing sufficient awake duration; no renewed attempt approval. Preserve old attempts and deadlines. P2 human preparation remains reviewed, with actual fresh readiness/materialization required before its residual candidate.",
+    "primary": "Review and compose the exact final S1 E01 dependency in a MAIN-linked PR7 worktree, retaining byte-exact final E05; then review the smallest caller-thread capture capability and Off path before consumer implementation. No native worker is running. P2 human preparation awaits fresh availability, materialization and Ready.",
     "required_paths": [
       "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-workspace-source-cycle1/client/AutomaticCoverage.xcodeproj",
       "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/worktree/Datadog.xcworkspace"

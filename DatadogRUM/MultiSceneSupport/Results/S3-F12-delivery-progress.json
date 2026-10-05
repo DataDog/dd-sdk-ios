@@ -173,10 +173,10 @@
       "off_contract": "Current DDApplication/DDEvent swizzle calls previous IMP once; no new installation/scene lookup/handoff read/owner allocation",
       "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
       "rebuild_obligation": "Core capability declared PR2; allocate only after resolved On, propagate to already-existing network provider without module imports or extra Off locks",
-      "status": "SCOPED_CONFIGURED_ATTACHED_COMPONENTS_AND_LIFETIME_DISCRIMINATOR_REVIEWED",
+      "status": "SCOPED_COMPONENTS_AND_FINITE_APPLICABILITY_REVIEWED_WITH_HOLDS",
       "owning_record": "Results/S3-PR6-action-preparation.json",
       "whole_F12_closed": false,
-      "remaining": "P6R7 finite final exact-source applicability review; real Swift6.2 and watch nominal9/binary26 runtime/distribution held. Four configured methods and SDK-free immediate UI fixture-confounding discriminator are reviewed; whole PR6/current-stack acceptance remains open.",
+      "remaining": "Actual Swift6.2, watch nominal9/binary26 runtime/distribution and final-stack source integration remain. Immediate UIKit weak release is specifically unproven and fixture-confounded; original SDK/control failures remain.",
       "source_head": "e1b6d5e5af36bbbad48ee74dccf7675f86376b9a",
       "obligation": "BEFORE_SLICE_MERGE",
       "qualification": {
@@ -185,8 +185,8 @@
         "off": "QUALIFIED",
         "integration": "NOT_QUALIFIED"
       },
-      "remaining_assertion": "P6R7 final applicability and explicit P6R5/P6R6 holds.",
-      "next_action": "Complete the finite source applicability review using accepted records; then advance declared PR7 consumer source design. Preserve failed tests and avoid equivalent native reruns.",
+      "remaining_assertion": "Actual Swift6.2, watch nominal9/binary26 runtime/distribution and final-stack source integration remain. Immediate UIKit weak release is specifically unproven and fixture-confounded; original SDK/control failures remain.",
+      "next_action": "Advance PR7 source composition/design; reuse accepted finite PR6 source and runtime assertions.",
       "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit.",
       "off_qualification_scope": "Concrete accepted input/scroll Off reachability, raw9/27 helper-zero/positive controls and lifetime/source joins only; no universal allocation, class-size or whole SDK Off claim.",
       "source_dispositions_review": {
@@ -219,11 +219,15 @@
       },
       "lifetime_discriminator": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR6-lifetime-discriminator-20261005.json",
-        "sha256": "997bd7a0d7cfef14d5d37c14f866641666d59e39b61b1ee1757e62ba93c447cd"
+        "sha256": "c0e5c786ed292bdcb81220b18e5f4a213cad1ec545d909ed7eb1419abc2a3d00"
       },
       "lifetime_discriminator_review": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-bound-continuation/current-parameters-cf8c9c8369/actual-review.json",
         "sha256": "ba5502909119b1b1d23d2b587041ba0d9fcb9644977614262ca743d337b5d451"
+      },
+      "final_applicability_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-bound-continuation/current-parameters-cf8c9c8369/finite-pr6-exit-review.json",
+        "sha256": "d107bb8050ce36ccaabb12a8fd30b86df5f59649fc54ef4f7fe2deff3ffd1a2c"
       }
     },
     {
@@ -239,7 +243,7 @@
       "off_contract": "Static fast path; final E01/E05 headers/sampling/user/account expressions and fresh develop no handoff or scene lookup",
       "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
       "rebuild_obligation": "Drop unqualified empty-header, existing-header suppression and helper rewrites; networking wire policy unchanged",
-      "status": "DEFINED_NOT_IMPLEMENTED",
+      "status": "SOURCE_COMPOSITION_DESIGN_REVIEW_ACTIVE",
       "owning_record": null,
       "source_head": null,
       "obligation": "BEFORE_SLICE_MERGE",
@@ -251,8 +255,12 @@
         "integration": "NOT_QUALIFIED"
       },
       "remaining_assertion": "Authoritative nil vs absent handoff, optional request-time final E05 correlation, delayed WebView owner and accepted action merge Off: Static fast path; final E01/E05 headers/sampling/user/account expressions and fresh develop no handoff or scene lookup",
-      "next_action": "Implement only this declared slice once its named dependencies are qualified; retain private exposure until F01 for PR13.",
-      "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit."
+      "next_action": "Join exact final S1 E01 source in a MAIN-linked worktree and retain byte-exact E05 before reviewing caller-thread capture and Off design. No consumer implementation or native qualification yet.",
+      "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit.",
+      "dependency_design": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/packet.json",
+        "sha256": "8abe7997c48bfb657d0963e26dc8b22858c5c189f03b741650fd54459b72c3a8"
+      }
     },
     {
       "id": "PR8",
@@ -432,9 +440,9 @@
     "PR5"
   ],
   "locally_qualified_off_scope": "PR1-PR3 accepted prefix plus PR4/PR5 concrete exclusive-Off at their recorded heads; no blanket later-slice or current-stack equivalence claim",
-  "next_slice": "PR6_FINITE_APPLICABILITY_REVIEW",
+  "next_slice": "PR7_DEPENDENCY_SOURCE_COMPOSITION_AND_CAPTURE_DESIGN",
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": 1791231647.730818
+  "updated_at": 1791232571.858492
 }
