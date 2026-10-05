@@ -1,6 +1,9 @@
 # Unreleased
 
-- [FIX] Report slow frame and freeze rates for RUM views when navigation starts a new view without calling `stopView()` on the previous one.
+# 3.16.1 / 05-10-2026
+
+- [FIX] Report slow frame and freeze rates for RUM views when navigation starts a new view without calling `stopView()` on the previous one. See [#3237][]
+- [FIX] Measure RUM session inactivity with the device time when a cross-platform SDK provides event timestamps, so sessions are no longer split on every interaction after a device clock change. See [#3242][]
 
 # 3.16.0 / 19-08-2026
 
@@ -1231,6 +1234,8 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3127]: https://github.com/DataDog/dd-sdk-ios/pull/3127
 [#3097]: https://github.com/DataDog/dd-sdk-ios/pull/3097
 [#3134]: https://github.com/DataDog/dd-sdk-ios/pull/3134
+[#3237]: https://github.com/DataDog/dd-sdk-ios/pull/3237
+[#3242]: https://github.com/DataDog/dd-sdk-ios/pull/3242
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
