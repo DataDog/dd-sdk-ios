@@ -104,9 +104,12 @@ is excluded. Current S2 source/lifetime proof belongs to
   source/policy review. Fresh one-hour authority and exact parameter review led to one dispatch, which stopped before
   admission/build/test on a missing inherited selection field. Parent retirement, unchanged Shutdown and Xcode selection
   restoration are verified separately. The one-line selector correction passes10 controls/source review. Corrected exact parameters/static trust pass but stayed
-  unadmitted when the full original reservation no longer fit. A fresh one-hour grant now covers the still-unexecuted
-  single control; a separate integrity-check build must retire before refreshed admission. No control result follows,
-  and the original lifetime failure is unchanged.
+  unadmitted when the full original reservation no longer fit. A fresh one-hour grant led to one build, which stopped
+  before boot/test/install because the selected worktree lacked the existing OpenTelemetryApi framework; the older receipt
+  verified another worktree. Original UNQUALIFIED/INCOMPLETE/INVALID and separately reviewed scoped Shutdown/worker/Xcode
+  restoration stay distinct. A two-assertion workspace-binding repair passes10 offline controls and designated source-only
+  review; the identical141-file local dependency now verifies at the selected destination. A separately bounded continuation
+  needs fresh exact module/receipt parameters and native/awake authority. No control result or SDK cause follows.
   Original INCOMPLETE grading stays beside the reviewed saved-only FAIL reconciliation. MinimumSwift6.2, watch floor,
   final-source integration and release acceptance remain open.
 

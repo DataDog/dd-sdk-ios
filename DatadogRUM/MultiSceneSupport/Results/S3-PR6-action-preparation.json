@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "FOUR_CONFIGURED_ATTACHED_METHODS_PARTIAL_QUALIFIED_LIFETIME_FIXTURE_CONFOUNDED",
+  "state": "FOUR_CONFIGURED_METHODS_PARTIAL_QUALIFIED_LIFETIME_DISCRIMINATOR_UNEXECUTED",
   "delivery_slice": "PR6",
   "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9",
   "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/worktree",
@@ -28,7 +28,7 @@
   ],
   "controls_defined": 22,
   "design_reviewer": "/root/h10_backend_reviewer",
-  "next_action": "Wait for the separate integrity-check native build; refresh exact parameters and current admission after retirement, then complete the one unchanged SDK-free control under the fresh one-hour grant. No control build/test has run. Source/selector correction is reviewed; all stopped/unadmitted proposals and old cutoffs remain.",
+  "next_action": "Materialize one fresh exact continuation using the reviewed selected-workspace dependency correction, then obtain its required new native/awake authority. The consumed attempt made one failed build and zero tests; no retry or cutoff extension. P2 human preparation is reviewed; actual fresh post-plan inputs/authority/readiness and exact materialized review precede invitation.",
   "implementation_admitted": true,
   "native_admitted": false,
   "native_runs": 6,
@@ -3913,5 +3913,82 @@
   "matched_lifetime_control_competing_lane_observation": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/one-control-fresh-awake-0ceb7aa720/competing-lane-observation.json",
     "sha256": "9be21538fa15a692a8f4c4835ab625824323d54fa1ead4a0a38af89e00b69e0d"
+  },
+  "matched_lifetime_control_fresh_awake_attempt": {
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/one-control-fresh-awake-0ceb7aa720/definition.json",
+      "sha256": "13204eeb6d16a25f2784dfd083241a6f713f55bc6ab7decc4a7793ddfd17c247"
+    },
+    "parameter_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/one-control-fresh-awake-0ceb7aa720/review.json",
+      "sha256": "cb0d3aebd15253d7686208aaeaa66223979588575690796e42727962fe06ed93"
+    },
+    "static_trust": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/one-control-fresh-awake-0ceb7aa720/static-preflight-actual-return.json",
+      "sha256": "6e2b479705a3c7511bf916e75450ba1778b6bb6e7d8c17df1c2e1fe237ee48cc"
+    },
+    "parent_return": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/one-control-fresh-awake-0ceb7aa720/parent-return.json",
+      "sha256": "d8018a297cb21e34be311dd012e49795050855a6d998268c0192bc2727d7c006"
+    },
+    "actual_stop": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/one-control-fresh-awake-0ceb7aa720/actual-stop.json",
+      "sha256": "4e84e3b58019bb353d9122e436536665de6f16ccd503555deda5e29d185bfe5f"
+    },
+    "actual_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/one-control-fresh-awake-0ceb7aa720/actual-review.json",
+      "sha256": "b8569ba135a2e6be0ac8a341c8bb4db6b9a26876e4d877481998671b87330600"
+    },
+    "original_cleanup": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/one-control-fresh-awake-0ceb7aa720/runtime/cleanup.json",
+      "sha256": "68c6106b22b54aeff4f73fa97c3350dfa3fa497e3b3ebfe75e148d7982687d88"
+    },
+    "separate_restoration": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/one-control-fresh-awake-0ceb7aa720/separate-restoration.json",
+      "sha256": "b37259dd67f22c6c7573b9355207c98f08c36c3380746059e5059b2a99710264"
+    },
+    "builds": 1,
+    "tests": 0,
+    "native_controls": 0,
+    "scenario": "UNQUALIFIED",
+    "evidence": "INCOMPLETE",
+    "cleanup": "INVALID",
+    "scoped_restoration": "PASS_PRE_NATIVE_ORIGINAL_STATE_AND_RETIREMENT",
+    "native_retry_authorized": false,
+    "gates_closed": []
+  },
+  "matched_lifetime_control_framework_correction": {
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-workspace-binding-correction/packet.json",
+      "sha256": "11e9778399fdc81dde8264bfd5014f2b6bc83b6d13213d83172bd3865c61bbc1"
+    },
+    "source": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-workspace-binding-correction/host_manifest_controller.py",
+      "sha256": "fb17de230da8f5284b1f0feab6f9a77c2ebdde6f28932ff3edebe3056fa7dfe2"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-workspace-binding-correction/controls-corrected.json",
+      "sha256": "c6f2bbb6a082aa3f1171c04fcc48f5c7da3855f89902b3ad2e9aafbd45fba5c5"
+    },
+    "focused_controls_passed": 10,
+    "local_framework": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-workspace-binding-correction/framework.json",
+      "sha256": "87fe88141bef5964df0c120cbb67e841f7ce3de1a549828bede59d9182195ab4"
+    },
+    "actual_selected_workspace_preflight": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-workspace-binding-correction/selected-framework-actual-preflight.json",
+      "sha256": "5f54e5488a785ac60c85cf5c30ad1809381ed19dd5974c7e9ea93498f2fc0d20"
+    },
+    "review_state": "PASS_SOURCE_ONLY_DEPENDENCY_WORKSPACE_BINDING_CORRECTION",
+    "native_runs": 0,
+    "gates_closed": [],
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-workspace-binding-correction/review.json",
+      "sha256": "7e9ac0c6d62b67a557f10976a5d5d88b60087091d405041a267ee5914ee2901a"
+    }
+  },
+  "matched_lifetime_control_unissued_continuation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-current-parameters-20261005-d24469f7/lifetime-control-preparation-1342ca54690e4b7490bf368dfc3f9bc0/framework-bound-continuation/proposal.json",
+    "sha256": "9512e1a92cd4190a6ff3d706b9583f1a1b85049f53ec585de5d23a1363b4c836"
   }
 }

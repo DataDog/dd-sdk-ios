@@ -107,6 +107,11 @@ copy only qualified inputs with matching hashes. A pin alone does not establish
 that the installed binary is the intended dependency. No automatic updates or
 persistent Git/build-setting changes are implied.
 
+Bind each local framework receipt’s destination and version lockfile to the selected
+checkout before output publication or native admission. Verify its actual member
+bytes there; a valid copy in an earlier worktree cannot satisfy the current build.
+Preserve a missing-input build stop and qualify any later local preparation separately.
+
 For benchmark configuration, use the tracked Benchmark Runner template plus the
 existing optional local include and map `CLIENT_TOKEN` to `DATADOG_CLIENT_TOKEN`.
 Do not include the full Example configuration chain: its global deployment settings
