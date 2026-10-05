@@ -205,6 +205,9 @@ Apple's `plutil` before applying exact bundle-absence checks; Python plistlib do
 not support that representation. Preserve a failed cleanup verdict separately from
 later proof of app, data, simulator and process absence. Persist terminal state even
 when cleanup raises, so an earlier running-state receipt cannot become the cursor.
+Container absence must pair the exact supervised command's typed error with a
+complete same-device app inventory excluding the bundle. Accept tested domain/code
+forms only; generic ENOENT or missing output does not prove absence.
 
 A reaped driver PID does not prove its command descendants are gone. Keep native
 commands in the owned cell group, prove worker quiescence before task teardown,

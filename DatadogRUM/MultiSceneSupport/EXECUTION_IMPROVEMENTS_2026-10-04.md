@@ -126,7 +126,7 @@ Every unfinished item has one unambiguous next action; S2 has no added campaign;
 
 Owner: harness implementer and designated independent reviewer.
 Dependency: P1 acceptance boundaries.
-Status: composition implemented and reviewed; the single automatic qualification stopped before tool dispatch. The path remains stopped; no human invitation is qualified.
+Status: the workspace qualification stopped before native dispatch on existing-file publication and abnormal parent shutdown. Both defects now have a scoped independent offline repair review and ten focused controls; original failure and separate local retirement remain immutable. The consumed automatic route stays stopped. Actual capture qualification and a qualifying continuation remain; no human invitation is admitted.
 
 Scope:
 - Existing automatic-coverage human_rum_only_runtime.py, human_supported_readiness/continuation and foreground capture/finalization paths as needed.
@@ -219,7 +219,7 @@ Routine runs reuse reviewed machinery while consequential changes retain indepen
 
 Owner: SDK implementer and independent reviewer; API reviewers own F01.
 Dependency: P1; P3/P4 help execution but must not become an indefinite prerequisite.
-Status: PR4/PR5 concrete exclusive-Off obligations qualify after six native cells and independent applicability review. The fixed seven-item PR6 exit packet is selected; later slices and final integration remain.
+Status: PR4/PR5 concrete exclusive-Off obligations qualify after six native cells and independent applicability review. The fixed seven-item PR6 exit packet is selected, and actual workspace access is confirmed. Fresh RUM settings/source/parameters and configured native qualification remain; later slices and final integration remain.
 
 Scope:
 - Existing PR1–13 rebuilt feature-flag delivery chain and its tests.

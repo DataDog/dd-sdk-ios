@@ -102,19 +102,23 @@ is excluded. Current S2 source/lifetime proof belongs to
   review; no failure-injection seam is required. The corrected five-case configured
   attached UIKit fixture passes source review. The original native proposal is
   BLOCKED on six capture/custody/cleanup issues; its separate consolidated correction
-  passes40 offline controls and independent proposal review; Xcode workspace
-  access and native qualification remain. No native acceptance follows from these controls. Actual minimum Swift6.2 remains held. No timing campaign,
+  passes40 offline controls and independent proposal review; actual workspace
+  access is confirmed, while fresh RUM parameters and native qualification remain. No native acceptance follows from these controls. Actual minimum Swift6.2 remains held. No timing campaign,
   universal callback-safety or rebuilt-source runtime credit follows.
 
-- P2's single automatic composition stopped before tool dispatch on missing bridge
-  configuration. Original scenarioUNQUALIFIED/evidenceINCOMPLETE/cleanupINVALID and
-  the separate INVALID restoration remain. Later actual task/device/display/worker
-  restoration verifies, with no original complete-app-inventory claim. The offline
-  correction is reviewed; the route stays stopped. The distinct workspace route
-  has a fresh linked source tree, but complete composition review found nine
-  orchestration issues. Cycle3 passes63 offline controls but re-review retains three
-  import/retirement/partial-allocation findings. Their consolidated cycle4 correction passes
-  four incremental controls/ten subcases and full composition review; actual access/qualification remain. No human session is qualified.
+- [P2 progress](Results/execution-improvements-20261004.json) preserves the original
+  failed route and restoration. The distinct reviewed workspace qualification also
+  stopped before native dispatch: existing-file publication used an exclusive-create
+  helper, and failed withdrawal left a daemon stdin reader blocked at interpreter
+  shutdown. No SDK/app/session effect occurred. Actual owned groups/resources retired
+  and original Xcode selection verifies after independent actual-failure review;
+  the original TTY receipt proves a successful restoration call, without readback.
+  Normal qualification remains UNQUALIFIED
+  with INCOMPLETE evidence. Both defects now pass a scoped independent offline
+  repair review and ten focused controls. Guarded publication requires exclusive
+  owner freeze; new TTY readback excludes only Darwin PENDIN. The consumed route
+  stays stopped. No retry, human invitation or release credit follows from controls
+  or local retirement.
 
 - P5 has one source-paired Monitor/legacy-factory Off fixture in linked verification
   worktrees at PR3/PR4/PR5. Transport/consumer review findings are corrected

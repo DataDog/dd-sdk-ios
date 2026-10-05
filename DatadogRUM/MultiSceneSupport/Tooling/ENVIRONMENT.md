@@ -16,7 +16,10 @@ not admit a run or renew a stopped attempt.
    list again. Perform a useful read, such as schemes or test discovery. A running
    bridge or configured server alone does not prove access.
 4. Resolve workspace IDs, schemes, destinations and test inventory from the new
-   connection. Cache them only within that verified connection. `DatadogRUM` is
+   connection. Bind a tool handle to the absolute project path from the actual
+   workspace list; keep that handle separate from source-path identity. If a path
+   is rejected, retain the response and verify the supported handle before effects.
+   Cache identifiers only within that verified connection. `DatadogRUM` is
    the RUM scheme; do not invent `DatadogRUMiOS`.
 5. Compare the bridge's destination SDK with CLI discovery. An old bridge can
    survive an Xcode selection change. Stop rather than launch through a mismatch.

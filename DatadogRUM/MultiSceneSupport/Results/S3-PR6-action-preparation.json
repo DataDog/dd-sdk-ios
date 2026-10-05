@@ -28,13 +28,13 @@
   ],
   "controls_defined": 22,
   "design_reviewer": "/root/h10_backend_reviewer",
-  "next_action": "Reviewed cycle3 execution adapter is ready for actual approved workspace/scheme/destination/effective-settings discovery. Workspace access remains pending; preserve both BLOCKED predecessors and accepted suites. Run only the single configured component after fresh admission, then final exact slice review.",
+  "next_action": "Refresh the finite configured-host RUM settings, source/CLI/owner applicability and unconsumed parameters from actual accessible workspace metadata; then execute only the independently reviewed staged build/five-case proposal. Access is not native qualification.",
   "implementation_admitted": true,
   "native_admitted": false,
   "native_runs": 6,
   "sdk_edits": 6,
   "gates_closed": [],
-  "updated_at": "2026-10-04T23:52:43.615412+00:00",
+  "updated_at": "2026-10-05T09:45:26.125471+00:00",
   "previous_definition": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/next-pr6-controls-definition.json",
     "sha256": "7b374396fc3b8a33818520301d7a2ca3a56c53e7be70360e25fdfd154ece0e4e"
@@ -3588,7 +3588,7 @@
   },
   "execution_improvement_plan": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
-    "sha256": "92016adbadf1c433c083d5ae1c4912fb503c885eda13fecb1d066f71271b1fb0"
+    "sha256": "db0f56742ad626028e482dc2ca9ca436c5ee9bcdf9216dd2de1542f02da459bb"
   },
   "backlog_visionos_proposal": {
     "definition": {
@@ -3615,7 +3615,7 @@
   "current_exit_packet": {
     "plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
-      "sha256": "124e31ba7624d0acd88af34f748414bbfb7271746825acfb9ef9a5fd940dcf96"
+      "sha256": "db0f56742ad626028e482dc2ca9ca436c5ee9bcdf9216dd2de1542f02da459bb"
     },
     "dependency": "PR4/PR5 exclusive-Off",
     "source_head": "e1b6d5e5af36bbbad48ee74dccf7675f86376b9a",
@@ -3638,7 +3638,7 @@
       "sha256": "95b60c9f269d9c588133b535c2ee9b81ab3640fceccd0bb27206b1fd89161806"
     },
     "residual_items": 7,
-    "state": "SOURCE_AND_EXECUTION_PROPOSAL_REVIEW_PASS_CONFIGURED_NATIVE_ACCESS_PENDING",
+    "state": "SOURCE_AND_EXECUTION_PROPOSAL_REVIEW_PASS_ACCESS_CONFIRMED_PARAMETERS_PENDING",
     "dependency_state": "SATISFIED_CONCRETE_PR4_PR5_OFF",
     "dependency_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/final-review.json",
@@ -3673,8 +3673,8 @@
       "sha256": "35fe3f848b71bfd60c9163e282ab36bdd36a0dcfe109833135e498ac752986cc"
     },
     "workspace_access": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-configured-host-cycle1/workspace-access-observations.json",
-      "sha256": "53fb9122d381b0b294952da78b1ce6b8ad26cc77824c4fb1ab34e1b66c54e20e"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-access-after-p2-retirement-20261005/receipt.json",
+      "sha256": "aae252cd4b823e59d1345b9ef6dcbe11f75290419b73b365676610e9e59570eb"
     },
     "preserved_blocked_native_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-configured-host-cycle1/native-review.json",
@@ -3704,6 +3704,31 @@
     "corrected_configured_host_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-native-adapter-cycle3/review.json",
       "sha256": "bac12bb1e648a3524853d344740e115bc0a0f028006064ace742a5b5d462a269"
+    },
+    "plan_history": [
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-native-qualification-20261005-6d6ee16b/owning-plan-history/124e31ba7624d0acd88af34f748414bbfb7271746825acfb9ef9a5fd940dcf96.md",
+        "sha256": "124e31ba7624d0acd88af34f748414bbfb7271746825acfb9ef9a5fd940dcf96"
+      }
+    ],
+    "workspace_access_history": [
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-configured-host-cycle1/workspace-access-observations.json",
+        "sha256": "53fb9122d381b0b294952da78b1ce6b8ad26cc77824c4fb1ab34e1b66c54e20e"
+      }
+    ],
+    "workspace_access_scope": "Actual shared RUM scheme and eligible27.0 target verified; originalCore/MyMac restored. Source2440files/one symlink and executable trust match. Target-default iphoneos evaluation is not simulator effective identity; exact runtime parameters, compiler/products and configured native cases remain.",
+    "target_source_preflight": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-access-after-p2-retirement-20261005/target-source-preflight.json",
+      "sha256": "4de47b32fb4a38847ed4361c894c9a17761afbd2be11eceb8fbccde6c2c0b1cc"
+    },
+    "static_trust_preflight": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-access-after-p2-retirement-20261005/static-trust-preflight.json",
+      "sha256": "7e637c41bcbd7e119dd731f9a6805b2a5b968bc8d083fab17b1cd7d47f456d55"
+    },
+    "rum_metadata": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-access-after-p2-retirement-20261005/rum-metadata-receipt.json",
+      "sha256": "5d1f013101ba499e942f8a0346561f4a1d7081bc5b4e6a4f8cfc3a26a6476a83"
     }
   },
   "native_parameters_disposition": {
@@ -3712,7 +3737,13 @@
   },
   "native_parameter_refresh_required": true,
   "fresh_workspace_access_observation": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/final-workspace-access-observation.json",
-    "sha256": "fd49495a0a9520726263c96d5067f2a51108416bd68a88313f53bfa1b0fc9d60"
-  }
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr6-access-after-p2-retirement-20261005/receipt.json",
+    "sha256": "aae252cd4b823e59d1345b9ef6dcbe11f75290419b73b365676610e9e59570eb"
+  },
+  "execution_improvement_plan_history": [
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-native-qualification-20261005-6d6ee16b/owning-plan-history/92016adbadf1c433c083d5ae1c4912fb503c885eda13fecb1d066f71271b1fb0.md",
+      "sha256": "92016adbadf1c433c083d5ae1c4912fb503c885eda13fecb1d066f71271b1fb0"
+    }
+  ]
 }
