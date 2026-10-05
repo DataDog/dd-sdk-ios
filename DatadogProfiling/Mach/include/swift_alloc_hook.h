@@ -49,6 +49,7 @@ typedef enum {
 
 typedef struct {
   uint64_t allocations;
+  /// Counts entries to both full and partial class deallocation functions.
   uint64_t class_deallocations;
   uint64_t object_deallocations;
   uint64_t reentrant_skips;
@@ -60,7 +61,7 @@ typedef struct {
   bool is_enabled;
 } dd_swift_alloc_hook_diagnostics_t;
 
-/// Installs process-wide Swift runtime interposition once. The three
+/// Installs process-wide Swift runtime interposition once. The four
 /// trampolines are never restored; stop() only disables observation. Replacing
 /// observers waits for previously admitted callbacks to finish. A failed
 /// install leaves the trampolines forwarding without invoking observers. The
