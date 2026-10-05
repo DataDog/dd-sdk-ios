@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "state": "FINAL_S1_DEPENDENCY_SOURCE_REVIEWED_CHECKPOINTED_CONSUMERS_NOT_IMPLEMENTED",
+  "existing_gate": "S3:F12",
+  "slice": "PR7",
+  "source_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
+  "branch": "valpertui/s3-consumer-capture",
+  "base_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
+  "source_head": "142ad7150f3e62f1522c3feb923d84b722efb951",
+  "source_gap_inventory": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-consumer-source-preparation/packet.json",
+    "sha256": "57e376768a17b85993c54af64fcfb4f63048738ae0976e386760c5831f0c4a5b"
+  },
+  "dependency_design": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/packet.json",
+    "sha256": "8abe7997c48bfb657d0963e26dc8b22858c5c189f03b741650fd54459b72c3a8"
+  },
+  "dependency_design_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/dependency-design-review.json",
+    "sha256": "71a2bd15b9f0c0e408a64f498dc4e234d89e3d54fdb216eb24ce69a8d25ca66f"
+  },
+  "composed_source": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/composed-source.json",
+    "sha256": "b764c695ce666e4f1562c04ca7f493abb969de213f33cb9d2a9facc6d55f4b17"
+  },
+  "composed_source_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/composed-source-review.json",
+    "sha256": "a47deb0b69ae7305d17098f99e63c627eecdc3f27e17d4dfdfcf2564f298217f"
+  },
+  "worktree_linkage": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/worktree-linkage.json",
+    "sha256": "40fa64c0b2fa8882faaa73afb0f0ea25559c648f4ef1147408fa1c49adae4196"
+  },
+  "source_wide_usage_audit": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/usage-audit.json",
+    "sha256": "269308c0ef0cefc6986d9cc6b70fe7a7e7ce42e8dffadd7e4ecb98789e361de8"
+  },
+  "deliverables": [
+    {
+      "id": "P7D0",
+      "deliverable": "Compose final once-per-task URLSession preparation before consumer changes",
+      "owner": "SDK implementer + designated reviewer",
+      "dependencies": [
+        "PR6 finite scoped applicability",
+        "final S1 E01",
+        "final S1 E05"
+      ],
+      "completion": "Exact five-file source join plus one affected-component qualification on the composed source",
+      "decisive_test": [
+        "Typed captured continuation deferral and foreign-task forwarding",
+        "Duplicate/concurrent/reentrant resume prepares one request and start before releasing all captured native continuations",
+        "Early cancellation or buffered completion retains ordered start/data/metrics/terminal delivery",
+        "Completed/terminal repeat cannot reopen preparation; registered-delegate metrics and prepared fallback remain usable",
+        "Retained first-party/third-party header guards remain; exact Core/provider and E05 sources are unchanged"
+      ],
+      "environment": "Ordinary iOS27 simulator; fresh pinned Xcode/source/product/evidence; no gestures",
+      "state": "EXACT_SOURCE_REVIEWED_CHECKPOINTED_RUNTIME_NOT_QUALIFIED"
+    },
+    {
+      "id": "P7N1",
+      "deliverable": "Network and automatic Trace",
+      "owner": "SDK implementer + designated reviewer",
+      "dependencies": [
+        "P7D0",
+        "reviewed shared caller-thread capture and On-only activation/Off design"
+      ],
+      "completion": "Captured request-time ownership",
+      "decisive_test": "Start in A with delivered B, complete in B; A or authoritative absence, matching final request session and sampling, unchanged header/user/account/parent/GraphQL guards",
+      "environment": "Deterministic supported iOS27 simulator; older17.5 and custom/NOP/Off controls where applicable. Mounted WebView only for P7W1.",
+      "state": "DESIGN_AND_IMPLEMENTATION_REMAIN"
+    },
+    {
+      "id": "P7T1",
+      "deliverable": "Manual Trace",
+      "owner": "SDK implementer + designated reviewer",
+      "dependencies": [
+        "P7D0",
+        "reviewed shared caller-thread capture and On-only activation/Off design"
+      ],
+      "completion": "Captured span-start ownership",
+      "decisive_test": "Start A, queue context read after B; finish B retains A or authoritative absence; custom/NOP and default/explicit Off use legacy context exactly once",
+      "environment": "Deterministic supported iOS27 simulator; older17.5 and custom/NOP/Off controls where applicable. Mounted WebView only for P7W1.",
+      "state": "DESIGN_AND_IMPLEMENTATION_REMAIN"
+    },
+    {
+      "id": "P7L1",
+      "deliverable": "Logs and mirrored RUM errors",
+      "owner": "SDK implementer + designated reviewer",
+      "dependencies": [
+        "P7D0",
+        "reviewed shared caller-thread capture and On-only activation/Off design"
+      ],
+      "completion": "One captured emission owner shared by both outputs",
+      "decisive_test": "Emit A before B queue delivery; serialized log and mirrored error retain same original view/accepted action or explicit absence; sampling/threshold/Trace/user/account unchanged",
+      "environment": "Deterministic supported iOS27 simulator; older17.5 and custom/NOP/Off controls where applicable. Mounted WebView only for P7W1.",
+      "state": "DESIGN_AND_IMPLEMENTATION_REMAIN"
+    },
+    {
+      "id": "P7F1",
+      "deliverable": "Feature flags",
+      "owner": "SDK implementer + designated reviewer",
+      "dependencies": [
+        "P7D0",
+        "reviewed shared caller-thread capture and On-only activation/Off design"
+      ],
+      "completion": "Captured evaluation owner at emission",
+      "decisive_test": "A evaluation delivered while B is current mutates only original A or follows explicit no-owner disposition; invalid/foreign/source-less and Off controls",
+      "environment": "Deterministic supported iOS27 simulator; older17.5 and custom/NOP/Off controls where applicable. Mounted WebView only for P7W1.",
+      "state": "DESIGN_AND_IMPLEMENTATION_REMAIN"
+    },
+    {
+      "id": "P7W1",
+      "deliverable": "WebView",
+      "owner": "SDK implementer + designated reviewer",
+      "dependencies": [
+        "P7D0",
+        "reviewed shared caller-thread capture and On-only activation/Off design"
+      ],
+      "completion": "Explicit native container with captured message ownership",
+      "decisive_test": "Mounted A/B containers, delayed A event through navigation/rebind/detach keeps native A or absence; browser IDs/session and offsets unchanged",
+      "environment": "Deterministic supported iOS27 simulator; older17.5 and custom/NOP/Off controls where applicable. Mounted WebView only for P7W1.",
+      "state": "DESIGN_AND_IMPLEMENTATION_REMAIN"
+    },
+    {
+      "id": "P7R8",
+      "deliverable": "Resource carrier dependency for PR8",
+      "owner": "SDK implementer + designated reviewer",
+      "dependencies": [
+        "P7D0",
+        "reviewed shared caller-thread capture and On-only activation/Off design"
+      ],
+      "completion": "Captured request-start owner carried across async interception",
+      "decisive_test": "A start with B terminal preserves original carrier; PR8 separately qualifies success/metrics/error routing and accepted Error1/Resource0",
+      "environment": "Deterministic supported iOS27 simulator; older17.5 and custom/NOP/Off controls where applicable. Mounted WebView only for P7W1.",
+      "state": "DESIGN_AND_IMPLEMENTATION_REMAIN"
+    }
+  ],
+  "selected_task": "P7D0_AFFECTED_COMPONENT_QUALIFICATION_PREPARATION",
+  "pending_action_requirement": "Pending/excluded action scalars do not identify an accepted Action UUID. The existing queue-confined continuous-action receipt is not a generic cross-module/discrete-action acceptance receipt. Do not borrow a later same-view action; independently review the smallest source-backed receipt design before consumer changes.",
+  "off_requirement": "Reusing the network provider single State read may gate On locally. No default-Off Core registry/TaskLocal/scene lookup, owner allocation, new map/lock or naive owner(in: FeatureScope) capture.",
+  "runtime_admitted": false,
+  "native_runs": 0,
+  "builds": 0,
+  "gates_closed": [],
+  "whole_pr7_qualified": false,
+  "next_action": "Prepare one new-source affected-component qualification; consumer capture and accepted-action design remain. Preserve all old accepted evidence and compiler/platform/final-stack holds.",
+  "updated_at": 1791233801.748554,
+  "sdk_checkpoint": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/sdk-checkpoint.json",
+    "sha256": "8de6f4600357cbe88a003bb7d235945a3fda02af056f4e021f20540b19c82749"
+  }
+}

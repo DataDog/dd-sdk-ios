@@ -243,7 +243,7 @@
       "off_contract": "Static fast path; final E01/E05 headers/sampling/user/account expressions and fresh develop no handoff or scene lookup",
       "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
       "rebuild_obligation": "Drop unqualified empty-header, existing-header suppression and helper rewrites; networking wire policy unchanged",
-      "status": "SOURCE_COMPOSITION_DESIGN_REVIEW_ACTIVE",
+      "status": "FINAL_S1_DEPENDENCY_SOURCE_REVIEWED_CHECKPOINTED_RUNTIME_UNQUALIFIED",
       "owning_record": null,
       "source_head": null,
       "obligation": "BEFORE_SLICE_MERGE",
@@ -255,12 +255,24 @@
         "integration": "NOT_QUALIFIED"
       },
       "remaining_assertion": "Authoritative nil vs absent handoff, optional request-time final E05 correlation, delayed WebView owner and accepted action merge Off: Static fast path; final E01/E05 headers/sampling/user/account expressions and fresh develop no handoff or scene lookup",
-      "next_action": "Join exact final S1 E01 source in a MAIN-linked worktree and retain byte-exact E05 before reviewing caller-thread capture and Off design. No consumer implementation or native qualification yet.",
+      "next_action": "Prepare one affected-component qualification on the composed dependency source before consumer implementation.",
       "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit.",
       "dependency_design": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/packet.json",
         "sha256": "8abe7997c48bfb657d0963e26dc8b22858c5c189f03b741650fd54459b72c3a8"
-      }
+      },
+      "preparation_record": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
+        "sha256": "13bd5729652dbe54d67e44afebc3f1d0161e65f753b135163e656cb31816d2ce"
+      },
+      "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
+      "source_branch": "valpertui/s3-consumer-capture",
+      "composed_source_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/composed-source-review.json",
+        "sha256": "a47deb0b69ae7305d17098f99e63c627eecdc3f27e17d4dfdfcf2564f298217f"
+      },
+      "dependency_source_head": "142ad7150f3e62f1522c3feb923d84b722efb951",
+      "preparation_owner": "Results/S3-PR7-consumer-preparation.json"
     },
     {
       "id": "PR8",
@@ -444,5 +456,5 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": 1791232571.858492
+  "updated_at": 1791233226.543811
 }

@@ -1,6 +1,6 @@
 {
   "state": "ALL_CURRENT_S2_S3_DELIVERY_SOURCE_WORKTREES_LINKED",
-  "verified_on": "2026-10-05T01:51:43.691072+00:00",
+  "verified_on": "2026-10-05T20:56:41.795051+00:00",
   "main_repository": "/Users/valentin.pertuisot/work/dd-sdk-ios",
   "required_delivery_branches": [
     "valpertui/s2-rum-lifetime",
@@ -8,7 +8,8 @@
     "valpertui/s3-session-routing",
     "valpertui/s3-monitor-targets",
     "valpertui/s3-scene-view-handler",
-    "valpertui/s3-handoff-activation"
+    "valpertui/s3-handoff-activation",
+    "valpertui/s3-consumer-capture"
   ],
   "s3_slice_mapping": {
     "PR1_PR2": "valpertui/s3-runtime-feature-flag",
@@ -16,32 +17,37 @@
     "PR4": "valpertui/s3-monitor-targets",
     "PR5": "valpertui/s3-scene-view-handler",
     "PR6": "valpertui/s3-handoff-activation",
-    "PR7_PR13": "No separate implemented source branches recorded yet; create future delivery worktrees from the main repository."
+    "PR7_PR13": "PR7 delivery worktree exists; PR8 and PR10\u2013PR13 still have no separate implemented delivery branches; use MAIN-linked worktrees for future delivery.",
+    "PR7": "valpertui/s3-consumer-capture; final S1 dependency source composed, consumer implementation and new-source qualification remain"
   },
   "registered_named_worktrees": [
     {
       "branch": "valpertui/multiple-windows-scenes",
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios",
-      "head_at_verification": "cd086ddb9a5fa200f5ebce3e8ac1df8d7adc96fb",
-      "linked": true
+      "head_at_verification": "d1915661c2596413066031f86a4d333a75e917aa",
+      "linked": true,
+      "actual_branch": "refs/heads/valpertui/multiple-windows-scenes"
     },
     {
       "branch": "valpertui/rum-context-override",
       "path": "/Users/valentin.pertuisot/.codex/worktrees/rum-context-override/dd-sdk-ios",
       "head_at_verification": "dd819c458fccc47bc67baae4c6f01cee4593e208",
-      "linked": true
+      "linked": true,
+      "actual_branch": "refs/heads/valpertui/rum-context-override"
     },
     {
       "branch": "valpertui/multi-scene-doc-review-20260924-qk08",
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-doc-review-upcyqk08",
       "head_at_verification": "6fd89e112ee79f25a7d36f744604a4b5f6eca0d4",
-      "linked": true
+      "linked": true,
+      "actual_branch": "refs/heads/valpertui/multi-scene-doc-review-20260924-qk08"
     },
     {
       "branch": "valpertui/active-view-cache-lifetime",
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/active-view-cache-lifetime",
       "head_at_verification": "a3d34069cccbe35cac0fd2bc1fb456e64b1f4c43",
-      "linked": true
+      "linked": true,
+      "actual_branch": "refs/heads/valpertui/active-view-cache-lifetime"
     },
     {
       "branch": "valpertui/s3-handoff-activation",
@@ -51,91 +57,122 @@
       "latest_local_checkpoint": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/checkpoint-pr9-disconnect-test/checkpoint.json",
         "sha256": "19046c889ac49e81e6bcc2d9f783e1284f5a55c14b4018f96cb867e41f706e8b"
-      }
+      },
+      "actual_branch": "refs/heads/valpertui/s3-handoff-activation"
     },
     {
       "branch": "valpertui/resume-deferral-test-witness",
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resume-witness-wg4afuza/worktree",
       "head_at_verification": "0eaba3e39d89256f849addee284e1b92d14b8a5e",
-      "linked": true
+      "linked": true,
+      "actual_branch": "refs/heads/valpertui/resume-deferral-test-witness"
     },
     {
       "branch": "valpertui/timeseries-pause-test-barrier",
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-timeseries-pause-olnmq8w2/worktree",
       "head_at_verification": "4dec888b99e70285cc855197790c3c2f6d20e426",
-      "linked": true
+      "linked": true,
+      "actual_branch": "refs/heads/valpertui/timeseries-pause-test-barrier"
     },
     {
       "branch": "valpertui/s3-session-routing",
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/worktree",
       "head_at_verification": "2d3de2170248c386a5e7f7de4477ecd703e0c504",
-      "linked": true
+      "linked": true,
+      "actual_branch": "refs/heads/valpertui/s3-session-routing"
     },
     {
       "branch": "valpertui/s3-runtime-feature-flag",
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/worktree",
       "head_at_verification": "1c103b6096820d7ce5471ed3d2aff0bf026270a3",
-      "linked": true
+      "linked": true,
+      "actual_branch": "refs/heads/valpertui/s3-runtime-feature-flag"
     },
     {
       "branch": "valpertui/s3-monitor-targets",
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr4-monitor-sz_1c98v/worktree",
       "head_at_verification": "06e87120c8d88204f32b6821840ef8a4f0c6c41d",
-      "linked": true
+      "linked": true,
+      "actual_branch": "refs/heads/valpertui/s3-monitor-targets"
     },
     {
       "branch": "valpertui/s3-scene-view-handler",
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr5-scene-handler-jnhjwvv9/worktree",
       "head_at_verification": "8cd7793d31fdde07b3b1821dd1413fc69cfe3070",
-      "linked": true
+      "linked": true,
+      "actual_branch": "refs/heads/valpertui/s3-scene-view-handler"
     },
     {
       "branch": "valpertui/rum-release-checklist",
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/release-checklist",
       "head_at_verification": "9298172432428a3eb39bfde3ada547f35f7e0e4e",
-      "linked": true
+      "linked": true,
+      "actual_branch": "refs/heads/valpertui/rum-release-checklist"
     },
     {
       "branch": "valpertui/request-time-trace-ownership",
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership",
       "head_at_verification": "9e0a990452c52b1c083df182ca04c99694c5ef7c",
-      "linked": true
+      "linked": true,
+      "actual_branch": "refs/heads/valpertui/request-time-trace-ownership"
     },
     {
       "branch": "valpertui/resource-completion-ownership",
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/resource-completion-ownership",
       "head_at_verification": "e3c3bde1c58cc8031c5496fafabb4c2df9763e87",
-      "linked": true
+      "linked": true,
+      "actual_branch": "refs/heads/valpertui/resource-completion-ownership"
     },
     {
       "branch": "valpertui/s2-rum-lifetime",
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/s2-rum-lifetime",
       "head_at_verification": "7604da24bfb757e8d19314e7183b840fa17d858f",
-      "linked": true
+      "linked": true,
+      "actual_branch": "refs/heads/valpertui/s2-rum-lifetime"
     },
     {
       "branch": "valpertui/urlsession-exactly-once",
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/urlsession-exactly-once",
       "head_at_verification": "652ce169773b0be5b6767179eca8ab5f4cf25f8a",
-      "linked": true
+      "linked": true,
+      "actual_branch": null
     },
     {
       "branch": "valpertui/rum-view-hitch-assertions",
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-hitch-assertions",
       "head_at_verification": "d98f3540a5cf445844c2547378e05cffd2212dbd",
-      "linked": true
+      "linked": true,
+      "actual_branch": "refs/heads/valpertui/rum-view-hitch-assertions"
     },
     {
       "branch": "valpertui/view-occurrence-ownership",
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership",
       "head_at_verification": "568be6cb87a7f64bc96cd1ff49cd5ed4c6f504e3",
-      "linked": true
+      "linked": true,
+      "actual_branch": "refs/heads/valpertui/view-occurrence-ownership"
     },
     {
       "branch": "valpertui/rum-only-verdict",
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-rum-only-verdict",
       "head_at_verification": "98514dc1e51804eaff8832b2d7de70374590d7da",
-      "linked": true
+      "linked": true,
+      "actual_branch": "refs/heads/valpertui/rum-only-verdict"
+    },
+    {
+      "branch": "valpertui/s3-consumer-capture",
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
+      "head_at_verification": "142ad7150f3e62f1522c3feb923d84b722efb951",
+      "linked": true,
+      "worktree_linkage": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/worktree-linkage.json",
+        "sha256": "40fa64c0b2fa8882faaa73afb0f0ea25559c648f4ef1147408fa1c49adae4196"
+      },
+      "scope": "Exact five-file final S1 dependency source reviewed and committed; no runtime/consumer acceptance.",
+      "actual_branch": "refs/heads/valpertui/s3-consumer-capture",
+      "latest_local_checkpoint": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/sdk-checkpoint.json",
+        "sha256": "8de6f4600357cbe88a003bb7d235945a3fda02af056f4e021f20540b19c82749"
+      }
     }
   ],
   "excluded": "Detached experiment snapshots and Datadog mobile-app fixture clones are not SDK delivery branches. Baseline fixture clones bearing resource-completion-ownership at develop HEAD do not replace the actual linked delivery branch.",
