@@ -41,6 +41,21 @@
 #include <mach-o/nlist.h>
 #if __has_feature(ptrauth_calls)
 #include <ptrauth.h>
+#elif defined(__aarch64__)
+// An arm64 SDK can still rebind authenticated imports in arm64e system images.
+// Clang's ptrauth intrinsics are unavailable for arm64. Use the IA key and the
+// slot address, matching the arm64e path below, only for authenticated slots.
+__attribute__((target("pauth"), noinline)) static void *authenticate_got_pointer(
+    void *pointer, void *slot) {
+  __asm__ volatile("autia %0, %1" : "+r"(pointer) : "r"(slot));
+  return pointer;
+}
+
+__attribute__((target("pauth"), noinline)) static void *sign_got_pointer(
+    void *pointer, void *slot) {
+  __asm__ volatile("pacia %0, %1" : "+r"(pointer) : "r"(slot));
+  return pointer;
+}
 #endif
 
 #ifdef __LP64__
@@ -169,19 +184,26 @@ static void perform_rebinding_with_section(struct rebindings_entry *rebindings,
           }
 #else
           if (authenticated_got) {
+#if defined(__aarch64__)
+            forward_target = authenticate_got_pointer(
+                previous, &indirect_symbol_bindings[i]);
+            replacement = sign_got_pointer(
+                replacement, &indirect_symbol_bindings[i]);
+#else
             // An unsigned replacement would crash an arm64e caller. Leave the
             // slot untouched and let the hook fail closed.
             if (cur->rebindings[j].failed_count != NULL)
               __atomic_fetch_add(cur->rebindings[j].failed_count, 1, __ATOMIC_RELAXED);
             goto symbol_loop;
+#endif
           }
 #endif
 
           if ((section->flags & SECTION_TYPE) == S_LAZY_SYMBOL_POINTERS) {
-            uintptr_t previous_address = (uintptr_t)previous;
+            uintptr_t previous_address = (uintptr_t)forward_target;
 #if __has_feature(ptrauth_calls)
             previous_address = (uintptr_t)ptrauth_strip(
-                previous, ptrauth_key_function_pointer);
+                forward_target, ptrauth_key_function_pointer);
 #endif
             if (stub_helper_start <= previous_address &&
                 previous_address < stub_helper_end) {
