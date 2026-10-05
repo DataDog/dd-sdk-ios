@@ -10,7 +10,7 @@
   "native_admitted": false,
   "native_runs": 16,
   "gates_closed": [],
-  "next_action": "Materialize and review the prepared candidate-only SwiftUI split session after the safe documentation checkpoint; actual visible page/Ready and fresh admission precede native launch.",
+  "next_action": "Obtain actual visible-page reply for the prepared candidate-only SwiftUI split, bind the exact post-plan operator inputs in final independent review, then issue one fresh4800-second execution/cleanup reservation and exclusive owner freeze. No app/session is active.",
   "p1": {
     "required_s2_tasks": 3,
     "required_s3_tasks": 20,
@@ -651,6 +651,32 @@
       },
       "native_admitted": false,
       "operator_ready": false
+    },
+    "current_human_materialization": {
+      "state": "CURRENT_PREREQUISITES_PREPARED_WAIT_VISIBLE_PAGE_FINAL_REVIEW_AND_ADMISSION",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2300",
+      "packet": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2300/preparation/packet.json",
+        "sha256": "8b389edb51dd0962f2f730ca85febe05381b699dafb853e5222623ab6debe3a7"
+      },
+      "plan": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2300/runtime/runtime-plan.json",
+        "sha256": "ec3af95e3fa6c6a12cfa4f4966d3be752c5e6f648adcdb1c354a7bf70f8305b0"
+      },
+      "prerequisites": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2300/preparation/current-prerequisites.json",
+        "sha256": "a33c78a4bc1a69634fd57fc0d27692203844968cf5ccd79c73038e39ea487e42"
+      },
+      "page": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261005-2300/runtime/operator/server.json",
+        "sha256": "f51312a7d37f0e36e1e49f2f3c7695633a798726bf6aebb0bf296181222748f1"
+      },
+      "native_admitted": false,
+      "issued_clocks": null,
+      "native_calls": 0,
+      "builds": 0,
+      "gates_closed": [],
+      "no_operator_ready_inferred": true
     }
   },
   "p3": {
@@ -1410,7 +1436,7 @@
   },
   "selected_task": "P7D0_EXACT_COMPOSITION_REVIEW_AND_AFFECTED_QUALIFICATION_PREPARATION",
   "execution_frontier": {
-    "primary": "Materialize and review the prepared candidate-only SwiftUI split session after the safe documentation checkpoint; actual visible page/Ready and fresh admission precede native launch.",
+    "primary": "Obtain actual visible-page reply for the prepared candidate-only SwiftUI split, bind the exact post-plan operator inputs in final independent review, then issue one fresh4800-second execution/cleanup reservation and exclusive owner freeze. No app/session is active.",
     "required_paths": [
       "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-workspace-human-successor-20261005/readiness-binding-correction/packet.json"
     ],
