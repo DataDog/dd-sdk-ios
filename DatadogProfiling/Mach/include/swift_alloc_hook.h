@@ -51,22 +51,24 @@ typedef struct {
   uint64_t allocations;
   /// Counts entries to both full and partial class deallocation functions.
   uint64_t class_deallocations;
+  /// Counts entries to full and uninitialized object deallocation functions.
   uint64_t object_deallocations;
   uint64_t reentrant_skips;
   uint64_t alloc_slots_patched;
   uint64_t class_dealloc_slots_patched;
   uint64_t object_dealloc_slots_patched;
+  uint64_t uninitialized_object_dealloc_slots_patched;
   uint64_t conflicting_slots;
   uint64_t failed_slot_writes;
   bool is_enabled;
 } dd_swift_alloc_hook_diagnostics_t;
 
-/// Installs process-wide Swift runtime interposition once. The four
+/// Installs process-wide Swift runtime interposition once. The five
 /// trampolines are never restored; stop() only disables observation. Replacing
 /// observers waits for previously admitted callbacks to finish. A failed
 /// install leaves the trampolines forwarding without invoking observers. The
-/// defensive swift_deallocObject path is registered even if no loaded image
-/// imports it. Do not call start or stop from an observer callback.
+/// object deallocation paths are registered even if no loaded image imports
+/// them. Do not call start or stop from an observer callback.
 dd_swift_alloc_hook_status_t dd_swift_alloc_hook_start(
     dd_swift_allocation_observer_t allocation_observer,
     dd_swift_deallocation_observer_t deallocation_observer);

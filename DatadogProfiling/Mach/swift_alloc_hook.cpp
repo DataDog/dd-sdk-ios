@@ -58,6 +58,8 @@ public:
                                     size_t alignment_mask);
   void interceptObjectDealloc(HeapObject *object, size_t size,
                               size_t alignment_mask);
+  void interceptUninitializedObjectDealloc(HeapObject *object, size_t size,
+                                           size_t alignment_mask);
   dd_swift_class_name_t resolveClassName(const HeapMetadata *metadata) const;
 
 private:
@@ -98,6 +100,7 @@ private:
   std::atomic<DeallocFn> runtime_class_dealloc_{nullptr};
   std::atomic<PartialClassDeallocFn> runtime_partial_class_dealloc_{nullptr};
   std::atomic<DeallocFn> runtime_object_dealloc_{nullptr};
+  std::atomic<DeallocFn> runtime_uninitialized_object_dealloc_{nullptr};
   std::atomic<GetTypeNameFn> get_type_name_{nullptr};
 
   // fishhook retains these addresses for future images. The instance must
@@ -106,18 +109,22 @@ private:
   void *first_class_dealloc_ = nullptr;
   void *first_partial_class_dealloc_ = nullptr;
   void *first_object_dealloc_ = nullptr;
+  void *first_uninitialized_object_dealloc_ = nullptr;
   uint64_t alloc_patches_ = 0;
   uint64_t class_dealloc_patches_ = 0;
   uint64_t partial_class_dealloc_patches_ = 0;
   uint64_t object_dealloc_patches_ = 0;
+  uint64_t uninitialized_object_dealloc_patches_ = 0;
   uint64_t alloc_conflicts_ = 0;
   uint64_t class_dealloc_conflicts_ = 0;
   uint64_t partial_class_dealloc_conflicts_ = 0;
   uint64_t object_dealloc_conflicts_ = 0;
+  uint64_t uninitialized_object_dealloc_conflicts_ = 0;
   uint64_t alloc_failures_ = 0;
   uint64_t class_dealloc_failures_ = 0;
   uint64_t partial_class_dealloc_failures_ = 0;
   uint64_t object_dealloc_failures_ = 0;
+  uint64_t uninitialized_object_dealloc_failures_ = 0;
 
   std::atomic<uint64_t> allocations_{0};
   std::atomic<uint64_t> class_deallocations_{0};
@@ -134,6 +141,7 @@ void intercept_class_dealloc(HeapObject *, size_t, size_t);
 void intercept_partial_class_dealloc(HeapObject *, const HeapMetadata *, size_t,
                                      size_t);
 void intercept_object_dealloc(HeapObject *, size_t, size_t);
+void intercept_uninitialized_object_dealloc(HeapObject *, size_t, size_t);
 dd_swift_class_name_t resolve_class_name(const HeapMetadata *);
 
 uint64_t SwiftAllocHook::loadCount(const uint64_t *count) {
@@ -143,13 +151,15 @@ uint64_t SwiftAllocHook::loadCount(const uint64_t *count) {
 uint64_t SwiftAllocHook::conflictCount() const {
   return loadCount(&alloc_conflicts_) + loadCount(&class_dealloc_conflicts_) +
          loadCount(&partial_class_dealloc_conflicts_) +
-         loadCount(&object_dealloc_conflicts_);
+         loadCount(&object_dealloc_conflicts_) +
+         loadCount(&uninitialized_object_dealloc_conflicts_);
 }
 
 uint64_t SwiftAllocHook::failureCount() const {
   return loadCount(&alloc_failures_) + loadCount(&class_dealloc_failures_) +
          loadCount(&partial_class_dealloc_failures_) +
-         loadCount(&object_dealloc_failures_);
+         loadCount(&object_dealloc_failures_) +
+         loadCount(&uninitialized_object_dealloc_failures_);
 }
 
 bool SwiftAllocHook::observing() const {
@@ -303,6 +313,14 @@ void SwiftAllocHook::interceptObjectDealloc(HeapObject *object, size_t size,
   original(object, size, alignment_mask);
 }
 
+void SwiftAllocHook::interceptUninitializedObjectDealloc(
+    HeapObject *object, size_t size, size_t alignment_mask) {
+  observeDeallocation(object, object_deallocations_);
+  DeallocFn original = previous(&first_uninitialized_object_dealloc_,
+                                runtime_uninitialized_object_dealloc_);
+  original(object, size, alignment_mask);
+}
+
 dd_swift_alloc_hook_status_t
 SwiftAllocHook::start(dd_swift_allocation_observer_t allocation_observer,
                       dd_swift_deallocation_observer_t deallocation_observer) {
@@ -342,16 +360,20 @@ SwiftAllocHook::start(dd_swift_allocation_observer_t allocation_observer,
   void *partial_class_dealloc_symbol =
       dlsym(RTLD_DEFAULT, "swift_deallocPartialClassInstance");
   void *object_dealloc_symbol = dlsym(RTLD_DEFAULT, "swift_deallocObject");
+  void *uninitialized_object_dealloc_symbol =
+      dlsym(RTLD_DEFAULT, "swift_deallocUninitializedObject");
   auto alloc = reinterpret_cast<AllocFn>(alloc_symbol);
   auto class_dealloc = reinterpret_cast<DeallocFn>(class_dealloc_symbol);
   auto partial_class_dealloc =
       reinterpret_cast<PartialClassDeallocFn>(partial_class_dealloc_symbol);
   auto object_dealloc = reinterpret_cast<DeallocFn>(object_dealloc_symbol);
+  auto uninitialized_object_dealloc =
+      reinterpret_cast<DeallocFn>(uninitialized_object_dealloc_symbol);
   auto get_name =
       reinterpret_cast<GetTypeNameFn>(dlsym(RTLD_DEFAULT, "swift_getTypeName"));
   if (alloc == nullptr || class_dealloc == nullptr ||
       partial_class_dealloc == nullptr || object_dealloc == nullptr ||
-      get_name == nullptr) {
+      uninitialized_object_dealloc == nullptr || get_name == nullptr) {
     return DD_SWIFT_ALLOC_HOOK_FAILED_NO_SYMBOL;
   }
   runtime_alloc_.store(alloc, std::memory_order_release);
@@ -359,6 +381,8 @@ SwiftAllocHook::start(dd_swift_allocation_observer_t allocation_observer,
   runtime_partial_class_dealloc_.store(partial_class_dealloc,
                                        std::memory_order_release);
   runtime_object_dealloc_.store(object_dealloc, std::memory_order_release);
+  runtime_uninitialized_object_dealloc_.store(uninitialized_object_dealloc,
+                                              std::memory_order_release);
   get_type_name_.store(get_name, std::memory_order_release);
 
   // first_replaced is published before a slot is patched. fishhook leaves
@@ -405,6 +429,16 @@ SwiftAllocHook::start(dd_swift_allocation_observer_t allocation_observer,
           &object_dealloc_failures_,
           object_dealloc_symbol,
       },
+      {
+          "swift_deallocUninitializedObject",
+          reinterpret_cast<void *>(intercept_uninitialized_object_dealloc),
+          nullptr,
+          &first_uninitialized_object_dealloc_,
+          &uninitialized_object_dealloc_patches_,
+          &uninitialized_object_dealloc_conflicts_,
+          &uninitialized_object_dealloc_failures_,
+          uninitialized_object_dealloc_symbol,
+      },
   };
   int result = rebind_symbols(bindings, sizeof(bindings) / sizeof(bindings[0]));
   install_state_ =
@@ -445,6 +479,8 @@ dd_swift_alloc_hook_diagnostics_t SwiftAllocHook::diagnostics() const {
   result.alloc_slots_patched = loadCount(&alloc_patches_);
   result.class_dealloc_slots_patched = loadCount(&class_dealloc_patches_);
   result.object_dealloc_slots_patched = loadCount(&object_dealloc_patches_);
+  result.uninitialized_object_dealloc_slots_patched =
+      loadCount(&uninitialized_object_dealloc_patches_);
   result.conflicting_slots = conflictCount();
   result.failed_slot_writes = failureCount();
   result.is_enabled = observing();
@@ -478,6 +514,11 @@ void intercept_partial_class_dealloc(HeapObject *object,
 void intercept_object_dealloc(HeapObject *object, size_t size,
                               size_t alignment_mask) {
   hook().interceptObjectDealloc(object, size, alignment_mask);
+}
+
+void intercept_uninitialized_object_dealloc(HeapObject *object, size_t size,
+                                            size_t alignment_mask) {
+  hook().interceptUninitializedObjectDealloc(object, size, alignment_mask);
 }
 
 dd_swift_class_name_t resolve_class_name(const HeapMetadata *metadata) {
