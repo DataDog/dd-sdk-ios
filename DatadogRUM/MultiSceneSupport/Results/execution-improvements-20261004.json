@@ -10,7 +10,7 @@
   "native_admitted": false,
   "native_runs": 16,
   "gates_closed": [],
-  "next_action": "Review one corrected saved-build test continuation with composed publication/cleanup controls, then fresh checkpoint/source/product/process/device/awake authority. Original INVALID remains; source142ad frozen; no rebuild or human input.",
+  "next_action": "Fresh root source/product/process/device/awake checks and separate reviewed authority/loader, then one discovery/ten-test/export continuation from saved products, no rebuild or human input. Source142ad stays frozen through actual outcomes/cleanup review and handoff; private consumer drafts qualify nothing.",
   "p1": {
     "required_s2_tasks": 3,
     "required_s3_tasks": 20,
@@ -1672,14 +1672,14 @@
     },
     "pr7_owning_preparation": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
-      "sha256": "1a47c7af7a0545c81cb9f5a2e4c01982f7b0f42e18fcc498ae6387bf93735730"
+      "sha256": "f47a8e8441892659ab129c8b0abc952b22c87a79b70955c2d43c1e7ce1d06c42"
     },
     "pr7_dependency_design_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/dependency-design-review.json",
       "sha256": "71a2bd15b9f0c0e408a64f498dc4e234d89e3d54fdb216eb24ce69a8d25ca66f"
     }
   },
-  "updated_at": 1791252070.939399,
+  "updated_at": 1791252974.5451038,
   "native_run_accounting": {
     "P3_required_platform_build": 1,
     "P5_PR3_PR4_PR5_off_cells": 6,
@@ -1715,7 +1715,7 @@
   },
   "selected_task": "S3_F12_PR7_P7D0",
   "execution_frontier": {
-    "primary": "Complete the consolidated P7D0 proposal repair and designated review before root checkpoint/release. Accepted-action receipt semantics pass design review only; no native effect or consumer qualification.",
+    "primary": "Fresh root source/product/process/device/awake checks and separate reviewed authority/loader, then one discovery/ten-test/export continuation from saved products, no rebuild or human input. Source142ad stays frozen through actual outcomes/cleanup review and handoff; private consumer drafts qualify nothing.",
     "required_paths": [
       "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
       "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-source-selection-20261006/packet.json"
@@ -1876,5 +1876,5 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/attempt-policy-20261005.json",
     "sha256": "4a455a7d817bd900f2f7ca21cc403c2ee934f825b4e7d0c2ba9eb575787f2411"
   },
-  "independent_selected_task": "P7D0_EXACT_COMPOSITION_REVIEW_AND_AFFECTED_QUALIFICATION_PREPARATION"
+  "independent_selected_task": "P7D0_TEST_ONLY_SUCCESSOR_REVIEW_AND_PRIVATE_CONSUMER_DRAFTS"
 }

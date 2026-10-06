@@ -255,7 +255,7 @@
         "integration": "NOT_QUALIFIED"
       },
       "remaining_assertion": "Authoritative nil vs absent handoff, optional request-time final E05 correlation, delayed WebView owner and accepted action merge Off: Static fast path; final E01/E05 headers/sampling/user/account expressions and fresh develop no handoff or scene lookup",
-      "next_action": "Review one corrected saved-build test continuation with composed publication/cleanup controls, then fresh checkpoint/source/product/process/device/awake authority. Original INVALID remains; source142ad frozen; no rebuild or human input.",
+      "next_action": "Fresh root source/product/process/device/awake checks and separate reviewed authority/loader, then one discovery/ten-test/export continuation from saved products, no rebuild or human input. Source142ad stays frozen through actual outcomes/cleanup review and handoff; private consumer drafts qualify nothing.",
       "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit.",
       "dependency_design": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/packet.json",
@@ -263,7 +263,7 @@
       },
       "preparation_record": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
-        "sha256": "1a47c7af7a0545c81cb9f5a2e4c01982f7b0f42e18fcc498ae6387bf93735730"
+        "sha256": "f47a8e8441892659ab129c8b0abc952b22c87a79b70955c2d43c1e7ce1d06c42"
       },
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
       "source_branch": "valpertui/s3-consumer-capture",
@@ -452,10 +452,10 @@
     "PR5"
   ],
   "locally_qualified_off_scope": "PR1-PR3 accepted prefix plus PR4/PR5 concrete exclusive-Off at their recorded heads; no blanket later-slice or current-stack equivalence claim",
-  "next_slice": "PR7_DEPENDENCY_SOURCE_COMPOSITION_AND_CAPTURE_DESIGN",
+  "next_slice": "PR7_P7D0_SAVED_BUILD_TEN_TEST_QUALIFICATION",
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": 1791252070.938507,
+  "updated_at": 1791252974.544499,
   "dependency_build_attempts": 1
 }

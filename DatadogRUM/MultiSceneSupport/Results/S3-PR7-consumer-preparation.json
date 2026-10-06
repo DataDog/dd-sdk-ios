@@ -143,8 +143,8 @@
   "builds": 1,
   "gates_closed": [],
   "whole_pr7_qualified": false,
-  "next_action": "Review one corrected saved-build test continuation with composed publication/cleanup controls, then fresh checkpoint/source/product/process/device/awake authority. Original INVALID remains; source142ad frozen; no rebuild or human input.",
-  "updated_at": 1791252070.9379818,
+  "next_action": "Fresh root source/product/process/device/awake checks and separate reviewed authority/loader, then one discovery/ten-test/export continuation from saved products, no rebuild or human input. Source142ad stays frozen through actual outcomes/cleanup review and handoff; private consumer drafts qualify nothing.",
+  "updated_at": 1791252974.543974,
   "sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/sdk-checkpoint.json",
     "sha256": "8de6f4600357cbe88a003bb7d235945a3fda02af056f4e021f20540b19c82749"
@@ -316,7 +316,7 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-scope-tests-draft-cycle5-20261006/packet.json",
       "sha256": "f9717fa025a6430f00d8200347d76c236e77eb3459fc2606ce8486ecde627445"
     },
-    "scope_tests_successor_state": "PENDING_SOURCE_REVIEW_UNAPPLIED",
+    "scope_tests_successor_state": "SOURCE_REVIEWED_UNAPPLIED_UNCOMPILED",
     "real_core_tests": {
       "packet": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-real-core-receipt-tests-draft-cycle2-20261006/packet.json",
@@ -342,6 +342,14 @@
     "scope_tests_intermediate_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-scope-tests-draft-cycle3-20261006/review.json",
       "sha256": "1fc048058e08959c94a3e42530925803052dc91e072155ae49cd95e7fb5af751"
+    },
+    "scope_tests_successor_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-scope-tests-draft-cycle5-20261006/review.json",
+      "sha256": "902ccb24920d3a60d8d1a71bead4b7b2f7590bbdb6891f97daa730f82e00b652"
+    },
+    "composition_preview": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-composition-preview-cycle2-20261006/packet.json",
+      "sha256": "4fa31fcea6c319298901bb68627297d23a2f600afdae875ac9d1acd4809a7d42"
     }
   },
   "tests_run": 0,
@@ -385,6 +393,21 @@
     "review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-compiler-reconciliation-20261006/review.json",
       "sha256": "267b540b981bbeee7722be0a6351ceacac3a1dcf71abc4e5246e1ad45199bfc5"
+    },
+    "successor": {
+      "packet": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-compiler-reconciliation-cycle2-20261006/packet.json",
+        "sha256": "6b9eb994a9a93f629e50dc260cff121d8028ba8ce6ce2ec2bb842b0f337c0639"
+      },
+      "state": "SOURCE_REVIEWED_UNISSUED",
+      "new_composed_controls_passed": 5,
+      "accepted_controls_rerun": 0,
+      "builds": 0,
+      "native_calls": 0,
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-compiler-reconciliation-cycle2-20261006/review.json",
+        "sha256": "d5fb4345b583891049a05a5b86b961e593c52c5426abc6b65522f945614d5984"
+      }
     }
   },
   "network_carrier_draft": {
@@ -405,5 +428,32 @@
     "discovery": 0,
     "test_invocations": 0,
     "qualified_component_cells": 0
+  },
+  "automatic_trace_consumer_draft": {
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-automatic-trace-consumer-draft-20261006/packet.json",
+      "sha256": "539f11d87ba2719dfe9ae853b96b8b6e81f19fb9eac0789983970b473a2092c4"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-automatic-trace-consumer-draft-20261006/review.json",
+      "sha256": "c458690a84d7db9b16b0d00c60d4f45950c99dec3d6445368fc621c9fc845b49"
+    },
+    "state": "SOURCE_REVIEWED_UNAPPLIED_UNCOMPILED",
+    "qualification": "Original request sampling/map guards and immutable writer ownership source-reviewed only; payload/Off/native qualification remains."
+  },
+  "manual_otel_trace_consumer_draft": {
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-manual-otel-trace-consumer-draft-20261006/packet.json",
+      "sha256": "fb32ca960b1ce4bbe2f2854342d72576a737f654cf5747b6ab195bc90d79bb4e"
+    },
+    "state": "SOURCE_REVIEW_PENDING_UNAPPLIED_UNCOMPILED"
+  },
+  "trace_writer_tests_draft": {
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-trace-writer-tests-draft-20261006/packet.json",
+      "sha256": "215b2251e8cd5bc881b629f71549d0db00d4436b557eef32a833dffa052762f0"
+    },
+    "state": "SOURCE_REVIEW_PENDING_UNCOMPILED_UNEXECUTED",
+    "methods": 3
   }
 }
