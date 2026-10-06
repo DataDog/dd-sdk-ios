@@ -7,6 +7,7 @@
 #if os(iOS)
 import DatadogInternal
 import Foundation
+import CoreImage
 
 /// Turns layer tree, image, and touch snapshots into Session Replay records.
 internal protocol LayerSnapshotProcessing {
@@ -23,6 +24,7 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
     private let recordWriter: RecordWriting
     private let resourceProcessor: ResourceProcessing
     private let replayContextPublisher: SRContextPublisher
+    private let heatmapIdentifierRegistry: (any HeatmapIdentifierRegistry)?
     private let telemetry: Telemetry
     private let recordBuilder = LayerRecordBuilder()
 
@@ -35,12 +37,14 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
         recordWriter: RecordWriting,
         resourceProcessor: ResourceProcessing,
         replayContextPublisher: SRContextPublisher,
+        heatmapIdentifierRegistry: (any HeatmapIdentifierRegistry)?,
         telemetry: Telemetry
     ) {
         self.queue = queue
         self.recordWriter = recordWriter
         self.resourceProcessor = resourceProcessor
         self.replayContextPublisher = replayContextPublisher
+        self.heatmapIdentifierRegistry = heatmapIdentifierRegistry
         self.telemetry = telemetry
     }
 
@@ -55,6 +59,8 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
                 imageSnapshots: imageSnapshots,
                 touchSnapshot: touchSnapshot
             )
+            // Release temporary images and textures after each batch
+            CIContext.clearSessionReplayCaches()
         }
     }
 
@@ -67,8 +73,14 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
             root: layerTreeSnapshot.root,
             webViewSlotIDs: layerTreeSnapshot.webViewSlotIDs,
             embeddedContentSlots: layerTreeSnapshot.embeddedContentSlots,
-            imageSnapshots: imageSnapshots
+            imageSnapshots: imageSnapshots,
+            screenName: layerTreeSnapshot.context.viewPath
         ).build()
+
+        heatmapIdentifierRegistry?.setHeatmapIdentifiers(
+            output.heatmapIdentifiers,
+            requiresDescendantLookup: true
+        )
 
         var records = records(
             from: layerTreeSnapshot,

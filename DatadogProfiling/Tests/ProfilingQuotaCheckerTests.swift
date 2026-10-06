@@ -324,7 +324,7 @@ private extension ProfilingQuotaCheckerTests {
     }
 }
 
-final class ProfilingQuotaCheckerMock: ProfilingQuotaChecking {
+final class ProfilingQuotaCheckerMock: ProfilingQuotaChecking, @unchecked Sendable {
     private(set) var receivedContexts: [DatadogContext] = []
     var quotaResult: ProfilingQuotaResult?
     var onQuotaResultUpdate: ProfilingQuotaResultListener?

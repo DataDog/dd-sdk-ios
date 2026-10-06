@@ -15,12 +15,14 @@ extension CALayerSnapshot.Context {
     static func mockAny(
         textAndInputPrivacyLevel: TextAndInputPrivacyLevel = .maskAll,
         imagePrivacyLevel: ImagePrivacyLevel = .maskAll,
+        heatmapsEnabled: Bool = false,
         webViewCache: NSHashTable<WKWebView> = .weakObjects(),
         embeddedContentViewCache: NSHashTable<UIView> = .weakObjects()
     ) -> Self {
         .init(
             textAndInputPrivacyLevel: textAndInputPrivacyLevel,
             imagePrivacyLevel: imagePrivacyLevel,
+            heatmapsEnabled: heatmapsEnabled,
             webViewCache: webViewCache,
             embeddedContentViewCache: embeddedContentViewCache
         )

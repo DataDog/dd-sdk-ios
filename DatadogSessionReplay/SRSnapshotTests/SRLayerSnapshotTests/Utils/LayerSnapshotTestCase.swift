@@ -33,7 +33,6 @@ internal class LayerSnapshotTestCase: XCTestCase {
         imagePrivacyLevel: ImagePrivacyLevel = .maskNonBundledOnly,
         waitTime: TimeInterval = 0.2,
         shouldRecord: Bool,
-        folderPath: String,
         fileNamePrefix: String? = nil,
         file: StaticString = #filePath,
         function: StaticString = #function
@@ -47,7 +46,6 @@ internal class LayerSnapshotTestCase: XCTestCase {
             imagePrivacyLevel: imagePrivacyLevel,
             waitTime: waitTime,
             shouldRecord: shouldRecord,
-            folderPath: folderPath,
             fileNamePrefix: fileNamePrefix,
             file: file,
             function: function
@@ -60,13 +58,19 @@ internal class LayerSnapshotTestCase: XCTestCase {
         with textAndInputPrivacyLevels: [TextAndInputPrivacyLevel] = [.maskSensitiveInputs],
         imagePrivacyLevel: ImagePrivacyLevel = .maskNonBundledOnly,
         waitTime: TimeInterval = 0.2,
+        beforeSnapshot: (() async -> Void)? = nil,
         shouldRecord: Bool,
-        folderPath: String,
         fileNamePrefix: String? = nil,
         file: StaticString = #filePath,
         function: StaticString = #function
     ) async throws {
+        let environment = try LayerSnapshotEnvironment(
+            osVersion: UIDevice.current.systemVersion,
+            modelIdentifier: ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"]
+        )
+
         try await show(viewController)
+        await beforeSnapshot?()
         await wait(seconds: waitTime)
 
         for textAndInputPrivacyLevel in textAndInputPrivacyLevels {
@@ -83,13 +87,13 @@ internal class LayerSnapshotTestCase: XCTestCase {
             DDAssertSnapshotTest(
                 newImage: image,
                 snapshotLocation: .folder(
-                    named: folderPath,
+                    named: environment.snapshotsFolderPath,
                     fileNameSuffix: fileNameSuffix,
                     file: file,
                     function: function
                 ),
                 record: shouldRecord,
-                simulator: .layerTree,
+                simulator: environment.simulator,
                 file: file
             )
         }

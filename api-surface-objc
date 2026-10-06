@@ -396,6 +396,7 @@ public class objc_RUMActionEvent: NSObject
     public var ddtags: String?
     public var device: objc_RUMActionEventDevice?
     public var display: objc_RUMActionEventDisplay?
+    public var executionContext: objc_RUMActionEventExecutionContext?
     public var os: objc_RUMActionEventOperatingSystem?
     public var service: String?
     public var session: objc_RUMActionEventSession
@@ -579,6 +580,14 @@ public class objc_RUMActionEventDisplay: NSObject
 public class objc_RUMActionEventDisplayViewport: NSObject
     public var height: NSNumber
     public var width: NSNumber
+public class objc_RUMActionEventExecutionContext: NSObject
+    public var id: String
+    public var name: String?
+    public var type: objc_RUMActionEventExecutionContextExecutionContextType
+public enum objc_RUMActionEventExecutionContextExecutionContextType: Int
+    case mainProcess
+    case rendererProcess
+    case utilityProcess
 public class objc_RUMActionEventOperatingSystem: NSObject
     public var build: String?
     public var name: String
@@ -623,6 +632,7 @@ public class objc_RUMActionEventRUMUser: NSObject
 public class objc_RUMActionEventView: NSObject
     public var id: String
     public var inForeground: NSNumber?
+    public var isFake: NSNumber?
     public var name: String?
     public var referrer: String?
     public var url: String
@@ -644,6 +654,7 @@ public class objc_RUMErrorEvent: NSObject
     public var device: objc_RUMErrorEventDevice?
     public var display: objc_RUMErrorEventDisplay?
     public var error: objc_RUMErrorEventError
+    public var executionContext: objc_RUMErrorEventExecutionContext?
     public var featureFlags: objc_RUMErrorEventFeatureFlags?
     public var freeze: objc_RUMErrorEventFreeze?
     public var os: objc_RUMErrorEventOperatingSystem?
@@ -971,6 +982,14 @@ public class objc_RUMErrorEventErrorThreads: NSObject
 public class objc_RUMErrorEventErrorWasmModules: NSObject
     public var buildId: String
     public var url: String
+public class objc_RUMErrorEventExecutionContext: NSObject
+    public var id: String
+    public var name: String?
+    public var type: objc_RUMErrorEventExecutionContextExecutionContextType
+public enum objc_RUMErrorEventExecutionContextExecutionContextType: Int
+    case mainProcess
+    case rendererProcess
+    case utilityProcess
 public class objc_RUMErrorEventFeatureFlags: NSObject
     public var featureFlagsInfo: [String: Any]
 public class objc_RUMErrorEventFreeze: NSObject
@@ -1019,6 +1038,7 @@ public class objc_RUMErrorEventRUMUser: NSObject
 public class objc_RUMErrorEventView: NSObject
     public var id: String
     public var inForeground: NSNumber?
+    public var isFake: NSNumber?
     public var name: String?
     public var referrer: String?
     public var url: String
@@ -1039,6 +1059,7 @@ public class objc_RUMLongTaskEvent: NSObject
     public var ddtags: String?
     public var device: objc_RUMLongTaskEventDevice?
     public var display: objc_RUMLongTaskEventDisplay?
+    public var executionContext: objc_RUMLongTaskEventExecutionContext?
     public var longTask: objc_RUMLongTaskEventLongTask
     public var os: objc_RUMLongTaskEventOperatingSystem?
     public var service: String?
@@ -1201,6 +1222,14 @@ public class objc_RUMLongTaskEventDisplay: NSObject
 public class objc_RUMLongTaskEventDisplayViewport: NSObject
     public var height: NSNumber
     public var width: NSNumber
+public class objc_RUMLongTaskEventExecutionContext: NSObject
+    public var id: String
+    public var name: String?
+    public var type: objc_RUMLongTaskEventExecutionContextExecutionContextType
+public enum objc_RUMLongTaskEventExecutionContextExecutionContextType: Int
+    case mainProcess
+    case rendererProcess
+    case utilityProcess
 public class objc_RUMLongTaskEventLongTask: NSObject
     public var blockingDuration: NSNumber?
     public var duration: NSNumber
@@ -1279,6 +1308,7 @@ public class objc_RUMLongTaskEventRUMUser: NSObject
     public var usrInfo: [String: Any]
 public class objc_RUMLongTaskEventView: NSObject
     public var id: String
+    public var isFake: NSNumber?
     public var name: String?
     public var referrer: String?
     public var url: String
@@ -1299,6 +1329,7 @@ public class objc_RUMResourceEvent: NSObject
     public var ddtags: String?
     public var device: objc_RUMResourceEventDevice?
     public var display: objc_RUMResourceEventDisplay?
+    public var executionContext: objc_RUMResourceEventExecutionContext?
     public var os: objc_RUMResourceEventOperatingSystem?
     public var resource: objc_RUMResourceEventResource
     public var service: String?
@@ -1435,6 +1466,14 @@ public class objc_RUMResourceEventDisplay: NSObject
 public class objc_RUMResourceEventDisplayViewport: NSObject
     public var height: NSNumber
     public var width: NSNumber
+public class objc_RUMResourceEventExecutionContext: NSObject
+    public var id: String
+    public var name: String?
+    public var type: objc_RUMResourceEventExecutionContextExecutionContextType
+public enum objc_RUMResourceEventExecutionContextExecutionContextType: Int
+    case mainProcess
+    case rendererProcess
+    case utilityProcess
 public class objc_RUMResourceEventOperatingSystem: NSObject
     public var build: String?
     public var name: String
@@ -1610,6 +1649,7 @@ public class objc_RUMResourceEventRUMUser: NSObject
     public var usrInfo: [String: Any]
 public class objc_RUMResourceEventView: NSObject
     public var id: String
+    public var isFake: NSNumber?
     public var name: String?
     public var referrer: String?
     public var url: String
@@ -1628,6 +1668,7 @@ public class objc_RUMTimeseriesCpuEvent: NSObject
     public var ddtags: String?
     public var device: objc_RUMTimeseriesCpuEventDevice?
     public var display: objc_RUMTimeseriesCpuEventDisplay?
+    public var executionContext: objc_RUMTimeseriesCpuEventExecutionContext?
     public var os: objc_RUMTimeseriesCpuEventOperatingSystem?
     public var service: String?
     public var session: objc_RUMTimeseriesCpuEventSession
@@ -1737,6 +1778,14 @@ public class objc_RUMTimeseriesCpuEventDisplay: NSObject
 public class objc_RUMTimeseriesCpuEventDisplayViewport: NSObject
     public var height: NSNumber
     public var width: NSNumber
+public class objc_RUMTimeseriesCpuEventExecutionContext: NSObject
+    public var id: String
+    public var name: String?
+    public var type: objc_RUMTimeseriesCpuEventExecutionContextExecutionContextType
+public enum objc_RUMTimeseriesCpuEventExecutionContextExecutionContextType: Int
+    case mainProcess
+    case rendererProcess
+    case utilityProcess
 public class objc_RUMTimeseriesCpuEventOperatingSystem: NSObject
     public var build: String?
     public var name: String
@@ -1792,6 +1841,7 @@ public class objc_RUMTimeseriesCpuEventRUMUser: NSObject
     public var usrInfo: [String: Any]
 public class objc_RUMTimeseriesCpuEventView: NSObject
     public var id: String
+    public var isFake: NSNumber?
     public var name: String?
     public var referrer: String?
     public var url: String
@@ -1810,6 +1860,7 @@ public class objc_RUMTimeseriesMemoryEvent: NSObject
     public var ddtags: String?
     public var device: objc_RUMTimeseriesMemoryEventDevice?
     public var display: objc_RUMTimeseriesMemoryEventDisplay?
+    public var executionContext: objc_RUMTimeseriesMemoryEventExecutionContext?
     public var os: objc_RUMTimeseriesMemoryEventOperatingSystem?
     public var service: String?
     public var session: objc_RUMTimeseriesMemoryEventSession
@@ -1919,6 +1970,14 @@ public class objc_RUMTimeseriesMemoryEventDisplay: NSObject
 public class objc_RUMTimeseriesMemoryEventDisplayViewport: NSObject
     public var height: NSNumber
     public var width: NSNumber
+public class objc_RUMTimeseriesMemoryEventExecutionContext: NSObject
+    public var id: String
+    public var name: String?
+    public var type: objc_RUMTimeseriesMemoryEventExecutionContextExecutionContextType
+public enum objc_RUMTimeseriesMemoryEventExecutionContextExecutionContextType: Int
+    case mainProcess
+    case rendererProcess
+    case utilityProcess
 public class objc_RUMTimeseriesMemoryEventOperatingSystem: NSObject
     public var build: String?
     public var name: String
@@ -1975,6 +2034,7 @@ public class objc_RUMTimeseriesMemoryEventRUMUser: NSObject
     public var usrInfo: [String: Any]
 public class objc_RUMTimeseriesMemoryEventView: NSObject
     public var id: String
+    public var isFake: NSNumber?
     public var name: String?
     public var referrer: String?
     public var url: String
@@ -1994,6 +2054,7 @@ public class objc_RUMViewEvent: NSObject
     public var ddtags: String?
     public var device: objc_RUMViewEventDevice?
     public var display: objc_RUMViewEventDisplay?
+    public var executionContext: objc_RUMViewEventExecutionContext?
     public var featureFlags: objc_RUMViewEventFeatureFlags?
     public var os: objc_RUMViewEventOperatingSystem?
     public var privacy: objc_RUMViewEventPrivacy?
@@ -2174,6 +2235,14 @@ public class objc_RUMViewEventDisplayScroll: NSObject
 public class objc_RUMViewEventDisplayViewport: NSObject
     public var height: NSNumber
     public var width: NSNumber
+public class objc_RUMViewEventExecutionContext: NSObject
+    public var id: String
+    public var name: String?
+    public var type: objc_RUMViewEventExecutionContextExecutionContextType
+public enum objc_RUMViewEventExecutionContextExecutionContextType: Int
+    case mainProcess
+    case rendererProcess
+    case utilityProcess
 public class objc_RUMViewEventFeatureFlags: NSObject
     public var featureFlagsInfo: [String: Any]
 public class objc_RUMViewEventOperatingSystem: NSObject
@@ -2264,6 +2333,7 @@ public class objc_RUMViewEventView: NSObject
     public var interactionToNextPaintTime: NSNumber?
     public var interactionToNextViewTime: NSNumber?
     public var isActive: NSNumber?
+    public var isFake: NSNumber?
     public var isSlowRendered: NSNumber?
     public var jsRefreshRate: objc_RUMViewEventViewJsRefreshRate?
     public var largestContentfulPaint: NSNumber?
@@ -2422,6 +2492,7 @@ public class objc_RUMViewUpdateEvent: NSObject
     public var ddtags: String?
     public var device: objc_RUMViewUpdateEventDevice?
     public var display: objc_RUMViewUpdateEventDisplay?
+    public var executionContext: objc_RUMViewUpdateEventExecutionContext?
     public var featureFlags: objc_RUMViewUpdateEventFeatureFlags?
     public var os: objc_RUMViewUpdateEventOperatingSystem?
     public var privacy: objc_RUMViewUpdateEventPrivacy?
@@ -2602,6 +2673,14 @@ public class objc_RUMViewUpdateEventDisplayScroll: NSObject
 public class objc_RUMViewUpdateEventDisplayViewport: NSObject
     public var height: NSNumber
     public var width: NSNumber
+public class objc_RUMViewUpdateEventExecutionContext: NSObject
+    public var id: String
+    public var name: String?
+    public var type: objc_RUMViewUpdateEventExecutionContextExecutionContextType
+public enum objc_RUMViewUpdateEventExecutionContextExecutionContextType: Int
+    case mainProcess
+    case rendererProcess
+    case utilityProcess
 public class objc_RUMViewUpdateEventFeatureFlags: NSObject
     public var featureFlagsInfo: [String: Any]
 public class objc_RUMViewUpdateEventOperatingSystem: NSObject
@@ -2692,6 +2771,7 @@ public class objc_RUMViewUpdateEventView: NSObject
     public var interactionToNextPaintTime: NSNumber?
     public var interactionToNextViewTime: NSNumber?
     public var isActive: NSNumber?
+    public var isFake: NSNumber?
     public var isSlowRendered: NSNumber?
     public var jsRefreshRate: objc_RUMViewUpdateEventViewJsRefreshRate?
     public var largestContentfulPaint: NSNumber?
@@ -2850,6 +2930,7 @@ public class objc_RUMVitalAppLaunchEvent: NSObject
     public var ddtags: String?
     public var device: objc_RUMVitalAppLaunchEventDevice?
     public var display: objc_RUMVitalAppLaunchEventDisplay?
+    public var executionContext: objc_RUMVitalAppLaunchEventExecutionContext?
     public var os: objc_RUMVitalAppLaunchEventOperatingSystem?
     public var service: String?
     public var session: objc_RUMVitalAppLaunchEventSession
@@ -3002,6 +3083,14 @@ public class objc_RUMVitalAppLaunchEventDisplay: NSObject
 public class objc_RUMVitalAppLaunchEventDisplayViewport: NSObject
     public var height: NSNumber
     public var width: NSNumber
+public class objc_RUMVitalAppLaunchEventExecutionContext: NSObject
+    public var id: String
+    public var name: String?
+    public var type: objc_RUMVitalAppLaunchEventExecutionContextExecutionContextType
+public enum objc_RUMVitalAppLaunchEventExecutionContextExecutionContextType: Int
+    case mainProcess
+    case rendererProcess
+    case utilityProcess
 public class objc_RUMVitalAppLaunchEventOperatingSystem: NSObject
     public var build: String?
     public var name: String
@@ -3045,6 +3134,7 @@ public class objc_RUMVitalAppLaunchEventRUMUser: NSObject
     public var usrInfo: [String: Any]
 public class objc_RUMVitalAppLaunchEventView: NSObject
     public var id: String
+    public var isFake: NSNumber?
     public var name: String?
     public var referrer: String?
     public var url: String
@@ -3081,6 +3171,7 @@ public class objc_RUMVitalDurationEvent: NSObject
     public var ddtags: String?
     public var device: objc_RUMVitalDurationEventDevice?
     public var display: objc_RUMVitalDurationEventDisplay?
+    public var executionContext: objc_RUMVitalDurationEventExecutionContext?
     public var os: objc_RUMVitalDurationEventOperatingSystem?
     public var service: String?
     public var session: objc_RUMVitalDurationEventSession
@@ -3233,6 +3324,14 @@ public class objc_RUMVitalDurationEventDisplay: NSObject
 public class objc_RUMVitalDurationEventDisplayViewport: NSObject
     public var height: NSNumber
     public var width: NSNumber
+public class objc_RUMVitalDurationEventExecutionContext: NSObject
+    public var id: String
+    public var name: String?
+    public var type: objc_RUMVitalDurationEventExecutionContextExecutionContextType
+public enum objc_RUMVitalDurationEventExecutionContextExecutionContextType: Int
+    case mainProcess
+    case rendererProcess
+    case utilityProcess
 public class objc_RUMVitalDurationEventOperatingSystem: NSObject
     public var build: String?
     public var name: String
@@ -3276,6 +3375,7 @@ public class objc_RUMVitalDurationEventRUMUser: NSObject
     public var usrInfo: [String: Any]
 public class objc_RUMVitalDurationEventView: NSObject
     public var id: String
+    public var isFake: NSNumber?
     public var name: String?
     public var referrer: String?
     public var url: String
@@ -3301,6 +3401,7 @@ public class objc_RUMVitalOperationStepEvent: NSObject
     public var ddtags: String?
     public var device: objc_RUMVitalOperationStepEventDevice?
     public var display: objc_RUMVitalOperationStepEventDisplay?
+    public var executionContext: objc_RUMVitalOperationStepEventExecutionContext?
     public var os: objc_RUMVitalOperationStepEventOperatingSystem?
     public var service: String?
     public var session: objc_RUMVitalOperationStepEventSession
@@ -3453,6 +3554,14 @@ public class objc_RUMVitalOperationStepEventDisplay: NSObject
 public class objc_RUMVitalOperationStepEventDisplayViewport: NSObject
     public var height: NSNumber
     public var width: NSNumber
+public class objc_RUMVitalOperationStepEventExecutionContext: NSObject
+    public var id: String
+    public var name: String?
+    public var type: objc_RUMVitalOperationStepEventExecutionContextExecutionContextType
+public enum objc_RUMVitalOperationStepEventExecutionContextExecutionContextType: Int
+    case mainProcess
+    case rendererProcess
+    case utilityProcess
 public class objc_RUMVitalOperationStepEventOperatingSystem: NSObject
     public var build: String?
     public var name: String
@@ -3496,6 +3605,7 @@ public class objc_RUMVitalOperationStepEventRUMUser: NSObject
     public var usrInfo: [String: Any]
 public class objc_RUMVitalOperationStepEventView: NSObject
     public var id: String
+    public var isFake: NSNumber?
     public var name: String?
     public var referrer: String?
     public var url: String

@@ -45,7 +45,7 @@ extension CGFloat: DatadogExtended {}
 
 extension DatadogExtension where ExtendedType == CGFloat {
     internal var svgString: String {
-        String(format: "%.3f", locale: .init(identifier: "en_US_POSIX"), type)
+        String(format: "%.3f", type)
     }
 }
 

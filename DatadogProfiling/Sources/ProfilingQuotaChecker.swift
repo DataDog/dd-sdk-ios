@@ -30,7 +30,7 @@ internal struct ProfilingQuotaResult: Equatable, Sendable {
 
 internal typealias ProfilingQuotaResultListener = @Sendable (ProfilingQuotaResult?) -> Void
 
-internal protocol ProfilingQuotaChecking: AnyObject, FeatureMessageReceiver {
+internal protocol ProfilingQuotaChecking: AnyObject, FeatureMessageReceiver, Sendable {
     var quotaResult: ProfilingQuotaResult? { get }
 
     /// Called when the active session quota result changes.
@@ -53,7 +53,7 @@ extension ProfilingQuotaChecking {
 /// It starts a quota request when a sampled-in RUM session id is observed with granted
 /// tracking consent, ignores stale responses for previous sessions and fails open
 /// on request or decoding errors.
-internal final class ProfilingQuotaChecker: ProfilingQuotaChecking, Sendable {
+internal final class ProfilingQuotaChecker: ProfilingQuotaChecking {
     private enum Constants {
         static let quotaPath = "/api/v2/profiling/quota"
         static let sessionIDQueryItem = "session_id"

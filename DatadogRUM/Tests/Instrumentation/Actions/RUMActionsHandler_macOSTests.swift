@@ -643,7 +643,7 @@ class RUMActionsHandlerMacOSTests: XCTestCase {
         // Then
         let command = try XCTUnwrap(commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand)
         XCTAssertEqual(command.name, actionName)
-        XCTAssertEqual(command.actionType, .tap)
+        XCTAssertEqual(command.actionType, .click)
         XCTAssertEqual(command.instrumentation, .swiftui)
         XCTAssertEqual(command.time, .mockDecember15th2019At10AMUTC())
         DDAssertReflectionEqual(command.attributes, actionAttributes)

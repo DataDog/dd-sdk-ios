@@ -57,7 +57,10 @@ internal struct ViewTreeSnapshotBuilder {
             embeddedContentSlots: embeddedContentSlots()
         )
         if let heatmapCache {
-            core?.heatmapIdentifierRegistry?.setHeatmapIdentifiers(heatmapCache.identifiers)
+            core?.heatmapIdentifierRegistry?.setHeatmapIdentifiers(
+                heatmapCache.identifiers,
+                requiresDescendantLookup: false
+            )
         }
         return snapshot
     }

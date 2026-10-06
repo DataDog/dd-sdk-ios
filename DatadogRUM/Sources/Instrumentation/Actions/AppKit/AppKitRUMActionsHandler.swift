@@ -99,7 +99,7 @@ internal final class RUMActionsHandler: RUMActionsHandling {
             time: dateProvider.now,
             attributes: actionAttributes,
             instrumentation: .swiftui,
-            actionType: .tap,
+            actionType: .click,
             name: actionName
         )
 

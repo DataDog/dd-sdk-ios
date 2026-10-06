@@ -5,6 +5,7 @@
  */
 
 #if os(iOS)
+import AVFoundation
 import Foundation
 import QuartzCore
 import UIKit
@@ -65,6 +66,17 @@ extension CALayerSnapshot.SemanticObservationMapping {
         }
 
         return .init(semantics: .label(.init(label: label)), ignoresSublayers: true)
+    }
+
+    static let roundedRectShadow = Self { layer, _, _ in
+        guard layer.isRoundedRectShadow else {
+            return nil
+        }
+
+        return .init(
+            semantics: .visualEffect(.compositorSupport),
+            ignoresSublayers: true
+        )
     }
 
     static let imageView = Self { layer, _, _ in
@@ -129,6 +141,61 @@ extension CALayerSnapshot.SemanticObservationMapping {
         }
 
         return .init(semantics: .layer, ignoresImagePrivacy: true)
+    }
+
+    static let playerLayer = Self { layer, _, _ in
+        guard layer is AVPlayerLayer else {
+            return nil
+        }
+
+        return .init(
+            semantics: .unsupported("Video"),
+            ignoresSublayers: true
+        )
+    }
+
+    static let captureVideoPreviewLayer = Self { layer, _, _ in
+        guard layer is AVCaptureVideoPreviewLayer else {
+            return nil
+        }
+
+        return .init(
+            semantics: .unsupported("Camera preview"),
+            ignoresSublayers: true
+        )
+    }
+
+    static let sampleBufferDisplayLayer = Self { layer, _, _ in
+        guard layer is AVSampleBufferDisplayLayer else {
+            return nil
+        }
+
+        return .init(
+            semantics: .unsupported("Video"),
+            ignoresSublayers: true
+        )
+    }
+
+    static let metalLayer = Self { layer, _, _ in
+        guard layer is CAMetalLayer else {
+            return nil
+        }
+
+        return .init(
+            semantics: .unsupported("Metal"),
+            ignoresSublayers: true
+        )
+    }
+
+    static let layerHost = Self { layer, _, _ in
+        guard layer.isHost else {
+            return nil
+        }
+
+        return .init(
+            semantics: .unsupported("Remote content"),
+            ignoresSublayers: true
+        )
     }
 }
 
