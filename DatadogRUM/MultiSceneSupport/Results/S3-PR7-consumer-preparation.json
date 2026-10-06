@@ -6,7 +6,7 @@
   "source_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
   "branch": "valpertui/s3-consumer-capture",
   "base_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
-  "source_head": "f7a2ab00ba27478c9e5bad8fa5a025a8b9e0fb87",
+  "source_head": "3dbc972ee5b94c320980a42955760e9796cb1677",
   "source_gap_inventory": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-consumer-source-preparation/packet.json",
     "sha256": "57e376768a17b85993c54af64fcfb4f63048738ae0976e386760c5831f0c4a5b"
@@ -188,8 +188,8 @@
   "builds": 4,
   "gates_closed": [],
   "whole_pr7_qualified": false,
-  "next_action": "Review and apply decisive actual automatic/manual/OTel constructor tests, then fresh current-source Internal/CoreTSan/Trace qualification within the existing awake cutoff. P7A0 selected twelve methods at ab46 are accepted; original whole INVALID stays immutable. Logs/Flags/WebView, complete Off, older-system and final-stack obligations remain.",
-  "updated_at": "2026-10-06T04:35:59.312009+00:00",
+  "next_action": "Qualify sixteen new consumer methods and eight focused legacy regressions on current source3dbc through fresh Internal/CoreTSan/Trace builds, exact discovery and cleanup within the unchanged awake cutoff. Constructor source review/lint pass; no current consumer execution or gate credit. Preserve accepted action dependencies and original failures; Logs/Flags/WebView, complete Off, older-system and final-stack obligations remain.",
+  "updated_at": "2026-10-06T04:51:00.251331+00:00",
   "sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-applied-20261006/formatting-successor/sdk-checkpoint.json",
     "sha256": "3a399170a220d96401f654f679c8de419c8c8377b3bee1daf6a3638ac8ddf73b"
@@ -921,6 +921,45 @@
     "new_source_methods": 11,
     "tests_run": 0,
     "native_runs": 0,
-    "qualification_gap": "Actual constructor tests must prove automatic/manual/OTel install the captured decorator; existing writer-only and capture=nil tests cannot close that obligation."
+    "qualification_gap": "Actual constructor tests now applied and reviewed; fresh current-source compilation and sixteen new/eight legacy selected-method qualification remain."
+  },
+  "trace_constructor_tests": {
+    "state": "APPLIED_SOURCE_REVIEWED_LINT_PASS_UNCOMPILED",
+    "original_block": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-trace-constructor-test-draft-cycle2-20261006/review.json",
+      "sha256": "4bab9919601ad33a64cb444da15f7d17fd8ebd8632d746929a6e22f965eb8b38"
+    },
+    "corrected_packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-trace-constructor-test-draft-cycle3-20261006/packet.json",
+      "sha256": "cc8766679bf67078e8e6a01c20128f70b75896384c416da112b30d7e3b5cb8d8"
+    },
+    "source_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-trace-constructor-test-draft-cycle3-20261006/review.json",
+      "sha256": "3796b63aeb2dceeb342da4cf9ba480912fc3f35445af43f2b6b3a912beae9893"
+    },
+    "actual_source": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-trace-constructor-tests-applied-20261006/packet.json",
+      "sha256": "d870b70fb852a1ea1719a6a91277bdb85ab9354da573f2797da3422e2f73c674"
+    },
+    "checkpoint": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-trace-constructor-tests-applied-20261006/sdk-checkpoint.json",
+      "sha256": "c8a84e2af5e123fa06ba8d6e4b53f20e1f8cf8a18bfb3bf18b16d099aa19d191"
+    },
+    "new_methods": 5,
+    "consumer_new_methods_total": 16,
+    "prospective_selected_total": 24,
+    "tests_run": 0,
+    "native_runs": 0,
+    "disposition": "Actual automatic/manual/OTel constructors install retained owner; sole random nil-decision custom-root oracle corrected without changing SDK sampling. All uncompiled."
+  },
+  "flags_capture_design": {
+    "state": "UNREVIEWED_SOURCE_DESIGN_ONLY",
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-flags-capture-design-20261006/packet.json",
+      "sha256": "a200c79abf45c233e8a93df30d1b6a8bf4b87897d7275106a34dbd1504bbb533"
+    },
+    "sdk_edits": 0,
+    "native_runs": 0,
+    "gates_closed": []
   }
 }

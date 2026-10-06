@@ -10,7 +10,7 @@
   "native_admitted": false,
   "native_runs": 20,
   "gates_closed": [],
-  "next_action": "Review and apply decisive actual automatic/manual/OTel constructor tests, then fresh current-source Internal/CoreTSan/Trace qualification within the existing awake cutoff. P7A0 selected twelve methods at ab46 are accepted; original whole INVALID stays immutable. Logs/Flags/WebView, complete Off, older-system and final-stack obligations remain.",
+  "next_action": "Qualify sixteen new consumer methods and eight focused legacy regressions on current source3dbc through fresh Internal/CoreTSan/Trace builds, exact discovery and cleanup within the unchanged awake cutoff. Constructor source review/lint pass; no current consumer execution or gate credit. Preserve accepted action dependencies and original failures; Logs/Flags/WebView, complete Off, older-system and final-stack obligations remain.",
   "p1": {
     "required_s2_tasks": 3,
     "required_s3_tasks": 20,
@@ -1567,7 +1567,7 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-consumer-source-preparation/packet.json",
       "sha256": "57e376768a17b85993c54af64fcfb4f63048738ae0976e386760c5831f0c4a5b"
     },
-    "pr7_preparation_scope": "One actual build rc0; compiler expectation stop closed independently with no owned boot/test. Saved ten-target products reconciled separately; new test-only proposal remains unadmitted. No consumer or release acceptance.",
+    "pr7_preparation_scope": "Source3dbc contains independently reviewed Network/Trace implementation and five actual constructor tests, sixteen new/eight legacy selectors pending fresh current-source qualification. Action twelve-method dependency remains separately accepted; whole PR7/Off/final-stack gates open.",
     "pr9_private_preparation": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-representative-projection-cycle3/source-review-packet.json",
       "sha256": "8d1064e62b8b1f33ea55646a5ad87d78d8250bb06f08951bb3fbd185f3a85f71"
@@ -1672,14 +1672,18 @@
     },
     "pr7_owning_preparation": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
-      "sha256": "34b3b64c2ace2e4a5f408cea64e171b1ca60653acede273e3760e3e9b20219b1"
+      "sha256": "24bac2623042bafeebf3fb2ccd7668a56f4b72a8dfca1a52c8719c28602cf772"
     },
     "pr7_dependency_design_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/dependency-design-review.json",
       "sha256": "71a2bd15b9f0c0e408a64f498dc4e234d89e3d54fdb216eb24ce69a8d25ca66f"
+    },
+    "pr7_constructor_checkpoint": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-trace-constructor-tests-applied-20261006/sdk-checkpoint.json",
+      "sha256": "c8a84e2af5e123fa06ba8d6e4b53f20e1f8cf8a18bfb3bf18b16d099aa19d191"
     }
   },
-  "updated_at": "2026-10-06T04:35:59.312009+00:00",
+  "updated_at": "2026-10-06T04:51:00.251331+00:00",
   "native_run_accounting": {
     "P3_required_platform_build": 1,
     "P5_PR3_PR4_PR5_off_cells": 6,
