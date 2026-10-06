@@ -504,7 +504,7 @@ extension OTelSpanTests {
             let sampler = fixture.sessionSampler()
             sampler.onRichDecision = {
                 var context = fixture.scope.contextMock
-                context.userInfo = .mockWith(id: "after-sampling")
+                context.userInfo = UserInfo(id: "after-sampling")
                 fixture.scope.contextMock = context
             }
             let tracer = DatadogTracer.mockWith(
