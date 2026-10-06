@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "state": "STOPPED_LATER_CAPTURE_SESSION_LOSS_RETIRED",
+  "updated_at": "2026-10-06T17:56:26.068105+00:00",
+  "plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/runtime-plan.json",
+    "sha256": "8ecffcc61ac6f541f38835a19346405aa720fe1f54d5a97d16e7f4e889fa1421"
+  },
+  "plan_scope": "Selected preparation lineage; actual issued candidate context is retained separately.",
+  "actual_plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-return-identity-runtime-successor-20261006/preparation/plan.current.unissued.json",
+    "sha256": "4376df5ef66df72a26d54fa603aa3dd442ffebeddda5ce0e0cc6208077a4cfd5"
+  },
+  "gates": [
+    "S2:C09",
+    "S2:C10",
+    "S2:H14"
+  ],
+  "scenario": "UNQUALIFIED",
+  "evidence": "INCOMPLETE",
+  "cleanup": "INVALID",
+  "overall": "INVALID",
+  "gates_closed": [],
+  "run_id": "04d7d303-a564-4a6b-83c0-f0e3377b951a",
+  "context": {
+    "bundle": "com.datadoghq.s2.automatic.candidate.sdk271.swiftui",
+    "cleanup_deadline": 1791313089.2325718,
+    "device": "F91CCE46-2704-4E8B-9093-A6A0EF250B1A",
+    "execution_deadline": 1791312489.2325718,
+    "issued_at": 1791307089.2325718,
+    "layout": "split",
+    "operation_profile": "S2_WORKSPACE_HUMAN_FOREGROUND_END_LAST_V1",
+    "owner": "/root/s2_split_input_owner",
+    "plan_sha256": "4376df5ef66df72a26d54fa603aa3dd442ffebeddda5ce0e0cc6208077a4cfd5",
+    "run_id": "04d7d303-a564-4a6b-83c0-f0e3377b951a",
+    "scheme": "Coverage",
+    "source": "c9faed816a1d4828d7d8c4b64acae01119425889",
+    "tool_workspace_binding": {
+      "configuration": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-return-identity-runtime-successor-20261006/preparation/workspace-configuration.consumer.json",
+        "sha256": "c509c273c2617c9c5f702fe69e7313d9777e73d7016a3554891dff29d40b12f9"
+      },
+      "tool_metadata": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-parent-return-identity-correction-20261006/root-checkpoint-bindings-1624/metadata.actual.json",
+        "sha256": "b2604160c5068085d42d114cd81854721926ed2a9b63b31276d255883e7481d8"
+      },
+      "workspace_list": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-return-identity-runtime-successor-20261006/preparation/workspace-list.consumer.json",
+        "sha256": "4ea50df6cf90b56f107c09755b3d0b9fc41ecee44530e8714f0a85be444205a2"
+      }
+    },
+    "tool_workspace_identifier": "workspace-uanW3al82g",
+    "workspace": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-workspace-source-cycle1/client/AutomaticCoverage.xcodeproj"
+  },
+  "closure": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-post-plan-consent-chronology-correction-20261006/runtime-next/separate-stopped-session-restoration/closure.json",
+    "sha256": "7ef2bdc44dbe3337083c9e4da01bb4fd640172049fa8c5c303875e3af2c08ad7"
+  },
+  "actual_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-post-plan-consent-chronology-correction-20261006/runtime-next/separate-stopped-session-restoration/actual-review.json",
+    "sha256": "b94b33d46426d10c63e41a68b04a66bcb0f8b412fcbbbfa3fee9e81ddee7af2e"
+  },
+  "browser_ack_addendum": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-post-plan-consent-chronology-correction-20261006/runtime-next/separate-stopped-session-restoration/browser-ack-consumer-path-addendum.json",
+    "sha256": "3c5800abfc75dd1c4bebb87d44242aa99531cebc797a349e33ba84e6d503e363"
+  },
+  "separate_restoration": {
+    "disposition": {
+      "full_original_device_comparison": true,
+      "full_original_displays_equal": true,
+      "original_app_count": 23,
+      "original_full_apps_equal": true,
+      "page_actual_exit": 143,
+      "page_pid_retired": true,
+      "reader_state": "QUIESCENT",
+      "reader_thread_alive": false,
+      "registered_group_count": 219,
+      "registered_groups_and_controller_worker_fixture_absent_in_saved_full_ps": true,
+      "relay_socket_absent": true,
+      "restoration_and_retirement_completed_before_fixed_cleanup_cutoff": true,
+      "stable_copy_membership_and_bytes_exact": true,
+      "state": "PASS_TASK_ONLY_REMOVAL_ORIGINAL_APPS_DEVICE_DISPLAYS_AND_ORIGINAL_WORKSPACE_SELECTION",
+      "task_app_and_data_absent": true,
+      "workspace_destination": "iPhone 18 Pro (27.0)",
+      "workspace_scheme": "Coverage"
+    },
+    "record": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-post-plan-consent-chronology-correction-20261006/runtime-next/separate-stopped-session-restoration/restoration.json",
+      "sha256": "fa729245a8d5e0c808b31d950d8a459c9d9d1fb332da716c522e9a3a88065fc3"
+    },
+    "supported_end": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-post-plan-consent-chronology-correction-20261006/runtime-next/separate-stopped-session-restoration/actual-separate-end-and-observer-returns.json",
+      "sha256": "c0cb5a413f853cc36b6050c6216f3d61b1b3db580ff1062311e34822ffb6fca5"
+    },
+    "original_rejected_end_unchanged": true
+  },
+  "page_retirement": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-post-plan-consent-chronology-correction-20261006/runtime-next/separate-stopped-session-restoration/page-retirement.json",
+    "sha256": "335c76a98ce33d22bb0f076efe49461f2f249abf5b249e47b94e5b107ac50dc9"
+  },
+  "ready_invited": true,
+  "browser_ready_ack": false,
+  "human_gestures": 0,
+  "limited_positive": {
+    "does_not_qualify_full_human_path": true,
+    "initial_and_first_scheduled_renewal_pre_ready_proof": true
+  },
+  "failure": {
+    "cause": "UNPROVEN",
+    "duration_seconds": 148.45000004768372,
+    "finished_at": 1791307778.211,
+    "kind": "THIRD_SCHEDULED_EMPTY_CAPTURE_ERROR_AND_LATE_RETURN",
+    "raw_is_error": true,
+    "request_deadline": 1791307747.378546,
+    "request_id": "a0c5e036-4e65-4f17-8659-1ce4e9a0132e",
+    "returned_message": "Session not found. It may have already been closed, or the identifier is wrong",
+    "started_at": 1791307629.761,
+    "worker_error": "foreign or late renewal return"
+  },
+  "secondary_parent_error": "owned local channel closed/partial",
+  "failure_attribution": "Capture/tool transport failure; no SDK or lease cause is established. First accepted renewal does not qualify the whole human path.",
+  "native_counts": {
+    "original_return_records": 7,
+    "successful_session_stopped_response": false,
+    "separate_supported_end_calls": 1,
+    "pending_calls_after_restoration": 0
+  },
+  "retired": true,
+  "active": false,
+  "owner_freeze": false,
+  "runtime_authority_unresumable": true,
+  "latest_user_availability": {
+    "actual_message": "I'm ready now",
+    "observed_at_utc": "2026-10-06T17:45:34Z",
+    "supplies_old_browser_ready": false,
+    "supplies_gestures": false
+  },
+  "next_action": "Qualify the existing independent-app launch and short workspace-free capture/End path for this candidate. Require fresh same-PID writer, scene/window/root ownership and idle after End before offering browser Ready; retain actual returned tool state. Reuse accepted source, products, four cells and split baseline. Review the changed composition and focused boundary controls before native use; keep original clocks and failures immutable. PR7 WebView and Flags acquisition can progress independently."
+}

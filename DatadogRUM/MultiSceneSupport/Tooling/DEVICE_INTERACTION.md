@@ -133,7 +133,7 @@ returned key and verify it with a live capture near input; a successful StartSes
 receipt does not prove later liveness. If the first capture reports a missing
 session, retain that zero-input result. Close or prove session absence before app
 cleanup. A fresh-session comparison needs a new identity; repeated disappearance
-is an environment blocker, not an SDK finding. SwiftUI automatic coverage requires
+is an environment blocker, not an SDK finding. [The latest stopped path](../Results/S2-capture-session-loss-20261006.json) requires independent app launch/short capture/End and fresh same-PID writer/owner/idle before Ready; retain actual returned tool state. SwiftUI automatic coverage requires
 its [supported capture prerequisite](../../../tools/multi-scene/automatic-coverage/README.md); a compiled reader or restoration graph cannot qualify a new launch.
 
 For the controlled Datadog app, use the [F08 capture overlay](../../../tools/multi-scene/app-acceptance/README.md)
