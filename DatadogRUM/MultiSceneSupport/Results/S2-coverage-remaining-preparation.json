@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "state": "PREARMED_SERVICE_REVIEWED_OFFLINE_WAIT_FRESH_HUMAN",
-  "updated_at": "2026-10-06T08:16:41.942614+00:00",
+  "updated_at": "2026-10-06T08:47:41.866961+00:00",
   "execution": {
     "record": "Results/S2-swiftui-split-candidate-20261003.json"
   },
@@ -560,12 +560,12 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-post-otel-static-20261006/s2-candidate-0900-handoff.json",
       "sha256": "f97158964a6ae877f7de7e1c31d35fbf6540fe495f8f44cb47321f794c2a51db"
     },
-    "state": "FOUR_RUNTIME_PIN_CORRECTION_AND_GUARDED_CONSTRUCTION_REVIEWED_OFFLINE_ONLY",
+    "state": "REVIEW_RECEIPT_SCHEMA_BLOCKED_FULL_STARTUP_PREFLIGHT_REQUIRED",
     "new_native_runs": 0,
     "new_builds": 0,
     "baseline_repeat": false,
     "gates_closed": [],
-    "next_action": "Prepare a fresh candidate-only sitting from reviewed runtime_static_pins and executable_cone, using current MAIN HEAD, actual new-page visibility/readiness, canonical UUID context validation, final parameter review and exclusive root admission. No repeat baseline, old clocks or offline gate credit.",
+    "next_action": "Correct only the private receipt schema and exercise the actual unchanged full pre-effect bootstrap/configuration/reviewer-assignment/dispatch-source plus guarded construction and human/operator setup. Retain explicit offline fixtures, exact path/hash guards and zero native effects; missing reviewer_role must be rejected. Obtain designated review before a new candidate-only invitation. No source edit, rebuild, accepted-suite rerun or repeat baseline.",
     "static_sitting_preparation": {
       "original_metadata_packet": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-0900-metadata-preparation-20261006/packet.json",
