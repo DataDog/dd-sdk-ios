@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "state": "FINAL_S1_DEPENDENCY_SOURCE_REVIEWED_CHECKPOINTED_CONSUMERS_NOT_IMPLEMENTED",
+  "state": "DEPENDENCY_QUALIFIED_ACTION_IMPLEMENTED_COMPONENT_QUALIFICATION_REMAINS",
   "existing_gate": "S3:F12",
   "slice": "PR7",
   "source_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
   "branch": "valpertui/s3-consumer-capture",
   "base_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
-  "source_head": "142ad7150f3e62f1522c3feb923d84b722efb951",
+  "source_head": "ab46a329ad5b3f0322e27671ca59efc6a98de6d5",
   "source_gap_inventory": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-consumer-source-preparation/packet.json",
     "sha256": "57e376768a17b85993c54af64fcfb4f63048738ae0976e386760c5831f0c4a5b"
@@ -54,7 +54,28 @@
         "Retained first-party/third-party header guards remain; exact Core/provider and E05 sources are unchanged"
       ],
       "environment": "Ordinary iOS27 simulator; fresh pinned Xcode/source/product/evidence; no gestures",
-      "state": "EXACT_SOURCE_REVIEWED_CHECKPOINTED_RUNTIME_NOT_QUALIFIED"
+      "state": "QUALIFIED_AFFECTED_COMPONENT_AT_142AD",
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-filtered-discovery-20261006/actual-test-only-run-97d448b1/result.json",
+        "sha256": "2c99511e7785ed6bbc34ec05aa5153dd3d70308631e82aed20169ff4258bcc4b"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-filtered-discovery-20261006/actual-test-only-run-97d448b1/closure/actual-review.json",
+        "sha256": "055a01692b7be28ef4a3077368f37ff0d57653b027574d0485a4627626b58705"
+      }
+    },
+    {
+      "id": "P7A0",
+      "deliverable": "Shared accepted-action receipt before downstream consumer application",
+      "owner": "SDK implementer + designated reviewer",
+      "dependencies": [
+        "P7D0",
+        "reviewed receipt and composed source"
+      ],
+      "completion": "Captured original owner and actual accepted action UUID, with authoritative absence for dropped/unprocessed/invalid ownership",
+      "decisive_test": "Five scalar receipt methods, six actual action-scope methods, one real-Core queued-context method; no prior or subsequent action borrowing, genuine rejected priority and uncertain-launch resolution",
+      "environment": "Pinned ordinary iOS27 simulator; Internal/RUM/Core schemes, Core Thread Sanitizer preserved; no gestures or workspace opening",
+      "state": "IMPLEMENTED_REVIEWED_CHECKPOINTED_UNCOMPILED"
     },
     {
       "id": "P7N1",
@@ -135,19 +156,19 @@
       "state": "DESIGN_AND_IMPLEMENTATION_REMAIN"
     }
   ],
-  "selected_task": "P7D0_SAVED_FILTERED_DISCOVERY_TEST_ONLY_SUCCESSOR",
+  "selected_task": "P7A0_ACCEPTED_ACTION_COMPONENT_QUALIFICATION",
   "pending_action_requirement": "Pending/excluded action scalars do not identify an accepted Action UUID. The existing queue-confined continuous-action receipt is not a generic cross-module/discrete-action acceptance receipt. Do not borrow a later same-view action; independently review the smallest source-backed receipt design before consumer changes.",
   "off_requirement": "Reusing the network provider single State read may gate On locally. No default-Off Core registry/TaskLocal/scene lookup, owner allocation, new map/lock or naive owner(in: FeatureScope) capture.",
   "runtime_admitted": false,
-  "native_runs": 0,
+  "native_runs": 1,
   "builds": 1,
   "gates_closed": [],
   "whole_pr7_qualified": false,
-  "next_action": "Fresh root source/product/process/device/awake checks and exact reviewed new parameters, then ten tests from the saved build and discovery. No rebuild or enumeration. Source142ad stays frozen through actual outcomes/cleanup review and handoff; private drafts close no release gate.",
-  "updated_at": 1791254615.826348,
+  "next_action": "Qualify twelve new accepted-action methods at ab46a329ad (Internal5/RUM6/Core1), preserving Core Thread Sanitizer and actual per-target compiler modes. Fresh reviewed source/product/parameter/awake authority; headless command-line execution, no workspace opening or human input. Consumer drafts and Off/final-stack obligations remain; no release gate closes.",
+  "updated_at": 1791256233.943434,
   "sdk_checkpoint": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/sdk-checkpoint.json",
-    "sha256": "8de6f4600357cbe88a003bb7d235945a3fda02af056f4e021f20540b19c82749"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-applied-20261006/formatting-successor/sdk-checkpoint.json",
+    "sha256": "3a399170a220d96401f654f679c8de419c8c8377b3bee1daf6a3638ac8ddf73b"
   },
   "affected_component_selection_preparation": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-source-selection-20261006/packet.json",
@@ -283,7 +304,11 @@
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-logs-store-capture-design-20261006/packet.json",
         "sha256": "37744feaf9d441668c20b155fc1d007dd0ca515b8323d40df8e79b339ff09072"
       },
-      "state": "SOURCE_DESIGN_REVIEW_PENDING_NO_SDK_EFFECTS"
+      "state": "SOURCE_DESIGN_REVIEWED_NO_SDK_EFFECTS",
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-logs-store-capture-design-20261006/review.json",
+        "sha256": "314f47b130e3e960a17d865feedd8c4e4dfe6e1f868aec7dd4f1a92e1ad53335"
+      }
     }
   },
   "accepted_action_implementation_drafts": {
@@ -299,10 +324,10 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-scope-tests-draft-20261006/packet.json",
       "sha256": "a215373d8d479c21cf5434d20566956a8150612c6dcb2e4e427038afa7408b05"
     },
-    "state": "UNAPPLIED_UNCOMPILED_NOT_QUALIFIED",
-    "sdk_edits": 0,
+    "state": "IMPLEMENTED_FORMATTED_CHECKPOINTED_UNCOMPILED",
+    "sdk_edits": 10,
     "tests_run": 0,
-    "next": "After dependency qualification/source handoff, apply only current reviewed composition with synchronization comment correction; actual compilation/controls, Off/lifetime and consumer capture remain.",
+    "next": "Qualify twelve new accepted-action methods at ab46a329ad (Internal5/RUM6/Core1), preserving Core Thread Sanitizer and actual per-target compiler modes. Fresh reviewed source/product/parameter/awake authority; headless command-line execution, no workspace opening or human input. Consumer drafts and Off/final-stack obligations remain; no release gate closes.",
     "primitive_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-receipt-implementation-draft-20261006/review.json",
       "sha256": "9d7d78b7a0d41955e38de60830d1c9faabb5a31357b264953670fbbd2555816f"
@@ -361,9 +386,30 @@
     "composition_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-composition-preview-cycle2-20261006/review.json",
       "sha256": "850e6e735c30c1f805327efbead47de39f94f2c74405827d80dd7c6de3126c34"
+    },
+    "actual_source": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-applied-20261006/formatting-successor/packet.json",
+      "sha256": "b8c560ab43dac15ae4fc78d91730d7fc000675d32c06269fc41846dabb931951"
+    },
+    "actual_source_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-applied-20261006/formatting-successor/review.json",
+      "sha256": "6977c4eefb9ef6f1efdf5d52c294c2a889f23b2aa08a21baec48f34dabc4c3c5"
+    },
+    "sdk_checkpoint": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-applied-20261006/formatting-successor/sdk-checkpoint.json",
+      "sha256": "3a399170a220d96401f654f679c8de419c8c8377b3bee1daf6a3638ac8ddf73b"
+    },
+    "static_selection": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-cli-static-preparation-20261006/packet.static.json",
+      "sha256": "76876fd3531f536a914f995d6b7bba5e3dc307bb64f2714ec15e2047c718a791"
+    },
+    "lint": {
+      "introduced": 0,
+      "inherited": 12,
+      "scope": "Ten changed files; original failure and baseline attribution immutable."
     }
   },
-  "tests_run": 0,
+  "tests_run": 10,
   "affected_component_execution": {
     "authority": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-cli-proposal-cycle3-20261006/root-release-continuation-1.json",
@@ -466,10 +512,10 @@
   },
   "native_attempt_accounting": {
     "build_for_testing": 1,
-    "boot": 1,
+    "boot": 2,
     "discovery": 1,
-    "test_invocations": 0,
-    "qualified_component_cells": 0
+    "test_invocations": 1,
+    "qualified_component_cells": 1
   },
   "automatic_trace_consumer_draft": {
     "packet": {
@@ -534,13 +580,51 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-filtered-discovery-20261006/materialization-recipe.json",
       "sha256": "b19c0f395295a14ca3f7f5d6d044f48fce807e632a6505feca0c572f79b9d4af"
     },
-    "state": "SOURCE_REVIEWED_UNISSUED_TEST_ONLY",
+    "state": "QUALIFIED_AFFECTED_COMPONENT_ONLY",
     "controls": 37,
     "new_controls": 18,
     "reused_controls": 19,
     "builds": 0,
     "discovery_reruns": 0,
-    "test_invocations": 0,
-    "native_admitted": false
+    "test_invocations": 1,
+    "native_admitted": true,
+    "execution": {
+      "authority": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-filtered-discovery-20261006/root-release-97d448b1.json",
+        "sha256": "52834da3ab44507e5510a5e78050d688b255fc5c9af510025d3ca11907b39419"
+      },
+      "parameters": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-filtered-discovery-20261006/root-preparation-97d448b1/materialized-parameters.json",
+        "sha256": "2154e759c8326dc89a647c73baf86e0fcca96b336403cb0e17f304449942bec9"
+      },
+      "parameter_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-filtered-discovery-20261006/root-preparation-97d448b1/parameter-review.json",
+        "sha256": "67f58c4e8b947e0e426b3302f64fe1ce248675b85de271abb04a8943c2139320"
+      },
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-filtered-discovery-20261006/actual-test-only-run-97d448b1/result.json",
+        "sha256": "2c99511e7785ed6bbc34ec05aa5153dd3d70308631e82aed20169ff4258bcc4b"
+      },
+      "closure": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-filtered-discovery-20261006/actual-test-only-run-97d448b1/closure/closure.json",
+        "sha256": "61d29eb17bc758402ad1157c265acec270aa6a0c2e7772dd7aad059fd70fa5ce"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-filtered-discovery-20261006/actual-test-only-run-97d448b1/closure/actual-review.json",
+        "sha256": "055a01692b7be28ef4a3077368f37ff0d57653b027574d0485a4627626b58705"
+      },
+      "scenario": "PASS",
+      "evidence": "COMPLETE",
+      "cleanup": "PASS_ORIGINAL_SHUTDOWN_APPS_AND_GROUPS",
+      "overall": "PASS_AFFECTED_COMPONENT_ONLY",
+      "passed_methods": 10,
+      "rebuilds": 0,
+      "discovery_reruns": 0,
+      "limits": "Exact142ad affected dependency only; duplicate OTel class diagnostics retained, no clean sanitizer/full Trace/whole PR7 claim."
+    }
+  },
+  "dependency_sdk_checkpoint": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/sdk-checkpoint.json",
+    "sha256": "8de6f4600357cbe88a003bb7d235945a3fda02af056f4e021f20540b19c82749"
   }
 }

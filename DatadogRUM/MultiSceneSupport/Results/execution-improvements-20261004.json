@@ -6,11 +6,11 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
     "sha256": "70bedb83f022117657516b76d4d786c5d4184cb9943bf608af8e89de05d6ce24"
   },
-  "selected": "P7D0_COMPOSED_URLSESSION_AFFECTED_COMPONENT_QUALIFICATION",
+  "selected": "P7A0_ACCEPTED_ACTION_COMPONENT_QUALIFICATION",
   "native_admitted": false,
-  "native_runs": 16,
+  "native_runs": 17,
   "gates_closed": [],
-  "next_action": "Fresh root source/product/process/device/awake checks and exact reviewed new parameters, then ten tests from the saved build and discovery. No rebuild or enumeration. Source142ad stays frozen through actual outcomes/cleanup review and handoff; private drafts close no release gate.",
+  "next_action": "Qualify twelve new accepted-action methods at ab46a329ad (Internal5/RUM6/Core1), preserving Core Thread Sanitizer and actual per-target compiler modes. Fresh reviewed source/product/parameter/awake authority; headless command-line execution, no workspace opening or human input. Consumer drafts and Off/final-stack obligations remain; no release gate closes.",
   "p1": {
     "required_s2_tasks": 3,
     "required_s3_tasks": 20,
@@ -1679,7 +1679,7 @@
       "sha256": "71a2bd15b9f0c0e408a64f498dc4e234d89e3d54fdb216eb24ce69a8d25ca66f"
     }
   },
-  "updated_at": 1791254615.82765,
+  "updated_at": 1791256233.947278,
   "native_run_accounting": {
     "P3_required_platform_build": 1,
     "P5_PR3_PR4_PR5_off_cells": 6,
@@ -1688,7 +1688,7 @@
     "P2_actual_native_invocations": 11,
     "PR9_current_source_platform_build_cells": 4,
     "PR9_current_source_framework_build_commands": 8,
-    "counting_rule": "native_runs retains16 qualified build/test/Off cells; eleven actual P2 tool calls include the pre-capture Start/Install/End stop. Failed or incomplete sittings add no qualification or gate credit; PR6 failed attempt and SDK-free control remain separate.",
+    "counting_rule": "native_runs retains17 qualified build/test/Off cells, now including exact142ad URLSession dependency. Failed/incomplete sittings add no qualification or gate credit; actual tool calls, builds and stopped attempts remain separately attributed.",
     "P5_PR6_actual_test_attempts": 1,
     "P5_PR6_test_attempt_failed": 1,
     "P5_PR6_configured_methods_passed": 4,
@@ -1708,17 +1708,18 @@
     },
     "P7D0_actual_build_attempts": 1,
     "P7D0_actual_build_exit": 0,
-    "P7D0_boot": 1,
+    "P7D0_boot": 2,
     "P7D0_discovery": 1,
-    "P7D0_test_invocations": 0,
-    "P7D0_qualified_component_cells": 0
+    "P7D0_test_invocations": 1,
+    "P7D0_qualified_component_cells": 1
   },
-  "selected_task": "S3_F12_PR7_P7D0",
+  "selected_task": "S3_F12_PR7_P7A0",
   "execution_frontier": {
-    "primary": "Fresh root source/product/process/device/awake checks and separate reviewed authority/loader, then one discovery/ten-test/export continuation from saved products, no rebuild or human input. Source142ad stays frozen through actual outcomes/cleanup review and handoff; private consumer drafts qualify nothing.",
+    "primary": "Qualify twelve new accepted-action methods at ab46a329ad (Internal5/RUM6/Core1), preserving Core Thread Sanitizer and actual per-target compiler modes. Fresh reviewed source/product/parameter/awake authority; headless command-line execution, no workspace opening or human input. Consumer drafts and Off/final-stack obligations remain; no release gate closes.",
     "required_paths": [
       "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
-      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-source-selection-20261006/packet.json"
+      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-applied-20261006/formatting-successor/sdk-checkpoint.json",
+      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-cli-static-preparation-20261006/packet.static.json"
     ],
     "independent_boundary": "Human captures held until fresh availability; API approval, minimum Swift6.2 and hardware release boundaries remain.",
     "no_live_native_admission": true,
@@ -1791,6 +1792,18 @@
     "pr7_actual_discovery_stop_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-compiler-reconciliation-cycle2-20261006/actual-saved-build-run-9eca8d37/closure/actual-review.json",
       "sha256": "a8c24acf0c63d245870b1d2860f82d90e278ac4a46ee15a38c161ed52a4a269f"
+    },
+    "pr7_dependency_actual_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-filtered-discovery-20261006/actual-test-only-run-97d448b1/closure/actual-review.json",
+      "sha256": "055a01692b7be28ef4a3077368f37ff0d57653b027574d0485a4627626b58705"
+    },
+    "pr7_action_source_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-applied-20261006/formatting-successor/review.json",
+      "sha256": "6977c4eefb9ef6f1efdf5d52c294c2a889f23b2aa08a21baec48f34dabc4c3c5"
+    },
+    "pr7_action_sdk_checkpoint": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-applied-20261006/formatting-successor/sdk-checkpoint.json",
+      "sha256": "3a399170a220d96401f654f679c8de419c8c8377b3bee1daf6a3638ac8ddf73b"
     }
   },
   "plan_history": [
@@ -1880,5 +1893,5 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/attempt-policy-20261005.json",
     "sha256": "4a455a7d817bd900f2f7ca21cc403c2ee934f825b4e7d0c2ba9eb575787f2411"
   },
-  "independent_selected_task": "P7D0_SAVED_FILTERED_DISCOVERY_TEST_ONLY_AND_PRIVATE_CONSUMERS"
+  "independent_selected_task": "P7A0_ACTION_QUALIFICATION_AND_PRIVATE_CONSUMERS"
 }

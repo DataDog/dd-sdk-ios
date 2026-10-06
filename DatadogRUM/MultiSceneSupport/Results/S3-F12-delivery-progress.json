@@ -243,7 +243,7 @@
       "off_contract": "Static fast path; final E01/E05 headers/sampling/user/account expressions and fresh develop no handoff or scene lookup",
       "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
       "rebuild_obligation": "Drop unqualified empty-header, existing-header suppression and helper rewrites; networking wire policy unchanged",
-      "status": "DEPENDENCY_DISCOVERY_SAVED_TESTS_NOT_EXECUTED",
+      "status": "DEPENDENCY_QUALIFIED_ACTION_IMPLEMENTED_UNCOMPILED",
       "owning_record": null,
       "source_head": null,
       "obligation": "BEFORE_SLICE_MERGE",
@@ -255,7 +255,7 @@
         "integration": "NOT_QUALIFIED"
       },
       "remaining_assertion": "Authoritative nil vs absent handoff, optional request-time final E05 correlation, delayed WebView owner and accepted action merge Off: Static fast path; final E01/E05 headers/sampling/user/account expressions and fresh develop no handoff or scene lookup",
-      "next_action": "Fresh root source/product/process/device/awake checks and exact reviewed new parameters, then ten tests from the saved build and discovery. No rebuild or enumeration. Source142ad stays frozen through actual outcomes/cleanup review and handoff; private drafts close no release gate.",
+      "next_action": "Qualify twelve new accepted-action methods at ab46a329ad (Internal5/RUM6/Core1), preserving Core Thread Sanitizer and actual per-target compiler modes. Fresh reviewed source/product/parameter/awake authority; headless command-line execution, no workspace opening or human input. Consumer drafts and Off/final-stack obligations remain; no release gate closes.",
       "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit.",
       "dependency_design": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/packet.json",
@@ -263,7 +263,7 @@
       },
       "preparation_record": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
-        "sha256": "34b3b64c2ace2e4a5f408cea64e171b1ca60653acede273e3760e3e9b20219b1"
+        "sha256": "fb43d0660f2acc67b55a6c1b4fe74497d56fb3c265166b2bb548c4ea4cb1b6f3"
       },
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
       "source_branch": "valpertui/s3-consumer-capture",
@@ -272,7 +272,21 @@
         "sha256": "a47deb0b69ae7305d17098f99e63c627eecdc3f27e17d4dfdfcf2564f298217f"
       },
       "dependency_source_head": "142ad7150f3e62f1522c3feb923d84b722efb951",
-      "preparation_owner": "Results/S3-PR7-consumer-preparation.json"
+      "preparation_owner": "Results/S3-PR7-consumer-preparation.json",
+      "dependency_component_result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-filtered-discovery-20261006/actual-test-only-run-97d448b1/result.json",
+        "sha256": "2c99511e7785ed6bbc34ec05aa5153dd3d70308631e82aed20169ff4258bcc4b"
+      },
+      "dependency_component_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-filtered-discovery-20261006/actual-test-only-run-97d448b1/closure/actual-review.json",
+        "sha256": "055a01692b7be28ef4a3077368f37ff0d57653b027574d0485a4627626b58705"
+      },
+      "action_source_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-applied-20261006/formatting-successor/review.json",
+        "sha256": "6977c4eefb9ef6f1efdf5d52c294c2a889f23b2aa08a21baec48f34dabc4c3c5"
+      },
+      "partial_action_source_head": "ab46a329ad5b3f0322e27671ca59efc6a98de6d5",
+      "dependency_qualification": "QUALIFIED_AFFECTED_COMPONENT_ONLY"
     },
     {
       "id": "PR8",
@@ -452,10 +466,12 @@
     "PR5"
   ],
   "locally_qualified_off_scope": "PR1-PR3 accepted prefix plus PR4/PR5 concrete exclusive-Off at their recorded heads; no blanket later-slice or current-stack equivalence claim",
-  "next_slice": "PR7_P7D0_SAVED_DISCOVERY_TEN_TESTS",
+  "next_slice": "PR7_P7A0_ACCEPTED_ACTION_TWELVE_METHODS",
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": 1791254615.8269498,
-  "dependency_build_attempts": 1
+  "updated_at": 1791256233.946221,
+  "dependency_build_attempts": 1,
+  "dependency_component_qualifications": 1,
+  "dependency_test_invocations": 1
 }
