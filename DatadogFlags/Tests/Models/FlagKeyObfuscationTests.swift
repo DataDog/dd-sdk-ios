@@ -152,11 +152,11 @@ final class FlagKeyObfuscationTests: XCTestCase {
             let attributes = try XCTUnwrap(data["attributes"] as? [String: Any])
             let identity = try XCTUnwrap(attributes["source"] as? [String: String])
             XCTAssertEqual(identity, ["sdk_name": "dd-sdk-ios", "sdk_version": "99.1.2-telemetry"])
+            XCTAssertNil(attributes["supported_capabilities"])
             if source != "ios" {
-                XCTAssertNil(attributes["supported_capabilities"])
+                XCTAssertNil(request.value(forHTTPHeaderField: "X-DD-FEATURE-FLAGS-CAPABILITIES"))
             } else {
-                let capabilities = try XCTUnwrap(attributes["supported_capabilities"] as? [String: [String]])
-                XCTAssertEqual(capabilities, ["assignment_encodings": ["flag-key-sha256-v1"]])
+                XCTAssertEqual(request.value(forHTTPHeaderField: "X-DD-FEATURE-FLAGS-CAPABILITIES"), "assignment-encoding-flag-key-256-v1")
             }
         }
     }

@@ -42,9 +42,6 @@ final class FlagAssignmentsRequestTests: XCTestCase {
                 "sdk_name" : "dd-sdk-ios",
                 "sdk_version" : "3.5.1"
               },
-              "supported_capabilities": {
-                "assignment_encodings": ["flag-key-sha256-v1"]
-              },
               "subject" : {
                 "targeting_attributes" : {
                   "plan" : "premium",
@@ -70,6 +67,7 @@ final class FlagAssignmentsRequestTests: XCTestCase {
         XCTAssertEqual(request.url, testURL)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "application/vnd.api+json")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-DD-FEATURE-FLAGS-CAPABILITIES"), "assignment-encoding-flag-key-256-v1")
         XCTAssertEqual(request.value(forHTTPHeaderField: "Accept-Encoding"), "gzip, deflate, br")
         XCTAssertEqual(request.value(forHTTPHeaderField: "dd-client-token"), "test-token")
         XCTAssertEqual(request.value(forHTTPHeaderField: "dd-application-id"), "test-app-id")

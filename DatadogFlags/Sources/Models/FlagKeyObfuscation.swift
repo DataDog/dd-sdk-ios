@@ -10,6 +10,7 @@ import Foundation
 /// Describes the lookup keys in one assignment set. The salt is public.
 internal struct FlagKeyObfuscation: Equatable, Codable {
     static let supportedScheme = "flag-key-sha256-v1"
+    static let capability = "assignment-encoding-flag-key-256-v1"
 
     let scheme: String
     let salt: String

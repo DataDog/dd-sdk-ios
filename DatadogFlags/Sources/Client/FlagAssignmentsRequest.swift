@@ -20,6 +20,13 @@ extension URLRequest {
         request.setValue("application/vnd.api+json", forHTTPHeaderField: "Content-Type")
         request.setValue("gzip, deflate, br", forHTTPHeaderField: "Accept-Encoding")
         request.setValue(context.clientToken, forHTTPHeaderField: "dd-client-token")
+        // Bridge SDKs that consume raw snapshots cannot resolve encoded keys yet.
+        if FlagKeyObfuscation.isSupported(source: context.source) {
+            request.setValue(
+                [FlagKeyObfuscation.capability].sorted().joined(separator: ","),
+                forHTTPHeaderField: "X-DD-FEATURE-FLAGS-CAPABILITIES"
+            )
+        }
 
         if let applicationId = context.additionalContext(ofType: RUMCoreContext.self)?.applicationID {
             request.setValue(applicationId, forHTTPHeaderField: "dd-application-id")
@@ -43,9 +50,7 @@ extension URLRequest {
             subject: FlagAssignmentsRequestBody.Subject(
                 targetingKey: evaluationContext.targetingKey,
                 targetingAttributes: evaluationContext.attributes
-            ),
-            supportedCapabilities: FlagKeyObfuscation.isSupported(source: context.source)
-                ? .init(assignmentEncodings: [FlagKeyObfuscation.supportedScheme]) : nil
+            )
         )
 
         let encoder = JSONEncoder.dd.default()
@@ -86,18 +91,9 @@ internal struct FlagAssignmentsRequestBody {
         let sdkVersion: String
     }
 
-    struct SupportedCapabilities: Encodable {
-        let assignmentEncodings: [String]
-
-        private enum CodingKeys: String, CodingKey {
-            case assignmentEncodings = "assignment_encodings"
-        }
-    }
-
     let environment: Environment
     let source: Source
     let subject: Subject
-    let supportedCapabilities: SupportedCapabilities?
 }
 
 extension FlagAssignmentsRequestBody: Encodable {
@@ -109,7 +105,6 @@ extension FlagAssignmentsRequestBody: Encodable {
         case environment = "env"
         case source
         case subject
-        case supportedCapabilities = "supported_capabilities"
     }
 
     func encode(to encoder: any Encoder) throws {
@@ -122,6 +117,5 @@ extension FlagAssignmentsRequestBody: Encodable {
         try attributesContainer.encode(environment, forKey: .environment)
         try attributesContainer.encode(source, forKey: .source)
         try attributesContainer.encode(subject, forKey: .subject)
-        try attributesContainer.encodeIfPresent(supportedCapabilities, forKey: .supportedCapabilities)
     }
 }
