@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "state": "QUALIFIED_INDEPENDENT_PREFIX_HUMAN_READY_TIMEOUT_RETIRED",
+  "updated_at": "2026-10-06T20:24:25.434897+00:00",
+  "plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/runtime-plan.json",
+    "sha256": "8ecffcc61ac6f541f38835a19346405aa720fe1f54d5a97d16e7f4e889fa1421"
+  },
+  "plan_scope": "Selected preparation lineage; actual consumed human plan is separate.",
+  "actual_plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-successor/runtime-plan.final-unissued.json",
+    "sha256": "88faf72b2dd720fb25659afe5838095536a94acef415cf451c080658350d2bd4"
+  },
+  "gates": [
+    "S2:C09",
+    "S2:C10",
+    "S2:H14"
+  ],
+  "gates_closed": [],
+  "run_id": "d98b5558-ead2-4108-aeb8-404dd8956f55",
+  "context": {
+    "bundle": "com.datadoghq.s2.automatic.candidate.sdk271.swiftui",
+    "cleanup_deadline": 1791322205.4912,
+    "device": "F91CCE46-2704-4E8B-9093-A6A0EF250B1A",
+    "execution_deadline": 1791321605.4912,
+    "issued_at": 1791316205.4912,
+    "owner": "/root/s2_split_input_owner",
+    "plan_sha256": "88faf72b2dd720fb25659afe5838095536a94acef415cf451c080658350d2bd4",
+    "run_id": "d98b5558-ead2-4108-aeb8-404dd8956f55",
+    "source": "c9faed816a1d4828d7d8c4b64acae01119425889"
+  },
+  "scenario": "UNQUALIFIED",
+  "evidence": "INCOMPLETE",
+  "cleanup": "PASS",
+  "overall": "UNQUALIFIED_HUMAN_JOURNEY",
+  "component_verdict": "PASS",
+  "original_result": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-successor/runtime-human/cells/candidate-27.1-duo-SwiftUI-split-single/result.json",
+    "sha256": "9d3644565f5b01f54831abdf6195cee1cb0c8dc4fe8e7c98713372787e105385"
+  },
+  "closure": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-successor/runtime-human/actual-outcome-closure/packet.json",
+    "sha256": "8d162e72ce99da78b174a395eb0a40c0d99408729e9c6ce8160682e2cf24c00d"
+  },
+  "actual_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-successor/runtime-human/actual-outcome-closure/actual-review.json",
+    "sha256": "863c3037599ae17e811d74d8843fb8bac0d9681f23bab8161c17dd95294326c1"
+  },
+  "source_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-successor/runtime-human/review.json",
+    "sha256": "40247f1015bc0a40c1d9155a3f9794e0ec1fc177cad05800f31a91e3cd958057"
+  },
+  "parameter_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-successor/runtime-human/parameter-review.json",
+    "sha256": "a1d68788b059f8b9f182cc8e644f59d7257d547bce2091aeb32ae394c15e94a6"
+  },
+  "final_state_quiescence": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-successor/runtime-human/actual-outcome-closure/current-state.json",
+    "sha256": "376ca6c2864a06d0ad8ac5cfb889151f4bf90e82f4bee3daeb0e46cca9ab0b4a"
+  },
+  "root_page_retirement": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-successor/runtime-human/root-page-retirement/retirement.json",
+    "sha256": "0da35e29cc76a0bfbd3535d46263ae05b2de79c0f1bd3d1aa45208e399b30e42"
+  },
+  "actual_root_page_return": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-successor/runtime-human/root-page-retirement/actual-root-tool-return.json",
+    "sha256": "a71b12fa4ee95d31f11cb65ca1b3b7e63a566af007709a241c60f6b93f418cd2"
+  },
+  "native_counts": {
+    "cli_app_launches": 1,
+    "supported_calls": 3,
+    "end_calls": 1,
+    "human_gestures": 0,
+    "pending_calls": 0
+  },
+  "browser_ready_acknowledged": false,
+  "ready_request": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-successor/runtime-human/cells/candidate-27.1-duo-SwiftUI-split-single/operator-ready/request.json",
+    "sha256": "38db1b93b8b8935b0bfbf004c3ca1dbbcf786c34f9dab301d30848dbb55f04b0"
+  },
+  "restoration": "Task app/data/PID and source-bound worker absent; original 23-app inventory, display, stable Duo fields and workspace configuration restored. Root-owned page separately retired.",
+  "limits": [
+    "Actual short capture applicationState NotRun retained; same-PID writer/scene/window/root/idle proof supports prefix readiness only.",
+    "No browser Ready acknowledgement, consumed scenario or gesture occurred. The fixed Ready wait expired; this is not evidence of an SDK or capture-mechanism regression.",
+    "Original partial publication failures and separate saved-only custody corrections remain with the closure. No full process-group/TTY retirement claim.",
+    "No behavioral, physical-Duo, API-approval or whole-release credit."
+  ],
+  "active": false,
+  "retired": true,
+  "owner_freeze": false,
+  "native_admitted": false,
+  "runtime_authority_unresumable": true,
+  "next_action": "Admit only a fresh candidate-only SwiftUI split sitting using the reviewed unchanged source/products and current user availability. Present the new page only after actual launch/capture proof; require genuine browser Ready plus fresh post-Ready owner/idle, unchanged RUM-only journey and actual H14 fold evidence. No automatic diagnostic or baseline repeat."
+}

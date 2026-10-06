@@ -314,7 +314,7 @@ needs separate cleanup-only idle proof. Uncertain delivery defers teardown.
 
 ## Current complete-path qualification boundary
 
-[P2](../Results/execution-improvements-20261004.json) collects terminal rows and genuine bound idle while the writer is live, before End.
-After End, seal/grade saved bytes. Stopped-task cleanup needs same-session End and fresh exact PID/executable absence.
-Persist each actual return before failure handling; isolate per-attempt stores/command receipts. Preserve originals and separate restoration.
-New reviewed bindings/admission must qualify the complete path before humans; keep clocks separate and never extend a stopped attempt.
+[P2](../Results/execution-improvements-20261004.json) seals terminal rows/idle before teardown. The independent profile ends its short session before Ready, then proves the same app's fresh owner/writer/idle.
+[The human prefix](../Results/S2-independent-human-ready-timeout-20261006.json) passed; Ready expired without acknowledgement or gestures. Retain raw NotRun, actual returns, failed publications and separate restoration.
+After task-only cleanup/quiescence, retire the page. A late chat reply cannot revive it; a fresh candidate needs genuine Ready and post-Ready owner/idle.
+Reuse reviewed unchanged capture/source/products and baselines; no separate rehearsal or timing acceptance. All issued clocks remain fixed.

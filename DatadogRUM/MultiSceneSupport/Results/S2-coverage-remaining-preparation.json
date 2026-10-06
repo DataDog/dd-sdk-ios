@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
   "state": "QUALIFIED_INDEPENDENT_PREFIX_THIN_HUMAN_ADAPTER_PREPARATION",
-  "updated_at": "2026-10-06T19:35:25.612797+00:00",
+  "updated_at": "2026-10-06T20:24:25.434897+00:00",
   "execution": {
-    "record": "Results/S2-independent-capture-qualified-20261006.json"
+    "record": "Results/S2-independent-human-ready-timeout-20261006.json"
   },
   "current": {
     "kind": "swiftui_preparation",
@@ -37,7 +37,7 @@
         "multiple_scenes": false
       }
     ],
-    "prerequisites": "Qualified independent launch/short supported capture/End prefix; review thin human composition and require fresh post-Ready same-PID owner/idle before consumed scenario. Reuse accepted source/products/four cells and split baseline.",
+    "prerequisites": "Reviewed independent lifecycle/human composition; last prefix passed, Ready wait expired without gestures and cleanup/restoration reviewed. Fresh candidate-only admission/page/Ready and post-Ready owner/idle; unchanged RUM-only journey/H14. Accepted source/products/four cells/split baseline reused.",
     "review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/review.json",
       "sha256": "316fe3377dd485f86562f331469d439785a5d60ef5f5ffe870ede1a32a8b02b2"
@@ -603,30 +603,19 @@
     "gates_closed": []
   },
   "next_human_profile": {
-    "record": "Results/execution-improvements-20261004.json#p2.independent_app_lifecycle",
-    "state": "QUALIFIED_INDEPENDENT_PREFIX_THIN_HUMAN_ADAPTER_PREPARATION",
-    "native_admitted": false,
-    "page": null,
-    "run_id": null,
-    "clocks": null,
-    "ready_invited": false,
-    "latest_actual_result": "Results/S2-independent-capture-qualified-20261006.json",
-    "source_repair": {
-      "state": "SOURCE_INTERFACE_REVIEWED_FULL_HUMAN_PATH_RETIRED",
-      "packet": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-parent-return-identity-correction-20261006/packet.json",
-        "sha256": "2366d3003d27a1bafadfa3fea0373f3602089fd5c1817b11add981b0ac229674"
-      },
-      "review": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-parent-return-identity-correction-20261006/review.json",
-        "sha256": "9d7e0a19d41bc223f806b44de6e0977f452fccf168d5935d7f1249e4e2f93158"
-      },
-      "accepted_distinct_controls": 8,
-      "native_calls": 0,
-      "runtime_authority": false,
-      "ready_invited": false,
-      "remaining": "Source interface accepted; actual first renewal passed. Later tool-session loss retires this human composition; source-only and full-human qualification remain distinct."
-    }
+    "operation_profile": "P2_HUMAN_INDEPENDENT_APP_SHORT_CAPTURE_END_THEN_JOURNEY_V1",
+    "owner": "Results/S2-independent-human-ready-timeout-20261006.json",
+    "qualified_prefix_only": true,
+    "source_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-successor/runtime-human/review.json",
+      "sha256": "40247f1015bc0a40c1d9155a3f9794e0ec1fc177cad05800f31a91e3cd958057"
+    },
+    "actual_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-successor/runtime-human/actual-outcome-closure/actual-review.json",
+      "sha256": "863c3037599ae17e811d74d8843fb8bac0d9681f23bab8161c17dd95294326c1"
+    },
+    "no_baseline_repeat": true,
+    "no_old_ready_reuse": true
   },
   "execution_history": [
     {
@@ -634,6 +623,34 @@
     },
     {
       "record": "Results/S2-independent-capture-prestart-20261006.json"
+    }
+  ],
+  "next_human_profile_history": [
+    {
+      "record": "Results/execution-improvements-20261004.json#p2.independent_app_lifecycle",
+      "state": "QUALIFIED_INDEPENDENT_PREFIX_THIN_HUMAN_ADAPTER_PREPARATION",
+      "native_admitted": false,
+      "page": null,
+      "run_id": null,
+      "clocks": null,
+      "ready_invited": false,
+      "latest_actual_result": "Results/S2-independent-capture-qualified-20261006.json",
+      "source_repair": {
+        "state": "SOURCE_INTERFACE_REVIEWED_FULL_HUMAN_PATH_RETIRED",
+        "packet": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-parent-return-identity-correction-20261006/packet.json",
+          "sha256": "2366d3003d27a1bafadfa3fea0373f3602089fd5c1817b11add981b0ac229674"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-parent-return-identity-correction-20261006/review.json",
+          "sha256": "9d7e0a19d41bc223f806b44de6e0977f452fccf168d5935d7f1249e4e2f93158"
+        },
+        "accepted_distinct_controls": 8,
+        "native_calls": 0,
+        "runtime_authority": false,
+        "ready_invited": false,
+        "remaining": "Source interface accepted; actual first renewal passed. Later tool-session loss retires this human composition; source-only and full-human qualification remain distinct."
+      }
     }
   ]
 }
