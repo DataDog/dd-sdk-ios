@@ -135,7 +135,7 @@ Trace.enable(
         customStatsEndpoint: nil,
 
         // Compute APM stats (request hits, errors, latency distributions) on-device
-        // across every finished span BEFORE sampling, then upload them to Datadog.
+        // over eligible spans BEFORE sampling, then upload them to Datadog.
         // Gives accurate RED metrics independent of the trace sample rate. When
         // enabled, the SDK stamps `_dd.compute_stats=0` on spans so the backend does
         // not also compute stats for the same traffic (avoiding double-counting).
@@ -286,7 +286,7 @@ Automatically instrumented `URLSession` spans have no call site to tag. Do **not
 - **`eventMapper`** — `@Sendable (SpanEvent) -> SpanEvent`. Modify spans before upload (e.g. scrub sensitive data, override tags). Cannot drop spans — must return an event. Runs on a background thread; keep it fast and `Sendable`-safe.
 
 ### Client-Side Stats (APM)
-- **`featureFlags[.clientSideStats]`** (default: `false`, experimental) — when enabled, the SDK aggregates APM stats (request hits, errors, and latency distributions) on-device across every finished span *before* the sampling decision, and uploads them to the Datadog stats intake. This yields accurate RED metrics regardless of the trace `sampleRate`. To avoid double-counting, the SDK stamps `_dd.compute_stats=0` on uploaded spans so the backend does not recompute stats for the same traffic. Aggregation and upload respect tracking consent.
+- **`featureFlags[.clientSideStats]`** (default: `false`, experimental) — when enabled, the SDK aggregates APM stats (request hits, errors, and latency distributions) on-device over eligible spans *before* the sampling decision, and uploads them to the Datadog stats intake. Eligible spans are top-level and measured spans, and spans of kind `client`, `server`, `producer` or `consumer`. This yields accurate RED metrics regardless of the trace `sampleRate`. To avoid double-counting, the SDK stamps `_dd.compute_stats=0` on uploaded spans so the backend does not recompute stats for the same traffic. Aggregation and upload respect tracking consent.
 - **`customStatsEndpoint`** (default: `nil`) — overrides the client-side stats intake URL. Independent of `customEndpoint` (spans) and has no effect unless the `clientSideStats` feature flag is enabled.
 
 ### Manual Header Propagation

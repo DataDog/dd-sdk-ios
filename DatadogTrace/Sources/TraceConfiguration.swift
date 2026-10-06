@@ -213,10 +213,11 @@ extension Trace.Configuration {
         /// Client-side APM stats.
         ///
         /// When enabled, the SDK computes trace statistics (hit counts, error rates, latency
-        /// distributions) locally over all finished spans, including sampled-out ones, and uploads
-        /// them to the Datadog stats intake. This yields accurate RED metrics regardless of the
-        /// trace `sampleRate`. To avoid double counting, uploaded spans are stamped with
-        /// `_dd.compute_stats=0` so the backend does not recompute stats for the same traffic.
+        /// distributions) locally over eligible finished spans, including sampled-out ones, and
+        /// uploads them to the Datadog stats intake. Eligible spans are top-level and measured spans,
+        /// and spans of kind client, server, producer or consumer. This yields accurate RED metrics
+        /// regardless of the trace `sampleRate`. To avoid double counting, uploaded spans are stamped
+        /// with `_dd.compute_stats=0` so the backend does not recompute stats for the same traffic.
         case clientSideStats = "client_side_stats"
     }
 }
