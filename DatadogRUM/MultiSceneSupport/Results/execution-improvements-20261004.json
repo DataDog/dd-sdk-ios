@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "UNATTENDED_ACTION_DEPENDENCY_QUALIFIED_NETWORK_TRACE_IMPLEMENTED_UNCOMPILED",
+  "state": "UNATTENDED_CONSUMER_FIXTURE_REPAIRED_QUALIFICATION_HELD",
   "owner": "/root",
   "plan": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
@@ -10,7 +10,7 @@
   "native_admitted": false,
   "native_runs": 20,
   "gates_closed": [],
-  "next_action": "Qualify the composed current source: sixteen new network/Trace methods, eight focused legacy regressions and twenty Core/Logs ownership methods through fresh exact products, discovery, assertions and cleanup. Both zero-test compile failures remain invalid; successful builds close no behavioral gate. Flags requires an Off-compliant acquisition path covering native and Internal/React Native producers. WebView, complete Off, older-system and final-stack obligations remain. No human/Xcode prompt is needed for the prepared CLI path; fresh authority and exact review remain required.",
+  "next_action": "Qualify forty-four selected current-source Internal/CoreTSan/Trace/RUM/Logs consumer and legacy methods using fresh products, discovery, exact assertions and cleanup. The final44 attempt stopped on one OTel UserInfo fixture before discovery/tests/boot; the supported initializer repair is signed locally and the repeated helper pattern was audited across1727 tracked Swift files. All three zero-test consumer compile failures remain invalid, with separate accepted no-owned-boot cleanup. No full2700-second profile fits the remaining pre09:00 awake window; prepare only, never clip or extend old clocks. From09:00 prioritize the reviewed S2 SwiftUI split candidate after fresh human readiness. Flags Off acquisition, WebView, complete Off, older-system and final-stack acceptance remain.",
   "p1": {
     "required_s2_tasks": 3,
     "required_s3_tasks": 20,
@@ -1672,7 +1672,7 @@
     },
     "pr7_owning_preparation": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
-      "sha256": "e9d514bffde8c8d52c8f0a8c4a55345cf6bf0e55e57ce7aeef816ddfc7969550"
+      "sha256": "550e80b8f22ee749f1f0f29deae5b5e88a1f24697b47b22356b700c63b02da54"
     },
     "pr7_dependency_design_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/dependency-design-review.json",
@@ -1688,34 +1688,41 @@
     },
     "pr7_stopped_component_attempt": {
       "plan": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-network-trace-cli-proposal-cycle2-20261006/plan.json",
-        "sha256": "23889274c5e878e3cb605e811f5162ae3ff8ec50d095dec1fe8386bee9b2e146"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-cli-proposal-20261006/plan.json",
+        "sha256": "67ee089c88319e74574680a9b31329c5bf9cf03cc3c7dcd7cbfc4d8d0e0b8ade"
       },
       "proposal_review": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-network-trace-cli-proposal-cycle2-20261006/review.json",
-        "sha256": "44dddbbbcd0b3e28ba4c6f3a833abcbbd1f5f0e394c97615d03ebdc389c9be6b"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-cli-proposal-20261006/review.json",
+        "sha256": "5cee9010cbaded498e3c54259e03d50d5f2cb4be472b3c5617cf3df3ad75e274"
       },
       "result": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-network-trace-cli-proposal-cycle2-20261006/actual-run-bef40a0a/stopped-result.json",
-        "sha256": "f2e34ddb90c2cca2e45d38b7fdf379747db33071ab2139f36ee051485342ca26"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-cli-proposal-20261006/actual-run-f331edfc/stopped-result.json",
+        "sha256": "74ee09fb8f947ca64b7b2291a4439cc24ea7bc97a191bed86d2c660c10f90a6c"
       },
       "closure": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-network-trace-cli-proposal-cycle2-20261006/actual-run-bef40a0a/closure/closure.json",
-        "sha256": "a9fdd96004022719b67ca293f6023bcfca04567630e0b6b7182c3c59c8c852a1"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-cli-proposal-20261006/actual-run-f331edfc/closure/closure.json",
+        "sha256": "4e5086f11bdf33e83b584f834193798b906b97155134ad7af9bf39795edd7f56"
       },
       "actual_review": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-network-trace-cli-proposal-cycle2-20261006/actual-run-bef40a0a/closure/actual-review.json",
-        "sha256": "758169b2bf2deaab81f2c88652dceea02edbee44518d2dcce58ddb93201c7044"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-cli-proposal-20261006/actual-run-f331edfc/closure/actual-review.json",
+        "sha256": "97b210faf9402c6bfd6ed5403595dff7cbd67ca2a721c6c0c226575b8c237d03"
       },
-      "source_head": "2294defbb39824bb3da395663586b97d15e59e9d",
+      "source_head": "1a6d1600bf4ead50bd696787de6d9abab2b31b7b",
       "scenario": "UNQUALIFIED",
       "evidence": "INCOMPLETE",
       "overall": "INVALID",
       "cleanup": "PASS_ORIGINAL_SHUTDOWN_APPS_AND_GROUPS",
+      "app_equality_observed": false,
       "build_attempts": 3,
+      "build_results": [
+        0,
+        0,
+        65
+      ],
       "tests": 0,
+      "enumerations": 0,
       "boot_effects": 0,
-      "disposition": "Trace rc65: unsupported UserInfo mock helper in one constructor fixture. Original invalid verdict is immutable; two successful builds are compilation custody only, with no boot/app-equality/runtime/SDK-regression claim."
+      "disposition": "OTelSpanTests507 used an unsupported UserInfo?.mockWith helper. Original invalid verdict and unavailable app-equality evidence remain immutable. The one-line supported initializer repair preserves after-sampling mutation and before-sampling ownership assertions; no SDK runtime regression or qualification inferred."
     },
     "pr7_userinfo_checkpoint": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-trace-constructor-userinfo-repair-20261006/sdk-checkpoint.json",
@@ -1724,9 +1731,13 @@
     "pr7_logs_core_source_checkpoint": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-logs-core-composition-preview-cycle2-20261006/sdk-checkpoint.json",
       "sha256": "afe05de4f9a3b75ee563d35a09547bf4216c881aa24fea42ce902d7b2b233a85"
+    },
+    "pr7_otel_userinfo_checkpoint": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-otel-userinfo-and-fixture-audit-20261006/sdk-checkpoint.json",
+      "sha256": "cb18fc6e55042565af4475144a96c5a74a22a0dc126485b9e3c844cd25ee2660"
     }
   },
-  "updated_at": "2026-10-06T06:00:42.376137+00:00",
+  "updated_at": "2026-10-06T06:33:02.616882+00:00",
   "native_run_accounting": {
     "P3_required_platform_build": 1,
     "P5_PR3_PR4_PR5_off_cells": 6,
@@ -2006,6 +2017,44 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-static-preparation-20261006/packet.json",
       "sha256": "00f2d7428197e87df24f8e88bdda68eac57a2ddf85de0992a12b6292d38219db"
     },
-    "native_admitted": false
+    "native_admitted": false,
+    "completed_component_attempt": {
+      "plan": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-cli-proposal-20261006/plan.json",
+        "sha256": "67ee089c88319e74574680a9b31329c5bf9cf03cc3c7dcd7cbfc4d8d0e0b8ade"
+      },
+      "proposal_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-cli-proposal-20261006/review.json",
+        "sha256": "5cee9010cbaded498e3c54259e03d50d5f2cb4be472b3c5617cf3df3ad75e274"
+      },
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-cli-proposal-20261006/actual-run-f331edfc/stopped-result.json",
+        "sha256": "74ee09fb8f947ca64b7b2291a4439cc24ea7bc97a191bed86d2c660c10f90a6c"
+      },
+      "closure": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-cli-proposal-20261006/actual-run-f331edfc/closure/closure.json",
+        "sha256": "4e5086f11bdf33e83b584f834193798b906b97155134ad7af9bf39795edd7f56"
+      },
+      "actual_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-cli-proposal-20261006/actual-run-f331edfc/closure/actual-review.json",
+        "sha256": "97b210faf9402c6bfd6ed5403595dff7cbd67ca2a721c6c0c226575b8c237d03"
+      },
+      "source_head": "1a6d1600bf4ead50bd696787de6d9abab2b31b7b",
+      "scenario": "UNQUALIFIED",
+      "evidence": "INCOMPLETE",
+      "overall": "INVALID",
+      "cleanup": "PASS_ORIGINAL_SHUTDOWN_APPS_AND_GROUPS",
+      "app_equality_observed": false,
+      "build_attempts": 3,
+      "build_results": [
+        0,
+        0,
+        65
+      ],
+      "tests": 0,
+      "enumerations": 0,
+      "boot_effects": 0,
+      "disposition": "OTelSpanTests507 used an unsupported UserInfo?.mockWith helper. Original invalid verdict and unavailable app-equality evidence remain immutable. The one-line supported initializer repair preserves after-sampling mutation and before-sampling ownership assertions; no SDK runtime regression or qualification inferred."
+    }
   }
 }

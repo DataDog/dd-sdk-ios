@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "state": "ACTION_DEPENDENCY_QUALIFIED_NETWORK_TRACE_FIXTURE_REPAIRED_LOGS_CORE_SOURCE_APPLIED_UNQUALIFIED",
+  "state": "ACTION_DEPENDENCY_QUALIFIED_CONSUMER_FIXTURES_REPAIRED_COMPONENT_QUALIFICATION_REMAINS",
   "existing_gate": "S3:F12",
   "slice": "PR7",
   "source_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
   "branch": "valpertui/s3-consumer-capture",
   "base_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
-  "source_head": "1a6d1600bf4ead50bd696787de6d9abab2b31b7b",
+  "source_head": "92da869be87fbd4b3ab92c9f78ee5359f4fa98cb",
   "source_gap_inventory": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-consumer-source-preparation/packet.json",
     "sha256": "57e376768a17b85993c54af64fcfb4f63048738ae0976e386760c5831f0c4a5b"
@@ -185,11 +185,11 @@
   "off_requirement": "Reusing the network provider single State read may gate On locally. No default-Off Core registry/TaskLocal/scene lookup, owner allocation, new map/lock or naive owner(in: FeatureScope) capture.",
   "runtime_admitted": false,
   "native_runs": 4,
-  "builds": 10,
+  "builds": 13,
   "gates_closed": [],
   "whole_pr7_qualified": false,
-  "next_action": "Qualify the composed current source: sixteen new network/Trace methods, eight focused legacy regressions and twenty Core/Logs ownership methods through fresh exact products, discovery, assertions and cleanup. Both zero-test compile failures remain invalid; successful builds close no behavioral gate. Flags requires an Off-compliant acquisition path covering native and Internal/React Native producers. WebView, complete Off, older-system and final-stack obligations remain. No human/Xcode prompt is needed for the prepared CLI path; fresh authority and exact review remain required.",
-  "updated_at": "2026-10-06T05:52:53.369486+00:00",
+  "next_action": "Qualify forty-four selected current-source Internal/CoreTSan/Trace/RUM/Logs consumer and legacy methods using fresh products, discovery, exact assertions and cleanup. The final44 attempt stopped on one OTel UserInfo fixture before discovery/tests/boot; the supported initializer repair is signed locally and the repeated helper pattern was audited across1727 tracked Swift files. All three zero-test consumer compile failures remain invalid, with separate accepted no-owned-boot cleanup. No full2700-second profile fits the remaining pre09:00 awake window; prepare only, never clip or extend old clocks. From09:00 prioritize the reviewed S2 SwiftUI split candidate after fresh human readiness. Flags Off acquisition, WebView, complete Off, older-system and final-stack acceptance remain.",
+  "updated_at": "2026-10-06T06:33:02.616882+00:00",
   "sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-applied-20261006/formatting-successor/sdk-checkpoint.json",
     "sha256": "3a399170a220d96401f654f679c8de419c8c8377b3bee1daf6a3638ac8ddf73b"
@@ -535,7 +535,7 @@
     }
   },
   "native_attempt_accounting": {
-    "build_for_testing": 10,
+    "build_for_testing": 13,
     "boot": 4,
     "discovery": 4,
     "test_invocations": 4,
@@ -1041,6 +1041,44 @@
       "tests": 0,
       "boot_effects": 0,
       "disposition": "Trace rc65: unsupported UserInfo mock helper in one constructor fixture. Original invalid verdict is immutable; two successful builds are compilation custody only, with no boot/app-equality/runtime/SDK-regression claim."
+    },
+    {
+      "plan": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-cli-proposal-20261006/plan.json",
+        "sha256": "67ee089c88319e74574680a9b31329c5bf9cf03cc3c7dcd7cbfc4d8d0e0b8ade"
+      },
+      "proposal_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-cli-proposal-20261006/review.json",
+        "sha256": "5cee9010cbaded498e3c54259e03d50d5f2cb4be472b3c5617cf3df3ad75e274"
+      },
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-cli-proposal-20261006/actual-run-f331edfc/stopped-result.json",
+        "sha256": "74ee09fb8f947ca64b7b2291a4439cc24ea7bc97a191bed86d2c660c10f90a6c"
+      },
+      "closure": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-cli-proposal-20261006/actual-run-f331edfc/closure/closure.json",
+        "sha256": "4e5086f11bdf33e83b584f834193798b906b97155134ad7af9bf39795edd7f56"
+      },
+      "actual_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-cli-proposal-20261006/actual-run-f331edfc/closure/actual-review.json",
+        "sha256": "97b210faf9402c6bfd6ed5403595dff7cbd67ca2a721c6c0c226575b8c237d03"
+      },
+      "source_head": "1a6d1600bf4ead50bd696787de6d9abab2b31b7b",
+      "scenario": "UNQUALIFIED",
+      "evidence": "INCOMPLETE",
+      "overall": "INVALID",
+      "cleanup": "PASS_ORIGINAL_SHUTDOWN_APPS_AND_GROUPS",
+      "app_equality_observed": false,
+      "build_attempts": 3,
+      "build_results": [
+        0,
+        0,
+        65
+      ],
+      "tests": 0,
+      "enumerations": 0,
+      "boot_effects": 0,
+      "disposition": "OTelSpanTests507 used an unsupported UserInfo?.mockWith helper. Original invalid verdict and unavailable app-equality evidence remain immutable. The one-line supported initializer repair preserves after-sampling mutation and before-sampling ownership assertions; no SDK runtime regression or qualification inferred."
     }
   ],
   "trace_test_accessor_repair": {
@@ -1119,5 +1157,75 @@
     "state": "APPLIED_TEST_ONLY_UNQUALIFIED",
     "production_changes": 0,
     "tests_run": 0
+  },
+  "otel_userinfo_fixture_repair": {
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-otel-userinfo-and-fixture-audit-20261006/packet.json",
+      "sha256": "5902d3d0150f2ca2029ddb83ad4b50e6f764c59aaff00ce21a132bf176fc25d9"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-otel-userinfo-and-fixture-audit-20261006/review.json",
+      "sha256": "5cc2e5cbaff77f970e1f11865190c040f11fcbd0396de9e25871bcbb9e138d0a"
+    },
+    "checkpoint": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-otel-userinfo-and-fixture-audit-20261006/sdk-checkpoint.json",
+      "sha256": "cb18fc6e55042565af4475144a96c5a74a22a0dc126485b9e3c844cd25ee2660"
+    },
+    "source_handoff": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-otel-userinfo-and-fixture-audit-20261006/root-source-handoff.json",
+      "sha256": "b96622aec20ce1145c6b2baa3f8e8cc86d67a0bb2b564d7157ebb482fd3e5d5d"
+    },
+    "known_pattern_audit": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-otel-userinfo-and-fixture-audit-20261006/unsupported-userinfo-audit.json",
+      "sha256": "ea3eac33bd4655d70394a7cd2a2ff94ba0d2d276bb7637654bd461b8f12dc7bd"
+    },
+    "strict_lint": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-otel-userinfo-and-fixture-audit-20261006/strict-lint.json",
+      "sha256": "60b96843115e3b41625408b3dee15cf598726dcc09032afe14e2e28f8c090ca6"
+    },
+    "state": "APPLIED_TEST_ONLY_UNCOMPILED_UNQUALIFIED",
+    "production_changes": 0,
+    "tests_run": 0
+  },
+  "webview_current_source_preparation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-consumer-source-preparation-20261006/source-preparation.json",
+    "sha256": "524865f5f29fdfcc81308c90b097e1c8b4e3ea083c02403f2b1334c0486ac8ff"
+  },
+  "launcher_derivation_preparation": {
+    "source": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/root-final44-materialization-template-20261006/derive_loader.py",
+      "sha256": "03093de71da9ea3f3d3dca3846cb2b188d92fa94b61c5159382da97971e6791f"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/root-final44-materialization-template-20261006/controls.json",
+      "sha256": "387b58f76277cbb9432415882fbc0bda4fc3a7f5a85e3a8e2a356ccb16f40902"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/root-final44-materialization-template-20261006/review.json",
+      "sha256": "0c4464aaa16728f38c55749fda980d61ac2ee4e69e337aa983e48575bf666f62"
+    },
+    "materialized_parameters": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-cli-proposal-20261006/root-preparation-f331edfc/materialized-parameters.json",
+      "sha256": "1eaf748d7f21f6e0a37ad8fdc6c80e463781ff5ed102ab80e8aefdc815f061bf"
+    },
+    "parameter_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-cli-proposal-20261006/root-preparation-f331edfc/parameter-review.json",
+      "sha256": "974e523a50a19f8c31af8e72e2f5a82c2e23ec62a1a70f748dcefd8cfff83ab0"
+    },
+    "actual_handover": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-cli-proposal-20261006/root-preparation-f331edfc/continuing-guard-handover-cycle2.json",
+      "sha256": "501562c94e68eeabfcca7667a06e84a52429a51e90b4438c6fbacb38a0fefa18"
+    },
+    "actual_root_tool_returns": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-cli-proposal-20261006/root-preparation-f331edfc/root-observed-tool-returns.json",
+      "sha256": "ded5403f3bc48051f7f3e84bc8d9c12da9dbb61ed67981b59cf0bc05ef6ed1a7"
+    },
+    "actual_guard_tool_returns": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-cli-proposal-20261006/root-preparation-f331edfc/actual-final-guard-tool-returns.json",
+      "sha256": "e451ad3b4eb08c5346ef21e765f0e9af353012e1104f8c4d0a064a20bd668f2b"
+    },
+    "state": "SOURCE_AND_PARAMETERS_REVIEWED_ACTUAL_FIXED_CLOCK_HANDOFF_CONSUMED",
+    "tests_run": 0,
+    "gates_closed": []
   }
 }

@@ -15,7 +15,7 @@ hashes, dependencies, compiler flags, runtime and output identities. Verify exac
 path sets and bytes, not a manifest hash alone. Reject unexpected files and
 symlinks. For tracked directory symlinks, check mode, Git blob and literal target
 separately. Recheck source/helper identity before assertions and after execution.
-Generated outputs must be explicitly inventoried outside the admitted source roots.
+Generated outputs must be explicitly inventoried outside the admitted source roots. Derive named launcher authority bindings structurally and verify full derived bytes before publishing clocks; global budget replacement can corrupt embedded digests. [PR7 preparation](../Results/S3-PR7-consumer-preparation.json) owns the reviewed loader controls.
 Parse compiler flags as argv; accept exact joined/separate defines. Derive each target's language mode from its frozen target/configuration and xcconfig include chain. Compare the actual driver mode per target; a shared project can legitimately mix Swift 5 and Swift 6. Preserve an original classifier stop, then reconcile saved source/list/product/link custody before separately admitting remaining discovery/tests without rebuilding. Inventory target
 version C separately, binding source/object/link bytes and the object variant from
 actual compiler sanitizer flags. A read-only verifier stop preserves native results
@@ -123,7 +123,7 @@ display name from xcresult's model name and bind both before installation.
 
 When current sources add/remove tests, reconcile every changed method against the
 frozen source before another invocation. Retain the original pre-assertion stop.
-A historical suite count cannot silently omit a newer failure.
+A historical suite count cannot silently omit a newer failure. For an unavailable fixture helper, audit changed tests and the nominal type declarations before retrying; similarly named nested models can have different helpers. Preserve attribution assertions and separate source/lint checks from executed tests.
 
 Compiler evidence must follow the actual tool output. Preserve exact architecture, platform, deployment and SDK checks when accepting a documented canonical target spelling such as `macos`/`macosx`. Parse Swift conditions from outer argv; each `-Xcc` forwards one separate Clang argument. A driver need not print `-parse-as-library`: qualify library output through the actual linker command, complete source/output-map/object/link membership and produced Mach-O/platform metadata. A saved-artifact checker correction preserves the original stop and does not require another build.
 
