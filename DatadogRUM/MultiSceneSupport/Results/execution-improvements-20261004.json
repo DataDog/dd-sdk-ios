@@ -7,10 +7,10 @@
     "sha256": "70bedb83f022117657516b76d4d786c5d4184cb9943bf608af8e89de05d6ce24"
   },
   "selected": "P7A0_ACCEPTED_ACTION_COMPONENT_QUALIFICATION",
-  "native_admitted": false,
+  "native_admitted": true,
   "native_runs": 17,
   "gates_closed": [],
-  "next_action": "Qualify twelve new accepted-action methods at ab46a329ad (Internal5/RUM6/Core1), preserving Core Thread Sanitizer and actual per-target compiler modes. Fresh reviewed source/product/parameter/awake authority; headless command-line execution, no workspace opening or human input. Consumer drafts and Off/final-stack obligations remain; no release gate closes.",
+  "next_action": "Continue the exclusive P7A0 current-source Internal/RUM/Core qualification. Await exact twelve outcomes, complete exports and original apps/Shutdown/group restoration plus designated actual review before SDK source handoff. No duplicate or source edit; consumer drafts, Off and final-stack remain.",
   "p1": {
     "required_s2_tasks": 3,
     "required_s3_tasks": 20,
@@ -1679,7 +1679,7 @@
       "sha256": "71a2bd15b9f0c0e408a64f498dc4e234d89e3d54fdb216eb24ce69a8d25ca66f"
     }
   },
-  "updated_at": 1791256233.947278,
+  "updated_at": 1791258260.914058,
   "native_run_accounting": {
     "P3_required_platform_build": 1,
     "P5_PR3_PR4_PR5_off_cells": 6,
@@ -1715,14 +1715,14 @@
   },
   "selected_task": "S3_F12_PR7_P7A0",
   "execution_frontier": {
-    "primary": "Qualify twelve new accepted-action methods at ab46a329ad (Internal5/RUM6/Core1), preserving Core Thread Sanitizer and actual per-target compiler modes. Fresh reviewed source/product/parameter/awake authority; headless command-line execution, no workspace opening or human input. Consumer drafts and Off/final-stack obligations remain; no release gate closes.",
+    "primary": "Continue the exclusive P7A0 current-source Internal/RUM/Core qualification. Await exact twelve outcomes, complete exports and original apps/Shutdown/group restoration plus designated actual review before SDK source handoff. No duplicate or source edit; consumer drafts, Off and final-stack remain.",
     "required_paths": [
       "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
-      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-applied-20261006/formatting-successor/sdk-checkpoint.json",
-      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-cli-static-preparation-20261006/packet.static.json"
+      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-cli-proposal-20261006/root-preparation-469a1b9e/materialized-parameters.json",
+      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-cli-proposal-20261006/actual-run-469a1b9e/controller.json"
     ],
     "independent_boundary": "Human captures held until fresh availability; API approval, minimum Swift6.2 and hardware release boundaries remain.",
-    "no_live_native_admission": true,
+    "no_live_native_admission": false,
     "human_invitation_qualified": false,
     "gates_closed": [],
     "p2_actual_failure_review": {
@@ -1804,6 +1804,10 @@
     "pr7_action_sdk_checkpoint": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-applied-20261006/formatting-successor/sdk-checkpoint.json",
       "sha256": "3a399170a220d96401f654f679c8de419c8c8377b3bee1daf6a3638ac8ddf73b"
+    },
+    "pr7_action_current_controller": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-cli-proposal-20261006/actual-run-469a1b9e/controller.json",
+      "sha256": "8c9020dc9de986dc4f7ebb754bfde633d44f4705d2945ef5242335ce7f77ae35"
     }
   },
   "plan_history": [

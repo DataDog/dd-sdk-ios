@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "DEPENDENCY_QUALIFIED_ACTION_IMPLEMENTED_COMPONENT_QUALIFICATION_REMAINS",
+  "state": "DEPENDENCY_QUALIFIED_ACTION_IMPLEMENTED_COMPONENT_QUALIFICATION_RUNNING",
   "existing_gate": "S3:F12",
   "slice": "PR7",
   "source_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
@@ -75,7 +75,11 @@
       "completion": "Captured original owner and actual accepted action UUID, with authoritative absence for dropped/unprocessed/invalid ownership",
       "decisive_test": "Five scalar receipt methods, six actual action-scope methods, one real-Core queued-context method; no prior or subsequent action borrowing, genuine rejected priority and uncertain-launch resolution",
       "environment": "Pinned ordinary iOS27 simulator; Internal/RUM/Core schemes, Core Thread Sanitizer preserved; no gestures or workspace opening",
-      "state": "IMPLEMENTED_REVIEWED_CHECKPOINTED_UNCOMPILED"
+      "state": "RUNNING_COMPONENT_QUALIFICATION_AT_AB46",
+      "execution": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-cli-proposal-20261006/actual-run-469a1b9e/controller.json",
+        "sha256": "8c9020dc9de986dc4f7ebb754bfde633d44f4705d2945ef5242335ce7f77ae35"
+      }
     },
     {
       "id": "P7N1",
@@ -112,9 +116,9 @@
         "reviewed shared caller-thread capture and On-only activation/Off design"
       ],
       "completion": "One captured emission owner shared by both outputs",
-      "decisive_test": "Emit A before B queue delivery; serialized log and mirrored error retain same original view/accepted action or explicit absence; sampling/threshold/Trace/user/account unchanged",
+      "decisive_test": "Emit A before B queue delivery: log retains original emission view/accepted action; mirror uses only same still-active original session/view or an authoritative drop, never replacement fallback. Queued/post-launch invalidation, stopped/expired session, inactive-retained view, nil/pending/rejected action, sampling/threshold/mapper/Trace/user/account/consent/completion and Off controls.",
       "environment": "Deterministic supported iOS27 simulator; older17.5 and custom/NOP/Off controls where applicable. Mounted WebView only for P7W1.",
-      "state": "DESIGN_AND_IMPLEMENTATION_REMAIN"
+      "state": "SOURCE_REVIEWED_UNAPPLIED_UNCOMPILED"
     },
     {
       "id": "P7F1",
@@ -159,13 +163,13 @@
   "selected_task": "P7A0_ACCEPTED_ACTION_COMPONENT_QUALIFICATION",
   "pending_action_requirement": "Pending/excluded action scalars do not identify an accepted Action UUID. The existing queue-confined continuous-action receipt is not a generic cross-module/discrete-action acceptance receipt. Do not borrow a later same-view action; independently review the smallest source-backed receipt design before consumer changes.",
   "off_requirement": "Reusing the network provider single State read may gate On locally. No default-Off Core registry/TaskLocal/scene lookup, owner allocation, new map/lock or naive owner(in: FeatureScope) capture.",
-  "runtime_admitted": false,
+  "runtime_admitted": true,
   "native_runs": 1,
   "builds": 1,
   "gates_closed": [],
   "whole_pr7_qualified": false,
-  "next_action": "Qualify twelve new accepted-action methods at ab46a329ad (Internal5/RUM6/Core1), preserving Core Thread Sanitizer and actual per-target compiler modes. Fresh reviewed source/product/parameter/awake authority; headless command-line execution, no workspace opening or human input. Consumer drafts and Off/final-stack obligations remain; no release gate closes.",
-  "updated_at": 1791256233.943434,
+  "next_action": "Continue the exclusive P7A0 current-source Internal/RUM/Core qualification. Await exact twelve outcomes, complete exports and original apps/Shutdown/group restoration plus designated actual review before SDK source handoff. No duplicate or source edit; consumer drafts, Off and final-stack remain.",
+  "updated_at": 1791258260.909127,
   "sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-applied-20261006/formatting-successor/sdk-checkpoint.json",
     "sha256": "3a399170a220d96401f654f679c8de419c8c8377b3bee1daf6a3638ac8ddf73b"
@@ -626,5 +630,114 @@
   "dependency_sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/sdk-checkpoint.json",
     "sha256": "8de6f4600357cbe88a003bb7d235945a3fda02af056f4e021f20540b19c82749"
+  },
+  "accepted_action_component_proposal": {
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-cli-proposal-20261006/packet.json",
+      "sha256": "e832f0bae9ebb1f2d860dfaacee986b7eba182ff007964593d0c24fdb55d6f91"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-cli-proposal-20261006/review.json",
+      "sha256": "3a0cf750d533ea35b1e211dcdb0da6deff5d025a108392df73d46698beb4acad"
+    },
+    "materialized_parameters": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-cli-proposal-20261006/root-preparation-469a1b9e/materialized-parameters.json",
+      "sha256": "4e4ee7cb29e45f704bd8c08fafc79e6d8efe0300863ea6b6da429c95535045fb"
+    },
+    "parameter_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-cli-proposal-20261006/root-preparation-469a1b9e/parameter-review.json",
+      "sha256": "86c6ac30fdb11440fef4579f6f89c2e95cd6cb26b840850f58d5099027db2bce"
+    },
+    "root_exclusive_release": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-cli-proposal-20261006/root-preparation-469a1b9e/root-exclusive-release.json",
+      "sha256": "c09c9e52e54ca27a16a2612811e6c6e1585ea211daf69c23dfe1f1c0653f7b9f"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-cli-proposal-20261006/focused-controls-cycle2.json",
+      "sha256": "68e480f07afd58c22d1283ced530285cde36f42b48fb79d262fbea5fab7a2caa"
+    },
+    "offline_controls": 43,
+    "native_tests_from_controls": 0
+  },
+  "accepted_action_component_execution": {
+    "state": "RUNNING_ORIGINAL_FIXED_ADMISSION",
+    "run_id": "469a1b9e-a83a-4965-b1bb-a194783912a8",
+    "controller": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-cli-proposal-20261006/actual-run-469a1b9e/controller.json",
+      "sha256": "8c9020dc9de986dc4f7ebb754bfde633d44f4705d2945ef5242335ce7f77ae35"
+    },
+    "controller_pid": 17770,
+    "controller_pgid": 17770,
+    "observed_process": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/root-p7a0-running-docs-20261006/actual-controller-process.txt",
+      "sha256": "066d24d268d04806d8cec5bcea58365761fae29715ba047864fa30bb027d9ef3"
+    },
+    "owner": "/root/s2_split_input_owner",
+    "tool_session_observation": 7266,
+    "release": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-cli-proposal-20261006/root-release-469a1b9e.json",
+      "sha256": "30487132b35355847de0309bea82d56bcf2779877bb4fd5388d9466d632267bf"
+    },
+    "source_head": "ab46a329ad5b3f0322e27671ca59efc6a98de6d5",
+    "scenario": "PENDING",
+    "evidence": "PENDING",
+    "cleanup": "NOT_STARTED",
+    "source_frozen": true,
+    "qualification_scope": "P7A0 twelve new affected-component methods only; no whole PR7/consumer/Off/integration/release credit"
+  },
+  "logs_core_capture_draft": {
+    "state": "SOURCE_REVIEWED_UNAPPLIED_UNCOMPILED",
+    "original_packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-logs-core-capture-draft-20261006/packet.json",
+      "sha256": "543ac6a93925c3d9a83cf81d79593f1e9c866584273dc64c614acd4743df7c3e"
+    },
+    "original_blocked_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-logs-core-capture-draft-20261006/review.json",
+      "sha256": "275f66084469ca8a0bbaed31d556411229d6b80d94105d579ed791585f605dc5"
+    },
+    "corrected_packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-logs-core-capture-draft-cycle2-20261006/packet.json",
+      "sha256": "29d445b2c9b860c7354ea6031529dcec94ff640134594c6e6501e4fd611cdd66"
+    },
+    "corrected_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-logs-core-capture-draft-cycle2-20261006/review.json",
+      "sha256": "f2e8c8154140751aa585743f644b8651d0f3e1960c129044803005744c997433"
+    },
+    "disposition": "Current-first capture then monotonic invalidation check preserves authoritative absence across the store-publication race. Existing storage synchronization; ordinary writer path unchanged. Runtime/store-overlap/Off tests remain.",
+    "sdk_edits": 0,
+    "native_runs": 0
+  },
+  "logs_projection_draft": {
+    "state": "SOURCE_REVIEWED_UNAPPLIED_UNCOMPILED",
+    "original_packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-logs-projection-draft-20261006/packet.json",
+      "sha256": "379a9d50294f457c4562ff4008a90842c046bab84a1183cceae55105733a0f7f"
+    },
+    "original_blocked_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-logs-projection-draft-20261006/review.json",
+      "sha256": "44b2fa7ee810069adfee1a97fe2ac80f5d64b5e387d9674b05f0225f41ead8c2"
+    },
+    "corrected_packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-logs-projection-draft-cycle2-20261006/packet.json",
+      "sha256": "855e2448c69182bd6cb89e0ba2760c865f99815e6ce8b1c9956084584580697a"
+    },
+    "corrected_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-logs-projection-draft-cycle2-20261006/review.json",
+      "sha256": "3a9ef89c6375a33f30205c137658756fc0d9ebc6a3075bcbd19f268c638908ce"
+    },
+    "disposition": "Retained original session/view/owner bypasses lazy start, refresh, historical fallback and peer fanout; original action receipt resolves at actual queued/post-launch application. Inactive retained views stay ineligible. Ordinary error/Off routing unchanged.",
+    "footprint": "One optional reference word in the existing error command; allocated captured ownership only on the new On payload. No zero-size claim.",
+    "sdk_edits": 0,
+    "native_runs": 0
+  },
+  "logs_strict_routing_tests_draft": {
+    "state": "UNAPPLIED_UNCOMPILED_UNREVIEWED",
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-logs-strict-routing-tests-draft-20261006/packet.json",
+      "sha256": "1eedc122fc1d979f6bd1900bc55080ae9c66fe627225a9552007469604d36ef9"
+    },
+    "new_methods": 7,
+    "tests_run": 0,
+    "native_runs": 0
   }
 }
