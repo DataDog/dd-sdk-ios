@@ -270,6 +270,7 @@
 		11D5190C306AA655008C003F /* swift_alloc_hook.h in Headers */ = {isa = PBXBuildFile; fileRef = 11D5190B306AA655008C003F /* swift_alloc_hook.h */; };
 		11D5190E306AA6A0008C003F /* swift_alloc_hook.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11D5190D306AA6A0008C003F /* swift_alloc_hook.cpp */; };
 		11D51910306AA6E7008C003F /* SwiftAllocHookTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D5190F306AA6E7008C003F /* SwiftAllocHookTests.swift */; };
+		11D519223074F977008C003F /* swift_alloc_hook_testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 11D519213074F977008C003F /* swift_alloc_hook_testing.h */; };
 		11E6D59F2E6B1468004D2F87 /* FirstFrameReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E6D59E2E6B1468004D2F87 /* FirstFrameReader.swift */; };
 		11E6D5A22E6B16A3004D2F87 /* FirstFrameReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E6D5A12E6B1696004D2F87 /* FirstFrameReaderTests.swift */; };
 		11EA5C212DC27F7600E8DFA2 /* LogsDataModels+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11EA5C1E2DC27F7600E8DFA2 /* LogsDataModels+objc.swift */; };
@@ -2186,6 +2187,7 @@
 		11D5190B306AA655008C003F /* swift_alloc_hook.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_alloc_hook.h; sourceTree = "<group>"; };
 		11D5190D306AA6A0008C003F /* swift_alloc_hook.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = swift_alloc_hook.cpp; sourceTree = "<group>"; };
 		11D5190F306AA6E7008C003F /* SwiftAllocHookTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftAllocHookTests.swift; sourceTree = "<group>"; };
+		11D519213074F977008C003F /* swift_alloc_hook_testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = swift_alloc_hook_testing.h; sourceTree = "<group>"; };
 		11E6D59E2E6B1468004D2F87 /* FirstFrameReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstFrameReader.swift; sourceTree = "<group>"; };
 		11E6D5A12E6B1696004D2F87 /* FirstFrameReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstFrameReaderTests.swift; sourceTree = "<group>"; };
 		11EA5C1D2DC27F7600E8DFA2 /* Logs+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Logs+objc.swift"; sourceTree = "<group>"; };
@@ -6669,6 +6671,7 @@
 				D2355B262E4E05CE000DDF5F /* module.modulemap */,
 				11D51909306AA5D7008C003F /* fishhook.h */,
 				11D5190B306AA655008C003F /* swift_alloc_hook.h */,
+				11D519213074F977008C003F /* swift_alloc_hook_testing.h */,
 			);
 			path = include;
 			sourceTree = "<group>";
@@ -7550,6 +7553,7 @@
 				D2E937262E53324100FECA76 /* profile.h in Headers */,
 				1157930A2F51F05100AEE829 /* binary_image_resolver_testing.h in Headers */,
 				D2E9372F2E53325900FECA76 /* protobuf-c.h in Headers */,
+				11D519223074F977008C003F /* swift_alloc_hook_testing.h in Headers */,
 				D2E9372B2E53325200FECA76 /* profile.pb-c.h in Headers */,
 				115792E62F4504F700AEE829 /* binary_image_resolver.h in Headers */,
 				D2E9371A2E4E25E800FECA76 /* mach_sampling_profiler.h in Headers */,
