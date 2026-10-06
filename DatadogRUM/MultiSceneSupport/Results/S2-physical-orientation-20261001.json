@@ -55,14 +55,9 @@
   "backend_queries": 0,
   "release_acceptance": false,
   "gate_closures": [],
-  "user_availability": {
-    "date": "2026-10-01",
-    "timezone": "Europe/Paris",
-    "simulator_until": "12:00",
-    "physical_ipad_not_before": "21:00"
-  },
-  "next_action": "Finish exact independent re-review, then obtain fresh actual landscapeLeft display/image/display setup before a physical invitation after21:00. Continue the unresolved SwiftUI simulator capture preparation during the current simulator window.",
-  "updated_at": "2026-10-01T07:51:25.690952+00:00",
+  "user_availability": "Unavailable until2026-10-07T06:30:00+02:00; readiness must be rediscovered when a physical session is requested.",
+  "next_action": "Prepare the physical candidate against the current independent lifecycle/capture contract, preserving the accepted baseline and24 orientation controls. Qualify fresh actual landscapeLeft window/display/image readiness before inviting the user. User unavailable until06:30Paris7October; no physical gestures, unlock request or native admission is implied. S2 SwiftUI C09/C10/H14 are now scoped closed; no simulator repeat.",
+  "updated_at": "2026-10-06T21:36:37Z",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-physical-orientation-80u7u761/runtime-v2/review.json",
     "sha256": "b84937f95d241718fd7c5edd91f35958806b02b551e37cbc997e656e4f4ab7c2"

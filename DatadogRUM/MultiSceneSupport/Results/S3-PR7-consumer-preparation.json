@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "CONSUMER_COMPONENTS_QUALIFIED_WEBVIEW_CACHE_SIGNED_NATIVE_QUALIFICATION_REMAINS",
+  "state": "CONSUMER_AND_WEBVIEW_CACHE_COMPONENTS_QUALIFIED_CAPTURE_INTEGRATION_REMAINS",
   "existing_gate": "S3:F12",
   "slice": "PR7",
   "source_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
@@ -180,16 +180,16 @@
       "state": "DESIGN_AND_IMPLEMENTATION_REMAIN"
     }
   ],
-  "selected_task": "P7W1_SCENE_SCOPED_HISTORICAL_CACHE",
+  "selected_task": "P7W1_CAPTURED_WEBVIEW_TRANSPORT_AND_RECEIVER_ROUTING",
   "pending_action_requirement": "Pending/excluded action scalars do not identify an accepted Action UUID. The existing queue-confined continuous-action receipt is not a generic cross-module/discrete-action acceptance receipt. Do not borrow a later same-view action; independently review the smallest source-backed receipt design before consumer changes.",
   "off_requirement": "Reusing the network provider single State read may gate On locally. No default-Off Core registry/TaskLocal/scene lookup, owner allocation, new map/lock or naive owner(in: FeatureScope) capture.",
   "runtime_admitted": false,
-  "native_runs": 9,
-  "builds": 18,
+  "native_runs": 10,
+  "builds": 19,
   "gates_closed": [],
   "whole_pr7_qualified": false,
   "next_action": "Complete source-backed WebView native-container and Flags Internal/React Native acquisition, then focused component/complete Off/older-system/final-stack qualification. Preserve accepted component evidence and original44 failure; do not rerun the repaired Core method merely to resume.",
-  "updated_at": "2026-10-06T21:15:41.894317+00:00",
+  "updated_at": "2026-10-06T21:36:37Z",
   "sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-core-sampling-initialization-test-repair-applied-20261006/sdk-checkpoint.json",
     "sha256": "8479a54805b889477b7b9f20b61e6755e0ce49fda73cab852a95a77f47f45e72"
@@ -1421,7 +1421,7 @@
     }
   },
   "webview_scene_cache_primitive": {
-    "state": "SOURCE_REVIEWED_SIGNED_THREE_METHOD_QUALIFICATION_PREPARED",
+    "state": "THREE_METHOD_COMPONENT_QUALIFIED_AT_F483",
     "packet": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-scene-cache-20261006/packet.json",
       "sha256": "0f599f2274dd13cae50fa015bc1f4225865ab705e7d289e2570e9715243a897c"
@@ -1429,7 +1429,7 @@
     "controls": 3,
     "scope": "Internal scene-filtered historical lookup; unchanged global lookup. No production caller yet.",
     "gates_closed": [],
-    "next": "Finalize exact signed source/compiler/helper bindings and designated proposal review; root issues one fresh automatic three-method cell. Full callback acquisition remains open.",
+    "next": "Implement the typed ownership transport across both queues and strict receiver routing; mounted callback acquisition and historic rebind proof remain separate obligations.",
     "review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-scene-cache-20261006/review.json",
       "sha256": "6d427e4d0264d5a06d2bd79ace700371d34b0aaf9cb3c5f70a64d515c73931fe"
@@ -1439,8 +1439,33 @@
       "sha256": "78c24d9a0aab72df30bba76b55b07ad700062917ac701b7ed751ad0aca6f7d0b"
     },
     "preparation": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-scene-cache-20261006/three-method-qualification-preparation/packet.precommit.json",
-      "sha256": "22f70500930dceeecb866cc1a35091c26b2ac0178b5529ad4b1c2b9f7fde786d"
-    }
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-scene-cache-20261006/three-method-qualification-preparation/packet.json",
+      "sha256": "8ede98de3506e04a34d6bccf7a5351bc331a8a599d6910aa9971d2054baa540d"
+    },
+    "actual_result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-scene-cache-20261006/three-method-qualification-preparation/actual-run-d4eaac52/result.json",
+      "sha256": "8f65b5a07fba4b3e831b31060534dd6eda3b8529cc02f0bb2a21c0fbb28a8c71"
+    },
+    "actual_packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-scene-cache-20261006/three-method-qualification-preparation/actual-run-d4eaac52/actual-outcome-closure/packet.json",
+      "sha256": "47b4e063ac64bdb90cac0df383cfee1b6adeccc922549444df03e12b453be2d8"
+    },
+    "actual_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-scene-cache-20261006/three-method-qualification-preparation/actual-run-d4eaac52/actual-outcome-closure/actual-review.json",
+      "sha256": "0d936a696183c01a2791836d07f0da4be278e07ad4846088f50098717426606c"
+    },
+    "custody_handback": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-scene-cache-20261006/three-method-qualification-preparation/actual-run-d4eaac52/actual-outcome-closure/custody-handback.json",
+      "sha256": "e774ec42484f1226dd117bfcef85fa66c4d95944997d65db9a2f559d7116f58f"
+    },
+    "verdicts": {
+      "scenario": "PASS",
+      "evidence": "COMPLETE",
+      "cleanup": "PASS_ORIGINAL_SHUTDOWN_APPS_AND_GROUPS",
+      "overall": "PASS_AFFECTED_COMPONENT_ONLY"
+    },
+    "native_runs": 1,
+    "builds": 1,
+    "tests_passed": 3
   }
 }

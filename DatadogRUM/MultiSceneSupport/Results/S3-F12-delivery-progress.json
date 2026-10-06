@@ -254,7 +254,7 @@
         "off": "NOT_EXECUTED",
         "integration": "NOT_QUALIFIED"
       },
-      "remaining_assertion": "WebView callback origin across two queues/same-scene history; Flags Internal/React Native acquisition; complete Off, older-system, lifetime and final stack. Retain43 consumers and separate repaired Core method; original44 INVALID stays.",
+      "remaining_assertion": "WebView callback origin across two queues and historic/rebind proof; Flags Internal/React Native acquisition; complete Off, older-system, lifetime and final stack. Reuse the three scene-cache methods,43 consumers and separate repaired Core method; original44 INVALID stays.",
       "next_action": "Complete source-backed WebView native-container and Flags Internal/React Native acquisition, then focused component/complete Off/older-system/final-stack qualification. Preserve accepted component evidence and original44 failure; do not rerun the repaired Core method merely to resume.",
       "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit.",
       "dependency_design": {
@@ -263,7 +263,7 @@
       },
       "preparation_record": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
-        "sha256": "63bee02b8e8e54fac06902df9fb24e5b66587fac3e31d2a04799dfc5a0b18e3d"
+        "sha256": "4cd7cc517a7a37b2d3a377b548c4952e6618d5738b6e9be74243f71ed73dcb98"
       },
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
       "source_branch": "valpertui/s3-consumer-capture",
@@ -381,6 +381,19 @@
       "webview_cache_checkpoint": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-scene-cache-20261006/sdk-checkpoint.json",
         "sha256": "78c24d9a0aab72df30bba76b55b07ad700062917ac701b7ed751ad0aca6f7d0b"
+      },
+      "webview_cache_component": {
+        "source_head": "f483d658d16f6612a515ba862c07aa6f448aff1a",
+        "state": "THREE_METHOD_COMPONENT_QUALIFIED_ONLY",
+        "result": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-scene-cache-20261006/three-method-qualification-preparation/actual-run-d4eaac52/result.json",
+          "sha256": "8f65b5a07fba4b3e831b31060534dd6eda3b8529cc02f0bb2a21c0fbb28a8c71"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-scene-cache-20261006/three-method-qualification-preparation/actual-run-d4eaac52/actual-outcome-closure/actual-review.json",
+          "sha256": "0d936a696183c01a2791836d07f0da4be278e07ad4846088f50098717426606c"
+        },
+        "gates_closed": []
       }
     },
     {
@@ -565,7 +578,7 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": "2026-10-06T21:15:41.894317+00:00",
+  "updated_at": "2026-10-06T21:36:37Z",
   "dependency_build_attempts": 4,
   "dependency_component_qualifications": 4,
   "dependency_test_invocations": 4
