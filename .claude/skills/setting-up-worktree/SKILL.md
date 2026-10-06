@@ -23,6 +23,6 @@ mkdir -p Carthage && /bin/cp -cR "$MAIN/Carthage/Build" Carthage/          # APF
 - Use `/bin/cp`: Homebrew's GNU `cp` may shadow it and has no `-c`.
 - If `Cartfile.resolved` differs from the main checkout's, run `make dependencies` instead of the clone.
 - Don't run full `make`, `env-check`, or `templates` — they're machine-wide and already done.
-- If the worktree is inside the main checkout, add its folder to `$MAIN/.git/info/exclude` (not `.gitignore`) so it doesn't show up as untracked.
+- If the worktree is inside the main checkout, add its folder to the file printed by `git rev-parse --path-format=absolute --git-path info/exclude` (not `.gitignore`) so it doesn't show up as untracked. Don't hardcode `.git/info/exclude`: in a linked worktree `.git` is a file.
 
 **Xcode MCP:** `XcodeOpenWorkspace(path: "<WT>/Datadog.xcworkspace")`. Each new folder needs approval: if the call says *"Xcode is waiting for the user to approve this request"*, ask the user to approve from the Xcode MCP menu bar icon, then retry.
