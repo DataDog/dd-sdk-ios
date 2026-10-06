@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
-  "state": "AUTONOMOUS_CAPTURE_CONTINUITY_REQUIRED_BEFORE_HUMAN_READY",
-  "updated_at": "2026-10-06T13:11:27.509382+00:00",
+  "state": "FOREGROUND_CAPTURE_CONTINUITY_QUALIFIED_HUMAN_BINDING_REQUIRED",
+  "updated_at": "2026-10-06T15:05:18.734286+00:00",
   "execution": {
     "record": "Results/S2-capture-continuity-20261006.json"
   },
@@ -596,5 +596,19 @@
     "latest_attempts_owner": "Results/execution-improvements-20261004.json#p2.human_startup_blocker.attempts",
     "canonical_startup_owner": "Results/execution-improvements-20261004.json#p2.human_startup_blocker.canonical_startup_assembly",
     "actual_startup_attempt_owner": "Results/S2-capture-continuity-20261006.json"
+  },
+  "foreground_capture_continuity": {
+    "record": "Results/S2-capture-continuity-20261006.json#next_qualification",
+    "state": "QUALIFIED_AUTONOMOUS_FOREGROUND_CONTINUITY_COMPONENT_ONLY",
+    "gates_closed": []
+  },
+  "next_human_profile": {
+    "record": "Results/execution-improvements-20261004.json#p2.human_foreground_renewal_profile",
+    "state": "SOURCE_INTERFACE_REVIEWED_FRESH_RUNTIME_BINDINGS_REQUIRED",
+    "native_admitted": false,
+    "page": null,
+    "run_id": null,
+    "clocks": null,
+    "ready_invited": false
   }
 }

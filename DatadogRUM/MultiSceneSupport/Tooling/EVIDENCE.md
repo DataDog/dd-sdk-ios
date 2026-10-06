@@ -315,6 +315,6 @@ runtime/plan/definition/review/admission/null execution under sole-writer custod
 Preserve prior bytes; test this producer separately from seeded owner tests.
 Missing/foreign selection stops release; modeled selection grants no authority.
 
-Human Ready requires a proved live app/capture/writer/original owner and a qualified continuity mechanism.
-Keep capture current; recheck after Ready. On failure withdraw without relaunch or reused observations.
-See the [readiness owner](../Results/S2-capture-continuity-20261006.json).
+Human Ready requires current app/capture/writer/original owner proof; keep foreground capture current and recheck after Ready.
+Shared renewal is natively qualified once. Bind reviewed human roles; disable renewal before Home/background. Withdraw on failure without relaunch/reuse.
+The [readiness owner](../Results/S2-capture-continuity-20261006.json#next_qualification) preserves original failure, scoped qualification and restoration; do not repeat the idle measurement.

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "state": "STOPPED_READY_WAIT_PROCESS_ABSENT_RETIRED",
-  "updated_at": "2026-10-06T13:11:27.509382+00:00",
+  "updated_at": "2026-10-06T15:05:18.734286+00:00",
   "plan": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/runtime-plan.json",
     "sha256": "8ecffcc61ac6f541f38835a19346405aa720fe1f54d5a97d16e7f4e889fa1421"
@@ -47,12 +47,83 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/human-readiness-reliability-20261006/decision.json",
     "sha256": "31b050ef096bd1fc6652ff411e754277b9309d897ebeafbc9ab3b36408966973"
   },
-  "next_action": "Review and autonomously qualify the integrated serial foreground-capture renewal through the observed idle boundary. No Ready invitation until actual working launch/capture continuity is proved; reuse accepted source, products, four cells and baseline.",
+  "next_action": "Complete fresh runtime bindings for the source/interface-reviewed canonical human profile with the qualified foreground hook and a prospective 5400+600-second reservation. Create page and clocks after preparation and scoped launch/awake authorization; offer Ready only after actual app, capture, writer, original owner and idle checks pass. Keep foreground capture current, recheck after Ready, and disable renewal before Home/background. Reuse the accepted source, products, four cells, baseline and continuity qualification; do not repeat the idle measurement. PR7 WebView and Flags acquisition remain independent.",
   "next_qualification": {
-    "state": "SOURCE_PROPOSAL_IN_PROGRESS",
+    "state": "QUALIFIED_AUTONOMOUS_FOREGROUND_CONTINUITY_COMPONENT_ONLY",
     "native_admitted": false,
-    "native_calls": 0,
-    "user_input_required": false,
-    "credit": "CAPTURE_MECHANISM_ONLY_NO_RELEASE_GATE"
-  }
+    "run_id": "e300caec-b932-40ea-88d8-49a4ddcf3118",
+    "context": {
+      "bundle": "com.datadoghq.s2.automatic.candidate.sdk271.swiftui",
+      "cleanup_deadline": 1791297382.329401,
+      "device": "F91CCE46-2704-4E8B-9093-A6A0EF250B1A",
+      "execution_deadline": 1791297082.329401,
+      "issued_at": 1791296182.329401,
+      "layout": "split",
+      "operation_profile": "S2_AUTONOMOUS_FOREGROUND_CONTINUITY_V1",
+      "owner": "/root/s2_split_input_owner",
+      "plan_sha256": "390a5efa35fc7079598ff6075d240487eb67d2e5832511a3c5320f98fbd1efc4",
+      "run_id": "e300caec-b932-40ea-88d8-49a4ddcf3118",
+      "scheme": "Coverage",
+      "source": "c9faed816a1d4828d7d8c4b64acae01119425889",
+      "tool_workspace_binding": {
+        "configuration": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/human-readiness-reliability-20261006/automatic-renewed-preflight/workspace-configuration.actual.rejoined.json",
+          "sha256": "f7a93989be53253786695b81e401163fcc0726ab9720c351dd159b420b05165e"
+        },
+        "tool_metadata": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/human-readiness-reliability-20261006/automatic-renewed-preflight/tool-metadata.actual.json",
+          "sha256": "da09bf67bec7e846cd108e7aa56f72c472b84c3743fb53a1f8afa57c1b5eccc7"
+        },
+        "workspace_list": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/human-readiness-reliability-20261006/automatic-renewed-preflight/workspace-list.actual.json",
+          "sha256": "f24ed7cefedd8556f9127385f70907f66835cfd43b9f030ede25ec9285070192"
+        }
+      },
+      "tool_workspace_identifier": "workspace-uanW3al82g",
+      "workspace": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-workspace-source-cycle1/client/AutomaticCoverage.xcodeproj"
+    },
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-passive-continuity-awake-successor-20261006/runtime/actual-outcome-closure/packet.json",
+      "sha256": "182cd3d9586221a6a4b93afb46e4914cf3f6738bc5143769e220a8e0bd2510d1"
+    },
+    "actual_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-passive-continuity-awake-successor-20261006/runtime/actual-outcome-closure/actual-review.json",
+      "sha256": "1ba896725b3e76d71a929a0c55b0c0f4eba517bbc1427c71c459f89dd5005c1f"
+    },
+    "continuity": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-passive-continuity-awake-successor-20261006/runtime/cleanup/continuity-qualification.json",
+      "sha256": "3368ec4975df57ee1193225a53fca94d2259488b57c19982d37ade960fa814b2"
+    },
+    "completion": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-passive-continuity-awake-successor-20261006/runtime/completion.json",
+      "sha256": "3e97156eea228c91d41d49dde054467a0794f059101579f002d2485a7d808acf"
+    },
+    "typed_task_cleanup": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-passive-continuity-awake-successor-20261006/runtime/cleanup/cleanup-final.json",
+      "sha256": "e8cff232b12acd5136ed4af22b86c867f58d95b1484da7dc4a0625fae732129d"
+    },
+    "native_calls": 7,
+    "empty_captures": 4,
+    "numbered_renewals": 3,
+    "end_calls": 1,
+    "scenario": "PASS",
+    "evidence": "COMPLETE",
+    "cleanup": "PASS",
+    "qualification_scope": "AUTONOMOUS_FOREGROUND_CAPTURE_COMPONENT_ONLY",
+    "native_owner_publication": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-passive-continuity-awake-successor-20261006/runtime/owning-execution-publication.json",
+      "sha256": "518a3c3442007378f8021162d6494ba66372c8ca3e9615b59ee4fce9c3e65d88"
+    },
+    "limits": [
+      "No human Ready/gesture/scenario, SDK safety, release-gate or lease-cause credit.",
+      "Exact TTY equality remains false only for Darwin PENDIN; observer PID/group is not independently retained.",
+      "Original Ready-wait failure and all earlier verdicts/clocks remain immutable."
+    ],
+    "gates_closed": [],
+    "retired": true,
+    "active": false,
+    "owner_freeze": false,
+    "runtime_authority_unresumable": true
+  },
+  "human_profile_owner": "Results/execution-improvements-20261004.json#p2.human_foreground_renewal_profile"
 }
