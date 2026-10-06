@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "state": "ACTION_DEPENDENCY_QUALIFIED_NETWORK_TRACE_TEST_COMPILE_REPAIRED_UNQUALIFIED",
+  "state": "ACTION_DEPENDENCY_QUALIFIED_NETWORK_TRACE_FIXTURE_REPAIRED_LOGS_CORE_SOURCE_APPLIED_UNQUALIFIED",
   "existing_gate": "S3:F12",
   "slice": "PR7",
   "source_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
   "branch": "valpertui/s3-consumer-capture",
   "base_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
-  "source_head": "2294defbb39824bb3da395663586b97d15e59e9d",
+  "source_head": "1a6d1600bf4ead50bd696787de6d9abab2b31b7b",
   "source_gap_inventory": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-consumer-source-preparation/packet.json",
     "sha256": "57e376768a17b85993c54af64fcfb4f63048738ae0976e386760c5831f0c4a5b"
@@ -112,7 +112,7 @@
       "completion": "Captured request-time ownership",
       "decisive_test": "Start in A with delivered B, complete in B; A or authoritative absence, matching final request session and sampling, unchanged header/user/account/parent/GraphQL guards",
       "environment": "Deterministic supported iOS27 simulator; older17.5 and custom/NOP/Off controls where applicable. Mounted WebView only for P7W1.",
-      "state": "IMPLEMENTED_TEST_COMPILE_REPAIRED_CONSUMER_QUALIFICATION_REMAINS"
+      "state": "IMPLEMENTED_FIXTURES_REPAIRED_CONSUMER_QUALIFICATION_REMAINS"
     },
     {
       "id": "P7T1",
@@ -125,7 +125,7 @@
       "completion": "Captured span-start ownership",
       "decisive_test": "Start A, queue context read after B; finish B retains A or authoritative absence; custom/NOP and default/explicit Off use legacy context exactly once",
       "environment": "Deterministic supported iOS27 simulator; older17.5 and custom/NOP/Off controls where applicable. Mounted WebView only for P7W1.",
-      "state": "IMPLEMENTED_TEST_COMPILE_REPAIRED_CONSUMER_QUALIFICATION_REMAINS"
+      "state": "IMPLEMENTED_FIXTURES_REPAIRED_CONSUMER_QUALIFICATION_REMAINS"
     },
     {
       "id": "P7L1",
@@ -138,7 +138,7 @@
       "completion": "One captured emission owner shared by both outputs",
       "decisive_test": "Emit A before B queue delivery: log retains original emission view/accepted action; mirror uses only same still-active original session/view or an authoritative drop, never replacement fallback. Queued/post-launch invalidation, stopped/expired session, inactive-retained view, nil/pending/rejected action, sampling/threshold/mapper/Trace/user/account/consent/completion and Off controls.",
       "environment": "Deterministic supported iOS27 simulator; older17.5 and custom/NOP/Off controls where applicable. Mounted WebView only for P7W1.",
-      "state": "SOURCE_REVIEWED_UNAPPLIED_UNCOMPILED"
+      "state": "IMPLEMENTED_SOURCE_REVIEWED_CURRENT_SOURCE_QUALIFICATION_REMAINS"
     },
     {
       "id": "P7F1",
@@ -180,16 +180,16 @@
       "state": "DESIGN_AND_IMPLEMENTATION_REMAIN"
     }
   ],
-  "selected_task": "P7N1_P7T1_CURRENT_SOURCE_CONSUMER_QUALIFICATION",
+  "selected_task": "P7N1_P7T1_P7L1_CURRENT_SOURCE_COMPONENT_QUALIFICATION",
   "pending_action_requirement": "Pending/excluded action scalars do not identify an accepted Action UUID. The existing queue-confined continuous-action receipt is not a generic cross-module/discrete-action acceptance receipt. Do not borrow a later same-view action; independently review the smallest source-backed receipt design before consumer changes.",
   "off_requirement": "Reusing the network provider single State read may gate On locally. No default-Off Core registry/TaskLocal/scene lookup, owner allocation, new map/lock or naive owner(in: FeatureScope) capture.",
   "runtime_admitted": false,
   "native_runs": 4,
-  "builds": 7,
+  "builds": 10,
   "gates_closed": [],
   "whole_pr7_qualified": false,
-  "next_action": "Qualify the same sixteen new consumer methods and eight focused legacy regressions on the corrected exact source through fresh Internal/CoreTSan/Trace products, discovery, assertions and cleanup. Preserve the original zero-test compile failure; no SDK regression or gate credit follows from builds. Core/Logs composition is private and uncompiled; Flags acquisition is blocked by the approved Off contract. WebView, complete Off, older-system and final-stack obligations remain.",
-  "updated_at": "2026-10-06T05:18:48.411506+00:00",
+  "next_action": "Qualify the composed current source: sixteen new network/Trace methods, eight focused legacy regressions and twenty Core/Logs ownership methods through fresh exact products, discovery, assertions and cleanup. Both zero-test compile failures remain invalid; successful builds close no behavioral gate. Flags requires an Off-compliant acquisition path covering native and Internal/React Native producers. WebView, complete Off, older-system and final-stack obligations remain. No human/Xcode prompt is needed for the prepared CLI path; fresh authority and exact review remain required.",
+  "updated_at": "2026-10-06T05:52:53.369486+00:00",
   "sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-applied-20261006/formatting-successor/sdk-checkpoint.json",
     "sha256": "3a399170a220d96401f654f679c8de419c8c8377b3bee1daf6a3638ac8ddf73b"
@@ -535,7 +535,7 @@
     }
   },
   "native_attempt_accounting": {
-    "build_for_testing": 7,
+    "build_for_testing": 10,
     "boot": 4,
     "discovery": 4,
     "test_invocations": 4,
@@ -924,7 +924,7 @@
     "qualification_gap": "Actual constructor tests now applied and reviewed; fresh current-source compilation and sixteen new/eight legacy selected-method qualification remain."
   },
   "trace_constructor_tests": {
-    "state": "SOURCE_REVIEWED_QUALIFICATION_REMAINS_AFTER_WRITER_TEST_COMPILE_REPAIR",
+    "state": "SOURCE_REVIEWED_FIXTURES_REPAIRED_QUALIFICATION_REMAINS",
     "original_block": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-trace-constructor-test-draft-cycle2-20261006/review.json",
       "sha256": "4bab9919601ad33a64cb444da15f7d17fd8ebd8632d746929a6e22f965eb8b38"
@@ -969,10 +969,14 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-flags-capture-design-20261006/off-acquisition-alternatives.json",
       "sha256": "37c75820b9cd8f1ce181fffe5e9493628b8275eed5e9abba8199b61224c34647"
     },
-    "blocker": "Reporter owner getter adds a default-Off Core registry lock read contrary to the owning Off requirement. Routing design does not authorize this acquisition; preserve the contract and redesign before implementation.",
+    "blocker": "Reporter owner getter adds a default-Off Core registry lock read contrary to the owning Off requirement. Routing design does not authorize this acquisition; preserve the contract and redesign before implementation. A repository-only carrier also misses the existing Internal/React Native producer, which calls trackEvaluation without repository reads.",
     "off_contract_disposition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-flags-capture-design-20261006/off-contract-disposition.json",
       "sha256": "bba915a0054a8a814ef2a9cf8cc6c7f625d4667e5827fb3b1daafd79b3ac33dd"
+    },
+    "producer_coverage_source_note": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-flags-capture-design-20261006/off-acquisition-producer-coverage.json",
+      "sha256": "f878f66926433cedec08fc856f6345be302154d5094c220dac267a13da26b266"
     }
   },
   "network_trace_component_attempts": [
@@ -1006,6 +1010,37 @@
       "tests": 0,
       "boot_effects": 0,
       "disposition": "Trace rc65: fifteen compiler diagnostics from seventeen unsupported test accessor expressions. Original immutable; two build successes are compilation custody only. No app-equality claim without boot inventory."
+    },
+    {
+      "plan": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-network-trace-cli-proposal-cycle2-20261006/plan.json",
+        "sha256": "23889274c5e878e3cb605e811f5162ae3ff8ec50d095dec1fe8386bee9b2e146"
+      },
+      "proposal_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-network-trace-cli-proposal-cycle2-20261006/review.json",
+        "sha256": "44dddbbbcd0b3e28ba4c6f3a833abcbbd1f5f0e394c97615d03ebdc389c9be6b"
+      },
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-network-trace-cli-proposal-cycle2-20261006/actual-run-bef40a0a/stopped-result.json",
+        "sha256": "f2e34ddb90c2cca2e45d38b7fdf379747db33071ab2139f36ee051485342ca26"
+      },
+      "closure": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-network-trace-cli-proposal-cycle2-20261006/actual-run-bef40a0a/closure/closure.json",
+        "sha256": "a9fdd96004022719b67ca293f6023bcfca04567630e0b6b7182c3c59c8c852a1"
+      },
+      "actual_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-network-trace-cli-proposal-cycle2-20261006/actual-run-bef40a0a/closure/actual-review.json",
+        "sha256": "758169b2bf2deaab81f2c88652dceea02edbee44518d2dcce58ddb93201c7044"
+      },
+      "source_head": "2294defbb39824bb3da395663586b97d15e59e9d",
+      "scenario": "UNQUALIFIED",
+      "evidence": "INCOMPLETE",
+      "overall": "INVALID",
+      "cleanup": "PASS_ORIGINAL_SHUTDOWN_APPS_AND_GROUPS",
+      "build_attempts": 3,
+      "tests": 0,
+      "boot_effects": 0,
+      "disposition": "Trace rc65: unsupported UserInfo mock helper in one constructor fixture. Original invalid verdict is immutable; two successful builds are compilation custody only, with no boot/app-equality/runtime/SDK-regression claim."
     }
   ],
   "trace_test_accessor_repair": {
@@ -1038,14 +1073,51 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-logs-core-composition-preview-cycle2-20261006/strict-lint.json",
       "sha256": "42362e2cd035aff3a9bf14fb381d48a4c4a926816939ad5f469a99e9304af20c"
     },
-    "state": "SOURCE_REVIEWED_UNAPPLIED_UNCOMPILED",
+    "state": "SOURCE_REVIEWED_APPLIED_UNCOMPILED_UNQUALIFIED",
     "production_files": 10,
     "test_files": 3,
     "new_methods": 20,
-    "disposition": "Thirteen-file composition/twenty methods pass exact source review. No introduced lint violations; seven unchanged baseline findings. Application, compilation and runtime qualification remain.",
+    "disposition": "The reviewed thirteen files (ten production/three tests; twenty methods) are committed locally after both stopped runs closed. Strict lint has no introduced violations. Compilation, runtime, complete Off and integrated-stack qualification remain.",
     "review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-logs-core-composition-preview-cycle2-20261006/review.json",
       "sha256": "d6b5d9753027fd82f8049548c7be8d7029d9db15da4d017fd36d1512f57215a6"
+    },
+    "current_source_join": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-logs-core-composition-preview-cycle2-20261006/current-source-join-0e165.json",
+      "sha256": "04bd52008234fd6542db7909aad32582a1ce9d7ddd32c559b10d70e869259744"
+    },
+    "application_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-logs-core-composition-preview-cycle2-20261006/application-review-cycle4.json",
+      "sha256": "210481047d923bfecc58d238f8d2b1ab283bb2057e470e318460a7da2365a3d3"
+    },
+    "checkpoint": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-logs-core-composition-preview-cycle2-20261006/sdk-checkpoint.json",
+      "sha256": "afe05de4f9a3b75ee563d35a09547bf4216c881aa24fea42ce902d7b2b233a85"
+    },
+    "source_handoff": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-logs-core-composition-preview-cycle2-20261006/root-source-handoff.json",
+      "sha256": "d0e09e0bccf3997e5fb920ee0cf97982027e2fd3efeb8bfec7ea7efc8768b540"
     }
+  },
+  "trace_userinfo_fixture_repair": {
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-trace-constructor-userinfo-repair-20261006/packet.json",
+      "sha256": "eff2dd22edd2954fe5e4df821bb8b3a85eb7d42dcda5fae251ef58f5a653a597"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-trace-constructor-userinfo-repair-20261006/review.json",
+      "sha256": "31b502813f8eabfbee40477e1dcba249744b96e5726b639c68894fde5ec81580"
+    },
+    "checkpoint": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-trace-constructor-userinfo-repair-20261006/sdk-checkpoint.json",
+      "sha256": "c3140e2528acefe6a3c0f318e21559d37845390562a0b829fffb874fdd76f6a0"
+    },
+    "source_handoff": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-trace-constructor-userinfo-repair-20261006/root-source-handoff.json",
+      "sha256": "5dd29cad5138ef23adf9923ba86dcd597688a046dfe39ccf7b7417aaaa4b85a8"
+    },
+    "state": "APPLIED_TEST_ONLY_UNQUALIFIED",
+    "production_changes": 0,
+    "tests_run": 0
   }
 }
