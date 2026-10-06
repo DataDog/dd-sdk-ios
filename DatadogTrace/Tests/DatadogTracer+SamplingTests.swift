@@ -384,7 +384,7 @@ final class TraceConstructorCaptureFixture {
             viewID: "view-b",
             userActionID: "action-b"
         ))
-        legacy.userInfo = .mockWith(id: "before-sampling")
+        legacy.userInfo = UserInfo(id: "before-sampling")
         scope = FeatureScopeMock(context: legacy, deferEventWriteContext: true)
     }
 
