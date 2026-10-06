@@ -606,6 +606,16 @@ extension RUMFeature {
     }
 }
 
+extension RUMFeature: RUMContextHandoffSessionValidating {
+    func isRUMContextHandoffSessionActive(sessionID: String, owner: RUMContextHandoff.Owner) -> Bool {
+        guard isMultiSceneTrackingEnabled, rumContextHandoffOwner === owner, owner.isValid else {
+            return false
+        }
+        // This checks the live session at the current SDK date without requiring an active view.
+        return monitor.rumContextSnapshot(for: .processRepresentative)?.sessionID == sessionID
+    }
+}
+
 extension RUMFeature: Flushable {
     /// Awaits completion of all asynchronous operations.
     ///

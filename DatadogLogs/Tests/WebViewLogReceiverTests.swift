@@ -400,9 +400,81 @@ class WebViewLogReceiverTests: XCTestCase {
             }
         }
     }
+
+    func testCapturedWebLog_checksLiveSessionAtDeferredDelivery() throws {
+        let original = RUMCoreContext(applicationID: "native-app", sessionID: "native-session", sessionSampler: .mockKeepAll(), viewID: "native-a")
+        let scope = FeatureScopeMock(context: .mockWith(additionalContext: [original]), deferEventWriteContext: true)
+        let core = CapturedWebLogCore()
+        let owner = RUMContextHandoff.Owner()
+        core.owner = owner
+        core.scopeOverride = scope
+        let capture = RUMContextHandoff.Capture(owner: owner, value: .init(rumContext: original, sceneIdentifier: "scene-a", hasPendingUserAction: false, excludedUserActionID: nil))
+        let message = WebViewMessageWithRUMContext(message: .log(["message": "browser-log", LogEvent.Attributes.RUM.viewID: "unproved-peer"]), capture: capture)
+        XCTAssertTrue(WebViewLogReceiver().receive(message: .payload(message), from: core))
+        core.sessionValidator?.isActive = false
+        scope.flushDeferredEventWriteContexts()
+        let log: AnyEncodable = try XCTUnwrap(scope.eventsWritten(ofType: AnyEncodable.self).first)
+        let json = try JSONObjectMatcher(log)
+        XCTAssertEqual(try json.value("message"), "browser-log")
+        for key in [LogEvent.Attributes.RUM.applicationID, LogEvent.Attributes.RUM.sessionID, LogEvent.Attributes.RUM.viewID, LogEvent.Attributes.RUM.actionID] {
+            XCTAssertNil(json.object[key])
+        }
+        XCTAssertEqual(scope.eventsWritten.count, 1)
+        XCTAssertEqual(core.sessionValidator?.calls, 1)
+    }
+
+    func testCapturedWebLog_requiresLiveSessionCapability() throws {
+        let original = RUMCoreContext(applicationID: "native-app", sessionID: "native-session", sessionSampler: .mockKeepAll(), viewID: "native-a")
+        let core = CapturedWebLogCore(context: .mockWith(additionalContext: [original]))
+        let owner = RUMContextHandoff.Owner()
+        core.owner = owner
+        core.sessionValidator = nil
+        let capture = RUMContextHandoff.Capture(owner: owner, value: .init(rumContext: original, sceneIdentifier: "scene-a", hasPendingUserAction: false, excludedUserActionID: nil))
+        XCTAssertTrue(WebViewLogReceiver().receive(message: .payload(WebViewMessageWithRUMContext(message: .log(["message": "browser-log"]), capture: capture)), from: core))
+        let log: AnyEncodable = try XCTUnwrap(core.events().first)
+        let json = try JSONObjectMatcher(log)
+        XCTAssertEqual(try json.value("message"), "browser-log")
+        XCTAssertNil(json.object[LogEvent.Attributes.RUM.sessionID])
+    }
+
+    func testSourceLessWebLog_doesNotReadLiveSessionCapability() throws {
+        let original = RUMCoreContext(applicationID: "native-app", sessionID: "native-session", sessionSampler: .mockKeepAll(), viewID: "native-a")
+        let core = CapturedWebLogCore(context: .mockWith(additionalContext: [original]))
+        core.sessionValidator?.isActive = false
+        XCTAssertTrue(WebViewLogReceiver().receive(message: .webview(.log(["message": "browser-log"])), from: core))
+        let log: AnyEncodable = try XCTUnwrap(core.events().first)
+        let json = try JSONObjectMatcher(log)
+        XCTAssertEqual(json.object[LogEvent.Attributes.RUM.sessionID] as? String, "native-session")
+        XCTAssertEqual(core.sessionValidator?.calls, 0)
+    }
 }
 
-private final class CapturedWebLogCore: PassthroughCoreMock, RUMContextHandoffOwnerProviding, @unchecked Sendable {
+private final class CapturedWebLogCore: DatadogCoreProtocol, RUMContextHandoffOwnerProviding, @unchecked Sendable {
+    let base: PassthroughCoreMock
     var owner: RUMContextHandoff.Owner?
+    var sessionValidator: CapturedWebLogSession? = CapturedWebLogSession()
+    var scopeOverride: FeatureScope?
     var rumContextHandoffOwner: RUMContextHandoff.Owner? { owner }
+    var remoteConfiguration: RemoteConfiguration? { base.remoteConfiguration }
+
+    init(context: DatadogContext = .mockAny()) { base = PassthroughCoreMock(context: context) }
+
+    func register<T>(feature: T) throws where T: DatadogFeature {}
+    func feature<T>(named name: String, type: T.Type) -> T? {
+        name == Feature.rum ? sessionValidator as? T : nil
+    }
+    func scope<T>(for featureType: T.Type) -> FeatureScope where T: DatadogFeature { scopeOverride ?? base }
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext { base.set(context: context) }
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) { base.send(message: message, else: fallback) }
+    func mostRecentModifiedFileAt(before: Date) throws -> Date? { nil }
+    func events<T>(ofType type: T.Type = T.self) -> [T] where T: Encodable { base.events(ofType: type) }
+}
+
+private final class CapturedWebLogSession: RUMContextHandoffSessionValidating {
+    var isActive = true
+    var calls = 0
+    func isRUMContextHandoffSessionActive(sessionID: String, owner: RUMContextHandoff.Owner) -> Bool {
+        calls += 1
+        return isActive
+    }
 }

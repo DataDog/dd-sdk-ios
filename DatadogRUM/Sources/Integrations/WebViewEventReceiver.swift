@@ -90,7 +90,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
             let currentRUM = context.additionalContext(ofType: RUMCoreContext.self)
             let rum: RUMCoreContext?
             if let capture {
-                rum = capture.rumContext(for: RUMContextHandoff.owner(in: core), sessionID: currentRUM?.sessionID)
+                rum = capture.rumContext(in: core, sessionID: currentRUM?.sessionID)
             } else {
                 rum = currentRUM
             }
@@ -201,7 +201,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
             let currentRUM = context.additionalContext(ofType: RUMCoreContext.self)
             let rum: RUMCoreContext?
             if let capture {
-                rum = capture.rumContext(for: RUMContextHandoff.owner(in: core), sessionID: currentRUM?.sessionID)
+                rum = capture.rumContext(in: core, sessionID: currentRUM?.sessionID)
             } else {
                 rum = currentRUM
             }

@@ -101,7 +101,7 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
             let currentRUM = context.additionalContext(ofType: RUMCoreContext.self)
             let rum: RUMCoreContext?
             if let capture {
-                rum = capture.rumContext(for: RUMContextHandoff.owner(in: core), sessionID: currentRUM?.sessionID)
+                rum = capture.rumContext(in: core, sessionID: currentRUM?.sessionID)
                 event[LogEvent.Attributes.RUM.applicationID] = nil
                 event[LogEvent.Attributes.RUM.sessionID] = nil
                 event[LogEvent.Attributes.RUM.viewID] = nil

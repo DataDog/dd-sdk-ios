@@ -337,6 +337,12 @@ public struct AccountConfigurationContext: AdditionalContext, Equatable {
     }
 }
 
+/// Validates a captured native session against the current RUM lifetime.
+@_spi(Internal)
+public protocol RUMContextHandoffSessionValidating {
+    func isRUMContextHandoffSessionActive(sessionID: String, owner: RUMContextHandoff.Owner) -> Bool
+}
+
 /// Carries native ownership with a Browser message across asynchronous queues.
 @_spi(Internal)
 public struct WebViewMessageWithRUMContext {
@@ -348,11 +354,14 @@ public struct WebViewMessageWithRUMContext {
         self.capture = capture
     }
 
-    /// Resolves the captured context only for its original owner and current session.
-    public func rumContext(for owner: RUMContextHandoff.Owner?, sessionID: String?) -> RUMCoreContext? {
-        guard let owner, owner === capture.owner, owner.isValid,
+    /// Resolves only its original owner and a native session that is still alive at delivery.
+    public func rumContext(in core: DatadogCoreProtocol, sessionID: String?) -> RUMCoreContext? {
+        guard let owner = RUMContextHandoff.owner(in: core),
+              owner === capture.owner, owner.isValid,
               let context = capture.value.resolvedRUMContext(for: owner),
-              context.sessionID == sessionID else {
+              context.sessionID == sessionID,
+              let validator = core.feature(named: Feature.rum, type: RUMContextHandoffSessionValidating.self),
+              validator.isRUMContextHandoffSessionActive(sessionID: context.sessionID, owner: owner) else {
             return nil
         }
         return context

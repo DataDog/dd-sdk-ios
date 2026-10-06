@@ -834,6 +834,7 @@ private final class HandoffActivationCoreMock: DatadogCoreProtocol, RUMContextHa
     var ownerBoundRegistrations = 0
     var ownerReads = 0
     var rumScopeObservedActiveOwner = false
+    var rumScopeOverride: FeatureScope?
     var rejectedFeatureName: String?
     var remoteConfiguration: RemoteConfiguration? { nil }
 
@@ -881,7 +882,7 @@ private final class HandoffActivationCoreMock: DatadogCoreProtocol, RUMContextHa
     func scope<T>(for featureType: T.Type) -> FeatureScope where T: DatadogFeature {
         if T.name == RUMFeature.name {
             rumScopeObservedActiveOwner = activeOwner?.isValid == true
-            return HandoffFeatureScope { [weak self] in self?.rumContextHandoffOwner }
+            return HandoffFeatureScope(base: rumScopeOverride ?? NOPFeatureScope()) { [weak self] in self?.rumContextHandoffOwner }
         }
         return NOPFeatureScope()
     }
@@ -891,10 +892,13 @@ private final class HandoffActivationCoreMock: DatadogCoreProtocol, RUMContextHa
 }
 
 private final class HandoffFeatureScope: FeatureScope, RUMContextHandoffOwnerProviding, @unchecked Sendable {
-    private let base = NOPFeatureScope()
+    private let base: FeatureScope
     private let ownerProvider: () -> RUMContextHandoff.Owner?
     var rumContextHandoffOwner: RUMContextHandoff.Owner? { ownerProvider() }
-    init(ownerProvider: @escaping () -> RUMContextHandoff.Owner?) { self.ownerProvider = ownerProvider }
+    init(base: FeatureScope = NOPFeatureScope(), ownerProvider: @escaping () -> RUMContextHandoff.Owner?) {
+        self.base = base
+        self.ownerProvider = ownerProvider
+    }
     var dataStore: DataStore { base.dataStore }
     var telemetry: Telemetry { base.telemetry }
     func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) { base.eventWriteContext(bypassConsent: bypassConsent, block) }
@@ -907,6 +911,94 @@ private final class HandoffFeatureScope: FeatureScope, RUMContextHandoffOwnerPro
 #if os(iOS)
 @MainActor
 extension RUMTests {
+    func testCapturedWebViewSession_actualFeatureKeepsOriginalViewWithoutActiveView() throws {
+        guard #available(iOS 27.0, *) else { return }
+        let clock = DateProviderMock(now: Date(timeIntervalSince1970: 1_000))
+        let activationCore = HandoffActivationCoreMock()
+        activationCore.rumScopeOverride = FeatureScopeMock(context: .mockWith(sdkInitDate: clock.now))
+        var configuration = config
+        configuration.dateProvider = clock
+        configuration.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
+        configuration.featureFlags = [.multiSceneTracking: true]
+        try RUM.enableOrThrow(with: configuration, in: activationCore)
+        let rum = try XCTUnwrap(activationCore.get(feature: RUMFeature.self))
+        let owner = try XCTUnwrap(rum.rumContextHandoffOwner)
+        let scene = RUMSceneIdentifier(rawValue: "owned")
+        rum.monitor.process(command: RUMStartViewCommand(time: clock.now, identity: ViewIdentifier("a"), name: "a", path: "a", globalAttributes: [:], attributes: [:], instrumentationType: .manual, target: .scene(scene)))
+        let original = try XCTUnwrap(rum.monitor.rumContextSnapshot(for: .scene(scene)))
+        let capture = RUMContextHandoff.Capture(owner: owner, value: .init(rumContext: original, sceneIdentifier: scene.rawValue, hasPendingUserAction: false, excludedUserActionID: nil))
+        let message = WebViewMessageWithRUMContext(message: .rum([:]), capture: capture)
+        var stop = RUMStopViewCommand(time: clock.now, globalAttributes: [:], attributes: [:], identity: ViewIdentifier("a"))
+        stop.target = .scene(scene)
+        rum.monitor.process(command: stop)
+        XCTAssertNil(rum.monitor.rumContextSnapshot(for: .scene(scene)))
+        let live = try XCTUnwrap(rum.monitor.rumContextSnapshot(for: .processRepresentative))
+        XCTAssertNil(live.viewID)
+        XCTAssertEqual(live.sessionID, original.sessionID)
+        XCTAssertTrue(rum.isRUMContextHandoffSessionActive(sessionID: original.sessionID, owner: owner))
+        XCTAssertEqual(message.rumContext(in: activationCore, sessionID: original.sessionID)?.viewID, original.viewID)
+        XCTAssertFalse(rum.isRUMContextHandoffSessionActive(sessionID: original.sessionID, owner: RUMContextHandoff.Owner()))
+        owner.invalidate()
+        XCTAssertFalse(rum.isRUMContextHandoffSessionActive(sessionID: original.sessionID, owner: owner))
+        XCTAssertNil(message.rumContext(in: activationCore, sessionID: original.sessionID))
+    }
+
+    func testCapturedWebViewSession_actualFeatureRejectsStaleSameIDAfterExpiry() throws {
+        guard #available(iOS 27.0, *) else { return }
+        for maximumDuration in [false, true] {
+            let start = Date(timeIntervalSince1970: 1_000)
+            let clock = DateProviderMock(now: start)
+            let activationCore = HandoffActivationCoreMock()
+            activationCore.rumScopeOverride = FeatureScopeMock(context: .mockWith(sdkInitDate: clock.now))
+            var configuration = config
+            configuration.dateProvider = clock
+            configuration.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
+            configuration.featureFlags = [.multiSceneTracking: true]
+            try RUM.enableOrThrow(with: configuration, in: activationCore)
+            let rum = try XCTUnwrap(activationCore.get(feature: RUMFeature.self))
+            let owner = try XCTUnwrap(rum.rumContextHandoffOwner)
+            let scene = RUMSceneIdentifier(rawValue: "owned")
+            rum.monitor.process(command: RUMStartViewCommand(time: clock.now, identity: ViewIdentifier("a"), name: "a", path: "a", globalAttributes: [:], attributes: [:], instrumentationType: .manual, target: .scene(scene)))
+            let original = try XCTUnwrap(rum.monitor.rumContextSnapshot(for: .scene(scene)))
+            let message = WebViewMessageWithRUMContext(message: .rum([:]), capture: .init(owner: owner, value: .init(rumContext: original, sceneIdentifier: scene.rawValue, hasPendingUserAction: false, excludedUserActionID: nil)))
+            XCTAssertNotNil(message.rumContext(in: activationCore, sessionID: original.sessionID))
+            if maximumDuration {
+                for seconds in stride(from: 600, through: 13_800, by: 600) {
+                    clock.now = start.addingTimeInterval(TimeInterval(seconds))
+                    rum.monitor.process(command: RUMAddUserActionCommand(time: clock.now, name: "keep-session-active", actionType: .custom, attributes: [:], target: .scene(scene)))
+                    XCTAssertTrue(rum.isRUMContextHandoffSessionActive(sessionID: original.sessionID, owner: owner))
+                }
+            }
+            clock.now = start.addingTimeInterval(maximumDuration ? 14_401 : 901)
+            let session = try XCTUnwrap(rum.monitor.applicationScope.activeSession)
+            XCTAssertEqual(session.sessionUUID.toRUMDataFormat, original.sessionID)
+            if maximumDuration {
+                XCTAssertFalse(RUMSessionScope.hasTimedOut(lastInteractionTime: session.lastInteractionTime, currentTime: clock.now))
+                XCTAssertTrue(RUMSessionScope.hasExpired(sessionStartTime: session.sessionStartTime, currentTime: clock.now))
+            } else {
+                XCTAssertTrue(RUMSessionScope.hasTimedOut(lastInteractionTime: session.lastInteractionTime, currentTime: clock.now))
+                XCTAssertFalse(RUMSessionScope.hasExpired(sessionStartTime: session.sessionStartTime, currentTime: clock.now))
+            }
+            XCTAssertFalse(rum.isRUMContextHandoffSessionActive(sessionID: original.sessionID, owner: owner))
+            XCTAssertNil(message.rumContext(in: activationCore, sessionID: original.sessionID))
+            XCTAssertEqual(rum.monitor.applicationScope.activeSession?.sessionUUID.toRUMDataFormat, original.sessionID)
+            XCTAssertNil(session.endReason)
+        }
+    }
+
+    func testCapturedWebViewSession_resolvedOffDoesNotReadOwner() throws {
+        let activationCore = HandoffActivationCoreMock()
+        var configuration = config
+        configuration.featureFlags = [.multiSceneTracking: false]
+        try RUM.enableOrThrow(with: configuration, in: activationCore)
+        let rum = try XCTUnwrap(activationCore.get(feature: RUMFeature.self))
+        let reads = activationCore.ownerReads
+        XCTAssertFalse(rum.isRUMContextHandoffSessionActive(sessionID: "unknown", owner: RUMContextHandoff.Owner()))
+        XCTAssertEqual(activationCore.ownerReads, reads)
+        XCTAssertNil(rum.rumContextHandoffOwner)
+        XCTAssertEqual(activationCore.activations, 0)
+    }
+
     func testAutomaticInput_resolvedOnWiresExactMonitorExecutionOwner() throws {
         let activationCore = HandoffActivationCoreMock()
         config.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])

@@ -531,6 +531,38 @@ extension MonitorTests {
         XCTAssertNil(active.rumContextSnapshot(for: .processRepresentative, at: afterMaximum))
     }
 
+    func testWebViewSessionSnapshot_remainsAvailableAfterLastViewStops() throws {
+        let clock = DateProviderMock(now: snapshotDate)
+        let monitor = sceneMonitor(scope: FeatureScopeMock(), clock: clock)
+        startSnapshotView(monitor, key: "a", target: .scene(sceneA))
+        let original = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        var stop = RUMStopViewCommand(time: snapshotDate, globalAttributes: [:], attributes: [:], identity: ViewIdentifier("a"))
+        stop.target = .scene(sceneA)
+        monitor.process(command: stop)
+        let liveSession = try XCTUnwrap(monitor.rumContextSnapshot(for: .processRepresentative))
+        XCTAssertEqual(liveSession.sessionID, original.sessionID)
+        XCTAssertNil(liveSession.viewID)
+        XCTAssertNil(monitor.rumContextSnapshot(for: .scene(sceneA)))
+    }
+
+    func testWebViewSessionSnapshot_defaultDateRejectsMaximumDurationWithRecentInteraction() throws {
+        let clock = DateProviderMock(now: snapshotDate)
+        let monitor = sceneMonitor(scope: FeatureScopeMock(context: .mockWith(sdkInitDate: snapshotDate)), clock: clock)
+        startSnapshotView(monitor, key: "a", target: .scene(sceneA))
+        let original = try XCTUnwrap(monitor.rumContextSnapshot(for: .processRepresentative))
+        for minute in stride(from: 10, through: 230, by: 10) {
+            clock.now = snapshotDate.addingTimeInterval(TimeInterval(minute * 60))
+            monitor.process(command: RUMAddUserActionCommand(time: clock.now, name: "keep-session-active", actionType: .custom, attributes: [:], target: .scene(sceneA)))
+            XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.sessionID, original.sessionID)
+        }
+        clock.now = snapshotDate.addingTimeInterval(4 * 60 * 60 + 1)
+        let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+        XCTAssertFalse(RUMSessionScope.hasTimedOut(lastInteractionTime: session.lastInteractionTime, currentTime: clock.now))
+        XCTAssertTrue(RUMSessionScope.hasExpired(sessionStartTime: session.sessionStartTime, currentTime: clock.now))
+        XCTAssertNil(monitor.rumContextSnapshot(for: .processRepresentative))
+        XCTAssertEqual(session.sessionUUID.toRUMDataFormat, original.sessionID)
+    }
+
     func testSceneSnapshots_sessionStopClearsAllOwners() {
         let monitor = sceneMonitor(scope: FeatureScopeMock(), clock: DateProviderMock(now: snapshotDate))
         startSnapshotView(monitor, key: "a", target: .scene(sceneA))
