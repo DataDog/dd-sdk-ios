@@ -144,6 +144,16 @@ measure an explicit clock-offset bound. Record scenario/evidence/cleanup separat
 incomplete required evidence or cleanup leaves overall acceptance invalid.
 
 
+Assemble runtime configuration through one source-bound builder and the same
+validator consumed by the loader. Validate the complete serialized object, typed
+receipts, concrete paths, UUID and process-role list before publishing authority.
+Join the in-memory dispatcher object to those exact validated bytes. Fragment or
+AST controls do not qualify the JS/parent/worker/IPC/publication startup path;
+exercise it once with explicit isolated platform mocks and stop at the first
+native boundary. Keep modeled observations visibly non-authoritative, preserve
+actual local returns, and prove rollback preserves foreign edits. Only fresh
+actual metadata/readiness/environment and final review can admit native work.
+
 Before backend projection/assembly, verify the live helper files against the
 approved manifest, not merely hash labels in a response. Reject extra/missing files,
 foreign-run payloads, symlinks, malformed types and ambiguous flattened/nested fields.

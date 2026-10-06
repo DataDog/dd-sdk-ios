@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "state": "ACTION_DEPENDENCY_QUALIFIED_CONSUMER_FIXTURES_REPAIRED_COMPONENT_QUALIFICATION_REMAINS",
+  "state": "CURRENT_CONSUMER43_PASS_ONE_CORE_SETUP_REPAIR_SIGNED_FOCUSED_QUALIFICATION_REMAINS",
   "existing_gate": "S3:F12",
   "slice": "PR7",
   "source_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
   "branch": "valpertui/s3-consumer-capture",
   "base_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
-  "source_head": "92da869be87fbd4b3ab92c9f78ee5359f4fa98cb",
+  "source_head": "3783b697b50d8fb184814c83283857822afa4852",
   "source_gap_inventory": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-consumer-source-preparation/packet.json",
     "sha256": "57e376768a17b85993c54af64fcfb4f63048738ae0976e386760c5831f0c4a5b"
@@ -180,19 +180,19 @@
       "state": "DESIGN_AND_IMPLEMENTATION_REMAIN"
     }
   ],
-  "selected_task": "P7N1_P7T1_P7L1_CURRENT_SOURCE_COMPONENT_QUALIFICATION",
+  "selected_task": "P7_ONE_CHANGED_CORE_TEST_CURRENT_SOURCE_QUALIFICATION",
   "pending_action_requirement": "Pending/excluded action scalars do not identify an accepted Action UUID. The existing queue-confined continuous-action receipt is not a generic cross-module/discrete-action acceptance receipt. Do not borrow a later same-view action; independently review the smallest source-backed receipt design before consumer changes.",
   "off_requirement": "Reusing the network provider single State read may gate On locally. No default-Off Core registry/TaskLocal/scene lookup, owner allocation, new map/lock or naive owner(in: FeatureScope) capture.",
   "runtime_admitted": false,
-  "native_runs": 4,
-  "builds": 13,
+  "native_runs": 9,
+  "builds": 18,
   "gates_closed": [],
   "whole_pr7_qualified": false,
-  "next_action": "Current-source forty-four consumer methods are statically prepared and reviewed on92da. Await new adequate awake/fresh runtime parameters/review/exclusive admission; no full profile was clipped or old clocks reused before the09:00 unattended cutoff. Prioritize the reviewed S2 SwiftUI split candidate when the user is freshly ready. All three zero-test compiler failures and separate accepted no-owned-boot cleanup remain immutable. Flags Off acquisition, WebView, complete Off, older-system and final-stack acceptance remain.",
-  "updated_at": "2026-10-06T07:04:54.922113+00:00",
+  "next_action": "Run only the reviewed repaired Core method with a fresh CoreTSan product after fresh MAIN/parameters/exclusive ownership and adequate900+300 awake fit. Preserve all43 current44 passes and original FAIL/COMPLETE/restored/INVALID. Flags Off acquisition, WebView, complete Off, older-system and final-stack remain.",
+  "updated_at": "2026-10-06T11:16:00.761905+00:00",
   "sdk_checkpoint": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-applied-20261006/formatting-successor/sdk-checkpoint.json",
-    "sha256": "3a399170a220d96401f654f679c8de419c8c8377b3bee1daf6a3638ac8ddf73b"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-core-sampling-initialization-test-repair-applied-20261006/sdk-checkpoint.json",
+    "sha256": "8479a54805b889477b7b9f20b61e6755e0ce49fda73cab852a95a77f47f45e72"
   },
   "affected_component_selection_preparation": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-source-selection-20261006/packet.json",
@@ -433,7 +433,7 @@
       "scope": "Ten changed files; original failure and baseline attribution immutable."
     }
   },
-  "tests_run": 22,
+  "tests_run": 66,
   "affected_component_execution": {
     "authority": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-cli-proposal-cycle3-20261006/root-release-continuation-1.json",
@@ -535,11 +535,11 @@
     }
   },
   "native_attempt_accounting": {
-    "build_for_testing": 13,
-    "boot": 4,
-    "discovery": 4,
-    "test_invocations": 4,
-    "qualified_component_cells": 4
+    "build_for_testing": 18,
+    "boot": 5,
+    "discovery": 9,
+    "test_invocations": 9,
+    "qualified_component_cells": 8
   },
   "automatic_trace_consumer_draft": {
     "packet": {
@@ -1245,5 +1245,135 @@
     "new_builds": 0,
     "gates_closed": [],
     "limits": "Static source/procedure/selection applicability only; fresh actual parameters, tool/process/device/output/awake evidence, review and exclusive admission remain required. The old procedure join rejection and original native INVALID verdicts remain immutable."
+  },
+  "current44_actual_execution": {
+    "state": "CURRENT44_COMPLETED_43_PASS_1_CORE_SETUP_FAILURE_RESTORED",
+    "result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-current-source-20261006-1137/actual-run-957c6e34/result.json",
+      "sha256": "ae2d0de06983b07e8d15cca5337bcbcc703dcd755b6c643331f5b61ae2df621b"
+    },
+    "closure": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-current-source-20261006-1137/actual-run-957c6e34/closure/closure.json",
+      "sha256": "a0cd1e1a7e59b41fb9af16b2dd9559e68c19a7993bab6187d08c47f72f359e2d"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-current-source-20261006-1137/actual-run-957c6e34/closure/actual-review.json",
+      "sha256": "23b347ef3bcc1f9d6354c7167a2df46d7af4fda4f683c20ec5688ba1d7b7e813"
+    },
+    "actual_tool_returns": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-current-source-20261006-1137/actual-run-957c6e34/closure/actual-owner-tool-returns.json",
+      "sha256": "a1af6b7b91b5f24227cc5127cdde7bb277fb498c2f7bd769b7a227d3d05f6534"
+    },
+    "source_head": "92da869be87fbd4b3ab92c9f78ee5359f4fa98cb",
+    "run_id": "957c6e34-d9fe-4a59-b080-b57d258d3405",
+    "scenario": "FAIL",
+    "evidence": "COMPLETE",
+    "cleanup": "PASS_ORIGINAL_SHUTDOWN_APPS_AND_GROUPS",
+    "overall": "INVALID",
+    "builds": 5,
+    "test_invocations": 5,
+    "passed": 43,
+    "failed": 1,
+    "cells": [
+      {
+        "scheme": "DatadogInternal",
+        "scenario": "PASS",
+        "passed": 6,
+        "failed": 0,
+        "record": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-current-source-20261006-1137/actual-run-957c6e34/DatadogInternal/cell-result.json",
+          "sha256": "09fb19e99b2015027e07e16f588d602f478bad6d76bad56be65989cf6c76323f"
+        }
+      },
+      {
+        "scheme": "DatadogCore",
+        "scenario": "FAIL",
+        "passed": 8,
+        "failed": 1,
+        "record": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-current-source-20261006-1137/actual-run-957c6e34/DatadogCore/cell-result.json",
+          "sha256": "c71938cc9ff35dce270f9a80b6804d4bbbaf0e5f79362e66c9f60d68a7c90ac2"
+        }
+      },
+      {
+        "scheme": "DatadogTrace",
+        "scenario": "PASS",
+        "passed": 16,
+        "failed": 0,
+        "record": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-current-source-20261006-1137/actual-run-957c6e34/DatadogTrace/cell-result.json",
+          "sha256": "d5878a4a033b519f42c5f70abf8ba0f74534ffd7fb41a6bda25d925067e06eb3"
+        }
+      },
+      {
+        "scheme": "DatadogRUM",
+        "scenario": "PASS",
+        "passed": 7,
+        "failed": 0,
+        "record": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-current-source-20261006-1137/actual-run-957c6e34/DatadogRUM/cell-result.json",
+          "sha256": "37bf9a8250b28616c5f8d49aca8cb13aaca5f3433d6630b7ac01857e508fbb3c"
+        }
+      },
+      {
+        "scheme": "DatadogLogs",
+        "scenario": "PASS",
+        "passed": 6,
+        "failed": 0,
+        "record": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-current-source-20261006-1137/actual-run-957c6e34/DatadogLogs/cell-result.json",
+          "sha256": "da1f7305733b213e91a0da8a1477e9d68b48521b039c9513f2a4ae7d0ec8bc94"
+        }
+      }
+    ],
+    "failed_method": "DatadogCoreTests/testBuiltInSamplingKeepsAnInvalidatedOwnerAuthoritative",
+    "source_backed_disposition": "Test seeds the shared sampling store before asynchronous RUM initialization completes. Initialization can overwrite the seed; the saved callback order is not proven. Owner-invalidity/absence assertions passed. No production repair or SDK-regression conclusion.",
+    "gates_closed": [],
+    "acceptance_limit": "Four component cells pass; Core contains eight passed methods and one failure. Preserve all43 passed methods; original whole INVALID is immutable. This does not qualify whole PR7/F12/Off/older/final-stack."
+  },
+  "core_sampling_initialization_test_repair": {
+    "state": "SIGNED_ONE_LINE_CORE_TEST_BARRIER_NOT_YET_RERUN",
+    "checkpoint": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-core-sampling-initialization-test-repair-applied-20261006/sdk-checkpoint.json",
+      "sha256": "8479a54805b889477b7b9f20b61e6755e0ce49fda73cab852a95a77f47f45e72"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-core-sampling-initialization-test-repair-cycle2-20261006/review.json",
+      "sha256": "383cec349a26b10b3749071236d814fd3b91512147749c61e8f072bbc713161a"
+    },
+    "source_head": "3783b697b50d8fb184814c83283857822afa4852",
+    "signature": "G",
+    "change": "Drain core.contextProvider after RUM.enableOrThrow, before manually seeding the sampling store; assertions unchanged. One test file only, no production changes.",
+    "test_rerun": false,
+    "gates_closed": []
+  },
+  "single_core_changed_test_proposal": {
+    "state": "ONE_CHANGED_CORE_TEST_REVIEWED_UNISSUED",
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-single-core-sampling-current-awake-20261006/packet.json",
+      "sha256": "df430d6a5e61ccd9f2c64964c7b6b62ebb5af63a348c5c578c4ac04cc639b4b1"
+    },
+    "plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-single-core-sampling-current-awake-20261006/plan.json",
+      "sha256": "a68f24da529e7420fa6fd4e8388e37a262b5ddcc2afd50e6e7c60c9bd9f90f7c"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-single-core-sampling-current-awake-20261006/review.json",
+      "sha256": "16b41ecc785ec7da19eed9e51b633e46fa62c9785e0ce7b1cf2ac855bf6a1f2c"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-single-core-sampling-qualification-20261006/controls.json",
+      "sha256": "9e38086ae7049033019a3d6ee86f5d50662145f9b31f31f39ca1b01344df6a07"
+    },
+    "selected_methods": 1,
+    "excluded_accepted_methods": 43,
+    "offline_policy_executions": 25,
+    "execution_seconds": 900,
+    "cleanup_seconds": 300,
+    "native_admitted": false,
+    "builds": 0,
+    "tests_run": 0,
+    "gates_closed": [],
+    "remaining_prerequisites": "Fresh current MAIN/snapshot/parameters/review, exclusive native lane and full1200-second current awake fit. No new grant/run ID/clock implied."
   }
 }

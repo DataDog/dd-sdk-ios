@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
-  "state": "PREARMED_SERVICE_REVIEWED_OFFLINE_WAIT_FRESH_HUMAN",
-  "updated_at": "2026-10-06T08:56:05.949506+00:00",
+  "state": "CANONICAL_FULL_STARTUP_OFFLINE_REVIEWED_WAIT_FRESH_ACTUAL_SITTING",
+  "updated_at": "2026-10-06T11:16:00.761905+00:00",
   "execution": {
     "record": "Results/S2-swiftui-split-candidate-20261003.json"
   },
@@ -560,12 +560,12 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-post-otel-static-20261006/s2-candidate-0900-handoff.json",
       "sha256": "f97158964a6ae877f7de7e1c31d35fbf6540fe495f8f44cb47321f794c2a51db"
     },
-    "state": "CURRENT_METADATA_COMPLETE_PRE_EFFECT_REVIEWED_WAIT_FRESH_BINDINGS",
+    "state": "CANONICAL_WHOLE_STARTUP_OFFLINE_REVIEWED_WAIT_FRESH_ACTUAL_BINDINGS",
     "new_native_runs": 0,
     "new_builds": 0,
     "baseline_repeat": false,
     "gates_closed": [],
-    "next_action": "Prepare candidate only from the reviewed corrected current-observation projections and runtime_static_pins/executable_cone. Rebind all fresh metadata selectors consistently, preserve actual raw provenance, pass complete context and exact [page,awake] guard plus actual final reviewer receipt before authority. Fresh page/operator/environment/awake and exact parameter review with full fixed-budget exclusive ownership remain required. Reuse source/products/baseline; offline controls grant no readiness, native or gate credit. While human preparation is held, qualify the reviewed S3 current44 after fresh full-profile admission.",
+    "next_action": "Use the canonical builder for a fresh candidate-only sitting: actual metadata, selected source ledger, complete context, page/operator/environment and adequate awake binding, then final independent parameter review and exclusive admission. Reuse accepted source/products/baseline and qualified native capture operations. Never substitute model observations or consumed page confirmations.",
     "static_sitting_preparation": {
       "original_metadata_packet": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-0900-metadata-preparation-20261006/packet.json",
@@ -593,6 +593,7 @@
       "limits": "Current live skill and metadata consumer shapes joined to actual retained returns. Original BLOCKED receipt is unchanged. Configuration/restoration, device/process/apps/displays/source/product/output, operator/page/awake, final parameter review and root exclusive admission remain fresh external prerequisites."
     },
     "execution_blocker": "Results/execution-improvements-20261004.json#p2.human_startup_blocker",
-    "latest_attempts_owner": "Results/execution-improvements-20261004.json#p2.human_startup_blocker.attempts"
+    "latest_attempts_owner": "Results/execution-improvements-20261004.json#p2.human_startup_blocker.attempts",
+    "canonical_startup_owner": "Results/execution-improvements-20261004.json#p2.human_startup_blocker.canonical_startup_assembly"
   }
 }

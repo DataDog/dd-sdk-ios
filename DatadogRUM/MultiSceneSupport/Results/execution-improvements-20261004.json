@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "state": "UNATTENDED_CHECKPOINT_COMPLETE_S2_STATIC_REVIEWED_WAIT_FRESH_HUMAN",
+  "state": "CURRENT44_COMPLETE_CORE_TEST_REPAIR_AND_CANONICAL_STARTUP_REVIEWED",
   "owner": "/root",
   "plan": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
     "sha256": "70bedb83f022117657516b76d4d786c5d4184cb9943bf608af8e89de05d6ce24"
   },
-  "selected": "P7N1_P7T1_CURRENT_SOURCE_CONSUMER_QUALIFICATION",
+  "selected": "P7_ONE_CHANGED_CORE_TEST_AND_P2_FRESH_CANONICAL_SITTING",
   "native_admitted": false,
   "native_runs": 20,
   "gates_closed": [],
-  "next_action": "Obtain fresh readiness and an adequate awake grant for the reviewed candidate-only SwiftUI split sitting, then bind fresh native environment/final parameters/review/exclusive admission. Reuse accepted baselines; C09/C10 semantic View/Navigation/Action ownership and actual fold evidence decide the scoped result. PR7 current-source44 qualification remains separately prepared; no fresh authority or gate credit from static work.",
+  "next_action": "Qualify only the repaired Core method through the reviewed900+300 profile after fresh MAIN/parameters/exclusive ownership and adequate awake binding. Preserve the other43 current-source passes. Prepare S2 SwiftUI split using the fully reviewed canonical builder and fresh actual bindings; no consumed readiness or model authority. Flags/WebView/complete Off/older/final-stack remain.",
   "p1": {
     "required_s2_tasks": 3,
     "required_s3_tasks": 20,
@@ -885,7 +885,7 @@
       "limits": "Source-bound Python parent/worker and actual xcodebuild recognizers; fresh caller roles and live inventory remain required. No native or gate credit."
     },
     "human_startup_blocker": {
-      "state": "CURRENT_METADATA_COMPLETE_PRE_EFFECT_REVIEWED_WAIT_FRESH_BINDINGS",
+      "state": "CANONICAL_WHOLE_STARTUP_OFFLINE_REVIEWED_WAIT_FRESH_ACTUAL_BINDINGS",
       "attempts": [
         {
           "kind": "ROOT_UUID_CONTEXT_SCHEMA_STOP_BEFORE_PARENT",
@@ -1005,7 +1005,7 @@
       },
       "native_calls": 0,
       "gates_closed": [],
-      "next_action": "Prepare candidate only from the reviewed corrected current-observation projections and runtime_static_pins/executable_cone. Rebind all fresh metadata selectors consistently, preserve actual raw provenance, pass complete context and exact [page,awake] guard plus actual final reviewer receipt before authority. Fresh page/operator/environment/awake and exact parameter review with full fixed-budget exclusive ownership remain required. Reuse source/products/baseline; offline controls grant no readiness, native or gate credit. While human preparation is held, qualify the reviewed S3 current44 after fresh full-profile admission.",
+      "next_action": "Use the canonical builder for a fresh candidate-only sitting: actual metadata, selected source ledger, complete context, page/operator/environment and adequate awake binding, then final independent parameter review and exclusive admission. Reuse accepted source/products/baseline and qualified native capture operations. Never substitute model observations or consumed page confirmations.",
       "packet": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-runtime-pin-construction-correction-20261006/packet.json",
         "sha256": "e0f3c066a5c2a67b5426cf565fceb41b32adf16220a88510765a4168c082f9c6"
@@ -1142,6 +1142,52 @@
           "Publish schema_version1 and reviewer_role rum-runtime-reviewer with exact local assignment/plan, then consume the actual final receipt through unchanged require_reviewer.",
           "Any future sitting still requires actual current source/device/full original state/output/process/tool applicability, a live fixed page, genuine operator reply and adequate authorized awake reservation, exact parameter review and root exclusive ownership/freeze."
         ]
+      },
+      "canonical_startup_assembly": {
+        "state": "CANONICAL_WHOLE_STARTUP_OFFLINE_REVIEWED_WAIT_FRESH_ACTUAL_BINDINGS",
+        "plan": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-startup-assembly-cycle1/final-plan.json",
+          "sha256": "dc123e3737f970fdabe2a2a605e4e211e8655c42437177a1c36340eccbc08e60"
+        },
+        "packet": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-startup-assembly-cycle1/final-review-packet.json",
+          "sha256": "99d5a605588d38eee98ef19824edb385c2259cb052a61a83895a82935c5bc50d"
+        },
+        "source_proposal": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-startup-assembly-cycle1/final-source-proposal.json",
+          "sha256": "149942e02a9ced96bcacaf22c5b917d9316fd12258c4c8a32fc3a8d74fca658d"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-startup-assembly-cycle1/final-review.json",
+          "sha256": "c9be603a2a2de164343131667f89766c85e50733f3582d19fbb779534226ad97"
+        },
+        "whole_startup": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-startup-assembly-cycle1/whole-startup-05.actual.json",
+          "sha256": "c1c66de44166fd71e1c3d6773e001a39ef913137e5eaac70d7f8ad63144973f4"
+        },
+        "assembly_controls": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-startup-assembly-cycle1/final-assembly-controls.json",
+          "sha256": "8e5e0887890965276fac01c7c8e28dd331779c17a8708b72b3305aa0d19891ae"
+        },
+        "publication_controls": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-startup-assembly-cycle1/publication-controls.json",
+          "sha256": "cc4f4e7944154c51f8e9036248e49a80a805bc96195f6a7447d0222c779b971c"
+        },
+        "actual_tool_returns": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-startup-assembly-cycle1/final-actual-tool-returns.json",
+          "sha256": "4bf11eee5715d6c3cedf195f5ab8eb4d31edc65c62ba2be9b8ef0cc15efdfa36"
+        },
+        "offline_controls": {
+          "whole_startup": 1,
+          "complete_configuration": 12,
+          "publication": 6,
+          "resident_configuration_and_boundary": 3
+        },
+        "actual_native_calls": 0,
+        "native_admitted": false,
+        "gates_closed": [],
+        "limits": "Real local JS/parent/worker/PTY/IPC/initial validation/publication/progress and first empty-key Start request; platform-read effects modeled and Start rejected at explicit local-only boundary. No native readiness/authority or behavioral credit. Previous fragment controls retain narrower scope; original stopped attempts and separate restorations unchanged.",
+        "next_action": "Use the canonical builder for a fresh candidate-only sitting: actual metadata, selected source ledger, complete context, page/operator/environment and adequate awake binding, then final independent parameter review and exclusive admission. Reuse accepted source/products/baseline and qualified native capture operations. Never substitute model observations or consumed page confirmations."
       }
     }
   },
@@ -1937,7 +1983,7 @@
       "sha256": "cb18fc6e55042565af4475144a96c5a74a22a0dc126485b9e3c844cd25ee2660"
     }
   },
-  "updated_at": "2026-10-06T08:56:05.949506+00:00",
+  "updated_at": "2026-10-06T11:16:00.761905+00:00",
   "native_run_accounting": {
     "P3_required_platform_build": 1,
     "P5_PR3_PR4_PR5_off_cells": 6,
@@ -1946,7 +1992,7 @@
     "P2_actual_native_invocations": 11,
     "PR9_current_source_platform_build_cells": 4,
     "PR9_current_source_framework_build_commands": 8,
-    "counting_rule": "native_runs retains20 independently qualified build/test/Off cells, including142ad URLSession and ab46 Internal/RUM/Core action components. Original whole P7A0INVALID stays immutable; separate actual attempts/builds remain attributed. Consumer source and private tests close no runtime/release gate.",
+    "counting_rule": "native_runs retains the earlier20 independently qualified cells. Current44 separately records five fresh builds/test invocations, four passing component cells and43 passed methods; one failed Core method keeps original whole INVALID. No release gate closes by these counts.",
     "P5_PR6_actual_test_attempts": 1,
     "P5_PR6_test_attempt_failed": 1,
     "P5_PR6_configured_methods_passed": 4,
@@ -1995,15 +2041,26 @@
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-core-saved-continuation-20261006/actual-Core-only-run-032d4e9d/closure/actual-review.json",
         "sha256": "aee62ad0d5b39d6eb79df0fad7fa4b04ab7a93a03cf5f70561e2783c7998b07d"
       }
+    },
+    "current44_actual_execution": {
+      "owner": "Results/S3-PR7-consumer-preparation.json#current44_actual_execution",
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-current-source-20261006-1137/actual-run-957c6e34/result.json",
+        "sha256": "ae2d0de06983b07e8d15cca5337bcbcc703dcd755b6c643331f5b61ae2df621b"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-current-source-20261006-1137/actual-run-957c6e34/closure/actual-review.json",
+        "sha256": "23b347ef3bcc1f9d6354c7167a2df46d7af4fda4f683c20ec5688ba1d7b7e813"
+      }
     }
   },
   "selected_task": "S3_F12_PR7_P7N1_P7T1",
   "execution_frontier": {
-    "primary": "Review and apply decisive actual automatic/manual/OTel constructor tests, then fresh current-source Internal/CoreTSan/Trace qualification within the existing awake cutoff. P7A0 selected twelve methods at ab46 are accepted; original whole INVALID stays immutable. Logs/Flags/WebView, complete Off, older-system and final-stack obligations remain.",
+    "primary": "Qualify only the repaired Core method through the reviewed900+300 profile after fresh MAIN/parameters/exclusive ownership and adequate awake binding. Preserve the other43 current-source passes. Prepare S2 SwiftUI split using the fully reviewed canonical builder and fresh actual bindings; no consumed readiness or model authority. Flags/WebView/complete Off/older/final-stack remain.",
     "required_paths": [
       "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
-      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-cli-proposal-20261006/root-preparation-469a1b9e/materialized-parameters.json",
-      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-cli-proposal-20261006/actual-run-469a1b9e/controller.json"
+      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-startup-assembly-cycle1/final-review.json",
+      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-single-core-sampling-current-awake-20261006/packet.json"
     ],
     "independent_boundary": "Human captures held until fresh availability; API approval, minimum Swift6.2 and hardware release boundaries remain.",
     "no_live_native_admission": true,
@@ -2149,8 +2206,8 @@
     }
   ],
   "awake_window": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/awake-unattended-20261006/authority.json",
-    "sha256": "9c86d4f8081bd584014ce401949b8da7c3564283c7a7d67baf3a07037c6b3f39"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/awake-core-and-canonical-sitting-20261006/authority.json",
+    "sha256": "4e7f06e2f64c65d57d1c8526c79dde345bf565602a07ac6c412b971c3e0376d2"
   },
   "awake_window_history": [
     {
@@ -2195,13 +2252,23 @@
         "sha256": "d62c19738c1bba5b91e7735082757aa4c96db834d1f12ec6dd00627cb78af276"
       },
       "native_admitted": false
+    },
+    {
+      "record": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/awake-s2-human-receipt-bound-20261006/authority.json",
+        "sha256": "69ef1c4563ac18c68439cc787003f00885dd7c9030ff7d6a892e8bfdae569eb9"
+      },
+      "state": "RETAINED_ORIGINAL_CUTOFF_NO_LONGER_FITS_NEXT1200_PROFILE",
+      "cutoff_utc": "2026-10-06T11:08:28Z",
+      "latest_page_confirmation": "Retired64327; consumed, not new readiness",
+      "native_admitted": false
     }
   ],
   "current_attempt_authority": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/attempt-policy-20261005.json",
     "sha256": "4a455a7d817bd900f2f7ca21cc403c2ee934f825b4e7d0c2ba9eb575787f2411"
   },
-  "independent_selected_task": "P7A0_ACTION_QUALIFICATION_AND_PRIVATE_CONSUMERS",
+  "independent_selected_task": "P2_CANONICAL_SITTING_PREPARATION_AND_P7_ONE_CHANGED_CORE_TEST",
   "unattended_window_20261006_0900": {
     "authorization": "Continue the unattended work up to09:00; user available for human sessions starting09:00",
     "awake_authority": {
@@ -2311,5 +2378,6 @@
       "gates_closed": [],
       "limits": "Current live skill and metadata consumer shapes joined to actual retained returns. Original BLOCKED receipt is unchanged. Configuration/restoration, device/process/apps/displays/source/product/output, operator/page/awake, final parameter review and root exclusive admission remain fresh external prerequisites."
     }
-  }
+  },
+  "awake_window_current_state": "FRESH_TWO_HOUR_GRANT_CORE_AND_CANDIDATE_PREPARATION_ONLY"
 }
