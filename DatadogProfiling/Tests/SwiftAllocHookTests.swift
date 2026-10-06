@@ -7,7 +7,7 @@
 #if !os(watchOS)
 import Foundation
 import XCTest
-import DatadogMachProfiler
+import DatadogMachProfiler.Testing
 
 private final class PureSwiftAllocationFixture {
     var payload = (1, 2, 3, 4)
@@ -183,6 +183,26 @@ final class SwiftAllocHookTests: XCTestCase {
         let throwing = SwiftAllocationRecorder.snapshot()
         XCTAssertEqual(throwing.allocations.count, 1)
         XCTAssertEqual(throwing.matchedDeallocations, 1)
+    }
+
+    func testUninitializedObjectDeallocationRemovesClassAllocation() {
+        SwiftAllocationRecorder.reset(for: PureSwiftAllocationFixture.self)
+        XCTAssertGreaterThan(dd_swift_alloc_hook_diagnostics().uninitialized_object_dealloc_slots_patched, 0)
+        let metadata = unsafeBitCast(PureSwiftAllocationFixture.self, to: UnsafeRawPointer.self)
+        let size = 128
+        let alignmentMask = 7
+        guard let object = dd_swift_alloc_object_for_testing(metadata, size, alignmentMask) else {
+            XCTFail("Swift runtime allocation unexpectedly returned nil")
+            return
+        }
+        let address = UInt(bitPattern: object)
+        XCTAssertTrue(SwiftAllocationRecorder.snapshot().allocations.contains { $0.address == address })
+
+        dd_swift_dealloc_uninitialized_object_for_testing(object, size, alignmentMask)
+
+        let snapshot = SwiftAllocationRecorder.snapshot()
+        XCTAssertTrue(snapshot.deallocations.contains(address))
+        XCTAssertEqual(snapshot.matchedDeallocations, 1)
     }
 
     func testStopAndRestartKeepForwardingWithoutDuplicateObservation() {
