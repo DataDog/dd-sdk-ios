@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "state": "PREARMED_SERVICE_REVIEWED_OFFLINE_WAIT_FRESH_HUMAN",
-  "updated_at": 1790994691.978708,
+  "updated_at": "2026-10-06T06:45:50.914601+00:00",
   "execution": {
     "record": "Results/S2-swiftui-split-candidate-20261003.json"
   },
@@ -554,5 +554,17 @@
   "prearmed_service_review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-prearmed-cycle4-3y1yjjsz/runtime/review.json",
     "sha256": "b732432b48986713501b70e64c88bcb0e3652f014137ff3b35f7083f91d63be5"
+  },
+  "current_0900_human_handoff": {
+    "record": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-post-otel-static-20261006/s2-candidate-0900-handoff.json",
+      "sha256": "f97158964a6ae877f7de7e1c31d35fbf6540fe495f8f44cb47321f794c2a51db"
+    },
+    "state": "STATIC_SOURCE_PRODUCTS_BASELINE_JOINED_FRESH_HUMAN_AND_NATIVE_BINDINGS_REQUIRED",
+    "new_native_runs": 0,
+    "new_builds": 0,
+    "baseline_repeat": false,
+    "gates_closed": [],
+    "next_action": "From09:00 Paris obtain fresh human readiness and adequate awake grant; bind a new page, current tool/workspace/device/source/product/process/output identity, final parameters and exclusive root admission. Reuse the reviewed source and saved baseline; no rehearsal or expired sitting authority."
   }
 }

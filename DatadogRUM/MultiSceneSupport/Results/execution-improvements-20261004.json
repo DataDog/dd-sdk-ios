@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "UNATTENDED_CONSUMER_FIXTURE_REPAIRED_QUALIFICATION_HELD",
+  "state": "UNATTENDED_STATIC_REVIEW_COMPLETE_HUMAN_PRIORITY_FROM0900",
   "owner": "/root",
   "plan": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
@@ -1737,7 +1737,7 @@
       "sha256": "cb18fc6e55042565af4475144a96c5a74a22a0dc126485b9e3c844cd25ee2660"
     }
   },
-  "updated_at": "2026-10-06T06:33:02.616882+00:00",
+  "updated_at": "2026-10-06T06:45:50.914601+00:00",
   "native_run_accounting": {
     "P3_required_platform_build": 1,
     "P5_PR3_PR4_PR5_off_cells": 6,
@@ -2055,6 +2055,28 @@
       "enumerations": 0,
       "boot_effects": 0,
       "disposition": "OTelSpanTests507 used an unsupported UserInfo?.mockWith helper. Original invalid verdict and unavailable app-equality evidence remain immutable. The one-line supported initializer repair preserves after-sampling mutation and before-sampling ownership assertions; no SDK runtime regression or qualification inferred."
+    },
+    "post_repair_static_preparation": {
+      "packet": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-post-otel-static-20261006/packet.current-procedure.json",
+        "sha256": "0ff85818d53a7dbfe84ea1cb2beeb94a237284f3849c19266660d7fce3a3932b"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-post-otel-static-20261006/review.json",
+        "sha256": "65c3a175e6d7886964c39d10e2f94fd486bf2be37c0f6c5cbb55d3ac45696705"
+      },
+      "state": "STATIC_SOURCE_REVIEW_PASS_FRESH_RUNTIME_AUTHORITY_REQUIRED",
+      "source_head": "92da869be87fbd4b3ab92c9f78ee5359f4fa98cb",
+      "methods": 44,
+      "reused_controls": 17,
+      "new_native_runs": 0,
+      "new_builds": 0,
+      "gates_closed": [],
+      "limits": "Static source/procedure/selection applicability only; fresh actual parameters, tool/process/device/output/awake evidence, review and exclusive admission remain required. The old procedure join rejection and original native INVALID verdicts remain immutable."
+    },
+    "s2_human_handoff": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-post-otel-static-20261006/s2-candidate-0900-handoff.json",
+      "sha256": "f97158964a6ae877f7de7e1c31d35fbf6540fe495f8f44cb47321f794c2a51db"
     }
   }
 }

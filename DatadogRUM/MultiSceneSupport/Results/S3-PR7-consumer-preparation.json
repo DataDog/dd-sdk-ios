@@ -189,7 +189,7 @@
   "gates_closed": [],
   "whole_pr7_qualified": false,
   "next_action": "Qualify forty-four selected current-source Internal/CoreTSan/Trace/RUM/Logs consumer and legacy methods using fresh products, discovery, exact assertions and cleanup. The final44 attempt stopped on one OTel UserInfo fixture before discovery/tests/boot; the supported initializer repair is signed locally and the repeated helper pattern was audited across1727 tracked Swift files. All three zero-test consumer compile failures remain invalid, with separate accepted no-owned-boot cleanup. No full2700-second profile fits the remaining pre09:00 awake window; prepare only, never clip or extend old clocks. From09:00 prioritize the reviewed S2 SwiftUI split candidate after fresh human readiness. Flags Off acquisition, WebView, complete Off, older-system and final-stack acceptance remain.",
-  "updated_at": "2026-10-06T06:33:02.616882+00:00",
+  "updated_at": "2026-10-06T06:45:50.914601+00:00",
   "sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-applied-20261006/formatting-successor/sdk-checkpoint.json",
     "sha256": "3a399170a220d96401f654f679c8de419c8c8377b3bee1daf6a3638ac8ddf73b"
@@ -1227,5 +1227,23 @@
     "state": "SOURCE_AND_PARAMETERS_REVIEWED_ACTUAL_FIXED_CLOCK_HANDOFF_CONSUMED",
     "tests_run": 0,
     "gates_closed": []
+  },
+  "post_otel_current_source_static_preparation": {
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-post-otel-static-20261006/packet.current-procedure.json",
+      "sha256": "0ff85818d53a7dbfe84ea1cb2beeb94a237284f3849c19266660d7fce3a3932b"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-post-otel-static-20261006/review.json",
+      "sha256": "65c3a175e6d7886964c39d10e2f94fd486bf2be37c0f6c5cbb55d3ac45696705"
+    },
+    "state": "STATIC_SOURCE_REVIEW_PASS_FRESH_RUNTIME_AUTHORITY_REQUIRED",
+    "source_head": "92da869be87fbd4b3ab92c9f78ee5359f4fa98cb",
+    "methods": 44,
+    "reused_controls": 17,
+    "new_native_runs": 0,
+    "new_builds": 0,
+    "gates_closed": [],
+    "limits": "Static source/procedure/selection applicability only; fresh actual parameters, tool/process/device/output/awake evidence, review and exclusive admission remain required. The old procedure join rejection and original native INVALID verdicts remain immutable."
   }
 }
