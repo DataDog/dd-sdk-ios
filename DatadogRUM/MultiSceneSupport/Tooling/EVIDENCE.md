@@ -256,10 +256,10 @@ map each inherited invariant separately. Reopen only concrete invalidated
 obligations, preserving their owner, dependency, decisive test and environment.
 [EXP-216](../Results/EXP-216-s2-composition-promotion.json) illustrates this review.
 
-An archive with historical paths is evidence, not a portable CI runner or fresh
-execution authority. Gate status belongs to the register, generated progress to
-PLAN, and completed narratives to their owning records. Use
-[documentation maintenance](DOCUMENTATION.md) to update them once.
+Historical archives establish lineage, not current execution authority. Verify their sealed
+bytes against archived source; validate explicitly bound current members at current HEAD.
+Reject current hash drift or foreign run/output, and preserve original failed custody seals.
+Gate facts belong to the register, narratives to owners; [maintenance](DOCUMENTATION.md) regenerates PLAN.
 
 ## Scope limits
 

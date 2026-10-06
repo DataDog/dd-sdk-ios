@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "OFFLINE_FINAL_REVIEW_INDEX_PREPARED_REQUIRED_PHYSICAL_UIKIT_AND_MAINTAINER_REVIEW_OPEN",
+  "state": "BOUNDED_SOURCE_REVIEW_PASS_REQUIRED_PHYSICAL_UIKIT_AND_MAINTAINER_REVIEW_OPEN",
   "existing_gate": "S2:F06",
   "owner": "RUM maintainers",
   "prepared_at": "2026-10-06T21:57:51.841225+00:00",
@@ -29,5 +29,12 @@
   "builds": 0,
   "backend_queries": 0,
   "gates_closed": [],
-  "release_acceptance": false
+  "release_acceptance": false,
+  "source_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-final-review-preparation-20261006/source-review.json",
+    "sha256": "723405439a8838d43be4f6ad20fe74ec494eac06644d99bea135096352c9a1a8"
+  },
+  "source_applicability": "All19 manifest candidate hashes refer to immutable productionc9faed blobs. Six production files are identical at qualification7604da; eight qualification-only test/documentation paths are separately joined in source-review. No frozen index or production source rewritten.",
+  "review_findings": [],
+  "maintainer_gate_closed": false
 }

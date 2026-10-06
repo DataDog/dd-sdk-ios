@@ -184,12 +184,12 @@
   "pending_action_requirement": "Pending/excluded action scalars do not identify an accepted Action UUID. The existing queue-confined continuous-action receipt is not a generic cross-module/discrete-action acceptance receipt. Do not borrow a later same-view action; independently review the smallest source-backed receipt design before consumer changes.",
   "off_requirement": "Reusing the network provider single State read may gate On locally. No default-Off Core registry/TaskLocal/scene lookup, owner allocation, new map/lock or naive owner(in: FeatureScope) capture.",
   "runtime_admitted": false,
-  "native_runs": 10,
-  "builds": 19,
+  "native_runs": 13,
+  "builds": 22,
   "gates_closed": [],
   "whole_pr7_qualified": false,
-  "next_action": "Finish and independently review exact17-selector preparation, then root issues one automatic three-scheme affected-component run only if its1800s execution plus600s cleanup fit original caffeinate52811 cutoff. Preserve accepted43/cache3/separate Core tests; no human input, mounted callback or whole-PR7 claim.",
-  "updated_at": "2026-10-06T22:05:37.719783+00:00",
+  "next_action": "Add and review only the independent captured maximum-duration control, using targeted real user actions to keep inactivity below its threshold. A fresh one-method qualification is prospective and must fit original awake cutoff; preserve17/cache3/consumer43/Core passes. Native callback/page/rebind acquisition, actual delivery-time expiry, Flags and complete Off/older-system/final-stack remain.",
+  "updated_at": "2026-10-06T22:35:49.440860+00:00",
   "sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-core-sampling-initialization-test-repair-applied-20261006/sdk-checkpoint.json",
     "sha256": "8479a54805b889477b7b9f20b61e6755e0ce49fda73cab852a95a77f47f45e72"
@@ -1469,7 +1469,7 @@
     "tests_passed": 3
   },
   "webview_captured_transport": {
-    "state": "SOURCE_REVIEWED_AND_CHECKPOINTED_AFFECTED_COMPONENT_TESTS_PENDING",
+    "state": "SEVENTEEN_METHOD_TRANSPORT_COMPONENT_QUALIFIED_AT_7FCD",
     "existing_gate": "S3:F12",
     "dependency": "P7W1 captured WebView transport and receiver routing",
     "original_blocked_packet": {
@@ -1485,7 +1485,7 @@
       "sha256": "509756514ddf7ceab435a78127f12b4ed5d8b66a02dfbd7cd8fd0af72580b10b"
     },
     "new_test_methods": 14,
-    "new_tests_executed": 0,
+    "new_tests_executed": 14,
     "correction_scope": [
       "Carry captured keep-alive owner/session through resolved application before lifecycle effects",
       "Remove every unproved captured container before optional metadata parsing"
@@ -1495,8 +1495,8 @@
       "Actual delivery-time same-ID expiry",
       "Complete Off/older-system/final-stack and release acceptance"
     ],
-    "native_runs": 0,
-    "builds": 0,
+    "native_runs": 3,
+    "builds": 3,
     "gates_closed": [],
     "source_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-captured-transport-20261006/cycle2/review.json",
@@ -1513,6 +1513,39 @@
     "source_head": "7fcd960cd4a9e92eec10ac69d6367486ee3e1c79",
     "signature": "N",
     "local_unsigned_authority": "Authorized fallback after signing-agent communication failure; sign outgoing history before separately authorized publication.",
-    "maximum_duration_test_limit": "The maximum-duration subcase also times out from inactivity; it does not independently qualify the maximum-duration branch."
+    "maximum_duration_test_limit": "The maximum-duration subcase also times out from inactivity; it does not independently qualify the maximum-duration branch.",
+    "legacy_controls_executed": 3,
+    "tests_passed": 17,
+    "qualification_runs": 1,
+    "actual_result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-captured-transport-20261006/cycle2/affected-component-preparation/actual-run-3000bade/result.json",
+      "sha256": "63d33341f122b9130110d84acd2b84fffac367e4ad1ca632b774228a0c226f4a"
+    },
+    "actual_packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-captured-transport-20261006/cycle2/affected-component-preparation/actual-run-3000bade/actual-outcome-closure/packet.json",
+      "sha256": "89fc201666c119b270c024b0d84d67fcde14c4af6a5d88b9e53b60c7a9516c90"
+    },
+    "actual_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-captured-transport-20261006/cycle2/affected-component-preparation/actual-run-3000bade/actual-outcome-closure/actual-review.json",
+      "sha256": "730e7b468f455031253cf09d04a20b6665a63af53f3eb6e55dbbc3255d7e27c9"
+    },
+    "custody_handback": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-captured-transport-20261006/cycle2/affected-component-preparation/actual-run-3000bade/actual-outcome-closure/custody-handback.json",
+      "sha256": "614f8b8b97f79077ecb328b1143ceb06d3fe1fbc969aec0e299544a0160d1168"
+    },
+    "verdicts": {
+      "scenario": "PASS",
+      "evidence": "COMPLETE",
+      "cleanup": "PASS_ORIGINAL_SHUTDOWN_APPS_AND_GROUPS",
+      "overall": "PASS_AFFECTED_COMPONENT_ONLY"
+    },
+    "follow_up_discriminators": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-captured-transport-20261006/cycle2/follow-up-discriminators.json",
+      "sha256": "23a55e9bc2fd7e1e02004b0eeec45ffc2aab27861dd25de2388513f03934125f"
+    },
+    "maximum_duration_draft": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-captured-transport-20261006/cycle2/maximum-duration-control/packet.json",
+      "sha256": "aa52c69f1ffecd1ac0cc19460b304db1b8a5e03f08d8b0c314dd2cbb5a7763a1"
+    }
   }
 }
