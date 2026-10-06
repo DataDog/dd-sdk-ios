@@ -135,7 +135,7 @@
       "state": "DESIGN_AND_IMPLEMENTATION_REMAIN"
     }
   ],
-  "selected_task": "P7D0_TWO_FINDING_SUCCESSOR_BEFORE_QUALIFICATION",
+  "selected_task": "P7D0_REVIEWED_ROOT_CHECKPOINT_AND_EXCLUSIVE_RELEASE",
   "pending_action_requirement": "Pending/excluded action scalars do not identify an accepted Action UUID. The existing queue-confined continuous-action receipt is not a generic cross-module/discrete-action acceptance receipt. Do not borrow a later same-view action; independently review the smallest source-backed receipt design before consumer changes.",
   "off_requirement": "Reusing the network provider single State read may gate On locally. No default-Off Core registry/TaskLocal/scene lookup, owner allocation, new map/lock or naive owner(in: FeatureScope) capture.",
   "runtime_admitted": false,
@@ -143,8 +143,8 @@
   "builds": 0,
   "gates_closed": [],
   "whole_pr7_qualified": false,
-  "next_action": "Correct the two remaining qualification proposal findings in one immutable successor, independently review, checkpoint and release the finite CLI build/discovery/ten-test qualification. Source142ad remains frozen; private action drafts and reviewed network design qualify no SDK behavior.",
-  "updated_at": 1791249279.999941,
+  "next_action": "After fresh live source/dependency/device/process/space/awake checks, release the exact reviewed Q3 finite CLI build/discovery/ten-test qualification. Then independently assess actual outcomes and owned restoration before consumer implementation; source142ad remains frozen.",
+  "updated_at": 1791249582.741905,
   "sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/sdk-checkpoint.json",
     "sha256": "8de6f4600357cbe88a003bb7d235945a3fda02af056f4e021f20540b19c82749"
@@ -193,6 +193,19 @@
       ],
       "offline_controls": 19,
       "next": "Bind actual retained ProcessXCFramework/output/link grammar and exact historical control source in one successor; designated review/root checkpoint/release remain required."
+    },
+    "current": {
+      "packet": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-cli-proposal-cycle3-20261006/packet.json",
+        "sha256": "0a0b33185b2eff06c29d092f111227e1ca0bb50d768185fb5df8ef0bb66f28dc"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-cli-proposal-cycle3-20261006/review.json",
+        "sha256": "7df59d7250f55ef12636685198893f6f270ad3ec94aae0057b52103403adcb68"
+      },
+      "state": "REVIEWED_UNISSUED",
+      "new_grammar_controls": 1,
+      "old_control_reruns": 0
     }
   },
   "accepted_action_design": {

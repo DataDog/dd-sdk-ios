@@ -255,7 +255,7 @@
         "integration": "NOT_QUALIFIED"
       },
       "remaining_assertion": "Authoritative nil vs absent handoff, optional request-time final E05 correlation, delayed WebView owner and accepted action merge Off: Static fast path; final E01/E05 headers/sampling/user/account expressions and fresh develop no handoff or scene lookup",
-      "next_action": "Correct the two remaining proposal findings, review and qualify composed dependency source; then review/apply the prepared action and consumer changes. No behavioral gate is closed by drafts.",
+      "next_action": "Run the reviewed Q3 finite dependency-component qualification after fresh root release, then review/apply prepared action and consumer changes; no whole PR7 acceptance yet.",
       "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit.",
       "dependency_design": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/packet.json",
@@ -263,7 +263,7 @@
       },
       "preparation_record": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
-        "sha256": "58dd88291ab2723c4917aba5b577d104581bb41e6afa211b20a569066b185932"
+        "sha256": "2769debbbc8e122d94f77d3aa91c1d79b7d54255fa32e531409ea160bd86a4f6"
       },
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
       "source_branch": "valpertui/s3-consumer-capture",
@@ -456,5 +456,5 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": 1791249280.000396
+  "updated_at": 1791249582.742473
 }
