@@ -2067,3 +2067,199 @@ extension DatadogCoreTests {
     }
 }
 #endif
+
+#if os(iOS)
+extension DatadogCoreTests {
+    func testWriteCaptureUsesPublishedStoreOwnerBeforeFeatureRegistryCommit() throws {
+        guard supportsHandoffScope else {
+            throw XCTSkip("Execution-scope handoff requires iOS 27")
+        }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let owner = try core.activateRUMContextHandoff()
+        let scope = core.scope(for: PausedHandoffRemoteFeature.self)
+        let delivered = expectation(description: "write queued before feature registry commit")
+        var writes = 0
+        core.set(context: RUMCoreContext.mockWith(viewID: "delivery-view"))
+        core.contextProvider.flush()
+        let feature = PausedHandoffRemoteFeature {
+            XCTAssertNotNil(core.stores[PausedHandoffRemoteFeature.name])
+            XCTAssertNil(core.get(feature: PausedHandoffRemoteFeature.self))
+            scope.eventWriteContextWithRUMCapture { context, _, capture in
+                writes += 1
+                XCTAssertEqual(context.additionalContext(ofType: RUMCoreContext.self)?.viewID, "delivery-view")
+                XCTAssertTrue(capture?.owner === owner)
+                XCTAssertEqual(capture?.value.resolvedRUMContext(for: owner)?.viewID, "caller-view")
+                delivered.fulfill()
+            }
+        }
+        try RUMContextHandoff.withValue(handoffValue("caller-view"), for: owner) {
+            try core.register(feature: feature)
+        }
+        wait(for: [delivered], timeout: 5)
+        XCTAssertEqual(writes, 1)
+        XCTAssertNotNil(core.get(feature: PausedHandoffRemoteFeature.self))
+    }
+
+    func testWriteCaptureAfterActivationUsesExistingStoreWithoutChangingDeliveryContext() throws {
+        guard supportsHandoffScope else {
+            throw XCTSkip("Execution-scope handoff requires iOS 27")
+        }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        try core.register(feature: FeatureMock())
+        let scope = core.scope(for: FeatureMock.self)
+        let owner = try core.activateRUMContextHandoff()
+        core.set(context: RUMCoreContext.mockWith(viewID: "delivery-view"))
+        let delivered = expectation(description: "activated existing store")
+        RUMContextHandoff.withValue(handoffValue("caller-view"), for: owner) {
+            scope.eventWriteContextWithRUMCapture { context, _, capture in
+                XCTAssertEqual(context.additionalContext(ofType: RUMCoreContext.self)?.viewID, "delivery-view")
+                XCTAssertTrue(capture?.owner === owner)
+                XCTAssertEqual(capture?.value.resolvedRUMContext(for: owner)?.viewID, "caller-view")
+                delivered.fulfill()
+            }
+        }
+        wait(for: [delivered], timeout: 5)
+    }
+
+    func testWriteCapturePreservesAuthoritativeNilInsteadOfDeliveryView() throws {
+        guard supportsHandoffScope else {
+            throw XCTSkip("Execution-scope handoff requires iOS 27")
+        }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let owner = try core.activateRUMContextHandoff()
+        try core.register(feature: FeatureMock())
+        core.set(context: RUMCoreContext.mockWith(viewID: "delivery-view"))
+        let value = RUMContextHandoff.CurrentValue(
+            rumContext: nil, sceneIdentifier: nil, hasPendingUserAction: false, excludedUserActionID: nil
+        )
+        let delivered = expectation(description: "authoritative empty caller")
+        RUMContextHandoff.withValue(value, for: owner) {
+            core.scope(for: FeatureMock.self).eventWriteContextWithRUMCapture { context, _, capture in
+                XCTAssertEqual(context.additionalContext(ofType: RUMCoreContext.self)?.viewID, "delivery-view")
+                XCTAssertTrue(capture?.owner === owner)
+                XCTAssertNotNil(capture)
+                XCTAssertNil(capture?.value.resolvedRUMContext(for: owner))
+                delivered.fulfill()
+            }
+        }
+        wait(for: [delivered], timeout: 5)
+    }
+
+    func testWriteCaptureInvalidatedInsideBindingCannotSelectLegacyDeliveryView() throws {
+        guard supportsHandoffScope else {
+            throw XCTSkip("Execution-scope handoff requires iOS 27")
+        }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let owner = try core.activateRUMContextHandoff()
+        try core.register(feature: FeatureMock())
+        core.set(context: RUMCoreContext.mockWith(viewID: "delivery-view"))
+        let delivered = expectation(description: "invalid published owner is authoritative")
+        RUMContextHandoff.withValue(handoffValue("caller-view"), for: owner) {
+            owner.invalidate()
+            core.scope(for: FeatureMock.self).eventWriteContextWithRUMCapture { context, _, capture in
+                XCTAssertEqual(context.additionalContext(ofType: RUMCoreContext.self)?.viewID, "delivery-view")
+                XCTAssertTrue(capture?.owner === owner)
+                XCTAssertNotNil(capture)
+                XCTAssertNil(capture?.value.rumContext)
+                XCTAssertNil(capture?.value.resolvedRUMContext(for: owner))
+                delivered.fulfill()
+            }
+        }
+        wait(for: [delivered], timeout: 5)
+    }
+
+    func testWriteCaptureQueuedBeforeOwnerReplacementCannotAdoptReplacement() throws {
+        guard supportsHandoffScope else {
+            throw XCTSkip("Execution-scope handoff requires iOS 27")
+        }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let owner = try core.activateRUMContextHandoff()
+        try core.register(feature: FeatureMock())
+        core.set(context: RUMCoreContext.mockWith(viewID: "delivery-view"))
+        core.contextProvider.flush()
+        let entered = expectation(description: "actual context queue held")
+        let release = DispatchSemaphore(value: 0)
+        core.contextProvider.read { _ in
+            entered.fulfill()
+            XCTAssertEqual(release.wait(timeout: .now() + 5), .success)
+        }
+        wait(for: [entered], timeout: 5)
+        let delivered = expectation(description: "queued capture retains invalid original owner")
+        RUMContextHandoff.withValue(handoffValue("caller-view"), for: owner) {
+            core.scope(for: FeatureMock.self).eventWriteContextWithRUMCapture { context, _, capture in
+                XCTAssertEqual(context.additionalContext(ofType: RUMCoreContext.self)?.viewID, "delivery-view")
+                XCTAssertTrue(capture?.owner === owner)
+                XCTAssertFalse(owner.isValid)
+                XCTAssertEqual(capture?.value.rumContext?.viewID, "caller-view")
+                XCTAssertNil(capture?.value.resolvedRUMContext(for: owner))
+                delivered.fulfill()
+            }
+        }
+        core.deactivateRUMContextHandoff(owner: owner)
+        let replacement = try core.activateRUMContextHandoff()
+        XCTAssertFalse(owner === replacement)
+        XCTAssertTrue(replacement.isValid)
+        release.signal()
+        wait(for: [delivered], timeout: 5)
+    }
+
+    func testWriteCaptureOffAndMissingBindingKeepLegacyContextExactlyOnce() throws {
+        guard supportsHandoffScope else {
+            throw XCTSkip("Execution-scope handoff requires iOS 27")
+        }
+        for activated in [false, true] {
+            let core = makeHandoffCore()
+            try core.register(feature: FeatureMock())
+            if activated {
+                _ = try core.activateRUMContextHandoff()
+            }
+            core.set(context: RUMCoreContext.mockWith(viewID: "delivery-view"))
+            let delivered = expectation(description: "legacy context without matching binding")
+            var calls = 0
+            core.scope(for: FeatureMock.self).eventWriteContextWithRUMCapture { context, _, capture in
+                calls += 1
+                XCTAssertNil(capture)
+                XCTAssertEqual(context.additionalContext(ofType: RUMCoreContext.self)?.viewID, "delivery-view")
+                delivered.fulfill()
+            }
+            wait(for: [delivered], timeout: 5)
+            XCTAssertEqual(calls, 1)
+            core.stop()
+        }
+    }
+
+    func testWriteCaptureKeepsOriginalConsentAndBypassWriterSelection() throws {
+        guard supportsHandoffScope else {
+            throw XCTSkip("Execution-scope handoff requires iOS 27")
+        }
+        for bypassConsent in [false, true] {
+            let core = makeHandoffCore()
+            let owner = try core.activateRUMContextHandoff()
+            let requests = FeatureRequestBuilderSpy()
+            try core.register(feature: FeatureMock(requestBuilder: requests))
+            let scope = try XCTUnwrap(core.scope(for: FeatureMock.self) as? RUMContextHandoffEventWriting)
+            for (consent, name) in [(TrackingConsent.notGranted, "not-granted"), (.granted, "granted"), (.pending, "pending")] {
+                core.set(trackingConsent: consent)
+                RUMContextHandoff.withValue(handoffValue("caller-view"), for: owner) {
+                    scope.eventWriteContextWithRUMCapture(bypassConsent: bypassConsent) { context, writer, capture in
+                        XCTAssertEqual(context.trackingConsent, consent)
+                        XCTAssertEqual(capture?.value.resolvedRUMContext(for: owner)?.viewID, "caller-view")
+                        writer.write(value: FeatureMock.Event(event: name))
+                    }
+                }
+            }
+            core.flushAndTearDown()
+            let actual = requests.requestParameters.flatMap { $0.events }.map { $0.data.utf8String }
+            let expected = bypassConsent
+                ? [#"{"event":"not-granted"}"#, #"{"event":"granted"}"#, #"{"event":"pending"}"#]
+                : [#"{"event":"granted"}"#]
+            XCTAssertEqual(actual, expected)
+        }
+    }
+}
+#endif

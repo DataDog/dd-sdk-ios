@@ -261,6 +261,15 @@ internal class Monitor: RUMCommandSubscriber {
                 }
             }
 
+            if let error = command as? RUMAddCurrentViewErrorCommand,
+               let ownership = error.capturedOwnership {
+                guard self.isMultiSceneTrackingEnabled, ownership.owner.isValid,
+                      self.rumContextHandoffOwner === ownership.owner else {
+                    error.completionHandler()
+                    return
+                }
+            }
+
             let transformedCommand = self.transform(command: command)
             let previousSessionID = self.sessionActivitySnapshot.sessionID
 

@@ -123,3 +123,15 @@ public struct RUMFlagEvaluationMessage {
         self.value = value
     }
 }
+
+/// Internal On-only ownership metadata; the legacy error payload layout stays unchanged.
+@_spi(Internal)
+public struct RUMCapturedErrorMessage {
+    public let error: RUMErrorMessage
+    public let capture: RUMContextHandoff.Capture
+
+    public init(error: RUMErrorMessage, capture: RUMContextHandoff.Capture) {
+        self.error = error
+        self.capture = capture
+    }
+}

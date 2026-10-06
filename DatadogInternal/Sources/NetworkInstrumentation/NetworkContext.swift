@@ -27,6 +27,30 @@ public protocol RUMContextHandoffReceiving: AnyObject {
     func receiveRUMContextHandoff(owner: RUMContextHandoff.Owner, active: Bool)
 }
 
+/// Optional built-in write capability; custom and NOP scopes keep their original method.
+@_spi(Internal)
+public protocol RUMContextHandoffEventWriting {
+    func eventWriteContextWithRUMCapture(
+        bypassConsent: Bool,
+        _ block: @escaping (DatadogContext, Writer, RUMContextHandoff.Capture?) -> Void
+    )
+}
+
+@_spi(Internal)
+public extension FeatureScope {
+    func eventWriteContextWithRUMCapture(
+        _ block: @escaping (DatadogContext, Writer, RUMContextHandoff.Capture?) -> Void
+    ) {
+        if let scope = self as? RUMContextHandoffEventWriting {
+            scope.eventWriteContextWithRUMCapture(bypassConsent: false, block)
+        } else {
+            eventWriteContext { context, writer in
+                block(context, writer, nil)
+            }
+        }
+    }
+}
+
 /// Declares request-local ownership; activation is supplied by the scene input layer.
 @_spi(Internal)
 public enum RUMContextHandoff {

@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 /// Extends `RUMMonitorProtocol` with additional methods designed for Datadog cross-platform SDKs.
@@ -39,7 +40,8 @@ public struct DatadogInternalInterface {
         attributes: [AttributeKey: AttributeValue],
         binaryImages: [BinaryImage]?,
         target: RUMCommandTarget = .processRepresentative,
-        userActionTarget: RUMErrorUserActionTarget = .current
+        userActionTarget: RUMErrorUserActionTarget = .current,
+        capturedOwnership: RUMCapturedErrorOwnership? = nil
     ) {
         var addErrorCommand = RUMAddCurrentViewErrorCommand(
             time: time,
@@ -57,6 +59,7 @@ public struct DatadogInternalInterface {
         )
         addErrorCommand.target = target
         addErrorCommand.userActionTarget = userActionTarget
+        addErrorCommand.capturedOwnership = capturedOwnership
         monitor.process(command: addErrorCommand)
     }
 

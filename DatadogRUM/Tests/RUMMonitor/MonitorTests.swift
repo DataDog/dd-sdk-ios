@@ -1401,4 +1401,210 @@ private final class ScrollActionScope: FeatureScope, RUMContextHandoffOwnerProvi
     func send(message: FeatureMessage, else fallback: @escaping () -> Void) { base.send(message: message, else: fallback) }
 }
 
+@available(iOS 27.0, *)
+final class CapturedLogErrorOwnershipTests: XCTestCase {
+    private func capture(
+        _ f: ScrollActionFixture,
+        view: RUMViewScope,
+        receipt: RUMContextHandoff.ActionReceipt? = nil
+    ) throws -> RUMContextHandoff.Capture {
+        let session = try XCTUnwrap(f.monitor.applicationScope.activeSession)
+        let context = RUMCoreContext(
+            applicationID: view.context.rumApplicationID,
+            sessionID: session.sessionUUID.toRUMDataFormat,
+            sessionSampler: session.sampler,
+            viewID: view.viewUUID.toRUMDataFormat,
+            userActionID: view.userActionScope?.actionUUID.toRUMDataFormat,
+            viewServerTimeOffset: view.serverTimeOffset,
+            viewPath: view.viewPath,
+            viewName: view.viewName
+        )
+        return .init(owner: f.owner, value: .init(
+            rumContext: context,
+            sceneIdentifier: "a",
+            hasPendingUserAction: receipt != nil,
+            excludedUserActionID: nil,
+            actionReceipt: receipt
+        ))
+    }
+
+    private func mirror(_ capture: RUMContextHandoff.Capture, in f: ScrollActionFixture) {
+        let error = RUMErrorMessage(
+            time: f.clock.now,
+            message: "captured log",
+            source: "logger",
+            type: nil,
+            stack: nil,
+            attributes: ["capture": "original"],
+            binaryImages: nil
+        )
+        let receiver = ErrorMessageReceiver(featureScope: f.scope, monitor: f.monitor)
+        XCTAssertTrue(receiver.receive(message: .payload(RUMCapturedErrorMessage(error: error, capture: capture)), from: NOPDatadogCore()))
+    }
+
+    func testCapturedMirrorKeepsOriginalViewAndAcceptedActionWhenAnotherSceneIsRepresentative() throws {
+        let f = ScrollActionFixture()
+        let a = try f.view("a")
+        let original = try capture(f, view: a)
+        let receipt = RUMContextHandoff.ActionReceipt(owner: f.owner, context: original.value.rumContext)
+        let bound = try capture(f, view: a, receipt: receipt)
+        var action = RUMStartUserActionCommand.mockWith(time: f.clock.now, instrumentation: .swiftuiAutomatic, actionType: .scroll, name: "original")
+        action.target = .scene(.init(rawValue: "a"))
+        action.actionReceipt = receipt
+        f.monitor.process(command: action)
+        let actionID = try XCTUnwrap(a.userActionScope).actionUUID.toRUMDataFormat
+        var stop = RUMStopUserActionCommand.mockWith(time: f.clock.now, actionType: .scroll)
+        stop.target = .scene(.init(rawValue: "a"))
+        f.monitor.process(command: stop)
+        f.manualStart()
+        let replacement = try XCTUnwrap(a.userActionScope)
+        let b = try f.view("b", scene: "b")
+        mirror(bound, in: f)
+        let error = try XCTUnwrap(f.mockScope.eventsWritten(ofType: RUMErrorEvent.self).last)
+        XCTAssertEqual(error.session.id, bound.value.rumContext?.sessionID)
+        XCTAssertEqual(error.view.id, a.viewUUID.toRUMDataFormat)
+        XCTAssertEqual(error.action?.id, .string(value: actionID))
+        XCTAssertNotEqual(error.view.id, b.viewUUID.toRUMDataFormat)
+        XCTAssertTrue(a.userActionScope === replacement)
+        var finish = RUMStopUserActionCommand.mockWith(time: f.clock.now, actionType: .custom)
+        finish.target = .scene(.init(rawValue: "a"))
+        f.monitor.process(command: finish)
+        let later = try XCTUnwrap(f.events.last { $0.action.target?.name == "manual" })
+        XCTAssertEqual(later.action.error?.count, 0)
+    }
+
+    func testCapturedMirrorCannotUseRemovedOrRetainedInactiveViewFallback() throws {
+        for retainResource in [false, true] {
+            let f = ScrollActionFixture()
+            let originalView = try f.view("a")
+            let bound = try capture(f, view: originalView)
+            if retainResource {
+                var resource = RUMStartResourceCommand.mockWith(resourceKey: "held", time: f.clock.now)
+                resource.target = .scene(.init(rawValue: "a"))
+                f.monitor.process(command: resource)
+            }
+            let replacement = try f.view("replacement")
+            _ = try f.view("b", scene: "b")
+            XCTAssertFalse(originalView.isActiveView)
+            XCTAssertEqual(f.monitor.applicationScope.activeSession?.viewScopes.contains { $0 === originalView }, retainResource)
+            let before = f.mockScope.eventsWritten.count
+            mirror(bound, in: f)
+            XCTAssertEqual(f.mockScope.eventsWritten.count, before)
+            XCTAssertTrue(f.mockScope.eventsWritten(ofType: RUMErrorEvent.self).isEmpty)
+            XCTAssertTrue(replacement.isActiveView)
+        }
+    }
+
+    func testCapturedMirrorCannotStartOrRefreshStoppedExpiredOrMaximumDurationSession() throws {
+        for boundary in ["stopped", "timeout", "maximum"] {
+            let f = ScrollActionFixture()
+            let a = try f.view("a")
+            let bound = try capture(f, view: a)
+            if boundary == "stopped" {
+                f.monitor.stopSession()
+            } else {
+                f.clock.now.addTimeInterval(boundary == "timeout" ? RUMSessionScope.Constants.sessionTimeoutDuration + 1 : RUMSessionScope.Constants.sessionMaxDuration + 1)
+            }
+            let sessions = f.monitor.applicationScope.sessionScopes.map(\.sessionUUID)
+            let before = f.mockScope.eventsWritten.count
+            mirror(bound, in: f)
+            XCTAssertEqual(f.monitor.applicationScope.sessionScopes.map(\.sessionUUID), sessions)
+            XCTAssertEqual(f.mockScope.eventsWritten.count, before)
+            XCTAssertTrue(f.mockScope.eventsWritten(ofType: RUMErrorEvent.self).isEmpty)
+            if boundary != "stopped" {
+                XCTAssertEqual(f.monitor.applicationScope.activeSession?.sessionUUID.toRUMDataFormat, bound.value.rumContext?.sessionID)
+            }
+            _ = try f.view("successor")
+            let successor = try XCTUnwrap(f.monitor.applicationScope.activeSession)
+            let afterNavigation = f.mockScope.eventsWritten.count
+            mirror(bound, in: f)
+            XCTAssertTrue(f.monitor.applicationScope.activeSession === successor)
+            XCTAssertEqual(f.mockScope.eventsWritten.count, afterNavigation)
+        }
+    }
+
+    func testCapturedMirrorPendingRejectedAndNilActionCannotBorrowLaterAction() throws {
+        for mode in ["pending", "rejected", "nil"] {
+            let f = ScrollActionFixture()
+            let a = try f.view("a")
+            let original = try capture(f, view: a)
+            let receipt = RUMContextHandoff.ActionReceipt(owner: f.owner, context: original.value.rumContext)
+            if mode == "rejected" { receipt.reject() }
+            let bound = try capture(f, view: a, receipt: mode == "nil" ? nil : receipt)
+            f.manualStart()
+            let later = try XCTUnwrap(a.userActionScope)
+            mirror(bound, in: f)
+            let error = try XCTUnwrap(f.mockScope.eventsWritten(ofType: RUMErrorEvent.self).last)
+            XCTAssertEqual(error.view.id, a.viewUUID.toRUMDataFormat)
+            XCTAssertNil(error.action)
+            XCTAssertTrue(a.userActionScope === later)
+            var finish = RUMStopUserActionCommand.mockWith(time: f.clock.now, actionType: .custom)
+            finish.target = .scene(.init(rawValue: "a"))
+            f.monitor.process(command: finish)
+            XCTAssertEqual(f.events.last?.action.error?.count, 0)
+        }
+    }
+
+    func testCapturedMirrorValidNilAndForeignOwnerDoNotBorrowRepresentativeView() throws {
+        let f = ScrollActionFixture()
+        let a = try f.view("a")
+        let original = try capture(f, view: a)
+        _ = try f.view("b", scene: "b")
+        let foreign = RUMContextHandoff.Capture(owner: .init(), value: original.value)
+        let nilContext = RUMContextHandoff.Capture(owner: f.owner, value: .init(rumContext: nil, sceneIdentifier: "a", hasPendingUserAction: false, excludedUserActionID: nil))
+        let before = f.mockScope.eventsWritten.count
+        mirror(foreign, in: f)
+        mirror(nilContext, in: f)
+        XCTAssertEqual(f.mockScope.eventsWritten.count, before)
+        XCTAssertTrue(f.mockScope.eventsWritten(ofType: RUMErrorEvent.self).isEmpty)
+    }
+
+    func testCapturedMirrorOwnerInvalidatedAfterActualQueueSubmissionHasNoEffect() throws {
+        let clock = DateProviderMock(now: ScrollActionFixture.startDate)
+        let core = DatadogCoreProxy(context: ScrollActionFixture.context(at: clock.now))
+        defer { try? core.flushAndTearDown() }
+        try core.register(feature: DatadogRemoteFeatureMock())
+        let scope = ScrollActionScope(base: core.scope(for: DatadogRemoteFeatureMock.self))
+        let f = ScrollActionFixture(scope: scope, clock: clock)
+        f.enqueueView("a")
+        let viewReady = expectation(description: "original view applied on actual queue")
+        scope.context { _ in viewReady.fulfill() }
+        wait(for: [viewReady], timeout: 5)
+        let a = try XCTUnwrap(f.monitor.applicationScope.activeSession?.viewScopes.first { $0.viewName == "a" })
+        let bound = try capture(f, view: a)
+        let before = core.waitAndReturnEvents(ofFeature: DatadogRemoteFeatureMock.name, ofType: RUMErrorEvent.self).count
+        let entered = expectation(description: "actual queue held")
+        let release = DispatchSemaphore(value: 0)
+        scope.context { _ in entered.fulfill(); XCTAssertEqual(release.wait(timeout: .now() + 5), .success) }
+        defer { release.signal() }
+        wait(for: [entered], timeout: 2)
+        mirror(bound, in: f)
+        f.owner.invalidate()
+        let finished = expectation(description: "stale mirror consumed")
+        scope.context { _ in finished.fulfill() }
+        release.signal()
+        wait(for: [finished], timeout: 5)
+        let errors = core.waitAndReturnEvents(ofFeature: DatadogRemoteFeatureMock.name, ofType: RUMErrorEvent.self)
+        XCTAssertEqual(errors.count, before)
+        XCTAssertTrue(a.isActiveView)
+        XCTAssertEqual(f.monitor.applicationScope.activeSession?.viewScopes.count, 1)
+    }
+
+    func testCapturedMirrorOwnerInvalidatedDuringLaunchDeferralDoesNotApply() throws {
+        let f = ScrollActionFixture()
+        let a = try f.view("a")
+        let bound = try capture(f, view: a)
+        var uncertain = f.mockScope.contextMock
+        uncertain.launchInfo.launchReason = .uncertain
+        uncertain.applicationStateHistory = .mockWith(initialState: .background, date: f.clock.now)
+        f.mockScope.contextMock = uncertain
+        mirror(bound, in: f)
+        XCTAssertTrue(f.mockScope.eventsWritten(ofType: RUMErrorEvent.self).isEmpty)
+        f.owner.invalidate()
+        f.monitor.process(command: RUMHandleAppLifecycleEventCommand(time: f.clock.now, globalAttributes: [:], attributes: [:], event: .willEnterForeground))
+        XCTAssertTrue(f.mockScope.eventsWritten(ofType: RUMErrorEvent.self).isEmpty)
+        XCTAssertEqual(f.monitor.applicationScope.activeSession?.viewScopes.first { $0.viewName == "a" }?.viewUUID, a.viewUUID)
+    }
+}
+
 #endif

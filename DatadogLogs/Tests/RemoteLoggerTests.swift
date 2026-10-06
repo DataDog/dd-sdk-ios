@@ -701,3 +701,213 @@ class RemoteLoggerTests: XCTestCase {
         )
     }
 }
+
+private final class RetainedLogCaptureScope: FeatureScope, RUMContextHandoffEventWriting, @unchecked Sendable {
+    let base: FeatureScopeMock
+    let capture: RUMContextHandoff.Capture?
+    private(set) var captureWrites = 0
+
+    init(base: FeatureScopeMock, capture: RUMContextHandoff.Capture?) {
+        self.base = base
+        self.capture = capture
+    }
+
+    func eventWriteContextWithRUMCapture(
+        bypassConsent: Bool,
+        _ block: @escaping (DatadogContext, Writer, RUMContextHandoff.Capture?) -> Void
+    ) {
+        captureWrites += 1
+        let retained = capture
+        base.eventWriteContext(bypassConsent: bypassConsent) { context, writer in
+            block(context, writer, retained)
+        }
+    }
+
+    func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
+        base.eventWriteContext(bypassConsent: bypassConsent, block)
+    }
+    func context(_ block: @escaping (DatadogContext) -> Void) { base.context(block) }
+    var dataStore: DataStore { base.dataStore }
+    var telemetry: Telemetry { base.telemetry }
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) { base.send(message: message, else: fallback) }
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext { base.set(context: context) }
+    func set(anonymousId: String?) { base.set(anonymousId: anonymousId) }
+}
+
+final class CapturedLogOutputTests: XCTestCase {
+    private func logger(
+        scope: FeatureScope,
+        configuration: RemoteLogger.Configuration = .mockWith(),
+        rumContextIntegration: Bool = true
+    ) -> RemoteLogger {
+        RemoteLogger(
+            featureScope: scope,
+            globalAttributes: .mockAny(),
+            configuration: configuration,
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: rumContextIntegration,
+            activeSpanIntegration: true,
+            backtraceReporter: BacktraceReporterMock()
+        )
+    }
+
+    private func capture(owner: RUMContextHandoff.Owner, context: RUMCoreContext?) -> RUMContextHandoff.Capture {
+        .init(owner: owner, value: .init(
+            rumContext: context, sceneIdentifier: "original-scene", hasPendingUserAction: false, excludedUserActionID: nil
+        ))
+    }
+
+    private func serialized(_ base: FeatureScopeMock) throws -> [String: Any] {
+        let logs = base.eventsWritten(ofType: LogEvent.self)
+        XCTAssertEqual(logs.count, 1)
+        let log = try XCTUnwrap(logs.first)
+        let data = try JSONEncoder().dd.encodeWithAttributeRecovery(log)
+        return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+    }
+
+    func testDeferredCapturedLogAndMirrorKeepOriginalAcceptedActionAndDeliveryTrace() throws {
+        let original = RUMCoreContext.mockWith(
+            applicationID: "original-application", sessionID: UUID(uuidString: "11111111-1111-1111-1111-111111111111")!, viewID: "original-view", userActionID: "prior-action"
+        )
+        let delivery = RUMCoreContext.mockWith(
+            applicationID: "delivery-application", sessionID: UUID(uuidString: "22222222-2222-2222-2222-222222222222")!, viewID: "delivery-view", userActionID: "later-action"
+        )
+        let owner = RUMContextHandoff.Owner()
+        let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: original)
+        let retained = RUMContextHandoff.Capture(owner: owner, value: .init(
+            rumContext: original,
+            sceneIdentifier: "original-scene",
+            hasPendingUserAction: true,
+            excludedUserActionID: original.userActionID,
+            actionReceipt: receipt
+        ))
+        let base = FeatureScopeMock(context: .mockWith(additionalContext: [original]), deferEventWriteContext: true)
+        let scope = RetainedLogCaptureScope(base: base, capture: retained)
+        let logger = logger(scope: scope)
+        var completions = 0
+        logger.internalLog(level: .error, message: "captured-error", error: nil, attributes: ["retained": "value"]) {
+            completions += 1
+        }
+        XCTAssertTrue(base.eventsWritten.isEmpty)
+        receipt.accept(sessionID: original.sessionID, viewID: "original-view", actionID: "accepted-action")
+        base.contextMock = .mockWith(additionalContext: [delivery, TraceCoreContext.Span(traceID: "delivery-trace", spanID: "delivery-span")])
+        base.flushDeferredEventWriteContexts()
+        let json = try serialized(base)
+        XCTAssertEqual(json["application_id"] as? String, "original-application")
+        XCTAssertEqual(json["session_id"] as? String, original.sessionID)
+        XCTAssertEqual(json["view.id"] as? String, "original-view")
+        XCTAssertEqual(json["user_action.id"] as? String, "accepted-action")
+        XCTAssertEqual(json["dd.trace_id"] as? String, "delivery-trace")
+        XCTAssertEqual(json["dd.span_id"] as? String, "delivery-span")
+        XCTAssertEqual(json["retained"] as? String, "value")
+        XCTAssertEqual(completions, 1)
+        XCTAssertEqual(scope.captureWrites, 1)
+        XCTAssertEqual(base.messagesSent().count, 1)
+        let mirror = try XCTUnwrap(base.messagesSent().firstPayload as? RUMCapturedErrorMessage)
+        XCTAssertTrue(mirror.capture.owner === owner)
+        XCTAssertTrue(mirror.capture.value.actionReceipt === receipt)
+        XCTAssertEqual(mirror.capture.value.resolvedRUMContext(for: owner)?.viewID, "original-view")
+        XCTAssertEqual(mirror.capture.value.resolvedRUMContext(for: owner)?.userActionID, "accepted-action")
+        XCTAssertEqual(mirror.error.message, "captured-error")
+    }
+
+    func testAuthoritativeNilAndInvalidatedCapturedOwnerCannotUseDeliveryRUMTags() throws {
+        for invalidated in [false, true] {
+            let owner = RUMContextHandoff.Owner()
+            let original = invalidated ? RUMCoreContext.mockWith(viewID: "original-view") : nil
+            let base = FeatureScopeMock(deferEventWriteContext: true)
+            let scope = RetainedLogCaptureScope(base: base, capture: capture(owner: owner, context: original))
+            let logger = logger(scope: scope)
+            logger.error("retained-error")
+            if invalidated { owner.invalidate() }
+            base.contextMock = .mockWith(additionalContext: [RUMCoreContext.mockWith(viewID: "delivery-view", userActionID: "later-action")])
+            base.flushDeferredEventWriteContexts()
+            let json = try serialized(base)
+            for key in ["application_id", "session_id", "view.id", "user_action.id"] { XCTAssertNil(json[key]) }
+            let mirror = try XCTUnwrap(base.messagesSent().firstPayload as? RUMCapturedErrorMessage)
+            XCTAssertTrue(mirror.capture.owner === owner)
+            XCTAssertNil(mirror.capture.value.resolvedRUMContext(for: owner))
+            XCTAssertEqual(scope.captureWrites, 1)
+        }
+    }
+
+    func testCapturedMirrorKeepsOwnershipWhenLogRUMTagsAreDisabledAndMapperChangesMessage() throws {
+        let owner = RUMContextHandoff.Owner()
+        let original = RUMCoreContext.mockWith(viewID: "original-view")
+        let base = FeatureScopeMock(deferEventWriteContext: true)
+        let scope = RetainedLogCaptureScope(base: base, capture: capture(owner: owner, context: original))
+        let mapper = SyncLogEventMapper { log in
+            var mapped = log
+            mapped.message = "mapped-error"
+            return mapped
+        }
+        let logger = logger(scope: scope, configuration: .mockWith(eventMapper: mapper), rumContextIntegration: false)
+        logger.error("original-error", attributes: [Logs.Attributes.errorFingerprint: "retained-fingerprint"])
+        base.contextMock = .mockWith(additionalContext: [RUMCoreContext.mockWith(viewID: "delivery-view")])
+        base.flushDeferredEventWriteContexts()
+        let json = try serialized(base)
+        XCTAssertEqual(json["message"] as? String, "mapped-error")
+        XCTAssertNil(json["view.id"])
+        let mirror = try XCTUnwrap(base.messagesSent().firstPayload as? RUMCapturedErrorMessage)
+        XCTAssertEqual(mirror.error.message, "mapped-error")
+        XCTAssertEqual(mirror.error.attributes[Logs.Attributes.errorFingerprint] as? String, "retained-fingerprint")
+        XCTAssertEqual(mirror.capture.value.resolvedRUMContext(for: owner)?.viewID, "original-view")
+    }
+
+    func testCapturedSamplingThresholdAndMapperDropsDoNotProduceLogMirrorOrCompletion() throws {
+        for configuration in [
+            RemoteLogger.Configuration.mockWith(sampler: .mockRejectAll()),
+            .mockWith(threshold: .critical),
+            .mockWith(eventMapper: SyncLogEventMapper { _ in nil })
+        ] {
+            let owner = RUMContextHandoff.Owner()
+            let base = FeatureScopeMock(deferEventWriteContext: true)
+            let scope = RetainedLogCaptureScope(base: base, capture: capture(owner: owner, context: .mockWith(viewID: "original-view")))
+            let logger = logger(scope: scope, configuration: configuration)
+            var completions = 0
+            logger.internalLog(level: .error, message: "dropped-error", error: nil, attributes: nil) { completions += 1 }
+            base.flushDeferredEventWriteContexts()
+            XCTAssertTrue(base.eventsWritten.isEmpty)
+            XCTAssertTrue(base.messagesSent().isEmpty)
+            XCTAssertEqual(completions, 0)
+        }
+    }
+
+    func testCustomScopeAndUncapturedBuiltinCapabilityKeepLegacyMirrorAndDeliveryTags() throws {
+        for builtinCapability in [false, true] {
+            let base = FeatureScopeMock(deferEventWriteContext: true)
+            let scope: FeatureScope = builtinCapability ? RetainedLogCaptureScope(base: base, capture: nil) : base
+            let logger = logger(scope: scope)
+            var completions = 0
+            logger.internalLog(level: .error, message: "legacy-error", error: nil, attributes: nil) { completions += 1 }
+            base.contextMock = .mockWith(additionalContext: [RUMCoreContext.mockWith(viewID: "delivery-view")])
+            base.flushDeferredEventWriteContexts()
+            let json = try serialized(base)
+            XCTAssertEqual(json["view.id"] as? String, "delivery-view")
+            XCTAssertEqual(base.messagesSent().count, 1)
+            XCTAssertNotNil(base.messagesSent().firstPayload as? RUMErrorMessage)
+            XCTAssertNil(base.messagesSent().firstPayload as? RUMCapturedErrorMessage)
+            XCTAssertEqual(completions, 1)
+        }
+        let nop = logger(scope: NOPFeatureScope())
+        var nopCompletions = 0
+        nop.internalLog(level: .error, message: "nop-error", error: nil, attributes: nil) { nopCompletions += 1 }
+        XCTAssertEqual(nopCompletions, 0)
+    }
+
+    func testDeferredCapturedLoggerCanDeallocateWithoutWritingOrCompleting() throws {
+        let owner = RUMContextHandoff.Owner()
+        let base = FeatureScopeMock(deferEventWriteContext: true)
+        let scope = RetainedLogCaptureScope(base: base, capture: capture(owner: owner, context: .mockWith(viewID: "original-view")))
+        var retainedLogger: RemoteLogger? = logger(scope: scope)
+        weak var weakLogger = retainedLogger
+        var completions = 0
+        retainedLogger?.internalLog(level: .error, message: "released-error", error: nil, attributes: nil) { completions += 1 }
+        retainedLogger = nil
+        XCTAssertNil(weakLogger)
+        base.flushDeferredEventWriteContexts()
+        XCTAssertTrue(base.eventsWritten.isEmpty)
+        XCTAssertTrue(base.messagesSent().isEmpty)
+        XCTAssertEqual(completions, 0)
+    }
+}

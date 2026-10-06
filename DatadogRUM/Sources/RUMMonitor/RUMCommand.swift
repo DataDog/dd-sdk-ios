@@ -87,6 +87,37 @@ internal enum RUMErrorUserActionTarget: Equatable {
     case captured(RUMUUID?)
 }
 
+/// Exact ownership for a mirrored error; allocated only for a captured On payload.
+internal final class RUMCapturedErrorOwnership {
+    private let capture: RUMContextHandoff.Capture
+    let sessionID: RUMUUID
+    let viewID: RUMUUID
+    var owner: RUMContextHandoff.Owner { capture.owner }
+
+    init?(capture: RUMContextHandoff.Capture) {
+        guard capture.owner.isValid, let context = capture.value.rumContext,
+              let sessionID = UUID(uuidString: context.sessionID),
+              let viewID = context.viewID.flatMap(UUID.init(uuidString:)) else {
+            return nil
+        }
+        self.capture = capture
+        self.sessionID = RUMUUID(rawValue: sessionID)
+        self.viewID = RUMUUID(rawValue: viewID)
+    }
+
+    /// Resolves the original action receipt at application, never the current action.
+    func actionTarget(for owner: RUMContextHandoff.Owner?) -> RUMErrorUserActionTarget? {
+        guard owner === capture.owner,
+              let context = capture.value.resolvedRUMContext(for: capture.owner),
+              context.sessionID == sessionID.toRUMDataFormat,
+              context.viewID == viewID.toRUMDataFormat else {
+            return nil
+        }
+        let actionID = context.userActionID.flatMap(UUID.init(uuidString:)).map { RUMUUID(rawValue: $0) }
+        return .captured(actionID)
+    }
+}
+
 /// Command processed through the tree of `RUMScopes`.
 internal protocol RUMCommand {
     /// The time of command issue.
@@ -349,6 +380,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand, RUMExplicitViewT
     var target: RUMCommandTarget = .processRepresentative
     var explicitTarget: RUMCommandTarget? = nil
     var userActionTarget: RUMErrorUserActionTarget = .current
+    var capturedOwnership: RUMCapturedErrorOwnership? = nil
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
