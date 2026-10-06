@@ -6,7 +6,7 @@
   "source_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
   "branch": "valpertui/s3-consumer-capture",
   "base_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
-  "source_head": "7fcd960cd4a9e92eec10ac69d6367486ee3e1c79",
+  "source_head": "78dca3e69c8fb437d902feeb0a9ea9d5ac80a090",
   "source_gap_inventory": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-consumer-source-preparation/packet.json",
     "sha256": "57e376768a17b85993c54af64fcfb4f63048738ae0976e386760c5831f0c4a5b"
@@ -188,8 +188,8 @@
   "builds": 22,
   "gates_closed": [],
   "whole_pr7_qualified": false,
-  "next_action": "Add and review only the independent captured maximum-duration control, using targeted real user actions to keep inactivity below its threshold. A fresh one-method qualification is prospective and must fit original awake cutoff; preserve17/cache3/consumer43/Core passes. Native callback/page/rebind acquisition, actual delivery-time expiry, Flags and complete Off/older-system/final-stack remain.",
-  "updated_at": "2026-10-06T22:35:49.440860+00:00",
+  "next_action": "Qualify only the new independent captured maximum-duration method on a fresh source-bound plan if900s execution+600s cleanup fully fit original23:10UTC cutoff. Otherwise keep it prepared without issuing clocks and continue offline until new awake authority. Preserve accepted17/cache3/43/Core. Native callback/page/rebind acquisition, actual delivery-time expiry, Flags, whole-Off/older-system/final-stack remain.",
+  "updated_at": "2026-10-06T22:42:59.869663+00:00",
   "sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-core-sampling-initialization-test-repair-applied-20261006/sdk-checkpoint.json",
     "sha256": "8479a54805b889477b7b9f20b61e6755e0ce49fda73cab852a95a77f47f45e72"
@@ -1547,5 +1547,31 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-captured-transport-20261006/cycle2/maximum-duration-control/packet.json",
       "sha256": "aa52c69f1ffecd1ac0cc19460b304db1b8a5e03f08d8b0c314dd2cbb5a7763a1"
     }
+  },
+  "maximum_duration_control": {
+    "state": "REVIEWED_TEST_ONLY_SUCCESSOR_PENDING_ONE_METHOD_QUALIFICATION",
+    "source_head": "78dca3e69c8fb437d902feeb0a9ea9d5ac80a090",
+    "production_qualified_predecessor": "7fcd960cd4a9e92eec10ac69d6367486ee3e1c79",
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-captured-transport-20261006/cycle2/maximum-duration-control/packet.json",
+      "sha256": "aa52c69f1ffecd1ac0cc19460b304db1b8a5e03f08d8b0c314dd2cbb5a7763a1"
+    },
+    "source_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-captured-transport-20261006/cycle2/maximum-duration-control/review.json",
+      "sha256": "83c9908e07350e268262eedf1c666a47ba850f87e2e1b1849ef73d0862f1caf1"
+    },
+    "applied": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-captured-transport-20261006/cycle2/maximum-duration-control/applied.json",
+      "sha256": "0c78c6fc63ef9e32ccad77b49caf7255b7e581a7e8c5ce5d4cd6068084cc3663"
+    },
+    "sdk_checkpoint": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-captured-transport-20261006/cycle2/maximum-duration-control/sdk-checkpoint.json",
+      "sha256": "12b6c8f934092573c2170fd5a21f0b9f0c56409870a6a5ba47576f1a950f9c4d"
+    },
+    "new_methods": 1,
+    "production_edits": 0,
+    "new_tests_executed": 0,
+    "native_runs": 0,
+    "gates_closed": []
   }
 }
