@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "state": "STOPPED_PRESTART_CONTROL_INVENTORY_RETIRED",
+  "updated_at": "2026-10-06T18:51:20.661191+00:00",
+  "plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/runtime-plan.json",
+    "sha256": "8ecffcc61ac6f541f38835a19346405aa720fe1f54d5a97d16e7f4e889fa1421"
+  },
+  "plan_scope": "Selected candidate preparation lineage; the issued automatic-component plan is retained separately as actual_plan.",
+  "gates": [
+    "S2:C09",
+    "S2:C10",
+    "S2:H14"
+  ],
+  "run_id": "86657a51-6380-4401-9d7a-820806dbb06f",
+  "context": {
+    "bundle": "com.datadoghq.s2.automatic.candidate.sdk271.swiftui",
+    "cleanup_deadline": 1791312778.646333,
+    "device": "F91CCE46-2704-4E8B-9093-A6A0EF250B1A",
+    "execution_deadline": 1791312478.646333,
+    "issued_at": 1791311578.646333,
+    "owner": "/root/s2_split_input_owner",
+    "plan_sha256": "e5bad6cfb84a94c764199734d3f2d091a3912bc962496c802858f72ec1e73e60",
+    "run_id": "86657a51-6380-4401-9d7a-820806dbb06f",
+    "source": "c9faed816a1d4828d7d8c4b64acae01119425889"
+  },
+  "scenario": "UNQUALIFIED",
+  "evidence": "INCOMPLETE",
+  "cleanup": "INVALID",
+  "overall": "INVALID",
+  "gates_closed": [],
+  "closure": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/runtime-completion/actual-stop-closure/packet.json",
+    "sha256": "c20d20bdd89a771e6a41cfe003794aa23d252c5d061f075a620312521b8c0763"
+  },
+  "actual_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/runtime-completion/actual-stop-closure/actual-review.json",
+    "sha256": "cd95387f4c307b1c7a2b68d02e65d1ccf39d6785d935cd6682fd34d257506a40"
+  },
+  "original_result": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/runtime-completion/actual-component/result.json",
+    "sha256": "b91e26b908be5ef4cdd375989a2eaadcc7216ec7b77a001630c113a74b9f5663"
+  },
+  "separate_restoration": {
+    "state": "PASS_TASK_ONLY_REMOVAL_AND_ORIGINAL_STATE_RESTORATION",
+    "record": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/runtime-completion/separate-restoration-final/readback.json",
+      "sha256": "2e7b41266ee4d6a62fe06d7cc7169cbc99001f39d8e3ccb03e0f4b6a14ff6553"
+    },
+    "completed_at": "2026-10-06T18:43:25Z",
+    "original_cleanup_unchanged": true,
+    "original_apps": 23,
+    "full_original_apps_equal": true,
+    "full_original_displays_equal": true,
+    "stable_original_device_fields_equal": true,
+    "task_app_data_and_pid_absent": true,
+    "supported_requests_calls_and_pending": 0
+  },
+  "ready_invited": false,
+  "human_gestures": 0,
+  "native_counts": {
+    "cli_app_launches": 1,
+    "supported_requests": 0,
+    "supported_calls": 0,
+    "pending_calls": 0
+  },
+  "limited_positive": {
+    "app_pid": 33445,
+    "exact_launch_declaration_and_owned_initial_scene_window_root_captured": true,
+    "post_end_survival_or_idle_not_qualified": true
+  },
+  "failure": {
+    "message": "automatic human input: missing/duplicate actual target screen.sidebar",
+    "type": "ValueError"
+  },
+  "secondary_cleanup": [
+    "ValueError: session creation unresolved; task teardown is not authorized"
+  ],
+  "failure_attribution": "Harness readiness imported a Sidebar control requirement into an input-free component. The saved 65 accessibility identifiers are all nil. No SDK regression, session lifetime cause or post-End qualification follows.",
+  "source_fact": {
+    "SDK_regression_inferred": false,
+    "all_identifiers_nil": true,
+    "assumption": "human_supported_readiness.native_ready calls human_journey.ready_controls for Sidebar and refuses before Session.start; this is an independent-component harness predicate.",
+    "initial_snapshot_sequence": 17,
+    "lifecycle_mechanism_qualified": false,
+    "native_accessibility_identifiers_count": 65,
+    "screen_sidebar_absent": true
+  },
+  "restoration_limits": [
+    "Shared CLI command receipts do not retain PID/PGID; no universal command-group absence credit.",
+    "Fresh PS confirms source-bound runtime workers absent; final observation process itself is contemporaneous infrastructure.",
+    "No exact TTY state claim.",
+    "Source/readiness component failed before supported Start; independent app survival across End remains unqualified."
+  ],
+  "retired": true,
+  "active": false,
+  "owner_freeze": false,
+  "runtime_authority_unresumable": true,
+  "next_action": "Review an independent-only readiness predicate retaining snapshot integrity, launch/PID and owned scene/window/root plus request-bound idle; omit human control inventory only. Distinguish a proved never-emitted Start from an emitted unresolved Start in cleanup. Qualify short supported Start/capture/End and same-PID ownership/idle automatically before inviting the candidate-only RUM journey. Input-proof readiness is diagnostic in the future RUM-only human plan; actual fold proof remains required for H14.",
+  "actual_plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/runtime-plan-completion.json",
+    "sha256": "e5bad6cfb84a94c764199734d3f2d091a3912bc962496c802858f72ec1e73e60"
+  }
+}

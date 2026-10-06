@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "state": "INDEPENDENT_APP_LIFECYCLE_PREPARATION_REQUIRED",
-  "updated_at": "2026-10-06T17:58:20.762499+00:00",
+  "state": "INDEPENDENT_COMPONENT_PRESTART_CORRECTION_REQUIRED",
+  "updated_at": "2026-10-06T18:51:20.661191+00:00",
   "execution": {
-    "record": "Results/S2-capture-session-loss-20261006.json"
+    "record": "Results/S2-independent-capture-prestart-20261006.json"
   },
   "current": {
     "kind": "swiftui_preparation",
@@ -604,13 +604,13 @@
   },
   "next_human_profile": {
     "record": "Results/execution-improvements-20261004.json#p2.independent_app_lifecycle",
-    "state": "SOURCE_PREPARATION_NOT_NATIVE_QUALIFIED",
+    "state": "INDEPENDENT_COMPONENT_PRESTART_CORRECTION_REQUIRED",
     "native_admitted": false,
     "page": null,
     "run_id": null,
     "clocks": null,
     "ready_invited": false,
-    "latest_actual_result": "Results/S2-capture-session-loss-20261006.json",
+    "latest_actual_result": "Results/S2-independent-capture-prestart-20261006.json",
     "source_repair": {
       "state": "SOURCE_INTERFACE_REVIEWED_FULL_HUMAN_PATH_RETIRED",
       "packet": {

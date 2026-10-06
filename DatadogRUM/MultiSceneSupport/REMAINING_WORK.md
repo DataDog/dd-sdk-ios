@@ -13,7 +13,7 @@ selects current execution. A preparation PASS admits no native run or gate closu
 | S2:F06 | OPEN | Review the exact selected source, accepted evidence, baseline limitations and remaining hardware uncertainty. No unresolved attributable regression, API/wire/privacy change or required evidence gap. Preserve qualified compatibility/lifetime checks; sign outgoing history before separately authorized publication. The S2 acceptance contract governs behavioral and delivery evidence separately; no immediate background upload, physical-Duo or optional performance prerequisite. |
 
 The selected SwiftUI cell is: **SwiftUI, split, candidate-27.1, duo**.
-Recorded execution: [STOPPED_LATER_CAPTURE_SESSION_LOSS_RETIRED](Results/S2-capture-session-loss-20261006.json). scenario **UNQUALIFIED**; evidence **INCOMPLETE**; cleanup **INVALID**. Recheck actual admission, process and artifacts before taking ownership; this summary grants no launch.
+Recorded execution: [STOPPED_PRESTART_CONTROL_INVENTORY_RETIRED](Results/S2-independent-capture-prestart-20261006.json). scenario **UNQUALIFIED**; evidence **INCOMPLETE**; cleanup **INVALID**. Recheck actual admission, process and artifacts before taking ownership; this summary grants no launch.
 
 ### Finite next actions
 
