@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "state": "STOPPED_PARENT_CAPTURE_RECEIPT_COLLISION_RETIRED",
+  "updated_at": "2026-10-06T16:17:19.151321+00:00",
+  "plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/runtime-plan.json",
+    "sha256": "8ecffcc61ac6f541f38835a19346405aa720fe1f54d5a97d16e7f4e889fa1421"
+  },
+  "plan_scope": "Inherited single-candidate behavioral contract; actual workspace execution binds its separate canonical plan.",
+  "actual_plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-foreground-renewal-runtime-preparation-20261006/preparation/plan.unissued.json",
+    "sha256": "14ebb8c9dddb6322856ae70c0cacb7434ab5a078fc20e916b82caf806f4fa3fc"
+  },
+  "gates": [
+    "S2:C09",
+    "S2:C10",
+    "S2:H14"
+  ],
+  "scenario": "UNQUALIFIED",
+  "evidence": "INCOMPLETE",
+  "cleanup": "INVALID",
+  "overall": "INVALID",
+  "gates_closed": [],
+  "run_id": "e009b271-3595-4e7f-98d7-27c2f7ea060d",
+  "context": {
+    "bundle": "com.datadoghq.s2.automatic.candidate.sdk271.swiftui",
+    "cleanup_deadline": 1791307373.4945211,
+    "device": "F91CCE46-2704-4E8B-9093-A6A0EF250B1A",
+    "execution_deadline": 1791306773.4945211,
+    "issued_at": 1791301373.4945211,
+    "layout": "split",
+    "operation_profile": "S2_WORKSPACE_HUMAN_FOREGROUND_END_LAST_V1",
+    "owner": "/root/s2_split_input_owner",
+    "plan_sha256": "14ebb8c9dddb6322856ae70c0cacb7434ab5a078fc20e916b82caf806f4fa3fc",
+    "run_id": "e009b271-3595-4e7f-98d7-27c2f7ea060d",
+    "scheme": "Coverage",
+    "source": "c9faed816a1d4828d7d8c4b64acae01119425889",
+    "tool_workspace_binding": {
+      "configuration": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-foreground-renewal-runtime-preparation-20261006/preparation/workspace-configuration.consumer.json",
+        "sha256": "7a610626f561d2441ab549fef80c94fa6632a206946d17a7e3599cec5fe35208"
+      },
+      "tool_metadata": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-foreground-renewal-integration-cycle2-20261006/root-current-metadata/metadata.actual.json",
+        "sha256": "5eb0dbc794f58a59fb1121b021f73b706a1d9ae81761ddcb581e100e099bfd37"
+      },
+      "workspace_list": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-foreground-renewal-runtime-preparation-20261006/preparation/workspace-list.consumer.json",
+        "sha256": "2c34216fe705e228355ec76548e373fd1ed81b47787e1d68068ac2683740a484"
+      }
+    },
+    "tool_workspace_identifier": "workspace-uanW3al82g",
+    "workspace": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-workspace-source-cycle1/client/AutomaticCoverage.xcodeproj"
+  },
+  "closure": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-foreground-renewal-runtime-preparation-20261006/runtime/separate-stopped-restoration/closure.json",
+    "sha256": "2ff24775f8b62938467371a246197af79674c04cfbbcfb091e19ecf2a6170b7e"
+  },
+  "actual_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-foreground-renewal-runtime-preparation-20261006/runtime/separate-stopped-restoration/actual-review.json",
+    "sha256": "e26d3cbfb63c8c9d9aacaf01a4a3ec019ce67087e646e46e9266f24050cb944e"
+  },
+  "separate_restoration": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-foreground-renewal-runtime-preparation-20261006/runtime/separate-stopped-restoration/restoration.saved-correction.json",
+    "sha256": "4a66ba536f990813827ec85e75dfe8d9f751867576b08b9f0776712384800cff"
+  },
+  "page_retirement": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-foreground-renewal-runtime-preparation-20261006/runtime/separate-stopped-restoration/page-retirement.json",
+    "sha256": "a232e2ecbfa412fcb866681feefcd1d3e946fd822fd96c6ddc373ab9e7e134d7"
+  },
+  "actual_counts": {
+    "start": 1,
+    "install": 1,
+    "initial_capture": 1,
+    "renewal_capture": 1,
+    "separate_end": 1,
+    "gestures": 0,
+    "browser_ready": false,
+    "pending_tools": 0
+  },
+  "original_worker_pending": 1,
+  "original_worker_pending_scope": "channelclosed awaiting actual renewal forwarding, preserved unchanged; root owner actual tools resolved separately",
+  "ready_invited": false,
+  "human_gestures": 0,
+  "actual_launch_and_captures": "Initial and first serial renewal returned Running; parent receipt collision prevented renewal forwarding.",
+  "failure": "Parent exclusively creates owner-return-<phase>.json; repeated capture reused the existing filename.",
+  "failure_attribution": "harness receipt collision, no SDK regression or gate credit",
+  "evidence_limits": [
+    "No actual human Ready or gestures, release-gate closure or established SDK regression.",
+    "Original pending1 and failed helper/parent verdicts stay immutable; later actual pending0, owned End and separate saved restoration are distinct.",
+    "TTY exact equality remains false only for Darwin PENDIN; final observer/addendum scope stays at the actual review."
+  ],
+  "retired": true,
+  "active": false,
+  "owner_freeze": false,
+  "runtime_authority_unresumable": true,
+  "next_action": "Repair per-call parent capture receipts and qualify actual repeated human TOOL publication/forwarding before a new sitting. Offer Ready only after initial capture plus a completed serial renewal, original process/window/scene, durable writer and native idle pass. Preserve accepted source, products, four cells, saved baseline and automatic continuity qualification. Reuse fixed clocks only as retained evidence; new execution requires a fresh reviewed complete configuration. PR7 WebView and Flags acquisition remains independent."
+}

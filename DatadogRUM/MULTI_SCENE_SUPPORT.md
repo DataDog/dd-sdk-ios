@@ -78,7 +78,7 @@ Before inviting human participation, autonomously qualify a changed launch/captu
 mechanism. Every sitting must prove a working app, live capture and the same
 process/run/window before Ready, maintain foreground capture while waiting, and
 recheck after Ready. Withdraw the invitation on failure; never relaunch a consumed
-cell or reuse an older observation. The [readiness owner](MultiSceneSupport/Results/S2-capture-continuity-20261006.json) records this user requirement. The shared foreground renewal has one native continuity qualification; reuse it without repeating the idle-boundary measurement. Bind it to reviewed human roles and stop renewals before Home/background.
+cell or reuse an older observation. The [readiness owner](MultiSceneSupport/Results/S2-capture-continuity-20261006.json) records this user requirement. The automatic foreground renewal has one native continuity qualification; reuse it without repeating the idle-boundary measurement. The [human path](MultiSceneSupport/Results/S2-capture-receipt-20261006.json) additionally requires distinct per-call receipts and a completed renewal before Ready. Bind it to reviewed human roles and stop renewals before Home/background.
 
 ## E01 replacement and S2 evidence
 

@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "state": "FOREGROUND_CAPTURE_CONTINUITY_QUALIFIED_HUMAN_BINDING_REQUIRED",
-  "updated_at": "2026-10-06T15:05:18.734286+00:00",
+  "state": "HUMAN_CAPTURE_RECEIPT_REPAIR_REQUIRED",
+  "updated_at": "2026-10-06T16:17:19.151321+00:00",
   "execution": {
-    "record": "Results/S2-capture-continuity-20261006.json"
+    "record": "Results/S2-capture-receipt-20261006.json"
   },
   "current": {
     "kind": "swiftui_preparation",
@@ -37,7 +37,7 @@
         "multiple_scenes": false
       }
     ],
-    "prerequisites": "Review and autonomously qualify the integrated serial foreground-capture renewal through the observed idle boundary. No Ready invitation until actual working launch/capture continuity is proved; reuse accepted source, products, four cells and baseline.",
+    "prerequisites": "Repair and review per-call parent capture receipts; actual initial capture plus one successful renewal must precede Ready. Reuse accepted cells/baseline and automatic qualification; never repeat the idle measurement.",
     "review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/review.json",
       "sha256": "316fe3377dd485f86562f331469d439785a5d60ef5f5ffe870ede1a32a8b02b2"
@@ -604,11 +604,17 @@
   },
   "next_human_profile": {
     "record": "Results/execution-improvements-20261004.json#p2.human_foreground_renewal_profile",
-    "state": "SOURCE_INTERFACE_REVIEWED_FRESH_RUNTIME_BINDINGS_REQUIRED",
+    "state": "ACTUAL_HUMAN_COMPOSITION_STOPPED_RECEIPT_REPAIR_REQUIRED",
     "native_admitted": false,
     "page": null,
     "run_id": null,
     "clocks": null,
-    "ready_invited": false
-  }
+    "ready_invited": false,
+    "latest_actual_result": "Results/S2-capture-receipt-20261006.json"
+  },
+  "execution_history": [
+    {
+      "record": "Results/S2-capture-continuity-20261006.json"
+    }
+  ]
 }

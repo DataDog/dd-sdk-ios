@@ -143,7 +143,6 @@ separate: prove causal request/response binding and native monotonic ordering, o
 measure an explicit clock-offset bound. Record scenario/evidence/cleanup separately;
 incomplete required evidence or cleanup leaves overall acceptance invalid.
 
-
 Assemble runtime configuration through one source-bound builder and the same
 validator consumed by the loader. Validate the complete serialized object, typed
 receipts, concrete paths, UUID and process-role list before publishing authority.
@@ -275,7 +274,6 @@ correctness and attribution remain required. Historical
 not impose a new timing prerequisite. Simulator numbers or missing warning frames
 cannot establish device performance or crash freedom.
 
-
 ## Asynchronous fixture persistence
 
 A reserved event sequence does not prove that its bytes reached disk. A serial
@@ -299,7 +297,6 @@ witness. Fresh decoded owner pixels qualify only that anchor; they do not prove
 whole-window visibility, uninterrupted usability or lifecycle continuity. Keep
 those native obligations and actual supported-source qualification separate.
 
-
 ## Bounded reuse of design review
 
 The [execution-improvement owner](../Results/execution-improvements-20261004.json)
@@ -315,6 +312,9 @@ runtime/plan/definition/review/admission/null execution under sole-writer custod
 Preserve prior bytes; test this producer separately from seeded owner tests.
 Missing/foreign selection stops release; modeled selection grants no authority.
 
-Human Ready requires current app/capture/writer/original owner proof; keep foreground capture current and recheck after Ready.
+Offer Ready after initial capture plus one completed human-path renewal, with current
+app/writer/owner/idle proof; renew while waiting and recheck after Ready.
 Shared renewal is natively qualified once. Bind reviewed human roles; disable renewal before Home/background. Withdraw on failure without relaunch/reuse.
 The [readiness owner](../Results/S2-capture-continuity-20261006.json#next_qualification) preserves original failure, scoped qualification and restoration; do not repeat the idle measurement.
+Bind repeated captures to distinct request-bound receipts; exercise their publication and
+forwarding in the complete human parent path.

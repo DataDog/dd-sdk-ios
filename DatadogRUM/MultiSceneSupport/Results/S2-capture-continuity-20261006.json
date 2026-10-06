@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "state": "STOPPED_READY_WAIT_PROCESS_ABSENT_RETIRED",
-  "updated_at": "2026-10-06T15:05:18.734286+00:00",
+  "updated_at": "2026-10-06T16:17:19.151321+00:00",
   "plan": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/runtime-plan.json",
     "sha256": "8ecffcc61ac6f541f38835a19346405aa720fe1f54d5a97d16e7f4e889fa1421"
@@ -47,7 +47,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/human-readiness-reliability-20261006/decision.json",
     "sha256": "31b050ef096bd1fc6652ff411e754277b9309d897ebeafbc9ab3b36408966973"
   },
-  "next_action": "Complete fresh runtime bindings for the source/interface-reviewed canonical human profile with the qualified foreground hook and a prospective 5400+600-second reservation. Create page and clocks after preparation and scoped launch/awake authorization; offer Ready only after actual app, capture, writer, original owner and idle checks pass. Keep foreground capture current, recheck after Ready, and disable renewal before Home/background. Reuse the accepted source, products, four cells, baseline and continuity qualification; do not repeat the idle measurement. PR7 WebView and Flags acquisition remain independent.",
+  "next_action": "Repair per-call parent capture receipts and qualify actual repeated human TOOL publication/forwarding before a new sitting. Offer Ready only after initial capture plus a completed serial renewal, original process/window/scene, durable writer and native idle pass. Preserve accepted source, products, four cells, saved baseline and automatic continuity qualification. Reuse fixed clocks only as retained evidence; new execution requires a fresh reviewed complete configuration. PR7 WebView and Flags acquisition remains independent.",
   "next_qualification": {
     "state": "QUALIFIED_AUTONOMOUS_FOREGROUND_CONTINUITY_COMPONENT_ONLY",
     "native_admitted": false,
@@ -125,5 +125,10 @@
     "owner_freeze": false,
     "runtime_authority_unresumable": true
   },
-  "human_profile_owner": "Results/execution-improvements-20261004.json#p2.human_foreground_renewal_profile"
+  "human_profile_owner": "Results/execution-improvements-20261004.json#p2.human_foreground_renewal_profile",
+  "latest_human_attempt": {
+    "record": "Results/S2-capture-receipt-20261006.json",
+    "state": "STOPPED_PARENT_CAPTURE_RECEIPT_COLLISION_RETIRED",
+    "next_action": "Repair per-call parent capture receipts and qualify actual repeated human TOOL publication/forwarding before a new sitting. Offer Ready only after initial capture plus a completed serial renewal, original process/window/scene, durable writer and native idle pass. Preserve accepted source, products, four cells, saved baseline and automatic continuity qualification. Reuse fixed clocks only as retained evidence; new execution requires a fresh reviewed complete configuration. PR7 WebView and Flags acquisition remains independent."
+  }
 }
