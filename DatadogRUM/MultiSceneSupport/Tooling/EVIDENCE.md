@@ -310,3 +310,10 @@ process control or cleanup changes require independent review. Eligibility grant
 no admission, repeat attempt, release credit or extension of an issued deadline.
 Give the designated reviewer one complete consequential packet; write facts once
 at the owner and regenerate derived progress at a meaningful checkpoint.
+
+Canonical configuration does not select the owning execution record. Before any
+parent, root must publish the definition-derived runtime, plan, definition and
+review with native admission and null execution; preserve the exact prior bytes
+and verify readback under sole-writer custody. Qualify this producer boundary
+separately from tests that seed a matching owner. Missing or foreign selection
+must stop before parent release; modeled selection grants no native authority.

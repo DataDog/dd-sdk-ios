@@ -10,7 +10,7 @@
   "native_admitted": false,
   "native_runs": 20,
   "gates_closed": [],
-  "next_action": "Qualify only the repaired Core method through the reviewed900+300 profile after fresh MAIN/parameters/exclusive ownership and adequate awake binding. Preserve the other43 current-source passes. Prepare S2 SwiftUI split using the fully reviewed canonical builder and fresh actual bindings; no consumed readiness or model authority. Flags/WebView/complete Off/older/final-stack remain.",
+  "next_action": "Prepare a fresh candidate-only sitting from retained source/products/baseline. After full canonical configuration validation/build/readback, root must publish the six-field MAIN selection, verify exact readback and bind actual configuration.json before exclusive parent release. Preserve all stopped identities, original clocks and retirement limits.",
   "p1": {
     "required_s2_tasks": 3,
     "required_s3_tasks": 20,
@@ -43,7 +43,7 @@
     }
   },
   "p2": {
-    "state": "CURRENT_METADATA_COMPLETE_PRE_EFFECT_REVIEWED_WAIT_FRESH_BINDINGS",
+    "state": "ROOT_SELECTION_READBACK_OFFLINE_REVIEWED_WAIT_FRESH_SITTING",
     "plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-composition-qualified-identity/runtime/runtime-plan.json",
       "sha256": "3e8200cfb0d7163867983c237ff896e0d00ddf1fb9dc9fa2306873ecded50a80"
@@ -1144,7 +1144,7 @@
         ]
       },
       "canonical_startup_assembly": {
-        "state": "CANONICAL_WHOLE_STARTUP_OFFLINE_REVIEWED_WAIT_FRESH_ACTUAL_BINDINGS",
+        "state": "ROOT_SELECTION_READBACK_OFFLINE_REVIEWED_WAIT_FRESH_SITTING",
         "plan": {
           "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-startup-assembly-cycle1/final-plan.json",
           "sha256": "dc123e3737f970fdabe2a2a605e4e211e8655c42437177a1c36340eccbc08e60"
@@ -1187,7 +1187,46 @@
         "native_admitted": false,
         "gates_closed": [],
         "limits": "Real local JS/parent/worker/PTY/IPC/initial validation/publication/progress and first empty-key Start request; platform-read effects modeled and Start rejected at explicit local-only boundary. No native readiness/authority or behavioral credit. Previous fragment controls retain narrower scope; original stopped attempts and separate restorations unchanged.",
-        "next_action": "Use the canonical builder for a fresh candidate-only sitting: actual metadata, selected source ledger, complete context, page/operator/environment and adequate awake binding, then final independent parameter review and exclusive admission. Reuse accepted source/products/baseline and qualified native capture operations. Never substitute model observations or consumed page confirmations."
+        "next_action": "Prepare a fresh candidate-only sitting from retained source/products/baseline. After full canonical configuration validation/build/readback, root must publish the six-field MAIN selection, verify exact readback and bind actual configuration.json before exclusive parent release. Preserve all stopped identities, original clocks and retirement limits.",
+        "actual_startup_attempt": {
+          "state": "STOPPED_BEFORE_NATIVE_ROOT_SELECTION_OMITTED_RETIRED",
+          "configuration": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-canonical-human-current-20261006/runtime/configuration.json",
+            "sha256": "90b3aac279af350e9b5602471fd1feebd30bf643dad31600c103c7a74f125f42"
+          },
+          "closure": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-canonical-human-current-20261006/runtime/owner-selection-stop-closure/packet.json",
+            "sha256": "5abbcba8ce535c675a44ed9c95ba0aa117aad58858ff71c23c11926e4bcba966"
+          },
+          "actual_review": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-canonical-human-current-20261006/runtime/owner-selection-stop-closure/actual-review.json",
+            "sha256": "df12a3537e1850a354ee608b0eccc7dc6418c7de300808c5d37676c749868504"
+          },
+          "page_retirement": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-canonical-human-current-20261006/runtime/root-page-retirement/retirement.json",
+            "sha256": "b530c79153f6b6c85f40fdc5c189feb594279034678c494b8dd0ec1341407ed6"
+          },
+          "scenario": "UNQUALIFIED",
+          "evidence": "INCOMPLETE",
+          "overall": "INVALID",
+          "native_calls": 0,
+          "native_cleanup": "NOT_REQUIRED_NO_NATIVE_EFFECTS",
+          "resume_permitted": false,
+          "limits": "No separately retained raw publisher command return or normal page tool exit; exact traceback/withdrawal and OS retirement retained. No original full apps/display equality or exact TTY claim; no SDK inference."
+        },
+        "root_selection_controls": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/root-selection-cycle1/controls.json",
+          "sha256": "d9ad14c2685ff796ba1d7be7bb0cede9b601d946159c62880d8130e51b16a829"
+        },
+        "root_selection_procedure": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/root-selection-cycle1/root_selection.py",
+          "sha256": "e41abbc39abb6ca347adbaf8871a9d0c98baed14e9504b6243a065c35666ebea"
+        },
+        "root_selection_review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/root-selection-cycle1/review.json",
+          "sha256": "03a3aabf8292e7edb156a7d31d0611e46bb61b0e460b6a5fe1e9a84a39907a58"
+        },
+        "root_selection_limits": "Complete canonical configuration validation and sole-writer custody remain mandatory. Root receipt configuration field is a legacy definition-ref label; final handoff must separately bind actual serialized configuration.json. Offline controls grant no native or gate credit."
       }
     }
   },
@@ -1983,7 +2022,7 @@
       "sha256": "cb18fc6e55042565af4475144a96c5a74a22a0dc126485b9e3c844cd25ee2660"
     }
   },
-  "updated_at": "2026-10-06T11:16:00.761905+00:00",
+  "updated_at": "2026-10-06T12:17:58.394354+00:00",
   "native_run_accounting": {
     "P3_required_platform_build": 1,
     "P5_PR3_PR4_PR5_off_cells": 6,
@@ -2379,5 +2418,13 @@
       "limits": "Current live skill and metadata consumer shapes joined to actual retained returns. Original BLOCKED receipt is unchanged. Configuration/restoration, device/process/apps/displays/source/product/output, operator/page/awake, final parameter review and root exclusive admission remain fresh external prerequisites."
     }
   },
-  "awake_window_current_state": "FRESH_TWO_HOUR_GRANT_CORE_AND_CANDIDATE_PREPARATION_ONLY"
+  "awake_window_current_state": {
+    "state": "ACTUAL_TWO_HOUR_RENEWAL",
+    "authority": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/awake-canonical-human-current-20261006/authority.json",
+      "sha256": "8f16f4665ff244b523728b95467c192276e2c03c46f0fd7ee05a2abf65b241a3"
+    },
+    "cutoff_utc": "2026-10-06T13:48:41Z",
+    "supplies_human_readiness": false
+  }
 }
