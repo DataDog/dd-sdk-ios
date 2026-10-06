@@ -1919,6 +1919,7 @@ extension DatadogCoreTests {
         configuration.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
         configuration.featureFlags = [.multiSceneTracking: true]
         try RUM.enableOrThrow(with: configuration, in: core)
+        core.contextProvider.flush()
         let feature = try XCTUnwrap(core.get(feature: RUMFeature.self))
         let owner = try XCTUnwrap(feature.rumContextHandoffOwner)
         let sampler = try XCTUnwrap(core.sessionSampler as? SessionSamplerWithRUMContext)
