@@ -22,6 +22,7 @@ module DatadogMachProfiler {
       header "dd_profiler_testing.h"
       header "dd_pprof_testing.h"
       header "safe_read_testing.h"
+      header "swift_alloc_hook_testing.h"
       export *
   }
 }
