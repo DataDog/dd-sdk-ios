@@ -53,6 +53,27 @@ final class FlagKeyObfuscationTests: XCTestCase {
         try assertEquivalent(.object(.dictionary(["nested": .array([.string("visible"), .int(42)])])), defaultValue: AnyValue.dictionary([:]))
     }
 
+    func testLookupCacheIsBoundedAndKeepsExactBytesAndSaltSeparate() throws {
+        let encoding = try XCTUnwrap(decode(flags: [:], metadata: metadata()).obfuscation)
+        let other = try XCTUnwrap(decode(flags: [:], metadata: metadata(salt: String(repeating: "f", count: 32))).obfuscation)
+        XCTAssertEqual(encoding.lookupKey(for: "flag"), digest)
+        XCTAssertEqual(encoding.lookupKey(for: "flag"), digest)
+        XCTAssertEqual(encoding.lookupKeys.count, 1)
+        XCTAssertNotEqual(other.lookupKey(for: "flag"), digest)
+        XCTAssertEqual(encoding.lookupKey(for: "flag"), digest)
+        XCTAssertNotEqual(encoding.lookupKey(for: "café"), encoding.lookupKey(for: "cafe\u{0301}"))
+        XCTAssertEqual(encoding.lookupKeys.count, 3)
+        for index in 0..<FlagKeyObfuscation.lookupCacheLimit {
+            _ = encoding.lookupKey(for: "flag-\(index)")
+            XCTAssertLessThanOrEqual(encoding.lookupKeys.count, FlagKeyObfuscation.lookupCacheLimit)
+        }
+        XCTAssertNil(encoding.lookupKeys[Data("flag".utf8)])
+        XCTAssertEqual(encoding.lookupKey(for: "flag"), digest)
+        let restored = try JSONDecoder().decode(FlagKeyObfuscation.self, from: JSONEncoder().encode(encoding))
+        XCTAssertEqual(restored, encoding)
+        XCTAssertTrue(restored.lookupKeys.isEmpty, "Lookup hashes are not persisted")
+    }
+
     func testRejectsInvalidMetadataFromWireAndDisk() throws {
         let descriptor: [String: Any] = ["scheme": "flag-key-sha256-v1", "salt": salt]
         var invalidMetadata: [[String: Any]] = [
@@ -81,6 +102,46 @@ final class FlagKeyObfuscationTests: XCTestCase {
             let invalidCache = baseCache.merging(metadata) { _, new in new }
             XCTAssertThrowsError(try JSONDecoder().decode(FlagsData.self, from: JSONSerialization.data(withJSONObject: invalidCache)))
         }
+    }
+
+    func testAcceptsNewKeysAndUnknownFieldsAndIsolatesUnknownVariantTypes() throws {
+        let encoding = try XCTUnwrap(decode(flags: [:], metadata: metadata()).obfuscation)
+        var unknown = assignment
+        unknown.variation = .unknown("future-type")
+        let response = try decode(
+            flags: [digest: assignment, encoding.lookupKey(for: "new-flag"): assignment, encoding.lookupKey(for: "future"): unknown],
+            metadata: metadata().merging(["future-field": ["enabled": true]]) { _, new in new }
+        )
+        XCTAssertEqual(state(response).flagAssignment(for: "flag"), assignment)
+        XCTAssertEqual(state(response).flagAssignment(for: "new-flag"), assignment)
+        XCTAssertNil(state(response).flagAssignment(for: "future"))
+        XCTAssertNotNil(response.failedFlags[encoding.lookupKey(for: "future")])
+    }
+
+    func testOfflineRestoreUsesLatestSaltAndChangedValue() throws {
+        let scope = FeatureScopeMock(context: .mockWith(source: "ios"))
+        var networkData = Data()
+        let repository = makeRepository(scope: scope, fetcher: makeFetcher(scope: scope) { networkData })
+        for (salt, value) in [(salt, true), (String(repeating: "f", count: 32), false)] {
+            let encoding = try XCTUnwrap(decode(flags: [:], metadata: metadata(salt: salt)).obfuscation)
+            var changed = assignment
+            changed.variation = .boolean(value)
+            networkData = try payload(flags: [encoding.lookupKey(for: "flag"): changed], metadata: metadata(salt: salt))
+            let completed = expectation(description: "refresh completes")
+            repository.setEvaluationContext(.mockAny()) { _ in completed.fulfill() }
+            waitForExpectations(timeout: 1)
+            XCTAssertEqual(repository.flagAssignment(for: "flag"), changed)
+        }
+        let stored = try XCTUnwrap(scope.dataStoreMock.storage["client"]?.data(expectedVersion: 2))
+        XCTAssertEqual(try JSONDecoder().decode(FlagsData.self, from: stored).obfuscation?.salt, String(repeating: "f", count: 32))
+        let restored = makeRepository(scope: scope, fetcher: FlagAssignmentsFetcherMock { _, completion in
+            completion(.failure(.invalidResponse))
+        })
+        let completed = expectation(description: "offline refresh completes")
+        restored.setEvaluationContext(.mockAny()) { _ in completed.fulfill() }
+        waitForExpectations(timeout: 1)
+        XCTAssertEqual(restored.state.currentState, .stale)
+        XCTAssertEqual(restored.flagAssignment(for: "flag")?.variation, .boolean(false))
     }
 
     func testRejectsMalformedEncodedKeysFromWireAndDisk() throws {
@@ -217,10 +278,10 @@ final class FlagKeyObfuscationTests: XCTestCase {
         for source in ["ios", "react-native", "future-bridge"] {
             let scope = DeferredFlagsContextScope()
             scope.flagsDataStore.setFlagsData(state(response), forClientNamed: "client")
-            var didFetch = false
+            var fetchCompletion: ((Result<FlagAssignmentsResponse, FlagsError>) -> Void)?
             let repository = FlagsRepository(
                 clientName: "client",
-                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, _ in didFetch = true },
+                flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in fetchCompletion = completion },
                 dateProvider: DateProviderMock(),
                 featureScope: scope,
                 initializationTimeout: nil
@@ -229,8 +290,11 @@ final class FlagKeyObfuscationTests: XCTestCase {
             XCTAssertNil(repository.flagAssignment(for: "flag"))
             XCTAssertNil(repository.flagAssignments())
             repository.setEvaluationContext(.mockAny()) { _ in }
-            XCTAssertTrue(didFetch, "Disk completion must not depend on the context callback")
+            XCTAssertNotNil(fetchCompletion, "Disk completion must not depend on the context callback")
             scope.completeContext(source: source)
+            XCTAssertEqual(repository.flagAssignment(for: "flag"), source == "ios" ? assignment : nil)
+            fetchCompletion?(.failure(.invalidResponse))
+            XCTAssertEqual(repository.state.currentState, source == "ios" ? .stale : .error)
             XCTAssertEqual(repository.flagAssignment(for: "flag"), source == "ios" ? assignment : nil)
         }
     }

@@ -5,6 +5,7 @@
  */
 
 import CryptoKit
+import DatadogInternal
 import Foundation
 
 /// Describes the lookup keys in one assignment set. The salt is public.
@@ -15,6 +16,10 @@ internal struct FlagKeyObfuscation: Equatable, Codable {
     let scheme: String
     let salt: String
     private let saltBytes: [UInt8]
+    // Use exact UTF-8 bytes: Swift String equality normalizes equivalent Unicode sequences.
+    @ReadWriteLock
+    private(set) var lookupKeys: [Data: String] = [:]
+    static let lookupCacheLimit = 1_024
 
     private enum CodingKeys: String, CodingKey {
         case scheme, salt
@@ -56,10 +61,25 @@ internal struct FlagKeyObfuscation: Equatable, Codable {
     }
 
     func lookupKey(for key: String) -> String {
-        var input = Data("datadog.feature-flags.flag-key.v1\0".utf8)
-        input.append(contentsOf: saltBytes)
-        input.append(contentsOf: key.utf8)
-        return SHA256.hash(data: input).map { String(format: "%02x", $0) }.joined()
+        let keyBytes = Data(key.utf8)
+        var result = ""
+        _lookupKeys.mutate { cache in
+            if let cached = cache[keyBytes] {
+                result = cached
+                return
+            }
+            var input = Data("datadog.feature-flags.flag-key.v1\0".utf8)
+            input.append(contentsOf: saltBytes)
+            input.append(keyBytes)
+            result = SHA256.hash(data: input).map { String(format: "%02x", $0) }.joined()
+            if cache.count >= Self.lookupCacheLimit { cache.removeAll(keepingCapacity: true) }
+            cache[keyBytes] = result
+        }
+        return result
+    }
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.scheme == rhs.scheme && lhs.salt == rhs.salt
     }
 
     func validateKeys(_ keys: Dictionary<String, FlagAssignment>.Keys) throws {

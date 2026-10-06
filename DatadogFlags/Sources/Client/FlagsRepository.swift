@@ -315,16 +315,13 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 ?? (initializationCompletion == nil ? completion : nil)
         }
 
-        // Chain after disk read completes to ensure correct hadFlags determination
+        // Wait for disk loading before fetching assignments.
         whenFlagsDataRead { [weak self] in
             guard let self else {
                 takeCompletion()?(.failure(.clientNotInitialized))
                 return
             }
 
-            let cachedData = self.readableFlagsData
-            let hadFlags = cachedData != nil
-            let cachedContext = cachedData?.context
             let versionAtStart = self.flagsDataVersion
             if initializationCompletion == nil {
                 self.stateManager.updateState(.reconciling)
@@ -368,7 +365,8 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     // serving flags from a different user/context.
                     let operationCompletion = takeCompletion()
                     let newState: FlagsClientState
-                    if hadFlags && cachedContext == context {
+                    // Source detection can finish while the request is in flight.
+                    if self?.readableFlagsData?.context == context {
                         newState = .stale
                     } else {
                         // Clear cached data to prevent cross-context flag leakage.
