@@ -1726,7 +1726,7 @@
       "sha256": "afe05de4f9a3b75ee563d35a09547bf4216c881aa24fea42ce902d7b2b233a85"
     }
   },
-  "updated_at": "2026-10-06T05:52:53.369486+00:00",
+  "updated_at": "2026-10-06T06:00:42.376137+00:00",
   "native_run_accounting": {
     "P3_required_platform_build": 1,
     "P5_PR3_PR4_PR5_off_cells": 6,
@@ -1990,5 +1990,22 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/attempt-policy-20261005.json",
     "sha256": "4a455a7d817bd900f2f7ca21cc403c2ee934f825b4e7d0c2ba9eb575787f2411"
   },
-  "independent_selected_task": "P7A0_ACTION_QUALIFICATION_AND_PRIVATE_CONSUMERS"
+  "independent_selected_task": "P7A0_ACTION_QUALIFICATION_AND_PRIVATE_CONSUMERS",
+  "unattended_window_20261006_0900": {
+    "authorization": "Continue the unattended work up to09:00; user available for human sessions starting09:00",
+    "awake_authority": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/awake-unattended-until0900-20261006/authority.json",
+      "sha256": "d5a2af536ea1e85a0d9def8e6a33f94282fcc31ffbf6f73b38781ba5a440745e"
+    },
+    "automation_id": "rum-unattended-progress-until-08-00-paris",
+    "human_unavailable_until": "2026-10-06T09:00:00+02:00",
+    "operational_cutoff": 1791270000.0,
+    "previous_deadlines_preserved": true,
+    "scope": "Finite S2/S3 automated/offline tasks without human or Xcode authorization",
+    "static44_preparation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-static-preparation-20261006/packet.json",
+      "sha256": "00f2d7428197e87df24f8e88bdda68eac57a2ddf85de0992a12b6292d38219db"
+    },
+    "native_admitted": false
+  }
 }
