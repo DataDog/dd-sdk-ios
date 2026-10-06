@@ -174,11 +174,13 @@ internal final class RUMSceneScrollHandler: UIScrollViewHandler, RUMCommandSubsc
         let scene: RUMSceneIdentifier?
         let value: RUMContextHandoff.CurrentValue?
 
-        var pending: Capture {
+        func pending(receipt: RUMContextHandoff.ActionReceipt?) -> Capture {
             Capture(scene: scene, value: value.map {
                 RUMContextHandoff.CurrentValue(
                     rumContext: $0.rumContext, sceneIdentifier: $0.sceneIdentifier,
-                    hasPendingUserAction: true, excludedUserActionID: $0.rumContext?.userActionID
+                    hasPendingUserAction: true,
+                    excludedUserActionID: $0.rumContext?.userActionID,
+                    actionReceipt: receipt
                 )
             })
         }
@@ -290,16 +292,24 @@ internal final class RUMSceneScrollHandler: UIScrollViewHandler, RUMCommandSubsc
             guard isOwnedSubscriber else { return }
             let ownership = RUMContinuousActionOwnership(sceneIdentifier: frame.capture.scene, owner: owner)
             start.target = .continuousAction(ownership)
+            let receipt = frame.capture.value.map {
+                RUMContextHandoff.ActionReceipt(owner: owner, context: $0.rumContext)
+            }
+            start.actionReceipt = receipt
+            let pending = frame.capture.pending(receipt: receipt)
             let gesture = Gesture(ownership: ownership, capture: frame.capture)
             // Reentrant customer code can end this gesture while processing its Start.
             gestures[frame.scrollID] = gesture
-            let published = withCapture(frame.capture.pending) {
+            let published = withCapture(pending) {
                 publishIfOwned(start)
             }
             if published {
-                publicationFrame?.publishedStart = frame.capture.pending
-            } else if gestures[frame.scrollID]?.ownership === ownership {
-                gestures.removeValue(forKey: frame.scrollID)
+                publicationFrame?.publishedStart = pending
+            } else {
+                receipt?.reject()
+                if gestures[frame.scrollID]?.ownership === ownership {
+                    gestures.removeValue(forKey: frame.scrollID)
+                }
             }
         } else if var stop = command as? RUMStopUserActionCommand,
                   let gesture = gestures.removeValue(forKey: frame.scrollID) {

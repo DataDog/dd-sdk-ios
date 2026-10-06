@@ -230,6 +230,7 @@ internal class Monitor: RUMCommandSubscriber {
 
     func process(command: RUMCommand) {
         guard !isMultiSceneTrackingEnabled || command.target != .none else {
+            (command as? RUMUserActionCommand)?.actionReceipt?.reject()
             (command as? RUMAddCurrentViewErrorCommand)?.completionHandler()
             return
         }
@@ -240,9 +241,17 @@ internal class Monitor: RUMCommandSubscriber {
         featureScope.eventWriteContext { [weak self] context, writer in
             guard let self = self else {
                 if completesDroppedErrors {
+                    (command as? RUMUserActionCommand)?.actionReceipt?.reject()
                     (command as? RUMAddCurrentViewErrorCommand)?.completionHandler()
                 }
                 return
+            }
+
+            if self.isMultiSceneTrackingEnabled, let receipt = (command as? RUMUserActionCommand)?.actionReceipt {
+                guard receipt.owner.isValid, self.rumContextHandoffOwner === receipt.owner else {
+                    receipt.reject()
+                    return
+                }
             }
 
             if self.isMultiSceneTrackingEnabled, case .continuousAction(let ownership) = command.target {

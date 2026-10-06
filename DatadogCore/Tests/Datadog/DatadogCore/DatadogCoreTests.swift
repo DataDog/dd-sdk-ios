@@ -10,6 +10,7 @@ import TestUtilities
 @testable import DatadogInternal
 @_spi(Internal)
 @testable import DatadogCore
+@testable import DatadogRUM
 
 private struct FeatureMock: DatadogRemoteFeature {
     static let name: String = "mock"
@@ -1901,3 +1902,119 @@ private actor HandoffAsyncScopeTestActor {
 private final class HandoffCallbackMainActorTestReference {
     let value = 23
 }
+
+#if os(iOS)
+private final class AcceptedReceiptActionCapture {
+    @ReadWriteLock
+    var id: String?
+}
+
+extension DatadogCoreTests {
+    @MainActor
+    func testQueuedActionReceiptKeepsItsOriginalViewAfterAnotherSceneBecomesRepresentative() throws {
+        guard supportsHandoffScope else {
+            throw XCTSkip("Execution-scope handoff requires iOS 27")
+        }
+        let date = Date()
+        let initial = DatadogContext.mockWith(
+            sdkInitDate: date,
+            launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: date),
+            applicationStateHistory: .mockWith(initialState: .active, date: date)
+        )
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockAny(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: DatadogContextProvider(context: initial),
+            applicationVersion: initial.version,
+            maxBatchesPerUpload: 1,
+            backgroundTasksEnabled: false
+        )
+        defer { core.flushAndTearDown() }
+        var config = RUM.Configuration(applicationID: "receipt-application", trackAnonymousUser: false)
+        config.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
+        config.featureFlags = [.multiSceneTracking: true]
+        config.sessionSampleRate = 100
+        config.dateProvider = RelativeDateProvider(startingFrom: date, advancingBySeconds: 0)
+        try RUM.enableOrThrow(with: config, in: core)
+        let feature = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        let monitor = feature.monitor
+        XCTAssertTrue(monitor.isMultiSceneTrackingEnabled)
+        let owner = try XCTUnwrap(monitor.rumContextHandoffOwner)
+        let first = RUMSceneIdentifier(rawValue: "receipt-first-scene")
+        let second = RUMSceneIdentifier(rawValue: "receipt-second-scene")
+        func start(_ scene: RUMSceneIdentifier, name: String, at time: Date) {
+            monitor.process(command: RUMStartViewCommand(
+                time: time,
+                identity: ViewIdentifier(name),
+                name: name,
+                path: name,
+                globalAttributes: [:],
+                attributes: [:],
+                instrumentationType: .manual,
+                target: .scene(scene)
+            ))
+        }
+        start(first, name: "first", at: date.addingTimeInterval(1))
+        core.flush()
+        let original = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(first)))
+        let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: original)
+        let submitted = RUMContextHandoff.CurrentValue(
+            rumContext: original,
+            sceneIdentifier: first.rawValue,
+            hasPendingUserAction: true,
+            excludedUserActionID: original.userActionID,
+            actionReceipt: receipt
+        )
+        var action = RUMAddUserActionCommand(
+            time: date.addingTimeInterval(2),
+            attributes: [:],
+            instrumentation: .swiftuiAutomatic,
+            actionType: .tap,
+            name: "original-action"
+        )
+        action.target = .scene(first)
+        action.actionReceipt = receipt
+        let retained = try RUMContextHandoff.withValue(submitted, for: owner) {
+            let retained = try XCTUnwrap(RUMContextHandoff.current(for: owner))
+            monitor.process(command: action)
+            return retained
+        }
+        XCTAssertNil(RUMContextHandoff.current(for: owner))
+        let acceptedAction = AcceptedReceiptActionCapture()
+        core.scope(for: RUMFeature.self).context { _ in
+            let firstView = monitor.applicationScope.activeSession?.viewScopes.first {
+                $0.isActiveView && $0.sceneIdentifier == first
+            }
+            acceptedAction.id = firstView?.userActionScope?.actionUUID.toRUMDataFormat
+            XCTAssertNotNil(acceptedAction.id)
+            XCTAssertEqual(firstView?.userActionScope?.name, "original-action")
+        }
+        start(second, name: "second", at: date.addingTimeInterval(3))
+        let observed = XCTestExpectation(description: "actual Core delivery after queued action and navigation")
+        core.scope(for: RUMFeature.self).context { context in
+            let delivered = context.additionalContext(ofType: RUMCoreContext.self)
+            let firstView = monitor.applicationScope.activeSession?.viewScopes.first {
+                $0.isActiveView && $0.sceneIdentifier == first
+            }
+            let accepted = acceptedAction.id
+            XCTAssertNotNil(accepted)
+            XCTAssertNil(firstView?.userActionScope, "Receipt survives the original action's expiration")
+            XCTAssertNotEqual(delivered?.viewID, original.viewID)
+            XCTAssertEqual(delivered?.viewID, monitor.rumContextSnapshot(for: .scene(second))?.viewID)
+            let projected = retained.resolvedRUMContext(for: owner)
+            XCTAssertEqual(projected?.viewID, original.viewID)
+            XCTAssertEqual(projected?.sessionID, original.sessionID)
+            XCTAssertEqual(projected?.userActionID, accepted)
+            XCTAssertEqual(projected?.viewPath, original.viewPath)
+            XCTAssertEqual(context.service, initial.service)
+            observed.fulfill()
+        }
+        wait(for: [observed], timeout: 5)
+        core.flush()
+    }
+}
+#endif

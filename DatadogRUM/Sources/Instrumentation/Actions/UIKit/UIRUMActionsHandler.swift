@@ -209,12 +209,15 @@ internal final class RUMSceneActionsHandler: RUMSceneActionsHandling {
                 return
             }
             command.target = .scene(identifier)
+            let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: captured.rumContext)
+            command.actionReceipt = receipt
             // Pending denotes a selected command awaiting processing, not an Action UUID.
             let pending = RUMContextHandoff.CurrentValue(
                 rumContext: captured.rumContext,
                 sceneIdentifier: captured.sceneIdentifier,
                 hasPendingUserAction: true,
-                excludedUserActionID: captured.rumContext?.userActionID
+                excludedUserActionID: captured.rumContext?.userActionID,
+                actionReceipt: receipt
             )
             let didPublish = RUMContextHandoff.withValue(pending, for: owner) {
                 guard publishIfOwned(command) else {
@@ -224,6 +227,7 @@ internal final class RUMSceneActionsHandler: RUMSceneActionsHandling {
                 return true
             }
             if !didPublish {
+                receipt.reject()
                 operation()
             }
         }

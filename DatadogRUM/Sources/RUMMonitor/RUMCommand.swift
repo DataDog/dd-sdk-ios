@@ -773,10 +773,16 @@ internal protocol RUMUserActionCommand: RUMCommand {
     var actionType: RUMActionType { get }
     var target: RUMCommandTarget { get set }
     var explicitTarget: RUMCommandTarget? { get }
+    var actionReceipt: RUMContextHandoff.ActionReceipt? { get }
+}
+
+extension RUMUserActionCommand {
+    var actionReceipt: RUMContextHandoff.ActionReceipt? { nil }
 }
 
 /// Starts continuous User Action.
 internal struct RUMStartUserActionCommand: RUMUserActionCommand {
+    var actionReceipt: RUMContextHandoff.ActionReceipt? = nil
     var target: RUMCommandTarget = .processRepresentative
     var explicitTarget: RUMCommandTarget? = nil
     var time: Date
@@ -817,6 +823,7 @@ internal struct RUMStopUserActionCommand: RUMUserActionCommand {
 
 /// Adds discrete (discontinuous) User Action.
 internal struct RUMAddUserActionCommand: RUMUserActionCommand {
+    var actionReceipt: RUMContextHandoff.ActionReceipt? = nil
     var target: RUMCommandTarget = .processRepresentative
     var explicitTarget: RUMCommandTarget? = nil
     var time: Date

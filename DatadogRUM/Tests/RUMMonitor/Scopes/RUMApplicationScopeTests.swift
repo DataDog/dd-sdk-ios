@@ -5,6 +5,7 @@
  */
 
 import XCTest
+@_spi(Internal)
 import DatadogInternal
 @testable import DatadogRUM
 @testable import TestUtilities
@@ -1212,5 +1213,259 @@ extension RUMApplicationScopeTests {
         let viewCompletion = try XCTUnwrap(deferred.completions.popLast())
         viewCompletion()
         XCTAssertEqual(count, 1)
+    }
+}
+
+extension RUMApplicationScopeTests {
+    private func capturedReceiptContext(_ app: RUMApplicationScope, view: RUMViewScope) throws -> RUMCoreContext {
+        let session = try XCTUnwrap(app.activeSession)
+        return RUMCoreContext(
+            applicationID: view.context.rumApplicationID,
+            sessionID: session.sessionUUID.toRUMDataFormat,
+            sessionSampler: session.sampler,
+            viewID: view.viewUUID.toRUMDataFormat,
+            userActionID: view.userActionScope?.actionUUID.toRUMDataFormat,
+            viewServerTimeOffset: view.serverTimeOffset,
+            viewPath: view.viewPath,
+            viewName: view.viewName
+        )
+    }
+
+    func testCapturedActionReceiptKeepsTheOriginalActionAfterReplacement() throws {
+        let (app, context) = routingApplication()
+        startRoutingPeers(app, context: context)
+        let view = try XCTUnwrap(app.activeSession?.viewScopes.first { $0.sceneIdentifier == routingSceneA && $0.isActiveView })
+        let captured = try capturedReceiptContext(app, view: view)
+        let owner = RUMContextHandoff.Owner()
+        let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: captured)
+        var original = RUMStartUserActionCommand(
+            time: routingDate.addingTimeInterval(3),
+            globalAttributes: [:],
+            attributes: [:],
+            instrumentation: .swiftuiAutomatic,
+            actionType: .scroll,
+            name: "original"
+        )
+        original.target = .scene(routingSceneA)
+        original.actionReceipt = receipt
+        _ = app.process(command: original, context: context, writer: writer)
+        let originalID = try XCTUnwrap(view.userActionScope).actionUUID.toRUMDataFormat
+        var replacement = RUMAddUserActionCommand.mockWith(time: routingDate.addingTimeInterval(4), instrumentation: .manual, name: "replacement")
+        replacement.target = .scene(routingSceneA)
+        _ = app.process(command: replacement, context: context, writer: writer)
+        XCTAssertNotEqual(view.userActionScope?.actionUUID.toRUMDataFormat, originalID)
+        XCTAssertEqual(view.userActionScope?.name, "replacement")
+        XCTAssertEqual(receipt.actionID(for: owner, sessionID: captured.sessionID, viewID: captured.viewID), originalID)
+        XCTAssertNil(app.activeSession?.viewScopes.first { $0.sceneIdentifier == routingSceneB && $0.isActiveView }?.userActionScope)
+    }
+
+    func testPriorityDroppedReceiptDoesNotAdoptTheExistingOrLaterAction() throws {
+        let (app, context) = routingApplication()
+        startRoutingPeers(app, context: context)
+        let view = try XCTUnwrap(app.activeSession?.viewScopes.first { $0.sceneIdentifier == routingSceneA && $0.isActiveView })
+        var existing = RUMStartUserActionCommand(
+            time: routingDate.addingTimeInterval(3),
+            globalAttributes: [:],
+            attributes: [:],
+            instrumentation: .manual,
+            actionType: .scroll,
+            name: "existing"
+        )
+        existing.target = .scene(routingSceneA)
+        _ = app.process(command: existing, context: context, writer: writer)
+        let existingID = try XCTUnwrap(view.userActionScope).actionUUID
+        let captured = try capturedReceiptContext(app, view: view)
+        let owner = RUMContextHandoff.Owner()
+        let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: captured)
+        var dropped = RUMAddUserActionCommand.mockWith(time: routingDate.addingTimeInterval(4), instrumentation: .swiftuiAutomatic, name: "dropped")
+        dropped.target = .scene(routingSceneA)
+        dropped.actionReceipt = receipt
+        _ = app.process(command: dropped, context: context, writer: writer)
+        XCTAssertEqual(view.userActionScope?.actionUUID, existingID)
+        XCTAssertEqual(view.userActionScope?.name, "existing")
+        XCTAssertNil(receipt.actionID(for: owner, sessionID: captured.sessionID, viewID: captured.viewID))
+        var later = RUMAddUserActionCommand.mockWith(time: routingDate.addingTimeInterval(5), instrumentation: .crossPlatform("later"), name: "later")
+        later.target = .scene(routingSceneA)
+        _ = app.process(command: later, context: context, writer: writer)
+        let laterScope = try XCTUnwrap(view.userActionScope)
+        XCTAssertEqual(laterScope.name, "later")
+        XCTAssertNotEqual(laterScope.actionUUID.toRUMDataFormat, captured.userActionID)
+        XCTAssertNil(receipt.actionID(for: owner, sessionID: captured.sessionID, viewID: captured.viewID))
+    }
+
+    func testImmediateCustomActionReceiptClaimsTheEmittedLocalScope() throws {
+        let (app, context) = routingApplication()
+        startRoutingPeers(app, context: context)
+        let view = try XCTUnwrap(app.activeSession?.viewScopes.first { $0.sceneIdentifier == routingSceneA && $0.isActiveView })
+        let captured = try capturedReceiptContext(app, view: view)
+        let owner = RUMContextHandoff.Owner()
+        let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: captured)
+        var command = RUMAddUserActionCommand.mockWith(time: routingDate.addingTimeInterval(3), actionType: .custom, name: "custom")
+        command.target = .scene(routingSceneA)
+        command.actionReceipt = receipt
+        _ = app.process(command: command, context: context, writer: writer)
+        let action = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first { $0.action.target?.name == "custom" })
+        XCTAssertNil(view.userActionScope)
+        XCTAssertEqual(action.view.id, captured.viewID)
+        XCTAssertEqual(receipt.actionID(for: owner, sessionID: captured.sessionID, viewID: captured.viewID), action.action.id)
+    }
+
+    #if !os(macOS)
+    func testUncertainLaunchReceiptRemainsUnclaimedUntilActualResolution() throws {
+        let (app, context) = routingApplication()
+        startRoutingPeers(app, context: context)
+        let view = try XCTUnwrap(app.activeSession?.viewScopes.first { $0.sceneIdentifier == routingSceneA && $0.isActiveView })
+        let captured = try capturedReceiptContext(app, view: view)
+        let owner = RUMContextHandoff.Owner()
+        let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: captured)
+        let uncertain = DatadogContext.mockWith(
+            sdkInitDate: routingDate,
+            launchInfo: .mockWith(launchReason: .uncertain, processLaunchDate: routingDate),
+            applicationStateHistory: .mockWith(initialState: .background, date: routingDate)
+        )
+        var command = RUMStartUserActionCommand(
+            time: routingDate.addingTimeInterval(3),
+            globalAttributes: [:],
+            attributes: [:],
+            instrumentation: .swiftuiAutomatic,
+            actionType: .scroll,
+            name: "deferred"
+        )
+        command.target = .scene(routingSceneA)
+        command.actionReceipt = receipt
+        _ = app.process(command: command, context: uncertain, writer: writer)
+        XCTAssertNil(view.userActionScope)
+        XCTAssertNil(receipt.actionID(for: owner, sessionID: captured.sessionID, viewID: captured.viewID))
+        _ = app.process(
+            command: RUMHandleAppLifecycleEventCommand(time: routingDate.addingTimeInterval(4), event: .willEnterForeground),
+            context: uncertain,
+            writer: writer
+        )
+        let accepted = try XCTUnwrap(view.userActionScope)
+        XCTAssertEqual(accepted.name, "deferred")
+        XCTAssertEqual(receipt.actionID(for: owner, sessionID: captured.sessionID, viewID: captured.viewID), accepted.actionUUID.toRUMDataFormat)
+    }
+    #endif
+}
+
+extension RUMApplicationScopeTests {
+    func testContinuousActionReceiptKeepsTheClaimedActionAfterTerminalAndReplacement() throws {
+        let (app, context) = routingApplication()
+        startRoutingPeers(app, context: context)
+        let view = try XCTUnwrap(app.activeSession?.viewScopes.first {
+            $0.sceneIdentifier == routingSceneA && $0.isActiveView
+        })
+        let captured = try capturedReceiptContext(app, view: view)
+        let owner = RUMContextHandoff.Owner()
+        let ownership = RUMContinuousActionOwnership(sceneIdentifier: routingSceneA, owner: owner)
+        let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: captured)
+        var start = RUMStartUserActionCommand(
+            time: routingDate.addingTimeInterval(3),
+            globalAttributes: [:],
+            attributes: [:],
+            instrumentation: .swiftuiAutomatic,
+            actionType: .scroll,
+            name: "original-scroll"
+        )
+        start.target = .continuousAction(ownership)
+        start.actionReceipt = receipt
+        _ = app.process(command: start, context: context, writer: writer)
+        let original = try XCTUnwrap(ownership.claim)
+        XCTAssertEqual(original.actionID, try XCTUnwrap(view.userActionScope).actionUUID)
+        XCTAssertEqual(receipt.actionID(for: owner, sessionID: captured.sessionID, viewID: captured.viewID), original.actionID.toRUMDataFormat)
+        var peer = RUMAddUserActionCommand.mockWith(
+            time: routingDate.addingTimeInterval(4), instrumentation: .manual, name: "peer-action"
+        )
+        peer.target = .scene(routingSceneB)
+        _ = app.process(command: peer, context: context, writer: writer)
+        var stop = RUMStopUserActionCommand(
+            time: routingDate.addingTimeInterval(5),
+            globalAttributes: [:],
+            attributes: [:],
+            actionType: .scroll,
+            name: nil
+        )
+        stop.target = .continuousAction(ownership)
+        _ = app.process(command: stop, context: context, writer: writer)
+        XCTAssertTrue(ownership.isClosed)
+        let emitted = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).first {
+            $0.action.target?.name == "original-scroll"
+        })
+        XCTAssertEqual(emitted.view.id, captured.viewID)
+        XCTAssertEqual(emitted.action.id, original.actionID.toRUMDataFormat)
+        var later = RUMAddUserActionCommand.mockWith(
+            time: routingDate.addingTimeInterval(6), instrumentation: .manual, name: "later-action"
+        )
+        later.target = .scene(routingSceneA)
+        _ = app.process(command: later, context: context, writer: writer)
+        XCTAssertNotEqual(view.userActionScope?.actionUUID, original.actionID)
+        XCTAssertEqual(receipt.actionID(for: owner, sessionID: captured.sessionID, viewID: captured.viewID), original.actionID.toRUMDataFormat)
+        owner.invalidate()
+        XCTAssertNil(receipt.actionID(for: owner, sessionID: captured.sessionID, viewID: captured.viewID))
+    }
+
+    func testDroppedContinuousStartReceiptCannotClaimOnARepeatedStart() throws {
+        let (app, context) = routingApplication()
+        startRoutingPeers(app, context: context)
+        let view = try XCTUnwrap(app.activeSession?.viewScopes.first {
+            $0.sceneIdentifier == routingSceneA && $0.isActiveView
+        })
+        var manual = RUMStartUserActionCommand(
+            time: routingDate.addingTimeInterval(3),
+            globalAttributes: [:],
+            attributes: [:],
+            instrumentation: .manual,
+            actionType: .scroll,
+            name: "existing"
+        )
+        manual.target = .scene(routingSceneA)
+        _ = app.process(command: manual, context: context, writer: writer)
+        let existingID = try XCTUnwrap(view.userActionScope).actionUUID
+        let captured = try capturedReceiptContext(app, view: view)
+        let owner = RUMContextHandoff.Owner()
+        let ownership = RUMContinuousActionOwnership(sceneIdentifier: routingSceneA, owner: owner)
+        let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: captured)
+        var start = RUMStartUserActionCommand(
+            time: routingDate.addingTimeInterval(4),
+            globalAttributes: [:],
+            attributes: [:],
+            instrumentation: .swiftuiAutomatic,
+            actionType: .scroll,
+            name: "dropped"
+        )
+        start.target = .continuousAction(ownership)
+        start.actionReceipt = receipt
+        _ = app.process(command: start, context: context, writer: writer)
+        XCTAssertNil(ownership.claim)
+        XCTAssertNil(receipt.actionID(for: owner, sessionID: captured.sessionID, viewID: captured.viewID))
+        XCTAssertEqual(view.userActionScope?.actionUUID, existingID)
+        XCTAssertEqual(view.userActionScope?.name, "existing")
+        var stop = RUMStopUserActionCommand(
+            time: routingDate.addingTimeInterval(5),
+            globalAttributes: [:],
+            attributes: [:],
+            actionType: .scroll,
+            name: nil
+        )
+        stop.target = .scene(routingSceneA)
+        _ = app.process(command: stop, context: context, writer: writer)
+        var replacement = RUMStartUserActionCommand(
+            time: routingDate.addingTimeInterval(6),
+            globalAttributes: [:],
+            attributes: [:],
+            instrumentation: .manual,
+            actionType: .scroll,
+            name: "replacement"
+        )
+        replacement.target = .scene(routingSceneA)
+        _ = app.process(command: replacement, context: context, writer: writer)
+        let replacementID = try XCTUnwrap(view.userActionScope).actionUUID
+        XCTAssertNotEqual(replacementID, existingID)
+        start.time = routingDate.addingTimeInterval(7)
+        _ = app.process(command: start, context: context, writer: writer)
+        XCTAssertEqual(view.userActionScope?.name, "replacement")
+        XCTAssertEqual(view.userActionScope?.actionUUID, replacementID)
+        XCTAssertNil(ownership.claim)
+        XCTAssertNil(receipt.actionID(for: owner, sessionID: captured.sessionID, viewID: captured.viewID))
     }
 }

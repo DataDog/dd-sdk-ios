@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+@_spi(Internal)
 import DatadogInternal
 import Foundation
 
@@ -112,6 +113,9 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     }
 
     private func processResolved(command: RUMCommand, context: DatadogContext, writer: Writer) {
+        let actionReceipt = dependencies.isMultiSceneTrackingEnabled
+            ? (command as? RUMUserActionCommand)?.actionReceipt : nil
+        defer { actionReceipt?.reject() }
         if dependencies.isMultiSceneTrackingEnabled, case .continuousAction(let ownership) = command.target {
             if command is RUMStartUserActionCommand {
                 guard ownership.beginStart() else { return }

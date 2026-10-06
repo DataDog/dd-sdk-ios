@@ -44,27 +44,107 @@ public enum RUMContextHandoff {
         public var isValid: Bool { isActive }
     }
 
+    /// Acceptance of one submitted action; no Core, feature or UI object is retained.
+    public final class ActionReceipt: @unchecked Sendable {
+        private enum State {
+            case pending
+            case accepted(String)
+            case rejected
+        }
+
+        public let owner: Owner
+        private let sessionID: String?
+        private let viewID: String?
+        @ReadWriteLock
+        private var state = State.pending
+
+        public init(owner: Owner, context: RUMCoreContext?) {
+            self.owner = owner
+            self.sessionID = context?.sessionID
+            self.viewID = context?.viewID
+        }
+
+        /// Called only when processing creates this command's action scope.
+        public func accept(sessionID: String, viewID: String, actionID: String) {
+            _state.mutate { state in
+                guard case .pending = state else {
+                    return
+                }
+                guard owner.isValid, self.sessionID == sessionID, self.viewID == viewID else {
+                    state = .rejected
+                    return
+                }
+                state = .accepted(actionID)
+            }
+        }
+
+        /// Known drops or completed resolved processing settle only an unclaimed command.
+        public func reject() {
+            _state.mutate { state in
+                if case .pending = state { state = .rejected }
+            }
+        }
+
+        /// An unresolved command cannot borrow an action from subsequent delivery context.
+        public func actionID(for owner: Owner, sessionID: String, viewID: String?) -> String? {
+            guard self.owner === owner, owner.isValid,
+                  self.sessionID == sessionID, self.viewID == viewID else { return nil }
+            guard case let .accepted(actionID) = state else {
+                return nil
+            }
+            return actionID
+        }
+    }
+
     public struct CurrentValue {
         public let rumContext: RUMCoreContext?
         public let sceneIdentifier: String?
         public let hasPendingUserAction: Bool
         public let excludedUserActionID: String?
+        public let actionReceipt: ActionReceipt?
 
         public init(
             rumContext: RUMCoreContext?,
             sceneIdentifier: String?,
             hasPendingUserAction: Bool,
-            excludedUserActionID: String?
+            excludedUserActionID: String?,
+            actionReceipt: ActionReceipt? = nil
         ) {
             self.rumContext = rumContext
             self.sceneIdentifier = sceneIdentifier
             self.hasPendingUserAction = hasPendingUserAction
             self.excludedUserActionID = excludedUserActionID
+            self.actionReceipt = actionReceipt
+        }
+
+        /// Resolves only this captured action while preserving the captured RUM view.
+        public func resolvedRUMContext(for owner: Owner) -> RUMCoreContext? {
+            guard owner.isValid, let context = rumContext else {
+                return nil
+            }
+            let actionID: String?
+            if let actionReceipt {
+                actionID = actionReceipt.actionID(for: owner, sessionID: context.sessionID, viewID: context.viewID)
+            } else if hasPendingUserAction {
+                actionID = nil
+            } else {
+                actionID = context.userActionID
+            }
+            return RUMCoreContext(
+                applicationID: context.applicationID,
+                sessionID: context.sessionID,
+                sessionSampler: context.sessionSampler,
+                viewID: context.viewID,
+                userActionID: actionID,
+                viewServerTimeOffset: context.viewServerTimeOffset,
+                viewPath: context.viewPath,
+                viewName: context.viewName
+            )
         }
     }
 
-    // All stored values are immutable. RUMCoreContext contains only scalar/string
-    // values and an immutable Sendable sampler, but does not declare Sendable.
+    // The binding stores scalar context and a separately synchronized action receipt.
+    // RUMCoreContext has an immutable Sendable sampler, but does not declare Sendable.
     private struct Binding: @unchecked Sendable {
         let owner: Owner
         let value: CurrentValue

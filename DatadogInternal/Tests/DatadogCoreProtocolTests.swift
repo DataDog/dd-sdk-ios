@@ -29,6 +29,90 @@ class DatadogCoreProtocolTests: XCTestCase {
         XCTAssertTrue(second.isValid)
     }
 
+    func testAcceptedActionReceiptCannotAdoptASubsequentAction() {
+        let owner = RUMContextHandoff.Owner()
+        let context = receiptContext(actionID: "prior-action")
+        let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: context)
+        let value = receiptValue(context: context, receipt: receipt)
+        XCTAssertNil(value.resolvedRUMContext(for: owner)?.userActionID)
+
+        receipt.accept(sessionID: context.sessionID, viewID: "view-a", actionID: "original-action")
+        receipt.accept(sessionID: context.sessionID, viewID: "view-a", actionID: "later-action")
+        receipt.reject()
+        let result = value.resolvedRUMContext(for: owner)
+        XCTAssertEqual(result?.userActionID, "original-action")
+        XCTAssertEqual(result?.viewID, context.viewID)
+        XCTAssertEqual(result?.viewName, context.viewName)
+        XCTAssertEqual(result?.viewServerTimeOffset, context.viewServerTimeOffset)
+        XCTAssertEqual(result?.sessionSampler, context.sessionSampler)
+    }
+
+    func testRejectedActionReceiptDoesNotBorrowAPriorOrSubsequentAction() {
+        let owner = RUMContextHandoff.Owner()
+        let context = receiptContext(actionID: "prior-action")
+        let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: context)
+        receipt.reject()
+        receipt.accept(sessionID: context.sessionID, viewID: "view-a", actionID: "later-action")
+        let result = receiptValue(context: context, receipt: receipt).resolvedRUMContext(for: owner)
+        XCTAssertEqual(result?.viewID, "view-a")
+        XCTAssertNil(result?.userActionID)
+    }
+
+    func testActionReceiptRejectsForeignOwnerSessionAndView() {
+        let owner = RUMContextHandoff.Owner()
+        let otherOwner = RUMContextHandoff.Owner()
+        let context = receiptContext(actionID: nil)
+        let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: context)
+        receipt.accept(sessionID: context.sessionID, viewID: "view-a", actionID: "original-action")
+        XCTAssertNil(receipt.actionID(for: otherOwner, sessionID: context.sessionID, viewID: context.viewID))
+        XCTAssertNil(receipt.actionID(for: owner, sessionID: "other-session", viewID: context.viewID))
+        XCTAssertNil(receipt.actionID(for: owner, sessionID: context.sessionID, viewID: "other-view"))
+        owner.invalidate()
+        XCTAssertNil(receiptValue(context: context, receipt: receipt).resolvedRUMContext(for: owner))
+    }
+
+    func testMismatchedActionAcceptanceCannotBeReplacedByALaterValidAction() {
+        let owner = RUMContextHandoff.Owner()
+        let context = receiptContext(actionID: nil)
+        let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: context)
+        receipt.accept(sessionID: "other-session", viewID: "view-a", actionID: "foreign-action")
+        receipt.accept(sessionID: context.sessionID, viewID: "view-a", actionID: "later-action")
+        XCTAssertNil(receipt.actionID(for: owner, sessionID: context.sessionID, viewID: context.viewID))
+    }
+
+    func testUnprocessedActionReceiptPreservesAuthoritativeAbsence() {
+        let owner = RUMContextHandoff.Owner()
+        let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: nil)
+        receipt.accept(sessionID: "session-a", viewID: "view-a", actionID: "later-action")
+        XCTAssertNil(receiptValue(context: nil, receipt: receipt).resolvedRUMContext(for: owner))
+        let context = receiptContext(actionID: "prior-action")
+        let pending = receiptValue(context: context, receipt: nil)
+        XCTAssertNil(pending.resolvedRUMContext(for: owner)?.userActionID)
+    }
+
+    private func receiptContext(actionID: String?) -> RUMCoreContext {
+        RUMCoreContext(
+            applicationID: "application",
+            sessionID: "session-a",
+            sessionSampler: DeterministicSampler(seed: 42, samplingRate: 100),
+            viewID: "view-a",
+            userActionID: actionID,
+            viewServerTimeOffset: 0.25,
+            viewPath: "path-a",
+            viewName: "View A"
+        )
+    }
+
+    private func receiptValue(context: RUMCoreContext?, receipt: RUMContextHandoff.ActionReceipt?) -> RUMContextHandoff.CurrentValue {
+        RUMContextHandoff.CurrentValue(
+            rumContext: context,
+            sceneIdentifier: "scene-a",
+            hasPendingUserAction: true,
+            excludedUserActionID: context?.userActionID,
+            actionReceipt: receipt
+        )
+    }
+
     func testSendMessageExtension() {
         // Given
         let receiver = FeatureMessageReceiverMock()
