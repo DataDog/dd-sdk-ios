@@ -606,6 +606,24 @@ extension RUMFeature {
     }
 }
 
+extension RUMFeature: RUMContextHandoffWebViewProviding {
+    func captureRUMContext(forSceneIdentifier sceneIdentifier: String, owner: RUMContextHandoff.Owner) -> RUMContextHandoff.Capture? {
+        guard isMultiSceneTrackingEnabled, rumContextHandoffOwner === owner, owner.isValid else {
+            return nil
+        }
+        let context = monitor.rumContextSnapshot(for: .scene(RUMSceneIdentifier(rawValue: sceneIdentifier)))
+        return RUMContextHandoff.Capture(
+            owner: owner,
+            value: .init(
+                rumContext: context,
+                sceneIdentifier: sceneIdentifier,
+                hasPendingUserAction: false,
+                excludedUserActionID: nil
+            )
+        )
+    }
+}
+
 extension RUMFeature: RUMContextHandoffSessionValidating {
     func isRUMContextHandoffSessionActive(sessionID: String, owner: RUMContextHandoff.Owner) -> Bool {
         guard isMultiSceneTrackingEnabled, rumContextHandoffOwner === owner, owner.isValid else {

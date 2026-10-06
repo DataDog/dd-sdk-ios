@@ -9,12 +9,130 @@
 import XCTest
 import WebKit
 import TestUtilities
+@_spi(Internal)
 import DatadogInternal
 @testable import DatadogRUM
 @testable import DatadogWebViewTracking
 
 @MainActor
 final class WebViewSessionRolloverHandlerTests: XCTestCase {
+    func testNativeOwnership_legacyDoesNotLookUpProvider() {
+        let core = WebViewContextCoreMock()
+        let handler = WebViewSessionRolloverHandler(core: core)
+        XCTAssertNil(handler.captureRUMContext(forSceneIdentifier: "a"))
+        XCTAssertEqual(core.lookups, 0)
+    }
+
+    func testNativeOwnership_providerCanRegisterAfterPublication() throws {
+        let core = WebViewContextCoreMock()
+        let handler = WebViewSessionRolloverHandler(core: core)
+        let owner = RUMContextHandoff.Owner()
+        let receiver = WebViewTrackingMessageReceiver(sessionRolloverHandler: handler)
+        receiver.receiveRUMContextHandoff(owner: owner, active: true)
+        let beforeRegistration = try XCTUnwrap(handler.captureRUMContext(forSceneIdentifier: "a"))
+        XCTAssertTrue(beforeRegistration.owner === owner)
+        XCTAssertNil(beforeRegistration.value.rumContext)
+        let provider = WebViewContextProviderMock()
+        provider.output = nativeCapture(owner: owner, scene: "a")
+        core.provider = provider
+        let afterRegistration = try XCTUnwrap(handler.captureRUMContext(forSceneIdentifier: "a"))
+        XCTAssertTrue(afterRegistration.owner === owner)
+        XCTAssertEqual(afterRegistration.value.rumContext?.viewID, "view-a")
+        XCTAssertEqual(core.lookups, 2)
+        XCTAssertEqual(provider.calls, 1)
+    }
+
+    func testNativeOwnership_unknownOriginDoesNotLookUpProvider() throws {
+        let core = WebViewContextCoreMock()
+        let handler = WebViewSessionRolloverHandler(core: core)
+        let owner = RUMContextHandoff.Owner()
+        handler.receiveRUMContextHandoff(owner: owner, active: true)
+        let capture = try XCTUnwrap(handler.captureRUMContext(forSceneIdentifier: nil))
+        XCTAssertTrue(capture.owner === owner)
+        XCTAssertNil(capture.value.rumContext)
+        XCTAssertEqual(core.lookups, 0)
+    }
+
+    func testNativeOwnership_retirementNeverReturnsLegacyFallback() throws {
+        let core = WebViewContextCoreMock()
+        let handler = WebViewSessionRolloverHandler(core: core)
+        let owner = RUMContextHandoff.Owner()
+        owner.invalidate()
+        handler.receiveRUMContextHandoff(owner: owner, active: false)
+        handler.receiveRUMContextHandoff(owner: owner, active: true)
+        let capture = try XCTUnwrap(handler.captureRUMContext(forSceneIdentifier: "a"))
+        XCTAssertTrue(capture.owner === owner)
+        XCTAssertNil(capture.value.rumContext)
+        XCTAssertEqual(core.lookups, 0)
+    }
+
+    func testNativeOwnership_oldPublicationCannotReplaceNewOwner() throws {
+        let core = WebViewContextCoreMock()
+        let handler = WebViewSessionRolloverHandler(core: core)
+        let old = RUMContextHandoff.Owner()
+        let current = RUMContextHandoff.Owner()
+        handler.receiveRUMContextHandoff(owner: old, active: true)
+        old.invalidate()
+        handler.receiveRUMContextHandoff(owner: current, active: true)
+        handler.receiveRUMContextHandoff(owner: old, active: false)
+        handler.receiveRUMContextHandoff(owner: old, active: true)
+        XCTAssertTrue(try XCTUnwrap(handler.captureRUMContext(forSceneIdentifier: "a")).owner === current)
+    }
+
+    func testNativeOwnership_rejectsForeignProviderCapture() throws {
+        let core = WebViewContextCoreMock()
+        let provider = WebViewContextProviderMock()
+        core.provider = provider
+        let handler = WebViewSessionRolloverHandler(core: core)
+        let owner = RUMContextHandoff.Owner()
+        handler.receiveRUMContextHandoff(owner: owner, active: true)
+        for capture in [nativeCapture(owner: RUMContextHandoff.Owner(), scene: "a"), nativeCapture(owner: owner, scene: "b")] {
+            provider.output = capture
+            let result = try XCTUnwrap(handler.captureRUMContext(forSceneIdentifier: "a"))
+            XCTAssertTrue(result.owner === owner)
+            XCTAssertNil(result.value.rumContext)
+        }
+    }
+
+    func testNativeOwnership_backgroundRetirementReturnsBeforeMainAndPreservesReplacement() async throws {
+        let core = WebViewContextCoreMock()
+        let handler = WebViewSessionRolloverHandler(core: core)
+        let receiver = WebViewTrackingMessageReceiver(sessionRolloverHandler: handler)
+        let old = RUMContextHandoff.Owner()
+        let current = RUMContextHandoff.Owner()
+        receiver.receiveRUMContextHandoff(owner: old, active: true)
+        old.invalidate()
+        let returned = DispatchSemaphore(value: 0)
+        DispatchQueue.global().async {
+            receiver.receiveRUMContextHandoff(owner: old, active: false)
+            returned.signal()
+        }
+        XCTAssertEqual(returned.wait(timeout: .now() + 1), .success)
+        receiver.receiveRUMContextHandoff(owner: current, active: true)
+        let mainDelivery = expectation(description: "queued retirement observed")
+        DispatchQueue.main.async { mainDelivery.fulfill() }
+        await fulfillment(of: [mainDelivery], timeout: 1)
+        XCTAssertTrue(try XCTUnwrap(handler.captureRUMContext(forSceneIdentifier: "a")).owner === current)
+    }
+
+    func testNativeOwnership_doesNotRetainCore() throws {
+        var core: WebViewContextCoreMock? = WebViewContextCoreMock()
+        weak var weakCore = core
+        let handler = WebViewSessionRolloverHandler(core: try XCTUnwrap(core))
+        let owner = RUMContextHandoff.Owner()
+        handler.receiveRUMContextHandoff(owner: owner, active: true)
+        core = nil
+        XCTAssertNil(weakCore)
+        let capture = try XCTUnwrap(handler.captureRUMContext(forSceneIdentifier: "a"))
+        XCTAssertTrue(capture.owner === owner)
+        XCTAssertNil(capture.value.rumContext)
+    }
+
+    private func nativeCapture(owner: RUMContextHandoff.Owner, scene: String) -> RUMContextHandoff.Capture {
+        let context = RUMCoreContext(applicationID: "app", sessionID: "session", sessionSampler: .mockKeepAll(), viewID: "view-a")
+        return .init(owner: owner, value: .init(rumContext: context, sceneIdentifier: scene, hasPendingUserAction: false, excludedUserActionID: nil))
+    }
+
     func testSingleCore() throws {
         let core = DatadogCoreProxy(
             context: .mockWith(
@@ -174,6 +292,30 @@ final class WebViewSessionRolloverHandlerTests: XCTestCase {
         while let _ = activeWebViewsEnumerator.nextObject() as? WKWebView {
             XCTFail("handler.activeWebViews.handlerPerView should be empty.")
         }
+    }
+}
+
+private final class WebViewContextCoreMock: DatadogCoreProtocol {
+    var provider: WebViewContextProviderMock?
+    var lookups = 0
+    var remoteConfiguration: RemoteConfiguration? { nil }
+    func register<T>(feature: T) throws where T: DatadogFeature {}
+    func feature<T>(named name: String, type: T.Type) -> T? {
+        lookups += 1
+        return name == Feature.rum ? provider as? T : nil
+    }
+    func scope<T>(for featureType: T.Type) -> FeatureScope where T: DatadogFeature { NOPFeatureScope() }
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {}
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) {}
+    func mostRecentModifiedFileAt(before: Date) throws -> Date? { nil }
+}
+
+private final class WebViewContextProviderMock: RUMContextHandoffWebViewProviding {
+    var output: RUMContextHandoff.Capture?
+    var calls = 0
+    func captureRUMContext(forSceneIdentifier sceneIdentifier: String, owner: RUMContextHandoff.Owner) -> RUMContextHandoff.Capture? {
+        calls += 1
+        return output
     }
 }
 

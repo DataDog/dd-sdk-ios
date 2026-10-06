@@ -337,6 +337,12 @@ public struct AccountConfigurationContext: AdditionalContext, Equatable {
     }
 }
 
+/// Provides a snapshot only after a caller independently proves the originating native scene.
+@_spi(Internal)
+public protocol RUMContextHandoffWebViewProviding {
+    func captureRUMContext(forSceneIdentifier sceneIdentifier: String, owner: RUMContextHandoff.Owner) -> RUMContextHandoff.Capture?
+}
+
 /// Validates a captured native session against the current RUM lifetime.
 @_spi(Internal)
 public protocol RUMContextHandoffSessionValidating {

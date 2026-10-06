@@ -911,6 +911,52 @@ private final class HandoffFeatureScope: FeatureScope, RUMContextHandoffOwnerPro
 #if os(iOS)
 @MainActor
 extension RUMTests {
+    func testWebViewContextCapability_resolvesOnlyRequestedScene() throws {
+        guard #available(iOS 27.0, *) else { return }
+        let clock = DateProviderMock(now: Date(timeIntervalSince1970: 1_000))
+        let activationCore = HandoffActivationCoreMock()
+        activationCore.rumScopeOverride = FeatureScopeMock(context: .mockWith(sdkInitDate: clock.now))
+        var configuration = config
+        configuration.dateProvider = clock
+        configuration.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
+        configuration.featureFlags = [.multiSceneTracking: true]
+        try RUM.enableOrThrow(with: configuration, in: activationCore)
+        let rum = try XCTUnwrap(activationCore.get(feature: RUMFeature.self))
+        let owner = try XCTUnwrap(rum.rumContextHandoffOwner)
+        let a = RUMSceneIdentifier(rawValue: "a")
+        let b = RUMSceneIdentifier(rawValue: "b")
+        for scene in [a, b] {
+            rum.monitor.process(command: RUMStartViewCommand(time: clock.now, identity: ViewIdentifier("shared"), name: scene.rawValue, path: scene.rawValue, globalAttributes: [:], attributes: [:], instrumentationType: .manual, target: .scene(scene)))
+        }
+        let original = try XCTUnwrap(rum.monitor.rumContextSnapshot(for: .scene(a)))
+        let peer = try XCTUnwrap(rum.monitor.rumContextSnapshot(for: .scene(b)))
+        XCTAssertNotEqual(original.viewID, peer.viewID)
+        let capture = try XCTUnwrap(rum.captureRUMContext(forSceneIdentifier: a.rawValue, owner: owner))
+        XCTAssertTrue(capture.owner === owner)
+        XCTAssertEqual(capture.value.sceneIdentifier, a.rawValue)
+        XCTAssertEqual(capture.value.rumContext?.viewID, original.viewID)
+        XCTAssertEqual(capture.value.rumContext?.sessionID, original.sessionID)
+        XCTAssertNil(try XCTUnwrap(rum.captureRUMContext(forSceneIdentifier: "unknown", owner: owner)).value.rumContext)
+        XCTAssertNil(rum.captureRUMContext(forSceneIdentifier: a.rawValue, owner: RUMContextHandoff.Owner()))
+        clock.now = clock.now.addingTimeInterval(901)
+        XCTAssertNil(try XCTUnwrap(rum.captureRUMContext(forSceneIdentifier: a.rawValue, owner: owner)).value.rumContext)
+        owner.invalidate()
+        XCTAssertNil(rum.captureRUMContext(forSceneIdentifier: a.rawValue, owner: owner))
+    }
+
+    func testWebViewContextCapability_resolvedOffDoesNotReadOwner() throws {
+        let activationCore = HandoffActivationCoreMock()
+        var configuration = config
+        configuration.featureFlags = [.multiSceneTracking: false]
+        try RUM.enableOrThrow(with: configuration, in: activationCore)
+        let rum = try XCTUnwrap(activationCore.get(feature: RUMFeature.self))
+        let reads = activationCore.ownerReads
+        XCTAssertNil(rum.captureRUMContext(forSceneIdentifier: "unproved", owner: RUMContextHandoff.Owner()))
+        XCTAssertEqual(activationCore.ownerReads, reads)
+        XCTAssertNil(rum.rumContextHandoffOwner)
+        XCTAssertEqual(activationCore.activations, 0)
+    }
+
     func testCapturedWebViewSession_actualFeatureKeepsOriginalViewWithoutActiveView() throws {
         guard #available(iOS 27.0, *) else { return }
         let clock = DateProviderMock(now: Date(timeIntervalSince1970: 1_000))

@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 #if canImport(WebKit)
 import WebKit
@@ -33,6 +34,55 @@ internal class WebViewSessionRolloverHandler {
 
     /// The core that owns this handler.
     private weak var core: DatadogCoreProtocol?
+
+    private enum NativeOwnership {
+        case legacy
+        case active(RUMContextHandoff.Owner)
+        case retired(RUMContextHandoff.Owner)
+    }
+
+    private var nativeOwnership = NativeOwnership.legacy
+
+    /// Updates only the main-confined lifetime token; provider registration may still be pending.
+    func receiveRUMContextHandoff(owner: RUMContextHandoff.Owner, active: Bool) {
+        if active {
+            guard owner.isValid else { return }
+            nativeOwnership = .active(owner)
+        } else {
+            switch nativeOwnership {
+            case .legacy:
+                nativeOwnership = .retired(owner)
+            case .active(let current), .retired(let current):
+                guard current === owner else { return }
+                nativeOwnership = .retired(owner)
+            }
+        }
+    }
+
+    /// The caller must prove page/window origin separately before supplying a scene.
+    /// Nil means legacy mode; a retained On lifetime always produces authoritative capture or absence.
+    func captureRUMContext(forSceneIdentifier sceneIdentifier: String?) -> RUMContextHandoff.Capture? {
+        let owner: RUMContextHandoff.Owner
+        switch nativeOwnership {
+        case .legacy:
+            return nil
+        case .retired(let retiredOwner):
+            return emptyCapture(for: retiredOwner)
+        case .active(let activeOwner):
+            owner = activeOwner
+        }
+        guard owner.isValid, let sceneIdentifier, let core,
+              let provider = core.feature(named: Feature.rum, type: RUMContextHandoffWebViewProviding.self),
+              let capture = provider.captureRUMContext(forSceneIdentifier: sceneIdentifier, owner: owner),
+              capture.owner === owner, capture.value.sceneIdentifier == sceneIdentifier else {
+            return emptyCapture(for: owner)
+        }
+        return capture
+    }
+
+    private func emptyCapture(for owner: RUMContextHandoff.Owner) -> RUMContextHandoff.Capture {
+        .init(owner: owner, value: .init(rumContext: nil, sceneIdentifier: nil, hasPendingUserAction: false, excludedUserActionID: nil))
+    }
 
     /// Creates a new RUM session rollover handler.
     ///
