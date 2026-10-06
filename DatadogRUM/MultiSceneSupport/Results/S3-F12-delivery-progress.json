@@ -243,7 +243,7 @@
       "off_contract": "Static fast path; final E01/E05 headers/sampling/user/account expressions and fresh develop no handoff or scene lookup",
       "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
       "rebuild_obligation": "Drop unqualified empty-header, existing-header suppression and helper rewrites; networking wire policy unchanged",
-      "status": "ACTION_COMPONENT_QUALIFICATION_RUNNING_CONSUMERS_UNAPPLIED",
+      "status": "ACTION_INTERNAL_RUM_ACCEPTED_CORE_REMAINS_CONSUMERS_UNAPPLIED",
       "owning_record": null,
       "source_head": null,
       "obligation": "BEFORE_SLICE_MERGE",
@@ -255,7 +255,7 @@
         "integration": "NOT_QUALIFIED"
       },
       "remaining_assertion": "Authoritative nil vs absent handoff, optional request-time final E05 correlation, delayed WebView owner and accepted action merge Off: Static fast path; final E01/E05 headers/sampling/user/account expressions and fresh develop no handoff or scene lookup",
-      "next_action": "Continue the exclusive P7A0 current-source Internal/RUM/Core qualification. Await exact twelve outcomes, complete exports and original apps/Shutdown/group restoration plus designated actual review before SDK source handoff. No duplicate or source edit; consumer drafts, Off and final-stack remain.",
+      "next_action": "Review actual P7A0 terminal/cleanup, then qualify only the remaining Core method using the exact current-source TSan build and source-backed disabled discovery grammar. Preserve eleven accepted methods and failed original verdict; SDK source stays frozen. Consumer composition/private tests continue offline; Off/final-stack remain.",
       "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit.",
       "dependency_design": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/packet.json",
@@ -263,7 +263,7 @@
       },
       "preparation_record": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
-        "sha256": "fdd8f40f767a264aa4b9dc7281a90e6d03d3c61310a6cde50ccfc56e042376e0"
+        "sha256": "c5e776271262389961e03506d9fa8eb7cff1c4540619ecbc1a0f2cc0513f3826"
       },
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
       "source_branch": "valpertui/s3-consumer-capture",
@@ -290,6 +290,18 @@
       "action_component_controller": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-cli-proposal-20261006/actual-run-469a1b9e/controller.json",
         "sha256": "8c9020dc9de986dc4f7ebb754bfde633d44f4705d2945ef5242335ce7f77ae35"
+      },
+      "action_component_result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-cli-proposal-20261006/actual-run-469a1b9e/stopped-result.json",
+        "sha256": "095b68ea66a8a075c6346e1328962a0eaa0dde3146043b70f01ce686484746e5"
+      },
+      "action_component_closure": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-cli-proposal-20261006/actual-run-469a1b9e/closure/closure.json",
+        "sha256": "631538b28cab4ccccbbf8ec86ca21eec12e68632187be6b802a20102efc80600"
+      },
+      "action_component_partial_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-cli-proposal-20261006/actual-run-469a1b9e/closure/actual-review.json",
+        "sha256": "c28355ec581f1fb5970562b54b73ad1228b8c02defe554fc23e37f9105263a69"
       }
     },
     {
@@ -474,8 +486,8 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": 1791258260.912779,
-  "dependency_build_attempts": 1,
-  "dependency_component_qualifications": 1,
-  "dependency_test_invocations": 1
+  "updated_at": 1791259384.31451,
+  "dependency_build_attempts": 4,
+  "dependency_component_qualifications": 3,
+  "dependency_test_invocations": 3
 }
