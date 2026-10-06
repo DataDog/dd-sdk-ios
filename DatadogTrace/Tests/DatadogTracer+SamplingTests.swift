@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+@_spi(Internal)
 import DatadogInternal
 @testable import DatadogTrace
 
@@ -256,5 +257,225 @@ class SamplerProviderTests: XCTestCase {
         let provider = SamplerProvider(sampleRate: 100)
         XCTAssertTrue(provider.sampler.sample())
         XCTAssertEqual(provider.makeSamplerFor(samplingRate: 0).sample(), false)
+    }
+}
+
+extension DatadogTracer_SamplingTests {
+    @MainActor
+    func testManualConstructorsInstallCapturedOwnershipBeforeDeferredSerialization() throws {
+        for customRoot in [false, true] {
+            for mode in TraceConstructorCaptureFixture.Mode.allCases {
+                let fixture = TraceConstructorCaptureFixture(mode: mode)
+                let sessionSampler = fixture.sessionSampler()
+                let customRate: SampleRate = mode == .missingSession ? 100 : 37
+                let tracer = DatadogTracer.mockWith(
+                    featureScope: fixture.scope,
+                    samplingProvider: SamplerProvider(sampleRate: 100, sessionSampler: sessionSampler),
+                    spanEventBuilder: .mockWith(bundleWithRUM: true)
+                )
+                let span = customRoot
+                    ? tracer.startRootSpan(operationName: "captured-root", customSampleRate: customRate)
+                    : tracer.startSpan(operationName: "captured-manual")
+                XCTAssertEqual(sessionSampler.richCalls, 1)
+                XCTAssertEqual(sessionSampler.legacyCalls, 0)
+                XCTAssertEqual(sessionSampler.richPolicies, [.featureRate])
+                XCTAssertEqual(sessionSampler.rates, [customRoot ? customRate : 100])
+                span.finish()
+                XCTAssertEqual(try fixture.scope.spanEventsWritten().count, 0)
+                fixture.resolveReceiptAndFlush()
+                let events = try fixture.scope.spanEventsWritten()
+                XCTAssertEqual(events.count, 1)
+                fixture.assertCapturedTags(try XCTUnwrap(events.first))
+                XCTAssertEqual(try XCTUnwrap(events.first).samplingRate, customRoot ? Float(customRate / 100) : 1, accuracy: 0.000001)
+                XCTAssertEqual(sessionSampler.richCalls, 1)
+            }
+        }
+    }
+
+    @MainActor
+    func testManualAndOTelConstructorsUseLegacyCustomProviderExactlyOnce() throws {
+        for kind in ["manual", "custom-root", "otel"] {
+            let fixture = TraceConstructorCaptureFixture(mode: .accepted)
+            let provider = TraceConstructorLegacyProvider()
+            let tracer = DatadogTracer.mockWith(
+                featureScope: fixture.scope,
+                samplingProvider: provider,
+                spanEventBuilder: .mockWith(bundleWithRUM: true)
+            )
+            if kind == "otel" {
+                tracer.spanBuilder(spanName: kind).startSpan().end()
+            } else if kind == "custom-root" {
+                tracer.startRootSpan(operationName: kind, customSampleRate: 37).finish()
+            } else {
+                tracer.startSpan(operationName: kind).finish()
+            }
+            fixture.scope.flushDeferredEventWriteContexts()
+            let events = try fixture.scope.spanEventsWritten()
+            XCTAssertEqual(events.count, 1)
+            XCTAssertEqual(events.first?.tags[SpanTags.rumViewID], "view-b")
+            XCTAssertEqual(events.first?.tags[SpanTags.rumActionID], "action-b")
+            XCTAssertEqual(provider.defaultReads, kind == "custom-root" ? 0 : 1)
+            XCTAssertEqual(provider.customRates, kind == "custom-root" ? [37] : [])
+        }
+    }
+
+    @MainActor
+    func testManualAndOTelConstructorsUseLegacySessionDecisionExactlyOnce() throws {
+        for kind in ["manual", "custom-root", "otel"] {
+            let fixture = TraceConstructorCaptureFixture(mode: .accepted)
+            let sessionSampler = TraceConstructorLegacySessionSampler()
+            let tracer = DatadogTracer.mockWith(
+                featureScope: fixture.scope,
+                samplingProvider: SamplerProvider(sampleRate: 100, sessionSampler: sessionSampler),
+                spanEventBuilder: .mockWith(bundleWithRUM: true)
+            )
+            if kind == "otel" {
+                tracer.spanBuilder(spanName: kind).startSpan().end()
+            } else if kind == "custom-root" {
+                tracer.startRootSpan(operationName: kind, customSampleRate: 37).finish()
+            } else {
+                tracer.startSpan(operationName: kind).finish()
+            }
+            fixture.scope.flushDeferredEventWriteContexts()
+            let events = try fixture.scope.spanEventsWritten()
+            XCTAssertEqual(events.count, 1)
+            XCTAssertEqual(events.first?.tags[SpanTags.rumViewID], "view-b")
+            XCTAssertEqual(sessionSampler.policies, [.featureRate])
+            XCTAssertEqual(sessionSampler.rates, kind == "custom-root" ? [37] : [100])
+        }
+    }
+}
+
+// Shared by the actual manual, automatic and OTel constructor tests in this target.
+final class TraceConstructorCaptureFixture {
+    enum Mode: CaseIterable {
+        case accepted, rejected, capturedNil, invalidated, foreignSession, missingSession
+    }
+
+    let mode: Mode
+    let owner = RUMContextHandoff.Owner()
+    let original: RUMCoreContext
+    let receipt: RUMContextHandoff.ActionReceipt
+    let value: RUMContextHandoff.CurrentValue
+    let scope: FeatureScopeMock
+
+    init(mode: Mode) {
+        self.mode = mode
+        original = RUMCoreContext(
+            applicationID: "application-a",
+            sessionID: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+            sessionSampler: DeterministicSampler(seed: 42, samplingRate: 100),
+            viewID: "view-a",
+            userActionID: "prior-action-a"
+        )
+        receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: original)
+        value = RUMContextHandoff.CurrentValue(
+            rumContext: mode == .capturedNil ? nil : original,
+            sceneIdentifier: "scene-a",
+            hasPendingUserAction: true,
+            excludedUserActionID: original.userActionID,
+            actionReceipt: receipt
+        )
+        var legacy: DatadogContext = .mockAny()
+        legacy.set(additionalContext: RUMCoreContext(
+            applicationID: "application-b",
+            sessionID: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+            sessionSampler: DeterministicSampler(seed: 43, samplingRate: 100),
+            viewID: "view-b",
+            userActionID: "action-b"
+        ))
+        legacy.userInfo = .mockWith(id: "before-sampling")
+        scope = FeatureScopeMock(context: legacy, deferEventWriteContext: true)
+    }
+
+    func sessionSampler() -> TraceConstructorSessionSampler {
+        TraceConstructorSessionSampler(
+            decision: mode == .missingSession ? nil : .init(
+                sessionID: mode == .foreignSession ? "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb" : original.sessionID,
+                isSampled: true
+            ),
+            capture: .init(owner: owner, value: value)
+        )
+    }
+
+    func resolveReceiptAndFlush() {
+        if mode == .rejected {
+            receipt.reject()
+        } else {
+            receipt.accept(sessionID: original.sessionID, viewID: "view-a", actionID: "accepted-action-a")
+        }
+        if mode == .invalidated { owner.invalidate() }
+        var delivery = scope.contextMock
+        delivery.set(additionalContext: RUMCoreContext(
+            applicationID: "application-c",
+            sessionID: "cccccccc-cccc-cccc-cccc-cccccccccccc",
+            sessionSampler: DeterministicSampler(seed: 44, samplingRate: 100),
+            viewID: "view-c",
+            userActionID: "action-c"
+        ))
+        scope.contextMock = delivery
+        scope.flushDeferredEventWriteContexts()
+    }
+
+    func assertCapturedTags(_ span: SpanEvent, file: StaticString = #filePath, line: UInt = #line) {
+        let keepsView = mode == .accepted || mode == .rejected
+        XCTAssertEqual(span.tags[SpanTags.rumApplicationID], keepsView ? original.applicationID : nil, file: file, line: line)
+        XCTAssertEqual(span.tags[SpanTags.rumSessionID], keepsView ? original.sessionID : nil, file: file, line: line)
+        XCTAssertEqual(span.tags[SpanTags.rumViewID], keepsView ? "view-a" : nil, file: file, line: line)
+        XCTAssertEqual(span.tags[SpanTags.rumActionID], mode == .accepted ? "accepted-action-a" : nil, file: file, line: line)
+    }
+}
+
+final class TraceConstructorSessionSampler: SessionSamplerWithRUMContext {
+    let snapshot: RUMSessionSamplingContext
+    private(set) var richCalls = 0
+    private(set) var legacyCalls = 0
+    private(set) var richPolicies: [SamplingRatePolicy] = []
+    private(set) var legacyPolicies: [SamplingRatePolicy] = []
+    private(set) var rates: [SampleRate] = []
+    var onRichDecision: (() -> Void)?
+
+    init(decision: SessionSamplingDecision?, capture: RUMContextHandoff.Capture?) {
+        snapshot = .init(decision: decision, capture: capture)
+    }
+
+    func decision(for policy: SamplingRatePolicy, rate: SampleRate) -> SessionSamplingDecision? {
+        legacyCalls += 1
+        legacyPolicies.append(policy)
+        return snapshot.decision
+    }
+
+    func decisionWithRUMContext(for policy: SamplingRatePolicy, rate: SampleRate) -> RUMSessionSamplingContext {
+        richCalls += 1
+        richPolicies.append(policy)
+        rates.append(rate)
+        onRichDecision?()
+        return snapshot
+    }
+}
+
+final class TraceConstructorLegacyProvider: TracerSamplerProvider, @unchecked Sendable {
+    private(set) var defaultReads = 0
+    private(set) var customRates: [SampleRate] = []
+
+    var sampler: Sampling {
+        defaultReads += 1
+        return Sampler(samplingRate: 100)
+    }
+
+    func makeSamplerFor(samplingRate: SampleRate) -> Sampling {
+        customRates.append(samplingRate)
+        return DeterministicSampler(seed: 0, samplingRate: samplingRate)
+    }
+}
+
+final class TraceConstructorLegacySessionSampler: SessionSampler {
+    private(set) var policies: [SamplingRatePolicy] = []
+    private(set) var rates: [SampleRate] = []
+
+    func decision(for policy: SamplingRatePolicy, rate: SampleRate) -> SessionSamplingDecision? {
+        policies.append(policy)
+        rates.append(rate)
+        return .init(sessionID: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", isSampled: true)
     }
 }

@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+@_spi(Internal)
 import DatadogInternal
 @testable import DatadogTrace
 
@@ -492,5 +493,40 @@ extension PassthroughCoreMock {
     func spans() -> [SpanEvent] {
         let events: [SpanEventsEnvelope] = self.events()
         return events.flatMap { $0.spans }
+    }
+}
+
+extension OTelSpanTests {
+    @MainActor
+    func testOTelConstructorInstallsCapturedOwnershipAfterItsOriginalContextRequest() throws {
+        for mode in TraceConstructorCaptureFixture.Mode.allCases {
+            let fixture = TraceConstructorCaptureFixture(mode: mode)
+            let sampler = fixture.sessionSampler()
+            sampler.onRichDecision = {
+                var context = fixture.scope.contextMock
+                context.userInfo = .mockWith(id: "after-sampling")
+                fixture.scope.contextMock = context
+            }
+            let tracer = DatadogTracer.mockWith(
+                featureScope: fixture.scope,
+                samplingProvider: SamplerProvider(sampleRate: 100, sessionSampler: sampler),
+                spanEventBuilder: .mockWith(bundleWithRUM: true)
+            )
+            let span = tracer.spanBuilder(spanName: "captured-otel").startSpan()
+            XCTAssertEqual(sampler.richCalls, 1)
+            XCTAssertEqual(sampler.legacyCalls, 0)
+            XCTAssertEqual(sampler.richPolicies, [.featureRate])
+            XCTAssertEqual(sampler.rates, [100])
+            span.end()
+            XCTAssertEqual(try fixture.scope.spanEventsWritten().count, 0)
+            fixture.resolveReceiptAndFlush()
+            let events = try fixture.scope.spanEventsWritten()
+            XCTAssertEqual(events.count, 1)
+            let event = try XCTUnwrap(events.first)
+            fixture.assertCapturedTags(event)
+            XCTAssertEqual(event.userInfo.id, "before-sampling")
+            XCTAssertEqual(sampler.richCalls, 1)
+            XCTAssertEqual(event.operationName, "captured-otel")
+        }
     }
 }
