@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "state": "PREARMED_SERVICE_REVIEWED_OFFLINE_WAIT_FRESH_HUMAN",
-  "updated_at": "2026-10-06T08:47:41.866961+00:00",
+  "updated_at": "2026-10-06T08:56:05.949506+00:00",
   "execution": {
     "record": "Results/S2-swiftui-split-candidate-20261003.json"
   },
@@ -560,12 +560,12 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-post-otel-static-20261006/s2-candidate-0900-handoff.json",
       "sha256": "f97158964a6ae877f7de7e1c31d35fbf6540fe495f8f44cb47321f794c2a51db"
     },
-    "state": "REVIEW_RECEIPT_SCHEMA_BLOCKED_FULL_STARTUP_PREFLIGHT_REQUIRED",
+    "state": "COMPLETE_OFFLINE_STARTUP_REVIEWED_WAIT_FRESH_PARAMETERS",
     "new_native_runs": 0,
     "new_builds": 0,
     "baseline_repeat": false,
     "gates_closed": [],
-    "next_action": "Correct only the private receipt schema and exercise the actual unchanged full pre-effect bootstrap/configuration/reviewer-assignment/dispatch-source plus guarded construction and human/operator setup. Retain explicit offline fixtures, exact path/hash guards and zero native effects; missing reviewer_role must be rejected. Obtain designated review before a new candidate-only invitation. No source edit, rebuild, accepted-suite rerun or repeat baseline.",
+    "next_action": "Prepare the same candidate only from reviewed runtime_static_pins/executable_cone, current source/products/baseline, actual fresh page/operator/environment bindings and final parameter review. Consume every actual final receipt through unchanged require_reviewer before invitation/admission; root validates complete canonical UUID context before authority publication. New fixed adequate awake/run clocks and exclusive ownership remain required. No repeat baseline or offline gate credit.",
     "static_sitting_preparation": {
       "original_metadata_packet": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-0900-metadata-preparation-20261006/packet.json",

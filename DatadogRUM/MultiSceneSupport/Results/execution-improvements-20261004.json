@@ -43,7 +43,7 @@
     }
   },
   "p2": {
-    "state": "REVIEW_RECEIPT_SCHEMA_BLOCKED_FULL_STARTUP_PREFLIGHT_REQUIRED",
+    "state": "COMPLETE_OFFLINE_STARTUP_REVIEWED_WAIT_FRESH_PARAMETERS",
     "plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-composition-qualified-identity/runtime/runtime-plan.json",
       "sha256": "3e8200cfb0d7163867983c237ff896e0d00ddf1fb9dc9fa2306873ecded50a80"
@@ -885,7 +885,7 @@
       "limits": "Source-bound Python parent/worker and actual xcodebuild recognizers; fresh caller roles and live inventory remain required. No native or gate credit."
     },
     "human_startup_blocker": {
-      "state": "REVIEW_RECEIPT_SCHEMA_BLOCKED_FULL_STARTUP_PREFLIGHT_REQUIRED",
+      "state": "COMPLETE_OFFLINE_STARTUP_REVIEWED_WAIT_FRESH_PARAMETERS",
       "attempts": [
         {
           "kind": "ROOT_UUID_CONTEXT_SCHEMA_STOP_BEFORE_PARENT",
@@ -964,7 +964,7 @@
       },
       "native_calls": 0,
       "gates_closed": [],
-      "next_action": "Correct only the private receipt schema and exercise the actual unchanged full pre-effect bootstrap/configuration/reviewer-assignment/dispatch-source plus guarded construction and human/operator setup. Retain explicit offline fixtures, exact path/hash guards and zero native effects; missing reviewer_role must be rejected. Obtain designated review before a new candidate-only invitation. No source edit, rebuild, accepted-suite rerun or repeat baseline.",
+      "next_action": "Prepare the same candidate only from reviewed runtime_static_pins/executable_cone, current source/products/baseline, actual fresh page/operator/environment bindings and final parameter review. Consume every actual final receipt through unchanged require_reviewer before invitation/admission; root validates complete canonical UUID context before authority publication. New fixed adequate awake/run clocks and exclusive ownership remain required. No repeat baseline or offline gate credit.",
       "packet": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-runtime-pin-construction-correction-20261006/packet.json",
         "sha256": "e0f3c066a5c2a67b5426cf565fceb41b32adf16220a88510765a4168c082f9c6"
@@ -994,11 +994,35 @@
       "historical_unconsumed_pin_map": "source_verification.pins",
       "construction_limit": "Actual unchanged worker statements254-272 and human/operator setup only; configuration/handshake/app.run/native admission require fresh current bindings.",
       "full_startup_preflight": {
-        "state": "PENDING_OFFLINE_ONLY",
+        "state": "PASS_REVIEWED_OFFLINE_ONLY",
         "required_reviewer_role": "rum-runtime-reviewer",
-        "scope": "Actual complete unchanged pre-effect startup consumer path, including receipt schema and guarded construction; prior five constructor controls remain narrower valid evidence.",
-        "no_new_page_or_admission_until_pass": true,
+        "packet": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-reviewer-role-complete-startup-correction-20261006/packet.json",
+          "sha256": "79912863fceaf3f74b70029498248a1b236de3b367fad1e79e9b4dc34fe5a834"
+        },
+        "controls": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-reviewer-role-complete-startup-correction-20261006/controls.json",
+          "sha256": "d605b943298be350b36fdcfbc05132ac259d5e465c11dfd3b99a501805d7ed38"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-reviewer-role-complete-startup-correction-20261006/review.json",
+          "sha256": "76bcb00e3a46d6c753d29f1e654f42cc7975a4b5eb63ab46445c9e3097a17d61"
+        },
+        "schema": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-reviewer-role-complete-startup-correction-20261006/review-fields.schema.json",
+          "sha256": "c8f30b27d84652c7be6095275d46f49f54ecc5a6709a3453334519b96a0add32"
+        },
+        "actual_tool_returns": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-reviewer-role-complete-startup-correction-20261006/actual-tool-returns.json",
+          "sha256": "50cff636744b89951ff1db58b30f7ce1325827276fdc967f180125a1ed29e371"
+        },
+        "scope": "Actual unchanged bootstrap.main dispatch-source, require_reviewer, entrypoint.configuration and worker254-272 real constructors plus human/operator setup. Two controls run once; missing-role negative rejects before import; all command/process/native/Popen/app.run effects zero.",
+        "actual_published_receipt_consumer": "PASS_UNCHANGED_REQUIRE_REVIEWER",
+        "future_rule": "Consume every fresh final receipt with its exact current assignment/plan before invitation/admission; current external composition and root fixed exclusive authority remain required.",
+        "limits": "Returned dispatcher bytes verified only. Parent/socket/Controller.initial/app.run/native and release behavior remain unqualified. Retired external fixtures confer no current readiness or authority.",
+        "source_bytes_changed": 0,
         "native_calls": 0,
+        "native_admitted": false,
         "gates_closed": []
       }
     }
@@ -1795,7 +1819,7 @@
       "sha256": "cb18fc6e55042565af4475144a96c5a74a22a0dc126485b9e3c844cd25ee2660"
     }
   },
-  "updated_at": "2026-10-06T08:47:41.865087+00:00",
+  "updated_at": "2026-10-06T08:56:05.949506+00:00",
   "native_run_accounting": {
     "P3_required_platform_build": 1,
     "P5_PR3_PR4_PR5_off_cells": 6,
