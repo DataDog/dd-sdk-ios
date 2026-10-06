@@ -340,16 +340,20 @@
         },
         "S2": {
           "scope": "SwiftUI automatic view non-regression after an iOS 27 rebuild",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [
             "S2:A01",
             "S2:F07"
           ],
           "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild and baseline-to-candidate at27.1 on Duo; report SwiftUI views separately. Validate View/Navigation/Action capture and exact event owners within the actual layout. Cross-compiler View counts and occurrence sequences may differ when simultaneous columns change. Classify new loss, duplicates or wrong owners; documented baseline pane/control limitations may remain. No general tab/split tracking redesign, concurrent-pane modeling, strict timing or whole-payload equality.",
           "environment": "Xcode27.1 Duo27.1 simulator;12 shared stack/split cells plus at most4 ordinary baseline controls; reuse valid source-matched observations",
-          "evidence": "Results/S2-swiftui-stack-candidate-20260930.json qualifies all three stack cells with unchanged source-paired ownership. Results/S2-swiftui-split-20260930.json qualifies the SDK26.5 split baseline: 17 Views, 25 Actions, 29 gesture effects, three folds, Home and cleanup PASS. Corrected Sidebar capture, 1,200 artifact hashes and independent review pass. Generic names and four toggle omissions remain explicit. Only SDK27.1 split baseline/candidate remain in Results/S2-coverage-remaining-preparation.json; no full gate closure.",
+          "evidence": "Results/S2-swiftui-split-candidate-20261006.json closes scoped foreground rebuild/source-pair and actual fold obligations after independent classification: retained destinations/current owners/two Sheets, no duplicate/unknown/unassigned actions or errors, actual geometry and stable scene/window/root. Human empty.tap/two extra sidebar taps, scroll/swipe and generic churn are classified. Four accepted cells and distinct SDK27.1 saved foreground baseline reused; baseline native INVALID stays. Candidate PASS/COMPLETE/INVALID and raw DIFFERENCE unchanged; exact later23-app/full-display/task/workspace restoration separately reviewed. No full Home, ideal pane semantics, timing, physical-Duo or S3 claim.",
           "required": true,
-          "acceptance_review": "Results/S2-release-gate-review-20260925.json"
+          "acceptance_review": "Results/S2-release-gate-review-20260925.json",
+          "closure_review": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-sitting2-20261006/runtime-human/actual-outcome-closure/source-pair-classification-review.json",
+            "sha256": "462004050cfe8a03a219eef2bf00b01512616c68e73625b64e843578a493084f"
+          }
         }
       }
     },
@@ -375,16 +379,20 @@
         },
         "S2": {
           "scope": "SwiftUI automatic action non-regression after an iOS 27 rebuild",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [
             "S2:A01",
             "S2:F07"
           ],
           "decisive_test": "Use the shared coverage package: compare genuine26.5-to27.1 rebuild and baseline-to-candidate at27.1 on Duo; report SwiftUI actions separately. Validate View/Navigation/Action capture and exact event owners within the actual layout. Cross-compiler View counts and occurrence sequences may differ when simultaneous columns change. Classify new loss, duplicates or wrong owners; documented baseline pane/control limitations may remain. No general tab/split tracking redesign, concurrent-pane modeling, strict timing or whole-payload equality.",
           "environment": "Xcode27.1 Duo27.1 simulator;12 shared stack/split cells plus at most4 ordinary baseline controls; reuse valid source-matched observations",
-          "evidence": "Results/S2-swiftui-stack-candidate-20260930.json qualifies all three stack cells with unchanged source-paired ownership. Results/S2-swiftui-split-20260930.json qualifies the SDK26.5 split baseline: 17 Views, 25 Actions, 29 gesture effects, three folds, Home and cleanup PASS. Corrected Sidebar capture, 1,200 artifact hashes and independent review pass. Generic names and four toggle omissions remain explicit. Only SDK27.1 split baseline/candidate remain in Results/S2-coverage-remaining-preparation.json; no full gate closure.",
+          "evidence": "Results/S2-swiftui-split-candidate-20261006.json closes scoped foreground rebuild/source-pair and actual fold obligations after independent classification: retained destinations/current owners/two Sheets, no duplicate/unknown/unassigned actions or errors, actual geometry and stable scene/window/root. Human empty.tap/two extra sidebar taps, scroll/swipe and generic churn are classified. Four accepted cells and distinct SDK27.1 saved foreground baseline reused; baseline native INVALID stays. Candidate PASS/COMPLETE/INVALID and raw DIFFERENCE unchanged; exact later23-app/full-display/task/workspace restoration separately reviewed. No full Home, ideal pane semantics, timing, physical-Duo or S3 claim.",
           "required": true,
-          "acceptance_review": "Results/S2-release-gate-review-20260925.json"
+          "acceptance_review": "Results/S2-release-gate-review-20260925.json",
+          "closure_review": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-sitting2-20261006/runtime-human/actual-outcome-closure/source-pair-classification-review.json",
+            "sha256": "462004050cfe8a03a219eef2bf00b01512616c68e73625b64e843578a493084f"
+          }
         }
       }
     },
@@ -1753,16 +1761,20 @@
         },
         "S2": {
           "scope": "Ordinary single-scene adaptive resize/fold",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [
             "S2:A01",
             "S2:F07"
           ],
           "decisive_test": "Reuse the automatic coverage split journeys for actual Closed/Open display geometry, stable scene/window/controller ownership, selection continuity and no new view/action misattribution. No extra physical-iPad resize matrix or ideal semantic selection guarantee. Compare attribution within the observed column layout; inherited single-current-view behavior and legitimate cross-compiler occurrence differences are not regressions.",
           "environment": "Qualified Duo27.1 simulator; physical iPhone/iPad only for a specifically unsupported interaction mechanism, not a duplicate matrix",
-          "evidence": "Results/S2-coverage-remaining-preparation.json qualifies the UIKit split portion with actual display transitions, stable native owners and classified pane limitations. Results/S2-swiftui-split-20260930.json adds the SDK26.5 SwiftUI split baseline: three actual folds, stable owners and complete gesture/Home/cleanup evidence. SDK27.1 SwiftUI split baseline/candidate comparison remains; H14 stays OPEN.",
+          "evidence": "Results/S2-swiftui-split-candidate-20261006.json closes scoped foreground rebuild/source-pair and actual fold obligations after independent classification: retained destinations/current owners/two Sheets, no duplicate/unknown/unassigned actions or errors, actual geometry and stable scene/window/root. Human empty.tap/two extra sidebar taps, scroll/swipe and generic churn are classified. Four accepted cells and distinct SDK27.1 saved foreground baseline reused; baseline native INVALID stays. Candidate PASS/COMPLETE/INVALID and raw DIFFERENCE unchanged; exact later23-app/full-display/task/workspace restoration separately reviewed. No full Home, ideal pane semantics, timing, physical-Duo or S3 claim.",
           "required": true,
-          "acceptance_review": "Results/S2-release-gate-review-20260925.json"
+          "acceptance_review": "Results/S2-release-gate-review-20260925.json",
+          "closure_review": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-sitting2-20261006/runtime-human/actual-outcome-closure/source-pair-classification-review.json",
+            "sha256": "462004050cfe8a03a219eef2bf00b01512616c68e73625b64e843578a493084f"
+          }
         }
       }
     },
@@ -3044,7 +3056,7 @@
       "id": "S2",
       "name": "Single-scene iPhone Duo readiness",
       "deadline": "2026-10-16",
-      "shipping_rule": "No worse RUM after SDK27 rebuild without major app changes, evaluated by the S2 semantic acceptance contract and six finite execution packages below. E01+DL01+E04 productionc9faed81 on62f64 retains qualified source/lifetime/compatibility evidence. Resource/Trace, WebView and integrated-app ownership qualify; automatic coverage, UIKit transitions and final review remain open. No new scene API, duplicate physical matrix or immediate background-upload requirement. The user-approved [E01 equivalence decision](../MULTI_SCENE_SUPPORT.md#e01-replacement-and-s2-evidence) preserves all original S2 built evidence and closed gates; replacement alone requires no rebuild, retest or reopening.",
+      "shipping_rule": "No worse RUM after SDK27 rebuild without major app changes, evaluated by the S2 semantic acceptance contract and six finite execution packages below. E01+DL01+E04 productionc9faed81 on62f64 retains qualified source/lifetime/compatibility evidence. Resource/Trace, WebView and integrated-app ownership qualify; UIKit candidate transitions and final review remain open. No new scene API, duplicate physical matrix or immediate background-upload requirement. The user-approved [E01 equivalence decision](../MULTI_SCENE_SUPPORT.md#e01-replacement-and-s2-evidence) preserves all original S2 built evidence and closed gates; replacement alone requires no rebuild, retest or reopening.",
       "hardware_uncertainty": "No physical Duo validated. Targeted F09 follows when hardware is available; it is not pre-release readiness proof.",
       "selected_candidate": "E01 + DL01 + E04",
       "candidate_freeze": {
@@ -3063,7 +3075,7 @@
           "E05",
           "deferred semantic SwiftUI and multi-scene implementation"
         ],
-        "status": "SOURCE/LIFETIME/DOCUMENTATION/COMPATIBILITY/RESOURCE_TRACE/WEBVIEW/APP QUALIFIED; AUTOMATIC_COVERAGE/UIKIT_TRANSITIONS/FINAL RELEASE OPEN",
+        "status": "SOURCE/LIFETIME/COMPATIBILITY/RESOURCE_TRACE/WEBVIEW/APP/AUTOMATIC_COVERAGE/FOLD QUALIFIED; PHYSICAL_UIKIT_TRANSITIONS/FINAL REVIEW OPEN",
         "documentation": "Results/S2-F02-composition-documentation.json",
         "compatibility": "Results/EXP-217-s2-compatibility.json",
         "e01_replacement_decision": "strategy_decision.e01_functional_equivalence"
@@ -3078,8 +3090,8 @@
           "E04"
         ],
         "evidence": "Results/EXP-216-s2-composition-promotion.json",
-        "status": "SELECTED; SOURCE/P03/F02/F03 QUALIFIED",
-        "remaining": "Automatic coverage, UIKit transitions and final review remain open. Compatibility at unchanged7604da24, Resource/Trace, WebView and app evidence qualify within their recorded scopes. No accepted check repeats merely to resume.",
+        "status": "SOURCE/LIFETIME/COMPATIBILITY/RESOURCE_TRACE/WEBVIEW/APP/AUTOMATIC_COVERAGE/FOLD QUALIFIED; PHYSICAL_UIKIT_TRANSITIONS/FINAL REVIEW OPEN",
+        "remaining": "Physical UIKit candidate and final review remain; reuse all accepted scoped evidence.",
         "production_revision": "c9faed816a1d4828d7d8c4b64acae01119425889"
       },
       "candidate_freeze_history": [
@@ -3284,30 +3296,6 @@
       "measurement_rule": "strategy_decision.project_measurement_rule",
       "remaining_tasks": [
         {
-          "id": "swiftui-split-candidate",
-          "gates": [
-            "S2:C09",
-            "S2:C10",
-            "S2:H14"
-          ],
-          "owner": "SDK implementer; Device operator + SDK implementer",
-          "owner_record": "Results/S2-coverage-remaining-preparation.json",
-          "dependencies": [
-            "S2:A01",
-            "S2:F07"
-          ],
-          "source_scope": "S2",
-          "missing_assertion": "One final SwiftUI split candidate has no complete native capture/terminal grading with actual fold proof.",
-          "next_action": "P2 qualifies the complete automatic capture path; then invite only for the existing candidate cell.",
-          "reuse": [
-            "Four accepted SwiftUI cells; separate saved baseline",
-            "Results/S2-foreground-finalization-20261002.json"
-          ],
-          "environment": "Duo27.1 simulator under Xcode27.1; fresh human availability only after automatic bootstrap qualification.",
-          "exit": "Selected assertions, complete scoped evidence and cleanup accepted; named gate verdict assessed separately.",
-          "obligation": "RELEASE_BLOCKING"
-        },
-        {
           "id": "uikit-transition-candidate",
           "gates": [
             "S2:H11",
@@ -3364,8 +3352,8 @@
             "S2:F08"
           ],
           "source_scope": "S2",
-          "missing_assertion": "Final candidate review awaits the two remaining behavioral items.",
-          "next_action": "Review exact S2 source and accepted evidence once both candidate results are sufficient.",
+          "missing_assertion": "Final review awaits the remaining physical UIKit candidate.",
+          "next_action": "Prepare exact source/evidence review now; complete release review once physical UIKit evidence is sufficient.",
           "reuse": [
             "Closed S2 compatibility, lifetime, UIKit, Resource/Trace, WebView, app and hosting evidence"
           ],

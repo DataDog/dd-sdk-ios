@@ -1,0 +1,206 @@
+{
+  "schema_version": 1,
+  "state": "SCOPED_FOREGROUND_AND_FOLD_QUALIFIED_ORIGINAL_CLEANUP_INVALID_SEPARATE_RESTORATION_PASS",
+  "updated_at": "2026-10-06T21:15:41.894317+00:00",
+  "gates": [
+    "S2:C09",
+    "S2:C10",
+    "S2:H14"
+  ],
+  "plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/runtime-plan.json",
+    "sha256": "8ecffcc61ac6f541f38835a19346405aa720fe1f54d5a97d16e7f4e889fa1421"
+  },
+  "plan_meaning": "Selected preparation lineage only; actual native plan is separately frozen.",
+  "actual_plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-sitting2-20261006/runtime-plan.final-unissued.json",
+    "sha256": "3a75f8a37707d059ac1423c203cf0f973b77a0c12d0ae02053f9d6f203adc383"
+  },
+  "configuration": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-sitting2-20261006/runtime-human/configuration.json",
+    "sha256": "f625dd4a4a319910cb1b47e9e375e99753b5d47fb58f3cf1162ffa6beb8c4900"
+  },
+  "source_revision": "c9faed816a1d4828d7d8c4b64acae01119425889",
+  "run_id": "2ede386d-70a2-4751-b0d7-25ef212977a7",
+  "scenario": "PASS",
+  "evidence": "COMPLETE",
+  "cleanup": "INVALID",
+  "overall": "INVALID",
+  "original_result": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-sitting2-20261006/runtime-human/cells/candidate-27.1-duo-SwiftUI-split-single/result.json",
+    "sha256": "0b3bc79e71469d03b5b2f38b10fde7ddd646f1741dfe022b33812fd40a7e7fe5"
+  },
+  "original_cleanup_reason": "Inactive display3 backlightState off to activeOn. Original verdict remains immutable.",
+  "separate_restoration": {
+    "state": "PASS",
+    "proof": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-sitting2-20261006/runtime-human/actual-outcome-closure/current-state.json",
+      "sha256": "e7aa1f0ed8db7127c5230b7aaa1e9990646def24d9291f66693d035952abb6a3"
+    },
+    "scope": "Read-only exact full original display,23 original apps, stable device/workspace/source and task/PID/worker absence; no normalization."
+  },
+  "custody_packet": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-sitting2-20261006/runtime-human/actual-outcome-closure/packet.json",
+    "sha256": "38f0328ed8b5da8e044eeff9d37716935399d7ff45f9df03bb6cef136e6d5a6b"
+  },
+  "actual_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-sitting2-20261006/runtime-human/actual-outcome-closure/actual-review.json",
+    "sha256": "fa50caa435b7f8e6fe6e7a84ee8c28ad5157fb9f87809e2d3999a42a5db76642"
+  },
+  "page_retirement": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-sitting2-20261006/runtime-human/actual-outcome-closure/page-retirement.json",
+    "sha256": "be2831e80c6f3637d79e35488e1b533bc176dc2037a4e34195219ef60d851fe6"
+  },
+  "classification_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-sitting2-20261006/runtime-human/actual-outcome-closure/source-pair-classification-review.json",
+    "sha256": "462004050cfe8a03a219eef2bf00b01512616c68e73625b64e843578a493084f"
+  },
+  "raw_comparison": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-sitting2-20261006/runtime-human/actual-outcome-closure/source-pair-offline-comparison.json",
+    "sha256": "5b3e312ee914d45f56a89d97a207fd9afef6288be703aebf73d9c870f40f0d7a"
+  },
+  "raw_comparison_verdict": "DIFFERENCES_REQUIRE_SCOPED_CLASSIFICATION",
+  "foreground_inventory": {
+    "views": 15,
+    "automatic_actions": 27,
+    "duplicate_ids": 0,
+    "unknown_owners": 0,
+    "unassigned_actions": 0,
+    "error_rows": 0,
+    "rum_only_verdict": "PASS",
+    "local_result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-sitting2-20261006/runtime-human/cells/candidate-27.1-duo-SwiftUI-split-single/local-result.json",
+      "sha256": "779da91f17d6d40ca27b5b1fb61e616e32ba1d161ceee394b8064dcd61cc977f"
+    },
+    "rum_only_result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-sitting2-20261006/runtime-human/cells/candidate-27.1-duo-SwiftUI-split-single/rum-only-result.json",
+      "sha256": "bfb78673651782b52a769fe03bb4d45dbf388f7adddaa09efe483b17c0983e66"
+    }
+  },
+  "classified_differences": [
+    {
+      "basis": "One automatic action in both for the same sidebar HostingScrollView and current pre-fold navigation owner2, with actual pan begin/end retained. Accepted source-paired stack evidence records this same recognition variance. No gesture-kinetics or universal type-stability claim.",
+      "difference": "initial.root.scroll swipe versus scroll",
+      "state": "CLASSIFIED_NO_CAPTURE_OR_OWNER_LOSS"
+    },
+    {
+      "basis": "Request826d5239\u2026 callback305/native_input307 is empty.tap while the prompt targets sidebar.tap. This independently matches the uncertain direct human annotation. Captured button Action uses the current generic navigation owner; unequal input is not an SDK sidebar-capture-loss observation.",
+      "difference": "inner.root.return.tap",
+      "state": "CLASSIFIED_SPECIFIC_HUMAN_TARGET_DEVIATION"
+    },
+    {
+      "basis": "Request3cf461ea\u2026 has sidebar.tap callbacks314/318 and native inputs316/320 before Detail appearance325/327 and navigation Action. Two extra unique button Actions explain25\u219227; no duplicate Action identifier.",
+      "difference": "stable.navigate additional button actions",
+      "state": "CLASSIFIED_ADDITIONAL_ACTUAL_INPUT"
+    },
+    {
+      "basis": "Initial View occurrences0\u20138 match class/URL/order. At Open baseline records empty+Sidebar appearance and fallback/navigation/navigation9\u201311, while candidate records empty and navigation9. Both retain that generic navigation owner across inner root and Detail until the separately captured second SheetScreen (baseline12/candidate10); dismissal returns generic navigation13/11. Closed Detail input uses baseline newly created navigation14 versus retained candidate11. At Reopen both record Sidebar appearance and end with generic navigation17/14; candidate has fallback+navigation/navigation versus three baseline navigation occurrences. Names/classes, two Sheet owners and all selected action owner classes remain. No new selected destination-class loss, unknown/foreign owner, duplicate Action ID or unassigned action appears. Generic lifecycle churn/ordinal equality and concurrent-pane modeling are not owning-contract requirements; inherited detail-to-current-generic-navigation limitation is explicit.",
+      "difference": "post-Open generic View churn and ordinal offsets",
+      "state": "CLASSIFIED_WITHIN_ACTUAL_LAYOUT_AND_INHERITED_SINGLE_CURRENT_DESTINATION"
+    },
+    {
+      "basis": "Accepted17-view/25-action SDK26.5 split and three accepted stack cells are reused. All selected destination class/name sets and four toggle omissions persist. Compare owner relationships within actual simultaneous-column layout;17/18/15 occurrence equality and ideal semantic selection are not required.",
+      "difference": "26.5\u219227.1 rebuild",
+      "state": "CLASSIFIED_CROSS_COMPILER_LAYOUT_VARIANCE"
+    }
+  ],
+  "fold_evidence": {
+    "close": {
+      "active_display": 1,
+      "actual_display": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-sitting2-20261006/runtime-human/cells/candidate-27.1-duo-SwiftUI-split-single/input/close.effect/actual-display.json",
+        "sha256": "d7a1087e5f90e36824404973279dc939b92297368f16db3ee994317ab8d13096"
+      },
+      "receipt": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-sitting2-20261006/runtime-human/cells/candidate-27.1-duo-SwiftUI-split-single/input/close.effect/fold.json",
+        "sha256": "47fed88af99b4067961e07c0bea3f5445e01369337755db1bca303d395adb5b1"
+      }
+    },
+    "open": {
+      "active_display": 3,
+      "actual_display": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-sitting2-20261006/runtime-human/cells/candidate-27.1-duo-SwiftUI-split-single/input/open.effect/actual-display.json",
+        "sha256": "3415bfeec1257e51173d847660357c1aae7d63fcbdeabbc8275999df8e0622da"
+      },
+      "receipt": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-sitting2-20261006/runtime-human/cells/candidate-27.1-duo-SwiftUI-split-single/input/open.effect/fold.json",
+        "sha256": "fa64d918d002d6fa8b554f027e6f994837d2d74315292ddc11fa3ac56ff12235"
+      }
+    },
+    "reopen": {
+      "active_display": 3,
+      "actual_display": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-sitting2-20261006/runtime-human/cells/candidate-27.1-duo-SwiftUI-split-single/input/reopen.effect/actual-display.json",
+        "sha256": "f56cc6dc6c7f17128e55421ef25ccd462a680eec5d934f3c14ee910b627df140"
+      },
+      "receipt": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-sitting2-20261006/runtime-human/cells/candidate-27.1-duo-SwiftUI-split-single/input/reopen.effect/fold.json",
+        "sha256": "accb273676f1858b7290462e64add43b005f3f7c9045b6e287efdf746c13171b"
+      }
+    }
+  },
+  "topology": {
+    "records": 103,
+    "scene_window_root_identities": 1,
+    "active_foreground_bounds": [
+      [
+        0,
+        0,
+        466,
+        678
+      ],
+      [
+        0,
+        0,
+        951,
+        669
+      ]
+    ]
+  },
+  "reused_accepted_cells": [
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-effect-recapture-20260930.json",
+      "sha256": "86e282bd8531a4fe3d00a05b686a0cd35305fcb209a763b66743948ab73f1f39"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-stack271-20260930.json",
+      "sha256": "2850adb4656c7d93eb3fb9ba6d99b55f92808c34e6b86d9e9b909d379f8f3f15"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-stack-candidate-20260930.json",
+      "sha256": "5930e4621a7047569bdc70de1b650288be20dfd11e232e53dc369768ec8cb61e"
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-split-20260930.json",
+      "sha256": "bc67dea7037b2debbacd69c8ad9e51c14251071ae56c32a10a2e595943798af8"
+    }
+  ],
+  "baseline_scope": {
+    "reference": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/saved-foreground-assessment-cycle4.json",
+      "sha256": "65e749c9acfd7d1009a7bd44389060c983640c80cdfcb394ad8fca9a1bf310df"
+    },
+    "state": "SAVED_FOREGROUND_ASSESSMENT_ONLY",
+    "original_native_verdict": "INVALID",
+    "completed_native_cell": false,
+    "home_qualified": false
+  },
+  "gates_closed": [
+    "S2:C09",
+    "S2:C10",
+    "S2:H14"
+  ],
+  "closure_basis": "Owning S2 semantic contract and independent foreground source-pair/rebuild classification accept destination/action ownership in actual layout, plus actual fold geometry/continuity. Original cleanup INVALID stays unchanged; exact later restoration is separately accepted.",
+  "new_builds": 0,
+  "new_native_runs": 1,
+  "supported_calls": 3,
+  "end_calls": 1,
+  "browser_ready": true,
+  "pending_tools_after_retirement": 0,
+  "limits": [
+    "No full Home/backend, physical Duo, concurrent-pane modeling, exact generic count/ordinal equality, whole SDK/API/privacy or S3 credit.",
+    "Four toggle omissions and generic current-view pane limitation remain inherited.",
+    "Human annotation explains only the specific captured empty.tap and additional sidebar inputs."
+  ],
+  "next_action": "Physical UIKit candidate and final S2 release review remain. No SwiftUI candidate, baseline or automatic diagnostic repeat."
+}

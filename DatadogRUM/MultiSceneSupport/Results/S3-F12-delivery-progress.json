@@ -243,7 +243,7 @@
       "off_contract": "Static fast path; final E01/E05 headers/sampling/user/account expressions and fresh develop no handoff or scene lookup",
       "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
       "rebuild_obligation": "Drop unqualified empty-header, existing-header suppression and helper rewrites; networking wire policy unchanged",
-      "status": "ACTION_DEPENDENCY_QUALIFIED_CONSUMER_FIXTURES_REPAIRED_COMPONENT_QUALIFICATION_REMAINS",
+      "status": "CONSUMER_COMPONENTS_PARTIALLY_QUALIFIED_WEBVIEW_AND_FLAGS_ACQUISITION_REMAIN",
       "owning_record": null,
       "source_head": null,
       "obligation": "BEFORE_SLICE_MERGE",
@@ -254,8 +254,8 @@
         "off": "NOT_EXECUTED",
         "integration": "NOT_QUALIFIED"
       },
-      "remaining_assertion": "Authoritative nil vs absent handoff, optional request-time final E05 correlation, delayed WebView owner and accepted action merge Off: Static fast path; final E01/E05 headers/sampling/user/account expressions and fresh develop no handoff or scene lookup",
-      "next_action": "Qualify forty-four selected current-source Internal/CoreTSan/Trace/RUM/Logs consumer and legacy methods using fresh products, discovery, exact assertions and cleanup. The final44 attempt stopped on one OTel UserInfo fixture before discovery/tests/boot; the supported initializer repair is signed locally and the repeated helper pattern was audited across1727 tracked Swift files. All three zero-test consumer compile failures remain invalid, with separate accepted no-owned-boot cleanup. No full2700-second profile fits the remaining pre09:00 awake window; prepare only, never clip or extend old clocks. From09:00 prioritize the reviewed S2 SwiftUI split candidate after fresh human readiness. Flags Off acquisition, WebView, complete Off, older-system and final-stack acceptance remain.",
+      "remaining_assertion": "WebView callback origin across two queues/same-scene history; Flags Internal/React Native acquisition; complete Off, older-system, lifetime and final stack. Retain43 consumers and separate repaired Core method; original44 INVALID stays.",
+      "next_action": "Complete source-backed WebView native-container and Flags Internal/React Native acquisition, then focused component/complete Off/older-system/final-stack qualification. Preserve accepted component evidence and original44 failure; do not rerun the repaired Core method merely to resume.",
       "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit.",
       "dependency_design": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/packet.json",
@@ -263,7 +263,7 @@
       },
       "preparation_record": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
-        "sha256": "550e80b8f22ee749f1f0f29deae5b5e88a1f24697b47b22356b700c63b02da54"
+        "sha256": "63bee02b8e8e54fac06902df9fb24e5b66587fac3e31d2a04799dfc5a0b18e3d"
       },
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
       "source_branch": "valpertui/s3-consumer-capture",
@@ -377,6 +377,10 @@
       "consumer_otel_userinfo_checkpoint": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-otel-userinfo-and-fixture-audit-20261006/sdk-checkpoint.json",
         "sha256": "cb18fc6e55042565af4475144a96c5a74a22a0dc126485b9e3c844cd25ee2660"
+      },
+      "webview_cache_checkpoint": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-scene-cache-20261006/sdk-checkpoint.json",
+        "sha256": "78c24d9a0aab72df30bba76b55b07ad700062917ac701b7ed751ad0aca6f7d0b"
       }
     },
     {
@@ -561,7 +565,7 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": "2026-10-06T06:33:02.616882+00:00",
+  "updated_at": "2026-10-06T21:15:41.894317+00:00",
   "dependency_build_attempts": 4,
   "dependency_component_qualifications": 4,
   "dependency_test_invocations": 4

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "HUMAN_PREFIX_QUALIFIED_FRESH_CANDIDATE_READY_REQUIRED",
+  "state": "S2_SWIFTUI_SCOPED_GATES_CLOSED_P7_WEBVIEW_ACQUISITION",
   "owner": "/root",
   "plan": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
@@ -10,7 +10,7 @@
   "native_admitted": false,
   "native_runs": 20,
   "gates_closed": [],
-  "next_action": "Admit only a fresh candidate-only SwiftUI split sitting using the reviewed unchanged source/products and current user availability. Present the new page only after actual launch/capture proof; require genuine browser Ready plus fresh post-Ready owner/idle, unchanged RUM-only journey and actual H14 fold evidence. No automatic diagnostic or baseline repeat.",
+  "next_action": "Qualify only the three new scene-cache methods after source review and signed source checkpoint, then implement WebView callback origin transport and Flags acquisition. No human session while the user is unavailable.",
   "p1": {
     "required_s2_tasks": 3,
     "required_s3_tasks": 20,
@@ -95,29 +95,21 @@
       "sha256": "d16086cc4679eda3e066438196e6b5b9555f682c6794cbb996f6d18fa42f28c5"
     },
     "workspace_alternative": {
-      "native_admitted": false,
-      "execution": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-independent-human-ready-timeout-20261006.json",
-        "sha256": "f0926799bac1f31247d32be3d8ab8982942d1f0fdedcc4ae026a24f2005ab440"
-      },
-      "state": "HUMAN_READY_TIMEOUT_PREFIX_PASS_RETIRED",
+      "native_admitted": true,
+      "execution": null,
       "definition": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-successor/runtime-human/definition.json",
-        "sha256": "c11b7da4e66062745a5502778694649408039ebe8dbdefd1b6d2be5d5649aac7"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-sitting2-20261006/runtime-human/definition.json",
+        "sha256": "e0da8cd975eeb8038a13b8b409fc71e6cde4349b274208b40159880c330f4e61"
       },
       "plan": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-successor/runtime-plan.final-unissued.json",
-        "sha256": "88faf72b2dd720fb25659afe5838095536a94acef415cf451c080658350d2bd4"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-sitting2-20261006/runtime-plan.final-unissued.json",
+        "sha256": "3a75f8a37707d059ac1423c203cf0f973b77a0c12d0ae02053f9d6f203adc383"
       },
       "review": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-successor/runtime-human/review.json",
-        "sha256": "40247f1015bc0a40c1d9155a3f9794e0ec1fc177cad05800f31a91e3cd958057"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-sitting2-20261006/runtime-human/review.json",
+        "sha256": "fcfdca48c7f6dac581fceb60278d2792b0d7cf2bf889ec2940c0440e4e739829"
       },
-      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-successor/runtime-human",
-      "active": false,
-      "retired": true,
-      "owner_freeze": false,
-      "runtime_authority_unresumable": true
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-sitting2-20261006/runtime-human"
     },
     "distinct_workspace_cycle3": {
       "state": "63_OFFLINE_PASS_FULL_REVIEW_BLOCKED_3_CORRECTION_ASSIGNED_CYCLE4",
@@ -1029,6 +1021,31 @@
         "review": null,
         "root": null,
         "state": "INACTIVE_THIN_HUMAN_ADAPTER_PREPARATION"
+      },
+      {
+        "active": false,
+        "definition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-successor/runtime-human/definition.json",
+          "sha256": "c11b7da4e66062745a5502778694649408039ebe8dbdefd1b6d2be5d5649aac7"
+        },
+        "execution": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-independent-human-ready-timeout-20261006.json",
+          "sha256": "f0926799bac1f31247d32be3d8ab8982942d1f0fdedcc4ae026a24f2005ab440"
+        },
+        "native_admitted": false,
+        "owner_freeze": false,
+        "plan": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-successor/runtime-plan.final-unissued.json",
+          "sha256": "88faf72b2dd720fb25659afe5838095536a94acef415cf451c080658350d2bd4"
+        },
+        "retired": true,
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-successor/runtime-human/review.json",
+          "sha256": "40247f1015bc0a40c1d9155a3f9794e0ec1fc177cad05800f31a91e3cd958057"
+        },
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-successor/runtime-human",
+        "runtime_authority_unresumable": true,
+        "state": "HUMAN_READY_TIMEOUT_PREFIX_PASS_RETIRED"
       }
     ],
     "ordering_successor": {
@@ -1992,7 +2009,7 @@
       "runtime_authority": false
     },
     "independent_app_lifecycle": {
-      "state": "THIN_HUMAN_ADAPTER_REVIEWED_PREFIX_PASS_READY_TIMEOUT",
+      "state": "ACTUAL_HUMAN_FOREGROUND_FOLD_COMPLETE_RESTORATION_REVIEWED",
       "proposal": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/proposal.json",
         "sha256": "0e59eeea1f64129649135b43f1e74942f2ff5ece33634f8f99f50279fe3b5e01"
@@ -2003,7 +2020,11 @@
       },
       "native_admitted": false,
       "ready_invited": false,
-      "gates_closed": [],
+      "gates_closed": [
+        "S2:C09",
+        "S2:C10",
+        "S2:H14"
+      ],
       "required_positive": "Fresh same-PID writer, scene/window/root ownership and idle after short supported capture/End, before browser Ready.",
       "actual_result": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-independent-capture-qualified-20261006.json",
@@ -2013,22 +2034,26 @@
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/component-readiness-correction-20261006/cycle2/runtime-successor/actual-outcome-closure/actual-review.json",
         "sha256": "cf5629df40aa9b5101ab404f15343c70102b4a726b2ea33fb58166ddd98c7086"
       },
-      "next_action": "Admit only a fresh candidate-only SwiftUI split sitting using the reviewed unchanged source/products and current user availability. Present the new page only after actual launch/capture proof; require genuine browser Ready plus fresh post-Ready owner/idle, unchanged RUM-only journey and actual H14 fold evidence. No automatic diagnostic or baseline repeat.",
+      "next_action": "Retain actual journey and separate restoration. No SwiftUI candidate repeat; physical UIKit readiness remains independent.",
       "qualification": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/component-readiness-correction-20261006/cycle2/runtime-successor/actual-component/proof/qualification.json",
         "sha256": "3f683d65b4d14c52f7f0e38b5b9515be1b7b5852e88e907904589dd30c8cd6bc"
       },
       "human_composition": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-independent-human-ready-timeout-20261006.json",
-        "sha256": "f0926799bac1f31247d32be3d8ab8982942d1f0fdedcc4ae026a24f2005ab440"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-split-candidate-20261006.json",
+        "sha256": "e83bc4c23958bb83d8ae6bcbcf4f8e116580d76f275e64d27df29e077e53c036"
       },
       "human_composition_review": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-successor/runtime-human/review.json",
         "sha256": "40247f1015bc0a40c1d9155a3f9794e0ec1fc177cad05800f31a91e3cd958057"
       },
       "human_actual_review": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-successor/runtime-human/actual-outcome-closure/actual-review.json",
-        "sha256": "863c3037599ae17e811d74d8843fb8bac0d9681f23bab8161c17dd95294326c1"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-sitting2-20261006/runtime-human/actual-outcome-closure/actual-review.json",
+        "sha256": "fa50caa435b7f8e6fe6e7a84ee8c28ad5157fb9f87809e2d3999a42a5db76642"
+      },
+      "scoped_comparison_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-independent-app-lifecycle-capture-design-20261006/human-independent-sitting2-20261006/runtime-human/actual-outcome-closure/source-pair-classification-review.json",
+        "sha256": "462004050cfe8a03a219eef2bf00b01512616c68e73625b64e843578a493084f"
       }
     }
   },
@@ -2824,7 +2849,7 @@
       "sha256": "cb18fc6e55042565af4475144a96c5a74a22a0dc126485b9e3c844cd25ee2660"
     }
   },
-  "updated_at": "2026-10-06T20:24:25.434897+00:00",
+  "updated_at": "2026-10-06T21:15:41.894317+00:00",
   "native_run_accounting": {
     "P3_required_platform_build": 1,
     "P5_PR3_PR4_PR5_off_cells": 6,
@@ -2951,9 +2976,28 @@
       "gestures": 0,
       "browser_ready": false,
       "gates_closed": []
+    },
+    "P2_human_independent_sitting2": {
+      "actual_result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-split-candidate-20261006.json",
+        "sha256": "e83bc4c23958bb83d8ae6bcbcf4f8e116580d76f275e64d27df29e077e53c036"
+      },
+      "native_runs": 1,
+      "cli_app_launches": 1,
+      "supported_calls": 3,
+      "end_calls": 1,
+      "browser_ready": true,
+      "original_cleanup": "INVALID",
+      "separate_restoration": "PASS",
+      "gates_closed": [
+        "S2:C09",
+        "S2:C10",
+        "S2:H14"
+      ],
+      "pending_tools": 0
     }
   },
-  "selected_task": "S2_C09_C10_H14_HUMAN_CAPTURE_CONTINUITY",
+  "selected_task": "P7_WEBVIEW_SCENE_CACHE_AND_CALLBACK_OWNERSHIP",
   "execution_frontier": {
     "primary": "Qualify the existing independent-app launch and short workspace-free capture/End path for this candidate. Require fresh same-PID writer, scene/window/root ownership and idle after End before offering browser Ready; retain actual returned tool state. Reuse accepted source, products, four cells and split baseline. Review the changed composition and focused boundary controls before native use; keep original clocks and failures immutable. PR7 WebView and Flags acquisition can progress independently.",
     "required_paths": [
@@ -3225,7 +3269,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/attempt-policy-20261005.json",
     "sha256": "4a455a7d817bd900f2f7ca21cc403c2ee934f825b4e7d0c2ba9eb575787f2411"
   },
-  "independent_selected_task": "P2_CANONICAL_SITTING_PREPARATION_AND_P7_ONE_CHANGED_CORE_TEST",
+  "independent_selected_task": "P7_THREE_NEW_CACHE_METHODS_AUTOMATIC_PREPARATION",
   "unattended_window_20261006_0900": {
     "authorization": "Continue the unattended work up to09:00; user available for human sessions starting09:00",
     "awake_authority": {

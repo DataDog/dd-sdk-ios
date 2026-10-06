@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "state": "CURRENT_CONSUMER43_PASS_ONE_CORE_SETUP_REPAIR_SIGNED_FOCUSED_QUALIFICATION_REMAINS",
+  "state": "CONSUMER_COMPONENTS_QUALIFIED_WEBVIEW_CACHE_SIGNED_NATIVE_QUALIFICATION_REMAINS",
   "existing_gate": "S3:F12",
   "slice": "PR7",
   "source_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
   "branch": "valpertui/s3-consumer-capture",
   "base_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
-  "source_head": "3783b697b50d8fb184814c83283857822afa4852",
+  "source_head": "f483d658d16f6612a515ba862c07aa6f448aff1a",
   "source_gap_inventory": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-consumer-source-preparation/packet.json",
     "sha256": "57e376768a17b85993c54af64fcfb4f63048738ae0976e386760c5831f0c4a5b"
@@ -180,7 +180,7 @@
       "state": "DESIGN_AND_IMPLEMENTATION_REMAIN"
     }
   ],
-  "selected_task": "P7_ONE_CHANGED_CORE_TEST_CURRENT_SOURCE_QUALIFICATION",
+  "selected_task": "P7W1_SCENE_SCOPED_HISTORICAL_CACHE",
   "pending_action_requirement": "Pending/excluded action scalars do not identify an accepted Action UUID. The existing queue-confined continuous-action receipt is not a generic cross-module/discrete-action acceptance receipt. Do not borrow a later same-view action; independently review the smallest source-backed receipt design before consumer changes.",
   "off_requirement": "Reusing the network provider single State read may gate On locally. No default-Off Core registry/TaskLocal/scene lookup, owner allocation, new map/lock or naive owner(in: FeatureScope) capture.",
   "runtime_admitted": false,
@@ -189,7 +189,7 @@
   "gates_closed": [],
   "whole_pr7_qualified": false,
   "next_action": "Complete source-backed WebView native-container and Flags Internal/React Native acquisition, then focused component/complete Off/older-system/final-stack qualification. Preserve accepted component evidence and original44 failure; do not rerun the repaired Core method merely to resume.",
-  "updated_at": "2026-10-06T19:35:25.612797+00:00",
+  "updated_at": "2026-10-06T21:15:41.894317+00:00",
   "sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-core-sampling-initialization-test-repair-applied-20261006/sdk-checkpoint.json",
     "sha256": "8479a54805b889477b7b9f20b61e6755e0ce49fda73cab852a95a77f47f45e72"
@@ -1413,7 +1413,34 @@
       "sha256": "f2700a6dd4b49f5fa7824c9ca6a16dc11c5e8be608067bf092eda9076027094a"
     },
     "native_runs": 0,
-    "next": "Review On-only callback-time native ownership and scene-filtered historical lookup; retain default-Off and source-less fallback contracts.",
-    "state": "SOURCE_PREPARATION_ONLY_NOT_IMPLEMENTED_OR_QUALIFIED"
+    "next": "Carry On-only callback-time ownership across both async hops; retain default-Off public message path and source-less fallback.",
+    "state": "SOURCE_PREPARATION_ONLY_NOT_IMPLEMENTED_OR_QUALIFIED",
+    "message_bus_boundary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-consumer-source-preparation-20261006/message-bus-boundary-discriminator.json",
+      "sha256": "ad0fe5780937e10f8252bf91a658c9231c58ffec1cd88392653c60ce9e0a26aa"
+    }
+  },
+  "webview_scene_cache_primitive": {
+    "state": "SOURCE_REVIEWED_SIGNED_THREE_METHOD_QUALIFICATION_PREPARED",
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-scene-cache-20261006/packet.json",
+      "sha256": "0f599f2274dd13cae50fa015bc1f4225865ab705e7d289e2570e9715243a897c"
+    },
+    "controls": 3,
+    "scope": "Internal scene-filtered historical lookup; unchanged global lookup. No production caller yet.",
+    "gates_closed": [],
+    "next": "Finalize exact signed source/compiler/helper bindings and designated proposal review; root issues one fresh automatic three-method cell. Full callback acquisition remains open.",
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-scene-cache-20261006/review.json",
+      "sha256": "6d427e4d0264d5a06d2bd79ace700371d34b0aaf9cb3c5f70a64d515c73931fe"
+    },
+    "sdk_checkpoint": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-scene-cache-20261006/sdk-checkpoint.json",
+      "sha256": "78c24d9a0aab72df30bba76b55b07ad700062917ac701b7ed751ad0aca6f7d0b"
+    },
+    "preparation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-scene-cache-20261006/three-method-qualification-preparation/packet.precommit.json",
+      "sha256": "22f70500930dceeecb866cc1a35091c26b2ac0178b5529ad4b1c2b9f7fde786d"
+    }
   }
 }

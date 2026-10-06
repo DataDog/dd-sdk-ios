@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "state": "QUALIFIED_INDEPENDENT_PREFIX_THIN_HUMAN_ADAPTER_PREPARATION",
-  "updated_at": "2026-10-06T20:24:25.434897+00:00",
+  "state": "SCOPED_SWIFTUI_FOREGROUND_AND_FOLD_GATES_CLOSED",
+  "updated_at": "2026-10-06T21:15:41.894317+00:00",
   "execution": {
-    "record": "Results/S2-independent-human-ready-timeout-20261006.json"
+    "record": "Results/S2-swiftui-split-candidate-20261006.json"
   },
   "current": {
     "kind": "swiftui_preparation",
@@ -615,7 +615,8 @@
       "sha256": "863c3037599ae17e811d74d8843fb8bac0d9681f23bab8161c17dd95294326c1"
     },
     "no_baseline_repeat": true,
-    "no_old_ready_reuse": true
+    "no_old_ready_reuse": true,
+    "state": "RETIRED_SCOPED_FOREGROUND_AND_FOLD_COMPLETE_NO_RELAUNCH"
   },
   "execution_history": [
     {
@@ -652,5 +653,21 @@
         "remaining": "Source interface accepted; actual first renewal passed. Later tool-session loss retires this human composition; source-only and full-human qualification remain distinct."
       }
     }
-  ]
+  ],
+  "scoped_swiftui_completion": {
+    "record": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-swiftui-split-candidate-20261006.json",
+      "sha256": "e83bc4c23958bb83d8ae6bcbcf4f8e116580d76f275e64d27df29e077e53c036"
+    },
+    "gates_closed": [
+      "S2:C09",
+      "S2:C10",
+      "S2:H14"
+    ],
+    "accepted_native_cells_unchanged": 4,
+    "distinct_baseline_native_invalid_preserved": true,
+    "original_candidate_cleanup": "INVALID",
+    "later_restoration": "PASS",
+    "next": "Physical UIKit candidate and final S2 review; preserved preparation selector grants no launch."
+  }
 }
