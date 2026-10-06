@@ -243,7 +243,7 @@
       "off_contract": "Static fast path; final E01/E05 headers/sampling/user/account expressions and fresh develop no handoff or scene lookup",
       "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
       "rebuild_obligation": "Drop unqualified empty-header, existing-header suppression and helper rewrites; networking wire policy unchanged",
-      "status": "ACTION_INTERNAL_RUM_ACCEPTED_CORE_REMAINS_CONSUMERS_UNAPPLIED",
+      "status": "ACTION_DEPENDENCY_QUALIFIED_NETWORK_TRACE_IMPLEMENTED_UNCOMPILED",
       "owning_record": null,
       "source_head": null,
       "obligation": "BEFORE_SLICE_MERGE",
@@ -255,7 +255,7 @@
         "integration": "NOT_QUALIFIED"
       },
       "remaining_assertion": "Authoritative nil vs absent handoff, optional request-time final E05 correlation, delayed WebView owner and accepted action merge Off: Static fast path; final E01/E05 headers/sampling/user/account expressions and fresh develop no handoff or scene lookup",
-      "next_action": "Review actual P7A0 terminal/cleanup, then qualify only the remaining Core method using the exact current-source TSan build and source-backed disabled discovery grammar. Preserve eleven accepted methods and failed original verdict; SDK source stays frozen. Consumer composition/private tests continue offline; Off/final-stack remain.",
+      "next_action": "Review and apply decisive actual automatic/manual/OTel constructor tests, then fresh current-source Internal/CoreTSan/Trace qualification within the existing awake cutoff. P7A0 selected twelve methods at ab46 are accepted; original whole INVALID stays immutable. Logs/Flags/WebView, complete Off, older-system and final-stack obligations remain.",
       "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit.",
       "dependency_design": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/packet.json",
@@ -263,7 +263,7 @@
       },
       "preparation_record": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
-        "sha256": "c5e776271262389961e03506d9fa8eb7cff1c4540619ecbc1a0f2cc0513f3826"
+        "sha256": "5fbdac695cf3000c6b49d67d58cd1dd965cfe152ca0894768b78ad5cce32b755"
       },
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
       "source_branch": "valpertui/s3-consumer-capture",
@@ -302,7 +302,24 @@
       "action_component_partial_review": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-cli-proposal-20261006/actual-run-469a1b9e/closure/actual-review.json",
         "sha256": "c28355ec581f1fb5970562b54b73ad1228b8c02defe554fc23e37f9105263a69"
-      }
+      },
+      "action_component_core_result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-core-saved-continuation-20261006/actual-Core-only-run-032d4e9d/result.json",
+        "sha256": "280651982dcf700826dde731824fe2307657f83253ab59f4b07e18e9e564cf8e"
+      },
+      "action_component_core_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-core-saved-continuation-20261006/actual-Core-only-run-032d4e9d/closure/actual-review.json",
+        "sha256": "aee62ad0d5b39d6eb79df0fad7fa4b04ab7a93a03cf5f70561e2783c7998b07d"
+      },
+      "action_source_handoff": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/root-p7a0-component-handoff-20261006/handoff.json",
+        "sha256": "8c407f6fa76a6c85828f86ce58b9a68bd08148cef3b23d88a36bb8339df6d3fc"
+      },
+      "consumer_implementation": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-network-trace-applied-20261006/sdk-checkpoint.json",
+        "sha256": "4ee6aec96a00cbb902d5e227d9e65ad88ec7cc41b81634a572222f0efc3d465b"
+      },
+      "consumer_source_head": "f7a2ab00ba27478c9e5bad8fa5a025a8b9e0fb87"
     },
     {
       "id": "PR8",
@@ -482,12 +499,12 @@
     "PR5"
   ],
   "locally_qualified_off_scope": "PR1-PR3 accepted prefix plus PR4/PR5 concrete exclusive-Off at their recorded heads; no blanket later-slice or current-stack equivalence claim",
-  "next_slice": "PR7_P7A0_ACCEPTED_ACTION_TWELVE_METHODS",
+  "next_slice": "PR7_NETWORK_TRACE_CONSUMER_QUALIFICATION",
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": 1791259384.31451,
+  "updated_at": "2026-10-06T04:35:59.312009+00:00",
   "dependency_build_attempts": 4,
-  "dependency_component_qualifications": 3,
-  "dependency_test_invocations": 3
+  "dependency_component_qualifications": 4,
+  "dependency_test_invocations": 4
 }

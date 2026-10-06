@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "state": "UNATTENDED_P7D0_DISCOVERY_STOP_CLOSED_TEST_ONLY_PREPARATION",
+  "state": "UNATTENDED_ACTION_DEPENDENCY_QUALIFIED_NETWORK_TRACE_IMPLEMENTED_UNCOMPILED",
   "owner": "/root",
   "plan": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
     "sha256": "70bedb83f022117657516b76d4d786c5d4184cb9943bf608af8e89de05d6ce24"
   },
-  "selected": "P7A0_ACCEPTED_ACTION_COMPONENT_QUALIFICATION",
+  "selected": "P7N1_P7T1_CURRENT_SOURCE_CONSUMER_QUALIFICATION",
   "native_admitted": false,
-  "native_runs": 19,
+  "native_runs": 20,
   "gates_closed": [],
-  "next_action": "Review actual P7A0 terminal/cleanup, then qualify only the remaining Core method using the exact current-source TSan build and source-backed disabled discovery grammar. Preserve eleven accepted methods and failed original verdict; SDK source stays frozen. Consumer composition/private tests continue offline; Off/final-stack remain.",
+  "next_action": "Review and apply decisive actual automatic/manual/OTel constructor tests, then fresh current-source Internal/CoreTSan/Trace qualification within the existing awake cutoff. P7A0 selected twelve methods at ab46 are accepted; original whole INVALID stays immutable. Logs/Flags/WebView, complete Off, older-system and final-stack obligations remain.",
   "p1": {
     "required_s2_tasks": 3,
     "required_s3_tasks": 20,
@@ -1679,7 +1679,7 @@
       "sha256": "71a2bd15b9f0c0e408a64f498dc4e234d89e3d54fdb216eb24ce69a8d25ca66f"
     }
   },
-  "updated_at": 1791259384.315552,
+  "updated_at": "2026-10-06T04:35:59.312009+00:00",
   "native_run_accounting": {
     "P3_required_platform_build": 1,
     "P5_PR3_PR4_PR5_off_cells": 6,
@@ -1688,7 +1688,7 @@
     "P2_actual_native_invocations": 11,
     "PR9_current_source_platform_build_cells": 4,
     "PR9_current_source_framework_build_commands": 8,
-    "counting_rule": "native_runs retains19 qualified build/test/Off cells, including exact142ad URLSession dependency and independently accepted ab46 Internal/RUM action cells. Original whole P7A0 INVALID/Core tests0 remains. Failed/incomplete sittings add no whole qualification or gate credit; actual calls/builds/stops remain separately attributed.",
+    "counting_rule": "native_runs retains20 independently qualified build/test/Off cells, including142ad URLSession and ab46 Internal/RUM/Core action components. Original whole P7A0INVALID stays immutable; separate actual attempts/builds remain attributed. Consumer source and private tests close no runtime/release gate.",
     "P5_PR6_actual_test_attempts": 1,
     "P5_PR6_test_attempt_failed": 1,
     "P5_PR6_configured_methods_passed": 4,
@@ -1723,11 +1723,25 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-cli-proposal-20261006/actual-run-469a1b9e/closure/actual-review.json",
       "sha256": "c28355ec581f1fb5970562b54b73ad1228b8c02defe554fc23e37f9105263a69"
     },
-    "P7A0_qualified_component_cells": 2
+    "P7A0_qualified_component_cells": 2,
+    "PR7_action_core_only": {
+      "native_test_calls": 1,
+      "builds": 0,
+      "tests_passed": 1,
+      "accepted_source_head": "ab46a329ad5b3f0322e27671ca59efc6a98de6d5",
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-core-saved-continuation-20261006/actual-Core-only-run-032d4e9d/result.json",
+        "sha256": "280651982dcf700826dde731824fe2307657f83253ab59f4b07e18e9e564cf8e"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-core-saved-continuation-20261006/actual-Core-only-run-032d4e9d/closure/actual-review.json",
+        "sha256": "aee62ad0d5b39d6eb79df0fad7fa4b04ab7a93a03cf5f70561e2783c7998b07d"
+      }
+    }
   },
-  "selected_task": "S3_F12_PR7_P7A0",
+  "selected_task": "S3_F12_PR7_P7N1_P7T1",
   "execution_frontier": {
-    "primary": "Review actual P7A0 terminal/cleanup, then qualify only the remaining Core method using the exact current-source TSan build and source-backed disabled discovery grammar. Preserve eleven accepted methods and failed original verdict; SDK source stays frozen. Consumer composition/private tests continue offline; Off/final-stack remain.",
+    "primary": "Review and apply decisive actual automatic/manual/OTel constructor tests, then fresh current-source Internal/CoreTSan/Trace qualification within the existing awake cutoff. P7A0 selected twelve methods at ab46 are accepted; original whole INVALID stays immutable. Logs/Flags/WebView, complete Off, older-system and final-stack obligations remain.",
     "required_paths": [
       "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
       "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-cli-proposal-20261006/root-preparation-469a1b9e/materialized-parameters.json",
@@ -1828,6 +1842,18 @@
     "pr7_action_partial_actual_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-cli-proposal-20261006/actual-run-469a1b9e/closure/actual-review.json",
       "sha256": "c28355ec581f1fb5970562b54b73ad1228b8c02defe554fc23e37f9105263a69"
+    },
+    "pr7_action_core_actual_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7a0-core-saved-continuation-20261006/actual-Core-only-run-032d4e9d/closure/actual-review.json",
+      "sha256": "aee62ad0d5b39d6eb79df0fad7fa4b04ab7a93a03cf5f70561e2783c7998b07d"
+    },
+    "pr7_action_source_handoff": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/root-p7a0-component-handoff-20261006/handoff.json",
+      "sha256": "8c407f6fa76a6c85828f86ce58b9a68bd08148cef3b23d88a36bb8339df6d3fc"
+    },
+    "pr7_consumer_source_checkpoint": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-network-trace-applied-20261006/sdk-checkpoint.json",
+      "sha256": "4ee6aec96a00cbb902d5e227d9e65ad88ec7cc41b81634a572222f0efc3d465b"
     }
   },
   "plan_history": [
