@@ -10,7 +10,7 @@
   "native_admitted": false,
   "native_runs": 16,
   "gates_closed": [],
-  "next_action": "Complete the consolidated P7D0 proposal repair and designated review before root checkpoint/release. Accepted-action receipt semantics pass design review only; no native effect or consumer qualification.",
+  "next_action": "Complete the two-finding immutable P7D0 successor, designated review and root checkpoint/release before the finite CLI qualification. Continue private consumer preparation while source142ad is frozen.",
   "p1": {
     "required_s2_tasks": 3,
     "required_s3_tasks": 20,
@@ -1672,14 +1672,14 @@
     },
     "pr7_owning_preparation": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
-      "sha256": "71e62d70543163895eafd69792fc03de761103b35199fd17ea6a6f56cf4f4281"
+      "sha256": "58dd88291ab2723c4917aba5b577d104581bb41e6afa211b20a569066b185932"
     },
     "pr7_dependency_design_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/dependency-design-review.json",
       "sha256": "71a2bd15b9f0c0e408a64f498dc4e234d89e3d54fdb216eb24ce69a8d25ca66f"
     }
   },
-  "updated_at": 1791248188.803755,
+  "updated_at": 1791249280.001023,
   "native_run_accounting": {
     "P3_required_platform_build": 1,
     "P5_PR3_PR4_PR5_off_cells": 6,

@@ -135,7 +135,7 @@
       "state": "DESIGN_AND_IMPLEMENTATION_REMAIN"
     }
   ],
-  "selected_task": "P7D0_CONSOLIDATED_REVIEW_CORRECTION_BEFORE_QUALIFICATION",
+  "selected_task": "P7D0_TWO_FINDING_SUCCESSOR_BEFORE_QUALIFICATION",
   "pending_action_requirement": "Pending/excluded action scalars do not identify an accepted Action UUID. The existing queue-confined continuous-action receipt is not a generic cross-module/discrete-action acceptance receipt. Do not borrow a later same-view action; independently review the smallest source-backed receipt design before consumer changes.",
   "off_requirement": "Reusing the network provider single State read may gate On locally. No default-Off Core registry/TaskLocal/scene lookup, owner allocation, new map/lock or naive owner(in: FeatureScope) capture.",
   "runtime_admitted": false,
@@ -143,8 +143,8 @@
   "builds": 0,
   "gates_closed": [],
   "whole_pr7_qualified": false,
-  "next_action": "Complete the seven P7D0 runner/dependency/evidence corrections together, independently review the successor, then checkpoint and release one finite CLI affected-component qualification. No SDK edits while source142ad is frozen; reviewed action semantics do not qualify consumers or Off behavior.",
-  "updated_at": 1791248188.802057,
+  "next_action": "Correct the two remaining qualification proposal findings in one immutable successor, independently review, checkpoint and release the finite CLI build/discovery/ten-test qualification. Source142ad remains frozen; private action drafts and reviewed network design qualify no SDK behavior.",
+  "updated_at": 1791249279.999941,
   "sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/sdk-checkpoint.json",
     "sha256": "8de6f4600357cbe88a003bb7d235945a3fda02af056f4e021f20540b19c82749"
@@ -177,7 +177,23 @@
       "P7D0-6",
       "P7D0-7"
     ],
-    "successor": "Sole native owner fixes the seven findings together in a private successor; independent full-controller review and root release remain required."
+    "successor": {
+      "packet": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-cli-proposal-cycle2-20261006/packet.json",
+        "sha256": "6ed9117ffb1b5b5b8856045ae556e5cdf72ac93bcba653937e6d490d04159b12"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-cli-proposal-cycle2-20261006/review.json",
+        "sha256": "c2d2ed569cae1f82a3004fd278787f65816c8e0d7b1ae2963a718d1e9affe484"
+      },
+      "state": "BLOCKED_BEFORE_NATIVE_EFFECTS",
+      "findings": [
+        "P7D0-C2-1",
+        "P7D0-C2-2"
+      ],
+      "offline_controls": 19,
+      "next": "Bind actual retained ProcessXCFramework/output/link grammar and exact historical control source in one successor; designated review/root checkpoint/release remain required."
+    }
   },
   "accepted_action_design": {
     "packet": {
@@ -201,6 +217,40 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-network-capture-design-20261006/packet.json",
       "sha256": "a57c1859444c89dca6495e868b2aeb49a3104e674d1abc3867ed142817465288"
     },
-    "state": "PROPOSAL_ONLY_REVIEW_PENDING"
+    "state": "DESIGN_REVIEWED_IMPLEMENTATION_AND_QUALIFICATION_REMAIN",
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-network-capture-design-20261006/review.json",
+      "sha256": "9a820de5e377895b43af7d603d13beafb2c35316b8ee0811b98919d8750099d3"
+    }
+  },
+  "trace_logs_capture_design": {
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-trace-logs-capture-design-20261006/packet.json",
+      "sha256": "1d7b469f96edc4ebab667a8cdf46fcbba58b59f0f0cc78cbcd343a79496e2e2d"
+    },
+    "state": "MANUAL_TRACE_LOGS_SEAMS_REVIEWED_OTEL_WIRING_HELD",
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-trace-logs-capture-design-20261006/review.json",
+      "sha256": "7761145b7ff59917b30937e8dc4dd36d43acc6a0afdce59cfad363480bbd81d2"
+    },
+    "remaining": "Actual sampler/writer chronology, once-only custom/NOP behavior, captured nil/error mirror and Off costs need implementation and decisive controls."
+  },
+  "accepted_action_implementation_drafts": {
+    "primitive": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-receipt-implementation-draft-20261006/packet.json",
+      "sha256": "91e5557c45028640ce4b7dcb3f371eb0f8ac65a66d130b317350330e1bf46a2a"
+    },
+    "producer": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-producer-draft-20261006/packet.json",
+      "sha256": "52d1045aac4c286b7d6d5159d846411f5806ee1f0f852e84cdb0389e4bae0766"
+    },
+    "scope_tests": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-scope-tests-draft-20261006/packet.json",
+      "sha256": "a215373d8d479c21cf5434d20566956a8150612c6dcb2e4e427038afa7408b05"
+    },
+    "state": "UNAPPLIED_UNCOMPILED_NOT_QUALIFIED",
+    "sdk_edits": 0,
+    "tests_run": 0,
+    "next": "Review exact drafts after dependency qualification; complete real-Core, continuous, lifetime and Off controls before consumer qualification."
   }
 }
