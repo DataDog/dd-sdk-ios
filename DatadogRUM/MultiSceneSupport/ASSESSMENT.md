@@ -157,7 +157,7 @@ qualification rather than assumed from this table.
   backend and profile joins have distinct [evidence levels](TOOLING_RUNBOOK.md#evidence-levels).
   Current tool/runtime availability must be rediscovered when execution needs it.
 
-Current [S3 PR7 preparation](Results/S3-PR7-consumer-preparation.json#webview_live_session) separates the accepted typed-transport component from its newly implemented native-session lifetime guard. The successor has source review and syntax/static checks; focused runtime qualification, callback/page/rebind acquisition and whole-slice acceptance remain. No S2 result or release gate changes.
+Current [S3 PR7 preparation](Results/S3-PR7-consumer-preparation.json#webview_native_provider) separates accepted typed transport from the reviewed live-session guard and explicit-scene provider/main publication at7e308269. The latter remains runtime-unqualified; one combined focused qualification is prepared next. Callback/page/rebind acquisition, Flags and whole-slice acceptance remain. No S2 result or release gate changes.
 
 Completed narratives and superseded claims are reference material in the
 [non-frozen documentation checkpoint](Experiments/DOCUMENTATION_CHECKPOINT_EXP-220.md).

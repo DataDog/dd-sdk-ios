@@ -6,7 +6,7 @@
   "source_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
   "branch": "valpertui/s3-consumer-capture",
   "base_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
-  "source_head": "225920de0d0e28cf4e3bd853f8727d46d6a12b13",
+  "source_head": "7e308269a612b60cfb41c317ae24e682fb9e1fc5",
   "source_gap_inventory": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-consumer-source-preparation/packet.json",
     "sha256": "57e376768a17b85993c54af64fcfb4f63048738ae0976e386760c5831f0c4a5b"
@@ -180,7 +180,7 @@
       "state": "DESIGN_AND_IMPLEMENTATION_REMAIN"
     }
   ],
-  "selected_task": "P7W1_LIVE_SESSION_VALIDATION_IMPLEMENTED_PENDING_FOCUSED_QUALIFICATION",
+  "selected_task": "P7W1_CURRENT_SOURCE_COMBINED27_PREPARATION_AND_PHYSICAL_CAPTURE_REVIEW",
   "pending_action_requirement": "Pending/excluded action scalars do not identify an accepted Action UUID. The existing queue-confined continuous-action receipt is not a generic cross-module/discrete-action acceptance receipt. Do not borrow a later same-view action; independently review the smallest source-backed receipt design before consumer changes.",
   "off_requirement": "Reusing the network provider single State read may gate On locally. No default-Off Core registry/TaskLocal/scene lookup, owner allocation, new map/lock or naive owner(in: FeatureScope) capture.",
   "runtime_admitted": false,
@@ -188,8 +188,8 @@
   "builds": 22,
   "gates_closed": [],
   "whole_pr7_qualified": false,
-  "next_action": "Prepare one unissued current-source affected RUM/Logs selection including eleven new live-session methods, changed captured controls and independent maximum duration. No native launch or renewed clocks after original awake cutoff. Continue callback/page/rebind and physical UIKit preparation offline. Reuse accepted17/cache3/consumer43/Core; complete Flags/Off/older/final-stack remain.",
-  "updated_at": "2026-10-06T23:07:32.339483+00:00",
+  "next_action": "Bind one unissued current7e combined27 selection: live17 plus provider10, with independent maximum duration once; preserve prior unissued preparations and accepted17/cache3/consumer43/Core. No clocks or native after expired awake authority. Finish source-reviewed physical adapter and callback origin preparation offline. Whole Flags/Off/older/final-stack remain.",
+  "updated_at": "2026-10-06T23:40:36.237253+00:00",
   "sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-core-sampling-initialization-test-repair-applied-20261006/sdk-checkpoint.json",
     "sha256": "8479a54805b889477b7b9f20b61e6755e0ce49fda73cab852a95a77f47f45e72"
@@ -1642,6 +1642,69 @@
       "Typecheck and focused affected-component qualification",
       "Native callback/page/rebind acquisition",
       "Complete Off/older-system/final-stack and Flags"
+    ],
+    "qualification_preparation": {
+      "state": "HISTORICAL_UNISSUED_CURRENT_SOURCE_REBIND_REQUIRED",
+      "packet": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-live-session-20261007/cycle3/affected-component-preparation/packet.json",
+        "sha256": "11dca2055a33ec07f3105e2d2297f346610bd2dfbccd5d82f06423e668754132"
+      },
+      "handback": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-live-session-20261007/cycle3/affected-component-preparation/preparation-handback.json",
+        "sha256": "66d0882849c0e5d969a04bdc342b0df850c722c72026f8d0cfce829b216d82a1"
+      },
+      "methods": 17,
+      "sdk_tests_executed": 0,
+      "native_admitted": false,
+      "disposition": "Never issued at225; provider successor changes source identity. Preserve plan and original clocks-null state. Current combined27 preparation will replace selection once bound, without running either historical plan."
+    }
+  },
+  "webview_native_provider": {
+    "state": "SOURCE_REVIEWED_APPLIED_CHECKPOINTED_UNQUALIFIED",
+    "existing_gate": "S3:F12",
+    "deliverable": "P7W1 native explicit-scene snapshot and main-confined ownership publication",
+    "source_head": "7e308269a612b60cfb41c317ae24e682fb9e1fc5",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/definition.json",
+      "sha256": "b172caf08f542fd87eeb5fe8ecf62eee1b609f8bddec3d1e6dd33f80b289af29"
+    },
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/packet.json",
+      "sha256": "5974659be6b32f9ac97ba7d53ad20aed0e0a1dbd2d9d7a90684f672f49701120"
+    },
+    "source_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/review.json",
+      "sha256": "87611e257eba776425b5bc5778989d884a65ae60fd15eba541d02d1982ef7450"
+    },
+    "applied": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/applied-source.json",
+      "sha256": "1d70d43c9e44546d885613900f9e613e00ce2fdd761b64484c67a19728a7e84a"
+    },
+    "sdk_checkpoint": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/sdk-checkpoint.json",
+      "sha256": "d847e47307fe3503fe001838f3c9c6b78a5bee5ddcbacbe0d377aba8a258f01b"
+    },
+    "actual_tool_returns": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/actual-application-and-checkpoint-tool-returns.json",
+      "sha256": "8a98770797a3d5916730be9547b45a4a839a17472336e59eb4ccfe6748cd4119"
+    },
+    "syntax": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/syntax.json",
+      "sha256": "291536b8430899c741fadc1297f8f00580aaf18dd610e59b8bf8fda07a3f36e3"
+    },
+    "static_checks": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/static-checks.json",
+      "sha256": "d05826b0cffd119dc0d0e0e5e915c04bd27d840be7bfdcd143e4643655d37ce2"
+    },
+    "new_methods": 10,
+    "tests_executed": 0,
+    "native_runs": 0,
+    "gates_closed": [],
+    "contract": "Resolved-On, exact valid lifetime and explicit originating scene precede fresh RUM snapshot. Main-confined WebView lifetime publication handles late provider registration and retired ownership without sync-main dispatch, peer adoption or legacy fallback. Existing weak Core/UI and legacy rollover remain.",
+    "held": [
+      "One new current-source combined27 qualification; typecheck/runtime/minimum compiler unqualified",
+      "Actual callback/window/page origin and both-queue freezing; first-message/rebind ambiguity cannot adopt current peer",
+      "Whole Off/older/final-stack, Flags and final PR7 qualification"
     ]
   }
 }

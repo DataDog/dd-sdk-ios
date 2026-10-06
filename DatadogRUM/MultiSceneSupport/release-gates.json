@@ -2962,7 +2962,7 @@
       "environment": "CI and supported simulator/toolchains; explicit per-PR source/fixture identities",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "Results/S3-F12-delivery-progress.json owns thirteen finite slices. PR1-PR6 and PR9 qualify bounded private components with explicit remaining holds; PR7 preserves consumer43/Core/cache3/typed-transport17 and current live-session source-only preparation. Native acquisition, Flags, complete per-slice Off/older/final-stack, CI and maintainer acceptance remain. No whole F12 or release credit.",
+      "evidence": "Results/S3-F12-delivery-progress.json owns thirteen finite slices. PR1-PR6 and PR9 qualify bounded private components. PR7 preserves consumer43/Core/cache3/transport17; current7e live-session/provider source is reviewed, checkpointed and runtime-unqualified. Combined focused qualification, native page acquisition, Flags, complete Off/older/final-stack and maintainer acceptance remain; no whole F12 credit.",
       "release_requirements": {
         "S3": {
           "scope": "S3 per-PR flag-Off equivalence and On slice qualification",
@@ -2973,7 +2973,7 @@
           ],
           "decisive_test": "For each of PR1-13: unmodified develop suites pass; Off tripwires prove no scene observer/lookup/handoff/new swizzle, differential command fixtures match develop events, On slice tests pass. Review Off allocations/locks. No strict timing or physical hardware prerequisite for opening/merging.",
           "environment": "CI and supported simulator/toolchains; explicit per-PR source/fixture identities",
-          "evidence": "Results/S3-F12-delivery-progress.json owns thirteen finite slices. PR1-PR6 and PR9 qualify bounded private components with explicit remaining holds; PR7 preserves consumer43/Core/cache3/typed-transport17 and current live-session source-only preparation. Native acquisition, Flags, complete per-slice Off/older/final-stack, CI and maintainer acceptance remain. No whole F12 or release credit.",
+          "evidence": "Results/S3-F12-delivery-progress.json owns thirteen finite slices. PR1-PR6 and PR9 qualify bounded private components. PR7 preserves consumer43/Core/cache3/transport17; current7e live-session/provider source is reviewed, checkpointed and runtime-unqualified. Combined focused qualification, native page acquisition, Flags, complete Off/older/final-stack and maintainer acceptance remain; no whole F12 credit.",
           "required": true
         }
       }
