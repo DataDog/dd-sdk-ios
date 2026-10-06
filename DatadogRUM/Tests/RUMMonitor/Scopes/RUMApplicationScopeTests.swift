@@ -1559,6 +1559,39 @@ extension RUMApplicationScopeTests {
         }
     }
 
+    func testCapturedWebViewKeepAlive_rejectsMaximumDurationWhileRecentlyActive() throws {
+        let scope = WebViewKeepAliveOwnerScope()
+        let (app, context) = routingApplication(featureScope: scope)
+        startRoutingPeers(app, context: context)
+        let capture = try webViewKeepAliveCapture(app, owner: scope.owner)
+        let session = try XCTUnwrap(app.activeSession)
+
+        for elapsed in stride(from: 600.0, to: RUMSessionScope.Constants.sessionMaxDuration, by: 600.0) {
+            let time = routingDate.addingTimeInterval(elapsed)
+            var interaction = RUMAddUserActionCommand.mockWith(time: time, actionType: .custom)
+            interaction.target = .scene(routingSceneA)
+            _ = app.process(command: interaction, context: context, writer: writer)
+            XCTAssertTrue(app.activeSession === session)
+            XCTAssertEqual(session.lastInteractionTime, time)
+        }
+
+        let expiredDate = routingDate.addingTimeInterval(RUMSessionScope.Constants.sessionMaxDuration + 3)
+        XCTAssertFalse(RUMSessionScope.hasTimedOut(lastInteractionTime: session.lastInteractionTime, currentTime: expiredDate))
+        XCTAssertTrue(RUMSessionScope.hasExpired(sessionStartTime: session.sessionStartTime, currentTime: expiredDate))
+        let interaction = session.lastInteractionTime
+        let count = writer.events.count
+
+        _ = app.process(
+            command: RUMKeepSessionAliveCommand(time: expiredDate, attributes: [:], capture: capture),
+            context: context, writer: writer
+        )
+
+        XCTAssertTrue(app.activeSession === session)
+        XCTAssertNil(session.endReason)
+        XCTAssertEqual(session.lastInteractionTime, interaction)
+        XCTAssertEqual(writer.events.count, count)
+    }
+
     func testCapturedWebViewKeepAlive_preservesLegacyAndOriginatingSceneTargets() throws {
         let scope = WebViewKeepAliveOwnerScope()
         let (app, context) = routingApplication(featureScope: scope)
