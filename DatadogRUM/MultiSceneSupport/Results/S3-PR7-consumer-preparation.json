@@ -189,7 +189,7 @@
   "gates_closed": [],
   "whole_pr7_qualified": false,
   "next_action": "Complete source-backed WebView native-container and Flags Internal/React Native acquisition, then focused component/complete Off/older-system/final-stack qualification. Preserve accepted component evidence and original44 failure; do not rerun the repaired Core method merely to resume.",
-  "updated_at": "2026-10-06T12:17:58.394354+00:00",
+  "updated_at": "2026-10-06T19:35:25.612797+00:00",
   "sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-core-sampling-initialization-test-repair-applied-20261006/sdk-checkpoint.json",
     "sha256": "8479a54805b889477b7b9f20b61e6755e0ce49fda73cab852a95a77f47f45e72"
@@ -1401,5 +1401,19 @@
     "prior43_rerun": false,
     "gates_closed": [],
     "limits": "Affected method only. Original44 whole INVALID and its43 passes remain immutable; no causal callback-order proof, production defect or whole PR7/F12/Off/older/final-stack acceptance."
+  },
+  "webview_source_discriminators": {
+    "gates_closed": [],
+    "main_thread_publication": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-consumer-source-preparation-20261006/main-thread-publication-discriminator.json",
+      "sha256": "9269ec5fde570b130d6d968e87fb5ac521d1666025df970a38e379ee7af497e0"
+    },
+    "native_container_acquisition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-consumer-source-preparation-20261006/native-container-discriminator.json",
+      "sha256": "f2700a6dd4b49f5fa7824c9ca6a16dc11c5e8be608067bf092eda9076027094a"
+    },
+    "native_runs": 0,
+    "next": "Review On-only callback-time native ownership and scene-filtered historical lookup; retain default-Off and source-less fallback contracts.",
+    "state": "SOURCE_PREPARATION_ONLY_NOT_IMPLEMENTED_OR_QUALIFIED"
   }
 }
