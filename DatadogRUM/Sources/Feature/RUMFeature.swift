@@ -14,7 +14,7 @@ import UIKit
 import AppKit
 #endif
 
-internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
+internal final class RUMFeature: DatadogRemoteFeature, SessionSamplerWithRUMContext {
     static var name: String { Feature.rum }
 
     let requestBuilder: FeatureRequestBuilder
@@ -592,6 +592,17 @@ extension RUMFeature {
 
     func decision(for policy: SamplingRatePolicy, rate: SampleRate) -> SessionSamplingDecision? {
         sessionSamplingStore.decision(for: policy, rate: rate)
+    }
+
+    func decisionWithRUMContext(for policy: SamplingRatePolicy, rate: SampleRate) -> RUMSessionSamplingContext {
+        let decision = sessionSamplingStore.decision(for: policy, rate: rate)
+        let capture: RUMContextHandoff.Capture?
+        if let owner = rumContextHandoffOwner, let value = RUMContextHandoff.captureValue(for: owner) {
+            capture = RUMContextHandoff.Capture(owner: owner, value: value)
+        } else {
+            capture = nil
+        }
+        return RUMSessionSamplingContext(decision: decision, capture: capture)
     }
 }
 

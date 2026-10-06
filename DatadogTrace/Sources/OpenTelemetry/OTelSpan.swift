@@ -5,6 +5,7 @@
 */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 import OpenTelemetryApi
 
@@ -121,7 +122,19 @@ internal class OTelSpan: OpenTelemetryApi.Span {
         self.isRecording = true
         self.tracer = tracer
         self.spanLinks = spanLinks
-        let sampler = tracer.samplerProvider.sampler
+        let samplingContext = tracer.samplerProvider.samplerWithRUMContext(samplingRate: nil)
+        let sampler = samplingContext.sampler
+        let writer: SpanWriteContext
+        if let capture = samplingContext.capture {
+            writer = CapturedRUMSpanWriteContext(
+                original: eventWriter,
+                owner: capture.owner,
+                value: capture.value,
+                sessionOwnership: .request(samplingContext.sessionID)
+            )
+        } else {
+            writer = eventWriter
+        }
         self.ddSpan = .init(
             tracer: tracer,
             context: .init(
@@ -136,7 +149,7 @@ internal class OTelSpan: OpenTelemetryApi.Span {
             startTime: startTime,
             tags: [:],
             eventBuilder: eventBuilder,
-            eventWriter: eventWriter
+            eventWriter: writer
         )
     }
 

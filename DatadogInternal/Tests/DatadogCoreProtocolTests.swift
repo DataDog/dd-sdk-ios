@@ -90,6 +90,69 @@ class DatadogCoreProtocolTests: XCTestCase {
         XCTAssertNil(pending.resolvedRUMContext(for: owner)?.userActionID)
     }
 
+    private func requireCaptureScope() throws {
+        #if os(iOS)
+        if #available(iOS 27.0, *) {
+            return
+        }
+        #endif
+        throw XCTSkip("Consumer capture requires iOS 27")
+    }
+
+    func testInvalidatedCaptureOwnerPreservesAuthoritativeAbsence() throws {
+        try requireCaptureScope()
+        let owner = RUMContextHandoff.Owner()
+        try RUMContextHandoff.withValue(receiptValue(context: receiptContext(actionID: nil), receipt: nil), for: owner) {
+            owner.invalidate()
+            XCTAssertNil(RUMContextHandoff.current(for: owner))
+            let captured = try XCTUnwrap(RUMContextHandoff.captureValue(for: owner))
+            XCTAssertNil(captured.rumContext)
+            XCTAssertNil(captured.sceneIdentifier)
+            XCTAssertNil(captured.actionReceipt)
+            XCTAssertNil(captured.resolvedRUMContext(for: owner))
+        }
+        XCTAssertNotNil(RUMContextHandoff.captureValue(for: owner))
+    }
+
+    func testCaptureRetainsTheRawReceiptUntilActionAcceptance() throws {
+        try requireCaptureScope()
+        let owner = RUMContextHandoff.Owner()
+        let context = receiptContext(actionID: "prior-action")
+        let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: context)
+        let captured = try RUMContextHandoff.withValue(receiptValue(context: context, receipt: receipt), for: owner) {
+            try XCTUnwrap(RUMContextHandoff.captureValue(for: owner))
+        }
+        XCTAssertTrue(captured.actionReceipt === receipt)
+        XCTAssertEqual(captured.rumContext?.userActionID, "prior-action")
+        XCTAssertNil(captured.resolvedRUMContext(for: owner)?.userActionID)
+        receipt.accept(sessionID: context.sessionID, viewID: "view-a", actionID: "original-action")
+        XCTAssertEqual(captured.resolvedRUMContext(for: owner)?.userActionID, "original-action")
+        XCTAssertEqual(captured.resolvedRUMContext(for: owner)?.viewID, "view-a")
+    }
+
+    func testCaptureKeepsAValidNilBindingDistinctFromNoBinding() throws {
+        try requireCaptureScope()
+        let owner = RUMContextHandoff.Owner()
+        XCTAssertNil(RUMContextHandoff.captureValue(for: owner))
+        try RUMContextHandoff.withValue(receiptValue(context: nil, receipt: nil), for: owner) {
+            let captured = try XCTUnwrap(RUMContextHandoff.captureValue(for: owner))
+            XCTAssertNil(captured.rumContext)
+            XCTAssertEqual(captured.sceneIdentifier, "scene-a")
+            XCTAssertTrue(captured.hasPendingUserAction)
+        }
+        XCTAssertNil(RUMContextHandoff.captureValue(for: owner))
+    }
+
+    func testAbsentAndForeignCaptureOwnersPreserveLegacyFallback() throws {
+        try requireCaptureScope()
+        let owner = RUMContextHandoff.Owner()
+        let foreign = RUMContextHandoff.Owner()
+        RUMContextHandoff.withValue(receiptValue(context: receiptContext(actionID: nil), receipt: nil), for: owner) {
+            XCTAssertNil(RUMContextHandoff.captureValue(for: nil))
+            XCTAssertNil(RUMContextHandoff.captureValue(for: foreign))
+        }
+    }
+
     private func receiptContext(actionID: String?) -> RUMCoreContext {
         RUMCoreContext(
             applicationID: "application",

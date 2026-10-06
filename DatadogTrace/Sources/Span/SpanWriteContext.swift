@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+@_spi(Internal)
 import DatadogInternal
 
 /// A type providing core context and writer for writing span events.
@@ -48,6 +49,39 @@ internal final class LazySpanWriteContext: SpanWriteContext {
             if let rumContext = self.rumContext {
                 context.set(additionalContext: rumContext)
             }
+            block(context, writer)
+        }
+    }
+}
+
+/// Resolves the original captured action at serialization on the Core queue.
+internal final class CapturedRUMSpanWriteContext: SpanWriteContext {
+    enum SessionOwnership {
+        case captured
+        case request(String?)
+    }
+
+    private let original: SpanWriteContext
+    private let owner: RUMContextHandoff.Owner
+    private let value: RUMContextHandoff.CurrentValue
+    private let sessionOwnership: SessionOwnership
+
+    init(original: SpanWriteContext, owner: RUMContextHandoff.Owner, value: RUMContextHandoff.CurrentValue, sessionOwnership: SessionOwnership) {
+        self.original = original
+        self.owner = owner
+        self.value = value
+        self.sessionOwnership = sessionOwnership
+    }
+
+    func spanWriteContext(_ block: @escaping (DatadogContext, Writer) -> Void) {
+        original.spanWriteContext { context, writer in
+            var context = context
+            var rumContext = self.value.resolvedRUMContext(for: self.owner)
+            if case let .request(sessionID) = self.sessionOwnership,
+               rumContext?.sessionID != sessionID {
+                rumContext = nil
+            }
+            context.set(additionalContext: rumContext)
             block(context, writer)
         }
     }

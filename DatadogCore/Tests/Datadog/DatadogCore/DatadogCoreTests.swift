@@ -1911,6 +1911,55 @@ private final class AcceptedReceiptActionCapture {
 
 extension DatadogCoreTests {
     @MainActor
+    func testBuiltInSamplingKeepsAnInvalidatedOwnerAuthoritative() throws {
+        guard supportsHandoffScope else { throw XCTSkip("Consumer capture requires iOS 27") }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        var configuration = RUM.Configuration(applicationID: "sampling-capture", trackAnonymousUser: false)
+        configuration.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
+        configuration.featureFlags = [.multiSceneTracking: true]
+        try RUM.enableOrThrow(with: configuration, in: core)
+        let feature = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        let owner = try XCTUnwrap(feature.rumContextHandoffOwner)
+        let sampler = try XCTUnwrap(core.sessionSampler as? SessionSamplerWithRUMContext)
+        let session = try XCTUnwrap(UUID(uuidString: "a1b2c3d4-e5f6-7890-abcd-ceb01cf21171"))
+        feature.sessionSamplingStore.setSession(id: session.uuidString.lowercased(), sampler: DeterministicSampler(uuid: session, samplingRate: 10))
+        try RUMContextHandoff.withValue(handoffValue("original-view"), for: owner) {
+            core.deactivateRUMContextHandoff(owner: owner)
+            let sampled = sampler.decisionWithRUMContext(for: .featureRate, rate: 20)
+            let captured = try XCTUnwrap(sampled.capture)
+            XCTAssertTrue(captured.owner === owner)
+            XCTAssertFalse(captured.owner.isValid)
+            XCTAssertNil(captured.value.rumContext)
+            XCTAssertNil(captured.value.resolvedRUMContext(for: owner))
+            XCTAssertEqual(sampled.decision?.sessionID, session.uuidString.lowercased())
+            XCTAssertEqual(sampled.decision?.isSampled, true)
+        }
+    }
+
+    @MainActor
+    func testBuiltInSamplingPreservesValidUnboundAndNilOwnership() throws {
+        guard supportsHandoffScope else { throw XCTSkip("Consumer capture requires iOS 27") }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        var configuration = RUM.Configuration(applicationID: "sampling-capture", trackAnonymousUser: false)
+        configuration.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
+        configuration.featureFlags = [.multiSceneTracking: true]
+        try RUM.enableOrThrow(with: configuration, in: core)
+        let feature = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        let owner = try XCTUnwrap(feature.rumContextHandoffOwner)
+        let sampler = try XCTUnwrap(core.sessionSampler as? SessionSamplerWithRUMContext)
+        XCTAssertNil(sampler.decisionWithRUMContext(for: .featureRate, rate: 100).capture)
+        let empty = RUMContextHandoff.CurrentValue(rumContext: nil, sceneIdentifier: "original-scene", hasPendingUserAction: false, excludedUserActionID: nil)
+        try RUMContextHandoff.withValue(empty, for: owner) {
+            let captured = try XCTUnwrap(sampler.decisionWithRUMContext(for: .featureRate, rate: 100).capture)
+            XCTAssertTrue(captured.owner === owner)
+            XCTAssertNil(captured.value.rumContext)
+            XCTAssertEqual(captured.value.sceneIdentifier, "original-scene")
+        }
+    }
+
+    @MainActor
     func testQueuedActionReceiptKeepsItsOriginalViewAfterAnotherSceneBecomesRepresentative() throws {
         guard supportsHandoffScope else {
             throw XCTSkip("Execution-scope handoff requires iOS 27")

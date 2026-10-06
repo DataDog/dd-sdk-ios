@@ -84,6 +84,79 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.shouldInterceptRequest = { [weak server] req in server?.isMyRequest(req) ?? false }
     }
 
+    func testWinningPreparationKeepsInvalidatedOwnershipAuthoritative() throws {
+        try assertPreparationOwnership(invalidateOwner: true)
+    }
+
+    func testWinningPreparationWithAValidUnboundOwnerPreservesLegacyContext() throws {
+        try assertPreparationOwnership(invalidateOwner: false)
+    }
+
+    private func assertPreparationOwnership(invalidateOwner: Bool) throws {
+        #if os(iOS)
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Consumer capture requires iOS 27") }
+        #else
+        throw XCTSkip("Consumer capture requires iOS 27")
+        #endif
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        let provider = try XCTUnwrap(feature.networkContextProvider as? NetworkContextCoreProvider)
+        let delivered: RUMCoreContext = .mockWith(viewID: "delivered-view", userActionID: "delivered-action")
+        provider.currentNetworkContext = NetworkContext(rumContext: delivered)
+        let owner = RUMContextHandoff.Owner()
+        feature.receiveRUMContextHandoff(owner: owner, active: true)
+        let url = try XCTUnwrap(URL(string: "https://example.com/capture-ownership"))
+        let session = URLSession(configuration: .ephemeral)
+        let task = session.dataTask(with: url)
+        defer { session.invalidateAndCancel() }
+        let forwarded = ReadWriteLock(wrappedValue: 0)
+        let previous = URLSessionTaskSwizzler()
+        try previous.swizzle { candidate, continuation in
+            guard candidate === task else {
+                continuation()
+                return
+            }
+            forwarded.mutate { $0 += 1 }
+        }
+        defer { previous.unswizzle() }
+        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])
+        handler.shouldInterceptRequest = { $0.url == url }
+        let mutations = ReadWriteLock(wrappedValue: 0)
+        handler.onRequestMutation = { request, _, context in
+            guard request.url == url else {
+                return
+            }
+            mutations.mutate { $0 += 1 }
+            if invalidateOwner {
+                XCTAssertNotNil(context?.rumURLSessionContext)
+                XCTAssertTrue(context?.rumURLSessionContext?.owner === owner)
+                XCTAssertNil(context?.rumContext)
+                XCTAssertNil(context?.rumURLSessionContext?.rumContext)
+            } else {
+                XCTAssertNil(context?.rumURLSessionContext)
+                XCTAssertEqual(context?.rumContext?.viewID, "delivered-view")
+                XCTAssertEqual(context?.rumContext?.userActionID, "delivered-action")
+            }
+        }
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        if invalidateOwner {
+            let original = RUMContextHandoff.CurrentValue(rumContext: .mockWith(viewID: "original-view"), sceneIdentifier: "original-scene", hasPendingUserAction: false, excludedUserActionID: nil)
+            RUMContextHandoff.withValue(original, for: owner) {
+                owner.invalidate()
+                task.resume()
+            }
+        } else {
+            task.resume()
+        }
+        feature.flush()
+        XCTAssertEqual(mutations.wrappedValue, 1)
+        XCTAssertEqual(forwarded.wrappedValue, 1)
+        XCTAssertEqual(handler.interceptions.count, 1)
+        XCTAssertEqual(task.state, .suspended, "Native transport is deliberately withheld")
+        feature.task(task, didCompleteWithError: nil)
+        feature.flush()
+        handler.onRequestMutation = nil
+    }
+
     // MARK: - Registered Delegate Mode
 
     func testRegisteredDelegate_capturesMetricsForDataTaskWithURL() throws {

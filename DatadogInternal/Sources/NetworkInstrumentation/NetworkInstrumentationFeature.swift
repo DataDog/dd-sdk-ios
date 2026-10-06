@@ -31,8 +31,9 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
         target: .global(qos: .utility)
     )
 
-    /// A no-op message bus receiver.
-    let messageReceiver: FeatureMessageReceiver
+    /// Exposes activation without adding another receiver allocation.
+    var messageReceiver: FeatureMessageReceiver { self }
+    private let originalMessageReceiver: FeatureMessageReceiver
 
     let networkContextProvider: NetworkContextProvider
 
@@ -67,6 +68,8 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 
     /// Coordinates active preparations and weak terminal identities without retaining tasks.
     private let preparationLock = NSLock()
+    // Read only with the existing successful preparation admission.
+    private var rumContextHandoffOwner: RUMContextHandoff.Owner?
     private let preparations = NSMapTable<URLSessionTask, TaskPreparation>(
         keyOptions: [.weakMemory, .objectPointerPersonality],
         valueOptions: .strongMemory
@@ -89,7 +92,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
         }
     }
 
-    private enum ResumeAction { case prepare, forward, deferred }
+    private enum ResumeAction { case prepare(RUMContextHandoff.Owner?), forward, deferred }
 
     private enum TaskEvent {
         case metrics(URLSessionTaskMetrics)
@@ -113,7 +116,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
         mediaTimeProvider: CACurrentMediaTimeProvider = MediaTimeProvider()
     ) {
         self.networkContextProvider = networkContextProvider
-        self.messageReceiver = messageReceiver
+        self.originalMessageReceiver = messageReceiver
         self.mediaTimeProvider = mediaTimeProvider
     }
 
@@ -187,6 +190,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                     return
                 }
 
+                let owner: RUMContextHandoff.Owner?
                 switch self.beginPreparation(
                     for: task,
                     continuation: continuation,
@@ -198,16 +202,26 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                     return
                 case .deferred:
                     return
-                case .prepare:
-                    break
+                case .prepare(let admittedOwner):
+                    owner = admittedOwner
                 }
 
                 // Only perform interception if this swizzler should handle this task
                 // This allows the swizzler chain to continue for tasks we don't handle
                 let configuredFirstPartyHosts = FirstPartyHosts(firstPartyHosts: configuration?.firstPartyHostsTracing) ?? .init()
-                let (request, traceContexts) = self.intercept(request: currentRequest, additionalFirstPartyHosts: configuredFirstPartyHosts)
+                let captured: RUMURLSessionContext?
+                if let owner, let value = RUMContextHandoff.captureValue(for: owner) {
+                    captured = RUMURLSessionContext(owner: owner, value: value)
+                } else {
+                    captured = nil
+                }
+                let (request, traceContexts) = self.intercept(
+                    request: currentRequest,
+                    additionalFirstPartyHosts: configuredFirstPartyHosts,
+                    rumContext: captured
+                )
                 task.dd.override(currentRequest: request)
-                self.intercept(task: task, with: traceContexts, additionalFirstPartyHosts: configuredFirstPartyHosts, trackingMode: trackingMode, fallbackRequest: request)
+                self.intercept(task: task, with: traceContexts, additionalFirstPartyHosts: configuredFirstPartyHosts, trackingMode: trackingMode, fallbackRequest: request, rumContext: captured)
                 self.finishPreparation(for: task)
             }
         )
@@ -476,7 +490,7 @@ extension NetworkInstrumentationFeature {
         let preparation = TaskPreparation(phase: .preparing, trackingMode: trackingMode)
         preparations.setObject(preparation, forKey: task)
         preparation.continuations.append(continuation)
-        return .prepare
+        return .prepare(rumContextHandoffOwner)
     }
 
     private func finishPreparation(for task: URLSessionTask) {
@@ -589,7 +603,7 @@ extension NetworkInstrumentationFeature {
     ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception, used in conjunction with hosts defined in each handler.
     /// - Returns: A tuple containing the modified request and the list of injected TraceContexts, one or none for each handler. If no trace is injected (e.g., due to sampling),
     ///            the list will be empty.
-    func intercept(request: URLRequest, additionalFirstPartyHosts: FirstPartyHosts?) -> (URLRequest, [RequestInstrumentationContext]) {
+    func intercept(request: URLRequest, additionalFirstPartyHosts: FirstPartyHosts?, rumContext: RUMURLSessionContext? = nil) -> (URLRequest, [RequestInstrumentationContext]) {
         let headerTypes = firstPartyHosts(with: additionalFirstPartyHosts)
             .tracingHeaderTypes(for: request.url)
 
@@ -597,7 +611,13 @@ extension NetworkInstrumentationFeature {
             return (request, [])
         }
 
-        let networkContext = self.networkContextProvider.currentNetworkContext
+        let delivered = self.networkContextProvider.currentNetworkContext
+        let networkContext: NetworkContext?
+        if let rumContext {
+            networkContext = rumContext.projecting(delivered)
+        } else {
+            networkContext = delivered
+        }
         var request = request
 
         // TODO: RUM-13769 This code can be simplified since we never use more than one handler simultaneously.
@@ -621,7 +641,7 @@ extension NetworkInstrumentationFeature {
     ///   - injectedTraceContexts: The list of trace contexts injected into the task's request, one or none for each handler.
     ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception, used in conjunction with hosts defined in each handler.
     ///   - trackingMode: The tracking mode to use for this interception (automatic or registered delegate).
-    func intercept(task: URLSessionTask, with instrumentationContexts: [RequestInstrumentationContext], additionalFirstPartyHosts: FirstPartyHosts?, trackingMode: TrackingMode, fallbackRequest: URLRequest? = nil) {
+    func intercept(task: URLSessionTask, with instrumentationContexts: [RequestInstrumentationContext], additionalFirstPartyHosts: FirstPartyHosts?, trackingMode: TrackingMode, fallbackRequest: URLRequest? = nil, rumContext: RUMURLSessionContext? = nil) {
         // In response to https://github.com/DataDog/dd-sdk-ios/issues/1638 capture the current request object on the
         // caller thread and freeze its attributes through `ImmutableRequest`. This is to avoid changing the request
         // object from multiple threads:
@@ -684,11 +704,13 @@ extension NetworkInstrumentationFeature {
             // Only notify handlers when the interception is first created, not when it's reused
             // This prevents double notifications when both automatic and registered delegate modes are enabled
                 if isNewInterception {
+                    var capturedStates = instrumentationContexts.compactMap({ $0.capturedState })
+                    if let rumContext { capturedStates.append(rumContext) }
                     self.handlers
                         .forEach {
                             $0.interceptionDidStart(
                                 interception: interception,
-                                capturedStates: instrumentationContexts.compactMap({ $0.capturedState })
+                                capturedStates: capturedStates
                             )
                         }
                 }
@@ -917,5 +939,22 @@ extension NetworkInstrumentationFeature: Flushable {
     /// **blocks the caller thread**
     func flush() {
         queue.sync { }
+    }
+}
+
+extension NetworkInstrumentationFeature: FeatureMessageReceiver, RUMContextHandoffReceiving {
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+        originalMessageReceiver.receive(message: message, from: core)
+    }
+
+    func receiveRUMContextHandoff(owner: RUMContextHandoff.Owner, active: Bool) {
+        preparationLock.lock()
+        if active {
+            if owner.isValid { rumContextHandoffOwner = owner }
+        } else if rumContextHandoffOwner === owner {
+            rumContextHandoffOwner = nil
+        }
+        preparationLock.unlock()
+        (originalMessageReceiver as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: owner, active: active)
     }
 }

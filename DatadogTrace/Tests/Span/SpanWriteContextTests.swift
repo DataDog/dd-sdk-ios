@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+@_spi(Internal)
 import DatadogInternal
 @testable import DatadogTrace
 
@@ -46,5 +47,147 @@ class SpanWriteContextTests: XCTestCase {
         // Then
         XCTAssertEqual(featureScope.eventsWritten(ofType: SpanEvent.self, withBypassConsent: false).count, 1)
         XCTAssertEqual(featureScope.eventsWritten(ofType: SpanEvent.self, withBypassConsent: true).count, 0)
+    }
+}
+
+extension SpanWriteContextTests {
+    func testCapturedWriterResolvesOriginalActionAtDeferredDeliveryAndPreservesOtherContext() {
+        let owner = RUMContextHandoff.Owner()
+        let captured = capturedWriterRUMContext()
+        let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: captured)
+        let value = RUMContextHandoff.CurrentValue(
+            rumContext: captured,
+            sceneIdentifier: "scene-a",
+            hasPendingUserAction: true,
+            excludedUserActionID: captured.userActionID,
+            actionReceipt: receipt
+        )
+        var initialContext: DatadogContext = .mockRandom()
+        initialContext.set(additionalContext: capturedWriterRUMContext(sessionID: "session-b", viewID: "view-b", actionID: "prior-delivery-action"))
+        XCTAssertEqual(initialContext.rumContext?.viewID, "view-b")
+        XCTAssertEqual(initialContext.rumContext?.userActionID, "prior-delivery-action")
+        let scope = FeatureScopeMock(context: initialContext, deferEventWriteContext: true)
+        let writer = CapturedRUMSpanWriteContext(
+            original: LazySpanWriteContext(featureScope: scope),
+            owner: owner,
+            value: value,
+            sessionOwnership: .request(captured.sessionID)
+        )
+        var calls = 0
+        writer.spanWriteContext { provided, _ in
+            var expected = initialContext
+            expected.set(additionalContext: value.resolvedRUMContext(for: owner))
+            DDAssertReflectionEqual(provided, expected)
+            XCTAssertEqual(provided.rumContext?.viewID, "view-a")
+            XCTAssertEqual(provided.rumContext?.userActionID, "original-action")
+            calls += 1
+        }
+        XCTAssertEqual(calls, 0)
+        receipt.accept(sessionID: captured.sessionID, viewID: "view-a", actionID: "original-action")
+        receipt.accept(sessionID: captured.sessionID, viewID: "view-a", actionID: "subsequent-action")
+        var deliveredContext: DatadogContext = .mockRandom()
+        deliveredContext.set(additionalContext: capturedWriterRUMContext(sessionID: "session-c", viewID: "view-c", actionID: "later-delivery-action"))
+        XCTAssertEqual(deliveredContext.rumContext?.viewID, "view-c")
+        XCTAssertEqual(deliveredContext.rumContext?.userActionID, "later-delivery-action")
+        scope.contextMock = deliveredContext
+        scope.flushDeferredEventWriteContexts()
+        XCTAssertEqual(calls, 1)
+    }
+
+    func testCapturedWriterOmitsRejectedOrUnresolvedActionWithoutBorrowingDeliveryAction() {
+        for rejected in [false, true] {
+            let owner = RUMContextHandoff.Owner()
+            let captured = capturedWriterRUMContext()
+            let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: captured)
+            if rejected { receipt.reject() }
+            let value = RUMContextHandoff.CurrentValue(
+                rumContext: captured,
+                sceneIdentifier: "scene-a",
+                hasPendingUserAction: true,
+                excludedUserActionID: captured.userActionID,
+                actionReceipt: receipt
+            )
+            var initialContext: DatadogContext = .mockRandom()
+            initialContext.set(additionalContext: capturedWriterRUMContext(sessionID: "session-b", viewID: "view-b", actionID: "prior-delivery-action"))
+            XCTAssertEqual(initialContext.rumContext?.viewID, "view-b")
+            XCTAssertEqual(initialContext.rumContext?.userActionID, "prior-delivery-action")
+            let scope = FeatureScopeMock(context: initialContext, deferEventWriteContext: true)
+            let writer = CapturedRUMSpanWriteContext(
+                original: LazySpanWriteContext(featureScope: scope),
+                owner: owner,
+                value: value,
+                sessionOwnership: .request(captured.sessionID)
+            )
+            var calls = 0
+            writer.spanWriteContext { provided, _ in
+                var expected = initialContext
+                expected.set(additionalContext: value.resolvedRUMContext(for: owner))
+                DDAssertReflectionEqual(provided, expected)
+                XCTAssertEqual(provided.rumContext?.viewID, "view-a")
+                XCTAssertNil(provided.rumContext?.userActionID)
+                calls += 1
+            }
+            var deliveredContext: DatadogContext = .mockRandom()
+            deliveredContext.set(additionalContext: capturedWriterRUMContext(sessionID: "session-c", viewID: "view-c", actionID: "later-delivery-action"))
+            XCTAssertEqual(deliveredContext.rumContext?.viewID, "view-c")
+            XCTAssertEqual(deliveredContext.rumContext?.userActionID, "later-delivery-action")
+            scope.contextMock = deliveredContext
+            scope.flushDeferredEventWriteContexts()
+            XCTAssertEqual(calls, 1)
+        }
+    }
+
+    func testCapturedWriterOmitsMissingUnequalInvalidAndAuthoritativelyAbsentOwnership() {
+        for kind in ["missing-session", "unequal-session", "invalid-owner", "captured-nil"] {
+            let owner = RUMContextHandoff.Owner()
+            let captured = capturedWriterRUMContext()
+            let value = RUMContextHandoff.CurrentValue(
+                rumContext: kind == "captured-nil" ? nil : captured,
+                sceneIdentifier: "scene-a",
+                hasPendingUserAction: false,
+                excludedUserActionID: nil
+            )
+            var initialContext: DatadogContext = .mockRandom()
+            initialContext.set(additionalContext: capturedWriterRUMContext(sessionID: "session-b", viewID: "view-b", actionID: "prior-delivery-action"))
+            XCTAssertEqual(initialContext.rumContext?.viewID, "view-b")
+            XCTAssertEqual(initialContext.rumContext?.userActionID, "prior-delivery-action")
+            let scope = FeatureScopeMock(context: initialContext, deferEventWriteContext: true)
+            let sessionID = kind == "missing-session" ? nil : (kind == "unequal-session" ? "session-b" : captured.sessionID)
+            let writer = CapturedRUMSpanWriteContext(
+                original: LazySpanWriteContext(featureScope: scope),
+                owner: owner,
+                value: value,
+                sessionOwnership: .request(sessionID)
+            )
+            var calls = 0
+            writer.spanWriteContext { provided, _ in
+                var expected = initialContext
+                expected.set(additionalContext: Optional<RUMCoreContext>.none)
+                DDAssertReflectionEqual(provided, expected)
+                XCTAssertNil(provided.rumContext, kind)
+                calls += 1
+            }
+            if kind == "invalid-owner" { owner.invalidate() }
+            var deliveredContext: DatadogContext = .mockRandom()
+            deliveredContext.set(additionalContext: capturedWriterRUMContext(sessionID: "session-c", viewID: "view-c", actionID: "later-delivery-action"))
+            XCTAssertEqual(deliveredContext.rumContext?.viewID, "view-c")
+            XCTAssertEqual(deliveredContext.rumContext?.userActionID, "later-delivery-action")
+            scope.contextMock = deliveredContext
+            scope.flushDeferredEventWriteContexts()
+            XCTAssertEqual(calls, 1, kind)
+        }
+    }
+
+    private func capturedWriterRUMContext(sessionID: String = "session-a", viewID: String = "view-a", actionID: String = "prior-action") -> RUMCoreContext {
+        RUMCoreContext(
+            applicationID: "application-a",
+            sessionID: sessionID,
+            sessionSampler: DeterministicSampler(seed: 42, samplingRate: 100),
+            viewID: viewID,
+            userActionID: actionID,
+            viewServerTimeOffset: 0.25,
+            viewPath: "path-a",
+            viewName: "View A"
+        )
     }
 }

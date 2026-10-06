@@ -171,6 +171,26 @@ public enum RUMContextHandoff {
         return binding.value
     }
 
+    /// Captures an On consumer without turning an invalid retained owner into legacy fallback.
+    /// A valid owner without a binding and unsupported systems retain the original path.
+    public static func captureValue(for owner: Owner?) -> CurrentValue? {
+        guard supportsExecutionScope, let owner else {
+            return nil
+        }
+        if let value = current(for: owner) {
+            return value
+        }
+        guard !owner.isValid else {
+            return nil
+        }
+        return CurrentValue(
+            rumContext: nil,
+            sceneIdentifier: nil,
+            hasPendingUserAction: false,
+            excludedUserActionID: nil
+        )
+    }
+
     /// Binds a synchronous operation and restores the prior binding on return or throw.
     /// Unsupported systems and absent or invalid owners execute the operation directly.
     /// This primitive does not authorize automatic customer-callback integration.
@@ -213,6 +233,8 @@ public struct NetworkContext {
     public var activeSpanProvider: TraceActiveSpanProvider?
     public var userConfigurationContext: UserConfigurationContext?
     public var accountConfigurationContext: AccountConfigurationContext?
+    @_spi(Internal)
+    public var rumURLSessionContext: RUMURLSessionContext? = nil
 }
 
 /// The User configuration context received from `Core`.
