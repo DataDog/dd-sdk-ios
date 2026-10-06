@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "state": "OFFLINE_FINAL_REVIEW_INDEX_PREPARED_REQUIRED_PHYSICAL_UIKIT_AND_MAINTAINER_REVIEW_OPEN",
+  "existing_gate": "S2:F06",
+  "owner": "RUM maintainers",
+  "prepared_at": "2026-10-06T21:57:51.841225+00:00",
+  "packet": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-final-review-preparation-20261006/packet.json",
+    "sha256": "d4cce166c63cf6777f47f0dd184bf03cecb0ecbfe23276a7a2a835b52c6576d1"
+  },
+  "source_manifest": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-final-review-preparation-20261006/source-manifest.json",
+    "sha256": "0430563c7d07b94f2cc795ecf4151c07a86181783a72e526d6defc3aab98f4b8"
+  },
+  "gate_evidence_index": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-final-review-preparation-20261006/gate-evidence-index.json",
+    "sha256": "245f8f16ac66192d359413f6daa144f53d66d22dce67c8d92d84ec393c7f2268"
+  },
+  "required_gates": 27,
+  "closed_gates": 24,
+  "remaining": [
+    "S2:H11",
+    "S2:H13",
+    "S2:F06"
+  ],
+  "decisive_review": "Exact selected source and applicable accepted attribution, View/Navigation/Action, lifetime, privacy, API, compatibility and host crash evidence; preserve accepted limitations and hardware uncertainty.",
+  "next_action": "Complete one baseline-reusing physical UIKit candidate after orientation capture qualification and fresh user availability, then perform final maintainer release review.",
+  "native_runs": 0,
+  "builds": 0,
+  "backend_queries": 0,
+  "gates_closed": [],
+  "release_acceptance": false
+}

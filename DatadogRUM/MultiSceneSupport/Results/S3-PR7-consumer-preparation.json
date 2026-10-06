@@ -6,7 +6,7 @@
   "source_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
   "branch": "valpertui/s3-consumer-capture",
   "base_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
-  "source_head": "f483d658d16f6612a515ba862c07aa6f448aff1a",
+  "source_head": "7fcd960cd4a9e92eec10ac69d6367486ee3e1c79",
   "source_gap_inventory": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-consumer-source-preparation/packet.json",
     "sha256": "57e376768a17b85993c54af64fcfb4f63048738ae0976e386760c5831f0c4a5b"
@@ -188,8 +188,8 @@
   "builds": 19,
   "gates_closed": [],
   "whole_pr7_qualified": false,
-  "next_action": "Complete source-backed WebView native-container and Flags Internal/React Native acquisition, then focused component/complete Off/older-system/final-stack qualification. Preserve accepted component evidence and original44 failure; do not rerun the repaired Core method merely to resume.",
-  "updated_at": "2026-10-06T21:36:37Z",
+  "next_action": "Finish and independently review exact17-selector preparation, then root issues one automatic three-scheme affected-component run only if its1800s execution plus600s cleanup fit original caffeinate52811 cutoff. Preserve accepted43/cache3/separate Core tests; no human input, mounted callback or whole-PR7 claim.",
+  "updated_at": "2026-10-06T22:05:37.719783+00:00",
   "sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-core-sampling-initialization-test-repair-applied-20261006/sdk-checkpoint.json",
     "sha256": "8479a54805b889477b7b9f20b61e6755e0ce49fda73cab852a95a77f47f45e72"
@@ -1467,5 +1467,52 @@
     "native_runs": 1,
     "builds": 1,
     "tests_passed": 3
+  },
+  "webview_captured_transport": {
+    "state": "SOURCE_REVIEWED_AND_CHECKPOINTED_AFFECTED_COMPONENT_TESTS_PENDING",
+    "existing_gate": "S3:F12",
+    "dependency": "P7W1 captured WebView transport and receiver routing",
+    "original_blocked_packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-captured-transport-20261006/packet.json",
+      "sha256": "aaafdd2305a9670a60200c89357de708ba37dd935e32e3d59b030fe14d3935a0"
+    },
+    "original_blocked_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-captured-transport-20261006/review.json",
+      "sha256": "ac579f9bb3be449e4112e5f73d1b06de9dec44e20e9a973bdef14a8a0bd3236d"
+    },
+    "correction_packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-captured-transport-20261006/cycle2/packet.json",
+      "sha256": "509756514ddf7ceab435a78127f12b4ed5d8b66a02dfbd7cd8fd0af72580b10b"
+    },
+    "new_test_methods": 14,
+    "new_tests_executed": 0,
+    "correction_scope": [
+      "Carry captured keep-alive owner/session through resolved application before lifecycle effects",
+      "Remove every unproved captured container before optional metadata parsing"
+    ],
+    "held": [
+      "Native callback acquisition and original page/rebind proof",
+      "Actual delivery-time same-ID expiry",
+      "Complete Off/older-system/final-stack and release acceptance"
+    ],
+    "native_runs": 0,
+    "builds": 0,
+    "gates_closed": [],
+    "source_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-captured-transport-20261006/cycle2/review.json",
+      "sha256": "7880a77796cc183316db42f1cbeb61bbcd27d43da346831512876688b38981cd"
+    },
+    "sdk_checkpoint": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-captured-transport-20261006/cycle2/sdk-checkpoint.json",
+      "sha256": "d3b809e8edd3ffbe9b036c4e73d05e1e924810fa12186d2c843c955cbb48ca5b"
+    },
+    "canonical_patch": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-captured-transport-20261006/cycle2/patch.canonical.diff",
+      "sha256": "dc192f3e9f599d365c88b86075cfeef7db5d17a14f78aea88d6cd464f0e400ea"
+    },
+    "source_head": "7fcd960cd4a9e92eec10ac69d6367486ee3e1c79",
+    "signature": "N",
+    "local_unsigned_authority": "Authorized fallback after signing-agent communication failure; sign outgoing history before separately authorized publication.",
+    "maximum_duration_test_limit": "The maximum-duration subcase also times out from inactivity; it does not independently qualify the maximum-duration branch."
   }
 }
