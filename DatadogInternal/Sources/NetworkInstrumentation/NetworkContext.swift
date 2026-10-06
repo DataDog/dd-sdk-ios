@@ -336,3 +336,25 @@ public struct AccountConfigurationContext: AdditionalContext, Equatable {
         self.name = accountInfo.name
     }
 }
+
+/// Carries native ownership with a Browser message across asynchronous queues.
+@_spi(Internal)
+public struct WebViewMessageWithRUMContext {
+    public let message: WebViewMessage
+    public let capture: RUMContextHandoff.Capture
+
+    public init(message: WebViewMessage, capture: RUMContextHandoff.Capture) {
+        self.message = message
+        self.capture = capture
+    }
+
+    /// Resolves the captured context only for its original owner and current session.
+    public func rumContext(for owner: RUMContextHandoff.Owner?, sessionID: String?) -> RUMCoreContext? {
+        guard let owner, owner === capture.owner, owner.isValid,
+              let context = capture.value.resolvedRUMContext(for: owner),
+              context.sessionID == sessionID else {
+            return nil
+        }
+        return context
+    }
+}

@@ -925,6 +925,11 @@ internal struct RUMAddLongTaskCommand: RUMCommand {
 
 /// RUM Events received from WebView should keep the active session alive, therefore they fire this command to do so. (ref: RUMM-1793)
 internal struct RUMKeepSessionAliveCommand: RUMCommand {
+    /// Ownership supplied by a captured WebView message; nil preserves legacy processing.
+    var target: RUMCommandTarget {
+        guard let capture else { return .processRepresentative }
+        return capture.value.sceneIdentifier.map { .scene(RUMSceneIdentifier(rawValue: $0)) } ?? .none
+    }
     var canStartApplicationLaunchView = false
     let canStartBackgroundView = false
     let shouldRestartLastViewAfterSessionExpiration = false
@@ -935,6 +940,7 @@ internal struct RUMKeepSessionAliveCommand: RUMCommand {
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
+    var capture: RUMContextHandoff.Capture? = nil
 }
 
 // MARK: - Feature Operation Steps (Vital) commands

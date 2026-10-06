@@ -951,7 +951,9 @@ extension RUMApplicationScopeTests {
     private var routingSceneA: RUMSceneIdentifier { RUMSceneIdentifier(rawValue: "scene-a") }
     private var routingSceneB: RUMSceneIdentifier { RUMSceneIdentifier(rawValue: "scene-b") }
 
-    private func routingApplication(enabled: Bool = true, mapper: RUMEventsMapper = .mockNoOp()) -> (RUMApplicationScope, DatadogContext) {
+    private func routingApplication(
+        enabled: Bool = true, mapper: RUMEventsMapper = .mockNoOp(), featureScope: FeatureScope = NOPFeatureScope()
+    ) -> (RUMApplicationScope, DatadogContext) {
         let context = DatadogContext.mockWith(
             sdkInitDate: routingDate,
             launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: routingDate),
@@ -959,7 +961,7 @@ extension RUMApplicationScopeTests {
         )
         let cache = ViewCache(dateProvider: DateProviderMock(now: routingDate), isMultiSceneTrackingEnabled: enabled)
         let app = createRUMApplicationScope(
-            dependencies: .mockWith(eventBuilder: RUMEventBuilder(eventsMapper: mapper), viewCache: cache, featureFlags: [.multiSceneTracking: enabled]),
+            dependencies: .mockWith(featureScope: featureScope, eventBuilder: RUMEventBuilder(eventsMapper: mapper), viewCache: cache, featureFlags: [.multiSceneTracking: enabled]),
             sdkContext: context
         )
         return (app, context)
@@ -1468,4 +1470,129 @@ extension RUMApplicationScopeTests {
         XCTAssertNil(ownership.claim)
         XCTAssertNil(receipt.actionID(for: owner, sessionID: captured.sessionID, viewID: captured.viewID))
     }
+}
+
+extension RUMApplicationScopeTests {
+    private func webViewKeepAliveCapture(_ app: RUMApplicationScope, owner: RUMContextHandoff.Owner) throws -> RUMContextHandoff.Capture {
+        let view = try XCTUnwrap(app.activeSession?.viewScopes.first { $0.sceneIdentifier == routingSceneA && $0.isActiveView })
+        return .init(
+            owner: owner,
+            value: .init(
+                rumContext: try capturedReceiptContext(app, view: view), sceneIdentifier: routingSceneA.rawValue,
+                hasPendingUserAction: false, excludedUserActionID: nil
+            )
+        )
+    }
+
+    func testCapturedWebViewKeepAlive_rejectsSessionTransitionBeforeApplication() throws {
+        for restart in [false, true] {
+            let scope = WebViewKeepAliveOwnerScope()
+            let (app, context) = routingApplication(featureScope: scope)
+            startRoutingPeers(app, context: context)
+            let capture = try webViewKeepAliveCapture(app, owner: scope.owner)
+            let native = try XCTUnwrap(capture.value.resolvedRUMContext(for: scope.owner))
+            let receiverScope = FeatureScopeMock(context: .mockWith(additionalContext: [native]), deferEventWriteContext: true)
+            let subscriber = RUMCommandSubscriberMock()
+            let core = WebViewKeepAliveOwnerCore()
+            core.owner = scope.owner
+            let receiver = WebViewEventReceiver(
+                featureScope: receiverScope, dateProvider: DateProviderMock(now: routingDate.addingTimeInterval(5)),
+                commandSubscriber: subscriber, viewCache: ViewCache(dateProvider: DateProviderMock())
+            )
+            XCTAssertTrue(receiver.receive(
+                message: .payload(WebViewMessageWithRUMContext(message: .rum(["date": 1_600_000_003_000, "view": ["id": "browser"]]), capture: capture)),
+                from: core
+            ))
+            receiverScope.flushDeferredEventWriteContexts()
+            XCTAssertEqual(receiverScope.eventsWritten.count, 1)
+            let queued = try XCTUnwrap(subscriber.receivedCommands.firstElement(of: RUMKeepSessionAliveCommand.self))
+            XCTAssertTrue(queued.capture?.owner === scope.owner)
+            _ = app.process(command: RUMStopSessionCommand(time: routingDate.addingTimeInterval(4)), context: context, writer: writer)
+            if restart { navigate(app, context: context, scene: routingSceneB, name: "replacement", after: 4.5) }
+            let before = app.sessionScopes.map { $0.sessionUUID }
+            let active = app.activeSession
+            let interaction = active?.lastInteractionTime
+            let count = writer.events.count
+            _ = app.process(command: queued, context: context, writer: writer)
+            XCTAssertEqual(app.sessionScopes.map { $0.sessionUUID }, before)
+            XCTAssertTrue(app.activeSession === active)
+            XCTAssertEqual(app.activeSession?.lastInteractionTime, interaction)
+            XCTAssertEqual(writer.events.count, count)
+        }
+    }
+
+    func testCapturedWebViewKeepAlive_rejectsInvalidOrReplacedOwnerAtApplication() throws {
+        for replacement in [false, true] {
+            let scope = WebViewKeepAliveOwnerScope()
+            let (app, context) = routingApplication(featureScope: scope)
+            startRoutingPeers(app, context: context)
+            let capture = try webViewKeepAliveCapture(app, owner: scope.owner)
+            if replacement { scope.owner = RUMContextHandoff.Owner() } else { scope.owner.invalidate() }
+            let count = writer.events.count
+            let session = app.activeSession
+            _ = app.process(
+                command: RUMKeepSessionAliveCommand(time: routingDate.addingTimeInterval(5), attributes: [:], capture: capture),
+                context: context, writer: writer
+            )
+            XCTAssertTrue(app.activeSession === session)
+            XCTAssertEqual(writer.events.count, count)
+        }
+    }
+
+    func testCapturedWebViewKeepAlive_doesNotRestartExpiredSession() throws {
+        for elapsed in [RUMSessionScope.Constants.sessionTimeoutDuration + 3, RUMSessionScope.Constants.sessionMaxDuration + 3] {
+            let scope = WebViewKeepAliveOwnerScope()
+            let (app, context) = routingApplication(featureScope: scope)
+            startRoutingPeers(app, context: context)
+            let capture = try webViewKeepAliveCapture(app, owner: scope.owner)
+            let session = try XCTUnwrap(app.activeSession)
+            let interaction = session.lastInteractionTime
+            let count = writer.events.count
+            _ = app.process(
+                command: RUMKeepSessionAliveCommand(time: routingDate.addingTimeInterval(elapsed), attributes: [:], capture: capture),
+                context: context, writer: writer
+            )
+            XCTAssertTrue(app.activeSession === session)
+            XCTAssertNil(session.endReason)
+            XCTAssertEqual(session.lastInteractionTime, interaction)
+            XCTAssertEqual(writer.events.count, count)
+        }
+    }
+
+    func testCapturedWebViewKeepAlive_preservesLegacyAndOriginatingSceneTargets() throws {
+        let scope = WebViewKeepAliveOwnerScope()
+        let (app, context) = routingApplication(featureScope: scope)
+        startRoutingPeers(app, context: context)
+        let capture = try webViewKeepAliveCapture(app, owner: scope.owner)
+        let command = RUMKeepSessionAliveCommand(time: routingDate.addingTimeInterval(5), attributes: [:], capture: capture)
+        if case .scene(let scene) = command.target { XCTAssertEqual(scene, routingSceneA) } else { XCTFail("Missing originating scene") }
+        let session = try XCTUnwrap(app.activeSession)
+        let interaction = session.lastInteractionTime
+        _ = app.process(command: command, context: context, writer: writer)
+        XCTAssertTrue(app.activeSession === session)
+        XCTAssertEqual(session.lastInteractionTime, interaction)
+        let legacy = RUMKeepSessionAliveCommand(time: routingDate.addingTimeInterval(6), attributes: [:])
+        XCTAssertNil(legacy.capture)
+        if case .processRepresentative = legacy.target {} else { XCTFail("Legacy target changed") }
+    }
+}
+
+private final class WebViewKeepAliveOwnerScope: FeatureScope, RUMContextHandoffOwnerProviding, @unchecked Sendable {
+    private let base = FeatureScopeMock()
+    var owner = RUMContextHandoff.Owner()
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? { owner }
+    var dataStore: DataStore { base.dataStore }
+    var telemetry: Telemetry { base.telemetry }
+    func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
+        base.eventWriteContext(bypassConsent: bypassConsent, block)
+    }
+    func context(_ block: @escaping (DatadogContext) -> Void) { base.context(block) }
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext { base.set(context: context) }
+    func set(anonymousId: String?) { base.set(anonymousId: anonymousId) }
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) { base.send(message: message, else: fallback) }
+}
+
+private final class WebViewKeepAliveOwnerCore: PassthroughCoreMock, RUMContextHandoffOwnerProviding, @unchecked Sendable {
+    var owner: RUMContextHandoff.Owner?
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? { owner }
 }

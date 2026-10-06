@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+@_spi(Internal)
 import DatadogInternal
 
 @testable import DatadogWebViewTracking
@@ -148,5 +149,45 @@ class MessageEmitterTests: XCTestCase {
         XCTAssertEqual(dd.logger.errorLog?.message, "Encountered an error when receiving web view event")
         XCTAssertEqual(dd.logger.errorLog?.error?.message, #"invalidMessage(description: "123")"#)
         XCTAssertEqual(telemetry.messages.first?.asError?.message, "Encountered an error when receiving web view event - WebViewMessageError does not conform to TelemetrySanitizableError — reporting type name only")
+    }
+    func testCapturedMessage_preservesCaptureAcrossTransport() throws {
+        let owner = RUMContextHandoff.Owner()
+        let context = RUMCoreContext(applicationID: "native-app", sessionID: "native-session", sessionSampler: .mockKeepAll(), viewID: "native-a")
+        let capture = RUMContextHandoff.Capture(
+            owner: owner,
+            value: .init(rumContext: context, sceneIdentifier: "scene-a", hasPendingUserAction: false, excludedUserActionID: nil)
+        )
+        for eventType in ["rum", "internal_telemetry", "log"] {
+            let receiver = FeatureMessageReceiverMock()
+            let core = PassthroughCoreMock(messageReceiver: receiver)
+            let emitter = MessageEmitter(logsSampler: Sampler(samplingRate: 100), core: core)
+            emitter.send(
+                body: "{\"eventType\":\"\(eventType)\",\"event\":{\"view\":{\"id\":\"browser-view\"},\"session\":{\"id\":\"browser-session\"}}}",
+                slotId: nil,
+                capture: capture
+            )
+            let message = try XCTUnwrap(receiver.messages.firstPayload as? WebViewMessageWithRUMContext)
+            XCTAssertTrue(message.capture.owner === owner)
+            XCTAssertEqual(message.capture.value.sceneIdentifier, "scene-a")
+            XCTAssertEqual(message.capture.value.rumContext?.viewID, "native-a")
+            let event: WebViewMessage.Event
+            switch message.message {
+            case .rum(let value), .telemetry(let value), .log(let value): event = value
+            default: return XCTFail("Unexpected message")
+            }
+            XCTAssertEqual(try JSONObjectMatcher(object: event).value("view.id"), "browser-view")
+            XCTAssertEqual(try JSONObjectMatcher(object: event).value("session.id"), "browser-session")
+        }
+    }
+
+    func testWithoutCapture_preservesLegacyMessageTransport() throws {
+        for eventType in ["rum", "internal_telemetry", "log"] {
+            let receiver = FeatureMessageReceiverMock()
+            let core = PassthroughCoreMock(messageReceiver: receiver)
+            let emitter = MessageEmitter(logsSampler: Sampler(samplingRate: 100), core: core)
+            emitter.send(body: "{\"eventType\":\"\(eventType)\",\"event\":{\"test\":true}}")
+            XCTAssertNotNil(receiver.messages.firstWebViewMessage)
+            XCTAssertNil(receiver.messages.firstPayload as? WebViewMessageWithRUMContext)
+        }
     }
 }

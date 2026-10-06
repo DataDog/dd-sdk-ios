@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+@_spi(Internal)
 import DatadogInternal
 
 @testable import DatadogLogs
@@ -358,4 +359,50 @@ class WebViewLogReceiverTests: XCTestCase {
         XCTAssertEqual(usr["anonymous_id"] as? String, fakeAnonymousId)
         XCTAssertEqual(usr.count, 1, "usr should only contain anonymous_id")
     }
+    func testCapturedWebLog_keepsOriginalViewAndAcceptedAction() throws {
+        let owner = RUMContextHandoff.Owner()
+        let original = RUMCoreContext(applicationID: "native-app", sessionID: "native-session", sessionSampler: .mockKeepAll(), viewID: "native-a", userActionID: "previous-action")
+        let receipt = RUMContextHandoff.ActionReceipt(owner: owner, context: original)
+        let capture = RUMContextHandoff.Capture(owner: owner, value: .init(rumContext: original, sceneIdentifier: "scene-a", hasPendingUserAction: true, excludedUserActionID: "previous-action", actionReceipt: receipt))
+        let delivery = RUMCoreContext(applicationID: "native-app", sessionID: "native-session", sessionSampler: .mockKeepAll(), viewID: "native-b", userActionID: "peer-action")
+        let core = CapturedWebLogCore(context: .mockWith(serverTimeOffset: 0, additionalContext: [delivery]))
+        core.owner = owner
+        let message = WebViewMessageWithRUMContext(message: .log(["message": "browser-log"]), capture: capture)
+        let receiver = WebViewLogReceiver()
+        XCTAssertTrue(receiver.receive(message: .payload(message), from: core))
+        receipt.accept(sessionID: "native-session", viewID: "native-a", actionID: "accepted-action")
+        XCTAssertTrue(receiver.receive(message: .payload(message), from: core))
+        let logs: [AnyEncodable] = core.events()
+        XCTAssertEqual(logs.count, 2)
+        let pending = try JSONObjectMatcher(logs[0])
+        XCTAssertEqual(pending.object[LogEvent.Attributes.RUM.viewID] as? String, "native-a")
+        XCTAssertNil(pending.object[LogEvent.Attributes.RUM.actionID])
+        let accepted = try JSONObjectMatcher(logs[1])
+        XCTAssertEqual(accepted.object[LogEvent.Attributes.RUM.viewID] as? String, "native-a")
+        XCTAssertEqual(accepted.object[LogEvent.Attributes.RUM.actionID] as? String, "accepted-action")
+    }
+
+    func testCapturedWebLog_keepsLogWithoutBorrowingInvalidOwnership() throws {
+        for invalid in [true, false] {
+            let owner = RUMContextHandoff.Owner()
+            let original = RUMCoreContext(applicationID: "native-app", sessionID: "native-session", sessionSampler: .mockKeepAll(), viewID: "native-a")
+            let core = CapturedWebLogCore(context: .mockWith(serverTimeOffset: 0, additionalContext: [original]))
+            core.owner = invalid ? owner : RUMContextHandoff.Owner()
+            if invalid { owner.invalidate() }
+            let capture = RUMContextHandoff.Capture(owner: owner, value: .init(rumContext: original, sceneIdentifier: "scene-a", hasPendingUserAction: false, excludedUserActionID: nil))
+            let message = WebViewMessageWithRUMContext(message: .log(["message": "browser-log", LogEvent.Attributes.RUM.viewID: "unproved-view"]), capture: capture)
+            XCTAssertTrue(WebViewLogReceiver().receive(message: .payload(message), from: core))
+            let log: AnyEncodable = try XCTUnwrap(core.events().first)
+            let json = try JSONObjectMatcher(log)
+            XCTAssertEqual(try json.value("message"), "browser-log")
+            for key in [LogEvent.Attributes.RUM.applicationID, LogEvent.Attributes.RUM.sessionID, LogEvent.Attributes.RUM.viewID, LogEvent.Attributes.RUM.actionID] {
+                XCTAssertNil(json.object[key])
+            }
+        }
+    }
+}
+
+private final class CapturedWebLogCore: PassthroughCoreMock, RUMContextHandoffOwnerProviding, @unchecked Sendable {
+    var owner: RUMContextHandoff.Owner?
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? { owner }
 }

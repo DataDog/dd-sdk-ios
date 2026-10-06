@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 /// Receiver to consume a Log message
@@ -69,7 +70,19 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
     ///   - message: The Feature message
     ///   - core: The core from which the message is transmitted.
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case var .webview(.log(event)) = message else {
+        var event: WebViewMessage.Event
+        let capture: WebViewMessageWithRUMContext?
+        switch message {
+        case let .webview(.log(browserEvent)):
+            event = browserEvent
+            capture = nil
+        case let .payload(message as WebViewMessageWithRUMContext):
+            guard case let .log(browserEvent) = message.message else {
+                return false
+            }
+            event = browserEvent
+            capture = message
+        default:
             return false
         }
 
@@ -85,7 +98,18 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
                 event[dateKey] = correctedTimestamp
             }
 
-            if let rum = context.additionalContext(ofType: RUMCoreContext.self), rum.sessionSampler.isSampled {
+            let currentRUM = context.additionalContext(ofType: RUMCoreContext.self)
+            let rum: RUMCoreContext?
+            if let capture {
+                rum = capture.rumContext(for: RUMContextHandoff.owner(in: core), sessionID: currentRUM?.sessionID)
+                event[LogEvent.Attributes.RUM.applicationID] = nil
+                event[LogEvent.Attributes.RUM.sessionID] = nil
+                event[LogEvent.Attributes.RUM.viewID] = nil
+                event[LogEvent.Attributes.RUM.actionID] = nil
+            } else {
+                rum = currentRUM
+            }
+            if let rum, rum.sessionSampler.isSampled {
                 event[LogEvent.Attributes.RUM.applicationID] = rum.applicationID
                 event[LogEvent.Attributes.RUM.sessionID] = rum.sessionID
                 event[LogEvent.Attributes.RUM.viewID] = rum.viewID

@@ -113,6 +113,21 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     }
 
     private func processResolved(command: RUMCommand, context: DatadogContext, writer: Writer) {
+        if let keepAlive = command as? RUMKeepSessionAliveCommand, let capture = keepAlive.capture {
+            guard dependencies.isMultiSceneTrackingEnabled,
+                  capture.owner.isValid,
+                  RUMContextHandoff.owner(in: dependencies.featureScope) === capture.owner,
+                  let rum = capture.value.resolvedRUMContext(for: capture.owner),
+                  let session = activeSession,
+                  session.sessionUUID.toRUMDataFormat == rum.sessionID,
+                  !RUMSessionScope.hasTimedOut(lastInteractionTime: session.lastInteractionTime, currentTime: command.time),
+                  !RUMSessionScope.hasExpired(sessionStartTime: session.sessionStartTime, currentTime: command.time) else {
+                return
+            }
+            // Validate after launch resolution, before any session creation, refresh or broadcast.
+            _ = session.process(command: keepAlive, context: context, writer: writer)
+            return
+        }
         if let error = command as? RUMAddCurrentViewErrorCommand,
            let ownership = error.capturedOwnership {
             guard dependencies.isMultiSceneTrackingEnabled,
