@@ -243,7 +243,7 @@
       "off_contract": "Static fast path; final E01/E05 headers/sampling/user/account expressions and fresh develop no handoff or scene lookup",
       "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
       "rebuild_obligation": "Drop unqualified empty-header, existing-header suppression and helper rewrites; networking wire policy unchanged",
-      "status": "ACTION_DEPENDENCY_QUALIFIED_NETWORK_TRACE_IMPLEMENTED_UNCOMPILED",
+      "status": "ACTION_DEPENDENCY_QUALIFIED_NETWORK_TRACE_TEST_COMPILE_REPAIRED_UNQUALIFIED",
       "owning_record": null,
       "source_head": null,
       "obligation": "BEFORE_SLICE_MERGE",
@@ -255,7 +255,7 @@
         "integration": "NOT_QUALIFIED"
       },
       "remaining_assertion": "Authoritative nil vs absent handoff, optional request-time final E05 correlation, delayed WebView owner and accepted action merge Off: Static fast path; final E01/E05 headers/sampling/user/account expressions and fresh develop no handoff or scene lookup",
-      "next_action": "Qualify sixteen new consumer methods and eight focused legacy regressions on current source3dbc through fresh Internal/CoreTSan/Trace builds, exact discovery and cleanup within the unchanged awake cutoff. Constructor source review/lint pass; no current consumer execution or gate credit. Preserve accepted action dependencies and original failures; Logs/Flags/WebView, complete Off, older-system and final-stack obligations remain.",
+      "next_action": "Qualify the same sixteen new consumer methods and eight focused legacy regressions on the corrected exact source through fresh Internal/CoreTSan/Trace products, discovery, assertions and cleanup. Preserve the original zero-test compile failure; no SDK regression or gate credit follows from builds. Core/Logs composition is private and uncompiled; Flags acquisition is blocked by the approved Off contract. WebView, complete Off, older-system and final-stack obligations remain.",
       "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit.",
       "dependency_design": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/packet.json",
@@ -263,7 +263,7 @@
       },
       "preparation_record": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
-        "sha256": "24bac2623042bafeebf3fb2ccd7668a56f4b72a8dfca1a52c8719c28602cf772"
+        "sha256": "a2b99c053ac761e8941f63d193f87070ca16a99c54f381079b1916b79a823d6f"
       },
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
       "source_branch": "valpertui/s3-consumer-capture",
@@ -319,10 +319,45 @@
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-network-trace-applied-20261006/sdk-checkpoint.json",
         "sha256": "4ee6aec96a00cbb902d5e227d9e65ad88ec7cc41b81634a572222f0efc3d465b"
       },
-      "consumer_source_head": "3dbc972ee5b94c320980a42955760e9796cb1677",
+      "consumer_source_head": "2294defbb39824bb3da395663586b97d15e59e9d",
       "consumer_constructor_checkpoint": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-trace-constructor-tests-applied-20261006/sdk-checkpoint.json",
         "sha256": "c8a84e2af5e123fa06ba8d6e4b53f20e1f8cf8a18bfb3bf18b16d099aa19d191"
+      },
+      "consumer_accessor_checkpoint": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-network-trace-test-accessor-repair-20261006/sdk-checkpoint.json",
+        "sha256": "3243b4c6bb10808756efc84fd330e3814cc0f12d90c5db815ffb3127473d541a"
+      },
+      "consumer_stopped_attempt": {
+        "plan": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-network-trace-cli-proposal-20261006/plan.json",
+          "sha256": "3c497a619afe97b3a36012f0550abbcaf368edcdd4a31d244f71694635b507b5"
+        },
+        "proposal_review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-network-trace-cli-proposal-20261006/review.json",
+          "sha256": "8ca8015a02761b8ebbefe578a2dd817c3d4fa217cbc2a913b8833d2c71178b1b"
+        },
+        "result": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-network-trace-cli-proposal-20261006/actual-run-508912a4/stopped-result.json",
+          "sha256": "d4b11bad3cc280c933dfb3cee204dacac52c4407b9b62b1e5ddc8e1398690875"
+        },
+        "closure": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-network-trace-cli-proposal-20261006/actual-run-508912a4/closure/closure.json",
+          "sha256": "81b8c9d34c79dd77d201d24f7e67524741e3532d2aff837272d1f135626e5a4f"
+        },
+        "actual_review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-network-trace-cli-proposal-20261006/actual-run-508912a4/closure/actual-review.json",
+          "sha256": "31d6bd4c044a2cd75e452a2c1e4780daf35cfcf01a8107a9faf5a95480ab90e1"
+        },
+        "source_head": "3dbc972ee5b94c320980a42955760e9796cb1677",
+        "scenario": "UNQUALIFIED",
+        "evidence": "INCOMPLETE",
+        "overall": "INVALID",
+        "cleanup": "PASS_ORIGINAL_SHUTDOWN_APPS_AND_GROUPS",
+        "build_attempts": 3,
+        "tests": 0,
+        "boot_effects": 0,
+        "disposition": "Trace rc65: fifteen compiler diagnostics from seventeen unsupported test accessor expressions. Original immutable; two build successes are compilation custody only. No app-equality claim without boot inventory."
       }
     },
     {
@@ -507,7 +542,7 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": "2026-10-06T04:51:00.251331+00:00",
+  "updated_at": "2026-10-06T05:18:48.411506+00:00",
   "dependency_build_attempts": 4,
   "dependency_component_qualifications": 4,
   "dependency_test_invocations": 4
