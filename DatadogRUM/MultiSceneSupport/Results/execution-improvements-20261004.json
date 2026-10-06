@@ -43,7 +43,7 @@
     }
   },
   "p2": {
-    "state": "COMPLETE_OFFLINE_STARTUP_REVIEWED_WAIT_FRESH_PARAMETERS",
+    "state": "STOPPED_CURRENT_METADATA_PROJECTION_CORRECTION_PENDING",
     "plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-composition-qualified-identity/runtime/runtime-plan.json",
       "sha256": "3e8200cfb0d7163867983c237ff896e0d00ddf1fb9dc9fa2306873ecded50a80"
@@ -885,7 +885,7 @@
       "limits": "Source-bound Python parent/worker and actual xcodebuild recognizers; fresh caller roles and live inventory remain required. No native or gate credit."
     },
     "human_startup_blocker": {
-      "state": "COMPLETE_OFFLINE_STARTUP_REVIEWED_WAIT_FRESH_PARAMETERS",
+      "state": "STOPPED_CURRENT_METADATA_PROJECTION_CORRECTION_PENDING",
       "attempts": [
         {
           "kind": "ROOT_UUID_CONTEXT_SCHEMA_STOP_BEFORE_PARENT",
@@ -944,6 +944,47 @@
             "sha256": "ed25893a690d8eeab6ecbb7901c610581a0c32fc757c888997901726e947e26f"
           },
           "prior_review_executable_applicability": "SUPERSEDED_BY_ACTUAL_BOOTSTRAP_REVIEW_RECEIPT_CONTRACT_FAILURE"
+        },
+        {
+          "kind": "CURRENT_METADATA_PROJECTION_ROOT_PREPUBLICATION_STOP",
+          "closure": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261006-receipt-bound/runtime/zero-native-unadmitted-closure/closure.json",
+            "sha256": "6f24fca50cf2682d1992b7d46b5652a0bba1c04299b93e1c8d9898ffced7deb2"
+          },
+          "review": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261006-receipt-bound/runtime/zero-native-unadmitted-closure/actual-review.json",
+            "sha256": "6c2f117c46f5353f460de05a184910ebf8c7fd7b0918658221db3dcd06d8084a"
+          },
+          "closure_addendum": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261006-receipt-bound/runtime/zero-native-unadmitted-closure/actual-closure-addendum.json",
+            "sha256": "954f70fd5b69c34730fea1beddbb1b874fe663a6d292cacaa13cdbb9c8277a12"
+          },
+          "actual_root_stops": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261006-receipt-bound/preparation/actual-root-prepublication-stops.json",
+            "sha256": "74f31e127f1cde0c7c1fda5c01fb5f4300b803045b450f6202ea73e8643b870b"
+          },
+          "zero_authority_publication": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261006-receipt-bound/preparation/zero-authority-publication.json",
+            "sha256": "49a1f7c7571ebd207c41b0ecf29c1dd5800c7f3bf1162d77196b1c331c18dcae"
+          },
+          "native_calls": 0,
+          "new_builds": 0,
+          "scenario": "UNQUALIFIED",
+          "evidence": "INCOMPLETE",
+          "cleanup": "NOT_REQUIRED_NO_NATIVE_EFFECTS",
+          "acceptance": "INVALID",
+          "primary_error": "Current consumer data wraps actual MCPResult in raw.actual; unchanged workspace_binding expects raw.structuredContent directly.",
+          "separate_root_guard_error": "Named role mapping was passed to process_guard.guard, which expects a list of role dictionaries. Original TypeError is preserved.",
+          "static_review": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261006-receipt-bound/preparation/static-parameter-review.json",
+            "sha256": "41e0ed898348f34fa4e255bb102f095dbf20a66a12aab815426ea93af98bfe56"
+          },
+          "final_review": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261006-receipt-bound/runtime/review.json",
+            "sha256": "922dfd9bc79a632b771e92fb92d068cd0317662b111d2617b3e4db4a0de0a73c"
+          },
+          "prior_review_executable_applicability": "SUPERSEDED_BY_ACTUAL_CURRENT_METADATA_CONSUMER_FAILURE",
+          "limits": "Narrower custody/role checks remain; page and original state retirement pass separately. No authority/clocks/parent/worker/session/gestures/native effects were created. This is a harness/data-shape failure, with no SDK regression or gate credit."
         }
       ],
       "stale_runtime_pins": [
@@ -964,7 +1005,7 @@
       },
       "native_calls": 0,
       "gates_closed": [],
-      "next_action": "Prepare the same candidate only from reviewed runtime_static_pins/executable_cone, current source/products/baseline, actual fresh page/operator/environment bindings and final parameter review. Consume every actual final receipt through unchanged require_reviewer before invitation/admission; root validates complete canonical UUID context before authority publication. New fixed adequate awake/run clocks and exclusive ownership remain required. No repeat baseline or offline gate credit.",
+      "next_action": "Project the exact retained current MCP workspace/configuration objects directly into the unchanged consumer data schema, preserving original raw wrappers and custody. Complete the actual current-context/bootstrap/configuration/constructor zero-effect controls and designated review before another invitation. Validate exact root process-guard argument shape and complete canonical context before authority writes. Reuse accepted source/products/baseline; future page/operator/environment/awake and full fixed-budget admission must be fresh.",
       "packet": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-runtime-pin-construction-correction-20261006/packet.json",
         "sha256": "e0f3c066a5c2a67b5426cf565fceb41b32adf16220a88510765a4168c082f9c6"
@@ -994,7 +1035,7 @@
       "historical_unconsumed_pin_map": "source_verification.pins",
       "construction_limit": "Actual unchanged worker statements254-272 and human/operator setup only; configuration/handshake/app.run/native admission require fresh current bindings.",
       "full_startup_preflight": {
-        "state": "PASS_REVIEWED_OFFLINE_ONLY",
+        "state": "PASS_REVIEWED_OFFLINE_RETIRED_EXTERNAL_FIXTURES_ONLY",
         "required_reviewer_role": "rum-runtime-reviewer",
         "packet": {
           "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-reviewer-role-complete-startup-correction-20261006/packet.json",
@@ -1023,7 +1064,8 @@
         "source_bytes_changed": 0,
         "native_calls": 0,
         "native_admitted": false,
-        "gates_closed": []
+        "gates_closed": [],
+        "current_metadata_applicability": "NOT_ESTABLISHED; original current wrapped response failed actual validate_context before authority publication."
       }
     }
   },
