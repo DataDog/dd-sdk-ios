@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "UNATTENDED_P7D0_PRE_CONTROLLER_STOP_CLOSED_CONTINUATION_PREPARATION",
+  "state": "UNATTENDED_P7D0_BUILD_STOP_CLOSED_SAVED_TEST_PREPARATION",
   "owner": "/root",
   "plan": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
@@ -10,7 +10,7 @@
   "native_admitted": false,
   "native_runs": 16,
   "gates_closed": [],
-  "next_action": "Fresh source-identical CLI dependency qualification after reviewed closed pre-controller stop; then actual evidence/cleanup review and consumer implementation. No human or workspace authorization required.",
+  "next_action": "Review one corrected saved-build test continuation with composed publication/cleanup controls, then fresh checkpoint/source/product/process/device/awake authority. Original INVALID remains; source142ad frozen; no rebuild or human input.",
   "p1": {
     "required_s2_tasks": 3,
     "required_s3_tasks": 20,
@@ -1567,7 +1567,7 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-consumer-source-preparation/packet.json",
       "sha256": "57e376768a17b85993c54af64fcfb4f63048738ae0976e386760c5831f0c4a5b"
     },
-    "pr7_preparation_scope": "Exact five-file dependency source committed142ad7150f and independently reviewed; no new runtime or consumer acceptance.",
+    "pr7_preparation_scope": "One actual build rc0; compiler expectation stop closed independently with no owned boot/test. Saved ten-target products reconciled separately; new test-only proposal remains unadmitted. No consumer or release acceptance.",
     "pr9_private_preparation": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr9-representative-projection-cycle3/source-review-packet.json",
       "sha256": "8d1064e62b8b1f33ea55646a5ad87d78d8250bb06f08951bb3fbd185f3a85f71"
@@ -1672,14 +1672,14 @@
     },
     "pr7_owning_preparation": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
-      "sha256": "ca786d381d0e91af7c41edfb826fa3342e5a412d7ed4ec9812fc0eaf9db068d5"
+      "sha256": "1a47c7af7a0545c81cb9f5a2e4c01982f7b0f42e18fcc498ae6387bf93735730"
     },
     "pr7_dependency_design_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/dependency-design-review.json",
       "sha256": "71a2bd15b9f0c0e408a64f498dc4e234d89e3d54fdb216eb24ce69a8d25ca66f"
     }
   },
-  "updated_at": 1791250353.1992629,
+  "updated_at": 1791252070.939399,
   "native_run_accounting": {
     "P3_required_platform_build": 1,
     "P5_PR3_PR4_PR5_off_cells": 6,
@@ -1705,7 +1705,13 @@
     "P2_pre_capture_actual_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261006-approved-exclusive/runtime/separate-restoration/actual-review.json",
       "sha256": "ef0b53007f5b1f5d450b07b04981949f6f9ca267cf3c6e6ed85b552c258ae07b"
-    }
+    },
+    "P7D0_actual_build_attempts": 1,
+    "P7D0_actual_build_exit": 0,
+    "P7D0_boot": 0,
+    "P7D0_discovery": 0,
+    "P7D0_test_invocations": 0,
+    "P7D0_qualified_component_cells": 0
   },
   "selected_task": "S3_F12_PR7_P7D0",
   "execution_frontier": {

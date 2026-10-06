@@ -16,7 +16,7 @@ path sets and bytes, not a manifest hash alone. Reject unexpected files and
 symlinks. For tracked directory symlinks, check mode, Git blob and literal target
 separately. Recheck source/helper identity before assertions and after execution.
 Generated outputs must be explicitly inventoried outside the admitted source roots.
-Parse compiler flags as argv; accept exact joined/separate defines. Inventory target
+Parse compiler flags as argv; accept exact joined/separate defines. Derive each target's language mode from its frozen target/configuration and xcconfig include chain. Compare the actual driver mode per target; a shared project can legitimately mix Swift 5 and Swift 6. Preserve an original classifier stop, then reconcile saved source/list/product/link custody before separately admitting remaining discovery/tests without rebuilding. Inventory target
 version C separately, binding source/object/link bytes and the object variant from
 actual compiler sanitizer flags. A read-only verifier stop preserves native results
 for reviewed reclassification; it does not justify repeating accepted tests.

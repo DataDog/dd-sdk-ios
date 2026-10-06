@@ -135,16 +135,16 @@
       "state": "DESIGN_AND_IMPLEMENTATION_REMAIN"
     }
   ],
-  "selected_task": "P7D0_FRESH_SOURCE_IDENTICAL_CONTINUATION_AFTER_CLOSED_PRE_CONTROLLER_STOP",
+  "selected_task": "P7D0_SAVED_BUILD_RECONCILIATION_AND_TEN_TEST_DISCOVERY",
   "pending_action_requirement": "Pending/excluded action scalars do not identify an accepted Action UUID. The existing queue-confined continuous-action receipt is not a generic cross-module/discrete-action acceptance receipt. Do not borrow a later same-view action; independently review the smallest source-backed receipt design before consumer changes.",
   "off_requirement": "Reusing the network provider single State read may gate On locally. No default-Off Core registry/TaskLocal/scene lookup, owner allocation, new map/lock or naive owner(in: FeatureScope) capture.",
   "runtime_admitted": false,
   "native_runs": 0,
-  "builds": 0,
+  "builds": 1,
   "gates_closed": [],
   "whole_pr7_qualified": false,
-  "next_action": "Review separate source-identical continuation bindings, checkpoint fresh owning facts, issue a new fixed reservation only after live source/dependency/device/process/awake checks, then qualify the ten affected methods and independently assess actual outcomes/owned cleanup. Original issued-but-unexecuted authority is closed; source142ad remains frozen.",
-  "updated_at": 1791250353.1977642,
+  "next_action": "Review one corrected saved-build test continuation with composed publication/cleanup controls, then fresh checkpoint/source/product/process/device/awake authority. Original INVALID remains; source142ad frozen; no rebuild or human input.",
+  "updated_at": 1791252070.9379818,
   "sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/sdk-checkpoint.json",
     "sha256": "8de6f4600357cbe88a003bb7d235945a3fda02af056f4e021f20540b19c82749"
@@ -295,7 +295,7 @@
     "state": "UNAPPLIED_UNCOMPILED_NOT_QUALIFIED",
     "sdk_edits": 0,
     "tests_run": 0,
-    "next": "After dependency qualification and source handoff, apply reviewed drafts with the receipt synchronization comment correction; add real-Core, continuous, lifetime and Off controls before consumer qualification.",
+    "next": "After dependency qualification/source handoff, apply only current reviewed composition with synchronization comment correction; actual compilation/controls, Off/lifetime and consumer capture remain.",
     "primitive_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-receipt-implementation-draft-20261006/review.json",
       "sha256": "9d7d78b7a0d41955e38de60830d1c9faabb5a31357b264953670fbbd2555816f"
@@ -307,6 +307,103 @@
     "scope_tests_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-scope-tests-draft-20261006/review.json",
       "sha256": "f2eee40a85ee3bf4acd0c37ad2e23561513d3bbb042af219fbeb504eda521609"
+    },
+    "scope_expiry_disposition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-scope-tests-draft-20261006/expiry-disposition-review.json",
+      "sha256": "93dd77b0bf6e1da07f558241b6e45b800f6ff62f73a4c9b49c11c07c7c4fbb90"
+    },
+    "scope_tests_successor": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-scope-tests-draft-cycle5-20261006/packet.json",
+      "sha256": "f9717fa025a6430f00d8200347d76c236e77eb3459fc2606ce8486ecde627445"
+    },
+    "scope_tests_successor_state": "PENDING_SOURCE_REVIEW_UNAPPLIED",
+    "real_core_tests": {
+      "packet": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-real-core-receipt-tests-draft-cycle2-20261006/packet.json",
+        "sha256": "d84f805662aea9058decaf14a966b2428d2ca5849c65ef5a5f70cf0687b30c81"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-real-core-receipt-tests-draft-cycle2-20261006/review.json",
+        "sha256": "5085ef181b8231a8a57f4260fd290cf53571592c7041ca507ea124ca1d45602f"
+      },
+      "state": "SOURCE_DRAFT_ONLY_UNCOMPILED_UNEXECUTED"
+    },
+    "continuous_tests": {
+      "packet": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-continuous-receipt-tests-draft-cycle2-20261006/packet.json",
+        "sha256": "d41fded3134144c84645340647db61a65b42ae395a8b9ad5103d5c806b9edefc"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-continuous-receipt-tests-draft-cycle2-20261006/review.json",
+        "sha256": "529f49ece26a98fb68c0f7c2cafd10787822fb6edfe74550937597c73908d82f"
+      },
+      "state": "SOURCE_DRAFT_ONLY_UNCOMPILED_UNEXECUTED_HELPER_ONLY_OLD_SCOPE_DEPENDENCY"
+    },
+    "scope_tests_intermediate_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-scope-tests-draft-cycle3-20261006/review.json",
+      "sha256": "1fc048058e08959c94a3e42530925803052dc91e072155ae49cd95e7fb5af751"
     }
+  },
+  "tests_run": 0,
+  "affected_component_execution": {
+    "authority": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-cli-proposal-cycle3-20261006/root-release-continuation-1.json",
+      "sha256": "d4339f26ba23c10f5a58b0b60250fbb6e9781f87fd4ec7c434df7495c7691001"
+    },
+    "result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-cli-proposal-cycle3-20261006/actual-run-continuation-1/stopped-result.json",
+      "sha256": "c83508363f142c08838c54e987c14f9272e0158ee84fea22afa9d972138bce50"
+    },
+    "closure": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-cli-proposal-cycle3-20261006/actual-run-continuation-1/closure/closure.json",
+      "sha256": "f945c04d9361a6cfae83bf32dbef2be822e7ce3008ff3a3f8522fe3f44dc55c1"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-cli-proposal-cycle3-20261006/actual-run-continuation-1/closure/actual-review.json",
+      "sha256": "a503a51a5a2eff9a0318297c467ad1fb5703219130d2c23782e77ed9fd1c71cd"
+    },
+    "scenario": "UNQUALIFIED",
+    "evidence": "INCOMPLETE",
+    "overall": "INVALID",
+    "cleanup_scope": "Original Shutdown and absence of owned groups; app inventory unobserved, no boot/install/test",
+    "build_for_testing": 1,
+    "actual_build_exit": 0,
+    "discovery": 0,
+    "tests": 0,
+    "discriminator": "Frozen Trace Debug mode6, other nine targets mode5; original all-target5 validator stopped before native tests. Harness expectation, not SDK regression."
+  },
+  "saved_build_continuation": {
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-compiler-reconciliation-20261006/packet.json",
+      "sha256": "0f480b793ccf06575eee65b2ecb5ea7441db347a19c533c0a5db73d839611f05"
+    },
+    "state": "PROPOSAL_BLOCKED_POST_TEST_PUBLICATION_VARIABLE",
+    "new_controls_passed": 14,
+    "original_verdict_unchanged": true,
+    "rebuilds": 0,
+    "next": "Preserve blocked proposal; review one offline successor restoring helper and qualifying composed success/failure export/publication/cleanup, then checkpoint/fresh root admission. No new native effects.",
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-compiler-reconciliation-20261006/review.json",
+      "sha256": "267b540b981bbeee7722be0a6351ceacac3a1dcf71abc4e5246e1ad45199bfc5"
+    }
+  },
+  "network_carrier_draft": {
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-network-carrier-draft-20261006/packet.json",
+      "sha256": "ac904a9455b7b566d86868e4d722c0afdfd2cdc9450eb7f0d9ffddc46118de37"
+    },
+    "state": "SOURCE_REVIEWED_UNAPPLIED_UNCOMPILED",
+    "consumer_wiring_remaining": true,
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-network-carrier-draft-20261006/review.json",
+      "sha256": "4157d03de7f574e68046fa476c89cea9b7ba9d3c6f08dbe1b668fd3a31e5789d"
+    }
+  },
+  "native_attempt_accounting": {
+    "build_for_testing": 1,
+    "boot": 0,
+    "discovery": 0,
+    "test_invocations": 0,
+    "qualified_component_cells": 0
   }
 }
