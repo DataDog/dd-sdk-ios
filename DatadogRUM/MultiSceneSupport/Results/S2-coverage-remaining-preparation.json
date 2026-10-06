@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "state": "ROOT_SELECTION_READBACK_OFFLINE_REVIEWED_WAIT_FRESH_SITTING",
-  "updated_at": "2026-10-06T12:17:58.394354+00:00",
+  "state": "AUTONOMOUS_CAPTURE_CONTINUITY_REQUIRED_BEFORE_HUMAN_READY",
+  "updated_at": "2026-10-06T13:11:27.509382+00:00",
   "execution": {
-    "record": "Results/S2-swiftui-split-candidate-20261003.json"
+    "record": "Results/S2-capture-continuity-20261006.json"
   },
   "current": {
     "kind": "swiftui_preparation",
@@ -37,7 +37,7 @@
         "multiple_scenes": false
       }
     ],
-    "prerequisites": "The pre-armed service passes exact offline review after owned-End, request-lineage, quiescence and Start-publication corrections. Original failed verdicts and separate restoration stay immutable. No S2 worker/session is active. Actual composition still needs one fresh candidate human sitting after10:00 Paris; reuse accepted four cells and distinct saved baseline. Current user readiness and pre-armed actual tool owner are prerequisites.",
+    "prerequisites": "Review and autonomously qualify the integrated serial foreground-capture renewal through the observed idle boundary. No Ready invitation until actual working launch/capture continuity is proved; reuse accepted source, products, four cells and baseline.",
     "review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/review.json",
       "sha256": "316fe3377dd485f86562f331469d439785a5d60ef5f5ffe870ede1a32a8b02b2"
@@ -560,12 +560,12 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-post-otel-static-20261006/s2-candidate-0900-handoff.json",
       "sha256": "f97158964a6ae877f7de7e1c31d35fbf6540fe495f8f44cb47321f794c2a51db"
     },
-    "state": "ROOT_SELECTION_READBACK_OFFLINE_REVIEWED_WAIT_FRESH_SITTING",
-    "new_native_runs": 0,
-    "new_builds": 0,
+    "state": "AUTONOMOUS_CAPTURE_CONTINUITY_REQUIRED_BEFORE_HUMAN_READY",
+    "new_native_runs": 1,
+    "new_builds": 1,
     "baseline_repeat": false,
     "gates_closed": [],
-    "next_action": "Prepare a fresh candidate-only sitting from retained source/products/baseline. After full canonical configuration validation/build/readback, root must publish the six-field MAIN selection, verify exact readback and bind actual configuration.json before exclusive parent release. Preserve all stopped identities, original clocks and retirement limits.",
+    "next_action": "Review and autonomously qualify the integrated serial foreground-capture renewal through the observed idle boundary. No Ready invitation until actual working launch/capture continuity is proved; reuse accepted source, products, four cells and baseline.",
     "static_sitting_preparation": {
       "original_metadata_packet": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-0900-metadata-preparation-20261006/packet.json",
@@ -595,6 +595,6 @@
     "execution_blocker": "Results/execution-improvements-20261004.json#p2.human_startup_blocker",
     "latest_attempts_owner": "Results/execution-improvements-20261004.json#p2.human_startup_blocker.attempts",
     "canonical_startup_owner": "Results/execution-improvements-20261004.json#p2.human_startup_blocker.canonical_startup_assembly",
-    "actual_startup_attempt_owner": "Results/execution-improvements-20261004.json#p2.human_startup_blocker.canonical_startup_assembly.actual_startup_attempt"
+    "actual_startup_attempt_owner": "Results/S2-capture-continuity-20261006.json"
   }
 }

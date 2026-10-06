@@ -74,6 +74,12 @@ unresolved. Preserve source identity, raw evidence, cleanup and original verdict
 This rule supersedes the earlier mandatory application-performance comparison;
 existing safety and compatibility evidence retains its original scope.
 
+Before inviting human participation, autonomously qualify a changed launch/capture
+mechanism. Every sitting must prove a working app, live capture and the same
+process/run/window before Ready, maintain foreground capture while waiting, and
+recheck after Ready. Withdraw the invitation on failure; never relaunch a consumed
+cell or reuse an older observation. The [readiness owner](MultiSceneSupport/Results/S2-capture-continuity-20261006.json) records this user requirement.
+
 ## E01 replacement and S2 evidence
 
 Approved by the user on September 30, 2026. The implementation replacement in

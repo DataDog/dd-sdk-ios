@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "state": "STOPPED_READY_WAIT_PROCESS_ABSENT_RETIRED",
+  "updated_at": "2026-10-06T13:11:27.509382+00:00",
+  "plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/runtime-plan.json",
+    "sha256": "8ecffcc61ac6f541f38835a19346405aa720fe1f54d5a97d16e7f4e889fa1421"
+  },
+  "plan_scope": "Retained comparison preparation; actual canonical startup plan is bound separately.",
+  "actual_plan": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-canonical-human-selection-bound-20261006/preparation/plan.json",
+    "sha256": "6ffda521a7a5dba175beb840bb8f91401218ac3d7f829ce9c5bcfc79bbf06306"
+  },
+  "gates": [
+    "S2:C09",
+    "S2:C10",
+    "S2:H14"
+  ],
+  "scenario": "UNQUALIFIED",
+  "evidence": "INCOMPLETE",
+  "cleanup": "INVALID",
+  "gates_closed": [],
+  "run_id": "2f9c4dcc-2b92-40c7-80f7-6777ee321c58",
+  "supported_calls": 4,
+  "human_gestures": 0,
+  "actual_launch_and_initial_capture": "PASSED_BEFORE_READY_WAIT",
+  "failure": "Original app PID became absent while waiting for Ready; termination cause unproved.",
+  "end_disposition": "ACTUAL_SESSION_ABSENCE_RETURN_NO_SECOND_END",
+  "late_ready": "Arrived after primary failure and End; consumed with no human credit.",
+  "closure": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-canonical-human-selection-bound-20261006/runtime/actual-stop-closure/packet.json",
+    "sha256": "bd5a3dc43d7e1a20f36f4216f4ae8bc1af66836ad3c2d9acddde926584fa3549"
+  },
+  "actual_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-canonical-human-selection-bound-20261006/runtime/actual-stop-closure/actual-review.json",
+    "sha256": "58b12320aad1a2c98ebd7cc27f6a9fc160ec9173b39225d4275a7bd60889b910"
+  },
+  "separate_restoration": {
+    "state": "PASS_TASK_REMOVAL_ORIGINAL_STATE_AND_CUSTODY_ONLY",
+    "scope": "Preserved full copies; task-only removal; original23 apps, Booted Closed Duo and Xcode destination restored; all task groups/page/socket retired. Original failed verdicts stay immutable.",
+    "record": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-canonical-human-selection-bound-20261006/runtime/separate-restoration/task-restoration-result.json",
+      "sha256": "8ea1f9d71cc824c33605bf58f5932ccd0b0c09236820910ceb905a589639b1ab"
+    }
+  },
+  "readiness_policy": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/human-readiness-reliability-20261006/decision.json",
+    "sha256": "31b050ef096bd1fc6652ff411e754277b9309d897ebeafbc9ab3b36408966973"
+  },
+  "next_action": "Review and autonomously qualify the integrated serial foreground-capture renewal through the observed idle boundary. No Ready invitation until actual working launch/capture continuity is proved; reuse accepted source, products, four cells and baseline.",
+  "next_qualification": {
+    "state": "SOURCE_PROPOSAL_IN_PROGRESS",
+    "native_admitted": false,
+    "native_calls": 0,
+    "user_input_required": false,
+    "credit": "CAPTURE_MECHANISM_ONLY_NO_RELEASE_GATE"
+  }
+}

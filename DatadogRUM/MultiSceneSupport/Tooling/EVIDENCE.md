@@ -308,12 +308,13 @@ Only fresh sibling output paths, creation time and the corresponding operational
 cutoff/command output arguments may differ. Source, scope, assertions, lifecycle,
 process control or cleanup changes require independent review. Eligibility grants
 no admission, repeat attempt, release credit or extension of an issued deadline.
-Give the designated reviewer one complete consequential packet; write facts once
-at the owner and regenerate derived progress at a meaningful checkpoint.
+Give the designated reviewer one consequential packet; write facts at the owner and regenerate derived progress at a meaningful checkpoint.
 
-Canonical configuration does not select the owning execution record. Before any
-parent, root must publish the definition-derived runtime, plan, definition and
-review with native admission and null execution; preserve the exact prior bytes
-and verify readback under sole-writer custody. Qualify this producer boundary
-separately from tests that seed a matching owner. Missing or foreign selection
-must stop before parent release; modeled selection grants no native authority.
+Before parent release, root must publish/read back the definition-derived
+runtime/plan/definition/review/admission/null execution under sole-writer custody.
+Preserve prior bytes; test this producer separately from seeded owner tests.
+Missing/foreign selection stops release; modeled selection grants no authority.
+
+Human Ready requires a proved live app/capture/writer/original owner and a qualified continuity mechanism.
+Keep capture current; recheck after Ready. On failure withdraw without relaunch or reused observations.
+See the [readiness owner](../Results/S2-capture-continuity-20261006.json).
