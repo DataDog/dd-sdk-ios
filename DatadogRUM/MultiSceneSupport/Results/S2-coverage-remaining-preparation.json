@@ -560,12 +560,12 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-post-otel-static-20261006/s2-candidate-0900-handoff.json",
       "sha256": "f97158964a6ae877f7de7e1c31d35fbf6540fe495f8f44cb47321f794c2a51db"
     },
-    "state": "STOPPED_CURRENT_METADATA_PROJECTION_CORRECTION_PENDING",
+    "state": "CURRENT_METADATA_COMPLETE_PRE_EFFECT_REVIEWED_WAIT_FRESH_BINDINGS",
     "new_native_runs": 0,
     "new_builds": 0,
     "baseline_repeat": false,
     "gates_closed": [],
-    "next_action": "Project the exact retained current MCP workspace/configuration objects directly into the unchanged consumer data schema, preserving original raw wrappers and custody. Complete the actual current-context/bootstrap/configuration/constructor zero-effect controls and designated review before another invitation. Validate exact root process-guard argument shape and complete canonical context before authority writes. Reuse accepted source/products/baseline; future page/operator/environment/awake and full fixed-budget admission must be fresh.",
+    "next_action": "Prepare candidate only from the reviewed corrected current-observation projections and runtime_static_pins/executable_cone. Rebind all fresh metadata selectors consistently, preserve actual raw provenance, pass complete context and exact [page,awake] guard plus actual final reviewer receipt before authority. Fresh page/operator/environment/awake and exact parameter review with full fixed-budget exclusive ownership remain required. Reuse source/products/baseline; offline controls grant no readiness, native or gate credit. While human preparation is held, qualify the reviewed S3 current44 after fresh full-profile admission.",
     "static_sitting_preparation": {
       "original_metadata_packet": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-0900-metadata-preparation-20261006/packet.json",

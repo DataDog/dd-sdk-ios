@@ -43,7 +43,7 @@
     }
   },
   "p2": {
-    "state": "STOPPED_CURRENT_METADATA_PROJECTION_CORRECTION_PENDING",
+    "state": "CURRENT_METADATA_COMPLETE_PRE_EFFECT_REVIEWED_WAIT_FRESH_BINDINGS",
     "plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-composition-qualified-identity/runtime/runtime-plan.json",
       "sha256": "3e8200cfb0d7163867983c237ff896e0d00ddf1fb9dc9fa2306873ecded50a80"
@@ -885,7 +885,7 @@
       "limits": "Source-bound Python parent/worker and actual xcodebuild recognizers; fresh caller roles and live inventory remain required. No native or gate credit."
     },
     "human_startup_blocker": {
-      "state": "STOPPED_CURRENT_METADATA_PROJECTION_CORRECTION_PENDING",
+      "state": "CURRENT_METADATA_COMPLETE_PRE_EFFECT_REVIEWED_WAIT_FRESH_BINDINGS",
       "attempts": [
         {
           "kind": "ROOT_UUID_CONTEXT_SCHEMA_STOP_BEFORE_PARENT",
@@ -1005,7 +1005,7 @@
       },
       "native_calls": 0,
       "gates_closed": [],
-      "next_action": "Project the exact retained current MCP workspace/configuration objects directly into the unchanged consumer data schema, preserving original raw wrappers and custody. Complete the actual current-context/bootstrap/configuration/constructor zero-effect controls and designated review before another invitation. Validate exact root process-guard argument shape and complete canonical context before authority writes. Reuse accepted source/products/baseline; future page/operator/environment/awake and full fixed-budget admission must be fresh.",
+      "next_action": "Prepare candidate only from the reviewed corrected current-observation projections and runtime_static_pins/executable_cone. Rebind all fresh metadata selectors consistently, preserve actual raw provenance, pass complete context and exact [page,awake] guard plus actual final reviewer receipt before authority. Fresh page/operator/environment/awake and exact parameter review with full fixed-budget exclusive ownership remain required. Reuse source/products/baseline; offline controls grant no readiness, native or gate credit. While human preparation is held, qualify the reviewed S3 current44 after fresh full-profile admission.",
       "packet": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-runtime-pin-construction-correction-20261006/packet.json",
         "sha256": "e0f3c066a5c2a67b5426cf565fceb41b32adf16220a88510765a4168c082f9c6"
@@ -1066,6 +1066,82 @@
         "native_admitted": false,
         "gates_closed": [],
         "current_metadata_applicability": "NOT_ESTABLISHED; original current wrapped response failed actual validate_context before authority publication."
+      },
+      "current_metadata_preflight": {
+        "state": "PASS_REVIEWED_OFFLINE_CURRENT_METADATA_ONLY",
+        "packet": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-current-metadata-pre-effect-correction-20261006/packet.json",
+          "sha256": "b7bd4dbd3f5d8736c00e4e1f535228f9735a50c227746fa2fa6068851709558a"
+        },
+        "plan": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-current-metadata-pre-effect-correction-20261006/plan.json",
+          "sha256": "e6e0b17b6a3b8652ab98ce9afc4deb6010227925c8add30774cd6bed69925cfb"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-current-metadata-pre-effect-correction-20261006/review.json",
+          "sha256": "77e234933d4bcb8afc3a7d9da3d772842e9547e144ea4d731fc49377fec6b1a8"
+        },
+        "controls": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-current-metadata-pre-effect-correction-20261006/control-fixture-correction/controls.json",
+          "sha256": "ba525d9189ee46ba5adf1dae5376a8acaabfd95c4a2b15fc8c01f101da1921b1"
+        },
+        "actual_tool_returns": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-current-metadata-pre-effect-correction-20261006/actual-tool-returns.json",
+          "sha256": "cba0affaae4daffad3d1a8a2c0efc456f01947f8f57cfee45c4adc49cf804eaa"
+        },
+        "current_metadata_raw": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-current-20261006-receipt-bound/preparation/actual-workspace-observations.json",
+          "sha256": "9d0312f5a3889bcb3cabacaf0ef20f60bdb9eecfb1e23aa67f4ae613aed95641"
+        },
+        "current_metadata_projections": {
+          "configuration": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-current-metadata-pre-effect-correction-20261006/control-fixture-correction/projections/workspace-configuration.consumer.json",
+            "sha256": "2b5e17e4c66aef2af3ca694fff2909c9759648ddfe1b558856bf15aa773d57ab"
+          },
+          "tool_metadata": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-current-metadata-pre-effect-correction-20261006/control-fixture-correction/projections/tool-declarations.consumer.json",
+            "sha256": "aea682c06417f958df99374ca6ba80a7f5c286c1a3f3cdd4a2eaf5b249536c1f"
+          },
+          "workspace_list": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-current-metadata-pre-effect-correction-20261006/control-fixture-correction/projections/workspace-list.consumer.json",
+            "sha256": "2e4a1afa769573a6fc84b6ab1d6948439256317e6ced69e914bbeff6a8403cdf"
+          }
+        },
+        "projection_provenance": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-current-metadata-pre-effect-correction-20261006/control-fixture-correction/projection-provenance.json",
+          "sha256": "ee1c204e85efc9a6f71992340293e929144d86636a85ce94dec29b5830f0ee7d"
+        },
+        "root_receipt_consumer": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/root-current-metadata-reviewed-checkpoint-20261006/receipt-consumer.json",
+          "sha256": "73cd81a882aeae49b1e2bb216271ba86c65ad2e5d99be3c60db0f58bdd5e93e7"
+        },
+        "controls_passed": 4,
+        "effect_callbacks": {
+          "app_run": 0,
+          "command": 0,
+          "native_protocol": 0,
+          "popen": 0,
+          "process": 0
+        },
+        "source_bytes_changed": 0,
+        "native_calls": 0,
+        "native_admitted": false,
+        "gates_closed": [],
+        "limits": [
+          "Retired roles, PS, page, operator, environment and synthetic clocks/run/admission are historical modeled shape inputs only; no actual live readiness or native authority.",
+          "Controls return dispatch-source bytes but do not execute the JavaScript dispatcher, parent service, real socket/handshake or owning publication.",
+          "app.run at273, Controller.initial, native calls, capture, gestures, idle/fold/Home/finalization and behavioral/release gates are unqualified here.",
+          "Previously accepted source/helper/control conclusions are reused; reviewer performed no control or native rerun.",
+          "Original root failures and all prior verdicts/receipts remain immutable; this correction does not restore executable authority to the retired sitting.",
+          "The receipt validator checks provenance/shape only and is not authentication or native startup qualification."
+        ],
+        "future_materialization_requirements": [
+          "Rebind every consumed current context/definition/plan/review metadata selector to the faithful projections and retained raw provenance consistently; old invalid consumers and superseded41e/922 remain history.",
+          "Use exact [page_process,awake_process] at the unchanged root process guard API boundary.",
+          "Directly validate a complete canonical UUID context through the exact pinned workspace_session.validate_context before actual authority/definition/config/OWNER publication.",
+          "Publish schema_version1 and reviewer_role rum-runtime-reviewer with exact local assignment/plan, then consume the actual final receipt through unchanged require_reviewer.",
+          "Any future sitting still requires actual current source/device/full original state/output/process/tool applicability, a live fixed page, genuine operator reply and adequate authorized awake reservation, exact parameter review and root exclusive ownership/freeze."
+        ]
       }
     }
   },
