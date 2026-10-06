@@ -135,7 +135,7 @@
       "state": "DESIGN_AND_IMPLEMENTATION_REMAIN"
     }
   ],
-  "selected_task": "P7D0_SAVED_BUILD_RECONCILIATION_AND_TEN_TEST_DISCOVERY",
+  "selected_task": "P7D0_SAVED_FILTERED_DISCOVERY_TEST_ONLY_SUCCESSOR",
   "pending_action_requirement": "Pending/excluded action scalars do not identify an accepted Action UUID. The existing queue-confined continuous-action receipt is not a generic cross-module/discrete-action acceptance receipt. Do not borrow a later same-view action; independently review the smallest source-backed receipt design before consumer changes.",
   "off_requirement": "Reusing the network provider single State read may gate On locally. No default-Off Core registry/TaskLocal/scene lookup, owner allocation, new map/lock or naive owner(in: FeatureScope) capture.",
   "runtime_admitted": false,
@@ -143,8 +143,8 @@
   "builds": 1,
   "gates_closed": [],
   "whole_pr7_qualified": false,
-  "next_action": "Fresh root source/product/process/device/awake checks and separate reviewed authority/loader, then one discovery/ten-test/export continuation from saved products, no rebuild or human input. Source142ad stays frozen through actual outcomes/cleanup review and handoff; private consumer drafts qualify nothing.",
-  "updated_at": 1791252974.543974,
+  "next_action": "Review corrected exact saved-discovery partition and composed test/export/cleanup controls, then checkpoint and fresh root source/product/process/device/awake authority for ten tests only. No rebuild or discovery rerun. Source142ad stays frozen through actual review and handoff; private drafts close no release gate.",
+  "updated_at": 1791254345.220822,
   "sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/sdk-checkpoint.json",
     "sha256": "8de6f4600357cbe88a003bb7d235945a3fda02af056f4e021f20540b19c82749"
@@ -277,6 +277,13 @@
         "sha256": "6e8bbf519513be070ba38e721729a060254aff8ef5fc0399929517d73f28e918"
       },
       "state": "SOURCE_DESIGN_ONLY_NO_IMPLEMENTATION_OR_QUALIFICATION"
+    },
+    "registration_clarification": {
+      "packet": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-logs-store-capture-design-20261006/packet.json",
+        "sha256": "37744feaf9d441668c20b155fc1d007dd0ca515b8323d40df8e79b339ff09072"
+      },
+      "state": "SOURCE_DESIGN_REVIEW_PENDING_NO_SDK_EFFECTS"
     }
   },
   "accepted_action_implementation_drafts": {
@@ -350,6 +357,10 @@
     "composition_preview": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-composition-preview-cycle2-20261006/packet.json",
       "sha256": "4fa31fcea6c319298901bb68627297d23a2f600afdae875ac9d1acd4809a7d42"
+    },
+    "composition_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-action-composition-preview-cycle2-20261006/review.json",
+      "sha256": "850e6e735c30c1f805327efbead47de39f94f2c74405827d80dd7c6de3126c34"
     }
   },
   "tests_run": 0,
@@ -399,14 +410,45 @@
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-compiler-reconciliation-cycle2-20261006/packet.json",
         "sha256": "6b9eb994a9a93f629e50dc260cff121d8028ba8ce6ce2ec2bb842b0f337c0639"
       },
-      "state": "SOURCE_REVIEWED_UNISSUED",
+      "state": "ACTUAL_DISCOVERY_STOPPED_CLEANUP_REVIEWED",
       "new_composed_controls_passed": 5,
       "accepted_controls_rerun": 0,
       "builds": 0,
-      "native_calls": 0,
+      "native_calls": 1,
       "review": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-compiler-reconciliation-cycle2-20261006/review.json",
         "sha256": "d5fb4345b583891049a05a5b86b961e593c52c5426abc6b65522f945614d5984"
+      },
+      "actual_execution": {
+        "authority": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-compiler-reconciliation-cycle2-20261006/root-release-9eca8d37.json",
+          "sha256": "9adf4615b88abf279fd9db784470b1c084760e17d6035b0002ee974f6e1b078c"
+        },
+        "result": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-compiler-reconciliation-cycle2-20261006/actual-saved-build-run-9eca8d37/stopped-result.json",
+          "sha256": "aad4224338966a52fcad6ddee8a885f3069dbab60d5766bc3dac3a1eddc97e4f"
+        },
+        "closure": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-compiler-reconciliation-cycle2-20261006/actual-saved-build-run-9eca8d37/closure/closure.json",
+          "sha256": "0b76edede35ebe3656b631ae88b2618822830d1afe53d69fc3c8d42d3f4076e6"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-compiler-reconciliation-cycle2-20261006/actual-saved-build-run-9eca8d37/closure/actual-review.json",
+          "sha256": "a8c24acf0c63d245870b1d2860f82d90e278ac4a46ee15a38c161ed52a4a269f"
+        },
+        "proof_retirement": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-compiler-reconciliation-cycle2-20261006/actual-saved-build-run-9eca8d37/closure/local-proof-retirement.json",
+          "sha256": "cfcfe172e64600866f077ae5de4d78900614528cd81d34576bbf30d3f98e92aa"
+        },
+        "scenario": "UNQUALIFIED",
+        "evidence": "INCOMPLETE",
+        "overall": "INVALID",
+        "cleanup": "PASS_ORIGINAL_SHUTDOWN_APPS_AND_GROUPS",
+        "builds": 0,
+        "test_invocations": 0,
+        "discovery_enabled": 10,
+        "discovery_disabled": 457,
+        "discriminator": "Filtered discovery succeeded with exact selected ten plus disabled nonselected inventory; unchanged full-discovery wrapper rejected that partition. This is not SDK regression evidence."
       }
     }
   },
@@ -424,8 +466,8 @@
   },
   "native_attempt_accounting": {
     "build_for_testing": 1,
-    "boot": 0,
-    "discovery": 0,
+    "boot": 1,
+    "discovery": 1,
     "test_invocations": 0,
     "qualified_component_cells": 0
   },
@@ -446,14 +488,33 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-manual-otel-trace-consumer-draft-20261006/packet.json",
       "sha256": "fb32ca960b1ce4bbe2f2854342d72576a737f654cf5747b6ab195bc90d79bb4e"
     },
-    "state": "SOURCE_REVIEW_PENDING_UNAPPLIED_UNCOMPILED"
+    "state": "SOURCE_REVIEWED_UNAPPLIED_UNCOMPILED",
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-manual-otel-trace-consumer-draft-20261006/review.json",
+      "sha256": "5bc3afc1f494d0496e00fa06e27d7b8b80542f22cf2fa5798630fabc704e09b0"
+    }
   },
   "trace_writer_tests_draft": {
     "packet": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-trace-writer-tests-draft-20261006/packet.json",
       "sha256": "215b2251e8cd5bc881b629f71549d0db00d4436b557eef32a833dffa052762f0"
     },
-    "state": "SOURCE_REVIEW_PENDING_UNCOMPILED_UNEXECUTED",
-    "methods": 3
+    "state": "ORIGINAL_BLOCKED_POSITIVE_WITNESSES",
+    "methods": 3,
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-trace-writer-tests-draft-20261006/review.json",
+      "sha256": "e158ed43b8417046754783e8f6f012242ed3406136cb313a56e0830c1634a113"
+    },
+    "successor": {
+      "packet": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-trace-writer-tests-draft-cycle2-20261006/packet.json",
+        "sha256": "c511f090a017b8088f1136fd8e807cbe58189e8c3a49db304ad0e599d697ed87"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-trace-writer-tests-draft-cycle2-20261006/review.json",
+        "sha256": "5702cc20e977e027a1022914e17ab0306009dab56720a3285e7b9f7a6cec5de8"
+      },
+      "state": "SOURCE_REVIEWED_UNAPPLIED_UNCOMPILED_UNEXECUTED"
+    }
   }
 }
