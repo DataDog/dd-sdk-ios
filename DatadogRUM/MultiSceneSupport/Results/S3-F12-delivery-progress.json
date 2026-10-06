@@ -254,8 +254,8 @@
         "off": "NOT_EXECUTED",
         "integration": "NOT_QUALIFIED"
       },
-      "remaining_assertion": "Native WebView callback/page/rebind origin, actual delivery-time expiry and independent maximum-duration guard; Flags Internal/React Native acquisition; complete Off/older-system/lifetime/final stack. Reuse accepted17 typed-transport methods,cache3,consumer43 and separate Core; original44 INVALID remains.",
-      "next_action": "Complete source-backed WebView native-container and Flags Internal/React Native acquisition, then focused component/complete Off/older-system/final-stack qualification. Preserve accepted component evidence and original44 failure; do not rerun the repaired Core method merely to resume.",
+      "remaining_assertion": "Qualify current live-session delivery guard and independent maximum duration; native WebView callback/page/rebind origin; Flags Internal/React Native acquisition; complete Off/older-system/lifetime/final stack. Reuse accepted17/cache3/consumer43/Core; original44 INVALID remains.",
+      "next_action": "Prepare one unissued current-source affected RUM/Logs selection including eleven new live-session methods, changed captured controls and independent maximum duration. No native launch or renewed clocks after original awake cutoff. Continue callback/page/rebind and physical UIKit preparation offline. Reuse accepted17/cache3/consumer43/Core; complete Flags/Off/older/final-stack remain.",
       "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit.",
       "dependency_design": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/packet.json",
@@ -263,7 +263,7 @@
       },
       "preparation_record": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
-        "sha256": "881d5370f527d435d64d039e4886b0bde2f75ae74a4b8394d3838317bdc38395"
+        "sha256": "a596a03e469ddd1979ca30e4f9d9954eb5a7b5ba15c025bf535b9349b56664c2"
       },
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
       "source_branch": "valpertui/s3-consumer-capture",
@@ -413,7 +413,26 @@
         "tests_passed": 17,
         "gates_closed": []
       },
-      "qualification_scope": "Dimensions describe the complete PR7 slice. Accepted consumer/cache/typed-transport dependency components are recorded separately; native acquisition and Flags remain unimplemented."
+      "qualification_scope": "Dimensions describe the complete PR7 slice. Accepted consumer/cache/typed-transport dependency components are recorded separately; native acquisition and Flags remain unimplemented.",
+      "webview_live_session_source": {
+        "state": "SOURCE_REVIEWED_APPLIED_CHECKPOINTED_UNQUALIFIED",
+        "source_head": "225920de0d0e28cf4e3bd853f8727d46d6a12b13",
+        "source_review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-live-session-20261007/cycle3/review.json",
+          "sha256": "d7e9245b6e4ccb2b41983d7a6d9f04a95806263b1f38e326bb826d69b02b9eff"
+        },
+        "applied_review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-live-session-20261007/cycle3/applied-source-review.json",
+          "sha256": "b75d77d860881a600be0c0f6b88d845e33c85cb782573a0bb74fb8f41f01bd3f"
+        },
+        "sdk_checkpoint": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-live-session-20261007/cycle3/sdk-checkpoint.json",
+          "sha256": "2394af2cf7e4dd463777a778d0cddb47acbc45c3ddbcbccb0fee81afda941341"
+        },
+        "tests_executed": 0,
+        "native_runs": 0,
+        "gates_closed": []
+      }
     },
     {
       "id": "PR8",
@@ -597,7 +616,7 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": "2026-10-06T22:42:59.871018+00:00",
+  "updated_at": "2026-10-06T23:07:32.339483+00:00",
   "dependency_build_attempts": 4,
   "dependency_component_qualifications": 4,
   "dependency_test_invocations": 4,
@@ -688,6 +707,25 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-captured-transport-20261006/cycle2/maximum-duration-control/sdk-checkpoint.json",
       "sha256": "12b6c8f934092573c2170fd5a21f0b9f0c56409870a6a5ba47576f1a950f9c4d"
     },
+    "gates_closed": []
+  },
+  "webview_live_session_dependency": {
+    "state": "SOURCE_REVIEWED_APPLIED_CHECKPOINTED_UNQUALIFIED",
+    "source_head": "225920de0d0e28cf4e3bd853f8727d46d6a12b13",
+    "source_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-live-session-20261007/cycle3/review.json",
+      "sha256": "d7e9245b6e4ccb2b41983d7a6d9f04a95806263b1f38e326bb826d69b02b9eff"
+    },
+    "applied_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-live-session-20261007/cycle3/applied-source-review.json",
+      "sha256": "b75d77d860881a600be0c0f6b88d845e33c85cb782573a0bb74fb8f41f01bd3f"
+    },
+    "sdk_checkpoint": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-live-session-20261007/cycle3/sdk-checkpoint.json",
+      "sha256": "2394af2cf7e4dd463777a778d0cddb47acbc45c3ddbcbccb0fee81afda941341"
+    },
+    "tests_executed": 0,
+    "native_runs": 0,
     "gates_closed": []
   }
 }

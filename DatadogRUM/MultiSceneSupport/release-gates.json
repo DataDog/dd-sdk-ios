@@ -2962,7 +2962,7 @@
       "environment": "CI and supported simulator/toolchains; explicit per-PR source/fixture identities",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "Results/S3-F12-delivery-progress.json enumerates the fixed13 slices and their owning evidence. PR1-PR5 private components qualify locally; PR3 bounded Off obligations complete. PR5 full current RUM suites qualify1041cases/1077invocations on17.5/27 at8cd7793d3. PR4/PR5 exclusive-Off obligations and later slices remain. PR6 has7finite deliverables/22defined controls and reviewed On-only activation design; transactional activation/provider qualification precedes input implementation. No wholeF12, public API, CI or hardware release credit.",
+      "evidence": "Results/S3-F12-delivery-progress.json owns thirteen finite slices. PR1-PR6 and PR9 qualify bounded private components with explicit remaining holds; PR7 preserves consumer43/Core/cache3/typed-transport17 and current live-session source-only preparation. Native acquisition, Flags, complete per-slice Off/older/final-stack, CI and maintainer acceptance remain. No whole F12 or release credit.",
       "release_requirements": {
         "S3": {
           "scope": "S3 per-PR flag-Off equivalence and On slice qualification",
@@ -2973,7 +2973,7 @@
           ],
           "decisive_test": "For each of PR1-13: unmodified develop suites pass; Off tripwires prove no scene observer/lookup/handoff/new swizzle, differential command fixtures match develop events, On slice tests pass. Review Off allocations/locks. No strict timing or physical hardware prerequisite for opening/merging.",
           "environment": "CI and supported simulator/toolchains; explicit per-PR source/fixture identities",
-          "evidence": "Results/S3-F12-delivery-progress.json enumerates the fixed13 slices and their owning evidence. PR1-PR5 private components qualify locally; PR3 bounded Off obligations complete. PR5 full current RUM suites qualify1041cases/1077invocations on17.5/27 at8cd7793d3. PR4/PR5 exclusive-Off obligations and later slices remain. PR6 has7finite deliverables/22defined controls and reviewed On-only activation design; transactional activation/provider qualification precedes input implementation. No wholeF12, public API, CI or hardware release credit.",
+          "evidence": "Results/S3-F12-delivery-progress.json owns thirteen finite slices. PR1-PR6 and PR9 qualify bounded private components with explicit remaining holds; PR7 preserves consumer43/Core/cache3/typed-transport17 and current live-session source-only preparation. Native acquisition, Flags, complete per-slice Off/older/final-stack, CI and maintainer acceptance remain. No whole F12 or release credit.",
           "required": true
         }
       }
