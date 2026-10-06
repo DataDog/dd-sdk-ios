@@ -64,8 +64,8 @@ extension SpanWriteContextTests {
         )
         var initialContext: DatadogContext = .mockRandom()
         initialContext.set(additionalContext: capturedWriterRUMContext(sessionID: "session-b", viewID: "view-b", actionID: "prior-delivery-action"))
-        XCTAssertEqual(initialContext.rumContext?.viewID, "view-b")
-        XCTAssertEqual(initialContext.rumContext?.userActionID, "prior-delivery-action")
+        XCTAssertEqual(initialContext.additionalContext(ofType: RUMCoreContext.self)?.viewID, "view-b")
+        XCTAssertEqual(initialContext.additionalContext(ofType: RUMCoreContext.self)?.userActionID, "prior-delivery-action")
         let scope = FeatureScopeMock(context: initialContext, deferEventWriteContext: true)
         let writer = CapturedRUMSpanWriteContext(
             original: LazySpanWriteContext(featureScope: scope),
@@ -78,8 +78,8 @@ extension SpanWriteContextTests {
             var expected = initialContext
             expected.set(additionalContext: value.resolvedRUMContext(for: owner))
             DDAssertReflectionEqual(provided, expected)
-            XCTAssertEqual(provided.rumContext?.viewID, "view-a")
-            XCTAssertEqual(provided.rumContext?.userActionID, "original-action")
+            XCTAssertEqual(provided.additionalContext(ofType: RUMCoreContext.self)?.viewID, "view-a")
+            XCTAssertEqual(provided.additionalContext(ofType: RUMCoreContext.self)?.userActionID, "original-action")
             calls += 1
         }
         XCTAssertEqual(calls, 0)
@@ -87,8 +87,8 @@ extension SpanWriteContextTests {
         receipt.accept(sessionID: captured.sessionID, viewID: "view-a", actionID: "subsequent-action")
         var deliveredContext: DatadogContext = .mockRandom()
         deliveredContext.set(additionalContext: capturedWriterRUMContext(sessionID: "session-c", viewID: "view-c", actionID: "later-delivery-action"))
-        XCTAssertEqual(deliveredContext.rumContext?.viewID, "view-c")
-        XCTAssertEqual(deliveredContext.rumContext?.userActionID, "later-delivery-action")
+        XCTAssertEqual(deliveredContext.additionalContext(ofType: RUMCoreContext.self)?.viewID, "view-c")
+        XCTAssertEqual(deliveredContext.additionalContext(ofType: RUMCoreContext.self)?.userActionID, "later-delivery-action")
         scope.contextMock = deliveredContext
         scope.flushDeferredEventWriteContexts()
         XCTAssertEqual(calls, 1)
@@ -109,8 +109,8 @@ extension SpanWriteContextTests {
             )
             var initialContext: DatadogContext = .mockRandom()
             initialContext.set(additionalContext: capturedWriterRUMContext(sessionID: "session-b", viewID: "view-b", actionID: "prior-delivery-action"))
-            XCTAssertEqual(initialContext.rumContext?.viewID, "view-b")
-            XCTAssertEqual(initialContext.rumContext?.userActionID, "prior-delivery-action")
+            XCTAssertEqual(initialContext.additionalContext(ofType: RUMCoreContext.self)?.viewID, "view-b")
+            XCTAssertEqual(initialContext.additionalContext(ofType: RUMCoreContext.self)?.userActionID, "prior-delivery-action")
             let scope = FeatureScopeMock(context: initialContext, deferEventWriteContext: true)
             let writer = CapturedRUMSpanWriteContext(
                 original: LazySpanWriteContext(featureScope: scope),
@@ -123,14 +123,14 @@ extension SpanWriteContextTests {
                 var expected = initialContext
                 expected.set(additionalContext: value.resolvedRUMContext(for: owner))
                 DDAssertReflectionEqual(provided, expected)
-                XCTAssertEqual(provided.rumContext?.viewID, "view-a")
-                XCTAssertNil(provided.rumContext?.userActionID)
+                XCTAssertEqual(provided.additionalContext(ofType: RUMCoreContext.self)?.viewID, "view-a")
+                XCTAssertNil(provided.additionalContext(ofType: RUMCoreContext.self)?.userActionID)
                 calls += 1
             }
             var deliveredContext: DatadogContext = .mockRandom()
             deliveredContext.set(additionalContext: capturedWriterRUMContext(sessionID: "session-c", viewID: "view-c", actionID: "later-delivery-action"))
-            XCTAssertEqual(deliveredContext.rumContext?.viewID, "view-c")
-            XCTAssertEqual(deliveredContext.rumContext?.userActionID, "later-delivery-action")
+            XCTAssertEqual(deliveredContext.additionalContext(ofType: RUMCoreContext.self)?.viewID, "view-c")
+            XCTAssertEqual(deliveredContext.additionalContext(ofType: RUMCoreContext.self)?.userActionID, "later-delivery-action")
             scope.contextMock = deliveredContext
             scope.flushDeferredEventWriteContexts()
             XCTAssertEqual(calls, 1)
@@ -149,8 +149,8 @@ extension SpanWriteContextTests {
             )
             var initialContext: DatadogContext = .mockRandom()
             initialContext.set(additionalContext: capturedWriterRUMContext(sessionID: "session-b", viewID: "view-b", actionID: "prior-delivery-action"))
-            XCTAssertEqual(initialContext.rumContext?.viewID, "view-b")
-            XCTAssertEqual(initialContext.rumContext?.userActionID, "prior-delivery-action")
+            XCTAssertEqual(initialContext.additionalContext(ofType: RUMCoreContext.self)?.viewID, "view-b")
+            XCTAssertEqual(initialContext.additionalContext(ofType: RUMCoreContext.self)?.userActionID, "prior-delivery-action")
             let scope = FeatureScopeMock(context: initialContext, deferEventWriteContext: true)
             let sessionID = kind == "missing-session" ? nil : (kind == "unequal-session" ? "session-b" : captured.sessionID)
             let writer = CapturedRUMSpanWriteContext(
@@ -164,14 +164,14 @@ extension SpanWriteContextTests {
                 var expected = initialContext
                 expected.set(additionalContext: Optional<RUMCoreContext>.none)
                 DDAssertReflectionEqual(provided, expected)
-                XCTAssertNil(provided.rumContext, kind)
+                XCTAssertNil(provided.additionalContext(ofType: RUMCoreContext.self), kind)
                 calls += 1
             }
             if kind == "invalid-owner" { owner.invalidate() }
             var deliveredContext: DatadogContext = .mockRandom()
             deliveredContext.set(additionalContext: capturedWriterRUMContext(sessionID: "session-c", viewID: "view-c", actionID: "later-delivery-action"))
-            XCTAssertEqual(deliveredContext.rumContext?.viewID, "view-c")
-            XCTAssertEqual(deliveredContext.rumContext?.userActionID, "later-delivery-action")
+            XCTAssertEqual(deliveredContext.additionalContext(ofType: RUMCoreContext.self)?.viewID, "view-c")
+            XCTAssertEqual(deliveredContext.additionalContext(ofType: RUMCoreContext.self)?.userActionID, "later-delivery-action")
             scope.contextMock = deliveredContext
             scope.flushDeferredEventWriteContexts()
             XCTAssertEqual(calls, 1, kind)
