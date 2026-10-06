@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "UNATTENDED_STATIC_REVIEW_COMPLETE_HUMAN_PRIORITY_FROM0900",
+  "state": "UNATTENDED_CHECKPOINT_COMPLETE_S2_STATIC_REVIEWED_WAIT_FRESH_HUMAN",
   "owner": "/root",
   "plan": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
@@ -10,7 +10,7 @@
   "native_admitted": false,
   "native_runs": 20,
   "gates_closed": [],
-  "next_action": "Qualify forty-four selected current-source Internal/CoreTSan/Trace/RUM/Logs consumer and legacy methods using fresh products, discovery, exact assertions and cleanup. The final44 attempt stopped on one OTel UserInfo fixture before discovery/tests/boot; the supported initializer repair is signed locally and the repeated helper pattern was audited across1727 tracked Swift files. All three zero-test consumer compile failures remain invalid, with separate accepted no-owned-boot cleanup. No full2700-second profile fits the remaining pre09:00 awake window; prepare only, never clip or extend old clocks. From09:00 prioritize the reviewed S2 SwiftUI split candidate after fresh human readiness. Flags Off acquisition, WebView, complete Off, older-system and final-stack acceptance remain.",
+  "next_action": "Obtain fresh readiness and an adequate awake grant for the reviewed candidate-only SwiftUI split sitting, then bind fresh native environment/final parameters/review/exclusive admission. Reuse accepted baselines; C09/C10 semantic View/Navigation/Action ownership and actual fold evidence decide the scoped result. PR7 current-source44 qualification remains separately prepared; no fresh authority or gate credit from static work.",
   "p1": {
     "required_s2_tasks": 3,
     "required_s3_tasks": 20,
@@ -1737,7 +1737,7 @@
       "sha256": "cb18fc6e55042565af4475144a96c5a74a22a0dc126485b9e3c844cd25ee2660"
     }
   },
-  "updated_at": "2026-10-06T06:45:50.914601+00:00",
+  "updated_at": "2026-10-06T07:04:12.971718+00:00",
   "native_run_accounting": {
     "P3_required_platform_build": 1,
     "P5_PR3_PR4_PR5_off_cells": 6,
@@ -2077,6 +2077,39 @@
     "s2_human_handoff": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-final44-post-otel-static-20261006/s2-candidate-0900-handoff.json",
       "sha256": "f97158964a6ae877f7de7e1c31d35fbf6540fe495f8f44cb47321f794c2a51db"
+    },
+    "state": "COMPLETED_NO_FURTHER_NATIVE_ADMISSION",
+    "cutoff_receipt": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/unattended-0900-cutoff-20261006/cutoff.json",
+      "sha256": "b334f0f8d2059b1f2979071ba9875572af7dc44a5962a44939020ec416b80ce8"
+    },
+    "heartbeat_removed": true,
+    "new_awake_authority": null,
+    "static_sitting_preparation": {
+      "original_metadata_packet": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-0900-metadata-preparation-20261006/packet.json",
+        "sha256": "4ec1a1e235711517efed39c6d050d6abd7bfa6e7f477041c9d0d7f9e7ed262cc"
+      },
+      "original_blocked_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-0900-metadata-preparation-20261006/review.json",
+        "sha256": "60b1acdcc82f535c8c8f5730becd2c99aa7b549cdcc3363344aa733ac6a3ccbf"
+      },
+      "corrected_static_packet": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-0900-metadata-preparation-20261006/static-binding-correction-cycle2/packet.json",
+        "sha256": "ff4d927883a728880195ebaf9ba6440043b56730bf07ae4638582db87392dac4"
+      },
+      "static_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-0900-metadata-preparation-20261006/static-binding-correction-cycle2/review.json",
+        "sha256": "05083cda24683e9d6308cda0c41f94b3a806b6c6bafadb798b4832439079125c"
+      },
+      "state": "STATIC_BINDINGS_REVIEWED_WAIT_FRESH_HUMAN_ENVIRONMENT_AND_FINAL_PARAMETERS",
+      "source_changed": false,
+      "controls_rerun": 0,
+      "native_calls": 0,
+      "page_started": false,
+      "native_admitted": false,
+      "gates_closed": [],
+      "limits": "Current live skill and metadata consumer shapes joined to actual retained returns. Original BLOCKED receipt is unchanged. Configuration/restoration, device/process/apps/displays/source/product/output, operator/page/awake, final parameter review and root exclusive admission remain fresh external prerequisites."
     }
   }
 }

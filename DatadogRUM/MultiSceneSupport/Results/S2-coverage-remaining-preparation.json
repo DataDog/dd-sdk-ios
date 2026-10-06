@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "state": "PREARMED_SERVICE_REVIEWED_OFFLINE_WAIT_FRESH_HUMAN",
-  "updated_at": "2026-10-06T06:45:50.914601+00:00",
+  "updated_at": "2026-10-06T07:04:12.971718+00:00",
   "execution": {
     "record": "Results/S2-swiftui-split-candidate-20261003.json"
   },
@@ -565,6 +565,32 @@
     "new_builds": 0,
     "baseline_repeat": false,
     "gates_closed": [],
-    "next_action": "From09:00 Paris obtain fresh human readiness and adequate awake grant; bind a new page, current tool/workspace/device/source/product/process/output identity, final parameters and exclusive root admission. Reuse the reviewed source and saved baseline; no rehearsal or expired sitting authority."
+    "next_action": "From09:00 Paris obtain fresh human readiness and adequate awake grant; bind a new page, current tool/workspace/device/source/product/process/output identity, final parameters and exclusive root admission. Reuse the reviewed source and saved baseline; no rehearsal or expired sitting authority.",
+    "static_sitting_preparation": {
+      "original_metadata_packet": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-0900-metadata-preparation-20261006/packet.json",
+        "sha256": "4ec1a1e235711517efed39c6d050d6abd7bfa6e7f477041c9d0d7f9e7ed262cc"
+      },
+      "original_blocked_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-0900-metadata-preparation-20261006/review.json",
+        "sha256": "60b1acdcc82f535c8c8f5730becd2c99aa7b549cdcc3363344aa733ac6a3ccbf"
+      },
+      "corrected_static_packet": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-0900-metadata-preparation-20261006/static-binding-correction-cycle2/packet.json",
+        "sha256": "ff4d927883a728880195ebaf9ba6440043b56730bf07ae4638582db87392dac4"
+      },
+      "static_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-0900-metadata-preparation-20261006/static-binding-correction-cycle2/review.json",
+        "sha256": "05083cda24683e9d6308cda0c41f94b3a806b6c6bafadb798b4832439079125c"
+      },
+      "state": "STATIC_BINDINGS_REVIEWED_WAIT_FRESH_HUMAN_ENVIRONMENT_AND_FINAL_PARAMETERS",
+      "source_changed": false,
+      "controls_rerun": 0,
+      "native_calls": 0,
+      "page_started": false,
+      "native_admitted": false,
+      "gates_closed": [],
+      "limits": "Current live skill and metadata consumer shapes joined to actual retained returns. Original BLOCKED receipt is unchanged. Configuration/restoration, device/process/apps/displays/source/product/output, operator/page/awake, final parameter review and root exclusive admission remain fresh external prerequisites."
+    }
   }
 }
