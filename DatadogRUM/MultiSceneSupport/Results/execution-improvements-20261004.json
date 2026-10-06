@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "UNATTENDED_P7D0_PREPARATION_HUMAN_SITTING_CLOSED",
+  "state": "UNATTENDED_P7D0_PRE_CONTROLLER_STOP_CLOSED_CONTINUATION_PREPARATION",
   "owner": "/root",
   "plan": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
@@ -10,7 +10,7 @@
   "native_admitted": false,
   "native_runs": 16,
   "gates_closed": [],
-  "next_action": "Fresh root checks and exclusive release for reviewed Q3 finite CLI dependency qualification, then actual evidence/cleanup review. No human or workspace authorization required.",
+  "next_action": "Fresh source-identical CLI dependency qualification after reviewed closed pre-controller stop; then actual evidence/cleanup review and consumer implementation. No human or workspace authorization required.",
   "p1": {
     "required_s2_tasks": 3,
     "required_s3_tasks": 20,
@@ -1672,14 +1672,14 @@
     },
     "pr7_owning_preparation": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
-      "sha256": "2769debbbc8e122d94f77d3aa91c1d79b7d54255fa32e531409ea160bd86a4f6"
+      "sha256": "ca786d381d0e91af7c41edfb826fa3342e5a412d7ed4ec9812fc0eaf9db068d5"
     },
     "pr7_dependency_design_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/dependency-design-review.json",
       "sha256": "71a2bd15b9f0c0e408a64f498dc4e234d89e3d54fdb216eb24ce69a8d25ca66f"
     }
   },
-  "updated_at": 1791249582.7432919,
+  "updated_at": 1791250353.1992629,
   "native_run_accounting": {
     "P3_required_platform_build": 1,
     "P5_PR3_PR4_PR5_off_cells": 6,
