@@ -10,7 +10,7 @@
   "native_admitted": false,
   "native_runs": 16,
   "gates_closed": [],
-  "next_action": "Prepare and independently review a finite CLI qualification of composed source142ad; no workspace opening or human input. Build/discovery/tests require root checkpoint and exclusive release.",
+  "next_action": "Complete the consolidated P7D0 proposal repair and designated review before root checkpoint/release. Accepted-action receipt semantics pass design review only; no native effect or consumer qualification.",
   "p1": {
     "required_s2_tasks": 3,
     "required_s3_tasks": 20,
@@ -1672,14 +1672,14 @@
     },
     "pr7_owning_preparation": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
-      "sha256": "13bd5729652dbe54d67e44afebc3f1d0161e65f753b135163e656cb31816d2ce"
+      "sha256": "71e62d70543163895eafd69792fc03de761103b35199fd17ea6a6f56cf4f4281"
     },
     "pr7_dependency_design_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/dependency-design-review.json",
       "sha256": "71a2bd15b9f0c0e408a64f498dc4e234d89e3d54fdb216eb24ce69a8d25ca66f"
     }
   },
-  "updated_at": 1791246931.3541272,
+  "updated_at": 1791248188.803755,
   "native_run_accounting": {
     "P3_required_platform_build": 1,
     "P5_PR3_PR4_PR5_off_cells": 6,
@@ -1709,7 +1709,7 @@
   },
   "selected_task": "S3_F12_PR7_P7D0",
   "execution_frontier": {
-    "primary": "Prepare and independently review a finite CLI qualification of composed source142ad; no workspace opening or human input. Build/discovery/tests require root checkpoint and exclusive release.",
+    "primary": "Complete the consolidated P7D0 proposal repair and designated review before root checkpoint/release. Accepted-action receipt semantics pass design review only; no native effect or consumer qualification.",
     "required_paths": [
       "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
       "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-source-selection-20261006/packet.json"

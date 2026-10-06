@@ -135,7 +135,7 @@
       "state": "DESIGN_AND_IMPLEMENTATION_REMAIN"
     }
   ],
-  "selected_task": "P7D0_LIVE_DISCOVERY_AND_QUALIFICATION_PROPOSAL",
+  "selected_task": "P7D0_CONSOLIDATED_REVIEW_CORRECTION_BEFORE_QUALIFICATION",
   "pending_action_requirement": "Pending/excluded action scalars do not identify an accepted Action UUID. The existing queue-confined continuous-action receipt is not a generic cross-module/discrete-action acceptance receipt. Do not borrow a later same-view action; independently review the smallest source-backed receipt design before consumer changes.",
   "off_requirement": "Reusing the network provider single State read may gate On locally. No default-Off Core registry/TaskLocal/scene lookup, owner allocation, new map/lock or naive owner(in: FeatureScope) capture.",
   "runtime_admitted": false,
@@ -143,8 +143,8 @@
   "builds": 0,
   "gates_closed": [],
   "whole_pr7_qualified": false,
-  "next_action": "Reconcile the ten source-selector candidates with fresh live test discovery and prepare exact compiler/product/host/output custody plus designated review before one composed-source affected-component qualification. Consumer capture and accepted-action design remain; no accepted-suite repeat.",
-  "updated_at": 1791242525.577185,
+  "next_action": "Complete the seven P7D0 runner/dependency/evidence corrections together, independently review the successor, then checkpoint and release one finite CLI affected-component qualification. No SDK edits while source142ad is frozen; reviewed action semantics do not qualify consumers or Off behavior.",
+  "updated_at": 1791248188.802057,
   "sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/sdk-checkpoint.json",
     "sha256": "8de6f4600357cbe88a003bb7d235945a3fda02af056f4e021f20540b19c82749"
@@ -157,5 +157,50 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-source-selection-20261006/actual-mcp-metadata.json",
     "sha256": "700dfba9d449fc7bcaf05c827a973eaa6bac41aa94f836bb8b12e8f7239392f7"
   },
-  "actual_metadata_disposition": "Supported metadata only; original DatadogCore/MyMac restored and owned workspace closed before human lane. No test discovery, build, test or admission. Rediscover opaque handle on continuation."
+  "actual_metadata_disposition": "Supported metadata only; original DatadogCore/MyMac restored and owned workspace closed before human lane. No test discovery, build, test or admission. Rediscover opaque handle on continuation.",
+  "affected_component_proposal": {
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-cli-proposal-20261006/packet.json",
+      "sha256": "dde1ebc796340f0d5977482b69701490143513a2cd4acce1f3fcd552ac88e23d"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-cli-proposal-20261006/review.json",
+      "sha256": "64abdf7942547c512f8844bf330246d7538fdec0cc7cb9f0524fb3968da63e7c"
+    },
+    "state": "BLOCKED_BEFORE_NATIVE_EFFECTS",
+    "findings": [
+      "P7D0-1",
+      "P7D0-2",
+      "P7D0-3",
+      "P7D0-4",
+      "P7D0-5",
+      "P7D0-6",
+      "P7D0-7"
+    ],
+    "successor": "Sole native owner fixes the seven findings together in a private successor; independent full-controller review and root release remain required."
+  },
+  "accepted_action_design": {
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-accepted-action-design-20261006/packet.json",
+      "sha256": "e6ae11417aed1674dd52e89110dcdabfd9e0b57bb84549b7ba26cd098b6be1da"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-accepted-action-design-20261006/review.json",
+      "sha256": "974c3fbe0f24afe7abd4b6c61312381ca1fe33b2b11c32f00889f16b94508f55"
+    },
+    "state": "SEMANTICS_REVIEWED_IMPLEMENTATION_AND_OFF_CAPTURE_HELD",
+    "required_boundaries": [
+      "Claim only the exact action scope actually created; settle rejection at launch-resolved processing, not the outer Monitor return.",
+      "A never-processed receipt remains unresolved/invalid-owner absence; do not add waits, buffering or Off callbacks to force settlement.",
+      "Continuous queue-only ownership stays separate. Cross-module SPI, real-Core ordering and Off capture require implementation review and decisive tests."
+    ],
+    "controls_run": 0
+  },
+  "network_capture_design": {
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-network-capture-design-20261006/packet.json",
+      "sha256": "a57c1859444c89dca6495e868b2aeb49a3104e674d1abc3867ed142817465288"
+    },
+    "state": "PROPOSAL_ONLY_REVIEW_PENDING"
+  }
 }
