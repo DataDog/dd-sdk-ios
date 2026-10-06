@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
-  "state": "HUMAN_CAPTURE_RECEIPT_REPAIR_REQUIRED",
-  "updated_at": "2026-10-06T16:17:19.151321+00:00",
+  "state": "HUMAN_CAPTURE_RECEIPT_SOURCE_REVIEWED_BINDING_REQUIRED",
+  "updated_at": "2026-10-06T16:26:46.806693+00:00",
   "execution": {
     "record": "Results/S2-capture-receipt-20261006.json"
   },
@@ -37,7 +37,7 @@
         "multiple_scenes": false
       }
     ],
-    "prerequisites": "Repair and review per-call parent capture receipts; actual initial capture plus one successful renewal must precede Ready. Reuse accepted cells/baseline and automatic qualification; never repeat the idle measurement.",
+    "prerequisites": "Bind reviewed per-call parent receipts and initial capture plus one accepted renewal before Ready. Reuse accepted cells/baseline and automatic qualification; no idle remeasurement.",
     "review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/review.json",
       "sha256": "316fe3377dd485f86562f331469d439785a5d60ef5f5ffe870ede1a32a8b02b2"
@@ -604,13 +604,29 @@
   },
   "next_human_profile": {
     "record": "Results/execution-improvements-20261004.json#p2.human_foreground_renewal_profile",
-    "state": "ACTUAL_HUMAN_COMPOSITION_STOPPED_RECEIPT_REPAIR_REQUIRED",
+    "state": "SOURCE_REPAIR_REVIEWED_FRESH_RUNTIME_BINDINGS_REQUIRED",
     "native_admitted": false,
     "page": null,
     "run_id": null,
     "clocks": null,
     "ready_invited": false,
-    "latest_actual_result": "Results/S2-capture-receipt-20261006.json"
+    "latest_actual_result": "Results/S2-capture-receipt-20261006.json",
+    "source_repair": {
+      "state": "SOURCE_INTERFACE_REVIEWED_FRESH_RUNTIME_BINDINGS_REQUIRED",
+      "packet": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-parent-return-identity-correction-20261006/packet.json",
+        "sha256": "2366d3003d27a1bafadfa3fea0373f3602089fd5c1817b11add981b0ac229674"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-parent-return-identity-correction-20261006/review.json",
+        "sha256": "9d7e0a19d41bc223f806b44de6e0977f452fccf168d5935d7f1249e4e2f93158"
+      },
+      "accepted_distinct_controls": 8,
+      "native_calls": 0,
+      "runtime_authority": false,
+      "ready_invited": false,
+      "remaining": "Fresh complete sibling namespace, loaded aliases/pins/assignment/configuration, current source/output/environment proof and adequate launch/awake grant; actual initial capture plus accepted renewal before Ready."
+    }
   },
   "execution_history": [
     {

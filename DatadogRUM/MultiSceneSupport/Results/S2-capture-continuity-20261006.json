@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "state": "STOPPED_READY_WAIT_PROCESS_ABSENT_RETIRED",
-  "updated_at": "2026-10-06T16:17:19.151321+00:00",
+  "updated_at": "2026-10-06T16:26:46.806693+00:00",
   "plan": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-rum-only-native-wpxavuf6/foreground-finalization-preparation-20261002/candidate-human-sitting-d5g9vmyp/runtime/runtime-plan.json",
     "sha256": "8ecffcc61ac6f541f38835a19346405aa720fe1f54d5a97d16e7f4e889fa1421"
@@ -47,7 +47,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/human-readiness-reliability-20261006/decision.json",
     "sha256": "31b050ef096bd1fc6652ff411e754277b9309d897ebeafbc9ab3b36408966973"
   },
-  "next_action": "Repair per-call parent capture receipts and qualify actual repeated human TOOL publication/forwarding before a new sitting. Offer Ready only after initial capture plus a completed serial renewal, original process/window/scene, durable writer and native idle pass. Preserve accepted source, products, four cells, saved baseline and automatic continuity qualification. Reuse fixed clocks only as retained evidence; new execution requires a fresh reviewed complete configuration. PR7 WebView and Flags acquisition remains independent.",
+  "next_action": "Bind the source-reviewed per-request parent receipts and pre-Ready renewal gate in one complete successor namespace. Reuse the accepted source/products/four cells/baseline and automatic continuity; no idle remeasurement. After fresh complete runtime bindings and admission, verify actual initial capture and completed serial renewal with durable parent forwarding, same process/window/scene, fresh writer and native idle before inviting gestures. Keep Home/background renewal disabled; preserve retired failures and fixed clocks. PR7 WebView and Flags acquisition remain independent.",
   "next_qualification": {
     "state": "QUALIFIED_AUTONOMOUS_FOREGROUND_CONTINUITY_COMPONENT_ONLY",
     "native_admitted": false,
@@ -129,6 +129,22 @@
   "latest_human_attempt": {
     "record": "Results/S2-capture-receipt-20261006.json",
     "state": "STOPPED_PARENT_CAPTURE_RECEIPT_COLLISION_RETIRED",
-    "next_action": "Repair per-call parent capture receipts and qualify actual repeated human TOOL publication/forwarding before a new sitting. Offer Ready only after initial capture plus a completed serial renewal, original process/window/scene, durable writer and native idle pass. Preserve accepted source, products, four cells, saved baseline and automatic continuity qualification. Reuse fixed clocks only as retained evidence; new execution requires a fresh reviewed complete configuration. PR7 WebView and Flags acquisition remains independent."
+    "next_action": "Bind the source-reviewed per-request parent receipts and pre-Ready renewal gate in one complete successor namespace. Reuse the accepted source/products/four cells/baseline and automatic continuity; no idle remeasurement. After fresh complete runtime bindings and admission, verify actual initial capture and completed serial renewal with durable parent forwarding, same process/window/scene, fresh writer and native idle before inviting gestures. Keep Home/background renewal disabled; preserve retired failures and fixed clocks. PR7 WebView and Flags acquisition remain independent."
+  },
+  "next_source_repair": {
+    "state": "SOURCE_INTERFACE_REVIEWED_FRESH_RUNTIME_BINDINGS_REQUIRED",
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-parent-return-identity-correction-20261006/packet.json",
+      "sha256": "2366d3003d27a1bafadfa3fea0373f3602089fd5c1817b11add981b0ac229674"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-parent-return-identity-correction-20261006/review.json",
+      "sha256": "9d7e0a19d41bc223f806b44de6e0977f452fccf168d5935d7f1249e4e2f93158"
+    },
+    "accepted_distinct_controls": 8,
+    "native_calls": 0,
+    "runtime_authority": false,
+    "ready_invited": false,
+    "remaining": "Fresh complete sibling namespace, loaded aliases/pins/assignment/configuration, current source/output/environment proof and adequate launch/awake grant; actual initial capture plus accepted renewal before Ready."
   }
 }

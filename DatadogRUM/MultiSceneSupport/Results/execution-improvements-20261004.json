@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "state": "HUMAN_CAPTURE_RECEIPT_REPAIR_REQUIRED",
+  "state": "HUMAN_CAPTURE_RECEIPT_SOURCE_REVIEWED_BINDING_REQUIRED",
   "owner": "/root",
   "plan": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/EXECUTION_IMPROVEMENTS_2026-10-04.md",
@@ -10,7 +10,7 @@
   "native_admitted": false,
   "native_runs": 20,
   "gates_closed": [],
-  "next_action": "Repair per-call parent capture receipts and qualify actual repeated human TOOL publication/forwarding before a new sitting. Offer Ready only after initial capture plus a completed serial renewal, original process/window/scene, durable writer and native idle pass. Preserve accepted source, products, four cells, saved baseline and automatic continuity qualification. Reuse fixed clocks only as retained evidence; new execution requires a fresh reviewed complete configuration. PR7 WebView and Flags acquisition remains independent.",
+  "next_action": "Bind the source-reviewed per-request parent receipts and pre-Ready renewal gate in one complete successor namespace. Reuse the accepted source/products/four cells/baseline and automatic continuity; no idle remeasurement. After fresh complete runtime bindings and admission, verify actual initial capture and completed serial renewal with durable parent forwarding, same process/window/scene, fresh writer and native idle before inviting gestures. Keep Home/background renewal disabled; preserve retired failures and fixed clocks. PR7 WebView and Flags acquisition remain independent.",
   "p1": {
     "required_s2_tasks": 3,
     "required_s3_tasks": 20,
@@ -43,7 +43,7 @@
     }
   },
   "p2": {
-    "state": "HUMAN_CAPTURE_RECEIPT_REPAIR_REQUIRED",
+    "state": "HUMAN_CAPTURE_RECEIPT_SOURCE_REVIEWED_BINDING_REQUIRED",
     "plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p2-composition-qualified-identity/runtime/runtime-plan.json",
       "sha256": "3e8200cfb0d7163867983c237ff896e0d00ddf1fb9dc9fa2306873ecded50a80"
@@ -64,7 +64,7 @@
     "native_calls": 11,
     "native_qualifications": 1,
     "remaining": [
-      "Repair and review repeated capture receipt identity and pre-Ready renewal through actual human composition, then finish candidate C09/C10/H14 with fresh admission.",
+      "Bind the reviewed per-request receipt/Ready repair, then qualify actual candidate C09/C10/H14 after working launch/capture/renewal.",
       "Residual physical UIKit candidate H11/H13 after its capture/orientation prerequisites"
     ],
     "gates_closed": [],
@@ -1702,7 +1702,7 @@
       "runtime_authority_unresumable": true
     },
     "human_foreground_renewal_profile": {
-      "state": "ACTUAL_HUMAN_COMPOSITION_STOPPED_RECEIPT_REPAIR_REQUIRED",
+      "state": "SOURCE_REPAIR_REVIEWED_FRESH_RUNTIME_BINDINGS_REQUIRED",
       "packet": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-foreground-renewal-integration-cycle2-20261006/packet.assignment-bound.json",
         "sha256": "d905adc731e482bc5dda62e1438dadb7935d834ed5792dfafa2e206056b13aa1"
@@ -1724,14 +1724,28 @@
       "cleanup_seconds": 600,
       "page_seconds": 7200,
       "remaining": [
-        "Per-call parent capture receipt identity; full repeated human TOOL forwarding controls and scoped review.",
-        "Initial capture plus one accepted serial renewal before exposing Ready.",
-        "Fresh complete runtime bindings, metadata, fixed clocks and scoped admission after repair."
+        "Fresh complete sibling namespace, loaded aliases/pins/assignment/configuration, current source/output/environment proof and adequate launch/awake grant; actual initial capture plus accepted renewal before Ready."
       ],
       "gates_closed": [],
       "latest_actual_result": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S2-capture-receipt-20261006.json",
         "sha256": "58593dc8ff541ebb1dc49e5fdae86c8d39782cfd1a1adc888b618d6d7c24b061"
+      },
+      "source_repair": {
+        "state": "SOURCE_INTERFACE_REVIEWED_FRESH_RUNTIME_BINDINGS_REQUIRED",
+        "packet": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-parent-return-identity-correction-20261006/packet.json",
+          "sha256": "2366d3003d27a1bafadfa3fea0373f3602089fd5c1817b11add981b0ac229674"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-human-parent-return-identity-correction-20261006/review.json",
+          "sha256": "9d7e0a19d41bc223f806b44de6e0977f452fccf168d5935d7f1249e4e2f93158"
+        },
+        "accepted_distinct_controls": 8,
+        "native_calls": 0,
+        "runtime_authority": false,
+        "ready_invited": false,
+        "remaining": "Fresh complete sibling namespace, loaded aliases/pins/assignment/configuration, current source/output/environment proof and adequate launch/awake grant; actual initial capture plus accepted renewal before Ready."
       }
     },
     "latest_human_capture_result": {
@@ -2531,7 +2545,7 @@
       "sha256": "cb18fc6e55042565af4475144a96c5a74a22a0dc126485b9e3c844cd25ee2660"
     }
   },
-  "updated_at": "2026-10-06T16:17:19.151321+00:00",
+  "updated_at": "2026-10-06T16:26:46.806693+00:00",
   "native_run_accounting": {
     "P3_required_platform_build": 1,
     "P5_PR3_PR4_PR5_off_cells": 6,
@@ -2618,7 +2632,7 @@
   },
   "selected_task": "S2_C09_C10_H14_HUMAN_CAPTURE_CONTINUITY",
   "execution_frontier": {
-    "primary": "Repair per-call parent capture receipts and qualify actual repeated human TOOL publication/forwarding before a new sitting. Offer Ready only after initial capture plus a completed serial renewal, original process/window/scene, durable writer and native idle pass. Preserve accepted source, products, four cells, saved baseline and automatic continuity qualification. Reuse fixed clocks only as retained evidence; new execution requires a fresh reviewed complete configuration. PR7 WebView and Flags acquisition remains independent.",
+    "primary": "Bind the source-reviewed per-request parent receipts and pre-Ready renewal gate in one complete successor namespace. Reuse the accepted source/products/four cells/baseline and automatic continuity; no idle remeasurement. After fresh complete runtime bindings and admission, verify actual initial capture and completed serial renewal with durable parent forwarding, same process/window/scene, fresh writer and native idle before inviting gestures. Keep Home/background renewal disabled; preserve retired failures and fixed clocks. PR7 WebView and Flags acquisition remain independent.",
     "required_paths": [
       "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
       "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-startup-assembly-cycle1/final-review.json",
