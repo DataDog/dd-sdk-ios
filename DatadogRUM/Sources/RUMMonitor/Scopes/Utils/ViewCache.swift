@@ -143,6 +143,32 @@ internal final class ViewCache {
         return result
     }
 
+    /// Finds a historical container only within its originating native scene.
+    /// Missing, expired and replay-ineligible entries never borrow a peer or legacy view.
+    func lastView<Integer>(
+        before timestamp: Integer,
+        hasReplay: Bool? = nil,
+        in sceneIdentifier: RUMSceneIdentifier
+    ) -> String? where Integer: BinaryInteger {
+        let now = currentTimestamp
+        var result: String?
+
+        _views.mutate { views in
+            purge(&views, now: now)
+            result = views.first(where: {
+                guard $0.sceneIdentifier == sceneIdentifier, $0.timestamp < timestamp else {
+                    return false
+                }
+                guard let hasReplay else {
+                    return true
+                }
+                return $0.hasReplay == hasReplay
+            })?.id
+        }
+
+        return result
+    }
+
     /// Returns the owner of an exact retained View ID, without guessing a current peer.
     func ownership(forViewID viewID: String) -> ViewOwnership {
         let now = currentTimestamp
