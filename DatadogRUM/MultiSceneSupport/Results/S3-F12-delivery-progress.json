@@ -255,7 +255,7 @@
         "integration": "NOT_QUALIFIED"
       },
       "remaining_assertion": "Authoritative nil vs absent handoff, optional request-time final E05 correlation, delayed WebView owner and accepted action merge Off: Static fast path; final E01/E05 headers/sampling/user/account expressions and fresh develop no handoff or scene lookup",
-      "next_action": "Review corrected exact saved-discovery partition and composed test/export/cleanup controls, then checkpoint and fresh root source/product/process/device/awake authority for ten tests only. No rebuild or discovery rerun. Source142ad stays frozen through actual review and handoff; private drafts close no release gate.",
+      "next_action": "Fresh root source/product/process/device/awake checks and exact reviewed new parameters, then ten tests from the saved build and discovery. No rebuild or enumeration. Source142ad stays frozen through actual outcomes/cleanup review and handoff; private drafts close no release gate.",
       "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit.",
       "dependency_design": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/packet.json",
@@ -263,7 +263,7 @@
       },
       "preparation_record": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
-        "sha256": "b73fc9a501f9b5cda66a72eeae64fe40d779aa00e82b185de0c12302cd72fdaf"
+        "sha256": "34b3b64c2ace2e4a5f408cea64e171b1ca60653acede273e3760e3e9b20219b1"
       },
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
       "source_branch": "valpertui/s3-consumer-capture",
@@ -456,6 +456,6 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": 1791254345.2218628,
+  "updated_at": 1791254615.8269498,
   "dependency_build_attempts": 1
 }

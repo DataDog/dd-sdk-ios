@@ -10,7 +10,7 @@
   "native_admitted": false,
   "native_runs": 16,
   "gates_closed": [],
-  "next_action": "Review corrected exact saved-discovery partition and composed test/export/cleanup controls, then checkpoint and fresh root source/product/process/device/awake authority for ten tests only. No rebuild or discovery rerun. Source142ad stays frozen through actual review and handoff; private drafts close no release gate.",
+  "next_action": "Fresh root source/product/process/device/awake checks and exact reviewed new parameters, then ten tests from the saved build and discovery. No rebuild or enumeration. Source142ad stays frozen through actual outcomes/cleanup review and handoff; private drafts close no release gate.",
   "p1": {
     "required_s2_tasks": 3,
     "required_s3_tasks": 20,
@@ -1672,14 +1672,14 @@
     },
     "pr7_owning_preparation": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
-      "sha256": "b73fc9a501f9b5cda66a72eeae64fe40d779aa00e82b185de0c12302cd72fdaf"
+      "sha256": "34b3b64c2ace2e4a5f408cea64e171b1ca60653acede273e3760e3e9b20219b1"
     },
     "pr7_dependency_design_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/dependency-design-review.json",
       "sha256": "71a2bd15b9f0c0e408a64f498dc4e234d89e3d54fdb216eb24ce69a8d25ca66f"
     }
   },
-  "updated_at": 1791254345.223218,
+  "updated_at": 1791254615.82765,
   "native_run_accounting": {
     "P3_required_platform_build": 1,
     "P5_PR3_PR4_PR5_off_cells": 6,
