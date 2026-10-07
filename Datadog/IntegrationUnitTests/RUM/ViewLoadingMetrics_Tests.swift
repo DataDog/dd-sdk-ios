@@ -62,7 +62,7 @@ class ViewLoadingMetrics_Tests: XCTestCase {
             .takeSingle()
 
         let lastView = try XCTUnwrap(session.views.last)
-        let actualTNS = try XCTUnwrap(lastView.latestUpdateValue(\.view.networkSettledTime), "TNS should be reported after initial resources complete loading.")
+        let actualTNS = try XCTUnwrap(lastView.latestViewEvent?.view.networkSettledTime, "TNS should be reported after initial resources complete loading.")
         let expectedTNS = lastResourceTime.timeIntervalSince(viewStartTime).dd.toInt64Nanoseconds
         XCTAssertEqual(actualTNS, expectedTNS, "TNS should span from the view start to the last completed initial resource.")
     }
@@ -104,7 +104,7 @@ class ViewLoadingMetrics_Tests: XCTestCase {
             .takeSingle()
 
         let lastView = try XCTUnwrap(session.views.last)
-        let actualTNS = try XCTUnwrap(lastView.latestUpdateValue(\.view.networkSettledTime), "TNS should be reported after initial resources complete loading.")
+        let actualTNS = try XCTUnwrap(lastView.latestViewEvent?.view.networkSettledTime, "TNS should be reported after initial resources complete loading.")
         let expectedTNS = lastResourceTime.timeIntervalSince(viewStartTime).dd.toInt64Nanoseconds
         XCTAssertEqual(actualTNS, expectedTNS, "TNS should span from the view start to the last completed initial resource (resource1 with correct metrics).")
     }
@@ -143,7 +143,7 @@ class ViewLoadingMetrics_Tests: XCTestCase {
             .takeSingle()
 
         let lastView = try XCTUnwrap(session.views.last)
-        let actualTNS = try XCTUnwrap(lastView.latestUpdateValue(\.view.networkSettledTime), "TNS should be reported after initial resources complete loading.")
+        let actualTNS = try XCTUnwrap(lastView.latestViewEvent?.view.networkSettledTime, "TNS should be reported after initial resources complete loading.")
         let expectedTNS = lastInitialResourceTime.timeIntervalSince(viewStartTime).dd.toInt64Nanoseconds
         XCTAssertEqual(actualTNS, expectedTNS, "TNS should span from the view start to the last completed initial resource.")
     }
@@ -180,7 +180,7 @@ class ViewLoadingMetrics_Tests: XCTestCase {
             .takeSingle()
 
         let firstView = try XCTUnwrap(session.views.first(where: { $0.name == "FirstView" }))
-        XCTAssertNil(firstView.latestUpdateValue(\.view.networkSettledTime), "TNS should not be reported if view was stopped during resource loading.")
+        XCTAssertNil(firstView.latestViewEvent?.view.networkSettledTime, "TNS should not be reported if view was stopped during resource loading.")
     }
 
     func testWhenResourceIsDropped_thenItIsExcludedFromTNSMetric() throws {
@@ -222,7 +222,7 @@ class ViewLoadingMetrics_Tests: XCTestCase {
             .takeSingle()
 
         let lastView = try XCTUnwrap(session.views.last)
-        let actualTNS = try XCTUnwrap(lastView.latestUpdateValue(\.view.networkSettledTime), "TNS should be reported after initial resources end.")
+        let actualTNS = try XCTUnwrap(lastView.latestViewEvent?.view.networkSettledTime, "TNS should be reported after initial resources end.")
         let expectedTNS = resource1EndTime.timeIntervalSince(viewStartTime).dd.toInt64Nanoseconds
         XCTAssertEqual(actualTNS, expectedTNS, "TNS should only reflect ACCEPTED resources.")
     }
@@ -296,7 +296,7 @@ class ViewLoadingMetrics_Tests: XCTestCase {
             .takeSingle()
 
         let lastView = try XCTUnwrap(session.views.last)
-        let actualTNS = try XCTUnwrap(lastView.latestUpdateValue(\.view.networkSettledTime), "TNS should be reported after initial resources complete loading.")
+        let actualTNS = try XCTUnwrap(lastView.latestViewEvent?.view.networkSettledTime, "TNS should be reported after initial resources complete loading.")
         let expectedTNS = lastInitialResourceCompletionTime.timeIntervalSince(viewStartTime).dd.toInt64Nanoseconds
         XCTAssertEqual(actualTNS, expectedTNS, "TNS should span from the view start to the completion of last classified resource.")
     }
@@ -588,7 +588,7 @@ class ViewLoadingMetrics_Tests: XCTestCase {
             .takeSingle()
 
         let nextView = try XCTUnwrap(session.views.first(where: { $0.name == "NextView" }))
-        let actualINV = nextView.latestUpdateValue(\.view.interactionToNextViewTime)
+        let actualINV = nextView.latestViewEvent?.view.interactionToNextViewTime
         XCTAssertEqual(180_000, actualINV)
     }
 }

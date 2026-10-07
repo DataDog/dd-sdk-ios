@@ -30,8 +30,8 @@ private class RUMFixture2Screen: XCUIApplication {
 }
 
 /// Mirrors `RUMManualInstrumentationScenarioTests` with the `.viewUpdates` feature flag enabled.
-/// Subsequent view writes are `RUMViewUpdateEvent` deltas — assertions use `latestUpdateValue` and
-/// `viewUpdateEvents` instead of `viewEvents.last` for fields that only appear in deltas.
+/// Subsequent view writes are `RUMViewUpdateEvent` deltas — assertions use `latestViewEvent`
+/// (the fully reconstructed view state) instead of `viewEvents.last` for fields that only appear in deltas.
 class RUMManualInstrumentationViewUpdatesScenarioTests: IntegrationTests, RUMCommonAsserts {
     func testRUMManualInstrumentationScenario() throws {
         let rumServerSession = server.obtainUniqueRecordingSession()
@@ -79,9 +79,9 @@ class RUMManualInstrumentationViewUpdatesScenarioTests: IntegrationTests, RUMCom
             )
         }
         // final counts are in the last non-nil delta
-        XCTAssertEqual(view1.latestUpdateValue(\.view.action?.count), 1)
-        XCTAssertEqual(view1.latestUpdateValue(\.view.resource?.count), 1)
-        XCTAssertEqual(view1.latestUpdateValue(\.view.error?.count), 1)
+        XCTAssertEqual(view1.latestViewEvent?.view.action.count, 1)
+        XCTAssertEqual(view1.latestViewEvent?.view.resource.count, 1)
+        XCTAssertEqual(view1.latestViewEvent?.view.error.count, 1)
         XCTAssertEqual(view1.actionEvents[0].action.type, .tap)
         XCTAssertEqual(view1.actionEvents[0].action.resource?.count, 1, "Action should track one successful Resource")
         XCTAssertEqual(view1.actionEvents[0].action.error?.count, 1, "Action should track second Resource failure as Error")
@@ -107,9 +107,9 @@ class RUMManualInstrumentationViewUpdatesScenarioTests: IntegrationTests, RUMCom
         XCTAssertEqual(featureFlags.featureFlagsInfo.count, 0)
         RUMSessionMatcher.assertViewWasEventuallyInactive(view1)
 
-        // custom timings are carried as deltas; use latestUpdateValue to find the last delta that changed them
-        let contentReadyTiming = try XCTUnwrap(view1.latestUpdateValue(\.view.customTimings)?.customTimingsInfo["content-ready"])
-        let firstInteractionTiming = try XCTUnwrap(view1.latestUpdateValue(\.view.customTimings)?.customTimingsInfo["first-interaction"])
+        // custom timings are carried as deltas; latestViewEvent folds them into the reconstructed state
+        let contentReadyTiming = try XCTUnwrap(view1.latestViewEvent?.view.customTimings?.customTimingsInfo["content-ready"])
+        let firstInteractionTiming = try XCTUnwrap(view1.latestViewEvent?.view.customTimings?.customTimingsInfo["first-interaction"])
         XCTAssertGreaterThanOrEqual(contentReadyTiming, 50_000)
         XCTAssertLessThan(contentReadyTiming, 1_000_000_000)
         XCTAssertGreaterThan(firstInteractionTiming, 0)
@@ -119,11 +119,11 @@ class RUMManualInstrumentationViewUpdatesScenarioTests: IntegrationTests, RUMCom
         XCTAssertEqual(view2.name, "SendRUMFixture2View")
         XCTAssertEqual(view2.path, "Runner.SendRUMFixture2ViewController")
         XCTAssertNotNil(view2.viewEvents.last?.device)
-        XCTAssertEqual(view2.latestUpdateValue(\.view.action?.count) ?? 0, 0)
-        XCTAssertEqual(view2.latestUpdateValue(\.view.resource?.count) ?? 0, 0)
-        XCTAssertEqual(view2.latestUpdateValue(\.view.error?.count), 1)
+        XCTAssertEqual(view2.latestViewEvent?.view.action.count ?? 0, 0)
+        XCTAssertEqual(view2.latestViewEvent?.view.resource.count ?? 0, 0)
+        XCTAssertEqual(view2.latestViewEvent?.view.error.count, 1)
         // feature flags may be in the initial event or in a delta depending on when they were set
-        let viewFeatureFlags = try XCTUnwrap(view2.latestUpdateValue(\.featureFlags))
+        let viewFeatureFlags = try XCTUnwrap(view2.latestViewEvent?.featureFlags)
         XCTAssertEqual((viewFeatureFlags.featureFlagsInfo["mock_flag_a"] as? AnyCodable)?.value as? Bool, false)
         XCTAssertEqual((viewFeatureFlags.featureFlagsInfo["mock_flag_b"] as? AnyCodable)?.value as? String, "mock_value")
         XCTAssertEqual(view2.errorEvents[0].error.message, "Simulated view error")
@@ -137,9 +137,9 @@ class RUMManualInstrumentationViewUpdatesScenarioTests: IntegrationTests, RUMCom
         XCTAssertEqual(view3.name, "SendRUMFixture3View")
         XCTAssertEqual(view3.path, "fixture3-vc")
         XCTAssertNotNil(view3.viewEvents.last?.device)
-        XCTAssertEqual(view3.latestUpdateValue(\.view.action?.count) ?? 0, 0)
-        XCTAssertEqual(view3.latestUpdateValue(\.view.resource?.count) ?? 0, 0)
-        XCTAssertEqual(view3.latestUpdateValue(\.view.error?.count), 1)
+        XCTAssertEqual(view3.latestViewEvent?.view.action.count ?? 0, 0)
+        XCTAssertEqual(view3.latestViewEvent?.view.resource.count ?? 0, 0)
+        XCTAssertEqual(view3.latestViewEvent?.view.error.count, 1)
         let view3Error = try XCTUnwrap(view3.errorEvents[0])
         XCTAssertEqual(view3Error.error.message, "Simulated view error with fingerprint")
         XCTAssertEqual(view3Error.error.fingerprint, "fake-fingerprint")

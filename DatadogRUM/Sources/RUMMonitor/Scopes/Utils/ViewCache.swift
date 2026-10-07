@@ -20,6 +20,7 @@ internal final class ViewCache {
         let timestamp: Int64
         let id: String
         let hasReplay: Bool?
+        var inactiveSince: Int64?
     }
 
     @ReadWriteLock
@@ -48,18 +49,44 @@ internal final class ViewCache {
     ///   - id: The view id to cache.
     ///   - timestamp: The view epoch timestamp in milliseconds.
     ///   - hasReplay: `true` if the view has replay.
-    func insert(id: String, timestamp: Int64, hasReplay: Bool? = nil) {
+    ///   - isActive: `true` if the view is currently active.
+    func insert(
+        id: String,
+        timestamp: Int64,
+        hasReplay: Bool? = nil,
+        isActive: Bool = false
+    ) {
+        let now = currentTimestamp
+
         _views.mutate { views in
-            let view = View(timestamp: timestamp, id: id, hasReplay: hasReplay)
-            // order views by desc epoch time
+            let view = View(
+                timestamp: timestamp,
+                id: id,
+                hasReplay: hasReplay,
+                inactiveSince: isActive ? nil : timestamp
+            )
+            // Order views by descending epoch time.
             if let index = views.firstIndex(where: { $0.timestamp < timestamp }) {
                 views.insert(view, at: index)
             } else {
                 views.append(view)
             }
+            purge(&views, now: now)
         }
+    }
 
-        purge()
+    /// Marks the matching active view as inactive at the current device time.
+    func markInactive(id: String) {
+        let now = currentTimestamp
+
+        _views.mutate { views in
+            guard let index = views.firstIndex(where: { $0.id == id && $0.inactiveSince == nil }) else {
+                return
+            }
+
+            views[index].inactiveSince = now
+            purge(&views, now: now)
+        }
     }
 
     /// Gets the last view id before the specified timestamp.
@@ -69,31 +96,42 @@ internal final class ViewCache {
     ///   - hasReplay: Specify `true` to get the last view with replay.
     /// - Returns: The view id if found.
     func lastView<Integer>(before timestamp: Integer, hasReplay: Bool? = nil) -> String? where Integer: BinaryInteger {
-        views.first(where: {
-            if $0.timestamp < timestamp {
-                guard let hasReplay = hasReplay else {
-                    return true
-                }
+        let now = currentTimestamp
+        var result: String?
 
-                if $0.hasReplay == hasReplay {
-                    return true
+        _views.mutate { views in
+            purge(&views, now: now)
+            result = views.first(where: {
+                if $0.timestamp < timestamp {
+                    guard let hasReplay = hasReplay else {
+                        return true
+                    }
+
+                    if $0.hasReplay == hasReplay {
+                        return true
+                    }
                 }
-            }
-            return false
-        })?.id
+                return false
+            })?.id
+        }
+
+        return result
     }
 
-    private func purge() {
-        let now = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
+    private var currentTimestamp: Int64 {
+        dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
+    }
 
-        _views.mutate {
-            var views = $0.prefix(capacity)
-
-            if let index = views.firstIndex(where: { now - $0.timestamp > ttl }) {
-                views = views.prefix(upTo: index)
+    private func purge(_ views: inout [View], now: Int64) {
+        views.removeAll { view in
+            guard let inactiveSince = view.inactiveSince else {
+                return false
             }
+            return now - inactiveSince > ttl
+        }
 
-            $0 = Array(views)
+        if views.count > capacity {
+            views.removeSubrange(capacity...)
         }
     }
 }

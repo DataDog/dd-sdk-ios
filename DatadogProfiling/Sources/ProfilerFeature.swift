@@ -40,7 +40,6 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
         configuration: Profiling.Configuration,
         requestBuilder: FeatureRequestBuilder,
         telemetryController: ProfilingTelemetryController,
-        quotaChecker: ProfilingQuotaChecking = ProfilingQuotaChecker(),
         userDefaults: UserDefaults = UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME) ?? .standard //swiftlint:disable:this required_reason_api_name
     ) {
         self.requestBuilder = requestBuilder
@@ -48,7 +47,11 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
 
         let continuousSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.continuousSampleRate
         let appLaunchSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.applicationLaunchSampleRate
-        self.profilingSamplerProvider = ProfilingSamplerProvider(continuousSampleRate: continuousSampleRate)
+        self.profilingSamplerProvider = ProfilingSamplerProvider(
+            continuousSampleRate: continuousSampleRate,
+            appLaunchSampleRate: dd_profiler_was_started_at_launch() ? appLaunchSampleRate : 0
+        )
+        let quotaChecker = ProfilingQuotaChecker(profilingSamplerProvider: profilingSamplerProvider)
 
         Self.setProfilingEnabled(in: userDefaults)
         Self.setAppLaunch(sampleRate: appLaunchSampleRate, in: userDefaults)
@@ -58,8 +61,7 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
             profilingSamplerProvider: profilingSamplerProvider,
             quotaChecker: quotaChecker,
             telemetryController: telemetryController,
-            minProfileDuration: configuration.minProfileDuration,
-            isAppLaunchProfilingEnabled: appLaunchSampleRate > 0
+            minProfileDuration: configuration.minProfileDuration
         )
         self.messageReceiver = CombinedFeatureMessageReceiver([
             ProfilingContextMessageReceiver(profilingSamplerProvider: profilingSamplerProvider),

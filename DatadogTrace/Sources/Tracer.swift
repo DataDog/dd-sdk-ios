@@ -42,6 +42,11 @@ public enum SpanTags {
     internal static let rumViewID = "_dd.view.id"
     /// Internal tag used to encode the RUM action ID, linking the span to the current RUM session.
     internal static let rumActionID = "_dd.action.id"
+    /// Tag used to encode the RUM view name, so spans can be searched and grouped by view in APM.
+    ///
+    /// Unlike the RUM IDs above, this tag is deliberately not `_dd.`-prefixed: it is a user-facing
+    /// facet (`@view.name`) and mirrors the attribute Browser RUM sets. Do not add the prefix.
+    internal static let rumViewName = "view.name"
     /// Internal tag used to encode the span kind. This can be either "client" or "server" for RPC spans,
     /// and "producer" or "consumer" for messaging spans.
     internal static let kind = "span.kind"

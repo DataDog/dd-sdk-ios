@@ -78,14 +78,17 @@ internal class WebViewTrackingMessageReceiver: FeatureMessageReceiver {
 
     func receive(message: DatadogInternal.FeatureMessage, from core: any DatadogInternal.DatadogCoreProtocol) -> Bool {
         switch message {
-        case .context(let context):
-            let sessionSampler = context.additionalContext(ofType: RUMCoreContext.self)?.sessionSampler
-
+        case .context:
+            // The context message is only the trigger here: it tells us the RUM session may have
+            // changed. The decision itself comes from RUM's sampling store, which is the same source
+            // `isTraceSampledStringValue(for:)` uses when instrumenting a WebView, so a view
+            // instrumented now and a view updated from here always agree.
+            //
             // Run this on the current queue to avoid queueing work on the
             // main queue if it's not necessary.
             // Since we have the guarantee message broadcasting is serialized
             // by a queue, we don't need to lock `previousIsTraceSampled`.
-            let newIsTraceSampled = WebViewTracking.isTraceSampledStringValue(for: core, sessionSampler: sessionSampler)
+            let newIsTraceSampled = WebViewTracking.isTraceSampledStringValue(for: core)
             guard previousIsTraceSampled != newIsTraceSampled else {
                 return true
             }
