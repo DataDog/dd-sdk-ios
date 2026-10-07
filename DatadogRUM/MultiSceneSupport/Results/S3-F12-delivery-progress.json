@@ -586,11 +586,11 @@
         "integration": "NOT_QUALIFIED"
       },
       "remaining_assertion": "Exact per-step owner, duplicate keys distinct lifetime, targeted completion and released retained snapshots Off: Develop Operation/profiling keying and flow",
-      "next_action": "Review the concrete targeted retirement/disposal seam, then implement the complete private Operation/profiling chain in its MAIN-linked worktree using the reviewed weak original-feature admission and lazy On holder. Qualify the16 source-matched controls; preserve per-step A-to-B, latest-start semantics and Off flow.",
-      "evidence_source_scope": "Complete private design independently reviewed with explicit implementation holds, bound to23 current callers/35 source snapshots. MAIN-linked dependent worktree prepared. No implementation/compiler/runtime/retention/Off or release-gate credit.",
+      "next_action": "Implement and review the complete private Operation/profiling patch in its MAIN-linked worktree using the settled original-feature admission, post-unlock On-guard retirement, typed identity and lazy holder/provenance. Preserve the original BLOCK. Qualify the16 source-matched controls and compatibility/Off/lifetime obligations; no public or wire change.",
+      "evidence_source_scope": "Complete private design and exact retirement correction independently reviewed with implementation holds. Original provenance BLOCK preserved; current23 callers/35 source snapshots and MAIN-linked worktree retained. No source/compiler/runtime/retention/Off or release-gate credit.",
       "source_preparation_owner": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR10-source-preparation.json",
-        "sha256": "c9a43aeb6c73123c7c19a5d0baf025875cbd6871af6c9f2fbf1257161e64f66b"
+        "sha256": "c29fd1ffae9305de2145d0d0f6667cd8ce7d5af0f1491f2855e284276418b988"
       }
     },
     {
@@ -895,7 +895,7 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": "2026-10-07T15:56:40.324469+00:00",
+  "updated_at": "2026-10-07T16:17:28.694483+00:00",
   "dependency_build_attempts": 4,
   "dependency_component_qualifications": 4,
   "dependency_test_invocations": 4,

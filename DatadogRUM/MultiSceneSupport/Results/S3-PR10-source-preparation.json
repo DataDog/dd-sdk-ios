@@ -4,7 +4,7 @@
   "gate": "S3:F12",
   "slice": "PR10",
   "state": "REVIEWED_SOURCE_PREPARATION_ONLY_NOT_IMPLEMENTED",
-  "updated_at": "2026-10-07T15:56:40.324469+00:00",
+  "updated_at": "2026-10-07T16:17:28.694483+00:00",
   "owner": "SDK implementer + designated independent reviewer",
   "source_lineage": {
     "linked_base_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
@@ -81,7 +81,7 @@
   ],
   "remaining": [
     "Consume the qualified PR4 private resolver and PR7 owner/capture dependency under their exact approved source/platform limits; source facts alone provide no final dependency or consumer approval.",
-    "Define the private per-step admission and correlation contract: authoritative captured absence versus source-less representative fallback, original Core/RUM owner/session/lifetime, application-wide A-to-B targeting, distinct tuples/owners, and the existing duplicate-start disposition without a new public handle.",
+    "The full private admission/correlation and targeted retirement designs are reviewed. Apply their settled D01/D02/D03/D04 choices in exact source; preserve authoritative absence, per-step A-to-B, no-handle latest-start semantics and original feature/Session authority.",
     "Rebuild the whole private source chain in surviving Monitor/command/Session/manager/OperationMessage/consolidated DatadogProfiler, including per-step event/message attribute provenance and non-operation/TTID inventory; preserve public API and wire encoding and do not restore AppLaunchProfiler.",
     "Preserve consolidated stepType-aware completion, start ID/date, sampling/options, consent/quota, profile timers/extension/cleanup, app-launch/non-operation behavior and stale-owner rejection/retained snapshot release; typed identity alone proves none of these.",
     "Branch on the frozen resolved Off mode before any new handoff/Core/scene/UI lookup, snapshot, extra lock or retained-state allocation. Keep the legacy UUID/date/attribute/keying/warning Set/profile dictionary/callback/message flow and fallback exactly once. Exact changed storage/retention/allocation needs qualification.",
@@ -101,7 +101,7 @@
     "original": "AppLaunchVitalMessage",
     "source_semantics_changed": false
   },
-  "next_action": "Review the concrete targeted retirement/disposal seam, then implement the complete private Operation/profiling chain in its MAIN-linked worktree using the reviewed weak original-feature admission and lazy On holder. Qualify the16 source-matched controls; preserve per-step A-to-B, latest-start semantics and Off flow.",
+  "next_action": "Implement and review the complete private Operation/profiling patch in its MAIN-linked worktree using the settled original-feature admission, post-unlock On-guard retirement, typed identity and lazy holder/provenance. Preserve the original BLOCK. Qualify the16 source-matched controls and compatibility/Off/lifetime obligations; no public or wire change.",
   "actions": {
     "sdk_edits": 0,
     "controls": 0,
@@ -210,7 +210,56 @@
         "selection": "Retain profile-wide last-message attributes and value-copy dictionary semantics. Do not invent per-Vital tags, immutable deep copy of arbitrary AttributeValue, or a new backend format."
       }
     ],
-    "targeted_retirement_preparation": "One private concrete original-capability retirement/disposal design in progress; original design and review immutable. No Core registration token, broad receiver forwarding or new TTL assumed."
+    "targeted_retirement_preparation": {
+      "state": "PRIVATE_RETIREMENT_DESIGN_CORRECTED_REVIEWED_NOT_IMPLEMENTED",
+      "packet": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/operation-retirement-followup/cycle2/packet.json",
+        "sha256": "afb069cd0dc6b1183acb586bc338da0337c3079a7e4fa46c51c28960c286caa9"
+      },
+      "design": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/operation-retirement-followup/cycle2/design.md",
+        "sha256": "742efa88e6f3034d9e53210f9bbd534771b8587b49c64377aaedd5b5593d9905"
+      },
+      "control_refinements": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/operation-retirement-followup/cycle2/control-refinements.json",
+        "sha256": "d50a8c0d68dafde689da36711b5da8d06e7ecb5699aa2213d060679891d64148"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/operation-retirement-followup/cycle2/review.json",
+        "sha256": "ff1ebb523490fc2d4c3d43ed533a95d60e0eccbaa1376b753b7f8c790f0ca553"
+      },
+      "review_readback": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/operation-retirement-followup/cycle2/review-readback.json",
+        "sha256": "e62e6d1f92c11370fd5e00f47793b5f5d6d75e96c49a98ea755b057955536832"
+      },
+      "actual_review_publication": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/operation-retirement-followup/cycle2/actual-review-publication.json",
+        "sha256": "81c80aa649ec87b066f98923b00d02b714f56883d4bb5a8a41a33575dda94ea2"
+      },
+      "original_block": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/operation-retirement-followup/review.json",
+        "sha256": "6acf264792660d53702d3659fa6fa186f75fbffcc541646d1e19ee9b89a7967b"
+      },
+      "finding": {
+        "id": "PR10R-01",
+        "disposition": "DESIGN_ADDRESSED_NOT_IMPLEMENTATION_QUALIFIED",
+        "correction": "Keep exact stamp for valid unchanged attributes; actual later writes replace or clear it. Authority invalidation filters only exact current stamp-installed correlation keys before stamp clear on the same profiler queue; value equality does not prove ownership."
+      },
+      "selected_variant": "Existing On ActivatedHandoff weak recipients plus post-unlock optional feature retirement and local Feature deinit, covering Core release with externally retained original feature",
+      "remaining_holds": [
+        "No optional retirement SPI, guard weak list, per-Session capability, subscribers, map or attribute stamp is implemented by this packet. Exact source/publication/actor/platform/minimum Swift6.2 and cross-module capability/typecheck remain required.",
+        "Every active guard release/attachment path and callback/destruction ordering must be proven in actual source; weak subscription storage must not disappear before cancellation delivery. No reentrant Core getter/callback or synchronous queue wait inside any lock.",
+        "Core-release, externally retained old Feature, idle retained profiler, same-object/failure/displacement, Session transitions, insertion races, double retirement and generation-targeted cleanup require the existing source-matched real controls.",
+        "Graph release, stale-use refusal and queued idle record/key disposal are separate results. Cleanup is complete only after existing queue delivery; no immediate release/wall-time/TTL claim.",
+        "Original legacy vitals, timer extension, consent/quota, TTID/nonoperation/AppHang/LongTask and later profile-wide writes survive targeted cleanup. Public/wire/key/handle and per-Vital attribute limits stay unchanged.",
+        "Off must gate before new lookup/cast/holder/map/lock/subscription construction. The previously disclosed common optional slot/type-check cost and full Off/runtime qualification remain held."
+      ],
+      "source_edits": 0,
+      "controls_implemented": 0,
+      "controls_executed": 0,
+      "native_calls": 0,
+      "gates_closed": []
+    }
   },
   "delivery_worktree_preparation": {
     "state": "LINKED_PREPARATION_WORKTREE_ONLY_NO_PR10_IMPLEMENTATION",
