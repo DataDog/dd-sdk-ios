@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "state": "STOPPED_BEFORE_INPUT_CLEANUP_PASS",
-  "updated_at": "2026-10-06T21:36:37Z",
+  "updated_at": "2026-10-07T00:31:32.020791+00:00",
   "owner": "root",
   "reviewer": "/root/h10_backend_reviewer",
   "gates": [
@@ -57,7 +57,7 @@
   "original_verdicts": "All original failed attempts and admissions remain immutable. This attempt is INVALID / evidence INCOMPLETE / cleanup PASS; the later read-only checkpoint verification is separate.",
   "release_acceptance": false,
   "gate_closures": [],
-  "next_action": "Prepare the physical candidate against the current independent lifecycle/capture contract, preserving the accepted baseline and24 orientation controls. Qualify fresh actual landscapeLeft window/display/image readiness before inviting the user. User unavailable until06:30Paris7October; no physical gestures, unlock request or native admission is implied. S2 SwiftUI C09/C10/H14 are now scoped closed; no simulator repeat.",
+  "next_action": "Finish the reviewed private independent-capture helper activation with full relative aliases, canonical whole-object root binding and actual request/response publication before an automatic physical qualification. Preserve the accepted baseline, original stopped result/cleanup PASS and24 orientation controls. Actual physical pose/capture/PID/idle and fresh human Ready remain prerequisites; user unavailable until06:30Paris7October. No SwiftUI repeat.",
   "superseded_preparation": {
     "runtime_plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/physical-candidate/runtime/plan.json",
@@ -239,5 +239,44 @@
     "state": "REVIEWED_OFFLINE_ORIENTATION_READINESS",
     "controls": 24,
     "native_admitted": false
+  },
+  "independent_capture_preparation": {
+    "state": "SOURCE_REVIEWED_PRIVATE_ACTIVATION_REMAIN",
+    "existing_gates": [
+      "S2:H11",
+      "S2:H13"
+    ],
+    "original_packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/packet.json",
+      "sha256": "bc73d053357fc08b9ebfc4e9d6f55b5db45c686670ab99bb901a6351f5857a6c"
+    },
+    "original_block_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/review.json",
+      "sha256": "0f485e8567b02edb4cdda17444653e9fca31c25f98fee773728c607f402eb6b7"
+    },
+    "corrected_packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/cycle2/packet.json",
+      "sha256": "bbd53ad1a942fd6c959a12ebc95a21182e3813b9d960a6d682f3a219bf95d346"
+    },
+    "source_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/cycle2/review.json",
+      "sha256": "bdb493bb371524050ecebbb78313f1b8e4da2362c2acc0475e7198e14fcab3cc"
+    },
+    "actual_review_publication": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/cycle2/actual-review-publication-tool-return.json",
+      "sha256": "270eb6ab03f24d485d819ba5081ea992afafd2ed0377804847beaf10ff216d66"
+    },
+    "focused_correction_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/cycle2/controls.actual.json",
+      "sha256": "ea1adb70b3172110612587b7ecf392fe953ca28807a7494188378658a154ea4a"
+    },
+    "old_verdicts_unchanged": true,
+    "native_runs": 0,
+    "builds": 0,
+    "sdk_changes": 0,
+    "human_invited": false,
+    "gates_closed": [],
+    "contract": "One workspace-free short capture ends before Ready; same original process/writer, actual PNG/window/display/orientation and fresh native idle join. Main scenario/evidence/cleanup remain separate; primary failure persists before closure and secondary closure failure is retained. Existing accepted baseline and24 orientation controls reused without rerun.",
+    "hold": "Private frozen aliases/canonical producer/full supported-session dispatcher integration and independent activation review; actual physical connection/access/pose/process/capture/Ready and adequate awake authority remain."
   }
 }

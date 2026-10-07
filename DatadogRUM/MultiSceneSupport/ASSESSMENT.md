@@ -157,7 +157,7 @@ qualification rather than assumed from this table.
   backend and profile joins have distinct [evidence levels](TOOLING_RUNBOOK.md#evidence-levels).
   Current tool/runtime availability must be rediscovered when execution needs it.
 
-Current [S3 PR7 preparation](Results/S3-PR7-consumer-preparation.json#webview_native_provider) separates accepted typed transport from the reviewed live-session guard and explicit-scene provider/main publication at7e308269. The latter remains runtime-unqualified; one combined focused qualification is prepared next. Callback/page/rebind acquisition, Flags and whole-slice acceptance remain. No S2 result or release gate changes.
+Current [S3 PR7 preparation](Results/S3-PR7-consumer-preparation.json#webview_native_provider) separates accepted typed transport from the reviewed live-session guard and explicit-scene provider/main publication at7e308269. The latter remains runtime-unqualified; the combined27 selection and corrected full source inventory now pass independent preparation review. Executable root binding and fresh native authority remain. Callback/page/rebind acquisition, Flags and whole-slice acceptance remain. No S2 result or release gate changes. The [physical capture source preparation](Results/S2-H11-H13-local-continuation.json#independent_capture_preparation) separately resolves modeled orientation/primary-failure findings. Its dispatcher activation and actual capture readiness remain prerequisites to H11/H13.
 
 Completed narratives and superseded claims are reference material in the
 [non-frozen documentation checkpoint](Experiments/DOCUMENTATION_CHECKPOINT_EXP-220.md).

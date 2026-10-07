@@ -180,7 +180,7 @@
       "state": "DESIGN_AND_IMPLEMENTATION_REMAIN"
     }
   ],
-  "selected_task": "P7W1_CURRENT_SOURCE_COMBINED27_PREPARATION_AND_PHYSICAL_CAPTURE_REVIEW",
+  "selected_task": "P7W1_COMBINED27_ROOT_BINDING_AND_PHYSICAL_CAPTURE_ACTIVATION_OFFLINE",
   "pending_action_requirement": "Pending/excluded action scalars do not identify an accepted Action UUID. The existing queue-confined continuous-action receipt is not a generic cross-module/discrete-action acceptance receipt. Do not borrow a later same-view action; independently review the smallest source-backed receipt design before consumer changes.",
   "off_requirement": "Reusing the network provider single State read may gate On locally. No default-Off Core registry/TaskLocal/scene lookup, owner allocation, new map/lock or naive owner(in: FeatureScope) capture.",
   "runtime_admitted": false,
@@ -188,8 +188,8 @@
   "builds": 22,
   "gates_closed": [],
   "whole_pr7_qualified": false,
-  "next_action": "Bind one unissued current7e combined27 selection: live17 plus provider10, with independent maximum duration once; preserve prior unissued preparations and accepted17/cache3/consumer43/Core. No clocks or native after expired awake authority. Finish source-reviewed physical adapter and callback origin preparation offline. Whole Flags/Off/older/final-stack remain.",
-  "updated_at": "2026-10-06T23:40:36.237253+00:00",
+  "next_action": "Finish executable current root/materializer/loader/signature binding for the reviewed unissued27 selection and the physical capture helper activation. Preserve original size BLOCK48ab and corrected exact2436 readback, accepted17/cache3/consumer43/Core and prior78/225 plans. No native/build admission after expired awake authority; callback/page/rebind and Flags acquisition, whole Off/older/final-stack remain.",
+  "updated_at": "2026-10-07T00:31:32.020791+00:00",
   "sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-core-sampling-initialization-test-repair-applied-20261006/sdk-checkpoint.json",
     "sha256": "8479a54805b889477b7b9f20b61e6755e0ce49fda73cab852a95a77f47f45e72"
@@ -1705,6 +1705,75 @@
       "One new current-source combined27 qualification; typecheck/runtime/minimum compiler unqualified",
       "Actual callback/window/page origin and both-queue freezing; first-message/rebind ambiguity cannot adopt current peer",
       "Whole Off/older/final-stack, Flags and final PR7 qualification"
-    ]
+    ],
+    "applied_source_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/applied-source-review.json",
+      "sha256": "e49eee35ccb4f59a0dadd981c256c1629c5e34a3f5998eee3e5c3495bedad62b"
+    },
+    "qualification_preparation": {
+      "state": "SOURCE_AND_SELECTION_REVIEWED_UNISSUED_PARAMETERS_REMAIN",
+      "packet": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/cycle2/packet.json",
+        "sha256": "d86e0277d2fce83e0b8a57e8e1b95962ecb830b629ce967b780897b537303dc9"
+      },
+      "plan": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/cycle2/plan.bound.unissued.json",
+        "sha256": "6f67bcc845e0a7ce3dd7832944dc84ab24634e6314ab8acf48c055cfbb04048b"
+      },
+      "source_verification": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/cycle2/source-verification.json",
+        "sha256": "75392c11fc7699b7ce576450f67269bd9cc739c8019511cdefe95b097609ec23"
+      },
+      "preparation_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/cycle2/preparation-review.json",
+        "sha256": "48a14ecc13f88d9a3b40dd94a6f7e3fd105f1f7669b0d4ea00f36ad36ae797f1"
+      },
+      "actual_review_publication": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/cycle2/actual-preparation-review-publication-tool-return.json",
+        "sha256": "2a138700527c1a6a597e94cb7b4da2ca9815f00ba851dbda1346b300fbf0da7b"
+      },
+      "correction_controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/cycle2/correction-controls.json",
+        "sha256": "a22814b1c7d50ab859dc5dfbd2582429606d136a487a0d6a306ff0b1227cb448"
+      },
+      "actual_correction": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/cycle2/actual-source-size-correction-tool-return.json",
+        "sha256": "1e18e16950291786dea957ce26336361ed1a1a87944efa8657a233f829617584"
+      },
+      "actual_reference_publication": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/cycle2/actual-reference-correction-publication-tool-return.json",
+        "sha256": "d791f786bce86dcd9bc5f3b540cefb99ec85be5749a569b13a2d0c76170ef63e"
+      },
+      "handback": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/cycle2/preparation-handback.json",
+        "sha256": "53a0ac8bfc1c6dc8ed5731094f42ae01ac070ccb8bdc9042a4a2cc3643cc0d27"
+      },
+      "original_packet": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/packet.json",
+        "sha256": "a0485e2cdbb0e343c42796d7216325ed1a20c1a8504c3bb326c45f29cd090b32"
+      },
+      "original_block_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/preparation-review.json",
+        "sha256": "48ab723c43829dbb101cc6cd5dd5f3c6ac90b0326e31a58a62f6f5bd130eefb9"
+      },
+      "original_review_publication": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/actual-preparation-review-publication-tool-return.json",
+        "sha256": "22ee3a6e26dac3508c18b17a9b35c945921be93449ca9ba92fef687bdf8c88f1"
+      },
+      "source_head": "7e308269a612b60cfb41c317ae24e682fb9e1fc5",
+      "selected_methods": 27,
+      "counts": {
+        "RUM": 14,
+        "Logs": 5,
+        "WebView": 8
+      },
+      "source_bytes_changed": 0,
+      "sdk_tests_executed": 0,
+      "builds": 0,
+      "native_runs": 0,
+      "clocks_issued": 0,
+      "gates_closed": [],
+      "hold": "Executable current root/materializer/loader/signature receipt binding and fresh adequate awake/MAIN/device/lane authority remain. No historical metadata or original device state reused as current."
+    }
   }
 }
