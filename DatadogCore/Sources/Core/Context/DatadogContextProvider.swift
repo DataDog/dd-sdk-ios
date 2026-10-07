@@ -108,6 +108,23 @@ internal final class DatadogContextProvider {
         }
     }
 
+    /// Refused writes neither mutate the context nor notify its receivers.
+    /// Admission is evaluated on the context queue immediately before the write.
+    func write(
+        if isAdmitted: @escaping () -> Bool,
+        block: @escaping (inout DatadogContext) -> Void
+    ) {
+        queue.async {
+            guard isAdmitted() else {
+                return
+            }
+            block(&self.context)
+            self.receivers.forEach { receiver in
+                receiver(self.context)
+            }
+        }
+    }
+
     /// Subscribes a context's property to a publisher.
     ///
     /// The context provider can subscribe a context property to a publisher that complies

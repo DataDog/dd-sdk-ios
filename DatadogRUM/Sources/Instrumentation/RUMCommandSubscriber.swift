@@ -38,6 +38,13 @@ internal extension RUMCommandSubscriber {
     }
 }
 
+#if os(iOS)
+/// Receives explicit scene-view commands bound to their originating feature.
+internal protocol RUMOwnedSwiftUIViewCommandSubscriber: AnyObject {
+    func process(command: RUMCommand, lifetime: RUMSwiftUIViewLifetime)
+}
+#endif
+
 /// Supplies immutable scene context without synchronizing command processing.
 internal protocol RUMContextSnapshotProviding: AnyObject {
     func rumContextSnapshot(for target: RUMCommandTarget) -> RUMCoreContext?

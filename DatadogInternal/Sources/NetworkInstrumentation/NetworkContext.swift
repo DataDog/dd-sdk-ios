@@ -51,6 +51,16 @@ public extension FeatureScope {
     }
 }
 
+/// Publishes RUM context only while the originating feature is still admitted.
+/// Custom and NOP scopes do not need to implement this optional capability.
+@_spi(Internal)
+public protocol RUMContextHandoffContextWriting {
+    func setRUMContext(
+        if isAdmitted: @escaping () -> Bool,
+        context: @escaping () -> RUMCoreContext?
+    )
+}
+
 /// Declares request-local ownership; activation is supplied by the scene input layer.
 @_spi(Internal)
 public enum RUMContextHandoff {

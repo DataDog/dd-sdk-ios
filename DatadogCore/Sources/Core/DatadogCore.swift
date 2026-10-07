@@ -614,7 +614,7 @@ extension DatadogCore: DatadogCoreProtocol {
     }
 }
 
-internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope, RUMContextHandoffOwnerProviding, RUMContextHandoffEventWriting where Feature: DatadogFeature {
+internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope, RUMContextHandoffOwnerProviding, RUMContextHandoffEventWriting, RUMContextHandoffContextWriting where Feature: DatadogFeature {
     var rumContextHandoffOwner: RUMContextHandoff.Owner? { core?.rumContextHandoffOwner }
 
     private weak var core: DatadogCore?
@@ -721,6 +721,15 @@ internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope, RUM
 
     func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
         core?.set(context: context)
+    }
+
+    func setRUMContext(
+        if isAdmitted: @escaping () -> Bool,
+        context: @escaping () -> RUMCoreContext?
+    ) {
+        core?.contextProvider.write(if: isAdmitted) {
+            $0.set(additionalContext: context())
+        }
     }
 
     func set(anonymousId: String?) {

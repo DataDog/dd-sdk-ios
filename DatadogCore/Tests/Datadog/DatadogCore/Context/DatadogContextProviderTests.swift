@@ -90,4 +90,62 @@ class DatadogContextProviderTests: XCTestCase {
         )
         // swiftlint:enable opening_brace
     }
+
+    func testConditionalWrite_whenRefused_itDoesNotMutateOrNotify() {
+        let provider = DatadogContextProvider(context: context)
+        var writes = 0
+        var notifications = 0
+        provider.publish { _ in notifications += 1 }
+
+        provider.write(if: { false }) {
+            writes += 1
+            $0.serverTimeOffset = 42
+        }
+
+        let current = provider.read()
+        XCTAssertEqual(current.serverTimeOffset, context.serverTimeOffset)
+        XCTAssertEqual(writes, 0)
+        XCTAssertEqual(notifications, 0)
+    }
+
+    func testConditionalWrite_whenAdmitted_itMutatesAndNotifiesOnce() {
+        let provider = DatadogContextProvider(context: context)
+        var writes = 0
+        var notifications = 0
+        provider.publish { _ in notifications += 1 }
+
+        provider.write(if: { true }) {
+            writes += 1
+            $0.serverTimeOffset = 42
+        }
+
+        XCTAssertEqual(provider.read().serverTimeOffset, 42)
+        XCTAssertEqual(writes, 1)
+        XCTAssertEqual(notifications, 1)
+    }
+
+    func testConditionalWrite_preservesExistingReadWriteOrdering() {
+        let provider = DatadogContextProvider(context: context)
+        var order: [String] = []
+        provider.publish { _ in order.append("notification") }
+
+        provider.write {
+            order.append("legacy write")
+            $0.serverTimeOffset = 1
+        }
+        provider.read {
+            order.append("read")
+            XCTAssertEqual($0.serverTimeOffset, 1)
+        }
+        provider.write(if: {
+            order.append("admission")
+            return true
+        }) {
+            order.append("conditional write")
+            $0.serverTimeOffset = 2
+        }
+
+        XCTAssertEqual(provider.read().serverTimeOffset, 2)
+        XCTAssertEqual(order, ["legacy write", "notification", "read", "admission", "conditional write", "notification"])
+    }
 }

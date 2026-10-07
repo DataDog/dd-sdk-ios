@@ -2264,3 +2264,289 @@ extension DatadogCoreTests {
     }
 }
 #endif
+
+private final class ConditionalContextFeature: DatadogFeature {
+    static let name = "conditional-context-test"
+    let messageReceiver: FeatureMessageReceiver = FeatureMessageReceiverMock()
+}
+
+extension DatadogCoreTests {
+    func testConditionalRUMContext_whenAdmitted_itUpdatesAndNotifiesOnce() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let scope = try XCTUnwrap(core.scope(for: FeatureMock.self) as? RUMContextHandoffContextWriting)
+        core.contextProvider.flush()
+        var evaluations = 0
+        var notifications = 0
+        core.contextProvider.publish { _ in notifications += 1 }
+
+        scope.setRUMContext(if: { true }) {
+            evaluations += 1
+            return .mockWith(viewID: "owned")
+        }
+        let context = core.contextProvider.read().additionalContext(ofType: RUMCoreContext.self)
+
+        XCTAssertEqual(context?.viewID, "owned")
+        XCTAssertEqual(evaluations, 1)
+        XCTAssertEqual(notifications, 1)
+    }
+
+    func testConditionalRUMContext_whenAdmittedNil_itClearsAndNotifiesOnce() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let scope = try XCTUnwrap(core.scope(for: FeatureMock.self) as? RUMContextHandoffContextWriting)
+        core.set(context: RUMCoreContext.mockWith(viewID: "previous"))
+        core.contextProvider.flush()
+        var evaluations = 0
+        var notifications = 0
+        core.contextProvider.publish { _ in notifications += 1 }
+
+        scope.setRUMContext(if: { true }) {
+            evaluations += 1
+            return nil
+        }
+        let context = core.contextProvider.read().additionalContext(ofType: RUMCoreContext.self)
+
+        XCTAssertNil(context)
+        XCTAssertEqual(evaluations, 1)
+        XCTAssertEqual(notifications, 1)
+    }
+
+    func testConditionalRUMContext_whenOwnerInvalidatesBeforeDelivery_itPreservesCurrentContext() throws {
+        guard supportsHandoffScope else {
+            throw XCTSkip("Handoff activation requires iOS 27")
+        }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let owner = try core.activateRUMContextHandoff()
+        let scope = try XCTUnwrap(core.scope(for: FeatureMock.self) as? RUMContextHandoffContextWriting)
+        core.set(context: RUMCoreContext.mockWith(viewID: "current"))
+        core.contextProvider.flush()
+        var evaluations = 0
+        var notifications = 0
+        core.contextProvider.publish { _ in notifications += 1 }
+        core.contextProvider.flush()
+
+        core.contextProvider.queue.suspend()
+        scope.setRUMContext(if: { owner.isValid }) {
+            evaluations += 1
+            return nil
+        }
+        owner.invalidate()
+        core.contextProvider.queue.resume()
+        let context = core.contextProvider.read().additionalContext(ofType: RUMCoreContext.self)
+
+        XCTAssertEqual(context?.viewID, "current")
+        XCTAssertEqual(evaluations, 0)
+        XCTAssertEqual(notifications, 0)
+    }
+
+    func testConditionalRUMContext_whenFeatureReplacesWithSameOwner_itPreservesCurrentContext() throws {
+        guard supportsHandoffScope else {
+            throw XCTSkip("Handoff activation requires iOS 27")
+        }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let owner = try core.activateRUMContextHandoff()
+        let original = ConditionalContextFeature()
+        try core.register(feature: original)
+        let scope = try XCTUnwrap(core.scope(for: ConditionalContextFeature.self) as? RUMContextHandoffContextWriting)
+        core.set(context: RUMCoreContext.mockWith(viewID: "current"))
+        core.contextProvider.flush()
+        var evaluations = 0
+        var notifications = 0
+        core.contextProvider.publish { _ in notifications += 1 }
+        core.contextProvider.flush()
+
+        core.contextProvider.queue.suspend()
+        scope.setRUMContext(if: {
+            owner.isValid && core.get(feature: ConditionalContextFeature.self) === original
+        }) {
+            evaluations += 1
+            return .mockWith(viewID: "stale")
+        }
+        do {
+            try core.register(feature: ConditionalContextFeature())
+        } catch {
+            core.contextProvider.queue.resume()
+            throw error
+        }
+        XCTAssertTrue(core.rumContextHandoffOwner === owner)
+        XCTAssertTrue(owner.isValid)
+        core.contextProvider.queue.resume()
+        let context = core.contextProvider.read().additionalContext(ofType: RUMCoreContext.self)
+
+        XCTAssertEqual(context?.viewID, "current")
+        XCTAssertEqual(evaluations, 0)
+        XCTAssertEqual(notifications, 0)
+    }
+}
+
+#if os(iOS)
+extension DatadogCoreTests {
+    @MainActor
+    private func makeOwnedSwiftUIFeature(in core: DatadogCore) throws -> RUMFeature {
+        let date = Date()
+        core.contextProvider.replace(context: .mockWith(
+            sdkInitDate: date,
+            launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: date),
+            applicationStateHistory: .mockWith(initialState: .active, date: date)
+        ))
+        var configuration = RUM.Configuration(applicationID: "owned-swiftui", trackAnonymousUser: false)
+        configuration.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
+        configuration.featureFlags = [.multiSceneTracking: true]
+        configuration.sessionSampleRate = 100
+        configuration.vitalsUpdateFrequency = nil
+        try RUM.enableOrThrow(with: configuration, in: core)
+        core.flush()
+        return try XCTUnwrap(core.get(feature: RUMFeature.self))
+    }
+
+    private func ownedSwiftUIStartCommand(scene: RUMSceneIdentifier) -> RUMStartViewCommand {
+        RUMStartViewCommand(
+            time: Date(),
+            identity: ViewIdentifier("owned-view"),
+            name: "owned-view",
+            path: "owned-view",
+            globalAttributes: [:],
+            attributes: [:],
+            instrumentationType: .swiftui,
+            target: .scene(scene)
+        )
+    }
+
+    @MainActor
+    func testOwnedSwiftUIView_whenValid_itUpdatesTheExplicitSceneContext() throws {
+        guard supportsHandoffScope else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let feature = try makeOwnedSwiftUIFeature(in: core)
+        let lifetime = try XCTUnwrap(RUMSwiftUIViewLifetime(feature: feature, core: core))
+        let scene = RUMSceneIdentifier(rawValue: "owned-scene")
+        core.set(context: RUMCoreContext.mockWith(sessionID: "before-session", viewID: "before-view"))
+        core.contextProvider.flush()
+
+        feature.monitor.process(command: ownedSwiftUIStartCommand(scene: scene), lifetime: lifetime)
+        core.contextProvider.flush()
+
+        let context = try XCTUnwrap(feature.monitor.rumContextSnapshot(for: .scene(scene)))
+        XCTAssertEqual(context.viewName, "owned-view")
+        XCTAssertNotNil(context.viewID)
+        let expected = try XCTUnwrap(feature.monitor.rumContextSnapshot(for: .processRepresentative))
+        let published = try XCTUnwrap(core.contextProvider.read().additionalContext(ofType: RUMCoreContext.self))
+        XCTAssertEqual(published.applicationID, expected.applicationID)
+        XCTAssertEqual(published.sessionID, expected.sessionID)
+        XCTAssertEqual(published.viewID, expected.viewID)
+        XCTAssertNotEqual(published.sessionID, "before-session")
+        XCTAssertNotEqual(published.viewID, "before-view")
+    }
+
+    @MainActor
+    func testOwnedSwiftUIView_whenOwnerInvalidatesBeforeQueuedDelivery_itPreservesCurrentContext() throws {
+        guard supportsHandoffScope else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let feature = try makeOwnedSwiftUIFeature(in: core)
+        let lifetime = try XCTUnwrap(RUMSwiftUIViewLifetime(feature: feature, core: core))
+        let scene = RUMSceneIdentifier(rawValue: "refused-scene")
+        core.set(context: RUMCoreContext.mockWith(viewID: "current"))
+        core.contextProvider.flush()
+        var notifications = 0
+        core.contextProvider.publish { _ in notifications += 1 }
+        core.contextProvider.flush()
+
+        core.contextProvider.queue.suspend()
+        feature.monitor.process(command: ownedSwiftUIStartCommand(scene: scene), lifetime: lifetime)
+        lifetime.owner.invalidate()
+        core.contextProvider.queue.resume()
+        core.contextProvider.flush()
+
+        XCTAssertNil(feature.monitor.rumContextSnapshot(for: .scene(scene)))
+        XCTAssertEqual(core.contextProvider.read().additionalContext(ofType: RUMCoreContext.self)?.viewID, "current")
+        XCTAssertEqual(notifications, 0)
+    }
+
+    @MainActor
+    func testOwnedSwiftUIView_whenFeatureReplacesWithSameCoreOwner_itRefusesQueuedDelivery() throws {
+        guard supportsHandoffScope else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let feature = try makeOwnedSwiftUIFeature(in: core)
+        let lifetime = try XCTUnwrap(RUMSwiftUIViewLifetime(feature: feature, core: core))
+        let replacement = try RUMFeature(
+            in: core,
+            configuration: RUM.Configuration(applicationID: "replacement", trackAnonymousUser: false)
+        )
+        let scene = RUMSceneIdentifier(rawValue: "replaced-scene")
+        core.set(context: RUMCoreContext.mockWith(viewID: "current"))
+        core.contextProvider.flush()
+        var notifications = 0
+        core.contextProvider.publish { _ in notifications += 1 }
+        core.contextProvider.flush()
+
+        core.contextProvider.queue.suspend()
+        feature.monitor.process(command: ownedSwiftUIStartCommand(scene: scene), lifetime: lifetime)
+        do {
+            try core.register(feature: replacement)
+        } catch {
+            core.contextProvider.queue.resume()
+            throw error
+        }
+        XCTAssertTrue(core.rumContextHandoffOwner === lifetime.owner)
+        XCTAssertTrue(lifetime.owner.isValid)
+        core.contextProvider.queue.resume()
+        core.contextProvider.flush()
+
+        XCTAssertNil(feature.monitor.rumContextSnapshot(for: .scene(scene)))
+        XCTAssertEqual(core.contextProvider.read().additionalContext(ofType: RUMCoreContext.self)?.viewID, "current")
+        XCTAssertEqual(notifications, 0)
+    }
+
+    @MainActor
+    func testOwnedSwiftUIContextPublication_whenUnadmitted_itDoesNotRetainTheStoppedFeature() throws {
+        guard supportsHandoffScope else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        var feature: RUMFeature? = try makeOwnedSwiftUIFeature(in: core)
+        let lifetime = try XCTUnwrap(RUMSwiftUIViewLifetime(feature: try XCTUnwrap(feature), core: core))
+        let publication = RUMSwiftUIViewContextPublication(monitor: try XCTUnwrap(feature).monitor, lifetime: lifetime)
+        weak var monitor = feature?.monitor
+
+        core.stop()
+        core.flush()
+        feature = nil
+
+        XCTAssertNil(monitor)
+        XCTAssertFalse(core.contextProvider.queue.sync { publication.admit() })
+    }
+
+    @MainActor
+    func testOwnedSwiftUIContextPublication_keepsTheAdmittedMonitorOnlyThroughProduction() throws {
+        guard supportsHandoffScope else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        var feature: RUMFeature? = try makeOwnedSwiftUIFeature(in: core)
+        let lifetime = try XCTUnwrap(RUMSwiftUIViewLifetime(feature: try XCTUnwrap(feature), core: core))
+        let publication = RUMSwiftUIViewContextPublication(monitor: try XCTUnwrap(feature).monitor, lifetime: lifetime)
+        weak var monitor = feature?.monitor
+        XCTAssertTrue(core.contextProvider.queue.sync { publication.admit() })
+
+        core.stop()
+        core.flush()
+        feature = nil
+        XCTAssertNotNil(monitor)
+        var evaluations = 0
+        let context = core.contextProvider.queue.sync {
+            publication.context { admitted in
+                evaluations += 1
+                XCTAssertTrue(admitted === monitor)
+                return .mockWith(viewID: "admitted")
+            }
+        }
+
+        XCTAssertEqual(context?.viewID, "admitted")
+        XCTAssertEqual(evaluations, 1)
+        XCTAssertNil(monitor)
+    }
+}
+#endif

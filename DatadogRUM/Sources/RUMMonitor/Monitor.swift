@@ -270,56 +270,7 @@ internal class Monitor: RUMCommandSubscriber {
                 }
             }
 
-            let transformedCommand = self.transform(command: command)
-            let previousSessionID = self.sessionActivitySnapshot.sessionID
-
-            _ = self.applicationScope.process(command: transformedCommand, context: context, writer: writer)
-
-            if self.applicationScope.dependencies.timeseriesCollector != nil {
-                let currentSessionID = self.applicationScope.activeSession?.sessionUUID.toRUMDataFormat
-                // If a session boundary was just crossed, `context.hasReplay` still reflects the previous
-                // session's Session Replay decision (SR hasn't recomputed it for the new session yet), so
-                // carrying it over would leak stale replay state into the new session.
-                let didStartNewSession = previousSessionID != nil && currentSessionID != previousSessionID
-                self.update(hasReplay: didStartNewSession ? nil : context.hasReplay)
-            }
-
-            if let debugging = self.debugging {
-                debugging.debug(applicationScope: self.applicationScope)
-            }
-
-            if let activeSession = self.applicationScope.activeSession {
-                let representativeView = self.representativeView(in: activeSession)
-                let viewContext = representativeView?.context ?? activeSession.context
-                self.activeViewSnapshot = (
-                    id: viewContext.activeViewID?.toRUMDataFormat,
-                    path: viewContext.activeViewPath,
-                    name: viewContext.activeViewName
-                )
-                self.sessionActivitySnapshot = (
-                    sessionID: activeSession.sessionUUID.toRUMDataFormat,
-                    sessionStartTime: activeSession.sessionStartTime,
-                    lastInteractionTime: activeSession.lastInteractionTime
-                )
-                if let sceneContextSnapshots = self.sceneContextSnapshots {
-                    var snapshot = SceneContextSnapshots.Value(
-                        representative: self.makeCoreContext(session: activeSession, view: representativeView),
-                        sessionID: activeSession.sessionUUID.toRUMDataFormat,
-                        sessionStartTime: activeSession.sessionStartTime,
-                        lastInteractionTime: activeSession.lastInteractionTime
-                    )
-                    for view in activeSession.viewScopes where view.isActiveView {
-                        if let sceneIdentifier = view.sceneIdentifier {
-                            snapshot.contextsByScene[sceneIdentifier] = self.makeCoreContext(session: activeSession, view: view)
-                        }
-                    }
-                    sceneContextSnapshots.value = snapshot
-                }
-            } else {
-                self.activeViewSnapshot = (nil, nil, nil)
-                self.sessionActivitySnapshot = (nil, nil, nil)
-                self.sceneContextSnapshots?.value = SceneContextSnapshots.Value()
-            }
+            self.process(command: command, context: context, writer: writer)
         }
 
         // update the core context with rum context
@@ -349,6 +300,94 @@ internal class Monitor: RUMCommandSubscriber {
             }
         )
     }
+
+    private func process(command: RUMCommand, context: DatadogContext, writer: Writer) {
+        let transformedCommand = self.transform(command: command)
+        let previousSessionID = self.sessionActivitySnapshot.sessionID
+
+        _ = self.applicationScope.process(command: transformedCommand, context: context, writer: writer)
+
+        if self.applicationScope.dependencies.timeseriesCollector != nil {
+            let currentSessionID = self.applicationScope.activeSession?.sessionUUID.toRUMDataFormat
+            // If a session boundary was just crossed, `context.hasReplay` still reflects the previous
+            // session's Session Replay decision (SR hasn't recomputed it for the new session yet), so
+            // carrying it over would leak stale replay state into the new session.
+            let didStartNewSession = previousSessionID != nil && currentSessionID != previousSessionID
+            self.update(hasReplay: didStartNewSession ? nil : context.hasReplay)
+        }
+
+        if let debugging = self.debugging {
+            debugging.debug(applicationScope: self.applicationScope)
+        }
+
+        if let activeSession = self.applicationScope.activeSession {
+            let representativeView = self.representativeView(in: activeSession)
+            let viewContext = representativeView?.context ?? activeSession.context
+            self.activeViewSnapshot = (
+                id: viewContext.activeViewID?.toRUMDataFormat,
+                path: viewContext.activeViewPath,
+                name: viewContext.activeViewName
+            )
+            self.sessionActivitySnapshot = (
+                sessionID: activeSession.sessionUUID.toRUMDataFormat,
+                sessionStartTime: activeSession.sessionStartTime,
+                lastInteractionTime: activeSession.lastInteractionTime
+            )
+            if let sceneContextSnapshots = self.sceneContextSnapshots {
+                var snapshot = SceneContextSnapshots.Value(
+                    representative: self.makeCoreContext(session: activeSession, view: representativeView),
+                    sessionID: activeSession.sessionUUID.toRUMDataFormat,
+                    sessionStartTime: activeSession.sessionStartTime,
+                    lastInteractionTime: activeSession.lastInteractionTime
+                )
+                for view in activeSession.viewScopes where view.isActiveView {
+                    if let sceneIdentifier = view.sceneIdentifier {
+                        snapshot.contextsByScene[sceneIdentifier] = self.makeCoreContext(session: activeSession, view: view)
+                    }
+                }
+                sceneContextSnapshots.value = snapshot
+            }
+        } else {
+            self.activeViewSnapshot = (nil, nil, nil)
+            self.sessionActivitySnapshot = (nil, nil, nil)
+            self.sceneContextSnapshots?.value = SceneContextSnapshots.Value()
+        }
+    }
+
+    #if os(iOS)
+    var supportsOwnedSwiftUIViews: Bool {
+        isMultiSceneTrackingEnabled && featureScope is RUMContextHandoffContextWriting
+    }
+
+    func process(command: RUMCommand, lifetime: RUMSwiftUIViewLifetime) {
+        guard isMultiSceneTrackingEnabled,
+              case .scene = command.target,
+              command is RUMStartViewCommand || command is RUMStopViewCommand,
+              lifetime.isValid(for: self),
+              let contextScope = featureScope as? RUMContextHandoffContextWriting else {
+            return
+        }
+        var command = command
+        command.globalAttributes = attributes
+
+        featureScope.eventWriteContext { [weak self] context, writer in
+            guard let self, lifetime.isValid(for: self) else {
+                return
+            }
+            self.process(command: command, context: context, writer: writer)
+        }
+
+        let publication = RUMSwiftUIViewContextPublication(monitor: self, lifetime: lifetime)
+        contextScope.setRUMContext(if: publication.admit, context: {
+            publication.context { monitor in
+                guard let session = monitor.applicationScope.activeSession else {
+                    return nil
+                }
+                return monitor.makeCoreContext(session: session, view: monitor.representativeView(in: session))
+            }
+        })
+    }
+    #endif
 
     private func representativeView(in session: RUMSessionScope) -> RUMViewScope? {
         guard isMultiSceneTrackingEnabled else {
@@ -397,6 +436,10 @@ internal class Monitor: RUMCommandSubscriber {
         fatalErrorContext.globalAttributes = attributes
     }
 }
+
+#if os(iOS)
+extension Monitor: RUMOwnedSwiftUIViewCommandSubscriber {}
+#endif
 
 extension Monitor: RUMActiveContextReader {
     var globalAttributes: [AttributeKey: AttributeValue] { attributes }
