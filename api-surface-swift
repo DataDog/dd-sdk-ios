@@ -1661,7 +1661,6 @@ public struct FlagAssignment: Equatable
     public var reason: String
     public var doLog: Bool
     public var serialID: Int?
-    public static func == (lhs: FlagAssignment, rhs: FlagAssignment) -> Bool
     public init(allocationKey: String, variationKey: String, variation: Variation, reason: String, doLog: Bool, serialID: Int? = nil)
     public init(from decoder: any Decoder) throws
     public func encode(to encoder: any Encoder) throws

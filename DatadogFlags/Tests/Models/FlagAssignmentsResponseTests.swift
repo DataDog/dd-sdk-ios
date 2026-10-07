@@ -12,8 +12,8 @@ import DatadogInternal
 @testable import DatadogFlags
 
 final class FlagAssignmentsResponseTests: XCTestCase {
-    func testCachedProvenanceDoesNotChangeEqualityOrSerialization() throws {
-        var cached = FlagAssignment(
+    func testCachedAssignmentEqualityAndSerialization() throws {
+        let cached = FlagAssignment(
             allocationKey: "allocation",
             variationKey: "variant",
             variation: .boolean(true),
@@ -21,13 +21,6 @@ final class FlagAssignmentsResponseTests: XCTestCase {
             doLog: true,
             serialID: 42
         )
-        let withoutProvenance = cached
-        cached.reasonBeforeCacheProjection = "DEFAULT"
-        XCTAssertEqual(cached, withoutProvenance)
-        XCTAssertEqual(cached.reasonForTelemetry, "DEFAULT")
-        var otherProvenance = cached
-        otherProvenance.reasonBeforeCacheProjection = "TARGETING_MATCH"
-        XCTAssertEqual(cached, otherProvenance)
         let changes: [(inout FlagAssignment) -> Void] = [
             { $0.allocationKey = "other" },
             { $0.variationKey = "other" },
@@ -49,8 +42,28 @@ final class FlagAssignmentsResponseTests: XCTestCase {
         XCTAssertEqual(object["reason"] as? String, "CACHED")
         let decoded = try JSONDecoder().decode(FlagAssignment.self, from: encoded)
         XCTAssertEqual(decoded, cached)
-        XCTAssertNil(decoded.reasonBeforeCacheProjection)
-        XCTAssertEqual(decoded.reasonForTelemetry, "CACHED")
+    }
+
+    func testCacheProjectionChangesEqualityThroughExposedReason() {
+        let networkDefault = FlagAssignment(
+            allocationKey: "allocation",
+            variationKey: "variant",
+            variation: .boolean(true),
+            reason: "DEFAULT",
+            doLog: true
+        )
+        var networkMatch = networkDefault
+        networkMatch.reason = "TARGETING_MATCH"
+        XCTAssertNotEqual(networkDefault, networkMatch)
+
+        var cachedDefault = networkDefault
+        cachedDefault.reason = "CACHED"
+        var cachedMatch = networkMatch
+        cachedMatch.reason = "CACHED"
+
+        XCTAssertNotEqual(cachedDefault, networkDefault)
+        XCTAssertNotEqual(cachedMatch, networkMatch)
+        XCTAssertEqual(cachedDefault, cachedMatch)
     }
 
     func testDecoding() throws {

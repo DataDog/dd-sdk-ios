@@ -14,7 +14,7 @@ import TestUtilities
 class EvaluationAggregatorTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
 
-    func testCachedReasonsPreserveDefaultAndErrorTelemetry() throws {
+    func testTelemetryUsesEffectiveReasonAndPreservesErrorClassification() throws {
         for originalReason in ["DEFAULT", "TARGETING_MATCH"] {
             for cached in [false, true] {
                 for error in [nil, "TYPE_MISMATCH"] as [String?] {
@@ -32,7 +32,6 @@ class EvaluationAggregatorTests: XCTestCase {
                         doLog: false
                     )
                     if cached {
-                        assignment.reasonBeforeCacheProjection = originalReason
                         assignment.reason = "CACHED"
                     }
                     aggregator.recordEvaluation(
@@ -43,7 +42,7 @@ class EvaluationAggregatorTests: XCTestCase {
                     )
                     aggregator.sendEvaluations()
                     let event = try XCTUnwrap(scope.eventsWritten(ofType: FlagEvaluationEvent.self).first)
-                    let isDefault = originalReason == "DEFAULT" || error != nil
+                    let isDefault = (!cached && originalReason == "DEFAULT") || error != nil
                     XCTAssertEqual(event.runtimeDefaultUsed, isDefault ? true : nil)
                     XCTAssertEqual(event.variant?.key, isDefault ? nil : "variant")
                     XCTAssertEqual(event.allocation?.key, isDefault ? nil : "allocation")
@@ -53,7 +52,7 @@ class EvaluationAggregatorTests: XCTestCase {
         }
     }
 
-    func testDefaultAndTargetingMatchPreserveFirstRecordClassificationInBothOrders() throws {
+    func testFirstRecordClassificationUsesEffectiveReasonInBothOrders() throws {
         for projected in [false, true] {
             for defaultFirst in [false, true] {
                 let scope = FeatureScopeMock()
@@ -72,7 +71,6 @@ class EvaluationAggregatorTests: XCTestCase {
                 var networkAssignment = defaultAssignment
                 networkAssignment.reason = "TARGETING_MATCH"
                 if projected {
-                    defaultAssignment.reasonBeforeCacheProjection = defaultAssignment.reason
                     defaultAssignment.reason = "CACHED"
                 }
                 let assignments = defaultFirst
@@ -90,9 +88,9 @@ class EvaluationAggregatorTests: XCTestCase {
                 let events = scope.eventsWritten(ofType: FlagEvaluationEvent.self)
                 XCTAssertEqual(events.count, 1)
                 XCTAssertEqual(events.first?.evaluationCount, 2)
-                XCTAssertEqual(events.first?.runtimeDefaultUsed, defaultFirst ? true : nil)
-                XCTAssertEqual(events.first?.variant?.key, defaultFirst ? nil : "variant")
-                XCTAssertEqual(events.first?.allocation?.key, defaultFirst ? nil : "allocation")
+                XCTAssertEqual(events.first?.runtimeDefaultUsed, (defaultFirst && !projected) ? true : nil)
+                XCTAssertEqual(events.first?.variant?.key, (defaultFirst && !projected) ? nil : "variant")
+                XCTAssertEqual(events.first?.allocation?.key, (defaultFirst && !projected) ? nil : "allocation")
             }
         }
     }

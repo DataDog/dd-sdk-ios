@@ -207,7 +207,6 @@ internal final class FlagsRepository {
             var cachedData = data
             cachedData?.flags = data?.flags.mapValues { assignment in
                 var cachedAssignment = assignment
-                cachedAssignment.reasonBeforeCacheProjection = assignment.reason
                 cachedAssignment.reason = "CACHED"
                 return cachedAssignment
             } ?? [:]
