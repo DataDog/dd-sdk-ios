@@ -3,8 +3,8 @@
   "kind": "S3_PR11_FOUNDATION_SOURCE_PROGRESS",
   "gate": "S3:F12",
   "slice": "PR11",
-  "state": "PARTIAL_PREREQUISITES_IMPLEMENTED_COMPLETE_PRIVATE_SOURCE_REVIEW_BLOCKED",
-  "updated_at": "2026-10-07T13:40:52.464638+00:00",
+  "state": "COMPLETE_PRIVATE_SOURCE_APPLIED_REVIEWED_UNCOMPILED_UNQUALIFIED",
+  "updated_at": "2026-10-07T14:30:09.844506+00:00",
   "owner": "SDK implementer + designated independent reviewer",
   "source_lineage": {
     "linked_base_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
@@ -51,21 +51,20 @@
   },
   "decisive_source_fact": "The existing trackRUMView entry fetches RUMFeature once. Modifier initializer/body acquire no Core or shared Monitor; the same fetched feature offers frozen mode and existing collaborators without a second lookup.",
   "qualification": {
-    "implementation": "PARTIAL_PREREQUISITES_IMPLEMENTED_COMPLETE_FOUNDATION_NOT_IMPLEMENTED",
+    "implementation": "PRIVATE_IMPLEMENTED",
     "component": "NOT_EXECUTED",
     "off": "NOT_EXECUTED",
     "integration": "NOT_QUALIFIED"
   },
   "remaining": [
-    "Define a complete exact source closure, internal visibility and conditional-import/platform boundaries. Preserve existing public signature/default core/UUID/name/path/attributes and legacy appear/disappear behavior; preserve nil feature/NOP behavior. No PR12 concrete types introduced into the PR11 closure and no removal of keyed machinery without a separately reviewed design disposition.",
-    "Choose the resolved-On carrier/factory at the existing feature lookup/initialization boundary without another core.get or RUMMonitor.shared. Off must construct neither new child State/reader/tracking/occurrence registration nor feature-enable trait publisher/authority/arbiter/suppression state/observers; keep legacy handler constructor free of the new suppression callback. A shared outer State or ownership field requires explicit admission proof.",
-    "Retarget scene/replace/suppression calls and weak callbacks to the surviving On handler/protocol and pair instrumentation creation, storage, publication, handler eligibility and teardown. Preserve cancellation, scene disconnect, reader fallback and transition publication responsibility.",
-    "Prove exact active-owner/feature replacement/stop invalidation, weak registration/callback lifetime and no retained stale On collaborator. Reusing the fetched feature Monitor is an opportunity, not evidence that retaining the feature/Monitor in SwiftUI state is safe or that another Monitor is needed.",
-    "Run source-matched On/Off refusal, initialization, callback shape and lifetime discriminators only after implementation is separately authorized/reviewed. Static body shape, source coordinates, original PR5/PR6/qualified mapping do not close these assertions.",
-    "Complete deployment15/minimumSwift6.2 and supported platform conditional typecheck/availability checks, with no new public API/import/dependency assumption. Preserve PR6 watch/final integration/immediate UIKit weak-release holds and final F12/public/release approval independently."
+    "Compile/typecheck the complete applied fifteen-file closure and supported platform/availability boundaries; preserve public signature and PR12 separation.",
+    "Qualify resolved-On construction and exact original owner/session refusal, retained navigation records, local rebind, transition callbacks and disconnected/foreign scene behavior against the finite seven-family control map.",
+    "Qualify complete weak-retention and deferred-callback lifetime; expired original admission must refuse before reads, mutation or publication while valid same-foundation peers continue.",
+    "Qualify legacy Off structural identity/storage/allocation and nil/NOP behavior; no new On reader/state/authority/arbiter/observers or second feature lookup.",
+    "Complete deployment15/minimumSwift6.2 and supported platform checks; actual minimum compiler remains unavailable. Preserve PR6 watch/final integration/UI weak-release and API/hardware holds."
   ],
   "shape_limit": "Same-lookup reuse does not qualify opaque-return/ViewBuilder structure, stored mode/collaborator size or retention, SwiftUI structural identity or Off allocations. Exact implementation and source-matched Off proof remain.",
-  "next_action": "Correct PR11ON-01..04 in one complete private source successor and independently re-review; join the finite missing control map before deliberate integrated source qualification. Preserve d232/Core12 unexecuted and accepted PR7 evidence; native admission needs actual current MAIN/source/awake bindings. No Ready or human session.",
+  "next_action": "Finish the supported shared four-method host scheme and exact target/link/testability review, then freeze integrated6d3a source plus finite component controls for qualification. Fresh native admission needs actual MAIN/source/awake bindings. Preserve Core12/13 unexecuted and accepted PR7 evidence; no Ready or human session.",
   "actions": {
     "sdk_edits": 0,
     "controls": 0,
@@ -228,7 +227,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/qualification-preparation/packet.json",
     "sha256": "ac4358ddaa681abd40871fbf2dbd13c3b13983dd81ccc1c7cb508beffa386589"
   },
-  "qualification_preparation_state": "ORIGINAL_UNISSUED_82FF_BINDINGS_HELD_CURRENT_D232_FULL_SOURCE_PROFILE_MAIN_AWAKE_AND_NATIVE_PREFLIGHT_REQUIRED",
+  "qualification_preparation_state": "HISTORICAL_D232_PLANS_UNISSUED_CURRENT_COMPLETE_SOURCE_HOST_AND_AWAKE_BINDINGS_REQUIRED",
   "qualification_preparation_stop": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/qualification-preparation/root-binding/retained-work-stop.json",
     "sha256": "58ae45ad0a9a03e3cfb7cd12965472c24714a0969f30cdfbcfc2f220aa39a4cb"
@@ -259,12 +258,12 @@
     "scope": "Exact subscriber connection, stored lifetime identity and replacement destination admission guards only; legacy helpers unchanged. Real controls, application, compiler/Off and complete foundation remain."
   },
   "private_integration_preparation": {
-    "state": "COMPLETE_PRIVATE_SOURCE_REVIEW_BLOCKED_CORRECTION_IN_PROGRESS_NOT_APPLIED",
+    "state": "CORRECTED_REVIEWED_SOURCE_SUCCESSOR_APPLIED_UNQUALIFIED",
     "progress": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/integration-progress-checkpoint/progress.reviewed-successor.json",
       "sha256": "ae2c481a651e7eee8217d6823ef7e411f7bd02ba542b829187366b8b6d21764c"
     },
-    "scope": "Complete fifteen-file private proposal is source-reviewed with four consequential findings; correct one immutable successor and re-review. Frozen Core12 and thirteen future methods remain unexecuted; seven finite missing control families are mapped. No SDK application or Off/runtime/gate credit.",
+    "scope": "Original complete private source BLOCK and findings remain below; corrected successor passes source review and is applied at6d3a. No compiler/runtime/Off/gate qualification.",
     "whole_source": {
       "packet": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/full-on-modifier-integration-source-proposal/packet.json",
@@ -314,8 +313,8 @@
       "sha256": "c2b37618012ab722764ba6ac9a4d052b3956099382617a94406694c0b195ce03"
     },
     "pinned_main_head": "0cf6e1c053b815e9bbbe39a3490317be5bec0bf7",
-    "state": "SIGNED_MAIN_POLICY_PREPARATION_PASS_UNISSUED_CURRENT_MAIN_AND_AWAKE_REQUIRED",
-    "scope": "The old data-only binding omitted a policy pinned to an earlier MAIN checkpoint and is blocked. Signed-MAIN successor preparation passes twelve offline controls and review at its exact recorded checkpoint. Any later MAIN checkpoint needs a new truthful binding before admission; no clocks or launch authority. d232/Core12 and fixed budgets remain unchanged."
+    "state": "HISTORICAL_SIGNED_MAIN_D232_PREPARATION_UNISSUED_SUPERSEDED_SOURCE",
+    "scope": "Historical signed-MAIN/d232 source preparation only. Current complete source6d3a and MAIN have advanced; this unissued plan cannot authorize execution. Core12 remains unexecuted; new integrated-source bindings are required."
   },
   "prior_component_preparation": {
     "packet": {
@@ -332,5 +331,75 @@
     },
     "state": "UNISSUED_ACTUAL_AWAKE_AND_CURRENT_MAIN_BINDINGS_REQUIRED",
     "scope": "Data-only binder selects the actual current MAIN checkpoint; d232 source, profile, dependency closure and operational/cleanup budgets stay unchanged. No clocks or launch authority."
+  },
+  "complete_foundation_source_application": {
+    "state": "COMPLETE_PRIVATE_SOURCE_APPLIED_REVIEWED_UNCOMPILED_UNQUALIFIED",
+    "worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-worktree",
+    "branch": "valpertui/s3-swiftui-foundation",
+    "source_head": "6d3a7084baa61af5e4b876ddf5e83c4b613487c6",
+    "signature": "N",
+    "signing": "Signed attempt failed because signing agent communication failed; authorized local unsigned fallback used. No push.",
+    "source_files": 15,
+    "new_source_files": 9,
+    "project_membership_additions": 36,
+    "checkpoint": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/sdk-application-preparation/sdk-source-checkpoint.json",
+      "sha256": "677dfd307e1ed73b5735f05f9b33005858c4a78827082be61f8db9911dbd0247"
+    },
+    "application_plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/sdk-application-preparation/application-plan.json",
+      "sha256": "50d06ed2d62d4ba91522d93bc7f8afb1e36598a833bfae0046f223829db43ed2"
+    },
+    "source_successor_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/full-on-modifier-integration-source-proposal/cycle2/review.json",
+      "sha256": "1c5256c6ffc9a9c7c17f7112bfc3753053c731febc504dd625bc8762ff77834b"
+    },
+    "applied_source_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/sdk-application-preparation/whitespace-successor/applied-source-review.json",
+      "sha256": "3a0ff87a6f1f448c1754a453cbf57955388218f69e9c15ec3c65644bc7edb9b3"
+    },
+    "applied_source_readback": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/sdk-application-preparation/whitespace-successor/final-source-readback.json",
+      "sha256": "63c79e0fbe8e4b6db462a50ac4c8f6255318ec830de1d5435b68172145826b2e"
+    },
+    "focused_host_packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/navigation-controls-host-environment-proposal/focused-successor/packet.json",
+      "sha256": "a4201a45515c94bb74f54481293d2303fcd87ac083ff63b8c26da935a519c23b"
+    },
+    "focused_host_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/navigation-controls-host-environment-proposal/focused-successor/review.json",
+      "sha256": "dbfc99facf86a3ee31700b0de2712e79df51113e48b0932609f4e662faa7cd0e"
+    },
+    "builds": 0,
+    "controls_executed": 0,
+    "native_calls": 0,
+    "gates_closed": [],
+    "scope": "Complete fifteen-file private ordinary/keyed foundation applied via supported Xcode tools; nine new source files have exact RUM membership. Four source findings corrected and independently re-reviewed. Formatting-only successor verified. Not typechecked, runtime tested, Off qualified or released. Original BLOCKs/stage/signing failures remain immutable."
+  },
+  "applied_source_head": "6d3a7084baa61af5e4b876ddf5e83c4b613487c6",
+  "documentation_binding_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/sdk-application-preparation/documentation-binding-review.json",
+    "sha256": "51dddcbd0d0a7e6851e0e1b8daecdb28c5d7f387ef921f4fd3629836107a7d51"
+  },
+  "focused_host_application": {
+    "state": "ROOT_OWNED_PARTIAL_TEST_FIXTURE_APPLICATION_UNCOMPILED_UNEXECUTED",
+    "actual_xcode_operations": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/navigation-controls-host-environment-proposal/focused-successor/actual-xcode-application-tool-returns.json",
+      "sha256": "103ca9b4b695d7e552de8a7335a77bb8ab9fad34b5b8c5a006f32706901827b2"
+    },
+    "partial_readback": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/navigation-controls-host-environment-proposal/focused-successor/partial-application-readback.json",
+      "sha256": "f54914aeedd17fb933025424284d4c1ac66a5dafa19c84d7a848318f005815fe"
+    },
+    "scope": "Dedicated two targets, three reviewed Swift files plus repository headers, explicit retained scene plist; default SwiftUI screen/assets removed. Five existing target dependencies and four framework products added through supported UI. Current target settings match host binary and iOS15/repository Swift language policy. No SDK source changed beyond6d3a.",
+    "holds": [
+      "Shared four-only test scheme remains to create; GUI was yielded when user changed Xcode to MAIN.",
+      "Final source/membership/dependency/link/testability review and actual compiler/host loading needed before native admission.",
+      "Two asset-setting deletion calls were rejected as unknown setting; their original tool errors remain in transcript. No native failure or SDK defect follows."
+    ],
+    "native_calls": 0,
+    "builds": 0,
+    "controls_executed": 0,
+    "gates_closed": []
   }
 }

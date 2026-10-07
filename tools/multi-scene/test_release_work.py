@@ -183,6 +183,22 @@ class CurrentWorkTests(unittest.TestCase):
         progress=self.delivery(); (self.base / 'PR4-checkpoint.json').write_text(json.dumps({'head': 'b' * 40}))
         with self.assertRaisesRegex(ValueError, 'checkpoint changed'): work.validate_delivery_progress(progress, self.base)
 
+    def test_applied_swiftui_source_binding_keeps_runtime_and_release_held(self):
+        progress = self.delivery()
+        row = progress['rows'][10]
+        row.update(source_head='a' * 40, owning_record=work.DELIVERY_SOURCES['PR11'][0])
+        row['qualification']['implementation'] = 'PRIVATE_IMPLEMENTED'
+        work.validate_delivery_progress(progress, self.base)
+        for change in (dict(source_head=None), dict(source_head='b' * 40),
+                       dict(owning_record='Results/foreign.json'), dict(whole_F12_closed=True)):
+            changed = copy.deepcopy(progress)
+            changed['rows'][10].update(change)
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                work.validate_delivery_progress(changed, self.base)
+        row['qualification']['integration'] = 'QUALIFIED'
+        with self.assertRaisesRegex(ValueError, 'contradicts'):
+            work.validate_delivery_progress(progress, self.base)
+
     def test_source_map_rejects_stale_inventory_live_head_and_unlinked_git_directory(self):
         root=self.base / 'repository'; results=root / work.BASE / 'Results'; results.mkdir(parents=True)
         member=dict(branch='owner/source', path=str(self.base / 'source'), linked=True, head_at_verification='a' * 40)
