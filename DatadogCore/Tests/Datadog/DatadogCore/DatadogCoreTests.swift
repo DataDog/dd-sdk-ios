@@ -2423,7 +2423,8 @@ extension DatadogCoreTests {
         let feature = try makeOwnedSwiftUIFeature(in: core)
         let lifetime = try XCTUnwrap(RUMSwiftUIViewLifetime(feature: feature, core: core))
         let scene = RUMSceneIdentifier(rawValue: "owned-scene")
-        core.set(context: RUMCoreContext.mockWith(sessionID: "before-session", viewID: "before-view"))
+        let previousSessionID = UUID()
+        core.set(context: RUMCoreContext.mockWith(sessionID: previousSessionID, viewID: "before-view"))
         core.contextProvider.flush()
 
         feature.monitor.process(command: ownedSwiftUIStartCommand(scene: scene), lifetime: lifetime)
@@ -2437,7 +2438,7 @@ extension DatadogCoreTests {
         XCTAssertEqual(published.applicationID, expected.applicationID)
         XCTAssertEqual(published.sessionID, expected.sessionID)
         XCTAssertEqual(published.viewID, expected.viewID)
-        XCTAssertNotEqual(published.sessionID, "before-session")
+        XCTAssertNotEqual(published.sessionID, previousSessionID.uuidString.lowercased())
         XCTAssertNotEqual(published.viewID, "before-view")
     }
 
