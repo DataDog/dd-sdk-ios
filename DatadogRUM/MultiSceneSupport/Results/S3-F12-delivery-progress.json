@@ -605,7 +605,7 @@
       "off_contract": "Legacy modifier body and no reader/authority/arbiter/state allocation or body lock",
       "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
       "rebuild_obligation": "Proposed shared foundation 5-4820 and removed legacy modifier lines; complete closures, visibility and conditional scopes need independent disposition",
-      "status": "PARTIAL_PREREQUISITES_IMPLEMENTED_COMPLETE_FOUNDATION_NOT_IMPLEMENTED",
+      "status": "PARTIAL_PREREQUISITES_COMPLETE_PRIVATE_SOURCE_REVIEW_BLOCKED",
       "owning_record": null,
       "source_head": null,
       "obligation": "BEFORE_SLICE_MERGE",
@@ -616,12 +616,12 @@
         "off": "NOT_EXECUTED",
         "integration": "NOT_QUALIFIED"
       },
-      "remaining_assertion": "All12 signed d232 component methods remain unexecuted. Reviewed private factory, stop-descriptor and tracking-epoch fragments are unapplied; complete foundation/ordinary-keyed integration, On/Off identity/storage/allocation, lifetime and minimum compiler/platform remain unqualified.",
-      "next_action": "Complete the frozen d232 Core12 qualification after actual awake renewal and current MAIN/reviewer/native bindings; execute only those12 unexecuted methods. Finish and independently review the complete ordinary/keyed private source integration using the reviewed factory, original-lifetime binding and explicit callback reset. Keep concrete Off identity/storage/allocation and compiler/platform qualification separate.",
+      "remaining_assertion": "Four private source findings require correction/re-review. Core12 and thirteen future methods are unexecuted; seven missing control families are finite. Whole ordinary/keyed, Off structural/storage/allocation/lifetime and compiler/platform remain unqualified.",
+      "next_action": "Correct PR11ON-01..04 in one complete private source successor and independently re-review; join the finite missing control map before deliberate integrated source qualification. Preserve d232/Core12 unexecuted and accepted PR7 evidence; native admission needs actual current MAIN/source/awake bindings. No Ready or human session.",
       "evidence_source_scope": "Signed partial source prerequisite checkpoint and bounded source reviews only, owned by Results/S3-PR11-source-preparation.json. Original design/source/control BLOCKs are retained; no native, Off, complete foundation or gate credit.",
       "source_preparation_owner": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR11-source-preparation.json",
-        "sha256": "821baaed15cf1403b42b4ce12e15d444b4dcdc6280667867bad48c975249f76c"
+        "sha256": "cfd7213914d241714c99c86ffd3c499dd463fcf4bdf5a83063fa7e3154cb427b"
       },
       "complete_foundation_design": {
         "state": "REVIEWED_PREPARATION_IMPLEMENTATION_READINESS_BLOCKED",
@@ -768,7 +768,15 @@
           "disposition": "Source-detected UUID/String mismatch fixed only in positive test sentinel. No compiler/native execution; production remains original82ff."
         }
       },
-      "qualification_dimension_scope": "The standard implementation dimension grades the complete PR11 foundation. Signed partial source prerequisite and its exact owner/head are separately bound by implementation_component; no whole-foundation implementation claim."
+      "qualification_dimension_scope": "The standard implementation dimension grades the complete PR11 foundation. Signed partial source prerequisite and its exact owner/head are separately bound by implementation_component; no whole-foundation implementation claim.",
+      "full_source_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/full-on-modifier-integration-source-proposal/review.json",
+        "sha256": "6b6ba687573789a5f338fb9c6fc31d1ae1bfa6b1ea7089537fc9e67530a17cfd"
+      },
+      "control_coverage": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/full-on-source-control-coverage-map.json",
+        "sha256": "e92f37981073e9a78ecd58bc2e86d48d02fe4ff654e6b83fdf2fe6cb17cb119b"
+      }
     },
     {
       "id": "PR12",
@@ -839,7 +847,7 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": "2026-10-07T12:39:39.187963+00:00",
+  "updated_at": "2026-10-07T13:40:52.464638+00:00",
   "dependency_build_attempts": 4,
   "dependency_component_qualifications": 4,
   "dependency_test_invocations": 4,

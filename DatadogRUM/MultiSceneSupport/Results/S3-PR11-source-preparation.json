@@ -3,8 +3,8 @@
   "kind": "S3_PR11_FOUNDATION_SOURCE_PROGRESS",
   "gate": "S3:F12",
   "slice": "PR11",
-  "state": "PARTIAL_PREREQUISITES_IMPLEMENTED_SOURCE_REVIEWED_RUNTIME_UNQUALIFIED",
-  "updated_at": "2026-10-07T10:44:33.817354+00:00",
+  "state": "PARTIAL_PREREQUISITES_IMPLEMENTED_COMPLETE_PRIVATE_SOURCE_REVIEW_BLOCKED",
+  "updated_at": "2026-10-07T13:40:52.464638+00:00",
   "owner": "SDK implementer + designated independent reviewer",
   "source_lineage": {
     "linked_base_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
@@ -65,7 +65,7 @@
     "Complete deployment15/minimumSwift6.2 and supported platform conditional typecheck/availability checks, with no new public API/import/dependency assumption. Preserve PR6 watch/final integration/immediate UIKit weak-release holds and final F12/public/release approval independently."
   ],
   "shape_limit": "Same-lookup reuse does not qualify opaque-return/ViewBuilder structure, stored mode/collaborator size or retention, SwiftUI structural identity or Off allocations. Exact implementation and source-matched Off proof remain.",
-  "next_action": "Complete the frozen d232 Core12 qualification after actual awake renewal and current MAIN/reviewer/native bindings; execute only those12 unexecuted methods. Finish and independently review the complete ordinary/keyed private source integration using the reviewed factory, original-lifetime binding and explicit callback reset. Keep concrete Off identity/storage/allocation and compiler/platform qualification separate.",
+  "next_action": "Correct PR11ON-01..04 in one complete private source successor and independently re-review; join the finite missing control map before deliberate integrated source qualification. Preserve d232/Core12 unexecuted and accepted PR7 evidence; native admission needs actual current MAIN/source/awake bindings. No Ready or human session.",
   "actions": {
     "sdk_edits": 0,
     "controls": 0,
@@ -259,14 +259,65 @@
     "scope": "Exact subscriber connection, stored lifetime identity and replacement destination admission guards only; legacy helpers unchanged. Real controls, application, compiler/Off and complete foundation remain."
   },
   "private_integration_preparation": {
-    "state": "REVIEWED_FRAGMENTS_COMPLETE_INTEGRATION_IN_PROGRESS_NOT_APPLIED",
+    "state": "COMPLETE_PRIVATE_SOURCE_REVIEW_BLOCKED_CORRECTION_IN_PROGRESS_NOT_APPLIED",
     "progress": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/integration-progress-checkpoint/progress.reviewed-successor.json",
       "sha256": "ae2c481a651e7eee8217d6823ef7e411f7bd02ba542b829187366b8b6d21764c"
     },
-    "scope": "Reviewed scene admission controls, captured stop descriptor, ordinary entry/factory, explicit tracking reset and post-registration foundation. Complete per-callback/eligibility isolation integration remains private and unapplied; no SDK/native/Off/gate evidence."
+    "scope": "Complete fifteen-file private proposal is source-reviewed with four consequential findings; correct one immutable successor and re-review. Frozen Core12 and thirteen future methods remain unexecuted; seven finite missing control families are mapped. No SDK application or Off/runtime/gate credit.",
+    "whole_source": {
+      "packet": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/full-on-modifier-integration-source-proposal/packet.json",
+        "sha256": "208719be51cae1cec8c8f65201e0c848205d3eb3a7bde65d3f2ef68f5d9da9b1"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/full-on-modifier-integration-source-proposal/review.json",
+        "sha256": "6b6ba687573789a5f338fb9c6fc31d1ae1bfa6b1ea7089537fc9e67530a17cfd"
+      },
+      "control_coverage": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/full-on-source-control-coverage-map.json",
+        "sha256": "e92f37981073e9a78ecd58bc2e86d48d02fe4ff654e6b83fdf2fe6cb17cb119b"
+      },
+      "finding_ids": [
+        "PR11ON-01",
+        "PR11ON-02",
+        "PR11ON-03",
+        "PR11ON-04"
+      ],
+      "state": "ORIGINAL_BLOCK_IMMUTABLE_PRIVATE_SUCCESSOR_IN_PROGRESS",
+      "scope": "Two source interface/type mismatches, stale managed/pending original-Session admission before reads/pruning, and foreign-source rebind before effects. Complete seven bodies retained. No SDK regression, compiler, native or gate evidence.",
+      "review_readback": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/full-on-modifier-integration-source-proposal/review-readback.json",
+        "sha256": "5c774c9d60f49b6374cf95d371b6b31ebf62eeb75eef37ff9b92258e4bae46e0"
+      },
+      "review_publication": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/full-on-modifier-integration-source-proposal/actual-review-publication-tool-return.json",
+        "sha256": "a242b706d5927a0f8df71f0550ff02dcf62ca70f4a37e17484a7147e58dfb7f4"
+      },
+      "original_publication_stops": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/full-on-modifier-integration-source-proposal/review-publication-stops.json",
+        "sha256": "5015364fbeece510b936e613eb2af9896ba9e145732d326c5dbee5c2c0541925"
+      }
+    }
   },
   "current_component_preparation": {
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/qualification-preparation/root-binding-signed-main-successor/packet.json",
+      "sha256": "abb28ddb8581888987ac0e79c2bd053d98abe9f372bfd2a5fbdcee71b96a4d15"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/qualification-preparation/root-binding-signed-main-successor/preparation-review.json",
+      "sha256": "5138bdc391a10da7431321d50631a72f7cc17ad7ca97745b4ff36a5526629d3a"
+    },
+    "prior_binding_block": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/eligibility-carrier-design/current-checkpoint-binding-review.json",
+      "sha256": "c2b37618012ab722764ba6ac9a4d052b3956099382617a94406694c0b195ce03"
+    },
+    "pinned_main_head": "0cf6e1c053b815e9bbbe39a3490317be5bec0bf7",
+    "state": "SIGNED_MAIN_POLICY_PREPARATION_PASS_UNISSUED_CURRENT_MAIN_AND_AWAKE_REQUIRED",
+    "scope": "The old data-only binding omitted a policy pinned to an earlier MAIN checkpoint and is blocked. Signed-MAIN successor preparation passes twelve offline controls and review at its exact recorded checkpoint. Any later MAIN checkpoint needs a new truthful binding before admission; no clocks or launch authority. d232/Core12 and fixed budgets remain unchanged."
+  },
+  "prior_component_preparation": {
     "packet": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/qualification-preparation/root-binding-current/packet.json",
       "sha256": "9aef8df5c4a9ef2fc41ae82369128af10a617604348aa9e9ec505232f7b635b8"
