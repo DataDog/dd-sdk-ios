@@ -29,6 +29,17 @@ internal final class RUMSwiftUIViewLifetime {
         self.feature = feature
     }
 
+    @MainActor
+    func isValid(for handler: RUMSceneViewsHandler) -> Bool {
+        guard let feature,
+              isValid(for: feature.monitor),
+              let subscriber = handler.subscriber as? Monitor,
+              subscriber === feature.monitor else {
+            return false
+        }
+        return (feature.instrumentation.viewsHandler as AnyObject) === handler
+    }
+
     /// This check never acquires UI state or adopts a replacement feature.
     func isValid(for monitor: Monitor) -> Bool {
         guard owner.isValid, let core, let feature else {

@@ -482,6 +482,7 @@ internal final class RUMSceneViewsHandler {
 
         /// Scene that owns this view. `nil` preserves the legacy process-wide stack.
         let sceneIdentifier: RUMSceneIdentifier?
+        let swiftUILifetime: RUMSwiftUIViewLifetime?
 
         init(
             identity: ViewIdentifier,
@@ -490,7 +491,8 @@ internal final class RUMSceneViewsHandler {
             isUntrackedModal: Bool,
             attributes: [AttributeKey: AttributeValue],
             instrumentationType: InstrumentationType,
-            sceneIdentifier: RUMSceneIdentifier?
+            sceneIdentifier: RUMSceneIdentifier?,
+            swiftUILifetime: RUMSwiftUIViewLifetime? = nil
         ) {
             self.identity = identity
             self.name = name
@@ -499,6 +501,7 @@ internal final class RUMSceneViewsHandler {
             self.attributes = attributes
             self.instrumentationType = instrumentationType
             self.sceneIdentifier = sceneIdentifier
+            self.swiftUILifetime = swiftUILifetime
         }
     }
 
@@ -555,6 +558,36 @@ internal final class RUMSceneViewsHandler {
     /// The RUM Command subscriber responsible for processing
     /// this publisher's commands.
     internal weak var subscriber: RUMCommandSubscriber?
+
+    #if canImport(SwiftUI)
+    /// Installed only by the successfully registered On foundation.
+    internal var swiftUIViewEligibility: ((UIViewController) -> Bool)?
+    private var installedSwiftUIViewFoundation: RUMSwiftUIViewFoundation?
+
+    internal var swiftUIViewFoundation: RUMSwiftUIViewFoundation? {
+        guard Thread.isMainThread else { return nil }
+        return installedSwiftUIViewFoundation
+    }
+
+    @MainActor
+    @discardableResult
+    internal func installSwiftUIViewFoundation(
+        _ foundation: RUMSwiftUIViewFoundation,
+        notificationCenter: NotificationCenter
+    ) -> Bool {
+        guard Thread.isMainThread, installedSwiftUIViewFoundation == nil,
+              foundation.canInstall(in: self) else { return false }
+        // Occupy once before any observer work. Failure never restores legacy eligibility.
+        installedSwiftUIViewFoundation = foundation
+        swiftUIViewEligibility = { _ in false }
+        guard foundation.activate(notificationCenter: notificationCenter) else {
+            foundation.retire()
+            return false
+        }
+        swiftUIViewEligibility = foundation.makeEligibilityCheck() ?? { _ in false }
+        return true
+    }
+    #endif
 
     /// The appearing views stacks, independently keyed by scene.
     ///
@@ -929,18 +962,21 @@ internal final class RUMSceneViewsHandler {
             return
         }
 
-        subscriber.process(
-            command: RUMStartViewCommand(
-                time: time ?? dateProvider.now,
-                identity: view.identity,
-                name: view.name,
-                path: view.path,
-                globalAttributes: [:],
-                attributes: view.attributes,
-                instrumentationType: view.instrumentationType,
-                target: target(for: view)
-            )
+        let command = RUMStartViewCommand(
+            time: time ?? dateProvider.now,
+            identity: view.identity,
+            name: view.name,
+            path: view.path,
+            globalAttributes: [:],
+            attributes: view.attributes,
+            instrumentationType: view.instrumentationType,
+            target: target(for: view)
         )
+        if let lifetime = view.swiftUILifetime {
+            (subscriber as? RUMOwnedSwiftUIViewCommandSubscriber)?.process(command: command, lifetime: lifetime)
+        } else {
+            subscriber.process(command: command)
+        }
     }
 
     private func stop(
@@ -958,7 +994,11 @@ internal final class RUMSceneViewsHandler {
                 identity: view.identity
         )
         command.target = target(for: view)
-        subscriber?.process(command: command)
+        if let lifetime = view.swiftUILifetime {
+            (subscriber as? RUMOwnedSwiftUIViewCommandSubscriber)?.process(command: command, lifetime: lifetime)
+        } else {
+            subscriber?.process(command: command)
+        }
     }
 
     private func target(for view: View) -> RUMCommandTarget {
@@ -1404,6 +1444,11 @@ extension RUMSceneViewsHandler: UIViewControllerHandler {
         guard Thread.isMainThread else {
             return
         }
+        #if canImport(SwiftUI)
+        if let swiftUIViewEligibility, !swiftUIViewEligibility(viewController) {
+            return
+        }
+        #endif
         let identity = ViewIdentifier(viewController)
         let attachedSceneIdentifier = sceneIdentifierProvider(viewController)
         if let attachedSceneIdentifier, !canTrackViews(in: attachedSceneIdentifier) {
@@ -1553,6 +1598,95 @@ extension RUMSceneViewsHandler: RUMSceneTargetedManualViewHandling {
             sceneIdentifier: sceneIdentifier,
             stopAttributes: attributes
         )
+    }
+}
+
+extension RUMSceneViewsHandler: RUMSceneSwiftUIViewHandling {
+    @MainActor
+    @discardableResult
+    func notify_onAppear(
+        identity: String,
+        name: String,
+        path: String,
+        attributes: [AttributeKey: AttributeValue],
+        sceneIdentifier: RUMSceneIdentifier,
+        lifetime: RUMSwiftUIViewLifetime
+    ) -> Bool {
+        guard lifetime.isValid(for: self), canTrackViews(in: sceneIdentifier) else {
+            return false
+        }
+        let viewIdentity = ViewIdentifier(identity)
+        if let tracked = stacks.first(where: { $0.sceneIdentifier == sceneIdentifier })?
+            .views.first(where: { $0.identity == viewIdentity }) {
+            guard tracked.swiftUILifetime === lifetime else {
+                return false
+            }
+        }
+        return add(view: .init(
+            identity: viewIdentity,
+            name: name,
+            path: path,
+            isUntrackedModal: false,
+            attributes: attributes,
+            instrumentationType: .swiftui,
+            sceneIdentifier: sceneIdentifier,
+            swiftUILifetime: lifetime
+        ))
+    }
+
+    /// Nil preserves the descriptor captured by the tracked occurrence.
+    @MainActor
+    @discardableResult
+    func notify_onDisappear(
+        identity: String,
+        attributes: [AttributeKey: AttributeValue]? = nil,
+        sceneIdentifier: RUMSceneIdentifier,
+        lifetime: RUMSwiftUIViewLifetime
+    ) -> Bool {
+        guard lifetime.isValid(for: self),
+              canTrackViews(in: sceneIdentifier),
+              let tracked = stacks.first(where: { $0.sceneIdentifier == sceneIdentifier })?
+                .views.first(where: { $0.identity == ViewIdentifier(identity) }),
+              tracked.swiftUILifetime === lifetime else {
+            return false
+        }
+        remove(identity: tracked.identity, sceneIdentifier: sceneIdentifier, stopAttributes: attributes)
+        return true
+    }
+
+    @MainActor
+    @discardableResult
+    func notify_onReplace(
+        identity: String,
+        newIdentity: String,
+        name: String,
+        path: String,
+        attributes: [AttributeKey: AttributeValue],
+        sceneIdentifier: RUMSceneIdentifier,
+        lifetime: RUMSwiftUIViewLifetime
+    ) -> Bool {
+        let viewIdentity = ViewIdentifier(identity)
+        let replacementIdentity = ViewIdentifier(newIdentity)
+        guard lifetime.isValid(for: self),
+              canTrackViews(in: sceneIdentifier),
+              let stack = stacks.first(where: { $0.sceneIdentifier == sceneIdentifier }),
+              let tracked = stack.views.first(where: { $0.identity == viewIdentity }),
+              tracked.swiftUILifetime === lifetime,
+              !stack.views.contains(where: {
+                  $0.identity == replacementIdentity && $0.identity != viewIdentity
+              }) else {
+            return false
+        }
+        return replace(identity: tracked.identity, with: .init(
+            identity: replacementIdentity,
+            name: name,
+            path: path,
+            isUntrackedModal: false,
+            attributes: attributes,
+            instrumentationType: .swiftui,
+            sceneIdentifier: sceneIdentifier,
+            swiftUILifetime: lifetime
+        ))
     }
 }
 

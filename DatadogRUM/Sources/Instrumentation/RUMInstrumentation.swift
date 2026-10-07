@@ -60,6 +60,36 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
 
     let memoryWarningMonitor: MemoryWarningMonitor?
 
+    #if canImport(SwiftUI) && os(iOS)
+    /// Present only after the resolved-On registration succeeds.
+    var swiftUIViewFoundation: RUMSwiftUIViewFoundation? {
+        guard Thread.isMainThread else { return nil }
+        return (viewsHandler as? RUMSceneViewsHandler)?.swiftUIViewFoundation
+    }
+
+    @MainActor
+    func installSwiftUIViewFoundation(
+        feature: RUMFeature,
+        core: DatadogCoreProtocol,
+        notificationCenter: NotificationCenter
+    ) {
+        guard feature.isMultiSceneTrackingEnabled,
+              feature.instrumentation === self,
+              swiftUIViewFoundation == nil,
+              let handler = viewsHandler as? RUMSceneViewsHandler,
+              let lifetime = RUMSwiftUIViewLifetime(feature: feature, core: core),
+              let foundation = RUMSwiftUIViewFoundation(
+                instrumentation: self, handler: handler,
+                lifetime: lifetime, epoch: UUID()
+              ) else {
+            return
+        }
+        _ = handler.installSwiftUIViewFoundation(
+            foundation, notificationCenter: notificationCenter
+        )
+    }
+    #endif
+
     // MARK: - Initialization
 
     #if !os(watchOS)
