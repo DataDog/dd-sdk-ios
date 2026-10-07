@@ -255,7 +255,7 @@
         "integration": "NOT_QUALIFIED"
       },
       "remaining_assertion": "Current7e live-session guard and explicit-scene provider/main publication require combined focused qualification; native callback/page/rebind and Flags still need implementation. Preserve accepted consumer43/Core/cache3/transport17; complete Off/older/final-stack remain.",
-      "next_action": "Complete fresh dynamic inputs and canonical/issued parameter review for the source-reviewed current7e27-method qualification when awake/device/lane prerequisites are available. Offline root binding now passes; templates/model loader grant no admission. Preserve accepted17/cache3/consumer43/Core and original size/assignment/source BLOCKs. Original-page/event-time/same-window rebind acquisition remains a reviewed design hold; Flags, whole Off/older/final-stack remain open. No accepted component repeats.",
+      "next_action": "Complete fresh dynamic inputs and canonical/issued parameter review for the source-reviewed current7e27-method qualification when awake/device/lane prerequisites are available. Offline root binding/current-checkpoint compatibility now pass; templates/model loader grant no admission. Preserve accepted17/cache3/consumer43/Core, original preparation receipts and actual current-receipt rejection. Original-page/event-time/same-window rebind acquisition remains a reviewed design hold; Flags, whole Off/older/final-stack remain open. No accepted component repeats.",
       "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit.",
       "dependency_design": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/packet.json",
@@ -274,7 +274,7 @@
       "dependency_source_head": "142ad7150f3e62f1522c3feb923d84b722efb951",
       "preparation_owner": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
-        "sha256": "3ba65b544c7b73937253f89392f5d203f7147a579fdd19f32fd78de3e2d95106"
+        "sha256": "51affaf379f4891e481ef68253c7c81bd48104176ad67765d32b66cec1695f32"
       },
       "dependency_component_result": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-filtered-discovery-20261006/actual-test-only-run-97d448b1/result.json",
@@ -450,12 +450,12 @@
         "methods": 27,
         "gates_closed": [],
         "root_binding_packet": {
-          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/packet.json",
-          "sha256": "1da1583c6759084bd7ba9bee6864bafd4a5f507cbe8fcdcd52779d232492eb96"
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/cycle2/packet.json",
+          "sha256": "473da593dd643d2552867db990c74f73e5a30cd7d1e920cddfcdf582e8ece5e4"
         },
         "root_binding_review": {
-          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/preparation-review.json",
-          "sha256": "d134cf496307095b5b0a96af63fbc3ab769089c578d37c28e8f2a803db31f5a8"
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/cycle2/preparation-review.json",
+          "sha256": "aa6f40ca47cab355947d5eec83ec8c2e45039eeec66e34da249a2a5f5209a9e3"
         }
       },
       "webview_origin_option": {
@@ -653,7 +653,7 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": "2026-10-07T02:29:41.120214+00:00",
+  "updated_at": "2026-10-07T03:10:32.151581+00:00",
   "dependency_build_attempts": 4,
   "dependency_component_qualifications": 4,
   "dependency_test_invocations": 4,
@@ -807,12 +807,12 @@
       "sha256": "48a14ecc13f88d9a3b40dd94a6f7e3fd105f1f7669b0d4ea00f36ad36ae797f1"
     },
     "root_binding_preparation": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/packet.json",
-      "sha256": "1da1583c6759084bd7ba9bee6864bafd4a5f507cbe8fcdcd52779d232492eb96"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/cycle2/packet.json",
+      "sha256": "473da593dd643d2552867db990c74f73e5a30cd7d1e920cddfcdf582e8ece5e4"
     },
     "root_binding_review": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/preparation-review.json",
-      "sha256": "d134cf496307095b5b0a96af63fbc3ab769089c578d37c28e8f2a803db31f5a8"
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/cycle2/preparation-review.json",
+      "sha256": "aa6f40ca47cab355947d5eec83ec8c2e45039eeec66e34da249a2a5f5209a9e3"
     }
   }
 }

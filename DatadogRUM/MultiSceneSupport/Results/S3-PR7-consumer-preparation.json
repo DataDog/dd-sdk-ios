@@ -188,8 +188,8 @@
   "builds": 22,
   "gates_closed": [],
   "whole_pr7_qualified": false,
-  "next_action": "Complete fresh dynamic inputs and canonical/issued parameter review for the source-reviewed current7e27-method qualification when awake/device/lane prerequisites are available. Offline root binding now passes; templates/model loader grant no admission. Preserve accepted17/cache3/consumer43/Core and original size/assignment/source BLOCKs. Original-page/event-time/same-window rebind acquisition remains a reviewed design hold; Flags, whole Off/older/final-stack remain open. No accepted component repeats.",
-  "updated_at": "2026-10-07T02:29:41.120214+00:00",
+  "next_action": "Complete fresh dynamic inputs and canonical/issued parameter review for the source-reviewed current7e27-method qualification when awake/device/lane prerequisites are available. Offline root binding/current-checkpoint compatibility now pass; templates/model loader grant no admission. Preserve accepted17/cache3/consumer43/Core, original preparation receipts and actual current-receipt rejection. Original-page/event-time/same-window rebind acquisition remains a reviewed design hold; Flags, whole Off/older/final-stack remain open. No accepted component repeats.",
+  "updated_at": "2026-10-07T03:10:32.151581+00:00",
   "sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-core-sampling-initialization-test-repair-applied-20261006/sdk-checkpoint.json",
     "sha256": "8479a54805b889477b7b9f20b61e6755e0ce49fda73cab852a95a77f47f45e72"
@@ -1773,30 +1773,30 @@
       "native_runs": 0,
       "clocks_issued": 0,
       "gates_closed": [],
-      "hold": "Executable current root/materializer/loader/signature receipt binding and fresh adequate awake/MAIN/device/lane authority remain. No historical metadata or original device state reused as current.",
+      "hold": "Fresh actual awake authority/current MAIN checkpoint/head/owner, device/lane/metadata and complete2400 fit, bound canonical proposal review, same-call root preflight, issued parameter review and exclusive release remain. Offline templates/model loader grant no admission.",
       "root_binding": {
-        "state": "OFFLINE_PREPARATION_PASS_NOT_ADMITTED",
+        "state": "CURRENT_MAIN_SCHEMA_OFFLINE_PREPARATION_PASS_NOT_ADMITTED",
         "packet": {
-          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/packet.json",
-          "sha256": "1da1583c6759084bd7ba9bee6864bafd4a5f507cbe8fcdcd52779d232492eb96"
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/cycle2/packet.json",
+          "sha256": "473da593dd643d2552867db990c74f73e5a30cd7d1e920cddfcdf582e8ece5e4"
         },
         "plan": {
-          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/plan.unissued.json",
-          "sha256": "266174a661a29952e06b30efa6092285dc73eb566b65362d90698c66aeb1ae98"
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/cycle2/plan.unissued.json",
+          "sha256": "f2a2556c1d8beb7d23a15f1c9d87b17dcfc26743abe2ffe3637b8309b5f15a2b"
         },
         "review": {
-          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/preparation-review.json",
-          "sha256": "d134cf496307095b5b0a96af63fbc3ab769089c578d37c28e8f2a803db31f5a8"
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/cycle2/preparation-review.json",
+          "sha256": "aa6f40ca47cab355947d5eec83ec8c2e45039eeec66e34da249a2a5f5209a9e3"
         },
         "serialized_readback": {
-          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/preparation-review.readback.json",
-          "sha256": "9569c65318f085e3a6370c4aabee4f5e6f14effd6aee62b4aa62abe2a57d51e5"
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/cycle2/preparation-review.readback.json",
+          "sha256": "3ffe0c8b9bb173af9c9340bca6e671c877a49563a13613d8416bcbbe1f57412c"
         },
         "actual_review_publication": {
-          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/actual-review-publication-tool-return.json",
-          "sha256": "249e22b4dd85f39042297e744a800dad10d46a3c8210878c19bcfbd08513f61c"
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/cycle2/actual-review-publication-tool-return.json",
+          "sha256": "d9b60b76c60ee168115a4778af053723e1316a4fc72112df727c6a559488496c"
         },
-        "new_pure_controls": 4,
+        "new_pure_controls": 3,
         "source_tests_run": 0,
         "native_runs": 0,
         "clocks_issued": 0,
@@ -1809,7 +1809,30 @@
           "actual root same-call preflight and fixed numeric clocks/parameters/loader",
           "issued exact parameter review/current guard/exclusive release"
         ],
-        "scope": "Three accepted root scripts remain byte-identical templates. Current source/MAIN authorized N receipt schemas are checked; awake authority/reply/process/cutoff remain distinct from root routing. A model-derived loader is parse-only. Fresh bound canonical proposal review, same-call live root preflight, full2400 fit, exact issued parameters and exclusive release remain."
+        "scope": "Current truthful documentation receipts are supported without reason-wording coupling. Exact observed HEAD/signature, authorized bounded signing failure and safe explicit documentation paths remain required. Only validate_main changes; SDK validator/binder/root scripts remain exact. Actual-aa8/refusal controls are preparation only; future current receipt/input checks remain.",
+        "original_preparation_packet": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/packet.json",
+          "sha256": "1da1583c6759084bd7ba9bee6864bafd4a5f507cbe8fcdcd52779d232492eb96"
+        },
+        "original_preparation_review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/preparation-review.json",
+          "sha256": "d134cf496307095b5b0a96af63fbc3ab769089c578d37c28e8f2a803db31f5a8"
+        },
+        "actual_current_receipt_rejection": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/unattended-interface-checkpoint-20261007/actual-current-main-schema-reproduction.json",
+          "sha256": "001238cedbb091f5b36f32f174695693cd5dd31358e6cea9f991f1a84c85e9a7"
+        },
+        "signature_policy": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/cycle2/checkpoint-signature-policy.py",
+          "sha256": "fcd752dc7555a8f7f37bdb7c850bd54aac54d8c8a7acc41c11a52db685489d0f"
+        },
+        "reused_original_pure_controls": 4,
+        "controls": [
+          {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/cycle2/controls.actual.json",
+            "sha256": "84b610796efff6f1992e7332d91ddd9fcde326e8b50155f68de3d8e1955fad17"
+          }
+        ]
       }
     }
   },
