@@ -2,7 +2,7 @@
 
 - [FIX] Keep automatic URLSession spans linked to the RUM view and session captured when each request starts. See [#3220][]
 - [FIX] Reduce the risk of SwiftUI crashes during Session Replay recording by avoiding copies of unrelated view cache data. See [#3245][]
-- [FEATURE] Add experimental client-side APM stats, enabled with `Trace.Configuration.featureFlags[.clientSideStats]`. The SDK aggregates request counts, error counts and latency distributions on-device over finished spans before the trace sampling decision, so APM RED metrics stay accurate at any `sampleRate`. Off by default. See [#3272][]
+- [FEATURE] Add experimental client-side APM stats, enabled with `Trace.Configuration.featureFlags[.clientSideStats]`, or with `client_side_stats` in `DDTraceConfiguration.featureFlags` from Objective-C. The SDK aggregates request counts, error counts and latency distributions on-device over finished spans before the trace sampling decision, so APM RED metrics stay accurate at any `sampleRate`. Off by default. See [#3272][]
 
 # 3.19.0 / 30-09-2026
 
