@@ -58,6 +58,20 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         let samplingPriority: SamplingPriority
         let samplingDecisionMaker: SamplingMechanismType
         let baggage: BaggageItems
+
+        /// A copy whose sampling decision drops the span. The span gets its own decision from these
+        /// values, so a parent's `SamplingDecision`, which is shared by reference, is never changed.
+        func droppingTheSpan() -> NewSpanElements {
+            NewSpanElements(
+                spanID: spanID,
+                parentSpanID: parentSpanID,
+                sampleRate: sampleRate,
+                traceID: traceID,
+                samplingPriority: .autoDrop,
+                samplingDecisionMaker: .agentRate,
+                baggage: baggage
+            )
+        }
     }
 
     private struct CapturedRUMContext {
@@ -317,20 +331,24 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
                     LazySpanWriteContext(featureScope: tracer.featureScope, rumContext: .some($0.rumContext))
                 }
             )
-        } else if tracer.onSpanFinished != nil || Sampler(samplingRate: samplingRate).sample() {
-            // Span context may not be injected on iOS13+ if `URLSession.dataTask(...)` for `URL`
-            // was used to create the session task.
+        } else {
+            // No trace context was injected. Either the task never went through `modify(…)`, for example
+            // when `URLSession.dataTask(...)` was created from a `URL` on iOS 13+, or `modify(…)` injected
+            // nothing: with `.sampled` injection a dropped request gets no headers, and headers the request
+            // already carried are never overwritten. A sampler pre-check runs, then the decision below,
+            // and the span is uploaded only when both keep it.
             //
-            // When client-side stats is enabled this branch must be reached for every request,
-            // including sampled-out ones. `DDSpan.finish()` hands every finished span to the stats
-            // concentrator and gates only the *upload* on the sampling decision, so returning early
-            // here would leave the request out of the aggregate entirely. That is the sampling bias
-            // client-side stats exists to remove, and `_dd.compute_stats=0` stops the backend from
-            // compensating. `makeElementsForNewSpanContext` below already resolves keep/drop, so the
-            // sampler roll in this condition is just a fast path for when stats is off; testing the
-            // hook first also avoids rolling a second, independent sample that could disagree with
-            // the decision the helper is about to make.
-            //
+            // Client-side stats must not change which spans are uploaded, so the pre-check keeps its
+            // existing effect. When it rejects the request and stats is enabled, the span is still built:
+            // `DDSpan.finish()` hands every finished span to the stats concentrator and gates only the
+            // upload on the sampling decision, so skipping it would leave the request out of the
+            // aggregate, and `_dd.compute_stats=0` stops the backend from compensating. That span is
+            // dropped, so it is never uploaded.
+            let passesPreCheck = Sampler(samplingRate: samplingRate).sample()
+            guard passesPreCheck || tracer.onSpanFinished != nil else {
+                return
+            }
+
             // Reuse the session read when the request was modified, so the span is sampled by the same
             // session as its RUM tags even if the session changed while the request was in flight. A task
             // that never went through `modify(…)` has no captured state, so its session is read now.
@@ -340,11 +358,12 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             } else {
                 sessionDecision = currentSessionSnapshot()
             }
-            let newSpanElements = makeElementsForNewSpanContext(
+            let decidedSpanElements = makeElementsForNewSpanContext(
                 tracer: tracer,
                 parentSpanContext: interception.activeSpanContext as? DDSpanContext,
                 sessionDecision: sessionDecision
             )
+            let newSpanElements = passesPreCheck ? decidedSpanElements : decidedSpanElements.droppingTheSpan()
 
             let context = DDSpanContext(
                 traceID: newSpanElements.traceID,
@@ -366,8 +385,6 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
                     LazySpanWriteContext(featureScope: tracer.featureScope, rumContext: .some($0.rumContext))
                 }
             )
-        } else {
-            return
         }
 
         span.setTag(key: SpanTags.kind, value: "client")
