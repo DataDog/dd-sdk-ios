@@ -6,7 +6,6 @@
 
 #if os(iOS)
 import Testing
-import DatadogSDKTesting
 import UIKit
 import DatadogInternal
 
