@@ -288,9 +288,9 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         }
 
         // Self-enforce `RUMSessionScope`'s lifetime rules in case this session expired with no RUM
-        // command arriving to call `stop(sessionID:)`. Compared against `now()`, not the anchored
-        // `currentDate`, since `Monitor`'s expiry state is tracked in wall-clock `Date`s.
-        if activeContextReader?.isSessionExpired(sessionID: sessionID, at: now()) == true {
+        // command arriving to call `stop(sessionID:)`. Session lifetime is measured on `Monitor`'s own
+        // monotonic clock, so neither `now()` nor the anchored `currentDate` takes part in the check.
+        if activeContextReader?.isSessionExpired(sessionID: sessionID) == true {
             timer?.cancel()
             timer = nil
             flushMemory()

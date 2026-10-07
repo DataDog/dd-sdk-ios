@@ -8,7 +8,7 @@
 
 import XCTest
 import DatadogInternal
-import TestUtilities
+@testable import TestUtilities
 @testable import DatadogCore
 @_spi(Experimental)
 @testable import DatadogRUM
@@ -125,6 +125,51 @@ class TimeseriesCollectionIntegrationTests: RUMSessionTestsBase {
         XCTAssertEqual(cpu.count, 2, "Expected one flushed batch per background transition")
         assertTimestampsProgress(memory.map { $0.timeseries.data.timestamps }, metric: "memory")
         assertTimestampsProgress(cpu.map { $0.timeseries.data.timestamps }, metric: "cpu")
+    }
+
+    func testWhenMonotonicClockExpiresWithoutCommands_itStopsSamplingAndRestartsOnInteraction() throws {
+        let collectionDuration: TimeInterval = 3.5
+        let wallDate = processLaunchDate.addingTimeInterval(timeToSDKInit)
+        let dateProvider = DateProviderMock(now: wallDate)
+        let monotonicClock = MonotonicClockMock(elapsedTime: 123)
+        let given = enableTimeseries { configuration in
+            configuration.timeseries = .init(collectTypes: [.memory])
+            configuration.dateProvider = dateProvider
+            configuration.monotonicClock = monotonicClock
+        }
+
+        // Wait for the real sampling timer, then expire the session without a command or wall-clock change.
+        let when = given
+            .when(.waitRealTime(collectionDuration))
+            .and(AppRunStep { _ in
+                monotonicClock.advance(by: RUMSessionScope.Constants.sessionTimeoutDuration)
+            })
+            .and(.waitRealTime(2 * collectionDuration))
+            .and(AppRunStep { app in
+                app.rum.addAction(type: .custom, name: "after expiry")
+            })
+            .and(.waitRealTime(collectionDuration))
+            .and(.appEntersBackground(after: 0))
+
+        // Expiry flushes the first batch; backgrounding flushes the resumed session's batch.
+        let sessions = try when.then()
+        XCTAssertEqual(sessions.count, 2)
+        let resumedSession = try XCTUnwrap(sessions.first { session in
+            session.actionEvents.contains { $0.action.target?.name == "after expiry" }
+        })
+        let initialSession = try XCTUnwrap(sessions.first { $0.sessionID != resumedSession.sessionID })
+        let initialMemory = try memoryEvents(in: initialSession)
+        let resumedMemory = try memoryEvents(in: resumedSession)
+        let expected = Double(expectedTicks(in: collectionDuration))
+
+        // The idle observation window must not contribute samples to the expired session.
+        for events in [initialMemory, resumedMemory] {
+            XCTAssertEqual(events.count, 1)
+            let sampleCount = events.reduce(0) { $0 + $1.timeseries.data.timestamps.count }
+            XCTAssertGreaterThan(sampleCount, 0)
+            DDAssertEqual(Double(sampleCount), expected, accuracy: Double(dataPointsTolerance))
+        }
+        XCTAssertEqual(dateProvider.now, wallDate)
     }
 }
 
