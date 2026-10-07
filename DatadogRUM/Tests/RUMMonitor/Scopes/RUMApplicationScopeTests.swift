@@ -12,6 +12,15 @@ import DatadogInternal
 class RUMApplicationScopeTests: XCTestCase {
     let writer = FileWriterMock()
     private let recorder = ActiveSessionUpdateRecorder()
+    /// Session timeout and max duration are measured on this clock, moved by `advance(_:by:)`.
+    private let monotonicClock = MonotonicClockMock()
+
+    /// Advances both the simulated wall clock (what `RUMCommand.time` carries) and the session clock
+    /// (what bounds session lifetime), as real elapsed time would move both.
+    private func advance(_ currentTime: inout Date, by interval: TimeInterval) {
+        currentTime.addTimeInterval(interval)
+        monotonicClock.advance(by: interval)
+    }
 
     class ActiveSessionUpdateRecorder {
         var calls = [DeterministicSampler?]()
@@ -67,7 +76,8 @@ class RUMApplicationScopeTests: XCTestCase {
                 if let sessionScope {
                     dependencies.onSessionUpdate(sessionScope)
                 }
-            }
+            },
+            monotonicClock: monotonicClock
         )
         let scope = RUMApplicationScope(dependencies: modifiedDependencies)
         // Always receive `RUMSDKInitCommand` as the very first command (see: `Monitor.notifySDKInit()`)
@@ -126,7 +136,7 @@ class RUMApplicationScopeTests: XCTestCase {
 
         // When
         // Push time forward by the max session duration:
-        currentTime.addTimeInterval(RUMSessionScope.Constants.sessionMaxDuration)
+        advance(&currentTime, by: RUMSessionScope.Constants.sessionMaxDuration)
         _ = scope.process(
             command: RUMAddUserActionCommand.mockWith(time: currentTime),
             context: .mockAny(),
@@ -215,7 +225,7 @@ class RUMApplicationScopeTests: XCTestCase {
                 context: .mockAny(),
                 writer: writer
             )
-            currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration) // force the Session to be re-created
+            advance(&currentTime, by: RUMSessionScope.Constants.sessionTimeoutDuration) // force the Session to be re-created
         }
 
         let viewEventsCount = writer.events(ofType: RUMViewEvent.self).count
@@ -469,7 +479,7 @@ class RUMApplicationScopeTests: XCTestCase {
         )
 
         // When
-        currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
+        advance(&currentTime, by: RUMSessionScope.Constants.sessionTimeoutDuration)
         _ = scope.process(
             command: RUMCommandMock(time: currentTime, isUserInteraction: true),
             context: sdkContext,
@@ -492,7 +502,7 @@ class RUMApplicationScopeTests: XCTestCase {
 
         // keep session active until it expires
         while currentTime < initialTime.addingTimeInterval(RUMSessionScope.Constants.sessionMaxDuration) {
-            currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration - 1)
+            advance(&currentTime, by: RUMSessionScope.Constants.sessionTimeoutDuration - 1)
             _ = scope.process(
                 command: RUMCommandMock(time: currentTime, isUserInteraction: true),
                 context: sdkContext,
@@ -520,11 +530,11 @@ class RUMApplicationScopeTests: XCTestCase {
             sdkContext: sdkContext
         )
 
-        currentTime.addTimeInterval(1)
+        advance(&currentTime, by: 1)
         _ = scope.process(command: RUMStopSessionCommand(time: currentTime), context: sdkContext, writer: writer)
 
         // When
-        currentTime.addTimeInterval(1)
+        advance(&currentTime, by: 1)
         _ = scope.process(
             command: RUMCommandMock(time: currentTime, isUserInteraction: true),
             context: sdkContext,
@@ -545,7 +555,7 @@ class RUMApplicationScopeTests: XCTestCase {
         )
 
         // When
-        currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
+        advance(&currentTime, by: RUMSessionScope.Constants.sessionTimeoutDuration)
         let backgroundContext: DatadogContext = .mockWith(
             sdkInitDate: .mockDecember15th2019At10AMUTC(),
             launchInfo: .mockWith(
@@ -576,7 +586,7 @@ class RUMApplicationScopeTests: XCTestCase {
 
         // Keep session active without exceeding maxDuration — stop one step before it would expire
         while currentTime.addingTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration - 1) < initialTime.addingTimeInterval(RUMSessionScope.Constants.sessionMaxDuration) {
-            currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration - 1)
+            advance(&currentTime, by: RUMSessionScope.Constants.sessionTimeoutDuration - 1)
             _ = scope.process(
                 command: RUMCommandMock(time: currentTime, isUserInteraction: true),
                 context: sdkContext,
@@ -585,7 +595,7 @@ class RUMApplicationScopeTests: XCTestCase {
         }
 
         // When - advance past maxDuration without triggering inactivity timeout, then send in background
-        currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration - 1)
+        advance(&currentTime, by: RUMSessionScope.Constants.sessionTimeoutDuration - 1)
         let backgroundContext: DatadogContext = .mockWith(
             sdkInitDate: .mockDecember15th2019At10AMUTC(),
             launchInfo: .mockWith(
@@ -613,11 +623,11 @@ class RUMApplicationScopeTests: XCTestCase {
             sdkContext: sdkContext
         )
 
-        currentTime.addTimeInterval(1)
+        advance(&currentTime, by: 1)
         _ = scope.process(command: RUMStopSessionCommand(time: currentTime), context: sdkContext, writer: writer)
 
         // When
-        currentTime.addTimeInterval(1)
+        advance(&currentTime, by: 1)
         let backgroundContext: DatadogContext = .mockWith(
             sdkInitDate: .mockDecember15th2019At10AMUTC(),
             launchInfo: .mockWith(
@@ -646,7 +656,7 @@ class RUMApplicationScopeTests: XCTestCase {
         )
 
         // When
-        currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
+        advance(&currentTime, by: RUMSessionScope.Constants.sessionTimeoutDuration)
         let backgroundContext: DatadogContext = .mockWith(
             sdkInitDate: .mockDecember15th2019At10AMUTC(),
             launchInfo: .mockWith(
@@ -674,11 +684,11 @@ class RUMApplicationScopeTests: XCTestCase {
             sdkContext: sdkContext
         )
 
-        currentTime.addTimeInterval(1)
+        advance(&currentTime, by: 1)
         _ = scope.process(command: RUMStopSessionCommand(time: currentTime), context: sdkContext, writer: writer)
 
         // When
-        currentTime.addTimeInterval(1)
+        advance(&currentTime, by: 1)
         let backgroundContext: DatadogContext = .mockWith(
             sdkInitDate: .mockDecember15th2019At10AMUTC(),
             launchInfo: .mockWith(
@@ -711,7 +721,7 @@ class RUMApplicationScopeTests: XCTestCase {
         )
 
         // When - session times out while app is in background
-        currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
+        advance(&currentTime, by: RUMSessionScope.Constants.sessionTimeoutDuration)
         let backgroundContext: DatadogContext = .mockWith(
             sdkInitDate: .mockDecember15th2019At10AMUTC(),
             launchInfo: .mockWith(
@@ -730,5 +740,30 @@ class RUMApplicationScopeTests: XCTestCase {
         XCTAssertEqual(scope.activeSession?.context.sessionPrecondition, .inactivityTimeout)
         // And no error telemetry is fired for .userLaunch in background (it is a valid scenario)
         XCTAssertNil(featureScope.telemetryMock.messages.firstError())
+    }
+
+    func testWhenElapsedTimeAdvancesInBackgroundWithoutWallClockAdvancing_itStartsANewSession() throws {
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let sdkContext: DatadogContext = .mockWith(
+            sdkInitDate: currentTime,
+            launchInfo: .mockWith(launchReason: .userLaunch),
+            applicationStateHistory: .mockAppInBackground(since: currentTime)
+        )
+        let scope = createRUMApplicationScope(
+            dependencies: .mockWith(samplingRate: 100, trackBackgroundEvents: true),
+            sdkContext: sdkContext
+        )
+        let sessionID = try XCTUnwrap(scope.activeSession?.sessionUUID)
+
+        // A suspension produces no commands; only the continuous session clock advances.
+        monotonicClock.advance(by: RUMSessionScope.Constants.sessionTimeoutDuration)
+        _ = scope.process(
+            command: RUMCommandMock(time: currentTime, isUserInteraction: true),
+            context: sdkContext,
+            writer: writer
+        )
+
+        XCTAssertNotEqual(scope.activeSession?.sessionUUID, sessionID)
+        XCTAssertEqual(scope.activeSession?.context.sessionPrecondition, .inactivityTimeout)
     }
 }

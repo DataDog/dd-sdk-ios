@@ -247,14 +247,10 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private func sample() {
         let currentDate = now()
 
-        // Self-enforce the same session lifetime rules `RUMSessionScope` uses, in case this session
-        // has expired without any RUM command arriving to call `stop(sessionID:)` (e.g. the app went
-        // idle with no user interaction). This is a safety net only — it does not affect RUM's own
-        // session state, it just stops this collector from uploading data past session expiry.
-        //
-        // Pulled fresh from `activeContextReader` on every tick, rather than from a locally pushed
-        // copy, so there's a single live source of truth and no race with how/when that state is updated.
-        if activeContextReader?.isSessionExpired(sessionID: sessionID, at: currentDate) == true {
+        // Self-enforce `RUMSessionScope`'s lifetime rules in case this session expired with no RUM
+        // command arriving to call `stop(sessionID:)`. Session lifetime is measured on `Monitor`'s own
+        // monotonic clock, so the sample's wall-clock date does not take part in the check.
+        if activeContextReader?.isSessionExpired(sessionID: sessionID) == true {
             timer?.cancel()
             timer = nil
             flushMemory()

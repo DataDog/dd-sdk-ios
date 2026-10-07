@@ -42,53 +42,64 @@ class RUMSessionScopeTests: XCTestCase {
     }
 
     func testWhenSessionExceedsMaxDuration_itGetsClosed() {
-        var currentTime = Date()
+        let currentTime = Date()
+        let clock = MonotonicClockMock(elapsedTime: 123)
         let scope: RUMSessionScope = .mockWith(
             parent: parent,
             startTime: currentTime,
-            dependencies: .mockWith(samplingRate: .mockRandom())
+            dependencies: .mockWith(samplingRate: .mockRandom(), monotonicClock: clock)
         )
 
         XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime), context: context, writer: writer))
 
-        // Push time forward by the max session duration:
-        currentTime.addTimeInterval(RUMSessionScope.Constants.sessionMaxDuration)
+        // Keep interacting while only elapsed time advances, so inactivity cannot end the session.
+        let sessionEnd = clock.elapsedTime + RUMSessionScope.Constants.sessionMaxDuration
+        while clock.elapsedTime + RUMSessionScope.Constants.sessionTimeoutDuration - 1 < sessionEnd {
+            clock.advance(by: RUMSessionScope.Constants.sessionTimeoutDuration - 1)
+            XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime, isUserInteraction: true), context: context, writer: writer))
+        }
+        clock.advance(by: sessionEnd - clock.elapsedTime)
 
         XCTAssertFalse(scope.process(command: RUMCommandMock(time: currentTime), context: context, writer: writer))
+        XCTAssertEqual(scope.endReason, .maxDuration)
+        XCTAssertEqual(scope.sessionStartTime, currentTime)
     }
 
     func testWhenSessionIsInactiveForCertainDuration_itGetsClosed() {
-        var currentTime = Date()
+        let currentTime = Date()
+        let clock = MonotonicClockMock(elapsedTime: 123)
         let scope: RUMSessionScope = .mockWith(
             parent: parent,
             startTime: currentTime,
-            dependencies: .mockWith(samplingRate: .mockRandom())
+            dependencies: .mockWith(samplingRate: .mockRandom(), monotonicClock: clock)
         )
 
         XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime), context: context, writer: writer))
 
         // Push time forward by less than the session timeout duration:
-        currentTime.addTimeInterval(0.5 * RUMSessionScope.Constants.sessionTimeoutDuration)
+        clock.advance(by: 0.5 * RUMSessionScope.Constants.sessionTimeoutDuration)
 
         XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime), context: context, writer: writer))
 
-        // Push time forward by the session timeout duration:
-        currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
+        // Reach the exact timeout boundary without changing the command date.
+        clock.advance(by: 0.5 * RUMSessionScope.Constants.sessionTimeoutDuration)
 
         XCTAssertFalse(scope.process(command: RUMCommandMock(time: currentTime), context: context, writer: writer))
+        XCTAssertEqual(scope.endReason, .timeOut)
     }
 
     func testWhenSessionReceivesInteractiveEvent_itStaysAlive() {
         var currentTime = Date()
+        let clock = MonotonicClockMock()
         let scope: RUMSessionScope = .mockWith(
             parent: parent,
             startTime: currentTime,
-            dependencies: .mockWith(samplingRate: .mockRandom())
+            dependencies: .mockWith(samplingRate: .mockRandom(), monotonicClock: clock)
         )
 
         for _ in 0...10 {
             // Push time forward by less than the session timeout duration:
-            currentTime.addTimeInterval(0.5 * RUMSessionScope.Constants.sessionTimeoutDuration)
+            advance(&currentTime, clock, by: 0.5 * RUMSessionScope.Constants.sessionTimeoutDuration)
             XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime, isUserInteraction: true), context: context, writer: writer))
         }
 
@@ -97,19 +108,20 @@ class RUMSessionScopeTests: XCTestCase {
 
     func testWhenSessionReceivesNonInteractiveEvent_itGetsClosed() {
         var currentTime = Date()
+        let clock = MonotonicClockMock()
         let scope: RUMSessionScope = .mockWith(
             parent: parent,
             startTime: currentTime,
-            dependencies: .mockWith(samplingRate: .mockRandom())
+            dependencies: .mockWith(samplingRate: .mockRandom(), monotonicClock: clock)
         )
 
         for _ in 0...8 {
             // Push time forward by less than the session timeout duration:
-            currentTime.addTimeInterval(0.1 * RUMSessionScope.Constants.sessionTimeoutDuration)
+            advance(&currentTime, clock, by: 0.1 * RUMSessionScope.Constants.sessionTimeoutDuration)
             XCTAssertTrue(scope.process(command: RUMCommandMock(time: currentTime, isUserInteraction: false), context: context, writer: writer))
         }
 
-        currentTime.addTimeInterval(0.1 * RUMSessionScope.Constants.sessionTimeoutDuration)
+        advance(&currentTime, clock, by: 0.1 * RUMSessionScope.Constants.sessionTimeoutDuration)
         XCTAssertFalse(scope.process(command: RUMCommandMock(time: currentTime), context: context, writer: writer))
     }
 
@@ -728,14 +740,15 @@ class RUMSessionScopeTests: XCTestCase {
         // Given
         let collector = TimeseriesCollectorSpy()
         var currentTime = Date()
+        let clock = MonotonicClockMock()
         let scope: RUMSessionScope = .mockWith(
             parent: parent,
             startTime: currentTime,
-            dependencies: .mockWith(timeseriesCollector: collector)
+            dependencies: .mockWith(monotonicClock: clock, timeseriesCollector: collector)
         )
 
         // When — push past the max session duration
-        currentTime.addTimeInterval(RUMSessionScope.Constants.sessionMaxDuration)
+        advance(&currentTime, clock, by: RUMSessionScope.Constants.sessionMaxDuration)
         _ = scope.process(command: RUMCommandMock(time: currentTime), context: context, writer: writer)
 
         // Then
@@ -746,16 +759,17 @@ class RUMSessionScopeTests: XCTestCase {
         // Given
         let collector = TimeseriesCollectorSpy()
         var currentTime = Date()
+        let clock = MonotonicClockMock()
         let scope: RUMSessionScope = .mockWith(
             parent: parent,
             startTime: currentTime,
-            dependencies: .mockWith(timeseriesCollector: collector)
+            dependencies: .mockWith(monotonicClock: clock, timeseriesCollector: collector)
         )
 
         _ = scope.process(command: RUMCommandMock(time: currentTime), context: context, writer: writer)
 
         // When — push past the session inactivity timeout
-        currentTime.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
+        advance(&currentTime, clock, by: RUMSessionScope.Constants.sessionTimeoutDuration)
         _ = scope.process(command: RUMCommandMock(time: currentTime), context: context, writer: writer)
 
         // Then
@@ -860,6 +874,13 @@ class RUMSessionScopeTests: XCTestCase {
         // Then
         XCTAssertEqual(collector.resumeCallCount, 1)
         XCTAssertEqual(collector.pauseCallCount, 0)
+    }
+
+    /// Advances both the simulated wall clock (what `RUMCommand.time` carries) and the session clock
+    /// (what bounds session lifetime), as real elapsed time would move both.
+    private func advance(_ currentTime: inout Date, _ clock: MonotonicClockMock, by interval: TimeInterval) {
+        currentTime.addTimeInterval(interval)
+        clock.advance(by: interval)
     }
 }
 
