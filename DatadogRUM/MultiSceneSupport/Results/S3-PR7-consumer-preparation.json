@@ -180,7 +180,7 @@
       "state": "DESIGN_AND_IMPLEMENTATION_REMAIN"
     }
   ],
-  "selected_task": "P7W1_COMBINED27_ROOT_BINDING_AND_PHYSICAL_CAPTURE_ACTIVATION_OFFLINE",
+  "selected_task": "P7W1_COMBINED27_FRESH_DYNAMIC_PREPARATION_AFTER_AWAKE_AUTHORITY",
   "pending_action_requirement": "Pending/excluded action scalars do not identify an accepted Action UUID. The existing queue-confined continuous-action receipt is not a generic cross-module/discrete-action acceptance receipt. Do not borrow a later same-view action; independently review the smallest source-backed receipt design before consumer changes.",
   "off_requirement": "Reusing the network provider single State read may gate On locally. No default-Off Core registry/TaskLocal/scene lookup, owner allocation, new map/lock or naive owner(in: FeatureScope) capture.",
   "runtime_admitted": false,
@@ -188,8 +188,8 @@
   "builds": 22,
   "gates_closed": [],
   "whole_pr7_qualified": false,
-  "next_action": "Finish executable current root/materializer/loader/signature binding for the reviewed unissued27 selection and the physical capture helper activation. Preserve original size BLOCK48ab and corrected exact2436 readback, accepted17/cache3/consumer43/Core and prior78/225 plans. No native/build admission after expired awake authority; callback/page/rebind and Flags acquisition, whole Off/older/final-stack remain.",
-  "updated_at": "2026-10-07T00:31:32.020791+00:00",
+  "next_action": "Complete fresh dynamic inputs and canonical/issued parameter review for the source-reviewed current7e27-method qualification when awake/device/lane prerequisites are available. Offline root binding now passes; templates/model loader grant no admission. Preserve accepted17/cache3/consumer43/Core and original size/assignment/source BLOCKs. Original-page/event-time/same-window rebind acquisition remains a reviewed design hold; Flags, whole Off/older/final-stack remain open. No accepted component repeats.",
+  "updated_at": "2026-10-07T02:29:41.120214+00:00",
   "sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-core-sampling-initialization-test-repair-applied-20261006/sdk-checkpoint.json",
     "sha256": "8479a54805b889477b7b9f20b61e6755e0ce49fda73cab852a95a77f47f45e72"
@@ -1711,7 +1711,7 @@
       "sha256": "e49eee35ccb4f59a0dadd981c256c1629c5e34a3f5998eee3e5c3495bedad62b"
     },
     "qualification_preparation": {
-      "state": "SOURCE_AND_SELECTION_REVIEWED_UNISSUED_PARAMETERS_REMAIN",
+      "state": "SOURCE_SELECTION_AND_OFFLINE_ROOT_BINDING_REVIEWED_DYNAMIC_INPUTS_REMAIN",
       "packet": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/cycle2/packet.json",
         "sha256": "d86e0277d2fce83e0b8a57e8e1b95962ecb830b629ce967b780897b537303dc9"
@@ -1773,7 +1773,95 @@
       "native_runs": 0,
       "clocks_issued": 0,
       "gates_closed": [],
-      "hold": "Executable current root/materializer/loader/signature receipt binding and fresh adequate awake/MAIN/device/lane authority remain. No historical metadata or original device state reused as current."
+      "hold": "Executable current root/materializer/loader/signature receipt binding and fresh adequate awake/MAIN/device/lane authority remain. No historical metadata or original device state reused as current.",
+      "root_binding": {
+        "state": "OFFLINE_PREPARATION_PASS_NOT_ADMITTED",
+        "packet": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/packet.json",
+          "sha256": "1da1583c6759084bd7ba9bee6864bafd4a5f507cbe8fcdcd52779d232492eb96"
+        },
+        "plan": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/plan.unissued.json",
+          "sha256": "266174a661a29952e06b30efa6092285dc73eb566b65362d90698c66aeb1ae98"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/preparation-review.json",
+          "sha256": "d134cf496307095b5b0a96af63fbc3ab769089c578d37c28e8f2a803db31f5a8"
+        },
+        "serialized_readback": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/preparation-review.readback.json",
+          "sha256": "9569c65318f085e3a6370c4aabee4f5e6f14effd6aee62b4aa62abe2a57d51e5"
+        },
+        "actual_review_publication": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/actual-review-publication-tool-return.json",
+          "sha256": "249e22b4dd85f39042297e744a800dad10d46a3c8210878c19bcfbd08513f61c"
+        },
+        "new_pure_controls": 4,
+        "source_tests_run": 0,
+        "native_runs": 0,
+        "clocks_issued": 0,
+        "gates_closed": [],
+        "dynamic_holds": [
+          "genuine adequate current awake authority/process/root routing",
+          "current MAIN signed-or-authorized-fallback checkpoint/HEAD/owner bytes",
+          "fresh metadata/deviceShutdown/original app and native-lane state",
+          "fresh canonical proposal assignment/review for bound plan",
+          "actual root same-call preflight and fixed numeric clocks/parameters/loader",
+          "issued exact parameter review/current guard/exclusive release"
+        ],
+        "scope": "Three accepted root scripts remain byte-identical templates. Current source/MAIN authorized N receipt schemas are checked; awake authority/reply/process/cutoff remain distinct from root routing. A model-derived loader is parse-only. Fresh bound canonical proposal review, same-call live root preflight, full2400 fit, exact issued parameters and exclusive release remain."
+      }
     }
+  },
+  "webview_origin_option": {
+    "state": "REVIEWED_DESIGN_HOLD_NOT_IMPLEMENTATION_READY",
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-origin-option-20261007/packet.json",
+      "sha256": "221c00449f7678e0681adf2e1e80fae6c4bc267708b771636ff1dc8397c987f6"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-origin-option-20261007/review.json",
+      "sha256": "77861bb26732e73cd814bb15b7a34c3da266fe2013a73ae174405a9e2e9e88c1"
+    },
+    "actual_review_publication": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-origin-option-20261007/actual-review-publication-tool-return.json",
+      "sha256": "0deb0bec993aed39625e26c6957dfb99df7f0f0bab7d37f0b3d85290928da6d1"
+    },
+    "source_head": "7e308269a612b60cfb41c317ae24e682fb9e1fc5",
+    "unresolved_requirements": [
+      {
+        "id": "P7WO1",
+        "reason": "A registration nonce can be shared by later documents/subframes. It rejects old registrations, but is not document-generation or native session/view/action proof. Specify when the original weak binding is established before ambiguity and how delayed events retain original ownership or typed absence. Preserve live-session, historical scene/date/cache and Logs rules.",
+        "requirement": "Define origin epoch and event-time session/view/action ownership",
+        "source": "WebViewTracking.swift:187-214,239-275; NetworkContext.swift:340-369; RUMFeature.swift:609-633"
+      },
+      {
+        "id": "P7WO2",
+        "reason": "Current window/scene equality only rejects a present mismatch. Public window-movement declarations do not prove every UIWindow scene affiliation change reaches the sentinel or latches a moved-back excursion. Require a supported complete origin invalidation mechanism or explicit refusal/restriction. Observed detach/removal/rebind/registration/owner mismatch permanently invalidates the epoch; returning to A cannot reset it.",
+        "requirement": "Dispose of same-window scene changes and A-to-B-to-A",
+        "source": "UIView.h:248-251; prior original native-origin hold"
+      },
+      {
+        "id": "P7WO3",
+        "reason": "Bind actual WKWebView, handler, registration, weak window/scene and exact owner; webView hash or shared controller alone is insufficient. Freeze nonce in the bridge closure, never retrofit a new registration nonce into loaded pages on sampling rollover. Define subframes, queued callbacks and disable/re-enable. Unwrap original body exactly; preserve send/getters/returns, Browser IDs, sampling, offsets and Replay body/slot.",
+        "requirement": "Preserve bridge and shared-controller compatibility",
+        "source": "DDScriptMessageHandler.swift:27-36; WebViewTracking.swift:118-149,187-214,239-275"
+      },
+      {
+        "id": "P7WO4",
+        "reason": "Absence on ambiguous rebind is the accepted finite tradeoff; returning absence for all events does not meet useful explicit-container attribution. Require one stable mounted-A positive and weak deallocation/movement lifecycle. Hidden zero-frame sentinel compatibility with layout/hit testing/accessibility/Replay remains unproved. Default Off adds no sentinel/map/lock/owner allocation or Core/TaskLocal/scene read.",
+        "requirement": "Specify useful mounted-A positive and sentinel compatibility",
+        "source": "design.md Questions that block implementation; prior finite P7W1 contract"
+      }
+    ],
+    "prior_origin_hold": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-consumer-source-preparation-20261006/native-acquisition-design-review-225920de.json",
+      "sha256": "d9dfbccc5fce0a19cd398247b7b535657ac144121e161aaf21ba63dd363a3dc5"
+    },
+    "required_predecessor": "Current7e combined27 qualification",
+    "implementation_admitted": false,
+    "native_runs": 0,
+    "gates_closed": [],
+    "scope": "Registration nonce/hidden sentinel is a bounded option only. No original-page/event-time proof or complete same-window scene-excursion observation is established; useful stable-A and bridge/Off compatibility remain required. No SDK code follows from this design review."
   }
 }

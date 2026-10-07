@@ -314,7 +314,7 @@ needs separate cleanup-only idle proof. Uncertain delivery defers teardown.
 
 ## Current complete-path qualification boundary
 
-[P2](../Results/execution-improvements-20261004.json) seals terminal rows/idle before teardown. The independent profile ends its short session before Ready, then proves the same app's fresh owner/writer/idle.
+[P2](../Results/execution-improvements-20261004.json) seals terminal rows/idle before teardown. The independent profile ends its short session before Ready, then proves the same app's fresh owner/writer/idle. The [physical interface](../Results/S2-H11-H13-local-continuation.json#independent_capture_preparation) remains private preparation: publish and bind the complete runtime plan before worker use, require strict published review readback, and obtain fresh live inputs/issued authority. Source controls qualify neither capture nor a MAIN port.
 [The human prefix](../Results/S2-independent-human-ready-timeout-20261006.json) passed; Ready expired without acknowledgement or gestures. Retain raw NotRun, actual returns, failed publications and separate restoration.
 After task-only cleanup/quiescence, retire the page. A late chat reply cannot revive it; a fresh candidate needs genuine Ready and post-Ready owner/idle.
 Reuse reviewed unchanged capture/source/products and baselines; no separate rehearsal or timing acceptance. All issued clocks remain fixed.

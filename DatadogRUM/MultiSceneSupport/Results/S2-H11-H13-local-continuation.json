@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "state": "STOPPED_BEFORE_INPUT_CLEANUP_PASS",
-  "updated_at": "2026-10-07T00:31:32.020791+00:00",
+  "updated_at": "2026-10-07T02:29:41.120214+00:00",
   "owner": "root",
   "reviewer": "/root/h10_backend_reviewer",
   "gates": [
@@ -57,7 +57,7 @@
   "original_verdicts": "All original failed attempts and admissions remain immutable. This attempt is INVALID / evidence INCOMPLETE / cleanup PASS; the later read-only checkpoint verification is separate.",
   "release_acceptance": false,
   "gate_closures": [],
-  "next_action": "Finish the reviewed private independent-capture helper activation with full relative aliases, canonical whole-object root binding and actual request/response publication before an automatic physical qualification. Preserve the accepted baseline, original stopped result/cleanup PASS and24 orientation controls. Actual physical pose/capture/PID/idle and fresh human Ready remain prerequisites; user unavailable until06:30Paris7October. No SwiftUI repeat.",
+  "next_action": "Use the reviewed private physical interface for fresh dynamic preparation when actual awake/device/lane prerequisites are available. Preserve the reusable baseline, original STOPPED_BEFORE_INPUT_CLEANUP_PASS result and old24 orientation controls. Short capture/End plus same-PID writer/owner/idle must qualify before any Ready invitation. No verbatim MAIN port or SwiftUI repeat; user unavailable until06:30Paris7October.",
   "superseded_preparation": {
     "runtime_plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-autonomous-20260927-ato89jip/physical-candidate/runtime/plan.json",
@@ -241,7 +241,7 @@
     "native_admitted": false
   },
   "independent_capture_preparation": {
-    "state": "SOURCE_REVIEWED_PRIVATE_ACTIVATION_REMAIN",
+    "state": "PRIVATE_SOURCE_INTERFACE_REVIEWED_DYNAMIC_QUALIFICATION_REMAIN",
     "existing_gates": [
       "S2:H11",
       "S2:H13"
@@ -277,6 +277,72 @@
     "human_invited": false,
     "gates_closed": [],
     "contract": "One workspace-free short capture ends before Ready; same original process/writer, actual PNG/window/display/orientation and fresh native idle join. Main scenario/evidence/cleanup remain separate; primary failure persists before closure and secondary closure failure is retained. Existing accepted baseline and24 orientation controls reused without rerun.",
-    "hold": "Private frozen aliases/canonical producer/full supported-session dispatcher integration and independent activation review; actual physical connection/access/pose/process/capture/Ready and adequate awake authority remain."
+    "hold": "Actual physical access/orientation/product/process/source/metadata/awake/lane/launch consent and complete5400+600 fit, canonical build/MAIN selection/readback, issued parameter review and exclusive release remain. Then verify actual short capture/End, same original PID/writer/owner and native idle before inviting Ready. No old receipt or readiness reuse.",
+    "activation": {
+      "state": "PRIVATE_ONLY_COMPOSITION_SOURCE_REVIEWED_NO_NATIVE_CREDIT",
+      "packet": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/activation/cycle2/receipt-correction/packet.json",
+        "sha256": "f4eeb1b670d9942d01952fae9c230ad2cb759f2dafbdd746b2630ef52d93bfac"
+      },
+      "source_packet": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/activation/cycle2/packet.json",
+        "sha256": "c87dd21a2db69a1fccf0d72b6dfdfbbf438e9eeb74d037c1d09efb9dad658073"
+      },
+      "plan": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/activation/cycle2/plan.unissued.json",
+        "sha256": "cfdf39aade1308ca4caac42173508d24cb600d3c2419822eff01231f71db8a57"
+      },
+      "source_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/activation/cycle2/receipt-correction/review.json",
+        "sha256": "184535596c2e00511e40ff2a43738cb577a569c28329690d989c1e69a684fa30"
+      },
+      "provenance_readback": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/activation/cycle2/receipt-correction/provenance-readback.json",
+        "sha256": "cbcc1a893f20e100cb6ecad3b3f2c168bfefdcf50cdbf615638bdfd4938072aa"
+      },
+      "actual_review_publication": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/activation/cycle2/receipt-correction/actual-review-publication-tool-return.json",
+        "sha256": "04228741eaae54582303c0747bb893dd6bf5b3c79b103315ef101ae30b414eff"
+      },
+      "original_activation_block": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/activation/review.json",
+        "sha256": "065b35f5951ba13267e9fa896f95c83f128186875e8f2348e144bb9adc5e9ae7"
+      },
+      "provisional_unusable_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/activation/cycle2/review.json",
+        "sha256": "761bb57f55d898bc2f87d36a1822ef6d9aafbfa745f1e0b7f08c210893c50c42"
+      },
+      "failed_readback_disposition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/activation/cycle2/review-readback-disposition.json",
+        "sha256": "a6aa1eac476e0ea1b96986ad29cc496ae3aae6704d4a894e286e901c6299fa73"
+      },
+      "source_application_manifest": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/activation/cycle2/source-application-manifest.json",
+        "sha256": "2cf3927417fd60330e35c8d008c86c9b2606f86509a9801f92aa73310e041a0e"
+      },
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/activation/cycle2/controls.actual.json",
+        "sha256": "d2a6895236d5526ab710d1948de2882d66884ebee9ba44396e65c0fa9e18b683"
+      },
+      "source_ledger": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/activation/cycle2/source-ledger.json",
+        "sha256": "6d843a2c532e0190fd920c0bdda32e9c6187c999e8c5868e9b7dcc3ba80f789f"
+      },
+      "dynamic_holds": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/activation/dynamic-holds.json",
+        "sha256": "0452b7c8567dc5ba751ab1fa917d8aeefd82a2d8851f46986598927db3b73dd6"
+      },
+      "resolved_findings": [
+        "P2PHA1",
+        "P2PHA2"
+      ],
+      "new_boundary_controls": 4,
+      "native_runs": 0,
+      "builds": 0,
+      "clocks_issued": 0,
+      "human_invited": false,
+      "gates_closed": [],
+      "scope": "Private frozen79-member interface only. Canonical producer publishes and binds complete runtime plan.json before real worker use; missing/drifted/consumed plan rejects before effects. Full source/interface and mandatory review readback pass. MAIN portability/application is not qualified; no verbatim port."
+    }
   }
 }
