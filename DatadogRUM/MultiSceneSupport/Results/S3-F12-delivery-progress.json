@@ -616,12 +616,12 @@
         "off": "NOT_EXECUTED",
         "integration": "NOT_QUALIFIED"
       },
-      "remaining_assertion": "Factory/owner design findings are addressed. Conditional Core publication and weak original SwiftUI/owned-Monitor prerequisites pass bounded source review at signed82ff. All12 new component methods are unexecuted; complete ordinary/keyed foundation, source-matched On/Off identity/storage/allocation, lifetime and minimum compiler/platform remain unqualified.",
+      "remaining_assertion": "Signed d232 test-only UUID sentinel successor preserves original82ff production prerequisites and all assertions. All12 new methods remain unexecuted. Scene-capability admission findings are corrected only in a reviewed private proposal; complete ordinary/keyed foundation, On/Off identity/storage/allocation, lifetime and minimum compiler/platform remain unqualified.",
       "next_action": "Freeze and independently review one source-matched 12-test conditional/owned-Monitor component run after fresh awake/native prerequisites; execute only those new methods. Prepare the complete ordinary/keyed factory, foundation installation and capability/registry/arbiter integration independently. Keep Off identity/storage/allocation and minimum compiler/platform held; no PR12 concrete semantics or native admission from this record.",
       "evidence_source_scope": "Signed partial source prerequisite checkpoint and bounded source reviews only, owned by Results/S3-PR11-source-preparation.json. Original design/source/control BLOCKs are retained; no native, Off, complete foundation or gate credit.",
       "source_preparation_owner": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR11-source-preparation.json",
-        "sha256": "09602840d5341b0e70aa79d1cda5c7701887b992bc634990a8a307268e38c700"
+        "sha256": "27e86dc2a2a9a563b4735522a27b81a15c38d9dfb588ee31926e69a453cce352"
       },
       "complete_foundation_design": {
         "state": "REVIEWED_PREPARATION_IMPLEMENTATION_READINESS_BLOCKED",
@@ -683,11 +683,11 @@
         "state": "SIGNED_PARTIAL_SOURCE_CHECKPOINT_REVIEWED_NOT_RUNTIME_QUALIFIED",
         "worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-worktree",
         "branch": "valpertui/s3-swiftui-foundation",
-        "source_head": "82ff70de4deaa7863f0cc30b40cedfc329cf1ee9",
+        "source_head": "d23253f0f631940a4104c11039f64d6986966eb9",
         "signature": "G",
         "checkpoint": {
-          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/sdk-checkpoint.json",
-          "sha256": "7f6982e196a7669dbaca277edb52ad4c7b2304fda64189cc0cd038cecfbc911a"
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/owned-monitor-uuid-test-correction/sdk-checkpoint.json",
+          "sha256": "5e59b4a60c904b156b3d1ca2936c69225c53830e993b1e04dfdef3aa9d9828ee"
         },
         "linked_worktree": {
           "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/linked-worktree.json",
@@ -743,7 +743,30 @@
           "Source reviews are bounded to these prerequisites; no typecheck/runtime/Off/whole-PR11 evidence.",
           "An original admitted Monitor is retained only through the context producer; invalidated/replaced callbacks refuse before admission. No atomic stop barrier or adoption of a replacement feature.",
           "Original source and control BLOCKs, metadata-count correction and source-publication/parser stops remain preserved."
-        ]
+        ],
+        "initial_source_checkpoint": {
+          "source_head": "82ff70de4deaa7863f0cc30b40cedfc329cf1ee9",
+          "checkpoint": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/sdk-checkpoint.json",
+            "sha256": "7f6982e196a7669dbaca277edb52ad4c7b2304fda64189cc0cd038cecfbc911a"
+          },
+          "scope": "Original signed partial source; source-only review and unexecuted type error are preserved."
+        },
+        "test_fixture_successor": {
+          "source": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/owned-monitor-uuid-test-correction/source-correction.json",
+            "sha256": "19699e36ce08b692288bde231c30139fb8b9c496732e8d461a5183ded01504f9"
+          },
+          "review": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/owned-monitor-uuid-test-correction/review.json",
+            "sha256": "a06500c76e395ad44d931e2c06768bc05764ee606c225c8340e7e8387e5281a3"
+          },
+          "readback": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/owned-monitor-uuid-test-correction/review-readback.json",
+            "sha256": "56d7ff8a07262433e6a91e17f91f8e6493287c7d76c27b3375c406b8157cca0a"
+          },
+          "disposition": "Source-detected UUID/String mismatch fixed only in positive test sentinel. No compiler/native execution; production remains original82ff."
+        }
       },
       "qualification_dimension_scope": "The standard implementation dimension grades the complete PR11 foundation. Signed partial source prerequisite and its exact owner/head are separately bound by implementation_component; no whole-foundation implementation claim."
     },
@@ -816,7 +839,7 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": "2026-10-07T10:18:37.400036+00:00",
+  "updated_at": "2026-10-07T10:44:33.817354+00:00",
   "dependency_build_attempts": 4,
   "dependency_component_qualifications": 4,
   "dependency_test_invocations": 4,

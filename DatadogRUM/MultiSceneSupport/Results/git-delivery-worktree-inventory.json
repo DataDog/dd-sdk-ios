@@ -179,7 +179,7 @@
     {
       "branch": "valpertui/s3-swiftui-foundation",
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-worktree",
-      "head_at_verification": "82ff70de4deaa7863f0cc30b40cedfc329cf1ee9",
+      "head_at_verification": "d23253f0f631940a4104c11039f64d6986966eb9",
       "linked": true,
       "actual_branch": "refs/heads/valpertui/s3-swiftui-foundation",
       "worktree_linkage": {
@@ -187,8 +187,8 @@
         "sha256": "efa7c418c12adbf4a0c96b8c4295da636a2e29b9b7a0776309ab8ac0b2e43427"
       },
       "latest_local_checkpoint": {
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/sdk-checkpoint.json",
-        "sha256": "7f6982e196a7669dbaca277edb52ad4c7b2304fda64189cc0cd038cecfbc911a"
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/owned-monitor-uuid-test-correction/sdk-checkpoint.json",
+        "sha256": "5e59b4a60c904b156b3d1ca2936c69225c53830e993b1e04dfdef3aa9d9828ee"
       },
       "scope": "Partial SwiftUI foundation prerequisites only; no runtime/Off/final-stack qualification."
     }
@@ -260,7 +260,7 @@
       {
         "branch": "valpertui/s3-swiftui-foundation",
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-worktree",
-        "head": "82ff70de4deaa7863f0cc30b40cedfc329cf1ee9",
+        "head": "d23253f0f631940a4104c11039f64d6986966eb9",
         "git_common_dir": "/Users/valentin.pertuisot/work/dd-sdk-ios/.git",
         "linked": true
       }
