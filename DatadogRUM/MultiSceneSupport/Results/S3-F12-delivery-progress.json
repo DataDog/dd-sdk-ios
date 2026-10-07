@@ -616,12 +616,12 @@
         "off": "NOT_EXECUTED",
         "integration": "NOT_QUALIFIED"
       },
-      "remaining_assertion": "Complete source is applied and source-reviewed; compiler, four real-scene controls, finite seven-family callback/ownership/lifetime controls, complete Off and integration remain unqualified.",
-      "next_action": "Finish the supported shared four-method host scheme and exact target/link/testability review, then freeze integrated6d3a source plus finite component controls for qualification. Fresh native admission needs actual MAIN/source/awake bindings. Preserve Core12/13 unexecuted and accepted PR7 evidence; no Ready or human session.",
+      "remaining_assertion": "Complete SDK source and signed four-control host are source reviewed; compiler/execution, remaining finite control drafts, actual lifecycle, complete Off and integration stay unqualified.",
+      "next_action": "Freeze the signed4da720 four-only hosted qualification with fresh MAIN/source/awake bindings; verify actual built manifest before launch. Review the seven private remaining-control drafts; retain actual lifecycle and complete Off obligations separately. Core12/13/four and new drafts are unexecuted; accepted PR7 stays untouched.",
       "evidence_source_scope": "Complete fifteen-file private ordinary/keyed foundation applied via supported Xcode tools; nine new source files have exact RUM membership. Four source findings corrected and independently re-reviewed. Formatting-only successor verified. Not typechecked, runtime tested, Off qualified or released. Original BLOCKs/stage/signing failures remain immutable.",
       "source_preparation_owner": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR11-source-preparation.json",
-        "sha256": "573dc1f607b1fdc5d98dcfe858eb1f722a53ac0f99d09f23839f9640fd1fceaf"
+        "sha256": "0d82d1085a82c7de73d3c7f56faccaaf2054d050944b67d750861f6f766fd0e7"
       },
       "complete_foundation_design": {
         "state": "REVIEWED_PREPARATION_IMPLEMENTATION_READINESS_BLOCKED",
@@ -820,6 +820,10 @@
         "native_calls": 0,
         "gates_closed": [],
         "scope": "Complete fifteen-file private ordinary/keyed foundation applied via supported Xcode tools; nine new source files have exact RUM membership. Four source findings corrected and independently re-reviewed. Formatting-only successor verified. Not typechecked, runtime tested, Off qualified or released. Original BLOCKs/stage/signing failures remain immutable."
+      },
+      "focused_host_fixture_checkpoint": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/navigation-controls-host-environment-proposal/focused-successor/applied-fixture-review/fixture-checkpoint.json",
+        "sha256": "376d295c00e4f9b9ece18f332c61b71abd5676ae11cd1088b005d0996ca54e1a"
       }
     },
     {
@@ -891,7 +895,7 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": "2026-10-07T14:30:09.844506+00:00",
+  "updated_at": "2026-10-07T15:12:07.994180+00:00",
   "dependency_build_attempts": 4,
   "dependency_component_qualifications": 4,
   "dependency_test_invocations": 4,

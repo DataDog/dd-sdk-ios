@@ -4,7 +4,7 @@
   "gate": "S3:F12",
   "slice": "PR11",
   "state": "COMPLETE_PRIVATE_SOURCE_APPLIED_REVIEWED_UNCOMPILED_UNQUALIFIED",
-  "updated_at": "2026-10-07T14:30:09.844506+00:00",
+  "updated_at": "2026-10-07T15:12:07.994180+00:00",
   "owner": "SDK implementer + designated independent reviewer",
   "source_lineage": {
     "linked_base_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
@@ -64,7 +64,7 @@
     "Complete deployment15/minimumSwift6.2 and supported platform checks; actual minimum compiler remains unavailable. Preserve PR6 watch/final integration/UI weak-release and API/hardware holds."
   ],
   "shape_limit": "Same-lookup reuse does not qualify opaque-return/ViewBuilder structure, stored mode/collaborator size or retention, SwiftUI structural identity or Off allocations. Exact implementation and source-matched Off proof remain.",
-  "next_action": "Finish the supported shared four-method host scheme and exact target/link/testability review, then freeze integrated6d3a source plus finite component controls for qualification. Fresh native admission needs actual MAIN/source/awake bindings. Preserve Core12/13 unexecuted and accepted PR7 evidence; no Ready or human session.",
+  "next_action": "Freeze the signed4da720 four-only hosted qualification with fresh MAIN/source/awake bindings; verify actual built manifest before launch. Review the seven private remaining-control drafts; retain actual lifecycle and complete Off obligations separately. Core12/13/four and new drafts are unexecuted; accepted PR7 stays untouched.",
   "actions": {
     "sdk_edits": 0,
     "controls": 0,
@@ -382,7 +382,7 @@
     "sha256": "51dddcbd0d0a7e6851e0e1b8daecdb28c5d7f387ef921f4fd3629836107a7d51"
   },
   "focused_host_application": {
-    "state": "ROOT_OWNED_PARTIAL_TEST_FIXTURE_APPLICATION_UNCOMPILED_UNEXECUTED",
+    "state": "SIGNED_FOUR_CONTROL_FIXTURE_APPLIED_SOURCE_REVIEWED_UNCOMPILED_UNEXECUTED",
     "actual_xcode_operations": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/navigation-controls-host-environment-proposal/focused-successor/actual-xcode-application-tool-returns.json",
       "sha256": "103ca9b4b695d7e552de8a7335a77bb8ab9fad34b5b8c5a006f32706901827b2"
@@ -391,15 +391,80 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/navigation-controls-host-environment-proposal/focused-successor/partial-application-readback.json",
       "sha256": "f54914aeedd17fb933025424284d4c1ac66a5dafa19c84d7a848318f005815fe"
     },
-    "scope": "Dedicated two targets, three reviewed Swift files plus repository headers, explicit retained scene plist; default SwiftUI screen/assets removed. Five existing target dependencies and four framework products added through supported UI. Current target settings match host binary and iOS15/repository Swift language policy. No SDK source changed beyond6d3a.",
+    "scope": "Signed six-path dedicated UIKit host/test fixture. Source bodies match the reviewed four controls; Xcode discovers exactly four enabled methods in shared nonparallel TSan scheme. Five existing dependencies/four framework links are source reviewed. Existing SDK sources unchanged from6d3a; source discovery is not execution.",
     "holds": [
-      "Shared four-only test scheme remains to create; GUI was yielded when user changed Xcode to MAIN.",
-      "Final source/membership/dependency/link/testability review and actual compiler/host loading needed before native admission.",
-      "Two asset-setting deletion calls were rejected as unknown setting; their original tool errors remain in transcript. No native failure or SDK defect follows."
+      "Built Info.plist must prove the intended scene delegate and no resource-copy conflict before launch; conditional manifest generation evaluates YES and the rejected conditional setter is preserved.",
+      "Actual compiler, minimum-toolchain/project-format compatibility, testability and framework loading remain unqualified.",
+      "All four discovered methods remain unexecuted; real scene/window and exact executed results plus original-state cleanup are required."
     ],
     "native_calls": 0,
     "builds": 0,
     "controls_executed": 0,
+    "gates_closed": [],
+    "fixture_head": "4da720bb9af054b41d52841d670c4e95703a9f03",
+    "signature": "G",
+    "checkpoint": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/navigation-controls-host-environment-proposal/focused-successor/applied-fixture-review/fixture-checkpoint.json",
+      "sha256": "376d295c00e4f9b9ece18f332c61b71abd5676ae11cd1088b005d0996ca54e1a"
+    },
+    "applied_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/navigation-controls-host-environment-proposal/focused-successor/applied-fixture-review/review.json",
+      "sha256": "a4fb43ae8ca16b4e0f54c401f5d4aa3ca85689ca312aecfee6c1a3073d1d26ec"
+    },
+    "applied_review_readback": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/navigation-controls-host-environment-proposal/focused-successor/applied-fixture-review/review-readback.json",
+      "sha256": "5ad4eea080a9ef536b684383cfcee18efa39f41ded484c8c8c4edcc0f398603f"
+    },
+    "applied_review_actual": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/navigation-controls-host-environment-proposal/focused-successor/applied-fixture-review/actual-review-publication-tool-return.json",
+      "sha256": "ca86d524ad0ef366969d919cd00437f0cc4b4bd589d9c42356f4f6e14e6ca4f1"
+    },
+    "applied_packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/navigation-controls-host-environment-proposal/focused-successor/applied-fixture-review/packet.json",
+      "sha256": "a556211ac8b34909ea6b9391113b8808a5e0de558845a2f0b625cbcb86deda33"
+    },
+    "actual_test_discovery": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/navigation-controls-host-environment-proposal/focused-successor/actual-four-test-discovery-tool-returns.json",
+      "sha256": "244fa37d8ae77e266941dc03eaec426cc5f35b6f23a96a88bacbaee04459fda1"
+    }
+  },
+  "finite_control_source_preparation": {
+    "state": "PRIVATE_SEVEN_METHOD_DRAFT_PENDING_SOURCE_REVIEW_UNAPPLIED",
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/remaining-foundation-controls-source-proposal/packet.json",
+      "sha256": "46f791a775ddfd2174015306430720cc7e724f9e4a07c2d73838ad5e788fbfdd"
+    },
+    "control_map": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/remaining-foundation-controls-source-proposal/control-map.json",
+      "sha256": "5de82a26daf8052f92314f25dc8bf4067533a37055bfeb333c124a17fb9b2a34"
+    },
+    "new_methods": 7,
+    "reused_core12": 12,
+    "reused_future13": 13,
+    "excluded_applied_hosted_methods": 4,
+    "limits": "Actual background/disconnect, Off entry lookup/rendering/layout/allocation and observer-activation failure remain distinct finite gaps; no simulated lifecycle claim.",
+    "builds": 0,
+    "executed_tests": 0,
+    "gates_closed": []
+  },
+  "hosted_four_qualification_preparation": {
+    "state": "PRIVATE_UNISSUED_PROPOSAL_PENDING_REVIEW_NO_NATIVE_ADMISSION",
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/hosted-four-qualification-preparation/packet.json",
+      "sha256": "72eedcb72af789170637ac931adfe59f71c5056443fbf6da9eafb42584ae69c4"
+    },
+    "source_head": "4da720bb9af054b41d52841d670c4e95703a9f03",
+    "sdk_implementation_head": "6d3a7084baa61af5e4b876ddf5e83c4b613487c6",
+    "remaining_bindings": [
+      "current MAIN",
+      "actual awake authority/process",
+      "actual device/original state",
+      "output/product identities",
+      "review/admission"
+    ],
+    "clock_issued": false,
+    "builds": 0,
+    "executed_tests": 0,
     "gates_closed": []
   }
 }
