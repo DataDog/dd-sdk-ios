@@ -157,7 +157,7 @@ class MonitorTests: XCTestCase {
     func testAddViewLoadingTimeToActiveView_thenLoadingTimeUpdated() throws {
         // Given
         let monitor = Monitor(
-            dependencies: .mockWith(featureScope: featureScope),
+            dependencies: .mockWith(featureScope: featureScope, featureFlags: [.viewUpdates: false]),
             dateProvider: SystemDateProvider()
         )
         monitor.notifySDKInit()
@@ -195,7 +195,7 @@ class MonitorTests: XCTestCase {
     func testAddViewLoadingTimeMultipleTimes_thenLoadingTimeOverwritten() throws {
         // Given
         let monitor = Monitor(
-            dependencies: .mockWith(featureScope: featureScope),
+            dependencies: .mockWith(featureScope: featureScope, featureFlags: [.viewUpdates: false]),
             dateProvider: SystemDateProvider()
         )
         monitor.notifySDKInit()
@@ -236,6 +236,29 @@ class MonitorTests: XCTestCase {
         XCTAssertTrue(lastView3.view.loadingTime! > 0)
 
         XCTAssertTrue(lastView3.view.loadingTime! > old)
+    }
+
+    func testStartingAnotherViewWithoutStoppingPreviousView_reportsSlowFramesRate() throws {
+        let hitch = Hitch(start: 0, duration: 0.16.dd.toInt64Nanoseconds)
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(
+                featureScope: featureScope,
+                viewHitchesReaderFactory: { ViewHitchesMock(hitchesDataModel: ([hitch], 0.16)) },
+                featureFlags: [.viewUpdates: false]
+            ),
+            dateProvider: dateProvider
+        )
+
+        monitor.startView(key: "ScreenA")
+        dateProvider.now.addTimeInterval(10)
+        monitor.startView(key: "ScreenB")
+        dateProvider.now.addTimeInterval(10)
+        monitor.stopView(key: "ScreenB")
+
+        let viewEvents = try XCTUnwrap((featureScope as? FeatureScopeMock)?.eventsWritten(ofType: RUMViewEvent.self))
+        XCTAssertEqual(viewEvents.last { $0.view.name == "ScreenA" }?.view.slowFramesRate, 16)
+        XCTAssertEqual(viewEvents.last { $0.view.name == "ScreenB" }?.view.slowFramesRate, 16)
     }
 
     // MARK: - hasReplay snapshot

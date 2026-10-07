@@ -24,6 +24,7 @@ extension CALayerSnapshot {
 extension CALayerSnapshot.SemanticObservation {
     enum VisualEffect: Sendable, Equatable {
         case automaticCapsule
+        case platformGlass
         case glassGroup
         case backdrop
         case liquidLens
@@ -47,6 +48,7 @@ extension CALayerSnapshot.SemanticObservation {
 extension CALayerSnapshot.SemanticObservation {
     enum Semantics: Sendable, Equatable {
         case layer
+        case unsupported(String)
         case gradient(GradientSemantics)
         case visualEffect(VisualEffect)
         case label(LabelSemantics)

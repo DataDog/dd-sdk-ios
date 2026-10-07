@@ -35,8 +35,6 @@ internal final class DatadogProfiler: ProfilingHandler, @unchecked Sendable {
     private let profilingConditions: ProfilingConditions
     private let profilingInterval: TimeInterval
     private let minProfileDuration: TimeInterval
-    /// Whether the native profiler started at process launch and the latest configuration permits harvesting it.
-    private let hasAppLaunchProfileToHarvest: Bool
     private var timer: DispatchSourceTimer?
 
     let featureScope: FeatureScope
@@ -91,7 +89,6 @@ internal final class DatadogProfiler: ProfilingHandler, @unchecked Sendable {
         profilingConditions: ProfilingConditions = .init(),
         profilingInterval: TimeInterval = Constants.maxProfileDuration,
         minProfileDuration: TimeInterval = Constants.minProfileDuration,
-        isAppLaunchProfilingEnabled: Bool = false,
         encoder: JSONEncoder = JSONEncoder(),
         dateProvider: DateProvider = SystemDateProvider()
     ) {
@@ -103,7 +100,6 @@ internal final class DatadogProfiler: ProfilingHandler, @unchecked Sendable {
         self.profilingConditions = profilingConditions
         self.profilingInterval = profilingInterval
         self.minProfileDuration = minProfileDuration
-        self.hasAppLaunchProfileToHarvest = isAppLaunchProfilingEnabled && dd_profiler_was_started_at_launch()
         self.encoder = encoder
         self.dateProvider = dateProvider
         self.profileStartDate = dateProvider.now
@@ -200,15 +196,24 @@ private extension DatadogProfiler {
                 return
             }
 
+            var didChangeRUMSession = false
             if let sessionID = context.additionalContext(ofType: RUMCoreContext.self)?.sessionID,
                sessionID != currentRUMSessionID {
                 currentRUMSessionID = sessionID
+                didChangeRUMSession = true
                 telemetryController.resetContinuousCycleIndex()
             }
 
             let wasTrackingConsentAllowed = isTrackingConsentAllowed
             isTrackingConsentAllowed = context.trackingConsent != .notGranted
             if !isTrackingConsentAllowed {
+                cleanUpState(preservingOngoingOperations: false)
+                updateProfilerState(canProfile: false)
+                return
+            }
+
+            if context.additionalContext(ofType: RUMCoreContext.self)?.sessionSampler.isSampled == false {
+                isContinuousProfilingGraceAvailable = false
                 cleanUpState(preservingOngoingOperations: false)
                 updateProfilerState(canProfile: false)
                 return
@@ -259,7 +264,8 @@ private extension DatadogProfiler {
                 updateProfilerState(canProfile: shouldKeepProfilerRunning(), shouldSendProfile: true)
             }
             // If the conditions are the same, ignore the update profiler state
-            else if currentAppState != previousAppState
+            else if didChangeRUMSession
+                        || currentAppState != previousAppState
                         || hasConditionsToProfile != previousConditions
                         || isTrackingConsentAllowed != wasTrackingConsentAllowed {
                 switch ProfilingContext.Status.current {
@@ -441,6 +447,11 @@ private extension DatadogProfiler {
             guard isTrackingConsentAllowed else {
                 return
             }
+            if profilingSamplerProvider.isAppLaunchProfilingAvailable,
+               profilingSamplerProvider.appLaunchProfilingSampled == false {
+                updateProfilerState(canProfile: false)
+                return
+            }
             let shouldHarvestAppLaunchProfile = shouldHarvestAppLaunchProfileOnTTID
             attributes = message.attributes
             currentRUMVitals[message.ttid.key] = message.ttid
@@ -477,7 +488,7 @@ private extension DatadogProfiler {
             return
         }
 
-        if hasAppLaunchProfileToHarvest {
+        if profilingSamplerProvider.appLaunchProfilingSampled == true {
             writeAppLaunchProfile(profile)
         }
         cleanUpState()
@@ -485,8 +496,10 @@ private extension DatadogProfiler {
     }
 
     func writeAppLaunchProfile(_ profile: OpaquePointer) {
-        // Preserve the existing fail-open behavior while quota is pending:
-        // only an explicit quota rejection blocks the app-launch upload.
+        guard profilingSamplerProvider.appLaunchProfilingSampled == true else {
+            return
+        }
+        // Preserve the existing fail-open behavior while quota is pending.
         guard !quotaChecker.isRejectedByQuota else {
             telemetryController.sendProfileDropped(for: .appLaunch, reason: .quotaRejected(quotaChecker.quotaResult?.reason))
             return
@@ -589,7 +602,8 @@ private extension DatadogProfiler {
     var shouldWaitForAppLaunchVital: Bool {
         // If continuous profiling samples out before TTID, keep the native profiler
         // briefly so it can harvest the launch profile.
-        hasAppLaunchProfileToHarvest
+        profilingSamplerProvider.isAppLaunchProfilingAvailable
+            && profilingSamplerProvider.appLaunchProfilingSampled != false
             && isTrackingConsentAllowed
             && !quotaChecker.isRejectedByQuota
             && hasConditionsToProfile
@@ -615,7 +629,7 @@ private extension DatadogProfiler {
     var shouldHarvestAppLaunchProfileOnTTID: Bool {
         // TTID may still be attached to continuous/custom profiles when standalone
         // app-launch upload is disabled; this gate only decides standalone launch harvesting.
-        guard hasAppLaunchProfileToHarvest
+        guard profilingSamplerProvider.appLaunchProfilingSampled == true
                 && hasProcessedAppLaunchVital
                 && !quotaChecker.isRejectedByQuota else {
             return false

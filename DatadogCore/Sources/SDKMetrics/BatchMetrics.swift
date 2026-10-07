@@ -76,7 +76,8 @@ internal enum BatchDeletedMetric {
         case obsolete
         /// The batch was deleted due to exceeding allowed max size for batches directory.
         case purged
-        /// The feature failed to create request for that batch (e.g. data was malformed).
+        /// The batch could not be turned into a request: the feature failed to create one for it,
+        /// or the batch never reached the feature because its file held no readable event.
         case invalid
         /// The batch was deleted arbitrarily without considering its delivery status. This option is only used in test logic
         /// and we don't send "Batch Deleted" metric for this case.

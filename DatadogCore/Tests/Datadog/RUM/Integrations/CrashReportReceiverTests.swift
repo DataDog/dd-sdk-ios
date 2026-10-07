@@ -189,11 +189,8 @@ class CrashReportReceiverTests: XCTestCase {
 
         // Then
         let sentRUMError = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self).first)
-        let usrInfoCount = sentRUMError.usr?.usrInfo.count ?? 0
-        let accountInfoCount = sentRUMError.account?.accountInfo.count ?? 0
         let contextInfoCount = sentRUMError.context?.contextInfo.count ?? 0
-        XCTAssertEqual(usrInfoCount + accountInfoCount + contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes)
-        XCTAssertEqual(contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes - usrInfoCount - accountInfoCount, "`contextInfo` is removed first, then `account`, when the total exceeds the limit")
+        XCTAssertEqual(contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes, "`contextInfo` is capped at the per-field limit")
     }
 
     func testGivenCrashDuringRUMSessionWithActiveViewCollectedMoreThan4HoursAgoAndTooManyAttributes_whenSending_itSanitizesRUMErrorContext() throws {
@@ -231,11 +228,8 @@ class CrashReportReceiverTests: XCTestCase {
 
         // Then
         let sentRUMError = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self).first)
-        let usrInfoCount = sentRUMError.usr?.usrInfo.count ?? 0
-        let accountInfoCount = sentRUMError.account?.accountInfo.count ?? 0
         let contextInfoCount = sentRUMError.context?.contextInfo.count ?? 0
-        XCTAssertEqual(usrInfoCount + accountInfoCount + contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes)
-        XCTAssertEqual(contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes - usrInfoCount - accountInfoCount, "`contextInfo` is removed first, then `account`, when the total exceeds the limit")
+        XCTAssertEqual(contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes, "`contextInfo` is capped at the per-field limit")
     }
 
     func testGivenCrashDuringRUMSessionWithActiveViewCollectedLessThan4HoursAgoAndTooManyAttributes_whenSending_itSanitizesRUMViewContext() throws {
@@ -273,11 +267,8 @@ class CrashReportReceiverTests: XCTestCase {
 
         // Then
         let sentRUMView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).first)
-        let usrInfoCount = sentRUMView.usr?.usrInfo.count ?? 0
-        let accountInfoCount = sentRUMView.account?.accountInfo.count ?? 0
         let contextInfoCount = sentRUMView.context?.contextInfo.count ?? 0
-        XCTAssertEqual(usrInfoCount + accountInfoCount + contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes)
-        XCTAssertEqual(contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes - usrInfoCount - accountInfoCount, "`contextInfo` is removed first, then `account`, when the total exceeds the limit")
+        XCTAssertEqual(contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes, "`contextInfo` is capped at the per-field limit")
     }
 
     func testGivenCrashDuringRUMSessionWithActiveViewAndViewEventMapperReintroducingTooManyAttributes_whenSending_itSanitizesTheMappedRUMViewContext() throws {
@@ -317,10 +308,8 @@ class CrashReportReceiverTests: XCTestCase {
 
         // Then
         let sentRUMView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).first)
-        let usrInfoCount = sentRUMView.usr?.usrInfo.count ?? 0
-        let accountInfoCount = sentRUMView.account?.accountInfo.count ?? 0
         let contextInfoCount = sentRUMView.context?.contextInfo.count ?? 0
-        XCTAssertEqual(usrInfoCount + accountInfoCount + contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes, "the view returned by `viewEventMapper` must be sanitized before writing")
+        XCTAssertEqual(contextInfoCount, AttributesSanitizer.Constraints.maxNumberOfAttributes, "the view returned by `viewEventMapper` must be sanitized before writing")
     }
 
     func testGivenCrashDuringRUMSessionWithActiveView_whenSending_itMapsTheRawRUMViewContextBeforeSanitizing() throws {

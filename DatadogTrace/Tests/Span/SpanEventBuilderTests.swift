@@ -673,9 +673,9 @@ class SpanEventBuilderTests: XCTestCase {
         // Given
         let sampler: DeterministicSampler = .mockKeepAll()
         let rum = oneOf([
-            { RUMCoreContext(applicationID: .mockRandom(), sessionID: .mockRandom(), sessionSampler: sampler, viewID: .mockRandom(), userActionID: .mockRandom()) },
-            { RUMCoreContext(applicationID: .mockRandom(), sessionID: .mockRandom(), sessionSampler: sampler, viewID: .mockRandom(), userActionID: nil) },
-            { RUMCoreContext(applicationID: .mockRandom(), sessionID: .mockRandom(), sessionSampler: sampler, viewID: nil, userActionID: nil) }
+            { RUMCoreContext(applicationID: .mockRandom(), sessionID: .mockRandom(), sessionSampler: sampler, viewID: .mockRandom(), userActionID: .mockRandom(), viewName: .mockRandom()) },
+            { RUMCoreContext(applicationID: .mockRandom(), sessionID: .mockRandom(), sessionSampler: sampler, viewID: .mockRandom(), userActionID: nil, viewName: .mockRandom()) },
+            { RUMCoreContext(applicationID: .mockRandom(), sessionID: .mockRandom(), sessionSampler: sampler, viewID: nil, userActionID: nil, viewName: nil) }
         ])
         let context: DatadogContext = .mockWith(additionalContext: [rum])
 
@@ -702,6 +702,7 @@ class SpanEventBuilderTests: XCTestCase {
         XCTAssertEqual(span.tags[SpanTags.rumSessionID], rum.sessionID)
         XCTAssertEqual(span.tags[SpanTags.rumViewID], rum.viewID)
         XCTAssertEqual(span.tags[SpanTags.rumActionID], rum.userActionID)
+        XCTAssertEqual(span.tags[SpanTags.rumViewName], rum.viewName)
     }
     // swiftlint:enable opening_brace
 
@@ -710,7 +711,10 @@ class SpanEventBuilderTests: XCTestCase {
         let rum = RUMCoreContext(
             applicationID: .mockRandom(),
             sessionID: .mockRandom(),
-            sessionSampler: .mockRejectAll()
+            sessionSampler: .mockRejectAll(),
+            viewID: .mockRandom(),
+            userActionID: .mockRandom(),
+            viewName: .mockRandom()
         )
         let context: DatadogContext = .mockWith(additionalContext: [rum])
 
@@ -737,6 +741,76 @@ class SpanEventBuilderTests: XCTestCase {
         XCTAssertNil(span.tags[SpanTags.rumSessionID])
         XCTAssertNil(span.tags[SpanTags.rumViewID])
         XCTAssertNil(span.tags[SpanTags.rumActionID])
+        XCTAssertNil(span.tags[SpanTags.rumViewName])
+    }
+
+    func testWhenBundleWithRUMisEnabled_andRUMViewNameIsUnavailable_itCreatesSpanWithNoViewName() {
+        // Given
+        let rum = RUMCoreContext(
+            applicationID: .mockRandom(),
+            sessionID: .mockRandom(),
+            sessionSampler: .mockKeepAll(),
+            viewID: .mockRandom(),
+            userActionID: .mockRandom(),
+            viewName: nil
+        )
+        let context: DatadogContext = .mockWith(additionalContext: [rum])
+
+        // When
+        let builder: SpanEventBuilder = .mockWith(bundleWithRUM: true)
+        let span = builder.createSpanEvent(
+            context: context,
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
+            tags: [:],
+            baggageItems: [:],
+            logFields: []
+        )
+
+        // Then
+        XCTAssertFalse(span.tags.keys.contains(SpanTags.rumViewName))
+    }
+
+    func testWhenSpanAlreadyHasViewName_itIsNotOverwrittenByRUMContext() {
+        // Given
+        let userViewName: String = .mockRandom()
+        let rum = RUMCoreContext(
+            applicationID: .mockRandom(),
+            sessionID: .mockRandom(),
+            sessionSampler: .mockKeepAll(),
+            viewID: .mockRandom(),
+            userActionID: .mockRandom(),
+            viewName: "rum-view-name"
+        )
+        let context: DatadogContext = .mockWith(additionalContext: [rum])
+
+        // When
+        let builder: SpanEventBuilder = .mockWith(bundleWithRUM: true)
+        let span = builder.createSpanEvent(
+            context: context,
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            samplingPriority: .mockAny(),
+            samplingDecisionMaker: .mockAny(),
+            tags: [SpanTags.rumViewName: userViewName],
+            baggageItems: [:],
+            logFields: []
+        )
+
+        // Then
+        XCTAssertEqual(span.tags[SpanTags.rumViewName], userViewName)
     }
 
     func testWhenBundleWithRUMisDisabled_itCreatesSpanWithNoRUMContext() {
@@ -746,7 +820,8 @@ class SpanEventBuilderTests: XCTestCase {
             sessionID: .mockRandom(),
             sessionSampler: .mockKeepAll(),
             viewID: .mockRandom(),
-            userActionID: .mockRandom()
+            userActionID: .mockRandom(),
+            viewName: .mockRandom()
         )
         let context: DatadogContext = .mockWith(additionalContext: [rum])
 
@@ -773,5 +848,6 @@ class SpanEventBuilderTests: XCTestCase {
         XCTAssertNil(span.tags[SpanTags.rumSessionID])
         XCTAssertNil(span.tags[SpanTags.rumViewID])
         XCTAssertNil(span.tags[SpanTags.rumActionID])
+        XCTAssertNil(span.tags[SpanTags.rumViewName])
     }
 }

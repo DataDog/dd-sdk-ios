@@ -57,8 +57,11 @@ class ViewLoadingMetricsTests: XCTestCase {
             .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
             .takeSingle()
 
-        let lastViewEvent = try XCTUnwrap(session.views.last?.viewEvents.last)
-        let actualTNS = try XCTUnwrap(lastViewEvent.view.networkSettledTime, "TNS should be reported after initial resources complete loading.")
+        let lastView = try XCTUnwrap(session.views.last)
+        let actualTNS = try XCTUnwrap(
+            lastView.latestViewEvent?.view.networkSettledTime,
+            "TNS should be reported after initial resources complete loading."
+        )
         let expectedTNS = lastResourceTime.timeIntervalSince(viewStartTime).dd.toInt64Nanoseconds
         XCTAssertEqual(actualTNS, expectedTNS, "TNS should span from the view start to the last completed initial resource.")
     }
@@ -98,8 +101,11 @@ class ViewLoadingMetricsTests: XCTestCase {
             .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
             .takeSingle()
 
-        let lastViewEvent = try XCTUnwrap(session.views.last?.viewEvents.last)
-        let actualTNS = try XCTUnwrap(lastViewEvent.view.networkSettledTime, "TNS should be reported after initial resources complete loading.")
+        let lastView = try XCTUnwrap(session.views.last)
+        let actualTNS = try XCTUnwrap(
+            lastView.latestViewEvent?.view.networkSettledTime,
+            "TNS should be reported after initial resources complete loading."
+        )
         let expectedTNS = lastResourceTime.timeIntervalSince(viewStartTime).dd.toInt64Nanoseconds
         XCTAssertEqual(actualTNS, expectedTNS, "TNS should span from the view start to the last completed initial resource (resource1 with correct metrics).")
     }
@@ -137,8 +143,11 @@ class ViewLoadingMetricsTests: XCTestCase {
             .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
             .takeSingle()
 
-        let lastViewEvent = try XCTUnwrap(session.views.last?.viewEvents.last)
-        let actualTNS = try XCTUnwrap(lastViewEvent.view.networkSettledTime, "TNS should be reported after initial resources complete loading.")
+        let lastView = try XCTUnwrap(session.views.last)
+        let actualTNS = try XCTUnwrap(
+            lastView.latestViewEvent?.view.networkSettledTime,
+            "TNS should be reported after initial resources complete loading."
+        )
         let expectedTNS = lastInitialResourceTime.timeIntervalSince(viewStartTime).dd.toInt64Nanoseconds
         XCTAssertEqual(actualTNS, expectedTNS, "TNS should span from the view start to the last completed initial resource.")
     }
@@ -217,8 +226,11 @@ class ViewLoadingMetricsTests: XCTestCase {
             .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
             .takeSingle()
 
-        let lastViewEvent = try XCTUnwrap(session.views.last?.viewEvents.last)
-        let actualTNS = try XCTUnwrap(lastViewEvent.view.networkSettledTime, "TNS should be reported after initial resources end.")
+        let lastView = try XCTUnwrap(session.views.last)
+        let actualTNS = try XCTUnwrap(
+            lastView.latestViewEvent?.view.networkSettledTime,
+            "TNS should be reported after initial resources end."
+        )
         let expectedTNS = resource1EndTime.timeIntervalSince(viewStartTime).dd.toInt64Nanoseconds
         XCTAssertEqual(actualTNS, expectedTNS, "TNS should only reflect ACCEPTED resources.")
     }
@@ -291,8 +303,11 @@ class ViewLoadingMetricsTests: XCTestCase {
             .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
             .takeSingle()
 
-        let lastViewEvent = try XCTUnwrap(session.views.last?.viewEvents.last)
-        let actualTNS = try XCTUnwrap(lastViewEvent.view.networkSettledTime, "TNS should be reported after initial resources complete loading.")
+        let lastView = try XCTUnwrap(session.views.last)
+        let actualTNS = try XCTUnwrap(
+            lastView.latestViewEvent?.view.networkSettledTime,
+            "TNS should be reported after initial resources complete loading."
+        )
         let expectedTNS = lastInitialResourceCompletionTime.timeIntervalSince(viewStartTime).dd.toInt64Nanoseconds
         XCTAssertEqual(actualTNS, expectedTNS, "TNS should span from the view start to the completion of last classified resource.")
     }
@@ -583,8 +598,8 @@ class ViewLoadingMetricsTests: XCTestCase {
             .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
             .takeSingle()
 
-        let nextViewEvent = try XCTUnwrap(session.views.first(where: { $0.name == "NextView" })?.viewEvents.last)
-        let actualINV = nextViewEvent.view.interactionToNextViewTime
+        let nextView = try XCTUnwrap(session.views.first(where: { $0.name == "NextView" }))
+        let actualINV = nextView.latestViewEvent?.view.interactionToNextViewTime
         XCTAssertEqual(180_000, actualINV)
     }
 }

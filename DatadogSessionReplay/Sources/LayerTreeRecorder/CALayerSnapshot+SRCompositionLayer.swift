@@ -9,11 +9,37 @@ import Foundation
 import SwiftUI
 
 extension CALayerSnapshot {
+    /// Whether glass is approximated with a background, clip, and shadow.
+    var requiresGlassApproximation: Bool {
+        observation.semantics == .visualEffect(.automaticCapsule)
+            || (observation.semantics == .visualEffect(.platformGlass) && cornerRadii != .zero)
+    }
+
+    /// Corner radii resolved from automatic capsule or platform glass semantics.
+    var glassCornerRadii: CornerRadii? {
+        switch observation.semantics {
+        case .visualEffect(.automaticCapsule):
+            return .init(
+                cornerRadius: min(absoluteFrame.width, absoluteFrame.height) / 2,
+                maskedCorners: [
+                    .layerMinXMinYCorner,
+                    .layerMaxXMinYCorner,
+                    .layerMinXMaxYCorner,
+                    .layerMaxXMaxYCorner
+                ]
+            )
+        case .visualEffect(.platformGlass):
+            return cornerRadii
+        default:
+            return nil
+        }
+    }
+
     var requiresCompositionLayer: Bool {
         masksToBounds
             || opacity < 1
             || hasShadow
-            || observation.semantics == .visualEffect(.automaticCapsule)
+            || requiresGlassApproximation
             || filters.contains {
                 SRCompositionLayerModifier(filter: $0, semantics: observation.semantics) != nil
             }
@@ -59,19 +85,7 @@ extension CALayerSnapshot {
     }
 
     private var clipModifier: SRCompositionLayerModifier? {
-        let cornerRadii: CornerRadii? = if case .visualEffect(.automaticCapsule) = observation.semantics {
-            .init(
-                cornerRadius: min(absoluteFrame.width, absoluteFrame.height) / 2,
-                maskedCorners: [
-                    .layerMinXMinYCorner,
-                    .layerMaxXMinYCorner,
-                    .layerMinXMaxYCorner,
-                    .layerMaxXMaxYCorner
-                ]
-            )
-        } else {
-            masksToBounds ? self.cornerRadii : nil
-        }
+        let cornerRadii = requiresGlassApproximation ? glassCornerRadii : (masksToBounds ? self.cornerRadii : nil)
 
         return cornerRadii.map {
             .compositionLayerClipModifier(
@@ -87,7 +101,7 @@ extension CALayerSnapshot {
     }
 
     private var shadowModifier: SRCompositionLayerModifier? {
-        let shadow: SRCompositionLayerShadowModifier? = if case .visualEffect(.automaticCapsule) = observation.semantics {
+        let shadow: SRCompositionLayerShadowModifier? = if requiresGlassApproximation {
             .init(
                 color: hexString(from: UIColor.black.withAlphaComponent(0.125).cgColor) ?? .fallbackColor,
                 offsetX: 0,

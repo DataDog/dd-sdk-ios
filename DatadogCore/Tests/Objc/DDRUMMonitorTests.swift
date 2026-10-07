@@ -276,16 +276,17 @@ class DDRUMMonitorTests: XCTestCase {
 
         objcRUMMonitor.stopView(key: view, attributes: [:])
 
-        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+        let session = try RUMSessionMatcher
+            .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
+            .takeSingle()
 
-        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self) { event in
-            return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
-        }
-        XCTAssertEqual(viewEvents.count, 2)
+        let customView = try XCTUnwrap(session.views.first(where: { !$0.isApplicationLaunchView() }))
+        XCTAssertEqual(customView.viewEvents.count, 1)
+        XCTAssertEqual(customView.viewUpdateEvents.count, 1)
 
-        XCTAssertEqual(try viewEvents[1].attribute(forKeyPath: "context.view-attribute1"), "foo")
-        XCTAssertNil(try? viewEvents[1].attribute(forKeyPath: "context.view-attribute2") as String)
-        XCTAssertEqual(try viewEvents[1].attribute(forKeyPath: "context.view-attribute3"), "foobar")
+        XCTAssertEqual(customView.viewUpdateEvents[0].attribute(forKey: "view-attribute1"), "foo")
+        XCTAssertNil(customView.viewUpdateEvents[0].attribute(forKey: "view-attribute2") as String?)
+        XCTAssertEqual(customView.viewUpdateEvents[0].attribute(forKey: "view-attribute3"), "foobar")
     }
 
     func testSendingMultipleViewAttributes() throws {
@@ -308,18 +309,19 @@ class DDRUMMonitorTests: XCTestCase {
 
         objcRUMMonitor.stopView(key: view, attributes: [:])
 
-        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+        let session = try RUMSessionMatcher
+            .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
+            .takeSingle()
 
-        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self) { event in
-            return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
-        }
-        XCTAssertEqual(viewEvents.count, 2)
+        let customView = try XCTUnwrap(session.views.first(where: { !$0.isApplicationLaunchView() }))
+        XCTAssertEqual(customView.viewEvents.count, 1)
+        XCTAssertEqual(customView.viewUpdateEvents.count, 1)
 
-        XCTAssertEqual(try viewEvents[1].attribute(forKeyPath: "context.view-attribute1"), "foo")
-        XCTAssertNil(try? viewEvents[1].attribute(forKeyPath: "context.view-attribute2") as String)
-        XCTAssertEqual(try viewEvents[1].attribute(forKeyPath: "context.view-attribute3"), 3)
-        XCTAssertEqual(try viewEvents[1].attribute(forKeyPath: "context.view-attribute4"), true)
-        XCTAssertNil(try? viewEvents[1].attribute(forKeyPath: "context.view-attribute5") as String)
+        XCTAssertEqual(customView.viewUpdateEvents[0].attribute(forKey: "view-attribute1"), "foo")
+        XCTAssertNil(customView.viewUpdateEvents[0].attribute(forKey: "view-attribute2") as String?)
+        XCTAssertEqual(customView.viewUpdateEvents[0].attribute(forKey: "view-attribute3"), 3)
+        XCTAssertEqual(customView.viewUpdateEvents[0].attribute(forKey: "view-attribute4"), true)
+        XCTAssertNil(customView.viewUpdateEvents[0].attribute(forKey: "view-attribute5") as String?)
     }
 
     func testSendingViewEvents() throws {
@@ -333,33 +335,24 @@ class DDRUMMonitorTests: XCTestCase {
         objcRUMMonitor.reportAppFullyDisplayed()
         objcRUMMonitor.stopView(key: "view2", attributes: ["event-attribute2": "bar2"])
 
-        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+        let session = try RUMSessionMatcher
+            .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
+            .takeSingle()
 
-        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self) { event in
-            return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
-        }
-        XCTAssertEqual(viewEvents.count, 5)
+        let firstView = try XCTUnwrap(session.views.first(where: { $0.name == "FirstView" }))
+        XCTAssertEqual(firstView.viewEvents.count, 1)
+        XCTAssertEqual(firstView.viewUpdateEvents.count, 1)
+        XCTAssertEqual(firstView.viewEvents[0].attribute(forKey: "event-attribute1"), "foo1")
+        XCTAssertEqual(firstView.viewUpdateEvents[0].attribute(forKey: "event-attribute1"), "foo1")
+        XCTAssertEqual(firstView.viewUpdateEvents[0].attribute(forKey: "event-attribute2"), "foo2")
 
-        let event1: RUMViewEvent = try viewEvents[0].model()
-        let event2: RUMViewEvent = try viewEvents[1].model()
-        let event3: RUMViewEvent = try viewEvents[2].model()
-        let event4: RUMViewEvent = try viewEvents[3].model()
-        let event5: RUMViewEvent = try viewEvents[4].model()
-        XCTAssertEqual(event1.view.name, "FirstView")
-        XCTAssertEqual(event1.view.url, "view1")
-        XCTAssertEqual(event2.view.name, "FirstView")
-        XCTAssertEqual(event2.view.url, "view1")
-        XCTAssertEqual(event3.view.name, "SecondView")
-        XCTAssertEqual(event3.view.url, "view2")
-        XCTAssertEqual(event4.view.name, "SecondView")
-        XCTAssertEqual(event4.view.url, "view2")
-        XCTAssertNotNil(event4.view.loadingTime)
-        XCTAssertEqual(event5.view.name, "SecondView")
-        XCTAssertEqual(event5.view.url, "view2")
-        XCTAssertEqual(try viewEvents[1].attribute(forKeyPath: "context.event-attribute1"), "foo1")
-        XCTAssertEqual(try viewEvents[1].attribute(forKeyPath: "context.event-attribute2"), "foo2")
-        XCTAssertEqual(try viewEvents[4].attribute(forKeyPath: "context.event-attribute1"), "bar1")
-        XCTAssertEqual(try viewEvents[4].attribute(forKeyPath: "context.event-attribute2"), "bar2")
+        let secondView = try XCTUnwrap(session.views.first(where: { $0.name == "SecondView" }))
+        XCTAssertEqual(secondView.viewEvents.count, 1)
+        XCTAssertEqual(secondView.viewUpdateEvents.count, 2)
+        XCTAssertEqual(secondView.viewEvents[0].attribute(forKey: "event-attribute1"), "bar1")
+        XCTAssertNotNil(secondView.viewUpdateEvents[0].view.loadingTime)
+        XCTAssertEqual(secondView.viewUpdateEvents[1].attribute(forKey: "event-attribute1"), "bar1")
+        XCTAssertEqual(secondView.viewUpdateEvents[1].attribute(forKey: "event-attribute2"), "bar2")
     }
 
     func testSendingViewEventsWithTiming() throws {
@@ -370,21 +363,18 @@ class DDRUMMonitorTests: XCTestCase {
         objcRUMMonitor.addTiming(name: "timing")
         objcRUMMonitor.stopView(key: "some-view", attributes: ["event-attribute2": "foo2"])
 
-        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+        let session = try RUMSessionMatcher
+            .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
+            .takeSingle()
 
-        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self) { event in
-            return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
-        }
-        XCTAssertEqual(viewEvents.count, 3)
+        let someView = try XCTUnwrap(session.views.first(where: { $0.name == "SomeView" }))
+        XCTAssertEqual(someView.viewEvents.count, 1)
+        XCTAssertEqual(someView.viewUpdateEvents.count, 2)
 
-        let event1: RUMViewEvent = try viewEvents[0].model()
-        let event2: RUMViewEvent = try viewEvents[1].model()
-        XCTAssertEqual(event1.view.name, "SomeView")
-        XCTAssertEqual(event2.view.name, "SomeView")
-        XCTAssertEqual(try viewEvents.first?.attribute(forKeyPath: "context.event-attribute1"), "foo1")
-        XCTAssertEqual(try viewEvents.last?.attribute(forKeyPath: "context.event-attribute1"), "foo1")
-        XCTAssertEqual(try viewEvents.last?.attribute(forKeyPath: "context.event-attribute2"), "foo2")
-        XCTAssertNotNil(try? viewEvents.last?.timing(named: "timing"))
+        XCTAssertEqual(someView.viewEvents[0].attribute(forKey: "event-attribute1"), "foo1")
+        XCTAssertNotNil(someView.viewUpdateEvents[0].view.customTimings?.customTimingsInfo["timing"])
+        XCTAssertEqual(someView.viewUpdateEvents[1].attribute(forKey: "event-attribute1"), "foo1")
+        XCTAssertEqual(someView.viewUpdateEvents[1].attribute(forKey: "event-attribute2"), "foo2")
     }
 
     func testSendingResourceEvents() throws {
@@ -587,10 +577,17 @@ class DDRUMMonitorTests: XCTestCase {
         objcRUMMonitor.addFeatureFlagEvaluation(name: "flag1", value: "value1")
         objcRUMMonitor.addFeatureFlagEvaluation(name: "flag2", value: true)
 
-        let viewEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMViewEvent.self)
-        let lastView = try XCTUnwrap(viewEvents.last)
-        XCTAssertEqual(lastView.featureFlags!.featureFlagsInfo["flag1"] as? AnyEncodable, AnyEncodable("value1"))
-        XCTAssertEqual(lastView.featureFlags!.featureFlagsInfo["flag2"] as? AnyEncodable, AnyEncodable(true))
+        let session = try RUMSessionMatcher
+            .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
+            .takeSingle()
+
+        let launchView = try XCTUnwrap(session.views.first(where: { $0.isApplicationLaunchView() }))
+        XCTAssertEqual(launchView.viewEvents.count, 1)
+        XCTAssertEqual(launchView.viewUpdateEvents.count, 2)
+
+        let lastUpdate = try XCTUnwrap(launchView.viewUpdateEvents.last)
+        XCTAssertEqual((lastUpdate.featureFlags?.featureFlagsInfo["flag1"] as? AnyCodable)?.value as? String, "value1")
+        XCTAssertEqual((lastUpdate.featureFlags?.featureFlagsInfo["flag2"] as? AnyCodable)?.value as? Bool, true)
     }
 
     func testChangingDebugFlag() throws {
@@ -603,4 +600,14 @@ class DDRUMMonitorTests: XCTestCase {
         objcRUMMonitor.debug = false
         XCTAssertFalse(objcRUMMonitor.swiftRUMMonitor.debug)
     }
+}
+
+// MARK: - Helpers
+
+private extension RUMViewEvent {
+    func attribute<T: Equatable>(forKey key: String) -> T? { (context?.contextInfo[key] as? AnyCodable)?.value as? T }
+}
+
+private extension RUMViewUpdateEvent {
+    func attribute<T: Equatable>(forKey key: String) -> T? { (context?.contextInfo[key] as? AnyCodable)?.value as? T }
 }
