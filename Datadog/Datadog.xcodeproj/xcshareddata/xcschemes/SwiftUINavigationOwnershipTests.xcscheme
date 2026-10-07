@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<Scheme LastUpgradeVersion="2710" version="1.3">
+   <BuildAction parallelizeBuildables="NO" buildImplicitDependencies="YES">
+      <BuildActionEntries>
+         <BuildActionEntry buildForTesting="YES" buildForRunning="YES" buildForProfiling="NO" buildForArchiving="NO" buildForAnalyzing="YES">
+            <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="26C8526030768F9200C3B737" BuildableName="SwiftUINavigationOwnershipHost.app" BlueprintName="SwiftUINavigationOwnershipHost" ReferencedContainer="container:Datadog.xcodeproj" />
+         </BuildActionEntry>
+         <BuildActionEntry buildForTesting="YES" buildForRunning="NO" buildForProfiling="NO" buildForArchiving="NO" buildForAnalyzing="YES">
+            <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="26C8527030768FA000C3B737" BuildableName="SwiftUINavigationOwnershipTests.xctest" BlueprintName="SwiftUINavigationOwnershipTests" ReferencedContainer="container:Datadog.xcodeproj" />
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <TestAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.DebuggerFoundation.Launcher.LLDB" shouldUseLaunchSchemeArgsEnv="NO" enableThreadSanitizer="YES" codeCoverageEnabled="NO">
+      <MacroExpansion>
+         <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="26C8526030768F9200C3B737" BuildableName="SwiftUINavigationOwnershipHost.app" BlueprintName="SwiftUINavigationOwnershipHost" ReferencedContainer="container:Datadog.xcodeproj" />
+      </MacroExpansion>
+      <Testables>
+         <TestableReference skipped="NO" parallelizable="NO">
+            <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="26C8527030768FA000C3B737" BuildableName="SwiftUINavigationOwnershipTests.xctest" BlueprintName="SwiftUINavigationOwnershipTests" ReferencedContainer="container:Datadog.xcodeproj" />
+         </TestableReference>
+      </Testables>
+   </TestAction>
+   <LaunchAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.DebuggerFoundation.Launcher.LLDB" launchStyle="0" useCustomWorkingDirectory="NO" ignoresPersistentStateOnLaunch="NO" debugDocumentVersioning="YES" allowLocationSimulation="YES">
+      <BuildableProductRunnable runnableDebuggingMode="0">
+         <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="26C8526030768F9200C3B737" BuildableName="SwiftUINavigationOwnershipHost.app" BlueprintName="SwiftUINavigationOwnershipHost" ReferencedContainer="container:Datadog.xcodeproj" />
+      </BuildableProductRunnable>
+   </LaunchAction>
+   <AnalyzeAction buildConfiguration="Debug" />
+</Scheme>
