@@ -64,6 +64,9 @@ fi
 
 set -x
 
+export DD_SDK_COMPILED_FOR_TESTING=1
+export DD_TEST_UTILITIES_ENABLED=1
+
 WORKSPACE="IntegrationTests/IntegrationTests.xcworkspace"
 DESTINATION="platform=$platform,name=$device,OS=$os"
 SCHEME="IntegrationScenarios"
@@ -73,10 +76,6 @@ xcodebuild -version
 
 case "$mode" in
     build-and-test)
-        DIR=$(pwd)
-        cd IntegrationTests/ && bundle exec pod install
-        cd "$DIR"
-
         ./tools/config/generate-http-server-mock-config.sh
 
         disable_apple_crash_reporter
@@ -86,10 +85,6 @@ case "$mode" in
         ;;
 
     build-for-testing)
-        DIR=$(pwd)
-        cd IntegrationTests/ && bundle exec pod install
-        cd "$DIR"
-
         # The IntegrationScenarios xcconfigs include the generated xcconfig.
         ./tools/config/generate-http-server-mock-config.sh
 
