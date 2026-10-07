@@ -110,7 +110,7 @@ internal final class FlagsRepository {
         var flagsDataVersion: UInt64 = 0
         var contextUpdateID: UInt64 = 0
         var hasStartedEvaluationContextRequest = false
-        var reconcilingContext: FlagsEvaluationContext?
+        var latestRequestedContext: FlagsEvaluationContext?
         var pendingDiskReadCallbacks: [PendingCacheReadCallback] = []
         var initialFlagsDataGroup: DispatchGroup? = {
             let group = DispatchGroup()
@@ -129,7 +129,7 @@ internal final class FlagsRepository {
 
                 let isInitialReadStillAuthoritative = !hasStartedEvaluationContextRequest
                 let isReconcilingSameContext = data.map {
-                    reconcilingContext == $0.context
+                    latestRequestedContext == $0.context
                 } ?? false
 
                 if isInitialReadStillAuthoritative || isReconcilingSameContext {
@@ -315,16 +315,17 @@ internal final class FlagsRepository {
 
     private func applyFailedContextUpdate(
         for context: FlagsEvaluationContext,
-        contextUpdateID: UInt64
+        contextUpdateID: UInt64,
+        versionAtStart: UInt64
     ) -> (() -> Void)? {
-        // Only the latest request can select fallback data or end reconciliation.
+        // Only the latest request can select fallback data, unless a success for its
+        // context already supplied fresh assignments while it was in flight.
         var notifyListeners: (() -> Void)?
         _repositoryState.mutate { state in
-            guard contextUpdateID == state.contextUpdateID else {
+            guard contextUpdateID == state.contextUpdateID, state.flagsDataVersion == versionAtStart else {
                 return
             }
 
-            state.reconcilingContext = nil
             let newState: FlagsClientState
 
             // Only use cached flags if they match the requested context to avoid
@@ -378,6 +379,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         completion: @escaping (Result<Void, FlagsError>) -> Void
     ) {
         var contextUpdateID: UInt64 = 0
+        var versionAtStart: UInt64 = 0
         var isFirstContextUpdate = false
         var notifyReconciling: (() -> Void)?
         // Request registration, assignments, and client state use the same synchronization boundary.
@@ -385,9 +387,10 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         _repositoryState.mutate { state in
             state.contextUpdateID += 1
             contextUpdateID = state.contextUpdateID
+            versionAtStart = state.flagsDataVersion
             isFirstContextUpdate = !state.hasStartedEvaluationContextRequest
             state.hasStartedEvaluationContextRequest = true
-            state.reconcilingContext = context
+            state.latestRequestedContext = context
             notifyReconciling = stateManager.updateStateWithoutNotifying(.reconciling)
         }
         notifyReconciling?()
@@ -437,15 +440,18 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 var callbacks: [PendingCacheReadCallback] = []
                 var notifyListeners: (() -> Void)?
                 self._repositoryState.mutate { state in
-                    // Only the latest request can install assignments or end reconciliation.
-                    guard contextUpdateID == state.contextUpdateID else {
+                    // Accept an older success for the current context only if no success or reset
+                    // superseded its starting version. The latest request's success always applies.
+                    let isLatestRequest = contextUpdateID == state.contextUpdateID
+                    let isFreshForLatestContext = state.latestRequestedContext == context
+                        && state.flagsDataVersion == versionAtStart
+                    guard isLatestRequest || isFreshForLatestContext else {
                         return
                     }
                     state.flagsData = flagsData
                     state.cachedFlagsData = flagsData
                     state.flagsDataVersion += 1
                     versionAfterSuccess = state.flagsDataVersion
-                    state.reconcilingContext = nil
                     callbacks = state.finishWaitingForInitialFlagsData()
                     notifyListeners = self.stateManager.updateStateWithoutNotifying(.ready)
                 }
@@ -465,7 +471,8 @@ extension FlagsRepository: FlagsRepositoryProtocol {
 
                     let notifyListeners = self.applyFailedContextUpdate(
                         for: context,
-                        contextUpdateID: contextUpdateID
+                        contextUpdateID: contextUpdateID,
+                        versionAtStart: versionAtStart
                     )
                     complete(.failure(error), notifyListeners, operationCompletion)
                 })
@@ -484,7 +491,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             state.cachedFlagsData = nil
             state.flagsDataVersion += 1
             state.contextUpdateID += 1
-            state.reconcilingContext = nil
+            state.latestRequestedContext = nil
             callbacks = state.finishWaitingForInitialFlagsData()
             notifyListeners = stateManager.updateStateWithoutNotifying(.notReady)
         }

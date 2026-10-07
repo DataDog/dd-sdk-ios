@@ -200,6 +200,66 @@ final class FlagsRepositoryTests: XCTestCase {
         }
     }
 
+    func testOverlappingContextUpdates_withSameContext_preservesFreshSuccess() {
+        for latestSucceeds in [false, true] {
+            for responseOrder in [[0, 1], [1, 0]] {
+                let featureScope = FeatureScopeMock()
+                var completions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+                let repository = makeRepository(
+                    dataStore: featureScope.dataStore,
+                    fetcher: FlagAssignmentsFetcherMock { _, completion in completions.append(completion) },
+                    initializationTimeout: nil
+                )
+                featureScope.dataStore.flush()
+                defer { repository.flush() }
+                let context = FlagsEvaluationContext(targetingKey: "user-A")
+                var callbackCounts = [0, 0]
+                for index in 0..<2 {
+                    repository.setEvaluationContext(context) { result in
+                        XCTAssertEqual((try? result.get()) != nil, index == 0 || latestSucceeds)
+                        callbackCounts[index] += 1
+                    }
+                }
+                let results: [Result<[String: FlagAssignment], FlagsError>] = [
+                    .success(["older": .mockAny()]),
+                    latestSucceeds ? .success(["newer": .mockAny()]) : .failure(.invalidResponse)
+                ]
+
+                for index in responseOrder {
+                    completions[index](results[index])
+                }
+
+                XCTAssertEqual(callbackCounts, [1, 1])
+                XCTAssertEqual(repository.state.currentState, .ready)
+                XCTAssertEqual(repository.context, context)
+                XCTAssertEqual(Set(repository.flagAssignments()?.keys ?? [:].keys), [latestSucceeds ? "newer" : "older"])
+            }
+        }
+    }
+
+    func testOverlappingContextUpdates_withSameContext_afterReset_rejectsEarlierSuccess() {
+        var completions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+        let repository = makeRepository(
+            dataStore: featureScope.dataStore,
+            fetcher: FlagAssignmentsFetcherMock { _, completion in completions.append(completion) },
+            initializationTimeout: nil
+        )
+        defer { repository.flush() }
+        let context = FlagsEvaluationContext(targetingKey: "user-A")
+        repository.setEvaluationContext(context) { _ in }
+        repository.reset()
+        repository.setEvaluationContext(context) { _ in }
+
+        completions[0](.success(["old": .mockAny()]))
+
+        XCTAssertEqual(repository.state.currentState, .reconciling)
+        XCTAssertNil(repository.flagAssignments())
+        completions[1](.success(["new": .mockAny()]))
+        XCTAssertEqual(repository.state.currentState, .ready)
+        XCTAssertNotNil(repository.flagAssignment(for: "new"))
+        XCTAssertNil(repository.flagAssignment(for: "old"))
+    }
+
     func testOverlappingContextUpdates_whenSupersededSuccessArrives_doesNotEndNewerReconciliation() {
         var completions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
         let repository = makeRepository(
