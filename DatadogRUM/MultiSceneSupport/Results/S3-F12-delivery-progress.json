@@ -574,23 +574,24 @@
       "off_contract": "Develop Operation/profiling keying and flow",
       "environment": "Fresh pinned develop source; CI and supported17.5/27 simulator/toolchains. No physical hardware needed for opening or merging.",
       "rebuild_obligation": "Rebuild consolidated DatadogProfiler.swift, never restore removed AppLaunchProfiler.swift; standalone remains unqualified",
-      "status": "DEFINED_NOT_IMPLEMENTED",
-      "owning_record": null,
-      "source_head": null,
+      "status": "PRIVATE_IMPLEMENTATION_SOURCE_REVIEWED_UNCOMPILED_UNQUALIFIED",
+      "owning_record": "Results/S3-PR10-source-preparation.json",
+      "source_head": "471ae030e01ec654d5ececc0f11c89d220006922",
       "obligation": "BEFORE_SLICE_MERGE",
       "whole_F12_closed": false,
       "qualification": {
-        "implementation": "NOT_IMPLEMENTED",
+        "implementation": "PRIVATE_IMPLEMENTED",
         "component": "NOT_EXECUTED",
         "off": "NOT_EXECUTED",
         "integration": "NOT_QUALIFIED"
       },
       "remaining_assertion": "Exact per-step owner, duplicate keys distinct lifetime, targeted completion and released retained snapshots Off: Develop Operation/profiling keying and flow",
-      "next_action": "Seal the private successor correcting PR10ON-01/02; obtain designated correction review, then apply the complete patch through Xcode in the MAIN-linked delivery worktree and review exact membership. All19 methods and16 control families, compiler/Off/lifetime/platform and wholeF12 remain held.",
-      "evidence_source_scope": "Complete private source proposal reviewed with two interface BLOCKs. Seven Void-lock uses and three SPI imports corrected privately in four files, unsealed/unreviewed/unapplied. Original BLOCK and19 unexecuted methods/16 control-family gaps preserved. Xcode access granted; no compiler, runtime, Off or release credit.",
+      "next_action": "Primary: fresh PR11 four-only qualification after awake admission. Independent: prepare/implement the remaining source-matched PR10 controls within the existing16-family map, then qualify19 initial methods, Off, real queues/lifetime and supported compilers/platforms. Preserve accepted suites and original reviews.",
+      "evidence_source_scope": "At471ae030e, all16 applied source files and six target memberships pass independent review. Local unsigned fallback followed actual signing timeout. Original BLOCKs and missing-SPI retraction remain. All19 methods/16-family gaps/compiler/Off/lifetime/platform remain unqualified.",
       "source_preparation_owner": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR10-source-preparation.json",
-        "sha256": "166810e4bd74125e19b427b71eafce61d71db2946e56cba54140349ccd9838a9"
+        "sha256": "6993ffe001690363a2b1238e6a0d483ce83561e1f4e8a1292099e36ef79cce1a",
+        "size": 32548
       }
     },
     {
@@ -895,7 +896,7 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": "2026-10-07T19:58:04.836467+00:00",
+  "updated_at": "2026-10-07T20:47:04.775289+00:00",
   "dependency_build_attempts": 4,
   "dependency_component_qualifications": 4,
   "dependency_test_invocations": 4,

@@ -148,6 +148,7 @@ DELIVERY_SOURCES = {
     'PR5': ('Results/S3-PR5-scene-handler-preparation.json', 'sdk_head', None),
     'PR6': ('Results/S3-PR6-action-preparation.json', 'scroll_sdk_head', None),
     'PR9': ('Results/S3-PR9-representative-preparation.json', 'local_sdk_checkpoint', 'head'),
+    'PR10': ('Results/S3-PR10-source-preparation.json', 'local_sdk_checkpoint', 'head'),
     'PR11': ('Results/S3-PR11-source-preparation.json', 'applied_source_head', None),
 }
 QUALIFICATION_STATES = {
