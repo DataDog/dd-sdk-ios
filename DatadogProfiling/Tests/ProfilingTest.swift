@@ -64,10 +64,11 @@ class ProfilingTest: XCTestCase {
         dd_delete_profiling_defaults()
         defer { dd_delete_profiling_defaults() }
 
-        // Given a remote `profiling` namespace overriding the in-code application launch sample rate
-        let configuration = Profiling.Configuration(applicationLaunchSampleRate: 5)
-        let core = SingleFeatureCoreMock<ProfilerFeature>()
-        core.remoteConfiguration = .mockWith(profiling: .mockWith(applicationLaunchSampleRate: 100))
+        // Given a remote `profiling` namespace overriding both in-code sample rates
+        let configuration = Profiling.Configuration(applicationLaunchSampleRate: 5, continuousSampleRate: 0)
+        let receiver = FeatureMessageReceiverMock()
+        let core = SingleFeatureCoreMock<ProfilerFeature>(messageReceiver: receiver)
+        core.remoteConfiguration = .mockWith(profiling: .mockWith(applicationLaunchSampleRate: 100, continuousSampleRate: 37.5))
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         defer { dd_profiler_destroy() }
 
@@ -77,6 +78,34 @@ class ProfilingTest: XCTestCase {
         // Then the merged remote sample rate is injected into the feature and persisted at enable time
         XCTAssertNotNil(core.feature(named: ProfilerFeature.name, type: ProfilerFeature.self))
         XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate, 100)
+
+        let telemetryConfiguration = try XCTUnwrap(receiver.messages.compactMap { message -> ConfigurationTelemetry? in
+            guard case .telemetry(.configuration(let configuration)) = message else {
+                return nil
+            }
+            return configuration
+        }.first)
+        XCTAssertEqual(telemetryConfiguration.profilingApplicationLaunchSampleRate, 100)
+        XCTAssertEqual(telemetryConfiguration.profilingSampleRate, 37.5)
+    }
+
+    func testProfilingConfigurationTelemetry_clampsSampleRatesToSchemaRange() throws {
+        let receiver = FeatureMessageReceiverMock()
+        let core = SingleFeatureCoreMock<ProfilerFeature>(messageReceiver: receiver)
+
+        Profiling.enable(
+            with: .init(applicationLaunchSampleRate: -10, continuousSampleRate: 200),
+            in: core
+        )
+
+        let telemetryConfiguration = try XCTUnwrap(receiver.messages.compactMap { message -> ConfigurationTelemetry? in
+            guard case .telemetry(.configuration(let configuration)) = message else {
+                return nil
+            }
+            return configuration
+        }.first)
+        XCTAssertEqual(telemetryConfiguration.profilingApplicationLaunchSampleRate, 0)
+        XCTAssertEqual(telemetryConfiguration.profilingSampleRate, 100)
     }
 
     func testWhenEnabledInMultipleCoreInstances_itPrintsErrorAndKeepsFirstFeature() {
