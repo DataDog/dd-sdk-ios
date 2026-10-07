@@ -378,6 +378,9 @@ extension RUMViewScope {
             updatePerformanceMetric(on: command)
 
         // Feature Operation commands
+        case _ as RUMOwnedOperationStepCommand where isActiveView:
+            needsViewUpdate = true
+
         case _ as RUMOperationStepVitalCommand where isActiveView:
             needsViewUpdate = true
 

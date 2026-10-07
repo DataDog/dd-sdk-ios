@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import DatadogInternal
+@_spi(Internal) import DatadogInternal
 import Foundation
 
 /*
@@ -78,9 +78,32 @@ internal class RUMFeatureOperationManager {
         }
     }
 
+    func process(_ command: RUMOwnedOperationStepCommand, context: DatadogContext, writer: Writer,
+                 activeView: RUMViewScope?, ownership: RUMOperationOwnership,
+                 correlation: [AttributeKey: AttributeValue]) {
+        guard ownership.isValid, command.origin === ownership.origin,
+              validateCommand(command.step) else { return }
+        if activeView == nil {
+            DD.logger.warn("RUM operation step command received without an active view. This may result in incomplete context information.")
+        }
+        writeVitalEvent(from: command.step, context: context, writer: writer, activeView: activeView,
+                        ownership: ownership, correlation: correlation)
+        guard ownership.isValid else { return }
+        let lookupKey = "\(command.step.name)\(command.step.operationKey ?? "")"
+        switch command.step.stepType {
+        case .start:
+            trackOperationStart(name: command.step.name, operationKey: command.step.operationKey, lookupKey: lookupKey)
+        case .end, .update, .retry:
+            trackOperationUpdate(name: command.step.name, operationKey: command.step.operationKey,
+                                 lookupKey: lookupKey, stepType: command.step.stepType)
+        }
+    }
+
     // MARK: - Private Methods
 
-    private func writeVitalEvent(from command: RUMOperationStepVitalCommand, context: DatadogContext, writer: Writer, activeView: RUMViewScope?) {
+    private func writeVitalEvent(from command: RUMOperationStepVitalCommand, context: DatadogContext, writer: Writer,
+                                activeView: RUMViewScope?, ownership: RUMOperationOwnership? = nil,
+                                correlation: [AttributeKey: AttributeValue]? = nil) {
         let vital = RUMVitalOperationStepEvent.Vital(
             failureReason: command.failureReason,
             id: command.vitalId,
@@ -98,7 +121,7 @@ internal class RUMFeatureOperationManager {
 
         if shouldSendOperationMessage(for: command) {
             let message = OperationMessage(
-                attributes: parent.rumContextAttributes,
+                attributes: correlation ?? parent.rumContextAttributes,
                 operation: Vital(
                     id: command.vitalId,
                     name: command.name,
@@ -108,7 +131,14 @@ internal class RUMFeatureOperationManager {
                     serverTimeOffset: context.serverTimeOffset
                 )
             )
-            dependencies.featureScope.send(message: .payload(message))
+            if let ownership {
+                guard ownership.isValid, let correlation else { return }
+                dependencies.featureScope.send(message: .payload(OwnedOperationMessage(
+                    ownership: ownership, attributes: correlation, operation: message.operation
+                )))
+            } else {
+                dependencies.featureScope.send(message: .payload(message))
+            }
         }
 
         let vitalEvent = RUMVitalOperationStepEvent(
@@ -143,6 +173,7 @@ internal class RUMFeatureOperationManager {
             vital: vital
         )
 
+        if let ownership, !ownership.isValid { return }
         writer.write(value: sanitizer.sanitize(event: vitalEvent))
     }
 

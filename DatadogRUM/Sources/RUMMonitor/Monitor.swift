@@ -270,6 +270,9 @@ internal class Monitor: RUMCommandSubscriber {
                 }
             }
 
+            if self.isMultiSceneTrackingEnabled, let operation = command as? RUMOwnedOperationStepCommand {
+                guard operation.origin.isCurrent else { return }
+            }
             let transformedCommand = self.transform(command: command)
             let previousSessionID = self.sessionActivitySnapshot.sessionID
 
@@ -818,7 +821,7 @@ extension Monitor: RUMMonitorProtocol {
 
         telemetry.usage(event: .addOperationStepVital(.init(actionType: .start)))
 
-        process(
+        processOperationStep(
             command: RUMOperationStepVitalCommand(
                 vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
                 name: name,
@@ -841,7 +844,7 @@ extension Monitor: RUMMonitorProtocol {
 
         telemetry.usage(event: .addOperationStepVital(.init(actionType: .succeed)))
 
-        process(
+        processOperationStep(
             command: RUMOperationStepVitalCommand(
                 vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
                 name: name,
@@ -863,7 +866,7 @@ extension Monitor: RUMMonitorProtocol {
 
         telemetry.usage(event: .addOperationStepVital(.init(actionType: .fail)))
 
-        process(
+        processOperationStep(
             command: RUMOperationStepVitalCommand(
                 vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
                 name: name,
@@ -878,6 +881,19 @@ extension Monitor: RUMMonitorProtocol {
 
     func failFeatureOperation(name: String, operationKey: String?, reason: RUMFeatureOperationFailureReason, attributes: [AttributeKey: AttributeValue]) {
         failOperation(name: name, operationKey: operationKey, reason: reason, attributes: attributes)
+    }
+
+    private func processOperationStep(command: RUMOperationStepVitalCommand) {
+        guard isMultiSceneTrackingEnabled else {
+            process(command: command)
+            return
+        }
+        guard let provider = featureScope as? RUMOperationScopeProviding,
+              let origin = provider.operationOrigin(for: self), origin.isCurrent else { return }
+        let capture = RUMContextHandoff.captureValue(for: origin.owner)
+        // An explicit absent Session cannot acquire a later representative.
+        if let capture, capture.rumContext == nil { return }
+        process(command: RUMOwnedOperationStepCommand(step: command, origin: origin, capture: capture))
     }
 
     private func instanceSuffix(_ operationKey: String?) -> String {

@@ -345,6 +345,10 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider, RUMMappedViewConte
             lastInteractionTime = command.time
         }
 
+        if let origin = dependencies.operationOrigin, isActive {
+            origin.updateSession(sessionUUID.toRUMDataFormat, start: sessionStartTime, lastInteraction: lastInteractionTime)
+        }
+
         if !sampler.isSampled {
             // Make sure sessions end even if they are not sampled
             if command is RUMStopSessionCommand {
@@ -392,6 +396,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider, RUMMappedViewConte
                 hadApplicationLaunchViewWhenEnteringBackground = nil
                 dependencies.timeseriesCollector?.resume(sessionID: sessionUUID.toRUMDataFormat)
 
+            case let operation as RUMOwnedOperationStepCommand:
+                processOwnedOperation(operation, context: context, writer: writer)
+                return true
             case let operationStepVitalCommand as RUMOperationStepVitalCommand:
                 // Forward command to the feature operation manager
                 featureOperationManager.process(
@@ -668,6 +675,46 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider, RUMMappedViewConte
         // Stopped/removed owners are authoritative drops; no ViewCache fallback or peer mutation.
         if !view.process(command: error, context: context, writer: writer) {
             viewScopes.removeAll { $0 === view }
+        }
+        updateRepresentativeFatalErrorContext()
+    }
+
+    /// Applies only the original Session and directly selected view, without cache fallback or fanout.
+    func processOwnedOperation(_ command: RUMOwnedOperationStepCommand, context: DatadogContext, writer: Writer) {
+        guard dependencies.isMultiSceneTrackingEnabled, isActive, sampler.isSampled,
+              dependencies.operationOrigin === command.origin, command.origin.isCurrent,
+              !Self.hasTimedOut(lastInteractionTime: lastInteractionTime, currentTime: command.time),
+              !Self.hasExpired(sessionStartTime: sessionStartTime, currentTime: command.time) else { return }
+
+        let selectedView: RUMViewScope?
+        let actionID: String?
+        if let capture = command.capture {
+            guard let original = capture.resolvedRUMContext(for: command.origin.owner),
+                  original.sessionID == sessionUUID.toRUMDataFormat else { return }
+            selectedView = viewScopes.first { $0.viewUUID.toRUMDataFormat == original.viewID }
+            actionID = selectedView == nil ? nil : original.userActionID
+        } else {
+            selectedView = activeView
+            actionID = selectedView?.userActionScope?.actionUUID.toRUMDataFormat
+        }
+        command.origin.updateSession(sessionUUID.toRUMDataFormat, start: sessionStartTime, lastInteraction: lastInteractionTime)
+        guard let ownership = command.origin.ownership(for: sessionUUID.toRUMDataFormat),
+              ownership.isValid else { return }
+        var correlation: [AttributeKey: AttributeValue] = [
+            RUMCoreContext.IDs.applicationID: self.context.rumApplicationID,
+            RUMCoreContext.IDs.sessionID: sessionUUID.toRUMDataFormat
+        ]
+        if let selectedView {
+            correlation[RUMCoreContext.IDs.viewID] = [selectedView.viewUUID.toRUMDataFormat]
+            correlation[RUMCoreContext.IDs.viewName] = [selectedView.viewName]
+        }
+        if let actionID { correlation[RUMCoreContext.IDs.userActionID] = actionID }
+        featureOperationManager.process(command, context: context, writer: writer, activeView: selectedView,
+                                        ownership: ownership, correlation: correlation)
+        guard ownership.isValid else { return }
+        if let selectedView, selectedView.isActiveView,
+           !selectedView.process(command: command, context: context, writer: writer) {
+            viewScopes.removeAll { $0 === selectedView }
         }
         updateRepresentativeFatalErrorContext()
     }

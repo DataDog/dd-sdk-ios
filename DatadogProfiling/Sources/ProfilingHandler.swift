@@ -5,7 +5,7 @@
  */
 
 import Foundation
-import DatadogInternal
+@_spi(Internal) import DatadogInternal
 
 #if !os(watchOS)
 
@@ -28,7 +28,9 @@ extension ProfilingHandler {
         operation: ProfilingOperation,
         rumVitals: [Vital],
         hangs: [DurationEvent]? = nil,
-        longTasks: [DurationEvent]? = nil
+        longTasks: [DurationEvent]? = nil,
+        ownedOperations: [OwnedProfileOperation]? = nil,
+        ownedCorrelation: OwnedProfileCorrelation? = nil
     ) {
         var attributes = self.attributes
 
@@ -53,7 +55,10 @@ extension ProfilingHandler {
             with: profile,
             operation: operation,
             rumEvents: rumEvents,
-            attributes: attributes
+            attributes: attributes,
+            legacyVitals: rumVitals,
+            ownedOperations: ownedOperations,
+            ownedCorrelation: ownedCorrelation
         )
     }
 
@@ -61,7 +66,10 @@ extension ProfilingHandler {
         with profile: OpaquePointer,
         operation: ProfilingOperation,
         rumEvents: [RUMEvent],
-        attributes: [AttributeKey: AttributeValue]
+        attributes: [AttributeKey: AttributeValue],
+        legacyVitals: [Vital],
+        ownedOperations: [OwnedProfileOperation]?,
+        ownedCorrelation: OwnedProfileCorrelation?
     ) {
         let timeOffsetInNanoseconds = currentServerTimeOffset.dd.toInt64Nanoseconds
         dd_pprof_set_server_time_offset_ns(profile, timeOffsetInNanoseconds)
@@ -88,6 +96,23 @@ extension ProfilingHandler {
         dd_pprof_free_serialized_data(data)
 
         featureScope.eventWriteContext { context, writer in
+            var attributes = attributes
+            var rumEvents = rumEvents
+            if let ownedOperations {
+                // This is the actual deferred write boundary, not a borrow of current RUM state.
+                let valid = ownedOperations.filter { $0.ownership.isValid }.map { $0.vital }
+                if let stamp = ownedCorrelation, !stamp.ownership.isValid {
+                    for key in stamp.installedKeys { attributes.removeValue(forKey: key) }
+                }
+                if !ownedOperations.isEmpty, valid.isEmpty, legacyVitals.isEmpty,
+                   rumEvents.isEmpty, operation == .customProfiling { return }
+                let allVitals = legacyVitals + valid
+                if !allVitals.isEmpty {
+                    attributes[RUMCoreContext.IDs.vitalID] = allVitals.map(\.id)
+                    attributes[RUMCoreContext.IDs.vitalLabel] = allVitals.map(\.name)
+                }
+                rumEvents += valid.map(RUMEvent.vital)
+            }
             let event = ProfileEvent(
                 family: Constants.family,
                 runtime: Constants.runtime,
