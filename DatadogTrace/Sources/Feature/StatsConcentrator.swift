@@ -200,6 +200,16 @@ internal enum StatsUtils {
     /// the iOS SDK always uses weight 1.0 (no weighted sampling), so this reduces
     /// to simple truncation.
     static func stochasticRound(_ value: Double) -> UInt64 {
+        // `UInt64(_:)` traps outside its range, so saturate instead. `Double(UInt64.max)` is exactly
+        // 2^64, which a group's summed duration reaches with a single span whose duration saturated,
+        // for example one started at `Date.distantPast`. Counters are never negative or NaN; both
+        // map to 0.
+        guard value > 0 else {
+            return 0
+        }
+        guard value < Double(UInt64.max) else {
+            return .max
+        }
         let truncated = UInt64(value)
         let fractional = value - Double(truncated)
         if Double.random(in: 0..<1) < fractional {
@@ -312,7 +322,10 @@ internal final class StatsConcentrator: @unchecked Sendable {
             return
         }
 
-        let endTime = snapshot.startTime + snapshot.duration
+        // Saturate rather than trap: a start time clamped to `UInt64.max`, for example
+        // `Date.distantFuture`, plus any positive duration would overflow and crash the host app.
+        let (summedEndTime, didOverflow) = snapshot.startTime.addingReportingOverflow(snapshot.duration)
+        let endTime = didOverflow ? UInt64.max : summedEndTime
         let matchingPeerTags = self.matchingPeerTags(for: snapshot)
         let aggregationKey = makeAggregationKey(from: snapshot, peerTags: matchingPeerTags)
         let peerTagStrings = matchingPeerTags.map { "\($0.key):\($0.value)" }

@@ -563,6 +563,44 @@ class StatsConcentratorTests: XCTestCase {
         XCTAssertEqual(StatsUtils.stochasticRound(100.0), 100)
     }
 
+    func testStochasticRoundSaturatesValuesOutsideTheUInt64Range() {
+        // `Double(UInt64.max)` rounds up to exactly 2^64, the first value `UInt64` cannot hold.
+        XCTAssertEqual(StatsUtils.stochasticRound(Double(UInt64.max)), .max)
+        XCTAssertEqual(StatsUtils.stochasticRound(1e30), .max)
+        XCTAssertEqual(StatsUtils.stochasticRound(.infinity), .max)
+        XCTAssertEqual(StatsUtils.stochasticRound(-1), 0)
+        XCTAssertEqual(StatsUtils.stochasticRound(.nan), 0)
+        // The largest `Double` below 2^64 still converts exactly.
+        XCTAssertEqual(StatsUtils.stochasticRound(18_446_744_073_709_549_568), 18_446_744_073_709_549_568)
+    }
+
+    // MARK: - Saturated Timestamps
+
+    func testGivenSaturatedStartTime_whenAddingSpan_itAggregatesItWithoutOverflowing() throws {
+        // A start time that saturated to `UInt64.max`, for example `Date.distantFuture`, plus any
+        // positive duration overflows when computing the span's end time.
+        let concentrator = makeConcentrator(now: 0)
+
+        concentrator.add(.mockWith(startTime: .max, duration: 1_000_000_000, isTopLevel: true))
+        let buckets = concentrator.flush(now: 100_000_000_000, force: true)
+
+        let stats = try XCTUnwrap(buckets.first?.stats.first)
+        XCTAssertEqual(stats.hits, 1)
+    }
+
+    func testGivenSaturatedDuration_whenFlushing_itSaturatesTheGroupDuration() throws {
+        // A duration that saturated to `UInt64.max`, for example a span started at `Date.distantPast`,
+        // is summed as exactly 2^64 and used to overflow when the group is exported.
+        let concentrator = makeConcentrator(now: 0)
+
+        concentrator.add(.mockWith(startTime: 0, duration: .max, isTopLevel: true))
+        let buckets = concentrator.flush(now: 100_000_000_000, force: true)
+
+        let stats = try XCTUnwrap(buckets.first?.stats.first)
+        XCTAssertEqual(stats.hits, 1)
+        XCTAssertEqual(stats.duration, .max)
+    }
+
     // MARK: - Exported Bucket Structure
 
     func testExportedBucketContainsBucketDuration() {
