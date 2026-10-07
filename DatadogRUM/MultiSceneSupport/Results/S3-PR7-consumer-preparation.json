@@ -180,7 +180,7 @@
       "state": "DESIGN_AND_IMPLEMENTATION_REMAIN"
     }
   ],
-  "selected_task": "P7W1_COMBINED27_FRESH_QUALIFICATION_AFTER_REVIEWED_TEST_FIXTURE_CORRECTION",
+  "selected_task": "P7W1_COMBINED27_COMPONENT_QUALIFIED_NATIVE_ORIGIN_AND_FLAGS_REMAIN",
   "pending_action_requirement": "Pending/excluded action scalars do not identify an accepted Action UUID. The existing queue-confined continuous-action receipt is not a generic cross-module/discrete-action acceptance receipt. Do not borrow a later same-view action; independently review the smallest source-backed receipt design before consumer changes.",
   "off_requirement": "Reusing the network provider single State read may gate On locally. No default-Off Core registry/TaskLocal/scene lookup, owner allocation, new map/lock or naive owner(in: FeatureScope) capture.",
   "runtime_admitted": false,
@@ -188,8 +188,8 @@
   "builds": 22,
   "gates_closed": [],
   "whole_pr7_qualified": false,
-  "next_action": "Bind a fresh combined27 proposal at signed6635, review canonical/issued parameters and release exclusively within the actual awake reservation. Original81c814 stopped at first build, no tests; original UNQUALIFIED/INCOMPLETE/INVALID and separate Shutdown cleanup remain. Five unwraps and two ordered manual action constructions are independently reviewed; all27 methods remain unexecuted. Preserve accepted17/cache3/consumer43/Core. Native callback/page/rebind, Flags and whole Off/older/final-stack remain; no accepted repeats or wholeF12 credit.",
-  "updated_at": "2026-10-07T08:21:23Z",
+  "next_action": "Preserve accepted current6635 combined27 qualification and prior consumer/cache/transport/Core evidence. Complete a reviewed native callback/page-origin design before acquisition implementation; P7WO1-4, Flags, complete Off/older/final-stack and whole PR7/F12 remain. PR11 complete foundation source design can advance independently. Do not repeat accepted suites.",
+  "updated_at": "2026-10-07T09:04:05.565686+00:00",
   "sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-core-sampling-initialization-test-repair-applied-20261006/sdk-checkpoint.json",
     "sha256": "8479a54805b889477b7b9f20b61e6755e0ce49fda73cab852a95a77f47f45e72"
@@ -1592,7 +1592,7 @@
     }
   },
   "webview_live_session": {
-    "state": "SOURCE_REVIEWED_APPLIED_CHECKPOINTED_UNQUALIFIED",
+    "state": "QUALIFIED_AFFECTED_COMPONENT_AT_6635",
     "existing_gate": "S3:F12",
     "deliverable": "P7W1 actual delivery-time same-ID expiry",
     "source_head": "225920de0d0e28cf4e3bd853f8727d46d6a12b13",
@@ -1633,15 +1633,15 @@
       "sha256": "48276bf0c9ec905268d1ac22e905e6cd2ca9b41b122072425794039906d25b76"
     },
     "new_methods": 11,
-    "tests_executed": 0,
-    "native_runs": 0,
+    "tests_executed": 11,
+    "native_runs": 1,
     "gates_closed": [],
     "contract": "Typed RUM/telemetry/Logs require exact original owner and a still-live native session at actual deferred delivery; same-session historical view remains eligible. RUM/telemetry drop expired capture; Logs preserve contents without native RUM attributes. Legacy/source-less branches remain unchanged.",
     "finding_disposition": "Original P7WL1 BLOCKs preserved; local application-transition fixture now supplies actual scope eligibility while all original assertions and independent maximum-duration method remain unchanged.",
     "held": [
-      "Typecheck and focused affected-component qualification",
       "Native callback/page/rebind acquisition",
-      "Complete Off/older-system/final-stack and Flags"
+      "Complete Off/older-system/final-stack and Flags",
+      "Minimum compiler/platform and complete Off remain unqualified; current Xcode27.1 affected methods only."
     ],
     "qualification_preparation": {
       "state": "HISTORICAL_UNISSUED_CURRENT_SOURCE_REBIND_REQUIRED",
@@ -1657,10 +1657,15 @@
       "sdk_tests_executed": 0,
       "native_admitted": false,
       "disposition": "Never issued at225; provider successor changes source identity. Preserve plan and original clocks-null state. Current combined27 preparation will replace selection once bound, without running either historical plan."
+    },
+    "qualified_source_head": "6635d8eaccb67632248b5c778e1d200c9bf60f20",
+    "current_component_qualification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-combined27-component-20261007.json",
+      "sha256": "1318253b466018cdf740e51b6850e831f0772070fe643950dac86480202a834e"
     }
   },
   "webview_native_provider": {
-    "state": "SOURCE_REVIEWED_APPLIED_CHECKPOINTED_UNQUALIFIED",
+    "state": "QUALIFIED_AFFECTED_COMPONENT_AT_6635",
     "existing_gate": "S3:F12",
     "deliverable": "P7W1 native explicit-scene snapshot and main-confined ownership publication",
     "source_head": "7e308269a612b60cfb41c317ae24e682fb9e1fc5",
@@ -1697,14 +1702,14 @@
       "sha256": "d05826b0cffd119dc0d0e0e5e915c04bd27d840be7bfdcd143e4643655d37ce2"
     },
     "new_methods": 10,
-    "tests_executed": 0,
-    "native_runs": 0,
+    "tests_executed": 10,
+    "native_runs": 1,
     "gates_closed": [],
     "contract": "Resolved-On, exact valid lifetime and explicit originating scene precede fresh RUM snapshot. Main-confined WebView lifetime publication handles late provider registration and retired ownership without sync-main dispatch, peer adoption or legacy fallback. Existing weak Core/UI and legacy rollover remain.",
     "held": [
-      "One new current-source combined27 qualification; typecheck/runtime/minimum compiler unqualified",
       "Actual callback/window/page origin and both-queue freezing; first-message/rebind ambiguity cannot adopt current peer",
-      "Whole Off/older/final-stack, Flags and final PR7 qualification"
+      "Whole Off/older/final-stack, Flags and final PR7 qualification",
+      "Minimum compiler/platform and complete Off remain unqualified; current Xcode27.1 affected methods only."
     ],
     "applied_source_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/applied-source-review.json",
@@ -1843,6 +1848,11 @@
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-combined27-test-fixture-correction-20261007/sdk-checkpoint.json",
         "sha256": "c9d2c557a1e366d5c246f8b892efce50bee684f8a7833d236c7b26d4f743fac2"
       }
+    },
+    "qualified_source_head": "6635d8eaccb67632248b5c778e1d200c9bf60f20",
+    "current_component_qualification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-combined27-component-20261007.json",
+      "sha256": "1318253b466018cdf740e51b6850e831f0772070fe643950dac86480202a834e"
     }
   },
   "webview_origin_option": {
@@ -1890,11 +1900,34 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-consumer-source-preparation-20261006/native-acquisition-design-review-225920de.json",
       "sha256": "d9dfbccc5fce0a19cd398247b7b535657ac144121e161aaf21ba63dd363a3dc5"
     },
-    "required_predecessor": "Current7e combined27 qualification",
+    "required_predecessor": "Current6635 combined27 affected component qualified; native origin requirements remain",
     "implementation_admitted": false,
     "native_runs": 0,
     "gates_closed": [],
-    "scope": "Registration nonce/hidden sentinel is a bounded option only. No original-page/event-time proof or complete same-window scene-excursion observation is established; useful stable-A and bridge/Off compatibility remain required. No SDK code follows from this design review."
+    "scope": "Registration nonce/hidden sentinel is a bounded option only. No original-page/event-time proof or complete same-window scene-excursion observation is established; useful stable-A and bridge/Off compatibility remain required. No SDK code follows from this design review.",
+    "qualified_predecessor": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-combined27-component-20261007.json",
+      "sha256": "1318253b466018cdf740e51b6850e831f0772070fe643950dac86480202a834e"
+    },
+    "official_documentation_assessment": {
+      "packet": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-origin-documentation-20261007/packet.json",
+        "sha256": "db056107c11f93d488049d9d0286ef5d2c2416f870afca60c01fbafc38458532"
+      },
+      "assessment": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-origin-documentation-20261007/assessment.md",
+        "sha256": "faac6fb5491deca960fa6569a296f9e9398f375f48867a13c0efd77db04cce7c"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-origin-documentation-20261007/review.json",
+        "sha256": "cd5ac6483ba2788578f0fd7230b4ba0507e36f67385a7d9f53a2147a76428d0d"
+      },
+      "readback": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-origin-documentation-20261007/review-readback.json",
+        "sha256": "dea2509755f7d4cfae863974a4226db32f7fac7202e026ab4a76ea179a27ecaa"
+      },
+      "disposition": "Missing official documentation bodies resolved only. Public callbacks do not guarantee complete scene-excursion observation; P7WO1-4 all remain open. No implementation/native/gate authority."
+    }
   },
   "current_sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-combined27-test-fixture-correction-20261007/sdk-checkpoint.json",
@@ -1903,5 +1936,9 @@
   "current_test_fixture_correction": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-combined27-build-stop-20261007.json",
     "sha256": "1c406b3ad8385bfa3a77a91b591b5dc06717c1832589cab07874570f9067a508"
+  },
+  "current_combined27_component": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-combined27-component-20261007.json",
+    "sha256": "1318253b466018cdf740e51b6850e831f0772070fe643950dac86480202a834e"
   }
 }

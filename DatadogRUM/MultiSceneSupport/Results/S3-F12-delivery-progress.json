@@ -254,8 +254,8 @@
         "off": "NOT_EXECUTED",
         "integration": "NOT_QUALIFIED"
       },
-      "remaining_assertion": "Current6635 test-only successor requires fresh combined live-session/provider qualification after original compiler stop; native callback/page/rebind and Flags still need implementation. Accepted consumer43/Core/cache3/transport17 retained; complete Off/older/final-stack remain.",
-      "next_action": "Bind a fresh combined27 proposal at signed6635, review canonical/issued parameters and release exclusively within the actual awake reservation. Original81c814 stopped at first build, no tests; original UNQUALIFIED/INCOMPLETE/INVALID and separate Shutdown cleanup remain. Five unwraps and two ordered manual action constructions are independently reviewed; all27 methods remain unexecuted. Preserve accepted17/cache3/consumer43/Core. Native callback/page/rebind, Flags and whole Off/older/final-stack remain; no accepted repeats or wholeF12 credit.",
+      "remaining_assertion": "Current6635 combined27 live-session/provider/independent maximum-duration component qualifies with27/27 and reviewed cleanup. Native callback/page/rebind and Flags still need implementation; complete Off/older/minimum compiler/final-stack remain. Accepted consumer43/Core/cache3/transport17 unchanged.",
+      "next_action": "Preserve accepted current6635 combined27 qualification and prior consumer/cache/transport/Core evidence. Complete a reviewed native callback/page-origin design before acquisition implementation; P7WO1-4, Flags, complete Off/older/final-stack and whole PR7/F12 remain. PR11 complete foundation source design can advance independently. Do not repeat accepted suites.",
       "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit.",
       "dependency_design": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/packet.json",
@@ -263,7 +263,7 @@
       },
       "preparation_record": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
-        "sha256": "a596a03e469ddd1979ca30e4f9d9954eb5a7b5ba15c025bf535b9349b56664c2"
+        "sha256": "4309ae3914726f8836d8a9a85969496e6d48e8af7ce587a5442a3321bcea0a6f"
       },
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
       "source_branch": "valpertui/s3-consumer-capture",
@@ -274,7 +274,7 @@
       "dependency_source_head": "142ad7150f3e62f1522c3feb923d84b722efb951",
       "preparation_owner": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
-        "sha256": "e3e21dad79e6743532133bf50a3c1969ea1c3f49447ad7600f6e7331d1b91577"
+        "sha256": "4309ae3914726f8836d8a9a85969496e6d48e8af7ce587a5442a3321bcea0a6f"
       },
       "dependency_component_result": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-filtered-discovery-20261006/actual-test-only-run-97d448b1/result.json",
@@ -418,7 +418,7 @@
       },
       "qualification_scope": "Dimensions describe the complete PR7 slice. Accepted consumer/cache/typed-transport dependency components are recorded separately; native acquisition and Flags remain unimplemented.",
       "webview_live_session_source": {
-        "state": "SOURCE_REVIEWED_APPLIED_CHECKPOINTED_UNQUALIFIED",
+        "state": "QUALIFIED_AFFECTED_COMPONENT_AT_6635",
         "source_head": "225920de0d0e28cf4e3bd853f8727d46d6a12b13",
         "source_review": {
           "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-live-session-20261007/cycle3/review.json",
@@ -432,9 +432,29 @@
           "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-live-session-20261007/cycle3/sdk-checkpoint.json",
           "sha256": "2394af2cf7e4dd463777a778d0cddb47acbc45c3ddbcbccb0fee81afda941341"
         },
-        "tests_executed": 0,
-        "native_runs": 0,
-        "gates_closed": []
+        "tests_executed": 11,
+        "native_runs": 1,
+        "gates_closed": [],
+        "qualification_preparation": {
+          "state": "HISTORICAL_UNISSUED_CURRENT_SOURCE_REBIND_REQUIRED",
+          "packet": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-live-session-20261007/cycle3/affected-component-preparation/packet.json",
+            "sha256": "11dca2055a33ec07f3105e2d2297f346610bd2dfbccd5d82f06423e668754132"
+          },
+          "handback": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-live-session-20261007/cycle3/affected-component-preparation/preparation-handback.json",
+            "sha256": "66d0882849c0e5d969a04bdc342b0df850c722c72026f8d0cfce829b216d82a1"
+          },
+          "methods": 17,
+          "sdk_tests_executed": 0,
+          "native_admitted": false,
+          "disposition": "Never issued at225; provider successor changes source identity. Preserve plan and original clocks-null state. Current combined27 preparation will replace selection once bound, without running either historical plan."
+        },
+        "qualified_source_head": "6635d8eaccb67632248b5c778e1d200c9bf60f20",
+        "current_component_qualification": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-combined27-component-20261007.json",
+          "sha256": "1318253b466018cdf740e51b6850e831f0772070fe643950dac86480202a834e"
+        }
       },
       "partial_current_source_head": "6635d8eaccb67632248b5c778e1d200c9bf60f20",
       "webview_combined27_preparation": {
@@ -477,6 +497,10 @@
       "current_test_fixture_checkpoint": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-combined27-test-fixture-correction-20261007/sdk-checkpoint.json",
         "sha256": "c9d2c557a1e366d5c246f8b892efce50bee684f8a7833d236c7b26d4f743fac2"
+      },
+      "current_combined27_component": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-combined27-component-20261007.json",
+        "sha256": "1318253b466018cdf740e51b6850e831f0772070fe643950dac86480202a834e"
       }
     },
     {
@@ -592,12 +616,44 @@
         "off": "NOT_EXECUTED",
         "integration": "NOT_QUALIFIED"
       },
-      "remaining_assertion": "Keyed/ordinary tracking, scene reader/traits, authority/interactive arbitration lifetime and reader fallback; split full declarations into reviewable files Off: Legacy modifier body and no reader/authority/arbiter/state allocation or body lock",
-      "next_action": "After the current PR7 component qualification and named PR5/PR6 prerequisite disposition, review one complete PR11 ordinary/keyed foundation source design; keep PR12 semantic engine separate. No new implementation debt or native admission follows from this preparation.",
+      "remaining_assertion": "Complete25-declaration ordinary/keyed source closure is reviewed preparation. Cross-file factory and exact owner/capability revocation design remain blocked; implementation, source-matched On/Off, identity/storage/allocation, lifetime and minimum compiler/platform remain unqualified.",
+      "next_action": "Correct PR11F-01 with an internal opaque-return factory beside the private On modifiers; select and review PR11F-02 class-bound scene capability, exact owner revocation and registry/arbiter pairing. Preserve complete ordinary/keyed closure and Off identity/storage/allocation/toolchain holds. No PR12 concrete semantics or native admission.",
       "evidence_source_scope": "Reviewed source facts only, owned by Results/S3-PR11-source-preparation.json. Existing feature lookup can be reused; no current implementation, Off allocation, lifetime, compiler, native or gate credit.",
       "source_preparation_owner": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR11-source-preparation.json",
-        "sha256": "dc617fa6392b83a309a35beb00a3d722aedf575f97fecafc2404f708aa08d378"
+        "sha256": "f1eb0acce2e0b361fd0eea3e4799816f7bbf87c7ddef8755a22b810d4430cccc"
+      },
+      "complete_foundation_design": {
+        "state": "REVIEWED_PREPARATION_IMPLEMENTATION_READINESS_BLOCKED",
+        "packet": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-ordinary-keyed-foundation-design-preparation-20261007/packet.json",
+          "sha256": "1159218cccb721ecfdfbb9dd64a49cc6fe6a5bc1c36d568cb7bef0f1b9a947bd"
+        },
+        "design": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-ordinary-keyed-foundation-design-preparation-20261007/foundation-design.md",
+          "sha256": "fa0994dd6d02d35888c42e0d9d422654075334f2939cdb6953acc19b6159d3d0"
+        },
+        "declaration_index": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-ordinary-keyed-foundation-design-preparation-20261007/declaration-index.json",
+          "sha256": "85e93d1beb8d9fc1fb1dc649146acd317789005586ccf35a832c325b36fa5765"
+        },
+        "actual_publication": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-ordinary-keyed-foundation-design-preparation-20261007/actual-publication-tool-return.json",
+          "sha256": "3c77cec68708f57f921b824154167fa3c1a60e6f2e60ceb82eb51fe271c83130"
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-ordinary-keyed-foundation-design-preparation-20261007/review.json",
+          "sha256": "8c6fda3ecd815dd1d922f390d67b27b2b1410ddaef064964c9a56fc6328b919c"
+        },
+        "readback": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-ordinary-keyed-foundation-design-preparation-20261007/review-readback.json",
+          "sha256": "74302f795dc03a978fa2207475ee4c63649057cc4ffde308460683b7e67b3ace"
+        },
+        "findings": [
+          "PR11F-01",
+          "PR11F-02"
+        ],
+        "disposition": "Complete ordinary/keyed declaration and dependency preparation is supported. Cross-file internal opaque-return factory and exact active-owner/capability/revocation contract must be designed and reviewed before implementation. No source/native/gate credit."
       }
     },
     {
@@ -665,11 +721,11 @@
     "PR5"
   ],
   "locally_qualified_off_scope": "PR1-PR3 accepted prefix plus PR4/PR5 concrete exclusive-Off at their recorded heads; no blanket later-slice or current-stack equivalence claim",
-  "next_slice": "PR7_NETWORK_TRACE_CONSUMER_QUALIFICATION",
+  "next_slice": "PR11_COMPLETE_ORDINARY_KEYED_FOUNDATION_DESIGN",
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": "2026-10-07T08:21:23Z",
+  "updated_at": "2026-10-07T09:04:05.565686+00:00",
   "dependency_build_attempts": 4,
   "dependency_component_qualifications": 4,
   "dependency_test_invocations": 4,
@@ -754,16 +810,21 @@
     }
   },
   "webview_maximum_duration_dependency": {
-    "state": "SOURCE_REVIEWED_TEST_ONLY_PENDING_ONE_METHOD",
+    "state": "INDEPENDENT_MAXIMUM_DURATION_METHOD_QUALIFIED_AT_6635",
     "source_head": "78dca3e69c8fb437d902feeb0a9ea9d5ac80a090",
     "sdk_checkpoint": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-captured-transport-20261006/cycle2/maximum-duration-control/sdk-checkpoint.json",
       "sha256": "12b6c8f934092573c2170fd5a21f0b9f0c56409870a6a5ba47576f1a950f9c4d"
     },
-    "gates_closed": []
+    "gates_closed": [],
+    "qualified_source_head": "6635d8eaccb67632248b5c778e1d200c9bf60f20",
+    "current_component_qualification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-combined27-component-20261007.json",
+      "sha256": "1318253b466018cdf740e51b6850e831f0772070fe643950dac86480202a834e"
+    }
   },
   "webview_live_session_dependency": {
-    "state": "SOURCE_REVIEWED_APPLIED_CHECKPOINTED_UNQUALIFIED",
+    "state": "QUALIFIED_AFFECTED_COMPONENT_AT_6635",
     "source_head": "225920de0d0e28cf4e3bd853f8727d46d6a12b13",
     "source_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-live-session-20261007/cycle3/review.json",
@@ -777,8 +838,8 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-live-session-20261007/cycle3/sdk-checkpoint.json",
       "sha256": "2394af2cf7e4dd463777a778d0cddb47acbc45c3ddbcbccb0fee81afda941341"
     },
-    "tests_executed": 0,
-    "native_runs": 0,
+    "tests_executed": 11,
+    "native_runs": 1,
     "gates_closed": [],
     "qualification_preparation": {
       "state": "HISTORICAL_UNISSUED_CURRENT_SOURCE_REBIND_REQUIRED",
@@ -794,10 +855,15 @@
       "sdk_tests_executed": 0,
       "native_admitted": false,
       "disposition": "Never issued at225; provider successor changes source identity. Preserve plan and original clocks-null state. Current combined27 preparation will replace selection once bound, without running either historical plan."
+    },
+    "qualified_source_head": "6635d8eaccb67632248b5c778e1d200c9bf60f20",
+    "current_component_qualification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-combined27-component-20261007.json",
+      "sha256": "1318253b466018cdf740e51b6850e831f0772070fe643950dac86480202a834e"
     }
   },
   "webview_native_provider_dependency": {
-    "state": "SOURCE_REVIEWED_APPLIED_CHECKPOINTED_UNQUALIFIED",
+    "state": "QUALIFIED_AFFECTED_COMPONENT_AT_6635",
     "source_head": "7e308269a612b60cfb41c317ae24e682fb9e1fc5",
     "source_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/review.json",
@@ -811,8 +877,8 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/sdk-checkpoint.json",
       "sha256": "d847e47307fe3503fe001838f3c9c6b78a5bee5ddcbacbe0d377aba8a258f01b"
     },
-    "tests_executed": 0,
-    "native_runs": 0,
+    "tests_executed": 10,
+    "native_runs": 1,
     "gates_closed": [],
     "qualification_preparation": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/cycle2/packet.json",
@@ -829,6 +895,11 @@
     "root_binding_review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-webview-native-provider-20261007/combined-qualification-preparation/root-binding-preparation/cycle2/preparation-review.json",
       "sha256": "aa6f40ca47cab355947d5eec83ec8c2e45039eeec66e34da249a2a5f5209a9e3"
+    },
+    "qualified_source_head": "6635d8eaccb67632248b5c778e1d200c9bf60f20",
+    "current_component_qualification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-combined27-component-20261007.json",
+      "sha256": "1318253b466018cdf740e51b6850e831f0772070fe643950dac86480202a834e"
     }
   }
 }

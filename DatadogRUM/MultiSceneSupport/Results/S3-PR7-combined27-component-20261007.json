@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "kind": "S3_PR7_WEBVIEW_LIVE_SESSION_PROVIDER_COMPONENT_QUALIFICATION",
+  "state": "QUALIFIED_AFFECTED_COMPONENT_ONLY",
+  "existing_gate": "S3:F12",
+  "slice": "PR7",
+  "run_id": "09783103-251e-4f88-9e3e-39983e5f5cb7",
+  "source_head": "6635d8eaccb67632248b5c778e1d200c9bf60f20",
+  "source_signature": "G",
+  "environment": {
+    "toolchain": "Xcode27.1 27A9269 / Swift6.4",
+    "destination": {
+      "architecture": "arm64",
+      "deviceId": "59A8E789-932A-48D0-9281-0F49DEB8E96D",
+      "deviceName": "iPhone 18 Pro",
+      "modelName": "iPhone 18 Pro",
+      "osBuildNumber": "24A434",
+      "osVersion": "27.0",
+      "platform": "iOS Simulator"
+    }
+  },
+  "verdicts": {
+    "scenario": "PASS",
+    "evidence": "COMPLETE",
+    "cleanup": "PASS_ORIGINAL_SHUTDOWN_APPS_AND_GROUPS",
+    "overall": "PASS_AFFECTED_COMPONENT_ONLY"
+  },
+  "counts": {
+    "RUM": 14,
+    "Logs": 5,
+    "WebView": 8,
+    "passed": 27,
+    "failed": 0,
+    "new_live_session_methods": 11,
+    "new_provider_methods": 10,
+    "independent_maximum_duration": 1,
+    "affected_controls": 5,
+    "builds": 3,
+    "qualification_runs": 1
+  },
+  "actual_result": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-combined27-qualification-20261007-fixture-corrected-cycle2/actual-run-09783103/result.json",
+    "sha256": "4f7425d049d3367392066c99eb93ef2399c9feadb5c4e656a00fd51139207818"
+  },
+  "custody_packet": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-combined27-qualification-20261007-fixture-corrected-cycle2/actual-run-09783103/actual-outcome-closure/packet.json",
+    "sha256": "82b218b100fc8ab1ad77d421e9c727e2e481ffab8d42ac41aaa9c16aae4a82fb"
+  },
+  "actual_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-combined27-qualification-20261007-fixture-corrected-cycle2/actual-run-09783103/actual-outcome-closure/actual-review.json",
+    "sha256": "7ec102583dee51d123e30471f284128d276f5789e9e915cda79e534e2641c204"
+  },
+  "review_readback": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-combined27-qualification-20261007-fixture-corrected-cycle2/actual-run-09783103/actual-outcome-closure/actual-review-readback.json",
+    "sha256": "d3cd3ca2706dd5d1895e456ee167d5a647306da4624ff6f64ff7a88755056432"
+  },
+  "actual_review_publication": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-combined27-qualification-20261007-fixture-corrected-cycle2/actual-run-09783103/actual-outcome-closure/actual-review-publication-tool-return.json",
+    "sha256": "f4a0ec7cfa51f25971e49a3cc5a25764dd5938f07d5db3b418deba118a12db7c"
+  },
+  "custody_handback": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-combined27-qualification-20261007-fixture-corrected-cycle2/actual-run-09783103/actual-outcome-closure/native-source-custody-handback.json",
+    "sha256": "d15528dc0daf558a74f5a84f343fb9cf74476936ad5a2188b0b26fa940dec1b7"
+  },
+  "source_checkpoint": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-combined27-test-fixture-correction-20261007/sdk-checkpoint.json",
+    "sha256": "c9d2c557a1e366d5c246f8b892efce50bee684f8a7833d236c7b26d4f743fac2"
+  },
+  "original_build_stop": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-combined27-build-stop-20261007.json",
+    "sha256": "1c406b3ad8385bfa3a77a91b591b5dc06717c1832589cab07874570f9067a508"
+  },
+  "rejected_selection_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-combined27-qualification-20261007-fixture-corrected/review.json",
+    "sha256": "fc967ffc87887999292a91ea5d36fcf446adca0a5ef0137e2cb1e063ef9a916a"
+  },
+  "cleanup_scope": {
+    "original_shutdown": true,
+    "exact_42_app_inventory": true,
+    "registered_controller_and_command_groups_absent": 30,
+    "observer_self_retirement_or_universal_group_absence_claimed": false
+  },
+  "remaining": [
+    "Native callback/window/page origin, both-queue acquisition, rebind/detach and stable mounted-A positive",
+    "Flags acquisition",
+    "Complete Off, older/minimum compiler/platform and final-stack qualification",
+    "Whole PR7/F12 and maintainer release acceptance"
+  ],
+  "limits": "One current-source component qualification only. Earlier failures, historical source-only preparations and accepted suites remain unchanged. No mounted WebView origin, whole feature, release or gate credit.",
+  "gates_closed": [],
+  "pushed": false,
+  "updated_at": "2026-10-07T09:04:05.565686+00:00"
+}

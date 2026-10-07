@@ -4,7 +4,7 @@
   "gate": "S3:F12",
   "slice": "PR11",
   "state": "REVIEWED_SOURCE_PREPARATION_ONLY_NOT_IMPLEMENTED",
-  "updated_at": "2026-10-07T03:33:16.094862+00:00",
+  "updated_at": "2026-10-07T09:13:46.973753+00:00",
   "owner": "SDK implementer + designated independent reviewer",
   "source_lineage": {
     "linked_base_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
@@ -65,7 +65,7 @@
     "Complete deployment15/minimumSwift6.2 and supported platform conditional typecheck/availability checks, with no new public API/import/dependency assumption. Preserve PR6 watch/final integration/immediate UIKit weak-release holds and final F12/public/release approval independently."
   ],
   "shape_limit": "Same-lookup reuse does not qualify opaque-return/ViewBuilder structure, stored mode/collaborator size or retention, SwiftUI structural identity or Off allocations. Exact implementation and source-matched Off proof remain.",
-  "next_action": "After the current PR7 component qualification and named PR5/PR6 prerequisite disposition, review one complete PR11 ordinary/keyed foundation source design; keep PR12 semantic engine separate. No new implementation debt or native admission follows from this preparation.",
+  "next_action": "Correct PR11F-01 with an internal opaque-return factory beside the private On modifiers; select and review PR11F-02 class-bound scene capability, exact owner revocation and registry/arbiter pairing. Preserve complete ordinary/keyed closure and Off identity/storage/allocation/toolchain holds. No PR12 concrete semantics or native admission.",
   "actions": {
     "sdk_edits": 0,
     "controls": 0,
@@ -73,5 +73,41 @@
     "native_calls": 0,
     "authority_issued": 0,
     "gates_closed": []
+  },
+  "complete_foundation_design": {
+    "state": "REVIEWED_PREPARATION_IMPLEMENTATION_READINESS_BLOCKED",
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-ordinary-keyed-foundation-design-preparation-20261007/packet.json",
+      "sha256": "1159218cccb721ecfdfbb9dd64a49cc6fe6a5bc1c36d568cb7bef0f1b9a947bd"
+    },
+    "design": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-ordinary-keyed-foundation-design-preparation-20261007/foundation-design.md",
+      "sha256": "fa0994dd6d02d35888c42e0d9d422654075334f2939cdb6953acc19b6159d3d0"
+    },
+    "declaration_index": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-ordinary-keyed-foundation-design-preparation-20261007/declaration-index.json",
+      "sha256": "85e93d1beb8d9fc1fb1dc649146acd317789005586ccf35a832c325b36fa5765"
+    },
+    "actual_publication": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-ordinary-keyed-foundation-design-preparation-20261007/actual-publication-tool-return.json",
+      "sha256": "3c77cec68708f57f921b824154167fa3c1a60e6f2e60ceb82eb51fe271c83130"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-ordinary-keyed-foundation-design-preparation-20261007/review.json",
+      "sha256": "8c6fda3ecd815dd1d922f390d67b27b2b1410ddaef064964c9a56fc6328b919c"
+    },
+    "readback": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-ordinary-keyed-foundation-design-preparation-20261007/review-readback.json",
+      "sha256": "74302f795dc03a978fa2207475ee4c63649057cc4ffde308460683b7e67b3ace"
+    },
+    "findings": [
+      "PR11F-01",
+      "PR11F-02"
+    ],
+    "disposition": "Complete ordinary/keyed declaration and dependency preparation is supported. Cross-file internal opaque-return factory and exact active-owner/capability/revocation contract must be designed and reviewed before implementation. No source/native/gate credit."
+  },
+  "qualified_pr7_predecessor": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-combined27-component-20261007.json",
+    "sha256": "1318253b466018cdf740e51b6850e831f0772070fe643950dac86480202a834e"
   }
 }
