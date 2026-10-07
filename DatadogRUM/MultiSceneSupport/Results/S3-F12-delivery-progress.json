@@ -616,12 +616,12 @@
         "off": "NOT_EXECUTED",
         "integration": "NOT_QUALIFIED"
       },
-      "remaining_assertion": "Signed d232 test-only UUID sentinel successor preserves original82ff production prerequisites and all assertions. All12 new methods remain unexecuted. Scene-capability admission findings are corrected only in a reviewed private proposal; complete ordinary/keyed foundation, On/Off identity/storage/allocation, lifetime and minimum compiler/platform remain unqualified.",
-      "next_action": "Freeze and independently review one source-matched 12-test conditional/owned-Monitor component run after fresh awake/native prerequisites; execute only those new methods. Prepare the complete ordinary/keyed factory, foundation installation and capability/registry/arbiter integration independently. Keep Off identity/storage/allocation and minimum compiler/platform held; no PR12 concrete semantics or native admission from this record.",
+      "remaining_assertion": "All12 signed d232 component methods remain unexecuted. Reviewed private factory, stop-descriptor and tracking-epoch fragments are unapplied; complete foundation/ordinary-keyed integration, On/Off identity/storage/allocation, lifetime and minimum compiler/platform remain unqualified.",
+      "next_action": "Complete the frozen d232 Core12 qualification after actual awake renewal and current MAIN/reviewer/native bindings; execute only those12 unexecuted methods. Finish and independently review the complete ordinary/keyed private source integration using the reviewed factory, original-lifetime binding and explicit callback reset. Keep concrete Off identity/storage/allocation and compiler/platform qualification separate.",
       "evidence_source_scope": "Signed partial source prerequisite checkpoint and bounded source reviews only, owned by Results/S3-PR11-source-preparation.json. Original design/source/control BLOCKs are retained; no native, Off, complete foundation or gate credit.",
       "source_preparation_owner": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR11-source-preparation.json",
-        "sha256": "27e86dc2a2a9a563b4735522a27b81a15c38d9dfb588ee31926e69a453cce352"
+        "sha256": "821baaed15cf1403b42b4ce12e15d444b4dcdc6280667867bad48c975249f76c"
       },
       "complete_foundation_design": {
         "state": "REVIEWED_PREPARATION_IMPLEMENTATION_READINESS_BLOCKED",
@@ -839,7 +839,7 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": "2026-10-07T10:44:33.817354+00:00",
+  "updated_at": "2026-10-07T12:39:39.187963+00:00",
   "dependency_build_attempts": 4,
   "dependency_component_qualifications": 4,
   "dependency_test_invocations": 4,

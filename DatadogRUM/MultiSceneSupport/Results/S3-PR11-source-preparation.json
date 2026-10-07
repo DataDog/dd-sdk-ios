@@ -65,7 +65,7 @@
     "Complete deployment15/minimumSwift6.2 and supported platform conditional typecheck/availability checks, with no new public API/import/dependency assumption. Preserve PR6 watch/final integration/immediate UIKit weak-release holds and final F12/public/release approval independently."
   ],
   "shape_limit": "Same-lookup reuse does not qualify opaque-return/ViewBuilder structure, stored mode/collaborator size or retention, SwiftUI structural identity or Off allocations. Exact implementation and source-matched Off proof remain.",
-  "next_action": "Freeze and independently review one source-matched 12-test conditional/owned-Monitor component run after fresh awake/native prerequisites; execute only those new methods. Prepare the complete ordinary/keyed factory, foundation installation and capability/registry/arbiter integration independently. Keep Off identity/storage/allocation and minimum compiler/platform held; no PR12 concrete semantics or native admission from this record.",
+  "next_action": "Complete the frozen d232 Core12 qualification after actual awake renewal and current MAIN/reviewer/native bindings; execute only those12 unexecuted methods. Finish and independently review the complete ordinary/keyed private source integration using the reviewed factory, original-lifetime binding and explicit callback reset. Keep concrete Off identity/storage/allocation and compiler/platform qualification separate.",
   "actions": {
     "sdk_edits": 0,
     "controls": 0,
@@ -257,5 +257,29 @@
       "PR11SC-03"
     ],
     "scope": "Exact subscriber connection, stored lifetime identity and replacement destination admission guards only; legacy helpers unchanged. Real controls, application, compiler/Off and complete foundation remain."
+  },
+  "private_integration_preparation": {
+    "state": "REVIEWED_FRAGMENTS_COMPLETE_INTEGRATION_IN_PROGRESS_NOT_APPLIED",
+    "progress": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/integration-progress-checkpoint/progress.reviewed-successor.json",
+      "sha256": "ae2c481a651e7eee8217d6823ef7e411f7bd02ba542b829187366b8b6d21764c"
+    },
+    "scope": "Reviewed scene admission controls, captured stop descriptor, ordinary entry/factory, explicit tracking reset and post-registration foundation. Complete per-callback/eligibility isolation integration remains private and unapplied; no SDK/native/Off/gate evidence."
+  },
+  "current_component_preparation": {
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/qualification-preparation/root-binding-current/packet.json",
+      "sha256": "9aef8df5c4a9ef2fc41ae82369128af10a617604348aa9e9ec505232f7b635b8"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/qualification-preparation/root-binding-current/preparation-review.json",
+      "sha256": "e9e91ab838e3eb32d9f35744480293c8022338fc394dca960664ba5b4fa873be"
+    },
+    "root_procedure": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/qualification-preparation/root-binding-current/read-only-current-state-20261007/root-procedure.json",
+      "sha256": "6c5444eb69a799d2b06cfc194d69144a459b5a57c71de79ee767e23d389acbb7"
+    },
+    "state": "UNISSUED_ACTUAL_AWAKE_AND_CURRENT_MAIN_BINDINGS_REQUIRED",
+    "scope": "Data-only binder selects the actual current MAIN checkpoint; d232 source, profile, dependency closure and operational/cleanup budgets stay unchanged. No clocks or launch authority."
   }
 }
