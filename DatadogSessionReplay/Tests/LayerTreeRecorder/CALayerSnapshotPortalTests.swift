@@ -8,7 +8,7 @@
 import Foundation
 import QuartzCore
 import Testing
-import DatadogSDKTesting
+import TestUtilities
 
 @testable import DatadogSessionReplay
 
