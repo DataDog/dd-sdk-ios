@@ -1184,6 +1184,29 @@ public class FatalErrorContextNotifierMock: FatalErrorContextNotifying {
     public init() {}
 }
 
+/// A `MonotonicClock` that reads elapsed time from a `DateProvider`, so a test that already simulates
+/// time by moving a `DateProviderMock` drives session timeout and max duration with that same clock.
+internal struct DateProviderMonotonicClock: MonotonicClock {
+    let dateProvider: DateProvider
+
+    var elapsedTime: TimeInterval { dateProvider.now.timeIntervalSinceReferenceDate }
+}
+
+/// A `MonotonicClock` whose readings only move when a test moves them, so session timeout and
+/// max-duration can be driven deterministically without sleeping.
+internal final class MonotonicClockMock: MonotonicClock {
+    @ReadWriteLock
+    var elapsedTime: TimeInterval
+
+    init(elapsedTime: TimeInterval = 0) {
+        self.elapsedTime = elapsedTime
+    }
+
+    func advance(by interval: TimeInterval) {
+        _elapsedTime.mutate { $0 += interval }
+    }
+}
+
 extension RUMScopeDependencies {
     public static func mockAny() -> RUMScopeDependencies {
         return mockWith()
@@ -1225,6 +1248,7 @@ extension RUMScopeDependencies {
             INVMetric(predicate: TimeBasedINVActionPredicate())
         },
         sessionType: RUMSessionType? = nil,
+        monotonicClock: MonotonicClock? = nil,
         timeseriesCollector: TimeseriesCollecting? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
@@ -1257,6 +1281,7 @@ extension RUMScopeDependencies {
             networkSettledMetricFactory: networkSettledMetricFactory,
             interactionToNextViewMetricFactory: interactionToNextViewMetricFactory,
             sessionType: sessionType,
+            monotonicClock: monotonicClock ?? MonotonicClockMock(),
             timeseriesCollector: timeseriesCollector
         )
     }
@@ -1290,7 +1315,8 @@ extension RUMScopeDependencies {
         featureFlags: RUM.Configuration.FeatureFlags? = nil,
         networkSettledMetricFactory: ((Date, String) -> TNSMetricTracking)? = nil,
         interactionToNextViewMetricFactory: (() -> INVMetricTracking)? = nil,
-        sessionType: RUMSessionType? = nil
+        sessionType: RUMSessionType? = nil,
+        monotonicClock: MonotonicClock? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: self.featureScope,
@@ -1321,7 +1347,8 @@ extension RUMScopeDependencies {
             featureFlags: featureFlags ?? self.featureFlags,
             networkSettledMetricFactory: networkSettledMetricFactory ?? self.networkSettledMetricFactory,
             interactionToNextViewMetricFactory: interactionToNextViewMetricFactory ?? self.interactionToNextViewMetricFactory,
-            sessionType: sessionType
+            sessionType: sessionType,
+            monotonicClock: monotonicClock ?? self.monotonicClock
         )
     }
 }

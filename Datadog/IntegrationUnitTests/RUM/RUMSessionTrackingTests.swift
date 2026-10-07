@@ -264,7 +264,7 @@ class RUMSessionTrackingTests: RUMSessionTestsBase {
 
         // Suspend for long time
         run = run
-            .and(.advanceTime(by: 2.hours))
+            .and(.advanceTime(by: 2.hours, flushBeforeAdvancing: true))
 
         // Move to foreground, start "FirstView" and track events:
         run = run

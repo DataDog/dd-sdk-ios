@@ -500,6 +500,8 @@ extension RUM {
 
         /// The provider of the current date.
         internal var dateProvider: DateProvider = SystemDateProvider()
+        /// The monotonic clock measuring session inactivity and maximum duration.
+        internal var monotonicClock: MonotonicClock = SystemMonotonicClock()
         /// The provider of the current media uptime.
         internal var mediaTimeProvider: CACurrentMediaTimeProvider = MediaTimeProvider()
         /// The main queue, subject to App Hangs monitoring.
