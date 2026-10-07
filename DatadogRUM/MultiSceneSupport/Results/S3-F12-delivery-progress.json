@@ -586,11 +586,11 @@
         "integration": "NOT_QUALIFIED"
       },
       "remaining_assertion": "Exact per-step owner, duplicate keys distinct lifetime, targeted completion and released retained snapshots Off: Develop Operation/profiling keying and flow",
-      "next_action": "After named PR4/PR7 dependencies qualify, review one complete private Operation admission/message/consolidated-profiler design. Preserve application-wide A-to-B attribution and the approved duplicate-start/older-timeout rule; no new public handle, Off keying repair or optional profiling campaign.",
-      "evidence_source_scope": "Reviewed consolidated source facts and finite identity/Off boundaries only, owned by Results/S3-PR10-source-preparation.json. No current implementation, compiler, runtime, lifetime, performance or gate credit.",
+      "next_action": "Review the concrete targeted retirement/disposal seam, then implement the complete private Operation/profiling chain in its MAIN-linked worktree using the reviewed weak original-feature admission and lazy On holder. Qualify the16 source-matched controls; preserve per-step A-to-B, latest-start semantics and Off flow.",
+      "evidence_source_scope": "Complete private design independently reviewed with explicit implementation holds, bound to23 current callers/35 source snapshots. MAIN-linked dependent worktree prepared. No implementation/compiler/runtime/retention/Off or release-gate credit.",
       "source_preparation_owner": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR10-source-preparation.json",
-        "sha256": "4b8c8b4fbbba3933f2c1fb4e2b8d39aebac6e07b30651861193c31aa030f6252"
+        "sha256": "c9a43aeb6c73123c7c19a5d0baf025875cbd6871af6c9f2fbf1257161e64f66b"
       }
     },
     {
@@ -895,7 +895,7 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": "2026-10-07T15:28:49.717662+00:00",
+  "updated_at": "2026-10-07T15:56:40.324469+00:00",
   "dependency_build_attempts": 4,
   "dependency_component_qualifications": 4,
   "dependency_test_invocations": 4,

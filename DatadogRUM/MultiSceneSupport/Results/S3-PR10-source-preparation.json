@@ -4,7 +4,7 @@
   "gate": "S3:F12",
   "slice": "PR10",
   "state": "REVIEWED_SOURCE_PREPARATION_ONLY_NOT_IMPLEMENTED",
-  "updated_at": "2026-10-07T15:28:49.717662+00:00",
+  "updated_at": "2026-10-07T15:56:40.324469+00:00",
   "owner": "SDK implementer + designated independent reviewer",
   "source_lineage": {
     "linked_base_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
@@ -85,7 +85,7 @@
     "Rebuild the whole private source chain in surviving Monitor/command/Session/manager/OperationMessage/consolidated DatadogProfiler, including per-step event/message attribute provenance and non-operation/TTID inventory; preserve public API and wire encoding and do not restore AppLaunchProfiler.",
     "Preserve consolidated stepType-aware completion, start ID/date, sampling/options, consent/quota, profile timers/extension/cleanup, app-launch/non-operation behavior and stale-owner rejection/retained snapshot release; typed identity alone proves none of these.",
     "Branch on the frozen resolved Off mode before any new handoff/Core/scene/UI lookup, snapshot, extra lock or retained-state allocation. Keep the legacy UUID/date/attribute/keying/warning Set/profile dictionary/callback/message flow and fallback exactly once. Exact changed storage/retention/allocation needs qualification.",
-    "After separately authorized implementation, audit the complete usages/convenience/custom-NOP/Objective-C/source-membership closure and qualify the changed paths with focused source-matched identity, async attribute/context, targeted completion, stopped/replaced owner and lifetime controls plus supported compilers/platforms. No controls were run here; no public/encoding/generated-model/dependency/build-script or actor/Observation migration authorization."
+    "After the private design and source are reviewed, audit the complete usages/convenience/custom-NOP/Objective-C/source-membership closure and qualify the changed paths with focused source-matched identity, async attribute/context, targeted completion, stopped/replaced owner and lifetime controls plus supported compilers/platforms. Existing private implementation authorization remains; no public/encoding/generated-model/dependency/build-script or actor/Observation migration authorization."
   ],
   "limits": [
     "Only 19 immutable source observations and five historical documentary copies are reviewed; no F11 remap, full repository caller inventory, code implementation or current-source qualification.",
@@ -101,7 +101,7 @@
     "original": "AppLaunchVitalMessage",
     "source_semantics_changed": false
   },
-  "next_action": "After named PR4/PR7 dependencies qualify, review one complete private Operation admission/message/consolidated-profiler design. Preserve application-wide A-to-B attribution and the approved duplicate-start/older-timeout rule; no new public handle, Off keying repair or optional profiling campaign.",
+  "next_action": "Review the concrete targeted retirement/disposal seam, then implement the complete private Operation/profiling chain in its MAIN-linked worktree using the reviewed weak original-feature admission and lazy On holder. Qualify the16 source-matched controls; preserve per-step A-to-B, latest-start semantics and Off flow.",
   "actions": {
     "sdk_edits": 0,
     "controls": 0,
@@ -120,5 +120,107 @@
     "matching_files": 23,
     "scope": "Swift/Objective-C consumers and test/convenience/app-launch use sites; no implementation, encoding proof or runtime credit."
   },
-  "private_design_preparation": "In progress in independent private source-owner lane; no SDK/project/MAIN edits or native admission."
+  "private_design_preparation": {
+    "state": "PRIVATE_DESIGN_REVIEWED_WITH_IMPLEMENTATION_HOLDS_NOT_IMPLEMENTED",
+    "source_head": "6635d8eaccb67632248b5c778e1d200c9bf60f20",
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/complete-contract-design/packet.json",
+      "sha256": "f61f9b1f9a12b2d8eabbf9c9911f221460d8a797fe8f64f1fe5a7a397ab8820a"
+    },
+    "design": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/complete-contract-design/design.md",
+      "sha256": "795906f531ddf0db0fc21364084edaef2fa24a08d45f4f3ff99758ddfebf0877"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/complete-contract-design/controls.json",
+      "sha256": "17c655456f80196ff6e1ae87570a83ab9e9324b188e347c7bdcb77920d5920b6"
+    },
+    "decisions": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/complete-contract-design/contract-decisions.json",
+      "sha256": "49e690f58270c8d74dccae8e3c9a63663fb033f770271ec2b7c37b4b96c81891"
+    },
+    "publication_readback": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/complete-contract-design/publication-readback.json",
+      "sha256": "cde3b87d0cee8560dc3d7649c5eb2c0c223e8884e52e180cc3df335f1c6cf85b"
+    },
+    "actual_publication": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/complete-contract-design/actual-publication-tool-return.json",
+      "sha256": "4151541a255b5effe92fe02a2f7663c6ffb45e6a9c4b2c077731452d29c2018a"
+    },
+    "proposed_controls": 16,
+    "controls_executed": 0,
+    "holds": [
+      {
+        "id": "PR10I-01",
+        "requirement": "Retirement and retention must be concrete in the patch."
+      },
+      {
+        "id": "PR10I-02",
+        "requirement": "Implement and discriminate exact original Session/view/action selection."
+      },
+      {
+        "id": "PR10I-03",
+        "requirement": "Implement typed identity and mixed-state behavior without strengthening public guarantees."
+      },
+      {
+        "id": "PR10I-04",
+        "requirement": "All 16 proposed controls remain unexecuted and require real source-matched discriminators."
+      },
+      {
+        "id": "PR10I-05",
+        "requirement": "Compatibility and footprint qualification remain separate."
+      }
+    ],
+    "reviewer": "/root/rum_runtime_reviewer",
+    "sdk_edits": 0,
+    "builds": 0,
+    "native_calls": 0,
+    "gates_closed": [],
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/complete-contract-design/review.json",
+      "sha256": "8ae3cb67c905d6560bdd0fe8310173a39d52afb1cb5bda78d6ded32feb998b60"
+    },
+    "review_readback": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/complete-contract-design/review-readback.json",
+      "sha256": "36c4bffd5b78ae045e23bcbdf4edad119593da2bb09f8231040abe7f88f87209"
+    },
+    "actual_review_publication": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/complete-contract-design/actual-review-publication.json",
+      "sha256": "e27727fd1ca04531c458a1ef197b5a16d8c427719d2334dd4cf8b5514179ef90"
+    },
+    "decision_dispositions": [
+      {
+        "id": "PR10D-01",
+        "disposition": "RESOLVABLE_WITH_EXISTING_AUTHORITATIVE_ABSENCE_ADMISSION_CONTRACT",
+        "selection": "A source-bearing owned On command with no proved original Session is refused before manager admission. No current-session fallback or invented null-session event is required."
+      },
+      {
+        "id": "PR10D-02",
+        "disposition": "MINIMAL_POINT_IN_TIME_ADMISSION_CAN_REUSE_CURRENT_FEATURE_IDENTITY",
+        "selection": "Prefer an On-only weak original Core/RUMFeature/Monitor admission capability plus retained original Owner and exact current registered feature object identity. Expose only an opaque Internal capability to Profiling; do not make a new shared per-registration Core token/transaction a mandatory prerequisite for this contract."
+      },
+      {
+        "id": "PR10D-03",
+        "disposition": "SMALLEST_STORAGE_CHOICE_RESOLVED_WITH_QUALIFICATION_HOLDS",
+        "selection": "The separate storage note's lazy optional On holder on the existing final profiler is the smallest source design. The holder/map is allocated only after admitted On delivery on the existing queue; first admitted owned payload supports Profiling-before-RUM activation."
+      },
+      {
+        "id": "PR10D-04",
+        "disposition": "ALREADY_ACCEPTED_LEGACY_CONSTRAINT_NOT_NEW_BLOCKING_PRODUCT_DECISION",
+        "selection": "Retain profile-wide last-message attributes and value-copy dictionary semantics. Do not invent per-Vital tags, immutable deep copy of arbitrary AttributeValue, or a new backend format."
+      }
+    ],
+    "targeted_retirement_preparation": "One private concrete original-capability retirement/disposal design in progress; original design and review immutable. No Core registration token, broad receiver forwarding or new TTL assumed."
+  },
+  "delivery_worktree_preparation": {
+    "state": "LINKED_PREPARATION_WORKTREE_ONLY_NO_PR10_IMPLEMENTATION",
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-operation-worktree",
+    "branch": "valpertui/s3-operation-ownership",
+    "head": "6635d8eaccb67632248b5c778e1d200c9bf60f20",
+    "linkage": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/delivery-worktree-preparation/linkage.json",
+      "sha256": "b6972e86afe3bd69b99d80fc503e5ef82af7845bdd770e299ed4472d2e6204a2"
+    },
+    "implementation": "NOT_IMPLEMENTED"
+  }
 }

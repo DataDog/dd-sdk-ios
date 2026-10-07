@@ -10,7 +10,8 @@
     "valpertui/s3-scene-view-handler",
     "valpertui/s3-handoff-activation",
     "valpertui/s3-consumer-capture",
-    "valpertui/s3-swiftui-foundation"
+    "valpertui/s3-swiftui-foundation",
+    "valpertui/s3-operation-ownership"
   ],
   "s3_slice_mapping": {
     "PR1_PR2": "valpertui/s3-runtime-feature-flag",
@@ -18,9 +19,10 @@
     "PR4": "valpertui/s3-monitor-targets",
     "PR5": "valpertui/s3-scene-view-handler",
     "PR6": "valpertui/s3-handoff-activation",
-    "PR7_PR13": "PR7 and PR11 delivery worktrees exist; PR8 and PR10/PR12/PR13 still have no separate implemented delivery branches. Future delivery uses MAIN-linked worktrees.",
-    "PR7": "valpertui/s3-consumer-capture; final S1 dependency source composed, consumer implementation and new-source qualification remain",
-    "PR11": "valpertui/s3-swiftui-foundation; signed partial lifetime/owned-Monitor prerequisites; complete foundation remains unimplemented/unqualified"
+    "PR7_PR13": "PR7, PR10 and PR11 are MAIN-linked; PR8 and PR12/PR13 have no separate implemented delivery branches. Future delivery uses MAIN-linked worktrees.",
+    "PR7": "valpertui/s3-consumer-capture; affected RUM/Logs/WebView component27/27 qualified at6635; complete native acquisition/Off/final integration remain held",
+    "PR11": "valpertui/s3-swiftui-foundation; full source6d3a plus signed focused host4da720, source reviewed, uncompiled/unexecuted",
+    "PR10": "valpertui/s3-operation-ownership; dependent source only, complete private design under review"
   },
   "registered_named_worktrees": [
     {
@@ -191,6 +193,18 @@
         "sha256": "5e59b4a60c904b156b3d1ca2936c69225c53830e993b1e04dfdef3aa9d9828ee"
       },
       "scope": "Partial SwiftUI foundation prerequisites only; no runtime/Off/final-stack qualification."
+    },
+    {
+      "branch": "valpertui/s3-operation-ownership",
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-operation-worktree",
+      "head_at_verification": "6635d8eaccb67632248b5c778e1d200c9bf60f20",
+      "actual_branch": "refs/heads/valpertui/s3-operation-ownership",
+      "linked": true,
+      "worktree_linkage": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/delivery-worktree-preparation/linkage.json",
+        "sha256": "b6972e86afe3bd69b99d80fc503e5ef82af7845bdd770e299ed4472d2e6204a2"
+      },
+      "scope": "Clean dependent-source preparation only; PR10 not implemented or qualified."
     }
   ],
   "excluded": "Detached experiment snapshots and Datadog mobile-app fixture clones are not SDK delivery branches. Baseline fixture clones bearing resource-completion-ownership at develop HEAD do not replace the actual linked delivery branch.",
@@ -205,20 +219,34 @@
     "sha256": "19046c889ac49e81e6bcc2d9f783e1284f5a55c14b4018f96cb867e41f706e8b"
   },
   "latest_required_delivery_link_verification": {
-    "at": "2026-10-07T10:18:37.400036+00:00",
-    "scope": "Eight required S2/S3 delivery branches only; historical registered inventory snapshots are preserved. No push/merge/rewrite.",
+    "at": "2026-10-07T15:53:06.152633+00:00",
+    "scope": "Nine required delivery branches; source/current linkage only. Historical snapshots preserved. No publication, merge or rewrite.",
     "branches": [
       {
-        "branch": "valpertui/s2-rum-lifetime",
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/s2-rum-lifetime",
-        "head": "7604da24bfb757e8d19314e7183b840fa17d858f",
+        "branch": "valpertui/s3-operation-ownership",
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-operation-worktree",
+        "head": "6635d8eaccb67632248b5c778e1d200c9bf60f20",
         "git_common_dir": "/Users/valentin.pertuisot/work/dd-sdk-ios/.git",
         "linked": true
       },
       {
-        "branch": "valpertui/s3-runtime-feature-flag",
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/worktree",
-        "head": "1c103b6096820d7ce5471ed3d2aff0bf026270a3",
+        "branch": "valpertui/s3-swiftui-foundation",
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-worktree",
+        "head": "4da720bb9af054b41d52841d670c4e95703a9f03",
+        "git_common_dir": "/Users/valentin.pertuisot/work/dd-sdk-ios/.git",
+        "linked": true
+      },
+      {
+        "branch": "valpertui/s3-consumer-capture",
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
+        "head": "6635d8eaccb67632248b5c778e1d200c9bf60f20",
+        "git_common_dir": "/Users/valentin.pertuisot/work/dd-sdk-ios/.git",
+        "linked": true
+      },
+      {
+        "branch": "valpertui/s3-handoff-activation",
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/worktree",
+        "head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
         "git_common_dir": "/Users/valentin.pertuisot/work/dd-sdk-ios/.git",
         "linked": true
       },
@@ -226,6 +254,13 @@
         "branch": "valpertui/s3-session-routing",
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/pr3-preparation/worktree",
         "head": "2d3de2170248c386a5e7f7de4477ecd703e0c504",
+        "git_common_dir": "/Users/valentin.pertuisot/work/dd-sdk-ios/.git",
+        "linked": true
+      },
+      {
+        "branch": "valpertui/s3-runtime-feature-flag",
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s3-pr1-runtime-flag-vnkcg3j3/worktree",
+        "head": "1c103b6096820d7ce5471ed3d2aff0bf026270a3",
         "git_common_dir": "/Users/valentin.pertuisot/work/dd-sdk-ios/.git",
         "linked": true
       },
@@ -244,23 +279,9 @@
         "linked": true
       },
       {
-        "branch": "valpertui/s3-handoff-activation",
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/rum-continue-20261003-fp13e2hd/worktree",
-        "head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
-        "git_common_dir": "/Users/valentin.pertuisot/work/dd-sdk-ios/.git",
-        "linked": true
-      },
-      {
-        "branch": "valpertui/s3-consumer-capture",
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-worktree",
-        "head": "6635d8eaccb67632248b5c778e1d200c9bf60f20",
-        "git_common_dir": "/Users/valentin.pertuisot/work/dd-sdk-ios/.git",
-        "linked": true
-      },
-      {
-        "branch": "valpertui/s3-swiftui-foundation",
-        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-worktree",
-        "head": "d23253f0f631940a4104c11039f64d6986966eb9",
+        "branch": "valpertui/s2-rum-lifetime",
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/s2-rum-lifetime",
+        "head": "7604da24bfb757e8d19314e7183b840fa17d858f",
         "git_common_dir": "/Users/valentin.pertuisot/work/dd-sdk-ios/.git",
         "linked": true
       }
