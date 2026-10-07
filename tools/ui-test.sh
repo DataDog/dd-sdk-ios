@@ -37,9 +37,8 @@ enable_apple_crash_reporter() {
 
 set -x
 
-DIR=$(pwd)
-cd IntegrationTests/ && bundle exec pod install
-cd "$DIR"
+export DD_SDK_COMPILED_FOR_TESTING=1
+export DD_TEST_UTILITIES_ENABLED=1
 
 WORKSPACE="IntegrationTests/IntegrationTests.xcworkspace"
 DESTINATION="platform=$platform,name=$device,OS=$os"

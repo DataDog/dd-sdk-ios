@@ -2,7 +2,7 @@ all: env-check repo-setup dependencies templates
 .PHONY: env-check repo-setup dependencies clean clean-dependencies templates \
 		lint lint-cpp license-check \
 		test test-ios test-ios-all test-tvos test-tvos-all test-visionos test-visionos-all \
-		ui-test ui-test-all ui-test-podinstall \
+		ui-test ui-test-all ui-tests-open \
 		sr-snapshot-test sr-snapshots-pull sr-snapshots-push sr-layer-snapshot-test sr-layer-snapshots-pull sr-layer-snapshots-push sr-snapshot-tests-open \
 		tools-test \
 		smoke-test smoke-test-ios smoke-test-ios-all smoke-test-tvos smoke-test-tvos-all smoke-test-macos smoke-test-macos-all \
@@ -222,10 +222,10 @@ ui-test-all:
 	@$(MAKE) ui-test TEST_PLAN="CrashReporting"
 	@$(MAKE) ui-test TEST_PLAN="NetworkInstrumentation"
 
-# Update UI test project with latest SDK
-ui-test-podinstall:
-	@$(ECHO_TITLE) "make ui-test-podinstall"
-	cd IntegrationTests/ && bundle exec pod install
+# Open UI tests with the local SPM package's testing utilities enabled
+ui-tests-open:
+	@$(ECHO_TITLE) "make ui-tests-open"
+	open --new --env DD_SDK_COMPILED_FOR_TESTING=1 --env DD_TEST_UTILITIES_ENABLED=1 IntegrationTests/IntegrationTests.xcworkspace
 
 # Run tests for repo tools
 tools-test:
