@@ -77,6 +77,33 @@ Local commits need no prefix and may be unsigned under the project's
 authorized push. This project does not infer publication, merge or TestFlight
 permission from a completed experiment.
 
+## Reasoning effort recommendations
+
+Recommend effort for the next meaningful decision at task selection, a phase change,
+new substantive uncertainty, or the end of a difficult investigation. Do not assess
+individual tool calls or default the whole project to max/ultra.
+
+| Effort | Phase | Next change |
+| --- | --- | --- |
+| Low | Settled bookkeeping, formatting and documentation | Raise for a substantive inconsistency. |
+| Medium | Prepared build/test execution, evidence and routine compiler corrections | Raise for unexplained behavior or an unsettled oracle. |
+| High | Bounded implementation, compatibility or regression diagnosis | Lower to Medium when decisions and assertions are settled. |
+| xhigh | Cross-module ownership, asynchronous lifetime, reentrancy or consequential safety review | Lower to High for implementation or Medium for prepared execution. |
+
+Announce the recommendation once when activated or materially changed, including
+its reason and downgrade condition. Continue without waiting for acknowledgment or
+a settings change. Announce downgrades too; do not repeat an unchanged recommendation
+after restart. Restore phase, reason and last notice from the cursor at normal
+checkpoints. If current settings are unknown, state only the recommendation; never
+poll settings or change model/effort automatically. Recommend another model only
+for a concrete capability need. Existing review requirements still apply.
+
+Effort alone never blocks work. Hold only an affected action whose concrete unresolved
+correctness decision prevents a defensible next step; name the decision, considered
+evidence and unsafe assumption, then continue independent safe work. A slow tool,
+input failure or failing test alone does not prove insufficient effort. Settings
+changes replace neither evidence nor review and renew no deadline or retry authority.
+
 ## Repeatable acceptance workflow
 
 Use [the existing harness](../../tools/multi-scene/acceptance/README.md), selecting
