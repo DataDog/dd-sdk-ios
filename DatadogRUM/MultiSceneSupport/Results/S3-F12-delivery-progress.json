@@ -586,11 +586,11 @@
         "integration": "NOT_QUALIFIED"
       },
       "remaining_assertion": "Exact per-step owner, duplicate keys distinct lifetime, targeted completion and released retained snapshots Off: Develop Operation/profiling keying and flow",
-      "next_action": "Implement and review the complete private Operation/profiling patch in its MAIN-linked worktree using the settled original-feature admission, post-unlock On-guard retirement, typed identity and lazy holder/provenance. Preserve the original BLOCK. Qualify the16 source-matched controls and compatibility/Off/lifetime obligations; no public or wire change.",
-      "evidence_source_scope": "Complete private design and exact retirement correction independently reviewed with implementation holds. Original provenance BLOCK preserved; current23 callers/35 source snapshots and MAIN-linked worktree retained. No source/compiler/runtime/retention/Off or release-gate credit.",
+      "next_action": "Seal the private successor correcting PR10ON-01/02; obtain designated correction review, then apply the complete patch through Xcode in the MAIN-linked delivery worktree and review exact membership. All19 methods and16 control families, compiler/Off/lifetime/platform and wholeF12 remain held.",
+      "evidence_source_scope": "Complete private source proposal reviewed with two interface BLOCKs. Seven Void-lock uses and three SPI imports corrected privately in four files, unsealed/unreviewed/unapplied. Original BLOCK and19 unexecuted methods/16 control-family gaps preserved. Xcode access granted; no compiler, runtime, Off or release credit.",
       "source_preparation_owner": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR10-source-preparation.json",
-        "sha256": "c29fd1ffae9305de2145d0d0f6667cd8ce7d5af0f1491f2855e284276418b988"
+        "sha256": "166810e4bd74125e19b427b71eafce61d71db2946e56cba54140349ccd9838a9"
       }
     },
     {
@@ -895,7 +895,7 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": "2026-10-07T16:17:28.694483+00:00",
+  "updated_at": "2026-10-07T19:58:04.836467+00:00",
   "dependency_build_attempts": 4,
   "dependency_component_qualifications": 4,
   "dependency_test_invocations": 4,

@@ -3,8 +3,8 @@
   "kind": "S3_PR10_CONSOLIDATED_SOURCE_PREPARATION",
   "gate": "S3:F12",
   "slice": "PR10",
-  "state": "REVIEWED_SOURCE_PREPARATION_ONLY_NOT_IMPLEMENTED",
-  "updated_at": "2026-10-07T16:17:28.694483+00:00",
+  "state": "PRIVATE_COMPLETE_SOURCE_PROPOSAL_BLOCKED_UNAPPLIED",
+  "updated_at": "2026-10-07T19:58:04.836467+00:00",
   "owner": "SDK implementer + designated independent reviewer",
   "source_lineage": {
     "linked_base_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
@@ -101,7 +101,7 @@
     "original": "AppLaunchVitalMessage",
     "source_semantics_changed": false
   },
-  "next_action": "Implement and review the complete private Operation/profiling patch in its MAIN-linked worktree using the settled original-feature admission, post-unlock On-guard retirement, typed identity and lazy holder/provenance. Preserve the original BLOCK. Qualify the16 source-matched controls and compatibility/Off/lifetime obligations; no public or wire change.",
+  "next_action": "Seal the private successor correcting PR10ON-01/02; obtain designated correction review, then apply the complete patch through Xcode in the MAIN-linked delivery worktree and review exact membership. All19 methods and16 control families, compiler/Off/lifetime/platform and wholeF12 remain held.",
   "actions": {
     "sdk_edits": 0,
     "controls": 0,
@@ -271,5 +271,78 @@
       "sha256": "b6972e86afe3bd69b99d80fc503e5ef82af7845bdd770e299ed4472d2e6204a2"
     },
     "implementation": "NOT_IMPLEMENTED"
+  },
+  "complete_source_proposal": {
+    "state": "BLOCK_SOURCE_INTERFACE_MISMATCH_ORIGINAL_PRESERVED",
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/full-on-operation-integration-source-proposal/packet.json",
+      "sha256": "fcdaad1c024ea8c86082321c143e3bbaa546ace911e5cf50def661edd5dfe894",
+      "size": 4846
+    },
+    "source_manifest": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/full-on-operation-integration-source-proposal/source-manifest.json",
+      "sha256": "467964d5df474368f7dd40ba3642b7b559d4511d2f94ad70422aac21b9b8fe77",
+      "size": 14068
+    },
+    "control_coverage": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/full-on-operation-integration-source-proposal/control-coverage.json",
+      "sha256": "a2d06a87a17304c57de5d501524adaf9e1bf64e332257036830a7d39fd31f9af",
+      "size": 16060
+    },
+    "publication_custody": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/full-on-operation-integration-source-proposal/actual-source-publication-tool-returns.json",
+      "sha256": "1a6ed866b2fb76338f8523d679b3451a6df2f949de67bd42265f9a92da4a65ab",
+      "size": 104742
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/full-on-operation-integration-source-proposal/review/review.json",
+      "sha256": "135fda79b42762d71d4fa989500d6b315d9f902ce68aa851323c4780482b5465",
+      "size": 15006
+    },
+    "review_readback": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/full-on-operation-integration-source-proposal/review/readback.json",
+      "sha256": "b871a48cc23f980bda5f25b5ef831ab4d674df0f38918af2bec4584189cfcacb",
+      "size": 670
+    },
+    "actual_review_publication": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/full-on-operation-integration-source-proposal/review/actual-publication-tool-returns.json",
+      "sha256": "ed3aaa779be377f3b8cc0a0c8a2ab7f0d6f911e5e53f7e51544cdd4fa20bc63d",
+      "size": 21166
+    },
+    "findings": [
+      "PR10ON-01: seven return-value uses of the existing Void mutate API",
+      "PR10ON-02: three plain imports hide explicitly used Internal SPI symbols"
+    ],
+    "private_correction": {
+      "state": "UNSEALED_UNREVIEWED_NOT_APPLIED",
+      "snapshot": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/sdk-application-preparation/checkpoint-source-state.json",
+        "sha256": "53ff62bb6537b8eb7fb5c0055cbc413dd9a314916424cf20c8bdadc4ec1e9304",
+        "size": 11677
+      },
+      "changed_files": 4,
+      "void_sites": 7,
+      "spi_imports": 3,
+      "scope": "Existing Void lock and Internal SPI visibility preserved; callbacks remain after unlock. Separate original correction maps are intermediate snapshots."
+    },
+    "production_files": 13,
+    "test_files": 3,
+    "proposed_test_methods": 19,
+    "executed_methods": 0,
+    "control_families": 16,
+    "controls_qualified": 0,
+    "sdk_application": false,
+    "gate_credit": []
+  },
+  "xcode_application_preparation": {
+    "state": "WORKSPACE_ACCESS_GRANTED_NAVIGATOR_DISCOVERY_ONLY",
+    "actual_discovery": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/sdk-application-preparation/workspace-discovery-tool-returns.json",
+      "sha256": "9bb1cf129c2a7de7f7656e784ec31ebe4ec66d7e6f2f89867402580f03f3a943",
+      "size": 11439
+    },
+    "new_files": 6,
+    "files_applied": 0,
+    "next": "Rediscover workspace identifiers on resume; source review first. No build/test was started."
   }
 }
