@@ -4,7 +4,7 @@
   "gate": "S3:F12",
   "slice": "PR11",
   "state": "COMPLETE_PRIVATE_SOURCE_APPLIED_REVIEWED_UNCOMPILED_UNQUALIFIED",
-  "updated_at": "2026-10-07T15:12:07.994180+00:00",
+  "updated_at": "2026-10-07T15:28:49.717662+00:00",
   "owner": "SDK implementer + designated independent reviewer",
   "source_lineage": {
     "linked_base_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
@@ -64,7 +64,7 @@
     "Complete deployment15/minimumSwift6.2 and supported platform checks; actual minimum compiler remains unavailable. Preserve PR6 watch/final integration/UI weak-release and API/hardware holds."
   ],
   "shape_limit": "Same-lookup reuse does not qualify opaque-return/ViewBuilder structure, stored mode/collaborator size or retention, SwiftUI structural identity or Off allocations. Exact implementation and source-matched Off proof remain.",
-  "next_action": "Freeze the signed4da720 four-only hosted qualification with fresh MAIN/source/awake bindings; verify actual built manifest before launch. Review the seven private remaining-control drafts; retain actual lifecycle and complete Off obligations separately. Core12/13/four and new drafts are unexecuted; accepted PR7 stays untouched.",
+  "next_action": "Bind the reviewed four-only hosted proposal to fresh MAIN/source/awake/device/output identities, verify built manifest before launch, then execute the four controls. Seven corrected source-reviewed controls remain private/unapplied; actual lifecycle and complete Off remain separate. Core12/13/four are unexecuted; no accepted PR7 repeat.",
   "actions": {
     "sdk_edits": 0,
     "controls": 0,
@@ -429,7 +429,7 @@
     }
   },
   "finite_control_source_preparation": {
-    "state": "PRIVATE_SEVEN_METHOD_DRAFT_PENDING_SOURCE_REVIEW_UNAPPLIED",
+    "state": "PRIVATE_SEVEN_METHOD_SOURCE_REVIEWED_UNAPPLIED_UNCOMPILED_UNEXECUTED",
     "packet": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/remaining-foundation-controls-source-proposal/packet.json",
       "sha256": "46f791a775ddfd2174015306430720cc7e724f9e4a07c2d73838ad5e788fbfdd"
@@ -445,10 +445,31 @@
     "limits": "Actual background/disconnect, Off entry lookup/rendering/layout/allocation and observer-activation failure remain distinct finite gaps; no simulated lifecycle claim.",
     "builds": 0,
     "executed_tests": 0,
-    "gates_closed": []
+    "gates_closed": [],
+    "original_block": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/remaining-foundation-controls-source-proposal/review.json",
+      "sha256": "95ca5eaf1fb97b0a21f08da0a6c7abfc9931a1378853ece452a3032b30bf5eb4"
+    },
+    "cycle2_packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/remaining-foundation-controls-source-proposal/cycle2/packet.json",
+      "sha256": "a8a28dd86fde889cfd3a62ae5c066453ca291ff3a277fe983c6b48466f11aefd"
+    },
+    "cycle2_map": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/remaining-foundation-controls-source-proposal/cycle2/control-map.json",
+      "sha256": "bcbe15487f8fd6ca60e98ae770f36d13881465da9281dc0cd5ec9b49c1bff421"
+    },
+    "cycle2_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/remaining-foundation-controls-source-proposal/cycle2/review.json",
+      "sha256": "d8c9af08b9eb66cb770a4b7e08743b00184d77454ddebea3c26fb119d7c22a0a"
+    },
+    "cycle2_review_readback": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/remaining-foundation-controls-source-proposal/cycle2/review-readback.json",
+      "sha256": "04e13153bf4305cb3b6b06a8176f9170a1fc6d378ae6706a1339e7942f652277"
+    },
+    "correction": "Six Foundation.NotificationCenter arguments project actual provider.applicationCenter; weak-graph test has failure-safe defer on mutable optional Core. Original source and BLOCK retained."
   },
   "hosted_four_qualification_preparation": {
-    "state": "PRIVATE_UNISSUED_PROPOSAL_PENDING_REVIEW_NO_NATIVE_ADMISSION",
+    "state": "PRIVATE_REVIEWED_UNISSUED_PROPOSAL_NO_NATIVE_ADMISSION",
     "packet": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/hosted-four-qualification-preparation/packet.json",
       "sha256": "72eedcb72af789170637ac931adfe59f71c5056443fbf6da9eafb42584ae69c4"
@@ -465,6 +486,15 @@
     "clock_issued": false,
     "builds": 0,
     "executed_tests": 0,
-    "gates_closed": []
+    "gates_closed": [],
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/hosted-four-qualification-preparation/preparation-review.json",
+      "sha256": "889971fdc02f9cf2bbd73b5e31835aa835a48263b27e14bb3e780aedb1ef76c4"
+    },
+    "readback": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/hosted-four-qualification-preparation/preparation-review-readback.json",
+      "sha256": "715e87acf18e21e32b6e722a376008dbc1865719c6977674db74f796c5df7251"
+    },
+    "limits": "Built scene manifest before launch; RunSomeTests has no skip-build input, so verify actual test product custody. Current MAIN/awake/device/clocks remain unissued."
   }
 }

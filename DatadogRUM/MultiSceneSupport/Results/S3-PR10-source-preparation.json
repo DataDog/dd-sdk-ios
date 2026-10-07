@@ -4,7 +4,7 @@
   "gate": "S3:F12",
   "slice": "PR10",
   "state": "REVIEWED_SOURCE_PREPARATION_ONLY_NOT_IMPLEMENTED",
-  "updated_at": "2026-10-07T03:33:16.094862+00:00",
+  "updated_at": "2026-10-07T15:28:49.717662+00:00",
   "owner": "SDK implementer + designated independent reviewer",
   "source_lineage": {
     "linked_base_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
@@ -109,5 +109,16 @@
     "native_calls": 0,
     "authority_issued": 0,
     "gates_closed": []
-  }
+  },
+  "current_source_usage_inventory": {
+    "state": "CURRENT_SOURCE_KEYWORD_INVENTORY_ONLY_UNREVIEWED_SEMANTIC_CLOSURE",
+    "inventory": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/current-caller-inventory-6635/inventory.json",
+      "sha256": "880ed9f12ea6af3e6b3a47fb2399e222bdf73b31b0e7c86f6612b0be34549338"
+    },
+    "source_head": "6635d8eaccb67632248b5c778e1d200c9bf60f20",
+    "matching_files": 23,
+    "scope": "Swift/Objective-C consumers and test/convenience/app-launch use sites; no implementation, encoding proof or runtime credit."
+  },
+  "private_design_preparation": "In progress in independent private source-owner lane; no SDK/project/MAIN edits or native admission."
 }

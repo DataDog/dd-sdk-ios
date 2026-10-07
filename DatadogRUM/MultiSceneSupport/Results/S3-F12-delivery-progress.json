@@ -590,7 +590,7 @@
       "evidence_source_scope": "Reviewed consolidated source facts and finite identity/Off boundaries only, owned by Results/S3-PR10-source-preparation.json. No current implementation, compiler, runtime, lifetime, performance or gate credit.",
       "source_preparation_owner": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR10-source-preparation.json",
-        "sha256": "625f88eeb1beed71111959724d42d9cf254899dea4cbd9022936fead94578c96"
+        "sha256": "4b8c8b4fbbba3933f2c1fb4e2b8d39aebac6e07b30651861193c31aa030f6252"
       }
     },
     {
@@ -616,12 +616,12 @@
         "off": "NOT_EXECUTED",
         "integration": "NOT_QUALIFIED"
       },
-      "remaining_assertion": "Complete SDK source and signed four-control host are source reviewed; compiler/execution, remaining finite control drafts, actual lifecycle, complete Off and integration stay unqualified.",
-      "next_action": "Freeze the signed4da720 four-only hosted qualification with fresh MAIN/source/awake bindings; verify actual built manifest before launch. Review the seven private remaining-control drafts; retain actual lifecycle and complete Off obligations separately. Core12/13/four and new drafts are unexecuted; accepted PR7 stays untouched.",
+      "remaining_assertion": "Complete SDK source, signed four-control fixture and corrected seven-control drafts are source reviewed; all compiler/execution, lifecycle, complete Off and integration dimensions remain held.",
+      "next_action": "Bind the reviewed four-only hosted proposal to fresh MAIN/source/awake/device/output identities, verify built manifest before launch, then execute the four controls. Seven corrected source-reviewed controls remain private/unapplied; actual lifecycle and complete Off remain separate. Core12/13/four are unexecuted; no accepted PR7 repeat.",
       "evidence_source_scope": "Complete fifteen-file private ordinary/keyed foundation applied via supported Xcode tools; nine new source files have exact RUM membership. Four source findings corrected and independently re-reviewed. Formatting-only successor verified. Not typechecked, runtime tested, Off qualified or released. Original BLOCKs/stage/signing failures remain immutable.",
       "source_preparation_owner": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR11-source-preparation.json",
-        "sha256": "0d82d1085a82c7de73d3c7f56faccaaf2054d050944b67d750861f6f766fd0e7"
+        "sha256": "6b59b2f30f541c6d180eeda892d2146c2aad1b6657833086d73db327eed1cf9c"
       },
       "complete_foundation_design": {
         "state": "REVIEWED_PREPARATION_IMPLEMENTATION_READINESS_BLOCKED",
@@ -895,7 +895,7 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": "2026-10-07T15:12:07.994180+00:00",
+  "updated_at": "2026-10-07T15:28:49.717662+00:00",
   "dependency_build_attempts": 4,
   "dependency_component_qualifications": 4,
   "dependency_test_invocations": 4,
