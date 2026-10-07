@@ -114,7 +114,7 @@
         "integration": "NOT_QUALIFIED"
       },
       "remaining_assertion": "No required concrete exclusive-Off helper/state/lock/lifetime assertion remains at this source. Final integration and current-stack acceptance remain.",
-      "next_action": "Advance the fixed PR6 exit packet; reuse accepted components, full suites and six native Off cells.",
+      "next_action": "Preserve the qualified component and concrete Off source; inspect only changed final-stack bindings before promotion. Current PR7 qualification and its remaining acquisition obligations are separate.",
       "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit.",
       "off_component_evidence": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/matrix-comparison.json",
@@ -150,7 +150,7 @@
         "integration": "NOT_QUALIFIED"
       },
       "remaining_assertion": "No required concrete exclusive-Off helper/state/lock/lifetime assertion remains at this source. Final integration and current-stack acceptance remain.",
-      "next_action": "Advance the fixed PR6 exit packet; reuse accepted components, full suites and six native Off cells.",
+      "next_action": "Preserve the qualified component and concrete Off source; inspect only changed final-stack bindings before promotion. Current PR7 qualification and its remaining acquisition obligations are separate.",
       "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit.",
       "off_component_evidence": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/p5-off/matrix-comparison.json",
@@ -521,7 +521,7 @@
         "integration": "NOT_QUALIFIED"
       },
       "remaining_assertion": "Actual minimum Swift6.2 compatibility; watchOS9 binary/distribution/runtime boundary remains unqualified; Required complete pre-merge Off applicability and final frozen flagged-stack integration under F12/F13",
-      "next_action": "Resume PR6 configured attached-input or P2 complete capture qualification after fresh Xcode access/metadata and new unconsumed parameters. PR9 minimumSwift6.2 and final frozen-stack Off/integration remain separate; preserve all accepted selected tests/builds.",
+      "next_action": "Qualify only the missing actual minimumSwift6.2 and watch binary/runtime boundaries when their environments are available; retain accepted tests/platform builds and rejoin changed final-stack Off/integration separately.",
       "evidence_source_scope": "Twelve selected current-source unit methods qualify each27.0/17.5 (24 executions), modeled Off retention, handler/Monitor disconnect and named-three-helper Off dormancy. Four current102d platform cells (eight commands) qualify compilation only; minimumSwift6.2, watch9 binary/runtime, wholeOff/finalstack remain held.",
       "preparation_base_head": "e1b6d5e5af36bbbad48ee74dccf7675f86376b9a",
       "preparation_record": "Results/S3-PR9-representative-preparation.json",
@@ -554,8 +554,12 @@
         "integration": "NOT_QUALIFIED"
       },
       "remaining_assertion": "Exact per-step owner, duplicate keys distinct lifetime, targeted completion and released retained snapshots Off: Develop Operation/profiling keying and flow",
-      "next_action": "Implement only this declared slice once its named dependencies are qualified; retain private exposure until F01 for PR13.",
-      "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit."
+      "next_action": "After named PR4/PR7 dependencies qualify, review one complete private Operation admission/message/consolidated-profiler design. Preserve application-wide A-to-B attribution and the approved duplicate-start/older-timeout rule; no new public handle, Off keying repair or optional profiling campaign.",
+      "evidence_source_scope": "Reviewed consolidated source facts and finite identity/Off boundaries only, owned by Results/S3-PR10-source-preparation.json. No current implementation, compiler, runtime, lifetime, performance or gate credit.",
+      "source_preparation_owner": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR10-source-preparation.json",
+        "sha256": "625f88eeb1beed71111959724d42d9cf254899dea4cbd9022936fead94578c96"
+      }
     },
     {
       "id": "PR11",
@@ -581,8 +585,12 @@
         "integration": "NOT_QUALIFIED"
       },
       "remaining_assertion": "Keyed/ordinary tracking, scene reader/traits, authority/interactive arbitration lifetime and reader fallback; split full declarations into reviewable files Off: Legacy modifier body and no reader/authority/arbiter/state allocation or body lock",
-      "next_action": "Implement only this declared slice once its named dependencies are qualified; retain private exposure until F01 for PR13.",
-      "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit."
+      "next_action": "After the current PR7 component qualification and named PR5/PR6 prerequisite disposition, review one complete PR11 ordinary/keyed foundation source design; keep PR12 semantic engine separate. No new implementation debt or native admission follows from this preparation.",
+      "evidence_source_scope": "Reviewed source facts only, owned by Results/S3-PR11-source-preparation.json. Existing feature lookup can be reused; no current implementation, Off allocation, lifetime, compiler, native or gate credit.",
+      "source_preparation_owner": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR11-source-preparation.json",
+        "sha256": "dc617fa6392b83a309a35beb00a3d722aedf575f97fecafc2404f708aa08d378"
+      }
     },
     {
       "id": "PR12",
@@ -653,7 +661,7 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": "2026-10-07T03:10:32.151581+00:00",
+  "updated_at": "2026-10-07T03:33:16.094862+00:00",
   "dependency_build_attempts": 4,
   "dependency_component_qualifications": 4,
   "dependency_test_invocations": 4,

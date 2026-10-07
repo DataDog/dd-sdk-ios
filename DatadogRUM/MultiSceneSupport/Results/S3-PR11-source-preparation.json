@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "kind": "S3_PR11_OFF_ACTIVATION_SOURCE_PREPARATION",
+  "gate": "S3:F12",
+  "slice": "PR11",
+  "state": "REVIEWED_SOURCE_PREPARATION_ONLY_NOT_IMPLEMENTED",
+  "updated_at": "2026-10-07T03:33:16.094862+00:00",
+  "owner": "SDK implementer + designated independent reviewer",
+  "source_lineage": {
+    "linked_base_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
+    "historical_main_documentation_head": "b3a2bca2f294c89bc5d422dc48efcf541128f7fa",
+    "role": "Historical source/responsibility inputs only; no current execution authority"
+  },
+  "preparation": {
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-off-activation-source-preparation-20261007/packet.json",
+      "sha256": "c4ff5d699f8a878777f6f6215402d9a120fb8fdd82f680771e3b8757149fe645"
+    },
+    "facts": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-off-activation-source-preparation-20261007/source-facts.md",
+      "sha256": "7526593eac304cbb2a249888722a694c71cd48b12b373aa0b5510385e1cad24f"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-off-activation-source-preparation-20261007/review.json",
+      "sha256": "efbe2ee13b6a6a5e1818a36b6ad4f187e52ce5e76f399dbd815e435bc271eb38"
+    },
+    "clarification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-off-activation-source-preparation-20261007/review-field-clarification.json",
+      "sha256": "0286e2fe166d798362a358391f15952fb135f3a7e11b1790946e506e4d5c0516"
+    },
+    "shape_limit": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-off-activation-source-preparation-20261007/lookup-reuse-shape-limit-addendum.json",
+      "sha256": "2bcbb861e51050b7fef1e053a4614437353dd10a9dd386ec2b75eb10212f1208"
+    },
+    "historical_inputs": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-off-activation-source-preparation-20261007/historical-documentation-bindings.json",
+      "sha256": "3e6fd799904c74d3b1761591fbddf534b34c5cb58946e06727a2b94ffe97d106"
+    },
+    "readback": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-off-activation-source-preparation-20261007/review-readback.json",
+      "sha256": "25752db9091688313ff8910a90a7a4795771d6c1fe5d7c4cc4b3aaf584fbfed0"
+    },
+    "actual_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-off-activation-source-preparation-20261007/actual-review-publication-tool-return.json",
+      "sha256": "b90c062517dc13b808e8b0ec36c8c3f2cceda33a4cc99a94e201d904b0249353"
+    },
+    "actual_limit": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-off-activation-source-preparation-20261007/actual-lookup-reuse-limit-publication-tool-return.json",
+      "sha256": "5e4f27e6091c0a0fa07f5f4069f727aa27ef6430b3feba5c9101b3a0fe95dbe4"
+    }
+  },
+  "decisive_source_fact": "The existing trackRUMView entry fetches RUMFeature once. Modifier initializer/body acquire no Core or shared Monitor; the same fetched feature offers frozen mode and existing collaborators without a second lookup.",
+  "qualification": {
+    "implementation": "NOT_IMPLEMENTED",
+    "component": "NOT_EXECUTED",
+    "off": "NOT_EXECUTED",
+    "integration": "NOT_QUALIFIED"
+  },
+  "remaining": [
+    "Define a complete exact source closure, internal visibility and conditional-import/platform boundaries. Preserve existing public signature/default core/UUID/name/path/attributes and legacy appear/disappear behavior; preserve nil feature/NOP behavior. No PR12 concrete types introduced into the PR11 closure and no removal of keyed machinery without a separately reviewed design disposition.",
+    "Choose the resolved-On carrier/factory at the existing feature lookup/initialization boundary without another core.get or RUMMonitor.shared. Off must construct neither new child State/reader/tracking/occurrence registration nor feature-enable trait publisher/authority/arbiter/suppression state/observers; keep legacy handler constructor free of the new suppression callback. A shared outer State or ownership field requires explicit admission proof.",
+    "Retarget scene/replace/suppression calls and weak callbacks to the surviving On handler/protocol and pair instrumentation creation, storage, publication, handler eligibility and teardown. Preserve cancellation, scene disconnect, reader fallback and transition publication responsibility.",
+    "Prove exact active-owner/feature replacement/stop invalidation, weak registration/callback lifetime and no retained stale On collaborator. Reusing the fetched feature Monitor is an opportunity, not evidence that retaining the feature/Monitor in SwiftUI state is safe or that another Monitor is needed.",
+    "Run source-matched On/Off refusal, initialization, callback shape and lifetime discriminators only after implementation is separately authorized/reviewed. Static body shape, source coordinates, original PR5/PR6/qualified mapping do not close these assertions.",
+    "Complete deployment15/minimumSwift6.2 and supported platform conditional typecheck/availability checks, with no new public API/import/dependency assumption. Preserve PR6 watch/final integration/immediate UIKit weak-release holds and final F12/public/release approval independently."
+  ],
+  "shape_limit": "Same-lookup reuse does not qualify opaque-return/ViewBuilder structure, stored mode/collaborator size or retention, SwiftUI structural identity or Off allocations. Exact implementation and source-matched Off proof remain.",
+  "next_action": "After the current PR7 component qualification and named PR5/PR6 prerequisite disposition, review one complete PR11 ordinary/keyed foundation source design; keep PR12 semantic engine separate. No new implementation debt or native admission follows from this preparation.",
+  "actions": {
+    "sdk_edits": 0,
+    "controls": 0,
+    "builds": 0,
+    "native_calls": 0,
+    "authority_issued": 0,
+    "gates_closed": []
+  }
+}
