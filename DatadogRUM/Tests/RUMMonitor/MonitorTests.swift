@@ -552,7 +552,7 @@ extension MonitorTests {
         let original = try XCTUnwrap(monitor.rumContextSnapshot(for: .processRepresentative))
         for minute in stride(from: 10, through: 230, by: 10) {
             clock.now = snapshotDate.addingTimeInterval(TimeInterval(minute * 60))
-            monitor.process(command: RUMAddUserActionCommand(time: clock.now, name: "keep-session-active", actionType: .custom, attributes: [:], target: .scene(sceneA)))
+            monitor.process(command: RUMAddUserActionCommand(target: .scene(sceneA), time: clock.now, attributes: [:], instrumentation: .manual, actionType: .custom, name: "keep-session-active"))
             XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.sessionID, original.sessionID)
         }
         clock.now = snapshotDate.addingTimeInterval(4 * 60 * 60 + 1)

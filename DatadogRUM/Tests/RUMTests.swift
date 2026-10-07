@@ -916,7 +916,7 @@ extension RUMTests {
         let clock = DateProviderMock(now: Date(timeIntervalSince1970: 1_000))
         let activationCore = HandoffActivationCoreMock()
         activationCore.rumScopeOverride = FeatureScopeMock(context: .mockWith(sdkInitDate: clock.now))
-        var configuration = config
+        var configuration = try XCTUnwrap(config)
         configuration.dateProvider = clock
         configuration.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
         configuration.featureFlags = [.multiSceneTracking: true]
@@ -946,7 +946,7 @@ extension RUMTests {
 
     func testWebViewContextCapability_resolvedOffDoesNotReadOwner() throws {
         let activationCore = HandoffActivationCoreMock()
-        var configuration = config
+        var configuration = try XCTUnwrap(config)
         configuration.featureFlags = [.multiSceneTracking: false]
         try RUM.enableOrThrow(with: configuration, in: activationCore)
         let rum = try XCTUnwrap(activationCore.get(feature: RUMFeature.self))
@@ -962,7 +962,7 @@ extension RUMTests {
         let clock = DateProviderMock(now: Date(timeIntervalSince1970: 1_000))
         let activationCore = HandoffActivationCoreMock()
         activationCore.rumScopeOverride = FeatureScopeMock(context: .mockWith(sdkInitDate: clock.now))
-        var configuration = config
+        var configuration = try XCTUnwrap(config)
         configuration.dateProvider = clock
         configuration.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
         configuration.featureFlags = [.multiSceneTracking: true]
@@ -996,7 +996,7 @@ extension RUMTests {
             let clock = DateProviderMock(now: start)
             let activationCore = HandoffActivationCoreMock()
             activationCore.rumScopeOverride = FeatureScopeMock(context: .mockWith(sdkInitDate: clock.now))
-            var configuration = config
+            var configuration = try XCTUnwrap(config)
             configuration.dateProvider = clock
             configuration.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
             configuration.featureFlags = [.multiSceneTracking: true]
@@ -1011,7 +1011,7 @@ extension RUMTests {
             if maximumDuration {
                 for seconds in stride(from: 600, through: 13_800, by: 600) {
                     clock.now = start.addingTimeInterval(TimeInterval(seconds))
-                    rum.monitor.process(command: RUMAddUserActionCommand(time: clock.now, name: "keep-session-active", actionType: .custom, attributes: [:], target: .scene(scene)))
+                    rum.monitor.process(command: RUMAddUserActionCommand(target: .scene(scene), time: clock.now, attributes: [:], instrumentation: .manual, actionType: .custom, name: "keep-session-active"))
                     XCTAssertTrue(rum.isRUMContextHandoffSessionActive(sessionID: original.sessionID, owner: owner))
                 }
             }
@@ -1034,7 +1034,7 @@ extension RUMTests {
 
     func testCapturedWebViewSession_resolvedOffDoesNotReadOwner() throws {
         let activationCore = HandoffActivationCoreMock()
-        var configuration = config
+        var configuration = try XCTUnwrap(config)
         configuration.featureFlags = [.multiSceneTracking: false]
         try RUM.enableOrThrow(with: configuration, in: activationCore)
         let rum = try XCTUnwrap(activationCore.get(feature: RUMFeature.self))
