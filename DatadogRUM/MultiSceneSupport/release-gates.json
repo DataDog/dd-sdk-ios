@@ -2962,7 +2962,7 @@
       "environment": "CI and supported simulator/toolchains; explicit per-PR source/fixture identities",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "Results/S3-F12-delivery-progress.json owns thirteen finite slices. PR1-PR6 and PR9 retain bounded private components; PR7 consumer43/Core/cache3/transport17 remain accepted. Current6635 combined live-session/provider and independent maximum-duration component passes27/27 with reviewed original-state cleanup. Native page acquisition, Flags, complete Off/older/minimum compiler/final-stack and maintainer acceptance remain; whole F12 stays open.",
+      "evidence": "Results/S3-F12-delivery-progress.json owns thirteen finite slices. PR1-PR6 and PR9 retain bounded private components; PR7 consumer43/Core/cache3/transport17 remain accepted. Current6635 combined live-session/provider and independent maximum-duration component passes27/27 with reviewed original-state cleanup. Native page acquisition, Flags, complete Off/older/minimum compiler/final-stack and maintainer acceptance remain; whole F12 stays open. PR11 signed82ff conditional publication/weak lifetime/owned-Monitor prerequisites pass bounded source review;12 new component methods and complete foundation/Off remain unqualified.",
       "release_requirements": {
         "S3": {
           "scope": "S3 per-PR flag-Off equivalence and On slice qualification",
@@ -2973,7 +2973,7 @@
           ],
           "decisive_test": "For each of PR1-13: unmodified develop suites pass; Off tripwires prove no scene observer/lookup/handoff/new swizzle, differential command fixtures match develop events, On slice tests pass. Review Off allocations/locks. No strict timing or physical hardware prerequisite for opening/merging.",
           "environment": "CI and supported simulator/toolchains; explicit per-PR source/fixture identities",
-          "evidence": "Results/S3-F12-delivery-progress.json owns thirteen finite slices. PR1-PR6 and PR9 retain bounded private components; PR7 consumer43/Core/cache3/transport17 remain accepted. Current6635 combined live-session/provider and independent maximum-duration component passes27/27 with reviewed original-state cleanup. Native page acquisition, Flags, complete Off/older/minimum compiler/final-stack and maintainer acceptance remain; whole F12 stays open.",
+          "evidence": "Results/S3-F12-delivery-progress.json owns thirteen finite slices. PR1-PR6 and PR9 retain bounded private components; PR7 consumer43/Core/cache3/transport17 remain accepted. Current6635 combined live-session/provider and independent maximum-duration component passes27/27 with reviewed original-state cleanup. Native page acquisition, Flags, complete Off/older/minimum compiler/final-stack and maintainer acceptance remain; whole F12 stays open. PR11 signed82ff conditional publication/weak lifetime/owned-Monitor prerequisites pass bounded source review;12 new component methods and complete foundation/Off remain unqualified.",
           "required": true
         }
       }
@@ -3836,7 +3836,7 @@
           ],
           "source_scope": "S3",
           "missing_assertion": "Remaining PR6-13 fixed slice obligations and final flagged-stack integration.",
-          "next_action": "Complete the current7e combined27 qualification after fresh awake/device/lane inputs and canonical/issued review; then finish declared PR7 acquisition/Off obligations before dependent implementation. Reuse accepted PR1-6/PR9 source-scoped evidence; reviewed PR10/PR11 source preparation adds no implementation or gate credit.",
+          "next_action": "Retain current6635 combined27 component qualification and accepted PR1-6/PR9 scope. Qualify signed82ff PR11 conditional publication/owned-Monitor prerequisites with exactly12 new methods after current source, awake and native admission bindings; continue complete ordinary/keyed foundation integration. Declared PR7 native acquisition/Flags/Off, PR10 and final-stack obligations remain separate.",
           "reuse": [
             "PR1-5 private components; PR3 Off and qualified PR4/PR5 exclusive-Off; PR6 source-scoped input/scroll/sync/async/callback/platform receipts; selected PR9 component/Off/compilation evidence"
           ],

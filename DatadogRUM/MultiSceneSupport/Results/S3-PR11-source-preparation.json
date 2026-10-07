@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "kind": "S3_PR11_OFF_ACTIVATION_SOURCE_PREPARATION",
+  "kind": "S3_PR11_FOUNDATION_SOURCE_PROGRESS",
   "gate": "S3:F12",
   "slice": "PR11",
-  "state": "REVIEWED_SOURCE_PREPARATION_ONLY_NOT_IMPLEMENTED",
-  "updated_at": "2026-10-07T09:13:46.973753+00:00",
+  "state": "PARTIAL_PREREQUISITES_IMPLEMENTED_SOURCE_REVIEWED_RUNTIME_UNQUALIFIED",
+  "updated_at": "2026-10-07T10:18:37.400036+00:00",
   "owner": "SDK implementer + designated independent reviewer",
   "source_lineage": {
     "linked_base_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
@@ -51,7 +51,7 @@
   },
   "decisive_source_fact": "The existing trackRUMView entry fetches RUMFeature once. Modifier initializer/body acquire no Core or shared Monitor; the same fetched feature offers frozen mode and existing collaborators without a second lookup.",
   "qualification": {
-    "implementation": "NOT_IMPLEMENTED",
+    "implementation": "PARTIAL_PREREQUISITES_IMPLEMENTED_COMPLETE_FOUNDATION_NOT_IMPLEMENTED",
     "component": "NOT_EXECUTED",
     "off": "NOT_EXECUTED",
     "integration": "NOT_QUALIFIED"
@@ -65,7 +65,7 @@
     "Complete deployment15/minimumSwift6.2 and supported platform conditional typecheck/availability checks, with no new public API/import/dependency assumption. Preserve PR6 watch/final integration/immediate UIKit weak-release holds and final F12/public/release approval independently."
   ],
   "shape_limit": "Same-lookup reuse does not qualify opaque-return/ViewBuilder structure, stored mode/collaborator size or retention, SwiftUI structural identity or Off allocations. Exact implementation and source-matched Off proof remain.",
-  "next_action": "Correct PR11F-01 with an internal opaque-return factory beside the private On modifiers; select and review PR11F-02 class-bound scene capability, exact owner revocation and registry/arbiter pairing. Preserve complete ordinary/keyed closure and Off identity/storage/allocation/toolchain holds. No PR12 concrete semantics or native admission.",
+  "next_action": "Freeze and independently review one source-matched 12-test conditional/owned-Monitor component run after fresh awake/native prerequisites; execute only those new methods. Prepare the complete ordinary/keyed factory, foundation installation and capability/registry/arbiter integration independently. Keep Off identity/storage/allocation and minimum compiler/platform held; no PR12 concrete semantics or native admission from this record.",
   "actions": {
     "sdk_edits": 0,
     "controls": 0,
@@ -109,5 +109,101 @@
   "qualified_pr7_predecessor": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-combined27-component-20261007.json",
     "sha256": "1318253b466018cdf740e51b6850e831f0772070fe643950dac86480202a834e"
-  }
+  },
+  "historical_actions_scope": "actions and preparation above describe the original source-facts preparation only; current implementation component below owns subsequent edits.",
+  "successor_foundation_design": {
+    "state": "DESIGN_FINDINGS_ADDRESSED_SOURCE_AND_QUALIFICATION_REMAIN",
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/packet.json",
+      "sha256": "d2f20b14bff8685b8c6da0aedb92cb2f47c38f64055d9693262a777dc3fc0565"
+    },
+    "design": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/design.md",
+      "sha256": "ae4b2c5059cddbf8d98f0e6312e1441ee112e698f7f5989d1e1ec6f4bdf00b5b"
+    },
+    "context_publication_addendum": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/context-publication-addendum.json",
+      "sha256": "d1cb68c8a3cb2eba1a05415dc82d77afb6cc1c98b1e29590c7238cebac6ebc2f"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/review.json",
+      "sha256": "0243c8a8db7b5cb633d6ae14e8bee4c7883c5c140cfd26aa617ca2836e391ec1"
+    },
+    "readback": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/review-readback.json",
+      "sha256": "06aadfe9c0c3213e74091bcb43e07571030115b110dc42643c016f6e87dba183"
+    },
+    "findings_source_scope": "PR11F-01/02 factory/owner contracts and PR11F-03 conditional context refusal are selected. Original complete_foundation_design BLOCK remains immutable; this successor is design-only."
+  },
+  "current_implementation_component": {
+    "state": "SIGNED_PARTIAL_SOURCE_CHECKPOINT_REVIEWED_NOT_RUNTIME_QUALIFIED",
+    "worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-worktree",
+    "branch": "valpertui/s3-swiftui-foundation",
+    "source_head": "82ff70de4deaa7863f0cc30b40cedfc329cf1ee9",
+    "signature": "G",
+    "checkpoint": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/sdk-checkpoint.json",
+      "sha256": "7f6982e196a7669dbaca277edb52ad4c7b2304fda64189cc0cd038cecfbc911a"
+    },
+    "linked_worktree": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/linked-worktree.json",
+      "sha256": "efa7c418c12adbf4a0c96b8c4295da636a2e29b9b7a0776309ab8ac0b2e43427"
+    },
+    "scope": "Additive Internal/Core conditional publication, weak originating SwiftUI lifetime and On-only owned Monitor start/stop delivery. Legacy Monitor processing tail is extracted without changing its statements or context publication; complete ordinary/keyed foundation is not installed.",
+    "conditional_source": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/conditional-context-source-edit.json",
+      "sha256": "f953218a5efbd512bf05769905169a042c37908ee0b68851a8ced85d30178707"
+    },
+    "conditional_source_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/conditional-context-source-review.json",
+      "sha256": "49ad01f123711b833e2c42c27b2af9110499fea8cef80462c03426db8ca065ba"
+    },
+    "original_monitor_block": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/owned-monitor-source-review.json",
+      "sha256": "e80ad98d280497e71e8cfd2b69d1cd0c6f03278a0fe98d41e24f39d4b9b2eca4"
+    },
+    "monitor_correction": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/owned-monitor-one-publication-successor.json",
+      "sha256": "bcf551c257663da8e44322a162ce67f381c2a690db5e164973cac39abbc33214"
+    },
+    "monitor_correction_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/one-publication-source-review.json",
+      "sha256": "5e6962b6545f6389e8ac1d0b507b9673b7bd943adf3c03fe1dfd8ba846a0f3ac"
+    },
+    "original_controls_block": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/owned-monitor-controls-source-review.json",
+      "sha256": "611df94d554169744cd74d97d03638eb14c31bfd49777b3b1c3374fa3fc8fb1c"
+    },
+    "controls_correction": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/owned-monitor-controls-corrected-source.json",
+      "sha256": "ae5f89fc86320fa3e7c6ac8980301dd4c70f1a3f13b3503d99087cd8008f04f0"
+    },
+    "controls_correction_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/owned-monitor-controls-correction-source-review.json",
+      "sha256": "8378983ab8330b24ac983e334c8aa25b295f9e2baf5a9ec46fd5702aa02584d1"
+    },
+    "controls_readback": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/owned-monitor-controls-correction-source-review-readback.json",
+      "sha256": "b1038c453899972833f639bbc656a959e6f883ccb289b7a2eab17b135946432f"
+    },
+    "actual_controls_review_publication": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/actual-owned-monitor-controls-correction-review-publication-tool-return.json",
+      "sha256": "685acdcf1f37416105fd33b42be18ae8c5ee79c3067aece6433ff15f670e95e8"
+    },
+    "controls_selected": 12,
+    "controls_executed": 0,
+    "builds": 0,
+    "native_calls": 0,
+    "gates_closed": [],
+    "limits": [
+      "Source reviews are bounded to these prerequisites; no typecheck/runtime/Off/whole-PR11 evidence.",
+      "An original admitted Monitor is retained only through the context producer; invalidated/replaced callbacks refuse before admission. No atomic stop barrier or adoption of a replacement feature.",
+      "Original source and control BLOCKs, metadata-count correction and source-publication/parser stops remain preserved."
+    ]
+  },
+  "qualification_preparation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/qualification-preparation/packet.json",
+    "sha256": "ac4358ddaa681abd40871fbf2dbd13c3b13983dd81ccc1c7cb508beffa386589"
+  },
+  "qualification_preparation_state": "UNISSUED_PREPARATION_ONLY_CURRENT_SOURCE_PROFILE_MAIN_AWAKE_AND_NATIVE_PREFLIGHT_BINDINGS_REQUIRED"
 }
