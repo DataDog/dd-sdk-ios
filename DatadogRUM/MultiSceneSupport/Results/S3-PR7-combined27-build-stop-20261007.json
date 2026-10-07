@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "state": "BUILD_STOP_REVIEWED_TEST_FIXTURE_CORRECTED_NEW_QUALIFICATION_REQUIRED",
+  "existing_gate": "S3:F12",
+  "slice": "PR7",
+  "run_id": "81c81475-2dc4-4c35-acf4-237cd62e2c44",
+  "source_head": "7e308269a612b60cfb41c317ae24e682fb9e1fc5",
+  "scenario": "UNQUALIFIED",
+  "evidence": "INCOMPLETE",
+  "overall": "INVALID",
+  "cleanup": "PASS_ORIGINAL_SHUTDOWN_APPS_AND_GROUPS",
+  "app_equality_observed": false,
+  "build_attempts": 1,
+  "build_returncode": 65,
+  "tests_executed": 0,
+  "enumerations": 0,
+  "native_attempts": 0,
+  "simulator_boots": 0,
+  "actual_result": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-combined27-qualification-20261007-morning/actual-run-81c81475/stopped-result.json",
+    "sha256": "d9da5fe78c466019c4c0efdadbbada09a12bb06e9544e6e418862ec46d7d8339"
+  },
+  "custody_packet": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-combined27-qualification-20261007-morning/stopped-custody/packet.json",
+    "sha256": "b2dfc279ea56cfded4909e60c5cb91c98f6c06db45c2bb79361856004fd3327e"
+  },
+  "actual_tool_returns": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-combined27-qualification-20261007-morning/stopped-custody/actual-source-call-and-tool-returns.json",
+    "sha256": "79c1855f0d3a7d6e132f700efc49a9905d1375150d85e90b05b11043ba1c41c7"
+  },
+  "actual_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-combined27-qualification-20261007-morning/stopped-custody/actual-review.json",
+    "sha256": "ae29548fc3a591fbf706735f87fc01e154b5a4caf433eff2be35d2979547f35b"
+  },
+  "test_fixture_correction": {
+    "source_head": "6635d8eaccb67632248b5c778e1d200c9bf60f20",
+    "sdk_checkpoint": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-combined27-test-fixture-correction-20261007/sdk-checkpoint.json",
+      "sha256": "c9d2c557a1e366d5c246f8b892efce50bee684f8a7833d236c7b26d4f743fac2"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-combined27-test-fixture-correction-20261007/review.json",
+      "sha256": "2fab45642bb507da6e1cc4e2932e78c91a9c3eadecd39474c125c11fd7b8e36a"
+    },
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-combined27-test-fixture-correction-20261007/packet.json",
+      "sha256": "5732bf4ef76e2718403175199301290773faf53dc60d397ce2016daa446cb2f7"
+    },
+    "applied": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-combined27-test-fixture-correction-20261007/applied-source.json",
+      "sha256": "21cad1be0c06419f72f5e424b0dde8c9762cacadd67021a5734a8bc2e534ce47"
+    },
+    "actual_tool_returns": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-combined27-test-fixture-correction-20261007/actual-application-and-checkpoint-tool-returns.json",
+      "sha256": "f3d4736dabaa137226b7ff54957db02c395a31478a9b97660f554c84acd5b4d3"
+    },
+    "paths": [
+      "DatadogRUM/Tests/RUMTests.swift",
+      "DatadogRUM/Tests/RUMMonitor/MonitorTests.swift"
+    ],
+    "production_changes": 0,
+    "assertions_unchanged": true,
+    "selected_methods_unchanged": 27
+  },
+  "disposition": "Compilation stopped in five optional configuration copies and two action-command constructions. Reviewed fixture correction preserves assertions and values. A later local application validator matched a longer unrelated token; only the reviewed test files were changed, then whole-line validation and signed checkpoint completed. No SDK runtime finding, native qualification or gate credit.",
+  "next_action": "Fresh bound qualification of the same27 selected methods at6635; preserve original stop, accepted components and fixed consumed admission.",
+  "gates_closed": [],
+  "pushed": false
+}

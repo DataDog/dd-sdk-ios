@@ -254,8 +254,8 @@
         "off": "NOT_EXECUTED",
         "integration": "NOT_QUALIFIED"
       },
-      "remaining_assertion": "Current7e live-session guard and explicit-scene provider/main publication require combined focused qualification; native callback/page/rebind and Flags still need implementation. Preserve accepted consumer43/Core/cache3/transport17; complete Off/older/final-stack remain.",
-      "next_action": "Complete fresh dynamic inputs and canonical/issued parameter review for the source-reviewed current7e27-method qualification when awake/device/lane prerequisites are available. Offline root binding/current-checkpoint compatibility now pass; templates/model loader grant no admission. Preserve accepted17/cache3/consumer43/Core, original preparation receipts and actual current-receipt rejection. Original-page/event-time/same-window rebind acquisition remains a reviewed design hold; Flags, whole Off/older/final-stack remain open. No accepted component repeats.",
+      "remaining_assertion": "Current6635 test-only successor requires fresh combined live-session/provider qualification after original compiler stop; native callback/page/rebind and Flags still need implementation. Accepted consumer43/Core/cache3/transport17 retained; complete Off/older/final-stack remain.",
+      "next_action": "Bind a fresh combined27 proposal at signed6635, review canonical/issued parameters and release exclusively within the actual awake reservation. Original81c814 stopped at first build, no tests; original UNQUALIFIED/INCOMPLETE/INVALID and separate Shutdown cleanup remain. Five unwraps and two ordered manual action constructions are independently reviewed; all27 methods remain unexecuted. Preserve accepted17/cache3/consumer43/Core. Native callback/page/rebind, Flags and whole Off/older/final-stack remain; no accepted repeats or wholeF12 credit.",
       "evidence_source_scope": "Original owning record and exact source head above; no automatic current-stack/native release credit.",
       "dependency_design": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-dependency-composition-20261005/packet.json",
@@ -274,7 +274,7 @@
       "dependency_source_head": "142ad7150f3e62f1522c3feb923d84b722efb951",
       "preparation_owner": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-consumer-preparation.json",
-        "sha256": "51affaf379f4891e481ef68253c7c81bd48104176ad67765d32b66cec1695f32"
+        "sha256": "e3e21dad79e6743532133bf50a3c1969ea1c3f49447ad7600f6e7331d1b91577"
       },
       "dependency_component_result": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-p7d0-filtered-discovery-20261006/actual-test-only-run-97d448b1/result.json",
@@ -436,7 +436,7 @@
         "native_runs": 0,
         "gates_closed": []
       },
-      "partial_current_source_head": "7e308269a612b60cfb41c317ae24e682fb9e1fc5",
+      "partial_current_source_head": "6635d8eaccb67632248b5c778e1d200c9bf60f20",
       "webview_combined27_preparation": {
         "state": "SOURCE_SELECTION_AND_OFFLINE_ROOT_BINDING_REVIEWED_UNISSUED",
         "packet": {
@@ -469,6 +469,14 @@
           "sha256": "77861bb26732e73cd814bb15b7a34c3da266fe2013a73ae174405a9e2e9e88c1"
         },
         "gates_closed": []
+      },
+      "webview_combined27_build_stop": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR7-combined27-build-stop-20261007.json",
+        "sha256": "1c406b3ad8385bfa3a77a91b591b5dc06717c1832589cab07874570f9067a508"
+      },
+      "current_test_fixture_checkpoint": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr7-combined27-test-fixture-correction-20261007/sdk-checkpoint.json",
+        "sha256": "c9d2c557a1e366d5c246f8b892efce50bee684f8a7833d236c7b26d4f743fac2"
       }
     },
     {
@@ -661,7 +669,7 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": "2026-10-07T03:33:16.094862+00:00",
+  "updated_at": "2026-10-07T08:21:23Z",
   "dependency_build_attempts": 4,
   "dependency_component_qualifications": 4,
   "dependency_test_invocations": 4,
