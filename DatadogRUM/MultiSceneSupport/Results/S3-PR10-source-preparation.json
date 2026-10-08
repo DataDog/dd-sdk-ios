@@ -4,7 +4,7 @@
   "gate": "S3:F12",
   "slice": "PR10",
   "state": "COMPLETE_PRIVATE_SOURCE_APPLIED_REVIEWED_CHECKPOINTED_UNCOMPILED_UNQUALIFIED",
-  "updated_at": "2026-10-08T02:13:52.381382+00:00",
+  "updated_at": "2026-10-08T05:13:11.778933+00:00",
   "owner": "SDK implementer + designated independent reviewer",
   "source_lineage": {
     "linked_base_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
@@ -101,7 +101,7 @@
     "original": "AppLaunchVitalMessage",
     "source_semantics_changed": false
   },
-  "next_action": "Primary: PR11 four-only qualification after fresh explicit awake coverage and admission. Independent: complete the physical capture MAIN-port preparation and remaining existing16-family PR10 source controls; current34 methods remain uncompiled/unexecuted. Qualify selected controls and remaining Off/lifetime/compiler/platform obligations without repeating accepted suites.",
+  "next_action": "Primary: PR11 four-only qualification after explicit awake-duration authority and fresh admission. Physical canonical-producer offline control is prepared, not executed; complete current composition and short capture/End readiness before human input. PR10 current35 source-present methods need fresh discovery/compiler/runtime; all16 families stay open. Preserve accepted suites.",
   "actions": {
     "sdk_edits": 16,
     "controls": 0,
@@ -109,8 +109,8 @@
     "native_calls": 0,
     "authority_issued": 0,
     "gates_closed": [],
-    "additional_reviewed_test_methods_applied": 15,
-    "unexecuted_selected_test_methods": 34
+    "additional_reviewed_test_methods_applied": 16,
+    "unexecuted_selected_test_methods": 35
   },
   "current_source_usage_inventory": {
     "state": "CURRENT_SOURCE_KEYWORD_INVENTORY_ONLY_UNREVIEWED_SEMANTIC_CLOSURE",
@@ -455,9 +455,9 @@
     "local_unsigned_authority": "Authorized local fallback after actual45-second signing timeout. No push; outgoing history must be signed before separately authorized publication."
   },
   "local_sdk_checkpoint": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/four-control-application/checkpoint.json",
-    "sha256": "a36fc3de6f83d37cc461ea6802ba02a4a2e7a0ced79889e3b5b5dbca4cbadb96",
-    "size": 1954
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/stopped-view-control-proposal/retained-parent-successor/root-application/delivery-checkpoint.json",
+    "sha256": "4c30a7b87662704a8c51b1dc7a3de161e09086f146b7ddc111ffacc1027ac432",
+    "size": 1269
   },
   "prior_implementation_sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/sdk-application-preparation/cycle3-source-checkpoint.json",
@@ -580,5 +580,75 @@
     "total_source_discovered_methods": 34,
     "compiler_tests_native": 0,
     "gates_closed": []
+  },
+  "finite_thirty_four_map": {
+    "state": "REVIEWED_HISTORICAL_FINITE34_SOURCE_MAP_ALL16_FAMILIES_STILL_OPEN",
+    "coverage": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/thirty-four-finite-control-map/coverage.json",
+      "sha256": "e28a6452b23a722f5f71ee7b1cb3d3ed56a3333006625c1bde6624d3bbcf7fe5",
+      "size": 35641
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/thirty-four-finite-control-map/review/review.json",
+      "sha256": "0a67124fbe45b4ba15c50dda6c5f3b7e42cc5dfc59895c47dad19fc3ab3c3286",
+      "size": 14152
+    },
+    "readback": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/thirty-four-finite-control-map/review/readback.json",
+      "sha256": "2355a50fc672b17bc5c81d65ec18501260444062c2988e9e6ee91653bad08f95",
+      "size": 1243
+    },
+    "actual_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/thirty-four-finite-control-map/review/actual-review-publication-tool-returns.json",
+      "sha256": "56d532b4bebf46a6a5f1973ed8d51ac75c895f4c24b5d0d69f228f3af3fb94b3",
+      "size": 189300
+    },
+    "holds": "Exact9d source/34 historical discovery only; current35 source-present successor and parent fixture repair do not replace this immutable map or qualify any family."
+  },
+  "stopped_view_control_successor": {
+    "state": "REVIEWED_TEST_FIXTURE_SOURCE_CHECKPOINT_UNCOMPILED_UNEXECUTED",
+    "source_head": "678d22e4318575f1bea9fd9f5e74358696ba8886",
+    "signature": "N",
+    "packet": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/stopped-view-control-proposal/retained-parent-successor/packet.json",
+      "sha256": "7df908d0f11418bf8a5b1561fc1961f49c8e654e91fefc0a26c33569f27935f1",
+      "size": 7980
+    },
+    "original_block": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/stopped-view-control-proposal/review/review.json",
+      "sha256": "fb881c2c63fef6701bbd8dab5acb5a1585be734f91be5aef0cf886efda87e981",
+      "size": 12154
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/stopped-view-control-proposal/retained-parent-successor/review/review.json",
+      "sha256": "30d8e9cdced58980827296ed518d934053b6127639b97cd05c895e47dc535ac1",
+      "size": 13313
+    },
+    "readback": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/stopped-view-control-proposal/retained-parent-successor/review/readback.json",
+      "sha256": "e86628f6feff64b7bdfbbb8e2cacd8c6b3806ae078983de9f9ca20399b5f5cff",
+      "size": 1004
+    },
+    "actual_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/stopped-view-control-proposal/retained-parent-successor/review/actual-review-publication-tool-returns.json",
+      "sha256": "da363ada1e6825c74c2075e94b531e06b36c7efab7eba0f872fda7605e75f763",
+      "size": 71690
+    },
+    "checkpoint": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/stopped-view-control-proposal/retained-parent-successor/root-application/checkpoint.json",
+      "sha256": "4522eff686aeb64649f671790d508dbc840997ee41d702af3f1f263399bd9ccc",
+      "size": 3245
+    },
+    "disposition": "PR10STOP-01 source-addressed with one strong fixture-owned parent and explicit constructor argument. Six method bodies/assertions unchanged; one new retained/removed stopped-view/peer attribution method. Test readiness only, no SDK regression/runtime credit.",
+    "source_present_methods": 35,
+    "historical_source_discovered_methods": 34,
+    "current_discovery_held": true,
+    "compiler_runtime": 0,
+    "gates_closed": [],
+    "actual_application": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/stopped-view-control-proposal/retained-parent-successor/root-application/actual-application-tool-return.json",
+      "sha256": "6a83c2cc06b0f0abe05bd862bf4f7915530048c6c88b5f7f78b7b9e704738110",
+      "size": 518
+    }
   }
 }

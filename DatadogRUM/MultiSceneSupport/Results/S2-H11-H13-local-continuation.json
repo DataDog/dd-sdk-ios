@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "state": "STOPPED_BEFORE_INPUT_CLEANUP_PASS",
-  "updated_at": "2026-10-08T02:13:52.381382+00:00",
+  "updated_at": "2026-10-08T05:13:11.778933+00:00",
   "owner": "root",
   "reviewer": "/root/h10_backend_reviewer",
   "gates": [
@@ -241,7 +241,7 @@
     "native_admitted": false
   },
   "independent_capture_preparation": {
-    "state": "PRIVATE_INTERFACE_AND_OFFLINE_CHILD_BOUNDARIES_REVIEWED_NATIVE_QUALIFICATION_REMAIN",
+    "state": "EXPLICIT_PROFILE_APPLIED_SOURCE_READBACK_NATIVE_QUALIFICATION_REMAIN",
     "existing_gates": [
       "S2:H11",
       "S2:H13"
@@ -395,6 +395,92 @@
       "controls_passed": 3,
       "native_runs": 0,
       "gates_closed": []
+    },
+    "main_port": {
+      "state": "EIGHT_ADDITIVE_FILES_APPLIED_SOURCE_ONLY_NATIVE_UNQUALIFIED",
+      "packet": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/main-port-proposal/packet.json",
+        "sha256": "6c41ca2b4820c24863d5cc8ac2e80456c06d0febdc484d7d298630b2a98b2bfd",
+        "size": 6943
+      },
+      "manifest": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/main-port-proposal/source-manifest.json",
+        "sha256": "0fe7df0aff21e3e134327fb4c9bee30ad7e1779d52a639923fbd79c76ac0b3fe",
+        "size": 8271
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/main-port-proposal/review/review.json",
+        "sha256": "254542a852bc7ea5f6b6835d9276be09102e645878ee63ec7ae4d056136bf1b1",
+        "size": 25743
+      },
+      "readback": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/main-port-proposal/review/readback.json",
+        "sha256": "2d3c1d00444d064fe84bebf079a4f6b31c70fde77ada9bb81c4888c17de69a71",
+        "size": 1026
+      },
+      "actual_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/main-port-proposal/review/actual-publication-tool-returns.json",
+        "sha256": "0c80c34f1c0b38db0ec5f4b008a0fbad1fb3fbf28bfad262f293b3cfab5140b6",
+        "size": 174216
+      },
+      "application": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/main-port-proposal/root-application/application.json",
+        "sha256": "8e4cb600116f48c8890dfb85b0ca4a51475df235cec7f94fdb98cc45648b1b17",
+        "size": 10147
+      },
+      "actual_application": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/main-port-proposal/root-application/actual-application-tool-return.json",
+        "sha256": "2e7e2616a3c2042db7cabc7b39002a5c7164891985dcb87907b53368e5b799aa",
+        "size": 441
+      },
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/main-port-proposal/control-map.json",
+        "sha256": "2725b4933fd447eaf4b42902bf63e4adcfffea16505bc818cc6f6a1b5915ddf4",
+        "size": 9074
+      },
+      "root_procedure": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/main-port-proposal/ROOT-PROCEDURE.md",
+        "sha256": "ca6e8a104dd849dec739b3de8b776066c38d3a18f2861b85becb94c1b555cb53",
+        "size": 4537
+      },
+      "helper_profile": "PHYSICAL_INDEPENDENT_MAIN_SOURCE_V1",
+      "legacy_sources_preserved": 77,
+      "logical_contract": 79,
+      "holds": "Current composition/runtime assignment/full producer-worker positive, actual returned accessibility Swift/products/Python/device/awake/consent/metadata/protected/head/lane and short capture/confirmed End/same original PID/writer/owner/idle before Ready remain. Source-only assignment is not a consumable runtime admission.",
+      "native_calls": 0,
+      "human_invited": false,
+      "gates_closed": [],
+      "applied_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/main-port-proposal/root-application/review/review.json",
+        "sha256": "c15191b9da9dcf8073d89ded0c3d6c595a25166be487b1bd5d42583d9eb6b7d6",
+        "size": 11852
+      },
+      "applied_readback": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/main-port-proposal/root-application/review/readback.json",
+        "sha256": "246a0686171e0adad6253474ebb6b8a7dd2f341be360f44e29bcfc92a22dabcb",
+        "size": 946
+      },
+      "actual_applied_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/main-port-proposal/root-application/review/actual-review-publication-tool-returns.json",
+        "sha256": "398dce707bb5bf393bbf5e4e4f72cf557a220ffe172c5b00215a0465928aed50",
+        "size": 51425
+      }
+    },
+    "canonical_producer_control": {
+      "state": "PREPARED_UNEXECUTED_AT_SAFE_CHECKPOINT",
+      "proposal": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/canonical-producer-offline-control-proposal/proposal.json",
+        "sha256": "ad9b0e2fe7b7523acaffab3e81bdcf53c97773f46f1280f1cf99a2f77c09eb9e",
+        "size": 7933
+      },
+      "scope": "Real producer publication/readback positive and canonical worker-binding negative proposed; all external receipts/product modeled. Full positive local verification still held; no predicates bypassed or commands whitelisted.",
+      "controls_executed": 0,
+      "native_calls": 0,
+      "deadline_hold": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/canonical-producer-offline-control-proposal/deadline-hold.json",
+        "sha256": "4588d4ef566f5b5c0389b6cbfa5d7f14b51ddbbf5686e6c0fa32841db25dbeca",
+        "size": 5163
+      }
     }
   }
 }

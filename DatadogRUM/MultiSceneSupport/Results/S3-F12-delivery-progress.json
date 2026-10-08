@@ -576,7 +576,7 @@
       "rebuild_obligation": "Rebuild consolidated DatadogProfiler.swift, never restore removed AppLaunchProfiler.swift; standalone remains unqualified",
       "status": "PRIVATE_IMPLEMENTATION_SOURCE_REVIEWED_UNCOMPILED_UNQUALIFIED",
       "owning_record": "Results/S3-PR10-source-preparation.json",
-      "source_head": "9d01d20d9745ba2efab38e851d0b4ec86256c753",
+      "source_head": "678d22e4318575f1bea9fd9f5e74358696ba8886",
       "obligation": "BEFORE_SLICE_MERGE",
       "whole_F12_closed": false,
       "qualification": {
@@ -586,13 +586,14 @@
         "integration": "NOT_QUALIFIED"
       },
       "remaining_assertion": "Exact per-step owner, duplicate keys distinct lifetime, targeted completion and released retained snapshots Off: Develop Operation/profiling keying and flow",
-      "next_action": "Primary: PR11 four-only qualification after fresh explicit awake coverage and admission. Independent: complete the physical capture MAIN-port preparation and remaining existing16-family PR10 source controls; current34 methods remain uncompiled/unexecuted. Qualify selected controls and remaining Off/lifetime/compiler/platform obligations without repeating accepted suites.",
-      "evidence_source_scope": "Production source/membership reviewed at471ae. Fifteen additional reviewed controls checkpointed at local9d01d20d9 using authorized unsigned fallback after actual signing timeouts.34 methods source-discovered (Core4/RUM12/Profiling18), none compiled/executed. Original BLOCKs and original eleven-control/a732 records remain. All16 families/Off/lifetime/compiler/platform/integration stay open.",
+      "next_action": "Primary: PR11 four-only qualification after explicit awake-duration authority and fresh admission. Physical canonical-producer offline control is prepared, not executed; complete current composition and short capture/End readiness before human input. PR10 current35 source-present methods need fresh discovery/compiler/runtime; all16 families stay open. Preserve accepted suites.",
+      "evidence_source_scope": "Production471ae remains unchanged. Sixteen additional reviewed controls checkpointed678d22e43 using authorized local unsigned fallback;35 source-present/34 historical-discovered, uncompiled/unexecuted. Stopped-view fixture parent retained explicitly, original BLOCK preserved. Finite34 source coverage reviewed; all16 families/Off/lifetime/compiler/platform/integration remain open.",
       "source_preparation_owner": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR10-source-preparation.json",
-        "sha256": "13cd790b2361db8e51b923ae3da43e69532d1e17f98be9cec88404f575fcfcfe",
-        "size": 41140
-      }
+        "sha256": "eccb5f2b6d45c09828332ccd12089e52fdf0cf6bf558d31e25eb340203cab851",
+        "size": 46174
+      },
+      "source_only_controls": "35 source-present;34 historical-discovered. Stopped-view fixture parent source-repaired; all methods uncompiled/unexecuted, all16 families open."
     },
     {
       "id": "PR11",
@@ -897,7 +898,7 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": "2026-10-08T02:13:52.381382+00:00",
+  "updated_at": "2026-10-08T05:13:11.778933+00:00",
   "dependency_build_attempts": 4,
   "dependency_component_qualifications": 4,
   "dependency_test_invocations": 4,
