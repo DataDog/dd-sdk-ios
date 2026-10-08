@@ -1204,6 +1204,80 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertNotNil(flagsRepository.flagAssignment(for: "test"))
     }
 
+    func testInitializationTimeout_whenCacheReadIsBlocked_boundsFailedOrPendingFetch() throws {
+        let context = FlagsEvaluationContext(targetingKey: "cached-user")
+        let cachedData = FlagsData(flags: ["cached": .mockAny()], context: context, date: .mockAny())
+        let cachedValue = DataStoreValueResult.value(try JSONEncoder().encode(cachedData), dataStoreDefaultKeyVersion)
+        for fetchFailsBeforeTimeout in [true, false] {
+            for hasCache in [true, false] {
+                let dataStore = DelayedReadDataStore(storage: hasCache ? ["client": cachedValue] : [:])
+                var fetchCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
+                var timeoutAction: (() -> Void)?
+                var scheduledTimeout: TimeInterval?
+                var timeoutCancelled = false
+                @ReadWriteLock
+                var results: [Result<Void, FlagsError>] = []
+                let duplicateCompletion = XCTestExpectation(description: "initialization completed twice")
+                duplicateCompletion.isInverted = true
+                let repository = FlagsRepository(
+                    clientName: "client",
+                    flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in fetchCompletion = completion },
+                    dateProvider: DateProviderMock(),
+                    featureScope: FeatureScopeMock(dataStore: dataStore),
+                    initializationTimeout: 5,
+                    scheduleInitializationTimeout: { timeout, action in
+                        scheduledTimeout = timeout
+                        timeoutAction = action
+                        return { timeoutCancelled = true }
+                    }
+                )
+                defer {
+                    dataStore.resumeRead()
+                    dataStore.flush()
+                    repository.flush()
+                }
+                wait(for: [dataStore.readStarted], timeout: 1)
+                repository.setEvaluationContext(context) { result in
+                    _results.mutate { $0.append(result) }
+                    if results.count > 1 { duplicateCompletion.fulfill() }
+                }
+                if fetchFailsBeforeTimeout {
+                    try XCTUnwrap(fetchCompletion)(.failure(.invalidResponse))
+                }
+                XCTAssertEqual(scheduledTimeout, 5)
+                XCTAssertFalse(timeoutCancelled, "Waiting for disk must not cancel the initialization deadline")
+                XCTAssertTrue(results.isEmpty)
+                XCTAssertEqual(repository.state.currentState, .reconciling)
+
+                try XCTUnwrap(timeoutAction)()
+
+                XCTAssertEqual(results.count, 1)
+                guard case .failure(.initializationTimedOut)? = results.first else {
+                    XCTFail("Expected initializationTimedOut, got \(results)")
+                    continue
+                }
+                XCTAssertEqual(repository.state.currentState, .error)
+                let staleObserved = XCTestExpectation(description: "late matching cache becomes stale")
+                let listener = ClosureFlagsStateListener { state in
+                    if state == .stale { staleObserved.fulfill() }
+                }
+                repository.state.addListener(listener)
+                defer { repository.state.removeListener(listener) }
+
+                dataStore.resumeRead()
+                dataStore.flush()
+                if !fetchFailsBeforeTimeout {
+                    try XCTUnwrap(fetchCompletion)(.failure(.invalidResponse))
+                }
+                if hasCache { wait(for: [staleObserved], timeout: 1) }
+                wait(for: [duplicateCompletion], timeout: 0.2)
+                XCTAssertEqual(results.count, 1)
+                XCTAssertEqual(repository.state.currentState, hasCache ? .stale : .error)
+                XCTAssertEqual(repository.flagAssignment(for: "cached") != nil, hasCache)
+            }
+        }
+    }
+
     func testInitializationTimeoutCompletesWhenRepositoryIsReleased() throws {
         // Given
         var timeoutAction: (() -> Void)?
