@@ -28,7 +28,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
             }
         )
         let completed = expectation(description: "completed")
-        var capturedResult: Result<[String: FlagAssignment], FlagsError>?
+        var capturedResult: Result<FlagAssignmentsResponse, FlagsError>?
 
         // When
         fetcher.flagAssignments(for: .mockAny()) { result in
@@ -43,7 +43,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
             "https://preview.ff-cdn.us3.datadoghq.com/precompute-assignments"
         )
         let flagAssignments = try XCTUnwrap(capturedResult?.get())
-        XCTAssertEqual(flagAssignments, .mockAny())
+        XCTAssertEqual(flagAssignments.flags, .mockAny())
     }
 
     func testFlagAssignmentsNetworkError() {

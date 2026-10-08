@@ -1,5 +1,6 @@
 # Unreleased
 
+- [FEATURE] Support obfuscated keys in precomputed Flags assignments without changing evaluation calls or telemetry keys. The preview snapshot API returns `nil` for obfuscated assignments.
 - [FIX] Keep automatic URLSession spans linked to the RUM view and session captured when each request starts. See [#3220][]
 - [FIX] Reduce the risk of SwiftUI crashes during Session Replay recording by avoiding copies of unrelated view cache data. See [#3245][]
 - [FIX] Ensure repeated or concurrent URLSession task resumes apply request customization and start tracking only once per SDK instance. See [#3215][]
