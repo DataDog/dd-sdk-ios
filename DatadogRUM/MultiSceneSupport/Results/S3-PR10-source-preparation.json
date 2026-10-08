@@ -4,7 +4,7 @@
   "gate": "S3:F12",
   "slice": "PR10",
   "state": "COMPLETE_PRIVATE_SOURCE_APPLIED_REVIEWED_CHECKPOINTED_UNCOMPILED_UNQUALIFIED",
-  "updated_at": "2026-10-08T00:05:21.748335+00:00",
+  "updated_at": "2026-10-08T02:13:52.381382+00:00",
   "owner": "SDK implementer + designated independent reviewer",
   "source_lineage": {
     "linked_base_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
@@ -85,7 +85,7 @@
     "Compile and qualify the applied complete private Monitor/command/Session/manager/OperationMessage/consolidated DatadogProfiler chain; preserve per-step provenance and non-operation/TTID inventory, without restoring AppLaunchProfiler.",
     "Preserve consolidated stepType-aware completion, start ID/date, sampling/options, consent/quota, profile timers/extension/cleanup, app-launch/non-operation behavior and stale-owner rejection/retained snapshot release; typed identity alone proves none of these.",
     "Branch on the frozen resolved Off mode before any new handoff/Core/scene/UI lookup, snapshot, extra lock or retained-state allocation. Keep the legacy UUID/date/attribute/keying/warning Set/profile dictionary/callback/message flow and fallback exactly once. Exact changed storage/retention/allocation needs qualification.",
-    "Compile and run the thirty source-discovered methods (Core4/RUM10/Profiling16) after fresh admission, then address the remaining source-matched Off, queue/lifetime and supported compiler/platform controls from the existing16-family map. Source review closes no family. Preserve custom/NOP/Objective-C/API/encoding boundaries; no new public API, dependency, wire, generated-model, build-script or concurrency-migration authority."
+    "Compile and run the 34 source-discovered methods (Core4/RUM12/Profiling18) after fresh admission, then address the remaining source-matched Off, queue/lifetime and supported compiler/platform controls from the existing16-family map. Source review closes no family. Preserve custom/NOP/Objective-C/API/encoding boundaries; no new public API, dependency, wire, generated-model, build-script or concurrency-migration authority."
   ],
   "limits": [
     "Only 19 immutable source observations and five historical documentary copies are reviewed; no F11 remap, full repository caller inventory, code implementation or current-source qualification.",
@@ -101,7 +101,7 @@
     "original": "AppLaunchVitalMessage",
     "source_semantics_changed": false
   },
-  "next_action": "Primary: PR11 four-only qualification after fresh explicit awake coverage and admission. Independent: prepare two actual Monitor A-to-B/message provenance controls for C04 in the existing16-family map; current30 discovered methods remain uncompiled. Then qualify the exact selected controls and remaining Off/lifetime/compiler/platform obligations. Preserve accepted suites and original reviews.",
+  "next_action": "Primary: PR11 four-only qualification after fresh explicit awake coverage and admission. Independent: complete the physical capture MAIN-port preparation and remaining existing16-family PR10 source controls; current34 methods remain uncompiled/unexecuted. Qualify selected controls and remaining Off/lifetime/compiler/platform obligations without repeating accepted suites.",
   "actions": {
     "sdk_edits": 16,
     "controls": 0,
@@ -109,8 +109,8 @@
     "native_calls": 0,
     "authority_issued": 0,
     "gates_closed": [],
-    "additional_reviewed_test_methods_applied": 11,
-    "unexecuted_selected_test_methods": 30
+    "additional_reviewed_test_methods_applied": 15,
+    "unexecuted_selected_test_methods": 34
   },
   "current_source_usage_inventory": {
     "state": "CURRENT_SOURCE_KEYWORD_INVENTORY_ONLY_UNREVIEWED_SEMANTIC_CLOSURE",
@@ -455,9 +455,9 @@
     "local_unsigned_authority": "Authorized local fallback after actual45-second signing timeout. No push; outgoing history must be signed before separately authorized publication."
   },
   "local_sdk_checkpoint": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/control-application-preparation/test-source-checkpoint.json",
-    "sha256": "b9f9aea0a427bd6d350f8b86f82da81037b8078a9ee3000328847a77a7301e35",
-    "size": 3895
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/four-control-application/checkpoint.json",
+    "sha256": "a36fc3de6f83d37cc461ea6802ba02a4a2e7a0ced79889e3b5b5dbca4cbadb96",
+    "size": 1954
   },
   "prior_implementation_sdk_checkpoint": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/sdk-application-preparation/cycle3-source-checkpoint.json",
@@ -526,5 +526,59 @@
       "disposition": "Original first-custom-operation RUNNING assertion contradicted consolidated profiler source; corrected test expects NOT_CREATED while requiring exact original attributes. Original BLOCK is immutable; no production repair or SDK regression follows."
     },
     "limits": "Source review and metadata discovery only. All30 methods remain uncompiled/unexecuted; sixteen families, full Off/allocations/whole weak graph/same-Core message path/compilers/platforms and whole PR10/F12 remain unqualified. Sixteen prior production/test files and19 methods are unchanged; Xcode state restored to Core/My Mac."
+  },
+  "prior_additional_control_sdk_checkpoint": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/control-application-preparation/test-source-checkpoint.json",
+    "sha256": "b9f9aea0a427bd6d350f8b86f82da81037b8078a9ee3000328847a77a7301e35",
+    "size": 3895
+  },
+  "four_control_successor": {
+    "state": "FOUR_REVIEWED_TEST_CONTROLS_APPLIED_CHECKPOINTED_UNCOMPILED_UNEXECUTED",
+    "source_head": "9d01d20d9745ba2efab38e851d0b4ec86256c753",
+    "signature": "N",
+    "checkpoint": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/four-control-application/checkpoint.json",
+      "sha256": "a36fc3de6f83d37cc461ea6802ba02a4a2e7a0ced79889e3b5b5dbca4cbadb96",
+      "size": 1954
+    },
+    "actual_checkpoint": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/four-control-application/actual-checkpoint-tool-returns.json",
+      "sha256": "3a589ac08ed2dd283f0f2be001bf4692984efc70f02fcf1132c8e3fdff1d9157",
+      "size": 695
+    },
+    "source_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/four-control-preparation-review/review.json",
+      "sha256": "6fba9ab290fd288a486cd12ba2fb01e5ddadb252d9ce1cf86c2698bd096e5f20",
+      "size": 16413
+    },
+    "review_readback": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/four-control-preparation-review/readback.json",
+      "sha256": "fbecbd2b34e0a87de5b6faa013bc2cd2537a55c71fc22ae6dc9d8a07ff5880af",
+      "size": 991
+    },
+    "actual_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/four-control-preparation-review/actual-review-publication-tool-returns.json",
+      "sha256": "98801ec56202f39f9e1e94e4ff8dafa6567a55c73d462eb9bcdd54cc831aebd9",
+      "size": 74310
+    },
+    "selection": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/four-control-application/qualification-metadata/selected-thirty-four.json",
+      "sha256": "944a3fbd146889a70995b8041958ce59063703a59acf367e8dca54240bd83239",
+      "size": 37542
+    },
+    "metadata": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/four-control-application/qualification-metadata/source-lists.json",
+      "sha256": "e9b90587052345c2367d3e8589da1a1361649ca873e069533ee5f3a234781795",
+      "size": 2542
+    },
+    "partial_families": {
+      "C04": "Two actual Monitor per-step event/Internal-message provenance controls; profiler start matching and completion still unqualified.",
+      "C12": "Actual notGranted refusal followed by granted positive; post-enqueue consent and whole Core graph unqualified.",
+      "C14": "Explicit quotaKO before queue drain vs pending-positive control; callback/reset/timer/harvest unqualified."
+    },
+    "preservation": "Original production471ae, prior30 methods/helpers, project memberships and eleven-control records unchanged. Direct signing timeout recorded, owned locks preserved before removal; authorized local unsigned fallback.",
+    "total_source_discovered_methods": 34,
+    "compiler_tests_native": 0,
+    "gates_closed": []
   }
 }
