@@ -137,15 +137,30 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
 
     func body(content: Content) -> some View {
         reconcileDormantNavigationBoundaryFromEnvironmentTrait()
-        let onInitialMount: (@MainActor (RUMSceneIdentifier) -> Void)? = startsOnInitialMount ? { sceneIdentifier in
-            initialMount(in: sceneIdentifier)
-        } : nil
-        let onMount: (@MainActor (RUMSceneIdentifier) -> Void)? = startsOnInitialMount ? { sceneIdentifier in
-            mount(in: sceneIdentifier)
-        } : nil
-        let onReconcile: (@MainActor (RUMViewTrackingState.Attachment) -> Void)? = configuration == nil ? nil : { attachment in
-            update(attachment: attachment, allowsDormantBoundaryPromotion: true)
-            rebindNavigationOccurrenceSource(attachment: attachment)
+        let onInitialMount: (@MainActor (RUMSceneIdentifier) -> Void)?
+        if startsOnInitialMount {
+            onInitialMount = { sceneIdentifier in
+                initialMount(in: sceneIdentifier)
+            }
+        } else {
+            onInitialMount = nil
+        }
+        let onMount: (@MainActor (RUMSceneIdentifier) -> Void)?
+        if startsOnInitialMount {
+            onMount = { sceneIdentifier in
+                mount(in: sceneIdentifier)
+            }
+        } else {
+            onMount = nil
+        }
+        let onReconcile: (@MainActor (RUMViewTrackingState.Attachment) -> Void)?
+        if configuration == nil {
+            onReconcile = nil
+        } else {
+            onReconcile = { attachment in
+                update(attachment: attachment, allowsDormantBoundaryPromotion: true)
+                rebindNavigationOccurrenceSource(attachment: attachment)
+            }
         }
         return content
             .background(
@@ -847,9 +862,14 @@ private struct RUMAttachmentBackedMultiSceneViewModifierCallback: SwiftUI.ViewMo
     let admission: RUMSwiftUIViewCallbackAdmission
 
     func body(content: Content) -> some View {
-        let onReconcile: (@MainActor (RUMViewTrackingState.Attachment) -> Void)? = configuration == nil ? nil : { attachment in
-            update(attachment: attachment)
-            rebindNavigationOccurrenceSource(attachment: attachment)
+        let onReconcile: (@MainActor (RUMViewTrackingState.Attachment) -> Void)?
+        if configuration == nil {
+            onReconcile = nil
+        } else {
+            onReconcile = { attachment in
+                update(attachment: attachment)
+                rebindNavigationOccurrenceSource(attachment: attachment)
+            }
         }
         return content
             .background(
