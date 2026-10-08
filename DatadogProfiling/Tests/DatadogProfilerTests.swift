@@ -117,6 +117,100 @@ final class DatadogProfilerTests: XCTestCase {
         withExtendedLifetime(profiler) {}
     }
 
+    func testOwnedOperationMessage_quotaBecomesRejectedBeforeQueueDrain_preservesPreviousAttributes() throws {
+        for rejectsQuota in [false, true] {
+            let dateProvider = DateProviderMock()
+            let fixture = OwnedProfilerQueueFixture(date: dateProvider.now)
+            let ownership = try fixture.ownership()
+            let quota = ProfilingQuotaCheckerMock()
+            let telemetry = TelemetryMock()
+            let profiler = customProfiler(
+                telemetryController: .init(telemetry: telemetry),
+                dateProvider: dateProvider,
+                quotaChecker: quota
+            )
+            let seed: [AttributeKey: AttributeValue] = ["seed": "legacy-end"]
+            let seedVital = Vital(id: "seed-end", name: "seed", operationKey: nil, stepType: .end, date: dateProvider.now)
+            XCTAssertFalse(profiler.receive(message: .payload(OperationMessage(attributes: seed, operation: seedVital)), from: core))
+            flushQueue()
+            XCTAssertEqual(profiler.attributes.count, 1)
+            XCTAssertEqual(profiler.attributes["seed"] as? String, "legacy-end")
+            XCTAssertNil(quota.quotaResult)
+            XCTAssertTrue(ownership.isValid)
+            let initialStatus = dd_profiler_get_status()
+            let message = fixture.start(ownership, attributes: [RUMCoreContext.IDs.sessionID: "original-session"])
+            profilerQueue.suspend()
+            var isSuspended = true
+            defer { if isSuspended { profilerQueue.resume() } }
+
+            XCTAssertFalse(profiler.receive(message: .payload(message), from: core))
+            if rejectsQuota {
+                quota.quotaResult = .init(decision: .quotaKO, reason: .quotaExceeded)
+            }
+            // The mock's plain property does not invoke the quota callback.
+            // This isolates the message guard at drain from quota-triggered cleanup.
+            XCTAssertEqual(quota.isRejectedByQuota, rejectsQuota)
+            XCTAssertTrue(ownership.isValid)
+            profilerQueue.resume()
+            isSuspended = false
+            flushQueue()
+
+            XCTAssertEqual(profiler.attributes.count, 1)
+            if rejectsQuota {
+                XCTAssertEqual(profiler.attributes["seed"] as? String, "legacy-end")
+                XCTAssertNil(profiler.attributes[RUMCoreContext.IDs.sessionID])
+            } else {
+                XCTAssertEqual(profiler.attributes[RUMCoreContext.IDs.sessionID] as? String, "original-session")
+                XCTAssertNil(profiler.attributes["seed"])
+            }
+            XCTAssertTrue(core.events.isEmpty)
+            XCTAssertTrue(core.metadata.isEmpty)
+            XCTAssertTrue(telemetry.messages.isEmpty)
+            XCTAssertEqual(dd_profiler_get_status(), initialStatus)
+            withExtendedLifetime(profiler) {}
+        }
+    }
+
+    func testOwnedOperationMessage_notGrantedConsentRefusesThenGrantedAcceptsOriginalOwnership() throws {
+        let dateProvider = DateProviderMock()
+        let fixture = OwnedProfilerQueueFixture(date: dateProvider.now)
+        let ownership = try fixture.ownership()
+        let telemetry = TelemetryMock()
+        let profiler = customProfiler(telemetryController: .init(telemetry: telemetry), dateProvider: dateProvider)
+        let message = fixture.start(ownership, attributes: [RUMCoreContext.IDs.sessionID: "original-session"])
+        core.context = .mockWith(trackingConsent: .notGranted, applicationStateHistory: .mockAppInForeground())
+        XCTAssertFalse(profiler.receive(message: .context(core.context), from: core))
+        flushQueue()
+        XCTAssertTrue(ownership.isValid)
+        XCTAssertTrue(profiler.attributes.isEmpty)
+        let initialStatus = dd_profiler_get_status()
+        let initialTelemetryCount = telemetry.messages.count
+
+        XCTAssertFalse(profiler.receive(message: .payload(message), from: core))
+        flushQueue()
+
+        XCTAssertTrue(ownership.isValid)
+        XCTAssertTrue(profiler.attributes.isEmpty)
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertTrue(core.metadata.isEmpty)
+        XCTAssertEqual(telemetry.messages.count, initialTelemetryCount)
+        XCTAssertEqual(dd_profiler_get_status(), initialStatus)
+
+        core.context = .mockWith(trackingConsent: .granted, applicationStateHistory: .mockAppInForeground())
+        XCTAssertFalse(profiler.receive(message: .context(core.context), from: core))
+        flushQueue()
+        XCTAssertTrue(ownership.isValid)
+        XCTAssertFalse(profiler.receive(message: .payload(message), from: core))
+        flushQueue()
+
+        XCTAssertEqual(profiler.attributes.count, 1)
+        XCTAssertEqual(profiler.attributes[RUMCoreContext.IDs.sessionID] as? String, "original-session")
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertTrue(core.metadata.isEmpty)
+        XCTAssertEqual(dd_profiler_get_status(), initialStatus)
+        withExtendedLifetime(profiler) {}
+    }
+
     func testReceiveRUMEvents() {
         // Given
         let profiler = continuousProfiler()

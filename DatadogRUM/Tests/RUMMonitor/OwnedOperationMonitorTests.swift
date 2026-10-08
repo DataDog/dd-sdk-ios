@@ -440,5 +440,197 @@ final class OwnedOperationMonitorTests: XCTestCase {
         XCTAssertEqual(fixture.receiver.messages.count, ownedBefore + 1)
         XCTAssertEqual(fixture.receiver.legacyMessages.count, legacyBefore)
     }
+
+    private func assertStepProjection(
+        event: RUMVitalOperationStepEvent,
+        message: OwnedOperationMessage,
+        expected: RUMCoreContext,
+        step: RUMVitalOperationStepEvent.Vital.StepType,
+        name: String,
+        operationKey: String,
+        date: Date
+    ) throws {
+        XCTAssertEqual(event.application.id, expected.applicationID)
+        XCTAssertEqual(event.session.id, expected.sessionID)
+        XCTAssertEqual(event.view.id, try XCTUnwrap(expected.viewID))
+        XCTAssertEqual(event.view.url, expected.viewPath)
+        XCTAssertEqual(event.vital.name, name)
+        XCTAssertEqual(event.vital.operationKey, operationKey)
+        XCTAssertEqual(event.vital.stepType, step)
+        XCTAssertEqual(event.date, date.timeIntervalSince1970.dd.toInt64Milliseconds)
+        XCTAssertEqual(message.operation.id, event.vital.id)
+        XCTAssertEqual(message.operation.name, name)
+        XCTAssertEqual(message.operation.operationKey, operationKey)
+        XCTAssertEqual(message.operation.stepType, step)
+        XCTAssertEqual(message.operation.date, date)
+        XCTAssertEqual(message.ownership.sessionID, expected.sessionID)
+        XCTAssertTrue(message.ownership.isValid)
+        XCTAssertEqual(message.attributes[RUMCoreContext.IDs.applicationID] as? String, expected.applicationID)
+        XCTAssertEqual(message.attributes[RUMCoreContext.IDs.sessionID] as? String, expected.sessionID)
+        XCTAssertEqual(message.attributes[RUMCoreContext.IDs.viewID] as? [String], [try XCTUnwrap(expected.viewID)])
+        XCTAssertEqual(message.attributes[RUMCoreContext.IDs.viewName] as? [String], [try XCTUnwrap(expected.viewName)])
+        XCTAssertNil(expected.userActionID)
+        XCTAssertEqual(Set(message.attributes.keys), Set([
+            RUMCoreContext.IDs.applicationID,
+            RUMCoreContext.IDs.sessionID,
+            RUMCoreContext.IDs.viewID,
+            RUMCoreContext.IDs.viewName
+        ]))
+    }
+
+    func testCapturedCrossViewStepsKeepSelectedViewAndOriginalSessionProvenance() throws {
+        try requireOwnedOperations()
+        let fixture = try Fixture()
+        defer { fixture.tearDown() }
+        let original = fixture.feature
+        let owner = try XCTUnwrap(original.rumContextHandoffOwner)
+        let origin = try XCTUnwrap(original.operationOrigin)
+        let session = try XCTUnwrap(original.monitor.applicationScope.activeSession)
+        fixture.startView("selected-a")
+        fixture.drain()
+        let captureA = try fixture.capture("selected-a")
+        let contextA = try XCTUnwrap(captureA.value.rumContext)
+        fixture.clock.now = fixture.clock.now.addingTimeInterval(1)
+        fixture.startView("selected-b")
+        fixture.drain()
+        let captureB = try fixture.capture("selected-b")
+        let contextB = try XCTUnwrap(captureB.value.rumContext)
+        fixture.clock.now = fixture.clock.now.addingTimeInterval(1)
+        fixture.startView("representative-peer")
+        fixture.drain()
+        let peer = try XCTUnwrap(try fixture.capture("representative-peer").value.rumContext)
+        XCTAssertEqual(contextA.sessionID, session.sessionUUID.toRUMDataFormat)
+        XCTAssertEqual(contextB.sessionID, contextA.sessionID)
+        XCTAssertEqual(peer.sessionID, contextA.sessionID)
+        XCTAssertNotEqual(contextA.viewID, contextB.viewID)
+        XCTAssertNotEqual(peer.viewID, contextA.viewID)
+        XCTAssertNotEqual(peer.viewID, contextB.viewID)
+        XCTAssertTrue(captureA.owner === owner)
+        XCTAssertTrue(captureB.owner === owner)
+        let activeViewIDs = Set(session.viewScopes.filter { $0.isActiveView }.map { $0.viewUUID.toRUMDataFormat })
+        XCTAssertTrue(activeViewIDs.contains(try XCTUnwrap(contextA.viewID)))
+        XCTAssertTrue(activeViewIDs.contains(try XCTUnwrap(contextB.viewID)))
+        XCTAssertTrue(activeViewIDs.contains(try XCTUnwrap(peer.viewID)))
+        XCTAssertEqual(original.monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, peer.viewID)
+        let storage = try XCTUnwrap(fixture.core.stores[RUMFeature.name]?.storage)
+        let vitalsBefore = try fixture.storedVitals(in: storage).count
+        let ownedBefore = fixture.receiver.messages.count
+        let legacyBefore = fixture.receiver.legacyMessages.count
+        let name = "captured-cross-view"
+        let key = "request"
+        fixture.clock.now = fixture.clock.now.addingTimeInterval(1)
+        let startDate = fixture.clock.now
+
+        RUMContextHandoff.withValue(captureA.value, for: captureA.owner) {
+            original.monitor.startOperation(
+                name: name, operationKey: key, attributes: [:],
+                options: ProfilingOptions(sampleRate: 100)
+            )
+        }
+        fixture.drain()
+        XCTAssertEqual(original.monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, peer.viewID)
+        fixture.clock.now = fixture.clock.now.addingTimeInterval(1)
+        let endDate = fixture.clock.now
+        RUMContextHandoff.withValue(captureB.value, for: captureB.owner) {
+            original.monitor.succeedOperation(name: name, operationKey: key, attributes: [:])
+        }
+        fixture.drain()
+
+        let vitals = try fixture.storedVitals(in: storage)
+        let events = vitals.filter { $0.vital.name == name && $0.vital.operationKey == key }
+        let messages = fixture.receiver.messages.filter { $0.operation.name == name && $0.operation.operationKey == key }
+        XCTAssertEqual(vitals.count, vitalsBefore + 2)
+        XCTAssertEqual(events.count, 2)
+        XCTAssertEqual(messages.count, 2)
+        XCTAssertEqual(fixture.receiver.messages.count, ownedBefore + 2)
+        XCTAssertEqual(fixture.receiver.legacyMessages.count, legacyBefore)
+        let startEvent = try XCTUnwrap(events.first { $0.vital.stepType == .start })
+        let endEvent = try XCTUnwrap(events.first { $0.vital.stepType == .end })
+        let startMessage = try XCTUnwrap(messages.first { $0.operation.stepType == .start })
+        let endMessage = try XCTUnwrap(messages.first { $0.operation.stepType == .end })
+        try assertStepProjection(event: startEvent, message: startMessage, expected: contextA,
+                                 step: .start, name: name, operationKey: key, date: startDate)
+        try assertStepProjection(event: endEvent, message: endMessage, expected: contextB,
+                                 step: .end, name: name, operationKey: key, date: endDate)
+        XCTAssertNotEqual(startEvent.vital.id, endEvent.vital.id)
+        XCTAssertTrue(startMessage.ownership === endMessage.ownership)
+        XCTAssertTrue(startMessage.ownership.origin === origin)
+        XCTAssertTrue(endMessage.ownership.origin.owner === owner)
+        XCTAssertTrue(fixture.core.get(feature: RUMFeature.self) === original)
+        XCTAssertTrue(original.monitor.applicationScope.activeSession === session)
+        XCTAssertEqual(original.monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, peer.viewID)
+    }
+
+    func testCapturedStartAndSourceLessEndProjectTheirOwnViewsInSameSession() throws {
+        try requireOwnedOperations()
+        let fixture = try Fixture()
+        defer { fixture.tearDown() }
+        let original = fixture.feature
+        let owner = try XCTUnwrap(original.rumContextHandoffOwner)
+        let origin = try XCTUnwrap(original.operationOrigin)
+        let session = try XCTUnwrap(original.monitor.applicationScope.activeSession)
+        fixture.startView("captured-start")
+        fixture.drain()
+        let captureA = try fixture.capture("captured-start")
+        let contextA = try XCTUnwrap(captureA.value.rumContext)
+        fixture.clock.now = fixture.clock.now.addingTimeInterval(1)
+        fixture.startView("source-less-end")
+        fixture.drain()
+        let contextB = try XCTUnwrap(try fixture.capture("source-less-end").value.rumContext)
+        XCTAssertEqual(contextA.sessionID, session.sessionUUID.toRUMDataFormat)
+        XCTAssertEqual(contextB.sessionID, contextA.sessionID)
+        XCTAssertNotEqual(contextA.viewID, contextB.viewID)
+        XCTAssertTrue(captureA.owner === owner)
+        let activeViewIDs = Set(session.viewScopes.filter { $0.isActiveView }.map { $0.viewUUID.toRUMDataFormat })
+        XCTAssertTrue(activeViewIDs.contains(try XCTUnwrap(contextA.viewID)))
+        XCTAssertTrue(activeViewIDs.contains(try XCTUnwrap(contextB.viewID)))
+        XCTAssertEqual(original.monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, contextB.viewID)
+        let storage = try XCTUnwrap(fixture.core.stores[RUMFeature.name]?.storage)
+        let vitalsBefore = try fixture.storedVitals(in: storage).count
+        let ownedBefore = fixture.receiver.messages.count
+        let legacyBefore = fixture.receiver.legacyMessages.count
+        let name = "captured-to-source-less"
+        let key = "request"
+        fixture.clock.now = fixture.clock.now.addingTimeInterval(1)
+        let startDate = fixture.clock.now
+
+        RUMContextHandoff.withValue(captureA.value, for: captureA.owner) {
+            original.monitor.startOperation(
+                name: name, operationKey: key, attributes: [:],
+                options: ProfilingOptions(sampleRate: 100)
+            )
+        }
+        fixture.drain()
+        XCTAssertNil(RUMContextHandoff.captureValue(for: owner))
+        XCTAssertEqual(original.monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, contextB.viewID)
+        fixture.clock.now = fixture.clock.now.addingTimeInterval(1)
+        let endDate = fixture.clock.now
+        original.monitor.succeedOperation(name: name, operationKey: key, attributes: [:])
+        fixture.drain()
+
+        let vitals = try fixture.storedVitals(in: storage)
+        let events = vitals.filter { $0.vital.name == name && $0.vital.operationKey == key }
+        let messages = fixture.receiver.messages.filter { $0.operation.name == name && $0.operation.operationKey == key }
+        XCTAssertEqual(vitals.count, vitalsBefore + 2)
+        XCTAssertEqual(events.count, 2)
+        XCTAssertEqual(messages.count, 2)
+        XCTAssertEqual(fixture.receiver.messages.count, ownedBefore + 2)
+        XCTAssertEqual(fixture.receiver.legacyMessages.count, legacyBefore)
+        let startEvent = try XCTUnwrap(events.first { $0.vital.stepType == .start })
+        let endEvent = try XCTUnwrap(events.first { $0.vital.stepType == .end })
+        let startMessage = try XCTUnwrap(messages.first { $0.operation.stepType == .start })
+        let endMessage = try XCTUnwrap(messages.first { $0.operation.stepType == .end })
+        try assertStepProjection(event: startEvent, message: startMessage, expected: contextA,
+                                 step: .start, name: name, operationKey: key, date: startDate)
+        try assertStepProjection(event: endEvent, message: endMessage, expected: contextB,
+                                 step: .end, name: name, operationKey: key, date: endDate)
+        XCTAssertNotEqual(startEvent.vital.id, endEvent.vital.id)
+        XCTAssertTrue(startMessage.ownership === endMessage.ownership)
+        XCTAssertTrue(startMessage.ownership.origin === origin)
+        XCTAssertTrue(endMessage.ownership.origin.owner === owner)
+        XCTAssertTrue(fixture.core.get(feature: RUMFeature.self) === original)
+        XCTAssertTrue(original.monitor.applicationScope.activeSession === session)
+        XCTAssertEqual(original.monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, contextB.viewID)
+    }
 }
 #endif
