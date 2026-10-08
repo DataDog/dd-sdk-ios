@@ -2,6 +2,7 @@ module DatadogMachProfiler {
   header "dd_profiler.h"
   header "dd_pprof.h"
   header "swift_alloc_hook.h"
+  header "objc_alloc_hook.h"
   export *
 
   explicit module Cxx {
@@ -23,6 +24,7 @@ module DatadogMachProfiler {
       header "dd_pprof_testing.h"
       header "safe_read_testing.h"
       header "swift_alloc_hook_testing.h"
+      header "objc_alloc_hook_testing.h"
       export *
   }
 }
