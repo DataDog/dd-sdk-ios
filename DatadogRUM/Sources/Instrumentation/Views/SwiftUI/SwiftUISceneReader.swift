@@ -6,6 +6,7 @@
 
 #if canImport(SwiftUI) && os(iOS)
 import Foundation
+import SwiftUI
 import UIKit
 @_spi(Internal)
 import DatadogInternal
