@@ -117,6 +117,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                 if context.hasReplay != true {
                     session["has_replay"] = context.hasReplay
                 }
+                session["is_main_process"] = context.applicationBundleType != .iOSAppExtension
 
                 event["session"] = session
             }

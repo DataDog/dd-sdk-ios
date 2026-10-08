@@ -126,6 +126,7 @@ internal struct FatalErrorBuilder {
             session: .init(
                 hasReplay: lastRUMView.session.hasReplay,
                 id: lastRUMView.session.id,
+                isMainProcess: lastRUMView.session.isMainProcess,
                 type: lastRUMView.session.type
             ),
             source: lastRUMView.source?.toErrorEventSource ?? .ios,
