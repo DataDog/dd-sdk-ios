@@ -137,6 +137,16 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
 
     func body(content: Content) -> some View {
         reconcileDormantNavigationBoundaryFromEnvironmentTrait()
+        let onInitialMount: (@MainActor (RUMSceneIdentifier) -> Void)? = startsOnInitialMount ? { sceneIdentifier in
+            initialMount(in: sceneIdentifier)
+        } : nil
+        let onMount: (@MainActor (RUMSceneIdentifier) -> Void)? = startsOnInitialMount ? { sceneIdentifier in
+            mount(in: sceneIdentifier)
+        } : nil
+        let onReconcile: (@MainActor (RUMViewTrackingState.Attachment) -> Void)? = configuration == nil ? nil : { attachment in
+            update(attachment: attachment, allowsDormantBoundaryPromotion: true)
+            rebindNavigationOccurrenceSource(attachment: attachment)
+        }
         return content
             .background(
                 RUMSceneIdentifierReader(
@@ -146,19 +156,9 @@ private struct RUMTraitBackedMultiSceneViewModifierCallback: SwiftUI.ViewModifie
                     onCreate: { observer in
                         register(observer: observer)
                     },
-                    onInitialMount: startsOnInitialMount ? { sceneIdentifier in
-                        initialMount(in: sceneIdentifier)
-                    } : nil,
-                    onMount: startsOnInitialMount ? { sceneIdentifier in
-                        mount(in: sceneIdentifier)
-                    } : nil,
-                    onReconcile: configuration == nil ? nil : { attachment in
-                        update(
-                            attachment: attachment,
-                            allowsDormantBoundaryPromotion: true
-                        )
-                        rebindNavigationOccurrenceSource(attachment: attachment)
-                    },
+                    onInitialMount: onInitialMount,
+                    onMount: onMount,
+                    onReconcile: onReconcile,
                     onChange: { attachment in
                         update(attachment: attachment)
                         rebindNavigationOccurrenceSource(attachment: attachment)
@@ -847,7 +847,11 @@ private struct RUMAttachmentBackedMultiSceneViewModifierCallback: SwiftUI.ViewMo
     let admission: RUMSwiftUIViewCallbackAdmission
 
     func body(content: Content) -> some View {
-        content
+        let onReconcile: (@MainActor (RUMViewTrackingState.Attachment) -> Void)? = configuration == nil ? nil : { attachment in
+            update(attachment: attachment)
+            rebindNavigationOccurrenceSource(attachment: attachment)
+        }
+        return content
             .background(
                 RUMSceneIdentifierReader(
                     admission: admission,
@@ -855,10 +859,7 @@ private struct RUMAttachmentBackedMultiSceneViewModifierCallback: SwiftUI.ViewMo
                     onCreate: { observer in
                         register(observer: observer)
                     },
-                    onReconcile: configuration == nil ? nil : { attachment in
-                        update(attachment: attachment)
-                        rebindNavigationOccurrenceSource(attachment: attachment)
-                    },
+                    onReconcile: onReconcile,
                     onChange: { attachment in
                         update(attachment: attachment)
                         rebindNavigationOccurrenceSource(attachment: attachment)
@@ -959,7 +960,7 @@ private struct RUMAttachmentBackedMultiSceneViewModifierCallback: SwiftUI.ViewMo
             let trackingState = session.trackingState
             let navigationOccurrenceRegistration = session.navigationRegistration
 
-        navigationOccurrenceSource?.consumeRevealedRoute(
+        return navigationOccurrenceSource?.consumeRevealedRoute(
             configuration: configuration,
             sceneIdentifier: sceneIdentifier,
             into: trackingState
