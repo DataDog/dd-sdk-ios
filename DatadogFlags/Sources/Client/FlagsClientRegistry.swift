@@ -7,6 +7,10 @@
 import Foundation
 import DatadogInternal
 
+internal protocol FlagsClientFlushable: AnyObject {
+    func flush()
+}
+
 internal final class FlagsClientRegistry {
     @ReadWriteLock
     private var clients: [String: FlagsClientProtocol] = [:]
@@ -30,5 +34,9 @@ internal final class FlagsClientRegistry {
 
     func client(named name: String) -> FlagsClientProtocol? {
         clients[name]
+    }
+
+    func flushClients() {
+        clients.values.compactMap { $0 as? FlagsClientFlushable }.forEach { $0.flush() }
     }
 }

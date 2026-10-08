@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FIX] Start the `DatadogFlags` assignments request without waiting for the initial cache read, and report successful assignments before cache persistence. See [#3078][]
+- [IMPROVEMENT] Overlapping `FlagsClient.setEvaluationContext` calls no longer let an earlier result replace assignments for a newer context. Earlier calls still complete, and listeners skip state notifications superseded before delivery. Fetch-result completions run on a global utility queue. See [#3078][]
 - [FIX] Keep automatic URLSession spans linked to the RUM view and session captured when each request starts. See [#3220][]
 - [FIX] Reduce the risk of SwiftUI crashes during Session Replay recording by avoiding copies of unrelated view cache data. See [#3245][]
 - [FIX] Ensure repeated or concurrent URLSession task resumes apply request customization and start tracking only once per SDK instance. See [#3215][]
@@ -1253,6 +1255,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3061]: https://github.com/DataDog/dd-sdk-ios/pull/3061
 [#3066]: https://github.com/DataDog/dd-sdk-ios/pull/3066
 [#3073]: https://github.com/DataDog/dd-sdk-ios/pull/3073
+[#3078]: https://github.com/DataDog/dd-sdk-ios/pull/3078
 [#3087]: https://github.com/DataDog/dd-sdk-ios/pull/3087
 [#3089]: https://github.com/DataDog/dd-sdk-ios/pull/3089
 [#3092]: https://github.com/DataDog/dd-sdk-ios/pull/3092
