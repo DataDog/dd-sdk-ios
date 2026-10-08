@@ -1,0 +1,444 @@
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ */
+
+import Foundation
+import XCTest
+@_spi(Internal) @testable import DatadogInternal
+@_spi(Internal) @testable import DatadogCore
+@testable import DatadogRUM
+@testable import TestUtilities
+
+#if os(iOS)
+@MainActor
+final class OwnedOperationMonitorTests: XCTestCase {
+    private final class OperationReceiver: FeatureMessageReceiver {
+        @ReadWriteLock private var received: [OwnedOperationMessage] = []
+        @ReadWriteLock private var receivedLegacy: [OperationMessage] = []
+
+        var messages: [OwnedOperationMessage] { received }
+        var legacyMessages: [OperationMessage] { receivedLegacy }
+
+        func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+            guard case let .payload(payload) = message else { return false }
+            if let operation = payload as? OwnedOperationMessage {
+                _received.mutate { $0.append(operation) }
+                return true
+            }
+            if let operation = payload as? OperationMessage {
+                _receivedLegacy.mutate { $0.append(operation) }
+                return true
+            }
+            return false
+        }
+    }
+
+    private struct OperationObserver: DatadogFeature {
+        static let name = "owned-operation-observer"
+        let messageReceiver: FeatureMessageReceiver
+    }
+
+    private struct ReplacementFeature: DatadogFeature {
+        static let name = RUMFeature.name
+        let messageReceiver: FeatureMessageReceiver
+    }
+
+    @MainActor
+    private final class Fixture {
+        let directory: CoreDirectory
+        let core: DatadogCore
+        let clock: DateProviderMock
+        let receiver: OperationReceiver
+        let configuration: RUM.Configuration
+        var feature: RUMFeature
+
+        init(multiSceneTrackingEnabled: Bool = true) throws {
+            let directory = temporaryUniqueCoreDirectory()
+            try directory.create()
+            let clock = DateProviderMock(now: Date(timeIntervalSince1970: 1_700_000_000))
+            let receiver = OperationReceiver()
+            let context = DatadogContext.mockWith(
+                sdkInitDate: clock.now,
+                trackingConsent: .granted,
+                launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: clock.now),
+                applicationStateHistory: AppStateHistory(initialState: .active, date: clock.now)
+            )
+            let core = DatadogCore(
+                directory: directory,
+                dateProvider: clock,
+                initialConsent: .granted,
+                performance: .combining(
+                    storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
+                    uploadPerformance: .noOp
+                ),
+                httpClient: HTTPClientMock(),
+                encryption: nil,
+                contextProvider: DatadogContextProvider(
+                    context: context,
+                    queue: DispatchQueue(label: "owned-operation-context-\(UUID().uuidString)")
+                ),
+                applicationVersion: "1",
+                maxBatchesPerUpload: 0,
+                backgroundTasksEnabled: false
+            )
+            var configuration = RUM.Configuration(applicationID: UUID().uuidString)
+            configuration.dateProvider = clock
+            configuration.sessionSampleRate = 100
+            configuration.telemetrySampleRate = 0
+            configuration.sessionEndedSampleRate = 0
+            configuration.trackAnonymousUser = false
+            configuration.longTaskThreshold = nil
+            configuration.appHangThreshold = nil
+            configuration.vitalsUpdateFrequency = nil
+            configuration.bundle = .mockWith(
+                UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true]
+            )
+            configuration.featureFlags = [.multiSceneTracking: multiSceneTrackingEnabled]
+            do {
+                try core.register(feature: OperationObserver(messageReceiver: receiver))
+                try RUM.enableOrThrow(with: configuration, in: core)
+                self.feature = try XCTUnwrap(core.get(feature: RUMFeature.self))
+            } catch {
+                core.stop()
+                try? directory.delete()
+                throw error
+            }
+            self.directory = directory
+            self.core = core
+            self.clock = clock
+            self.receiver = receiver
+            self.configuration = configuration
+            core.flush()
+        }
+
+        func tearDown() {
+            core.stop()
+            core.contextProvider.flush()
+            core.readWriteQueue.sync {}
+            core.bus.flush()
+            try? directory.delete()
+        }
+
+        func drain() { core.flush() }
+
+        func startView(_ name: String, on feature: RUMFeature? = nil) {
+            (feature ?? self.feature).monitor.process(command: RUMStartViewCommand(
+                time: clock.now,
+                identity: ViewIdentifier(name),
+                name: name,
+                path: name,
+                globalAttributes: [:],
+                attributes: [:],
+                instrumentationType: .manual,
+                target: .scene(.init(rawValue: name))
+            ))
+        }
+
+        func capture(_ name: String, on feature: RUMFeature? = nil) throws -> RUMContextHandoff.Capture {
+            let feature = feature ?? self.feature
+            let owner = try XCTUnwrap(feature.rumContextHandoffOwner)
+            return try XCTUnwrap(feature.captureRUMContext(forSceneIdentifier: name, owner: owner))
+        }
+
+        func start(_ name: String, capture: RUMContextHandoff.Capture, on feature: RUMFeature? = nil) {
+            let monitor = (feature ?? self.feature).monitor
+            RUMContextHandoff.withValue(capture.value, for: capture.owner) {
+                monitor.startOperation(
+                    name: name,
+                    operationKey: nil,
+                    attributes: [:],
+                    options: ProfilingOptions(sampleRate: 100)
+                )
+            }
+        }
+
+        func storedEvents(in storage: FeatureStorage) throws -> [Data] {
+            storage.setIgnoreFilesAgeWhenReading(to: true)
+            let reader = storage.reader
+            let files = reader.readFiles(limit: 128)
+            XCTAssertLessThan(files.count, 128, "Read the complete bounded fixture inventory")
+            return try files.flatMap { file in
+                try XCTUnwrap(reader.readBatch(from: file)).events.map(\.data)
+            }
+        }
+
+        func storedVitals(in storage: FeatureStorage) throws -> [RUMVitalOperationStepEvent] {
+            try storedEvents(in: storage).compactMap { data in
+                let object = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+                guard object["type"] as? String == "vital",
+                      let vital = object["vital"] as? [String: Any],
+                      vital["type"] as? String == "operation_step" else { return nil }
+                return try JSONDecoder().decode(RUMVitalOperationStepEvent.self, from: data)
+            }
+        }
+
+        func bytes(in storage: FeatureStorage) throws -> [String] {
+            try storedEvents(in: storage).map { $0.base64EncodedString() }.sorted()
+        }
+    }
+
+    private func requireOwnedOperations() throws {
+        guard #available(iOS 27.0, *) else {
+            throw XCTSkip("Original operation ownership requires supported iOS")
+        }
+    }
+
+    private func holdOriginalQueue(in fixture: Fixture) -> DispatchSemaphore {
+        let entered = expectation(description: "original Core context queue held")
+        let release = DispatchSemaphore(value: 0)
+        fixture.core.scope(for: RUMFeature.self).context { @Sendable _ in
+            entered.fulfill()
+            XCTAssertEqual(release.wait(timeout: .now() + 10), .success)
+        }
+        wait(for: [entered], timeout: 2)
+        return release
+    }
+
+    func testAuthoritativeAbsentSessionCannotBorrowLaterRepresentativeOnMonitorQueue() throws {
+        try requireOwnedOperations()
+        let fixture = try Fixture()
+        defer { fixture.tearDown() }
+        XCTAssertTrue(fixture.feature.isMultiSceneTrackingEnabled)
+        fixture.startView("original")
+        fixture.drain()
+        let absent = try fixture.capture("absent")
+        XCTAssertNil(absent.value.rumContext)
+        fixture.startView("later")
+        fixture.drain()
+        let later = try fixture.capture("later")
+        XCTAssertNotNil(later.value.rumContext)
+        let session = try XCTUnwrap(fixture.feature.monitor.applicationScope.activeSession)
+        let originalSessionID = session.sessionUUID
+        let viewsBefore = session.viewScopes.map(\.viewUUID)
+        let interactionBefore = session.lastInteractionTime
+        let storage = try XCTUnwrap(fixture.core.stores[RUMFeature.name]?.storage)
+        let eventsBefore = try fixture.bytes(in: storage)
+        let messagesBefore = fixture.receiver.messages.count
+        let release = holdOriginalQueue(in: fixture)
+        defer { release.signal() }
+
+        fixture.start("absent-public", capture: absent)
+        let step = RUMOperationStepVitalCommand.mockWith(
+            vitalId: "absent-queued",
+            name: "absent-queued",
+            operationKey: nil,
+            stepType: .start,
+            options: ProfilingOptions(sampleRate: 100),
+            time: fixture.clock.now
+        )
+        fixture.feature.monitor.process(command: RUMOwnedOperationStepCommand(
+            step: step,
+            origin: try XCTUnwrap(fixture.feature.operationOrigin),
+            capture: absent.value
+        ))
+        release.signal()
+        fixture.drain()
+
+        XCTAssertTrue(fixture.feature.monitor.applicationScope.activeSession === session)
+        XCTAssertEqual(session.sessionUUID, originalSessionID)
+        XCTAssertEqual(session.viewScopes.map(\.viewUUID), viewsBefore)
+        XCTAssertEqual(session.lastInteractionTime, interactionBefore)
+        XCTAssertEqual(try fixture.bytes(in: storage), eventsBefore)
+        XCTAssertEqual(fixture.receiver.messages.count, messagesBefore)
+
+        fixture.start("admitted", capture: later)
+        fixture.drain()
+        let event = try XCTUnwrap(try fixture.storedVitals(in: storage).last)
+        let message = try XCTUnwrap(fixture.receiver.messages.last)
+        XCTAssertEqual(event.vital.name, "admitted")
+        XCTAssertEqual(event.session.id, later.value.rumContext?.sessionID)
+        XCTAssertEqual(event.view.id, later.value.rumContext?.viewID)
+        XCTAssertTrue(message.ownership.origin === fixture.feature.operationOrigin)
+        XCTAssertEqual(message.ownership.sessionID, event.session.id)
+        XCTAssertEqual(fixture.receiver.messages.count, messagesBefore + 1)
+    }
+
+    func testQueuedOriginalOperationRefusesSameOwnerRegistryReplacementAndFreshRUMProgresses() throws {
+        try requireOwnedOperations()
+        let fixture = try Fixture()
+        defer { fixture.tearDown() }
+        fixture.startView("original")
+        fixture.drain()
+        let original = fixture.feature
+        let capture = try fixture.capture("original")
+        let origin = try XCTUnwrap(original.operationOrigin)
+        let owner = try XCTUnwrap(original.rumContextHandoffOwner)
+        let session = try XCTUnwrap(original.monitor.applicationScope.activeSession)
+        let interactionBefore = session.lastInteractionTime
+        let viewsBefore = session.viewScopes.map(\.viewUUID)
+        let originalStorage = try XCTUnwrap(fixture.core.stores[RUMFeature.name]?.storage)
+        let vitalsBefore = try fixture.storedVitals(in: originalStorage)
+        let replacementReceiver = OperationReceiver()
+        let messagesBefore = fixture.receiver.messages.count
+        XCTAssertTrue(origin.isCurrent)
+        let release = holdOriginalQueue(in: fixture)
+        defer { release.signal() }
+
+        fixture.start("stale-original", capture: capture, on: original)
+        try fixture.core.registerRUMContextHandoff(
+            feature: ReplacementFeature(messageReceiver: replacementReceiver),
+            owner: owner
+        )
+        XCTAssertNotNil(fixture.core.get(feature: ReplacementFeature.self))
+        XCTAssertNil(fixture.core.get(feature: RUMFeature.self))
+        XCTAssertTrue(owner.isValid)
+        XCTAssertFalse(origin.isCurrent)
+        release.signal()
+        fixture.drain()
+
+        XCTAssertTrue(original.monitor.applicationScope.activeSession === session)
+        XCTAssertEqual(session.lastInteractionTime, interactionBefore)
+        XCTAssertEqual(session.viewScopes.map(\.viewUUID), viewsBefore)
+        XCTAssertEqual(try fixture.storedVitals(in: originalStorage), vitalsBefore)
+        XCTAssertEqual(fixture.receiver.messages.count, messagesBefore)
+        XCTAssertTrue(replacementReceiver.messages.isEmpty)
+
+        fixture.core.deactivateRUMContextHandoff(owner: owner)
+        try RUM.enableOrThrow(with: fixture.configuration, in: fixture.core)
+        let replacement = try XCTUnwrap(fixture.core.get(feature: RUMFeature.self))
+        fixture.feature = replacement
+        let replacementOwner = try XCTUnwrap(replacement.rumContextHandoffOwner)
+        XCTAssertFalse(replacement === original)
+        XCTAssertFalse(replacementOwner === owner)
+        XCTAssertFalse(owner.isValid)
+        XCTAssertTrue(replacementOwner.isValid)
+        XCTAssertTrue(try XCTUnwrap(replacement.operationOrigin).isCurrent)
+        fixture.drain()
+        let replacementStorage = try XCTUnwrap(fixture.core.stores[RUMFeature.name]?.storage)
+        XCTAssertFalse(try fixture.storedVitals(in: replacementStorage).contains {
+            $0.vital.name == "stale-original"
+        })
+        fixture.startView("replacement")
+        fixture.drain()
+        let replacementCapture = try fixture.capture("replacement")
+        let replacementSession = try XCTUnwrap(replacement.monitor.applicationScope.activeSession)
+        fixture.start("replacement-admitted", capture: replacementCapture)
+        fixture.drain()
+        let event = try XCTUnwrap(try fixture.storedVitals(in: replacementStorage).last)
+        let message = try XCTUnwrap(fixture.receiver.messages.last)
+        XCTAssertTrue(replacement.monitor.applicationScope.activeSession === replacementSession)
+        XCTAssertEqual(event.vital.name, "replacement-admitted")
+        XCTAssertEqual(event.session.id, replacementCapture.value.rumContext?.sessionID)
+        XCTAssertEqual(event.view.id, replacementCapture.value.rumContext?.viewID)
+        XCTAssertTrue(message.ownership.origin === replacement.operationOrigin)
+        XCTAssertFalse(message.ownership.origin === origin)
+        XCTAssertEqual(message.ownership.sessionID, event.session.id)
+        XCTAssertEqual(fixture.receiver.messages.count, messagesBefore + 1)
+    }
+
+    func testQueuedOriginalOperationRefusesRetiredOwnerWithoutWritingOrChangingSession() throws {
+        try requireOwnedOperations()
+        let fixture = try Fixture()
+        defer { fixture.tearDown() }
+        fixture.startView("original")
+        fixture.drain()
+        let original = fixture.feature
+        let capture = try fixture.capture("original")
+        let origin = try XCTUnwrap(original.operationOrigin)
+        let session = try XCTUnwrap(original.monitor.applicationScope.activeSession)
+        let interactionBefore = session.lastInteractionTime
+        let viewsBefore = session.viewScopes.map(\.viewUUID)
+        let storage = try XCTUnwrap(fixture.core.stores[RUMFeature.name]?.storage)
+        let eventsBefore = try fixture.bytes(in: storage)
+        let messagesBefore = fixture.receiver.messages.count
+        let release = holdOriginalQueue(in: fixture)
+        defer { release.signal() }
+
+        fixture.start("stale-retired", capture: capture)
+        fixture.core.deactivateRUMContextHandoff(owner: capture.owner)
+        XCTAssertFalse(capture.owner.isValid)
+        XCTAssertFalse(origin.isCurrent)
+        release.signal()
+        fixture.drain()
+
+        XCTAssertTrue(original.monitor.applicationScope.activeSession === session)
+        XCTAssertEqual(session.lastInteractionTime, interactionBefore)
+        XCTAssertEqual(session.viewScopes.map(\.viewUUID), viewsBefore)
+        XCTAssertEqual(try fixture.bytes(in: storage), eventsBefore)
+        XCTAssertEqual(fixture.receiver.messages.count, messagesBefore)
+        XCTAssertTrue(fixture.core.get(feature: RUMFeature.self) === original)
+    }
+
+    func testFlagOffPublicOperationUsesLegacyEventAndMessage() throws {
+        try requireOwnedOperations()
+        let fixture = try Fixture(multiSceneTrackingEnabled: false)
+        defer { fixture.tearDown() }
+        let original = fixture.feature
+        XCTAssertFalse(original.isMultiSceneTrackingEnabled)
+        XCTAssertNil(original.operationOrigin)
+        XCTAssertNil(original.rumContextHandoffOwner)
+        let session = try XCTUnwrap(original.monitor.applicationScope.activeSession)
+        let storage = try XCTUnwrap(fixture.core.stores[RUMFeature.name]?.storage)
+        let vitalsBefore = try fixture.storedVitals(in: storage).count
+        let legacyBefore = fixture.receiver.legacyMessages.count
+        XCTAssertTrue(fixture.receiver.messages.isEmpty)
+
+        original.monitor.startOperation(
+            name: "legacy-first",
+            operationKey: nil,
+            attributes: [:],
+            options: ProfilingOptions(sampleRate: 100)
+        )
+        fixture.drain()
+
+        XCTAssertTrue(fixture.core.get(feature: RUMFeature.self) === original)
+        XCTAssertTrue(original.monitor.applicationScope.activeSession === session)
+        let vitals = try fixture.storedVitals(in: storage)
+        let event = try XCTUnwrap(vitals.last)
+        let message = try XCTUnwrap(fixture.receiver.legacyMessages.last)
+        XCTAssertEqual(vitals.count, vitalsBefore + 1)
+        XCTAssertEqual(event.vital.name, "legacy-first")
+        XCTAssertEqual(event.session.id, session.sessionUUID.toRUMDataFormat)
+        XCTAssertEqual(message.operation.id, event.vital.id)
+        XCTAssertEqual(message.operation.name, event.vital.name)
+        XCTAssertEqual(message.operation.stepType, .start)
+        XCTAssertEqual(fixture.receiver.legacyMessages.count, legacyBefore + 1)
+        XCTAssertTrue(fixture.receiver.messages.isEmpty)
+        XCTAssertNil(original.operationOrigin)
+        XCTAssertNil(original.rumContextHandoffOwner)
+    }
+
+    func testFirstSourceLessOperationUsesOriginalSDKInitializedSession() throws {
+        try requireOwnedOperations()
+        let fixture = try Fixture()
+        defer { fixture.tearDown() }
+        let original = fixture.feature
+        let owner = try XCTUnwrap(original.rumContextHandoffOwner)
+        let origin = try XCTUnwrap(original.operationOrigin)
+        let session = try XCTUnwrap(original.monitor.applicationScope.activeSession)
+        let sessionID = session.sessionUUID.toRUMDataFormat
+        let storage = try XCTUnwrap(fixture.core.stores[RUMFeature.name]?.storage)
+        let vitalsBefore = try fixture.storedVitals(in: storage).count
+        let ownedBefore = fixture.receiver.messages.count
+        let legacyBefore = fixture.receiver.legacyMessages.count
+        XCTAssertTrue(origin.isCurrent)
+        XCTAssertNil(RUMContextHandoff.captureValue(for: owner))
+
+        original.monitor.startOperation(
+            name: "source-less-first",
+            operationKey: nil,
+            attributes: [:],
+            options: ProfilingOptions(sampleRate: 100)
+        )
+        fixture.drain()
+
+        XCTAssertTrue(fixture.core.get(feature: RUMFeature.self) === original)
+        XCTAssertTrue(original.monitor.applicationScope.activeSession === session)
+        XCTAssertTrue(original.rumContextHandoffOwner === owner)
+        let vitals = try fixture.storedVitals(in: storage)
+        let event = try XCTUnwrap(vitals.last)
+        let message = try XCTUnwrap(fixture.receiver.messages.last)
+        XCTAssertEqual(vitals.count, vitalsBefore + 1)
+        XCTAssertEqual(event.vital.name, "source-less-first")
+        XCTAssertEqual(event.session.id, sessionID)
+        XCTAssertTrue(message.ownership.origin === origin)
+        XCTAssertTrue(message.ownership.origin.owner === owner)
+        XCTAssertEqual(message.ownership.sessionID, sessionID)
+        XCTAssertTrue(message.ownership.isValid)
+        XCTAssertEqual(fixture.receiver.messages.count, ownedBefore + 1)
+        XCTAssertEqual(fixture.receiver.legacyMessages.count, legacyBefore)
+    }
+}
+#endif

@@ -7,7 +7,7 @@
 #if !os(watchOS)
 
 import XCTest
-import DatadogInternal
+@_spi(Internal) import DatadogInternal
 import TestUtilities
 @testable import DatadogProfiling
 //swiftlint:disable duplicate_imports
@@ -38,6 +38,84 @@ final class DatadogProfilerTests: XCTestCase {
     }
 
     // MARK: - receive(message:from:)
+
+    func testOwnedOperationMessage_validAtQueueDrain_keepsOriginalAttributesWithoutStartingCustomProfiler() throws {
+        let dateProvider = DateProviderMock()
+        let fixture = OwnedProfilerQueueFixture(date: dateProvider.now)
+        let ownership = try fixture.ownership()
+        let profiler = customProfiler(dateProvider: dateProvider)
+        let message = fixture.start(ownership, attributes: [RUMCoreContext.IDs.sessionID: "original-session"])
+        XCTAssertTrue(ownership.isValid)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_CREATED)
+
+        XCTAssertFalse(profiler.receive(message: .payload(message), from: core))
+        flushQueue()
+
+        XCTAssertEqual(profiler.attributes[RUMCoreContext.IDs.sessionID] as? String, "original-session")
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_CREATED)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testOwnedOperationMessage_retiredWhileProfilerQueueIsPaused_hasNoEffectsAtDrain() throws {
+        let dateProvider = DateProviderMock()
+        let fixture = OwnedProfilerQueueFixture(date: dateProvider.now)
+        let ownership = try fixture.ownership()
+        let telemetry = TelemetryMock()
+        let profiler = customProfiler(telemetryController: .init(telemetry: telemetry), dateProvider: dateProvider)
+        let message = fixture.start(ownership, attributes: [RUMCoreContext.IDs.sessionID: "retired-session"])
+        let initialStatus = dd_profiler_get_status()
+        XCTAssertTrue(ownership.isValid)
+        profilerQueue.suspend()
+        var isSuspended = true
+        defer { if isSuspended { profilerQueue.resume() } }
+
+        XCTAssertFalse(profiler.receive(message: .payload(message), from: core))
+        fixture.origin.retire()
+        XCTAssertFalse(ownership.isValid)
+        profilerQueue.resume()
+        isSuspended = false
+        flushQueue()
+
+        XCTAssertTrue(profiler.attributes.isEmpty)
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertTrue(core.metadata.isEmpty)
+        XCTAssertTrue(telemetry.messages.isEmpty)
+        XCTAssertEqual(dd_profiler_get_status(), initialStatus)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testQueuedOwnedOperationMessage_doesNotRetainOriginalCoreFeatureOrMonitor() throws {
+        let dateProvider = DateProviderMock()
+        var fixture: OwnedProfilerQueueFixture? = OwnedProfilerQueueFixture(date: dateProvider.now)
+        let ownership = try XCTUnwrap(fixture).ownership()
+        let message = try XCTUnwrap(fixture).start(ownership, attributes: [RUMCoreContext.IDs.sessionID: "original-session"])
+        weak var originalCore: AnyObject? = fixture?.originalCore
+        weak var originalFeature: AnyObject? = fixture?.originalFeature
+        weak var originalMonitor: AnyObject? = fixture?.originalMonitor
+        let telemetry = TelemetryMock()
+        let profiler = customProfiler(telemetryController: .init(telemetry: telemetry), dateProvider: dateProvider)
+        let initialStatus = dd_profiler_get_status()
+        profilerQueue.suspend()
+        var isSuspended = true
+        defer { if isSuspended { profilerQueue.resume() } }
+
+        XCTAssertFalse(profiler.receive(message: .payload(message), from: core))
+        fixture = nil
+        XCTAssertNil(originalCore)
+        XCTAssertNil(originalFeature)
+        XCTAssertNil(originalMonitor)
+        XCTAssertFalse(ownership.isValid)
+        profilerQueue.resume()
+        isSuspended = false
+        flushQueue()
+
+        XCTAssertTrue(profiler.attributes.isEmpty)
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertTrue(core.metadata.isEmpty)
+        XCTAssertTrue(telemetry.messages.isEmpty)
+        XCTAssertEqual(dd_profiler_get_status(), initialStatus)
+        withExtendedLifetime(profiler) {}
+    }
 
     func testReceiveRUMEvents() {
         // Given
@@ -3243,4 +3321,42 @@ private extension DatadogProfilerTests {
         XCTFail("Condition was not met within \(timeout) seconds.", file: file, line: line)
     }
 }
+private final class OwnedProfilerQueueFixture {
+    private final class OriginalFeature: DatadogFeature, RUMOperationOriginProviding {
+        static let name = "rum"
+        let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
+        var operationOrigin: RUMOperationOrigin?
+        let monitor = NSObject()
+        func isOperationMonitor(_ monitor: AnyObject) -> Bool { self.monitor === monitor }
+        func isOperationSessionActive(start: Date, lastInteraction: Date) -> Bool { true }
+    }
+
+    private let feature = OriginalFeature()
+    private let core: SingleFeatureCoreMock<OriginalFeature>
+    let origin: RUMOperationOrigin
+    let date: Date
+    var originalCore: AnyObject { core }
+    var originalFeature: AnyObject { feature }
+    var originalMonitor: AnyObject { feature.monitor }
+
+    init(date: Date) {
+        self.date = date
+        core = SingleFeatureCoreMock(feature: feature)
+        origin = RUMOperationOrigin(core: core, owner: RUMContextHandoff.Owner())
+        feature.operationOrigin = origin
+        origin.attach(feature: feature, monitor: feature.monitor)
+        origin.setSession("original-session")
+        origin.updateSession("original-session", start: date, lastInteraction: date)
+    }
+
+    func ownership() throws -> RUMOperationOwnership {
+        try XCTUnwrap(origin.ownership(for: "original-session"))
+    }
+
+    func start(_ ownership: RUMOperationOwnership, attributes: [AttributeKey: AttributeValue]) -> OwnedOperationMessage {
+        OwnedOperationMessage(ownership: ownership, attributes: attributes,
+            operation: Vital(id: "original-operation", name: "operation", operationKey: nil, stepType: .start, date: date))
+    }
+}
+
 #endif // !os(watchOS)
