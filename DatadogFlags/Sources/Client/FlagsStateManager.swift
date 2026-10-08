@@ -11,7 +11,8 @@ import DatadogInternal
 ///
 /// Implement this protocol to observe state transitions. Listeners are called
 /// synchronously after the state is updated, so implementations should be
-/// fast and non-blocking.
+/// fast and non-blocking. A notification can be skipped if a newer state
+/// supersedes it before delivery to a listener.
 public protocol FlagsStateListener: AnyObject {
     /// Called when the client state changes.
     ///
