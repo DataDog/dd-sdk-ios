@@ -138,6 +138,7 @@ class RUMResourceScopeTests: XCTestCase {
 
     func testGivenStartedResource_whenResourceLoadingEnds_itSendsResourceEvent() throws {
         let hasReplay: Bool = .mockRandom()
+        let hasTimeseries: Bool = .mockRandom()
         var context = self.context
         context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
 
@@ -146,7 +147,7 @@ class RUMResourceScopeTests: XCTestCase {
         // Given
         let scope = RUMResourceScope.mockWith(
             parent: provider,
-            dependencies: dependencies,
+            dependencies: dependencies.replacing(timeseriesCollector: TimeseriesCollectorMock(hasData: hasTimeseries)),
             resourceKey: "/resource/1",
             startTime: currentTime,
             url: "https://foo.com/resource/1",
@@ -185,6 +186,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.session.id, scope.parent.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
         XCTAssertEqual(event.session.hasReplay, hasReplay)
+        XCTAssertEqual(event.session.hasTimeseries, hasTimeseries)
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.view.id, provider.context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.view.url, "FooViewController")
@@ -630,12 +632,13 @@ class RUMResourceScopeTests: XCTestCase {
     }
 
     func testGivenStartedResource_whenResourceLoadingEndsWithError_itSendsErrorEvent() throws {
+        let hasTimeseries: Bool = .mockRandom()
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
         let scope = RUMResourceScope.mockWith(
             parent: provider,
-            dependencies: dependencies,
+            dependencies: dependencies.replacing(timeseriesCollector: TimeseriesCollectorMock(hasData: hasTimeseries)),
             resourceKey: "/resource/1",
             startTime: currentTime,
             url: "https://foo.com/resource/1",
@@ -667,6 +670,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.application.id, scope.parent.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.parent.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
+        XCTAssertEqual(event.session.hasTimeseries, hasTimeseries)
         XCTAssertEqual(event.view.id, provider.context.activeViewID?.toRUMDataFormat)
         XCTAssertEqual(event.view.url, "FooViewController")
         XCTAssertEqual(event.view.name, "FooViewName")

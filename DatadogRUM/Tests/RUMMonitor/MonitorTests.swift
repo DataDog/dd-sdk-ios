@@ -309,6 +309,7 @@ private class TimeseriesCollectorStub: TimeseriesCollecting {
     func stop(sessionID: String) {}
     func noteActivity(sessionID: String, at time: Date) {}
     func flush() {}
+    func hasCollectedData(sessionID: String) -> Bool { false }
 }
 
 // MARK: - Convenience

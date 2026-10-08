@@ -363,6 +363,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             service: context.service,
             session: .init(
                 hasReplay: hasReplay,
+                hasTimeseries: false,
                 id: sessionUUID.toRUMDataFormat,
                 isActive: true,
                 isMainProcess: context.applicationBundleType != .iOSAppExtension,

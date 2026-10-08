@@ -1184,6 +1184,24 @@ public class FatalErrorContextNotifierMock: FatalErrorContextNotifying {
     public init() {}
 }
 
+public class TimeseriesCollectorMock: TimeseriesCollecting {
+    public weak var activeContextReader: RUMActiveContextReader?
+    /// The value returned by `hasCollectedData(sessionID:)` for any session.
+    public var hasData: Bool
+
+    public init(hasData: Bool = false) {
+        self.hasData = hasData
+    }
+
+    public func start(sessionID: String, applicationID: String, sessionType: RUMSessionType) {}
+    public func pause(sessionID: String) {}
+    public func resume(sessionID: String) {}
+    public func stop(sessionID: String) {}
+    public func noteActivity(sessionID: String, at time: Date) {}
+    public func flush() {}
+    public func hasCollectedData(sessionID: String) -> Bool { hasData }
+}
+
 extension RUMScopeDependencies {
     public static func mockAny() -> RUMScopeDependencies {
         return mockWith()
@@ -1290,7 +1308,8 @@ extension RUMScopeDependencies {
         featureFlags: RUM.Configuration.FeatureFlags? = nil,
         networkSettledMetricFactory: ((Date, String) -> TNSMetricTracking)? = nil,
         interactionToNextViewMetricFactory: (() -> INVMetricTracking)? = nil,
-        sessionType: RUMSessionType? = nil
+        sessionType: RUMSessionType? = nil,
+        timeseriesCollector: TimeseriesCollecting? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: self.featureScope,
@@ -1321,7 +1340,8 @@ extension RUMScopeDependencies {
             featureFlags: featureFlags ?? self.featureFlags,
             networkSettledMetricFactory: networkSettledMetricFactory ?? self.networkSettledMetricFactory,
             interactionToNextViewMetricFactory: interactionToNextViewMetricFactory ?? self.interactionToNextViewMetricFactory,
-            sessionType: sessionType
+            sessionType: sessionType,
+            timeseriesCollector: timeseriesCollector ?? self.timeseriesCollector
         )
     }
 }

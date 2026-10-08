@@ -260,6 +260,7 @@ private extension RUMViewUpdateEvent.Session {
     init(_ s: RUMViewEvent.Session) {
         self.init(
             hasReplay: s.hasReplay,
+            hasTimeseries: s.hasTimeseries,
             id: s.id,
             isActive: s.isActive,
             isMainProcess: s.isMainProcess,

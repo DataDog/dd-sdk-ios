@@ -194,6 +194,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,
+                hasTimeseries: dependencies.timeseriesCollector?.hasCollectedData(sessionID: self.context.sessionID.toRUMDataFormat) ?? false,
                 id: self.context.sessionID.toRUMDataFormat,
                 isMainProcess: context.applicationBundleType != .iOSAppExtension,
                 type: dependencies.sessionType

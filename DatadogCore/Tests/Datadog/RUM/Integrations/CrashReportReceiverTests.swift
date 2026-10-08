@@ -466,6 +466,8 @@ class CrashReportReceiverTests: XCTestCase {
         let view = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).first)
         XCTAssertEqual(error.session.isMainProcess, false)
         XCTAssertEqual(view.session.isMainProcess, false)
+        XCTAssertEqual(error.session.hasTimeseries, false)
+        XCTAssertEqual(view.session.hasTimeseries, false)
     }
 
     func testGivenCrashDuringAppLaunchAndNoSampling_whenSending_itIsDropped() throws {

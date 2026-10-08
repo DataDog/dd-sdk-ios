@@ -352,6 +352,7 @@ extension RUMViewEvent: RandomMockable {
         viewURL: String = .mockRandom(),
         crashCount: Int64? = Int64.mockRandom(),
         hasReplay: Bool? = Bool.random(),
+        hasTimeseries: Bool? = .random(),
         isMainProcess: Bool? = .random(),
         featureFlags: RUMViewEvent.FeatureFlags? = .init(featureFlagsInfo: ["flag-\(String.mockRandom())": Bool.mockRandom()])
     ) -> RUMViewEvent {
@@ -396,6 +397,7 @@ extension RUMViewEvent: RandomMockable {
             service: .mockRandom(),
             session: .init(
                 hasReplay: hasReplay,
+                hasTimeseries: hasTimeseries,
                 id: sessionID.uuidString.lowercased(),
                 isActive: true,
                 isMainProcess: isMainProcess,

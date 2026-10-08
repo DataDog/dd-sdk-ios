@@ -21,7 +21,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         super.setUp()
         appStateManager = AppStateManagerMock()
         mockParent = RUMContextProviderMock()
-        mockDependencies = .mockWith(appStateManager: appStateManager)
+        mockDependencies = .mockWith(appStateManager: appStateManager, timeseriesCollector: TimeseriesCollectorMock(hasData: true))
         mockWriter = FileWriterMock()
         mockContext = .mockWith(
             launchInfo: .mockWith(
@@ -79,6 +79,7 @@ final class RUMAppLaunchManagerTests: XCTestCase {
         XCTAssertEqual(event.vital.startupType, .coldStart)
 
         // Common properties
+        XCTAssertEqual(event.session.hasTimeseries, true)
         XCTAssertNil(event.account)
         XCTAssertNil(event.buildId)
         XCTAssertNotNil(event.buildVersion)
