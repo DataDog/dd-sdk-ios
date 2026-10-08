@@ -102,8 +102,10 @@ internal final class FlagsRepository {
     @ReadWriteLock
     private var repositoryState = RepositoryState()
 
-    /// Groups cached flags and disk-read lifecycle under one lock so a delayed initial read
-    /// cannot race with a network reconciliation that has already produced fresher flags.
+    /// Synchronizes assignments, request supersession, and disk-read lifecycle. Client-state transitions
+    /// acquire this lock before the state-manager lock; listeners and completions run after unlocking.
+    /// `contextUpdateID` and `flagsDataVersion` reject superseded results. Version zero means no success
+    /// or reset has superseded the initial disk read.
     private struct RepositoryState {
         var flagsData: FlagsData?
         var cachedFlagsData: FlagsData?
@@ -274,7 +276,8 @@ internal final class FlagsRepository {
         _ = group.wait(timeout: .now() + readTimeout)
     }
 
-    /// Executes the callback once the initial cache is available, or immediately if a fetch or reset superseded it.
+    /// Runs immediately if the initial read finished or a fetch or reset superseded it.
+    /// Otherwise queues the callback until then; queued callbacks run on a global utility queue.
     /// Used on fetch failure so cached flags can be used without delaying the network request.
     private func whenCacheReady(_ callback: PendingCacheReadCallback) {
         var shouldExecuteNow = false
@@ -333,9 +336,8 @@ internal final class FlagsRepository {
                 state.flagsData = matchingFlagsData
                 newState = .stale
             } else {
-                // Clear cached data to prevent cross-context flag leakage.
-                // Without this, flagAssignment() could return the previous
-                // user's flags while in .error state.
+                // Drop active flags to prevent cross-context leakage. Keep the fallback cache:
+                // it can only be selected by a later request with a matching context.
                 state.flagsData = nil
                 newState = .error
             }
