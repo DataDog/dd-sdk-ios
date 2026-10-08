@@ -14,7 +14,6 @@ all: env-check repo-setup dependencies templates
 		profiling-protoc \
 		dogfood-shopist dogfood-datadog-app \
 		release-build release-validate release-publish-github \
-		release-publish-podspec release-publish-internal-podspecs release-publish-dependent-podspecs \
 		set-ci-secret
 
 REPO_ROOT := $(PWD)
@@ -253,7 +252,6 @@ smoke-test-ios:
 smoke-test-ios-all:
 	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/spm"
 	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/spm-6"
-	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/cocoapods"
 	@$(MAKE) smoke-test-ios TEST_DIRECTORY="SmokeTests/xcframeworks"
 
 # Run smoke tests for specified TEST_DIRECTORY using tvOS Simulator
@@ -268,7 +266,6 @@ smoke-test-tvos:
 smoke-test-tvos-all:
 	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/spm"
 	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/spm-6"
-	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/cocoapods"
 	@$(MAKE) smoke-test-tvos TEST_DIRECTORY="SmokeTests/xcframeworks"
 
 # Run smoke tests for specified TEST_DIRECTORY using macOS (runs natively on the host)
@@ -528,32 +525,6 @@ release-publish-github:
 		 --artifacts-path "$(ARTIFACTS_PATH)" \
 		 --tag "$(GIT_TAG)"
 
-# Publish Cocoapods podspec to trunk
-release-publish-podspec:
-	@$(call require_param,PODSPEC_NAME)
-	@$(call require_param,ARTIFACTS_PATH)
-	@:$(eval DRY_RUN ?= 1)
-	@$(ECHO_TITLE) "make release-publish-podspec PODSPEC_NAME='$(PODSPEC_NAME)' ARTIFACTS_PATH='$(ARTIFACTS_PATH)' DRY_RUN='$(DRY_RUN)'"
-	DRY_RUN=$(DRY_RUN) ./tools/release/publish-podspec.sh \
-		 --artifacts-path "$(ARTIFACTS_PATH)" \
-		 --podspec-name "$(PODSPEC_NAME)"
-
-# Publish DatadogInternal podspec
-release-publish-internal-podspecs:
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogInternal.podspec"
-
-# Publish podspecs that depend on DatadogInternal
-release-publish-dependent-podspecs:
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogCore.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogLogs.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogTrace.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogRUM.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogSessionReplay.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogCrashReporting.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogWebViewTracking.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogFlags.podspec"
-	@$(MAKE) release-publish-podspec PODSPEC_NAME="DatadogProfiling.podspec"
-
 # Set ot update CI secrets
 set-ci-secret:
 	@$(ECHO_TITLE) "make set-ci-secret"
@@ -562,7 +533,6 @@ set-ci-secret:
 bump:
 	@read -p "Enter version number: " version;  \
 	echo "// GENERATED FILE: Do not edit directly\n\ninternal let __sdkVersion = \"$$version\"" > DatadogCore/Sources/Versioning.swift; \
-	./tools/podspec_bump_version.sh $$version; \
 	git add . ; \
 	git commit -m "Bumped version to $$version"; \
 	echo Bumped version to $$version

@@ -72,7 +72,7 @@ To add a new feature doc to the system, create a `*_FEATURE.md` file following t
 7. **Update the frontmatter** — runs on every skill invocation, **even when steps 4–6 were skipped**. A skill run is itself a verification event; bumping the frontmatter records that and keeps `verified_against_commit` pointing at a recently-pushed SHA (older SHAs may be unreachable on a fresh clone in CI). Set:
    - `tracked_files` → if it was missing or out of date, write the list derived in step 2
    - `verified_against_commit` → current HEAD commit hash (use `git rev-parse --short=9 HEAD`)
-   - `sdk_version` → current version from `DatadogCore.podspec`
+   - `sdk_version` → current version from `DatadogCore/Sources/Versioning.swift` (`__sdkVersion`)
    - `last_updated` → today's date (YYYY-MM-DD)
 
 8. **Update the registries** — when adding, renaming, or removing a `*_FEATURE.md` file, also update every place that hand-lists feature docs. `tools/feature-docs-verify.sh` enforces these and will fail CI otherwise:

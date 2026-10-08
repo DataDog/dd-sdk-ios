@@ -2,6 +2,51 @@
 
 This document outlines breaking changes and migration steps between major versions of the project.
 
+## Migration from 3.x to 4.0
+
+This section describes the main changes introduced in SDK `4.0` compared to `3.x`.
+
+### Product Modules
+
+Starting with `4.0`, CocoaPods and Carthage are no longer supported as installation methods.
+Swift Package Manager is the only supported package manager; the prebuilt XCFrameworks
+(`Datadog.xcframework.zip`, attached to every GitHub release) remain available as before, for
+projects that don't use a package manager at all. This follows the CocoaPods Trunk shutdown:
+`3.x` already stopped publishing new podspec versions and Carthage frameworks, while keeping the
+existing ones installable; `4.0` removes the podspecs and the Carthage toolchain from the
+repository entirely.
+
+<details>
+  <summary>SPM</summary>
+
+  ```swift
+  let package = Package(
+      ...
+      dependencies: [
+          .package(url: "https://github.com/DataDog/dd-sdk-ios", from: "4.0.0")
+      ],
+      targets: [
+          .target(
+              ...
+              dependencies: [
+                  .product(name: "DatadogCore", package: "dd-sdk-ios"),
+                  .product(name: "DatadogCrashReporting", package: "dd-sdk-ios"),
+                  .product(name: "DatadogFlags", package: "dd-sdk-ios"),
+                  .product(name: "DatadogLogs", package: "dd-sdk-ios"),
+                  .product(name: "DatadogProfiling", package: "dd-sdk-ios"),
+                  .product(name: "DatadogRUM", package: "dd-sdk-ios"),
+                  .product(name: "DatadogSessionReplay", package: "dd-sdk-ios"),
+                  .product(name: "DatadogTrace", package: "dd-sdk-ios"),
+                  .product(name: "DatadogWebViewTracking", package: "dd-sdk-ios"),
+              ]
+          ),
+      ]
+  )
+  ```
+</details>
+
+If you're on a pre-`4.0` version installed through CocoaPods or Carthage, this change does not remove anything retroactively. You can continue to install older versions the same way as before.
+
 ## Migration from 2.x to 3.0
 
 This section describes the main changes introduced in SDK `3.0` compared to `2.x`.

@@ -8,9 +8,6 @@
     <a href="https://swiftpackageindex.com/DataDog/dd-sdk-ios">
         <img src="https://img.shields.io/github/v/release/DataDog/dd-sdk-ios?style=flat&label=Swift%20Package%20Index&color=red" />
     </a>
-    <a href="https://cocoapods.org/pods/DatadogCore">
-        <img src="https://img.shields.io/github/v/release/DataDog/dd-sdk-ios?style=flat&label=CocoaPods" />
-    </a>
 </p>
 
 
