@@ -1462,11 +1462,12 @@ final class FlagsRepositoryTests: XCTestCase {
         }
     }
 
-    func testInitializationSuccessClaimsCompletionBeforeReadyListeners() throws {
+    func testInitializationSuccessDeliversCompletionBeforeReadyListeners() throws {
         // Given
         var fetchCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
         var timeoutAction: (() -> Void)?
         var callbackResult: Result<Void, FlagsError>?
+        var callbackWasDeliveredBeforeReadyListener = false
         let flagsRepository = FlagsRepository(
             clientName: .mockAny(),
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
@@ -1483,6 +1484,7 @@ final class FlagsRepositoryTests: XCTestCase {
         featureScope.dataStore.flush()
         let listener = ClosureFlagsStateListener { state in
             if state == .ready {
+                callbackWasDeliveredBeforeReadyListener = callbackResult != nil
                 timeoutAction?()
             }
         }
@@ -1493,8 +1495,40 @@ final class FlagsRepositoryTests: XCTestCase {
         try XCTUnwrap(fetchCompletion)(.success([:]))
 
         // Then
+        XCTAssertTrue(callbackWasDeliveredBeforeReadyListener)
         XCTAssertNoThrow(try XCTUnwrap(callbackResult).get())
         XCTAssertEqual(flagsRepository.state.currentState, .ready)
+    }
+
+    func testLaterContextUpdate_deliversTerminalStateListenersBeforeCompletion() {
+        for succeeds in [true, false] {
+            let featureScope = FeatureScopeMock()
+            var completions: [(Result<[String: FlagAssignment], FlagsError>) -> Void] = []
+            var events: [String] = []
+            let repository = makeRepository(
+                dataStore: featureScope.dataStore,
+                fetcher: FlagAssignmentsFetcherMock { _, completion in completions.append(completion) },
+                initializationTimeout: nil
+            )
+            featureScope.dataStore.flush()
+            defer { repository.flush() }
+            repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "user-A")) { _ in }
+            completions[0](.success([:]))
+            let expectedState: FlagsClientState = succeeds ? .ready : .error
+            let listener = ClosureFlagsStateListener { state in
+                if state == expectedState { events.append("listener") }
+            }
+            repository.state.addListener(listener)
+            events.removeAll()
+
+            repository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "user-B")) { _ in
+                events.append("completion")
+            }
+            completions[1](succeeds ? .success([:]) : .failure(.invalidResponse))
+
+            XCTAssertEqual(events, ["listener", "completion"])
+            XCTAssertEqual(repository.state.currentState, expectedState)
+        }
     }
 
     func testInitializationFailureClaimsCompletionBeforeStateListeners() throws {

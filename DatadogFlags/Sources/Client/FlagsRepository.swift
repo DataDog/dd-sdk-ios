@@ -415,7 +415,9 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 return
             }
 
-            // State is already updated; initialization must also complete before listeners.
+            // Publish state before completion: dd-openfeature-provider-swift reads `currentState`
+            // in its failure callback to detect stale assignments. With an initialization timeout,
+            // a completion still owned by this helper must also run before listeners.
             Self.executePendingDiskReadCallbacks(pendingCompletions)
             if initializationCompletion != nil {
                 operationCompletion?(result)
