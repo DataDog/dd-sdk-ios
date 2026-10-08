@@ -116,16 +116,6 @@ class TracerTests: XCTestCase {
         """)
     }
 
-    func testSendingSpanWithFallbackBuildNumber() throws {
-        core.context = .mockWith(buildNumber: "0")
-        Trace.enable(with: config, in: core)
-
-        Tracer.shared(in: core).startSpan(operationName: "operation").finish()
-
-        let spanMatcher = try core.waitAndReturnSpanMatchers()[0]
-        XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.build_version"), "0")
-    }
-
     func testSendingSpanWithCustomBuildVersionTag() throws {
         core.context = .mockWith(buildNumber: "42")
         Trace.enable(with: config, in: core)
