@@ -286,6 +286,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         }
 
         let span: OTSpan
+        var isStatsOnly = false
 
         /*
          Read the comments inside the modify(…) and interceptionDidStart(…) methods to know where
@@ -364,6 +365,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
                 sessionDecision: sessionDecision
             )
             let newSpanElements = passesPreCheck ? decidedSpanElements : decidedSpanElements.droppingTheSpan()
+            isStatsOnly = !passesPreCheck
 
             let context = DDSpanContext(
                 traceID: newSpanElements.traceID,
@@ -401,15 +403,26 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         span.setTag(key: OTTags.httpUrl, value: url)
         span.setTag(key: OTTags.httpMethod, value: method)
 
+        // A span that exists only for client-side stats gets just the error tag, which is enough for it to
+        // count as an error. `setError` would also send an error log, independently of the upload decision,
+        // for a request that is not traced.
+        let setError: (Error) -> Void = { error in
+            if isStatsOnly {
+                span.setTag(key: OTTags.error, value: true)
+            } else {
+                span.setError(error, file: "", line: 0)
+            }
+        }
+
         if let error = resourceCompletion.error {
-            span.setError(error, file: "", line: 0)
+            setError(error)
         }
 
         if let httpResponse = resourceCompletion.httpResponse {
             let httpStatusCode = httpResponse.statusCode
             span.setTag(key: OTTags.httpStatusCode, value: httpStatusCode)
             if let error = httpResponse.asClientError() {
-                span.setError(error, file: "", line: 0)
+                setError(error)
             }
 
             // Redaction is intentionally independent of error classification: a status code can be
