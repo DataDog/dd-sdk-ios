@@ -57,9 +57,13 @@ public final class objc_TraceConfiguration: NSObject {
         get { swiftConfig.customStatsEndpoint }
     }
 
-    public var statsComputationEnabled: Bool {
-        set { swiftConfig.statsComputationEnabled = newValue }
-        get { swiftConfig.statsComputationEnabled }
+    /// Experimental feature flags, keyed by flag name. Unknown names are ignored.
+    ///
+    /// Available flags:
+    /// - `client_side_stats`: `false` by default.
+    public var featureFlags: [String: Bool] {
+        set { swiftConfig.featureFlags = newValue.dd.featureFlags }
+        get { swiftConfig.featureFlags.dd.featureFlags }
     }
 }
 
@@ -287,5 +291,23 @@ public final class objc_Tracer: NSObject, objc_OTTracer {
         }
 
         return validTags
+    }
+}
+
+private extension DatadogExtension where ExtendedType == [String: Bool] {
+    var featureFlags: Trace.Configuration.FeatureFlags {
+        type.reduce(into: [:]) { result, element in
+            Trace.Configuration.FeatureFlag(rawValue: element.key).map {
+                result[$0] = element.value
+            }
+        }
+    }
+}
+
+private extension DatadogExtension where ExtendedType == Trace.Configuration.FeatureFlags {
+    var featureFlags: [String: Bool] {
+        type.reduce(into: [:]) { result, element in
+            result[element.key.rawValue] = element.value
+        }
     }
 }

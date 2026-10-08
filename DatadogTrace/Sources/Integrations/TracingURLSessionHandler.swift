@@ -58,6 +58,19 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         let samplingPriority: SamplingPriority
         let samplingDecisionMaker: SamplingMechanismType
         let baggage: BaggageItems
+
+        /// Returns a copy that drops the span, so it is aggregated by client-side stats but never uploaded.
+        func dropped() -> NewSpanElements {
+            NewSpanElements(
+                spanID: spanID,
+                parentSpanID: parentSpanID,
+                sampleRate: sampleRate,
+                traceID: traceID,
+                samplingPriority: .autoDrop,
+                samplingDecisionMaker: .agentRate,
+                baggage: baggage
+            )
+        }
     }
 
     private struct CapturedRUMContext {
@@ -272,6 +285,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         }
 
         let span: OTSpan
+        var isStatsOnly = false
 
         /*
          Read the comments inside the modify(…) and interceptionDidStart(…) methods to know where
@@ -317,9 +331,24 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
                     LazySpanWriteContext(featureScope: tracer.featureScope, rumContext: .some($0.rumContext))
                 }
             )
-        } else if Sampler(samplingRate: samplingRate).sample() {
-            // Span context may not be injected on iOS13+ if `URLSession.dataTask(...)` for `URL`
-            // was used to create the session task.
+        } else {
+            // No trace context was injected. Either the task never went through `modify(…)`, for example
+            // when `URLSession.dataTask(...)` was created from a `URL` on iOS 13+, or `modify(…)` injected
+            // nothing: with `.sampled` injection a dropped request gets no headers, and headers the request
+            // already carried are never overwritten. A sampler pre-check runs, then the decision below,
+            // and the span is uploaded only when both keep it.
+            //
+            // Client-side stats must not change which spans are uploaded, so the pre-check keeps its
+            // existing effect. When it rejects the request and stats is enabled, the span is still built:
+            // `DDSpan.finish()` hands every finished span to the stats concentrator and gates only the
+            // upload on the sampling decision, so skipping it would leave the request out of the
+            // aggregate, and `_dd.compute_stats=0` stops the backend from compensating. That span is
+            // dropped, so it is never uploaded.
+            let passesPreCheck = Sampler(samplingRate: samplingRate).sample()
+            guard passesPreCheck || tracer.onSpanFinished != nil else {
+                return
+            }
+
             // Reuse the session read when the request was modified, so the span is sampled by the same
             // session as its RUM tags even if the session changed while the request was in flight. A task
             // that never went through `modify(…)` has no captured state, so its session is read now.
@@ -329,11 +358,13 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             } else {
                 sessionDecision = currentSessionSnapshot()
             }
-            let newSpanElements = makeElementsForNewSpanContext(
+            let decidedSpanElements = makeElementsForNewSpanContext(
                 tracer: tracer,
                 parentSpanContext: interception.activeSpanContext as? DDSpanContext,
                 sessionDecision: sessionDecision
             )
+            let newSpanElements = passesPreCheck ? decidedSpanElements : decidedSpanElements.dropped()
+            isStatsOnly = !passesPreCheck
 
             let context = DDSpanContext(
                 traceID: newSpanElements.traceID,
@@ -355,8 +386,6 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
                     LazySpanWriteContext(featureScope: tracer.featureScope, rumContext: .some($0.rumContext))
                 }
             )
-        } else {
-            return
         }
 
         span.setTag(key: SpanTags.kind, value: "client")
@@ -373,15 +402,26 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         span.setTag(key: OTTags.httpUrl, value: url)
         span.setTag(key: OTTags.httpMethod, value: method)
 
+        // A span that exists only for client-side stats gets just the error tag, which is enough for it to
+        // count as an error. `setError` would also send an error log, independently of the upload decision,
+        // for a request that is not traced.
+        let setError: (Error) -> Void = { error in
+            if isStatsOnly {
+                span.setTag(key: OTTags.error, value: true)
+            } else {
+                span.setError(error, file: "", line: 0)
+            }
+        }
+
         if let error = resourceCompletion.error {
-            span.setError(error, file: "", line: 0)
+            setError(error)
         }
 
         if let httpResponse = resourceCompletion.httpResponse {
             let httpStatusCode = httpResponse.statusCode
             span.setTag(key: OTTags.httpStatusCode, value: httpStatusCode)
             if let error = httpResponse.asClientError() {
-                span.setError(error, file: "", line: 0)
+                setError(error)
             }
 
             // Redaction is intentionally independent of error classification: a status code can be

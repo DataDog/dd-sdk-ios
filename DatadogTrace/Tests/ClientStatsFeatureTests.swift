@@ -28,7 +28,7 @@ class ClientStatsFeatureTests: XCTestCase {
 
     func testWhenStatsComputationDisabled_thenClientStatsFeatureIsNotRegistered() {
         // Given
-        config.statsComputationEnabled = false
+        config.featureFlags[.clientSideStats] = false
 
         // When
         Trace.enable(with: config, in: core)
@@ -39,7 +39,7 @@ class ClientStatsFeatureTests: XCTestCase {
 
     func testWhenStatsComputationEnabled_thenClientStatsFeatureIsRegistered() {
         // Given
-        config.statsComputationEnabled = true
+        config.featureFlags[.clientSideStats] = true
 
         // When
         Trace.enable(with: config, in: core)
@@ -50,7 +50,7 @@ class ClientStatsFeatureTests: XCTestCase {
 
     func testWhenStatsComputationEnabled_thenTraceFeatureIsAlsoRegistered() {
         // Given
-        config.statsComputationEnabled = true
+        config.featureFlags[.clientSideStats] = true
 
         // When
         Trace.enable(with: config, in: core)
@@ -65,7 +65,7 @@ class ClientStatsFeatureTests: XCTestCase {
         let defaultConfig = Trace.Configuration()
 
         // Then
-        XCTAssertFalse(defaultConfig.statsComputationEnabled)
+        XCTAssertFalse(defaultConfig.featureFlags[.clientSideStats])
     }
 
     // MARK: - Consent
@@ -98,7 +98,7 @@ class ClientStatsFeatureTests: XCTestCase {
 
     func testWhenStatsComputationEnabled_thenRequestBuilderUsesStatsEndpoint() throws {
         // Given
-        config.statsComputationEnabled = true
+        config.featureFlags[.clientSideStats] = true
 
         // When
         Trace.enable(with: config, in: core)
@@ -111,7 +111,7 @@ class ClientStatsFeatureTests: XCTestCase {
     func testWhenStatsComputationEnabledWithCustomStatsEndpoint_thenRequestBuilderUsesCustomURL() throws {
         // Given
         let customURL: URL = .mockRandom()
-        config.statsComputationEnabled = true
+        config.featureFlags[.clientSideStats] = true
         config.customStatsEndpoint = customURL
 
         // When
@@ -126,7 +126,7 @@ class ClientStatsFeatureTests: XCTestCase {
     func testWhenStatsComputationEnabledWithCustomEndpointOnly_thenStatsRequestBuilderDoesNotUseIt() throws {
         // Given: customEndpoint is for spans, not stats. Setting it must not affect the stats request builder.
         let spansURL: URL = .mockRandom()
-        config.statsComputationEnabled = true
+        config.featureFlags[.clientSideStats] = true
         config.customEndpoint = spansURL
 
         // When
@@ -148,7 +148,7 @@ class ClientStatsFeatureTests: XCTestCase {
         let core = FeatureRegistrationPassthroughCoreMock()
         let dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
 
-        config.statsComputationEnabled = true
+        config.featureFlags[.clientSideStats] = true
         config.dateProvider = dateProvider
 
         Trace.enable(with: config, in: core)
@@ -171,7 +171,7 @@ class ClientStatsFeatureTests: XCTestCase {
         // Given
         let core = FeatureRegistrationPassthroughCoreMock()
         let dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
-        config.statsComputationEnabled = true
+        config.featureFlags[.clientSideStats] = true
         config.dateProvider = dateProvider
 
         Trace.enable(with: config, in: core)
@@ -199,7 +199,7 @@ class ClientStatsFeatureTests: XCTestCase {
         // Given
         let core = FeatureRegistrationPassthroughCoreMock()
         let dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
-        config.statsComputationEnabled = true
+        config.featureFlags[.clientSideStats] = true
         config.dateProvider = dateProvider
 
         Trace.enable(with: config, in: core)
@@ -218,7 +218,7 @@ class ClientStatsFeatureTests: XCTestCase {
     func testWhenFlushProducesNoBuckets_itDoesNotSendFlushMetric() throws {
         // Given
         let core = FeatureRegistrationPassthroughCoreMock()
-        config.statsComputationEnabled = true
+        config.featureFlags[.clientSideStats] = true
         config.dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
 
         Trace.enable(with: config, in: core)
@@ -235,7 +235,7 @@ class ClientStatsFeatureTests: XCTestCase {
         // Given
         let core = FeatureRegistrationPassthroughCoreMock()
         let dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
-        config.statsComputationEnabled = true
+        config.featureFlags[.clientSideStats] = true
         config.dateProvider = dateProvider
 
         Trace.enable(with: config, in: core)

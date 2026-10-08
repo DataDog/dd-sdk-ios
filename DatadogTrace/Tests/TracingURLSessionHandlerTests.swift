@@ -1752,4 +1752,375 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let actualSampled = try XCTUnwrap(traceContext?.samplingPriority.isKept)
         XCTAssertEqual(actualSampled, expectedSampled, "Cross-SDK vector: handler must match composed rate Knuth decision")
     }
+
+    // MARK: - Client-Side Stats coverage of automatic requests (RUM-17382)
+
+    func testGivenClientSideStatsEnabled_whenSampledOutInterceptionCompletes_itDeliversSnapshotAndDoesNotSendSpan() throws {
+        // Given: stats enabled and a trace sample rate that rejects every request.
+        // The stats hook is installed at tracer construction, mirroring how `Trace.enable(with:)`
+        // wires the concentrator.
+        let capture = SpanSnapshotCapture()
+        let statsTracer: DatadogTracer = .mockWith(core: core, onSpanFinished: capture.capture)
+        let handler = TracingURLSessionHandler(
+            tracer: statsTracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: 0,
+            firstPartyHosts: .init(["www.example.com": [.datadog]]),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
+        )
+
+        // No `modify(…)` call, so the interception carries no trace context and the handler has to
+        // build the span context itself. This is the path that used to return early.
+        let request: ImmutableRequest = .mockWith(httpMethod: "GET")
+        let interception = URLSessionTaskInterception(request: request, isFirstParty: true, trackingMode: .registeredDelegate)
+        interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
+        interception.register(
+            metrics: .mockWith(
+                fetch: .init(
+                    start: .mockDecember15th2019At10AMUTC(),
+                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 2)
+                )
+            )
+        )
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+
+        // Then: the span reaches the stats pipeline even though it is dropped for upload.
+        XCTAssertEqual(capture.snapshots.count, 1, "Sampled-out automatic request must still be aggregated")
+        let snapshot = try XCTUnwrap(capture.snapshots.first)
+        XCTAssertEqual(snapshot.operationName, "urlsession.request")
+        XCTAssertEqual(snapshot.spanKind, "client")
+        XCTAssertEqual(snapshot.httpStatusCode, 200)
+
+        let envelopes: [SpanEventsEnvelope] = core.events()
+        XCTAssertEqual(envelopes.count, 0, "Sampled-out automatic request must not be uploaded")
+    }
+
+    func testGivenClientSideStatsDisabled_whenSampledOutInterceptionCompletes_itDoesNotCreateSpan() throws {
+        // Given: stats disabled, so the early-return fast path must be preserved.
+        let expectation = expectation(description: "Do not open a write context")
+        expectation.isInverted = true
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: 0,
+            firstPartyHosts: .init(["www.example.com": [.datadog]]),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
+        )
+        XCTAssertNil(tracer.onSpanFinished)
+
+        let interception = URLSessionTaskInterception(request: .mockWith(httpMethod: "GET"), isFirstParty: true, trackingMode: .registeredDelegate)
+        interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
+        interception.register(
+            metrics: .mockWith(
+                fetch: .init(
+                    start: .mockDecember15th2019At10AMUTC(),
+                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 2)
+                )
+            )
+        )
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        let envelopes: [SpanEventsEnvelope] = core.events()
+        XCTAssertEqual(envelopes.count, 0)
+    }
+
+    func testGivenRequestsThatSkippedModify_whenClientSideStatsIsEnabled_itUploadsThemAtTheSameRate() throws {
+        // Given: tasks that never went through `modify(…)` decide at completion, after a sampler
+        // pre-check, so at 50% about a quarter of them are uploaded. Enabling client-side stats must
+        // aggregate all of them without changing that share. The bounds sit about 7 standard
+        // deviations from the expected 500 of 2000, so random sampling cannot make this flaky.
+        let requestCount = 2_000
+
+        func run(statsEnabled: Bool) -> (uploaded: Int, aggregated: Int) {
+            let runCore = PassthroughCoreMock()
+            let capture = SpanSnapshotCapture()
+            var onSpanFinished: (@Sendable (SpanSnapshot) -> Void)?
+            if statsEnabled {
+                onSpanFinished = { capture.capture($0) }
+            }
+            let tracer: DatadogTracer = .mockWith(core: runCore, onSpanFinished: onSpanFinished) // the handler holds it weakly
+            let handler = TracingURLSessionHandler(
+                tracer: tracer,
+                contextReceiver: ContextMessageReceiver(),
+                samplingRate: 50,
+                firstPartyHosts: .init(["www.example.com": [.datadog]]),
+                traceContextInjection: .sampled,
+                telemetry: NOPTelemetry()
+            )
+            for index in 0..<requestCount {
+                let interception = makeCompletedInterception(path: "\(index)")
+                handler.interceptionDidStart(interception: interception, capturedStates: [])
+                handler.interceptionDidComplete(interception: interception)
+            }
+            let uploaded = (runCore.events() as [SpanEventsEnvelope]).flatMap(\.spans).count
+            return (uploaded, capture.snapshots.count)
+        }
+
+        // When
+        let withoutStats = run(statsEnabled: false)
+        let withStats = run(statsEnabled: true)
+
+        // Then
+        XCTAssertTrue((350...650).contains(withoutStats.uploaded), "Without stats: \(withoutStats.uploaded) uploaded")
+        XCTAssertTrue((350...650).contains(withStats.uploaded), "With stats: \(withStats.uploaded) uploaded, expected the same share")
+        XCTAssertEqual(withStats.aggregated, requestCount, "Every request is aggregated")
+    }
+
+    func testGivenKeptParentAndRequestThatSkippedModify_whenThePreCheckRejectsIt_itAggregatesItWithoutUploadingOrChangingTheParent() throws {
+        // Given: a 0% rate, so the pre-check rejects the task, under a kept parent.
+        let capture = SpanSnapshotCapture()
+        let statsTracer: DatadogTracer = .mockWith(core: core, onSpanFinished: capture.capture)
+        let handler = TracingURLSessionHandler(
+            tracer: statsTracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: 0,
+            firstPartyHosts: .init(["www.example.com": [.datadog]]),
+            traceContextInjection: .sampled,
+            telemetry: NOPTelemetry()
+        )
+        let parent = statsTracer.startRootSpan(operationName: "parent", customSampleRate: 100).context.dd
+        XCTAssertTrue(parent.samplingDecision.samplingPriority.isKept)
+        let interception = makeCompletedInterception()
+        interception.register(activeSpanContext: parent)
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+
+        // Then
+        XCTAssertEqual(capture.snapshots.count, 1, "The request is aggregated")
+        XCTAssertTrue((core.events() as [SpanEventsEnvelope]).isEmpty, "The pre-check rejected it, so it is not uploaded")
+        XCTAssertTrue(parent.samplingDecision.samplingPriority.isKept, "The parent's own decision is unchanged")
+    }
+
+    func testGivenDroppedParentAndRequestThatSkippedModify_whenThePreCheckKeepsIt_itInheritsTheDropWithOrWithoutStats() throws {
+        for statsEnabled in [false, true] {
+            // Given: a 100% rate, so the pre-check keeps the task, under a dropped parent.
+            let runCore = PassthroughCoreMock()
+            let capture = SpanSnapshotCapture()
+            var onSpanFinished: (@Sendable (SpanSnapshot) -> Void)?
+            if statsEnabled {
+                onSpanFinished = { capture.capture($0) }
+            }
+            let tracer: DatadogTracer = .mockWith(core: runCore, onSpanFinished: onSpanFinished)
+            let handler = TracingURLSessionHandler(
+                tracer: tracer,
+                contextReceiver: ContextMessageReceiver(),
+                samplingRate: 100,
+                firstPartyHosts: .init(["www.example.com": [.datadog]]),
+                traceContextInjection: .sampled,
+                telemetry: NOPTelemetry()
+            )
+            let parent = tracer.startRootSpan(operationName: "parent", customSampleRate: 0).context.dd
+            let interception = makeCompletedInterception()
+            interception.register(activeSpanContext: parent)
+
+            // When
+            handler.interceptionDidComplete(interception: interception)
+
+            // Then
+            XCTAssertTrue((runCore.events() as [SpanEventsEnvelope]).isEmpty, "stats \(statsEnabled): the parent's drop is inherited")
+            XCTAssertEqual(capture.snapshots.count, statsEnabled ? 1 : 0, "stats \(statsEnabled): aggregated only with stats")
+            XCTAssertFalse(parent.samplingDecision.samplingPriority.isKept, "stats \(statsEnabled): the parent's own decision is unchanged")
+        }
+    }
+
+    func testGivenSampledInjection_whenClientSideStatsIsEnabled_itUploadsModifiedRequestsAtTheSameRate() throws {
+        // At 50% without a RUM session, `modify(…)` keeps half of the requests and injects them. The other
+        // half get no headers, then pass the pre-check and a new decision at completion, so a quarter of
+        // those are uploaded too: about 62.5% in total, 1250 of 2000. The bounds sit about 7 standard
+        // deviations away, so random sampling cannot make this flaky.
+        let withoutStats = runModifiedRequests(count: 2_000, samplingRate: 50, existingHeaders: false, statsEnabled: false)
+        let withStats = runModifiedRequests(count: 2_000, samplingRate: 50, existingHeaders: false, statsEnabled: true)
+
+        XCTAssertTrue((1_100...1_400).contains(withoutStats.uploaded.count), "Without stats: \(withoutStats.uploaded.count) uploaded")
+        XCTAssertTrue((1_100...1_400).contains(withStats.uploaded.count), "With stats: \(withStats.uploaded.count) uploaded, expected the same share")
+        for run in [withoutStats, withStats] {
+            XCTAssertTrue(
+                run.keptAtRequestTime.isSubset(of: Set(run.uploaded.map(\.traceID))),
+                "Every request kept at request time is uploaded under its injected trace ID"
+            )
+        }
+        XCTAssertEqual(withStats.aggregated, 2_000, "Every request is aggregated")
+    }
+
+    func testGivenExistingTraceHeaders_whenClientSideStatsIsEnabled_itUploadsModifiedRequestsAtTheSameRate() throws {
+        // Headers the request already carries are never overwritten, so `modify(…)` injects nothing and
+        // completion decides after the pre-check: at 50%, about a quarter, 500 of 2000, are uploaded.
+        let withoutStats = runModifiedRequests(count: 2_000, samplingRate: 50, existingHeaders: true, statsEnabled: false)
+        let withStats = runModifiedRequests(count: 2_000, samplingRate: 50, existingHeaders: true, statsEnabled: true)
+
+        XCTAssertTrue(withoutStats.keptAtRequestTime.isEmpty, "Nothing is injected over existing headers")
+        XCTAssertTrue((350...650).contains(withoutStats.uploaded.count), "Without stats: \(withoutStats.uploaded.count) uploaded")
+        XCTAssertTrue((350...650).contains(withStats.uploaded.count), "With stats: \(withStats.uploaded.count) uploaded, expected the same share")
+        XCTAssertEqual(withStats.aggregated, 2_000, "Every request is aggregated")
+    }
+
+    func testGivenExistingTraceHeadersAndKeptParent_whenThePreCheckRejectsTheRequest_itIsNotUploadedWithOrWithoutStats() throws {
+        for statsEnabled in [false, true] {
+            let result = runModifiedRequestUnderKeptParent(samplingRate: 0, statsEnabled: statsEnabled)
+            XCTAssertEqual(result.uploadedRequestSpans, 0, "stats \(statsEnabled): the pre-check rejected it")
+            XCTAssertEqual(result.aggregated, statsEnabled ? 1 : 0, "stats \(statsEnabled): aggregated only with stats")
+            XCTAssertTrue(result.parentStillKept, "stats \(statsEnabled): the parent's own decision is unchanged")
+        }
+    }
+
+    func testGivenExistingTraceHeadersAndKeptParent_whenThePreCheckKeepsTheRequest_itIsUploadedWithOrWithoutStats() throws {
+        for statsEnabled in [false, true] {
+            let result = runModifiedRequestUnderKeptParent(samplingRate: 100, statsEnabled: statsEnabled)
+            XCTAssertEqual(result.uploadedRequestSpans, 1, "stats \(statsEnabled): the parent's keep is inherited")
+            XCTAssertEqual(result.aggregated, statsEnabled ? 1 : 0, "stats \(statsEnabled): aggregated only with stats")
+            XCTAssertTrue(result.parentStillKept, "stats \(statsEnabled): the parent's own decision is unchanged")
+        }
+    }
+
+    func testGivenStatsOnlySpanForAFailedRequest_whenItCompletes_itCountsTheErrorWithoutSendingALog() throws {
+        // At 0% the pre-check rejects the request, so its span exists only for client-side stats and is
+        // never uploaded. It must still count as an error, but `setError` would also send an error log,
+        // which a request that is not traced must not do.
+        let transportError = runFailedRequest(samplingRate: 0, statusCode: 200, error: ErrorMock("network"))
+        let clientError = runFailedRequest(samplingRate: 0, statusCode: 404, error: nil)
+
+        for (name, result) in [("transport error", transportError), ("client error", clientError)] {
+            XCTAssertEqual(result.logsSent, 0, "\(name): no log for a span that is never uploaded")
+            XCTAssertEqual(result.aggregatedErrors, 1, "\(name): the request still counts as an error")
+        }
+    }
+
+    func testGivenUploadedSpanForAFailedRequest_whenItCompletes_itStillSendsTheErrorLog() throws {
+        // Control for the test above: at 100% the span is uploaded and keeps its error log.
+        let result = runFailedRequest(samplingRate: 100, statusCode: 404, error: nil)
+
+        XCTAssertEqual(result.logsSent, 1)
+        XCTAssertEqual(result.aggregatedErrors, 1)
+    }
+
+    /// Completes one failed request that never went through `modify(…)`, with client-side stats enabled,
+    /// and counts the error logs it sends and the errors it aggregates.
+    private func runFailedRequest(samplingRate: SampleRate, statusCode: Int, error: Error?) -> (logsSent: Int, aggregatedErrors: Int) {
+        var logsSent = 0
+        let runCore = PassthroughCoreMock(
+            messageReceiver: FeatureMessageReceiverMock { message in
+                if case .payload(let payload) = message, payload is LogMessage {
+                    logsSent += 1
+                }
+            }
+        )
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith( // the handler holds it weakly
+            core: runCore,
+            loggingIntegration: TracingWithLoggingIntegration(core: runCore, service: "app", networkInfoEnabled: false),
+            onSpanFinished: { capture.capture($0) }
+        )
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: samplingRate,
+            firstPartyHosts: .init(["www.example.com": [.datadog]]),
+            traceContextInjection: .sampled,
+            telemetry: NOPTelemetry()
+        )
+        let interception = URLSessionTaskInterception(
+            request: .mockWith(url: URL(string: "https://www.example.com/request")!),
+            isFirstParty: true,
+            trackingMode: .registeredDelegate
+        )
+        interception.register(response: .mockResponseWith(statusCode: statusCode), error: error)
+        interception.register(metrics: makeMetrics())
+
+        handler.interceptionDidStart(interception: interception, capturedStates: [])
+        handler.interceptionDidComplete(interception: interception)
+
+        return (logsSent, capture.snapshots.filter(\.isError).count)
+    }
+
+    /// Sends `count` requests through `modify(…)`, `interceptionDidStart(…)` and `interceptionDidComplete(…)`
+    /// with `.sampled` injection and no RUM session, registering a trace only when `modify(…)` returned one,
+    /// as network instrumentation does.
+    private func runModifiedRequests(
+        count: Int,
+        samplingRate: SampleRate,
+        existingHeaders: Bool,
+        statsEnabled: Bool
+    ) -> (keptAtRequestTime: Set<TraceID>, uploaded: [SpanEvent], aggregated: Int) {
+        let runCore = PassthroughCoreMock()
+        let capture = SpanSnapshotCapture()
+        var onSpanFinished: (@Sendable (SpanSnapshot) -> Void)?
+        if statsEnabled {
+            onSpanFinished = { capture.capture($0) }
+        }
+        let tracer: DatadogTracer = .mockWith(core: runCore, onSpanFinished: onSpanFinished) // the handler holds it weakly
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: samplingRate,
+            firstPartyHosts: .init(["www.example.com": [.datadog]]),
+            traceContextInjection: .sampled,
+            telemetry: NOPTelemetry()
+        )
+
+        var keptAtRequestTime: Set<TraceID> = []
+        for index in 0..<count {
+            let (_, trace, state) = handler.modify(
+                request: makeRequest(path: "\(index)", withExistingDatadogHeaders: existingHeaders),
+                headerTypes: [.datadog],
+                networkContext: nil
+            )
+            let interception = makeCompletedInterception(path: "\(index)")
+            if let trace {
+                keptAtRequestTime.insert(trace.traceID)
+                interception.register(trace: trace)
+            }
+            handler.interceptionDidStart(interception: interception, capturedStates: [state].compactMap { $0 })
+            handler.interceptionDidComplete(interception: interception)
+        }
+        let uploaded = (runCore.events() as [SpanEventsEnvelope]).flatMap(\.spans)
+        return (keptAtRequestTime, uploaded, capture.snapshots.count)
+    }
+
+    /// Sends one request that already carries trace headers through the handler while a kept span is active.
+    private func runModifiedRequestUnderKeptParent(
+        samplingRate: SampleRate,
+        statsEnabled: Bool
+    ) -> (uploadedRequestSpans: Int, aggregated: Int, parentStillKept: Bool) {
+        let runCore = PassthroughCoreMock()
+        let capture = SpanSnapshotCapture()
+        var onSpanFinished: (@Sendable (SpanSnapshot) -> Void)?
+        if statsEnabled {
+            onSpanFinished = { capture.capture($0) }
+        }
+        let tracer: DatadogTracer = .mockWith(core: runCore, onSpanFinished: onSpanFinished) // the handler holds it weakly
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: samplingRate,
+            firstPartyHosts: .init(["www.example.com": [.datadog]]),
+            traceContextInjection: .sampled,
+            telemetry: NOPTelemetry()
+        )
+        let parent = tracer.startRootSpan(operationName: "parent", customSampleRate: 100).setActive()
+        defer { parent.finish() }
+
+        let (_, trace, state) = handler.modify(
+            request: makeRequest(withExistingDatadogHeaders: true),
+            headerTypes: [.datadog],
+            networkContext: nil
+        )
+        XCTAssertNil(trace, "Nothing is injected over existing headers")
+        let interception = makeCompletedInterception()
+        handler.interceptionDidStart(interception: interception, capturedStates: [state].compactMap { $0 })
+        handler.interceptionDidComplete(interception: interception)
+
+        let requestSpans = (runCore.events() as [SpanEventsEnvelope]).flatMap(\.spans).filter { $0.operationName == "urlsession.request" }
+        return (requestSpans.count, capture.snapshots.count, parent.context.dd.samplingDecision.samplingPriority.isKept)
+    }
 }
