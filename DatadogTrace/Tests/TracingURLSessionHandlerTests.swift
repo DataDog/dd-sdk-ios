@@ -1983,6 +1983,66 @@ class TracingURLSessionHandlerTests: XCTestCase {
         }
     }
 
+    func testGivenStatsOnlySpanForAFailedRequest_whenItCompletes_itCountsTheErrorWithoutSendingALog() throws {
+        // At 0% the pre-check rejects the request, so its span exists only for client-side stats and is
+        // never uploaded. It must still count as an error, but `setError` would also send an error log,
+        // which a request that is not traced must not do.
+        let transportError = runFailedRequest(samplingRate: 0, statusCode: 200, error: ErrorMock("network"))
+        let clientError = runFailedRequest(samplingRate: 0, statusCode: 404, error: nil)
+
+        for (name, result) in [("transport error", transportError), ("client error", clientError)] {
+            XCTAssertEqual(result.logsSent, 0, "\(name): no log for a span that is never uploaded")
+            XCTAssertEqual(result.aggregatedErrors, 1, "\(name): the request still counts as an error")
+        }
+    }
+
+    func testGivenUploadedSpanForAFailedRequest_whenItCompletes_itStillSendsTheErrorLog() throws {
+        // Control for the test above: at 100% the span is uploaded and keeps its error log.
+        let result = runFailedRequest(samplingRate: 100, statusCode: 404, error: nil)
+
+        XCTAssertEqual(result.logsSent, 1)
+        XCTAssertEqual(result.aggregatedErrors, 1)
+    }
+
+    /// Completes one failed request that never went through `modify(…)`, with client-side stats enabled,
+    /// and counts the error logs it sends and the errors it aggregates.
+    private func runFailedRequest(samplingRate: SampleRate, statusCode: Int, error: Error?) -> (logsSent: Int, aggregatedErrors: Int) {
+        var logsSent = 0
+        let runCore = PassthroughCoreMock(
+            messageReceiver: FeatureMessageReceiverMock { message in
+                if case .payload(let payload) = message, payload is LogMessage {
+                    logsSent += 1
+                }
+            }
+        )
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith( // the handler holds it weakly
+            core: runCore,
+            loggingIntegration: TracingWithLoggingIntegration(core: runCore, service: "app", networkInfoEnabled: false),
+            onSpanFinished: { capture.capture($0) }
+        )
+        let handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: samplingRate,
+            firstPartyHosts: .init(["www.example.com": [.datadog]]),
+            traceContextInjection: .sampled,
+            telemetry: NOPTelemetry()
+        )
+        let interception = URLSessionTaskInterception(
+            request: .mockWith(url: URL(string: "https://www.example.com/request")!),
+            isFirstParty: true,
+            trackingMode: .registeredDelegate
+        )
+        interception.register(response: .mockResponseWith(statusCode: statusCode), error: error)
+        interception.register(metrics: makeMetrics())
+
+        handler.interceptionDidStart(interception: interception, capturedStates: [])
+        handler.interceptionDidComplete(interception: interception)
+
+        return (logsSent, capture.snapshots.filter(\.isError).count)
+    }
+
     /// Sends `count` requests through `modify(…)`, `interceptionDidStart(…)` and `interceptionDidComplete(…)`
     /// with `.sampled` injection and no RUM session, registering a trace only when `modify(…)` returned one,
     /// as network instrumentation does.
