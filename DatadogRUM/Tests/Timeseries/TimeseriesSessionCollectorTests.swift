@@ -58,6 +58,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(event.application.id, "app-123")
         XCTAssertEqual(event.session.type, .user)
         XCTAssertEqual(event.source, .ios)
+        XCTAssertEqual(event.session.hasTimeseries, true)
         XCTAssertEqual(event.timeseries.name, "memory")
         XCTAssertEqual(event.timeseries.schema, "object-v2")
         XCTAssertEqual(event.timeseries.data.timestamps.count, 2)
@@ -98,6 +99,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(event.application.id, "app-123")
         XCTAssertEqual(event.session.type, .user)
         XCTAssertEqual(event.source, .ios)
+        XCTAssertEqual(event.session.hasTimeseries, true)
         XCTAssertEqual(event.timeseries.name, "cpu")
         XCTAssertEqual(event.timeseries.schema, "object-v2")
         XCTAssertEqual(event.timeseries.data.timestamps.count, 2)
@@ -670,6 +672,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         // Then
         XCTAssertTrue(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty)
         XCTAssertTrue(featureScope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self).isEmpty)
+        XCTAssertFalse(collector.hasCollectedData(sessionID: "session-abc"))
     }
 
     // MARK: - Session restart
@@ -693,6 +696,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { firstExpectation.fulfill() }
         collector.start(sessionID: "session-1", applicationID: "app-1", sessionType: .user)
         waitForExpectations(timeout: 2)
+        XCTAssertTrue(collector.hasCollectedData(sessionID: "session-1"))
 
         // Second session — start() resets buffers and updates metadata
         let secondExpectation = self.expectation(description: "second session samples")
@@ -711,6 +715,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         let events = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
         let lastEvent = try XCTUnwrap(events.last)
         XCTAssertEqual(lastEvent.session.id, "session-2")
+        XCTAssertTrue(collector.hasCollectedData(sessionID: "session-2"))
+        XCTAssertFalse(collector.hasCollectedData(sessionID: "session-1"))
     }
 
     // MARK: - Pause / resume

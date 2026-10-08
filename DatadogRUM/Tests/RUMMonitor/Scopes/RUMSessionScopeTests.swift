@@ -1962,6 +1962,10 @@ private class TimeseriesCollectorSpy: TimeseriesCollecting {
     func flush() {
         flushCallCount += 1
     }
+
+    func hasCollectedData(sessionID: String) -> Bool {
+        return false
+    }
 }
 
 extension RUMSessionScopeTests {
