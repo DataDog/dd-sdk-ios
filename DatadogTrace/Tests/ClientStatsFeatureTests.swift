@@ -205,23 +205,27 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertEqual(clientStats["Service"] as? String, "ios-app")
     }
 
-    func testWhenFlushing_itStampsBucketsWithTheCurrentDeploymentIdentity() throws {
-        // Given
+    func testWhenVersionChangesBeforeFlush_itReportsTheDeploymentTheSpanWasRecordedUnder() throws {
+        // Given: the span was recorded under 1.0.0, and the version changed to 2.0.0 before the flush,
+        // as `Datadog._internal.set(customVersion:)` can do.
         let core = FeatureRegistrationPassthroughCoreMock(
-            context: .mockWith(service: "ios-app", env: "staging", version: "1.2.3")
+            context: .mockWith(service: "ios-app", env: "staging", version: "2.0.0")
         )
         config.featureFlags[.clientSideStats] = true
         Trace.enable(with: config, in: core)
         let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
-        stats.concentrator.add(SpanSnapshot.mockWith(isTopLevel: true))
+        stats.concentrator.add(SpanSnapshot.mockWith(
+            isTopLevel: true,
+            deployment: .mockWith(env: "staging", version: "1.0.0", service: "ios-app")
+        ))
 
         // When
         stats.flush()
 
         // Then
         let bucket = try XCTUnwrap(core.exportedBuckets.first)
+        XCTAssertEqual(bucket.version, "1.0.0", "The flush-time version must not be reported")
         XCTAssertEqual(bucket.env, "staging")
-        XCTAssertEqual(bucket.version, "1.2.3")
         XCTAssertEqual(bucket.service, "ios-app")
     }
 
