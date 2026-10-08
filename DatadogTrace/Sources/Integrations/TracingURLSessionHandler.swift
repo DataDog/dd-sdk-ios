@@ -59,9 +59,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         let samplingDecisionMaker: SamplingMechanismType
         let baggage: BaggageItems
 
-        /// A copy whose sampling decision drops the span. The span gets its own decision from these
-        /// values, so a parent's `SamplingDecision`, which is shared by reference, is never changed.
-        func droppingTheSpan() -> NewSpanElements {
+        /// Returns a copy that drops the span, so it is aggregated by client-side stats but never uploaded.
+        func dropped() -> NewSpanElements {
             NewSpanElements(
                 spanID: spanID,
                 parentSpanID: parentSpanID,
@@ -367,7 +366,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
                 parentSpanContext: interception.activeSpanContext as? DDSpanContext,
                 sessionDecision: sessionDecision
             )
-            let newSpanElements = passesPreCheck ? decidedSpanElements : decidedSpanElements.droppingTheSpan()
+            let newSpanElements = passesPreCheck ? decidedSpanElements : decidedSpanElements.dropped()
             isStatsOnly = !passesPreCheck
 
             let context = DDSpanContext(
