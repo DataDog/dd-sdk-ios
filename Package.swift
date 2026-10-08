@@ -3,8 +3,14 @@
 import PackageDescription
 import Foundation
 
-let internalSwiftSettings: [SwiftSetting] = ProcessInfo.processInfo.environment["DD_BENCHMARK"] != nil ?
-    [.define("DD_BENCHMARK")] : []
+var internalSwiftSettings: [SwiftSetting] = []
+if ProcessInfo.processInfo.environment["DD_BENCHMARK"] != nil {
+    internalSwiftSettings.append(.define("DD_BENCHMARK"))
+}
+// Enable integration testing hooks when consuming the SDK as a local package.
+if ProcessInfo.processInfo.environment["DD_SDK_COMPILED_FOR_TESTING"] != nil {
+    internalSwiftSettings.append(.define("DD_SDK_COMPILED_FOR_TESTING"))
+}
 
 let package = Package(
     name: "Datadog",
@@ -182,7 +188,8 @@ let package = Package(
             dependencies: [
                 .target(name: "DatadogInternal"),
             ],
-            path: "DatadogWebViewTracking/Sources"
+            path: "DatadogWebViewTracking/Sources",
+            swiftSettings: internalSwiftSettings
         ),
         .testTarget(
             name: "DatadogWebViewTrackingTests",
