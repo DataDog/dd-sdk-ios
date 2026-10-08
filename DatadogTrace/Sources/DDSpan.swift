@@ -173,7 +173,11 @@ internal final class DDSpan: OTSpan, @unchecked Sendable {
             // the backend cannot correct because `_dd.compute_stats=0` suppresses its recomputation.
             if let onSpanFinished {
                 event = SpanSanitizer().sanitize(span: event)
-                onSpanFinished(SpanSnapshot(from: event, startTime: self.startTime))
+                onSpanFinished(SpanSnapshot(
+                    from: event,
+                    startTime: self.startTime,
+                    deployment: DeploymentIdentity(env: context.env, version: context.version, service: context.service)
+                ))
             }
 
             if shouldWriteSpan {
