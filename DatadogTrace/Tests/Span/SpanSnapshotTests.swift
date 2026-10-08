@@ -538,4 +538,22 @@ class SpanSnapshotTests: XCTestCase {
         XCTAssertEqual(snapshot.service, uploadedSpan.serviceName)
         XCTAssertEqual(snapshot.isError, uploadedSpan.isError)
     }
+
+    func testWhenVersionChangesBetweenSpans_eachSnapshotKeepsTheDeploymentItsUploadedSpanReports() throws {
+        let core = PassthroughCoreMock(context: .mockWith(service: "ios-app", env: "staging", version: "1.0.0"))
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: core, onSpanFinished: capture.capture)
+
+        tracer.startSpan(operationName: "first").finish()
+        core.context.version = "2.0.0"
+        tracer.startSpan(operationName: "second").finish()
+
+        let deployments = capture.snapshots.map(\.deployment)
+        XCTAssertEqual(deployments.map(\.version), ["1.0.0", "2.0.0"])
+        XCTAssertEqual(deployments.map(\.env), ["staging", "staging"])
+        XCTAssertEqual(deployments.map(\.service), ["ios-app", "ios-app"])
+
+        let uploadedVersions = (core.events() as [SpanEventsEnvelope]).flatMap(\.spans).map(\.applicationVersion)
+        XCTAssertEqual(uploadedVersions, deployments.map(\.version), "Stats and uploaded spans report the same version")
+    }
 }

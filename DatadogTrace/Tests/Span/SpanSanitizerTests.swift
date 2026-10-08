@@ -150,6 +150,6 @@ class SpanSanitizerTests: XCTestCase {
         XCTAssertEqual(sanitized.tags[SpanTags.kind], "client")
         XCTAssertEqual(sanitized.tags[SpanTags.topLevel], "1")
         XCTAssertEqual(sanitized.tags[SpanTags.measured], "1")
-        XCTAssertTrue(StatsConcentrator.isEligible(SpanSnapshot(from: sanitized, startTime: .mockAny())))
+        XCTAssertTrue(StatsConcentrator.isEligible(SpanSnapshot(from: sanitized, startTime: .mockAny(), deployment: .mockAny())))
     }
 }
