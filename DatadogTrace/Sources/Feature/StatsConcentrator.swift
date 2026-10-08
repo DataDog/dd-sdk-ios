@@ -11,7 +11,19 @@ import DatadogInternal
 
 /// The set of dimensions by which spans are grouped within a time bucket.
 /// Matches the Go reference `BucketsAggregationKey` in `aggregation.go`.
+/// The deployment a span was recorded under.
+///
+/// A stats payload reports one `env`, `version` and `service` for all of its buckets, so stats from
+/// different deployments are never aggregated together. The application version can change at
+/// runtime, for example through `Datadog._internal.set(customVersion:)`.
+internal struct DeploymentIdentity: Hashable, Encodable, Sendable {
+    let env: String
+    let version: String
+    let service: String
+}
+
 internal struct AggregationKey: Hashable, Sendable {
+    let deployment: DeploymentIdentity
     let service: String
     let operationName: String
     let resource: String
@@ -96,12 +108,12 @@ internal struct ExportedBucket: Codable, Sendable {
     let duration: UInt64
     let stats: [ExportedGroupedStats]
 
-    /// Deployment identity captured when the bucket was flushed to storage.
+    /// The deployment identity the bucket's spans were recorded under.
     ///
-    /// A bucket can sit on disk across an app upgrade, or across an `env`/`service` change, so the
-    /// uploaded payload must report the identity its spans were aggregated under rather than
-    /// whatever is current at upload time. Reporting the latter silently reattributes older
-    /// traffic to the new version, and `_dd.compute_stats=0` stops the backend from correcting it.
+    /// The version can change while spans are buffered or while the bucket sits on disk, so the
+    /// uploaded payload must report this identity rather than whatever is current at flush or
+    /// upload time. Reporting the latter silently reattributes traffic to another version, and
+    /// `_dd.compute_stats=0` stops the backend from correcting it.
     ///
     /// Optional so that buckets written by an earlier build still decode: `StatsRequestBuilder`
     /// falls back to the upload-time context for those rather than dropping the batch.
@@ -123,18 +135,6 @@ internal struct ExportedBucket: Codable, Sendable {
         self.env = env
         self.version = version
         self.service = service
-    }
-
-    /// Returns a copy carrying the deployment identity active when the bucket reached storage.
-    func stamped(env: String, version: String, service: String) -> ExportedBucket {
-        ExportedBucket(
-            start: start,
-            duration: duration,
-            stats: stats,
-            env: env,
-            version: version,
-            service: service
-        )
     }
 }
 
@@ -384,8 +384,12 @@ internal final class StatsConcentrator: @unchecked Sendable {
                 }
                 keysToRemove.append(ts)
 
-                let exportedStats: [ExportedGroupedStats] = bucket.groups.map { key, group in
-                    ExportedGroupedStats(
+                // Groups from different deployments can share a time window but never a payload, so
+                // each deployment gets its own exported bucket, reporting the identity its spans were
+                // recorded under.
+                var statsByDeployment: [DeploymentIdentity: [ExportedGroupedStats]] = [:]
+                for (key, group) in bucket.groups {
+                    statsByDeployment[key.deployment, default: []].append(ExportedGroupedStats(
                         service: key.service,
                         name: key.operationName,
                         resource: key.resource,
@@ -402,14 +406,17 @@ internal final class StatsConcentrator: @unchecked Sendable {
                         errorSummary: group.errorSummary.toProtoBytes(),
                         peerTags: group.peerTags,
                         serviceSource: key.serviceSource
-                    )
+                    ))
                 }
 
-                if !exportedStats.isEmpty {
+                for (deployment, exportedStats) in statsByDeployment {
                     flushed.append(ExportedBucket(
                         start: bucket.start,
                         duration: bucket.duration,
-                        stats: exportedStats
+                        stats: exportedStats,
+                        env: deployment.env,
+                        version: deployment.version,
+                        service: deployment.service
                     ))
                 }
             }
@@ -494,6 +501,7 @@ internal final class StatsConcentrator: @unchecked Sendable {
         let peerTagStrings = peerTags.map { "\($0.key):\($0.value)" }
 
         return AggregationKey(
+            deployment: snapshot.deployment,
             service: snapshot.service,
             operationName: snapshot.operationName,
             resource: snapshot.resource,

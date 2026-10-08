@@ -537,6 +537,24 @@ class StatsConcentratorTests: XCTestCase {
         XCTAssertNotEqual(hash1, hash2)
     }
 
+    func testGivenSpansFromTwoVersionsInOneWindow_whenFlushing_itExportsOneBucketPerVersion() throws {
+        let concentrator = makeConcentrator(now: 0)
+        concentrator.add(.mockWith(startTime: 1_000_000_000, duration: 1_000_000, isTopLevel: true, deployment: .mockWith(version: "1.0.0")))
+        concentrator.add(.mockWith(startTime: 2_000_000_000, duration: 1_000_000, isTopLevel: true, deployment: .mockWith(version: "2.0.0")))
+
+        let buckets = concentrator.flush(now: 100_000_000_000, force: true)
+
+        XCTAssertEqual(buckets.count, 2, "Each version gets its own bucket")
+        XCTAssertEqual(Set(buckets.map(\.start)).count, 1, "Both buckets cover the same time window")
+        let bucketsByVersion = Dictionary(uniqueKeysWithValues: buckets.map { ($0.version, $0) })
+        for version in ["1.0.0", "2.0.0"] {
+            let bucket = try XCTUnwrap(bucketsByVersion[version], "No bucket for \(version)")
+            XCTAssertEqual(bucket.stats.map(\.hits).reduce(0, +), 1, "\(version) counts only its own span")
+            XCTAssertEqual(bucket.env, "test-env")
+            XCTAssertEqual(bucket.service, "test-app")
+        }
+    }
+
     // MARK: - Stochastic Rounding
 
     func testStochasticRoundIntegerValues() {
