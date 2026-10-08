@@ -125,10 +125,3 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
         customIntakeURL ?? context.site.endpoint.appendingPathComponent("api/v0.2/stats")
     }
 }
-
-/// The deployment identity a set of stats buckets was aggregated under.
-private struct DeploymentIdentity: Hashable {
-    let env: String
-    let version: String
-    let service: String
-}
