@@ -54,6 +54,8 @@ internal struct SpanSnapshot: Encodable, Sendable {
     let peerTags: [String: String]
     /// The source of the service name override, from `_dd.svc_src` span meta tag.
     let serviceSource: String
+    /// The deployment the span was recorded under, from the same context its uploaded event uses.
+    let deployment: DeploymentIdentity
 }
 
 extension SpanSnapshot {
@@ -71,7 +73,7 @@ extension SpanSnapshot {
     ///   clock. Using the server-adjusted time here would bucket snapshots in the future
     ///   relative to the flush clock on devices whose clock is behind the server, delaying
     ///   or dropping stats. Stats stay on the device-local clock.
-    init(from event: SpanEvent, startTime: Date) {
+    init(from event: SpanEvent, startTime: Date, deployment: DeploymentIdentity) {
         let spanKind = event.tags[SpanTags.kind]
         let httpStatusCode: UInt32 = {
             guard let raw = event.tags[OTTags.httpStatusCode],
@@ -118,7 +120,8 @@ extension SpanSnapshot {
             isTopLevel: isTopLevel,
             isMeasured: isMeasured,
             peerTags: peerTags,
-            serviceSource: serviceSource
+            serviceSource: serviceSource,
+            deployment: deployment
         )
     }
 }
