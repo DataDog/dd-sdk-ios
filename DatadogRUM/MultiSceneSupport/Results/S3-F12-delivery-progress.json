@@ -576,7 +576,7 @@
       "rebuild_obligation": "Rebuild consolidated DatadogProfiler.swift, never restore removed AppLaunchProfiler.swift; standalone remains unqualified",
       "status": "PRIVATE_IMPLEMENTATION_SOURCE_REVIEWED_UNCOMPILED_UNQUALIFIED",
       "owning_record": "Results/S3-PR10-source-preparation.json",
-      "source_head": "471ae030e01ec654d5ececc0f11c89d220006922",
+      "source_head": "a7321c7e4eacf3f50b8cd63dd55d19901259701a",
       "obligation": "BEFORE_SLICE_MERGE",
       "whole_F12_closed": false,
       "qualification": {
@@ -586,12 +586,12 @@
         "integration": "NOT_QUALIFIED"
       },
       "remaining_assertion": "Exact per-step owner, duplicate keys distinct lifetime, targeted completion and released retained snapshots Off: Develop Operation/profiling keying and flow",
-      "next_action": "Primary: fresh PR11 four-only qualification after awake admission. Independent: prepare/implement the remaining source-matched PR10 controls within the existing16-family map, then qualify19 initial methods, Off, real queues/lifetime and supported compilers/platforms. Preserve accepted suites and original reviews.",
-      "evidence_source_scope": "At471ae030e, all16 applied source files and six target memberships pass independent review. Local unsigned fallback followed actual signing timeout. Original BLOCKs and missing-SPI retraction remain. All19 methods/16-family gaps/compiler/Off/lifetime/platform remain unqualified.",
+      "next_action": "Primary: PR11 four-only qualification after fresh explicit awake coverage and admission. Independent: prepare two actual Monitor A-to-B/message provenance controls for C04 in the existing16-family map; current30 discovered methods remain uncompiled. Then qualify the exact selected controls and remaining Off/lifetime/compiler/platform obligations. Preserve accepted suites and original reviews.",
+      "evidence_source_scope": "Production source/membership reviewed at471ae; eleven additional independently reviewed controls checkpointed at local a7321c7e4 after actual signing timeout. Thirty exact methods discovered across Core4/RUM10/Profiling16; none compiled/executed. Original BLOCKs remain. All16 families/Off/lifetime/compiler/platform/integration stay open.",
       "source_preparation_owner": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR10-source-preparation.json",
-        "sha256": "6993ffe001690363a2b1238e6a0d483ce83561e1f4e8a1292099e36ef79cce1a",
-        "size": 32548
+        "sha256": "bba4e4a3527364160a7eafe68a62d5bc93a3d15f24c1dc24e45c66512f7d0d83",
+        "size": 37374
       }
     },
     {
@@ -618,11 +618,12 @@
         "integration": "NOT_QUALIFIED"
       },
       "remaining_assertion": "Complete SDK source, signed four-control fixture and corrected seven-control drafts are source reviewed; all compiler/execution, lifecycle, complete Off and integration dimensions remain held.",
-      "next_action": "Bind the reviewed four-only hosted proposal to fresh MAIN/source/awake/device/output identities, verify built manifest before launch, then execute the four controls. Seven corrected source-reviewed controls remain private/unapplied; actual lifecycle and complete Off remain separate. Core12/13/four are unexecuted; no accepted PR7 repeat.",
+      "next_action": "After fresh explicitly authorized awake coverage, bind the reviewed four-only hosted proposal to current MAIN/source/device/output/process identities, verify built manifest before launch, then execute the four controls. Metadata refresh changes no execution verdict. Seven reviewed private controls and complete Off/lifecycle remain separate; no accepted PR7 repeat.",
       "evidence_source_scope": "Complete fifteen-file private ordinary/keyed foundation applied via supported Xcode tools; nine new source files have exact RUM membership. Four source findings corrected and independently re-reviewed. Formatting-only successor verified. Not typechecked, runtime tested, Off qualified or released. Original BLOCKs/stage/signing failures remain immutable.",
       "source_preparation_owner": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR11-source-preparation.json",
-        "sha256": "6b59b2f30f541c6d180eeda892d2146c2aad1b6657833086d73db327eed1cf9c"
+        "sha256": "eb13eb359d3d3143b42f5096558f4bb829a258922c0b86648d891f7ec63ce97d",
+        "size": 39956
       },
       "complete_foundation_design": {
         "state": "REVIEWED_PREPARATION_IMPLEMENTATION_READINESS_BLOCKED",
@@ -896,7 +897,7 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": "2026-10-07T20:47:04.775289+00:00",
+  "updated_at": "2026-10-08T00:05:21.748335+00:00",
   "dependency_build_attempts": 4,
   "dependency_component_qualifications": 4,
   "dependency_test_invocations": 4,

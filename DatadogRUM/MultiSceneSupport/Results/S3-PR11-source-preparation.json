@@ -4,7 +4,7 @@
   "gate": "S3:F12",
   "slice": "PR11",
   "state": "COMPLETE_PRIVATE_SOURCE_APPLIED_REVIEWED_UNCOMPILED_UNQUALIFIED",
-  "updated_at": "2026-10-07T15:28:49.717662+00:00",
+  "updated_at": "2026-10-08T00:05:21.748335+00:00",
   "owner": "SDK implementer + designated independent reviewer",
   "source_lineage": {
     "linked_base_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
@@ -64,7 +64,7 @@
     "Complete deployment15/minimumSwift6.2 and supported platform checks; actual minimum compiler remains unavailable. Preserve PR6 watch/final integration/UI weak-release and API/hardware holds."
   ],
   "shape_limit": "Same-lookup reuse does not qualify opaque-return/ViewBuilder structure, stored mode/collaborator size or retention, SwiftUI structural identity or Off allocations. Exact implementation and source-matched Off proof remain.",
-  "next_action": "Bind the reviewed four-only hosted proposal to fresh MAIN/source/awake/device/output identities, verify built manifest before launch, then execute the four controls. Seven corrected source-reviewed controls remain private/unapplied; actual lifecycle and complete Off remain separate. Core12/13/four are unexecuted; no accepted PR7 repeat.",
+  "next_action": "After fresh explicitly authorized awake coverage, bind the reviewed four-only hosted proposal to current MAIN/source/device/output/process identities, verify built manifest before launch, then execute the four controls. Metadata refresh changes no execution verdict. Seven reviewed private controls and complete Off/lifecycle remain separate; no accepted PR7 repeat.",
   "actions": {
     "sdk_edits": 0,
     "controls": 0,
@@ -495,6 +495,20 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/hosted-four-qualification-preparation/preparation-review-readback.json",
       "sha256": "715e87acf18e21e32b6e722a376008dbc1865719c6977674db74f796c5df7251"
     },
-    "limits": "Built scene manifest before launch; RunSomeTests has no skip-build input, so verify actual test product custody. Current MAIN/awake/device/clocks remain unissued."
+    "limits": "Built scene manifest before launch; RunSomeTests has no skip-build input, so verify actual test product custody. Current MAIN/awake/device/clocks remain unissued.",
+    "current_metadata_refresh": {
+      "actual_returns": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr11-foundation-contract-correction-20261007/hosted-four-qualification-preparation/oct7-metadata-refresh/actual-returns.json",
+        "sha256": "0a8ca5e920f48c2d786d3e6b39439aa900978730b7edb0e826b0e18cf65ffc48",
+        "size": 104724
+      },
+      "classification": "METADATA_ONLY_NO_BUILD_TEST_NATIVE",
+      "source_host_head": "4da720bb9af054b41d52841d670c4e95703a9f03",
+      "discovered_enabled_methods": 4,
+      "discovered_disabled_methods": 0,
+      "restored_state": "DatadogCore / My Mac",
+      "limits": "Live workspace identifiers/destinations are discovery facts, not reusable session admission; built manifest and exact products remain unchecked."
+    },
+    "awake_authority": "PENDING_EXPLICIT_DURATION_AUTHORIZATION; automatic approval review rejected inferred overnight caffeinate before effects; no sleep assertion/native/build/test started. Continue independent source work without user participation until07:00 Paris8October. Tooling/ENVIRONMENT.md owns the awake-duration policy."
   }
 }
