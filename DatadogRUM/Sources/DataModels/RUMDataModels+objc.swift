@@ -1119,6 +1119,10 @@ public class objc_RUMActionEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
     }
@@ -3189,6 +3193,10 @@ public class objc_RUMErrorEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
     }
@@ -4558,6 +4566,10 @@ public class objc_RUMLongTaskEventSession: NSObject {
 
     public var hasReplay: NSNumber? {
         root.swiftModel.session.hasReplay as NSNumber?
+    }
+
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
     }
 
     public var id: String {
@@ -6306,6 +6318,10 @@ public class objc_RUMResourceEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
     }
@@ -7220,6 +7236,10 @@ public class objc_RUMTimeseriesCpuEventSession: NSObject {
 
     public var hasReplay: NSNumber? {
         root.swiftModel.session.hasReplay as NSNumber?
+    }
+
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
     }
 
     public var id: String {
@@ -8205,6 +8225,10 @@ public class objc_RUMTimeseriesMemoryEventSession: NSObject {
 
     public var hasReplay: NSNumber? {
         root.swiftModel.session.hasReplay as NSNumber?
+    }
+
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
     }
 
     public var id: String {
@@ -9608,6 +9632,10 @@ public class objc_RUMViewEventSession: NSObject {
 
     public var hasReplay: NSNumber? {
         root.swiftModel.session.hasReplay as NSNumber?
+    }
+
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
     }
 
     public var id: String {
@@ -11831,6 +11859,10 @@ public class objc_RUMViewUpdateEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
     }
@@ -13850,6 +13882,10 @@ public class objc_RUMVitalAppLaunchEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
     }
@@ -15070,6 +15106,10 @@ public class objc_RUMVitalDurationEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
     }
@@ -16229,6 +16269,10 @@ public class objc_RUMVitalOperationStepEventSession: NSObject {
         root.swiftModel.session.hasReplay as NSNumber?
     }
 
+    public var hasTimeseries: NSNumber? {
+        root.swiftModel.session.hasTimeseries as NSNumber?
+    }
+
     public var id: String {
         root.swiftModel.session.id
     }
@@ -16959,6 +17003,16 @@ public class objc_TelemetryConfigurationEventTelemetryConfiguration: NSObject {
         .init(swift: root.swiftModel.telemetry.configuration.sessionPersistence)
     }
 
+    public var sessionReplayCanvasRecording: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.sessionReplayCanvasRecording = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.sessionReplayCanvasRecording as NSNumber? }
+    }
+
+    public var sessionReplayCanvasRecordingQuality: objc_TelemetryConfigurationEventTelemetryConfigurationSessionReplayCanvasRecordingQuality {
+        set { root.swiftModel.telemetry.configuration.sessionReplayCanvasRecordingQuality = newValue.toSwift }
+        get { .init(swift: root.swiftModel.telemetry.configuration.sessionReplayCanvasRecordingQuality) }
+    }
+
     public var sessionReplaySampleRate: NSNumber? {
         set { root.swiftModel.telemetry.configuration.sessionReplaySampleRate = newValue?.int64Value }
         get { root.swiftModel.telemetry.configuration.sessionReplaySampleRate as NSNumber? }
@@ -17415,6 +17469,33 @@ public enum objc_TelemetryConfigurationEventTelemetryConfigurationSessionPersist
     case localStorage
     case cookie
     case memory
+}
+
+@objc(DDTelemetryConfigurationEventTelemetryConfigurationSessionReplayCanvasRecordingQuality)
+@_spi(objc)
+public enum objc_TelemetryConfigurationEventTelemetryConfigurationSessionReplayCanvasRecordingQuality: Int {
+    internal init(swift: TelemetryConfigurationEvent.Telemetry.Configuration.SessionReplayCanvasRecordingQuality?) {
+        switch swift {
+        case nil: self = .none
+        case .low?: self = .low
+        case .medium?: self = .medium
+        case .high?: self = .high
+        }
+    }
+
+    internal var toSwift: TelemetryConfigurationEvent.Telemetry.Configuration.SessionReplayCanvasRecordingQuality? {
+        switch self {
+        case .none: return nil
+        case .low: return .low
+        case .medium: return .medium
+        case .high: return .high
+        }
+    }
+
+    case none
+    case low
+    case medium
+    case high
 }
 
 @objc(DDTelemetryConfigurationEventTelemetryConfigurationTraceContextInjection)
@@ -18274,4 +18355,4 @@ public class objc_TelemetryErrorEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/35fe66d7d178f38cc1f229946695a8b537ab4530
+// Generated from https://github.com/DataDog/rum-events-format/tree/59553d270aecf4b9cd9d520a9277e38b429fa6fe
