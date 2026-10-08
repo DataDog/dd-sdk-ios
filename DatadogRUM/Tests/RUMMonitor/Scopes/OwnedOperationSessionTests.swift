@@ -24,6 +24,7 @@ final class OwnedOperationSessionTests: XCTestCase {
         let core: SingleFeatureCoreMock<OriginalFeature>
         let origin: RUMOperationOrigin
         let session: RUMSessionScope
+        let parent = RUMContextProviderMock()
         let scope = FeatureScopeMock()
         let writer = FileWriterMock()
         let context = DatadogContext.mockAny()
@@ -53,7 +54,7 @@ final class OwnedOperationSessionTests: XCTestCase {
                 initialSessionUUID: base.initialSessionUUID, timeseriesCollector: base.timeseriesCollector,
                 operationOrigin: origin
             )
-            session = .mockWith(startTime: date, dependencies: dependencies)
+            session = .mockWith(parent: parent, startTime: date, dependencies: dependencies)
             origin.setSession(session.sessionUUID.toRUMDataFormat)
             origin.updateSession(session.sessionUUID.toRUMDataFormat, start: date, lastInteraction: date)
         }
@@ -127,5 +128,125 @@ final class OwnedOperationSessionTests: XCTestCase {
         }
         XCTAssertEqual(fixture.writer.events(ofType: RUMVitalOperationStepEvent.self).count, 2)
         XCTAssertTrue(fixture.ownedMessages.isEmpty)
+    }
+
+    func testCapturedStoppedViewKeepsRetainedOwnerOrNullWithoutBorrowingPeer() throws {
+        for retainsOriginal in [false, true] {
+            let fixture = Fixture()
+            let targetA = RUMCommandTarget.scene(.init(rawValue: "original"))
+            let targetB = RUMCommandTarget.scene(.init(rawValue: "peer"))
+            let start = RUMStartViewCommand(
+                time: fixture.date, identity: ViewIdentifier("original"),
+                name: "original", path: "original", globalAttributes: [:], attributes: [:],
+                instrumentationType: .manual, target: targetA
+            )
+            _ = fixture.session.process(command: start, context: fixture.context, writer: fixture.writer)
+            let original = try XCTUnwrap(fixture.session.viewScopes.first { $0.viewName == "original" })
+            let sessionID = try XCTUnwrap(UUID(uuidString: fixture.session.sessionUUID.toRUMDataFormat))
+            let selected = RUMCoreContext.mockWith(
+                applicationID: fixture.session.context.rumApplicationID,
+                sessionID: sessionID, viewID: original.viewUUID.toRUMDataFormat,
+                userActionID: nil, serverTimeOffset: 0, viewPath: original.viewPath,
+                viewName: original.viewName
+            )
+            let capture = RUMContextHandoff.CurrentValue(
+                rumContext: selected, sceneIdentifier: "original",
+                hasPendingUserAction: false, excludedUserActionID: nil
+            )
+            if retainsOriginal {
+                var resource = RUMStartResourceCommand.mockWith(
+                    resourceKey: "keep-original", time: fixture.date.addingTimeInterval(1)
+                )
+                resource.target = targetA
+                _ = fixture.session.process(command: resource, context: fixture.context, writer: fixture.writer)
+                XCTAssertEqual(original.resourceScopes.count, 1)
+            }
+            let peerStart = RUMStartViewCommand(
+                time: fixture.date.addingTimeInterval(2), identity: ViewIdentifier("peer"),
+                name: "peer", path: "peer", globalAttributes: [:], attributes: [:],
+                instrumentationType: .manual, target: targetB
+            )
+            _ = fixture.session.process(command: peerStart, context: fixture.context, writer: fixture.writer)
+            let peer = try XCTUnwrap(fixture.session.viewScopes.first { $0.viewName == "peer" })
+            var stop = RUMStopViewCommand.mockWith(
+                time: fixture.date.addingTimeInterval(3), identity: ViewIdentifier("original")
+            )
+            stop.target = targetA
+            _ = fixture.session.process(command: stop, context: fixture.context, writer: fixture.writer)
+            XCTAssertFalse(original.isActiveView)
+            XCTAssertEqual(fixture.session.viewScopes.contains { $0 === original }, retainsOriginal)
+            XCTAssertTrue(peer.isActiveView)
+            XCTAssertEqual(fixture.session.context.activeViewID, peer.viewUUID)
+            var action = RUMStartUserActionCommand.mockWith(
+                time: fixture.date.addingTimeInterval(4), name: "peer-action"
+            )
+            action.target = targetB
+            _ = fixture.session.process(command: action, context: fixture.context, writer: fixture.writer)
+            let peerAction = try XCTUnwrap(peer.userActionScope)
+            XCTAssertNil(original.userActionScope)
+            let ownership = try XCTUnwrap(fixture.origin.ownership(for: selected.sessionID))
+            XCTAssertTrue(ownership.isValid)
+            let viewsBefore = fixture.writer.events(ofType: RUMViewEvent.self).count
+            let peerViewsBefore = fixture.writer.events(ofType: RUMViewEvent.self)
+                .filter { $0.view.id == peer.viewUUID.toRUMDataFormat }.count
+            let retainedScopesBefore = fixture.session.viewScopes.map { ObjectIdentifier($0) }
+            let step = RUMOperationStepVitalCommand.mockWith(
+                vitalId: "captured-stopped", name: "captured-stopped",
+                stepType: .end, time: fixture.date.addingTimeInterval(5)
+            )
+
+            fixture.session.processOwnedOperation(
+                RUMOwnedOperationStepCommand(step: step, origin: fixture.origin, capture: capture),
+                context: fixture.context, writer: fixture.writer
+            )
+
+            let event = try XCTUnwrap(fixture.writer.events(ofType: RUMVitalOperationStepEvent.self).first)
+            XCTAssertEqual(fixture.writer.events(ofType: RUMVitalOperationStepEvent.self).count, 1)
+            let message = try XCTUnwrap(fixture.ownedMessages.first)
+            XCTAssertEqual(fixture.ownedMessages.count, 1)
+            XCTAssertEqual(event.session.id, selected.sessionID)
+            XCTAssertEqual(event.vital.id, "captured-stopped")
+            XCTAssertEqual(message.operation.id, event.vital.id)
+            XCTAssertTrue(message.ownership === ownership)
+            XCTAssertEqual(message.attributes[RUMCoreContext.IDs.sessionID] as? String, selected.sessionID)
+            XCTAssertNil(message.attributes[RUMCoreContext.IDs.userActionID])
+            if retainsOriginal {
+                XCTAssertEqual(event.view.id, original.viewUUID.toRUMDataFormat)
+                XCTAssertEqual(event.view.url, original.viewPath)
+                XCTAssertEqual(message.attributes[RUMCoreContext.IDs.viewID] as? [String], [original.viewUUID.toRUMDataFormat])
+                XCTAssertEqual(message.attributes[RUMCoreContext.IDs.viewName] as? [String], [original.viewName])
+                XCTAssertEqual(original.resourceScopes.count, 1)
+            } else {
+                XCTAssertEqual(event.view.id, RUMUUID.nullUUID.toRUMDataFormat)
+                XCTAssertNil(message.attributes[RUMCoreContext.IDs.viewID])
+                XCTAssertNil(message.attributes[RUMCoreContext.IDs.viewName])
+            }
+            XCTAssertTrue(peer.userActionScope === peerAction)
+            XCTAssertTrue(peer.isActiveView)
+            XCTAssertEqual(fixture.session.context.activeViewID, peer.viewUUID)
+            XCTAssertEqual(fixture.session.viewScopes.map { ObjectIdentifier($0) }, retainedScopesBefore)
+            XCTAssertEqual(fixture.writer.events(ofType: RUMViewEvent.self).count, viewsBefore)
+            XCTAssertEqual(fixture.writer.events(ofType: RUMViewEvent.self)
+                .filter { $0.view.id == peer.viewUUID.toRUMDataFormat }.count, peerViewsBefore)
+
+            let freshStep = RUMOperationStepVitalCommand.mockWith(
+                vitalId: "source-less-peer", name: "source-less-peer",
+                stepType: .end, time: fixture.date.addingTimeInterval(6)
+            )
+            fixture.session.processOwnedOperation(
+                RUMOwnedOperationStepCommand(step: freshStep, origin: fixture.origin, capture: nil),
+                context: fixture.context, writer: fixture.writer
+            )
+            XCTAssertEqual(fixture.writer.events(ofType: RUMVitalOperationStepEvent.self).count, 2)
+            XCTAssertEqual(fixture.ownedMessages.count, 2)
+            let freshEvent = try XCTUnwrap(fixture.writer.events(ofType: RUMVitalOperationStepEvent.self).last)
+            let freshMessage = try XCTUnwrap(fixture.ownedMessages.last)
+            XCTAssertEqual(freshEvent.view.id, peer.viewUUID.toRUMDataFormat)
+            XCTAssertEqual(freshEvent.vital.id, "source-less-peer")
+            XCTAssertEqual(freshMessage.attributes[RUMCoreContext.IDs.viewID] as? [String], [peer.viewUUID.toRUMDataFormat])
+            XCTAssertEqual(freshMessage.attributes[RUMCoreContext.IDs.userActionID] as? String,
+                           peerAction.actionUUID.toRUMDataFormat)
+            XCTAssertTrue(freshMessage.ownership === ownership)
+        }
     }
 }
