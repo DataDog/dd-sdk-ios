@@ -21,9 +21,15 @@ extension CALayerSnapshot {
 extension CALayerSnapshot.SemanticObservationMapping: CaseIterable {
     static let allCases: [Self] = [
         .embeddedContent,
+        .playerLayer,
+        .captureVideoPreviewLayer,
+        .sampleBufferDisplayLayer,
+        .metalLayer,
+        .layerHost,
         .gradient,
         .activityIndicator,
         .label,
+        .roundedRectShadow,
         .imageView,
         .textView,
         .textField,
@@ -36,6 +42,7 @@ extension CALayerSnapshot.SemanticObservationMapping: CaseIterable {
         .destinationOutView,
         .portal,
         .automaticCapsule,
+        .platformGlass,
         .glassGroup,
         .scrollPocket,
         .captureOnlyBackdrop,

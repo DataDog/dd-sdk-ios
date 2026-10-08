@@ -144,7 +144,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         presetSessionUUID: RUMUUID? = nil
     ) {
         // `presetSessionUUID` is created synchronously in `RUM.enable()` for the initial session, so the
-        // sampler derived from it is exposed through `RUMSessionSamplerProvider` before `RUM.enable()` returns.
+        // sampler derived from it is exposed through `SessionSampler` before `RUM.enable()` returns.
         // Every other session generates its ID here, as before.
         let sessionUUID = presetSessionUUID ?? dependencies.rumUUIDGenerator.generateUnique()
 

@@ -391,6 +391,25 @@ Benchmark Build:
   script:
     - make benchmark-build
 
+RUM FIT:
+  stage: smoke-test
+  rules:
+    - !reference [.test-pipeline-job, rules]
+  when: manual
+  allow_failure: true
+  interruptible: true
+  inherit:
+    variables:
+      - MAIN_BRANCH
+      - DEVELOP_BRANCH
+  trigger:
+    project: DataDog/rum-sdk-integration-test-framework
+    branch: main
+    strategy: depend
+  variables:
+    DYNAMIC_BUILD_RENDER_RULES: ios
+    TARGET_SHA_DD_SDK_IOS: $CI_COMMIT_SHA
+
 Smoke Tests (iOS):
   stage: smoke-test
   rules: 

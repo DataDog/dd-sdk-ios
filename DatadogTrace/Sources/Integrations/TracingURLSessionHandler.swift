@@ -20,6 +20,10 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         let activeSpan: OTSpan?
         /// Whether GraphQL headers were detected in the request
         let hasGraphQLHeaders: Bool
+        /// The RUM context resolved synchronously when the request was modified.
+        let rumContext: RUMCoreContext?
+        /// The RUM session snapshot read when the request was modified, or `nil` if no session was active.
+        let sessionDecision: SessionSamplingDecision?
     }
 
     /// Integration with Core Context.
@@ -35,11 +39,16 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     /// HTTP status codes whose `resource.name` span tag will be replaced with the status code string.
     /// Defaults to `Trace.Configuration.URLSessionTracking.defaultRedactedStatusCodes` for backward compatibility.
     let redactedStatusCodes: Set<Int>
+    /// Synchronous access to the RUM session.
+    ///
+    /// Safe to store: it holds the core weakly and resolves the RUM feature on every call, so a
+    /// session created after `Trace.enable()` is still seen.
+    let sessionSampler: SessionSampler?
 
     weak var tracer: DatadogTracer?
 
     /// Helper structure, used to collect elements for creating new contexts.
-    /// See ``TracingURLSessionHandler.makeElementsForNewSpanContext(tracer:parentSpanContext:)``
+    /// See ``TracingURLSessionHandler.makeElementsForNewSpanContext(tracer:parentSpanContext:sessionDecision:)``
     /// for more details.
     private struct NewSpanElements {
         let spanID: SpanID
@@ -51,6 +60,14 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         let baggage: BaggageItems
     }
 
+    private struct CapturedRUMContext {
+        let rumContext: RUMCoreContext?
+        let sessionDecision: SessionSamplingDecision?
+    }
+
+    @ReadWriteLock
+    private var capturedRUMContexts: [UUID: CapturedRUMContext] = [:]
+
     init(
         tracer: DatadogTracer,
         contextReceiver: ContextMessageReceiver,
@@ -58,7 +75,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         firstPartyHosts: FirstPartyHosts,
         traceContextInjection: TraceContextInjection,
         telemetry: Telemetry,
-        redactedStatusCodes: Set<Int> = Trace.Configuration.URLSessionTracking.defaultRedactedStatusCodes
+        redactedStatusCodes: Set<Int> = Trace.Configuration.URLSessionTracking.defaultRedactedStatusCodes,
+        sessionSampler: SessionSampler? = nil
     ) {
         self.tracer = tracer
         self.contextReceiver = contextReceiver
@@ -67,6 +85,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         self.traceContextInjection = traceContextInjection
         self.telemetry = telemetry
         self.redactedStatusCodes = redactedStatusCodes
+        self.sessionSampler = sessionSampler
     }
 
     func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>, networkContext: NetworkContext?) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
@@ -74,8 +93,31 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             return (request, nil, nil)
         }
 
+        // Read the RUM session from its store, on this thread. Both `networkContext` and
+        // `contextReceiver.context` are fed by the message bus, which can still be empty here; a
+        // request modified in that window used to be sampled at random and injected with no RUM
+        // session ID, which is the early-request gap this closes.
+        let sessionDecision = currentSessionSnapshot()
+
+        let deliveredRUMContext: RUMCoreContext?
+        if let networkContext {
+            deliveredRUMContext = networkContext.rumContext
+        } else {
+            deliveredRUMContext = contextReceiver.context.rumContext
+        }
+
+        // The message bus delivers the RUM context after the session store has changed, so right after
+        // a session change or stop it can still describe the previous session. It owns the span only when
+        // it belongs to the session injected in this request; otherwise the span gets no RUM tags, rather
+        // than being linked to a different session than its request.
+        let requestTimeRUMContext = deliveredRUMContext?.sessionID == sessionDecision?.sessionID ? deliveredRUMContext : nil
+
         // Use the current active span as parent if the propagation headers support it.
-        let newSpanElements = makeElementsForNewSpanContext(tracer: tracer, parentSpanContext: tracer.activeSpan?.context as? DDSpanContext, networkContext: networkContext)
+        let newSpanElements = makeElementsForNewSpanContext(
+            tracer: tracer,
+            parentSpanContext: tracer.activeSpan?.context as? DDSpanContext,
+            sessionDecision: sessionDecision
+        )
 
         let injectedSpanContext = TraceContext(
             traceID: newSpanElements.traceID,
@@ -84,7 +126,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             sampleRate: newSpanElements.sampleRate,
             samplingPriority: newSpanElements.samplingPriority,
             samplingDecisionMaker: newSpanElements.samplingDecisionMaker,
-            rumSessionId: contextReceiver.context.rumContext?.sessionID,
+            rumSessionId: sessionDecision?.sessionID,
             userId: contextReceiver.context.userInfo?.id,
             accountId: contextReceiver.context.accountInfo?.id
         )
@@ -118,7 +160,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             writer.traceHeaderFields.forEach { field, value in
                 // do not overwrite existing header
                 if request.value(forHTTPHeaderField: field) == nil {
-                    hasSetAnyHeader = true
+                    hasSetAnyHeader = hasSetAnyHeader || field != W3CHTTPHeaders.baggage
                     request.setValue(value, forHTTPHeaderField: field)
                 }
             }
@@ -154,10 +196,13 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         // Detect GraphQL requests by checking for GraphQL headers
         let hasGraphQLHeaders = request.hasGraphQLHeaders
 
-        // Return captured state with both active span and GraphQL detection
-        let capturedState: URLSessionHandlerCapturedState? = (tracer.activeSpan != nil || hasGraphQLHeaders)
-            ? TracingURLSessionHandlerCapturedState(activeSpan: tracer.activeSpan, hasGraphQLHeaders: hasGraphQLHeaders)
-            : nil
+        // Return captured state with active span, GraphQL detection and request-time RUM ownership.
+        let capturedState = TracingURLSessionHandlerCapturedState(
+            activeSpan: tracer.activeSpan,
+            hasGraphQLHeaders: hasGraphQLHeaders,
+            rumContext: requestTimeRUMContext,
+            sessionDecision: sessionDecision
+        )
 
         return (
             request,
@@ -184,6 +229,18 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         // TODO: RUM-13769 This code can be simplified since we never use more than one handler simultaneously.
         let capturedState = capturedStates.compactMap({ $0 as? TracingURLSessionHandlerCapturedState }).first
 
+        if let capturedState {
+            _capturedRUMContexts.mutate { contexts in
+                guard contexts[interception.identifier] == nil else {
+                    return
+                }
+                contexts[interception.identifier] = CapturedRUMContext(
+                    rumContext: capturedState.rumContext,
+                    sessionDecision: capturedState.sessionDecision
+                )
+            }
+        }
+
         capturedState?.activeSpan.map {
             interception.register(activeSpanContext: $0.context)
         }
@@ -198,6 +255,11 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     }
 
     func interceptionDidComplete(interception: DatadogInternal.URLSessionTaskInterception) {
+        var capturedRUMContext: CapturedRUMContext?
+        _capturedRUMContexts.mutate {
+            capturedRUMContext = $0.removeValue(forKey: interception.identifier)
+        }
+
         guard
             interception.isFirstPartyRequest, // `Span` should be only send for 1st party requests
             interception.origin != "rum", // if that request was tracked as RUM resource, the RUM backend will create the span on our behalf
@@ -250,12 +312,28 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             span = tracer.startSpan(
                 spanContext: context,
                 operationName: "urlsession.request",
-                startTime: startTime
+                startTime: startTime,
+                eventWriter: capturedRUMContext.map {
+                    LazySpanWriteContext(featureScope: tracer.featureScope, rumContext: .some($0.rumContext))
+                }
             )
         } else if Sampler(samplingRate: samplingRate).sample() {
             // Span context may not be injected on iOS13+ if `URLSession.dataTask(...)` for `URL`
             // was used to create the session task.
-            let newSpanElements = makeElementsForNewSpanContext(tracer: tracer, parentSpanContext: interception.activeSpanContext as? DDSpanContext)
+            // Reuse the session read when the request was modified, so the span is sampled by the same
+            // session as its RUM tags even if the session changed while the request was in flight. A task
+            // that never went through `modify(…)` has no captured state, so its session is read now.
+            let sessionDecision: SessionSamplingDecision?
+            if let capturedRUMContext {
+                sessionDecision = capturedRUMContext.sessionDecision
+            } else {
+                sessionDecision = currentSessionSnapshot()
+            }
+            let newSpanElements = makeElementsForNewSpanContext(
+                tracer: tracer,
+                parentSpanContext: interception.activeSpanContext as? DDSpanContext,
+                sessionDecision: sessionDecision
+            )
 
             let context = DDSpanContext(
                 traceID: newSpanElements.traceID,
@@ -272,7 +350,10 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             span = tracer.startSpan(
                 spanContext: context,
                 operationName: "urlsession.request",
-                startTime: startTime
+                startTime: startTime,
+                eventWriter: capturedRUMContext.map {
+                    LazySpanWriteContext(featureScope: tracer.featureScope, rumContext: .some($0.rumContext))
+                }
             )
         } else {
             return
@@ -349,13 +430,14 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     ///    - tracer: The used tracer.
     ///    - parentSpanContext: If the span created by the session handler should be related to a parent span, pass
     ///    the parent span context here, otherwise, pass `nil`.
+    ///    - sessionDecision: The RUM session sampling snapshot read for this request, or `nil` when no
+    ///    session is active. Passed in rather than read here so that one request makes exactly one
+    ///    read, and its session-derived decision cannot disagree with the injected session ID. An
+    ///    active parent span still takes precedence to preserve the parent trace's decision.
     /// - returns: A ``TracingURLSessionHandler.NewSpanElements`` helper struct.
-    private func makeElementsForNewSpanContext(tracer: DatadogTracer, parentSpanContext: DDSpanContext?, networkContext: NetworkContext? = nil) -> NewSpanElements {
+    private func makeElementsForNewSpanContext(tracer: DatadogTracer, parentSpanContext: DDSpanContext?, sessionDecision: SessionSamplingDecision?) -> NewSpanElements {
         let traceID = parentSpanContext?.traceID ?? tracer.traceIDGenerator.generate()
-        let sampled = isSampled(
-            rumContext: networkContext?.rumContext ?? contextReceiver.context.rumContext,
-            traceID: traceID.idLo
-        )
+        let sampled = isSampled(sessionDecision: sessionDecision, traceID: traceID.idLo)
         let samplingDecision = parentSpanContext.map { $0.samplingDecision } ?? SamplingDecision(
             from: sampled ? .autoKeep : .autoDrop,
             decisionMaker: .agentRate
@@ -372,22 +454,31 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         )
     }
 
+    /// Reads the current RUM session snapshot, on the calling thread.
+    ///
+    /// `firstPartyHostsTracing`'s rate applies on top of the sessions RUM already keeps, so the two
+    /// rates are composed: a 20% tracing rate inside a 10% RUM session traces 2% of requests.
+    private func currentSessionSnapshot() -> SessionSamplingDecision? {
+        sessionSampler?.decision(for: .combinedWithSessionRate, rate: samplingRate)
+    }
+
     /// Determines whether the current request should be sampled.
     ///
-    /// When a RUM session is active, combines the session sampler with the trace sampling rate
-    /// for a consistent decision. Otherwise, falls back to a deterministic sample seeded by the
-    /// trace ID, or a random sample if no trace ID is available.
+    /// When a RUM session is active, the snapshot already carries the decision: the session rate and
+    /// the trace sampling rate are composed, since `firstPartyHostsTracing`'s rate is a share of the
+    /// sessions RUM keeps. Otherwise, falls back to a deterministic sample seeded by the trace ID, or
+    /// a random sample if no trace ID is available.
     ///
     /// - Parameters:
-    ///   - rumSampling: The current RUM deterministic sampling context, if available.
+    ///   - sessionDecision: The current RUM session sampling snapshot, if a session is active.
     ///   - traceID: The trace ID used as a deterministic seed when no RUM session is present.
     /// - Returns: `true` if the request should be sampled.
-    private func isSampled(rumContext: RUMCoreContext?, traceID: UInt64?) -> Bool {
-        if let rumContext {
-            return rumContext.sessionSampler.combined(with: samplingRate).sample()
+    private func isSampled(sessionDecision: SessionSamplingDecision?, traceID: UInt64?) -> Bool {
+        if let sessionDecision {
+            return sessionDecision.isSampled
         }
 
-        // No RUM context: fall back to Knuth on traceID or random sampler.
+        // No RUM session: fall back to Knuth on traceID or random sampler.
         if let traceID {
             return DeterministicSampler(seed: traceID, samplingRate: samplingRate).sample()
         }

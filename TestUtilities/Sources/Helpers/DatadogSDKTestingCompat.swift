@@ -11,12 +11,12 @@ import Testing
 
 /// No-op stand-in for `DatadogSDKTesting`'s `.datadogTesting` trait.
 ///
-/// `DatadogSDKTesting` (https://github.com/DataDog/dd-sdk-swift-testing) requires iOS 15+,
-/// while this package's platform floor is iOS 12 — SwiftPM has no per-target deployment
-/// override, so it can't be declared as a `Package.swift` dependency. It is only ever
-/// resolved when building through `Datadog.xcworkspace`, which links it directly. When
-/// building via `Package.swift` (`swift build`/`swift test`), this stub is used instead so
-/// `@Suite(.datadogTesting)` still compiles, without observing anything.
+/// `DatadogSDKTesting` (https://github.com/DataDog/dd-sdk-swift-testing) instruments the
+/// Xcode test targets only. It is not declared as a `Package.swift` dependency, as that would
+/// make every SwiftPM user of the SDK resolve it. It is only ever resolved when building
+/// through `Datadog.xcworkspace`, which links it directly. When building via `Package.swift`
+/// (`swift build`/`swift test`), this stub is used instead so `@Suite(.datadogTesting)`
+/// still compiles, without observing anything.
 public struct DatadogSDKTestingStubTrait: TestTrait, SuiteTrait {
     public let isRecursive = true
 }

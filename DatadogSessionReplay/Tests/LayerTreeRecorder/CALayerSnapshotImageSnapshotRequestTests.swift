@@ -58,6 +58,33 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         #expect(requests.compactMap(\.content).isEmpty)
     }
 
+    @Test("Skips image snapshots for remote content and its sublayers")
+    func skipsImageSnapshotsForRemoteContentAndItsSublayers() throws {
+        // Given
+        let layerClass = try #require(NSClassFromString("CALayerHost") as? CALayer.Type)
+        let layer = layerClass.init()
+        layer.bounds = CGRect(x: 0, y: 0, width: 100, height: 40)
+
+        let child = CATextLayer()
+        child.frame = layer.bounds
+        child.string = "Remote content"
+        layer.addSublayer(child)
+
+        let snapshot = try #require(CALayerSnapshot(
+            from: layer,
+            in: .mockAny(imagePrivacyLevel: .maskNone)
+        ))
+        let cache = ImageSnapshotCache()
+        cache.setContentSnapshotData(.mockAny(), forReplayID: snapshot.replayID)
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(snapshot.sublayers.isEmpty)
+        #expect(requests.isEmpty)
+    }
+
     @Test("Creates request for plain layer with contents")
     func createsRequestForPlainLayerWithContents() throws {
         // Given
@@ -349,6 +376,30 @@ struct CALayerSnapshotImageSnapshotRequestTests {
         let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
 
         // Then
+        #expect(requests.isEmpty)
+    }
+
+    @Test("Skips image snapshots for rounded rectangle shadow and its sublayers")
+    func skipsImageSnapshotsForRoundedRectShadowAndItsSublayers() throws {
+        // Given
+        let viewClass = try #require(NSClassFromString("_UIRoundedRectShadowView") as? UIImageView.Type)
+        let shadowView = viewClass.init(frame: CGRect(x: 0, y: 0, width: 100, height: 40))
+        shadowView.image = UIImage()
+        shadowView.layer.contents = NSObject()
+
+        let child = CALayer()
+        child.frame = shadowView.bounds
+        child.contents = NSObject()
+        shadowView.layer.addSublayer(child)
+
+        let snapshot = try #require(CALayerSnapshot(from: shadowView.layer, in: .mockAny(imagePrivacyLevel: .maskNone)))
+        let cache = ImageSnapshotCache()
+
+        // When
+        let requests = snapshot.imageSnapshotRequests(for: .init(), cache: cache)
+
+        // Then
+        #expect(snapshot.sublayers.isEmpty)
         #expect(requests.isEmpty)
     }
 
