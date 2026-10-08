@@ -57,27 +57,18 @@ internal final class FlagsStateManager: FlagsStateObservable {
         managerState.clientState
     }
 
-    func updateState(
-        _ newState: FlagsClientState,
-        beforeNotifying: (() -> Void)? = nil
-    ) {
-        updateState(
-            newState,
-            unlessCurrentStateIs: [],
-            beforeNotifying: beforeNotifying
-        )
+    func updateState(_ newState: FlagsClientState) {
+        updateState(newState, unlessCurrentStateIs: [])
     }
 
     @discardableResult
     func updateState(
         _ newState: FlagsClientState,
-        unlessCurrentStateIs excludedStates: [FlagsClientState],
-        beforeNotifying: (() -> Void)? = nil
+        unlessCurrentStateIs excludedStates: [FlagsClientState]
     ) -> Bool {
         guard let notifyListeners = updateStateWithoutNotifying(newState, unlessCurrentStateIs: excludedStates) else {
             return false
         }
-        beforeNotifying?()
         notifyListeners()
         return true
     }
