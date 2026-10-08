@@ -53,11 +53,14 @@ class SwiftUINavigationOwnershipTests: XCTestCase {
     @MainActor
     private func makeOwnedSwiftUIFeature(in core: DatadogCore) throws -> RUMFeature {
         let date = Date()
-        core.contextProvider.replace(context: .mockWith(
-            sdkInitDate: date,
-            launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: date),
-            applicationStateHistory: .mockWith(initialState: .active, date: date)
-        ))
+        core.contextProvider.write { context in
+            context = .mockWith(
+                sdkInitDate: date,
+                launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: date),
+                applicationStateHistory: .mockWith(initialState: .active, date: date)
+            )
+        }
+        core.flush()
         var configuration = RUM.Configuration(applicationID: "owned-swiftui", trackAnonymousUser: false)
         configuration.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
         configuration.featureFlags = [.multiSceneTracking: true]
