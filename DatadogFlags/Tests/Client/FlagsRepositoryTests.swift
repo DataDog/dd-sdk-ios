@@ -873,6 +873,31 @@ final class FlagsRepositoryTests: XCTestCase {
         dataStore.flush()
     }
 
+    func testPendingFailedContextUpdate_whenRepositoryIsReleased_completesAfterCacheRead() {
+        let dataStore = DelayedReadDataStore()
+        var repository: FlagsRepository? = makeRepository(
+            dataStore: dataStore,
+            fetcher: FlagAssignmentsFetcherMock { _, completion in completion(.failure(.invalidResponse)) },
+            initializationTimeout: nil
+        )
+        weak var weakRepository = repository
+        wait(for: [dataStore.readStarted], timeout: 1)
+        let completed = expectation(description: "released repository completes pending failure")
+        repository?.setEvaluationContext(.mockAny()) { result in
+            guard case .failure(.clientNotInitialized) = result else {
+                return XCTFail("Expected clientNotInitialized, got \(result)")
+            }
+            completed.fulfill()
+        }
+
+        repository = nil
+        XCTAssertNil(weakRepository)
+        dataStore.resumeRead()
+        dataStore.flush()
+
+        wait(for: [completed], timeout: 1)
+    }
+
     func testInitialDataStoreRead_whenCompletesAfterReset_doesNotRestoreCachedFlags() throws {
         // Given
         let clientName = "client"
