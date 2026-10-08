@@ -391,6 +391,10 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             isFirstContextUpdate = !state.hasStartedEvaluationContextRequest
             state.hasStartedEvaluationContextRequest = true
             state.latestRequestedContext = context
+            // Apply the same context check whether the initial disk read wins or loses the race.
+            if state.flagsDataVersion == 0 {
+                state.flagsData = state.flagsData(matching: context)
+            }
             notifyReconciling = stateManager.updateStateWithoutNotifying(.reconciling)
         }
         notifyReconciling?()

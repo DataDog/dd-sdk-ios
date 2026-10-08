@@ -971,6 +971,49 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertNotNil(flagsRepository.flagAssignment(for: "fresh"))
     }
 
+    func testInitialDataStoreRead_duringFirstReconciliation_onlyServesMatchingContextRegardlessOfReadTiming() throws {
+        let cachedContext = FlagsEvaluationContext(targetingKey: "cached-user", attributes: ["tier": .string("gold")])
+        let cachedData = FlagsData(flags: ["cached": .mockAny()], context: cachedContext, date: .mockAny())
+        let cachedValue = DataStoreValueResult.value(try JSONEncoder().encode(cachedData), dataStoreDefaultKeyVersion)
+        let requestedContexts = [
+            cachedContext,
+            FlagsEvaluationContext(targetingKey: "another-user", attributes: cachedContext.attributes),
+            FlagsEvaluationContext(targetingKey: cachedContext.targetingKey, attributes: ["tier": .string("silver")])
+        ]
+        for readFirst in [true, false] {
+            for context in requestedContexts {
+                let dataStore = DelayedReadDataStore(storage: ["client": cachedValue])
+                let repository = makeRepository(
+                    dataStore: dataStore,
+                    fetcher: FlagAssignmentsFetcherMock { _, _ in },
+                    initializationTimeout: nil
+                )
+                defer {
+                    dataStore.resumeRead()
+                    dataStore.flush()
+                }
+                wait(for: [dataStore.readStarted], timeout: 1)
+                if readFirst {
+                    dataStore.resumeRead()
+                    dataStore.flush()
+                }
+
+                repository.setEvaluationContext(context) { _ in }
+                if !readFirst {
+                    dataStore.resumeRead()
+                    dataStore.flush()
+                }
+
+                XCTAssertEqual(repository.state.currentState, .reconciling)
+                XCTAssertEqual(repository.context, context == cachedContext ? cachedContext : nil)
+                XCTAssertEqual(repository.flagAssignment(for: "cached") != nil, context == cachedContext)
+                // The fallback remains available if we switch back before any successful fetch.
+                repository.setEvaluationContext(cachedContext) { _ in }
+                XCTAssertNotNil(repository.flagAssignment(for: "cached"))
+            }
+        }
+    }
+
     func testInitialDataStoreRead_whenFetchFails_waitsForReadAndOnlyUsesMatchingCachedFlags() throws {
         let clientName = "client"
         let cachedContext = FlagsEvaluationContext(targetingKey: "cached-user")
