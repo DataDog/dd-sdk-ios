@@ -577,6 +577,7 @@ class RUMViewScope_Tests: XCTestCase {
             XCTAssertEqual(metadata.isViewUpdate, true)
             XCTAssertEqual(metadata.id, update.view.id)
             XCTAssertEqual(metadata.documentVersion, update.dd.documentVersion)
+            XCTAssertEqual(metadata.hasAccessibility, update.view.accessibility != nil)
         }
 
         let fullEventsMetadata: [RUMViewEvent.Metadata] = zip(writer.events, writer.metadata).compactMap { event, metadata in

@@ -139,7 +139,7 @@ internal extension RUMViewUpdateEvent {
         return RUMViewEvent.Metadata(
             id: view.id,
             documentVersion: dd.documentVersion,
-            hasAccessibility: nil,
+            hasAccessibility: view.accessibility != nil,
             isDeltaBaseline: nil,
             isViewUpdate: true
         )

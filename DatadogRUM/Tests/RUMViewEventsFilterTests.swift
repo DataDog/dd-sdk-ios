@@ -340,6 +340,25 @@ final class RUMViewEventsFilterTests: XCTestCase {
         XCTAssertEqual(actual, events)
     }
 
+    func testFilterKeepsAccessibilityDeltasBeforeANewerFullEventOfTheSameView() throws {
+        // Accessibility is only sent when it changes, so the newer full event doesn't repeat it.
+        // Dropping the delta would lose the change.
+        let events = [
+            try Event(data: "A.1", viewMetadata: .mock(id: "A", documentVersion: 1, isDeltaBaseline: true)),
+            try Event(data: "A.2", viewMetadata: .mockUpdate(id: "A", documentVersion: 2, hasAccessibility: true)),
+            try Event(data: "A.3", viewMetadata: .mockUpdate(id: "A", documentVersion: 3)),
+            try Event(data: "A.4", viewMetadata: .mock(id: "A", documentVersion: 4, isDeltaBaseline: true))
+        ]
+
+        let actual = sut.filter(events: events)
+        let expected = [
+            try Event(data: "A.2", viewMetadata: .mockUpdate(id: "A", documentVersion: 2, hasAccessibility: true)),
+            try Event(data: "A.4", viewMetadata: .mock(id: "A", documentVersion: 4, isDeltaBaseline: true))
+        ]
+
+        XCTAssertEqual(actual, expected)
+    }
+
     func testFilterStillCollapsesRedundantLegacyFullEventsWhenNotDeltaBaseline() throws {
         // Legacy (non-viewUpdates) full-event snapshots remain subject to redundant-event collapsing.
         let events = [
@@ -426,8 +445,8 @@ extension RUMViewEvent.Metadata {
     }
 
     /// Metadata of a `RUMViewUpdateEvent` delta.
-    static func mockUpdate(id: String = .mockAny(), documentVersion: Int64 = .mockAny()) -> RUMViewEvent.Metadata {
-        return .mock(id: id, documentVersion: documentVersion, isViewUpdate: true)
+    static func mockUpdate(id: String = .mockAny(), documentVersion: Int64 = .mockAny(), hasAccessibility: Bool? = false) -> RUMViewEvent.Metadata {
+        return .mock(id: id, documentVersion: documentVersion, hasAccessibility: hasAccessibility, isViewUpdate: true)
     }
 }
 
