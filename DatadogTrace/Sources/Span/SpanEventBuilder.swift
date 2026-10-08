@@ -104,6 +104,7 @@ internal struct SpanEventBuilder: Sendable {
             samplingDecisionMaker: samplingDecisionMaker,
             tracerVersion: context.sdkVersion,
             applicationVersion: context.version,
+            applicationBuildNumber: context.buildNumber,
             networkConnectionInfo: networkInfoEnabled ? context.networkConnectionInfo : nil,
             mobileCarrierInfo: networkInfoEnabled ? context.carrierInfo : nil,
             device: context.normalizedDevice(addLocales: false),

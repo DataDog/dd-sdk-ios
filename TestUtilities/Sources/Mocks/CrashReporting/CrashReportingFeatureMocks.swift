@@ -148,7 +148,8 @@ extension CrashContext {
         appLaunchDate: Date? = .mockRandomInThePast(),
         remoteConfigurationId: String? = nil,
         lastRUMAttributes: RUMEventAttributes? = nil,
-        lastLogAttributes: LogEventAttributes? = nil
+        lastLogAttributes: LogEventAttributes? = nil,
+        applicationBundleType: BundleType = .iOSApp
     ) -> Self {
         .init(
             serverTimeOffset: serverTimeOffset,
@@ -171,7 +172,8 @@ extension CrashContext {
             lastRUMSessionState: lastRUMSessionState,
             lastRUMAttributes: lastRUMAttributes,
             lastLogAttributes: lastLogAttributes,
-            remoteConfigurationId: remoteConfigurationId
+            remoteConfigurationId: remoteConfigurationId,
+            applicationBundleType: applicationBundleType
         )
     }
 
@@ -197,7 +199,8 @@ extension CrashContext {
             lastRUMSessionState: .mockRandom(),
             lastRUMAttributes: .mockRandom(),
             lastLogAttributes: .mockRandom(),
-            remoteConfigurationId: .mockRandom()
+            remoteConfigurationId: .mockRandom(),
+            applicationBundleType: .mockRandom()
         )
     }
 

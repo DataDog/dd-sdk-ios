@@ -681,6 +681,7 @@ extension RUMViewScope {
                 hasReplay: hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
                 isActive: self.context.isSessionActive,
+                isMainProcess: context.applicationBundleType != .iOSAppExtension,
                 sampledForReplay: nil,
                 type: dependencies.sessionType
             ),
@@ -853,6 +854,7 @@ extension RUMViewScope {
             session: .init(
                 hasReplay: context.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
+                isMainProcess: context.applicationBundleType != .iOSAppExtension,
                 type: dependencies.sessionType
             ),
             source: .init(rawValue: context.source) ?? .ios,
@@ -945,6 +947,7 @@ extension RUMViewScope {
             session: .init(
                 hasReplay: context.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
+                isMainProcess: context.applicationBundleType != .iOSAppExtension,
                 type: dependencies.sessionType
             ),
             source: .init(rawValue: context.source) ?? .ios,

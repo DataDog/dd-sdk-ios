@@ -141,7 +141,8 @@ class WebEventIntegrationTests: XCTestCase {
             "service": "super",
             "session": {
               "id": "\(expectedUUID)",
-              "type": "user"
+              "type": "user",
+              "is_main_process": true
             },
             "type": "view",
             "view": {

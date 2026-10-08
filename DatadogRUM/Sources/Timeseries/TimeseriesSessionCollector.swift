@@ -350,7 +350,12 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                 device: context.normalizedDevice(),
                 os: context.os,
                 service: context.service,
-                session: .init(hasReplay: hasReplay, id: sessionID, type: sessionType),
+                session: .init(
+                    hasReplay: hasReplay,
+                    id: sessionID,
+                    isMainProcess: context.applicationBundleType != .iOSAppExtension,
+                    type: sessionType
+                ),
                 source: .init(rawValue: context.source) ?? .ios,
                 synthetics: syntheticsTest,
                 timeseries: .init(
@@ -404,7 +409,12 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                 device: context.normalizedDevice(),
                 os: context.os,
                 service: context.service,
-                session: .init(hasReplay: hasReplay, id: sessionID, type: sessionType),
+                session: .init(
+                    hasReplay: hasReplay,
+                    id: sessionID,
+                    isMainProcess: context.applicationBundleType != .iOSAppExtension,
+                    type: sessionType
+                ),
                 source: .init(rawValue: context.source) ?? .ios,
                 synthetics: syntheticsTest,
                 timeseries: .init(

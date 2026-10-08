@@ -6,8 +6,8 @@
 
 #if os(iOS)
 import Testing
-import DatadogSDKTesting
 import UIKit
+import TestUtilities
 
 @_spi(Internal)
 @testable import DatadogSessionReplay
