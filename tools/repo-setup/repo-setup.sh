@@ -32,5 +32,3 @@ cp -vi "./tools/repo-setup/Base.ci.xcconfig.src" ./xcconfigs/Base.ci.local.xccon
 if [[ "$env" == "$ENV_DEV" ]]; then
   cp -vi "./tools/repo-setup/Base.dev.xcconfig.src" ./xcconfigs/Base.dev.local.xcconfig
 fi
-
-bundle install
