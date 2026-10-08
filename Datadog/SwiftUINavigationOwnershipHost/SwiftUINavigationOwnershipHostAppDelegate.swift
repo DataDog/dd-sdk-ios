@@ -14,6 +14,9 @@ final class SwiftUINavigationOwnershipHostAppDelegate: UIResponder, UIApplicatio
     }
 
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
-        return UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
+        let configuration = UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
+        configuration.sceneClass = UIWindowScene.self
+        configuration.delegateClass = SwiftUINavigationOwnershipHostSceneDelegate.self
+        return configuration
     }
 }

@@ -315,8 +315,17 @@ extension SwiftUINavigationOwnershipTests {
     private func connectedSceneIdentifier(_ binding: RUMSwiftUIViewFoundationBinding) throws -> RUMSceneIdentifier {
         // Production scene proof is never replaced by a fabricated identifier.
         // A missing admitted host scene is not qualification of these controls.
-        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.first { $0.activationState != .unattached },
-                                 "Controls require an actual connected UIKit test-host scene")
+        let expectedDelegateClass = try XCTUnwrap(NSClassFromString("SwiftUINavigationOwnershipHost.SwiftUINavigationOwnershipHostSceneDelegate"))
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first {
+            $0.activationState != .unattached && $0.delegate.map {
+                ObjectIdentifier(type(of: $0)) == ObjectIdentifier(expectedDelegateClass)
+            } == true
+        }, "Controls require the actual connected UIKit test-host scene and delegate")
+        let delegate = try XCTUnwrap(scene.delegate as? UIWindowSceneDelegate)
+        let window = try XCTUnwrap(delegate.window ?? nil, "Controls require the test-host delegate's window")
+        _ = try XCTUnwrap(window.windowScene === scene && scene.windows.contains { $0 === window }
+                         && !window.isHidden && window.rootViewController != nil ? window : nil,
+                         "Controls require a visible test-host window and root controller in the same scene")
         let identifier = RUMSceneIdentifier(rawValue: scene.session.persistentIdentifier)
         let holder = RUMSwiftUIViewTrackingEpoch()
         let callback = try XCTUnwrap(holder.enter(binding))
