@@ -4,7 +4,7 @@
   "gate": "S3:F12",
   "slice": "PR11",
   "state": "COMPLETE_PRIVATE_SOURCE_APPLIED_REVIEWED_UNCOMPILED_UNQUALIFIED",
-  "updated_at": "2026-10-08T00:05:21.748335+00:00",
+  "updated_at": "2026-10-08T07:48:13.001893+00:00",
   "owner": "SDK implementer + designated independent reviewer",
   "source_lineage": {
     "linked_base_head": "102d02e349a577ec29a0088da030f4a36b6f84c6",
@@ -510,5 +510,10 @@
       "limits": "Live workspace identifiers/destinations are discovery facts, not reusable session admission; built manifest and exact products remain unchecked."
     },
     "awake_authority": "PENDING_EXPLICIT_DURATION_AUTHORIZATION; automatic approval review rejected inferred overnight caffeinate before effects; no sleep assertion/native/build/test started. Continue independent source work without user participation until07:00 Paris8October. Tooling/ENVIRONMENT.md owns the awake-duration policy."
+  },
+  "latest_source_discovery": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/pr10-current-source-preparation-20261007/stopped-view-control-proposal/retained-parent-successor/morning-source-discovery/PR11-four-source-join.json",
+    "sha256": "fa2b04aea3175200253b421a522e80f845ad9be8b703b7d0028a18d338ddff8f",
+    "size": 2556
   }
 }

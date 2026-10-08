@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "state": "STOPPED_BEFORE_INPUT_CLEANUP_PASS",
-  "updated_at": "2026-10-08T05:13:11.778933+00:00",
+  "updated_at": "2026-10-08T07:48:13.001893+00:00",
   "owner": "root",
   "reviewer": "/root/h10_backend_reviewer",
   "gates": [
@@ -241,7 +241,7 @@
     "native_admitted": false
   },
   "independent_capture_preparation": {
-    "state": "EXPLICIT_PROFILE_APPLIED_SOURCE_READBACK_NATIVE_QUALIFICATION_REMAIN",
+    "state": "EXPLICIT_PROFILE_AND_CANONICAL_PRODUCER_OFFLINE_REVIEWED_NATIVE_READINESS_PENDING",
     "existing_gates": [
       "S2:H11",
       "S2:H13"
@@ -480,6 +480,58 @@
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/canonical-producer-offline-control-proposal/deadline-hold.json",
         "sha256": "4588d4ef566f5b5c0389b6cbfa5d7f14b51ddbbf5686e6c0fa32841db25dbeca",
         "size": 5163
+      },
+      "daytime_execution": {
+        "state": "ONE_COMPOSITE_OFFLINE_CONTROL_REVIEWED_PASS_NO_NATIVE_AUTHORITY",
+        "packet": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/canonical-producer-daytime-control-20261008/packet.json",
+          "sha256": "14eab85283f8b7bec4e547480aa2cfd8ca108e7128e0859b67a5ddc871bbcc80",
+          "size": 23248
+        },
+        "controls": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/canonical-producer-daytime-control-20261008/controls.actual.json",
+          "sha256": "7d668ff9e50941c0048588a6f6d1b5ff5e46164cc1cfcb78aadb05c965416579",
+          "size": 2264
+        },
+        "observations": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/canonical-producer-daytime-control-20261008/observations.json",
+          "sha256": "721da365e8e91916add76eaaa761acfd4d7e55f7160cc22c724425d76a79fccb",
+          "size": 12365
+        },
+        "actual_controls": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/canonical-producer-daytime-control-20261008/actual-control-tool-returns.json",
+          "sha256": "9916db6293ceeac61272d93e959b5670b79180cbd180579aa9ee36b40dbe1870",
+          "size": 18970
+        },
+        "actual_seal": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/canonical-producer-daytime-control-20261008/actual-seal-publication-tool-return.json",
+          "sha256": "74cf84e1bbdf83233c5fdd175bb8aff705cb09e2738ac6b3f6bfc85c556bee6c",
+          "size": 30719
+        },
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/canonical-producer-daytime-control-20261008/review/review.json",
+          "sha256": "bdb651542ee323462b189e44319b368471455ef35862ffa3cdb39313738b4bc2",
+          "size": 14555
+        },
+        "readback": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/canonical-producer-daytime-control-20261008/review/readback.json",
+          "sha256": "e0045632c77fe510b97ef7477a375bddfa0810477aad402660053e25ccd093d1",
+          "size": 1416
+        },
+        "actual_review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/canonical-producer-daytime-control-20261008/review/actual-review-publication-tool-returns.json",
+          "sha256": "f9a7be867c3f98f59b460d474be61454a7456cafb56f8085c3cd1141312f1dcf",
+          "size": 155235
+        },
+        "quiescence": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/execution-improvements-20261004-86tr958c/s2-physical-current-preparation-20261007/canonical-producer-daytime-control-20261008/final-quiescence.json",
+          "sha256": "3c03c39e48d3c2320ec3721218c96c68b19820c4be3fede684b6a4f200fa8458",
+          "size": 7078
+        },
+        "discriminator": "Real values/build/validate/bound_runtime_plan four-file publication/readback; missing nonce before writes and foreign definition refused by real worker canonical verification before local/Device.",
+        "scope": "Every external access/time/product/reviewer/consent input MODEL. Full valid local/platform verification NOT_RUN, no native/authority/gate credit. Original overnight deadline hold and seven controls unchanged.",
+        "native_calls": 0,
+        "gates_closed": []
       }
     }
   }

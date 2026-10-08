@@ -586,14 +586,14 @@
         "integration": "NOT_QUALIFIED"
       },
       "remaining_assertion": "Exact per-step owner, duplicate keys distinct lifetime, targeted completion and released retained snapshots Off: Develop Operation/profiling keying and flow",
-      "next_action": "Primary: PR11 four-only qualification after explicit awake-duration authority and fresh admission. Physical canonical-producer offline control is prepared, not executed; complete current composition and short capture/End readiness before human input. PR10 current35 source-present methods need fresh discovery/compiler/runtime; all16 families stay open. Preserve accepted suites.",
-      "evidence_source_scope": "Production471ae remains unchanged. Sixteen additional reviewed controls checkpointed678d22e43 using authorized local unsigned fallback;35 source-present/34 historical-discovered, uncompiled/unexecuted. Stopped-view fixture parent retained explicitly, original BLOCK preserved. Finite34 source coverage reviewed; all16 families/Off/lifetime/compiler/platform/integration remain open.",
+      "next_action": "Primary: PR11 four-only build/test after explicit awake duration and fresh admission. Physical profile/current canonical producer pass source/offline review; full positive local/product/device/capture-End/same-PID idle readiness remains before human input. PR10 current35 methods are source-discovered, uncompiled/unexecuted; all16 families stay open. Preserve accepted suites.",
+      "evidence_source_scope": "Production471ae remains unchanged. Sixteen additional reviewed controls checkpointed678d22e43 using authorized local unsigned fallback;35 current source-discovered, uncompiled/unexecuted. Stopped-view fixture parent retained explicitly, original BLOCK preserved. Finite34 source coverage reviewed; all16 families/Off/lifetime/compiler/platform/integration remain open.",
       "source_preparation_owner": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/S3-PR10-source-preparation.json",
-        "sha256": "eccb5f2b6d45c09828332ccd12089e52fdf0cf6bf558d31e25eb340203cab851",
-        "size": 46174
+        "sha256": "620e19f2852800f13e5c4b89ced272e1be7f27a9979209e5e8f1125ed0d59c3e",
+        "size": 47467
       },
-      "source_only_controls": "35 source-present;34 historical-discovered. Stopped-view fixture parent source-repaired; all methods uncompiled/unexecuted, all16 families open."
+      "source_only_controls": "35 current source-discovered methods, uncompiled/unexecuted. Stopped-view parent fixture source-repaired; all16 families stay open."
     },
     {
       "id": "PR11",
@@ -898,7 +898,7 @@
   "sdk_edits": 0,
   "native_runs": 0,
   "gates_closed": [],
-  "updated_at": "2026-10-08T05:13:11.778933+00:00",
+  "updated_at": "2026-10-08T07:48:13.001893+00:00",
   "dependency_build_attempts": 4,
   "dependency_component_qualifications": 4,
   "dependency_test_invocations": 4,
