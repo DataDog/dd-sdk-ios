@@ -50,7 +50,7 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
         let concentrator = StatsConcentrator(now: now, telemetry: featureScope.telemetry) { [featureScope, metricController] bucket in
             featureScope.eventWriteContext { _, writer in
                 writer.write(value: bucket)
-                metricController.send(for: [bucket], force: false)
+                metricController.send(for: [bucket], reason: .overflowDeploymentChange)
             }
         }
         self.concentrator = concentrator
@@ -86,7 +86,7 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
             }
             // Report only after the write: in some cases the event write context is not
             // available, and we do not want to signal a flush that never reached storage.
-            metricController.send(for: exportedBuckets, force: force)
+            metricController.send(for: exportedBuckets, reason: force ? .forced : .periodic)
         }
     }
 

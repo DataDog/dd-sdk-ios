@@ -330,6 +330,13 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertEqual(core.exportedBuckets.map(\.version), ["one", "two"])
         XCTAssertEqual(core.exportedBuckets.flatMap(\.stats).map(\.hits), [2, 1])
         XCTAssertEqual(core.writeContextBypassConsentValues, [false, false], "Pending data must use consent-aware storage")
+        let earlyMetrics = core.telemetryMock.messages.compactMap(\.asMetric).filter { $0.name == TraceClientStatsMetric.name }
+        XCTAssertEqual(earlyMetrics.count, 2)
+        XCTAssertEqual(earlyMetrics.compactMap { $0.attributes[TraceClientStatsMetric.spansCountKey] as? UInt64 }, [2, 1])
+        for metric in earlyMetrics {
+            XCTAssertEqual(metric.attributes[TraceClientStatsMetric.exportReasonKey] as? String, "overflow_deployment_change")
+            XCTAssertEqual(metric.attributes[TraceClientStatsMetric.forcedKey] as? Bool, false)
+        }
         for bucket in core.exportedBuckets {
             let request = try makeRequestBuilder().request(
                 for: [makeEvent(from: bucket)],
@@ -345,9 +352,14 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertEqual(core.exportedBuckets.flatMap(\.stats).map(\.hits).reduce(0, +), UInt64(limit + 4))
         let collapsed = try XCTUnwrap(core.telemetryMock.messages.firstMetric(named: TraceClientStatsMetric.collapsedSpansName))
         XCTAssertEqual(collapsed.attributes[TraceClientStatsMetric.collapsedSpansCountKey] as? UInt64, 4)
+        let exportMetrics = core.telemetryMock.messages.compactMap(\.asMetric).filter { $0.name == TraceClientStatsMetric.name }
+        XCTAssertEqual(exportMetrics.count, 3)
+        XCTAssertEqual(exportMetrics.last?.attributes[TraceClientStatsMetric.exportReasonKey] as? String, "forced")
+        XCTAssertEqual(exportMetrics.compactMap { $0.attributes[TraceClientStatsMetric.spansCountKey] as? UInt64 }.reduce(0, +), UInt64(limit + 4))
         let count = core.exportedBuckets.count
         stats.flushStats(force: true)
         XCTAssertEqual(core.exportedBuckets.count, count)
+        XCTAssertEqual(core.telemetryMock.messages.compactMap(\.asMetric).filter { $0.name == TraceClientStatsMetric.name }.count, 3)
     }
 
     func testWhenFlushProducesBuckets_itSendsFlushMetric() throws {
@@ -376,6 +388,7 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertEqual(metric.attributes[TraceClientStatsMetric.spansCountKey] as? UInt64, 2)
         XCTAssertEqual(metric.attributes[TraceClientStatsMetric.errorsCountKey] as? UInt64, 1)
         XCTAssertEqual(metric.attributes[TraceClientStatsMetric.forcedKey] as? Bool, false)
+        XCTAssertEqual(metric.attributes[TraceClientStatsMetric.exportReasonKey] as? String, "periodic")
     }
 
     func testWhenForcedFlushProducesBuckets_itMarksMetricAsForced() throws {
@@ -395,6 +408,7 @@ class ClientStatsFeatureTests: XCTestCase {
         // Then
         let metric = try XCTUnwrap(core.telemetryMock.messages.firstMetric(named: TraceClientStatsMetric.name))
         XCTAssertEqual(metric.attributes[TraceClientStatsMetric.forcedKey] as? Bool, true)
+        XCTAssertEqual(metric.attributes[TraceClientStatsMetric.exportReasonKey] as? String, "forced")
         XCTAssertEqual(metric.attributes[TraceClientStatsMetric.spansCountKey] as? UInt64, 1)
     }
 
