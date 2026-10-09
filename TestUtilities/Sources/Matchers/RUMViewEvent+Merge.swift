@@ -119,12 +119,28 @@ extension RUMViewEvent.View {
             refreshRateAverage: update.refreshRateAverage ?? refreshRateAverage,
             refreshRateMin: update.refreshRateMin ?? refreshRateMin,
             resource: update.resource.map { .init($0) } ?? resource,
-            slowFrames: update.slowFrames.map { $0.map { .init($0) } } ?? slowFrames,
+            slowFrames: update.slowFrames.map { merge(slowFrames, $0.map { .init($0) }) } ?? slowFrames,
             slowFramesRate: update.slowFramesRate ?? slowFramesRate,
             timeSpent: update.timeSpent ?? timeSpent,
             url: update.url
         )
     }
+}
+
+/// Merges slow frames by `start`, keeping the largest `duration`, like the backend does.
+///
+/// View updates only carry new or grown slow frames, so they can't replace the list wholesale.
+private func merge(
+    _ slowFrames: [RUMViewEvent.View.SlowFrames]?,
+    _ updated: [RUMViewEvent.View.SlowFrames]
+) -> [RUMViewEvent.View.SlowFrames] {
+    var durations: [Int64: Int64] = [:]
+    for frame in (slowFrames ?? []) + updated {
+        durations[frame.start] = max(durations[frame.start] ?? 0, frame.duration)
+    }
+    return durations
+        .map { RUMViewEvent.View.SlowFrames(duration: $0.value, start: $0.key) }
+        .sorted { $0.start < $1.start }
 }
 
 // MARK: - RUMViewEvent type extensions (inverse of RUMViewEvent+Update.swift projections)
