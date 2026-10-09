@@ -358,6 +358,11 @@ public final class objc_TraceURLSessionTracking: NSObject
     public init(firstPartyHostsTracing: objc_TraceFirstPartyHostsTracing)
     public func setFirstPartyHostsTracing(_ firstPartyHostsTracing: objc_TraceFirstPartyHostsTracing)
     public func setRedactedStatusCodes(_ codes: [NSNumber])
+    public func setSpanCustomization(_ spanCustomization: @escaping @Sendable (objc_TraceInterceptedRequest, objc_OTSpan, URLResponse?, Error?) -> Void)
+public final class objc_TraceInterceptedRequest: NSObject
+    public var url: URL?
+    public var httpMethod: String?
+    public var httpBody: Data?
 public final class objc_Trace: NSObject
     public static func enable(with configuration: objc_TraceConfiguration)
     public static func enable(with configuration: objc_TraceConfiguration, instanceName: String?)

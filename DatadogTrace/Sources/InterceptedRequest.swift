@@ -12,7 +12,7 @@ extension Trace.Configuration {
     ///
     /// Properties are copied from the original `URLRequest` at interception time and are safe to read
     /// from any thread.
-    public struct InterceptedRequest {
+    public struct InterceptedRequest: Sendable {
         /// The URL of the request.
         public let url: URL?
         /// The HTTP method of the request (e.g. `"GET"`, `"POST"`).
@@ -26,8 +26,6 @@ internal extension Trace.Configuration.InterceptedRequest {
     init(from request: ImmutableRequest) {
         self.url = request.url
         self.httpMethod = request.httpMethod
-        // httpBody is Data? — safe to access; the thread-safety concern in ImmutableRequest
-        // applies only to allHTTPHeaderFields (bridged NSMutableDictionary).
         self.httpBody = request.unsafeOriginal.httpBody
     }
 }

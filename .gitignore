@@ -27,7 +27,6 @@ artifacts/
 
 # AI files
 .claude/settings.local.json
-.rum-analysis/
 
 # GSD planning files (local only)
 .planning/
