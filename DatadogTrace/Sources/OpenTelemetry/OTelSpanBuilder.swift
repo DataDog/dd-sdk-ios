@@ -23,16 +23,17 @@ internal class OTelSpanBuilder: OpenTelemetryApi.SpanBuilder {
         case spanContext(OpenTelemetryApi.SpanContext)
         case noParent
 
-        func context() -> OpenTelemetryApi.SpanContext? {
+        func resolved() -> (context: OpenTelemetryApi.SpanContext?, service: SpanService?) {
             switch self {
             case .currentSpan:
-                return OpenTelemetry.instance.contextProvider.activeSpan?.context
+                let span = OpenTelemetry.instance.contextProvider.activeSpan
+                return (span?.context, (span as? OTelSpan)?.ddSpan.ddContext.serviceForStats)
             case .span(let span):
-                return span.context
+                return (span.context, (span as? OTelSpan)?.ddSpan.ddContext.serviceForStats)
             case .spanContext(let context):
-                return context
+                return (context, nil)
             case .noParent:
-                return nil
+                return (nil, nil)
             }
         }
     }
@@ -107,7 +108,8 @@ internal class OTelSpanBuilder: OpenTelemetryApi.SpanBuilder {
     }
 
     private func prepareSpan() -> OTelSpan {
-        let parentContext = parent.context()
+        let resolvedParent = parent.resolved()
+        let parentContext = resolvedParent.context
         let traceId: TraceId
         let spanId = SpanId.random()
         let traceState: TraceState
@@ -140,7 +142,10 @@ internal class OTelSpanBuilder: OpenTelemetryApi.SpanBuilder {
             startTime: startTime ?? Date(),
             tracer: tracer,
             eventBuilder: tracer.spanEventBuilder,
-            eventWriter: writer
+            eventWriter: writer,
+            parentForStats: parentContext?.isValid == true && parentContext?.isRemote == true
+                ? .remote
+                : resolvedParent.service.map(DDSpanContext.StatsParent.local) ?? .unknown
         )
         return createdSpan
     }
