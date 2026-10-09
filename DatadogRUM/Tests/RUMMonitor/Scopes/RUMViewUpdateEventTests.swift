@@ -22,8 +22,10 @@ import TestUtilities
 class RUMViewUpdateEventTests: XCTestCase {
     func testRoundtrip_allDiffableFieldsAreReconstructed() throws {
         for _ in 0..<100 {
-            let base = RUMViewEvent.mockRandom()
-            let target = RUMViewEvent.mockRandom()
+            // Slow frames are merged by `start` instead of replaced, so unrelated random lists
+            // can't be reconstructed. They are covered by the `testSlowFrames_*` tests below.
+            let base = RUMViewEvent.mockRandomWith(slowFrames: nil)
+            let target = RUMViewEvent.mockRandomWith(slowFrames: nil)
             let update = base.update(from: target)
             let reconstructed = base.apply(update: update)
             DDAssertJSONEqual(reconstructed, target)
@@ -71,5 +73,77 @@ class RUMViewUpdateEventTests: XCTestCase {
         let clearedUpdate = base.update(from: cleared)
         XCTAssertNil(clearedUpdate.usr)
         XCTAssertNil(clearedUpdate.account)
+    }
+
+    // MARK: - Slow Frames
+
+    func testSlowFrames_onlyNewRecordsAreSent() {
+        // Given
+        let base = viewEvent(slowFrames: [(start: 0, duration: 10), (start: 100, duration: 20)])
+        let target = viewEvent(slowFrames: [(start: 0, duration: 10), (start: 100, duration: 20), (start: 200, duration: 30), (start: 300, duration: 40)])
+
+        // When
+        let update = base.update(from: target)
+
+        // Then
+        XCTAssertEqual(update.view.slowFrames, [.init(duration: 30, start: 200), .init(duration: 40, start: 300)])
+    }
+
+    func testSlowFrames_lastRecordIsResentWhenItGrew() {
+        // Given
+        let base = viewEvent(slowFrames: [(start: 0, duration: 10), (start: 100, duration: 20)])
+        let grown = viewEvent(slowFrames: [(start: 0, duration: 10), (start: 100, duration: 50)])
+        let grownAndNew = viewEvent(slowFrames: [(start: 0, duration: 10), (start: 100, duration: 50), (start: 200, duration: 30)])
+
+        // When
+        let grownUpdate = base.update(from: grown)
+        let grownAndNewUpdate = base.update(from: grownAndNew)
+
+        // Then
+        XCTAssertEqual(grownUpdate.view.slowFrames, [.init(duration: 50, start: 100)])
+        XCTAssertEqual(grownAndNewUpdate.view.slowFrames, [.init(duration: 50, start: 100), .init(duration: 30, start: 200)])
+    }
+
+    func testSlowFrames_nilWhenNothingChanged() {
+        // Given
+        let base = viewEvent(slowFrames: [(start: 0, duration: 10), (start: 100, duration: 20)])
+
+        // When
+        let unchangedUpdate = base.update(from: viewEvent(slowFrames: [(start: 0, duration: 10), (start: 100, duration: 20)]))
+        let emptyUpdate = base.update(from: viewEvent(slowFrames: []))
+        let nilUpdate = base.update(from: viewEvent(slowFrames: nil))
+
+        // Then
+        XCTAssertNil(unchangedUpdate.view.slowFrames)
+        XCTAssertNil(emptyUpdate.view.slowFrames)
+        XCTAssertNil(nilUpdate.view.slowFrames)
+    }
+
+    func testSlowFrames_whenOldestRecordsWereEvicted() {
+        // Given
+        let base = viewEvent(slowFrames: [(start: 0, duration: 10), (start: 100, duration: 20), (start: 200, duration: 30)])
+        let target = viewEvent(slowFrames: [(start: 200, duration: 30), (start: 300, duration: 40)])
+
+        // When
+        let update = base.update(from: target)
+
+        // Then
+        XCTAssertEqual(update.view.slowFrames, [.init(duration: 40, start: 300)])
+    }
+
+    func testSlowFrames_olderRecordsAreNeverResent() {
+        // Given
+        let base = viewEvent(slowFrames: [(start: 0, duration: 10), (start: 100, duration: 20)])
+        let target = viewEvent(slowFrames: [(start: 0, duration: 99), (start: 100, duration: 20), (start: 200, duration: 30)])
+
+        // When
+        let update = base.update(from: target)
+
+        // Then
+        XCTAssertEqual(update.view.slowFrames, [.init(duration: 30, start: 200)])
+    }
+
+    private func viewEvent(slowFrames: [(start: Int64, duration: Int64)]?) -> RUMViewEvent {
+        .mockRandomWith(slowFrames: slowFrames?.map { .init(duration: $0.duration, start: $0.start) })
     }
 }
