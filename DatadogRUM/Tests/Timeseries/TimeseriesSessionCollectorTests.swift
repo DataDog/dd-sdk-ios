@@ -718,6 +718,18 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertTrue(collector.hasCollectedData(sessionID: "session-2"))
         XCTAssertTrue(collector.hasCollectedData(sessionID: "session-1"), "Late events from the previous session keep reporting its data")
         XCTAssertFalse(collector.hasCollectedData(sessionID: "session-3"))
+
+        // Third session: only the 2 most recently sampled sessions are retained
+        let thirdExpectation = self.expectation(description: "third session samples")
+        thirdExpectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { thirdExpectation.fulfill() }
+        collector.start(sessionID: "session-3", applicationID: "app-1", sessionType: .user)
+        waitForExpectations(timeout: 2)
+        collector.stop(sessionID: "session-3")
+
+        XCTAssertTrue(collector.hasCollectedData(sessionID: "session-3"))
+        XCTAssertTrue(collector.hasCollectedData(sessionID: "session-2"))
+        XCTAssertFalse(collector.hasCollectedData(sessionID: "session-1"), "Older sessions are evicted")
     }
 
     // MARK: - Pause / resume
