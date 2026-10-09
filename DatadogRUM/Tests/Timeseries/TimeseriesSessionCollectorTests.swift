@@ -716,7 +716,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         let lastEvent = try XCTUnwrap(events.last)
         XCTAssertEqual(lastEvent.session.id, "session-2")
         XCTAssertTrue(collector.hasCollectedData(sessionID: "session-2"))
-        XCTAssertFalse(collector.hasCollectedData(sessionID: "session-1"))
+        XCTAssertTrue(collector.hasCollectedData(sessionID: "session-1"), "Late events from the previous session keep reporting its data")
+        XCTAssertFalse(collector.hasCollectedData(sessionID: "session-3"))
     }
 
     // MARK: - Pause / resume
