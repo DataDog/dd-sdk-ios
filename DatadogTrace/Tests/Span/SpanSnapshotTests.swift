@@ -7,10 +7,311 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
+import OpenTelemetryApi
 
 @testable import DatadogTrace
 
 class SpanSnapshotTests: XCTestCase {
+    // MARK: - Service boundaries
+
+    func testServiceChangingChildrenAreTopLevelRegardlessOfSamplingAndFinishOrder() throws {
+        for sampled in [false, true] {
+            for parentFinishesFirst in [false, true] {
+                let core = PassthroughCoreMock()
+                let capture = SpanSnapshotCapture()
+                let tracer: DatadogTracer = .mockWith(
+                    core: core,
+                    samplingProvider: sampled ? TracerSamplerProviderMock.mockKeepAll() : TracerSamplerProviderMock.mockRejectAll(),
+                    spanEventBuilder: .mockWith(statsComputationEnabled: true),
+                    onSpanFinished: capture.capture
+                )
+                let parent = tracer.startSpan(operationName: "parent", tags: [SpanTags.service: "parent-service"])
+                let child = tracer.startSpan(operationName: "child", childOf: parent.context)
+                child.setTag(key: SpanTags.service, value: "child-service")
+                if parentFinishesFirst { parent.finish() }
+                child.finish()
+                if !parentFinishesFirst { parent.finish() }
+
+                let snapshot = try XCTUnwrap(capture.snapshots.first { $0.operationName == "child" })
+                XCTAssertTrue(snapshot.isTopLevel)
+                XCTAssertTrue(StatsConcentrator.isEligible(snapshot))
+                XCTAssertNotNil(snapshot.parentSpanID)
+                XCTAssertEqual(snapshot.service, "child-service")
+                let events: [SpanEventsEnvelope] = core.events()
+                XCTAssertEqual(events.count, sampled ? 2 : 0)
+                XCTAssertTrue(events.flatMap(\.spans).allSatisfy { $0.tags[SpanTags.topLevel] == nil })
+            }
+        }
+    }
+
+    func testSameServiceChildrenRemainIneligibleAndUseParentsCurrentService() throws {
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: PassthroughCoreMock(), onSpanFinished: capture.capture)
+        let parent = tracer.startSpan(operationName: "parent", tags: [SpanTags.service: "initial"])
+        let child = tracer.startSpan(operationName: "child", childOf: parent.context, tags: [SpanTags.service: "updated"])
+        parent.setTag(key: SpanTags.service, value: "updated")
+        child.finish()
+        let snapshot = try XCTUnwrap(capture.snapshot)
+        XCTAssertFalse(snapshot.isTopLevel)
+        XCTAssertFalse(StatsConcentrator.isEligible(snapshot))
+        parent.setTag(key: SpanTags.service, value: "later")
+        parent.finish()
+        XCTAssertFalse(capture.snapshots[0].isTopLevel)
+    }
+
+    func testServiceOverridesAreFrozenBeforeDeferredEventMapping() throws {
+        let scope = FeatureScopeMock(deferEventWriteContext: true)
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(featureScope: scope, onSpanFinished: capture.capture)
+        let parent = tracer.startSpan(operationName: "parent", tags: [SpanTags.service: "same"])
+        let child = tracer.startSpan(operationName: "child", childOf: parent.context, tags: [SpanTags.service: "same"])
+        child.finish()
+        parent.setTag(key: SpanTags.service, value: "changed-after-child-finish")
+        scope.flushDeferredEventWriteContexts()
+        XCTAssertFalse(try XCTUnwrap(capture.snapshot).isTopLevel)
+    }
+
+    func testChildRetainsServiceMetadataButNotItsParentSpan() throws {
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: PassthroughCoreMock(), onSpanFinished: capture.capture)
+        var parent: OTSpan? = tracer.startSpan(operationName: "parent", tags: [SpanTags.service: "parent"])
+        weak var parentReference = parent?.dd
+        let child = tracer.startSpan(operationName: "child", childOf: try XCTUnwrap(parent).context, tags: [SpanTags.service: "child"])
+        parent?.finish()
+        parent = nil
+        XCTAssertNil(parentReference)
+        child.finish()
+        XCTAssertTrue(try XCTUnwrap(capture.snapshot).isTopLevel)
+    }
+
+    func testExtractedRemoteParentCreatesLocalServiceEntryWithoutChangingTraceRoot() throws {
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: PassthroughCoreMock(), onSpanFinished: capture.capture)
+        let reader = HTTPHeadersReader(httpHeaderFields: ["x-datadog-trace-id": "123", "x-datadog-parent-id": "456"])
+        let remote = try XCTUnwrap(tracer.extract(reader: reader))
+        XCTAssertTrue(remote.dd.isRemote)
+        let child = tracer.startSpan(operationName: "local-entry", childOf: remote)
+        let grandchild = tracer.startSpan(operationName: "local-child", childOf: child.context)
+        grandchild.finish()
+        child.finish()
+        XCTAssertFalse(capture.snapshots[0].isTopLevel)
+        XCTAssertTrue(capture.snapshots[1].isTopLevel)
+        XCTAssertEqual(capture.snapshots[1].parentSpanID, remote.dd.spanID)
+        XCTAssertFalse(child.context.dd.isRemote)
+    }
+
+    func testUnknownParentMetadataDoesNotImplyRemoteParent() throws {
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: PassthroughCoreMock(), onSpanFinished: capture.capture)
+        let context: DDSpanContext = .mockAny()
+        tracer.startSpan(operationName: "child", childOf: context).finish()
+        XCTAssertFalse(try XCTUnwrap(capture.snapshot).isTopLevel)
+    }
+
+    func testEachSpanUsesItsOwnStartTimeDefaultService() throws {
+        let scope = FeatureScopeMock(context: .mockWith(service: "parent-default"), deferEventWriteContext: true)
+        let capture = SpanSnapshotCapture()
+        let builder = SpanEventBuilder(
+            service: nil,
+            networkInfoEnabled: false,
+            eventsMapper: nil,
+            bundleWithRUM: false,
+            statsComputationEnabled: true,
+            telemetry: NOPTelemetry()
+        )
+        let tracer: DatadogTracer = .mockWith(featureScope: scope, spanEventBuilder: builder, onSpanFinished: capture.capture)
+        let parent = tracer.startSpan(operationName: "parent")
+        scope.contextMock = .mockWith(service: "child-default")
+        let child = tracer.startSpan(operationName: "child", childOf: parent.context)
+        child.finish()
+        scope.contextMock = .mockWith(service: "upload-default")
+        scope.flushDeferredEventWriteContexts()
+        XCTAssertEqual(capture.snapshot?.service, "child-default")
+        XCTAssertTrue(try XCTUnwrap(capture.snapshot).isTopLevel)
+    }
+
+    func testInvalidServiceOverrideFallsBackToConfiguredService() throws {
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: PassthroughCoreMock(), onSpanFinished: capture.capture)
+        let parent = tracer.startSpan(operationName: "parent", tags: [SpanTags.service: "temporary"])
+        let child = tracer.startSpan(operationName: "child", childOf: parent.context)
+        parent.setTag(key: SpanTags.service, value: 42)
+        child.finish()
+        XCTAssertFalse(try XCTUnwrap(capture.snapshot).isTopLevel)
+    }
+
+    func testStatsDisabledDoesNotAllocateServiceMetadataOrChangeUploads() throws {
+        let core = PassthroughCoreMock()
+        let tracer: DatadogTracer = .mockWith(core: core)
+        let parent = tracer.startSpan(operationName: "parent", tags: [SpanTags.service: "parent"])
+        let child = tracer.startSpan(operationName: "child", childOf: parent.context, tags: [SpanTags.service: "child"])
+        XCTAssertNil(parent.context.dd.serviceForStats)
+        XCTAssertNil(child.context.dd.serviceForStats)
+        child.finish()
+        parent.finish()
+        let events: [SpanEventsEnvelope] = core.events()
+        XCTAssertEqual(events.flatMap(\.spans).map(\.serviceName), ["child", "parent"])
+        XCTAssertTrue(events.flatMap(\.spans).allSatisfy { $0.tags[SpanTags.topLevel] == nil })
+    }
+
+    func testActiveOpenTracingParentProvidesServiceMetadata() throws {
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: PassthroughCoreMock(), onSpanFinished: capture.capture)
+        let parent = tracer.startSpan(operationName: "parent", tags: [SpanTags.service: "parent"]).setActive()
+        defer { parent.finish() }
+        tracer.startSpan(operationName: "child", tags: [SpanTags.service: "child"]).finish()
+        XCTAssertTrue(try XCTUnwrap(capture.snapshot).isTopLevel)
+    }
+
+    func testMapperServiceTagDoesNotOverrideServiceOrClassifyBoundary() throws {
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(
+            core: PassthroughCoreMock(),
+            spanEventBuilder: .mockWith(eventsMapper: { event in
+                var mapped = event
+                mapped.tags[SpanTags.service] = event.operationName
+                return mapped
+            }),
+            onSpanFinished: capture.capture
+        )
+        let parent = tracer.startSpan(operationName: "parent")
+        tracer.startSpan(operationName: "child", childOf: parent.context).finish()
+        XCTAssertEqual(capture.snapshot?.service, tracer.spanEventBuilder.service)
+        XCTAssertFalse(try XCTUnwrap(capture.snapshot).isTopLevel)
+    }
+
+    func testConcurrentServiceUpdatesAndChildFinishesPreserveAllSnapshots() throws {
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(
+            core: PassthroughCoreMock(),
+            samplingProvider: TracerSamplerProviderMock.mockRejectAll(),
+            onSpanFinished: capture.capture
+        )
+        let parent = tracer.startSpan(operationName: "parent", tags: [SpanTags.service: "parent"])
+        DispatchQueue.concurrentPerform(iterations: 200) { index in
+            parent.setTag(key: SpanTags.service, value: "parent-\(index)")
+            tracer.startSpan(operationName: "child", childOf: parent.context, tags: [SpanTags.service: "child"]).finish()
+        }
+        XCTAssertEqual(capture.snapshots.count, 200)
+        XCTAssertTrue(capture.snapshots.allSatisfy(\.isTopLevel))
+    }
+
+    func testOpenTelemetryUsesUnfinishedParentsCurrentAttributes() throws {
+        for parentFinishesFirst in [false, true] {
+            let capture = SpanSnapshotCapture()
+            let tracer: DatadogTracer = .mockWith(core: PassthroughCoreMock(), onSpanFinished: capture.capture)
+            let parent = tracer.spanBuilder(spanName: "parent").setNoParent().startSpan()
+            parent.setAttribute(key: SpanTags.service, value: .string("initial"))
+            let child = tracer.spanBuilder(spanName: "child").setParent(parent).startSpan()
+            parent.setAttributes([SpanTags.service: .string("updated")])
+            child.setAttribute(key: SpanTags.service, value: .string("updated"))
+            if parentFinishesFirst { parent.end() }
+            child.end()
+            if !parentFinishesFirst { parent.end() }
+            let snapshot = try XCTUnwrap(capture.snapshots.first { $0.operationName == "child" })
+            XCTAssertFalse(snapshot.isTopLevel)
+        }
+    }
+
+    func testOpenTelemetryServiceChangingChildCountsWithoutParentFinishing() throws {
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: PassthroughCoreMock(), onSpanFinished: capture.capture)
+        let parent = tracer.spanBuilder(spanName: "parent").setNoParent().setAttribute(key: SpanTags.service, value: .string("parent")).startSpan()
+        let child = tracer.spanBuilder(spanName: "child").setParent(parent).startSpan()
+        child.setAttribute(key: SpanTags.service, value: .string("child"))
+        child.end()
+        XCTAssertTrue(try XCTUnwrap(capture.snapshot).isTopLevel)
+        XCTAssertTrue(parent.isRecording)
+    }
+
+    func testOpenTelemetryActiveParentProvidesServiceMetadata() throws {
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: PassthroughCoreMock(), onSpanFinished: capture.capture)
+        let parent = tracer.spanBuilder(spanName: "parent")
+            .setNoParent()
+            .setAttribute(key: SpanTags.service, value: .string("parent"))
+            .startSpan()
+        OpenTelemetry.instance.contextProvider.withActiveSpan(parent) {
+            tracer.spanBuilder(spanName: "child").setAttribute(key: SpanTags.service, value: .string("child")).startSpan().end()
+        }
+        XCTAssertTrue(try XCTUnwrap(capture.snapshot).isTopLevel)
+        parent.end()
+    }
+
+    func testOpenTelemetrySampledOutServiceEntryStillContributesStats() throws {
+        let core = PassthroughCoreMock()
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: core, samplingProvider: TracerSamplerProviderMock.mockRejectAll(), onSpanFinished: capture.capture)
+        let parent = tracer.spanBuilder(spanName: "parent").setNoParent().setAttribute(key: SpanTags.service, value: .string("parent")).startSpan()
+        tracer.spanBuilder(spanName: "child").setParent(parent).setAttribute(key: SpanTags.service, value: .string("child")).startSpan().end()
+        let snapshot = try XCTUnwrap(capture.snapshot)
+        XCTAssertTrue(snapshot.isTopLevel)
+        XCTAssertTrue(StatsConcentrator.isEligible(snapshot))
+        let events: [SpanEventsEnvelope] = core.events()
+        XCTAssertTrue(events.isEmpty)
+    }
+
+    func testOpenTelemetryNestedServiceAttributesAreVisibleToChildren() throws {
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: PassthroughCoreMock(), onSpanFinished: capture.capture)
+        let parent = tracer.spanBuilder(spanName: "parent").setNoParent().startSpan()
+        parent.setAttribute(key: "service", value: .set(.init(labels: ["name": .string("shared")])))
+        parent.setAttribute(key: "unrelated", value: .string("value"))
+        tracer.spanBuilder(spanName: "same").setParent(parent).setAttribute(key: SpanTags.service, value: .string("shared")).startSpan().end()
+        XCTAssertFalse(try XCTUnwrap(capture.snapshot).isTopLevel)
+        parent.setAttributes(["service": .set(.init(labels: ["name": .string("updated")]))])
+        tracer.spanBuilder(spanName: "different").setParent(parent).setAttribute(key: SpanTags.service, value: .string("shared")).startSpan().end()
+        XCTAssertTrue(try XCTUnwrap(capture.snapshot).isTopLevel)
+    }
+
+    func testOpenTelemetryGlobalManualKeepRetainsItsExistingSideEffect() throws {
+        for statsEnabled in [false, true] {
+            let core = PassthroughCoreMock()
+            let capture = SpanSnapshotCapture()
+            let onSpanFinished: (@Sendable (SpanSnapshot) -> Void)?
+            if statsEnabled {
+                onSpanFinished = { capture.capture($0) }
+            } else {
+                onSpanFinished = nil
+            }
+            let tracer: DatadogTracer = .mockWith(
+                core: core,
+                samplingProvider: TracerSamplerProviderMock.mockRejectAll(),
+                tags: [SpanTags.manualKeep: true, SpanTags.service: "global"],
+                onSpanFinished: onSpanFinished
+            )
+            let span = tracer.spanBuilder(spanName: "span").setNoParent().startSpan()
+            span.setAttribute(key: SpanTags.manualKeep, value: .bool(false))
+            span.setAttribute(key: SpanTags.service, value: .string("local"))
+            span.end()
+            let events: [SpanEventsEnvelope] = core.events()
+            XCTAssertEqual(events.count, 1)
+            XCTAssertEqual(events.first?.spans.first?.serviceName, "local")
+        }
+    }
+
+    func testOpenTelemetryRemovingServiceAttributeRestoresGlobalService() throws {
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: PassthroughCoreMock(), tags: [SpanTags.service: "global"], onSpanFinished: capture.capture)
+        let parent = tracer.spanBuilder(spanName: "parent").setNoParent().setAttribute(key: SpanTags.service, value: .string("override")).startSpan()
+        let child = tracer.spanBuilder(spanName: "child").setParent(parent).startSpan()
+        parent.setAttribute(key: SpanTags.service, value: nil)
+        child.end()
+        XCTAssertFalse(try XCTUnwrap(capture.snapshot).isTopLevel)
+    }
+
+    func testOpenTelemetryRemoteParentIsNotInferredFromMissingMetadata() throws {
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: PassthroughCoreMock(), onSpanFinished: capture.capture)
+        let local = SpanContext.create(traceId: .random(), spanId: .random(), traceFlags: .init(), traceState: .init())
+        let remote = SpanContext.createFromRemoteParent(traceId: local.traceId, spanId: local.spanId, traceFlags: .init(), traceState: .init())
+        tracer.spanBuilder(spanName: "local-context-only").setParent(local).startSpan().end()
+        tracer.spanBuilder(spanName: "remote").setParent(remote).startSpan().end()
+        XCTAssertFalse(capture.snapshots[0].isTopLevel)
+        XCTAssertTrue(capture.snapshots[1].isTopLevel)
+        XCTAssertNotNil(capture.snapshots[1].parentSpanID)
+    }
+
     // MARK: - Snapshot Creation
 
     func testSnapshotCapturesBasicSpanData() throws {

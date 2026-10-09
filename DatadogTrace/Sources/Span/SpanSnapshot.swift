@@ -61,8 +61,8 @@ internal struct SpanSnapshot: Encodable, Sendable {
 extension SpanSnapshot {
     /// Creates a snapshot from a post-mapper `SpanEvent`.
     ///
-    /// All field values that the `SpanEventMapper` may mutate (resource, service,
-    /// operation name, tags, isError) are read from the event so that any mutation
+    /// All field values that the `SpanEventMapper` may mutate (resource,
+    /// operation name and tags) are read from the event so that any mutation
     /// applied by the user-configured mapper is reflected in stats aggregation.
     ///
     /// - Parameter event: the post-mapper `SpanEvent`.
@@ -73,7 +73,7 @@ extension SpanSnapshot {
     ///   clock. Using the server-adjusted time here would bucket snapshots in the future
     ///   relative to the flush clock on devices whose clock is behind the server, delaying
     ///   or dropping stats. Stats stay on the device-local clock.
-    init(from event: SpanEvent, startTime: Date, deployment: DeploymentIdentity) {
+    init(from event: SpanEvent, startTime: Date, deployment: DeploymentIdentity, isServiceEntry: Bool = false) {
         let spanKind = event.tags[SpanTags.kind]
         let httpStatusCode: UInt32 = {
             guard let raw = event.tags[OTTags.httpStatusCode],
@@ -83,12 +83,9 @@ extension SpanSnapshot {
             }
             return uint32
         }()
-        // A span is "top level" when it is a service entry point. Root spans (no
-        // parent) always qualify. Spans with a `parentID` set still qualify when the
-        // parent lives in a different service (distributed-tracing continuation) or
-        // when the user explicitly marks the span with `_dd.top_level`. Mirrors the
-        // dd-trace-go convention (`_top_level` tag).
-        let isTopLevel = event.parentID == nil || event.tags[SpanTags.topLevel] == "1"
+        // Service-entry classification is internal to stats. Keep a remote parent's ID:
+        // a local service entry is not necessarily the root of the distributed trace.
+        let isTopLevel = event.parentID == nil || isServiceEntry || event.tags[SpanTags.topLevel] == "1"
         let isMeasured = event.tags[SpanTags.measured] == "1"
         let serviceSource = event.tags["_dd.svc_src"] ?? ""
 

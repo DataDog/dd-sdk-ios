@@ -52,7 +52,8 @@ extension TracePropagationHeadersReader where Self: OTFormatReader {
             samplingDecision: SamplingDecision(
                 from: samplingPriority ?? .autoDrop,
                 decisionMaker: samplingDecisionMaker
-            )
+            ),
+            isRemote: true
         )
     }
 }
