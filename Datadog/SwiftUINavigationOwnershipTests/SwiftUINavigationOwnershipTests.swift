@@ -403,12 +403,14 @@ extension SwiftUINavigationOwnershipTests {
                 notificationCenter: NotificationCenterProvider.makeTestProvider().applicationCenter,
                 admitsCallbacks: { binding.isValid }, coordinatorProvider: { _, _ in coordinator }
             )
+            let trackedConfiguration = configuration(generation: 1)
             _ = admission.withSession { session in
-                _ = session.trackingState.reconcile(configuration: configuration(generation: 1),
+                _ = session.trackingState.reconcile(configuration: trackedConfiguration,
                                                     attachment: .attached(scene), isAppeared: true)
                 foundation.registerAuthority(observer: observer, trackingState: session.trackingState, admission: admission)
                 // Actual deferred production storage retains this appeared state after holder retirement.
-                arbiter.process(.disappear, state: session.trackingState) { _ in XCTFail("Completion was not released") }
+                arbiter.process(.reconcile(configuration: trackedConfiguration, attachment: nil, isAppeared: false),
+                                state: session.trackingState) { _ in XCTFail("Completion was not released") }
             }
             XCTAssertEqual(coordinator.registrations, 1)
             let eligible = try XCTUnwrap(foundation.makeEligibilityCheck())
