@@ -280,8 +280,8 @@ internal final class DatadogCore {
     ///   - key: The key associated with the receiver.
     private func add(messageReceiver: FeatureMessageReceiver, forKey key: String) {
         bus.connect(messageReceiver, forKey: key)
-        contextProvider.read { context in
-            self.bus.queue.async { messageReceiver.receive(message: .context(context), from: self) }
+        contextProvider.read { [weak self] context in
+            self?.bus.deliver(.context(context), to: messageReceiver)
         }
     }
 
@@ -305,7 +305,9 @@ internal final class DatadogCore {
     /// Awaits completion of all asynchronous operations, forces uploads (without retrying) and deinitializes
     /// this instance of the SDK. It **blocks the caller thread**.
     ///
-    /// Upon return, it is safe to assume that all events were stored and got uploaded. The SDK was deinitialised so this instance of core is non-functional.
+    /// Upon return, it is safe to assume that all events recorded before this call were stored and got uploaded. The SDK
+    /// was deinitialised and its message bus disconnected, so this instance of core is non-functional and no message is
+    /// delivered after return.
     func flushAndTearDown() {
         flush()
 
@@ -316,7 +318,14 @@ internal final class DatadogCore {
         allUploads.forEach { $0.flushAndTearDown() }
         allStorages.forEach { $0.setIgnoreFilesAgeWhenReading(to: false) }
 
+        // Deliver messages posted during the final upload, and complete the work they trigger (e.g. writing
+        // telemetry): `stop()` releases storages and disconnects the bus, which drops queued messages.
+        flush()
+
         stop()
+
+        // Wait for a delivery that may still be in progress, so that none runs upon return.
+        bus.flush()
     }
 
     /// Uploads all pending data immediately without tearing down the SDK.
@@ -331,11 +340,15 @@ internal final class DatadogCore {
     }
 
     /// Stops all processes for this instance of the Datadog core by
-    /// deallocating all Features and their storage & upload units.
+    /// deallocating all Features and their storage & upload units,
+    /// and disconnecting the message bus.
+    ///
+    /// Messages queued on the bus are dropped. A delivery already in progress may still complete after return.
     func stop() {
         remoteConfigurationProvider?.stop()
         stores = [:]
         features = [:]
+        bus.disconnect()
     }
 }
 

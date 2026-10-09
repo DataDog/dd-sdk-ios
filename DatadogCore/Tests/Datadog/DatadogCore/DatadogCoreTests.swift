@@ -412,6 +412,80 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 0, "It should not send any request")
     }
 
+    func testWhenStoppingInstance_itDisconnectsMessageBus() throws {
+        // Given
+        let messageReceiver = FeatureMessageReceiverMock()
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        try core.register(feature: FeatureMock(messageReceiver: messageReceiver))
+        core.send(message: .payload("sent before stop"))
+        core.bus.flush()
+
+        let busQueueBlocked = DispatchSemaphore(value: 0)
+        core.bus.queue.async { busQueueBlocked.wait() } // keep the next message queued until `stop()` returns
+        core.send(message: .payload("queued before stop"))
+
+        // When
+        core.stop()
+        busQueueBlocked.signal()
+        core.send(message: .payload("sent after stop"))
+        core.bus.flush()
+
+        // Then
+        let deliveredPayloads = messageReceiver.messages.compactMap { message -> String? in
+            guard case .payload(let payload as String) = message else {
+                return nil
+            }
+            return payload
+        }
+        XCTAssertEqual(deliveredPayloads, ["sent before stop"], "Messages queued or sent after `stop()` must not be delivered")
+    }
+
+    func testWhenStoppingInstance_itDoesNotDeliverPendingInitialContext() throws {
+        // Given
+        let messageReceiver = FeatureMessageReceiverMock()
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        let busQueueBlocked = DispatchSemaphore(value: 0)
+        core.bus.queue.async { busQueueBlocked.wait() } // keep the initial context delivery pending until `stop()` returns
+        try core.register(feature: FeatureMock(messageReceiver: messageReceiver))
+        core.contextProvider.flush() // the initial context is read and its delivery is queued
+
+        // When
+        core.stop()
+        busQueueBlocked.signal()
+        core.bus.flush()
+
+        // Then
+        let deliveredContexts = messageReceiver.messages.filter { message in
+            guard case .context = message else {
+                return false
+            }
+            return true
+        }
+        XCTAssertTrue(deliveredContexts.isEmpty, "The initial context must not be delivered after `stop()`")
+    }
+
     func testWhenStoppingInstance_itStopsRemoteConfigurationProvider() throws {
         // Given
         let notificationCenterProvider = NotificationCenterProvider.makeTestProvider()
@@ -711,6 +785,95 @@ class DatadogCoreTests: XCTestCase {
 
         XCTAssertTrue(uploadedEvents.contains(#"{"event":"first"}"#))
         XCTAssertTrue(uploadedEvents.contains(#"{"event":"second"}"#))
+    }
+
+    func testFlushAndTearDown_whenMessageIsPostedDuringFinalUpload_itDeliversItBeforeReturning() throws {
+        // Given
+        let requestBuilderSpy = FeatureRequestBuilderSpy()
+        let deliveredPayloads = ReadWriteLock<[String]>(wrappedValue: [])
+        let messageReceiver = FeatureMessageReceiverMock { message in
+            guard case .payload(let payload as String) = message else {
+                return
+            }
+            deliveredPayloads.mutate { $0.append(payload) }
+        }
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .noOp),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockWith(context: .mockWith(networkConnectionInfo: .mockWith(reachability: .no))),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: 1,
+            backgroundTasksEnabled: false
+        )
+        try core.register(feature: FeatureMock(requestBuilder: requestBuilderSpy, messageReceiver: messageReceiver))
+        core.scope(for: FeatureMock.self).eventWriteContext { _, writer in
+            writer.write(value: FeatureMock.Event(event: "test"))
+        }
+        // Only the final forced upload builds requests: scheduled uploads are blocked by the unreachable network.
+        // The bus queue is parked so the message is still queued when the final upload completes. The timeout only
+        // bounds how long `flushAndTearDown()` waits on it: the message must be delivered whenever the queue resumes.
+        let busQueueParked = DispatchSemaphore(value: 0)
+        requestBuilderSpy.onRequest = { [weak core] _, _ in
+            core?.bus.queue.async { _ = busQueueParked.wait(timeout: .now() + 1) }
+            core?.send(message: .payload("posted during final upload"))
+        }
+
+        // When
+        core.flushAndTearDown()
+
+        // Then
+        XCTAssertEqual(deliveredPayloads.wrappedValue, ["posted during final upload"])
+    }
+
+    func testFlushAndTearDown_whenMessageIsPostedDuringFinalUpload_itCompletesTheWriteItTriggersBeforeReturning() throws {
+        // Given
+        let requestBuilderSpy = FeatureRequestBuilderSpy()
+        let isWriteCompleted = ReadWriteLock(wrappedValue: false)
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .noOp),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockWith(context: .mockWith(networkConnectionInfo: .mockWith(reachability: .no))),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: 1,
+            backgroundTasksEnabled: false
+        )
+        // Like RUM's telemetry receiver, write an event when the message is delivered.
+        let contextQueueParked = DispatchSemaphore(value: 0)
+        let messageReceiver = FeatureMessageReceiverMock { [weak core] message in
+            guard case .payload(let payload as String) = message, payload == "posted during final upload", let core = core else {
+                return
+            }
+            // Park the context queue so the write is still pending when the delivery completes. The timeout only
+            // bounds how long `flushAndTearDown()` waits on it: the write must complete whenever the queue resumes.
+            core.contextProvider.queue.async { _ = contextQueueParked.wait(timeout: .now() + 1) }
+            core.scope(for: FeatureMock.self).eventWriteContext { _, writer in
+                writer.write(value: FeatureMock.Event(event: "written during teardown")) {
+                    isWriteCompleted.mutate { $0 = true }
+                }
+            }
+        }
+        try core.register(feature: FeatureMock(requestBuilder: requestBuilderSpy, messageReceiver: messageReceiver))
+        core.scope(for: FeatureMock.self).eventWriteContext { _, writer in
+            writer.write(value: FeatureMock.Event(event: "test"))
+        }
+        // Only the final forced upload builds requests: scheduled uploads are blocked by the unreachable network.
+        requestBuilderSpy.onRequest = { [weak core] _, _ in
+            core?.send(message: .payload("posted during final upload"))
+        }
+
+        // When
+        core.flushAndTearDown()
+
+        // Then
+        XCTAssertTrue(isWriteCompleted.wrappedValue, "A write triggered during teardown must complete before `flushAndTearDown()` returns")
     }
 
     func testDatadogFlush_uploadsEventsAndReturnsSynchronously() throws {
