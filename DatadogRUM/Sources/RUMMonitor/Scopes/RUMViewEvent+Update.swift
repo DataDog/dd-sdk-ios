@@ -60,6 +60,30 @@ private func diffMap<T: Equatable, U>(_ old: T?, _ new: T?, _ transform: (T?, T)
     diff(old, new).map { transform(old, $0) }
 }
 
+/// Returns the slow frames that are new or grown since `old`, or `nil` if there are none.
+///
+/// Slow frames are ordered by increasing `start`, and only the most recent one can grow (consecutive
+/// hitches are merged into it). The update therefore carries the records that started after the last
+/// one in `old`, plus that last record again if its `duration` changed. The backend keeps the largest
+/// `duration` for each `start`.
+///
+/// Records are matched by `start`, not by index or count: the oldest ones get evicted, so positions shift.
+private func diffSlowFrames(
+    _ old: [RUMViewEvent.View.SlowFrames]?,
+    _ new: [RUMViewEvent.View.SlowFrames]?
+) -> [RUMViewEvent.View.SlowFrames]? {
+    guard let new, !new.isEmpty else {
+        return nil
+    }
+    guard let last = old?.last else {
+        return new
+    }
+
+    let suffix = new.reversed().prefix { $0.start >= last.start }.reversed()
+    let frames = suffix.filter { $0.start > last.start || $0.duration != last.duration }
+    return frames.isEmpty ? nil : frames
+}
+
 // MARK: - Enum init extensions (safe conversion, no force-unwrap)
 
 private extension RUMViewUpdateEvent.Source {
@@ -341,7 +365,7 @@ private extension RUMViewUpdateEvent.View {
             refreshRateAverage: diff(old.refreshRateAverage, new.refreshRateAverage),
             refreshRateMin: diff(old.refreshRateMin, new.refreshRateMin),
             resource: diff(old.resource, new.resource).map { .init($0) },
-            slowFrames: diff(old.slowFrames, new.slowFrames).map { $0.map { .init($0) } },
+            slowFrames: diffSlowFrames(old.slowFrames, new.slowFrames).map { $0.map { .init($0) } },
             slowFramesRate: diff(old.slowFramesRate, new.slowFramesRate),
             timeSpent: diff(old.timeSpent, new.timeSpent),
             url: new.url
