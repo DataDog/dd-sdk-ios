@@ -88,7 +88,34 @@ internal final class FlagsRepository {
     private var didStartInitialization = false
 
     @ReadWriteLock
-    private var flagsData: FlagsData?
+    private var cachedFlagsData: CachedFlagsData?
+
+    private var flagsData: FlagsData? {
+        get { cachedFlagsData?.data }
+        // Replace assignments and lookup hashes together under the same lock.
+        set { cachedFlagsData = newValue.map { CachedFlagsData(data: $0) } }
+    }
+
+    struct CachedFlagsData {
+        static let lookupCacheLimit = 1_024
+        let data: FlagsData
+        // Swift String equality treats canonically equivalent Unicode sequences as equal.
+        private(set) var lookupKeys: [Data: String] = [:]
+
+        mutating func flagAssignment(for key: String) -> FlagAssignment? {
+            guard let obfuscation = data.obfuscation else {
+                return data.flags[key]
+            }
+            let keyBytes = Data(key.utf8)
+            if let lookupKey = lookupKeys[keyBytes] {
+                return data.flags[lookupKey]
+            }
+            let lookupKey = obfuscation.lookupKey(for: key)
+            if lookupKeys.count >= Self.lookupCacheLimit { lookupKeys.removeAll(keepingCapacity: true) }
+            lookupKeys[keyBytes] = lookupKey
+            return data.flags[lookupKey]
+        }
+    }
 
     // A missing or delayed context must not expose encoded assignments to legacy bridges.
     @ReadWriteLock
@@ -290,7 +317,15 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         guard stateManager.currentState != .error else {
             return nil
         }
-        return readableFlagsData?.flagAssignment(for: key)
+        let supportsObfuscation = supportsFlagKeyObfuscation
+        var assignment: FlagAssignment?
+        _cachedFlagsData.mutate { cached in
+            guard cached?.data.obfuscation == nil || supportsObfuscation else {
+                return
+            }
+            assignment = cached?.flagAssignment(for: key)
+        }
+        return assignment
     }
 
     func flagAssignments() -> [String: FlagAssignment]? {

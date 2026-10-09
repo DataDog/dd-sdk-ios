@@ -23,18 +23,32 @@ extension FlagAssignmentsResponse: Codable {
         case data
         case attributes
         case flags
+        case obfuscated
+        case obfuscation
     }
 
     init(from decoder: any Decoder) throws {
         let rootContainer = try decoder.container(keyedBy: CodingKeys.self)
         let dataContainer = try rootContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .data)
-        let attributesDecoder = try dataContainer.superDecoder(forKey: .attributes)
-        let attributesContainer = try attributesDecoder.container(keyedBy: CodingKeys.self)
-        obfuscation = try FlagKeyObfuscation.read(from: attributesDecoder)
+        let attributesContainer = try dataContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .attributes)
 
         // Decode all flags (including those with unknown variation types)
         let allFlags = try attributesContainer.decode([String: FlagAssignment].self, forKey: .flags)
-        try obfuscation?.validateKeys(allFlags.keys)
+        let isObfuscated = attributesContainer.contains(.obfuscated)
+            ? try attributesContainer.decode(Bool.self, forKey: .obfuscated) : false
+        if isObfuscated {
+            let obfuscation = try attributesContainer.decode(FlagKeyObfuscation.self, forKey: .obfuscation)
+            try obfuscation.validateKeys(allFlags.keys, codingPath: attributesContainer.codingPath + [CodingKeys.flags])
+            self.obfuscation = obfuscation
+        } else if attributesContainer.contains(.obfuscation) {
+            throw DecodingError.dataCorruptedError(
+                forKey: .obfuscation,
+                in: attributesContainer,
+                debugDescription: "`obfuscation` requires `obfuscated: true`"
+            )
+        } else {
+            self.obfuscation = nil
+        }
 
         // Separate valid flags from unknown variations
         var successfulFlags: [String: FlagAssignment] = [:]
@@ -55,9 +69,11 @@ extension FlagAssignmentsResponse: Codable {
     func encode(to encoder: any Encoder) throws {
         var rootContainer = encoder.container(keyedBy: CodingKeys.self)
         var dataContainer = rootContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .data)
-        let attributesEncoder = dataContainer.superEncoder(forKey: .attributes)
-        var attributesContainer = attributesEncoder.container(keyedBy: CodingKeys.self)
+        var attributesContainer = dataContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .attributes)
         try attributesContainer.encode(flags, forKey: .flags)
-        try obfuscation?.encodeMetadata(to: attributesEncoder)
+        if let obfuscation {
+            try attributesContainer.encode(true, forKey: .obfuscated)
+            try attributesContainer.encode(obfuscation, forKey: .obfuscation)
+        }
     }
 }

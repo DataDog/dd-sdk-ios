@@ -54,27 +54,36 @@ final class FlagKeyObfuscationTests: XCTestCase {
     }
 
     func testLookupCacheIsBoundedAndKeepsExactBytesAndSaltSeparate() throws {
-        let encoding = try XCTUnwrap(decode(flags: [:], metadata: metadata()).obfuscation)
-        let other = try XCTUnwrap(decode(flags: [:], metadata: metadata(salt: String(repeating: "f", count: 32))).obfuscation)
-        XCTAssertEqual(encoding.lookupKey(for: "flag"), digest)
-        XCTAssertEqual(encoding.lookupKey(for: "flag"), digest)
-        XCTAssertEqual(encoding.lookupKeys.count, 1)
-        XCTAssertNotEqual(other.lookupKey(for: "flag"), digest)
-        XCTAssertEqual(encoding.lookupKey(for: "flag"), digest)
-        XCTAssertNotEqual(encoding.lookupKey(for: "café"), encoding.lookupKey(for: "cafe\u{0301}"))
-        XCTAssertEqual(encoding.lookupKeys.count, 3)
-        for index in 0..<FlagKeyObfuscation.lookupCacheLimit {
-            _ = encoding.lookupKey(for: "flag-\(index)")
-            XCTAssertLessThanOrEqual(encoding.lookupKeys.count, FlagKeyObfuscation.lookupCacheLimit)
+        let response = try decode(flags: [digest: assignment], metadata: metadata())
+        var cache = FlagsRepository.CachedFlagsData(data: state(response))
+        var other = FlagsRepository.CachedFlagsData(data: state(try decode(flags: [:], metadata: metadata(salt: String(repeating: "f", count: 32)))))
+        XCTAssertEqual(cache.flagAssignment(for: "flag"), assignment)
+        XCTAssertEqual(cache.flagAssignment(for: "flag"), assignment)
+        XCTAssertEqual(cache.lookupKeys.count, 1)
+        _ = other.flagAssignment(for: "flag")
+        XCTAssertNotEqual(other.lookupKeys[Data("flag".utf8)], digest)
+        XCTAssertEqual(cache.flagAssignment(for: "flag"), assignment)
+        _ = cache.flagAssignment(for: "café")
+        _ = cache.flagAssignment(for: "cafe\u{0301}")
+        XCTAssertNotEqual(cache.lookupKeys[Data("café".utf8)], cache.lookupKeys[Data("cafe\u{0301}".utf8)])
+        XCTAssertEqual(cache.lookupKeys.count, 3)
+
+        var copy = cache
+        _ = copy.flagAssignment(for: "copy-only")
+        XCTAssertEqual(cache.lookupKeys.count, 3, "Copies must not share mutable lookup hashes")
+        XCTAssertEqual(copy.lookupKeys.count, 4)
+        for index in 0..<FlagsRepository.CachedFlagsData.lookupCacheLimit {
+            _ = cache.flagAssignment(for: "flag-\(index)")
+            XCTAssertLessThanOrEqual(cache.lookupKeys.count, FlagsRepository.CachedFlagsData.lookupCacheLimit)
         }
-        XCTAssertNil(encoding.lookupKeys[Data("flag".utf8)])
-        XCTAssertEqual(encoding.lookupKey(for: "flag"), digest)
-        let restored = try JSONDecoder().decode(FlagKeyObfuscation.self, from: JSONEncoder().encode(encoding))
-        XCTAssertEqual(restored, encoding)
-        XCTAssertTrue(restored.lookupKeys.isEmpty, "Lookup hashes are not persisted")
+        XCTAssertNil(cache.lookupKeys[Data("flag".utf8)])
+        XCTAssertEqual(cache.flagAssignment(for: "flag"), assignment)
+        let restored = try JSONDecoder().decode(FlagsData.self, from: JSONEncoder().encode(cache.data))
+        XCTAssertEqual(restored, cache.data)
+        XCTAssertTrue(FlagsRepository.CachedFlagsData(data: restored).lookupKeys.isEmpty, "Lookup hashes are not persisted")
     }
 
-    func testRejectsInvalidMetadataFromWireAndDisk() throws {
+    func testRejectsInvalidWireMetadata() throws {
         let descriptor: [String: Any] = ["scheme": "flag-key-sha256-v1", "salt": salt]
         var invalidMetadata: [[String: Any]] = [
             ["obfuscated": true],
@@ -95,12 +104,46 @@ final class FlagKeyObfuscationTests: XCTestCase {
         invalidMetadata += invalidSalts.map {
             ["obfuscated": true, "obfuscation": ["scheme": "flag-key-sha256-v1", "salt": $0]]
         }
-        let cache = try JSONEncoder().encode(FlagsData(flags: [digest: assignment], context: .mockAny(), date: .mockAny()))
-        let baseCache = try XCTUnwrap(JSONSerialization.jsonObject(with: cache) as? [String: Any])
         for metadata in invalidMetadata {
             XCTAssertThrowsError(try decode(flags: [digest: assignment], metadata: metadata))
-            let invalidCache = baseCache.merging(metadata) { _, new in new }
-            XCTAssertThrowsError(try JSONDecoder().decode(FlagsData.self, from: JSONSerialization.data(withJSONObject: invalidCache)))
+        }
+    }
+
+    func testRejectsInvalidDiskDescriptors() throws {
+        let cache = try JSONEncoder().encode(FlagsData(flags: [digest: assignment], context: .mockAny(), date: .mockAny()))
+        var json = try XCTUnwrap(JSONSerialization.jsonObject(with: cache) as? [String: Any])
+        let invalidDescriptors: [Any] = [
+            [], [:], "invalid-descriptor",
+            ["scheme": "flag-key-sha256-v2", "salt": salt],
+            ["scheme": "flag-key-sha256-v1"],
+            ["scheme": "flag-key-sha256-v1", "salt": NSNull()],
+            ["scheme": "flag-key-sha256-v1", "salt": salt.uppercased()],
+            ["scheme": "flag-key-sha256-v1", "salt": "00"],
+        ]
+        for descriptor in invalidDescriptors {
+            json["obfuscation"] = descriptor
+            XCTAssertThrowsError(try JSONDecoder().decode(FlagsData.self, from: JSONSerialization.data(withJSONObject: json)))
+        }
+    }
+
+    func testDecodingErrorsCarryCodingPathsAndUseSanitizedTelemetry() throws {
+        let cases: [([String: Any], [String: FlagAssignment], [String])] = [
+            (metadata(salt: "private-invalid-salt"), [digest: assignment], ["data", "attributes", "obfuscation", "salt"]),
+            (["obfuscated": true, "obfuscation": ["scheme": "private-unknown-scheme", "salt": salt]], [digest: assignment], ["data", "attributes", "obfuscation", "scheme"]),
+            (["obfuscated": false, "obfuscation": ["scheme": "flag-key-sha256-v1", "salt": salt]], [digest: assignment], ["data", "attributes", "obfuscation"]),
+            (metadata(), ["private-flag-name": assignment], ["data", "attributes", "flags"]),
+        ]
+        for (metadata, flags, path) in cases {
+            XCTAssertThrowsError(try decode(flags: flags, metadata: metadata)) { error in
+                guard case DecodingError.dataCorrupted(let context) = error else {
+                    return XCTFail("Expected dataCorrupted, got \(error)")
+                }
+                XCTAssertEqual(context.codingPath.map(\.stringValue), path)
+                let sanitized = TelemetrySanitizedError(sanitizing: error)
+                XCTAssertEqual(sanitized.kind, "DecodingError.dataCorrupted")
+                XCTAssertEqual(sanitized.message, "data was corrupted")
+                XCTAssertEqual(sanitized.stack, "\(path.count) levels deep")
+            }
         }
     }
 
@@ -133,7 +176,7 @@ final class FlagKeyObfuscationTests: XCTestCase {
             XCTAssertEqual(repository.flagAssignment(for: "flag"), changed)
         }
         let stored = try XCTUnwrap(scope.dataStoreMock.storage["client"]?.data(expectedVersion: 2))
-        XCTAssertEqual(try JSONDecoder().decode(FlagsData.self, from: stored).obfuscation?.salt, String(repeating: "f", count: 32))
+        XCTAssertEqual(try JSONDecoder().decode(FlagsData.self, from: stored).obfuscation?.salt.bytes, Array(repeating: 255, count: 16))
         let restored = makeRepository(scope: scope, fetcher: FlagAssignmentsFetcherMock { _, completion in
             completion(.failure(.invalidResponse))
         })
@@ -144,7 +187,75 @@ final class FlagKeyObfuscationTests: XCTestCase {
         XCTAssertEqual(restored.flagAssignment(for: "flag")?.variation, .boolean(false))
     }
 
-    func testRejectsMalformedEncodedKeysFromWireAndDisk() throws {
+    func testConcurrentLookupsDuringSaltRotation() throws {
+        // Given
+        let keys = (0..<64).map { "flag-\($0)" }
+        let responses = try [salt, String(repeating: "f", count: 32)].map { salt in
+            let encoding = try XCTUnwrap(decode(flags: [:], metadata: metadata(salt: salt)).obfuscation)
+            let flags = Dictionary(uniqueKeysWithValues: keys.map { (encoding.lookupKey(for: $0), assignment) })
+            return try decode(flags: flags, metadata: metadata(salt: salt))
+        }
+        let scope = FeatureScopeMock(context: .mockWith(source: "ios"))
+        scope.flagsDataStore.setFlagsData(state(responses[0]), forClientNamed: "client")
+        var nextResponse = responses[0]
+        let repository = makeRepository(scope: scope, fetcher: FlagAssignmentsFetcherMock { _, completion in
+            completion(.success(nextResponse))
+        })
+        repository.setEvaluationContext(.mockAny()) { _ in }
+        for key in keys.prefix(32) {
+            XCTAssertEqual(repository.flagAssignment(for: key), assignment)
+        }
+
+        // When: one writer rotates the salt while readers use cached and uncached keys.
+        DispatchQueue.concurrentPerform(iterations: 17) { worker in
+            if worker == 0 {
+                for index in 0..<32 {
+                    nextResponse = responses[index % 2]
+                    repository.setEvaluationContext(.mockAny()) { _ in }
+                }
+            } else {
+                for _ in 0..<4 {
+                    for key in keys {
+                        XCTAssertEqual(repository.flagAssignment(for: key), assignment)
+                    }
+                }
+            }
+        }
+
+        // Then
+        for key in keys {
+            XCTAssertEqual(repository.flagAssignment(for: key), assignment)
+        }
+    }
+
+    func testLookupCacheFollowsPlaintextRefreshAndReset() throws {
+        // Given
+        let scope = FeatureScopeMock(context: .mockWith(source: "ios"))
+        var response = try decode(flags: [digest: assignment], metadata: metadata())
+        let repository = makeRepository(scope: scope, fetcher: FlagAssignmentsFetcherMock { _, completion in
+            completion(.success(response))
+        })
+        repository.setEvaluationContext(.mockAny()) { _ in }
+        XCTAssertEqual(repository.flagAssignment(for: "flag"), assignment)
+
+        // When
+        var changed = assignment
+        changed.variation = .boolean(false)
+        response = try decode(flags: ["flag": changed], metadata: [:])
+        repository.setEvaluationContext(.mockAny()) { _ in }
+
+        // Then
+        XCTAssertEqual(repository.flagAssignment(for: "flag"), changed)
+        repository.reset()
+        XCTAssertNil(repository.flagAssignment(for: "flag"))
+        XCTAssertNil(scope.dataStoreMock.storage["client"])
+
+        response = try decode(flags: [digest: assignment], metadata: metadata())
+        repository.setEvaluationContext(.mockAny()) { _ in }
+        XCTAssertEqual(repository.flagAssignment(for: "flag"), assignment)
+    }
+
+    func testRejectsMalformedEncodedKeysFromWire() throws {
         let invalidKeys = [
             "plaintext-key", String(repeating: "a", count: 63), String(repeating: "a", count: 65),
             String(repeating: "A", count: 64), String(repeating: "a", count: 64) + "\n",
@@ -152,9 +263,6 @@ final class FlagKeyObfuscationTests: XCTestCase {
         ]
         for key in invalidKeys {
             XCTAssertThrowsError(try decode(flags: [key: assignment], metadata: metadata()))
-            let encoding = try XCTUnwrap(decode(flags: [:], metadata: metadata()).obfuscation)
-            let data = FlagsData(flags: [key: assignment], context: .mockAny(), date: .mockAny(), obfuscation: encoding)
-            XCTAssertThrowsError(try JSONDecoder().decode(FlagsData.self, from: JSONEncoder().encode(data)))
         }
     }
 
@@ -172,6 +280,10 @@ final class FlagKeyObfuscationTests: XCTestCase {
         XCTAssertEqual(try JSONDecoder().decode(FlagAssignmentsResponse.self, from: JSONEncoder().encode(response)), response)
         let data = state(response)
         let encoded = try JSONEncoder().encode(data)
+        let diskJSON = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+        XCTAssertEqual(diskJSON["obfuscation"] as? [String: String], ["scheme": "flag-key-sha256-v1", "salt": salt])
+        XCTAssertNil(diskJSON["obfuscated"], "The disk format needs only the optional descriptor")
+        XCTAssertNil(diskJSON["lookupKeys"], "Lookup hashes remain in memory")
         let restored = try JSONDecoder().decode(FlagsData.self, from: encoded)
         XCTAssertEqual(restored, data)
         XCTAssertEqual(restored.flagAssignment(for: "flag"), assignment)
@@ -343,7 +455,7 @@ final class FlagKeyObfuscationTests: XCTestCase {
             XCTAssertNil(stored.data(), "Old SDKs must not read encoded assignments as plaintext")
             let persisted = try XCTUnwrap(stored.data(expectedVersion: 2))
             let restored = try JSONDecoder().decode(FlagsData.self, from: persisted)
-            XCTAssertEqual(restored.obfuscation?.salt, salt)
+            XCTAssertEqual(restored.obfuscation, encoding)
             XCTAssertEqual(Array(restored.flags.keys), [key])
             XCTAssertEqual(restored.flagAssignment(for: "flag"), assignment)
         }

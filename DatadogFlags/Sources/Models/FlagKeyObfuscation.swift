@@ -5,86 +5,48 @@
  */
 
 import CryptoKit
-import DatadogInternal
 import Foundation
 
 /// Describes the lookup keys in one assignment set. The salt is public.
 internal struct FlagKeyObfuscation: Equatable, Codable {
-    static let supportedScheme = "flag-key-sha256-v1"
     static let capability = "assignment-encoding-flag-key-256-v1"
 
-    let scheme: String
-    let salt: String
-    private let saltBytes: [UInt8]
-    // Use exact UTF-8 bytes: Swift String equality normalizes equivalent Unicode sequences.
-    @ReadWriteLock
-    private(set) var lookupKeys: [Data: String] = [:]
-    static let lookupCacheLimit = 1_024
-
-    private enum CodingKeys: String, CodingKey {
-        case scheme, salt
+    enum Scheme: String, Codable {
+        case flagKeySHA256V1 = "flag-key-sha256-v1"
     }
 
-    private enum MetadataKeys: String, CodingKey {
-        case obfuscated, obfuscation
-    }
+    /// 16 bytes, encoded as lowercase hexadecimal.
+    struct Salt: Equatable, Codable {
+        let bytes: [UInt8]
 
-    init(from decoder: any Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        scheme = try container.decode(String.self, forKey: .scheme)
-        salt = try container.decode(String.self, forKey: .salt)
-        guard scheme == Self.supportedScheme, Self.isLowercaseHex(salt, bytes: 16) else {
-            throw FlagsError.invalidResponse
+        init(from decoder: any Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            let hex = try container.decode(String.self)
+            guard let bytes = [UInt8](lowercaseHex: hex, byteCount: 16) else {
+                throw DecodingError.dataCorruptedError(in: container, debugDescription: "Expected 16 bytes of lowercase hex")
+            }
+            self.bytes = bytes
         }
-        let characters = Array(salt.utf8)
-        saltBytes = stride(from: 0, to: characters.count, by: 2).map { index in
-            Self.hexDigit(characters[index]) * 16 + Self.hexDigit(characters[index + 1])
+
+        func encode(to encoder: any Encoder) throws {
+            var container = encoder.singleValueContainer()
+            try container.encode(bytes.map { String(format: "%02x", $0) }.joined())
         }
     }
 
-    /// Distinguishes absent metadata from explicit null or an inconsistent descriptor.
-    static func read(from decoder: any Decoder) throws -> FlagKeyObfuscation? {
-        let container = try decoder.container(keyedBy: MetadataKeys.self)
-        let obfuscated = container.contains(.obfuscated)
-            ? try container.decode(Bool.self, forKey: .obfuscated) : false
-        guard obfuscated else {
-            guard !container.contains(.obfuscation) else { throw FlagsError.invalidResponse }
-            return nil
-        }
-        return try container.decode(Self.self, forKey: .obfuscation)
-    }
-
-    func encodeMetadata(to encoder: any Encoder) throws {
-        var container = encoder.container(keyedBy: MetadataKeys.self)
-        try container.encode(true, forKey: .obfuscated)
-        try container.encode(self, forKey: .obfuscation)
-    }
+    let scheme: Scheme
+    let salt: Salt
 
     func lookupKey(for key: String) -> String {
-        let keyBytes = Data(key.utf8)
-        var result = ""
-        _lookupKeys.mutate { cache in
-            if let cached = cache[keyBytes] {
-                result = cached
-                return
-            }
-            var input = Data("datadog.feature-flags.flag-key.v1\0".utf8)
-            input.append(contentsOf: saltBytes)
-            input.append(keyBytes)
-            result = SHA256.hash(data: input).map { String(format: "%02x", $0) }.joined()
-            if cache.count >= Self.lookupCacheLimit { cache.removeAll(keepingCapacity: true) }
-            cache[keyBytes] = result
-        }
-        return result
+        var input = Data("datadog.feature-flags.flag-key.v1\0".utf8)
+        input.append(contentsOf: salt.bytes)
+        input.append(contentsOf: key.utf8)
+        return SHA256.hash(data: input).map { String(format: "%02x", $0) }.joined()
     }
 
-    static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.scheme == rhs.scheme && lhs.salt == rhs.salt
-    }
-
-    func validateKeys(_ keys: Dictionary<String, FlagAssignment>.Keys) throws {
-        guard keys.allSatisfy({ Self.isLowercaseHex($0, bytes: 32) }) else {
-            throw FlagsError.invalidResponse
+    func validateKeys(_ keys: Dictionary<String, FlagAssignment>.Keys, codingPath: [CodingKey]) throws {
+        guard keys.allSatisfy({ [UInt8](lowercaseHex: $0, byteCount: SHA256.byteCount) != nil }) else {
+            throw DecodingError.dataCorrupted(.init(codingPath: codingPath, debugDescription: "Flag keys are not SHA-256 digests"))
         }
     }
 
@@ -92,14 +54,29 @@ internal struct FlagKeyObfuscation: Equatable, Codable {
     static func isSupported(source: String) -> Bool {
         source == "ios"
     }
+}
 
-    private static func isLowercaseHex(_ value: String, bytes: Int) -> Bool {
-        value.utf8.count == bytes * 2 && value.utf8.allSatisfy {
-            (48...57).contains($0) || (97...102).contains($0)
+private extension Array where Element == UInt8 {
+    init?(lowercaseHex hex: String, byteCount: Int) {
+        guard hex.utf8.count == byteCount * 2 else {
+            return nil
         }
-    }
-
-    private static func hexDigit(_ character: UInt8) -> UInt8 {
-        character <= 57 ? character - 48 : character - 87
+        let digits = Array(hex.utf8)
+        func nibble(_ digit: UInt8) -> UInt8? {
+            switch digit {
+            case UInt8(ascii: "0")...UInt8(ascii: "9"): return digit - UInt8(ascii: "0")
+            case UInt8(ascii: "a")...UInt8(ascii: "f"): return digit - UInt8(ascii: "a") + 10
+            default: return nil
+            }
+        }
+        var bytes: [UInt8] = []
+        bytes.reserveCapacity(byteCount)
+        for index in stride(from: 0, to: digits.count, by: 2) {
+            guard let high = nibble(digits[index]), let low = nibble(digits[index + 1]) else {
+                return nil
+            }
+            bytes.append(high << 4 | low)
+        }
+        self = bytes
     }
 }

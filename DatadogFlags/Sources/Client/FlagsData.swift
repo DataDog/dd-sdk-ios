@@ -19,27 +19,6 @@ internal struct FlagsData: Equatable, Codable {
         self.obfuscation = obfuscation
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case flags, context, date
-    }
-
-    init(from decoder: any Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        obfuscation = try FlagKeyObfuscation.read(from: decoder)
-        flags = try container.decode([String: FlagAssignment].self, forKey: .flags)
-        try obfuscation?.validateKeys(flags.keys)
-        context = try container.decode(FlagsEvaluationContext.self, forKey: .context)
-        date = try container.decode(Date.self, forKey: .date)
-    }
-
-    func encode(to encoder: any Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(flags, forKey: .flags)
-        try container.encode(context, forKey: .context)
-        try container.encode(date, forKey: .date)
-        try obfuscation?.encodeMetadata(to: encoder)
-    }
-
     func flagAssignment(for key: String) -> FlagAssignment? {
         flags[obfuscation?.lookupKey(for: key) ?? key]
     }
