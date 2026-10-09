@@ -1,5 +1,6 @@
 # Unreleased
 
+- [IMPROVEMENT] Flags: Report `CACHED` for disk-restored assignments and use that effective reason for evaluation telemetry.
 - [IMPROVEMENT] Include the application build number (`CFBundleVersion`) in trace spans as `build_version`. See [#3286][]
 - [FIX] Keep automatic URLSession spans linked to the RUM view and session captured when each request starts. See [#3220][]
 - [FIX] Reduce the risk of SwiftUI crashes during Session Replay recording by avoiding copies of unrelated view cache data. See [#3245][]

@@ -14,6 +14,87 @@ import TestUtilities
 class EvaluationAggregatorTests: XCTestCase {
     private let featureScope = FeatureScopeMock()
 
+    func testTelemetryUsesEffectiveReasonAndPreservesErrorClassification() throws {
+        for originalReason in ["DEFAULT", "TARGETING_MATCH"] {
+            for cached in [false, true] {
+                for error in [nil, "TYPE_MISMATCH"] as [String?] {
+                    let scope = FeatureScopeMock()
+                    let aggregator = EvaluationAggregator(
+                        dateProvider: DateProviderMock(),
+                        featureScope: scope,
+                        flushInterval: 100
+                    )
+                    var assignment = FlagAssignment(
+                        allocationKey: "allocation",
+                        variationKey: "variant",
+                        variation: .boolean(true),
+                        reason: originalReason,
+                        doLog: false
+                    )
+                    if cached {
+                        assignment.reason = "CACHED"
+                    }
+                    aggregator.recordEvaluation(
+                        for: "flag",
+                        assignment: assignment,
+                        evaluationContext: .mockAny(),
+                        flagError: error
+                    )
+                    aggregator.sendEvaluations()
+                    let event = try XCTUnwrap(scope.eventsWritten(ofType: FlagEvaluationEvent.self).first)
+                    let isDefault = (!cached && originalReason == "DEFAULT") || error != nil
+                    XCTAssertEqual(event.runtimeDefaultUsed, isDefault ? true : nil)
+                    XCTAssertEqual(event.variant?.key, isDefault ? nil : "variant")
+                    XCTAssertEqual(event.allocation?.key, isDefault ? nil : "allocation")
+                    XCTAssertEqual(event.error?.message, error)
+                }
+            }
+        }
+    }
+
+    func testFirstRecordClassificationUsesEffectiveReasonInBothOrders() throws {
+        for projected in [false, true] {
+            for defaultFirst in [false, true] {
+                let scope = FeatureScopeMock()
+                let aggregator = EvaluationAggregator(
+                    dateProvider: DateProviderMock(),
+                    featureScope: scope,
+                    flushInterval: 100
+                )
+                var defaultAssignment = FlagAssignment(
+                    allocationKey: "allocation",
+                    variationKey: "variant",
+                    variation: .boolean(true),
+                    reason: "DEFAULT",
+                    doLog: true
+                )
+                var networkAssignment = defaultAssignment
+                networkAssignment.reason = "TARGETING_MATCH"
+                if projected {
+                    defaultAssignment.reason = "CACHED"
+                }
+                let assignments = defaultFirst
+                    ? [defaultAssignment, networkAssignment]
+                    : [networkAssignment, defaultAssignment]
+                for assignment in assignments {
+                    aggregator.recordEvaluation(
+                        for: "flag",
+                        assignment: assignment,
+                        evaluationContext: .mockAny(),
+                        flagError: nil
+                    )
+                }
+                aggregator.sendEvaluations()
+                let events = scope.eventsWritten(ofType: FlagEvaluationEvent.self)
+                XCTAssertEqual(events.count, 1)
+                XCTAssertEqual(events.first?.evaluationCount, 2)
+                XCTAssertEqual(events.first?.runtimeDefaultUsed, (defaultFirst && !projected) ? true : nil)
+                XCTAssertEqual(events.first?.variant?.key, (defaultFirst && !projected) ? nil : "variant")
+                XCTAssertEqual(events.first?.allocation?.key, (defaultFirst && !projected) ? nil : "allocation")
+            }
+        }
+    }
+
     // MARK: - Implementation Details
 
     func testGivenPendingAggregations_whenSendEvaluations_itClearsPending() {
