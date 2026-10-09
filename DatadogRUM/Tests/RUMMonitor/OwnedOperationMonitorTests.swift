@@ -84,7 +84,8 @@ final class OwnedOperationMonitorTests: XCTestCase {
             record("core.init.enter")
             let core = DatadogCore(
                 directory: directory,
-                dateProvider: clock,
+                // Storage filenames need an advancing clock; RUM retains the controlled clock.
+                dateProvider: SystemDateProvider(),
                 initialConsent: .granted,
                 performance: .combining(
                     storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
