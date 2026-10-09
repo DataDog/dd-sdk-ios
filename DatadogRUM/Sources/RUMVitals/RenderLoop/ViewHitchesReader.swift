@@ -13,7 +13,7 @@ import AppKit
 /**
  - Parameters:
    - start: Hitch duration in ns from the start of the view
-   - duration: Hitch duration in ns
+   - duration: Hitch duration in ns. Consecutive late frames are merged into one hitch, summing their durations.
  */
 internal typealias Hitch = (start: Int64, duration: Int64)
 
@@ -77,6 +77,9 @@ internal final class ViewHitchesReader: ViewHitchesModel {
     var isActive: Bool { queue.sync { self._isActive } }
 
     private var hitches: [Hitch] = []
+    /// Target timestamp of the frame that recorded the last hitch. When the next frame is expected
+    /// at exactly this timestamp and is late too, both hitches are consecutive and merged into one record.
+    private var lastHitchTargetTimestamp: Double?
     /// Amount of time when the frames are rendered too late.
     private var hitchesDuration: Double = 0.0
     var dataModel: HitchesDataModel { queue.sync { (hitches: self.hitches, hitchesDuration: self.hitchesDuration) } }
@@ -112,6 +115,7 @@ extension ViewHitchesReader: RenderLoopReader {
         queue.async {
             self._isActive = false
             self.nextFrameTimestamp = nil
+            self.lastHitchTargetTimestamp = nil
         }
     }
 
@@ -156,8 +160,16 @@ extension ViewHitchesReader: RenderLoopReader {
                     self.removedHitchesCount += Constants.maxHitchesThreshold
                 }
 
-                let hitchStart = nextFrameTimestamp - self.startTimestamp
-                self.hitches.append((hitchStart.dd.toInt64Nanoseconds, hitchFrameDuration.dd.toInt64Nanoseconds))
+                // Merge consecutive late frames into one hitch.
+                // The previous frame was the last hitch when this frame is expected at that hitch's target.
+                let followsLastHitch = self.lastHitchTargetTimestamp == nextFrameTimestamp
+                if followsLastHitch, !self.hitches.isEmpty {
+                    self.hitches[self.hitches.count - 1].duration += hitchFrameDuration.dd.toInt64Nanoseconds
+                } else {
+                    let hitchStart = nextFrameTimestamp - self.startTimestamp
+                    self.hitches.append((hitchStart.dd.toInt64Nanoseconds, hitchFrameDuration.dd.toInt64Nanoseconds))
+                }
+                self.lastHitchTargetTimestamp = targetFrameTimestamp
             } else if hitchFrameDuration > Constants.timestampTolerance {
                 self.ignoredHitchesCount += 1
             }

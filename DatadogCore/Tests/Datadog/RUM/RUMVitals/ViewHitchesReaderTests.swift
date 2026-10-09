@@ -297,4 +297,126 @@ final class ViewHitchesReaderTests: XCTestCase {
         XCTAssertTrue(reader.dataModel.hitchesDuration == 0)
         XCTAssertTrue(reader.dataModel.hitches.count == 0)
     }
+
+    // MARK: - Consecutive Hitches
+
+    /* Consecutive View Hitches at 60FPS
+     *
+     * 0--------16ms--------32ms--------48ms--------64ms
+     * |  16ms   |  Skipped  |   16ms    |  Skipped  |
+     *           <-------------- 1 hitch ------------>
+    */
+    func testViewHitches_givenConsecutiveLateFrames_mergesThemIntoOneHitch() {
+        // Given
+        let reader = ViewHitchesReader()
+        let frameInfoProvider = FrameInfoProviderMock(target: self, selector: .noOp)
+        frameInfoProvider.currentFrameTimestamp = 0
+        frameInfoProvider.nextFrameTimestamp = 0.016
+        reader.didUpdateFrame(link: frameInfoProvider)
+
+        // When
+        frameInfoProvider.currentFrameTimestamp = 0.032
+        frameInfoProvider.nextFrameTimestamp = 0.048
+        reader.didUpdateFrame(link: frameInfoProvider)
+
+        frameInfoProvider.currentFrameTimestamp = 0.064
+        frameInfoProvider.nextFrameTimestamp = 0.080
+        reader.didUpdateFrame(link: frameInfoProvider)
+
+        // Then
+        let dataModel = reader.dataModel
+        XCTAssertEqual(dataModel.hitches.count, 1)
+        XCTAssertEqual(dataModel.hitches.first?.start, 16_000_000)
+        XCTAssertEqual(Double(dataModel.hitches.first?.duration ?? 0), 32_000_000, accuracy: 1_000)
+        XCTAssertEqual(dataModel.hitchesDuration, 0.032, accuracy: 0.001)
+        XCTAssertEqual(reader.telemetryModel.hitchesCount, 1)
+    }
+
+    func testViewHitches_givenOnTimeFrameBetweenLateFrames_keepsTwoHitches() {
+        // Given
+        let reader = ViewHitchesReader()
+        let frameInfoProvider = FrameInfoProviderMock(target: self, selector: .noOp)
+        frameInfoProvider.currentFrameTimestamp = 0
+        frameInfoProvider.nextFrameTimestamp = 0.016
+        reader.didUpdateFrame(link: frameInfoProvider)
+
+        // When
+        // Late
+        frameInfoProvider.currentFrameTimestamp = 0.032
+        frameInfoProvider.nextFrameTimestamp = 0.048
+        reader.didUpdateFrame(link: frameInfoProvider)
+
+        // On time
+        frameInfoProvider.currentFrameTimestamp = 0.048
+        frameInfoProvider.nextFrameTimestamp = 0.064
+        reader.didUpdateFrame(link: frameInfoProvider)
+
+        // Late
+        frameInfoProvider.currentFrameTimestamp = 0.080
+        frameInfoProvider.nextFrameTimestamp = 0.096
+        reader.didUpdateFrame(link: frameInfoProvider)
+
+        // Then
+        let dataModel = reader.dataModel
+        XCTAssertEqual(dataModel.hitches.count, 2)
+        XCTAssertEqual(dataModel.hitches.first?.start, 16_000_000)
+        XCTAssertEqual(dataModel.hitches.last?.start, 64_000_000)
+    }
+
+    func testViewHitches_givenStopBetweenLateFrames_keepsTwoHitches() {
+        // Given
+        let reader = ViewHitchesReader()
+        let frameInfoProvider = FrameInfoProviderMock(target: self, selector: .noOp)
+        frameInfoProvider.currentFrameTimestamp = 0
+        frameInfoProvider.nextFrameTimestamp = 0.016
+        reader.didUpdateFrame(link: frameInfoProvider)
+
+        frameInfoProvider.currentFrameTimestamp = 0.032
+        frameInfoProvider.nextFrameTimestamp = 0.048
+        reader.didUpdateFrame(link: frameInfoProvider)
+
+        // When
+        reader.stop()
+
+        frameInfoProvider.currentFrameTimestamp = 0.048
+        frameInfoProvider.nextFrameTimestamp = 0.064
+        reader.didUpdateFrame(link: frameInfoProvider)
+
+        frameInfoProvider.currentFrameTimestamp = 0.080
+        frameInfoProvider.nextFrameTimestamp = 0.096
+        reader.didUpdateFrame(link: frameInfoProvider)
+
+        // Then
+        XCTAssertEqual(reader.dataModel.hitches.count, 2)
+    }
+
+    /* Consecutive View Hitches while the refresh rate goes from 60FPS to 120FPS
+     *
+     * 0--------16ms--------32ms--------48ms--------64ms---72ms
+     * |  16ms   |  Skipped  |   16ms    |  Skipped  | 8ms |
+     *           <-------------- 1 hitch ------------>
+    */
+    func testViewHitches_givenConsecutiveLateFramesAndRefreshRateChange_mergesThemIntoOneHitch() {
+        // Given
+        let reader = ViewHitchesReader()
+        let frameInfoProvider = FrameInfoProviderMock(target: self, selector: .noOp)
+        frameInfoProvider.maximumDeviceFramesPerSecond = 120
+        frameInfoProvider.currentFrameTimestamp = 0
+        frameInfoProvider.nextFrameTimestamp = 0.016
+        reader.didUpdateFrame(link: frameInfoProvider)
+
+        // When
+        frameInfoProvider.currentFrameTimestamp = 0.032
+        frameInfoProvider.nextFrameTimestamp = 0.048
+        reader.didUpdateFrame(link: frameInfoProvider)
+
+        frameInfoProvider.currentFrameTimestamp = 0.064
+        frameInfoProvider.nextFrameTimestamp = 0.072
+        reader.didUpdateFrame(link: frameInfoProvider)
+
+        // Then
+        let dataModel = reader.dataModel
+        XCTAssertEqual(dataModel.hitches.count, 1)
+        XCTAssertEqual(Double(dataModel.hitches.first?.duration ?? 0), 32_000_000, accuracy: 1_000)
+    }
 }
