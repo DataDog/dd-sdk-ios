@@ -30,12 +30,34 @@ internal enum TraceClientStatsMetric {
     static let errorsCountKey = "errors_count"
     /// Whether the flush was forced (SDK teardown) rather than a periodic flush.
     static let forcedKey = "forced"
+
+    /// A separate metric counts spans collapsed by the per-bucket cardinality limit.
+    static let collapsedSpansName = "Trace Client Stats Collapsed Spans"
+    static let collapsedSpansTypeValue = "trace client stats collapsed spans"
+    static let collapsedSpansCountKey = "collapsed_spans_count"
+    static let maxGroupsPerBucketKey = "max_groups_per_bucket"
 }
 
 /// Builds and emits the "Trace Client Stats" telemetry, keeping the metric responsibility
 /// out of `ClientStatsFeature`.
 internal struct TraceClientStatsMetricController {
     let telemetry: Telemetry
+
+    /// Reports cardinality loss without including resource names, peer tags or deployment values.
+    func sendCollapsedSpans(count: UInt64, limit: Int) {
+        guard count > 0 else {
+            return
+        }
+        telemetry.metric(
+            name: TraceClientStatsMetric.collapsedSpansName,
+            attributes: [
+                SDKMetricFields.typeKey: TraceClientStatsMetric.collapsedSpansTypeValue,
+                TraceClientStatsMetric.collapsedSpansCountKey: count,
+                "collapsed": "whole_key",
+                TraceClientStatsMetric.maxGroupsPerBucketKey: limit
+            ]
+        )
+    }
 
     /// Emits the metric summarizing what a non-empty flush produced.
     func send(for buckets: [ExportedBucket], force: Bool) {
