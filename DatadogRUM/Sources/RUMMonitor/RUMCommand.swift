@@ -459,6 +459,59 @@ internal protocol RUMResourceCommand: RUMCommand {
     var resourceKey: String { get }
 }
 
+/// The owner of a Resource completion, resolved once by the outermost scope that receives it.
+internal enum RUMResourceOwnership: Equatable {
+    /// Views that track the Resource key.
+    case views([RUMUUID])
+    /// The Resource was pending in a session that expired before it completed.
+    case expiredSession
+    /// No tracked Resource uses the key.
+    case untracked
+}
+
+/// Internal dispatch metadata for Resource terminal commands. It is never serialized.
+internal protocol RUMResourceCompletionCommand: RUMResourceCommand {
+    var isAutomatic: Bool { get }
+    var ownership: RUMResourceOwnership? { get set }
+}
+
+extension RUMResourceCompletionCommand {
+    func updatesAction(in viewID: RUMUUID?) -> Bool {
+        switch ownership {
+        case .views(let owners):
+            return viewID.map(owners.contains) ?? false
+        case .expiredSession:
+            return false
+        case .untracked, nil:
+            // Untracked manual stops retain their existing compatibility behavior.
+            return !isAutomatic
+        }
+    }
+}
+
+extension RUMCommand {
+    func resolvingResourceOwners(
+        in views: @autoclosure () -> [RUMViewScope],
+        expiredSessionResourceKeys: Set<String> = []
+    ) -> RUMCommand {
+        guard var completion = self as? RUMResourceCompletionCommand, completion.ownership == nil else {
+            return self
+        }
+        let key = completion.resourceKey
+        let owners = views().compactMap { view in
+            view.resourceScopes[key] != nil ? view.viewUUID : nil
+        }
+        if !owners.isEmpty {
+            completion.ownership = .views(owners)
+        } else if expiredSessionResourceKeys.contains(key) {
+            completion.ownership = .expiredSession
+        } else {
+            completion.ownership = .untracked
+        }
+        return completion
+    }
+}
+
 /// Tracing information propagated by Tracing to the underlying `URLRequest`. It is passed to the RUM backend
 /// in order to create the APM span. The actual `Span` is not sent by the SDK.
 internal struct RUMSpanContext {
@@ -520,8 +573,10 @@ internal struct RUMAddResourceMetricsCommand: RUMResourceCommand {
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
 }
 
-internal struct RUMStopResourceCommand: RUMResourceCommand {
+internal struct RUMStopResourceCommand: RUMResourceCompletionCommand {
     let resourceKey: String
+    var isAutomatic = false
+    var ownership: RUMResourceOwnership? = nil
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
@@ -541,8 +596,10 @@ internal struct RUMStopResourceCommand: RUMResourceCommand {
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
 }
 
-internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
+internal struct RUMStopResourceWithErrorCommand: RUMResourceCompletionCommand {
     let resourceKey: String
+    var isAutomatic = false
+    var ownership: RUMResourceOwnership? = nil
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
