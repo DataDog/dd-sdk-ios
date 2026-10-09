@@ -55,8 +55,6 @@ internal final class ViewHitchesReader: ViewHitchesModel {
         static let frozenFrameThreshold: TimeInterval = 0.7 // seconds
         /// Taking into account each Hitch takes 64B in the payload, we can have 64KB max per view event
         static let maxCollectedHitches = 1_000
-        /// Threshold of old hitches to remove. 10% of `maxCollectedHitches`
-        static let maxHitchesThreshold = 100
         /// By default, a hitch is detected when a frame takes twice as long to render as the current refresh rate.
         static let hitchesMultiplier: Double = 2
         /// Tolerance to handle timestamp conversions. 1ms of tolerance.
@@ -153,13 +151,6 @@ extension ViewHitchesReader: RenderLoopReader {
 
             if (hitchFrameDuration + Constants.timestampTolerance) >= max(self.config.acceptableLatency, idealFrameInterval)
                 && hitchFrameDuration < self.config.hangThreshold {
-                // The buffer has reach the maximum of hitches. The oldest hitches should be removed.
-                if self.hitches.count > Constants.maxCollectedHitches {
-                    let arraySlice = self.hitches.dropFirst(Constants.maxHitchesThreshold)
-                    self.hitches = Array(arraySlice)
-                    self.removedHitchesCount += Constants.maxHitchesThreshold
-                }
-
                 // Merge consecutive late frames into one hitch.
                 // The previous frame was the last hitch when this frame is expected at that hitch's target.
                 let followsLastHitch = self.lastHitchTargetTimestamp == nextFrameTimestamp
@@ -168,6 +159,12 @@ extension ViewHitchesReader: RenderLoopReader {
                 } else {
                     let hitchStart = nextFrameTimestamp - self.startTimestamp
                     self.hitches.append((hitchStart.dd.toInt64Nanoseconds, hitchFrameDuration.dd.toInt64Nanoseconds))
+
+                    // The buffer has reached the maximum of hitches. The oldest hitch is removed.
+                    if self.hitches.count > Constants.maxCollectedHitches {
+                        self.hitches.removeFirst()
+                        self.removedHitchesCount += 1
+                    }
                 }
                 self.lastHitchTargetTimestamp = targetFrameTimestamp
             } else if hitchFrameDuration > Constants.timestampTolerance {
