@@ -83,12 +83,14 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     /// Whether replay was reported active at any point during the session, OR-accumulated in `sample()`
     /// (mirrors `RUMViewScope`). Stays `nil` until observed, so sessions without Session Replay omit the field.
     private var hasReplay: Bool? = nil
-    /// IDs of the sessions for which at least one sample was collected. Kept for every session (not only the
-    /// current one) so events from a stopped session with in-flight resources still report its data.
+    /// IDs of the most recently sampled sessions, oldest first. Keeps the previous session alongside the current
+    /// one so events from a stopped session with in-flight resources still report its data, and is capped at
+    /// `maxRetainedSampledSessions` so it doesn't grow with the number of sessions.
     /// Lock-protected rather than confined to `queue`, since RUM scopes read it from the RUM context thread
     /// through `hasCollectedData(sessionID:)`.
     @ReadWriteLock
-    private var sampledSessionIDs: Set<String> = []
+    private var sampledSessionIDs: [String] = []
+    private static let maxRetainedSampledSessions = 2
 
     /// All buffer mutations and timer events run on this queue.
     private let queue = DispatchQueue(label: "com.datadoghq.timeseries-collector", qos: .utility)
@@ -333,9 +335,10 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     }
 
     private func markSessionAsSampled() {
-        if !sampledSessionIDs.contains(sessionID) {
-            sampledSessionIDs.insert(sessionID)
+        guard !sampledSessionIDs.contains(sessionID) else {
+            return
         }
+        sampledSessionIDs = Array((sampledSessionIDs + [sessionID]).suffix(Self.maxRetainedSampledSessions))
     }
 
     private func flushMemory() {
