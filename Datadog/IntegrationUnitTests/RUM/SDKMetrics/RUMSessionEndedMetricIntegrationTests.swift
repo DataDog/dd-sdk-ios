@@ -5,12 +5,14 @@
  */
 
 import XCTest
-import TestUtilities
+@testable import TestUtilities
 @testable import DatadogRUM
 @testable import DatadogInternal
+@testable import DatadogCore
 
 class RUMSessionEndedMetricIntegrationTests: XCTestCase {
     private let dateProvider = DateProviderMock()
+    private let monotonicClock = MonotonicClockMock()
     private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
     private var rumConfig: RUM.Configuration! // swiftlint:disable:this implicitly_unwrapped_optional
 
@@ -25,6 +27,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         rumConfig.telemetrySampleRate = .maxSampleRate
         rumConfig.sessionEndedSampleRate = .maxSampleRate
         rumConfig.dateProvider = dateProvider
+        rumConfig.monotonicClock = monotonicClock
     }
 
     override func tearDownWithError() throws {
@@ -60,7 +63,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         monitor.startView(key: "key1", name: "View1")
 
         // When
-        dateProvider.now += RUMSessionScope.Constants.sessionTimeoutDuration + 1.seconds
+        advanceTime(by: RUMSessionScope.Constants.sessionTimeoutDuration + 1.seconds, flushBeforeAdvancing: true)
         monitor.startView(key: "key2", name: "View2")
 
         // Then
@@ -79,12 +82,86 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         let deadline = dateProvider.now + RUMSessionScope.Constants.sessionMaxDuration * 1.5
         while dateProvider.now < deadline {
             monitor.addAction(type: .custom, name: "action")
-            dateProvider.now += RUMSessionScope.Constants.sessionTimeoutDuration - 1.seconds
+            advanceTime(by: RUMSessionScope.Constants.sessionTimeoutDuration - 1.seconds, flushBeforeAdvancing: true)
         }
 
         // Then
         let metricAttributes = try XCTUnwrap(core.waitAndReturnSessionEndedMetricEvent()?.attributes)
         XCTAssertFalse(metricAttributes.wasStopped)
+    }
+
+    func testWhenSDKInitializationIsDelayed_sessionLifetimeStartsWhenProcessed() throws {
+        let contextQueue = DispatchQueue(label: "test.rum.delayed-initialization")
+        try replaceCore(contextQueue: contextQueue)
+        let commandDate = dateProvider.now
+        let delay = RUMSessionScope.Constants.sessionMaxDuration + 1.seconds
+
+        // Hold the real context queue so initialization and the first view remain pending.
+        let monitor: RUMMonitorProtocol
+        contextQueue.suspend()
+        do {
+            defer { contextQueue.resume() }
+            RUM.enable(with: rumConfig, in: core)
+            monitor = RUMMonitor.shared(in: core)
+            monitor.startView(key: "first", name: "First")
+            advanceTime(by: delay)
+            monitor.startView(key: "second", name: "Second")
+        }
+
+        let session = try RUMSessionMatcher
+            .groupMatchersBySessions(core.waitAndReturnRUMEventMatchers())
+            .takeSingle()
+        let firstView = try XCTUnwrap(session.views.first { $0.name == "First" })
+        XCTAssertEqual(firstView.viewEvents.first?.date, commandDate.timeIntervalSince1970.dd.toInt64Milliseconds)
+        DDAssertEqual(firstView.duration, delay, accuracy: 0.001)
+        XCTAssertNil(core.waitAndReturnSessionEndedMetricEvent())
+
+        // Inactivity begins at processing, while the reported view retains its original timestamp.
+        let expiryReader = try XCTUnwrap(monitor as? Monitor)
+        advanceTime(by: RUMSessionScope.Constants.sessionTimeoutDuration - 1.seconds, flushBeforeAdvancing: true)
+        XCTAssertFalse(expiryReader.isSessionExpired(sessionID: session.sessionID))
+        advanceTime(by: 1.seconds)
+        XCTAssertTrue(expiryReader.isSessionExpired(sessionID: session.sessionID))
+        monitor.startView(key: "third", name: "Third")
+
+        let metric = try XCTUnwrap(core.waitAndReturnSessionEndedMetricEvent())
+        XCTAssertEqual(metric.session?.id, session.sessionID)
+        XCTAssertEqual(metric.attributes?.wasStopped, false)
+        XCTAssertGreaterThan(try XCTUnwrap(metric.attributes?.duration?.nanosecondsToSeconds), RUMSessionScope.Constants.sessionMaxDuration)
+    }
+
+    func testWhenInteractionIsQueuedBeforeTimeout_butProcessedAfterTimeout_itRenewsSession() throws {
+        let contextQueue = DispatchQueue(label: "test.rum.delayed-interaction")
+        try replaceCore(contextQueue: contextQueue)
+        RUM.enable(with: rumConfig, in: core)
+        let monitor = RUMMonitor.shared(in: core)
+        monitor.startView(key: "first", name: "First")
+        let initialSession = try RUMSessionMatcher
+            .groupMatchersBySessions(core.waitAndReturnRUMEventMatchers())
+            .takeSingle()
+
+        advanceTime(by: RUMSessionScope.Constants.sessionTimeoutDuration - 1.seconds, flushBeforeAdvancing: true)
+        let commandDate = dateProvider.now
+        contextQueue.suspend()
+        do {
+            defer { contextQueue.resume() }
+            monitor.addAction(type: .custom, name: "queued interaction")
+            advanceTime(by: 2.seconds)
+        }
+
+        let action = try XCTUnwrap(core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMActionEvent.self).first)
+        XCTAssertNotEqual(action.session.id, initialSession.sessionID)
+        XCTAssertEqual(action.date, commandDate.timeIntervalSince1970.dd.toInt64Milliseconds)
+        let metric = try XCTUnwrap(core.waitAndReturnSessionEndedMetricEvent())
+        XCTAssertEqual(metric.session?.id, initialSession.sessionID)
+        XCTAssertEqual(metric.attributes?.wasStopped, false)
+
+        // The queued interaction refreshes inactivity at its processing time in the renewed session.
+        let expiryReader = try XCTUnwrap(monitor as? Monitor)
+        advanceTime(by: RUMSessionScope.Constants.sessionTimeoutDuration - 1.seconds, flushBeforeAdvancing: true)
+        XCTAssertFalse(expiryReader.isSessionExpired(sessionID: action.session.id))
+        advanceTime(by: 1.seconds)
+        XCTAssertTrue(expiryReader.isSessionExpired(sessionID: action.session.id))
     }
 
     func testWhenSessionIsNotSampled_thenMetricIsNotSent() throws {
@@ -338,6 +415,41 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
 }
 
 // MARK: - Helpers
+
+private extension RUMSessionEndedMetricIntegrationTests {
+    /// Uses the real Core with an isolated context queue that the test can suspend to hold pending commands.
+    func replaceCore(contextQueue: DispatchQueue) throws {
+        let context = core.context
+        try core.flushAndTearDown()
+        core = DatadogCoreProxy(core: DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: context.trackingConsent,
+            performance: .mockAny(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: DatadogContextProvider(context: context, queue: contextQueue),
+            applicationVersion: context.version,
+            maxBatchesPerUpload: 1,
+            backgroundTasksEnabled: false
+        ))
+    }
+
+    /// Advances the mocked clocks by the specified interval.
+    /// - Parameters:
+    ///   - interval: The interval to add to the mocked clocks.
+    ///   - flushBeforeAdvancing: Whether to finish pending SDK work at the current mocked time before
+    ///     advancing the clocks. Session expiry reads the monotonic clock during command processing,
+    ///     so enable this when preceding commands must observe the old time. Defaults to `false`,
+    ///     allowing scenarios with commands pending across the time jump.
+    func advanceTime(by interval: TimeInterval, flushBeforeAdvancing: Bool = false) {
+        if flushBeforeAdvancing {
+            core.flush()
+        }
+        monotonicClock.advance(by: interval)
+        dateProvider.now.addTimeInterval(interval)
+    }
+}
 
 private extension DatadogCoreProxy {
     func waitAndReturnSessionEndedMetricEvent() -> TelemetryDebugEvent? {

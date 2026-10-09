@@ -19,8 +19,18 @@ extension AppRunStep {
         })
     }
 
-    static func advanceTime(by duration: TimeInterval) -> AppRunStep {
+    /// Advances the simulated app time by the specified interval.
+    /// - Parameters:
+    ///   - duration: The interval to add to the mocked clocks.
+    ///   - flushBeforeAdvancing: Whether to finish pending SDK work at the current mocked time before
+    ///     advancing the clocks. Session expiry reads the monotonic clock during command processing,
+    ///     so enable this when preceding commands must observe the old time. Defaults to `false`,
+    ///     allowing scenarios with commands pending across the time jump.
+    static func advanceTime(by duration: TimeInterval, flushBeforeAdvancing: Bool = false) -> AppRunStep {
         return AppRunStep({ app in
+            if flushBeforeAdvancing {
+                app.flush()
+            }
             app.advanceTime(by: duration)
         })
     }
@@ -70,10 +80,15 @@ extension AppRunStep {
         })
     }
 
-    static func timeoutSession() -> AppRunStep {
-        return AppRunStep({ app in
-            app.advanceTime(by: RUMSessionScope.Constants.sessionTimeoutDuration)
-        })
+    /// Advances the simulated app time by the session inactivity timeout.
+    /// - Parameter flushBeforeAdvancing: Whether to finish pending SDK work at the current mocked time
+    ///   before advancing the clocks. Enable this when preceding commands must be processed before
+    ///   the inactivity interval begins. Defaults to `false`, allowing commands to remain pending.
+    static func timeoutSession(flushBeforeAdvancing: Bool = false) -> AppRunStep {
+        return advanceTime(
+            by: RUMSessionScope.Constants.sessionTimeoutDuration,
+            flushBeforeAdvancing: flushBeforeAdvancing
+        )
     }
 
     static func startManualView(after dt: TimeInterval, viewName: String, viewKey: String = "view") -> AppRunStep {

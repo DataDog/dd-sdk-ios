@@ -840,6 +840,7 @@
 		759302032FF0000100000001 /* LayerSnapshotProcessorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759302022FF0000100000001 /* LayerSnapshotProcessorTests.swift */; };
 		759302052FF0000100000001 /* LayerTreeSnapshotMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759302042FF0000100000001 /* LayerTreeSnapshotMocks.swift */; };
 		770E0BF093842AF7D350E888 /* EvaluationLoggingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDC44AD2847746ED69201F65 /* EvaluationLoggingTests.swift */; };
+		7DEF58CA5F295198EE3B3F24 /* MonotonicClock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688C73D671C62EB5D35F8E47 /* MonotonicClock.swift */; };
 		86092FDE2DEDC6830075D63B /* AccessibilityValuesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86092FDC2DEDC6830075D63B /* AccessibilityValuesMock.swift */; };
 		861FD6862DF2EAED00F59823 /* LocaleInfoPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 861FD6842DF2EAED00F59823 /* LocaleInfoPublisherTests.swift */; };
 		861FD6892DF3366400F59823 /* LocaleInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 861FD6872DF3366400F59823 /* LocaleInfo.swift */; };
@@ -2842,6 +2843,7 @@
 		61FF9A4425AC5DEA001058CC /* ViewIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewIdentifier.swift; sourceTree = "<group>"; };
 		6482FB0D2EE885C20042234B /* FlagsClientInternal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsClientInternal.swift; sourceTree = "<group>"; };
 		66B9C6954A07274919E80B5E /* DisallowListTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisallowListTests.swift; sourceTree = "<group>"; };
+		688C73D671C62EB5D35F8E47 /* MonotonicClock.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MonotonicClock.swift; sourceTree = "<group>"; };
 		6C0CDC983065627200A8C8AF /* RUMSessionSamplingStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMSessionSamplingStore.swift; sourceTree = "<group>"; };
 		6FE4202BC457504AC37A51D6 /* HeatmapIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatmapIdentifier.swift; sourceTree = "<group>"; };
 		759200012FD2000100000001 /* CALayerSnapshotImageSnapshotRequestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CALayerSnapshotImageSnapshotRequestTests.swift; sourceTree = "<group>"; };
@@ -5449,6 +5451,7 @@
 				61FF9A4425AC5DEA001058CC /* ViewIdentifier.swift */,
 				61A614E7276B2BD000A06CE7 /* RUMOffViewEventsHandlingRule.swift */,
 				D253EE952B988CA90010B589 /* ViewCache.swift */,
+				688C73D671C62EB5D35F8E47 /* MonotonicClock.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -9777,6 +9780,7 @@
 				D29A9F5229DD85BB005C54A4 /* RUMUUIDGenerator.swift in Sources */,
 				61DCC84E2C071DCD00CB59E5 /* TelemetryInterceptor.swift in Sources */,
 				4062CCAEB02C9EEF6761F4F8 /* HeatmapIdentifierStore.swift in Sources */,
+				7DEF58CA5F295198EE3B3F24 /* MonotonicClock.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
