@@ -337,7 +337,7 @@ When `Datadog.Configuration.remoteConfiguration` is set, Core fetches and caches
 ### "Some events missing"
 1. Check if event mappers are configured - `resourceEventMapper`, `errorEventMapper`, `actionEventMapper`, `longTaskEventMapper` can drop events by returning `nil`
 2. Note: `viewEventMapper` cannot drop views - use predicates to filter views instead
-3. New events need a tracked view, unless background-event tracking supplies one. An in-flight Resource can finish on its retained starting view after navigation or a session change, subject to existing expiration and mapper rules.
+3. New events need a tracked view, unless background-event tracking supplies one. An in-flight Resource can finish on its retained starting view after navigation or `stopSession()`, subject to existing expiration and mapper rules.
 
 ## Feature Interactions
 
@@ -360,4 +360,5 @@ WebView RUM events are linked to the most recent native view with Session Replay
 - All automatic tracking can be disabled by not setting predicates; manual tracking always available via `RUMMonitor.shared()`
 - If an automatically tracked URLSession transfer fails after receiving HTTP headers, RUM reports one network Error with the received status and no completed Resource. Complete responses, including empty HEAD/204 and HTTP error-status responses without a transport error, keep the Resource path. Use `errorEventMapper` to modify or drop the failed-transfer Error.
 - A tracked Resource completion updates action counters only in its owning view. Within that view, it still updates the current eligible action; it does not bind the completion to the action that was active when the request started.
+- A manual Resource still pending when its session expires (timeout or max duration) is dropped: its later stop sends no event and doesn't update actions in the new session. After `stopSession()`, pending Resources still complete.
 - For completed Resources, URLSession metrics populate `delivery_type` and `transfer_size` when available.

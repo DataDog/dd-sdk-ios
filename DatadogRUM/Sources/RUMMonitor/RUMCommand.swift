@@ -459,33 +459,54 @@ internal protocol RUMResourceCommand: RUMCommand {
     var resourceKey: String { get }
 }
 
+/// The owner of a Resource completion, resolved once by the outermost scope that receives it.
+internal enum RUMResourceOwnership: Equatable {
+    /// Views that track the Resource key.
+    case views([RUMUUID])
+    /// The Resource was pending in a session that expired before it completed.
+    case expiredSession
+    /// No tracked Resource uses the key.
+    case untracked
+}
+
 /// Internal dispatch metadata for Resource terminal commands. It is never serialized.
 internal protocol RUMResourceCompletionCommand: RUMResourceCommand {
     var isAutomatic: Bool { get }
-    var owningViewIDs: [RUMUUID]? { get set }
+    var ownership: RUMResourceOwnership? { get set }
 }
 
 extension RUMResourceCompletionCommand {
     func updatesAction(in viewID: RUMUUID?) -> Bool {
-        guard let owners = owningViewIDs, !owners.isEmpty else {
+        switch ownership {
+        case .views(let owners):
+            return viewID.map(owners.contains) ?? false
+        case .expiredSession:
+            return false
+        case .untracked, nil:
             // Untracked manual stops retain their existing compatibility behavior.
             return !isAutomatic
         }
-        guard let viewID else {
-            return false
-        }
-        return owners.contains(viewID)
     }
 }
 
 extension RUMCommand {
-    func resolvingResourceOwners(in views: @autoclosure () -> [RUMViewScope]) -> RUMCommand {
-        guard var completion = self as? RUMResourceCompletionCommand, completion.owningViewIDs == nil else {
+    func resolvingResourceOwners(
+        in views: @autoclosure () -> [RUMViewScope],
+        expiredSessionResourceKeys: Set<String> = []
+    ) -> RUMCommand {
+        guard var completion = self as? RUMResourceCompletionCommand, completion.ownership == nil else {
             return self
         }
         let key = completion.resourceKey
-        completion.owningViewIDs = views().compactMap { view in
+        let owners = views().compactMap { view in
             view.resourceScopes[key] != nil ? view.viewUUID : nil
+        }
+        if !owners.isEmpty {
+            completion.ownership = .views(owners)
+        } else if expiredSessionResourceKeys.contains(key) {
+            completion.ownership = .expiredSession
+        } else {
+            completion.ownership = .untracked
         }
         return completion
     }
@@ -555,7 +576,7 @@ internal struct RUMAddResourceMetricsCommand: RUMResourceCommand {
 internal struct RUMStopResourceCommand: RUMResourceCompletionCommand {
     let resourceKey: String
     var isAutomatic = false
-    var owningViewIDs: [RUMUUID]? = nil
+    var ownership: RUMResourceOwnership? = nil
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
@@ -578,7 +599,7 @@ internal struct RUMStopResourceCommand: RUMResourceCompletionCommand {
 internal struct RUMStopResourceWithErrorCommand: RUMResourceCompletionCommand {
     let resourceKey: String
     var isAutomatic = false
-    var owningViewIDs: [RUMUUID]? = nil
+    var ownership: RUMResourceOwnership? = nil
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]

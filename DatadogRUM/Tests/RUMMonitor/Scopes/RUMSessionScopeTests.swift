@@ -1951,6 +1951,57 @@ extension RUMSessionScopeTests {
         XCTAssertTrue(fixture.errors.isEmpty)
     }
 
+    func testGivenTimedOutSessionResource_whenItSucceeds_itDoesNotCountInNewSessionAction() throws {
+        try assertExpiredSessionCompletion(by: .timeOut, error: false)
+    }
+
+    func testGivenTimedOutSessionResource_whenItFails_itDoesNotFrustrateNewSessionAction() throws {
+        try assertExpiredSessionCompletion(by: .timeOut, error: true)
+    }
+
+    func testGivenMaxDurationSessionResource_whenItSucceeds_itDoesNotCountInNewSessionAction() throws {
+        try assertExpiredSessionCompletion(by: .maxDuration, error: false)
+    }
+
+    func testGivenMaxDurationSessionResource_whenItFails_itDoesNotFrustrateNewSessionAction() throws {
+        try assertExpiredSessionCompletion(by: .maxDuration, error: true)
+    }
+
+    func testGivenExpiredSessionResourceKey_whenReused_itPreservesCurrentSessionActionCounts() throws {
+        let fixture = RUMResourceCompletionFixture(applicationScope: true)
+        fixture.startView("expired")
+        fixture.startResource("reused")
+        fixture.expireSession(by: .timeOut)
+        fixture.startView("current")
+        fixture.startAction("current")
+        fixture.startResource("reused")
+        fixture.stopResource("reused")
+        // Once reused, the key no longer refers to the expired Resource: an unknown stop keeps legacy counts.
+        fixture.stopResource("reused")
+        fixture.stopAction()
+        try fixture.assertAction("current", resources: 2, errors: 0)
+        XCTAssertEqual(fixture.resources.count, 1)
+    }
+
+    private func assertExpiredSessionCompletion(
+        by reason: RUMSessionScope.EndReason,
+        error: Bool,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) throws {
+        let fixture = RUMResourceCompletionFixture(applicationScope: true)
+        fixture.startView("expired")
+        fixture.startResource("late")
+        fixture.expireSession(by: reason)
+        fixture.startView("current")
+        fixture.startAction("current")
+        error ? fixture.failResource("late") : fixture.stopResource("late")
+        fixture.stopAction()
+        try fixture.assertAction("current", resources: 0, errors: 0, file: file, line: line)
+        XCTAssertTrue(fixture.resources.isEmpty, file: file, line: line)
+        XCTAssertTrue(fixture.errors.isEmpty, file: file, line: line)
+    }
+
     func testGivenReusedManualKey_itCompletesCurrentTrackedResource() throws {
         let fixture = RUMResourceCompletionFixture()
         fixture.startView("old")
@@ -2040,6 +2091,26 @@ final class RUMResourceCompletionFixture {
     func startResource(_ key: String) { send(RUMStartResourceCommand.mockWith(resourceKey: key, url: "https://example.com/transfer")) }
     func stopResource(_ key: String) { send(RUMStopResourceCommand.mockWith(resourceKey: key, kind: .native, httpStatusCode: 200)) }
     func failResource(_ key: String) { send(RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: key, source: .network, httpStatusCode: 200)) }
+
+    /// Advances time so that the next command ends the session for `reason`.
+    func expireSession(by reason: RUMSessionScope.EndReason) {
+        let timeout = RUMSessionScope.Constants.sessionTimeoutDuration
+        switch reason {
+        case .timeOut:
+            time.addTimeInterval(timeout)
+        case .maxDuration:
+            let expiration = time.addingTimeInterval(RUMSessionScope.Constants.sessionMaxDuration)
+            // Interactions keep the session from timing out before it reaches its max duration.
+            while expiration.timeIntervalSince(time) > timeout / 2 {
+                time.addTimeInterval(timeout / 2)
+                startAction("keep-alive")
+                stopAction()
+            }
+            time = expiration
+        case .stopAPI:
+            XCTFail("Stopped sessions are not expired; send `RUMStopSessionCommand` instead")
+        }
+    }
 
     func automaticCompletion(error: Bool) throws -> RUMCommand {
         let subscriber = RUMCommandSubscriberMock()
