@@ -1,5 +1,6 @@
 # Unreleased
 
+- [IMPROVEMENT] Send only new or grown slow frames in RUM view updates, and merge consecutive slow frames into one. See [#3290][]
 - [IMPROVEMENT] Include the application build number (`CFBundleVersion`) in trace spans as `build_version`. See [#3286][]
 - [FIX] Keep automatic URLSession spans linked to the RUM view and session captured when each request starts. See [#3220][]
 - [FIX] Reduce the risk of SwiftUI crashes during Session Replay recording by avoiding copies of unrelated view cache data. See [#3245][]
@@ -1290,6 +1291,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3245]: https://github.com/DataDog/dd-sdk-ios/pull/3245
 [#3215]: https://github.com/DataDog/dd-sdk-ios/pull/3215
 [#3286]: https://github.com/DataDog/dd-sdk-ios/pull/3286
+[#3290]: https://github.com/DataDog/dd-sdk-ios/pull/3290
 [#3282]: https://github.com/DataDog/dd-sdk-ios/pull/3282
 [#3285]: https://github.com/DataDog/dd-sdk-ios/pull/3285
 
