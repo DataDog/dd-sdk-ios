@@ -699,7 +699,7 @@ extension RUMViewScope {
                 let update = previousEvent.update(from: event)
                 lastSentViewEvent = event
                 consecutiveViewUpdatesCount += 1
-                writer.write(value: update, completion: completionHandler)
+                writer.write(value: update, metadata: update.metadata(), completion: completionHandler)
             } else {
                 writer.write(
                     value: event,
