@@ -25,6 +25,9 @@ public struct RUMSessionState: Codable, Equatable {
     public let hasTrackedAnyView: Bool
     /// If there was a Session Replay recording pending at the moment of starting this session (`nil` if SR Feature was not configured).
     public let didStartWithReplay: Bool?
+    /// If the timeseries collector has collected data for this session. Starts `false` and is refreshed by the session
+    /// once the first sample is collected, so a crash reported in the next process can still tell.
+    public let hasTimeseries: Bool
 
     /// Creates a RUM Session State
     /// - Parameters:
@@ -33,18 +36,21 @@ public struct RUMSessionState: Codable, Equatable {
     ///   - isInitialSession: If this is the very first session in the app process (`true`) or was re-created upon timeout (`false`).
     ///   - hasTrackedAnyView: If this session has ever tracked any view (used to reason about "application launch" events).
     ///   - didStartWithReplay: If there was a Session Replay recording pending at the moment of starting this session (`nil` if SR Feature was not configured).
+    ///   - hasTimeseries: If the timeseries collector has collected data for this session.
     public init(
         sessionUUID: UUID,
         isSampled: Bool,
         isInitialSession: Bool,
         hasTrackedAnyView: Bool,
-        didStartWithReplay: Bool?
+        didStartWithReplay: Bool?,
+        hasTimeseries: Bool = false
     ) {
         self.sessionUUID = sessionUUID
         self.isSampled = isSampled
         self.isInitialSession = isInitialSession
         self.hasTrackedAnyView = hasTrackedAnyView
         self.didStartWithReplay = didStartWithReplay
+        self.hasTimeseries = hasTimeseries
     }
 
     public init(from decoder: Decoder) throws {
@@ -57,6 +63,8 @@ public struct RUMSessionState: Codable, Equatable {
         // SDK versions, fall back to deriving the sampling state from `sessionUUID`: a null UUID
         // indicated a rejected (non-sampled) session in the previous encoding.
         isSampled = try container.decodeIfPresent(Bool.self, forKey: .isSampled) ?? (sessionUUID != UUID.dd.nullUUID)
+        // `hasTimeseries` was introduced in a later SDK version; older crash reports have no timeseries data.
+        hasTimeseries = try container.decodeIfPresent(Bool.self, forKey: .hasTimeseries) ?? false
     }
 }
 

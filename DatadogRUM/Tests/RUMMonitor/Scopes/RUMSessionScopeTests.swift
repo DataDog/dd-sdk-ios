@@ -572,6 +572,31 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(actualSessionState, expectedSessionState)
     }
 
+    func testWhenTimeseriesCollectorHasCollectedData_itUpdatesFatalErrorContextWithSessionState() throws {
+        let fatalErrorContext = FatalErrorContextNotifierMock()
+        let timeseriesCollector = TimeseriesCollectorMock(hasData: false)
+
+        // Given
+        let sessionStartTime = Date()
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: sessionStartTime,
+            dependencies: .mockWith(
+                fatalErrorContext: fatalErrorContext,
+                timeseriesCollector: timeseriesCollector
+            )
+        )
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: sessionStartTime), context: context, writer: writer)
+        XCTAssertEqual(fatalErrorContext.sessionState?.hasTimeseries, false)
+
+        // When
+        timeseriesCollector.hasData = true
+        _ = scope.process(command: RUMCommandMock(time: sessionStartTime.addingTimeInterval(1)), context: context, writer: writer)
+
+        // Then
+        XCTAssertEqual(fatalErrorContext.sessionState?.hasTimeseries, true)
+    }
+
     func testWhenSessionScopeHasNoActiveView_itUpdatesFatalErrorContextWithView() throws {
         let featureScope = FeatureScopeMock()
         let fatalErrorContext = FatalErrorContextNotifierMock()

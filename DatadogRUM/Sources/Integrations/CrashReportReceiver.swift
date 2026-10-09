@@ -172,7 +172,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 startDate: crashTimings.realCrashDate,
                 sessionUUID: RUMUUID(rawValue: lastRUMSessionState.sessionUUID), // link it to previous RUM Session
                 context: crashContext,
-                hasReplay: lastRUMSessionState.didStartWithReplay
+                hasReplay: lastRUMSessionState.didStartWithReplay,
+                hasTimeseries: lastRUMSessionState.hasTimeseries
             )
         case .handleInBackgroundView:
             // It means that the crash occurred as the very first event after sending app to background in previous session.
@@ -183,7 +184,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 startDate: crashTimings.realCrashDate,
                 sessionUUID: RUMUUID(rawValue: lastRUMSessionState.sessionUUID), // link it to previous RUM Session
                 context: crashContext,
-                hasReplay: lastRUMSessionState.didStartWithReplay
+                hasReplay: lastRUMSessionState.didStartWithReplay,
+                hasTimeseries: lastRUMSessionState.hasTimeseries
             )
         case .doNotHandle:
             DD.logger.debug("There was a crash in background, but it is ignored due to Background Event Tracking disabled or sampling.")
@@ -237,7 +239,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 // As the crash occurred after initializing SDK but before starting the first view,
                 // we can't know if Session Replay was configured. However, lack of view implies
                 // that there must be no replay collected:
-                hasReplay: false
+                hasReplay: false,
+                hasTimeseries: false
             )
         case .handleInBackgroundView:
             newRUMView = createNewRUMViewEvent(
@@ -249,7 +252,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 // As the crash occurred after initializing SDK but before starting the first view,
                 // we can't know if Session Replay was configured. However, lack of view implies
                 // that there must be no replay collected:
-                hasReplay: false
+                hasReplay: false,
+                hasTimeseries: false
             )
         case .doNotHandle:
             DD.logger.debug("There was a crash in background, but it is ignored due to Background Event Tracking disabled.")
@@ -313,7 +317,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         startDate: Date,
         sessionUUID: RUMUUID,
         context: CrashContext,
-        hasReplay: Bool?
+        hasReplay: Bool?,
+        hasTimeseries: Bool
     ) -> RUMViewEvent {
         let viewUUID = uuidGenerator.generateUnique()
 
@@ -363,7 +368,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             service: context.service,
             session: .init(
                 hasReplay: hasReplay,
-                hasTimeseries: false,
+                hasTimeseries: hasTimeseries,
                 id: sessionUUID.toRUMDataFormat,
                 isActive: true,
                 isMainProcess: context.applicationBundleType != .iOSAppExtension,

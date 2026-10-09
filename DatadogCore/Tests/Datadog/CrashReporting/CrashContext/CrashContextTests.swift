@@ -208,4 +208,21 @@ class CrashContextTests: XCTestCase {
         // Then
         XCTAssertEqual(deserializedContext.applicationBundleType, .iOSApp)
     }
+
+    func testGivenSessionStateEncodedWithoutHasTimeseries_whenItGetsDecoded_thenItDefaultsToFalse() throws {
+        // Given
+        // Simulate a `RUMSessionState` persisted by a prior SDK version, before `hasTimeseries` existed.
+        let context: CrashContext = .mockWith(lastRUMSessionState: .mockWith(hasTimeseries: true))
+        var serializedContext = try JSONSerialization.jsonObject(with: encoder.encode(context)) as? [String: Any]
+        var serializedSessionState = serializedContext?["lastRUMSessionState"] as? [String: Any]
+        serializedSessionState?.removeValue(forKey: "hasTimeseries")
+        serializedContext?["lastRUMSessionState"] = serializedSessionState
+        let legacyData = try JSONSerialization.data(withJSONObject: serializedContext as Any)
+
+        // When
+        let deserializedContext = try decoder.decode(CrashContext.self, from: legacyData)
+
+        // Then
+        XCTAssertEqual(deserializedContext.lastRUMSessionState?.hasTimeseries, false)
+    }
 }
