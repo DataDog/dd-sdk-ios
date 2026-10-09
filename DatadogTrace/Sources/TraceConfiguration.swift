@@ -43,7 +43,7 @@ extension Trace {
         /// ```
         ///
         /// - Note: Keep the implementation fast and do not make any assumptions on the thread used to run it.
-        public typealias SpanCustomization = (InterceptedRequest, OTSpan, URLResponse?, Error?) -> Void
+        public typealias SpanCustomization = @Sendable (InterceptedRequest, OTSpan, URLResponse?, Error?) -> Void
 
         /// The sampling rate for spans created with the default tracer.
         ///

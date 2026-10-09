@@ -200,6 +200,11 @@ public protocol LogEventMapper
     public func inject(spanContext: OTSpanContext)
 [?] extension TracePropagationHeadersReader where Self: OTFormatReader
     public func extract() -> OTSpanContext?
+[?] extension Trace.Configuration
+    public struct InterceptedRequest: Sendable
+        public let url: URL?
+        public let httpMethod: String?
+        public let httpBody: Data?
 [?] extension OpenTelemetryApi.TraceState
     public func w3c() -> String
 public class OTelTracerProvider: OpenTelemetryApi.TracerProvider
@@ -311,6 +316,7 @@ public enum Trace
 [?] extension Trace
     public struct Configuration: SampledTelemetry, Sendable
         public typealias EventMapper = @Sendable (SpanEvent) -> SpanEvent
+        public typealias SpanCustomization = @Sendable (InterceptedRequest, OTSpan, URLResponse?, Error?) -> Void
         public var sampleRate: SampleRate
         public var service: String?
         public var tags: [String: OTTagValue]?
@@ -319,11 +325,6 @@ public enum Trace
         public var networkInfoEnabled: Bool
         public var eventMapper: EventMapper?
         public var customEndpoint: URL?
-        public typealias SpanCustomization = (InterceptedRequest, OTSpan, URLResponse?, Error?) -> Void
-        public struct InterceptedRequest
-            public let url: URL?
-            public let httpMethod: String?
-            public let httpBody: Data?
         public struct URLSessionTracking: Sendable
             public var firstPartyHostsTracing: FirstPartyHostsTracing
             public var spanCustomization: SpanCustomization?
