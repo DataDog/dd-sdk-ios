@@ -419,4 +419,40 @@ final class ViewHitchesReaderTests: XCTestCase {
         XCTAssertEqual(dataModel.hitches.count, 1)
         XCTAssertEqual(Double(dataModel.hitches.first?.duration ?? 0), 32_000_000, accuracy: 1_000)
     }
+
+    // MARK: - Max Collected Hitches
+
+    func testViewHitches_givenMoreHitchesThanMaxCollected_evictsTheOldestOneAtATime() {
+        // Given
+        let reader = ViewHitchesReader()
+        let frameInfoProvider = FrameInfoProviderMock(target: self, selector: .noOp)
+        let frameInterval = 0.016
+        let extraHitches = 5
+        frameInfoProvider.currentFrameTimestamp = 0
+        frameInfoProvider.nextFrameTimestamp = frameInterval
+        reader.didUpdateFrame(link: frameInfoProvider)
+
+        // When
+        // Alternate late and on-time frames, so hitches are not merged.
+        for index in 0..<(ViewHitchesReader.Constants.maxCollectedHitches + extraHitches) {
+            let frame = Double(3 * index)
+
+            // Late
+            frameInfoProvider.currentFrameTimestamp = (frame + 2) * frameInterval
+            frameInfoProvider.nextFrameTimestamp = (frame + 3) * frameInterval
+            reader.didUpdateFrame(link: frameInfoProvider)
+
+            // On time
+            frameInfoProvider.currentFrameTimestamp = (frame + 3) * frameInterval
+            frameInfoProvider.nextFrameTimestamp = (frame + 4) * frameInterval
+            reader.didUpdateFrame(link: frameInfoProvider)
+        }
+
+        // Then
+        let hitches = reader.dataModel.hitches
+        let firstKeptHitchStart = Double(3 * extraHitches + 1) * frameInterval
+        XCTAssertEqual(hitches.count, ViewHitchesReader.Constants.maxCollectedHitches)
+        XCTAssertEqual(Double(hitches.first?.start ?? 0), firstKeptHitchStart * 1_000_000_000, accuracy: 1_000)
+        XCTAssertEqual(reader.telemetryModel.hitchesCount, ViewHitchesReader.Constants.maxCollectedHitches + extraHitches)
+    }
 }
