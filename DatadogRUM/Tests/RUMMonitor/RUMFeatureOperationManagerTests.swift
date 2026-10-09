@@ -19,7 +19,7 @@ class RUMFeatureOperationManagerTests: XCTestCase {
     override func setUp() {
         super.setUp()
         mockParent = RUMContextProviderMock()
-        mockDependencies = RUMScopeDependencies.mockAny()
+        mockDependencies = RUMScopeDependencies.mockWith(timeseriesCollector: TimeseriesCollectorMock(hasData: true))
         mockWriter = FileWriterMock()
         mockContext = DatadogContext.mockAny()
 
@@ -66,6 +66,7 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         XCTAssertEqual(event.view.url, view.viewPath)
 
         // Common properties
+        XCTAssertEqual(event.session.hasTimeseries, true)
         XCTAssertNil(event.account)
         XCTAssertNil(event.buildId)
         XCTAssertNotNil(event.buildVersion)

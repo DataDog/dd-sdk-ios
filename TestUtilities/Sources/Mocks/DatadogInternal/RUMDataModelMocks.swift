@@ -18,7 +18,8 @@ extension RUMSessionState: AnyMockable, RandomMockable {
             isSampled: .mockRandom(),
             isInitialSession: .mockRandom(),
             hasTrackedAnyView: .mockRandom(),
-            didStartWithReplay: .mockRandom()
+            didStartWithReplay: .mockRandom(),
+            hasTimeseries: .mockRandom()
         )
     }
 
@@ -27,14 +28,16 @@ extension RUMSessionState: AnyMockable, RandomMockable {
         isSampled: Bool = .mockAny(),
         isInitialSession: Bool = .mockAny(),
         hasTrackedAnyView: Bool = .mockAny(),
-        didStartWithReplay: Bool? = .mockAny()
+        didStartWithReplay: Bool? = .mockAny(),
+        hasTimeseries: Bool = false
     ) -> RUMSessionState {
         return RUMSessionState(
             sessionUUID: sessionUUID,
             isSampled: isSampled,
             isInitialSession: isInitialSession,
             hasTrackedAnyView: hasTrackedAnyView,
-            didStartWithReplay: didStartWithReplay
+            didStartWithReplay: didStartWithReplay,
+            hasTimeseries: hasTimeseries
         )
     }
 }
@@ -352,6 +355,7 @@ extension RUMViewEvent: RandomMockable {
         viewURL: String = .mockRandom(),
         crashCount: Int64? = Int64.mockRandom(),
         hasReplay: Bool? = Bool.random(),
+        hasTimeseries: Bool? = .random(),
         isMainProcess: Bool? = .random(),
         featureFlags: RUMViewEvent.FeatureFlags? = .init(featureFlagsInfo: ["flag-\(String.mockRandom())": Bool.mockRandom()])
     ) -> RUMViewEvent {
@@ -396,6 +400,7 @@ extension RUMViewEvent: RandomMockable {
             service: .mockRandom(),
             session: .init(
                 hasReplay: hasReplay,
+                hasTimeseries: hasTimeseries,
                 id: sessionID.uuidString.lowercased(),
                 isActive: true,
                 isMainProcess: isMainProcess,

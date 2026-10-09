@@ -54,7 +54,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                     isSampled: state.isSampled,
                     isInitialSession: state.isInitialSession,
                     hasTrackedAnyView: true,
-                    didStartWithReplay: state.didStartWithReplay
+                    didStartWithReplay: state.didStartWithReplay,
+                    hasTimeseries: state.hasTimeseries
                 )
             }
         }
@@ -298,6 +299,19 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             }
 
             return true // keep this session until it gets ended by any `endReason`
+        }
+
+        // Persist that this session has timeseries data, so a crash reported in the next process can tell:
+        if !state.hasTimeseries,
+           dependencies.timeseriesCollector?.hasCollectedData(sessionID: sessionUUID.toRUMDataFormat) == true {
+            state = RUMSessionState(
+                sessionUUID: state.sessionUUID,
+                isSampled: state.isSampled,
+                isInitialSession: state.isInitialSession,
+                hasTrackedAnyView: state.hasTrackedAnyView,
+                didStartWithReplay: state.didStartWithReplay,
+                hasTimeseries: true
+            )
         }
 
         var deactivating = false

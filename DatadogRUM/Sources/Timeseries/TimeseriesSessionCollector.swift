@@ -23,6 +23,9 @@ internal protocol TimeseriesCollecting: AnyObject {
     func noteActivity(sessionID: String, at time: Date)
     /// Synchronously flushes any buffered samples. **Blocks the caller thread.**
     func flush()
+    /// Whether at least one sample was collected for the session identified by `sessionID`.
+    /// Safe to call from any thread.
+    func hasCollectedData(sessionID: String) -> Bool
 }
 
 /// Collects memory and CPU samples at configurable intervals (default: 1 s) during a RUM session and flushes them
@@ -80,6 +83,14 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     /// Whether replay was reported active at any point during the session, OR-accumulated in `sample()`
     /// (mirrors `RUMViewScope`). Stays `nil` until observed, so sessions without Session Replay omit the field.
     private var hasReplay: Bool? = nil
+    /// IDs of the most recently sampled sessions, oldest first. Keeps the previous session alongside the current
+    /// one so events from a stopped session with in-flight resources still report its data, and is capped at
+    /// `maxRetainedSampledSessions` so it doesn't grow with the number of sessions.
+    /// Lock-protected rather than confined to `queue`, since RUM scopes read it from the RUM context thread
+    /// through `hasCollectedData(sessionID:)`.
+    @ReadWriteLock
+    private var sampledSessionIDs: [String] = []
+    private static let maxRetainedSampledSessions = 2
 
     /// All buffer mutations and timer events run on this queue.
     private let queue = DispatchQueue(label: "com.datadoghq.timeseries-collector", qos: .utility)
@@ -258,6 +269,10 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         }
     }
 
+    func hasCollectedData(sessionID: String) -> Bool {
+        return sampledSessionIDs.contains(sessionID)
+    }
+
     private func makeTimer() -> DispatchSourceTimer {
         let timer = DispatchSource.makeTimerSource(queue: queue)
         timer.schedule(deadline: .now() + samplingInterval, repeating: samplingInterval)
@@ -304,6 +319,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             let footprintKB = bytes / 1_024
             let memoryPercent = totalRAM > 0 ? bytes / totalRAM * 100 : 0
             memoryBuffer.append(MemorySample(timestamp: timestamp, footprintKB: footprintKB, percent: memoryPercent))
+            markSessionAsSampled()
             if memoryBuffer.count >= batchSize {
                 flushMemory()
             }
@@ -311,10 +327,18 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
 
         if collectTypes.contains(.cpu), let cpuUsage = cpuUsageProvider() {
             cpuBuffer.append(CPUSample(timestamp: timestamp, usage: cpuUsage))
+            markSessionAsSampled()
             if cpuBuffer.count >= batchSize {
                 flushCPU()
             }
         }
+    }
+
+    private func markSessionAsSampled() {
+        guard !sampledSessionIDs.contains(sessionID) else {
+            return
+        }
+        sampledSessionIDs = Array((sampledSessionIDs + [sessionID]).suffix(Self.maxRetainedSampledSessions))
     }
 
     private func flushMemory() {
@@ -352,6 +376,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                 service: context.service,
                 session: .init(
                     hasReplay: hasReplay,
+                    hasTimeseries: true,
                     id: sessionID,
                     isMainProcess: context.applicationBundleType != .iOSAppExtension,
                     type: sessionType
@@ -411,6 +436,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
                 service: context.service,
                 session: .init(
                     hasReplay: hasReplay,
+                    hasTimeseries: true,
                     id: sessionID,
                     isMainProcess: context.applicationBundleType != .iOSAppExtension,
                     type: sessionType

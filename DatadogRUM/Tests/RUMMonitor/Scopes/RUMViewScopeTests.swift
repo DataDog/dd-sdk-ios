@@ -149,6 +149,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.type, .user)
         XCTAssertEqual(event.session.hasReplay, hasReplay)
+        XCTAssertEqual(event.session.hasTimeseries, false)
         DDTAssertValidRUMUUID(event.view.id)
         XCTAssertEqual(event.view.url, "UIViewController")
         XCTAssertEqual(event.view.name, "ViewName")
@@ -2383,6 +2384,7 @@ class RUMViewScopeTests: XCTestCase {
         let completionExpectation = expectation(description: "Error processing completion")
 
         let hasReplay: Bool = .mockRandom()
+        let hasTimeseries: Bool = .mockRandom()
         let quotaReason: DDProfiling.QuotaReason = .mockRandom()
         var context = self.context
         context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
@@ -2392,7 +2394,7 @@ class RUMViewScopeTests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(featureFlags: [.viewUpdates: false]),
+            dependencies: .mockWith(featureFlags: [.viewUpdates: false], timeseriesCollector: TimeseriesCollectorMock(hasData: hasTimeseries)),
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
@@ -2435,6 +2437,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(error.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(error.session.type, .user)
         XCTAssertEqual(error.session.hasReplay, hasReplay)
+        XCTAssertEqual(error.session.hasTimeseries, hasTimeseries)
         DDTAssertValidRUMUUID(error.view.id)
         XCTAssertEqual(error.view.url, "UIViewController")
         XCTAssertEqual(error.view.name, "ViewName")
@@ -3690,6 +3693,7 @@ class RUMViewScopeTests: XCTestCase {
 
     func testWhenLongTaskIsAdded_itSendsLongTaskEventAndViewUpdateEvent() throws {
         let hasReplay: Bool = .mockRandom()
+        let hasTimeseries: Bool = .mockRandom()
         let quotaReason: DDProfiling.QuotaReason = .mockRandom()
         var context = self.context
         context.set(additionalContext: SessionReplayCoreContext.HasReplay(value: hasReplay))
@@ -3700,7 +3704,7 @@ class RUMViewScopeTests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(featureFlags: [.viewUpdates: false]),
+            dependencies: .mockWith(featureFlags: [.viewUpdates: false], timeseriesCollector: TimeseriesCollectorMock(hasData: hasTimeseries)),
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
@@ -3738,6 +3742,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
         XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
         XCTAssertEqual(event.session.hasReplay, hasReplay)
+        XCTAssertEqual(event.session.hasTimeseries, hasTimeseries)
         XCTAssertNil(event.connectivity)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.date, longTaskStartingDate.timeIntervalSince1970.dd.toInt64Milliseconds)
@@ -4954,6 +4959,62 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(events[0].session.hasReplay, false)
         XCTAssertEqual(events[1].session.hasReplay, true)
         XCTAssertEqual(events[2].session.hasReplay, true)
+    }
+
+    func testViewUpdate_onceTimeseriesHasCollectedDataItRemainsTrue() throws {
+        // Given
+        let timeseriesCollector = TimeseriesCollectorMock(hasData: false)
+
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockWith(featureFlags: [.viewUpdates: false], timeseriesCollector: timeseriesCollector),
+            identity: .mockViewIdentifier(),
+            path: .mockAny(),
+            name: .mockAny(),
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: .mockAny()
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // When
+        timeseriesCollector.hasData = true
+        currentTime.addTimeInterval(0.5)
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddViewTimingCommand.mockWith(time: currentTime, timingName: "timing-after-500000000ns"),
+                context: context,
+                writer: writer
+            )
+        )
+
+        timeseriesCollector.hasData = false
+        currentTime.addTimeInterval(0.5)
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddViewTimingCommand.mockWith(time: currentTime, timingName: "timing-after-500000000ns"),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
+        XCTAssertEqual(events.count, 3, "There should be 3 View updates sent")
+        XCTAssertEqual(events[0].session.hasTimeseries, false)
+        XCTAssertEqual(events[1].session.hasTimeseries, true)
+        XCTAssertEqual(events[2].session.hasTimeseries, true)
     }
 
     // MARK: - View Attributes

@@ -12,11 +12,11 @@ import TestUtilities
 final class WatchdogTerminationReporterTests: XCTestCase {
     let featureScope = FeatureScopeMock()
 
-    func testSend_whenViewHasIsMainProcessFalse_itCarriesItOverToErrorAndView() throws {
+    func testSend_whenViewHasSessionAttributes_itCarriesThemOverToErrorAndView() throws {
         let currentDate: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
-        let viewEvent: RUMViewEvent = .mockRandomWith(crashCount: 0, isMainProcess: false)
+        let viewEvent: RUMViewEvent = .mockRandomWith(crashCount: 0, hasTimeseries: true, isMainProcess: false)
         let featureScope = FeatureScopeMock()
 
         let reporter = WatchdogTerminationReporter(
@@ -35,9 +35,11 @@ final class WatchdogTerminationReporterTests: XCTestCase {
         // Then
         let sentRUMError = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self).first)
         XCTAssertEqual(sentRUMError.session.isMainProcess, false)
+        XCTAssertEqual(sentRUMError.session.hasTimeseries, true)
 
         let sentRUMView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).first)
         XCTAssertEqual(sentRUMView.session.isMainProcess, viewEvent.session.isMainProcess)
+        XCTAssertEqual(sentRUMView.session.hasTimeseries, viewEvent.session.hasTimeseries)
     }
 
     func testSend_sanitizesRUMErrorContextBeforeWriting() throws {
