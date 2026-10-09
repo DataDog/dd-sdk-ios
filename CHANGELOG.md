@@ -1,5 +1,6 @@
 # Unreleased
 
+- [FEATURE] Add `spanCustomization` to `Trace.Configuration.URLSessionTracking` to customize spans created for intercepted network requests, for example to add request-based tags. See [#2741][]
 - [IMPROVEMENT] Include the application build number (`CFBundleVersion`) in trace spans as `build_version`. See [#3286][]
 - [FIX] Keep automatic URLSession spans linked to the RUM view and session captured when each request starts. See [#3220][]
 - [FIX] Reduce the risk of SwiftUI crashes during Session Replay recording by avoiding copies of unrelated view cache data. See [#3245][]
@@ -1208,6 +1209,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2759]: https://github.com/DataDog/dd-sdk-ios/pull/2759
 [#2761]: https://github.com/DataDog/dd-sdk-ios/pull/2761
 [#2740]: https://github.com/DataDog/dd-sdk-ios/pull/2740
+[#2741]: https://github.com/DataDog/dd-sdk-ios/pull/2741
 [#2750]: https://github.com/DataDog/dd-sdk-ios/pull/2750
 [#2714]: https://github.com/DataDog/dd-sdk-ios/pull/2714
 [#2751]: https://github.com/DataDog/dd-sdk-ios/pull/2751
