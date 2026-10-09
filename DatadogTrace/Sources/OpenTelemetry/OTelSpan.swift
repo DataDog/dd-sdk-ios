@@ -111,7 +111,8 @@ internal class OTelSpan: OpenTelemetryApi.Span {
         startTime: Date,
         tracer: DatadogTracer,
         eventBuilder: SpanEventBuilder,
-        eventWriter: SpanWriteContext
+        eventWriter: SpanWriteContext,
+        parentForStats: DDSpanContext.StatsParent = .unknown
     ) {
         self._name = name
         self._status = .unset
@@ -130,7 +131,8 @@ internal class OTelSpan: OpenTelemetryApi.Span {
                 parentSpanID: parentSpanID?.toDatadog(),
                 baggageItems: .init(),
                 sampleRate: sampler.samplingRate,
-                samplingDecision: SamplingDecision(sampling: sampler)
+                samplingDecision: SamplingDecision(sampling: sampler),
+                parentForStats: parentForStats
             ),
             operationName: name,
             startTime: startTime,
@@ -138,6 +140,7 @@ internal class OTelSpan: OpenTelemetryApi.Span {
             eventBuilder: eventBuilder,
             eventWriter: eventWriter
         )
+        updateStatsService(from: attributes)
     }
 
     func addEvent(name: String) {
@@ -187,13 +190,11 @@ internal class OTelSpan: OpenTelemetryApi.Span {
         isRecording = false
         tags = attributes.tags
 
-        // set global tags
-        for (key, value) in tracer.tags {
+        // Preserve tag side effects (including manual sampling overrides), but do not
+        // temporarily replace the service visible to children with an overridden global value.
+        for (key, value) in tracer.tags where key != SpanTags.service || tags[key] == nil {
             ddSpan.setTag(key: key, value: value)
         }
-
-        // set local tags
-        // local takes precedence over global
         for (key, value) in tags {
             ddSpan.setTag(key: key, value: value)
         }
@@ -233,7 +234,12 @@ internal class OTelSpan: OpenTelemetryApi.Span {
             return
         }
 
-        attributes[key] = value
+        _attributes.mutate {
+            $0[key] = value
+            if key == SpanTags.service || SpanTags.service.hasPrefix(key + ".") {
+                updateStatsService(from: $0)
+            }
+        }
     }
 
     func setAttributes(_ attributes: [String: OpenTelemetryApi.AttributeValue]) {
@@ -245,7 +251,18 @@ internal class OTelSpan: OpenTelemetryApi.Span {
             for (key, value) in attributes {
                 $0[key] = value
             }
+            if attributes.keys.contains(where: { $0 == SpanTags.service || SpanTags.service.hasPrefix($0 + ".") }) {
+                updateStatsService(from: $0)
+            }
         }
+    }
+
+    /// Makes current attributes visible to children before this span ends.
+    private func updateStatsService(from attributes: [String: OpenTelemetryApi.AttributeValue]) {
+        guard let service = ddSpan.ddContext.serviceForStats else {
+            return
+        }
+        service.serviceOverride = attributes.tags[SpanTags.service] ?? tracer.tags[SpanTags.service]?.dd.decode()
     }
 
     func addLink(spanContext: OpenTelemetryApi.SpanContext, attributes: [String: OpenTelemetryApi.AttributeValue]) {
