@@ -32,6 +32,29 @@ final class FlagsEvaluationIntegrationTests: XCTestCase {
         )
     }
 
+    func testFirstFlagsFromPersistentStoreLogsOnlyExplicitEvaluation() throws {
+        let core = DatadogCoreProxy(context: .mockWith(trackingConsent: .granted))
+        defer { try? core.flushAndTearDown() }
+        Flags.enable(with: .init(trackEvaluations: true), in: core)
+        let scope = core.scope(for: FlagsFeature.self)
+        scope.flagsDataStore.setFlagsData(Fixtures.flagsData, forClientNamed: FlagsClient.defaultName)
+        scope.dataStore.flush()
+        let client = FlagsClient.create(in: core)
+        let delivered = expectation(description: "first flags")
+        client.onFirstFlags { event in
+            XCTAssertEqual(event.flagsChanged, ["test-flag"])
+            XCTAssertEqual(FlagsClient.shared(in: core).getBooleanDetails(key: "test-flag", defaultValue: false).value, true)
+            delivered.fulfill()
+        }
+        wait(for: [delivered], timeout: 5)
+        client.onFirstFlags { XCTAssertEqual($0.flagsChanged, ["test-flag"]) }
+        try core.flushAndTearDown()
+        let events = core.waitAndReturnEvents(ofFeature: FlagsEvaluationFeature.name, ofType: FlagEvaluationEvent.self)
+        XCTAssertEqual(events.count, 1)
+        XCTAssertEqual(events.first?.evaluationCount, 1)
+        XCTAssertEqual(events.first?.flag.key, "test-flag")
+    }
+
     // MARK: - EVALLOG.4: Shutdown Flush
 
     /// EVALLOG.4: Evaluations are flushed when SDK shuts down via flushAndTearDown()

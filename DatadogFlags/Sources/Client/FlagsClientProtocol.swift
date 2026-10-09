@@ -19,6 +19,30 @@ public protocol FlagsClientProtocol: AnyObject {
     /// ``FlagsClientState/stale``, or ``FlagsClientState/error``.
     var state: FlagsStateObservable { get }
 
+    /// Calls the handler once per registration with the complete keys of the first accepted disk or network configuration.
+    ///
+    /// This is one configuration notification, not one notification per flag or an inventory of all server flags.
+    /// Valid empty configurations complete it; missing, malformed or failed loads do not consume the signal.
+    /// The first event is retained across subsequent updates and resets. Its keys do not pin a snapshot:
+    /// evaluations in the handler read current assignments, which may differ. This is not readiness.
+    /// A failed fetch retains matching-context assignments as stale; a mismatched-context failure clears
+    /// in-memory assignments unless a newer request has already succeeded. The first event remains retained.
+    ///
+    /// Once the first event is published, replay is synchronous before this method returns and performs
+    /// no SDK I/O itself. Work performed by the handler, including evaluation, has its usual behavior.
+    /// Otherwise the handler runs on the installing thread after installation bookkeeping, outside SDK locks.
+    /// Delivery order across registrations is not guaranteed: a later registration may be notified before
+    /// an earlier pending one. Handlers are nonthrowing. Dispatch UI work as needed.
+    ///
+    /// The returned subscription supports thread-safe, idempotent cancellation of only this registration.
+    /// It releases a pending handler and suppresses delivery until that handler is atomically claimed.
+    /// It neither interrupts nor waits for claimed delivery, clears the first event, nor cancels loading.
+    /// Discarding the subscription does not cancel. Pending captures are released on delivery, cancellation,
+    /// or destruction of the client repository. Avoid strongly capturing the client in a pending handler.
+    /// Synchronous replay may finish before the subscription is returned.
+    @discardableResult
+    func onFirstFlags(_ listener: @escaping FlagsClientEventListener) -> any FlagsSubscription
+
     /// Sets the evaluation context for flag targeting.
     ///
     /// The evaluation context includes user or session information used to determine which flag
@@ -81,6 +105,12 @@ public protocol FlagsClientProtocol: AnyObject {
 }
 
 extension FlagsClientProtocol {
+    /// Compatibility default for conformers that do not produce first-flags notifications.
+    @discardableResult
+    public func onFirstFlags(_ listener: @escaping FlagsClientEventListener) -> any FlagsSubscription {
+        return NOPFlagsSubscription()
+    }
+
     /// Default state observable for backward compatibility with external conformers.
     ///
     /// External implementations of ``FlagsClientProtocol`` that don't provide their own
