@@ -392,6 +392,7 @@
 		5B1D027A2E8D6DE700AB2391 /* FlagAssignmentsFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02782E8D6DE400AB2391 /* FlagAssignmentsFetcherTests.swift */; };
 		5B1D027D2E8D896300AB2391 /* FlagAssignmentsFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D027C2E8D896300AB2391 /* FlagAssignmentsFetcher.swift */; };
 		5B1D027E2E8D896300AB2391 /* FlagAssignmentsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D027B2E8D896300AB2391 /* FlagAssignmentsRequest.swift */; };
+		AB3AC093E45346BCB5EEDE01 /* FlagsSDKMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3AC093E45346BCB5EEDE02 /* FlagsSDKMetadata.swift */; };
 		5B1D02822E8E6D2700AB2391 /* FlagsError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02812E8E6D2300AB2391 /* FlagsError.swift */; };
 		5B1D02862E8EB78800AB2391 /* FlagEvaluationReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D02842E8EB78600AB2391 /* FlagEvaluationReceiver.swift */; };
 		5B1D028E2E8ED10200AB2391 /* FlagAssignmentsResponseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B1D028D2E8ED0FF00AB2391 /* FlagAssignmentsResponseTests.swift */; };
@@ -2291,6 +2292,7 @@
 		5B1D02722E8D2EF300AB2391 /* FlagAssignmentsRequestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsRequestTests.swift; sourceTree = "<group>"; };
 		5B1D02782E8D6DE400AB2391 /* FlagAssignmentsFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsFetcherTests.swift; sourceTree = "<group>"; };
 		5B1D027B2E8D896300AB2391 /* FlagAssignmentsRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsRequest.swift; sourceTree = "<group>"; };
+		AB3AC093E45346BCB5EEDE02 /* FlagsSDKMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsSDKMetadata.swift; sourceTree = "<group>"; };
 		5B1D027C2E8D896300AB2391 /* FlagAssignmentsFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagAssignmentsFetcher.swift; sourceTree = "<group>"; };
 		5B1D02812E8E6D2300AB2391 /* FlagsError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsError.swift; sourceTree = "<group>"; };
 		5B1D02842E8EB78600AB2391 /* FlagEvaluationReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagEvaluationReceiver.swift; sourceTree = "<group>"; };
@@ -4307,6 +4309,7 @@
 				5B0E75D92E9690C400F66739 /* ExposureTracker.swift */,
 				5BF802712E9CD12E00097B0E /* RUMFlagEvaluationReporter.swift */,
 				5B1D027B2E8D896300AB2391 /* FlagAssignmentsRequest.swift */,
+				AB3AC093E45346BCB5EEDE02 /* FlagsSDKMetadata.swift */,
 				5B1D027C2E8D896300AB2391 /* FlagAssignmentsFetcher.swift */,
 				5B5B8CC12E8C0E8900A6740E /* FlagsClientProtocol.swift */,
 				8DADC3AE2E7CCF0D0060F558 /* FlagsClient.swift */,
@@ -8567,6 +8570,7 @@
 				5B16A3702E83EE340046A863 /* FlagAssignmentsResponse.swift in Sources */,
 				5B1D027D2E8D896300AB2391 /* FlagAssignmentsFetcher.swift in Sources */,
 				5B1D027E2E8D896300AB2391 /* FlagAssignmentsRequest.swift in Sources */,
+				AB3AC093E45346BCB5EEDE01 /* FlagsSDKMetadata.swift in Sources */,
 				5BB294C02E83E02900CAA44B /* ExposureLogger.swift in Sources */,
 				27A047D86EB162480FF0C5AC /* EvaluationLogger.swift in Sources */,
 				DFA7786C023CA3344F870712 /* EvaluationAggregator.swift in Sources */,
