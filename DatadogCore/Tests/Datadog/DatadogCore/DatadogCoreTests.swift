@@ -47,6 +47,34 @@ private final class PendingHTTPClientMock: HTTPClient {
     }
 }
 
+/// Holds the first request until `releaseRequest()` is called, keeping its upload in progress.
+private final class HoldingHTTPClientMock: HTTPClient {
+    let requestSent = DispatchSemaphore(value: 0)
+    private let requestReleased = DispatchSemaphore(value: 0)
+    private let isFirstRequest = ReadWriteLock(wrappedValue: true)
+
+    func send(
+        request: URLRequest,
+        delegate: URLSessionTaskDelegate?,
+        completion: @escaping (Result<(HTTPURLResponse, Data?), any Error>) -> Void
+    ) {
+        var shouldHold = false
+        isFirstRequest.mutate { isFirst in
+            shouldHold = isFirst
+            isFirst = false
+        }
+        if shouldHold {
+            requestSent.signal()
+            requestReleased.wait()
+        }
+        completion(.success((.mockResponseWith(statusCode: 202), nil)))
+    }
+
+    func releaseRequest() {
+        requestReleased.signal()
+    }
+}
+
 class DatadogCoreTests: XCTestCase {
     override func setUp() {
         super.setUp()
@@ -412,6 +440,39 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 0, "It should not send any request")
     }
 
+    func testWhenStoppingInstance_itDisconnectsMessageBus() throws {
+        // Given
+        let messageReceiver = FeatureMessageReceiverMock()
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        try core.register(feature: FeatureMock(messageReceiver: messageReceiver))
+        core.send(message: .payload("sent before stop"))
+
+        // When
+        core.stop()
+        core.send(message: .payload("sent after stop"))
+        core.bus.flush()
+
+        // Then
+        let deliveredPayloads = messageReceiver.messages.compactMap { message -> String? in
+            guard case .payload(let payload as String) = message else {
+                return nil
+            }
+            return payload
+        }
+        XCTAssertEqual(deliveredPayloads, ["sent before stop"], "Messages sent after `stop()` must not be delivered")
+    }
+
     func testWhenStoppingInstance_itStopsRemoteConfigurationProvider() throws {
         // Given
         let notificationCenterProvider = NotificationCenterProvider.makeTestProvider()
@@ -711,6 +772,112 @@ class DatadogCoreTests: XCTestCase {
 
         XCTAssertTrue(uploadedEvents.contains(#"{"event":"first"}"#))
         XCTAssertTrue(uploadedEvents.contains(#"{"event":"second"}"#))
+    }
+
+    func testFlushAndTearDown_whenUploadIsInProgress_itUploadsTelemetryRecordedFromIt() throws {
+        // Given
+        let httpClient = HoldingHTTPClientMock()
+        let requestBuilderSpy = FeatureRequestBuilderSpy()
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .combining(
+                storagePerformance: .readAllFiles,
+                uploadPerformance: UploadPerformanceMock(
+                    initialUploadDelay: 0,
+                    minUploadDelay: 0.05,
+                    maxUploadDelay: 0.05,
+                    uploadDelayChangeRate: 0
+                )
+            ),
+            httpClient: httpClient,
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: 1,
+            backgroundTasksEnabled: false
+        )
+        let isRecordingSlow = ReadWriteLock(wrappedValue: false)
+        let uploadQualityDeliveries = ReadWriteLock(wrappedValue: 0)
+        let messageReceiver = FeatureMessageReceiverMock { [weak core] message in
+            guard case .telemetry(.metric(let metric)) = message, metric.name == UploadQualityMetric.name else {
+                return
+            }
+            var delivery = 0
+            uploadQualityDeliveries.mutate {
+                $0 += 1
+                delivery = $0
+            }
+            if isRecordingSlow.wrappedValue {
+                Thread.sleep(forTimeInterval: 0.2) // record late if the telemetry is delivered after events are flushed
+            }
+            // Record the telemetry as an event, like RUM does
+            core?.scope(for: FeatureMock.self).eventWriteContext { _, writer in
+                writer.write(value: FeatureMock.Event(event: "upload telemetry \(delivery)"))
+            }
+        }
+        try core.register(feature: FeatureMock(requestBuilder: requestBuilderSpy, messageReceiver: messageReceiver))
+        core.scope(for: FeatureMock.self).eventWriteContext { _, writer in
+            writer.write(value: FeatureMock.Event(event: "test"))
+        }
+        XCTAssertEqual(httpClient.requestSent.wait(timeout: .now() + 5), .success, "An upload must be in progress")
+
+        // When
+        isRecordingSlow.mutate { $0 = true }
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
+            httpClient.releaseRequest() // completes the upload while `flushAndTearDown()` is running
+        }
+        core.flushAndTearDown()
+
+        // Then
+        let lastDelivery = uploadQualityDeliveries.wrappedValue // the upload in progress reports last
+        let uploadedEvents = requestBuilderSpy.requestParameters
+            .flatMap { $0.events }
+            .map { $0.data.utf8String }
+        XCTAssertTrue(
+            uploadedEvents.contains(#"{"event":"upload telemetry \#(lastDelivery)"}"#),
+            "Telemetry recorded from the upload in progress must be uploaded"
+        )
+    }
+
+    func testFlushAndTearDown_whenMessageIsPostedDuringFinalUpload_itDeliversItBeforeReturning() throws {
+        // Given
+        let requestBuilderSpy = FeatureRequestBuilderSpy()
+        let deliveredPayloads = ReadWriteLock<[String]>(wrappedValue: [])
+        let messageReceiver = FeatureMessageReceiverMock { message in
+            guard case .payload(let payload as String) = message else {
+                return
+            }
+            Thread.sleep(forTimeInterval: 0.2) // keep the delivery observable if it outlives `flushAndTearDown()`
+            deliveredPayloads.mutate { $0.append(payload) }
+        }
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .combining(storagePerformance: .readAllFiles, uploadPerformance: .noOp),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockWith(context: .mockWith(networkConnectionInfo: .mockWith(reachability: .no))),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: 1,
+            backgroundTasksEnabled: false
+        )
+        try core.register(feature: FeatureMock(requestBuilder: requestBuilderSpy, messageReceiver: messageReceiver))
+        core.scope(for: FeatureMock.self).eventWriteContext { _, writer in
+            writer.write(value: FeatureMock.Event(event: "test"))
+        }
+        // Only the final forced upload builds requests: scheduled uploads are blocked by the unreachable network.
+        requestBuilderSpy.onRequest = { [weak core] _, _ in
+            core?.send(message: .payload("posted during final upload"))
+        }
+
+        // When
+        core.flushAndTearDown()
+
+        // Then
+        XCTAssertEqual(deliveredPayloads.wrappedValue, ["posted during final upload"])
     }
 
     func testDatadogFlush_uploadsEventsAndReturnsSynchronously() throws {
