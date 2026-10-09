@@ -77,11 +77,8 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     /// Whether replay was reported active at any point during the session, OR-accumulated in `sample()`
     /// (mirrors `RUMViewScope`). Stays `nil` until observed, so sessions without Session Replay omit the field.
     private var hasReplay: Bool? = nil
-    /// IDs of the most recently sampled sessions, oldest first. Keeps the previous session alongside the current
-    /// one so events from a stopped session with in-flight resources still report its data, and is capped at
-    /// `maxRetainedSampledSessions` so it doesn't grow with the number of sessions.
-    /// Lock-protected rather than confined to `queue`, since RUM scopes read it from the RUM context thread
-    /// through `hasCollectedData(sessionID:)`.
+    /// IDs of the last `maxRetainedSampledSessions` sampled sessions, so late events from a stopped session still report its data.
+    /// Lock-protected because RUM scopes read it from their own thread through `hasCollectedData(sessionID:)`.
     @ReadWriteLock
     private var sampledSessionIDs: [String] = []
     private static let maxRetainedSampledSessions = 2
