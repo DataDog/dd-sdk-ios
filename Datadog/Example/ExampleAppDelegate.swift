@@ -5,6 +5,7 @@
 */
 
 import UIKit
+import DatadogFlags
 import DatadogCore
 import DatadogLogs
 import DatadogTrace
@@ -29,6 +30,7 @@ final class DummySessionDataDelegate: NSObject, URLSessionDataDelegate {}
 @main
 class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
+    private var flagsClient: (any FlagsClientProtocol)?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         if Environment.isRunningUnitTests() {
@@ -117,6 +119,22 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         )
 
         logger.addAttribute(forKey: "device-model", value: UIDevice.current.model)
+
+        if let flagKey = Environment.readFlagKey() {
+            Flags.enable()
+            let client = FlagsClient.create()
+            flagsClient = client
+            // App-lifetime registration; weak actor-owned capture avoids retaining the app delegate.
+            client.onFirstFlags { [weak self] event in
+                Task { @MainActor in
+                    guard let client = self?.flagsClient else { return }
+                    logger.info("First flag keys: \(event.flagsChanged.map { String(describing: $0) } ?? "unavailable")")
+                    let details = client.getBooleanDetails(key: flagKey, defaultValue: false)
+                    logger.info("Flag \(flagKey): \(details.value), reason: \(details.reason ?? "unavailable"), error: \(String(describing: details.error))")
+                }
+            }
+            client.setEvaluationContext(FlagsEvaluationContext(targetingKey: "abcd-1234"))
+        }
 
         #if DEBUG
         logger.addTag(withKey: "build_configuration", value: "debug")

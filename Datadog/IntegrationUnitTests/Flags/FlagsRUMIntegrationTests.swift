@@ -65,6 +65,29 @@ final class FlagsRUMIntegrationTests: XCTestCase {
         super.tearDown()
     }
 
+    func testFirstFlagsOnlyTracksTheFlagExplicitlyEvaluatedByTheHandler() throws {
+        let core = self.core!
+        let monitor = RUMMonitor.shared(in: core)
+        monitor.startView(key: "first-flags", name: "First Flags")
+        let client = FlagsClient.create(in: core)
+        let delivered = expectation(description: "first flags")
+        client.onFirstFlags { event in
+            XCTAssertEqual(event.flagsChanged?.sorted(), ["boolean-flag", "string-flag"])
+            XCTAssertEqual(FlagsClient.shared(in: core).getBooleanValue(key: "boolean-flag", defaultValue: false), true)
+            delivered.fulfill()
+        }
+        wait(for: [delivered], timeout: 5)
+        client.onFirstFlags { _ in }
+        core.flush()
+        monitor.stopView(key: "first-flags")
+        let session = try XCTUnwrap(RUMSessionMatcher.groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers()).first)
+        let view = try XCTUnwrap(session.views.first { $0.name == "First Flags" })
+        let flags = try XCTUnwrap(view.latestViewEvent?.featureFlags?.featureFlagsInfo)
+        XCTAssertEqual(flags.count, 1)
+        XCTAssertNotNil(flags["boolean-flag"])
+        XCTAssertNil(flags["string-flag"])
+    }
+
     func testWhenFlagIsEvaluated_itAddsFeatureFlagToRUMView() throws {
         // Given
         let monitor = RUMMonitor.shared(in: core)
