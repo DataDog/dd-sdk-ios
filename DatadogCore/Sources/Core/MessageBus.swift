@@ -78,6 +78,18 @@ internal final class MessageBus {
         queue.async { self.bus.removeValue(forKey: key) }
     }
 
+    /// Disconnects the core and all receivers from the bus.
+    ///
+    /// Messages sent after disconnection are not delivered, and the pending configuration
+    /// telemetry is not dispatched.
+    func disconnect() {
+        queue.async {
+            self.core = nil
+            self.bus = [:]
+            self.configuration = nil
+        }
+    }
+
     /// Sends a message to receivers registered in this bus.
     ///
     /// If the message could not be processed by any registered feature, the fallback closure

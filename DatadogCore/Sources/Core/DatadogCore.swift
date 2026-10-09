@@ -305,8 +305,15 @@ internal final class DatadogCore {
     /// Awaits completion of all asynchronous operations, forces uploads (without retrying) and deinitializes
     /// this instance of the SDK. It **blocks the caller thread**.
     ///
-    /// Upon return, it is safe to assume that all events were stored and got uploaded. The SDK was deinitialised so this instance of core is non-functional.
+    /// Upon return, it is safe to assume that all events were stored and got uploaded. Telemetry reported by an upload
+    /// in progress is delivered on the message bus before events are flushed. The SDK was deinitialised and its message
+    /// bus disconnected, so this instance of core is non-functional and no message is delivered after return.
     func flushAndTearDown() {
+        // Stop the periodic upload schedule first; pending batches stay on disk and are uploaded below.
+        // An upload in progress completes and reports its telemetry (e.g. upload quality) on the message bus,
+        // which `flush()` then drains.
+        allUploads.forEach { $0.cancelSynchronously() }
+
         flush()
 
         // At this point we can assume that all write operations completed and resulted with writing events to
@@ -317,6 +324,10 @@ internal final class DatadogCore {
         allStorages.forEach { $0.setIgnoreFilesAgeWhenReading(to: false) }
 
         stop()
+
+        // Wait for messages posted before `stop()` disconnected the bus, so that no delivery is still
+        // in progress upon return.
+        bus.flush()
     }
 
     /// Uploads all pending data immediately without tearing down the SDK.
@@ -331,11 +342,13 @@ internal final class DatadogCore {
     }
 
     /// Stops all processes for this instance of the Datadog core by
-    /// deallocating all Features and their storage & upload units.
+    /// deallocating all Features and their storage & upload units,
+    /// and disconnecting the message bus.
     func stop() {
         remoteConfigurationProvider?.stop()
         stores = [:]
         features = [:]
+        bus.disconnect()
     }
 }
 
