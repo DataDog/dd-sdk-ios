@@ -72,7 +72,7 @@ class ClientStatsFeatureTests: XCTestCase {
 
     func testWhenContextMessageRevokesConsent_itStopsConcentratorFromExporting() {
         // Given: a concentrator with buffered data and the feature's consent receiver
-        let concentrator = StatsConcentrator(now: 0, initialConsent: .granted)
+        let concentrator = StatsConcentrator(now: 0, initialConsent: .granted, writeOverflow: { _ in XCTFail("Unexpected overflow") })
         let receiver = TraceClientStatsConsentReceiver(concentrator: concentrator)
         concentrator.add(SpanSnapshot.mockWith(startTime: 0, duration: 2_000_000_000, isTopLevel: true))
 
@@ -88,7 +88,7 @@ class ClientStatsFeatureTests: XCTestCase {
     }
 
     func testWhenMessageIsNotContext_theConsentReceiverIgnoresIt() {
-        let concentrator = StatsConcentrator(now: 0, initialConsent: .granted)
+        let concentrator = StatsConcentrator(now: 0, initialConsent: .granted, writeOverflow: { _ in XCTFail("Unexpected overflow") })
         let receiver = TraceClientStatsConsentReceiver(concentrator: concentrator)
 
         XCTAssertFalse(receiver.receive(message: .payload("irrelevant"), from: core))
@@ -258,6 +258,110 @@ class ClientStatsFeatureTests: XCTestCase {
 
     // MARK: - Flush Telemetry
 
+    func testHighCardinalityTrafficBoundsStoredAndWirePayloadsAndPreservesTotals() throws {
+        let limit = StatsConcentrator.defaultMaxGroupsPerBucket
+        var storedSizes: [Int] = []
+        var wireSizes: [Int] = []
+        for spanCount in [limit, limit + 1, 10_000] {
+            let core = FeatureRegistrationPassthroughCoreMock()
+            config.featureFlags[.clientSideStats] = true
+            config.dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
+            Trace.enable(with: config, in: core)
+            let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
+            for index in 0..<spanCount {
+                stats.concentrator.add(.mockWith(resource: "GET /items/\(index)", startTime: 0, duration: 100))
+            }
+
+            stats.flushStats(force: true)
+
+            XCTAssertEqual(core.exportedBuckets.count, 1)
+            let bucket = try XCTUnwrap(core.exportedBuckets.first)
+            let expectedGroupCount = min(spanCount, limit + 1)
+            XCTAssertEqual(bucket.stats.count, expectedGroupCount)
+            XCTAssertEqual(bucket.stats.map(\.hits).reduce(0, +), UInt64(spanCount))
+            storedSizes.append(try JSONEncoder().encode(bucket).count)
+            let request = try makeRequestBuilder().request(
+                for: [makeEvent(from: bucket)],
+                with: .mockAny(),
+                execution: .init(previousResponseCode: nil, attempt: 0)
+            )
+            wireSizes.append(try XCTUnwrap(request.decompressed().httpBody).count)
+            let client = try firstClientStatsPayload(in: request)
+            let wireBuckets = try XCTUnwrap(client["Stats"] as? [Any?])
+            let wireBucket = try mapFields(wireBuckets[0])
+            let wireGroups = try XCTUnwrap(wireBucket["Stats"] as? [Any?])
+            XCTAssertEqual(wireGroups.count, expectedGroupCount)
+            let wireHits = try wireGroups.map { try XCTUnwrap(mapFields($0)["Hits"] as? Int64) }.reduce(0, +)
+            XCTAssertEqual(wireHits, Int64(spanCount))
+            let collapsedMetric = core.telemetryMock.messages.firstMetric(named: TraceClientStatsMetric.collapsedSpansName)
+            if spanCount == limit {
+                XCTAssertNil(collapsedMetric)
+            } else {
+                let metric = try XCTUnwrap(collapsedMetric)
+                XCTAssertEqual(metric.attributes[TraceClientStatsMetric.collapsedSpansCountKey] as? UInt64, UInt64(spanCount - limit))
+            }
+        }
+        // Counters/sketch counts need a few more bytes, but new resource keys allocate no more groups.
+        XCTAssertLessThan(storedSizes[2], storedSizes[1] + 100)
+        XCTAssertLessThan(wireSizes[2], wireSizes[1] + 100)
+    }
+
+    func testOverflowDeploymentRotationWritesThroughFeatureStorageAndPreservesWireIdentity() throws {
+        let core = FeatureRegistrationPassthroughCoreMock(context: .mockWith(trackingConsent: .pending))
+        config.featureFlags[.clientSideStats] = true
+        config.dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
+        Trace.enable(with: config, in: core)
+        let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
+        let limit = StatsConcentrator.defaultMaxGroupsPerBucket
+        for index in 0..<limit {
+            stats.concentrator.add(.mockWith(resource: "retained-\(index)", startTime: 0, duration: 100))
+        }
+        for version in ["one", "one", "two", "one"] {
+            stats.concentrator.add(.mockWith(
+                resource: "overflow",
+                startTime: 0,
+                duration: 100,
+                deployment: .mockWith(env: "original-env", version: version, service: "original-service")
+            ))
+        }
+        // Drains adds without flushing this recent time bucket: only rotated overflow is stored.
+        stats.flushStats(force: false)
+        XCTAssertEqual(core.exportedBuckets.count, 2)
+        XCTAssertEqual(core.exportedBuckets.map(\.version), ["one", "two"])
+        XCTAssertEqual(core.exportedBuckets.flatMap(\.stats).map(\.hits), [2, 1])
+        XCTAssertEqual(core.writeContextBypassConsentValues, [false, false], "Pending data must use consent-aware storage")
+        let earlyMetrics = core.telemetryMock.messages.compactMap(\.asMetric).filter { $0.name == TraceClientStatsMetric.name }
+        XCTAssertEqual(earlyMetrics.count, 2)
+        XCTAssertEqual(earlyMetrics.compactMap { $0.attributes[TraceClientStatsMetric.spansCountKey] as? UInt64 }, [2, 1])
+        for metric in earlyMetrics {
+            XCTAssertEqual(metric.attributes[TraceClientStatsMetric.exportReasonKey] as? String, "overflow_deployment_change")
+            XCTAssertEqual(metric.attributes[TraceClientStatsMetric.forcedKey] as? Bool, false)
+        }
+        for bucket in core.exportedBuckets {
+            let request = try makeRequestBuilder().request(
+                for: [makeEvent(from: bucket)],
+                with: .mockWith(env: "changed-env", version: "changed-version"),
+                execution: .init(previousResponseCode: nil, attempt: 0)
+            )
+            let client = try firstClientStatsPayload(in: request)
+            XCTAssertEqual(client["Env"] as? String, "original-env")
+            XCTAssertEqual(client["Version"] as? String, bucket.version)
+            XCTAssertEqual(client["Service"] as? String, "original-service")
+        }
+        stats.flushStats(force: true)
+        XCTAssertEqual(core.exportedBuckets.flatMap(\.stats).map(\.hits).reduce(0, +), UInt64(limit + 4))
+        let collapsed = try XCTUnwrap(core.telemetryMock.messages.firstMetric(named: TraceClientStatsMetric.collapsedSpansName))
+        XCTAssertEqual(collapsed.attributes[TraceClientStatsMetric.collapsedSpansCountKey] as? UInt64, 4)
+        let exportMetrics = core.telemetryMock.messages.compactMap(\.asMetric).filter { $0.name == TraceClientStatsMetric.name }
+        XCTAssertEqual(exportMetrics.count, 3)
+        XCTAssertEqual(exportMetrics.last?.attributes[TraceClientStatsMetric.exportReasonKey] as? String, "forced")
+        XCTAssertEqual(exportMetrics.compactMap { $0.attributes[TraceClientStatsMetric.spansCountKey] as? UInt64 }.reduce(0, +), UInt64(limit + 4))
+        let count = core.exportedBuckets.count
+        stats.flushStats(force: true)
+        XCTAssertEqual(core.exportedBuckets.count, count)
+        XCTAssertEqual(core.telemetryMock.messages.compactMap(\.asMetric).filter { $0.name == TraceClientStatsMetric.name }.count, 3)
+    }
+
     func testWhenFlushProducesBuckets_itSendsFlushMetric() throws {
         // Given
         let core = FeatureRegistrationPassthroughCoreMock()
@@ -284,6 +388,7 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertEqual(metric.attributes[TraceClientStatsMetric.spansCountKey] as? UInt64, 2)
         XCTAssertEqual(metric.attributes[TraceClientStatsMetric.errorsCountKey] as? UInt64, 1)
         XCTAssertEqual(metric.attributes[TraceClientStatsMetric.forcedKey] as? Bool, false)
+        XCTAssertEqual(metric.attributes[TraceClientStatsMetric.exportReasonKey] as? String, "periodic")
     }
 
     func testWhenForcedFlushProducesBuckets_itMarksMetricAsForced() throws {
@@ -303,6 +408,7 @@ class ClientStatsFeatureTests: XCTestCase {
         // Then
         let metric = try XCTUnwrap(core.telemetryMock.messages.firstMetric(named: TraceClientStatsMetric.name))
         XCTAssertEqual(metric.attributes[TraceClientStatsMetric.forcedKey] as? Bool, true)
+        XCTAssertEqual(metric.attributes[TraceClientStatsMetric.exportReasonKey] as? String, "forced")
         XCTAssertEqual(metric.attributes[TraceClientStatsMetric.spansCountKey] as? UInt64, 1)
     }
 
@@ -659,8 +765,11 @@ private final class FeatureRegistrationPassthroughCoreMock: DatadogCoreProtocol,
     }
 
     func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
+        writeContextBypassConsentValues.append(bypassConsent)
         block(contextValue, writer)
     }
+
+    var writeContextBypassConsentValues: [Bool] = []
 
     func context(_ block: @escaping (DatadogContext) -> Void) {
         block(contextValue)
