@@ -209,9 +209,15 @@ internal final class FlagsRepository {
                 }
                 return
             }
+            var cachedData = data
+            cachedData?.flags = data?.flags.mapValues { assignment in
+                var cachedAssignment = assignment
+                cachedAssignment.reason = "CACHED"
+                return cachedAssignment
+            } ?? [:]
             self.installationLock.lock()
-            self.flagsData = data
-            let publish = data.flatMap { self.firstFlags.reserve(keys: Array($0.flags.keys)) }
+            self.flagsData = cachedData
+            let publish = cachedData.flatMap { self.firstFlags.reserve(keys: Array($0.flags.keys)) }
             self.installationLock.unlock()
 
             // Mark complete and grab pending callbacks atomically
