@@ -14,6 +14,11 @@ import XCTest
 #if os(iOS)
 @MainActor
 final class OwnedOperationMonitorTests: XCTestCase {
+    private nonisolated static func recordPhase(_ phase: StaticString) {
+        let line = "OwnedOperationMonitorPhase " + String(describing: phase) + "\n"
+        FileHandle.standardError.write(Data(line.utf8))
+    }
+
     private final class OperationReceiver: FeatureMessageReceiver {
         @ReadWriteLock private var received: [OwnedOperationMessage] = []
         @ReadWriteLock private var receivedLegacy: [OperationMessage] = []
@@ -53,10 +58,21 @@ final class OwnedOperationMonitorTests: XCTestCase {
         let receiver: OperationReceiver
         let configuration: RUM.Configuration
         var feature: RUMFeature
+        private let recordsPhases: Bool
 
-        init(multiSceneTrackingEnabled: Bool = true) throws {
+        private func record(_ phase: StaticString) {
+            if recordsPhases { OwnedOperationMonitorTests.recordPhase(phase) }
+        }
+
+        init(multiSceneTrackingEnabled: Bool = true, recordPhases: Bool = false) throws {
+            func record(_ phase: StaticString) {
+                if recordPhases { OwnedOperationMonitorTests.recordPhase(phase) }
+            }
+            record("fixture.construct.enter")
             let directory = temporaryUniqueCoreDirectory()
+            record("directory.create.enter")
             try directory.create()
+            record("directory.create.return")
             let clock = DateProviderMock(now: Date(timeIntervalSince1970: 1_700_000_000))
             let receiver = OperationReceiver()
             let context = DatadogContext.mockWith(
@@ -65,6 +81,7 @@ final class OwnedOperationMonitorTests: XCTestCase {
                 launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: clock.now),
                 applicationStateHistory: AppStateHistory(initialState: .active, date: clock.now)
             )
+            record("core.init.enter")
             let core = DatadogCore(
                 directory: directory,
                 dateProvider: clock,
@@ -83,6 +100,7 @@ final class OwnedOperationMonitorTests: XCTestCase {
                 maxBatchesPerUpload: 0,
                 backgroundTasksEnabled: false
             )
+            record("core.init.return")
             var configuration = RUM.Configuration(applicationID: UUID().uuidString)
             configuration.dateProvider = clock
             configuration.sessionSampleRate = 100
@@ -97,12 +115,22 @@ final class OwnedOperationMonitorTests: XCTestCase {
             )
             configuration.featureFlags = [.multiSceneTracking: multiSceneTrackingEnabled]
             do {
+                record("observer.register.enter")
                 try core.register(feature: OperationObserver(messageReceiver: receiver))
+                record("observer.register.return")
+                record("rum.enable.enter")
                 try RUM.enableOrThrow(with: configuration, in: core)
+                record("rum.enable.return")
+                record("original-feature.lookup.enter")
                 self.feature = try XCTUnwrap(core.get(feature: RUMFeature.self))
+                record("original-feature.lookup.return")
             } catch {
+                record("fixture.failure.stop.enter")
                 core.stop()
+                record("fixture.failure.stop.return")
+                record("fixture.failure.directory-delete.enter")
                 try? directory.delete()
+                record("fixture.failure.directory-delete.return")
                 throw error
             }
             self.directory = directory
@@ -110,18 +138,36 @@ final class OwnedOperationMonitorTests: XCTestCase {
             self.clock = clock
             self.receiver = receiver
             self.configuration = configuration
+            self.recordsPhases = recordPhases
+            record("fixture.initial-flush.enter")
             core.flush()
+            record("fixture.initial-flush.return")
+            record("fixture.construct.return")
         }
 
         func tearDown() {
+            record("teardown.core-stop.enter")
             core.stop()
+            record("teardown.core-stop.return")
+            record("teardown.context-flush.enter")
             core.contextProvider.flush()
+            record("teardown.context-flush.return")
+            record("teardown.read-write-sync.enter")
             core.readWriteQueue.sync {}
+            record("teardown.read-write-sync.return")
+            record("teardown.bus-flush.enter")
             core.bus.flush()
+            record("teardown.bus-flush.return")
+            record("teardown.directory-delete.enter")
             try? directory.delete()
+            record("teardown.directory-delete.return")
         }
 
-        func drain() { core.flush() }
+        func drain() {
+            record("fixture.drain.enter")
+            core.flush()
+            record("fixture.drain.return")
+        }
 
         func startView(_ name: String, on feature: RUMFeature? = nil) {
             (feature ?? self.feature).monitor.process(command: RUMStartViewCommand(
@@ -185,41 +231,64 @@ final class OwnedOperationMonitorTests: XCTestCase {
         }
     }
 
-    private func holdOriginalQueue(in fixture: Fixture) -> DispatchSemaphore {
+    private func holdOriginalQueue(in fixture: Fixture, recordPhases: Bool = false) -> DispatchSemaphore {
         let entered = expectation(description: "original Core context queue held")
         let release = DispatchSemaphore(value: 0)
+        if recordPhases { Self.recordPhase("held-queue.request.enter") }
         fixture.core.scope(for: RUMFeature.self).context { @Sendable _ in
+            if recordPhases { OwnedOperationMonitorTests.recordPhase("held-queue.callback.enter") }
             entered.fulfill()
+            if recordPhases { OwnedOperationMonitorTests.recordPhase("held-queue.release-wait.enter") }
             XCTAssertEqual(release.wait(timeout: .now() + 10), .success)
+            if recordPhases { OwnedOperationMonitorTests.recordPhase("held-queue.release-wait.return") }
         }
+        if recordPhases { Self.recordPhase("held-queue.request.return") }
+        if recordPhases { Self.recordPhase("held-queue.entered-expectation.enter") }
         wait(for: [entered], timeout: 2)
+        if recordPhases { Self.recordPhase("held-queue.entered-expectation.return") }
         return release
     }
 
     func testAuthoritativeAbsentSessionCannotBorrowLaterRepresentativeOnMonitorQueue() throws {
+        Self.recordPhase("test.enter")
+        defer { Self.recordPhase("test.exit") }
         try requireOwnedOperations()
-        let fixture = try Fixture()
+        let fixture = try Fixture(recordPhases: true)
         defer { fixture.tearDown() }
         XCTAssertTrue(fixture.feature.isMultiSceneTrackingEnabled)
+        Self.recordPhase("original-view.enter")
         fixture.startView("original")
+        Self.recordPhase("original-view.return")
         fixture.drain()
+        Self.recordPhase("absent-capture.enter")
         let absent = try fixture.capture("absent")
+        Self.recordPhase("absent-capture.return")
         XCTAssertNil(absent.value.rumContext)
+        Self.recordPhase("later-view.enter")
         fixture.startView("later")
+        Self.recordPhase("later-view.return")
         fixture.drain()
+        Self.recordPhase("later-capture.enter")
         let later = try fixture.capture("later")
+        Self.recordPhase("later-capture.return")
         XCTAssertNotNil(later.value.rumContext)
         let session = try XCTUnwrap(fixture.feature.monitor.applicationScope.activeSession)
         let originalSessionID = session.sessionUUID
         let viewsBefore = session.viewScopes.map(\.viewUUID)
         let interactionBefore = session.lastInteractionTime
+        Self.recordPhase("storage.lookup.enter")
         let storage = try XCTUnwrap(fixture.core.stores[RUMFeature.name]?.storage)
+        Self.recordPhase("storage.lookup.return")
+        Self.recordPhase("storage.before-read.enter")
         let eventsBefore = try fixture.bytes(in: storage)
+        Self.recordPhase("storage.before-read.return")
         let messagesBefore = fixture.receiver.messages.count
-        let release = holdOriginalQueue(in: fixture)
+        let release = holdOriginalQueue(in: fixture, recordPhases: true)
         defer { release.signal() }
 
+        Self.recordPhase("public-absent-operation.enter")
         fixture.start("absent-public", capture: absent)
+        Self.recordPhase("public-absent-operation.return")
         let step = RUMOperationStepVitalCommand.mockWith(
             vitalId: "absent-queued",
             name: "absent-queued",
@@ -228,24 +297,34 @@ final class OwnedOperationMonitorTests: XCTestCase {
             options: ProfilingOptions(sampleRate: 100),
             time: fixture.clock.now
         )
+        Self.recordPhase("explicit-owned-command.enter")
         fixture.feature.monitor.process(command: RUMOwnedOperationStepCommand(
             step: step,
             origin: try XCTUnwrap(fixture.feature.operationOrigin),
             capture: absent.value
         ))
+        Self.recordPhase("explicit-owned-command.return")
+        Self.recordPhase("held-queue.signal.enter")
         release.signal()
+        Self.recordPhase("held-queue.signal.return")
         fixture.drain()
 
         XCTAssertTrue(fixture.feature.monitor.applicationScope.activeSession === session)
         XCTAssertEqual(session.sessionUUID, originalSessionID)
         XCTAssertEqual(session.viewScopes.map(\.viewUUID), viewsBefore)
         XCTAssertEqual(session.lastInteractionTime, interactionBefore)
+        Self.recordPhase("storage.after-refusal-read.enter")
         XCTAssertEqual(try fixture.bytes(in: storage), eventsBefore)
+        Self.recordPhase("storage.after-refusal-read.return")
         XCTAssertEqual(fixture.receiver.messages.count, messagesBefore)
 
+        Self.recordPhase("public-admitted-operation.enter")
         fixture.start("admitted", capture: later)
+        Self.recordPhase("public-admitted-operation.return")
         fixture.drain()
+        Self.recordPhase("storage.admitted-vital-read.enter")
         let event = try XCTUnwrap(try fixture.storedVitals(in: storage).last)
+        Self.recordPhase("storage.admitted-vital-read.return")
         let message = try XCTUnwrap(fixture.receiver.messages.last)
         XCTAssertEqual(event.vital.name, "admitted")
         XCTAssertEqual(event.session.id, later.value.rumContext?.sessionID)
@@ -253,6 +332,7 @@ final class OwnedOperationMonitorTests: XCTestCase {
         XCTAssertTrue(message.ownership.origin === fixture.feature.operationOrigin)
         XCTAssertEqual(message.ownership.sessionID, event.session.id)
         XCTAssertEqual(fixture.receiver.messages.count, messagesBefore + 1)
+        Self.recordPhase("test.assertions.complete")
     }
 
     func testQueuedOriginalOperationRefusesSameOwnerRegistryReplacementAndFreshRUMProgresses() throws {
