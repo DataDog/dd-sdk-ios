@@ -573,6 +573,85 @@ extension SwiftUINavigationOwnershipTests {
     }
 
     @MainActor
+    func testFoundationActivation_whenOriginalSubscriberChangesDuringObserverRegistration_itKeepsFailedSlotClosed() throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Owned SwiftUI tracking requires iOS 27") }
+        for invalidateSubscriber in [false, true] {
+            let directory = try temporaryUniqueCoreDirectory().create()
+            defer { try? directory.delete() }
+            let core = makeCore(in: directory)
+            defer { core.stop() }
+            let date = Date()
+            core.contextProvider.write { context in
+                context = .mockWith(
+                    sdkInitDate: date,
+                    launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: date),
+                    applicationStateHistory: .mockWith(initialState: .active, date: date)
+                )
+            }
+            core.flush()
+            let custom = RUMCommandSubscriberMock()
+            var registrations = 0
+            weak var installedAtRegistration: RUMSwiftUIViewFoundation?
+            let center = FoundationObserverRegistrationCenter { [weak core] in
+                registrations += 1
+                guard let core,
+                      let feature = core.get(feature: RUMFeature.self),
+                      let handler = feature.instrumentation.viewsHandler as? RUMSceneViewsHandler,
+                      let foundation = feature.instrumentation.swiftUIViewFoundation else {
+                    XCTFail("Observer registration requires the actual registered feature and occupied slot")
+                    return
+                }
+                installedAtRegistration = foundation
+                XCTAssertTrue(foundation.isValid)
+                XCTAssertNotNil(foundation.makeBinding())
+                if invalidateSubscriber { handler.publish(to: custom) }
+            }
+            var config = RUM.Configuration(applicationID: "foundation-activation-control", trackAnonymousUser: false)
+            config.bundle = .mockWith(UIApplicationSceneManifest: ["UIApplicationSupportsMultipleScenes": true])
+            config.featureFlags = [.multiSceneTracking: true]
+            config.sessionSampleRate = 100
+            config.vitalsUpdateFrequency = nil
+            config.notificationCenterProvider = NotificationCenterProvider(applicationCenter: center)
+            try RUM.enableOrThrow(with: config, in: core)
+            core.flush()
+            let feature = try XCTUnwrap(core.get(feature: RUMFeature.self))
+            let handler = try XCTUnwrap(feature.instrumentation.viewsHandler as? RUMSceneViewsHandler)
+            let original = try XCTUnwrap(installedAtRegistration)
+            XCTAssertEqual(registrations, 1)
+            XCTAssertTrue(feature.instrumentation.swiftUIViewFoundation === original)
+            let eligible = try XCTUnwrap(handler.swiftUIViewEligibility)
+            let candidateView = UIViewController()
+            if invalidateSubscriber {
+                XCTAssertFalse(original.isValid)
+                XCTAssertNil(original.makeBinding())
+                XCTAssertNil(original.makeEligibilityCheck())
+                XCTAssertFalse(eligible(candidateView))
+                XCTAssertTrue(custom.receivedCommands.isEmpty)
+                handler.publish(to: feature.monitor)
+                XCTAssertFalse(original.isValid)
+                XCTAssertNil(original.makeBinding())
+                XCTAssertFalse(handler.swiftUIViewEligibility?(candidateView) == true)
+                let lifetime = try XCTUnwrap(RUMSwiftUIViewLifetime(feature: feature, core: core))
+                let replacement = try XCTUnwrap(RUMSwiftUIViewFoundation(
+                    instrumentation: feature.instrumentation, handler: handler,
+                    lifetime: lifetime, epoch: UUID()
+                ))
+                XCTAssertFalse(handler.installSwiftUIViewFoundation(replacement, notificationCenter: center))
+                feature.instrumentation.installSwiftUIViewFoundation(feature: feature, core: core,
+                                                                     notificationCenter: center)
+                XCTAssertTrue(feature.instrumentation.swiftUIViewFoundation === original)
+                XCTAssertNil(replacement.makeBinding())
+                XCTAssertFalse(handler.swiftUIViewEligibility?(candidateView) == true)
+            } else {
+                XCTAssertTrue(original.isValid)
+                XCTAssertNotNil(original.makeBinding())
+                XCTAssertNotNil(original.makeEligibilityCheck())
+                XCTAssertTrue(eligible(candidateView))
+            }
+        }
+    }
+
+    @MainActor
     private func connectedSceneIdentifier(_ binding: RUMSwiftUIViewFoundationBinding) throws -> RUMSceneIdentifier {
         // Production scene proof is never replaced by a fabricated identifier.
         // A missing admitted host scene is not qualification of these controls.
@@ -629,6 +708,29 @@ private final class RetainedCompletionCoordinator: RUMSwiftUITransitionCoordinat
         let callback = completion
         completion = nil
         callback?(cancelled)
+    }
+}
+
+@available(iOS 27.0, *)
+private final class FoundationObserverRegistrationCenter: NotificationCenter, @unchecked Sendable {
+    private let onDisconnectObserverRegistration: @MainActor () -> Void
+
+    init(onDisconnectObserverRegistration: @escaping @MainActor () -> Void) {
+        self.onDisconnectObserverRegistration = onDisconnectObserverRegistration
+        super.init()
+    }
+
+    override func addObserver(forName name: NSNotification.Name?, object obj: Any?, queue: OperationQueue?,
+                              using block: @escaping @Sendable (Notification) -> Void) -> NSObjectProtocol {
+        let token = super.addObserver(forName: name, object: obj, queue: queue, using: block)
+        if name == UIScene.didDisconnectNotification {
+            guard Thread.isMainThread else {
+                XCTFail("Foundation registration must remain on the owning main actor")
+                return token
+            }
+            MainActor.assumeIsolated { onDisconnectObserverRegistration() }
+        }
+        return token
     }
 }
 
