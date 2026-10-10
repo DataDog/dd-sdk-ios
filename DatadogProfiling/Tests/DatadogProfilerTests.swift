@@ -7,6 +7,7 @@
 #if !os(watchOS)
 
 import XCTest
+import MachO
 import DatadogInternal
 import TestUtilities
 @testable import DatadogProfiling
@@ -36,6 +37,403 @@ final class DatadogProfilerTests: XCTestCase {
         core = nil
         super.tearDown()
     }
+
+
+    #if os(iOS)
+    private final class LegacyDeferredProfileScope: FeatureScope, @unchecked Sendable {
+        private weak var base: PassthroughCoreMock?
+        @ReadWriteLock private var pending: [(Bool, (DatadogContext, Writer) -> Void)] = []
+        var onEnqueue: (() -> Void)?
+
+        init(base: PassthroughCoreMock) { self.base = base }
+        var pendingCount: Int { pending.count }
+        var dataStore: DataStore { base?.dataStore ?? NOPDataStore() }
+        var telemetry: Telemetry { base?.telemetry ?? NOPTelemetry() }
+
+        func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
+            _pending.mutate { $0.append((bypassConsent, block)) }
+            onEnqueue?()
+        }
+
+        func context(_ block: @escaping (DatadogContext) -> Void) { base?.context(block) }
+        func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {
+            base?.set(context: context)
+        }
+        func set(anonymousId: String?) { base?.set(anonymousId: anonymousId) }
+        func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
+            guard let base else { fallback(); return }
+            base.send(message: message, else: fallback)
+        }
+
+        @discardableResult
+        func releaseWrites() -> Int {
+            var captured: [(Bool, (DatadogContext, Writer) -> Void)] = []
+            _pending.mutate { captured = $0; $0.removeAll() }
+            guard let base else { XCTFail("Deferred writer lost its original core"); return 0 }
+            for (bypass, block) in captured { base.eventWriteContext(bypassConsent: bypass, block) }
+            return captured.count
+        }
+
+        func discardWrites() {
+            _pending.mutate { $0.removeAll() }
+            onEnqueue = nil
+        }
+    }
+
+    func testLegacyProfilingTracePreservesCompletionAndDeferredAttachments() throws {
+        let cases: [(family: String, name: String)] = [
+            ("completion", "empty"), ("completion", "non-step"), ("completion", "completed"),
+            ("completion", "ongoing"), ("completion", "default-background-stop"),
+            ("completion", "continuous-non-step"), ("completion", "continuous-duration-events"),
+            ("keying", "orphan-and-latest-start"),
+            ("deferred-writer", "original-snapshot"),
+            ("consent-and-quota", "consent-regrant"), ("consent-and-quota", "quota-regrant"),
+            ("extension-and-cleanup", "mixed-ongoing")
+        ]
+        var results: [[String: Any]] = []
+
+        for scenario in cases {
+            dd_profiler_stop()
+            dd_profiler_destroy()
+            let clock = DateProviderMock(now: Date(timeIntervalSince1970: 1_700_000_000))
+            let localCore = SingleFeatureCoreMock<ProfilerFeature>(context: .mockWith(
+                service: "original-service", sdkInitDate: clock.now.addingTimeInterval(-10),
+                trackingConsent: .granted,
+                launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: clock.now.addingTimeInterval(-10)),
+                applicationStateHistory: .mockAppInForeground(since: clock.now.addingTimeInterval(-10))
+            ), feature: nil)
+            let deferred = LegacyDeferredProfileScope(base: localCore)
+            localCore.featureScopeOverride = deferred
+            let quota = ProfilingQuotaCheckerMock()
+            let conditions = scenario.name == "ongoing" || scenario.name == "mixed-ongoing"
+                ? ProfilingConditions(blockers: [.battery, .lowPowerModeOn])
+                : ProfilingConditions()
+            let profiler = scenario.name.hasPrefix("continuous-")
+                ? continuousProfiler(core: localCore, continuousProfilingSampled: true, dateProvider: clock, quotaChecker: quota)
+                : customProfiler(core: localCore, profilingConditions: conditions, dateProvider: clock, quotaChecker: quota)
+            defer {
+                flushQueue()
+                deferred.discardWrites()
+                localCore.featureScopeOverride = nil
+                localCore.messageReceiver = NOPFeatureMessageReceiver()
+                dd_profiler_stop()
+                dd_profiler_destroy()
+                withExtendedLifetime(profiler) {}
+            }
+            var inputs: [[String: Any]] = []
+            var checkpoints: [[String: Any]] = []
+            var quotaCallbacks: [String] = []
+            let original: [AttributeKey: AttributeValue] = [
+                RUMCoreContext.IDs.applicationID: "original-application",
+                RUMCoreContext.IDs.sessionID: "original-session",
+                RUMCoreContext.IDs.viewID: ["original-view"],
+                "fixture-attribute": "original"
+            ]
+            let later: [AttributeKey: AttributeValue] = [
+                RUMCoreContext.IDs.applicationID: "later-application",
+                RUMCoreContext.IDs.sessionID: "later-session",
+                RUMCoreContext.IDs.viewID: ["later-view"],
+                "fixture-attribute": "later"
+            ]
+            func receive(_ message: FeatureMessage, label: String) {
+                let consumed = profiler.receive(message: message, from: localCore)
+                flushQueue()
+                var input: [String: Any] = ["label": label, "consumed": consumed]
+                var attributes: [AttributeKey: AttributeValue]?
+                var vital: Vital?
+                if case .context(let context) = message {
+                    input["kind"] = "context"
+                    input["consent"] = String(describing: context.trackingConsent)
+                    input["app_state"] = String(describing: context.applicationStateHistory.currentState)
+                    input["version"] = context.version
+                } else if let payload = message.asPayload {
+                    if let operation = payload as? OperationMessage {
+                        input["kind"] = "OperationMessage"
+                        attributes = operation.attributes
+                        vital = operation.operation
+                    } else if let launch = payload as? TTIDMessage {
+                        input["kind"] = "TTIDMessage"
+                        attributes = launch.attributes
+                        vital = launch.ttid
+                    } else if let hang = payload as? AppHangMessage {
+                        input["kind"] = "AppHangMessage"
+                        attributes = hang.attributes
+                        input["duration_event"] = try? JSONSerialization.jsonObject(with: JSONEncoder().encode(hang.hang))
+                    } else if let task = payload as? LongTaskMessage {
+                        input["kind"] = "LongTaskMessage"
+                        attributes = task.attributes
+                        input["duration_event"] = try? JSONSerialization.jsonObject(with: JSONEncoder().encode(task.longTask))
+                    } else {
+                        XCTFail("Unexpected legacy trace input")
+                    }
+                }
+                if let vital {
+                    input["vital"] = [
+                        "id": vital.id, "name": vital.name, "key": vital.operationKey as Any? ?? NSNull(),
+                        "step": vital.stepType?.rawValue as Any? ?? NSNull(),
+                        "date": vital.date.timeIntervalSince1970, "server_offset": vital.serverTimeOffset,
+                        "duration": vital.duration as Any? ?? NSNull()
+                    ]
+                }
+                if let attributes {
+                    input["attributes"] = try? JSONSerialization.jsonObject(with: JSONEncoder().encode(
+                        attributes.mapValues { AnyEncodable($0) }
+                    ))
+                }
+                inputs.append(input)
+            }
+            func operation(
+                _ id: String, name: String, key: String? = nil,
+                step: RUMVitalOperationStepEvent.Vital.StepType? = nil,
+                attributes: [AttributeKey: AttributeValue]? = nil
+            ) {
+                receive(.payload(OperationMessage(attributes: attributes ?? original, operation: Vital(
+                    id: id, name: name, operationKey: key, stepType: step, date: clock.now
+                ))), label: id)
+            }
+            func background() {
+                localCore.context.applicationStateHistory = .mockWith(
+                    initialState: .active, date: clock.now.addingTimeInterval(-10),
+                    transitions: [(.background, clock.now)]
+                )
+                receive(.context(localCore.context), label: "background")
+            }
+            func snapshot(_ label: String) throws {
+                checkpoints.append([
+                    "label": label, "pending": deferred.pendingCount, "written": localCore.events.count,
+                    "status": String(describing: ProfilingContext.Status.current),
+                    "attributes": try JSONSerialization.jsonObject(with: JSONEncoder().encode(
+                        profiler.attributes.mapValues { AnyEncodable($0) }
+                    ))
+                ])
+            }
+            func startNative() {
+                XCTAssertEqual(dd_profiler_start_testing(100, false, 120 * 1_000_000_000, 0), 1)
+                addSampleToCurrentProfile()
+            }
+            func finishThroughTimer(_ body: () -> Void) {
+                let enqueued = expectation(description: "Completion timer enqueued a profile")
+                deferred.onEnqueue = { enqueued.fulfill() }
+                body()
+                wait(for: [enqueued], timeout: 10)
+                flushQueue()
+                deferred.onEnqueue = nil
+                XCTAssertEqual(deferred.pendingCount, 1)
+            }
+            receive(.context(localCore.context), label: "initial-context")
+            startNative()
+            switch scenario.name {
+            case "empty":
+                background()
+                XCTAssertEqual(deferred.pendingCount, 0)
+            case "non-step":
+                receive(.payload(TTIDMessage(attributes: original, ttid: Vital(
+                    id: "ttid", name: "ttid", date: clock.now, duration: 100
+                ))), label: "ttid")
+                operation("ttfd", name: "ttfd")
+                background()
+                XCTAssertEqual(deferred.pendingCount, 0)
+            case "continuous-non-step":
+                receive(.payload(TTIDMessage(attributes: original, ttid: Vital(
+                    id: "continuous-ttid", name: "ttid", date: clock.now, duration: 100
+                ))), label: "continuous-ttid")
+                operation("continuous-ttfd", name: "ttfd")
+                background()
+                XCTAssertEqual(deferred.releaseWrites(), 1)
+            case "continuous-duration-events":
+                receive(.payload(AppHangMessage(attributes: original, hang: DurationEvent(
+                    id: "continuous-hang", type: .error, start: 123, duration: 456
+                ))), label: "continuous-hang")
+                receive(.payload(LongTaskMessage(attributes: original, longTask: DurationEvent(
+                    id: "continuous-long-task", type: .longTask, start: 789, duration: 100
+                ))), label: "continuous-long-task")
+                background()
+                XCTAssertEqual(deferred.releaseWrites(), 1)
+            case "completed":
+                operation("completed-start", name: "completed", key: "request", step: .start)
+                clock.now.addTimeInterval(6)
+                finishThroughTimer { operation("completed-end", name: "completed", key: "request", step: .end) }
+                try snapshot("timer-enqueued")
+                XCTAssertEqual(deferred.releaseWrites(), 1)
+            case "ongoing":
+                operation("ongoing-start", name: "ongoing", step: .start)
+                background()
+                XCTAssertEqual(deferred.releaseWrites(), 1)
+                addSampleToCurrentProfile()
+                background()
+                XCTAssertEqual(deferred.releaseWrites(), 1)
+            case "default-background-stop":
+                operation("default-background-start", name: "default-background", step: .start)
+                background()
+                XCTAssertEqual(deferred.releaseWrites(), 1)
+                XCTAssertFalse(dd_profiler_is_running())
+                background()
+                XCTAssertEqual(deferred.pendingCount, 0)
+            case "orphan-and-latest-start":
+                operation("orphan-end", name: "orphan", step: .end, attributes: later)
+                XCTAssertEqual(profiler.attributes["fixture-attribute"] as? String, "later")
+                operation("first-start", name: "repeated", key: "same-key", step: .start)
+                clock.now.addTimeInterval(1)
+                operation("latest-start", name: "repeated", key: "same-key", step: .start)
+                clock.now.addTimeInterval(6)
+                finishThroughTimer { operation("latest-end", name: "repeated", key: "same-key", step: .end) }
+                XCTAssertEqual(deferred.releaseWrites(), 1)
+            case "original-snapshot":
+                operation("original-start", name: "original-operation", step: .start)
+                operation("original-non-step", name: "original-non-step")
+                receive(.payload(AppHangMessage(attributes: original, hang: DurationEvent(
+                    id: "original-hang", type: .error, start: 123, duration: 456
+                ))), label: "original-hang")
+                receive(.payload(LongTaskMessage(attributes: original, longTask: DurationEvent(
+                    id: "original-long-task", type: .longTask, start: 789, duration: 100
+                ))), label: "original-long-task")
+                background()
+                XCTAssertEqual(deferred.pendingCount, 1)
+                XCTAssertTrue(localCore.events.isEmpty)
+                try snapshot("before-mutation")
+                operation("later-non-step", name: "later-non-step", attributes: later)
+                localCore.context.version = "later-version"
+                localCore.context.applicationStateHistory = .mockAppInForeground(since: clock.now.addingTimeInterval(-10))
+                receive(.context(localCore.context), label: "later-context")
+                XCTAssertEqual(profiler.attributes["fixture-attribute"] as? String, "later")
+                XCTAssertTrue(localCore.events.isEmpty)
+                try snapshot("before-release")
+                XCTAssertEqual(deferred.releaseWrites(), 1)
+            case "consent-regrant", "quota-regrant":
+                if scenario.name == "consent-regrant" {
+                    localCore.context.trackingConsent = .notGranted
+                    receive(.context(localCore.context), label: "consent-not-granted")
+                } else {
+                    quota.quotaResult = .init(decision: .quotaKO, reason: .quotaExceeded)
+                    quotaCallbacks.append("quotaKO")
+                    quota.onQuotaResultUpdate?(quota.quotaResult)
+                    flushQueue()
+                }
+                operation("rejected-start", name: "rejected", step: .start)
+                XCTAssertTrue(profiler.attributes.isEmpty)
+                XCTAssertEqual(deferred.pendingCount, 0)
+                try snapshot("refused")
+                if scenario.name == "consent-regrant" {
+                    localCore.context.trackingConsent = .granted
+                    receive(.context(localCore.context), label: "consent-granted")
+                } else {
+                    quota.quotaResult = nil
+                    quotaCallbacks.append("pending")
+                    quota.onQuotaResultUpdate?(nil)
+                    flushQueue()
+                }
+                XCTAssertEqual(dd_profiler_start(), 1)
+                addSampleToCurrentProfile()
+                operation("regrant-start", name: "regrant", step: .start)
+                clock.now.addTimeInterval(6)
+                finishThroughTimer { operation("regrant-end", name: "regrant", step: .end) }
+                XCTAssertEqual(deferred.releaseWrites(), 1)
+            case "mixed-ongoing":
+                operation("mixed-completed", name: "completed", step: .start)
+                operation("mixed-ongoing", name: "ongoing", step: .start)
+                operation("mixed-non-step", name: "non-step")
+                receive(.payload(AppHangMessage(attributes: original, hang: DurationEvent(
+                    id: "mixed-hang", type: .error, start: 123, duration: 456
+                ))), label: "mixed-hang")
+                receive(.payload(LongTaskMessage(attributes: original, longTask: DurationEvent(
+                    id: "mixed-long-task", type: .longTask, start: 789, duration: 100
+                ))), label: "mixed-long-task")
+                clock.now.addTimeInterval(6)
+                let premature = expectation(description: "Ongoing operation prevents a completion write")
+                premature.isInverted = true
+                deferred.onEnqueue = { premature.fulfill() }
+                operation("mixed-end", name: "completed", step: .end)
+                wait(for: [premature], timeout: 1)
+                flushQueue()
+                deferred.onEnqueue = nil
+                XCTAssertEqual(deferred.pendingCount, 0, "Ongoing operation must prevent completion")
+                background()
+                XCTAssertEqual(deferred.releaseWrites(), 1)
+                addSampleToCurrentProfile()
+                background()
+                XCTAssertEqual(deferred.releaseWrites(), 1)
+                clock.now.addTimeInterval(DatadogProfiler.Constants.cutOffTime + 1)
+                localCore.context.applicationStateHistory = .mockAppInForeground(since: clock.now.addingTimeInterval(-100))
+                receive(.context(localCore.context), label: "past-cutoff")
+                XCTAssertFalse(dd_profiler_is_running())
+                XCTAssertEqual(deferred.pendingCount, 0)
+                try snapshot("expired")
+            default:
+                XCTFail("Unrecognized profiling trace")
+            }
+            try snapshot("terminal")
+            XCTAssertEqual(deferred.pendingCount, 0)
+            let events: [ProfileEvent] = localCore.events(ofType: ProfileEvent.self)
+            let attachments: [ProfileAttachments] = localCore.metadata(ofType: ProfileAttachments.self)
+            XCTAssertEqual(events.count, localCore.events.count)
+            XCTAssertEqual(attachments.count, events.count)
+            let expectedIDs: [String: [[String]]] = [
+                "empty": [], "non-step": [], "completed": [["completed-start"]],
+                "continuous-non-step": [["continuous-ttid", "continuous-ttfd"]],
+                "continuous-duration-events": [["continuous-hang", "continuous-long-task"]],
+                "ongoing": [["ongoing-start"], ["ongoing-start"]],
+                "default-background-stop": [["default-background-start"]],
+                "orphan-and-latest-start": [["latest-start"]],
+                "original-snapshot": [["original-start", "original-non-step", "original-hang", "original-long-task"]],
+                "consent-regrant": [["regrant-start"]], "quota-regrant": [["regrant-start"]],
+                "mixed-ongoing": [
+                    ["mixed-completed", "mixed-ongoing", "mixed-non-step", "mixed-hang", "mixed-long-task"],
+                    ["mixed-ongoing"]
+                ]
+            ]
+            let expected = try XCTUnwrap(expectedIDs[scenario.name])
+            XCTAssertEqual(events.count, expected.count, scenario.name)
+            var profiles: [[String: Any]] = []
+            for (index, pair) in zip(events, attachments).enumerated() {
+                let (event, attachment) = pair
+                XCTAssertFalse(attachment.pprof.isEmpty)
+                let rows = try typedRUMEvents(from: attachment)
+                let ids = try rows.map { try XCTUnwrap($0["id"] as? String) }
+                if index < expected.count { XCTAssertEqual(ids.sorted(), expected[index].sorted(), scenario.name) }
+                let vitals = rows.filter { $0["type"] as? String == "vital" }
+                let attachedIDs = try vitals.map { try XCTUnwrap($0["id"] as? String) }
+                let attachedLabels = try vitals.map { try XCTUnwrap($0["name"] as? String) }
+                if vitals.isEmpty {
+                    XCTAssertNil(event.additionalAttributes?[RUMCoreContext.IDs.vitalID])
+                    XCTAssertNil(event.additionalAttributes?[RUMCoreContext.IDs.vitalLabel])
+                } else {
+                    XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.vitalID] as? [String], attachedIDs)
+                    XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.vitalLabel] as? [String], attachedLabels)
+                }
+                XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.applicationID] as? String, "original-application")
+                XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.sessionID] as? String, "original-session")
+                XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.viewID] as? [String], ["original-view"])
+                XCTAssertEqual(event.additionalAttributes?["fixture-attribute"] as? String, "original")
+                if scenario.name == "original-snapshot" { XCTAssertTrue(event.tags.contains("version:later-version")) }
+                profiles.append([
+                    "event": try JSONSerialization.jsonObject(with: JSONEncoder().encode(event)),
+                    "rum_events": rows,
+                    "pprof_base64": attachment.pprof.base64EncodedString()
+                ])
+            }
+            results.append([
+                "family": scenario.family, "name": scenario.name, "terminal": true,
+                "inputs": inputs, "checkpoints": checkpoints, "quota_inputs": quotaCallbacks,
+                "configured_background_eligibility": scenario.name == "ongoing" || scenario.name == "mixed-ongoing",
+                "profiles": profiles
+            ])
+        }
+        XCTAssertEqual(Set(results.compactMap { $0["family"] as? String }).count, 5)
+        XCTAssertEqual(results.count, 12)
+        var images: [String] = []
+        for index in 0..<_dyld_image_count() {
+            if let image = _dyld_get_image_name(index) { images.append(String(cString: image)) }
+        }
+        let data = try JSONSerialization.data(withJSONObject: [
+            "schema_version": 1, "family": "legacy-profiling", "terminal": true,
+            "scenarios": results, "pid": ProcessInfo.processInfo.processIdentifier, "loaded_images": images
+        ], options: [.sortedKeys])
+        let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+        attachment.name = "legacy-profiling-trace"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+    #endif
 
     // MARK: - receive(message:from:)
 

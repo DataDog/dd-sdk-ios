@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import MachO
 #if os(iOS)
 import UIKit
 #endif
@@ -27,6 +28,216 @@ class MonitorTests: XCTestCase {
             )
         )
     }
+
+    #if os(iOS)
+    private final class LegacyOperationUUIDGenerator: RUMUUIDGenerator {
+        private var sequence = 0
+
+        func generateUnique() -> RUMUUID {
+            sequence += 1
+            let value = String(format: "00000000-0000-4000-8000-%012d", sequence)
+            return RUMUUID(rawValue: UUID(uuidString: value)!)
+        }
+    }
+
+    func testLegacyOperationsTracePreservesEventsMessagesAndFallbacks() throws {
+        let scenarioNames = [
+            "success", "failure", "profiling-options", "duplicate-and-orphan",
+            "legacy-key-collision", "deprecated-aliases", "off-view", "session-boundaries"
+        ]
+        var scenarios: [[String: Any]] = []
+
+        for name in scenarioNames {
+            let clock = DateProviderMock(now: Date(timeIntervalSince1970: 1_700_000_000))
+            let logger = CoreLoggerMock()
+            let dd = DD.mockWith(logger: logger)
+            defer { dd.reset() }
+            let scope = FeatureScopeMock(context: .mockWith(
+                sdkInitDate: clock.now,
+                trackingConsent: .granted,
+                launchInfo: .mockWith(
+                    launchReason: .userLaunch, processLaunchDate: clock.now,
+                    runtimeLoadDate: clock.now, runtimePreMainDate: clock.now,
+                    didFinishLaunchingDate: clock.now, didBecomeActiveDate: clock.now
+                ),
+                applicationStateHistory: .mockAppInForeground(since: clock.now.addingTimeInterval(-1))
+            ))
+            var callbacks: [String] = []
+            var providerCalls = 0
+            let monitor = Monitor(
+                dependencies: .mockWith(
+                    featureScope: scope,
+                    rumApplicationID: "legacy-trace-application",
+                    samplingRate: 100,
+                    trackBackgroundEvents: name == "off-view",
+                    hasAppHangsEnabled: false,
+                    rumUUIDGenerator: LegacyOperationUUIDGenerator(),
+                    viewHitchesReaderFactory: { nil },
+                    onSessionUpdate: { callbacks.append($0?.sessionUUID.toRUMDataFormat ?? "nil") },
+                    featureFlags: [.multiSceneTracking: false, .viewUpdates: false]
+                ),
+                dateProvider: clock,
+                executionContextProvider: { _ in providerCalls += 1; return nil }
+            )
+            XCTAssertFalse(monitor.isMultiSceneTrackingEnabled)
+            XCTAssertNil(monitor.currentExecutionContext)
+            monitor.startView(key: "home", name: "Home", attributes: ["view-attribute": "original"])
+            func start(_ operation: String, key: String? = nil, sampleRate: Float? = 100) {
+                monitor.startOperation(
+                    name: operation, operationKey: key, attributes: ["start-attribute": operation],
+                    options: sampleRate.map { ProfilingOptions(sampleRate: $0) }
+                )
+                clock.now.addTimeInterval(1)
+            }
+            func succeed(_ operation: String, key: String? = nil) {
+                monitor.succeedOperation(
+                    name: operation, operationKey: key, attributes: ["end-attribute": operation]
+                )
+                clock.now.addTimeInterval(1)
+            }
+            switch name {
+            case "success":
+                start("success")
+                succeed("success")
+            case "failure":
+                start("failure", key: "request-1")
+                monitor.failOperation(
+                    name: "failure", operationKey: "request-1", reason: .error,
+                    attributes: ["failure-attribute": "retained"]
+                )
+            case "profiling-options":
+                start("sampled-out", sampleRate: 0)
+                succeed("sampled-out")
+                start("no-options", sampleRate: nil)
+                succeed("no-options")
+            case "duplicate-and-orphan":
+                start("repeat", key: "same-key")
+                start("repeat", key: "same-key")
+                succeed("repeat", key: "same-key")
+                succeed("orphan", key: "missing-key")
+            case "legacy-key-collision":
+                start("ab", key: "c")
+                start("a", key: "bc")
+                succeed("ab", key: "c")
+                succeed("a", key: "bc")
+            case "deprecated-aliases":
+                monitor.startFeatureOperation(name: "alias-success", operationKey: nil, attributes: ["alias": "start"])
+                clock.now.addTimeInterval(1)
+                monitor.succeedFeatureOperation(name: "alias-success", operationKey: nil, attributes: ["alias": "end"])
+                monitor.startFeatureOperation(name: "alias-failure", operationKey: "key", attributes: [:])
+                clock.now.addTimeInterval(1)
+                monitor.failFeatureOperation(name: "alias-failure", operationKey: "key", reason: .abandoned, attributes: [:])
+            case "off-view":
+                monitor.stopView(key: "home", attributes: [:])
+                XCTAssertNil(try XCTUnwrap(monitor.applicationScope.activeSession).context.activeViewID)
+                start("source-less")
+                succeed("source-less")
+                scope.contextMock.applicationStateHistory = .mockWith(initialState: .background, date: clock.now)
+                monitor.addAction(type: .custom, name: "background-sentinel", attributes: [:])
+                XCTAssertEqual(try XCTUnwrap(monitor.applicationScope.activeSession).context.activeViewName, "Background")
+                start("background")
+                succeed("background")
+            case "session-boundaries":
+                start("before-stop")
+                monitor.stopSession()
+                succeed("before-stop")
+                start("after-stop")
+                succeed("after-stop")
+                monitor.startView(key: "successor", name: "Successor", attributes: [:])
+                clock.now.addTimeInterval(RUMSessionScope.Constants.sessionMaxDuration + 1)
+                start("after-expiry")
+                succeed("after-expiry")
+            default:
+                XCTFail("Unrecognized trace scenario")
+            }
+            monitor.stopView(key: "home", attributes: [:])
+            monitor.stopView(key: "successor", attributes: [:])
+            monitor.stopSession()
+            XCTAssertNil(monitor.currentExecutionContext)
+            XCTAssertEqual(providerCalls, 0)
+
+            let vitals = scope.eventsWritten(ofType: RUMVitalOperationStepEvent.self)
+            let expectedCounts: [String: (vitals: Int, messages: Int)] = [
+                "success": (2, 2), "failure": (2, 2), "profiling-options": (4, 2),
+                "duplicate-and-orphan": (4, 4), "legacy-key-collision": (4, 4),
+                "deprecated-aliases": (4, 2), "off-view": (4, 4), "session-boundaries": (6, 6)
+            ]
+            let expected = try XCTUnwrap(expectedCounts[name])
+            XCTAssertEqual(vitals.count, expected.vitals, name)
+            XCTAssertEqual(scope.messagesSent().count, expected.messages, name)
+            XCTAssertEqual(Set(vitals.map { $0.vital.id }).count, vitals.count, name)
+            if name == "failure" {
+                XCTAssertEqual(vitals.last?.vital.failureReason, .error)
+                XCTAssertEqual(vitals.last?.vital.operationKey, "request-1")
+            } else if name == "deprecated-aliases" {
+                XCTAssertEqual(vitals.last?.vital.failureReason, .abandoned)
+            } else if name == "off-view", vitals.count == 4 {
+                XCTAssertEqual(Array(vitals.prefix(2)).map { $0.view.id }, Array(repeating: RUMUUID.nullUUID.toRUMDataFormat, count: 2))
+                XCTAssertNotEqual(vitals[2].view.id, RUMUUID.nullUUID.toRUMDataFormat)
+                XCTAssertEqual(vitals[2].view.id, vitals[3].view.id)
+            } else if name == "session-boundaries", vitals.count == 6 {
+                XCTAssertNotEqual(vitals[0].session.id, vitals[1].session.id)
+                XCTAssertEqual(Array(vitals[1...3]).map { $0.session.id }, Array(repeating: vitals[1].session.id, count: 3))
+                XCTAssertNotEqual(vitals[3].session.id, vitals[4].session.id)
+                XCTAssertEqual(vitals[4].session.id, vitals[5].session.id)
+            }
+            var messages: [[String: Any]] = []
+            for message in scope.messagesSent() {
+                let payload = try XCTUnwrap(message.asPayload)
+                let operation = try XCTUnwrap(payload as? OperationMessage)
+                let matchingEvents = vitals.filter { $0.vital.id == operation.operation.id }
+                XCTAssertEqual(matchingEvents.count, 1)
+                let event = try XCTUnwrap(matchingEvents.first)
+                XCTAssertEqual(event.vital.name, operation.operation.name)
+                XCTAssertEqual(event.vital.operationKey, operation.operation.operationKey)
+                XCTAssertEqual(event.vital.stepType, operation.operation.stepType)
+                XCTAssertEqual(
+                    event.date,
+                    operation.operation.date.addingTimeInterval(operation.operation.serverTimeOffset)
+                        .timeIntervalSince1970.dd.toInt64Milliseconds
+                )
+                messages.append([
+                    "type": "OperationMessage",
+                    "id": operation.operation.id,
+                    "name": operation.operation.name,
+                    "key": operation.operation.operationKey as Any? ?? NSNull(),
+                    "step": operation.operation.stepType?.rawValue as Any? ?? NSNull(),
+                    "date": operation.operation.date.timeIntervalSince1970,
+                    "server_offset": operation.operation.serverTimeOffset,
+                    "attributes": try JSONSerialization.jsonObject(with: JSONEncoder().encode(
+                        operation.attributes.mapValues { AnyEncodable($0) }
+                    ))
+                ])
+            }
+            let rawEvents = try scope.eventsWritten.map {
+                try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(AnyEncodable($0))) as? [String: Any])
+            }
+            let keys = Set(["type", "date", "application", "session", "view", "vital", "context", "action", "error"])
+            let events = rawEvents.map { $0.filter { keys.contains($0.key) } }
+            scenarios.append([
+                "name": name, "events": events, "raw_events": rawEvents,
+                "messages": messages, "session_callbacks": callbacks,
+                "warnings": logger.warnMessages, "errors": logger.errorMessages,
+                "provider_calls": providerCalls, "terminal": true
+            ])
+        }
+        XCTAssertEqual(scenarios.count, 8)
+        var images: [String] = []
+        for index in 0..<_dyld_image_count() {
+            if let image = _dyld_get_image_name(index) { images.append(String(cString: image)) }
+        }
+        let data = try JSONSerialization.data(withJSONObject: [
+            "schema_version": 1, "family": "legacy-operations", "terminal": true,
+            "scenarios": scenarios, "pid": ProcessInfo.processInfo.processIdentifier,
+            "loaded_images": images
+        ], options: [.sortedKeys])
+        let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+        attachment.name = "legacy-operations-trace"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
+    #endif
 
     func testWhenSessionIsSampled_itSetsRUMContextInCore() throws {
         // Given
