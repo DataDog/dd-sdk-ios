@@ -8,7 +8,10 @@
 
 import XCTest
 import DatadogInternal
+//swiftlint:disable duplicate_imports
 import DatadogMachProfiler
+import DatadogMachProfiler.Testing
+//swiftlint:enable duplicate_imports
 import TestUtilities
 @testable import DatadogProfiling
 
@@ -114,8 +117,41 @@ final class ProfilerFeatureTests: XCTestCase {
         XCTAssertEqual(firstDecision, secondDecision)
     }
 
-    func testProfilingSamplerProvider_hasNoContinuousProfilingDecision_withoutDeterministicSampler() {
-        XCTAssertNil(ProfilingSamplerProvider(continuousSampleRate: 100).continuousProfilingSampled)
+    func testProfilingSamplerProvider_updatesAppLaunchSamplingForRUMSession() {
+        let provider = ProfilingSamplerProvider(continuousSampleRate: 0, appLaunchSampleRate: 100)
+        XCTAssertNil(provider.appLaunchProfilingSampled)
+
+        provider.updateWith(deterministicSampler: DeterministicSampler(seed: 1, samplingRate: 100))
+        XCTAssertEqual(provider.appLaunchProfilingSampled, true)
+
+        provider.updateWith(deterministicSampler: DeterministicSampler(seed: 1, samplingRate: 0))
+        XCTAssertEqual(provider.appLaunchProfilingSampled, false)
+
+        let disabledProvider = ProfilingSamplerProvider(continuousSampleRate: 0, appLaunchSampleRate: 0)
+        disabledProvider.updateWith(deterministicSampler: DeterministicSampler(seed: 1, samplingRate: 100))
+        XCTAssertEqual(disabledProvider.appLaunchProfilingSampled, false)
+    }
+
+    func testInit_onlyAllowsAppLaunchSamplingWhenNativeProfilerStartedAtLaunch() {
+        let configuration = Profiling.Configuration(applicationLaunchSampleRate: 100)
+        let withoutNativeStart = ProfilerFeature(
+            core: core,
+            configuration: configuration,
+            requestBuilder: requestBuilder,
+            telemetryController: telemetryController,
+            userDefaults: userDefaults
+        )
+        XCTAssertFalse(withoutNativeStart.profilingSamplerProvider.isAppLaunchProfilingAvailable)
+
+        dd_profiler_start_testing(100, false, Int64.max, 0)
+        let withNativeStart = ProfilerFeature(
+            core: core,
+            configuration: configuration,
+            requestBuilder: requestBuilder,
+            telemetryController: telemetryController,
+            userDefaults: userDefaults
+        )
+        XCTAssertTrue(withNativeStart.profilingSamplerProvider.isAppLaunchProfilingAvailable)
     }
 
     func testProfilingSamplerProvider_appliesChildRateCorrection() {
@@ -135,6 +171,7 @@ final class ProfilerFeatureTests: XCTestCase {
 
         // Then
         XCTAssertNotEqual(expectedSampled, oldBehavior, "Chosen vector must differ between composed and profiling-only rate")
+        XCTAssertEqual(provider.appLaunchProfilingSampled, false)
         XCTAssertEqual(provider.continuousProfilingSampled, expectedSampled)
     }
 

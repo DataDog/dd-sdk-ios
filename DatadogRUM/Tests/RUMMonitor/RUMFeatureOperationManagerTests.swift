@@ -43,6 +43,7 @@ class RUMFeatureOperationManagerTests: XCTestCase {
 
     func testFeatureOperationCommand_CreatesVitalEvent() throws {
         // Given
+        mockContext = .mockWith(applicationBundleType: .iOSApp)
         let command = RUMOperationStepVitalCommand.mockRandom()
         let view: RUMViewScope = .mockAny()
         let quotaReason: DDProfiling.QuotaReason = .mockRandom()
@@ -66,6 +67,7 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         XCTAssertEqual(event.view.url, view.viewPath)
 
         // Common properties
+        XCTAssertEqual(event.session.isMainProcess, true)
         XCTAssertNil(event.account)
         XCTAssertNil(event.buildId)
         XCTAssertNotNil(event.buildVersion)
@@ -96,6 +98,24 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         // Profiling Status
         XCTAssertEqual(event.dd.profiling?.status, .running)
         XCTAssertEqual(event.dd.profiling?.quotaReason, quotaReason)
+    }
+
+    func testFeatureOperationCommand_whenAppRunsAsAppExtension_createsVitalEventWithIsMainProcessFalse() throws {
+        // Given
+        let command = RUMOperationStepVitalCommand.mockRandom()
+        mockContext = .mockWith(applicationBundleType: .iOSAppExtension)
+
+        // When
+        manager.process(
+            command,
+            context: mockContext,
+            writer: mockWriter,
+            activeView: .mockAny()
+        )
+
+        // Then
+        let event = try XCTUnwrap(mockWriter.events(ofType: RUMVitalOperationStepEvent.self).first)
+        XCTAssertEqual(event.session.isMainProcess, false)
     }
 
     func testFeatureOperationCommand_sanitizesContextAttributesBeforeWriting() throws {

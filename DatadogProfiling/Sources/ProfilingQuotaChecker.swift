@@ -50,9 +50,9 @@ extension ProfilingQuotaChecking {
 /// Checks profiling quota admission for the active RUM session.
 ///
 /// This service owns the quota request lifecycle and session-scoped result cache.
-/// It starts a quota request when a sampled-in RUM session id is observed with granted
-/// tracking consent, ignores stale responses for previous sessions and fails open
-/// on request or decoding errors.
+/// It starts a quota request when a RUM session can produce a continuous or app-launch profile
+/// with granted tracking consent, ignores stale responses for previous sessions,
+/// and fails open on request or decoding errors.
 internal final class ProfilingQuotaChecker: ProfilingQuotaChecking {
     private enum Constants {
         static let quotaPath = "/api/v2/profiling/quota"
@@ -69,7 +69,8 @@ internal final class ProfilingQuotaChecker: ProfilingQuotaChecking {
     }
 
     private let urlSession: URLSession
-    private let state = ReadWriteLock(wrappedValue: State.idle)
+    private let profilingSamplerProvider: ProfilingSamplerProvider
+    private let state = ReadWriteLock(wrappedValue: State.idle(sessionID: nil))
     private let quotaResultUpdate = ReadWriteLock<ProfilingQuotaResultListener?>(wrappedValue: nil)
 
     var quotaResult: ProfilingQuotaResult? { state.wrappedValue.quotaResult }
@@ -79,7 +80,11 @@ internal final class ProfilingQuotaChecker: ProfilingQuotaChecking {
         set { quotaResultUpdate.wrappedValue = newValue }
     }
 
-    init(urlSession: URLSession = ProfilingQuotaChecker.urlSession) {
+    init(
+        profilingSamplerProvider: ProfilingSamplerProvider,
+        urlSession: URLSession = ProfilingQuotaChecker.urlSession
+    ) {
+        self.profilingSamplerProvider = profilingSamplerProvider
         self.urlSession = urlSession
     }
 }
@@ -87,15 +92,39 @@ internal final class ProfilingQuotaChecker: ProfilingQuotaChecking {
 extension ProfilingQuotaChecker: FeatureMessageReceiver {
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         guard case let .context(context) = message,
-              context.trackingConsent == .granted,
-              let rumContext = context.additionalContext(ofType: RUMCoreContext.self),
-              rumContext.sessionSampler.isSampled else {
+              context.trackingConsent != .notGranted,
+              let rumContext = context.additionalContext(ofType: RUMCoreContext.self) else {
+            return false
+        }
+
+        observeSession(rumContext.sessionID)
+        guard context.trackingConsent == .granted,
+              rumContext.sessionSampler.isSampled,
+              profilingSamplerProvider.appLaunchProfilingSampled == true
+                || profilingSamplerProvider.continuousProfilingSampled == true else {
             return false
         }
 
         checkIfNeeded(sessionID: rumContext.sessionID, context: context)
-
         return false
+    }
+
+    private func observeSession(_ sessionID: String) {
+        var didChangeSession = false
+
+        state.mutate {
+            let previousSessionID = $0.sessionID
+            guard previousSessionID != sessionID else {
+                return
+            }
+
+            $0 = .idle(sessionID: sessionID)
+            didChangeSession = previousSessionID != nil
+        }
+
+        if didChangeSession {
+            onQuotaResultUpdate?(nil)
+        }
     }
 
     private func checkIfNeeded(sessionID: String, context: DatadogContext) {
@@ -103,24 +132,17 @@ extension ProfilingQuotaChecker: FeatureMessageReceiver {
 
         state.mutate {
             switch $0 {
-            case .idle:
+            case .idle(let currentSessionID) where currentSessionID == sessionID:
                 $0 = .pending(sessionID: sessionID)
                 shouldStartRequest = true
-            case .pending(let currentSessionID), .resolved(let currentSessionID, _):
-                guard currentSessionID != sessionID else {
-                    return
-                }
-
-                $0 = .pending(sessionID: sessionID)
-                shouldStartRequest = true
+            default:
+                break
             }
         }
 
         guard shouldStartRequest else {
             return
         }
-
-        onQuotaResultUpdate?(nil)
 
         let request = self.request(sessionID: sessionID, context: context)
         urlSession.dataTask(with: request) { [weak self] data, response, error in
@@ -198,9 +220,18 @@ extension ProfilingQuotaChecker {
 
 private extension ProfilingQuotaChecker {
     enum State {
-        case idle
+        case idle(sessionID: String?)
         case pending(sessionID: String)
         case resolved(sessionID: String, result: ProfilingQuotaResult)
+
+        var sessionID: String? {
+            switch self {
+            case .idle(let sessionID):
+                return sessionID
+            case .pending(let sessionID), .resolved(let sessionID, _):
+                return sessionID
+            }
+        }
 
         var quotaResult: ProfilingQuotaResult? {
             guard case let .resolved(_, result) = self else {
