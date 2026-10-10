@@ -7,6 +7,7 @@
 #if !os(watchOS)
 
 import XCTest
+import MachO
 @_spi(Internal) import DatadogInternal
 @testable import TestUtilities
 @_spi(Internal) @testable import DatadogCore
@@ -3690,8 +3691,13 @@ private extension DatadogProfilerTests {
     }
 
     func attachOriginalCoreInventory(_ boundary: String, original: [Event], successor: [Event], unauthorized: [Event] = []) {
+        var images: [String] = []
+        for index in 0..<_dyld_image_count() {
+            if let image = _dyld_get_image_name(index) { images.append(String(cString: image)) }
+        }
         let inventory: [String: Any] = [
-            "schema_version": 1, "boundary": boundary,
+            "schema_version": 1, "family": "original-core-profiling-lifetime", "terminal": true,
+            "boundary": boundary, "pid": ProcessInfo.processInfo.processIdentifier, "loaded_images": images,
             "original": original.map { ["event": $0.data.base64EncodedString(), "metadata": $0.metadata?.base64EncodedString() ?? ""] },
             "successor": successor.map { ["event": $0.data.base64EncodedString(), "metadata": $0.metadata?.base64EncodedString() ?? ""] },
             "unauthorized": unauthorized.map { ["event": $0.data.base64EncodedString(), "metadata": $0.metadata?.base64EncodedString() ?? ""] }
