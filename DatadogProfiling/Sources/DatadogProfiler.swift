@@ -677,8 +677,9 @@ private extension DatadogProfiler {
     }
 
     var hasCompletedAllOperations: Bool {
-        let hasCompleted = currentRUMVitals.hasCompletedOperations() || ownedOperations?.hasCompleted == true
-        let hasOngoing = currentRUMVitals.ongoingOperations().isEmpty == false || ownedOperations?.hasOngoing == true
+        guard let ownedOperations else { return currentRUMVitals.hasCompletedAllOperations() }
+        let hasCompleted = currentRUMVitals.hasCompletedOperations() || ownedOperations.hasCompleted
+        let hasOngoing = currentRUMVitals.ongoingOperations().isEmpty == false || ownedOperations.hasOngoing
         return hasCompleted && !hasOngoing
     }
 
