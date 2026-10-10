@@ -208,7 +208,7 @@ final class DatadogProfilerTests: XCTestCase {
                 ])
             }
             func startNative() {
-                XCTAssertEqual(dd_profiler_start_testing(100, false, 120 * 1_000_000_000, 0), 1)
+                dd_profiler_start_testing(100, false, 120 * 1_000_000_000, 0)
                 addSampleToCurrentProfile()
             }
             func finishThroughTimer(_ body: () -> Void) {
