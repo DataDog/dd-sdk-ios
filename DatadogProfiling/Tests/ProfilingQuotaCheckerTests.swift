@@ -719,7 +719,11 @@ private final class ControlledQuotaSession: URLSession, @unchecked Sendable {
     var quotaTasks: [ControlledQuotaTask] { recordedTasks.wrappedValue }
 
     override init() {
-        super.init(configuration: .ephemeral, delegate: nil, delegateQueue: nil)
+        super.init()
+    }
+
+    override func invalidateAndCancel() {
+        // This transport owns only controlled tasks and no Foundation session resources.
     }
 
     override func dataTask(
