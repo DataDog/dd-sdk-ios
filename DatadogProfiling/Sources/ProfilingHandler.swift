@@ -5,7 +5,7 @@
  */
 
 import Foundation
-import DatadogInternal
+@_spi(Internal) import DatadogInternal
 
 #if !os(watchOS)
 
