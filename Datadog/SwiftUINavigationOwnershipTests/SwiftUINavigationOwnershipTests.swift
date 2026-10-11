@@ -8,6 +8,7 @@ import XCTest
 import MachO
 import UIKit
 import SwiftUI
+import Combine
 @testable import TestUtilities
 @_spi(Internal)
 @testable import DatadogInternal
