@@ -110,10 +110,14 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     // MARK: - RUMScope
 
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
-        if let expirationTime = possibleExpirationTime(currentTime: command.time), allResourcesCompletedLoading() {
-            // Stop user action due to timeout
-            sendActionEvent(completionTime: expirationTime, on: command, context: context, writer: writer)
+        if expireIfNeeded(on: command, context: context, writer: writer) {
             return false
+        }
+
+        // Foreign completions still drive expiration, but are not activity in this view.
+        if let completion = command as? RUMResourceCompletionCommand,
+           !completion.updatesAction(in: self.context.activeViewID) {
+            return true
         }
 
         lastActivityTime = command.time
@@ -142,6 +146,17 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         default:
             break
         }
+        return true
+    }
+
+    /// Sends the action when its timeout has elapsed and its resources have completed.
+    /// Returns whether the action has ended.
+    func expireIfNeeded(on command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
+        guard let expirationTime = possibleExpirationTime(currentTime: command.time),
+              allResourcesCompletedLoading() else {
+            return false
+        }
+        sendActionEvent(completionTime: expirationTime, on: command, context: context, writer: writer)
         return true
     }
 

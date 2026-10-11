@@ -85,6 +85,20 @@ internal final class WatchdogTerminationMonitor {
         feature.rumDataStore.setValue(viewEvent, forKey: .watchdogRUMViewEvent)
     }
 
+    /// Stores the current process representative, or removes a stopped view's snapshot.
+    /// The multi-scene session calls this only after its command propagation completes.
+    @discardableResult
+    func updateRepresentativeView(viewEvent: RUMViewEvent?) -> Bool {
+        guard currentState == .started else { return false }
+        if let viewEvent {
+            DD.logger.debug(ErrorMessages.rumViewEventUpdated)
+            feature.rumDataStore.setValue(viewEvent, forKey: .watchdogRUMViewEvent)
+        } else {
+            feature.rumDataStore.removeValue(forKey: .watchdogRUMViewEvent)
+        }
+        return true
+    }
+
     /// Checks if the app was terminated by Watchdog and sends the Watchdog Termination event to Datadog.
     /// - Parameter launch: The launch report containing information about the app launch.
     private func sendWatchTerminationIfFound(launch: LaunchReport, completion: @escaping () -> Void) {

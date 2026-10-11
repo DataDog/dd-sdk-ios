@@ -11,7 +11,8 @@ import UIKit
 import AppKit
 #endif
 
-/// A unique identifier for a RUM view.
+/// Identifies a view across its lifecycle commands.
+/// Repeated starts can create distinct occurrences with the same identity.
 internal enum ViewIdentifier: Equatable {
     #if !os(watchOS)
     case viewController(ObjectIdentifier)

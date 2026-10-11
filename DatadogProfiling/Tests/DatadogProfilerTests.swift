@@ -7,8 +7,10 @@
 #if !os(watchOS)
 
 import XCTest
-import DatadogInternal
-import TestUtilities
+import MachO
+@_spi(Internal) import DatadogInternal
+@testable import TestUtilities
+@_spi(Internal) @testable import DatadogCore
 @testable import DatadogProfiling
 //swiftlint:disable duplicate_imports
 import DatadogMachProfiler
@@ -38,6 +40,205 @@ final class DatadogProfilerTests: XCTestCase {
     }
 
     // MARK: - receive(message:from:)
+
+    func testOwnedOperationMessage_validAtQueueDrain_keepsOriginalAttributesWithoutStartingCustomProfiler() throws {
+        let dateProvider = DateProviderMock()
+        let fixture = OwnedProfilerQueueFixture(date: dateProvider.now)
+        let ownership = try fixture.ownership()
+        let profiler = customProfiler(dateProvider: dateProvider)
+        profiler.receiveRUMOperationBusMode(owner: fixture.origin.owner, active: true)
+        let message = fixture.start(ownership, attributes: [RUMCoreContext.IDs.sessionID: "original-session"])
+        XCTAssertTrue(ownership.isValid)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_CREATED)
+
+        XCTAssertFalse(profiler.receive(message: .payload(message), from: core))
+        flushQueue()
+
+        XCTAssertEqual(profiler.attributes[RUMCoreContext.IDs.sessionID] as? String, "original-session")
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_CREATED)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testOwnedOperationMessage_retiredWhileProfilerQueueIsPaused_hasNoEffectsAtDrain() throws {
+        let dateProvider = DateProviderMock()
+        let fixture = OwnedProfilerQueueFixture(date: dateProvider.now)
+        let ownership = try fixture.ownership()
+        let telemetry = TelemetryMock()
+        let profiler = customProfiler(telemetryController: .init(telemetry: telemetry), dateProvider: dateProvider)
+        profiler.receiveRUMOperationBusMode(owner: fixture.origin.owner, active: true)
+        let message = fixture.start(ownership, attributes: [RUMCoreContext.IDs.sessionID: "retired-session"])
+        let initialStatus = dd_profiler_get_status()
+        XCTAssertTrue(ownership.isValid)
+        profilerQueue.suspend()
+        var isSuspended = true
+        defer { if isSuspended { profilerQueue.resume() } }
+
+        XCTAssertFalse(profiler.receive(message: .payload(message), from: core))
+        fixture.origin.retire()
+        XCTAssertFalse(ownership.isValid)
+        profilerQueue.resume()
+        isSuspended = false
+        flushQueue()
+
+        XCTAssertTrue(profiler.attributes.isEmpty)
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertTrue(core.metadata.isEmpty)
+        XCTAssertTrue(telemetry.messages.isEmpty)
+        XCTAssertEqual(dd_profiler_get_status(), initialStatus)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testQueuedOwnedOperationMessage_doesNotRetainOriginalCoreFeatureOrMonitor() throws {
+        let dateProvider = DateProviderMock()
+        var fixture: OwnedProfilerQueueFixture? = OwnedProfilerQueueFixture(date: dateProvider.now)
+        let ownership = try XCTUnwrap(fixture).ownership()
+        let message = try XCTUnwrap(fixture).start(ownership, attributes: [RUMCoreContext.IDs.sessionID: "original-session"])
+        weak var originalCore: AnyObject? = fixture?.originalCore
+        weak var originalFeature: AnyObject? = fixture?.originalFeature
+        weak var originalMonitor: AnyObject? = fixture?.originalMonitor
+        let telemetry = TelemetryMock()
+        let profiler = customProfiler(telemetryController: .init(telemetry: telemetry), dateProvider: dateProvider)
+        profiler.receiveRUMOperationBusMode(owner: try XCTUnwrap(fixture).origin.owner, active: true)
+        let initialStatus = dd_profiler_get_status()
+        profilerQueue.suspend()
+        var isSuspended = true
+        defer { if isSuspended { profilerQueue.resume() } }
+
+        XCTAssertFalse(profiler.receive(message: .payload(message), from: core))
+        fixture = nil
+        XCTAssertNil(originalCore)
+        XCTAssertNil(originalFeature)
+        XCTAssertNil(originalMonitor)
+        XCTAssertFalse(ownership.isValid)
+        profilerQueue.resume()
+        isSuspended = false
+        flushQueue()
+
+        XCTAssertTrue(profiler.attributes.isEmpty)
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertTrue(core.metadata.isEmpty)
+        XCTAssertTrue(telemetry.messages.isEmpty)
+        XCTAssertEqual(dd_profiler_get_status(), initialStatus)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testOwnedOperationMessage_quotaBecomesRejectedBeforeQueueDrain_preservesPreviousAttributes() throws {
+        for rejectsQuota in [false, true] {
+            let dateProvider = DateProviderMock()
+            let fixture = OwnedProfilerQueueFixture(date: dateProvider.now)
+            let ownership = try fixture.ownership()
+            let quota = ProfilingQuotaCheckerMock()
+            let telemetry = TelemetryMock()
+            let profiler = customProfiler(
+                telemetryController: .init(telemetry: telemetry),
+                dateProvider: dateProvider,
+                quotaChecker: quota
+            )
+            profiler.receiveRUMOperationBusMode(owner: fixture.origin.owner, active: true)
+            let seed: [AttributeKey: AttributeValue] = ["seed": "legacy-end"]
+            let seedVital = Vital(id: "seed-end", name: "seed", operationKey: nil, stepType: .end, date: dateProvider.now)
+            XCTAssertFalse(profiler.receive(message: .payload(OperationMessage(attributes: seed, operation: seedVital)), from: core))
+            flushQueue()
+            XCTAssertEqual(profiler.attributes.count, 1)
+            XCTAssertEqual(profiler.attributes["seed"] as? String, "legacy-end")
+            XCTAssertNil(quota.quotaResult)
+            XCTAssertTrue(ownership.isValid)
+            let initialStatus = dd_profiler_get_status()
+            let message = fixture.start(ownership, attributes: [RUMCoreContext.IDs.sessionID: "original-session"])
+            profilerQueue.suspend()
+            var isSuspended = true
+            defer { if isSuspended { profilerQueue.resume() } }
+
+            XCTAssertFalse(profiler.receive(message: .payload(message), from: core))
+            if rejectsQuota {
+                quota.quotaResult = .init(decision: .quotaKO, reason: .quotaExceeded)
+            }
+            // The mock's plain property does not invoke the quota callback.
+            // This isolates the message guard at drain from quota-triggered cleanup.
+            XCTAssertEqual(quota.isRejectedByQuota, rejectsQuota)
+            XCTAssertTrue(ownership.isValid)
+            profilerQueue.resume()
+            isSuspended = false
+            flushQueue()
+
+            XCTAssertEqual(profiler.attributes.count, 1)
+            if rejectsQuota {
+                XCTAssertEqual(profiler.attributes["seed"] as? String, "legacy-end")
+                XCTAssertNil(profiler.attributes[RUMCoreContext.IDs.sessionID])
+            } else {
+                XCTAssertEqual(profiler.attributes[RUMCoreContext.IDs.sessionID] as? String, "original-session")
+                XCTAssertNil(profiler.attributes["seed"])
+            }
+            XCTAssertTrue(core.events.isEmpty)
+            XCTAssertTrue(core.metadata.isEmpty)
+            XCTAssertTrue(telemetry.messages.isEmpty)
+            XCTAssertEqual(dd_profiler_get_status(), initialStatus)
+            withExtendedLifetime(profiler) {}
+        }
+    }
+
+    func testOwnedOperationMessage_notGrantedConsentRefusesThenGrantedAcceptsOriginalOwnership() throws {
+        let dateProvider = DateProviderMock()
+        let fixture = OwnedProfilerQueueFixture(date: dateProvider.now)
+        let ownership = try fixture.ownership()
+        let telemetry = TelemetryMock()
+        let profiler = customProfiler(telemetryController: .init(telemetry: telemetry), dateProvider: dateProvider)
+        profiler.receiveRUMOperationBusMode(owner: fixture.origin.owner, active: true)
+        let message = fixture.start(ownership, attributes: [RUMCoreContext.IDs.sessionID: "original-session"])
+        core.context = .mockWith(trackingConsent: .notGranted, applicationStateHistory: .mockAppInForeground())
+        XCTAssertFalse(profiler.receive(message: .context(core.context), from: core))
+        flushQueue()
+        XCTAssertTrue(ownership.isValid)
+        XCTAssertTrue(profiler.attributes.isEmpty)
+        let initialStatus = dd_profiler_get_status()
+        let initialTelemetryCount = telemetry.messages.count
+
+        XCTAssertFalse(profiler.receive(message: .payload(message), from: core))
+        flushQueue()
+
+        XCTAssertTrue(ownership.isValid)
+        XCTAssertTrue(profiler.attributes.isEmpty)
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertTrue(core.metadata.isEmpty)
+        XCTAssertEqual(telemetry.messages.count, initialTelemetryCount)
+        XCTAssertEqual(dd_profiler_get_status(), initialStatus)
+
+        core.context = .mockWith(trackingConsent: .granted, applicationStateHistory: .mockAppInForeground())
+        XCTAssertFalse(profiler.receive(message: .context(core.context), from: core))
+        flushQueue()
+        XCTAssertTrue(ownership.isValid)
+        XCTAssertFalse(profiler.receive(message: .payload(message), from: core))
+        flushQueue()
+
+        XCTAssertEqual(profiler.attributes.count, 1)
+        XCTAssertEqual(profiler.attributes[RUMCoreContext.IDs.sessionID] as? String, "original-session")
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertTrue(core.metadata.isEmpty)
+        XCTAssertEqual(dd_profiler_get_status(), initialStatus)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testOwnedOperationBusMode_oldDeactivation_preservesReplacementProfilerOwnership() throws {
+        let dateProvider = DateProviderMock()
+        let fixture = OwnedProfilerQueueFixture(date: dateProvider.now)
+        let ownership = try fixture.ownership()
+        let profiler = customProfiler(dateProvider: dateProvider)
+        let oldOwner = RUMContextHandoff.Owner()
+        profiler.receiveRUMOperationBusMode(owner: oldOwner, active: true)
+        profiler.receiveRUMOperationBusMode(owner: fixture.origin.owner, active: true)
+        oldOwner.invalidate()
+        profiler.receiveRUMOperationBusMode(owner: oldOwner, active: false)
+        let message = fixture.start(ownership, attributes: [RUMCoreContext.IDs.sessionID: "original-session"])
+
+        XCTAssertTrue(ownership.isValid)
+        XCTAssertFalse(profiler.receive(message: .payload(message), from: core), "Original synchronous handled return is preserved")
+        flushQueue()
+
+        XCTAssertEqual(profiler.attributes.count, 1)
+        XCTAssertEqual(profiler.attributes[RUMCoreContext.IDs.sessionID] as? String, "original-session")
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_CREATED)
+        withExtendedLifetime(profiler) {}
+    }
 
     func testReceiveRUMEvents() {
         // Given
@@ -3310,12 +3511,12 @@ private extension DatadogProfilerTests {
         quotaChecker: ProfilingQuotaChecking? = nil
     ) {
         var receivers: [FeatureMessageReceiver] = [
-            ProfilingContextMessageReceiver(profilingSamplerProvider: profilingSamplerProvider),
-            profiler
+            ProfilingContextMessageReceiver(profilingSamplerProvider: profilingSamplerProvider)
         ]
         if let quotaChecker {
             receivers.append(quotaChecker)
         }
+        receivers.append(profiler)
 
         let messageReceiver = CombinedFeatureMessageReceiver(receivers)
         core.messageReceiver = messageReceiver
@@ -3343,4 +3544,509 @@ private extension DatadogProfilerTests {
         XCTFail("Condition was not met within \(timeout) seconds.", file: file, line: line)
     }
 }
+private final class OwnedProfilerQueueFixture {
+    private final class OriginalFeature: DatadogFeature, RUMOperationOriginProviding {
+        static let name = "rum"
+        let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
+        var operationOrigin: RUMOperationOrigin?
+        let monitor = NSObject()
+        func isOperationMonitor(_ monitor: AnyObject) -> Bool { self.monitor === monitor }
+        func isOperationSessionActive(start: Date, lastInteraction: Date) -> Bool { true }
+    }
+
+    private let feature = OriginalFeature()
+    private let core: SingleFeatureCoreMock<OriginalFeature>
+    let origin: RUMOperationOrigin
+    let date: Date
+    var originalCore: AnyObject { core }
+    var originalFeature: AnyObject { feature }
+    var originalMonitor: AnyObject { feature.monitor }
+
+    init(date: Date) {
+        self.date = date
+        core = SingleFeatureCoreMock(feature: feature)
+        origin = RUMOperationOrigin(core: core, owner: RUMContextHandoff.Owner())
+        feature.operationOrigin = origin
+        origin.attach(feature: feature, monitor: feature.monitor)
+        origin.setSession("original-session")
+        origin.updateSession("original-session", start: date, lastInteraction: date)
+    }
+
+    func ownership() throws -> RUMOperationOwnership {
+        try XCTUnwrap(origin.ownership(for: "original-session"))
+    }
+
+    func start(_ ownership: RUMOperationOwnership, attributes: [AttributeKey: AttributeValue]) -> OwnedOperationMessage {
+        OwnedOperationMessage(ownership: ownership, attributes: attributes,
+            operation: Vital(id: "original-operation", name: "operation", operationKey: nil, stepType: .start, date: date))
+    }
+}
+
+
+// MARK: - Original Core storage and deferred ownership
+
+extension DatadogProfilerTests {
+    func testOriginalCoreProfile_preservesOwnedOperationThroughBusAndDurableStorage() throws {
+        try requireOriginalCoreHandoff()
+        let original = try OriginalCoreProfileFixture()
+        defer { original.dispose() }
+        let capability = try original.ownership()
+        XCTAssertTrue(capability.isValid)
+
+        // The real consumer cannot run until the bus has queued the original message.
+        let gate = ProfileQueueGate(DatadogProfiler.defaultQueue)
+        defer { gate.release() }
+        original.sendStart(capability, id: "original-start")
+        try XCTUnwrap(original.core).bus.flush()
+        gate.release()
+        original.drain()
+        addSampleToCurrentProfile()
+        original.sendEndAndBackground(capability, id: "original-start")
+        original.drain()
+
+        let events = try original.events()
+        XCTAssertEqual(events.count, 1, "An always-dropping consumer cannot pass.")
+        try assertOriginalStoredProfile(try XCTUnwrap(events.first), id: "original-start", marker: "original", date: original.operationDate, tags: original.profilerTags)
+        XCTAssertTrue(try original.events(authorized: false).isEmpty)
+        XCTAssertTrue(capability.isValid)
+        attachOriginalCoreInventory("live-original", original: events, successor: [])
+    }
+
+    func testOriginalCoreRetirement_rejectsQueuedAndSnapshottedOperationsAndReleasesCollaborators() throws {
+        try requireOriginalCoreHandoff()
+        for afterSnapshot in [false, true] {
+            let original = try OriginalCoreProfileFixture()
+            defer { original.dispose() }
+            let capability = try original.ownership()
+            // A real write through this exact composition is required before testing refusal.
+            original.sendStart(capability, id: "baseline")
+            original.drain()
+            addSampleToCurrentProfile()
+            original.sendEndAndBackground(capability, id: "baseline")
+            original.drain()
+            let baseline = try original.events()
+            XCTAssertEqual(baseline.count, 1)
+            try assertOriginalStoredProfile(try XCTUnwrap(baseline.first), id: "baseline", marker: "original", date: original.operationDate, tags: original.profilerTags)
+
+            let successor = try OriginalCoreProfileFixture(marker: "successor")
+            defer { successor.dispose() }
+            let successorOwnership = try successor.ownership()
+            XCTAssertTrue(successorOwnership.isValid)
+            XCTAssertFalse(capability === successorOwnership)
+            successor.sendStart(successorOwnership, id: "successor-baseline")
+            successor.drain()
+            addSampleToCurrentProfile()
+            successor.sendEndAndBackground(successorOwnership, id: "successor-baseline")
+            successor.drain()
+            let successorBaseline = try successor.events()
+            XCTAssertEqual(successorBaseline.count, 1)
+            try assertOriginalStoredProfile(try XCTUnwrap(successorBaseline.first), id: "successor-baseline",
+                                            marker: "successor", date: successor.operationDate, tags: successor.profilerTags)
+            XCTAssertTrue(try successor.events(authorized: false).isEmpty)
+            let cancellation = OriginalCoreCancellation()
+            XCTAssertTrue(capability.subscribe(cancellation))
+            weak var weakCore = original.core
+            weak var weakFeature = original.feature
+            weak var weakMonitor = original.feature?.monitor
+
+            original.foreground()
+            if afterSnapshot {
+                original.sendStart(capability, id: "retired")
+                original.drain()
+                addSampleToCurrentProfile()
+                original.sendEnd(capability, id: "retired")
+                original.drain()
+                let context = try XCTUnwrap(original.core).contextProvider
+                let observedContext = context.read()
+                let gate = ProfileQueueGate(context.queue)
+                defer { gate.release() }
+                original.sendBackground(context: observedContext)
+                try XCTUnwrap(original.core).bus.flush()
+                DatadogProfiler.defaultQueue.sync {}
+                // Serialization and owned snapshot precede the still-blocked writer callback.
+                original.retire()
+                gate.release()
+                original.drain()
+            } else {
+                let gate = ProfileQueueGate(DatadogProfiler.defaultQueue)
+                defer { gate.release() }
+                original.sendStart(capability, id: "retired")
+                addSampleToCurrentProfile()
+                original.sendEndAndBackground(capability, id: "retired")
+                try XCTUnwrap(original.core).bus.flush()
+                original.retire()
+                gate.release()
+                original.drain()
+            }
+            XCTAssertFalse(capability.isValid)
+            XCTAssertEqual(cancellation.calls, 1)
+            XCTAssertGreaterThanOrEqual(try XCTUnwrap(original.feature).retirementCalls, 1)
+            XCTAssertEqual(try original.events(), baseline)
+            XCTAssertTrue(try original.events(authorized: false).isEmpty)
+            XCTAssertEqual(try successor.events(), successorBaseline)
+            XCTAssertTrue(try successor.events(authorized: false).isEmpty)
+            original.releaseCollaborators()
+            XCTAssertNil(weakCore)
+            XCTAssertNil(weakFeature)
+            XCTAssertNil(weakMonitor)
+            XCTAssertEqual(cancellation.calls, 1)
+            XCTAssertTrue(successorOwnership.isValid)
+            attachOriginalCoreInventory(afterSnapshot ? "retired-before-writer" : "retired-before-consumer",
+                                        original: try original.events(), successor: try successor.events())
+        }
+    }
+
+    func testOriginalCoreConsent_respectsWriterSelectionAndPendingStorageMigration() throws {
+        try requireOriginalCoreHandoff()
+        for boundary in ["before-selection", "already-enqueued", "pending-to-granted", "pending-to-not-granted"] {
+            let original = try OriginalCoreProfileFixture()
+            defer { original.dispose() }
+            let ownership = try original.ownership()
+            original.sendStart(ownership, id: "baseline")
+            original.drain()
+            addSampleToCurrentProfile()
+            original.sendEndAndBackground(ownership, id: "baseline")
+            original.drain()
+            let baseline = try original.events()
+            XCTAssertEqual(baseline.count, 1)
+            try assertOriginalStoredProfile(try XCTUnwrap(baseline.first), id: "baseline", marker: "original", date: original.operationDate, tags: original.profilerTags)
+            original.foreground()
+
+            switch boundary {
+            case "before-selection":
+                let gate = ProfileQueueGate(DatadogProfiler.defaultQueue)
+                defer { gate.release() }
+                original.sendStart(ownership, id: boundary)
+                addSampleToCurrentProfile()
+                original.sendEndAndBackground(ownership, id: boundary)
+                try XCTUnwrap(original.core).bus.flush()
+                // Actual context changes before the delayed eventWriteContext selects a writer.
+                original.setConsent(.notGranted, drainProfiler: false)
+                XCTAssertEqual(try XCTUnwrap(original.core).contextProvider.read().trackingConsent, .notGranted)
+                gate.release()
+                original.drain()
+                XCTAssertEqual(try original.events(), baseline)
+                XCTAssertTrue(try original.events(authorized: false).isEmpty)
+
+            case "already-enqueued":
+                let gate = ProfileQueueGate(original.storage.queue)
+                defer { gate.release() }
+                original.sendStart(ownership, id: boundary)
+                original.drain(includeStorage: false)
+                addSampleToCurrentProfile()
+                original.sendEndAndBackground(ownership, id: boundary)
+                original.drain(includeStorage: false)
+                XCTAssertEqual(try XCTUnwrap(original.core).contextProvider.read().trackingConsent, .granted)
+                original.setConsent(.notGranted, includeStorage: false)
+                gate.release()
+                original.drain()
+                let events = try original.events()
+                XCTAssertEqual(events.count, 2)
+                XCTAssertEqual(events.filter { $0 == baseline.first }.count, 1)
+                try assertOriginalStoredProfile(try XCTUnwrap(events.first { $0 != baseline.first }),
+                                                id: boundary, marker: "original", date: original.operationDate, tags: original.profilerTags)
+                XCTAssertTrue(try original.events(authorized: false).isEmpty)
+
+            default:
+                original.setConsent(.pending)
+                original.sendStart(ownership, id: boundary)
+                original.drain()
+                addSampleToCurrentProfile()
+                original.sendEndAndBackground(ownership, id: boundary)
+                original.drain()
+                let pending = try original.events(authorized: false)
+                XCTAssertEqual(pending.count, 1)
+                try assertOriginalStoredProfile(try XCTUnwrap(pending.first), id: boundary, marker: "original", date: original.operationDate, tags: original.profilerTags)
+                XCTAssertEqual(try original.events(), baseline)
+                original.setConsent(boundary == "pending-to-granted" ? .granted : .notGranted)
+                XCTAssertTrue(try original.events(authorized: false).isEmpty)
+                let events = try original.events()
+                XCTAssertEqual(events.count, boundary == "pending-to-granted" ? 2 : 1)
+                XCTAssertTrue(events.contains(try XCTUnwrap(baseline.first)))
+                if boundary == "pending-to-granted" {
+                    XCTAssertEqual(events.filter { $0 == pending.first }.count, 1, "Migration preserves the complete payload.")
+                }
+            }
+            XCTAssertTrue(ownership.isValid)
+            attachOriginalCoreInventory(boundary, original: try original.events(), successor: [],
+                                        unauthorized: try original.events(authorized: false))
+        }
+    }
+}
+
+private extension DatadogProfilerTests {
+    func requireOriginalCoreHandoff() throws {
+        #if os(iOS)
+        if #available(iOS 27.0, *) { return }
+        #endif
+        throw XCTSkip("Original Core ownership requires supported iOS.")
+    }
+
+    func assertOriginalStoredProfile(_ event: Event, id: String, marker: String, date: Date, tags: String) throws {
+        let value = try XCTUnwrap(JSONSerialization.jsonObject(with: event.data) as? [String: Any])
+        XCTAssertEqual(Set(value.keys), Set([
+            "family", "runtime", "version", "start", "end", "attachments", "tags_profiler", "marker",
+            RUMCoreContext.IDs.sessionID, RUMCoreContext.IDs.viewID, RUMCoreContext.IDs.vitalID,
+            RUMCoreContext.IDs.vitalLabel, RUMCoreContext.IDs.errorID, RUMCoreContext.IDs.longTaskID
+        ]))
+        XCTAssertEqual(value["family"] as? String, "ios")
+        XCTAssertEqual(value["runtime"] as? String, "ios")
+        XCTAssertEqual(value["version"] as? String, "4")
+        XCTAssertEqual(value["tags_profiler"] as? String, tags)
+        XCTAssertEqual(value[RUMCoreContext.IDs.errorID] as? [String], [])
+        XCTAssertEqual(value[RUMCoreContext.IDs.longTaskID] as? [String], [])
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let start = try XCTUnwrap(formatter.date(from: try XCTUnwrap(value["start"] as? String)))
+        let end = try XCTUnwrap(formatter.date(from: try XCTUnwrap(value["end"] as? String)))
+        XCTAssertLessThanOrEqual(start, end, "Native profile dates must be ordered; elapsed time is diagnostic.")
+        XCTAssertEqual(value[RUMCoreContext.IDs.sessionID] as? String, "original-session")
+        XCTAssertEqual(value[RUMCoreContext.IDs.viewID] as? String, "original-view")
+        XCTAssertEqual(value["marker"] as? String, marker)
+        XCTAssertEqual(value[RUMCoreContext.IDs.vitalID] as? [String], [id])
+        XCTAssertEqual(value[RUMCoreContext.IDs.vitalLabel] as? [String], ["storage-operation"])
+        XCTAssertEqual(value["attachments"] as? [String],
+                       [ProfileAttachments.Constants.pprofFilename, ProfileAttachments.Constants.rumEventsFilename])
+        let metadata = try JSONDecoder().decode(ProfileAttachments.self, from: XCTUnwrap(event.metadata))
+        XCTAssertFalse(metadata.pprof.isEmpty)
+        let vitals = try typedRUMEvents(from: metadata)
+        XCTAssertEqual(vitals.count, 1)
+        let expected = Vital(id: id, name: "storage-operation", operationKey: "shared-key", stepType: .start,
+                             date: date, duration: 250_000_000)
+        let expectedJSON = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(expected)) as? [String: Any])
+        XCTAssertEqual(try XCTUnwrap(vitals.first) as NSDictionary, expectedJSON as NSDictionary)
+    }
+
+    func attachOriginalCoreInventory(_ boundary: String, original: [Event], successor: [Event], unauthorized: [Event] = []) {
+        var images: [String] = []
+        for index in 0..<_dyld_image_count() {
+            if let image = _dyld_get_image_name(index) { images.append(String(cString: image)) }
+        }
+        let inventory: [String: Any] = [
+            "schema_version": 1, "family": "original-core-profiling-lifetime", "terminal": true,
+            "boundary": boundary, "pid": ProcessInfo.processInfo.processIdentifier, "loaded_images": images,
+            "original": original.map { ["event": $0.data.base64EncodedString(), "metadata": $0.metadata?.base64EncodedString() ?? ""] },
+            "successor": successor.map { ["event": $0.data.base64EncodedString(), "metadata": $0.metadata?.base64EncodedString() ?? ""] },
+            "unauthorized": unauthorized.map { ["event": $0.data.base64EncodedString(), "metadata": $0.metadata?.base64EncodedString() ?? ""] }
+        ]
+        guard let data = try? JSONSerialization.data(withJSONObject: inventory, options: [.sortedKeys]) else {
+            return XCTFail("Failed to encode the complete storage inventory.")
+        }
+        let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+        attachment.name = "original-core-profile-" + boundary
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+}
+
+private final class ProfileQueueGate {
+    private var queue: DispatchQueue?
+    init(_ queue: DispatchQueue) { self.queue = queue; queue.suspend() }
+    func release() { queue?.resume(); queue = nil }
+    deinit { release() }
+}
+
+private final class OriginalCoreCancellation: RUMOperationCancellationReceiving {
+    private(set) var calls = 0
+    func operationOwnershipDidRetire(_ ownership: RUMOperationOwnership) {
+        calls += 1
+        XCTAssertFalse(ownership.isValid)
+        ownership.unsubscribe(self)
+    }
+}
+
+/// The provider is explicit test instrumentation; Core, bus, ProfilerFeature and storage are real.
+private final class OriginalCoreProfileFixture {
+    final class OriginFeature: DatadogFeature, RUMOperationOriginProviding, RUMOperationFeatureRetiring {
+        static let name = "rum"
+        let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
+        var operationOrigin: RUMOperationOrigin?
+        let monitor = NSObject()
+        private(set) var retirementCalls = 0
+        func isOperationMonitor(_ monitor: AnyObject) -> Bool { self.monitor === monitor }
+        func isOperationSessionActive(start: Date, lastInteraction: Date) -> Bool { true }
+        func retireOperationOrigin() { retirementCalls += 1; operationOrigin?.retire() }
+    }
+    let operationDate: Date
+    let profilerTags: String
+    private(set) var core: DatadogCore?
+    private(set) var feature: OriginFeature?
+    private var profilerFeature: ProfilerFeature?
+    let storage: FeatureStorage
+    private let directory: CoreDirectory
+    private let defaults: UserDefaults
+    private let defaultsName: String
+    private let marker: String
+
+    init(consent: TrackingConsent = .granted, marker: String = "original") throws {
+        let operationDate = Date(timeIntervalSince1970: Date().timeIntervalSince1970.rounded(.down))
+        let defaultsName = "profile-core-" + UUID().uuidString
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: defaultsName))
+        let directory = temporaryUniqueCoreDirectory()
+        self.operationDate = operationDate
+        self.marker = marker
+        self.defaultsName = defaultsName
+        self.defaults = defaults
+        self.directory = directory
+        var setupCore: DatadogCore?
+        var initialized = false
+        defer {
+            if !initialized {
+                setupCore?.stop()
+                setupCore?.contextProvider.flush()
+                setupCore?.bus.flush()
+                DatadogProfiler.defaultQueue.sync {}
+                dd_profiler_stop()
+                dd_profiler_destroy()
+                Self.deleteOwnedState(directory: directory, defaults: defaults, name: defaultsName)
+            }
+        }
+        try directory.create()
+        let context = DatadogContext.mockWith(
+            service: "original-core-" + marker, env: "lifetime", version: "1",
+            trackingConsent: consent, applicationStateHistory: .mockAppInForeground(since: Date().addingTimeInterval(-60)),
+            networkConnectionInfo: .mockWith(reachability: .no), batteryStatus: nil
+        )
+        profilerTags = [
+            "service:" + context.service, "version:" + context.version, "sdk_version:" + context.sdkVersion,
+            "profiler_version:" + context.sdkVersion, "runtime_version:" + context.os.version,
+            "env:" + context.env, "source:" + context.source, "language:swift", "format:pprof",
+            "remote_symbols:yes", "operation:custom"
+        ].joined(separator: ",")
+        let core = DatadogCore(
+            directory: directory, dateProvider: SystemDateProvider(), initialConsent: consent,
+            performance: .mockAny(), httpClient: HTTPClientMock(), encryption: nil,
+            contextProvider: DatadogContextProvider(context: context, queue: DispatchQueue(label: defaultsName + ".context")),
+            applicationVersion: "1", maxBatchesPerUpload: 1, backgroundTasksEnabled: false
+        )
+        setupCore = core
+        self.core = core
+        let owner = try core.activateRUMContextHandoff()
+        let feature = OriginFeature()
+        let origin = RUMOperationOrigin(core: core, owner: owner)
+        feature.operationOrigin = origin
+        origin.attach(feature: feature, monitor: feature.monitor)
+        try core.registerRUMContextHandoff(feature: feature, owner: owner)
+        origin.setSession("original-session")
+        origin.updateSession("original-session", start: operationDate, lastInteraction: operationDate)
+        self.feature = feature
+        var configuration = Profiling.Configuration(applicationLaunchSampleRate: 0, continuousSampleRate: 0)
+        configuration.minProfileDuration = 3_600 // Explicit background delivery controls completion, not a timer race.
+        configuration.debugSDK = false
+        let profilerFeature = ProfilerFeature(
+            core: core, configuration: configuration, requestBuilder: FeatureRequestBuilderMock(),
+            telemetryController: .init(sampleRate: 100, telemetry: TelemetryMock()),
+            quotaChecker: ProfilingQuotaCheckerMock(), userDefaults: defaults
+        )
+        self.profilerFeature = profilerFeature
+        try core.registerRUMContextHandoff(feature: profilerFeature, owner: owner)
+        let store = try XCTUnwrap(core.stores[ProfilerFeature.name])
+        store.upload.uploader.cancelSynchronously()
+        storage = store.storage
+        storage.setIgnoreFilesAgeWhenReading(to: true)
+        drain()
+        initialized = true
+    }
+
+    func ownership() throws -> RUMOperationOwnership {
+        try XCTUnwrap(feature?.operationOrigin?.ownership(for: "original-session"))
+    }
+
+    func sendStart(_ ownership: RUMOperationOwnership, id: String) {
+        dd_profiler_stop()
+        dd_profiler_destroy()
+        dd_profiler_start_testing(100, false, Int64.max, 0)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+        let vital = Vital(id: id, name: "storage-operation", operationKey: "shared-key", stepType: .start, date: operationDate)
+        send(.payload(OwnedOperationMessage(ownership: ownership, attributes: attributes, operation: vital)))
+    }
+
+    func sendEnd(_ ownership: RUMOperationOwnership, id: String) {
+        let vital = Vital(id: id + "-end", name: "storage-operation", operationKey: "shared-key", stepType: .end,
+                          date: operationDate.addingTimeInterval(0.25))
+        send(.payload(OwnedOperationMessage(ownership: ownership, attributes: attributes, operation: vital)))
+    }
+
+    func sendEndAndBackground(_ ownership: RUMOperationOwnership, id: String) {
+        sendEnd(ownership, id: id)
+        sendBackground()
+    }
+
+    private var attributes: [AttributeKey: AttributeValue] {
+        [RUMCoreContext.IDs.sessionID: "original-session", RUMCoreContext.IDs.viewID: "original-view", "marker": marker]
+    }
+
+    private func send(_ message: FeatureMessage) { core?.send(message: message, else: {}) }
+
+    func sendBackground(context observedContext: DatadogContext? = nil) {
+        guard let context = observedContext ?? core?.contextProvider.read() else { return XCTFail("Original Core is absent.") }
+        var background = context
+        background.applicationStateHistory = .mockWith(
+            initialState: .active, date: context.launchInfo.processLaunchDate,
+            transitions: [(state: .background, date: Date())]
+        )
+        send(.context(background))
+    }
+
+    func foreground() {
+        core?.contextProvider.write { $0.applicationStateHistory = .mockAppInForeground(since: Date().addingTimeInterval(-60)) }
+        drain()
+    }
+
+    func setConsent(_ consent: TrackingConsent, drainProfiler: Bool = true, includeStorage: Bool = true) {
+        core?.set(trackingConsent: consent)
+        core?.contextProvider.flush()
+        core?.bus.flush()
+        if drainProfiler { DatadogProfiler.defaultQueue.sync {} }
+        core?.contextProvider.flush()
+        if includeStorage { storage.queue.sync {} }
+    }
+
+    func drain(includeStorage: Bool = true) {
+        core?.contextProvider.flush()
+        core?.bus.flush()
+        DatadogProfiler.defaultQueue.sync {}
+        core?.contextProvider.flush()
+        core?.bus.flush()
+        DatadogProfiler.defaultQueue.sync {}
+        core?.contextProvider.flush()
+        if includeStorage { storage.queue.sync {} }
+    }
+
+    func events(authorized: Bool = true) throws -> [Event] {
+        let reader: Reader = authorized ? storage.reader : DataReader(
+            readWriteQueue: storage.queue,
+            fileReader: FileReader(orchestrator: storage.unauthorizedFilesOrchestrator, encryption: nil, telemetry: storage.telemetry)
+        )
+        return try reader.readFiles(limit: 100).flatMap { try XCTUnwrap(reader.readBatch(from: $0)).events }
+    }
+
+    func retire() { core?.stop() }
+    func releaseCollaborators() {
+        drain()
+        profilerFeature = nil
+        feature = nil
+        core = nil
+        DatadogProfiler.defaultQueue.sync {}
+    }
+
+    func dispose() {
+        core?.stop()
+        drain()
+        releaseCollaborators()
+        dd_profiler_stop()
+        dd_profiler_destroy()
+        Self.deleteOwnedState(directory: directory, defaults: defaults, name: defaultsName)
+    }
+
+    private static func deleteOwnedState(directory: CoreDirectory, defaults: UserDefaults, name: String) {
+        defaults.removePersistentDomain(forName: name)
+        XCTAssertTrue(defaults.persistentDomain(forName: name)?.isEmpty ?? true)
+        XCTAssertNoThrow(try directory.osDirectory.delete())
+        XCTAssertNoThrow(try directory.coreDirectory.delete())
+        XCTAssertFalse(directory.osDirectory.exists())
+        XCTAssertFalse(directory.coreDirectory.exists())
+    }
+}
+
 #endif // !os(watchOS)

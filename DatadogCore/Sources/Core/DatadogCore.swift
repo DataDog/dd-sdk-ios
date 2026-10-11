@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 /// Core implementation of Datadog SDK.
@@ -14,7 +15,14 @@ import DatadogInternal
 ///
 /// By complying with `DatadogCoreProtocol`, the core can
 /// provide context and writing scopes to Features for event recording.
-internal final class DatadogCore {
+internal final class DatadogCore: RUMContextHandoffActivating {
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? {
+        guard case let .active(activation) = registry.handoff else {
+            return nil
+        }
+        return activation.owner
+    }
+
     /// The root location for storing Features data in this instance of the SDK.
     /// For each Feature a set of subdirectories is created inside `CoreDirectory` based on their storage configuration.
     let directory: CoreDirectory
@@ -62,13 +70,134 @@ internal final class DatadogCore {
     @ReadWriteLock
     var remoteConfiguration: RemoteConfiguration?
 
-    /// Registry for Features.
+    /// Storage and On-only ownership share the original storage lock.
+    private struct FeatureStores {
+        var entries: [String: (storage: FeatureStorage, upload: FeatureUpload)] = [:]
+        var handoffOwner: RUMContextHandoff.Owner?
+    }
+
     @ReadWriteLock
-    private(set) var stores: [String: (storage: FeatureStorage, upload: FeatureUpload)] = [:]
+    private var featureStores = FeatureStores()
+
+    /// Preserve dictionary access while every write retains current owner metadata.
+    private(set) var stores: [String: (storage: FeatureStorage, upload: FeatureUpload)] {
+        get { featureStores.entries }
+        set { _featureStores.mutate { $0.entries = newValue } }
+    }
 
     /// Registry for Features.
+    private struct RegisteredFeature {
+        let feature: DatadogFeature
+        let messageReceiver: FeatureMessageReceiver
+    }
+
+    /// Allocated only for On. Releasing the Core's guard invalidates owners
+    /// retained by downstream work without performing an Off deinit lookup.
+    private final class ActivatedHandoff {
+        private struct WeakFeature {
+            weak var value: (any RUMOperationFeatureRetiring)?
+        }
+        private struct State {
+            var isRetired = false
+            var features: [ObjectIdentifier: WeakFeature] = [:]
+        }
+
+        let owner = RUMContextHandoff.Owner()
+        @ReadWriteLock private var state = State()
+
+        func attach(_ feature: any RUMOperationFeatureRetiring) {
+            var accepted = false
+            _state.mutate {
+                guard !$0.isRetired else { return }
+                $0.features = $0.features.filter { $0.value.value != nil }
+                $0.features[ObjectIdentifier(feature)] = WeakFeature(value: feature)
+                accepted = true
+            }
+            if !accepted { feature.retireOperationOrigin() }
+        }
+
+        func detach(_ feature: any RUMOperationFeatureRetiring) {
+            _state.mutate {
+                let identity = ObjectIdentifier(feature)
+                guard $0.features[identity]?.value === feature else { return }
+                $0.features.removeValue(forKey: identity)
+            }
+        }
+
+        func retire() {
+            owner.invalidate()
+            var detached: [WeakFeature] = []
+            _state.mutate {
+                guard !$0.isRetired else { return }
+                $0.isRetired = true
+                detached = Array($0.features.values)
+                $0.features.removeAll()
+            }
+            detached.forEach { $0.value?.retireOperationOrigin() }
+        }
+
+        deinit { retire() }
+    }
+
+    private enum HandoffState {
+        case inactive
+        case active(ActivatedHandoff)
+        case stopped
+    }
+
+    private struct Registry {
+        var features: [String: RegisteredFeature] = [:]
+        var handoff: HandoffState = .inactive
+        var isStopped = false
+    }
+
     @ReadWriteLock
-    private var features: [String: DatadogFeature] = [:]
+    private var registry = Registry()
+
+    /// Called only for resolved On mode, before instrumentation installation.
+    func activateRUMContextHandoff() throws -> RUMContextHandoff.Owner {
+        var owner: RUMContextHandoff.Owner?
+        var receivers: [FeatureMessageReceiver] = []
+        try _registry.mutate { registry in
+            guard !registry.isStopped, case .inactive = registry.handoff else {
+                throw ProgrammerError(description: "RUM context ownership is already active or the SDK has stopped.")
+            }
+            let activation = ActivatedHandoff()
+            registry.handoff = .active(activation)
+            _featureStores.mutate { $0.handoffOwner = activation.owner }
+            owner = activation.owner
+            receivers = registry.features.values.map { $0.messageReceiver }
+        }
+        // The mutation above always issues an Owner or throws.
+        guard let owner else {
+            throw ProgrammerError(description: "RUM context ownership could not be activated.")
+        }
+        receivers.forEach { ($0 as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: owner, active: true) }
+        bus.notifyOperationBusMode(receivers: receivers, owner: owner, active: true)
+        return owner
+    }
+
+    func deactivateRUMContextHandoff(owner: RUMContextHandoff.Owner) {
+        var receivers: [FeatureMessageReceiver] = []
+        var retiredHandoff: ActivatedHandoff?
+        _registry.mutate { registry in
+            guard case let .active(activation) = registry.handoff, activation.owner === owner else {
+                return
+            }
+            owner.invalidate()
+            retiredHandoff = activation
+            registry.handoff = .inactive
+            _featureStores.mutate { stores in
+                if stores.handoffOwner === owner {
+                    stores.handoffOwner = nil
+                }
+            }
+            receivers = registry.features.values.map { $0.messageReceiver }
+        }
+        receivers.forEach { ($0 as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: owner, active: false) }
+        bus.notifyOperationBusMode(receivers: receivers, owner: owner, active: false)
+        retiredHandoff?.retire()
+    }
 
     /// The core context provider.
     internal let contextProvider: DatadogContextProvider
@@ -296,8 +425,8 @@ internal final class DatadogCore {
     }
 
     private var allDataStores: [DataStore] {
-        features.values.compactMap { feature in
-            let featureType = type(of: feature) as DatadogFeature.Type
+        registry.features.values.compactMap { entry in
+            let featureType = type(of: entry.feature) as DatadogFeature.Type
             return scope(for: featureType).dataStore
         }
     }
@@ -333,9 +462,35 @@ internal final class DatadogCore {
     /// Stops all processes for this instance of the Datadog core by
     /// deallocating all Features and their storage & upload units.
     func stop() {
+        var retiredHandoff: ActivatedHandoff?
+        var owner: RUMContextHandoff.Owner?
+        var receivers: [FeatureMessageReceiver] = []
+        var stoppedFeatures: [String: RegisteredFeature] = [:]
+        _registry.mutate { registry in
+            stoppedFeatures = registry.features
+            registry.isStopped = true
+            if case let .active(activation) = registry.handoff {
+                activation.owner.invalidate()
+                retiredHandoff = activation
+                owner = activation.owner
+                receivers = registry.features.values.map { $0.messageReceiver }
+                registry.handoff = .stopped
+            }
+            registry.features = [:]
+        }
+        if let owner {
+            receivers.forEach { ($0 as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: owner, active: false) }
+            bus.notifyOperationBusMode(receivers: receivers, owner: owner, active: false)
+            stoppedFeatures.keys.forEach { bus.removeReceiver(forKey: $0) }
+            stoppedFeatures.values.forEach { ($0.feature as? RUMOperationFeatureRetiring)?.retireOperationOrigin() }
+            retiredHandoff?.retire()
+        }
         remoteConfigurationProvider?.stop()
-        stores = [:]
-        features = [:]
+        _featureStores.mutate { stores in
+            stores.entries = [:]
+            stores.handoffOwner = nil
+        }
+        withExtendedLifetime(stoppedFeatures) {}
     }
 }
 
@@ -350,6 +505,24 @@ extension DatadogCore: DatadogCoreProtocol {
     ///
     /// - Parameter feature: The Feature instance.
     func register<T>(feature: T) throws where T: DatadogFeature {
+        try register(feature: feature, expectedOwner: nil)
+    }
+
+    func registerRUMContextHandoff<T>(feature: T, owner: RUMContextHandoff.Owner) throws where T: DatadogFeature {
+        try register(feature: feature, expectedOwner: owner)
+    }
+
+    private func register<T>(feature: T, expectedOwner: RUMContextHandoff.Owner?) throws where T: DatadogFeature {
+        var createdStore: (storage: FeatureStorage, upload: FeatureUpload)?
+        if let expectedOwner {
+            // Reject stale/foreign transactions before constructing storage/upload.
+            try _registry.mutate { registry in
+                guard case let .active(activation) = registry.handoff,
+                      activation.owner === expectedOwner, expectedOwner.isValid else {
+                    throw ProgrammerError(description: "RUM context ownership expired before feature registration.")
+                }
+            }
+        }
         if let feature = feature as? DatadogRemoteFeature {
             let featureDirectories = try directory.getFeatureDirectories(forFeatureNamed: T.name)
 
@@ -383,18 +556,86 @@ extension DatadogCore: DatadogCoreProtocol {
                 telemetry: telemetry
             )
 
-            stores[T.name] = (
-                storage: storage,
-                upload: upload
-            )
-
-            // If there is any persisted data recorded with `.pending` consent,
-            // it should be deleted on Feature startup:
-            storage.clearUnauthorizedData()
+            createdStore = (storage: storage, upload: upload)
+            if expectedOwner == nil {
+                // Preserve the legacy registration order for Off/custom features.
+                stores[T.name] = createdStore
+                storage.clearUnauthorizedData()
+            }
         }
 
-        features[T.name] = feature
-        add(messageReceiver: feature.messageReceiver, forKey: T.name)
+        let messageReceiver = feature.messageReceiver
+        var owner: RUMContextHandoff.Owner?
+        var registeredHandoff: ActivatedHandoff?
+        var replacedFeature: RegisteredFeature?
+        var replacedStore: (storage: FeatureStorage, upload: FeatureUpload)?
+        do {
+            try _registry.mutate { registry in
+                switch registry.handoff {
+                case .inactive:
+                    break
+                case let .active(activation):
+                    owner = activation.owner
+                    registeredHandoff = activation
+                case .stopped:
+                    throw ProgrammerError(description: "Cannot register a feature in a stopped scene-tracking SDK.")
+                }
+                if let expectedOwner {
+                    guard owner === expectedOwner, expectedOwner.isValid else {
+                        throw ProgrammerError(description: "RUM context ownership expired before feature registration.")
+                    }
+                }
+                if expectedOwner != nil, let createdStore {
+                    // The On transaction keeps its store private until this commit.
+                    // Retain the displaced store so destruction occurs after unlock.
+                    _featureStores.mutate { stores in
+                        replacedStore = stores.entries.updateValue(createdStore, forKey: T.name)
+                    }
+                }
+                replacedFeature = registry.features.updateValue(
+                    RegisteredFeature(feature: feature, messageReceiver: messageReceiver), forKey: T.name
+                )
+            }
+        } catch {
+            if let createdStore {
+                _featureStores.mutate { stores in
+                    if stores.entries[T.name]?.storage.authorizedFilesOrchestrator === createdStore.storage.authorizedFilesOrchestrator {
+                        stores.entries[T.name] = nil
+                    }
+                }
+            }
+            throw error
+        }
+        withExtendedLifetime(replacedFeature) {}
+        withExtendedLifetime(replacedStore) {}
+        if expectedOwner != nil {
+            createdStore?.storage.clearUnauthorizedData()
+        }
+        if let owner {
+            if let displaced = replacedFeature?.feature as? RUMOperationFeatureRetiring,
+               (feature as AnyObject) !== displaced {
+                displaced.retireOperationOrigin()
+                registeredHandoff?.detach(displaced)
+            }
+            if let participant = feature as? RUMOperationFeatureRetiring {
+                registeredHandoff?.attach(participant)
+            }
+            (messageReceiver as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: owner, active: true)
+            bus.connect(messageReceiver, forKey: T.name, while: owner)
+            contextProvider.read { [weak self] context in
+                guard let self else {
+                    return
+                }
+                self.bus.queue.async {
+                    guard owner.isValid else {
+                        return
+                    }
+                    _ = messageReceiver.receive(message: .context(context), from: self)
+                }
+            }
+        } else {
+            add(messageReceiver: messageReceiver, forKey: T.name)
+        }
     }
 
     /// Retrieves a Feature by its name and type.
@@ -409,7 +650,7 @@ extension DatadogCore: DatadogCoreProtocol {
     ///   - type: The Feature instance type.
     /// - Returns: The Feature if any.
     func feature<T>(named name: String, type: T.Type) -> T? {
-        features[name] as? T
+        registry.features[name]?.feature as? T
     }
 
     func scope<Feature>(for featureType: Feature.Type) -> FeatureScope where Feature: DatadogFeature {
@@ -429,7 +670,16 @@ extension DatadogCore: DatadogCoreProtocol {
     }
 }
 
-internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope where Feature: DatadogFeature {
+internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope, RUMContextHandoffOwnerProviding, RUMOperationScopeProviding where Feature: DatadogFeature {
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? { core?.rumContextHandoffOwner }
+
+    func operationOrigin(for monitor: AnyObject) -> RUMOperationOrigin? {
+        guard let core, let provider = core.feature(named: DatadogInternal.Feature.rum, type: RUMOperationOriginProviding.self),
+              provider.isOperationMonitor(monitor),
+              let origin = provider.operationOrigin, origin.isCurrent else { return nil }
+        return origin
+    }
+
     private weak var core: DatadogCore?
     private let store: FeatureDataStore
 
@@ -632,7 +882,7 @@ extension DatadogCore: Flushable {
         // Reset baggages that need not be persisted across flushes.
         removeContext(ofType: LaunchReport.self)
 
-        let features = features.values.compactMap { $0 as? Flushable }
+        let features = registry.features.values.compactMap { $0.feature as? Flushable }
 
         // The flushing is repeated few times, to make sure that operations spawned from other operations
         // on these queues are also awaited. Effectively, this is no different than short-time sleep() on current

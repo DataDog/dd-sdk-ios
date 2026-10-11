@@ -15,6 +15,28 @@ internal protocol UIScrollViewHandler: RUMCommandPublisher {
     func notify_scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate: Bool)
     /// Gets called on `scrollViewDidEndDecelerating(_:)`.
     func notify_scrollViewDidEndDecelerating(_ scrollView: UIScrollView)
+
+    /// Encloses notification and the weak original delegate call without escaping it.
+    func interceptWillBeginDragging(_ scrollView: UIScrollView, operation: () -> Void)
+    func interceptDidEndDragging(_ scrollView: UIScrollView, willDecelerate: Bool, operation: () -> Void)
+    func interceptDidEndDecelerating(_ scrollView: UIScrollView, operation: () -> Void)
+}
+
+internal extension UIScrollViewHandler {
+    func interceptWillBeginDragging(_ scrollView: UIScrollView, operation: () -> Void) {
+        notify_scrollViewWillBeginDragging(scrollView)
+        operation()
+    }
+
+    func interceptDidEndDragging(_ scrollView: UIScrollView, willDecelerate: Bool, operation: () -> Void) {
+        notify_scrollViewDidEndDragging(scrollView, willDecelerate: willDecelerate)
+        operation()
+    }
+
+    func interceptDidEndDecelerating(_ scrollView: UIScrollView, operation: () -> Void) {
+        notify_scrollViewDidEndDecelerating(scrollView)
+        operation()
+    }
 }
 
 #endif
