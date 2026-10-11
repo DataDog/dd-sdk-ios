@@ -8,7 +8,11 @@ import XCTest
 
 #if !os(watchOS)
 
-import DatadogInternal
+@_spi(Internal) import DatadogInternal
+@_spi(Internal) @testable import DatadogCore
+#if os(iOS)
+import UIKit
+#endif
 //swiftlint:disable duplicate_imports
 import DatadogMachProfiler
 import DatadogMachProfiler.Testing
@@ -448,6 +452,621 @@ private extension ProfilingRUMIntegrationTests {
             dd_profiler_get_status() == expected
         }, andThenFulfill: expectation)
         waitForExpectations(timeout: 1.0)
+    }
+}
+
+#endif
+
+#if os(iOS)
+
+private struct StoredOperationEvent: Codable {
+    let data: Data
+    let metadata: Data?
+}
+
+private struct CaptureDecoderControl: Codable {
+    let file: String
+    let raw: Data?
+    let deletionAttempts: [String]
+    let returnedBatch: Bool
+    let fileRetained: Bool
+    let rejectedInventory: [StoredOperationBatch]
+    let unreadableInventory: [StoredOperationBatch]
+}
+
+private enum OperationBatchReadStatus: String, Codable {
+    case notAttempted
+    case rawReadFailed
+    case decodeRejected
+    case rawChanged
+    case decoded
+}
+
+private struct StoredOperationBatch: Codable {
+    let file: String
+    let raw: Data?
+    let readStatus: OperationBatchReadStatus
+    let events: [StoredOperationEvent]
+
+    private enum CodingKeys: String, CodingKey { case file, raw, readStatus, events }
+
+    func encode(to encoder: Encoder) throws {
+        var values = encoder.container(keyedBy: CodingKeys.self)
+        try values.encode(file, forKey: .file)
+        if let raw {
+            try values.encode(raw, forKey: .raw)
+        } else {
+            try values.encodeNil(forKey: .raw)
+        }
+        try values.encode(readStatus, forKey: .readStatus)
+        try values.encode(events, forKey: .events)
+    }
+}
+
+
+
+private final class OperationReadOnlyOrchestrator: FilesOrchestratorType {
+    enum Failure: Error { case writeDuringCapture }
+    let original: FilesOrchestratorType
+    let directory: Directory
+    private(set) var enumerationFailed = false
+    private(set) var deletionAttempts: [String] = []
+
+    init(original: FilesOrchestratorType, directory: Directory) {
+        self.original = original
+        self.directory = directory
+    }
+
+    var performance: StoragePerformancePreset { original.performance }
+    var trackName: String { original.trackName }
+    var ignoreFilesAgeWhenReading: Bool {
+        get { original.ignoreFilesAgeWhenReading }
+        set { original.ignoreFilesAgeWhenReading = newValue }
+    }
+
+    func getWritableFile(writeSize: UInt64) throws -> WritableFile {
+        throw Failure.writeDuringCapture
+    }
+
+    // Forensic inventory includes every original file; it never purges obsolete files.
+    func getReadableFiles(excludingFilesNamed excluded: Set<String>, limit: Int) -> [ReadableFile] {
+        do {
+            return try directory.files()
+                .filter { !excluded.contains($0.name) }
+                .sorted { fileCreationDateFrom(fileName: $0.name) < fileCreationDateFrom(fileName: $1.name) }
+                .prefix(limit).map { $0 as ReadableFile }
+        } catch {
+            enumerationFailed = true
+            return []
+        }
+    }
+
+    func delete(readableFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason) {
+        deletionAttempts.append(readableFile.name)
+    }
+}
+
+private final class OperationSnapshotReader: Reader {
+    let reader: FileReader
+    let orchestrator: OperationReadOnlyOrchestrator
+    private(set) var rawFiles: [String: Data] = [:]
+    private(set) var filesInEnumerationOrder: [String] = []
+    private(set) var filesInReadOrder: [String] = []
+    private(set) var readStatuses: [String: OperationBatchReadStatus] = [:]
+    private(set) var captureFailed = false
+
+    init(storage: FeatureStorage, directory: Directory? = nil) {
+        orchestrator = OperationReadOnlyOrchestrator(original: storage.authorizedFilesOrchestrator,
+                                                     directory: directory ?? storage.directories.authorized)
+        reader = FileReader(orchestrator: orchestrator,
+                            encryption: storage.encryption, telemetry: storage.telemetry)
+    }
+
+    func readFiles(limit: Int) -> [ReadableFile] {
+        let files = reader.readFiles(limit: limit)
+        for file in files where !filesInEnumerationOrder.contains(file.name) {
+            filesInEnumerationOrder.append(file.name)
+            readStatuses[file.name] = .notAttempted
+        }
+        if orchestrator.enumerationFailed { captureFailed = true }
+        return files
+    }
+
+    // DataReader invokes this on the original storage queue, excluding concurrent writes.
+    func readBatch(from file: ReadableFile) -> Batch? {
+        filesInReadOrder.append(file.name)
+        readStatuses[file.name] = .rawReadFailed
+        do {
+            guard !file.name.contains("/") else { captureFailed = true; return nil }
+            let url = orchestrator.directory.url.appendingPathComponent(file.name)
+            let before = try Data(contentsOf: url)
+            rawFiles[file.name] = before
+            readStatuses[file.name] = .decodeRejected
+            guard let batch = reader.readBatch(from: file),
+                  orchestrator.deletionAttempts.isEmpty else {
+                captureFailed = true
+                return nil
+            }
+            readStatuses[file.name] = .rawChanged
+            guard before == (try Data(contentsOf: url)) else {
+                captureFailed = true
+                return nil
+            }
+            readStatuses[file.name] = .decoded
+            return batch
+        } catch {
+            captureFailed = true
+            return nil
+        }
+    }
+
+    func partialBatches(decoded: [StoredOperationBatch]) -> [StoredOperationBatch] {
+        let inventory = filesInEnumerationOrder
+            + filesInReadOrder.filter { !filesInEnumerationOrder.contains($0) }
+        return inventory.map { file in
+            decoded.first { $0.file == file }
+                ?? StoredOperationBatch(file: file, raw: rawFiles[file],
+                    readStatus: readStatuses[file] ?? .notAttempted, events: [])
+        }
+    }
+
+    func markFileAsRead(_ file: ReadableFile, reason: BatchDeletedMetric.RemovalReason) {
+        captureFailed = true
+        XCTFail("Evidence capture must not consume stored batches")
+    }
+}
+
+@MainActor
+private final class OperationProfileStorageFixture {
+    enum Failure: Error {
+        case hostNotReady
+        case storeChanged
+        case unreadableBatch
+        case conditionNotReached
+    }
+
+    let core: DatadogCore
+    let window: UIWindow
+    let scene: UIWindowScene
+    let monitor: Monitor
+    let resolvedOn: Bool
+    private let root: UIViewController
+    private let directory: URL
+    private let stores: [String: (storage: FeatureStorage, upload: FeatureUpload)]
+    private(set) var partialCapture: [String: [StoredOperationBatch]] = [:]
+    private var nativeCleanedUp = false
+
+    static var hostIsReady: Bool { hostedWindow() != nil }
+
+    private static func hostedWindow() -> (UIWindowScene, UIWindow, UIViewController)? {
+        guard UIApplication.shared.applicationState == .active else { return nil }
+        let matches = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+            .filter { $0.activationState == .foregroundActive }
+            .flatMap { scene in
+                scene.windows.filter { $0.accessibilityIdentifier == "operation-profile-test-window" }
+                    .map { (scene, $0) }
+            }
+        guard matches.count == 1, let (scene, window) = matches.first,
+              window.windowScene === scene, window.isKeyWindow,
+              let root = window.rootViewController, !window.isHidden,
+              window.bounds.width > 0, window.bounds.height > 0 else { return nil }
+        return (scene, window, root)
+    }
+
+    init(expectedOn: Bool) throws {
+        guard let (scene, window, root) = Self.hostedWindow() else { throw Failure.hostNotReady }
+        self.scene = scene
+        self.window = window
+        self.root = root
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("operation-profile-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: false)
+        self.directory = directory
+        var configuration = Datadog.Configuration(
+            clientToken: "local-operation-fixture", env: "tests", service: "operation-profile-fixture"
+        )
+        configuration.version = "1.0"
+        configuration.systemDirectory = { Directory(url: directory) }
+        configuration.httpClientFactory = { _ in HTTPClientMock(error: URLError(.notConnectedToInternet)) }
+        configuration.serverDateProvider = ServerDateProviderMock()
+        configuration.backgroundTasksEnabled = false
+        let core: DatadogCore
+        do {
+            core = try DatadogCore(
+                configuration: configuration, trackingConsent: .granted,
+                instanceName: "operation-profile-\(UUID().uuidString)"
+            )
+        } catch {
+            try? FileManager.default.removeItem(at: directory)
+            throw error
+        }
+        self.core = core
+        do {
+            var rum = RUM.Configuration(applicationID: "local-operation-fixture")
+            rum.sessionSampleRate = 100
+            rum.featureFlags[.multiSceneTracking] = true
+            guard !rum.debugSDK else { throw Failure.hostNotReady }
+            try RUM.enableOrThrow(with: rum, in: core)
+            let profiling = Profiling.Configuration(
+                applicationLaunchSampleRate: 0, continuousSampleRate: 0
+            )
+            guard !profiling.debugSDK,
+                  profiling.minProfileDuration == DatadogProfiler.Constants.minProfileDuration else {
+                throw Failure.hostNotReady
+            }
+            try Profiling.enableOrThrow(with: profiling, in: core)
+            let feature = try XCTUnwrap(core.get(feature: RUMFeature.self))
+            _ = try XCTUnwrap(core.get(feature: ProfilerFeature.self))
+            monitor = feature.monitor
+            let actualOn = feature.isMultiSceneTrackingEnabled
+            resolvedOn = actualOn
+            guard actualOn == expectedOn else { throw Failure.hostNotReady }
+            if expectedOn {
+                let owner = try XCTUnwrap(core.rumContextHandoffOwner)
+                guard owner.isValid, feature.rumContextHandoffOwner === owner,
+                      feature.operationOrigin?.isCurrent == true else { throw Failure.hostNotReady }
+            } else {
+                guard core.rumContextHandoffOwner == nil,
+                      feature.operationOrigin == nil else { throw Failure.hostNotReady }
+            }
+            stores = core.stores
+            for store in stores.values { store.upload.uploader.cancelSynchronously() }
+            core.flush()
+            DatadogProfiler.defaultQueue.sync { }
+            core.flush()
+            DatadogProfiler.defaultQueue.sync { }
+        } catch {
+            for store in core.stores.values { store.upload.uploader.cancelSynchronously() }
+            core.stop()
+            DatadogProfiler.defaultQueue.sync { }
+            dd_profiler_stop()
+            dd_profiler_destroy()
+            dd_delete_profiling_defaults()
+            try? FileManager.default.removeItem(at: directory)
+            throw error
+        }
+    }
+
+    func drain() {
+        core.flush()
+        DatadogProfiler.defaultQueue.sync { }
+        core.flush()
+        DatadogProfiler.defaultQueue.sync { }
+    }
+
+    func verifyReadOnlyCaptureControl() throws -> CaptureDecoderControl {
+        let pair = try XCTUnwrap(stores[RUMFeature.name])
+        let url = directory.appendingPathComponent("decoder-control", isDirectory: true)
+        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: false)
+        defer { try? FileManager.default.removeItem(at: url) }
+        let controlDirectory = Directory(url: url)
+        let date = Date()
+        let (file, later) = try pair.storage.queue.sync {
+            (try controlDirectory.createFile(named: fileNameFrom(fileCreationDate: date)),
+             try controlDirectory.createFile(named: fileNameFrom(fileCreationDate: date.addingTimeInterval(1))))
+        }
+        let snapshot = OperationSnapshotReader(storage: pair.storage, directory: controlDirectory)
+        let reader = DataReader(readWriteQueue: pair.storage.queue, fileReader: snapshot)
+        XCTAssertEqual(reader.readFiles(limit: .max).map(\.name), [file.name, later.name])
+        let batch = reader.readBatch(from: file)
+        XCTAssertNil(batch)
+        XCTAssertTrue(snapshot.captureFailed)
+        XCTAssertEqual(snapshot.orchestrator.deletionAttempts, [file.name])
+        XCTAssertEqual(snapshot.rawFiles[file.name], Data())
+        let retained = FileManager.default.fileExists(atPath: url.appendingPathComponent(file.name).path)
+        XCTAssertTrue(retained)
+        let rejected = snapshot.partialBatches(decoded: [])
+        XCTAssertEqual(rejected.map(\.file), [file.name, later.name])
+        XCTAssertEqual(rejected.map(\.readStatus), [.decodeRejected, .notAttempted])
+        XCTAssertEqual(rejected.first?.raw, Data())
+        XCTAssertNil(rejected.last?.raw)
+
+        let unreadable = OperationSnapshotReader(storage: pair.storage, directory: controlDirectory)
+        let unreadableReader = DataReader(readWriteQueue: pair.storage.queue, fileReader: unreadable)
+        let enumerated = unreadableReader.readFiles(limit: .max)
+        let missing = try XCTUnwrap(enumerated.last)
+        try pair.storage.queue.sync {
+            try FileManager.default.removeItem(at: url.appendingPathComponent(missing.name))
+        }
+        XCTAssertNil(unreadableReader.readBatch(from: missing))
+        XCTAssertTrue(unreadable.captureFailed)
+        let unreadableInventory = unreadable.partialBatches(decoded: [])
+        XCTAssertEqual(unreadableInventory.map(\.file), [file.name, later.name])
+        XCTAssertEqual(unreadableInventory.map(\.readStatus), [.notAttempted, .rawReadFailed])
+        XCTAssertNil(unreadableInventory.last?.raw)
+        let encoded = try JSONEncoder().encode(unreadableInventory)
+        let encodedRows = try XCTUnwrap(try JSONSerialization.jsonObject(with: encoded) as? [[String: Any]])
+        XCTAssertTrue(encodedRows.allSatisfy { $0["raw"] is NSNull })
+
+        return CaptureDecoderControl(file: file.name, raw: snapshot.rawFiles[file.name],
+            deletionAttempts: snapshot.orchestrator.deletionAttempts,
+            returnedBatch: batch != nil, fileRetained: retained,
+            rejectedInventory: rejected, unreadableInventory: unreadableInventory)
+    }
+
+    func capture() throws -> [String: [StoredOperationBatch]] {
+        guard Set(stores.keys) == Set(core.stores.keys) else { throw Failure.storeChanged }
+        drain()
+        var result: [String: [StoredOperationBatch]] = [:]
+        for (name, pair) in stores {
+            guard let current = core.stores[name],
+                  current.storage.authorizedFilesOrchestrator === pair.storage.authorizedFilesOrchestrator else {
+                throw Failure.storeChanged
+            }
+            let storage = pair.storage
+            let originalAge = storage.queue.sync {
+                storage.authorizedFilesOrchestrator.ignoreFilesAgeWhenReading
+            }
+            let snapshot = OperationSnapshotReader(storage: storage)
+            let reader = DataReader(readWriteQueue: storage.queue, fileReader: snapshot)
+            let files = reader.readFiles(limit: .max)
+            var batches: [StoredOperationBatch] = []
+            defer {
+                partialCapture[name] = snapshot.partialBatches(decoded: batches)
+            }
+            guard !snapshot.captureFailed else { throw Failure.unreadableBatch }
+            for file in files {
+                guard let batch = reader.readBatch(from: file), !snapshot.captureFailed,
+                      let bytes = snapshot.rawFiles[file.name] else {
+                    throw Failure.unreadableBatch
+                }
+                batches.append(.init(file: file.name, raw: bytes, readStatus: .decoded,
+                    events: batch.events.map { StoredOperationEvent(data: $0.data, metadata: $0.metadata) }))
+            }
+            guard Set(reader.readFiles(limit: .max).map(\.name)) == Set(files.map(\.name)),
+                  !snapshot.captureFailed,
+                  storage.queue.sync(execute: {
+                      storage.authorizedFilesOrchestrator.ignoreFilesAgeWhenReading == originalAge
+                  }) else {
+                throw Failure.storeChanged
+            }
+            result[name] = batches
+        }
+        return result
+    }
+
+    func context() throws -> RUMCoreContext {
+        drain()
+        return try XCTUnwrap(core.contextProvider.read().additionalContext(ofType: RUMCoreContext.self))
+    }
+
+    func verifyHost() throws {
+        guard window.windowScene === scene, window.rootViewController === root,
+              window.isKeyWindow, scene.activationState == .foregroundActive,
+              UIApplication.shared.applicationState == .active, !window.isHidden,
+              window.bounds.width > 0, window.bounds.height > 0 else { throw Failure.hostNotReady }
+    }
+
+    func hostInventory() -> [[String: Any]] {
+        UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.map { scene in
+            ["scene": scene.session.persistentIdentifier, "state": scene.activationState.rawValue,
+             "windows": scene.windows.map { window in
+                 ["identity": String(describing: ObjectIdentifier(window)),
+                  "fixtureOwned": window === self.window, "key": window.isKeyWindow,
+                  "hidden": window.isHidden, "root": window.rootViewController.map {
+                      String(describing: ObjectIdentifier($0))
+                  } ?? "", "bounds": NSStringFromCGRect(window.bounds)]
+             }]
+        }
+    }
+
+    func stop() throws {
+        for store in stores.values { store.upload.uploader.cancelSynchronously() }
+        drain()
+        let owner = core.rumContextHandoffOwner
+        core.stop()
+        XCTAssertFalse(owner?.isValid ?? false)
+        drain()
+        destroyNativeProfiler()
+        try FileManager.default.removeItem(at: directory)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: directory.path))
+    }
+
+    func destroyNativeProfiler() {
+        guard !nativeCleanedUp else { return }
+        DatadogProfiler.defaultQueue.sync { }
+        dd_profiler_stop()
+        dd_profiler_destroy()
+        dd_delete_profiling_defaults()
+        nativeCleanedUp = true
+    }
+}
+
+final class OriginalOperationProfileIntegrationTests: XCTestCase {
+    @MainActor
+    func testManualOperationWithSceneTracking_keepsOriginalProfileAttribution() async throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Scene ownership requires iOS 27") }
+        try await exerciseManualOperation(expectedOn: true)
+    }
+
+    @MainActor
+    func testRequestedSceneTrackingOnOlderSystem_keepsLegacyOperationProfile() async throws {
+        if #available(iOS 27.0, *) { throw XCTSkip("This control requires the older runtime") }
+        try await exerciseManualOperation(expectedOn: false)
+    }
+
+    @MainActor
+    private func exerciseManualOperation(expectedOn: Bool) async throws {
+        dd_profiler_stop()
+        dd_profiler_destroy()
+        dd_delete_profiling_defaults()
+        try await eventually { OperationProfileStorageFixture.hostIsReady }
+        let fixture = try OperationProfileStorageFixture(expectedOn: expectedOn)
+        defer {
+            attach(fixture.partialCapture, name: "partial-storage-before-terminal-read")
+            do {
+                let final = try fixture.capture()
+                attach(final, name: "terminal-storage")
+            } catch {
+                XCTFail("Terminal storage capture was incomplete")
+            }
+            attach(fixture.partialCapture, name: "partial-storage-after-terminal-read")
+            do { try fixture.stop() } catch { XCTFail("Owned directory cleanup failed") }
+            fixture.destroyNativeProfiler()
+        }
+        if expectedOn {
+            attach(try fixture.verifyReadOnlyCaptureControl(), name: "non-consuming-decoder-control")
+        }
+        attach(fixture.hostInventory(), name: "initial-window-inventory")
+        let monitor: RUMMonitorProtocol = fixture.monitor
+        XCTAssertNil(fixture.monitor.currentExecutionContext)
+        monitor.startView(key: "operation-start", name: "Operation Start")
+        let start = try fixture.context()
+        _ = try XCTUnwrap(start.viewID)
+        dd_profiler_start()
+        guard dd_profiler_get_status() == DD_PROFILER_STATUS_RUNNING else {
+            throw OperationProfileStorageFixture.Failure.conditionNotReached
+        }
+        let operationKey = UUID().uuidString
+        monitor.startOperation(name: "stored-operation", operationKey: operationKey,
+            attributes: ["fixture_phase": "start"], options: ProfilingOptions(sampleRate: 100))
+        fixture.drain()
+        guard dd_profiler_get_status() == DD_PROFILER_STATUS_RUNNING else {
+            throw OperationProfileStorageFixture.Failure.conditionNotReached
+        }
+        monitor.startView(key: "operation-end", name: "Operation End")
+        let end = try fixture.context()
+        _ = try XCTUnwrap(end.viewID)
+        XCTAssertEqual(start.sessionID, end.sessionID)
+        XCTAssertNotEqual(start.viewID, end.viewID)
+        monitor.succeedOperation(name: "stored-operation", operationKey: operationKey,
+            attributes: ["fixture_phase": "end"])
+        fixture.drain()
+
+        if expectedOn {
+            guard try fixture.capture()[ProfilerFeature.name]?.flatMap(\.events).isEmpty == true else {
+                throw OperationProfileStorageFixture.Failure.conditionNotReached
+            }
+            monitor.startView(key: "later-representative", name: "Later Representative")
+            let later = try fixture.context()
+            XCTAssertNotEqual(later.viewID, end.viewID)
+        }
+
+        try await eventually {
+            try fixture.capture()[ProfilerFeature.name]?.flatMap(\.events).isEmpty == false
+        }
+        let inventory = try fixture.capture()
+        attach(inventory, name: "decisive-storage")
+        attach(fixture.hostInventory(), name: "final-window-inventory")
+        try fixture.verifyHost()
+        let rumRows = try rows(inventory[RUMFeature.name] ?? [])
+        let steps = rumRows.filter {
+            guard let vital = $0["vital"] as? [String: Any] else { return false }
+            return vital["name"] as? String == "stored-operation"
+                && vital["operation_key"] as? String == operationKey
+                && vital["type"] as? String == "operation_step"
+        }
+        XCTAssertEqual(steps.count, 2)
+        let startStep = try onlyStep(steps, type: "start")
+        let endStep = try onlyStep(steps, type: "end")
+        try assertStep(startStep, context: start, phase: "start")
+        try assertStep(endStep, context: end, phase: "end")
+        let profileEvents = inventory[ProfilerFeature.name]?.flatMap(\.events) ?? []
+        XCTAssertEqual(profileEvents.count, 1)
+        let event = try XCTUnwrap(profileEvents.first)
+        let profile = try object(event.data)
+        XCTAssertEqual(profile[RUMCoreContext.IDs.sessionID] as? String, end.sessionID)
+        XCTAssertEqual(profile[RUMCoreContext.IDs.viewID] as? [String], [try XCTUnwrap(end.viewID)])
+        XCTAssertEqual(profile[RUMCoreContext.IDs.viewName] as? [String], [try XCTUnwrap(end.viewName)])
+        XCTAssertNil(profile[RUMCoreContext.IDs.userActionID])
+        XCTAssertEqual(profile["family"] as? String, "ios")
+        let tags = try XCTUnwrap(profile["tags_profiler"] as? String)
+        XCTAssertTrue(tags.split(separator: ",").contains("service:operation-profile-fixture"))
+        XCTAssertTrue(tags.split(separator: ",").contains("version:1.0"))
+        XCTAssertTrue(tags.split(separator: ",").contains("operation:custom"))
+
+        let metadata = try XCTUnwrap(event.metadata)
+        let attachment = try JSONDecoder().decode(ProfileAttachments.self, from: metadata)
+        XCTAssertFalse(attachment.pprof.isEmpty)
+        XCTAssertEqual(profile["attachments"] as? [String],
+            [ProfileAttachments.Constants.pprofFilename, ProfileAttachments.Constants.rumEventsFilename])
+        let attached = try XCTUnwrap(try JSONSerialization.jsonObject(
+            with: XCTUnwrap(attachment.rumEvents)) as? [[String: Any]])
+        let startVitalID = try XCTUnwrap((startStep["vital"] as? [String: Any])?["id"] as? String)
+        let selected = attached.filter { $0["id"] as? String == startVitalID }
+        XCTAssertEqual(selected.count, 1)
+        let vital = try XCTUnwrap(selected.first)
+        XCTAssertEqual(vital["type"] as? String, "vital")
+        XCTAssertEqual(vital["name"] as? String, "stored-operation")
+        let startNanoseconds = try XCTUnwrap(vital["start_ns"] as? NSNumber).doubleValue
+        let durationNanoseconds = try XCTUnwrap(vital["duration_ns"] as? NSNumber).doubleValue
+        XCTAssertTrue(startNanoseconds.isFinite)
+        XCTAssertTrue(durationNanoseconds.isFinite)
+        XCTAssertGreaterThanOrEqual(durationNanoseconds, 0)
+        XCTAssertNil(vital["session"])
+        XCTAssertNil(vital["view"])
+        XCTAssertNil(vital["action"])
+        XCTAssertNil(vital["step_type"])
+        let endVitalID = try XCTUnwrap((endStep["vital"] as? [String: Any])?["id"] as? String)
+        XCTAssertNotEqual(startVitalID, endVitalID)
+        XCTAssertFalse(attached.contains { $0["id"] as? String == endVitalID })
+        XCTAssertEqual(profile[RUMCoreContext.IDs.vitalID] as? [String], [startVitalID])
+        XCTAssertEqual(profile[RUMCoreContext.IDs.vitalLabel] as? [String], ["stored-operation"])
+    }
+
+    @MainActor
+    private func eventually(_ condition: @escaping () throws -> Bool) async throws {
+        let deadline = Date().addingTimeInterval(30)
+        var failure: Error?
+        var completed = false
+        let done = expectation(description: "Original storage or host condition becomes available")
+        wait(until: {
+            do {
+                if try condition() { completed = true; return true }
+                if Date() >= deadline {
+                    failure = OperationProfileStorageFixture.Failure.conditionNotReached
+                    return true
+                }
+                return false
+            } catch {
+                failure = error
+                return true
+            }
+        }, andThenFulfill: done)
+        await dd_fulfillment(for: [done], timeout: 31)
+        if let failure { throw failure }
+        guard completed else { throw OperationProfileStorageFixture.Failure.conditionNotReached }
+    }
+
+    private func object(_ data: Data) throws -> [String: Any] {
+        try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+    }
+
+    private func rows(_ batches: [StoredOperationBatch]) throws -> [[String: Any]] {
+        try batches.flatMap(\.events).map { try object($0.data) }
+    }
+
+    private func onlyStep(_ rows: [[String: Any]], type: String) throws -> [String: Any] {
+        let selected = rows.filter { ($0["vital"] as? [String: Any])?["step_type"] as? String == type }
+        XCTAssertEqual(selected.count, 1)
+        return try XCTUnwrap(selected.first)
+    }
+
+    private func assertStep(_ row: [String: Any], context: RUMCoreContext, phase: String) throws {
+        XCTAssertEqual((row["session"] as? [String: Any])?["id"] as? String, context.sessionID)
+        XCTAssertEqual((row["view"] as? [String: Any])?["id"] as? String, context.viewID)
+        XCTAssertEqual((row["view"] as? [String: Any])?["url"] as? String, context.viewPath)
+        XCTAssertEqual((row["context"] as? [String: Any])?["fixture_phase"] as? String, phase)
+    }
+
+    private func attach<T: Encodable>(_ value: T, name: String) {
+        do {
+            let attachment = XCTAttachment(data: try JSONEncoder().encode(value),
+                uniformTypeIdentifier: "public.json")
+            attachment.name = name
+            attachment.lifetime = .keepAlways
+            add(attachment)
+        } catch { XCTFail("Evidence attachment encoding failed") }
+    }
+
+    private func attach(_ value: [[String: Any]], name: String) {
+        do {
+            let attachment = XCTAttachment(data: try JSONSerialization.data(withJSONObject: value),
+                uniformTypeIdentifier: "public.json")
+            attachment.name = name
+            attachment.lifetime = .keepAlways
+            add(attachment)
+        } catch { XCTFail("Window inventory attachment encoding failed") }
     }
 }
 

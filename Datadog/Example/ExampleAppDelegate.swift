@@ -32,7 +32,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         if Environment.isRunningUnitTests() {
-            return false
+            return true
         }
 
         // Initialize Datadog SDK
@@ -161,3 +161,20 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         window?.rootViewController = storyboard.instantiateInitialViewController()!
     }
 }
+
+#if os(iOS)
+final class OperationProfileSceneDelegate: UIResponder, UIWindowSceneDelegate {
+    var window: UIWindow?
+
+    func scene(_ scene: UIScene, willConnectTo session: UISceneSession,
+               options connectionOptions: UIScene.ConnectionOptions) {
+        guard let scene = scene as? UIWindowScene else { return }
+        let window = UIWindow(windowScene: scene)
+        window.accessibilityIdentifier = "operation-profile-test-window"
+        window.rootViewController = UIViewController()
+        window.rootViewController?.view.backgroundColor = .systemBackground
+        self.window = window
+        window.makeKeyAndVisible()
+    }
+}
+#endif
