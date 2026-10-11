@@ -7,6 +7,7 @@
 #if !os(watchOS)
 
 import XCTest
+import MachO
 import DatadogInternal
 import TestUtilities
 
@@ -452,6 +453,116 @@ final class ProfilingQuotaCheckerTests: XCTestCase {
         XCTAssertEqual(server.waitAndReturnRequests(count: 2).count, 2)
     }
 
+
+    func testSessionChange_resetsQuotaAndAllowsReentrantContextDelivery() throws {
+        let session = ControlledQuotaSession()
+        let provider = ProfilingSamplerProvider(continuousSampleRate: 100)
+        provider.updateWith(deterministicSampler: DeterministicSampler(seed: 1, samplingRate: 100))
+        let checker = ProfilingQuotaChecker(profilingSamplerProvider: provider, urlSession: session)
+        let core = PassthroughCoreMock()
+        defer {
+            checker.onQuotaResultUpdate = nil
+            session.invalidateAndCancel()
+        }
+        let firstSessionID = UUID()
+        let secondSessionID = UUID()
+        let first = quotaContext(sessionID: firstSessionID)
+        let second = quotaContext(sessionID: secondSessionID)
+        let currentContext = ReadWriteLock(wrappedValue: first)
+        let updates = ReadWriteLock<[ProfilingQuotaResult?]>(wrappedValue: [])
+        let snapshots = ReadWriteLock<[ProfilingQuotaResult?]>(wrappedValue: [])
+        checker.onQuotaResultUpdate = { result in
+            updates.mutate { $0.append(result) }
+            snapshots.mutate { $0.append(checker.quotaResult) }
+            _ = checker.receive(message: .context(currentContext.wrappedValue), from: core)
+        }
+
+        _ = checker.receive(message: .context(first), from: core)
+        XCTAssertEqual(session.tasks.count, 1)
+        let firstTask = try XCTUnwrap(session.tasks.first)
+        XCTAssertTrue(firstTask.wasResumed)
+        XCTAssertEqual(firstTask.sessionID, firstSessionID.uuidString.lowercased())
+        firstTask.complete(data: quotaResponse(admitted: false, reason: .quotaExceeded))
+
+        let rejected = ProfilingQuotaResult(decision: .quotaKO, reason: .quotaExceeded)
+        XCTAssertEqual(checker.quotaResult, rejected)
+        XCTAssertEqual(updates.wrappedValue, [rejected])
+        XCTAssertEqual(snapshots.wrappedValue, [rejected])
+        XCTAssertTrue(checker.isRejectedByQuota)
+        attachQuotaBoundary("rejected-first-session", checker: checker, session: session, updates: updates.wrappedValue,
+                            expectedSessionIDs: [firstSessionID, secondSessionID])
+
+        currentContext.mutate { $0 = second }
+        _ = checker.receive(message: .context(second), from: core)
+        XCTAssertNil(checker.quotaResult)
+        XCTAssertFalse(checker.isRejectedByQuota)
+        XCTAssertEqual(updates.wrappedValue, [rejected, nil])
+        XCTAssertEqual(snapshots.wrappedValue, [rejected, nil])
+        XCTAssertEqual(session.tasks.count, 2)
+        attachQuotaBoundary("reset-pending-second-session", checker: checker, session: session, updates: updates.wrappedValue,
+                            expectedSessionIDs: [firstSessionID, secondSessionID])
+
+        let secondTask = try XCTUnwrap(session.tasks.last)
+        XCTAssertTrue(secondTask.wasResumed)
+        XCTAssertEqual(session.tasks.map(\.sessionID), [firstSessionID, secondSessionID].map { $0.uuidString.lowercased() })
+        secondTask.complete(data: quotaResponse(admitted: true, reason: .quotaOk))
+        let admitted = ProfilingQuotaResult(decision: .quotaOK, reason: .quotaOk)
+        XCTAssertEqual(checker.quotaResult, admitted)
+        XCTAssertEqual(updates.wrappedValue, [rejected, nil, admitted])
+        XCTAssertEqual(snapshots.wrappedValue, [rejected, nil, admitted])
+        XCTAssertEqual(session.tasks.count, 2)
+        XCTAssertEqual(session.tasks.map(\.completionCount), [1, 1])
+        attachQuotaBoundary("admitted-second-session", checker: checker, session: session, updates: updates.wrappedValue,
+                            expectedSessionIDs: [firstSessionID, secondSessionID])
+    }
+
+    func testLateQuotaResponse_doesNotOverwriteNewSessionOrNotifyListener() throws {
+        for oldResponseFirst in [true, false] {
+            let session = ControlledQuotaSession()
+            let provider = ProfilingSamplerProvider(continuousSampleRate: 100)
+            provider.updateWith(deterministicSampler: DeterministicSampler(seed: 1, samplingRate: 100))
+            let checker = ProfilingQuotaChecker(profilingSamplerProvider: provider, urlSession: session)
+            let core = PassthroughCoreMock()
+            defer {
+                checker.onQuotaResultUpdate = nil
+                session.invalidateAndCancel()
+            }
+            let updates = ReadWriteLock<[ProfilingQuotaResult?]>(wrappedValue: [])
+            checker.onQuotaResultUpdate = { result in updates.mutate { $0.append(result) } }
+
+            let firstSessionID = UUID()
+            let secondSessionID = UUID()
+            _ = checker.receive(message: .context(quotaContext(sessionID: firstSessionID)), from: core)
+            _ = checker.receive(message: .context(quotaContext(sessionID: secondSessionID)), from: core)
+            XCTAssertEqual(session.tasks.count, 2)
+            XCTAssertEqual(updates.wrappedValue, [nil])
+            let firstTask = try XCTUnwrap(session.tasks.first)
+            let secondTask = try XCTUnwrap(session.tasks.last)
+            XCTAssertTrue(firstTask.wasResumed)
+            XCTAssertTrue(secondTask.wasResumed)
+            XCTAssertEqual(session.tasks.map(\.sessionID), [firstSessionID, secondSessionID].map { $0.uuidString.lowercased() })
+
+            if oldResponseFirst {
+                firstTask.complete(data: quotaResponse(admitted: true, reason: .quotaOk))
+                XCTAssertNil(checker.quotaResult)
+                XCTAssertEqual(updates.wrappedValue, [nil])
+            }
+            secondTask.complete(data: quotaResponse(admitted: false, reason: .quotaExceeded))
+            if !oldResponseFirst {
+                firstTask.complete(data: quotaResponse(admitted: true, reason: .quotaOk))
+            }
+
+            let rejected = ProfilingQuotaResult(decision: .quotaKO, reason: .quotaExceeded)
+            XCTAssertEqual(checker.quotaResult, rejected)
+            XCTAssertTrue(checker.isRejectedByQuota)
+            XCTAssertEqual(updates.wrappedValue, [nil, rejected])
+            XCTAssertEqual(session.tasks.map(\.completionCount), [1, 1])
+            attachQuotaBoundary(oldResponseFirst ? "stale-before-current" : "stale-after-current",
+                                checker: checker, session: session, updates: updates.wrappedValue,
+                            expectedSessionIDs: [firstSessionID, secondSessionID])
+        }
+    }
+
     func testNotifiesQuotaResultUpdate() {
         // Given
         let server = ServerMock(
@@ -485,6 +596,53 @@ final class ProfilingQuotaCheckerTests: XCTestCase {
 }
 
 private extension ProfilingQuotaCheckerTests {
+
+
+    func attachQuotaBoundary(
+        _ boundary: String,
+        checker: ProfilingQuotaChecker,
+        session: ControlledQuotaSession,
+        updates: [ProfilingQuotaResult?],
+        expectedSessionIDs: [UUID]
+    ) {
+        func encode(_ result: ProfilingQuotaResult?) -> Any {
+            guard let result else { return NSNull() }
+            return ["decision": String(describing: result.decision), "reason": result.reason.rawValue]
+        }
+        var images: [String] = []
+        for index in 0..<_dyld_image_count() {
+            if let image = _dyld_get_image_name(index) { images.append(String(cString: image)) }
+        }
+        let inventory: [String: Any] = [
+            "schema_version": 1, "family": "quota-session-semantics",
+            "boundary": boundary, "pid": ProcessInfo.processInfo.processIdentifier, "loaded_images": images,
+            "result": encode(checker.quotaResult), "is_rejected": checker.isRejectedByQuota,
+            "updates": updates.map(encode),
+            "expected_session_ids": expectedSessionIDs.map { $0.uuidString.lowercased() },
+            "tasks": session.tasks.map {
+                ["session_id": $0.sessionID ?? "",
+                 "resumed": $0.wasResumed, "completions": $0.completionCount] as [String: Any]
+            }
+        ]
+        guard let data = try? JSONSerialization.data(withJSONObject: inventory, options: [.sortedKeys]) else {
+            return XCTFail("Failed to encode the quota boundary inventory.")
+        }
+        let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+        attachment.name = "quota-session-" + boundary
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
+    func quotaContext(sessionID: UUID) -> DatadogContext {
+        DatadogContext.mockWith(
+            site: .us1,
+            clientToken: "test-client-token",
+            trackingConsent: .granted,
+            additionalContext: [RUMCoreContext.mockWith(sessionID: sessionID, sessionSampleRate: .maxSampleRate)]
+        )
+    }
+
+
     func quotaServer() -> ServerMock {
         ServerMock(
             delivery: .success(
@@ -533,6 +691,57 @@ private extension ProfilingQuotaCheckerTests {
             {"data":{"id":"quota","type":"profiling-quota","attributes":{"admitted":\(admitted),"reason":"\(rawReason)"}}}
             """.utf8
         )
+    }
+}
+
+
+private final class ControlledQuotaSession: URLSession, @unchecked Sendable {
+    private let recordedTasks = ReadWriteLock<[ControlledQuotaTask]>(wrappedValue: [])
+    var tasks: [ControlledQuotaTask] { recordedTasks.wrappedValue }
+
+    override init() {
+        super.init(configuration: .ephemeral, delegate: nil, delegateQueue: nil)
+    }
+
+    override func dataTask(
+        with request: URLRequest,
+        completionHandler: @escaping @Sendable (Data?, URLResponse?, Error?) -> Void
+    ) -> URLSessionDataTask {
+        let task = ControlledQuotaTask(request: request, completion: completionHandler)
+        recordedTasks.mutate { $0.append(task) }
+        return task
+    }
+}
+
+private final class ControlledQuotaTask: URLSessionDataTask, @unchecked Sendable {
+    private struct State {
+        var wasResumed = false
+        var completionCount = 0
+    }
+    private let recordedState = ReadWriteLock(wrappedValue: State())
+    private let request: URLRequest
+    private let completion: @Sendable (Data?, URLResponse?, Error?) -> Void
+    override var originalRequest: URLRequest? { request }
+    var sessionID: String? {
+        request.url.flatMap { URLComponents(url: $0, resolvingAgainstBaseURL: false) }?
+            .queryItems?.first(where: { $0.name == "session_id" })?.value
+    }
+    var wasResumed: Bool { recordedState.wrappedValue.wasResumed }
+    var completionCount: Int { recordedState.wrappedValue.completionCount }
+
+    init(request: URLRequest, completion: @escaping @Sendable (Data?, URLResponse?, Error?) -> Void) {
+        self.request = request
+        self.completion = completion
+        super.init()
+    }
+
+    override func resume() {
+        recordedState.mutate { $0.wasResumed = true }
+    }
+
+    func complete(data: Data) {
+        recordedState.mutate { $0.completionCount += 1 }
+        completion(data, HTTPURLResponse.mockResponseWith(statusCode: 200), nil)
     }
 }
 
