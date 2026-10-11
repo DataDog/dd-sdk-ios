@@ -138,3 +138,229 @@ final class OperationFeatureRetirementTests: XCTestCase {
         XCTAssertEqual(feature.retirementCalls, 0)
     }
 }
+
+extension OperationFeatureRetirementTests {
+    private final class OperationBusProbe: FeatureMessageReceiver, RUMOperationBusModeReceiving, RUMContextHandoffReceiving {
+        struct Observation {
+            let kind: String
+            let owner: ObjectIdentifier?
+        }
+
+        private weak var activeOwner: RUMContextHandoff.Owner?
+        var activations: [ObjectIdentifier] = []
+        var deactivations: [ObjectIdentifier] = []
+        var synchronousHandoffStates: [Bool] = []
+        var observations: [Observation] = []
+        var consumesOwnedPayload = false
+
+        func receiveRUMContextHandoff(owner: RUMContextHandoff.Owner, active: Bool) {
+            synchronousHandoffStates.append(active)
+        }
+
+        func receiveRUMOperationBusMode(owner: RUMContextHandoff.Owner, active: Bool) {
+            if active {
+                activations.append(ObjectIdentifier(owner))
+                activeOwner = owner
+            } else {
+                deactivations.append(ObjectIdentifier(owner))
+                if activeOwner === owner { activeOwner = nil }
+            }
+        }
+
+        func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+            switch message {
+            case .context:
+                observations.append(Observation(kind: "context", owner: activeOwner.map(ObjectIdentifier.init)))
+                return false
+            case .payload(let value as OwnedOperationMessage):
+                observations.append(Observation(kind: "owned", owner: activeOwner.map(ObjectIdentifier.init)))
+                XCTAssertTrue(value.ownership.isValid)
+                XCTAssertTrue(activeOwner === value.ownership.origin.owner)
+                return consumesOwnedPayload
+            case .payload(let value as String):
+                observations.append(Observation(kind: value, owner: activeOwner.map(ObjectIdentifier.init)))
+                return false
+            default:
+                return false
+            }
+        }
+    }
+
+    private final class OperationBusFeature: DatadogFeature {
+        static let name = "profiling"
+        let messageReceiver: FeatureMessageReceiver
+        init(_ receiver: FeatureMessageReceiver) { messageReceiver = receiver }
+    }
+
+    private func drainOperationBus(_ core: DatadogCore) {
+        core.contextProvider.flush()
+        core.bus.flush()
+    }
+
+    private func disposeOperationBus(_ core: DatadogCore, directory: CoreDirectory) {
+        core.stop()
+        drainOperationBus(core)
+        core.readWriteQueue.sync {}
+        try? directory.delete()
+    }
+
+    private func sendFirstOwnedOperation(
+        _ ownership: RUMOperationOwnership,
+        through core: DatadogCore,
+        fallback: @escaping () -> Void = {}
+    ) {
+        let vital = Vital(id: "first-owned", name: "operation", operationKey: nil, stepType: .start, date: Date())
+        core.send(message: .payload(OwnedOperationMessage(
+            ownership: ownership,
+            attributes: [RUMCoreContext.IDs.sessionID: ownership.sessionID],
+            operation: vital
+        )), else: fallback)
+        drainOperationBus(core)
+    }
+
+    func testOperationBusMode_lateProfilingRegistration_precedesInitialContextAndFirstOwnedPayload() throws {
+        try requireHandoff()
+        let (core, directory) = try makeCore()
+        defer { disposeOperationBus(core, directory: directory) }
+        let owner = try core.activateRUMContextHandoff()
+        let (_, ownership) = try install(in: core, owner: owner)
+        let probe = OperationBusProbe()
+        probe.consumesOwnedPayload = true
+        try core.registerRUMContextHandoff(feature: OperationBusFeature(probe), owner: owner)
+        XCTAssertEqual(probe.synchronousHandoffStates, [true], "Network callback remains synchronous")
+        drainOperationBus(core)
+
+        let initialContexts = probe.observations.filter { $0.kind == "context" }
+        XCTAssertFalse(initialContexts.isEmpty)
+        XCTAssertTrue(initialContexts.allSatisfy { $0.owner == ObjectIdentifier(owner) })
+        sendFirstOwnedOperation(ownership, through: core) { XCTFail("First owned payload unexpectedly fell back") }
+
+        XCTAssertEqual(probe.activations, [ObjectIdentifier(owner)])
+        XCTAssertEqual(probe.observations.filter { $0.kind == "owned" }.count, 1)
+    }
+
+    func testOperationBusMode_lateRUMActivation_precedesFirstOwnedPayload() throws {
+        try requireHandoff()
+        let (core, directory) = try makeCore()
+        defer { disposeOperationBus(core, directory: directory) }
+        let probe = OperationBusProbe()
+        probe.consumesOwnedPayload = true
+        try core.register(feature: OperationBusFeature(probe))
+        drainOperationBus(core)
+        XCTAssertTrue(probe.activations.isEmpty)
+        XCTAssertTrue(probe.observations.filter { $0.kind == "context" }.allSatisfy { $0.owner == nil })
+
+        let owner = try core.activateRUMContextHandoff()
+        XCTAssertEqual(probe.synchronousHandoffStates, [true])
+        let (_, ownership) = try install(in: core, owner: owner)
+        sendFirstOwnedOperation(ownership, through: core) { XCTFail("First owned payload unexpectedly fell back") }
+
+        XCTAssertEqual(probe.activations, [ObjectIdentifier(owner)])
+        XCTAssertEqual(probe.observations.filter { $0.kind == "owned" }.count, 1)
+    }
+
+    func testOperationBusMode_expiredQueuedActivation_doesNotEnableReceiver() throws {
+        try requireHandoff()
+        let (core, directory) = try makeCore()
+        defer { disposeOperationBus(core, directory: directory) }
+        let probe = OperationBusProbe()
+        try core.register(feature: OperationBusFeature(probe))
+        drainOperationBus(core)
+        core.bus.queue.suspend()
+        var suspended = true
+        defer { if suspended { core.bus.queue.resume() } }
+
+        let owner = try core.activateRUMContextHandoff()
+        core.deactivateRUMContextHandoff(owner: owner)
+        XCTAssertFalse(owner.isValid)
+        XCTAssertEqual(probe.synchronousHandoffStates, [true, false])
+        core.bus.queue.resume()
+        suspended = false
+        drainOperationBus(core)
+        core.send(message: .payload("after-expiry"), else: {})
+        drainOperationBus(core)
+
+        XCTAssertTrue(probe.activations.isEmpty)
+        XCTAssertEqual(probe.deactivations, [ObjectIdentifier(owner)])
+        XCTAssertNil(try XCTUnwrap(probe.observations.last).owner)
+    }
+
+    func testOperationBusMode_oldDeactivation_cannotChangeReplacementOwner() throws {
+        try requireHandoff()
+        let (core, directory) = try makeCore()
+        defer { disposeOperationBus(core, directory: directory) }
+        let probe = OperationBusProbe()
+        probe.consumesOwnedPayload = true
+        try core.register(feature: OperationBusFeature(probe))
+        drainOperationBus(core)
+        let oldOwner = try core.activateRUMContextHandoff()
+        drainOperationBus(core)
+        core.deactivateRUMContextHandoff(owner: oldOwner)
+        let owner = try core.activateRUMContextHandoff()
+        let (_, ownership) = try install(in: core, owner: owner)
+        drainOperationBus(core)
+        let priorDeactivations = probe.deactivations
+
+        core.bus.notifyOperationBusMode(receivers: [probe], owner: oldOwner, active: false)
+        core.bus.flush()
+        core.deactivateRUMContextHandoff(owner: oldOwner)
+        sendFirstOwnedOperation(ownership, through: core) { XCTFail("Replacement owned payload unexpectedly fell back") }
+
+        XCTAssertEqual(probe.activations, [ObjectIdentifier(oldOwner), ObjectIdentifier(owner)])
+        XCTAssertEqual(probe.deactivations, priorDeactivations + [ObjectIdentifier(oldOwner)])
+        XCTAssertTrue(core.rumContextHandoffOwner === owner)
+        XCTAssertTrue(owner.isValid)
+        XCTAssertEqual(try XCTUnwrap(probe.observations.last).owner, ObjectIdentifier(owner))
+    }
+
+    func testOperationBusMode_combinedActivation_preservesFirstConsumerAndFallback() throws {
+        try requireHandoff()
+        let (core, directory) = try makeCore()
+        defer { disposeOperationBus(core, directory: directory) }
+        let owner = try core.activateRUMContextHandoff()
+        let (_, ownership) = try install(in: core, owner: owner)
+        let first = OperationBusProbe()
+        first.consumesOwnedPayload = true
+        let second = OperationBusProbe()
+        let combined = CombinedFeatureMessageReceiver(first, second)
+        try core.registerRUMContextHandoff(feature: OperationBusFeature(combined), owner: owner)
+        drainOperationBus(core)
+        sendFirstOwnedOperation(ownership, through: core) { XCTFail("Consumed payload unexpectedly fell back") }
+
+        XCTAssertEqual(first.activations, [ObjectIdentifier(owner)])
+        XCTAssertEqual(second.activations, [ObjectIdentifier(owner)])
+        XCTAssertEqual(first.observations.filter { $0.kind == "owned" }.count, 1)
+        XCTAssertTrue(second.observations.filter { $0.kind == "owned" }.isEmpty)
+
+        var fallbacks = 0
+        core.send(message: .payload("unknown"), else: { fallbacks += 1 })
+        drainOperationBus(core)
+        XCTAssertEqual(first.observations.filter { $0.kind == "unknown" }.count, 1)
+        XCTAssertEqual(second.observations.filter { $0.kind == "unknown" }.count, 1)
+        XCTAssertEqual(fallbacks, 1)
+    }
+
+    func testOperationBusMode_coreStop_deactivatesBeforeReceiverRemoval() throws {
+        try requireHandoff()
+        let (core, directory) = try makeCore()
+        defer { disposeOperationBus(core, directory: directory) }
+        let owner = try core.activateRUMContextHandoff()
+        let probe = OperationBusProbe()
+        try core.registerRUMContextHandoff(feature: OperationBusFeature(probe), owner: owner)
+        drainOperationBus(core)
+
+        core.stop()
+        drainOperationBus(core)
+        XCTAssertFalse(owner.isValid)
+        XCTAssertNil(core.rumContextHandoffOwner)
+        XCTAssertEqual(probe.synchronousHandoffStates, [true, false])
+        XCTAssertEqual(probe.deactivations, [ObjectIdentifier(owner)])
+        let observationCount = probe.observations.count
+        var fallbacks = 0
+        core.send(message: .payload("after-stop"), else: { fallbacks += 1 })
+        core.bus.flush()
+
+        XCTAssertEqual(probe.observations.count, observationCount)
+        XCTAssertEqual(fallbacks, 1)
+    }
+}

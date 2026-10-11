@@ -178,6 +178,7 @@ internal final class DatadogCore: RUMContextHandoffActivating {
             throw ProgrammerError(description: "RUM context ownership could not be activated.")
         }
         receivers.forEach { ($0 as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: owner, active: true) }
+        bus.notifyOperationBusMode(receivers: receivers, owner: owner, active: true)
         return owner
     }
 
@@ -199,6 +200,7 @@ internal final class DatadogCore: RUMContextHandoffActivating {
             receivers = registry.features.values.map { $0.messageReceiver }
         }
         receivers.forEach { ($0 as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: owner, active: false) }
+        bus.notifyOperationBusMode(receivers: receivers, owner: owner, active: false)
         retiredHandoff?.retire()
     }
 
@@ -483,6 +485,7 @@ internal final class DatadogCore: RUMContextHandoffActivating {
         }
         if let owner {
             receivers.forEach { ($0 as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: owner, active: false) }
+            bus.notifyOperationBusMode(receivers: receivers, owner: owner, active: false)
             stoppedFeatures.keys.forEach { bus.removeReceiver(forKey: $0) }
             stoppedFeatures.values.forEach { ($0.feature as? RUMOperationFeatureRetiring)?.retireOperationOrigin() }
             retiredHandoff?.retire()

@@ -253,7 +253,7 @@ final class ProfilingHandlerTests: XCTestCase {
                                             installedKeys: Set(correlation.keys))
         let profile = try startProfilerAndFlushSampledProfile()
 
-        ownedHandler.write(profile: profile, operation: .customProfiling, rumVitals: [],
+        ownedHandler.writeOwned(profile: profile, operation: .customProfiling, rumVitals: [],
                            ownedOperations: [.init(vital: vital, ownership: ownership)], ownedCorrelation: stamp)
         XCTAssertEqual(scope.pendingWrites, 1)
         XCTAssertTrue(core.events.isEmpty)
@@ -284,7 +284,7 @@ final class ProfilingHandlerTests: XCTestCase {
                                             installedKeys: Set(correlation.keys))
         let profile = try startProfilerAndFlushSampledProfile()
 
-        ownedHandler.write(profile: profile, operation: .customProfiling, rumVitals: [],
+        ownedHandler.writeOwned(profile: profile, operation: .customProfiling, rumVitals: [],
                            ownedOperations: [.init(vital: vital, ownership: ownership)], ownedCorrelation: stamp)
         XCTAssertEqual(scope.pendingWrites, 1)
         XCTAssertTrue(core.events.isEmpty)
@@ -321,7 +321,7 @@ final class ProfilingHandlerTests: XCTestCase {
                                             installedKeys: Set(correlation.keys))
         let profile = try startProfilerAndFlushSampledProfile()
 
-        ownedHandler.write(profile: profile, operation: .appLaunch, rumVitals: [legacy],
+        ownedHandler.writeOwned(profile: profile, operation: .appLaunch, rumVitals: [legacy],
                            hangs: [hang], longTasks: [longTask],
                            ownedOperations: [.init(vital: owned, ownership: ownership)], ownedCorrelation: stamp)
         XCTAssertEqual(scope.pendingWrites, 1)

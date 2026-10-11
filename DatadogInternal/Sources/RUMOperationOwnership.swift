@@ -196,3 +196,20 @@ public struct OwnedOperationMessage {
         self.operation = operation
     }
 }
+
+
+/// Separate On-only capability. Core invokes it on its serial message-bus queue.
+@_spi(Internal)
+public protocol RUMOperationBusModeReceiving {
+    func receiveRUMOperationBusMode(owner: RUMContextHandoff.Owner, active: Bool)
+}
+
+@_spi(Internal)
+extension CombinedFeatureMessageReceiver: RUMOperationBusModeReceiving {
+    @_spi(Internal)
+    public func receiveRUMOperationBusMode(owner: RUMContextHandoff.Owner, active: Bool) {
+        for receiver in receivers {
+            (receiver as? RUMOperationBusModeReceiving)?.receiveRUMOperationBusMode(owner: owner, active: active)
+        }
+    }
+}

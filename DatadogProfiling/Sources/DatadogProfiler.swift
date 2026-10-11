@@ -56,7 +56,11 @@ internal final class DatadogProfiler: ProfilingHandler, @unchecked Sendable {
     private(set) var currentServerTimeOffset: TimeInterval = .zero
     // Ongoing RUM Operations to attach to profiles.
     private var currentRUMVitals: [String: Vital] = [:]
-    // Allocated only after a valid owned operation reaches the profiler queue.
+    // Queue-confined activation after the first accepted owned operation.
+    private var hasAcceptedOwnedOperations = false
+    // Mutated and read only on Core's message-bus queue.
+    private var isOwnedOperationBusMode = false
+    private weak var operationBusOwner: RUMContextHandoff.Owner?
     private var ownedOperations: OwnedOperationStore?
     // App hangs to attach to profiles.
     private var hangs: [DurationEvent] = []
@@ -136,9 +140,6 @@ extension DatadogProfiler: FeatureMessageReceiver {
             case let message as TTIDMessage:
                 handleAppLaunch(message: message)
                 return true
-            case let message as OwnedOperationMessage:
-                handleOwnedOperation(message: message)
-                return hasReceivedAppLaunchVital
             case let message as OperationMessage:
                 handleOperation(message: message)
                 // Every OperationMessage is consumed by the active profiler after app launch vital.
@@ -150,10 +151,32 @@ extension DatadogProfiler: FeatureMessageReceiver {
                 handleLongTask(message: message)
                 return true
             default:
-                return false
+                guard isOwnedOperationBusMode else {
+                    return false
+                }
+                guard let ownedMessage = message as? OwnedOperationMessage else {
+                    return false
+                }
+                handleOwnedOperation(message: ownedMessage)
+                return hasReceivedAppLaunchVital
             }
         default:
             return false
+        }
+    }
+}
+
+extension DatadogProfiler: RUMOperationBusModeReceiving {
+    func receiveRUMOperationBusMode(owner: RUMContextHandoff.Owner, active: Bool) {
+        if active {
+            guard owner.isValid else {
+                return
+            }
+            operationBusOwner = owner
+            isOwnedOperationBusMode = true
+        } else if operationBusOwner === owner {
+            isOwnedOperationBusMode = false
+            operationBusOwner = nil
         }
     }
 }
@@ -201,7 +224,10 @@ private extension DatadogProfiler {
                 return
             }
 
-            pruneOwnedOperations()
+            if hasAcceptedOwnedOperations {
+                handleOwnedContext(context: context)
+                return
+            }
 
             var didChangeRUMSession = false
             if let sessionID = context.additionalContext(ofType: RUMCoreContext.self)?.sessionID,
@@ -237,7 +263,7 @@ private extension DatadogProfiler {
             case false?:
                 operation = .customProfiling
 
-                if hasAnyVitals, shouldHarvestAppLaunchProfileOnTTID {
+                if currentRUMVitals.isEmpty == false, shouldHarvestAppLaunchProfileOnTTID {
                     stopAndWriteAppLaunchProfile()
                     return
                 }
@@ -290,8 +316,12 @@ private extension DatadogProfiler {
             guard let self, isTrackingConsentAllowed, !quotaChecker.isRejectedByQuota else {
                 return
             }
+
+            if hasAcceptedOwnedOperations {
+                handleLegacyOperationWhileOwned(message: message)
+                return
+            }
             attributes = message.attributes
-            ownedOperations?.didAssignLegacyAttributes()
 
             // Capture vitals like TTFD that are not operation steps.
             if message.operation.stepType == nil {
@@ -306,7 +336,7 @@ private extension DatadogProfiler {
                     startVital.duration = duration.dd.toInt64Nanoseconds
                     currentRUMVitals[message.operation.key] = startVital
 
-                    if hasCompletedAllOperations,
+                    if currentRUMVitals.hasCompletedAllOperations(),
                        isCustomProfiling,
                        hasProcessedAppLaunchVital || !shouldWaitForAppLaunchVital {
                         let customProfilingDuration = dateProvider.now.timeIntervalSince(profileStartDate)
@@ -318,47 +348,17 @@ private extension DatadogProfiler {
         }
     }
 
-    func handleOwnedOperation(message: OwnedOperationMessage) {
-        queue.async { [weak self] in
-            guard let self, isTrackingConsentAllowed, !quotaChecker.isRejectedByQuota,
-                  message.ownership.isValid,
-                  message.operation.stepType == .start || message.operation.stepType == .end else { return }
-            pruneOwnedOperations()
-            if ownedOperations == nil {
-                ownedOperations = OwnedOperationStore { [weak self] ownership in
-                    self?.queue.async { [weak self] in
-                        guard let self, let store = ownedOperations else { return }
-                        // The old capability cannot erase another capability's records/stamp.
-                        store.retire(ownership, attributes: &attributes)
-                    }
-                }
-            }
-            guard let store = ownedOperations, store.prepare(message.ownership),
-                  message.ownership.isValid else { return }
-            attributes = message.attributes
-            store.installCorrelation(from: message)
-            if message.operation.stepType == .start {
-                store.start(message)
-                updateProfilerState(canProfile: shouldKeepProfilerRunning())
-            } else if store.end(message), hasCompletedAllOperations,
-                      isCustomProfiling, hasProcessedAppLaunchVital || !shouldWaitForAppLaunchVital {
-                let duration = dateProvider.now.timeIntervalSince(profileStartDate)
-                fireTimer(after: duration < minProfileDuration ? minProfileDuration - duration : 0)
-            }
-        }
-    }
-
-    func pruneOwnedOperations() {
-        ownedOperations?.pruneInvalid(attributes: &attributes)
-    }
-
     func handleAppHang(message: AppHangMessage) {
         queue.async { [weak self] in
             guard let self, isTrackingConsentAllowed, !quotaChecker.isRejectedByQuota else {
                 return
             }
+
+            if hasAcceptedOwnedOperations {
+                handleOwnedAppHang(message: message)
+                return
+            }
             attributes = message.attributes
-            ownedOperations?.didAssignLegacyAttributes()
             hangs.append(message.hang)
         }
     }
@@ -368,13 +368,21 @@ private extension DatadogProfiler {
             guard let self, isTrackingConsentAllowed, !quotaChecker.isRejectedByQuota else {
                 return
             }
+
+            if hasAcceptedOwnedOperations {
+                handleOwnedLongTask(message: message)
+                return
+            }
             attributes = message.attributes
-            ownedOperations?.didAssignLegacyAttributes()
             longTasks.append(message.longTask)
         }
     }
 
     func updateProfilerAndSendProfile() {
+        if hasAcceptedOwnedOperations {
+            updateOwnedProfilerAndSendProfile()
+            return
+        }
         isContinuousProfilingGraceAvailable = false
         updateProfilerState(canProfile: shouldKeepProfilerRunning(), shouldSendProfile: true)
     }
@@ -383,7 +391,6 @@ private extension DatadogProfiler {
     /// `canProfile` must already account for tracking consent, quota, and runtime conditions.
     /// Profiles stopped without being sent are discarded.
     func updateProfilerState(canProfile: Bool, shouldSendProfile: Bool = false) {
-        pruneOwnedOperations()
         if !canProfile {
             stopTimer()
         }
@@ -429,7 +436,6 @@ private extension DatadogProfiler {
     }
 
     func sendProfile() {
-        pruneOwnedOperations()
         profileStartDate = dateProvider.now
         guard let profile = dd_profiler_flush_and_get_profile() else {
             if shouldReportProfileAbsence {
@@ -445,9 +451,7 @@ private extension DatadogProfiler {
                 operation: operation,
                 rumVitals: Array(self.currentRUMVitals.values),
                 hangs: hangs,
-                longTasks: longTasks,
-                ownedOperations: ownedOperations?.profileOperations,
-                ownedCorrelation: ownedOperations?.correlation
+                longTasks: longTasks
             )
         } else if quotaChecker.isRejectedByQuota || shouldReportProfileAbsence {
             telemetryController.sendProfileDropped(for: operation, reason: profileDropReason)
@@ -458,13 +462,7 @@ private extension DatadogProfiler {
     }
 
     func cleanUpState(preservingOngoingOperations: Bool = true) {
-        pruneOwnedOperations()
-        let preserve = preservingOngoingOperations && canExtendCustomProfiling()
-        ownedOperations?.removeRecords(preservingOngoing: preserve)
-        if !isTrackingConsentAllowed || quotaChecker.isRejectedByQuota {
-            ownedOperations?.invalidateCorrelation(attributes: &attributes)
-        }
-        if preserve {
+        if preservingOngoingOperations, canExtendCustomProfiling() {
             currentRUMVitals = currentRUMVitals.ongoingOperations()
         } else {
             currentRUMVitals.removeAll()
@@ -496,6 +494,11 @@ private extension DatadogProfiler {
             guard let self else {
                 return
             }
+
+            if hasAcceptedOwnedOperations {
+                handleOwnedAppLaunch(message: message)
+                return
+            }
             hasProcessedAppLaunchVital = true
 
             guard isTrackingConsentAllowed else {
@@ -508,7 +511,6 @@ private extension DatadogProfiler {
             }
             let shouldHarvestAppLaunchProfile = shouldHarvestAppLaunchProfileOnTTID
             attributes = message.attributes
-            ownedOperations?.didAssignLegacyAttributes()
             currentRUMVitals[message.ttid.key] = message.ttid
 
             guard !quotaChecker.isRejectedByQuota else {
@@ -523,7 +525,7 @@ private extension DatadogProfiler {
             } else {
                 if shouldKeepProfilerRunning() {
                     updateProfilerState(canProfile: true)
-                } else if hasCompletedAllOperations, isCustomProfiling {
+                } else if currentRUMVitals.hasCompletedAllOperations(), isCustomProfiling {
                     let customProfilingDuration = dateProvider.now.timeIntervalSince(profileStartDate)
                     let fireInterval = customProfilingDuration < minProfileDuration ? minProfileDuration - customProfilingDuration : 0
                     fireTimer(after: fireInterval)
@@ -551,11 +553,9 @@ private extension DatadogProfiler {
     }
 
     func writeAppLaunchProfile(_ profile: OpaquePointer) {
-        pruneOwnedOperations()
         guard profilingSamplerProvider.appLaunchProfilingSampled == true else {
             return
         }
-
         // Preserve the existing fail-open behavior while quota is pending.
         guard !quotaChecker.isRejectedByQuota else {
             telemetryController.sendProfileDropped(for: .appLaunch, reason: .quotaRejected(quotaChecker.quotaResult?.reason))
@@ -567,9 +567,7 @@ private extension DatadogProfiler {
             operation: .appLaunch,
             rumVitals: Array(currentRUMVitals.values),
             hangs: hangs,
-            longTasks: longTasks,
-            ownedOperations: ownedOperations?.profileOperations,
-            ownedCorrelation: ownedOperations?.correlation
+            longTasks: longTasks
         )
     }
 }
@@ -580,6 +578,11 @@ private extension DatadogProfiler {
     func handle(quotaResult: ProfilingQuotaResult?) {
         queue.async { [weak self] in
             guard let self else {
+                return
+            }
+
+            if hasAcceptedOwnedOperations {
+                handleOwnedQuotaResult(quotaResult: quotaResult)
                 return
             }
 
@@ -629,8 +632,7 @@ private extension DatadogProfiler {
     var canWriteProfile: Bool {
         // Custom profiling is only handled by operation steps
         let hasCustomProfilingData = currentRUMVitals.contains { $0.value.stepType == .start }
-            || ownedOperations?.hasStarts == true
-        let hasContinuousProfilingVitals = operation == .continuousProfiling && hasAnyVitals
+        let hasContinuousProfilingVitals = operation == .continuousProfiling && currentRUMVitals.isEmpty == false
         let hasContinuousProfilingEvents = profilingSamplerProvider.continuousProfilingSampled == true
             && (hangs.isEmpty == false || longTasks.isEmpty == false)
 
@@ -641,7 +643,6 @@ private extension DatadogProfiler {
 
     /// Evaluates every condition required to keep or restart the native profiler.
     func shouldKeepProfilerRunning() -> Bool {
-        pruneOwnedOperations()
         guard isTrackingConsentAllowed, !quotaChecker.isRejectedByQuota else {
             return false
         }
@@ -651,7 +652,7 @@ private extension DatadogProfiler {
             case .some(true): // It is Continuous Profiling running
                 return hasConditionsToProfile
             case .some(false): // It is Custom Profiling running
-                return hasConditionsToProfile && (currentRUMVitals.ongoingOperations().isEmpty == false || ownedOperations?.hasOngoing == true)
+                return hasConditionsToProfile && currentRUMVitals.ongoingOperations().isEmpty == false
             case .none: // Waiting for RUM context info
                 return hasConditionsToProfile && isContinuousProfilingGraceAvailable
             }
@@ -684,18 +685,7 @@ private extension DatadogProfiler {
 
         return currentRUMVitals.ongoingOperations().contains {
             dateProvider.now.timeIntervalSince($1.date) < Constants.cutOffTime
-        } || ownedOperations?.canExtend(at: dateProvider.now, cutOff: Constants.cutOffTime) == true
-    }
-
-    var hasAnyVitals: Bool {
-        currentRUMVitals.isEmpty == false || ownedOperations?.isEmpty == false
-    }
-
-    var hasCompletedAllOperations: Bool {
-        guard let ownedOperations else { return currentRUMVitals.hasCompletedAllOperations() }
-        let hasCompleted = currentRUMVitals.hasCompletedOperations() || ownedOperations.hasCompleted
-        let hasOngoing = currentRUMVitals.ongoingOperations().isEmpty == false || ownedOperations.hasOngoing
-        return hasCompleted && !hasOngoing
+        }
     }
 
     var shouldHarvestAppLaunchProfileOnTTID: Bool {
@@ -713,8 +703,435 @@ private extension DatadogProfiler {
         }
 
         return currentRUMVitals.hasCompletedOperations() == false
-            && ownedOperations?.hasCompleted != true
             && canExtendCustomProfiling() == false
+    }
+}
+
+// MARK: - Owned operation policy
+
+private extension DatadogProfiler {
+    func handleOwnedOperation(message: OwnedOperationMessage) {
+        queue.async { [weak self] in
+            guard let self, isTrackingConsentAllowed, !quotaChecker.isRejectedByQuota,
+                  message.ownership.isValid,
+                  message.operation.stepType == .start || message.operation.stepType == .end else { return }
+            pruneOwnedOperations()
+            if ownedOperations == nil {
+                ownedOperations = OwnedOperationStore { [weak self] ownership in
+                    self?.queue.async { [weak self] in
+                        guard let self, let store = ownedOperations else { return }
+                        // The old capability cannot erase another capability's records/stamp.
+                        store.retire(ownership, attributes: &attributes)
+                    }
+                }
+            }
+            guard let store = ownedOperations, store.prepare(message.ownership),
+                  message.ownership.isValid else { return }
+            hasAcceptedOwnedOperations = true
+            attributes = message.attributes
+            store.installCorrelation(from: message)
+            if message.operation.stepType == .start {
+                store.start(message)
+                updateOwnedProfilerState(canProfile: shouldKeepOwnedProfilerRunning())
+            } else if store.end(message), hasCompletedAllOwnedAndLegacyOperations,
+                      isCustomProfiling, hasProcessedAppLaunchVital || !shouldWaitForAppLaunchVital {
+                let duration = dateProvider.now.timeIntervalSince(profileStartDate)
+                fireTimer(after: duration < minProfileDuration ? minProfileDuration - duration : 0)
+            }
+        }
+    }
+
+    func handleOwnedContext(context: DatadogContext) {
+        pruneOwnedOperations()
+
+        var didChangeRUMSession = false
+        if let sessionID = context.additionalContext(ofType: RUMCoreContext.self)?.sessionID,
+           sessionID != currentRUMSessionID {
+            currentRUMSessionID = sessionID
+            didChangeRUMSession = true
+            telemetryController.resetContinuousCycleIndex()
+        }
+
+        let wasTrackingConsentAllowed = isTrackingConsentAllowed
+        isTrackingConsentAllowed = context.trackingConsent != .notGranted
+        if !isTrackingConsentAllowed {
+            cleanUpOwnedState(preservingOngoingOperations: false)
+            updateOwnedProfilerState(canProfile: false)
+            return
+        }
+
+        if context.additionalContext(ofType: RUMCoreContext.self)?.sessionSampler.isSampled == false {
+            isContinuousProfilingGraceAvailable = false
+            cleanUpOwnedState(preservingOngoingOperations: false)
+            updateOwnedProfilerState(canProfile: false)
+            return
+        }
+
+        let previousConditions = hasConditionsToProfile
+        hasConditionsToProfile = profilingConditions.canProfileApplication(with: context)
+        let currentAppState = context.applicationStateHistory.currentState
+        defer { previousAppState = currentAppState }
+
+        switch profilingSamplerProvider.continuousProfilingSampled {
+        case true?:
+            operation = .continuousProfiling
+        case false?:
+            operation = .customProfiling
+
+            if hasAnyOwnedOrLegacyVitals, shouldHarvestOwnedAppLaunchProfileOnTTID {
+                stopAndWriteOwnedAppLaunchProfile()
+                return
+            }
+
+            if isContinuousProfilingGraceAvailable {
+                // The profiler was running optimistically while waiting for the RUM
+                // sampling decision. If that decision samples out continuous profiling,
+                // stop the optimistic profiler unless app-launch profiling still needs
+                // the native profiler to harvest TTID.
+                isContinuousProfilingGraceAvailable = false
+                let canProfile = shouldKeepOwnedProfilerRunning()
+                if canProfile || !shouldWaitForAppLaunchVital {
+                    updateOwnedProfilerState(canProfile: canProfile)
+                }
+                return
+            }
+        case .none: break
+        }
+
+        if currentAppState == .background {
+            // Updates the profiler state if the app was or is about to have foreground time
+            guard context.applicationStateHistory
+                .containsState(during: context.launchInfo.processLaunchDate...dateProvider.now, where: { $0 == .active }) else {
+                return
+            }
+
+            if profilingSamplerProvider.continuousProfilingSampled == nil {
+                isContinuousProfilingGraceAvailable = false
+            }
+
+            updateOwnedProfilerState(canProfile: shouldKeepOwnedProfilerRunning(), shouldSendProfile: true)
+        }
+        // If the conditions are the same, ignore the update profiler state
+        else if didChangeRUMSession
+                    || currentAppState != previousAppState
+                    || hasConditionsToProfile != previousConditions
+                    || isTrackingConsentAllowed != wasTrackingConsentAllowed {
+            switch ProfilingContext.Status.current {
+            case .running, .stopped, .unknown:
+                updateOwnedProfilerState(canProfile: shouldKeepOwnedProfilerRunning())
+            default:
+                break
+            }
+        }
+    }
+
+    func handleLegacyOperationWhileOwned(message: OperationMessage) {
+        attributes = message.attributes
+        ownedOperations?.didAssignLegacyAttributes()
+
+        // Capture vitals like TTFD that are not operation steps.
+        if message.operation.stepType == nil {
+            currentRUMVitals[message.operation.key] = message.operation
+        } else if message.operation.stepType == .start {
+            currentRUMVitals[message.operation.key] = message.operation
+            updateOwnedProfilerState(canProfile: shouldKeepOwnedProfilerRunning())
+        } else if message.operation.stepType == .end {
+            if var startVital = currentRUMVitals[message.operation.key] {
+                // Add duration to vital to help Profiling backend label correctly the samples of this vital
+                let duration = message.operation.date.timeIntervalSince(startVital.date)
+                startVital.duration = duration.dd.toInt64Nanoseconds
+                currentRUMVitals[message.operation.key] = startVital
+
+                if hasCompletedAllOwnedAndLegacyOperations,
+                   isCustomProfiling,
+                   hasProcessedAppLaunchVital || !shouldWaitForAppLaunchVital {
+                    let customProfilingDuration = dateProvider.now.timeIntervalSince(profileStartDate)
+                    let fireInterval = customProfilingDuration < minProfileDuration ? minProfileDuration - customProfilingDuration : 0
+                    fireTimer(after: fireInterval)
+                }
+            }
+        }
+    }
+
+    func handleOwnedAppHang(message: AppHangMessage) {
+        attributes = message.attributes
+        ownedOperations?.didAssignLegacyAttributes()
+        hangs.append(message.hang)
+    }
+
+    func handleOwnedLongTask(message: LongTaskMessage) {
+        attributes = message.attributes
+        ownedOperations?.didAssignLegacyAttributes()
+        longTasks.append(message.longTask)
+    }
+
+    func handleOwnedAppLaunch(message: TTIDMessage) {
+        hasProcessedAppLaunchVital = true
+
+        guard isTrackingConsentAllowed else {
+            return
+        }
+        if profilingSamplerProvider.isAppLaunchProfilingAvailable,
+           profilingSamplerProvider.appLaunchProfilingSampled == false {
+            updateOwnedProfilerState(canProfile: false)
+            return
+        }
+        let shouldHarvestAppLaunchProfile = shouldHarvestOwnedAppLaunchProfileOnTTID
+        attributes = message.attributes
+        ownedOperations?.didAssignLegacyAttributes()
+        currentRUMVitals[message.ttid.key] = message.ttid
+
+        guard !quotaChecker.isRejectedByQuota else {
+            cleanUpOwnedState(preservingOngoingOperations: false)
+            telemetryController.sendProfileDropped(for: .appLaunch, reason: .quotaRejected(quotaChecker.quotaResult?.reason))
+            updateOwnedProfilerState(canProfile: false)
+            return
+        }
+
+        if shouldHarvestAppLaunchProfile {
+            stopAndWriteOwnedAppLaunchProfile()
+        } else {
+            if shouldKeepOwnedProfilerRunning() {
+                updateOwnedProfilerState(canProfile: true)
+            } else if hasCompletedAllOwnedAndLegacyOperations, isCustomProfiling {
+                let customProfilingDuration = dateProvider.now.timeIntervalSince(profileStartDate)
+                let fireInterval = customProfilingDuration < minProfileDuration ? minProfileDuration - customProfilingDuration : 0
+                fireTimer(after: fireInterval)
+            }
+        }
+    }
+
+    func handleOwnedQuotaResult(quotaResult: ProfilingQuotaResult?) {
+        if quotaResult?.decision == .quotaKO {
+            // Quota is evaluated per RUM session. Once rejected, disable profiling for
+            // continuous, custom and app-launch profiles in that session.
+            cleanUpOwnedState(preservingOngoingOperations: false)
+            isStoppedByQuota = true
+            updateOwnedProfilerState(canProfile: shouldKeepOwnedProfilerRunning())
+        } else if isStoppedByQuota {
+            // A new session clears the previous quota result before the next check completes.
+            isStoppedByQuota = false
+            // Restart immediately when profiling is otherwise allowed, matching quota fail-open.
+            let canProfile = shouldKeepOwnedProfilerRunning()
+            updateOwnedProfilerState(canProfile: canProfile)
+            if canProfile && timer == nil {
+                startTimer()
+            }
+        }
+    }
+
+    func updateOwnedProfilerAndSendProfile() {
+        isContinuousProfilingGraceAvailable = false
+        updateOwnedProfilerState(canProfile: shouldKeepOwnedProfilerRunning(), shouldSendProfile: true)
+    }
+
+    func updateOwnedProfilerState(canProfile: Bool, shouldSendProfile: Bool = false) {
+        pruneOwnedOperations()
+        if !canProfile {
+            stopTimer()
+        }
+
+        var currentStatus = ProfilingContext.Status.current
+        if currentStatus == .running && !canProfile {
+            dd_profiler_stop()
+            currentStatus = ProfilingContext.Status.current
+        }
+
+        let hasTimedOut = currentStatus == .stopped(reason: .timeout)
+        let shouldSendCurrentProfile = shouldSendProfile || (hasTimedOut && canProfile && !isCustomProfiling)
+        if shouldSendCurrentProfile {
+            sendOwnedProfile()
+        } else if !canProfile && !shouldWaitForAppLaunchVital {
+            discardCurrentProfile()
+            cleanUpOwnedState()
+        }
+
+        if hasTimedOut && shouldSendCurrentProfile {
+            // Join the finished native threads after harvesting the timed-out profile.
+            dd_profiler_stop()
+            currentStatus = ProfilingContext.Status.current
+        }
+
+        switch currentStatus {
+        case .stopped, .unknown: // When `.unknown` status, mostly profiler NOT_CREATED, it will try to start the profiler
+            if isCustomProfiling {
+                cleanUpOwnedState(preservingOngoingOperations: false)
+            } else if canProfile {
+                dd_profiler_start()
+                profileStartDate = dateProvider.now
+                startTimer()
+            }
+        case .running:
+            if canProfile, timer == nil {
+                startTimer()
+            }
+        default: break
+        }
+
+        updateProfilingContext(quotaReason: quotaChecker.isRejectedByQuota ? quotaChecker.quotaResult?.reason : nil)
+    }
+
+    func sendOwnedProfile() {
+        pruneOwnedOperations()
+        profileStartDate = dateProvider.now
+        guard let profile = dd_profiler_flush_and_get_profile() else {
+            if shouldReportProfileAbsence {
+                telemetryController.sendNoProfile(for: operation)
+            }
+            cleanUpOwnedState()
+            return
+        }
+
+        if canWriteOwnedProfile {
+            writeOwned(
+                profile: profile,
+                operation: operation,
+                rumVitals: Array(self.currentRUMVitals.values),
+                hangs: hangs,
+                longTasks: longTasks,
+                ownedOperations: ownedOperations?.profileOperations,
+                ownedCorrelation: ownedOperations?.correlation
+            )
+        } else if quotaChecker.isRejectedByQuota || shouldReportProfileAbsence {
+            telemetryController.sendProfileDropped(for: operation, reason: profileDropReason)
+        }
+
+        cleanUpOwnedState()
+        dd_pprof_destroy(profile)
+    }
+
+    func cleanUpOwnedState(preservingOngoingOperations: Bool = true) {
+        pruneOwnedOperations()
+        let preserve = preservingOngoingOperations && canExtendOwnedCustomProfiling()
+        ownedOperations?.removeRecords(preservingOngoing: preserve)
+        if !isTrackingConsentAllowed || quotaChecker.isRejectedByQuota {
+            ownedOperations?.invalidateCorrelation(attributes: &attributes)
+        }
+        if preserve {
+            currentRUMVitals = currentRUMVitals.ongoingOperations()
+        } else {
+            currentRUMVitals.removeAll()
+        }
+        hangs.removeAll()
+        longTasks.removeAll()
+    }
+
+    func stopAndWriteOwnedAppLaunchProfile() {
+        stopTimer()
+        dd_profiler_stop()
+        updateProfilingContext()
+
+        guard let profile = dd_profiler_flush_and_get_profile() else {
+            telemetryController.sendNoProfile(for: .appLaunch)
+            cleanUpOwnedState()
+            return
+        }
+
+        if profilingSamplerProvider.appLaunchProfilingSampled == true {
+            writeOwnedAppLaunchProfile(profile)
+        }
+        cleanUpOwnedState()
+        dd_pprof_destroy(profile)
+    }
+
+    func writeOwnedAppLaunchProfile(_ profile: OpaquePointer) {
+        pruneOwnedOperations()
+        guard profilingSamplerProvider.appLaunchProfilingSampled == true else {
+            return
+        }
+
+        // Preserve the existing fail-open behavior while quota is pending.
+        guard !quotaChecker.isRejectedByQuota else {
+            telemetryController.sendProfileDropped(for: .appLaunch, reason: .quotaRejected(quotaChecker.quotaResult?.reason))
+            return
+        }
+
+        writeOwned(
+            profile: profile,
+            operation: .appLaunch,
+            rumVitals: Array(currentRUMVitals.values),
+            hangs: hangs,
+            longTasks: longTasks,
+            ownedOperations: ownedOperations?.profileOperations,
+            ownedCorrelation: ownedOperations?.correlation
+        )
+    }
+
+    var canWriteOwnedProfile: Bool {
+        // Custom profiling is only handled by operation steps
+        let hasCustomProfilingData = currentRUMVitals.contains { $0.value.stepType == .start }
+            || ownedOperations?.hasStarts == true
+        let hasContinuousProfilingVitals = operation == .continuousProfiling && hasAnyOwnedOrLegacyVitals
+        let hasContinuousProfilingEvents = profilingSamplerProvider.continuousProfilingSampled == true
+            && (hangs.isEmpty == false || longTasks.isEmpty == false)
+
+        // Keep quota fail-open while the check is pending. Only explicit rejection prevents writing.
+        return (hasCustomProfilingData || hasContinuousProfilingVitals || hasContinuousProfilingEvents)
+            && !quotaChecker.isRejectedByQuota
+    }
+
+    func shouldKeepOwnedProfilerRunning() -> Bool {
+        pruneOwnedOperations()
+        guard isTrackingConsentAllowed, !quotaChecker.isRejectedByQuota else {
+            return false
+        }
+
+        if profilingSamplerProvider.isContinuousProfilingConfigured {
+            switch profilingSamplerProvider.continuousProfilingSampled {
+            case .some(true): // It is Continuous Profiling running
+                return hasConditionsToProfile
+            case .some(false): // It is Custom Profiling running
+                return hasConditionsToProfile && (currentRUMVitals.ongoingOperations().isEmpty == false || ownedOperations?.hasOngoing == true)
+            case .none: // Waiting for RUM context info
+                return hasConditionsToProfile && isContinuousProfilingGraceAvailable
+            }
+        } else { // It is Custom Profiling running
+            return hasConditionsToProfile && canExtendOwnedCustomProfiling()
+        }
+    }
+
+    func canExtendOwnedCustomProfiling() -> Bool {
+        guard !quotaChecker.isRejectedByQuota else {
+            return false
+        }
+
+        return currentRUMVitals.ongoingOperations().contains {
+            dateProvider.now.timeIntervalSince($1.date) < Constants.cutOffTime
+        } || ownedOperations?.canExtend(at: dateProvider.now, cutOff: Constants.cutOffTime) == true
+    }
+
+    var shouldHarvestOwnedAppLaunchProfileOnTTID: Bool {
+        // TTID may still be attached to continuous/custom profiles when standalone
+        // app-launch upload is disabled; this gate only decides standalone launch harvesting.
+        guard profilingSamplerProvider.appLaunchProfilingSampled == true
+                && hasProcessedAppLaunchVital
+                && !quotaChecker.isRejectedByQuota else {
+            return false
+        }
+
+        if profilingSamplerProvider.isContinuousProfilingConfigured,
+           profilingSamplerProvider.continuousProfilingSampled != false {
+            return false
+        }
+
+        return currentRUMVitals.hasCompletedOperations() == false
+            && ownedOperations?.hasCompleted != true
+            && canExtendOwnedCustomProfiling() == false
+    }
+
+    var hasAnyOwnedOrLegacyVitals: Bool {
+        currentRUMVitals.isEmpty == false || ownedOperations?.isEmpty == false
+    }
+
+    var hasCompletedAllOwnedAndLegacyOperations: Bool {
+        guard let ownedOperations else { return currentRUMVitals.hasCompletedAllOperations() }
+        let hasCompleted = currentRUMVitals.hasCompletedOperations() || ownedOperations.hasCompleted
+        let hasOngoing = currentRUMVitals.ongoingOperations().isEmpty == false || ownedOperations.hasOngoing
+        return hasCompleted && !hasOngoing
+    }
+
+    func pruneOwnedOperations() {
+        ownedOperations?.pruneInvalid(attributes: &attributes)
     }
 }
 

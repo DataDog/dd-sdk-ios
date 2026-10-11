@@ -46,6 +46,7 @@ final class DatadogProfilerTests: XCTestCase {
         let fixture = OwnedProfilerQueueFixture(date: dateProvider.now)
         let ownership = try fixture.ownership()
         let profiler = customProfiler(dateProvider: dateProvider)
+        profiler.receiveRUMOperationBusMode(owner: fixture.origin.owner, active: true)
         let message = fixture.start(ownership, attributes: [RUMCoreContext.IDs.sessionID: "original-session"])
         XCTAssertTrue(ownership.isValid)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_CREATED)
@@ -64,6 +65,7 @@ final class DatadogProfilerTests: XCTestCase {
         let ownership = try fixture.ownership()
         let telemetry = TelemetryMock()
         let profiler = customProfiler(telemetryController: .init(telemetry: telemetry), dateProvider: dateProvider)
+        profiler.receiveRUMOperationBusMode(owner: fixture.origin.owner, active: true)
         let message = fixture.start(ownership, attributes: [RUMCoreContext.IDs.sessionID: "retired-session"])
         let initialStatus = dd_profiler_get_status()
         XCTAssertTrue(ownership.isValid)
@@ -96,6 +98,7 @@ final class DatadogProfilerTests: XCTestCase {
         weak var originalMonitor: AnyObject? = fixture?.originalMonitor
         let telemetry = TelemetryMock()
         let profiler = customProfiler(telemetryController: .init(telemetry: telemetry), dateProvider: dateProvider)
+        profiler.receiveRUMOperationBusMode(owner: try XCTUnwrap(fixture).origin.owner, active: true)
         let initialStatus = dd_profiler_get_status()
         profilerQueue.suspend()
         var isSuspended = true
@@ -131,6 +134,7 @@ final class DatadogProfilerTests: XCTestCase {
                 dateProvider: dateProvider,
                 quotaChecker: quota
             )
+            profiler.receiveRUMOperationBusMode(owner: fixture.origin.owner, active: true)
             let seed: [AttributeKey: AttributeValue] = ["seed": "legacy-end"]
             let seedVital = Vital(id: "seed-end", name: "seed", operationKey: nil, stepType: .end, date: dateProvider.now)
             XCTAssertFalse(profiler.receive(message: .payload(OperationMessage(attributes: seed, operation: seedVital)), from: core))
@@ -179,6 +183,7 @@ final class DatadogProfilerTests: XCTestCase {
         let ownership = try fixture.ownership()
         let telemetry = TelemetryMock()
         let profiler = customProfiler(telemetryController: .init(telemetry: telemetry), dateProvider: dateProvider)
+        profiler.receiveRUMOperationBusMode(owner: fixture.origin.owner, active: true)
         let message = fixture.start(ownership, attributes: [RUMCoreContext.IDs.sessionID: "original-session"])
         core.context = .mockWith(trackingConsent: .notGranted, applicationStateHistory: .mockAppInForeground())
         XCTAssertFalse(profiler.receive(message: .context(core.context), from: core))
@@ -210,6 +215,28 @@ final class DatadogProfilerTests: XCTestCase {
         XCTAssertTrue(core.events.isEmpty)
         XCTAssertTrue(core.metadata.isEmpty)
         XCTAssertEqual(dd_profiler_get_status(), initialStatus)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testOwnedOperationBusMode_oldDeactivation_preservesReplacementProfilerOwnership() throws {
+        let dateProvider = DateProviderMock()
+        let fixture = OwnedProfilerQueueFixture(date: dateProvider.now)
+        let ownership = try fixture.ownership()
+        let profiler = customProfiler(dateProvider: dateProvider)
+        let oldOwner = RUMContextHandoff.Owner()
+        profiler.receiveRUMOperationBusMode(owner: oldOwner, active: true)
+        profiler.receiveRUMOperationBusMode(owner: fixture.origin.owner, active: true)
+        oldOwner.invalidate()
+        profiler.receiveRUMOperationBusMode(owner: oldOwner, active: false)
+        let message = fixture.start(ownership, attributes: [RUMCoreContext.IDs.sessionID: "original-session"])
+
+        XCTAssertTrue(ownership.isValid)
+        XCTAssertFalse(profiler.receive(message: .payload(message), from: core), "Original synchronous handled return is preserved")
+        flushQueue()
+
+        XCTAssertEqual(profiler.attributes.count, 1)
+        XCTAssertEqual(profiler.attributes[RUMCoreContext.IDs.sessionID] as? String, "original-session")
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_CREATED)
         withExtendedLifetime(profiler) {}
     }
 
