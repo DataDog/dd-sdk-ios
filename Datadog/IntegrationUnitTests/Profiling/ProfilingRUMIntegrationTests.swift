@@ -708,7 +708,6 @@ private final class OperationProfileStorageFixture {
             stores = core.stores
             for store in stores.values { store.upload.uploader.cancelSynchronously() }
             drain()
-            if !automaticUIKit { try enableProfiler() }
         } catch {
             for store in core.stores.values { store.upload.uploader.cancelSynchronously() }
             core.stop()
@@ -988,6 +987,7 @@ final class OriginalOperationProfileIntegrationTests: XCTestCase {
             do { try fixture.stop() } catch { XCTFail("Owned directory cleanup failed") }
             fixture.destroyNativeProfiler()
         }
+        try await settleAppLaunch(beforeProfilingIn: fixture)
         controller.onTap = {
             callbackCount += 1
             guard callbackCount == 1 else { return }
@@ -1135,6 +1135,21 @@ final class OriginalOperationProfileIntegrationTests: XCTestCase {
     }
 
     @MainActor
+    private func settleAppLaunch(beforeProfilingIn fixture: OperationProfileStorageFixture) async throws {
+        XCTAssertNil(fixture.core.get(feature: ProfilerFeature.self))
+        try await eventually {
+            fixture.drain()
+            let inventory = try fixture.capture()
+            let rumRows = try rows(inventory[RUMFeature.name] ?? [])
+            return rumRows.contains {
+                ($0["vital"] as? [String: Any])?["app_launch_metric"] as? String == "ttid"
+            }
+        }
+        fixture.drain()
+        attach(try fixture.capture(), name: "settled-app-launch-before-profiling")
+    }
+
+    @MainActor
     private func exerciseManualOperation(expectedOn: Bool) async throws {
         dd_profiler_stop()
         dd_profiler_destroy()
@@ -1157,6 +1172,8 @@ final class OriginalOperationProfileIntegrationTests: XCTestCase {
             attach(try fixture.verifyReadOnlyCaptureControl(), name: "non-consuming-decoder-control")
         }
         attach(fixture.hostInventory(), name: "initial-window-inventory")
+        try await settleAppLaunch(beforeProfilingIn: fixture)
+        try fixture.enableProfiler()
         let monitor: RUMMonitorProtocol = fixture.monitor
         XCTAssertNil(fixture.monitor.currentExecutionContext)
         monitor.startView(key: "operation-start", name: "Operation Start")
