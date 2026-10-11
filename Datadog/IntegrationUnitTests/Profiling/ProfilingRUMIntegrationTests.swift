@@ -1140,7 +1140,7 @@ final class OriginalOperationProfileIntegrationTests: XCTestCase {
         try await eventually {
             fixture.drain()
             let inventory = try fixture.capture()
-            let rumRows = try rows(inventory[RUMFeature.name] ?? [])
+            let rumRows = try self.rows(inventory[RUMFeature.name] ?? [])
             return rumRows.contains {
                 ($0["vital"] as? [String: Any])?["app_launch_metric"] as? String == "ttid"
             }
