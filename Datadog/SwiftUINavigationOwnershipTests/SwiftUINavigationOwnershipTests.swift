@@ -831,16 +831,67 @@ extension SwiftUINavigationOwnershipTests {
                 } ?? [:]
             ])
         }
+        var attemptedBoundary = "mount"
+        var observedViewIDs: [String] = []
+        var terminalCaptured = false
+        defer {
+            if !terminalCaptured {
+                do {
+                    let context = snapshot()
+                    let raw = rows.views
+                    let encoded = try raw.map {
+                        try JSONSerialization.jsonObject(with: JSONEncoder().encode($0))
+                    }
+                    let partial: [String: Any] = [
+                        "schema_version": 1, "family": "swiftui-on-public-entry-partial",
+                        "terminal": false, "attempted_boundary": attemptedBoundary,
+                        "pid": Int(ProcessInfo.processInfo.processIdentifier),
+                        "scene_identifier": scene.session.persistentIdentifier,
+                        "stable_states": driver.states,
+                        "reconstructed_states": secondDriver?.states ?? [],
+                        "first_disappearances": driver.disappearances,
+                        "second_disappearances": secondDriver?.disappearances ?? 0,
+                        "scene_view_absent": context?.viewID == nil,
+                        "first_view_inactive": observedViewIDs.first.map { id in
+                            raw.contains { $0.view.id == id && $0.view.isActive == false }
+                        } ?? false,
+                        "observed_view_ids": observedViewIDs,
+                        "context": context.map {
+                            ["session_id": $0.sessionID, "view_id": $0.viewID ?? "",
+                             "name": $0.viewName ?? "", "path": $0.viewPath ?? ""]
+                        } ?? [:],
+                        "boundaries": boundaries, "view_rows": encoded,
+                        "window_is_key": window.isKeyWindow,
+                        "window_visible": !window.isHidden,
+                        "window_scene_matches": window.windowScene === scene,
+                        "root_is_original_host": window.rootViewController === host,
+                        "window_width": Double(window.bounds.width),
+                        "window_height": Double(window.bounds.height)
+                    ]
+                    let capture = XCTAttachment(
+                        data: try JSONSerialization.data(withJSONObject: partial),
+                        uniformTypeIdentifier: "public.json"
+                    )
+                    capture.name = "ordinary-swiftui-public-entry-partial"
+                    capture.lifetime = .keepAlways
+                    add(capture)
+                } catch {
+                    XCTFail("Could not retain ordinary SwiftUI partial observations")
+                }
+            }
+        }
         try await awaitOrdinaryBoundary("mount", core: core) {
             driver.states == [0] && snapshot()?.viewName == "OnTracked"
                 && rows.views.contains { $0.view.isActive == true }
         }
         let first = try XCTUnwrap(snapshot())
         let firstID = try XCTUnwrap(first.viewID)
+        observedViewIDs.append(firstID)
         XCTAssertEqual(first.viewPath, expectedPath)
         XCTAssertEqual(Set(selectedViews([firstID]).map { $0.view.id }), [firstID])
         record("mount", host)
         try XCTUnwrap(driver.update)()
+        attemptedBoundary = "child-state-update"
         try await awaitOrdinaryBoundary("child-state-update", core: core) { driver.states == [0, 1] }
         let retained = try XCTUnwrap(snapshot())
         XCTAssertEqual(retained.sessionID, first.sessionID)
@@ -850,6 +901,7 @@ extension SwiftUINavigationOwnershipTests {
         XCTAssertEqual(Set(selectedViews([firstID]).map { $0.view.id }), [firstID])
         record("child-state-update", host)
         driver.visible = false
+        attemptedBoundary = "unmount"
         try await awaitOrdinaryBoundary("unmount", core: core) {
             driver.disappearances == 1 && snapshot()?.viewID == nil
                 && rows.views.contains { $0.view.id == firstID && $0.view.isActive == false }
@@ -865,16 +917,19 @@ extension SwiftUINavigationOwnershipTests {
         ))
         let nextHost = UIHostingController(rootView: OrdinarySwiftUIViewRoot(content: rebuilt, driver: next))
         window.rootViewController = nextHost
+        attemptedBoundary = "reconstruction"
         try await awaitOrdinaryBoundary("reconstruction", core: core) {
             next.states == [0] && snapshot()?.viewName == "OnTracked" && snapshot()?.viewID != firstID
         }
         let second = try XCTUnwrap(snapshot())
         let secondID = try XCTUnwrap(second.viewID)
+        observedViewIDs.append(secondID)
         XCTAssertNotEqual(firstID, secondID)
         XCTAssertEqual(second.sessionID, first.sessionID)
         XCTAssertEqual(second.viewPath, expectedPath)
         record("reconstruction", nextHost)
         next.visible = false
+        attemptedBoundary = "reconstructed-unmount"
         try await awaitOrdinaryBoundary("reconstructed-unmount", core: core) {
             next.disappearances == 1 && snapshot()?.viewID == nil
                 && rows.views.contains { $0.view.id == secondID && $0.view.isActive == false }
@@ -919,6 +974,7 @@ extension SwiftUINavigationOwnershipTests {
         attachment.name = "ordinary-swiftui-public-entry-terminal"
         attachment.lifetime = .keepAlways
         add(attachment)
+        terminalCaptured = true
     }
 
     @MainActor
