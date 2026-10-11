@@ -861,7 +861,7 @@ private final class OperationProfileStorageFixture {
                   "fixtureOwned": window === self.window, "key": window.isKeyWindow,
                   "hidden": window.isHidden, "root": window.rootViewController.map {
                       String(describing: ObjectIdentifier($0))
-                  } ?? "", "bounds": NSStringFromCGRect(window.bounds)]
+                  } ?? "", "bounds": NSCoder.string(for: window.bounds)]
              }]
         }
     }
@@ -1022,7 +1022,7 @@ final class OriginalOperationProfileIntegrationTests: XCTestCase {
                  "buttonIdentifier": try XCTUnwrap(controller.button.accessibilityIdentifier),
                  "scene": fixture.scene.session.persistentIdentifier,
                  "viewID": try XCTUnwrap(before.viewID), "viewPath": expectedView.path,
-                 "buttonBoundsInWindow": NSStringFromCGRect(
+                 "buttonBoundsInWindow": NSCoder.string(for:
                      controller.button.convert(controller.button.bounds, to: fixture.window))]],
                name: "inferred-input-ready")
         controller.button.accessibilityLabel = "Run operation \(supplied)"
