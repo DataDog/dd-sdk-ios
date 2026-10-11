@@ -98,6 +98,50 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         XCTAssertEqual(event.dd.profiling?.quotaReason, quotaReason)
     }
 
+    func testOperationStep_OrdinaryApp_writesEncodedProcessClassification() throws {
+        let command = RUMOperationStepVitalCommand.mockRandom()
+        mockContext = .mockWith(applicationBundleType: .iOSApp)
+
+        manager.process(
+            command,
+            context: mockContext,
+            writer: mockWriter,
+            activeView: .mockAny()
+        )
+
+        let events = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
+        XCTAssertEqual(events.count, 1)
+        let event = try XCTUnwrap(events.first)
+        XCTAssertEqual(event.session.isMainProcess, true)
+        let data = try JSONEncoder().encode(event)
+        let object = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let session = try XCTUnwrap(object["session"] as? [String: Any])
+        let encodedIsMainProcess = try XCTUnwrap(session["is_main_process"] as? Bool)
+        XCTAssertEqual(encodedIsMainProcess, true)
+    }
+
+    func testOperationStep_AppExtension_writesEncodedProcessClassification() throws {
+        let command = RUMOperationStepVitalCommand.mockRandom()
+        mockContext = .mockWith(applicationBundleType: .iOSAppExtension)
+
+        manager.process(
+            command,
+            context: mockContext,
+            writer: mockWriter,
+            activeView: .mockAny()
+        )
+
+        let events = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
+        XCTAssertEqual(events.count, 1)
+        let event = try XCTUnwrap(events.first)
+        XCTAssertEqual(event.session.isMainProcess, false)
+        let data = try JSONEncoder().encode(event)
+        let object = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let session = try XCTUnwrap(object["session"] as? [String: Any])
+        let encodedIsMainProcess = try XCTUnwrap(session["is_main_process"] as? Bool)
+        XCTAssertEqual(encodedIsMainProcess, false)
+    }
+
     func testFeatureOperationCommand_whenAppRunsAsAppExtension_createsVitalEventWithIsMainProcessFalse() throws {
         // Given
         let command = RUMOperationStepVitalCommand.mockRandom()
