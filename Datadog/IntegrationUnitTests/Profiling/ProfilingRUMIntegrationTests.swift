@@ -632,7 +632,7 @@ private final class OperationProfileStorageFixture {
     let resolvedOn: Bool
     private let root: UIViewController
     private let directory: URL
-    private let stores: [String: (storage: FeatureStorage, upload: FeatureUpload)]
+    private var stores: [String: (storage: FeatureStorage, upload: FeatureUpload)] = [:]
     private(set) var partialCapture: [String: [StoredOperationBatch]] = [:]
     private var nativeCleanedUp = false
 
@@ -653,7 +653,7 @@ private final class OperationProfileStorageFixture {
         return (scene, window, root)
     }
 
-    init(expectedOn: Bool) throws {
+    init(expectedOn: Bool, automaticUIKit: Bool = false) throws {
         guard let (scene, window, root) = Self.hostedWindow() else { throw Failure.hostNotReady }
         self.scene = scene
         self.window = window
@@ -685,18 +685,14 @@ private final class OperationProfileStorageFixture {
             var rum = RUM.Configuration(applicationID: "local-operation-fixture")
             rum.sessionSampleRate = 100
             rum.featureFlags[.multiSceneTracking] = true
+            if automaticUIKit {
+                rum.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+                rum.uiKitActionsPredicate = DefaultUIKitRUMActionsPredicate()
+                rum.longTaskThreshold = nil
+            }
             guard !rum.debugSDK else { throw Failure.hostNotReady }
             try RUM.enableOrThrow(with: rum, in: core)
-            let profiling = Profiling.Configuration(
-                applicationLaunchSampleRate: 0, continuousSampleRate: 0
-            )
-            guard !profiling.debugSDK,
-                  profiling.minProfileDuration == DatadogProfiler.Constants.minProfileDuration else {
-                throw Failure.hostNotReady
-            }
-            try Profiling.enableOrThrow(with: profiling, in: core)
             let feature = try XCTUnwrap(core.get(feature: RUMFeature.self))
-            _ = try XCTUnwrap(core.get(feature: ProfilerFeature.self))
             monitor = feature.monitor
             let actualOn = feature.isMultiSceneTrackingEnabled
             resolvedOn = actualOn
@@ -711,10 +707,8 @@ private final class OperationProfileStorageFixture {
             }
             stores = core.stores
             for store in stores.values { store.upload.uploader.cancelSynchronously() }
-            core.flush()
-            DatadogProfiler.defaultQueue.sync { }
-            core.flush()
-            DatadogProfiler.defaultQueue.sync { }
+            drain()
+            if !automaticUIKit { try enableProfiler() }
         } catch {
             for store in core.stores.values { store.upload.uploader.cancelSynchronously() }
             core.stop()
@@ -725,6 +719,28 @@ private final class OperationProfileStorageFixture {
             try? FileManager.default.removeItem(at: directory)
             throw error
         }
+    }
+
+    func enableProfiler() throws {
+        guard core.get(feature: ProfilerFeature.self) == nil else { throw Failure.conditionNotReached }
+        let configuration = Profiling.Configuration(
+            applicationLaunchSampleRate: 0, continuousSampleRate: 0
+        )
+        guard !configuration.debugSDK,
+              configuration.minProfileDuration == DatadogProfiler.Constants.minProfileDuration else {
+            throw Failure.hostNotReady
+        }
+        do {
+            try Profiling.enableOrThrow(with: configuration, in: core)
+        } catch {
+            stores = core.stores
+            for store in stores.values { store.upload.uploader.cancelSynchronously() }
+            throw error
+        }
+        stores = core.stores
+        for store in stores.values { store.upload.uploader.cancelSynchronously() }
+        _ = try XCTUnwrap(core.get(feature: ProfilerFeature.self))
+        drain()
     }
 
     func drain() {
@@ -872,6 +888,43 @@ private final class OperationProfileStorageFixture {
     }
 }
 
+@MainActor
+private final class InferredOperationProfileController: UIViewController {
+    let button = UIButton(type: .system)
+    var onTap: (() -> Void)?
+
+    init(inputIdentifier: String) {
+        super.init(nibName: nil, bundle: nil)
+        modalPresentationStyle = .fullScreen
+        button.accessibilityIdentifier = inputIdentifier
+        button.accessibilityLabel = "Preparing operation"
+        button.isEnabled = false
+    }
+
+    required init?(coder: NSCoder) { return nil }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .systemBackground
+        button.setTitle("Run operation", for: .normal)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(tapped), for: .touchUpInside)
+        view.addSubview(button)
+        NSLayoutConstraint.activate([
+            button.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            button.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            button.widthAnchor.constraint(equalToConstant: 240),
+            button.heightAnchor.constraint(equalToConstant: 60)
+        ])
+    }
+
+    @objc private func tapped() {
+        button.isEnabled = false
+        button.accessibilityLabel = "Input received \(button.accessibilityIdentifier ?? "")"
+        onTap?()
+    }
+}
+
 final class OriginalOperationProfileIntegrationTests: XCTestCase {
     @MainActor
     func testManualOperationWithSceneTracking_keepsOriginalProfileAttribution() async throws {
@@ -883,6 +936,202 @@ final class OriginalOperationProfileIntegrationTests: XCTestCase {
     func testRequestedSceneTrackingOnOlderSystem_keepsLegacyOperationProfile() async throws {
         if #available(iOS 27.0, *) { throw XCTSkip("This control requires the older runtime") }
         try await exerciseManualOperation(expectedOn: false)
+    }
+
+    @MainActor
+    func testAutomaticUIKitOperation_keepsOriginalActionAndProfileAttribution() async throws {
+        guard #available(iOS 27.0, *) else { throw XCTSkip("Scene ownership requires iOS 27") }
+        let supplied = try XCTUnwrap(ProcessInfo.processInfo.environment["PR10_INFERRED_INPUT_ID"])
+        let inputID = try XCTUnwrap(UUID(uuidString: supplied))
+        guard inputID.uuidString.lowercased() == supplied else {
+            throw OperationProfileStorageFixture.Failure.hostNotReady
+        }
+        dd_profiler_stop()
+        dd_profiler_destroy()
+        dd_delete_profiling_defaults()
+        try await eventually { OperationProfileStorageFixture.hostIsReady }
+        let fixture = try OperationProfileStorageFixture(expectedOn: true, automaticUIKit: true)
+        let root = try XCTUnwrap(fixture.window.rootViewController)
+        let controller = InferredOperationProfileController(
+            inputIdentifier: "operation-profile-inferred-\(supplied)"
+        )
+        let operationKey = UUID().uuidString
+        let monitor: RUMMonitorProtocol = fixture.monitor
+        var callbackCount = 0
+        var capturedInput: RUMContextHandoff.CurrentValue?
+        var callbackPreparationError: Error?
+        func callbackInventory() -> [[String: Any]] {
+            let resolved = fixture.core.rumContextHandoffOwner.flatMap {
+                capturedInput?.resolvedRUMContext(for: $0)
+            }
+            return [["inputID": supplied, "processID": ProcessInfo.processInfo.processIdentifier,
+                     "callbackCount": callbackCount,
+                     "callbackPreparationFailed": callbackPreparationError != nil,
+                     "hasCapturedContext": capturedInput != nil,
+                     "hasPendingUserAction": capturedInput?.hasPendingUserAction ?? false,
+                     "hasActionReceipt": capturedInput?.actionReceipt != nil,
+                     "scene": capturedInput?.sceneIdentifier ?? "",
+                     "sessionID": capturedInput?.rumContext?.sessionID ?? "",
+                     "viewID": capturedInput?.rumContext?.viewID ?? "",
+                     "acceptedActionID": resolved?.userActionID ?? ""]]
+        }
+        defer {
+            attach(callbackInventory(), name: "inferred-terminal-callback-state")
+            controller.button.isEnabled = false
+            controller.onTap = nil
+            attach(fixture.partialCapture, name: "inferred-partial-storage-before-terminal-read")
+            do { attach(try fixture.capture(), name: "inferred-terminal-storage") }
+            catch { XCTFail("Terminal inferred storage capture was incomplete") }
+            attach(fixture.partialCapture, name: "inferred-partial-storage-after-terminal-read")
+            // No test-side dismissal result substitutes for the controller's native cleanup proof.
+            if root.presentedViewController === controller { root.dismiss(animated: false) }
+            do { try fixture.stop() } catch { XCTFail("Owned directory cleanup failed") }
+            fixture.destroyNativeProfiler()
+        }
+        controller.onTap = {
+            callbackCount += 1
+            guard callbackCount == 1 else { return }
+            capturedInput = fixture.monitor.currentExecutionContext
+            do {
+                // Construction is inside the real callback, so input waiting does not age the profile.
+                try fixture.enableProfiler()
+                dd_profiler_start()
+                guard dd_profiler_get_status() == DD_PROFILER_STATUS_RUNNING else {
+                    throw OperationProfileStorageFixture.Failure.conditionNotReached
+                }
+                monitor.startOperation(name: "inferred-stored-operation", operationKey: operationKey,
+                    attributes: ["fixture_phase": "start"], options: ProfilingOptions(sampleRate: 100))
+                monitor.succeedOperation(name: "inferred-stored-operation", operationKey: operationKey,
+                    attributes: ["fixture_phase": "end"])
+            } catch { callbackPreparationError = error }
+        }
+        root.present(controller, animated: false)
+        let expectedView = try XCTUnwrap(DefaultUIKitRUMViewsPredicate().rumView(for: controller))
+        try await eventually {
+            guard controller.viewIfLoaded?.window === fixture.window,
+                  root.presentedViewController === controller else { return false }
+            return try fixture.context().viewPath == expectedView.path
+        }
+        let before = try fixture.context()
+        _ = try XCTUnwrap(before.viewID)
+        try fixture.verifyHost()
+        XCTAssertEqual(before.viewName, expectedView.name)
+        XCTAssertNil(fixture.monitor.currentExecutionContext)
+        attach(fixture.hostInventory(), name: "inferred-before-input-window-inventory")
+        attach([["inputID": supplied, "processID": ProcessInfo.processInfo.processIdentifier,
+                 "buttonIdentifier": try XCTUnwrap(controller.button.accessibilityIdentifier),
+                 "scene": fixture.scene.session.persistentIdentifier,
+                 "viewID": try XCTUnwrap(before.viewID), "viewPath": expectedView.path,
+                 "buttonBoundsInWindow": NSStringFromCGRect(
+                     controller.button.convert(controller.button.bounds, to: fixture.window))]],
+               name: "inferred-input-ready")
+        controller.button.accessibilityLabel = "Run operation \(supplied)"
+        controller.button.accessibilityValue = "Ready"
+        controller.button.isEnabled = true
+        // The independently owned Xcode input session performs one actual tap.
+        // This wait is an operational bound, not a duration or performance assertion.
+        try await eventually(timeout: 120) { callbackCount > 0 }
+        fixture.drain()
+        controller.button.isEnabled = false
+        attach(callbackInventory(), name: "inferred-original-callback")
+        XCTAssertEqual(callbackCount, 1)
+        if let error = callbackPreparationError { throw error }
+        let captured = try XCTUnwrap(capturedInput)
+        let owner = try XCTUnwrap(fixture.core.rumContextHandoffOwner)
+        let receipt = try XCTUnwrap(captured.actionReceipt)
+        XCTAssertTrue(receipt.owner === owner)
+        XCTAssertTrue(owner.isValid)
+        XCTAssertTrue(captured.hasPendingUserAction)
+        XCTAssertEqual(captured.sceneIdentifier, fixture.scene.session.persistentIdentifier)
+        let owned = try XCTUnwrap(captured.resolvedRUMContext(for: owner))
+        XCTAssertEqual(owned.sessionID, before.sessionID)
+        XCTAssertEqual(owned.viewID, before.viewID)
+        let actionID = try XCTUnwrap(owned.userActionID)
+        XCTAssertNil(fixture.monitor.currentExecutionContext)
+
+        let beforeMutation = try fixture.capture()
+        attach(beforeMutation, name: "inferred-before-representative-change-storage")
+        guard beforeMutation[ProfilerFeature.name]?.flatMap(\.events).isEmpty == true else {
+            throw OperationProfileStorageFixture.Failure.conditionNotReached
+        }
+        monitor.startView(key: "inferred-later-representative", name: "Inferred Later Representative")
+        let later = try fixture.context()
+        XCTAssertEqual(later.sessionID, owned.sessionID)
+        XCTAssertNotEqual(later.viewID, owned.viewID)
+        try await eventually {
+            try fixture.capture()[ProfilerFeature.name]?.flatMap(\.events).isEmpty == false
+        }
+        let inventory = try fixture.capture()
+        attach(inventory, name: "inferred-decisive-storage")
+        attach(fixture.hostInventory(), name: "inferred-final-window-inventory")
+        try fixture.verifyHost()
+        XCTAssertTrue(controller.viewIfLoaded?.window === fixture.window)
+        let rumRows = try rows(inventory[RUMFeature.name] ?? [])
+        let steps = rumRows.filter {
+            guard let vital = $0["vital"] as? [String: Any] else { return false }
+            return vital["name"] as? String == "inferred-stored-operation"
+                && vital["operation_key"] as? String == operationKey
+                && vital["type"] as? String == "operation_step"
+        }
+        XCTAssertEqual(steps.count, 2)
+        let startStep = try onlyStep(steps, type: "start")
+        let endStep = try onlyStep(steps, type: "end")
+        try assertStep(startStep, context: owned, phase: "start")
+        try assertStep(endStep, context: owned, phase: "end")
+        // The operation-step wire model has Session/view but no action field.
+        for step in steps { XCTAssertNil(step["action"]) }
+        let actions = rumRows.filter { $0["type"] as? String == "action" }
+        let expectedAction = try XCTUnwrap(
+            DefaultUIKitRUMActionsPredicate().rumAction(targetView: controller.button)
+        )
+        let selectedActions = actions.filter {
+            (($0["action"] as? [String: Any])?["target"] as? [String: Any])?["name"] as? String
+                == expectedAction.name
+        }
+        XCTAssertEqual(selectedActions.count, 1)
+        let action = try XCTUnwrap(selectedActions.first)
+        XCTAssertEqual((action["action"] as? [String: Any])?["id"] as? String, actionID)
+        XCTAssertEqual((action["action"] as? [String: Any])?["type"] as? String, "tap")
+        XCTAssertEqual((action["session"] as? [String: Any])?["id"] as? String, owned.sessionID)
+        XCTAssertEqual((action["view"] as? [String: Any])?["id"] as? String, owned.viewID)
+        XCTAssertEqual((action["view"] as? [String: Any])?["url"] as? String, owned.viewPath)
+        let views = rumRows.filter { $0["type"] as? String == "view" }
+        XCTAssertTrue(views.contains {
+            ($0["view"] as? [String: Any])?["id"] as? String == owned.viewID
+                && ($0["view"] as? [String: Any])?["url"] as? String == expectedView.path
+        })
+
+        let profileEvents = inventory[ProfilerFeature.name]?.flatMap(\.events) ?? []
+        XCTAssertEqual(profileEvents.count, 1)
+        let event = try XCTUnwrap(profileEvents.first)
+        let profile = try object(event.data)
+        XCTAssertEqual(profile[RUMCoreContext.IDs.sessionID] as? String, owned.sessionID)
+        XCTAssertEqual(profile[RUMCoreContext.IDs.viewID] as? [String], [try XCTUnwrap(owned.viewID)])
+        XCTAssertEqual(profile[RUMCoreContext.IDs.viewName] as? [String], [try XCTUnwrap(owned.viewName)])
+        XCTAssertEqual(profile[RUMCoreContext.IDs.userActionID] as? String, actionID)
+        let attachments = try JSONDecoder().decode(ProfileAttachments.self, from: XCTUnwrap(event.metadata))
+        XCTAssertFalse(attachments.pprof.isEmpty)
+        XCTAssertEqual(profile["attachments"] as? [String],
+            [ProfileAttachments.Constants.pprofFilename, ProfileAttachments.Constants.rumEventsFilename])
+        let attached = try XCTUnwrap(try JSONSerialization.jsonObject(
+            with: XCTUnwrap(attachments.rumEvents)) as? [[String: Any]])
+        let startID = try XCTUnwrap((startStep["vital"] as? [String: Any])?["id"] as? String)
+        let endID = try XCTUnwrap((endStep["vital"] as? [String: Any])?["id"] as? String)
+        let selected = attached.filter { $0["id"] as? String == startID }
+        XCTAssertEqual(selected.count, 1)
+        let vital = try XCTUnwrap(selected.first)
+        XCTAssertEqual(vital["name"] as? String, "inferred-stored-operation")
+        XCTAssertEqual(vital["type"] as? String, "vital")
+        for key in ["start_ns", "duration_ns"] {
+            let value = try XCTUnwrap(vital[key] as? NSNumber).doubleValue
+            XCTAssertTrue(value.isFinite)
+            if key == "duration_ns" { XCTAssertGreaterThanOrEqual(value, 0) }
+        }
+        for key in ["session", "view", "action", "step_type"] { XCTAssertNil(vital[key]) }
+        XCTAssertFalse(attached.contains { $0["id"] as? String == endID })
+        XCTAssertEqual(profile[RUMCoreContext.IDs.vitalID] as? [String], [startID])
+        XCTAssertEqual(profile[RUMCoreContext.IDs.vitalLabel] as? [String], ["inferred-stored-operation"])
+        XCTAssertEqual(callbackCount, 1)
     }
 
     @MainActor
@@ -1005,8 +1254,8 @@ final class OriginalOperationProfileIntegrationTests: XCTestCase {
     }
 
     @MainActor
-    private func eventually(_ condition: @escaping () throws -> Bool) async throws {
-        let deadline = Date().addingTimeInterval(30)
+    private func eventually(timeout: TimeInterval = 30, _ condition: @escaping () throws -> Bool) async throws {
+        let deadline = Date().addingTimeInterval(timeout)
         var failure: Error?
         var completed = false
         let done = expectation(description: "Original storage or host condition becomes available")
@@ -1023,7 +1272,7 @@ final class OriginalOperationProfileIntegrationTests: XCTestCase {
                 return true
             }
         }, andThenFulfill: done)
-        await dd_fulfillment(for: [done], timeout: 31)
+        await dd_fulfillment(for: [done], timeout: timeout + 1)
         if let failure { throw failure }
         guard completed else { throw OperationProfileStorageFixture.Failure.conditionNotReached }
     }
