@@ -2505,5 +2505,193 @@ extension DatadogCoreTests {
         // Sending through a surviving weak scope remains safe after Core deallocation.
         scope.sendFlagEvaluation(.init(flagKey: "after-deinit", value: true))
     }
+
+    private func runConcurrentFlagOperations(_ operations: [() -> Void]) {
+        let entered = expectation(description: "all Flags workers entered")
+        entered.expectedFulfillmentCount = operations.count
+        let finished = expectation(description: "all Flags workers completed")
+        finished.expectedFulfillmentCount = operations.count
+        let release = DispatchSemaphore(value: 0)
+        let threads = operations.map { operation in
+            Thread {
+                defer { finished.fulfill() }
+                entered.fulfill()
+                guard release.wait(timeout: .now() + 10) == .success else {
+                    XCTFail("Flags worker was not released")
+                    return
+                }
+                operation()
+            }
+        }
+        threads.forEach { $0.start() }
+        wait(for: [entered], timeout: 10)
+        threads.forEach { _ in release.signal() }
+        wait(for: [finished], timeout: 10)
+    }
+
+    func testConcurrentFirstFlagPublicationsKeepOneAuthoritativeOwner() throws {
+        for round in 0..<32 {
+            let core = PassthroughCoreMock()
+            let bus = MessageBus.make(configurationDispatchTime: .seconds(0))
+            let receiver = FeatureMessageReceiverMock()
+            bus.connect(core: core)
+            bus.connect(receiver, forKey: "flag-test")
+            bus.flush()
+            let first = RUMContextHandoff.Owner()
+            let second = RUMContextHandoff.Owner()
+            runConcurrentFlagOperations([
+                { bus.publishFlagEvaluationOwner(first, active: true) },
+                { bus.publishFlagEvaluationOwner(second, active: true) }
+            ])
+            for (owner, name) in [(first, "first"), (second, "second")] {
+                RUMContextHandoff.withValue(handoffValue(name), for: owner) {
+                    bus.sendFlagEvaluation(.init(flagKey: name, value: round))
+                }
+            }
+            bus.flush()
+            let captured = receiver.messages.compactMap { message -> RUMCapturedFlagEvaluationMessage? in
+                guard case let .payload(value as RUMCapturedFlagEvaluationMessage) = message else {
+                    return nil
+                }
+                return value
+            }
+            let legacy = receiver.messages.compactMap { message -> RUMFlagEvaluationMessage? in
+                guard case let .payload(value as RUMFlagEvaluationMessage) = message else {
+                    return nil
+                }
+                return value
+            }
+            XCTAssertEqual(captured.count, 1)
+            XCTAssertEqual(legacy.count, 1)
+            let evaluation = try XCTUnwrap(captured.first)
+            let capture = try XCTUnwrap(evaluation.capture)
+            let winner = capture.owner
+            XCTAssertTrue(winner === first || winner === second)
+            let winnerName = winner === first ? "first" : "second"
+            let loser = winner === first ? second : first
+            XCTAssertEqual(evaluation.evaluation.flagKey, winnerName)
+            XCTAssertEqual(capture.value.rumContext?.viewID, winnerName)
+            XCTAssertEqual(evaluation.evaluation.value as? Int, round)
+            XCTAssertEqual(legacy.first?.flagKey, winner === first ? "second" : "first")
+            bus.publishFlagEvaluationOwner(loser, active: false)
+            RUMContextHandoff.withValue(handoffValue(winnerName), for: winner) {
+                bus.sendFlagEvaluation(.init(flagKey: "after-loser-disable", value: true))
+            }
+            bus.publishFlagEvaluationOwner(winner, active: false)
+            bus.sendFlagEvaluation(.init(flagKey: "after-winner-disable", value: false))
+            bus.flush()
+            let finalCaptured = receiver.messages.compactMap { message -> RUMCapturedFlagEvaluationMessage? in
+                guard case let .payload(value as RUMCapturedFlagEvaluationMessage) = message else {
+                    return nil
+                }
+                return value
+            }
+            let finalLegacy = receiver.messages.compactMap { message -> RUMFlagEvaluationMessage? in
+                guard case let .payload(value as RUMFlagEvaluationMessage) = message else {
+                    return nil
+                }
+                return value
+            }
+            XCTAssertEqual(finalCaptured.count, 2)
+            XCTAssertTrue(finalCaptured.last?.capture?.owner === winner)
+            XCTAssertEqual(finalCaptured.last?.evaluation.flagKey, "after-loser-disable")
+            XCTAssertEqual(finalLegacy.count, 2)
+            XCTAssertEqual(finalLegacy.last?.flagKey, "after-winner-disable")
+        }
+    }
+
+    func testConcurrentStaleFlagPublicationsCannotChangeReplacementDelivery() throws {
+        let core = PassthroughCoreMock()
+        let bus = MessageBus.make(configurationDispatchTime: .seconds(0))
+        let receiver = FeatureMessageReceiverMock()
+        bus.connect(core: core)
+        bus.connect(receiver, forKey: "flag-test")
+        let original = RUMContextHandoff.Owner()
+        let current = RUMContextHandoff.Owner()
+        bus.publishFlagEvaluationOwner(original, active: true)
+        original.invalidate()
+        bus.publishFlagEvaluationOwner(current, active: true)
+        bus.flush()
+        let value = handoffValue("replacement")
+        runConcurrentFlagOperations([
+            {
+                for _ in 0..<64 {
+                    bus.publishFlagEvaluationOwner(original, active: true)
+                    bus.publishFlagEvaluationOwner(original, active: false)
+                }
+            },
+            {
+                for _ in 0..<64 { bus.publishFlagEvaluationOwner(current, active: true) }
+            },
+            {
+                RUMContextHandoff.withValue(value, for: current) {
+                    for index in 0..<64 {
+                        bus.sendFlagEvaluation(.init(flagKey: "replacement-\(index)", value: index))
+                    }
+                }
+            }
+        ])
+        bus.flush()
+        assertNoLegacyFlagEvaluations(in: receiver)
+        let evaluations = receiver.messages.compactMap { message -> RUMCapturedFlagEvaluationMessage? in
+            guard case let .payload(value as RUMCapturedFlagEvaluationMessage) = message else {
+                    return nil
+                }
+            return value
+        }
+        XCTAssertEqual(evaluations.count, 64)
+        for (index, evaluation) in evaluations.enumerated() {
+            XCTAssertTrue(evaluation.capture?.owner === current)
+            XCTAssertEqual(evaluation.capture?.value.rumContext?.viewID, "replacement")
+            XCTAssertEqual(evaluation.evaluation.flagKey, "replacement-\(index)")
+            XCTAssertEqual(evaluation.evaluation.value as? Int, index)
+        }
+    }
+
+    func testConcurrentFlagOwnerInvalidationPreservesCapturedAbsence() throws {
+        let core = PassthroughCoreMock()
+        let bus = MessageBus.make(configurationDispatchTime: .seconds(0))
+        let receiver = FeatureMessageReceiverMock()
+        bus.connect(core: core)
+        bus.connect(receiver, forKey: "flag-test")
+        let owner = RUMContextHandoff.Owner()
+        bus.publishFlagEvaluationOwner(owner, active: true)
+        bus.flush()
+        let value = handoffValue("original")
+        runConcurrentFlagOperations([
+            { owner.invalidate() },
+            {
+                RUMContextHandoff.withValue(value, for: owner) {
+                    for index in 0..<64 {
+                        bus.sendFlagEvaluation(.init(flagKey: "invalidation-\(index)", value: index))
+                    }
+                }
+            }
+        ])
+        bus.sendFlagEvaluation(.init(flagKey: "after-invalidation", value: true))
+        bus.flush()
+        assertNoLegacyFlagEvaluations(in: receiver)
+        let evaluations = receiver.messages.compactMap { message -> RUMCapturedFlagEvaluationMessage? in
+            guard case let .payload(value as RUMCapturedFlagEvaluationMessage) = message else {
+                    return nil
+                }
+            return value
+        }
+        XCTAssertEqual(evaluations.count, 65)
+        for (index, evaluation) in evaluations.prefix(64).enumerated() {
+            let capture = try XCTUnwrap(evaluation.capture)
+            XCTAssertTrue(capture.owner === owner)
+            XCTAssertFalse(capture.owner.isValid)
+            XCTAssertTrue(capture.value.rumContext == nil || capture.value.rumContext?.viewID == "original")
+            XCTAssertEqual(evaluation.evaluation.flagKey, "invalidation-\(index)")
+            XCTAssertEqual(evaluation.evaluation.value as? Int, index)
+        }
+        let final = try XCTUnwrap(evaluations.last)
+        let finalCapture = try XCTUnwrap(final.capture)
+        XCTAssertTrue(finalCapture.owner === owner)
+        XCTAssertNil(finalCapture.value.rumContext)
+        XCTAssertNil(finalCapture.value.sceneIdentifier)
+        XCTAssertEqual(final.evaluation.flagKey, "after-invalidation")
+    }
 }
 #endif
