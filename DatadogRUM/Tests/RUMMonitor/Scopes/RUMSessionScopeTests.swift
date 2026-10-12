@@ -1967,20 +1967,50 @@ extension RUMSessionScopeTests {
         try assertExpiredSessionCompletion(by: .maxDuration, error: true)
     }
 
-    func testGivenExpiredSessionResourceKey_whenReused_itPreservesCurrentSessionActionCounts() throws {
+    func testGivenReusedExpiredSessionResourceKey_whenBothResourcesComplete_itCountsOneResourceInNewSessionAction() throws {
+        try assertReusedExpiredSessionResourceKey(startExpiresSession: false)
+    }
+
+    func testGivenReusingStartExpiresSession_whenBothResourcesComplete_itCountsOneResourceInNewSessionAction() throws {
+        try assertReusedExpiredSessionResourceKey(startExpiresSession: true)
+    }
+
+    func testGivenCompletionExpiresSession_whenKeyIsStoppedAgain_itPreservesLegacyActionCounts() throws {
+        let fixture = RUMResourceCompletionFixture(applicationScope: true)
+        fixture.startView("expired")
+        fixture.startResource("late")
+        fixture.expireSession(by: .timeOut)
+        // The expired Resource's completion ends its session, so the key no longer refers to it.
+        fixture.stopResource("late")
+        fixture.startView("current")
+        fixture.startAction("current")
+        fixture.stopResource("late")
+        fixture.stopAction()
+        try fixture.assertAction("current", resources: 1, errors: 0)
+        XCTAssertTrue(fixture.resources.isEmpty)
+    }
+
+    private func assertReusedExpiredSessionResourceKey(
+        startExpiresSession: Bool,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) throws {
         let fixture = RUMResourceCompletionFixture(applicationScope: true)
         fixture.startView("expired")
         fixture.startResource("reused")
         fixture.expireSession(by: .timeOut)
-        fixture.startView("current")
-        fixture.startAction("current")
+        if !startExpiresSession {
+            fixture.startView("current")
+        }
+        // When the start expires the session, the new session restarts the last view to track it.
         fixture.startResource("reused")
+        fixture.startAction("current")
+        // One stop completes the expired Resource. Only the stop owned by a tracked view counts.
         fixture.stopResource("reused")
-        // Once reused, the key no longer refers to the expired Resource: an unknown stop keeps legacy counts.
         fixture.stopResource("reused")
         fixture.stopAction()
-        try fixture.assertAction("current", resources: 2, errors: 0)
-        XCTAssertEqual(fixture.resources.count, 1)
+        try fixture.assertAction("current", resources: 1, errors: 0, file: file, line: line)
+        XCTAssertEqual(fixture.resources.count, 1, file: file, line: line)
     }
 
     private func assertExpiredSessionCompletion(

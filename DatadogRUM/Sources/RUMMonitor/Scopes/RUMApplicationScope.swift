@@ -28,8 +28,9 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// The end reason from the last active session. Used as "start reason" for the new session.
     private var lastSessionEndReason: RUMSessionScope.EndReason?
 
-    /// Keys of Resources still pending when the last session expired. Their late manual completions
-    /// must not update actions in the next session. Only the last expired session is kept to bound this set.
+    /// Keys of Resources still pending when the last session expired. The first manual completion of each key
+    /// that no tracked view owns is the expired Resource's, so it must not update actions in the next session.
+    /// A reused key keeps its entry. Only the last expired session is kept to bound this set.
     private var expiredSessionResourceKeys: Set<String> = []
 
     var activeSession: RUMSessionScope? {
@@ -157,10 +158,6 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             applicationState.wasAnySessionStopped = true
         }
 
-        if let start = command as? RUMStartResourceCommand {
-            // A reused key belongs to the new Resource.
-            expiredSessionResourceKeys.remove(start.resourceKey)
-        }
         // Resolve once before a retained owner can finish during session broadcast.
         let command = command.resolvingResourceOwners(
             in: sessionScopes.flatMap { $0.viewScopes },
@@ -197,8 +194,12 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             switch endReason {
             case .timeOut, .maxDuration:
                 applicationState.wasPreviousSessionStopped = false
-                // Expired sessions are dropped with their pending Resources.
-                expiredSessionResourceKeys = Set(scope.viewScopes.flatMap { $0.resourceScopes.keys })
+                // Expired sessions are dropped with their pending Resources, except one this command completes.
+                var pendingResourceKeys = Set(scope.viewScopes.flatMap { $0.resourceScopes.keys })
+                if let completion = command as? RUMResourceCompletionCommand {
+                    pendingResourceKeys.remove(completion.resourceKey)
+                }
+                expiredSessionResourceKeys = pendingResourceKeys
                 if !(command is RUMHandleAppLifecycleEventCommand) {
                     // Replace this session scope with the scope for refreshed session:
                     return refresh(expiredSession: scope, on: command, context: context, writer: writer)
