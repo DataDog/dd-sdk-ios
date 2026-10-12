@@ -55,7 +55,7 @@ final class BuiltInFlagEvaluationCaptureTests: XCTestCase {
         )
     }
 
-    private func core() throws -> DatadogCore {
+    private func core(stopAtTeardown: Bool = true) throws -> DatadogCore {
         let directory = try temporaryUniqueCoreDirectory().create()
         addTeardownBlock { try directory.delete() }
         let core = DatadogCore(
@@ -70,7 +70,9 @@ final class BuiltInFlagEvaluationCaptureTests: XCTestCase {
             maxBatchesPerUpload: 1,
             backgroundTasksEnabled: false
         )
-        addTeardownBlock { core.stop() }
+        if stopAtTeardown {
+            addTeardownBlock { core.stop() }
+        }
         return core
     }
 
@@ -148,6 +150,73 @@ final class BuiltInFlagEvaluationCaptureTests: XCTestCase {
         XCTAssertEqual(evaluations.map { $0.evaluation.value as? String }, ["enabled", "enabled"])
         XCTAssertEqual(evaluations.map { $0.capture?.value.rumContext?.viewID }, ["normal-view", "internal-view"])
         XCTAssertTrue(evaluations.allSatisfy { $0.capture?.owner === owner })
+    }
+
+    @available(iOS 27.0, *)
+    func testRetainedRealClientAndScopeDoNotKeepCoreAliveInEitherTrackingMode() throws {
+        for activate in [false, true] {
+            var sdkCore: DatadogCore? = try core(stopAtTeardown: false)
+            weak var weakCore = sdkCore
+            defer { weakCore?.stop() }
+            let receiver = FeatureMessageReceiverMock()
+            let bus = try XCTUnwrap(sdkCore).bus
+            bus.connect(receiver, forKey: "retained-client-lifetime")
+            let scope = try XCTUnwrap(sdkCore).scope(for: FlagsFeature.self)
+            let owner = activate ? try XCTUnwrap(sdkCore).activateRUMContextHandoff() : nil
+            let configuration = Flags.Configuration(trackExposures: false, trackEvaluations: false, rumIntegrationEnabled: true)
+            try Flags.enableOrThrow(with: configuration, in: XCTUnwrap(sdkCore))
+            let client = try XCTUnwrap(FlagsClient.create(name: "retained-lifetime", in: XCTUnwrap(sdkCore)) as? FlagsClient)
+            let assignment = FlagAssignment(
+                allocationKey: "allocation", variationKey: "enabled", variation: .boolean(true), reason: "TARGETING_MATCH", doLog: false
+            )
+            let sendBeforeRelease = {
+                client.sendFlagEvaluation(key: "before-release", assignment: assignment, context: .mockAny())
+            }
+            if let owner {
+                RUMContextHandoff.withValue(value("original-view"), for: owner, operation: sendBeforeRelease)
+            } else {
+                sendBeforeRelease()
+            }
+            sdkCore?.flush()
+            let before = receiver.messages.compactMap { message -> String? in
+                switch message {
+                case let .payload(evaluation as RUMFlagEvaluationMessage):
+                    XCTAssertFalse(activate)
+                    XCTAssertEqual(evaluation.value as? String, "enabled")
+                    return evaluation.flagKey
+                case let .payload(captured as RUMCapturedFlagEvaluationMessage):
+                    XCTAssertTrue(activate)
+                    XCTAssertTrue(captured.capture?.owner === owner)
+                    XCTAssertEqual(captured.capture?.value.rumContext?.viewID, "original-view")
+                    XCTAssertEqual(captured.evaluation.value as? String, "enabled")
+                    return captured.evaluation.flagKey
+                default:
+                    return nil
+                }
+            }
+            XCTAssertEqual(before, ["before-release"])
+
+            // Keep the real registered client, scope and bus alive while releasing Core.
+            sdkCore = nil
+            XCTAssertNil(weakCore)
+            if let owner {
+                XCTAssertFalse(owner.isValid)
+            }
+            client.sendFlagEvaluation(key: "after-release", assignment: assignment, context: .mockAny())
+            scope.sendFlagEvaluation(.init(flagKey: "scope-after-release", value: true))
+            bus.flush()
+            let evaluationsAfter = receiver.messages.filter { message in
+                if case .payload(is RUMFlagEvaluationMessage) = message {
+                    return true
+                }
+                if case .payload(is RUMCapturedFlagEvaluationMessage) = message {
+                    return true
+                }
+                return false
+            }
+            XCTAssertEqual(evaluationsAfter.count, 1)
+            withExtendedLifetime((client, scope, bus, owner)) {}
+        }
     }
 
     @available(iOS 27.0, *)
