@@ -8,6 +8,9 @@
 
 import XCTest
 import WebKit
+#if os(iOS)
+import UIKit
+#endif
 import TestUtilities
 @_spi(Internal)
 import DatadogInternal
@@ -127,6 +130,196 @@ final class WebViewSessionRolloverHandlerTests: XCTestCase {
         XCTAssertTrue(capture.owner === owner)
         XCTAssertNil(capture.value.rumContext)
     }
+
+    #if os(iOS)
+    func testNativeReceiptLegacyDoesNotResolveScene() {
+        let core = WebViewContextCoreMock()
+        let handler = WebViewSessionRolloverHandler(core: core)
+        var resolutions = 0
+        XCTAssertNil(handler.captureRUMContext(forSceneIdentifier: {
+            resolutions += 1
+            return "scene-a"
+        }))
+        XCTAssertEqual(resolutions, 0)
+        XCTAssertEqual(core.lookups, 0)
+    }
+
+    @available(iOS 27.0, *)
+    func testNativeReceiptInvalidAndRetiredOwnersDoNotResolveScene() throws {
+        for retired in [false, true] {
+            let core = WebViewContextCoreMock()
+            let handler = WebViewSessionRolloverHandler(core: core)
+            let owner = RUMContextHandoff.Owner()
+            handler.receiveRUMContextHandoff(owner: owner, active: true)
+            owner.invalidate()
+            if retired {
+                handler.receiveRUMContextHandoff(owner: owner, active: false)
+            }
+            var resolutions = 0
+            let capture = try XCTUnwrap(handler.captureRUMContext(forSceneIdentifier: {
+                resolutions += 1
+                return "scene-a"
+            }))
+            XCTAssertTrue(capture.owner === owner)
+            XCTAssertNil(capture.value.rumContext)
+            XCTAssertEqual(resolutions, 0)
+            XCTAssertEqual(core.lookups, 0)
+        }
+    }
+
+    @available(iOS 27.0, *)
+    func testNativeReceiptMissingSceneKeepsAuthoritativeAbsence() throws {
+        let core = WebViewContextCoreMock()
+        let handler = WebViewSessionRolloverHandler(core: core)
+        let owner = RUMContextHandoff.Owner()
+        handler.receiveRUMContextHandoff(owner: owner, active: true)
+        var resolutions = 0
+        let capture = try XCTUnwrap(handler.captureRUMContext(forSceneIdentifier: {
+            resolutions += 1
+            return nil
+        }))
+        XCTAssertTrue(capture.owner === owner)
+        XCTAssertNil(capture.value.rumContext)
+        XCTAssertEqual(resolutions, 1)
+        XCTAssertEqual(core.lookups, 0)
+    }
+
+    @available(iOS 27.0, *)
+    func testNativeReceiptUsesResolvedSceneAndFreezesProviderValue() throws {
+        let core = WebViewContextCoreMock()
+        let provider = WebViewContextProviderMock()
+        core.provider = provider
+        let handler = WebViewSessionRolloverHandler(core: core)
+        let owner = RUMContextHandoff.Owner()
+        handler.receiveRUMContextHandoff(owner: owner, active: true)
+        provider.output = nativeCapture(owner: owner, scene: "receipt-b")
+        let capture = try XCTUnwrap(handler.captureRUMContext(forSceneIdentifier: { "receipt-b" }))
+        provider.output = nativeCapture(owner: owner, scene: "later-c")
+        XCTAssertTrue(capture.owner === owner)
+        XCTAssertEqual(capture.value.sceneIdentifier, "receipt-b")
+        XCTAssertEqual(provider.calls, 1)
+        XCTAssertEqual(core.lookups, 1)
+    }
+
+    @available(iOS 27.0, *)
+    func testNativeReceiptResolutionCannotAdoptReentrantReplacement() throws {
+        let core = WebViewContextCoreMock()
+        let provider = WebViewContextProviderMock()
+        core.provider = provider
+        let handler = WebViewSessionRolloverHandler(core: core)
+        let original = RUMContextHandoff.Owner()
+        let replacement = RUMContextHandoff.Owner()
+        handler.receiveRUMContextHandoff(owner: original, active: true)
+        let capture = try XCTUnwrap(handler.captureRUMContext(forSceneIdentifier: {
+            original.invalidate()
+            handler.receiveRUMContextHandoff(owner: replacement, active: true)
+            provider.output = self.nativeCapture(owner: replacement, scene: "receipt-b")
+            return "receipt-b"
+        }))
+        XCTAssertTrue(capture.owner === original)
+        XCTAssertNil(capture.value.rumContext)
+        XCTAssertEqual(core.lookups, 0)
+        XCTAssertEqual(provider.calls, 0)
+    }
+
+    func testScriptReceiptOffDoesNotReadNativeWindowOrProvider() throws {
+        let core = WebViewContextCoreMock()
+        let rollover = WebViewSessionRolloverHandler(core: core)
+        let bridge = DDScriptMessageHandler(emitter: MessageEmitter(logsSampler: .mockKeepAll(), core: core))
+        bridge.sessionRolloverHandler = rollover
+        let webView = ReceiptCountingWebView(frame: .zero, configuration: WKWebViewConfiguration())
+        bridge.userContentController(WKUserContentController(), didReceive: MockScriptMessage(body: receiptBody, webView: webView))
+        bridge.flush()
+        XCTAssertEqual(webView.windowReads, 0)
+        XCTAssertEqual(core.lookups, 0)
+        XCTAssertEqual(core.messages.count, 1)
+        XCTAssertNotNil(core.messages.firstWebViewMessage)
+        XCTAssertNil(core.messages.firstPayload as? WebViewMessageWithRUMContext)
+    }
+
+    @available(iOS 27.0, *)
+    func testScriptReceiptDetachedViewCarriesEmptyCapturedOwnership() throws {
+        let core = WebViewContextCoreMock()
+        let rollover = WebViewSessionRolloverHandler(core: core)
+        let owner = RUMContextHandoff.Owner()
+        rollover.receiveRUMContextHandoff(owner: owner, active: true)
+        let bridge = DDScriptMessageHandler(emitter: MessageEmitter(logsSampler: .mockKeepAll(), core: core))
+        bridge.sessionRolloverHandler = rollover
+        let webView = ReceiptCountingWebView(frame: .zero, configuration: WKWebViewConfiguration())
+        bridge.userContentController(WKUserContentController(), didReceive: MockScriptMessage(body: receiptBody, webView: webView))
+        bridge.flush()
+        let payload = try XCTUnwrap(core.messages.firstPayload as? WebViewMessageWithRUMContext)
+        XCTAssertTrue(payload.capture.owner === owner)
+        XCTAssertNil(payload.capture.value.rumContext)
+        XCTAssertEqual(webView.windowReads, 1)
+        XCTAssertEqual(core.lookups, 0)
+        XCTAssertEqual(core.messages.count, 1)
+        XCTAssertNil(core.messages.firstWebViewMessage)
+    }
+
+    @available(iOS 27.0, *)
+    func testScriptReceiptFreezesOriginalAbsenceBeforeBridgeQueueDelivery() throws {
+        let webView = ReceiptCountingWebView(frame: .zero, configuration: WKWebViewConfiguration())
+        let core = WebViewContextCoreMock()
+        let provider = WebViewContextProviderMock()
+        core.provider = provider
+        let rollover = WebViewSessionRolloverHandler(core: core)
+        let original = RUMContextHandoff.Owner()
+        rollover.receiveRUMContextHandoff(owner: original, active: true)
+        provider.output = nativeCapture(owner: original, scene: "original-scene")
+        let bridge = DDScriptMessageHandler(emitter: MessageEmitter(logsSampler: .mockKeepAll(), core: core))
+        bridge.sessionRolloverHandler = rollover
+        let entered = DispatchSemaphore(value: 0)
+        let release = DispatchSemaphore(value: 0)
+        defer { release.signal() }
+        bridge.queue.async {
+            entered.signal()
+            release.wait()
+        }
+        guard entered.wait(timeout: .now() + 10) == .success else {
+            return XCTFail("Bridge queue blocker did not start")
+        }
+        bridge.userContentController(WKUserContentController(), didReceive: MockScriptMessage(body: receiptBody, webView: webView))
+        XCTAssertEqual(provider.calls, 0)
+        XCTAssertEqual(core.lookups, 0)
+        original.invalidate()
+        let replacement = RUMContextHandoff.Owner()
+        rollover.receiveRUMContextHandoff(owner: replacement, active: true)
+        provider.output = nativeCapture(owner: replacement, scene: "later-scene")
+        release.signal()
+        bridge.flush()
+        let payload = try XCTUnwrap(core.messages.firstPayload as? WebViewMessageWithRUMContext)
+        XCTAssertTrue(payload.capture.owner === original)
+        XCTAssertFalse(payload.capture.owner.isValid)
+        XCTAssertNil(payload.capture.value.sceneIdentifier)
+        XCTAssertNil(payload.capture.value.rumContext)
+        XCTAssertEqual(provider.calls, 0)
+        XCTAssertEqual(core.lookups, 0)
+        XCTAssertEqual(webView.windowReads, 1)
+        XCTAssertEqual(core.messages.count, 1)
+        XCTAssertNil(core.messages.firstWebViewMessage)
+    }
+
+    @available(iOS 27.0, *)
+    func testRetainedScriptReceiptProviderDoesNotRetainCore() throws {
+        var core: WebViewContextCoreMock? = WebViewContextCoreMock()
+        weak var weakCore = core
+        let original = RUMContextHandoff.Owner()
+        let rollover = WebViewSessionRolloverHandler(core: try XCTUnwrap(core))
+        rollover.receiveRUMContextHandoff(owner: original, active: true)
+        let bridge = DDScriptMessageHandler(emitter: MessageEmitter(logsSampler: .mockKeepAll(), core: try XCTUnwrap(core)))
+        bridge.sessionRolloverHandler = rollover
+        core = nil
+        XCTAssertNil(weakCore)
+        let capture = try XCTUnwrap(try XCTUnwrap(bridge.sessionRolloverHandler).captureRUMContext(forSceneIdentifier: { "scene-a" }))
+        XCTAssertTrue(capture.owner === original)
+        XCTAssertNil(capture.value.rumContext)
+    }
+
+    private var receiptBody: String {
+        "{\"eventType\":\"rum\",\"event\":{\"view\":{\"id\":\"browser-view\"},\"session\":{\"id\":\"browser-session\"}}}"
+    }
+    #endif
 
     private func nativeCapture(owner: RUMContextHandoff.Owner, scene: String) -> RUMContextHandoff.Capture {
         let context = RUMCoreContext(applicationID: "app", sessionID: "session", sessionSampler: .mockKeepAll(), viewID: "view-a")
@@ -295,9 +488,22 @@ final class WebViewSessionRolloverHandlerTests: XCTestCase {
     }
 }
 
+#if os(iOS)
+@MainActor
+private final class ReceiptCountingWebView: WKWebView {
+    private(set) var windowReads = 0
+
+    override var window: UIWindow? {
+        windowReads += 1
+        return super.window
+    }
+}
+#endif
+
 private final class WebViewContextCoreMock: DatadogCoreProtocol {
     var provider: WebViewContextProviderMock?
     var lookups = 0
+    var messages: [FeatureMessage] = []
     var remoteConfiguration: RemoteConfiguration? { nil }
     func register<T>(feature: T) throws where T: DatadogFeature {}
     func feature<T>(named name: String, type: T.Type) -> T? {
@@ -306,7 +512,7 @@ private final class WebViewContextCoreMock: DatadogCoreProtocol {
     }
     func scope<T>(for featureType: T.Type) -> FeatureScope where T: DatadogFeature { NOPFeatureScope() }
     func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {}
-    func send(message: FeatureMessage, else fallback: @escaping () -> Void) {}
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) { messages.append(message) }
     func mostRecentModifiedFileAt(before: Date) throws -> Date? { nil }
 }
 
