@@ -61,7 +61,7 @@ internal final class DatadogCore: RUMContextHandoffActivating {
     let applicationVersionPublisher: ApplicationVersionPublisher
 
     /// The message-bus instance.
-    let bus = MessageBus()
+    let bus = MessageBus.make()
 
     /// The remote configuration provider, if configured.
     let remoteConfigurationProvider: RemoteConfigurationProvider?
@@ -136,6 +136,7 @@ internal final class DatadogCore: RUMContextHandoffActivating {
         guard let owner else {
             throw ProgrammerError(description: "RUM context ownership could not be activated.")
         }
+        bus.publishFlagEvaluationOwner(owner, active: true)
         receivers.forEach { ($0 as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: owner, active: true) }
         return owner
     }
@@ -155,6 +156,7 @@ internal final class DatadogCore: RUMContextHandoffActivating {
             }
             receivers = registry.features.values.map { $0.messageReceiver }
         }
+        bus.publishFlagEvaluationOwner(owner, active: false)
         receivers.forEach { ($0 as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: owner, active: false) }
     }
 
@@ -436,6 +438,7 @@ internal final class DatadogCore: RUMContextHandoffActivating {
             registry.features = [:]
         }
         if let owner {
+            bus.publishFlagEvaluationOwner(owner, active: false)
             receivers.forEach { ($0 as? RUMContextHandoffReceiving)?.receiveRUMContextHandoff(owner: owner, active: false) }
             stoppedFeatures.keys.forEach { bus.removeReceiver(forKey: $0) }
         }
@@ -614,8 +617,11 @@ extension DatadogCore: DatadogCoreProtocol {
     }
 }
 
-internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope, RUMContextHandoffOwnerProviding, RUMContextHandoffEventWriting where Feature: DatadogFeature {
+internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope, RUMContextHandoffOwnerProviding, RUMContextHandoffEventWriting, RUMFlagEvaluationSending where Feature: DatadogFeature {
     var rumContextHandoffOwner: RUMContextHandoff.Owner? { core?.rumContextHandoffOwner }
+    func sendFlagEvaluation(_ evaluation: RUMFlagEvaluationMessage) {
+        core?.bus.sendFlagEvaluation(evaluation)
+    }
 
     private weak var core: DatadogCore?
     private let store: FeatureDataStore

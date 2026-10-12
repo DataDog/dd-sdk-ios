@@ -672,6 +672,22 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider, RUMMappedViewConte
         updateRepresentativeFatalErrorContext()
     }
 
+    /// Applies a captured evaluation only to its original active view.
+    func processCapturedFlagEvaluation(
+        _ flag: RUMAddFeatureFlagEvaluationCommand, context: DatadogContext, writer: Writer
+    ) {
+        guard sceneState != nil, isActive, sampler.isSampled,
+              let ownership = flag.capturedOwnership,
+              ownership.owner.isValid,
+              RUMContextHandoff.owner(in: dependencies.featureScope) === ownership.owner,
+              ownership.sessionID == sessionUUID,
+              !hasTimedOut(currentTime: flag.time), !hasExpired(currentTime: flag.time),
+              let view = viewScopes.first(where: { $0.isActiveView && $0.viewUUID == ownership.viewID }) else { return }
+        if !view.process(command: flag, context: context, writer: writer) {
+            viewScopes.removeAll { $0 === view }
+        }
+    }
+
     /// Queue-only join, before application-level session creation or refresh.
     func ownsContinuousAction(_ ownership: RUMContinuousActionOwnership, at date: Date) -> Bool {
         guard isActive, ownership.owner.isValid, !ownership.isClosed,

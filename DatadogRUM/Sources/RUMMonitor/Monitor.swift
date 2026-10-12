@@ -270,6 +270,12 @@ internal class Monitor: RUMCommandSubscriber {
                 }
             }
 
+            if let flag = command as? RUMAddFeatureFlagEvaluationCommand,
+               let ownership = flag.capturedOwnership {
+                guard self.isMultiSceneTrackingEnabled, ownership.owner.isValid,
+                      self.rumContextHandoffOwner === ownership.owner else { return }
+            }
+
             let transformedCommand = self.transform(command: command)
             let previousSessionID = self.sessionActivitySnapshot.sessionID
 
@@ -808,6 +814,14 @@ extension Monitor: RUMMonitorProtocol {
         )
         command.target = isMultiSceneTrackingEnabled ? target : .processRepresentative
         command.explicitTarget = isMultiSceneTrackingEnabled ? explicitTarget : nil
+        process(command: command)
+    }
+
+    func addCapturedFeatureFlagEvaluation(
+        name: String, value: Encodable, ownership: RUMCapturedFlagEvaluationOwnership
+    ) {
+        var command = RUMAddFeatureFlagEvaluationCommand(time: dateProvider.now, name: name, value: value)
+        command.capturedOwnership = ownership
         process(command: command)
     }
 

@@ -87,6 +87,22 @@ internal enum RUMErrorUserActionTarget: Equatable {
     case captured(RUMUUID?)
 }
 
+/// Original session/view for one captured Flags evaluation; retains no Core or UI.
+internal final class RUMCapturedFlagEvaluationOwnership {
+    let owner: RUMContextHandoff.Owner
+    let sessionID: RUMUUID
+    let viewID: RUMUUID
+
+    init?(capture: RUMContextHandoff.Capture) {
+        guard capture.owner.isValid, let context = capture.value.rumContext,
+              let sessionID = UUID(uuidString: context.sessionID),
+              let viewID = context.viewID.flatMap(UUID.init(uuidString:)) else { return nil }
+        owner = capture.owner
+        self.sessionID = RUMUUID(rawValue: sessionID)
+        self.viewID = RUMUUID(rawValue: viewID)
+    }
+}
+
 /// Exact ownership for a mirrored error; allocated only for a captured On payload.
 internal final class RUMCapturedErrorOwnership {
     private let capture: RUMContextHandoff.Capture
@@ -881,6 +897,7 @@ internal struct RUMAddUserActionCommand: RUMUserActionCommand {
 internal struct RUMAddFeatureFlagEvaluationCommand: RUMExplicitViewTargetCommand {
     var target: RUMCommandTarget = .processRepresentative
     var explicitTarget: RUMCommandTarget? = nil
+    var capturedOwnership: RUMCapturedFlagEvaluationOwnership? = nil
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]

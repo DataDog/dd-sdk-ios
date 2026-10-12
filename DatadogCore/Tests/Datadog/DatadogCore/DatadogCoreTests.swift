@@ -2264,3 +2264,246 @@ extension DatadogCoreTests {
     }
 }
 #endif
+
+#if os(iOS)
+@available(iOS 27.0, *)
+extension DatadogCoreTests {
+    private func assertNoLegacyFlagEvaluations(
+        in receiver: FeatureMessageReceiverMock, file: StaticString = #file, line: UInt = #line
+    ) {
+        XCTAssertFalse(
+            receiver.messages.contains { message in
+                if case .payload(is RUMFlagEvaluationMessage) = message {
+                    return true
+                }
+                return false
+            },
+            "Captured evaluation must not also dispatch an untargeted legacy payload",
+            file: file,
+            line: line
+        )
+    }
+
+    func testBuiltInFlagScopeKeepsLegacyPayloadWhenOffOrUnbound() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let receiver = FeatureMessageReceiverMock()
+        core.bus.connect(receiver, forKey: "flag-test")
+        let scope = core.scope(for: FeatureMock.self)
+        XCTAssertTrue(scope is RUMFlagEvaluationSending)
+        scope.sendFlagEvaluation(.init(flagKey: "off", value: false))
+        _ = try core.activateRUMContextHandoff()
+        scope.sendFlagEvaluation(.init(flagKey: "unbound", value: true))
+        core.bus.flush()
+        let evaluations = receiver.messages.compactMap { message -> RUMFlagEvaluationMessage? in
+            guard case let .payload(value as RUMFlagEvaluationMessage) = message else {
+                return nil
+            }
+            return value
+        }
+        XCTAssertEqual(evaluations.map(\.flagKey), ["off", "unbound"])
+        XCTAssertEqual(try XCTUnwrap(evaluations.first { $0.flagKey == "off" }).value as? Bool, false)
+        XCTAssertEqual(try XCTUnwrap(evaluations.first { $0.flagKey == "unbound" }).value as? Bool, true)
+        XCTAssertFalse(receiver.messages.contains { message in
+            if case .payload(is RUMCapturedFlagEvaluationMessage) = message {
+                return true
+            }
+            return false
+        })
+    }
+
+    func testBuiltInFlagScopeCapturesBeforeQueuedDeliveryAndOwnerReplacement() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let receiver = FeatureMessageReceiverMock()
+        core.bus.connect(receiver, forKey: "flag-test")
+        let original = try core.activateRUMContextHandoff()
+        let scope = core.scope(for: FeatureMock.self)
+        core.bus.flush()
+        let entered = expectation(description: "message bus held before evaluation")
+        let release = DispatchSemaphore(value: 0)
+        core.bus.queue.async {
+            entered.fulfill()
+            XCTAssertEqual(release.wait(timeout: .now() + 5), .success)
+        }
+        defer { release.signal() }
+        wait(for: [entered], timeout: 2)
+        RUMContextHandoff.withValue(handoffValue("caller-view"), for: original) {
+            scope.sendFlagEvaluation(.init(flagKey: "captured", value: "variant"))
+        }
+        core.deactivateRUMContextHandoff(owner: original)
+        let replacement = try core.activateRUMContextHandoff()
+        release.signal()
+        core.bus.flush()
+        assertNoLegacyFlagEvaluations(in: receiver)
+        let evaluations = receiver.messages.compactMap { message -> RUMCapturedFlagEvaluationMessage? in
+            guard case let .payload(value as RUMCapturedFlagEvaluationMessage) = message else {
+                return nil
+            }
+            return value
+        }
+        XCTAssertEqual(evaluations.count, 1)
+        let evaluation = try XCTUnwrap(evaluations.first)
+        let capture = try XCTUnwrap(evaluation.capture)
+        XCTAssertTrue(capture.owner === original)
+        XCTAssertFalse(capture.owner.isValid)
+        XCTAssertFalse(capture.owner === replacement)
+        XCTAssertEqual(capture.value.rumContext?.viewID, "caller-view")
+        XCTAssertEqual(evaluation.evaluation.flagKey, "captured")
+        XCTAssertEqual(evaluation.evaluation.value as? String, "variant")
+    }
+
+    func testBuiltInFlagScopeDoesNotTurnNilOrInvalidOwnershipIntoLegacyPayload() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let receiver = FeatureMessageReceiverMock()
+        core.bus.connect(receiver, forKey: "flag-test")
+        let owner = try core.activateRUMContextHandoff()
+        let scope = core.scope(for: FeatureMock.self)
+        let nilContext = RUMContextHandoff.CurrentValue(
+            rumContext: nil, sceneIdentifier: "a", hasPendingUserAction: false, excludedUserActionID: nil
+        )
+        RUMContextHandoff.withValue(nilContext, for: owner) {
+            scope.sendFlagEvaluation(.init(flagKey: "nil-context", value: true))
+        }
+        // A stale true publication must remain an authoritative unavailable capture.
+        owner.invalidate()
+        scope.sendFlagEvaluation(.init(flagKey: "invalid-owner", value: true))
+        core.bus.flush()
+        let evaluations = receiver.messages.compactMap { message -> RUMCapturedFlagEvaluationMessage? in
+            guard case let .payload(value as RUMCapturedFlagEvaluationMessage) = message else {
+                return nil
+            }
+            return value
+        }
+        XCTAssertEqual(evaluations.map { $0.evaluation.flagKey }, ["nil-context", "invalid-owner"])
+        for evaluation in evaluations {
+            let capture = try XCTUnwrap(evaluation.capture)
+            XCTAssertTrue(capture.owner === owner)
+            XCTAssertNil(capture.value.rumContext)
+        }
+        XCTAssertFalse(receiver.messages.contains { message in
+            if case .payload(is RUMFlagEvaluationMessage) = message {
+                return true
+            }
+            return false
+        })
+    }
+
+    func testStaleFlagPublicationsCannotReplaceOrDisableCurrentOwner() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let receiver = FeatureMessageReceiverMock()
+        core.bus.connect(receiver, forKey: "flag-test")
+        let original = try core.activateRUMContextHandoff()
+        core.deactivateRUMContextHandoff(owner: original)
+        let current = try core.activateRUMContextHandoff()
+        core.bus.publishFlagEvaluationOwner(original, active: true)
+        core.bus.publishFlagEvaluationOwner(original, active: false)
+        RUMContextHandoff.withValue(handoffValue("current"), for: current) {
+            core.scope(for: FeatureMock.self).sendFlagEvaluation(.init(flagKey: "current", value: true))
+        }
+        core.bus.flush()
+        assertNoLegacyFlagEvaluations(in: receiver)
+        let evaluations = receiver.messages.compactMap { message -> RUMCapturedFlagEvaluationMessage? in
+            guard case let .payload(value as RUMCapturedFlagEvaluationMessage) = message else {
+                return nil
+            }
+            return value
+        }
+        XCTAssertEqual(evaluations.count, 1)
+        let evaluation = try XCTUnwrap(evaluations.first)
+        XCTAssertTrue(evaluation.capture?.owner === current)
+        XCTAssertEqual(evaluation.capture?.value.rumContext?.viewID, "current")
+        XCTAssertTrue(current.isValid)
+        XCTAssertFalse(original.isValid)
+    }
+
+    func testFlagCaptureIsPublishedBeforeReentrantHandoffReceiverCallbacks() throws {
+        let core = makeHandoffCore()
+        defer { core.stop() }
+        let messages = FeatureMessageReceiverMock()
+        core.bus.connect(messages, forKey: "flag-test")
+        let receiver = HandoffReceiver(provider: NetworkContextCoreProvider())
+        try core.register(feature: HandoffFeature(receiver: receiver))
+        var replacement: RUMContextHandoff.Owner?
+        receiver.beforePublication = { owner, active in
+            guard active else {
+                return
+            }
+            receiver.beforePublication = nil
+            RUMContextHandoff.withValue(self.handoffValue("before-replacement"), for: owner) {
+                core.scope(for: HandoffFeature.self).sendFlagEvaluation(.init(flagKey: "reentrant", value: true))
+            }
+            core.deactivateRUMContextHandoff(owner: owner)
+            replacement = try? core.activateRUMContextHandoff()
+        }
+        let original = try core.activateRUMContextHandoff()
+        core.bus.flush()
+        assertNoLegacyFlagEvaluations(in: messages)
+        let evaluations = messages.messages.compactMap { message -> RUMCapturedFlagEvaluationMessage? in
+            guard case let .payload(value as RUMCapturedFlagEvaluationMessage) = message else {
+                return nil
+            }
+            return value
+        }
+        XCTAssertEqual(evaluations.count, 1)
+        let evaluation = try XCTUnwrap(evaluations.first)
+        XCTAssertTrue(evaluation.capture?.owner === original)
+        XCTAssertFalse(original.isValid)
+        XCTAssertTrue(try XCTUnwrap(replacement).isValid)
+        XCTAssertEqual(evaluation.capture?.value.rumContext?.viewID, "before-replacement")
+    }
+
+    func testFlagScopeCannotCaptureOwnerFromAnotherCore() throws {
+        let first = makeHandoffCore()
+        let second = makeHandoffCore()
+        defer { first.stop(); second.stop() }
+        let firstReceiver = FeatureMessageReceiverMock()
+        let secondReceiver = FeatureMessageReceiverMock()
+        first.bus.connect(firstReceiver, forKey: "flag-test")
+        second.bus.connect(secondReceiver, forKey: "flag-test")
+        let owner = try first.activateRUMContextHandoff()
+        RUMContextHandoff.withValue(handoffValue("first"), for: owner) {
+            first.scope(for: FeatureMock.self).sendFlagEvaluation(.init(flagKey: "first", value: true))
+            second.scope(for: FeatureMock.self).sendFlagEvaluation(.init(flagKey: "second", value: false))
+        }
+        first.bus.flush()
+        second.bus.flush()
+        assertNoLegacyFlagEvaluations(in: firstReceiver)
+        XCTAssertEqual(firstReceiver.messages.filter { message in
+            if case .payload(is RUMCapturedFlagEvaluationMessage) = message {
+                return true
+            }
+            return false
+        }.count, 1)
+        let secondEvaluation = try XCTUnwrap(secondReceiver.messages.compactMap { message -> RUMFlagEvaluationMessage? in
+            guard case let .payload(value as RUMFlagEvaluationMessage) = message else {
+                return nil
+            }
+            return value
+        }.first)
+        XCTAssertEqual(secondEvaluation.flagKey, "second")
+        XCTAssertEqual(secondEvaluation.value as? Bool, false)
+        XCTAssertFalse(secondReceiver.messages.contains { message in
+            if case .payload(is RUMCapturedFlagEvaluationMessage) = message {
+                return true
+            }
+            return false
+        })
+    }
+
+    func testRetainedFlagScopeDoesNotKeepCoreOrItsActivationAlive() throws {
+        var core: DatadogCore? = makeHandoffCore()
+        weak var weakCore = core
+        let owner = try XCTUnwrap(core).activateRUMContextHandoff()
+        let scope = try XCTUnwrap(core).scope(for: FeatureMock.self)
+        core?.flush()
+        core = nil
+        XCTAssertNil(weakCore)
+        XCTAssertFalse(owner.isValid)
+        // Sending through a surviving weak scope remains safe after Core deallocation.
+        scope.sendFlagEvaluation(.init(flagKey: "after-deinit", value: true))
+    }
+}
+#endif

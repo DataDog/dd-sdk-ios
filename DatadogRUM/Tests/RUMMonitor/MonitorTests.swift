@@ -1639,4 +1639,303 @@ final class CapturedLogErrorOwnershipTests: XCTestCase {
     }
 }
 
+@available(iOS 27.0, *)
+final class CapturedFlagEvaluationOwnershipTests: XCTestCase {
+    private func capture(_ fixture: ScrollActionFixture, view: RUMViewScope) throws -> RUMContextHandoff.Capture {
+        let session = try XCTUnwrap(fixture.monitor.applicationScope.activeSession)
+        let context = RUMCoreContext(
+            applicationID: view.context.rumApplicationID,
+            sessionID: session.sessionUUID.toRUMDataFormat,
+            sessionSampler: session.sampler,
+            viewID: view.viewUUID.toRUMDataFormat,
+            userActionID: nil,
+            viewServerTimeOffset: view.serverTimeOffset,
+            viewPath: view.viewPath,
+            viewName: view.viewName
+        )
+        return .init(owner: fixture.owner, value: .init(
+            rumContext: context, sceneIdentifier: "a", hasPendingUserAction: false, excludedUserActionID: nil
+        ))
+    }
+
+    private func receive(_ capture: RUMContextHandoff.Capture?, in fixture: ScrollActionFixture, value: Bool = true) {
+        let message = RUMCapturedFlagEvaluationMessage(
+            evaluation: .init(flagKey: "captured-flag", value: value), capture: capture
+        )
+        XCTAssertTrue(FlagEvaluationReceiver(monitor: fixture.monitor).receive(message: .payload(message), from: NOPDatadogCore()))
+    }
+
+    private func stop(_ key: String, scene: String, in fixture: ScrollActionFixture) {
+        var command = RUMStopViewCommand(time: fixture.clock.now, attributes: [:], identity: ViewIdentifier(key))
+        command.target = .scene(.init(rawValue: scene))
+        fixture.monitor.process(command: command)
+    }
+
+    func testCapturedFlagUpdatesOriginalViewAndSerializedOwnerWhenPeerIsRepresentative() throws {
+        let fixture = ScrollActionFixture()
+        let original = try fixture.view("original")
+        let bound = try capture(fixture, view: original)
+        let peer = try fixture.view("peer", scene: "b")
+        receive(bound, in: fixture)
+        XCTAssertEqual(original.featureFlags["captured-flag"] as? Bool, true)
+        XCTAssertNil(peer.featureFlags["captured-flag"])
+        stop("original", scene: "a", in: fixture)
+        stop("peer", scene: "b", in: fixture)
+        let views = fixture.mockScope.eventsWritten(ofType: RUMViewEvent.self)
+        let recorded = try XCTUnwrap(views.last { $0.view.id == original.viewUUID.toRUMDataFormat })
+        XCTAssertEqual(recorded.session.id, bound.value.rumContext?.sessionID)
+        XCTAssertEqual(recorded.view.id, bound.value.rumContext?.viewID)
+        XCTAssertEqual(recorded.featureFlags?.featureFlagsInfo["captured-flag"] as? Bool, true)
+        XCTAssertFalse(views.filter { $0.view.id == peer.viewUUID.toRUMDataFormat }.contains {
+            $0.featureFlags?.featureFlagsInfo["captured-flag"] != nil
+        })
+    }
+
+    func testCapturedFlagCannotUseRemovedOrResourceRetainedInactiveView() throws {
+        for retainResource in [false, true] {
+            let fixture = ScrollActionFixture()
+            let original = try fixture.view("original")
+            let bound = try capture(fixture, view: original)
+            if retainResource {
+                var command = RUMStartResourceCommand.mockWith(resourceKey: "retained", time: fixture.clock.now)
+                command.target = .scene(.init(rawValue: "a"))
+                fixture.monitor.process(command: command)
+            }
+            let replacement = try fixture.view("replacement")
+            let peer = try fixture.view("peer", scene: "b")
+            XCTAssertFalse(original.isActiveView)
+            XCTAssertEqual(fixture.monitor.applicationScope.activeSession?.viewScopes.contains { $0 === original }, retainResource)
+            let before = fixture.mockScope.eventsWritten.count
+            receive(bound, in: fixture)
+            XCTAssertEqual(fixture.mockScope.eventsWritten.count, before)
+            XCTAssertNil(original.featureFlags["captured-flag"])
+            XCTAssertNil(replacement.featureFlags["captured-flag"])
+            XCTAssertNil(peer.featureFlags["captured-flag"])
+        }
+    }
+
+    func testCapturedFlagCannotRestartStoppedTimedOutOrMaximumDurationSession() throws {
+        for boundary in ["stopped", "timeout", "maximum"] {
+            let fixture = ScrollActionFixture()
+            let original = try fixture.view("original")
+            let bound = try capture(fixture, view: original)
+            if boundary == "stopped" {
+                fixture.monitor.stopSession()
+            } else if boundary == "timeout" {
+                fixture.clock.now.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration + 1)
+            } else {
+                let session = try XCTUnwrap(fixture.monitor.applicationScope.activeSession)
+                let beforeMaximum = session.sessionStartTime.addingTimeInterval(RUMSessionScope.Constants.sessionMaxDuration - 1)
+                let interval = RUMSessionScope.Constants.sessionTimeoutDuration / 2
+                while fixture.clock.now < beforeMaximum {
+                    fixture.clock.now = min(fixture.clock.now.addingTimeInterval(interval), beforeMaximum)
+                    var interaction = RUMAddUserActionCommand.mockWith(time: fixture.clock.now, actionType: .custom, name: "keep-session-active")
+                    interaction.target = .scene(.init(rawValue: "a"))
+                    fixture.monitor.process(command: interaction)
+                    XCTAssertTrue(fixture.monitor.applicationScope.activeSession === session)
+                }
+                fixture.clock.now = session.sessionStartTime.addingTimeInterval(RUMSessionScope.Constants.sessionMaxDuration + 1)
+                XCTAssertTrue(RUMSessionScope.hasExpired(sessionStartTime: session.sessionStartTime, currentTime: fixture.clock.now))
+                XCTAssertFalse(RUMSessionScope.hasTimedOut(lastInteractionTime: session.lastInteractionTime, currentTime: fixture.clock.now))
+            }
+            let sessions = fixture.monitor.applicationScope.sessionScopes.map(\.sessionUUID)
+            let before = fixture.mockScope.eventsWritten.count
+            receive(bound, in: fixture)
+            XCTAssertEqual(fixture.monitor.applicationScope.sessionScopes.map(\.sessionUUID), sessions)
+            XCTAssertEqual(fixture.mockScope.eventsWritten.count, before)
+            XCTAssertNil(original.featureFlags["captured-flag"])
+            let successor = try fixture.view("successor")
+            let current = try XCTUnwrap(fixture.monitor.applicationScope.activeSession)
+            let afterNavigation = fixture.mockScope.eventsWritten.count
+            receive(bound, in: fixture)
+            XCTAssertTrue(fixture.monitor.applicationScope.activeSession === current)
+            XCTAssertEqual(fixture.mockScope.eventsWritten.count, afterNavigation)
+            XCTAssertNil(successor.featureFlags["captured-flag"])
+        }
+    }
+
+    func testCapturedFlagUnavailableNilForeignAndMalformedOwnersAreHandledWithoutFallback() throws {
+        let fixture = ScrollActionFixture()
+        let original = try fixture.view("original")
+        let bound = try capture(fixture, view: original)
+        let peer = try fixture.view("peer", scene: "b")
+        let nilContext = RUMContextHandoff.Capture(owner: fixture.owner, value: .init(
+            rumContext: nil, sceneIdentifier: "a", hasPendingUserAction: false, excludedUserActionID: nil
+        ))
+        let foreign = RUMContextHandoff.Capture(owner: .init(), value: bound.value)
+        let context = try XCTUnwrap(bound.value.rumContext)
+        let viewID = try XCTUnwrap(context.viewID)
+        let before = fixture.mockScope.eventsWritten.count
+        for candidate in [nil, nilContext, foreign] {
+            receive(candidate, in: fixture)
+        }
+        // Each malformed identifier has a valid peer identifier, so either guard can fail independently.
+        for (sessionID, candidateViewID) in [("invalid-session", viewID), (context.sessionID, "invalid-view")] {
+            let malformed = RUMCoreContext(
+                applicationID: context.applicationID,
+                sessionID: sessionID,
+                sessionSampler: context.sessionSampler,
+                viewID: candidateViewID,
+                userActionID: nil,
+                viewServerTimeOffset: context.viewServerTimeOffset,
+                viewPath: context.viewPath,
+                viewName: context.viewName
+            )
+            receive(.init(owner: fixture.owner, value: .init(
+                rumContext: malformed, sceneIdentifier: "a", hasPendingUserAction: false, excludedUserActionID: nil
+            )), in: fixture)
+        }
+        XCTAssertEqual(fixture.mockScope.eventsWritten.count, before)
+        XCTAssertNil(original.featureFlags["captured-flag"])
+        XCTAssertNil(peer.featureFlags["captured-flag"])
+    }
+
+    func testCapturedFlagInvalidatedAfterActualQueueSubmissionDoesNotApply() throws {
+        let clock = DateProviderMock(now: ScrollActionFixture.startDate)
+        let core = DatadogCoreProxy(context: ScrollActionFixture.context(at: clock.now))
+        defer { try? core.flushAndTearDown() }
+        try core.register(feature: DatadogRemoteFeatureMock())
+        let scope = ScrollActionScope(base: core.scope(for: DatadogRemoteFeatureMock.self))
+        let fixture = ScrollActionFixture(scope: scope, clock: clock)
+        fixture.enqueueView("original")
+        let ready = expectation(description: "original view applied")
+        scope.context { _ in ready.fulfill() }
+        wait(for: [ready], timeout: 5)
+        let original = try XCTUnwrap(fixture.monitor.applicationScope.activeSession?.viewScopes.first { $0.viewName == "original" })
+        let bound = try capture(fixture, view: original)
+        let entered = expectation(description: "actual RUM command queue held")
+        let release = DispatchSemaphore(value: 0)
+        scope.context { _ in
+            entered.fulfill()
+            XCTAssertEqual(release.wait(timeout: .now() + 5), .success)
+        }
+        defer { release.signal() }
+        wait(for: [entered], timeout: 2)
+        receive(bound, in: fixture)
+        fixture.owner.invalidate()
+        let consumed = expectation(description: "captured flag consumed after invalidation")
+        scope.context { _ in consumed.fulfill() }
+        release.signal()
+        wait(for: [consumed], timeout: 5)
+        XCTAssertNil(original.featureFlags["captured-flag"])
+        XCTAssertTrue(original.isActiveView)
+        XCTAssertEqual(fixture.monitor.applicationScope.activeSession?.viewScopes.count, 1)
+        let views = core.waitAndReturnEvents(ofFeature: DatadogRemoteFeatureMock.name, ofType: RUMViewEvent.self)
+        XCTAssertFalse(views.contains { $0.featureFlags?.featureFlagsInfo["captured-flag"] != nil })
+    }
+
+    func testCapturedFlagInvalidatedDuringUncertainLaunchDeferralDoesNotApply() throws {
+        let fixture = ScrollActionFixture()
+        let original = try fixture.view("original")
+        let bound = try capture(fixture, view: original)
+        var uncertain = fixture.mockScope.contextMock
+        uncertain.launchInfo.launchReason = .uncertain
+        uncertain.applicationStateHistory = .mockWith(initialState: .background, date: fixture.clock.now)
+        fixture.mockScope.contextMock = uncertain
+        receive(bound, in: fixture)
+        XCTAssertNil(original.featureFlags["captured-flag"])
+        fixture.owner.invalidate()
+        fixture.monitor.process(command: RUMHandleAppLifecycleEventCommand(
+            time: fixture.clock.now, globalAttributes: [:], attributes: [:], event: .willEnterForeground
+        ))
+        XCTAssertNil(original.featureFlags["captured-flag"])
+        XCTAssertFalse(fixture.mockScope.eventsWritten(ofType: RUMViewEvent.self).contains {
+            $0.featureFlags?.featureFlagsInfo["captured-flag"] != nil
+        })
+    }
+
+    func testManualAndLegacyFlagEvaluationKeepTheirExistingTargetsAndOverwrite() throws {
+        let fixture = ScrollActionFixture()
+        let first = try fixture.view("first")
+        let peer = try fixture.view("peer", scene: "b")
+        fixture.monitor.addFeatureFlagEvaluation(name: "manual", value: "first", target: .scene(.init(rawValue: "a")))
+        fixture.monitor.addFeatureFlagEvaluation(name: "manual", value: "replacement", target: .scene(.init(rawValue: "a")))
+        let receiver = FlagEvaluationReceiver(monitor: fixture.monitor)
+        XCTAssertTrue(receiver.receive(message: .payload(RUMFlagEvaluationMessage(flagKey: "legacy", value: true)), from: NOPDatadogCore()))
+        XCTAssertEqual(first.featureFlags["manual"] as? String, "replacement")
+        XCTAssertNil(first.featureFlags["legacy"])
+        XCTAssertNil(peer.featureFlags["manual"])
+        XCTAssertEqual(peer.featureFlags["legacy"] as? Bool, true)
+    }
+
+    func testExplicitFlagTargetsPreferActiveRecipientAndRetainInferredFallback() throws {
+        let fixture = ScrollActionFixture()
+        let original = try fixture.view("original", scene: "a")
+        let peer = try fixture.view("peer", scene: "b")
+        let targets: [(String, RUMCommandTarget)] = [
+            ("explicit-scene", .scene(.init(rawValue: "a"))),
+            ("explicit-view", .view(original.viewUUID))
+        ]
+        for (name, target) in targets {
+            fixture.monitor.addFeatureFlagEvaluation(
+                name: name, value: "original", target: .scene(.init(rawValue: "b")), explicitTarget: target
+            )
+            XCTAssertEqual(original.featureFlags[name] as? String, "original")
+            XCTAssertNil(peer.featureFlags[name])
+        }
+        fixture.monitor.addFeatureFlagEvaluation(
+            name: "missing-explicit",
+            value: true,
+            target: .scene(.init(rawValue: "b")),
+            explicitTarget: .scene(.init(rawValue: "missing-scene"))
+        )
+        XCTAssertNil(original.featureFlags["missing-explicit"])
+        XCTAssertEqual(peer.featureFlags["missing-explicit"] as? Bool, true)
+        let sessionID = try XCTUnwrap(fixture.monitor.applicationScope.activeSession).sessionUUID.toRUMDataFormat
+        stop("original", scene: "a", in: fixture)
+        stop("peer", scene: "b", in: fixture)
+        let views = fixture.mockScope.eventsWritten(ofType: RUMViewEvent.self)
+        let finalOriginal = try XCTUnwrap(views.last { $0.view.id == original.viewUUID.toRUMDataFormat })
+        XCTAssertEqual(finalOriginal.session.id, sessionID)
+        for (name, _) in targets {
+            XCTAssertEqual(finalOriginal.featureFlags?.featureFlagsInfo[name] as? String, "original")
+            XCTAssertFalse(views.filter { $0.view.id == peer.viewUUID.toRUMDataFormat }.contains {
+                $0.featureFlags?.featureFlagsInfo[name] != nil
+            })
+        }
+        XCTAssertFalse(views.filter { $0.view.id == original.viewUUID.toRUMDataFormat }.contains {
+            $0.featureFlags?.featureFlagsInfo["missing-explicit"] != nil
+        })
+        let finalPeer = try XCTUnwrap(views.last { $0.view.id == peer.viewUUID.toRUMDataFormat })
+        XCTAssertEqual(finalPeer.session.id, sessionID)
+        XCTAssertEqual(finalPeer.featureFlags?.featureFlagsInfo["missing-explicit"] as? Bool, true)
+    }
+
+    func testOffFlagEvaluationIgnoresInferredAndExplicitTargetsAndKeepsLegacyView() throws {
+        let clock = DateProviderMock(now: ScrollActionFixture.startDate)
+        let scope = FeatureScopeMock(context: ScrollActionFixture.context(at: clock.now))
+        let monitor = Monitor(dependencies: .mockWith(
+            featureScope: scope,
+            viewCache: ViewCache(dateProvider: clock, isMultiSceneTrackingEnabled: false),
+            featureFlags: [.multiSceneTracking: false]
+        ), dateProvider: clock)
+        XCTAssertFalse(monitor.isMultiSceneTrackingEnabled)
+        monitor.process(command: RUMStartViewCommand(
+            time: clock.now,
+            identity: ViewIdentifier("legacy"),
+            name: "legacy",
+            path: "legacy",
+            globalAttributes: [:],
+            attributes: [:],
+            instrumentationType: .manual
+        ))
+        let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+        let view = try XCTUnwrap(session.viewScopes.last { $0.isActiveView })
+        monitor.addFeatureFlagEvaluation(
+            name: "off-flag",
+            value: "legacy",
+            target: .none,
+            explicitTarget: .scene(.init(rawValue: "missing-scene"))
+        )
+        XCTAssertTrue(monitor.applicationScope.activeSession === session)
+        XCTAssertEqual(session.viewScopes.filter { $0.isActiveView }.map(\.viewUUID), [view.viewUUID])
+        XCTAssertEqual(view.featureFlags["off-flag"] as? String, "legacy")
+        monitor.process(command: RUMStopViewCommand(time: clock.now, attributes: [:], identity: ViewIdentifier("legacy")))
+        let finalView = try XCTUnwrap(scope.eventsWritten(ofType: RUMViewEvent.self).last)
+        XCTAssertEqual(finalView.session.id, session.sessionUUID.toRUMDataFormat)
+        XCTAssertEqual(finalView.view.id, view.viewUUID.toRUMDataFormat)
+        XCTAssertEqual(finalView.featureFlags?.featureFlagsInfo["off-flag"] as? String, "legacy")
+    }
+}
+
 #endif

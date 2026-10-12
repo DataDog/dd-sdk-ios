@@ -5,6 +5,7 @@
  */
 
 import XCTest
+@_spi(Internal)
 import DatadogInternal
 @testable import TestUtilities
 
@@ -40,5 +41,20 @@ class FlagEvaluationReceiverTests: XCTestCase {
         let lastViewEvent = try XCTUnwrap(viewEvents.last)
         let featureFlags = try XCTUnwrap(lastViewEvent.featureFlags)
         XCTAssertEqual(featureFlags.featureFlagsInfo["feature-flag"] as? Bool, true)
+    }
+
+    func testCapturedPayloadIsHandledWithoutLegacyFallbackWhenMultiSceneIsOff() {
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, featureFlags: [.viewUpdates: false, .multiSceneTracking: false]),
+            dateProvider: SystemDateProvider()
+        )
+        let receiver = FlagEvaluationReceiver(monitor: monitor)
+        let before = featureScope.eventsWritten.count
+        let payload = RUMCapturedFlagEvaluationMessage(
+            evaluation: .init(flagKey: "captured-flag", value: true), capture: nil
+        )
+        XCTAssertTrue(receiver.receive(message: .payload(payload), from: NOPDatadogCore()))
+        XCTAssertEqual(featureScope.eventsWritten.count, before)
+        XCTAssertNil(monitor.applicationScope.activeSession)
     }
 }

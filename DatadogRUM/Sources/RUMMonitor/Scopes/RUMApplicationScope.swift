@@ -140,6 +140,16 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             session.processCapturedError(error, context: context, writer: writer)
             return
         }
+        if let flag = command as? RUMAddFeatureFlagEvaluationCommand,
+           let ownership = flag.capturedOwnership {
+            guard dependencies.isMultiSceneTrackingEnabled,
+                  ownership.owner.isValid,
+                  RUMContextHandoff.owner(in: dependencies.featureScope) === ownership.owner,
+                  let session = activeSession, session.sessionUUID == ownership.sessionID else { return }
+            // This also runs after deferred launch resolution, before creating/refreshing a session.
+            session.processCapturedFlagEvaluation(flag, context: context, writer: writer)
+            return
+        }
         let actionReceipt = dependencies.isMultiSceneTrackingEnabled
             ? (command as? RUMUserActionCommand)?.actionReceipt : nil
         defer { actionReceipt?.reject() }
