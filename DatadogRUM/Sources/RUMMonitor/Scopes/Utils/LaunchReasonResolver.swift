@@ -26,7 +26,7 @@ internal final class LaunchReasonResolver {
     /// Launch window duration before resolving `.backgroundLaunch`.
     private let threshold: TimeInterval
     /// Buffer of commands received while the launch reason is unresolved.
-    private var buffer: [(command: RUMCommand, context: DatadogContext, writer: Writer)] = []
+    private var buffer: [(command: RUMCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer)] = []
     /// Resolved launch reason, updated once a conclusive condition is met.
     private var resolvedReason: LaunchReason?
 
@@ -47,31 +47,33 @@ internal final class LaunchReasonResolver {
     ///
     /// - Parameters:
     ///   - command: Incoming RUM command to buffer or forward.
+    ///   - monotonicTime: Captured monotonic time retained alongside the command while it is buffered.
     ///   - context: The associated `DatadogContext` (typically with `launchReason = .uncertain`).
     ///   - writer: The writer to be used when the command is ready.
     ///   - onReady: Callback called once per command, with the resolved launch reason injected into context.
     func deferUntilLaunchReasonResolved(
         command: RUMCommand,
+        monotonicTime: TimeInterval,
         context: DatadogContext,
         writer: Writer,
-        onReady: (RUMCommand, DatadogContext, Writer) -> Void
+        onReady: (RUMCommand, TimeInterval, DatadogContext, Writer) -> Void
     ) {
         // If the launch reason was already resolved externally (e.g., via iOS `task_role` or prewarm flag),
         // forward the command immediately. This is a defensive check — callers should avoid deferring resolution
         // when the reason is already known.
         guard context.launchInfo.launchReason == .uncertain else {
-            onReady(command, context, writer)
+            onReady(command, monotonicTime, context, writer)
             return
         }
 
         // If already resolved internally, inject and forward immediately:
         if let resolvedReason {
-            onReady(command, context.replacing(launchReason: resolvedReason), writer)
+            onReady(command, monotonicTime, context.replacing(launchReason: resolvedReason), writer)
             return
         }
 
         // Otherwise, buffer the command for deferred resolution.
-        buffer.append((command, context, writer))
+        buffer.append((command, monotonicTime, context, writer))
 
         // Check whether this command leads to launch reason resolution.
         guard let reason = evaluateLaunchReason(command: command, context: context) else {
@@ -80,9 +82,9 @@ internal final class LaunchReasonResolver {
 
         // If resolved, forward all buffered commands in FIFO order,
         // injecting the resolved reason into each context.
-        for (bufferedCommand, bufferedContext, bufferedWriter) in buffer {
+        for (bufferedCommand, bufferedMonotonicTime, bufferedContext, bufferedWriter) in buffer {
             let updatedContext = bufferedContext.replacing(launchReason: reason)
-            onReady(bufferedCommand, updatedContext, bufferedWriter)
+            onReady(bufferedCommand, bufferedMonotonicTime, updatedContext, bufferedWriter)
         }
 
         // Store resolved reason and clear the buffer (no further buffering needed)

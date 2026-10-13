@@ -109,9 +109,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     /// The start time of this Session, measured in device date. In initial session this is the time of SDK init.
     /// Reported in events; `sessionStart` is what bounds the session's lifetime.
     let sessionStartTime: Date
-    /// `MonotonicClock` reading taken when this Session started, used to measure its maximum duration.
+    /// Captured monotonic time of the command starting this session, used to measure its maximum duration.
     let sessionStart: TimeInterval
-    /// `MonotonicClock` reading of the last RUM interaction noticed by this Session, used to measure inactivity.
+    /// Captured monotonic time of the last RUM interaction, used to measure inactivity.
     private(set) var lastInteraction: TimeInterval
     /// Indicates whether the "ApplicationLaunch" view was active when the app entered the background.
     private var hadApplicationLaunchViewWhenEnteringBackground: Bool? = nil
@@ -129,6 +129,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         isInitialSession: Bool,
         parent: RUMContextProvider,
         startTime: Date,
+        monotonicStartTime: TimeInterval,
         startPrecondition: RUMSessionPrecondition?,
         context: DatadogContext,
         dependencies: RUMScopeDependencies,
@@ -148,9 +149,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         self.sessionUUID = sessionUUID
         self.isInitialSession = isInitialSession
         self.sessionStartTime = startTime
-        // Stamped from the monotonic clock rather than `startTime`: the session's lifetime is measured in
-        // elapsed time, while `startTime` is a wall-clock date that may come from a cross-platform SDK.
-        self.sessionStart = dependencies.monotonicClock.elapsedTime
+        // Use the starting command's captured monotonic time, so queue latency does not shift the
+        // session's lifetime. `startTime` remains the wall-clock date reported in events.
+        self.sessionStart = monotonicStartTime
         self.lastInteraction = self.sessionStart
         self.trackBackgroundEvents = dependencies.trackBackgroundEvents
         self.endReason = nil
@@ -205,6 +206,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     convenience init(
         from expiredSession: RUMSessionScope,
         startTime: Date,
+        monotonicStartTime: TimeInterval,
         startPrecondition: RUMSessionPrecondition?,
         context: DatadogContext,
         transferActiveView: Bool,
@@ -215,6 +217,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             isInitialSession: expiredSession.state.isInitialSession && !expiredSession.state.hasTrackedAnyView,
             parent: expiredSession.parent,
             startTime: startTime,
+            monotonicStartTime: monotonicStartTime,
             startPrecondition: startPrecondition,
             context: context,
             dependencies: expiredSession.dependencies,
@@ -263,9 +266,15 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     // MARK: - RUMScope
 
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
-        // Inactivity is measured from when this command is received, not from the time it carries:
-        // `command.time` may hold a cross-platform SDK's timestamp (see `Monitor.transform(command:)`).
-        let now = dependencies.monotonicClock.elapsedTime
+        process(command: command, monotonicTime: dependencies.monotonicClock.elapsedTime, context: context, writer: writer)
+    }
+
+    /// Processes a command using its captured monotonic time to evaluate session lifetime.
+    /// - Parameter monotonicTime: The monotonic clock reading captured before queueing or buffering.
+    func process(command: RUMCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer) -> Bool {
+        // Use monotonic time captured before queueing, independently of processing delays and
+        // `command.time`, which may hold a cross-platform SDK's timestamp.
+        let now = monotonicTime
 
         if hasTimedOut(now: now) {
             endReason = .timeOut
@@ -277,7 +286,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         }
 
         if command.isUserInteraction {
-            lastInteraction = now
+            // Concurrent callers can enqueue commands in a different order from their receipt times.
+            lastInteraction = max(lastInteraction, now)
         }
 
         if !sampler.isSampled {

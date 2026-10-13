@@ -88,6 +88,28 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(scope.endReason, .timeOut)
     }
 
+    func testWhenCommandIsProcessedAfterTimeout_itUsesCapturedReceiptTime() {
+        let clock = MonotonicClockMock()
+        let scope = RUMSessionScope.mockWith(dependencies: .mockWith(monotonicClock: clock))
+        let beforeTimeout = RUMSessionScope.Constants.sessionTimeoutDuration - 1
+        clock.advance(by: beforeTimeout + 2)
+
+        XCTAssertTrue(scope.process(command: RUMCommandMock(), monotonicTime: beforeTimeout, context: context, writer: writer))
+        XCTAssertFalse(scope.process(command: RUMCommandMock(), monotonicTime: beforeTimeout + 2, context: context, writer: writer))
+        XCTAssertEqual(scope.endReason, .timeOut)
+    }
+
+    func testWhenOlderInteractionIsProcessed_itDoesNotMoveInactivityBackwards() {
+        let scope = RUMSessionScope.mockWith()
+        _ = scope.process(command: RUMCommandMock(isUserInteraction: true), monotonicTime: 10, context: context, writer: writer)
+        _ = scope.process(command: RUMCommandMock(isUserInteraction: true), monotonicTime: 9, context: context, writer: writer)
+
+        XCTAssertEqual(scope.lastInteraction, 10)
+        let beforeTimeout = 10 + RUMSessionScope.Constants.sessionTimeoutDuration - 1
+        XCTAssertTrue(scope.process(command: RUMCommandMock(), monotonicTime: beforeTimeout, context: context, writer: writer))
+        XCTAssertFalse(scope.process(command: RUMCommandMock(), monotonicTime: beforeTimeout + 1, context: context, writer: writer))
+    }
+
     func testWhenSessionReceivesInteractiveEvent_itStaysAlive() {
         var currentTime = Date()
         let clock = MonotonicClockMock()
@@ -923,12 +945,10 @@ private class TimeseriesCollectorSpy: TimeseriesCollecting {
 
     var noteActivityCallCount = 0
     var lastActivitySessionID: String?
-    var lastActivityTime: Date?
 
-    func noteActivity(sessionID: String, at time: Date) {
+    func noteActivity(sessionID: String) {
         noteActivityCallCount += 1
         lastActivitySessionID = sessionID
-        lastActivityTime = time
     }
 
     var flushCallCount = 0

@@ -33,15 +33,17 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
         ]
 
         for given in [given1, given2, given3, given4, given5, given6] {
+            // Finish asynchronous app-launch vital creation before ending its owning session.
+            let started = given.and(.flushDatadogContext())
             // When
-            let when1 = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+            let when1 = started
+                .when(.timeoutSession())
                 .and(.trackTwoActions(after1: dt1, after2: dt2))
-            let when2 = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+            let when2 = started
+                .when(.timeoutSession())
                 .and(.trackResource(after: dt1, duration: dt2))
-            let when3 = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+            let when3 = started
+                .when(.timeoutSession())
                 .and(.trackTwoLongTasks(after1: dt1, after2: dt2))
 
             for when in [when1, when2, when3] {
@@ -100,13 +102,13 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
         for given in [given1, given2, given3, given4] {
             // When
             let when1 = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
                 .and(.trackTwoActions(after1: dt1, after2: dt2))
             let when2 = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
                 .and(.trackResource(after: dt1, duration: dt2))
             let when3 = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
                 .and(.trackTwoLongTasks(after1: dt1, after2: dt2))
 
             for when in [when1, when2, when3] {
@@ -173,17 +175,17 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
             // When
             // - "time out" → BG → FG → event
             let when1 = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
                 .and(.appEntersBackground(after: dt1))
                 .and(.appBecomesActive(after: dt2))
                 .and(.trackTwoActions(after1: dt3, after2: dt4))
             let when2 = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
                 .and(.appEntersBackground(after: dt1))
                 .and(.appBecomesActive(after: dt2))
                 .and(.trackResource(after: dt3, duration: dt4))
             let when3 = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
                 .and(.appEntersBackground(after: dt1))
                 .and(.appBecomesActive(after: dt2))
                 .and(.trackTwoLongTasks(after1: dt3, after2: dt4))
@@ -233,17 +235,17 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
             // When
             // - "time out" → BG → FG → event
             let when1 = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
                 .and(.appEntersBackground(after: dt1))
                 .and(.appBecomesActive(after: dt2))
                 .and(.trackTwoActions(after1: dt3, after2: dt4))
             let when2 = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
                 .and(.appEntersBackground(after: dt1))
                 .and(.appBecomesActive(after: dt2))
                 .and(.trackResource(after: dt3, duration: dt4))
             let when3 = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
                 .and(.appEntersBackground(after: dt1))
                 .and(.appBecomesActive(after: dt2))
                 .and(.trackTwoLongTasks(after1: dt3, after2: dt4))
@@ -295,17 +297,17 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
             // - BG → "time out" → FG → event
             let when1 = given
                 .when(.appEntersBackground(after: dt1))
-                .and(.timeoutSession(flushBeforeAdvancing: true))
+                .and(.timeoutSession())
                 .and(.appBecomesActive(after: dt2))
                 .and(.trackTwoActions(after1: dt3, after2: dt4))
             let when2 = given
                 .when(.appEntersBackground(after: dt1))
-                .and(.timeoutSession(flushBeforeAdvancing: true))
+                .and(.timeoutSession())
                 .and(.appBecomesActive(after: dt2))
                 .and(.trackResource(after: dt3, duration: dt4))
             let when3 = given
                 .when(.appEntersBackground(after: dt1))
-                .and(.timeoutSession(flushBeforeAdvancing: true))
+                .and(.timeoutSession())
                 .and(.appBecomesActive(after: dt2))
                 .and(.trackTwoLongTasks(after1: dt3, after2: dt4))
 
@@ -355,17 +357,17 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
             // - BG → "time out" → FG → event
             let when1 = given
                 .when(.appEntersBackground(after: dt1))
-                .and(.timeoutSession(flushBeforeAdvancing: true))
+                .and(.timeoutSession())
                 .and(.appBecomesActive(after: dt2))
                 .and(.trackTwoActions(after1: dt3, after2: dt4))
             let when2 = given
                 .when(.appEntersBackground(after: dt1))
-                .and(.timeoutSession(flushBeforeAdvancing: true))
+                .and(.timeoutSession())
                 .and(.appBecomesActive(after: dt2))
                 .and(.trackResource(after: dt3, duration: dt4))
             let when3 = given
                 .when(.appEntersBackground(after: dt1))
-                .and(.timeoutSession(flushBeforeAdvancing: true))
+                .and(.timeoutSession())
                 .and(.appBecomesActive(after: dt2))
                 .and(.trackTwoLongTasks(after1: dt3, after2: dt4))
 
@@ -402,10 +404,12 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
         let given3 = userSessionWithManualView()
 
         for given in [given1, given2, given3] {
+            // Finish asynchronous app-launch vital creation before ending its owning session.
+            let started = given.and(.flushDatadogContext())
             // When
             // - "time out" → BG
-            let when1 = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+            let when1 = started
+                .when(.timeoutSession())
                 .and(.appEntersBackground(after: dt1))
 
             for when in [
@@ -437,10 +441,10 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
 
             // When
             // - BG → "time out"
-            let when2 = given
+            let when2 = started
                 .and(.flushDatadogContext())
                 .and(.appEntersBackground(after: dt1))
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
 
             for when in [
                 when2.and(.trackTwoActions(after1: dt2, after2: dt3)),
@@ -487,7 +491,7 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
             // When
             // - "time out" → BG
             let when1 = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
                 .and(.appEntersBackground(after: dt1))
 
             for when in [
@@ -523,7 +527,7 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
             let when2 = given
                 .and(.flushDatadogContext())
                 .and(.appEntersBackground(after: dt1))
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
 
             for when in [
                 when2.and(.trackTwoActions(after1: dt2, after2: dt3)),
@@ -567,12 +571,12 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
         for given in [given1, given2, given3] {
             // When
             let when1 = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
                 .and(.appEntersBackground(after: dt1))
             let when2 = given
                 .and(.flushDatadogContext())
                 .and(.appEntersBackground(after: dt1))
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
 
             for when in [when1, when2] {
                 // When
@@ -620,12 +624,12 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
         for given in [given1, given2] {
             // When
             let when1 = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
                 .and(.appEntersBackground(after: dt1))
             let when2 = given
                 .and(.flushDatadogContext())
                 .and(.appEntersBackground(after: dt1))
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
 
             for when in [when1, when2] {
                 // When
@@ -680,13 +684,13 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
         for given in [given1, given2] {
             // When
             let when1 = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
                 .and(.trackTwoActions(after1: dt3, after2: dt4))
             let when2 = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
                 .and(.trackResource(after: dt3, duration: dt4))
             let when3 = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
                 .when(.trackTwoLongTasks(after1: dt3, after2: dt4))
 
             for when in [when1, when2, when3] {
@@ -713,10 +717,10 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
         for given in [given1, given2] {
             // When
             let when1 = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
                 .and(.trackTwoActions(after1: dt3, after2: dt4))
             let when2 = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
                 .and(.trackResource(after: dt3, duration: dt4))
 
             for when in [when1, when2] {
@@ -748,7 +752,7 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
 
             // When
             let when3 = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
                 .when(.trackTwoLongTasks(after1: dt2, after2: dt3))
 
             // Then
@@ -782,11 +786,11 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
         for given in [given1, given2] {
             // When
             let when1 = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
                 .and(.appBecomesActive(after: dt3))
             let when2 = given
                 .and(.appBecomesActive(after: dt3))
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
 
             for when in [when1, when2] {
                 // When
@@ -829,11 +833,11 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
         for given in [given1, given2] {
             // When
             let when1 = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
                 .and(.appBecomesActive(after: dt3))
             let when2 = given
                 .and(.appBecomesActive(after: dt3))
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
 
             for when in [when1, when2] {
                 // When
@@ -872,11 +876,11 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
         for given in [given1, given2] {
             // When
             let when1 = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
                 .and(.appBecomesActive(after: dt3))
             let when2 = given
                 .and(.appBecomesActive(after: dt3))
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
 
             for when in [when1, when2] {
                 // When
@@ -925,11 +929,11 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
         for given in [given1, given2] {
             // When
             let when1 = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
                 .and(.appBecomesActive(after: dt3))
             let when2 = given
                 .and(.appBecomesActive(after: dt3))
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
 
             for when in [when1, when2] {
                 // When
@@ -970,7 +974,7 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
     }
 
     #if os(watchOS)
-    func testGivenUnresolvedBackgroundLaunch_whenForegroundOccursAfterTimeout_itStartsOneSession() throws {
+    func testGivenUnresolvedBackgroundLaunch_whenForegroundOccursAfterTimeout_itRenewsSession() throws {
         for trackBackgroundEvents in [false, true] {
             // Given
             // Early background commands remain buffered until the launch reason is resolved.
@@ -978,29 +982,36 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
                 .and(.trackResource(after: dt1, duration: dt2))
 
             // When
-            // Draining Core does not release the launch resolver's buffer. The session's monotonic
-            // lifetime starts when foreground resolves the launch, after this clock advance.
+            // Buffered commands retain their receipt times. The resource completes before expiry,
+            // while foreground and the manual view occur after the inactivity timeout.
             let when = given
-                .when(.advanceTime(by: sessionTimeoutDuration, flushBeforeAdvancing: true))
+                .when(.advanceTime(by: sessionTimeoutDuration))
                 .and(.appBecomesActive(after: dt3))
                 .and(.startManualView(after: dt4, viewName: manualViewName, viewKey: "manual-view"))
                 .and(.stopManualView(after: dt5, viewKey: "manual-view"))
 
             // Then
-            // Both views belong to the initial session, retaining their original event timestamps.
-            let session = try when.then().takeSingle()
+            // Launch resolution does not postpone session lifetime or lose the buffered resource.
+            let (session1, session2) = try when.then().takeTwo()
             let timeToManualView = timeToSDKInit + dt1 + dt2 + sessionTimeoutDuration + dt3 + dt4
-            XCTAssertNil(session.ttidEvent)
-            XCTAssertNil(session.timeToInitialDisplay)
-            DDAssertEqual(session.sessionStartDate, processLaunchDate, accuracy: accuracy)
-            DDAssertEqual(session.duration, timeToManualView + dt5, accuracy: accuracy)
-            XCTAssertEqual(session.sessionPrecondition, .userAppLaunch)
-            XCTAssertEqual(session.views.count, 2)
-            XCTAssertEqual(session.views[0].name, applicationLaunchViewName)
-            DDAssertEqual(session.views[0].duration, timeToManualView, accuracy: accuracy)
-            XCTAssertEqual(session.views[0].resourceEvents.count, 1)
-            XCTAssertEqual(session.views[1].name, manualViewName)
-            DDAssertEqual(session.views[1].duration, dt5, accuracy: accuracy)
+            XCTAssertNil(session1.ttidEvent)
+            XCTAssertNil(session1.timeToInitialDisplay)
+            DDAssertEqual(session1.sessionStartDate, processLaunchDate, accuracy: accuracy)
+            DDAssertEqual(session1.duration, timeToSDKInit + dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session1.sessionPrecondition, .userAppLaunch)
+            XCTAssertEqual(session1.views.count, 1)
+            XCTAssertEqual(session1.views[0].name, applicationLaunchViewName)
+            DDAssertEqual(session1.views[0].duration, timeToSDKInit + dt1 + dt2, accuracy: accuracy)
+            XCTAssertEqual(session1.views[0].resourceEvents.count, 1)
+
+            XCTAssertNil(session2.ttidEvent)
+            XCTAssertNil(session2.timeToInitialDisplay)
+            DDAssertEqual(session2.sessionStartDate, processLaunchDate + timeToManualView, accuracy: accuracy)
+            DDAssertEqual(session2.duration, dt5, accuracy: accuracy)
+            XCTAssertEqual(session2.sessionPrecondition, .inactivityTimeout)
+            XCTAssertEqual(session2.views.count, 1)
+            XCTAssertEqual(session2.views[0].name, manualViewName)
+            DDAssertEqual(session2.views[0].duration, dt5, accuracy: accuracy)
         }
     }
 
@@ -1013,9 +1024,9 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
                 .and(.appBecomesActive(after: dt3))
 
             // When
-            // Process the resolved launch before advancing the session's inactivity interval.
+            // Advance the injected clocks beyond the resolved launch's inactivity interval.
             let when = given
-                .when(.timeoutSession(flushBeforeAdvancing: true))
+                .when(.timeoutSession())
                 .and(.startManualView(after: dt4, viewName: manualViewName, viewKey: "manual-view"))
                 .and(.stopManualView(after: dt5, viewKey: "manual-view"))
 
