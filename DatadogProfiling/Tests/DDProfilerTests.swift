@@ -547,4 +547,29 @@ final class DDProfilerTests: XCTestCase {
         wait(for: [expectation], timeout: 0.1)
     }
 }
+#if DD_PROFILING_CACHE_LIFETIME_TESTING
+extension DDProfilerTests {
+    func testDestroy_releasesAndRecreatesPopulatedBinaryImageCache() {
+        for generation in 0..<2 {
+            if generation > 0 {
+                dd_profiler_start_testing(0, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+            }
+            XCTAssertEqual(dd_binary_image_cache_live_count_for_testing(), 1)
+            XCTAssertTrue(dd_binary_image_cache_is_registered_for_testing())
+            XCTAssertGreaterThan(dd_binary_image_cache_entry_count_for_testing(), 0)
+            XCTAssertEqual(dd_profiler_start(), 1)
+            XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+
+            dd_profiler_stop()
+            dd_profiler_destroy()
+
+            XCTAssertEqual(dd_binary_image_cache_live_count_for_testing(), 0)
+            XCTAssertFalse(dd_binary_image_cache_is_registered_for_testing())
+            XCTAssertEqual(dd_binary_image_cache_entry_count_for_testing(), 0)
+            XCTAssertNil(dd_profiler_get_profile())
+            XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_CREATED)
+        }
+    }
+}
+#endif
 #endif // !os(watchOS)

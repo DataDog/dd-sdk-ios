@@ -44,6 +44,12 @@ void binary_image_destroy(binary_image_t* info);
  */
 bool binary_image_lookup_pc(binary_image_t* info, void* pc);
 
+#if defined(DD_PROFILING_CACHE_LIFETIME_TESTING)
+// Read-only cache observations for the opt-in lifetime fixture.
+size_t dd_binary_image_cache_live_count_for_testing(void);
+bool dd_binary_image_cache_is_registered_for_testing(void);
+size_t dd_binary_image_cache_entry_count_for_testing(void);
+#endif
 #ifdef __cplusplus
 }
 #endif

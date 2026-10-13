@@ -68,6 +68,9 @@ static constexpr bool is_valid_load_command_size(uint32_t cmdsize) {
 // The dyld callback remains registered during process teardown.
 [[clang::no_destroy]] static std::mutex g_cacheptr_mutex;
 static dd::profiler::binary_image_cache* g_binary_image_cache = nullptr;
+#if defined(DD_PROFILING_CACHE_LIFETIME_TESTING)
+static size_t g_live_cache_instances_for_testing = 0;
+#endif
 
 // ============================================================================
 // Binary image utility functions
@@ -150,7 +153,14 @@ bool binary_image_lookup_pc(binary_image_t* info, void* pc) {
 
 namespace dd::profiler {
 
+#if defined(DD_PROFILING_CACHE_LIFETIME_TESTING)
+binary_image_cache::binary_image_cache() {
+    std::lock_guard<std::mutex> glock(g_cacheptr_mutex);
+    ++g_live_cache_instances_for_testing;
+}
+#else
 binary_image_cache::binary_image_cache() = default;
+#endif
 
 binary_image_cache::~binary_image_cache() {
     // Null the global pointer so late dyld callbacks become no-ops.
@@ -169,6 +179,12 @@ binary_image_cache::~binary_image_cache() {
         }
     }
     cache.clear();
+#if defined(DD_PROFILING_CACHE_LIFETIME_TESTING)
+    {
+        std::lock_guard<std::mutex> glock(g_cacheptr_mutex);
+        --g_live_cache_instances_for_testing;
+    }
+#endif
 }
 
 bool binary_image_cache::load() {
@@ -329,4 +345,20 @@ void resolve_stack_trace_frames(stack_trace_t* traces, size_t count, binary_imag
 
 } // namespace dd::profiler
 
+#if defined(DD_PROFILING_CACHE_LIFETIME_TESTING)
+extern "C" size_t dd_binary_image_cache_live_count_for_testing() {
+    std::lock_guard<std::mutex> glock(g_cacheptr_mutex);
+    return g_live_cache_instances_for_testing;
+}
+
+extern "C" bool dd_binary_image_cache_is_registered_for_testing() {
+    std::lock_guard<std::mutex> glock(g_cacheptr_mutex);
+    return g_binary_image_cache != nullptr;
+}
+
+extern "C" size_t dd_binary_image_cache_entry_count_for_testing() {
+    std::lock_guard<std::mutex> glock(g_cacheptr_mutex);
+    return g_binary_image_cache ? g_binary_image_cache->size() : 0;
+}
+#endif
 #endif // __APPLE__ && !TARGET_OS_WATCH
