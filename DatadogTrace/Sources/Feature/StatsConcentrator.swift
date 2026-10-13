@@ -23,6 +23,8 @@ internal struct DeploymentIdentity: Hashable, Encodable, Sendable {
 }
 
 internal struct AggregationKey: Hashable, Sendable {
+    static let blockedValue = "tracer_blocked_value"
+
     let deployment: DeploymentIdentity
     let service: String
     let operationName: String
@@ -34,6 +36,23 @@ internal struct AggregationKey: Hashable, Sendable {
     let synthetics: Bool
     let peerTagsHash: UInt64
     let serviceSource: String
+
+    /// Collapses operational dimensions while retaining the payload's deployment identity.
+    static func collapsed(for deployment: DeploymentIdentity) -> AggregationKey {
+        return AggregationKey(
+            deployment: deployment,
+            service: blockedValue,
+            operationName: blockedValue,
+            resource: blockedValue,
+            httpStatusCode: 0,
+            type: blockedValue,
+            spanKind: blockedValue,
+            isTraceRoot: .notSet,
+            synthetics: false,
+            peerTagsHash: StatsUtils.fnv64a([blockedValue]),
+            serviceSource: blockedValue
+        )
+    }
 }
 
 // MARK: - Grouped Stats
@@ -90,6 +109,10 @@ internal final class StatsBucket {
     let start: UInt64
     let duration: UInt64
     var groups: [AggregationKey: GroupedStats] = [:]
+    // Kept separate so a real span whose fields equal the sentinel cannot occupy an overflow group.
+    var overflowGroups: [DeploymentIdentity: GroupedStats] = [:]
+    var collapsedSpansCount: UInt64 = 0
+    var droppedSpansCount: UInt64 = 0
 
     init(start: UInt64, duration: UInt64) {
         self.start = start
@@ -236,6 +259,15 @@ internal final class StatsConcentrator: @unchecked Sendable {
     /// for flush. Matches Go's `defaultBufferLen`.
     static let defaultBufferLen = 2
 
+    /// Maximum number of regular groups retained in one time bucket, across all deployments.
+    /// Overflow groups are additional to this limit. This bounds sketch count per bucket, not
+    /// total memory or serialized payload bytes.
+    static let defaultMaxGroupsPerBucket = 100
+
+    /// Maximum number of overflow groups in one time bucket, one per deployment. Only the version
+    /// can change at runtime, so a bucket rarely sees more than two deployments.
+    static let defaultMaxOverflowGroupsPerBucket = 10
+
     /// Configured peer tag keys to extract from spans.
     static let defaultPeerTagKeys: [String] = [
         "peer.service",
@@ -264,6 +296,12 @@ internal final class StatsConcentrator: @unchecked Sendable {
     /// under-broad set would split or merge groups differently than the backend expects. Defaults to
     /// `defaultPeerTagKeys`.
     private let peerTagKeys: [String]
+
+    /// New keys beyond this limit use their deployment's overflow group; retained keys keep their detail.
+    private let maxGroupsPerBucket: Int
+    /// Spans that need an overflow group beyond this limit are dropped and counted.
+    private let maxOverflowGroupsPerBucket: Int
+    private let metricController: TraceClientStatsMetricController
 
     /// Serial queue protecting `buckets` and `oldestTs`.
     private let queue = DispatchQueue(label: "com.datadoghq.stats-concentrator", qos: .utility)
@@ -298,16 +336,26 @@ internal final class StatsConcentrator: @unchecked Sendable {
     ///   - bucketDuration: See `bucketDuration`. Defaults to `defaultBucketDuration`.
     ///   - bufferLen: See `bufferLen`. Defaults to `defaultBufferLen`.
     ///   - peerTagKeys: See `peerTagKeys`. Defaults to `defaultPeerTagKeys`.
+    ///   - maxGroupsPerBucket: Maximum regular groups per time bucket, clamped to at least one.
+    ///     Overflow groups are additional to this limit.
+    ///   - maxOverflowGroupsPerBucket: Maximum overflow groups per time bucket, clamped to at least one.
+    ///   - telemetry: Receives collapsed and dropped span counts when an overflowing bucket is flushed.
     init(
         now: Nanoseconds,
         initialConsent: TrackingConsent = .pending,
         bucketDuration: Nanoseconds = StatsConcentrator.defaultBucketDuration,
         bufferLen: Int = StatsConcentrator.defaultBufferLen,
-        peerTagKeys: [String] = StatsConcentrator.defaultPeerTagKeys
+        peerTagKeys: [String] = StatsConcentrator.defaultPeerTagKeys,
+        maxGroupsPerBucket: Int = StatsConcentrator.defaultMaxGroupsPerBucket,
+        maxOverflowGroupsPerBucket: Int = StatsConcentrator.defaultMaxOverflowGroupsPerBucket,
+        telemetry: Telemetry = NOPTelemetry()
     ) {
         self.bucketDuration = bucketDuration
         self.bufferLen = bufferLen
         self.peerTagKeys = peerTagKeys
+        self.maxGroupsPerBucket = max(1, maxGroupsPerBucket)
+        self.maxOverflowGroupsPerBucket = max(1, maxOverflowGroupsPerBucket)
+        self.metricController = TraceClientStatsMetricController(telemetry: telemetry)
         self.oldestTs = StatsConcentrator.alignTimestamp(now, bucketDuration: bucketDuration)
         self.currentConsent = initialConsent
     }
@@ -345,7 +393,35 @@ internal final class StatsConcentrator: @unchecked Sendable {
             )
             let bucket = buckets[bucketKey, default: StatsBucket(start: bucketKey, duration: bucketDuration)]
 
-            let group = bucket.groups[aggregationKey, default: GroupedStats(peerTags: peerTagStrings)]
+            if let group = bucket.groups[aggregationKey] {
+                group.update(with: snapshot)
+                return
+            }
+
+            // Check before allocating sketches. Do not retain the original overflow keys.
+            guard bucket.groups.count < maxGroupsPerBucket else {
+                // One overflow group per deployment, like the agent's collapsed key, so overflow is
+                // exported with the rest of its bucket and never split across payloads.
+                let deployment = aggregationKey.deployment
+                if let overflowGroup = bucket.overflowGroups[deployment] {
+                    overflowGroup.update(with: snapshot)
+                } else if bucket.overflowGroups.count < maxOverflowGroupsPerBucket {
+                    let overflowGroup = GroupedStats(peerTags: [AggregationKey.blockedValue])
+                    overflowGroup.update(with: snapshot)
+                    bucket.overflowGroups[deployment] = overflowGroup
+                } else {
+                    if bucket.droppedSpansCount < .max {
+                        bucket.droppedSpansCount += 1
+                    }
+                    return
+                }
+                if bucket.collapsedSpansCount < .max {
+                    bucket.collapsedSpansCount += 1
+                }
+                return
+            }
+
+            let group = GroupedStats(peerTags: peerTagStrings)
             group.update(with: snapshot)
 
             bucket.groups[aggregationKey] = group
@@ -396,30 +472,24 @@ internal final class StatsConcentrator: @unchecked Sendable {
                     continue
                 }
                 keysToRemove.append(ts)
+                // One metric per overflowing bucket, rather than one per collapsed span. Consent
+                // revocation removes the bucket and its counter together.
+                metricController.sendCollapsedSpans(
+                    collapsedCount: bucket.collapsedSpansCount,
+                    droppedCount: bucket.droppedSpansCount,
+                    limit: maxGroupsPerBucket,
+                    overflowLimit: maxOverflowGroupsPerBucket
+                )
 
                 // Groups from different deployments can share a time window but never a payload, so
                 // each deployment gets its own exported bucket, reporting the identity its spans were
                 // recorded under.
                 var statsByDeployment: [DeploymentIdentity: [ExportedGroupedStats]] = [:]
                 for (key, group) in bucket.groups {
-                    statsByDeployment[key.deployment, default: []].append(ExportedGroupedStats(
-                        service: key.service,
-                        name: key.operationName,
-                        resource: key.resource,
-                        httpStatusCode: key.httpStatusCode,
-                        type: key.type,
-                        spanKind: key.spanKind,
-                        isTraceRoot: key.isTraceRoot,
-                        synthetics: key.synthetics,
-                        hits: StatsUtils.stochasticRound(group.hits),
-                        errors: StatsUtils.stochasticRound(group.errors),
-                        duration: StatsUtils.stochasticRound(group.duration),
-                        topLevelHits: StatsUtils.stochasticRound(group.topLevelHits),
-                        okSummary: group.okSummary.toProtoBytes(),
-                        errorSummary: group.errorSummary.toProtoBytes(),
-                        peerTags: group.peerTags,
-                        serviceSource: key.serviceSource
-                    ))
+                    statsByDeployment[key.deployment, default: []].append(export(group, for: key))
+                }
+                for (deployment, group) in bucket.overflowGroups {
+                    statsByDeployment[deployment, default: []].append(export(group, for: .collapsed(for: deployment)))
                 }
 
                 for (deployment, exportedStats) in statsByDeployment {
@@ -487,6 +557,27 @@ internal final class StatsConcentrator: @unchecked Sendable {
     }
 
     // MARK: - Private
+
+    private func export(_ group: GroupedStats, for key: AggregationKey) -> ExportedGroupedStats {
+        return ExportedGroupedStats(
+            service: key.service,
+            name: key.operationName,
+            resource: key.resource,
+            httpStatusCode: key.httpStatusCode,
+            type: key.type,
+            spanKind: key.spanKind,
+            isTraceRoot: key.isTraceRoot,
+            synthetics: key.synthetics,
+            hits: StatsUtils.stochasticRound(group.hits),
+            errors: StatsUtils.stochasticRound(group.errors),
+            duration: StatsUtils.stochasticRound(group.duration),
+            topLevelHits: StatsUtils.stochasticRound(group.topLevelHits),
+            okSummary: group.okSummary.toProtoBytes(),
+            errorSummary: group.errorSummary.toProtoBytes(),
+            peerTags: group.peerTags,
+            serviceSource: key.serviceSource
+        )
+    }
 
     /// Aligns a nanosecond timestamp to the bucket boundary.
     static func alignTimestamp(_ ts: UInt64, bucketDuration: UInt64) -> UInt64 {
