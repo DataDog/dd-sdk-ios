@@ -144,12 +144,20 @@ internal struct ExportedBucket: Codable, Sendable {
     let version: String?
     let service: String?
 
-    /// How many partial buckets this bucket's window was split into to fit the storage event limit.
+    /// Set when this bucket is one piece of a bucket split to fit the storage event limit.
     /// `nil` for whole buckets.
-    let pieceCount: Int?
+    let piece: Piece?
 
     /// Whether this bucket holds only some of its window's groups.
-    var isPartial: Bool { pieceCount != nil }
+    var isPartial: Bool { piece != nil }
+
+    /// Identifies the split a partial bucket comes from.
+    struct Piece: Codable, Hashable, Sendable {
+        /// Unique to one split, so pieces of two exports of the same window are never mixed.
+        let splitID: UUID
+        /// How many pieces the split produced.
+        let count: Int
+    }
 
     init(
         start: UInt64,
@@ -158,7 +166,7 @@ internal struct ExportedBucket: Codable, Sendable {
         env: String? = nil,
         version: String? = nil,
         service: String? = nil,
-        pieceCount: Int? = nil
+        piece: Piece? = nil
     ) {
         self.start = start
         self.duration = duration
@@ -166,7 +174,7 @@ internal struct ExportedBucket: Codable, Sendable {
         self.env = env
         self.version = version
         self.service = service
-        self.pieceCount = pieceCount
+        self.piece = piece
     }
 
     /// Splits the bucket into partial buckets whose JSON encoding fits in `maxEncodedSize`, or
@@ -179,11 +187,12 @@ internal struct ExportedBucket: Codable, Sendable {
     func split(toFit maxEncodedSize: Int) -> (pieces: [ExportedBucket], oversizedGroups: [ExportedGroupedStats]) {
         // The storage writer's encoder, so sizes match what it writes.
         let encoder = JSONEncoder.dd.default()
+        let splitID = UUID()
         guard
             let encodedSize = try? encoder.encode(self).count,
             encodedSize > maxEncodedSize,
             // The largest piece count this split can produce, so the estimate never runs short.
-            let emptySize = try? encoder.encode(makePartial(with: [], of: stats.count)).count
+            let emptySize = try? encoder.encode(makePartial(with: [], piece: Piece(splitID: splitID, count: stats.count))).count
         else {
             return ([self], [])
         }
@@ -206,10 +215,11 @@ internal struct ExportedBucket: Codable, Sendable {
                 pieceSize += 1 + groupSize
             }
         }
-        return (pieces.map { makePartial(with: $0, of: pieces.count) }, oversizedGroups)
+        let piece = Piece(splitID: splitID, count: pieces.count)
+        return (pieces.map { makePartial(with: $0, piece: piece) }, oversizedGroups)
     }
 
-    private func makePartial(with stats: [ExportedGroupedStats], of pieceCount: Int) -> ExportedBucket {
+    private func makePartial(with stats: [ExportedGroupedStats], piece: Piece) -> ExportedBucket {
         ExportedBucket(
             start: start,
             duration: duration,
@@ -217,7 +227,7 @@ internal struct ExportedBucket: Codable, Sendable {
             env: env,
             version: version,
             service: service,
-            pieceCount: pieceCount
+            piece: piece
         )
     }
 }
