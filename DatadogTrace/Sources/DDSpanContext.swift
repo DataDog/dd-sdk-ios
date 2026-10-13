@@ -32,6 +32,17 @@ internal struct DDSpanContext: OTSpanContext {
         case unknown
         case remote
         case local(SpanService)
+
+        /// The stats parent of a span created as a child of `parent`.
+        init(forChildOf parent: DDSpanContext?) {
+            if let parent, parent.isRemote {
+                self = .remote
+            } else if let service = parent?.serviceForStats {
+                self = .local(service)
+            } else {
+                self = .unknown
+            }
+        }
     }
 
     /// Delegate method called by ``DDSpan.setTag(key:value:)`` that filters and runs custom actions for specific tags.

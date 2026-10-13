@@ -2004,6 +2004,116 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(result.aggregatedErrors, 1)
     }
 
+    // MARK: - Client-Side Stats service entries (RUM-17308)
+
+    func testGivenInjectedRequestUnderParentWithAnotherService_whenItCompletes_itIsAServiceEntry() throws {
+        let snapshot = try runInjectedRequestUnderParent(parentService: "checkout")
+        XCTAssertNotNil(snapshot.parentSpanID)
+        XCTAssertTrue(snapshot.isTopLevel)
+    }
+
+    func testGivenInjectedRequestUnderParentWithTheSameService_whenItCompletes_itIsNotAServiceEntry() throws {
+        let snapshot = try runInjectedRequestUnderParent(parentService: nil)
+        XCTAssertNotNil(snapshot.parentSpanID)
+        XCTAssertFalse(snapshot.isTopLevel)
+    }
+
+    func testGivenParentChangesServiceAfterTheRequestStarts_whenItCompletes_itIsAServiceEntry() throws {
+        let snapshot = try runInjectedRequestUnderParent(parentService: nil, parentServiceSetDuringRequest: "checkout")
+        XCTAssertTrue(snapshot.isTopLevel, "The parent's service is read when the request span finishes")
+    }
+
+    func testGivenRequestThatSkippedModifyUnderParentWithAnotherService_whenItCompletes_itIsAServiceEntryWhetherUploadedOrNot() throws {
+        for samplingRate: SampleRate in [0, 100] {
+            let capture = SpanSnapshotCapture()
+            let statsTracer: DatadogTracer = .mockWith(core: core, onSpanFinished: capture.capture)
+            let handler = TracingURLSessionHandler(
+                tracer: statsTracer,
+                contextReceiver: ContextMessageReceiver(),
+                samplingRate: samplingRate,
+                firstPartyHosts: .init(["www.example.com": [.datadog]]),
+                traceContextInjection: .sampled,
+                telemetry: NOPTelemetry()
+            )
+            let parent = statsTracer.startRootSpan(operationName: "parent", tags: [SpanTags.service: "checkout"], customSampleRate: 100)
+            let interception = makeCompletedInterception()
+            interception.register(activeSpanContext: parent.context)
+
+            handler.interceptionDidComplete(interception: interception)
+
+            let snapshot = try XCTUnwrap(capture.snapshots.first { $0.operationName == "urlsession.request" })
+            XCTAssertEqual(snapshot.parentSpanID, parent.context.dd.spanID)
+            XCTAssertTrue(snapshot.isTopLevel, "Sampling rate \(samplingRate)")
+        }
+    }
+
+    func testGivenTraceInjectedForAnotherParent_whenItCompletes_itDoesNotCompareWithTheActiveSpan() throws {
+        let capture = SpanSnapshotCapture()
+        let statsTracer: DatadogTracer = .mockWith(core: core, onSpanFinished: capture.capture)
+        let handler = TracingURLSessionHandler(
+            tracer: statsTracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: 100,
+            firstPartyHosts: .init(["www.example.com": [.datadog]]),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
+        )
+        let activeSpan = statsTracer.startRootSpan(operationName: "active", tags: [SpanTags.service: "checkout"], customSampleRate: 100)
+        let interception = makeCompletedInterception()
+        interception.register(activeSpanContext: activeSpan.context)
+        interception.register(trace: TraceContext(
+            traceID: .mock(1, 1),
+            spanID: .mock(2),
+            parentSpanID: .mock(3),
+            sampleRate: 100,
+            samplingPriority: .autoKeep,
+            samplingDecisionMaker: .agentRate,
+            rumSessionId: nil
+        ))
+
+        handler.interceptionDidComplete(interception: interception)
+
+        let snapshot = try XCTUnwrap(capture.snapshots.first { $0.operationName == "urlsession.request" })
+        XCTAssertEqual(snapshot.parentSpanID, .mock(3))
+        XCTAssertFalse(snapshot.isTopLevel, "An unknown parent is not a service boundary")
+    }
+
+    /// Sends one request through `modify(…)`, `interceptionDidStart(…)` and `interceptionDidComplete(…)`
+    /// while an active parent is kept, so its trace context is injected, and returns the request's snapshot.
+    private func runInjectedRequestUnderParent(
+        parentService: String?,
+        parentServiceSetDuringRequest: String? = nil
+    ) throws -> SpanSnapshot {
+        let capture = SpanSnapshotCapture()
+        let statsTracer: DatadogTracer = .mockWith(core: core, onSpanFinished: capture.capture)
+        let handler = TracingURLSessionHandler(
+            tracer: statsTracer,
+            contextReceiver: ContextMessageReceiver(),
+            samplingRate: 100,
+            firstPartyHosts: .init(["www.example.com": [.datadog]]),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
+        )
+        let tags = parentService.map { [SpanTags.service: $0] }
+        let parent = statsTracer.startRootSpan(operationName: "parent", tags: tags, customSampleRate: 100).setActive()
+        defer { parent.finish() }
+
+        let (_, trace, state) = handler.modify(request: makeRequest(), headerTypes: [.datadog], networkContext: nil)
+        let injectedTrace = try XCTUnwrap(trace)
+        XCTAssertEqual(injectedTrace.parentSpanID, parent.context.dd.spanID)
+        let interception = makeCompletedInterception()
+        interception.register(trace: injectedTrace)
+        handler.interceptionDidStart(interception: interception, capturedStates: [state].compactMap { $0 })
+        if let parentServiceSetDuringRequest {
+            parent.setTag(key: SpanTags.service, value: parentServiceSetDuringRequest)
+        }
+        handler.interceptionDidComplete(interception: interception)
+
+        let snapshot = try XCTUnwrap(capture.snapshots.first { $0.operationName == "urlsession.request" })
+        XCTAssertEqual(snapshot.parentSpanID, parent.context.dd.spanID)
+        return snapshot
+    }
+
     /// Completes one failed request that never went through `modify(…)`, with client-side stats enabled,
     /// and counts the error logs it sends and the errors it aggregates.
     private func runFailedRequest(samplingRate: SampleRate, statusCode: Int, error: Error?) -> (logsSent: Int, aggregatedErrors: Int) {

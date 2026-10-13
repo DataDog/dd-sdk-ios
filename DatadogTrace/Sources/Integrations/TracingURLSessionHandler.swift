@@ -286,6 +286,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
 
         let span: OTSpan
         var isStatsOnly = false
+        let activeSpanContext = interception.activeSpanContext as? DDSpanContext
 
         /*
          Read the comments inside the modify(…) and interceptionDidStart(…) methods to know where
@@ -311,6 +312,9 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
          The following is/else block implements both cases.
          */
         if let trace = interception.trace {
+            // Another handler may have injected this trace context, so the captured active span is
+            // its parent only when their IDs match.
+            let parentSpanContext = activeSpanContext.flatMap { $0.spanID == trace.parentSpanID ? $0 : nil }
             let context = DDSpanContext(
                 traceID: trace.traceID,
                 spanID: trace.spanID,
@@ -320,7 +324,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
                 samplingDecision: SamplingDecision(
                     from: trace.samplingPriority,
                     decisionMaker: trace.samplingDecisionMaker
-                )
+                ),
+                parentForStats: DDSpanContext.StatsParent(forChildOf: parentSpanContext)
             )
 
             span = tracer.startSpan(
@@ -363,7 +368,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             }
             let decidedSpanElements = makeElementsForNewSpanContext(
                 tracer: tracer,
-                parentSpanContext: interception.activeSpanContext as? DDSpanContext,
+                parentSpanContext: activeSpanContext,
                 sessionDecision: sessionDecision
             )
             let newSpanElements = passesPreCheck ? decidedSpanElements : decidedSpanElements.dropped()
@@ -378,7 +383,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
                 samplingDecision: SamplingDecision(
                     from: newSpanElements.samplingPriority,
                     decisionMaker: newSpanElements.samplingDecisionMaker
-                )
+                ),
+                parentForStats: DDSpanContext.StatsParent(forChildOf: activeSpanContext)
             )
 
             span = tracer.startSpan(
