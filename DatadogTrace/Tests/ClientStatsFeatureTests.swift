@@ -444,6 +444,117 @@ class ClientStatsFeatureTests: XCTestCase {
 
     // MARK: - Request Builder - Encoding
 
+    // MARK: - Storage Event Limit
+
+    func testWhenBucketFitsTheLimit_splitReturnsItWhole() throws {
+        let bucket = makeExportedBucket(groupCount: 3, env: "prod", version: "1.0.0", service: "app")
+
+        let pieces = bucket.split(toFit: try JSONEncoder.dd.default().encode(bucket).count)
+
+        XCTAssertEqual(pieces.count, 1)
+        XCTAssertNil(pieces[0].isPartial)
+        XCTAssertEqual(pieces[0].stats.map(\.service), bucket.stats.map(\.service))
+    }
+
+    func testWhenBucketExceedsTheLimit_itIsSplitIntoPartialBucketsThatFit() throws {
+        let bucket = makeExportedBucket(start: 7_000, groupCount: 50, env: "prod", version: "1.0.0", service: "app")
+        let limit = 2_000
+        XCTAssertGreaterThan(try JSONEncoder.dd.default().encode(bucket).count, limit)
+
+        let pieces = bucket.split(toFit: limit)
+
+        XCTAssertGreaterThan(pieces.count, 1)
+        for piece in pieces {
+            XCTAssertLessThanOrEqual(try JSONEncoder.dd.default().encode(piece).count, limit)
+            XCTAssertEqual(piece.isPartial, true)
+            XCTAssertEqual(piece.start, 7_000)
+            XCTAssertEqual(piece.duration, bucket.duration)
+            XCTAssertEqual(piece.env, "prod")
+            XCTAssertEqual(piece.version, "1.0.0")
+            XCTAssertEqual(piece.service, "app")
+        }
+        XCTAssertEqual(pieces.flatMap(\.stats).map(\.service), bucket.stats.map(\.service), "Every group is kept once, in order")
+    }
+
+    func testWhenOneGroupExceedsTheLimit_itStillGetsItsOwnPartialBucket() {
+        let bucket = makeExportedBucket(groupCount: 3)
+
+        let pieces = bucket.split(toFit: 1)
+
+        XCTAssertEqual(pieces.map(\.stats.count), [1, 1, 1])
+        XCTAssertTrue(pieces.allSatisfy { $0.isPartial == true })
+    }
+
+    func testWhenWideLatencyBucketIsFlushed_everyStoredEventFitsTheLimitAndNoSpanIsLost() throws {
+        // Given: 100 groups of fast and very slow successful and failed requests ending in one window.
+        // The sketches span about 550 bins each, which encodes to more than the 1 MB storage limit.
+        let core = FeatureRegistrationPassthroughCoreMock()
+        config.featureFlags[.clientSideStats] = true
+        config.dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
+        Trace.enable(with: config, in: core)
+        let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
+        let end: UInt64 = 100_000_000_000
+        for group in 0..<StatsConcentrator.defaultMaxGroupsPerBucket {
+            for duration: UInt64 in [1_000_000, 60_000_000_000] {
+                for isError in [false, true] {
+                    stats.concentrator.add(.mockWith(resource: "GET /\(group)", isError: isError, startTime: end - duration, duration: duration))
+                }
+            }
+        }
+
+        // When
+        stats.flushStats(force: true)
+
+        // Then
+        let pieces = core.exportedBuckets
+        XCTAssertGreaterThan(pieces.count, 1)
+        let storedSize = try pieces.map { try JSONEncoder.dd.default().encode($0).count }.reduce(0, +)
+        XCTAssertGreaterThan(storedSize, 1_024 * 1_024, "Unsplit, this bucket exceeds the storage event limit")
+        for piece in pieces {
+            XCTAssertLessThanOrEqual(try JSONEncoder.dd.default().encode(piece).count, ClientStatsFeature.maxStoredBucketSize)
+            XCTAssertEqual(piece.isPartial, true)
+        }
+        XCTAssertEqual(pieces.flatMap(\.stats).count, StatsConcentrator.defaultMaxGroupsPerBucket)
+        XCTAssertEqual(pieces.flatMap(\.stats).map(\.hits).reduce(0, +), UInt64(StatsConcentrator.defaultMaxGroupsPerBucket * 4))
+
+        let request = try makeRequestBuilder().request(
+            for: pieces.map(makeEvent(from:)),
+            with: .mockAny(),
+            execution: .init(previousResponseCode: nil, attempt: 0)
+        )
+        let wireBuckets = try XCTUnwrap(firstClientStatsPayload(in: request)["Stats"] as? [Any?])
+        XCTAssertEqual(wireBuckets.count, 1, "Pieces in one batch are merged back into their window")
+        XCTAssertEqual((try mapFields(wireBuckets[0])["Stats"] as? [Any?])?.count, StatsConcentrator.defaultMaxGroupsPerBucket)
+    }
+
+    func testWhenBatchHoldsPartialBuckets_itMergesEachWindowAndMarksThePayloadSplit() throws {
+        let window = makeExportedBucket(start: 1_000, groupCount: 4, env: "prod", version: "1.0.0", service: "app")
+        let pieces = window.split(toFit: 1)
+        let otherVersion = makeExportedBucket(start: 1_000, groupCount: 1, env: "prod", version: "2.0.0", service: "app")
+        let whole = makeExportedBucket(start: 2_000, groupCount: 2, env: "prod", version: "1.0.0", service: "app")
+        let events = [pieces[0], whole, pieces[1], otherVersion, pieces[2]].map(makeEvent(from:))
+
+        let request = try makeRequestBuilder().request(for: events, with: .mockAny(), execution: .init(previousResponseCode: nil, attempt: 0))
+
+        let envelope = try decodeEnvelope(in: request)
+        XCTAssertEqual(envelope["SplitPayload"] as? Bool, true, "The fourth piece may travel in another request")
+        let payloads = try allClientStatsPayloads(in: request)
+        XCTAssertEqual(payloads.map { $0["Version"] as? String }, ["1.0.0", "2.0.0"])
+        let buckets = try XCTUnwrap(payloads[0]["Stats"] as? [Any?]).map(mapFields)
+        XCTAssertEqual(buckets.map { $0["Start"] as? Int64 }, [1_000, 2_000])
+        XCTAssertEqual(buckets.map { ($0["Stats"] as? [Any?])?.count }, [3, 2])
+    }
+
+    func testWhenBatchHoldsOnlyWholeBuckets_itDoesNotMarkThePayloadSplit() throws {
+        let events = [makeExportedBucket(start: 1_000), makeExportedBucket(start: 1_000)].map(makeEvent(from:))
+
+        let request = try makeRequestBuilder().request(for: events, with: .mockAny(), execution: .init(previousResponseCode: nil, attempt: 0))
+
+        XCTAssertEqual(try decodeEnvelope(in: request)["SplitPayload"] as? Bool, false)
+        let buckets = try XCTUnwrap(firstClientStatsPayload(in: request)["Stats"] as? [Any?])
+        XCTAssertEqual(buckets.count, 2, "Whole buckets are never merged")
+    }
+
     func testWhenBuildingRequest_itTargetsStatsIntakeWithMsgPackContentType() throws {
         // Given
         let context: DatadogContext = .mockWith(clientToken: "client-token", source: "ios", ciAppOrigin: nil)

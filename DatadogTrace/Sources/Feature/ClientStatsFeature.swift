@@ -15,6 +15,10 @@ import DatadogInternal
 internal final class ClientStatsFeature: DatadogRemoteFeature {
     static let name = "tracing-client-stats"
 
+    /// Largest encoded bucket written as one storage event. Half the 1 MB event limit, leaving room
+    /// for encryption and batch framing; larger buckets are split.
+    static let maxStoredBucketSize = 512 * 1_024
+
     let requestBuilder: FeatureRequestBuilder
     let messageReceiver: FeatureMessageReceiver
     let performanceOverride: PerformancePresetOverride?
@@ -77,7 +81,9 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
 
         featureScope.eventWriteContext { [metricController] _, writer in
             for bucket in exportedBuckets {
-                writer.write(value: bucket)
+                for piece in bucket.split(toFit: Self.maxStoredBucketSize) {
+                    writer.write(value: piece)
+                }
             }
             // Report only after the write: in some cases the event write context is not
             // available, and we do not want to signal a flush that never reached storage.
