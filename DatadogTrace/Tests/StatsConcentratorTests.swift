@@ -97,9 +97,10 @@ class StatsConcentratorTests: XCTestCase {
         XCTAssertEqual(metric.attributes[TraceClientStatsMetric.collapsedSpansCountKey] as? UInt64, 2)
         XCTAssertEqual(metric.attributes[TraceClientStatsMetric.droppedSpansCountKey] as? UInt64, 0)
         XCTAssertEqual(metric.attributes[TraceClientStatsMetric.maxGroupsPerBucketKey] as? Int, 2)
+        XCTAssertEqual(metric.attributes[TraceClientStatsMetric.maxOverflowGroupsPerBucketKey] as? Int, StatsConcentrator.defaultMaxOverflowGroupsPerBucket)
         XCTAssertEqual(metric.attributes[SDKMetricFields.typeKey] as? String, TraceClientStatsMetric.collapsedSpansTypeValue)
         XCTAssertEqual(metric.attributes["collapsed"] as? String, "whole_key")
-        XCTAssertEqual(metric.attributes.count, 5, "No resource, peer tag or deployment values in telemetry")
+        XCTAssertEqual(metric.attributes.count, 6, "No resource, peer tag or deployment values in telemetry")
     }
 
     func testLimitIncludesPeerTagsAndDeploymentIdentity() throws {
@@ -264,6 +265,7 @@ class StatsConcentratorTests: XCTestCase {
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: TraceClientStatsMetric.collapsedSpansName))
         XCTAssertEqual(metric.attributes[TraceClientStatsMetric.collapsedSpansCountKey] as? UInt64, 4)
         XCTAssertEqual(metric.attributes[TraceClientStatsMetric.droppedSpansCountKey] as? UInt64, UInt64(spanCount - 3))
+        XCTAssertEqual(metric.attributes[TraceClientStatsMetric.maxOverflowGroupsPerBucketKey] as? Int, 3)
         XCTAssertTrue(concentrator.flush(now: 0, force: true).isEmpty)
     }
 

@@ -38,6 +38,7 @@ internal enum TraceClientStatsMetric {
     /// Spans dropped because their bucket had no overflow group left for their deployment.
     static let droppedSpansCountKey = "dropped_spans_count"
     static let maxGroupsPerBucketKey = "max_groups_per_bucket"
+    static let maxOverflowGroupsPerBucketKey = "max_overflow_groups_per_bucket"
 }
 
 /// Builds and emits the "Trace Client Stats" telemetry, keeping the metric responsibility
@@ -46,7 +47,7 @@ internal struct TraceClientStatsMetricController {
     let telemetry: Telemetry
 
     /// Reports cardinality loss without including resource names, peer tags or deployment values.
-    func sendCollapsedSpans(collapsedCount: UInt64, droppedCount: UInt64, limit: Int) {
+    func sendCollapsedSpans(collapsedCount: UInt64, droppedCount: UInt64, limit: Int, overflowLimit: Int) {
         guard collapsedCount > 0 || droppedCount > 0 else {
             return
         }
@@ -57,7 +58,8 @@ internal struct TraceClientStatsMetricController {
                 TraceClientStatsMetric.collapsedSpansCountKey: collapsedCount,
                 TraceClientStatsMetric.droppedSpansCountKey: droppedCount,
                 "collapsed": "whole_key",
-                TraceClientStatsMetric.maxGroupsPerBucketKey: limit
+                TraceClientStatsMetric.maxGroupsPerBucketKey: limit,
+                TraceClientStatsMetric.maxOverflowGroupsPerBucketKey: overflowLimit
             ]
         )
     }
