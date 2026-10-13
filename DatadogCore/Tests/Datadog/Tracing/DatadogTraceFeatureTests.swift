@@ -163,4 +163,56 @@ class DatadogTraceFeatureTests: XCTestCase {
         XCTAssertEqual(try spanMatchers[1].operationName(), "operation 2")
         XCTAssertEqual(try spanMatchers[2].operationName(), "operation 3")
     }
+
+    // MARK: - Client-Side Stats
+
+    func testWhenClientStatsBucketExceedsTheStorageEventLimit_itIsStillUploaded() throws {
+        let httpClient = HTTPClientMock(responseCode: 202)
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .combining(
+                storagePerformance: StoragePerformanceMock(
+                    maxFileSize: .max,
+                    maxDirectorySize: .max,
+                    maxFileAgeForWrite: 0,
+                    minFileAgeForRead: StoragePerformanceMock.readAllFiles.minFileAgeForRead,
+                    maxFileAgeForRead: StoragePerformanceMock.readAllFiles.maxFileAgeForRead,
+                    maxObjectsInFile: 1, // one request per stored event
+                    maxObjectSize: PerformancePreset.mockAny().maxObjectSize // the real 1 MB event limit
+                ),
+                uploadPerformance: .veryQuick
+            ),
+            httpClient: httpClient,
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: 100,
+            backgroundTasksEnabled: .mockAny()
+        )
+        var config = Trace.Configuration()
+        config.featureFlags[.clientSideStats] = true
+        Trace.enable(with: config, in: core)
+
+        // Given: 100 groups of fast and very slow successful and failed requests ending together,
+        // whose bucket encodes to more than the 1 MB storage event limit. Snapshots go straight to
+        // the concentrator so they are all in one bucket before the teardown flush.
+        let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
+        let end = Date().timeIntervalSince1970.dd.toNanoseconds
+        for group in 0..<100 {
+            for duration: UInt64 in [1_000_000, 60_000_000_000] {
+                for isError in [false, true] {
+                    stats.concentrator.add(.mockWith(resource: "GET /\(group)", isError: isError, startTime: end - duration, duration: duration))
+                }
+            }
+        }
+
+        // When
+        core.flushAndTearDown()
+
+        // Then: the bucket is stored and uploaded as several pieces instead of being rejected.
+        let statsRequests = httpClient.requestsSent().filter { $0.url?.path.hasSuffix("api/v0.2/stats") == true }
+        XCTAssertGreaterThan(statsRequests.count, 1)
+    }
 }
