@@ -468,7 +468,7 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertTrue(split.oversizedGroups.isEmpty)
         for piece in split.pieces {
             XCTAssertLessThanOrEqual(try encodedSize(of: piece), limit)
-            XCTAssertEqual(piece.pieceCount, split.pieces.count)
+            XCTAssertEqual(piece.piece?.count, split.pieces.count)
             XCTAssertEqual(piece.start, 7_000)
             XCTAssertEqual(piece.duration, bucket.duration)
             XCTAssertEqual(piece.env, "prod")
@@ -568,7 +568,7 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertGreaterThan(pieces.count, 1)
         for piece in pieces {
             XCTAssertLessThanOrEqual(try encodedSize(of: piece), ClientStatsFeature.maxStoredBucketSize)
-            XCTAssertEqual(piece.pieceCount, pieces.count)
+            XCTAssertEqual(piece.piece?.count, pieces.count)
         }
 
         // Then: with each piece in its own request, every request is marked split, keeps the identity,
@@ -628,7 +628,7 @@ class ClientStatsFeatureTests: XCTestCase {
             env: "prod",
             version: "1.0.0",
             service: "app",
-            pieceCount: 4
+            piece: .init(splitID: UUID(), count: 4)
         ))
         let pieces = window.split(toFit: onePiecePerGroup).pieces
         XCTAssertEqual(pieces.map(\.stats.count), [1, 1, 1, 1])
@@ -656,7 +656,7 @@ class ClientStatsFeatureTests: XCTestCase {
             env: "prod",
             version: "1.0.0",
             service: "app",
-            pieceCount: 4
+            piece: .init(splitID: UUID(), count: 4)
         ))
         let pieces = window.split(toFit: onePiecePerGroup).pieces
         XCTAssertEqual(pieces.count, 4)
@@ -671,6 +671,51 @@ class ClientStatsFeatureTests: XCTestCase {
         let buckets = try XCTUnwrap(firstClientStatsPayload(in: request)["Stats"] as? [Any?])
         XCTAssertEqual(buckets.count, 1)
         XCTAssertEqual((try mapFields(buckets[0])["Stats"] as? [Any?])?.count, 4)
+    }
+
+    func testWhenTheSameWindowIsSplitTwice_eachSplitIsReassembledAndCheckedOnItsOwn() throws {
+        // Given: two exports of one window, for example a periodic flush and a later forced flush.
+        let first = makeExportedBucket(start: 1_000, groupCount: 2, env: "prod", version: "1.0.0", service: "app")
+        let second = makeExportedBucket(start: 1_000, groupCount: 3, env: "prod", version: "1.0.0", service: "app")
+        let onePiecePerGroup = try encodedSize(of: ExportedBucket(
+            start: 1_000,
+            duration: first.duration,
+            stats: [first.stats[0]],
+            env: "prod",
+            version: "1.0.0",
+            service: "app",
+            piece: .init(splitID: UUID(), count: 3)
+        ))
+        let firstPieces = first.split(toFit: onePiecePerGroup).pieces
+        let secondPieces = second.split(toFit: onePiecePerGroup).pieces
+        XCTAssertEqual(firstPieces.count, 2)
+        XCTAssertEqual(secondPieces.count, 3)
+        XCTAssertNotEqual(firstPieces[0].piece?.splitID, secondPieces[0].piece?.splitID)
+
+        // When: a batch holds both pieces of the first split and one of the second.
+        let partial = try makeRequestBuilder().request(
+            for: (firstPieces + [secondPieces[0]]).map(makeEvent(from:)),
+            with: .mockAny(),
+            execution: .init(previousResponseCode: nil, attempt: 0)
+        )
+
+        // Then: the second split is incomplete, and the two exports stay separate buckets.
+        XCTAssertEqual(try decodeEnvelope(in: partial)["SplitPayload"] as? Bool, true)
+        let partialBuckets = try XCTUnwrap(firstClientStatsPayload(in: partial)["Stats"] as? [Any?]).map(mapFields)
+        XCTAssertEqual(partialBuckets.map { $0["Start"] as? Int64 }, [1_000, 1_000])
+        XCTAssertEqual(partialBuckets.map { ($0["Stats"] as? [Any?])?.count }, [2, 1])
+
+        // When: a batch holds every piece of both splits.
+        let complete = try makeRequestBuilder().request(
+            for: (firstPieces + secondPieces).map(makeEvent(from:)),
+            with: .mockAny(),
+            execution: .init(previousResponseCode: nil, attempt: 0)
+        )
+
+        // Then
+        XCTAssertEqual(try decodeEnvelope(in: complete)["SplitPayload"] as? Bool, false)
+        let completeBuckets = try XCTUnwrap(firstClientStatsPayload(in: complete)["Stats"] as? [Any?]).map(mapFields)
+        XCTAssertEqual(completeBuckets.map { ($0["Stats"] as? [Any?])?.count }, [2, 3])
     }
 
     func testWhenBatchHoldsOnlyWholeBuckets_itDoesNotMarkThePayloadSplit() throws {
