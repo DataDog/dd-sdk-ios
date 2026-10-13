@@ -392,6 +392,28 @@ class MonitorTests: XCTestCase {
         XCTAssertTrue(monitor.isSessionExpired(sessionID: sessionID))
     }
 
+    func testWhenInteractionRenewsSession_itPublishesActivityBeforeNotifyingCollector() throws {
+        let clock = MonotonicClockMock()
+        let collector = TimeseriesCollectorStub()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100, monotonicClock: clock, timeseriesCollector: collector),
+            dateProvider: DateProviderMock()
+        )
+        collector.activeContextReader = monitor
+        monitor.notifySDKInit()
+        monitor.startView(key: "first")
+        let sessionID = try XCTUnwrap(monitor.applicationScope.activeSession?.sessionUUID.toRUMDataFormat)
+        XCTAssertEqual(collector.activitySessionIDs, [sessionID])
+
+        clock.advance(by: RUMSessionScope.Constants.sessionTimeoutDuration + 1)
+        monitor.addAction(type: .custom, name: "new session", attributes: [:])
+
+        let renewedID = try XCTUnwrap(monitor.applicationScope.activeSession?.sessionUUID.toRUMDataFormat)
+        XCTAssertNotEqual(renewedID, sessionID)
+        XCTAssertEqual(collector.activitySessionIDs, [sessionID, renewedID])
+        XCTAssertEqual(collector.isPreviousSessionExpiredOnActivity, false)
+    }
+
     // MARK: - hasReplay snapshot
 
     func testHasReplaySnapshot_isGatedByTimeseriesCollectorAndResetOnNewSession() throws {
@@ -442,7 +464,15 @@ private class TimeseriesCollectorStub: TimeseriesCollecting {
     func pause(sessionID: String) {}
     func resume(sessionID: String) {}
     func stop(sessionID: String) {}
-    func noteActivity(sessionID: String, at time: Date) {}
+    var activitySessionIDs: [String] = []
+    var isPreviousSessionExpiredOnActivity: Bool?
+
+    func noteActivity(sessionID: String) {
+        if let previousSessionID = activitySessionIDs.last {
+            isPreviousSessionExpiredOnActivity = activeContextReader?.isSessionExpired(sessionID: previousSessionID)
+        }
+        activitySessionIDs.append(sessionID)
+    }
     func flush() {}
 }
 

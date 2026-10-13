@@ -168,6 +168,9 @@ internal class Monitor: RUMCommandSubscriber {
 
     func process(command: RUMCommand) {
         var command = command
+        // Preserve captured monotonic time through the Core queue and launch-reason buffering. Queue latency
+        // must not make a command issued before expiry lose its original session.
+        let monotonicTime = applicationScope.dependencies.monotonicClock.elapsedTime
         command.globalAttributes = attributes
         // process command in event context
         featureScope.eventWriteContext { [weak self] context, writer in
@@ -178,7 +181,7 @@ internal class Monitor: RUMCommandSubscriber {
             let transformedCommand = self.transform(command: command)
             let previousSessionID = self.sessionActivitySnapshot.sessionID
 
-            _ = self.applicationScope.process(command: transformedCommand, context: context, writer: writer)
+            _ = self.applicationScope.process(command: transformedCommand, monotonicTime: monotonicTime, context: context, writer: writer)
 
             if self.applicationScope.dependencies.timeseriesCollector != nil {
                 let currentSessionID = self.applicationScope.activeSession?.sessionUUID.toRUMDataFormat
@@ -205,6 +208,11 @@ internal class Monitor: RUMCommandSubscriber {
                     sessionStart: activeSession.sessionStart,
                     lastInteraction: activeSession.lastInteraction
                 )
+                // A delayed interaction can keep this session alive after sampling self-stopped.
+                // Publish its activity snapshot first so the collector observes the refreshed lifetime.
+                if command.isUserInteraction && context.applicationStateHistory.currentState.isRunningInForeground {
+                    self.applicationScope.dependencies.timeseriesCollector?.noteActivity(sessionID: activeSession.sessionUUID.toRUMDataFormat)
+                }
             } else {
                 self.activeViewSnapshot = (nil, nil, nil)
                 self.sessionActivitySnapshot = (nil, nil, nil)

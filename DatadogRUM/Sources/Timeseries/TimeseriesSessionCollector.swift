@@ -18,9 +18,9 @@ internal protocol TimeseriesCollecting: AnyObject {
     func pause(sessionID: String)
     func resume(sessionID: String)
     func stop(sessionID: String)
-    /// Reports that a RUM interaction was just processed, so the collector can self-enforce
-    /// the session inactivity timeout even if no further commands ever arrive to call `stop(sessionID:)`.
-    func noteActivity(sessionID: String, at time: Date)
+    /// Restarts sampling if a delayed foreground interaction kept a self-stopped session alive.
+    /// Called after the monitor publishes the updated session activity.
+    func noteActivity(sessionID: String)
     /// Synchronously flushes any buffered samples. **Blocks the caller thread.**
     func flush()
 }
@@ -63,12 +63,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private var sessionType: RUMSessionType = .user
     private var timer: DispatchSourceTimer?
     private var isPaused: Bool = false
-    /// The start time of the current session, used to self-enforce `RUMSessionScope.Constants.sessionMaxDuration`
-    /// even if the RUM command pipeline never notifies this collector of the session's expiry.
-    private var sessionStartTime: Date = .distantPast
-    /// The time of the last RUM interaction reported via `noteActivity(sessionID:at:)`, used to self-enforce
-    /// `RUMSessionScope.Constants.sessionTimeoutDuration` even when the app goes idle with no RUM commands.
-    private var lastActivityTime: Date = .distantPast
     private let now: () -> Date
     private let mediaTimeProvider: CACurrentMediaTimeProvider
     /// The wall-clock date and monotonic media time captured together at the start of the current session,
@@ -235,6 +229,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             self.isPaused = false
             self.flushMemory()
             self.flushCPU()
+            self.sessionID = ""
         }
     }
 
@@ -246,15 +241,15 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         }
     }
 
-    /// Records that a RUM interaction happened, resetting the inactivity clock this collector uses to
-    /// self-enforce `RUMSessionScope.Constants.sessionTimeoutDuration` (see `sample()`).
-    /// No-ops if `sessionID` no longer matches the currently active session.
-    func noteActivity(sessionID: String, at time: Date) {
+    /// Restarts a self-stopped timer after a delayed foreground interaction keeps the session alive.
+    /// Background pauses and sessions still expired according to the monitor remain stopped.
+    func noteActivity(sessionID: String) {
         queue.async { [weak self] in
-            guard let self = self, self.sessionID == sessionID else {
+            guard let self = self, self.sessionID == sessionID, !self.isPaused, self.timer == nil,
+                  self.activeContextReader?.isSessionExpired(sessionID: sessionID) == false else {
                 return
             }
-            self.lastActivityTime = time
+            self.timer = self.makeTimer()
         }
     }
 
