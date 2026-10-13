@@ -144,9 +144,12 @@ internal struct ExportedBucket: Codable, Sendable {
     let version: String?
     let service: String?
 
-    /// Whether this bucket holds only some of its window's groups, because the window was split to
-    /// fit the storage event limit. `nil` for whole buckets and buckets written by earlier builds.
-    let isPartial: Bool?
+    /// How many partial buckets this bucket's window was split into to fit the storage event limit.
+    /// `nil` for whole buckets.
+    let pieceCount: Int?
+
+    /// Whether this bucket holds only some of its window's groups.
+    var isPartial: Bool { pieceCount != nil }
 
     init(
         start: UInt64,
@@ -155,7 +158,7 @@ internal struct ExportedBucket: Codable, Sendable {
         env: String? = nil,
         version: String? = nil,
         service: String? = nil,
-        isPartial: Bool? = nil
+        pieceCount: Int? = nil
     ) {
         self.start = start
         self.duration = duration
@@ -163,7 +166,7 @@ internal struct ExportedBucket: Codable, Sendable {
         self.env = env
         self.version = version
         self.service = service
-        self.isPartial = isPartial
+        self.pieceCount = pieceCount
     }
 
     /// Splits the bucket into partial buckets whose JSON encoding fits in `maxEncodedSize`, or
@@ -179,7 +182,8 @@ internal struct ExportedBucket: Codable, Sendable {
         guard
             let encodedSize = try? encoder.encode(self).count,
             encodedSize > maxEncodedSize,
-            let emptySize = try? encoder.encode(makePartial(with: [])).count
+            // The largest piece count this split can produce, so the estimate never runs short.
+            let emptySize = try? encoder.encode(makePartial(with: [], of: stats.count)).count
         else {
             return ([self], [])
         }
@@ -202,10 +206,10 @@ internal struct ExportedBucket: Codable, Sendable {
                 pieceSize += 1 + groupSize
             }
         }
-        return (pieces.map(makePartial(with:)), oversizedGroups)
+        return (pieces.map { makePartial(with: $0, of: pieces.count) }, oversizedGroups)
     }
 
-    private func makePartial(with stats: [ExportedGroupedStats]) -> ExportedBucket {
+    private func makePartial(with stats: [ExportedGroupedStats], of pieceCount: Int) -> ExportedBucket {
         ExportedBucket(
             start: start,
             duration: duration,
@@ -213,7 +217,7 @@ internal struct ExportedBucket: Codable, Sendable {
             env: env,
             version: version,
             service: service,
-            isPartial: true
+            pieceCount: pieceCount
         )
     }
 }
