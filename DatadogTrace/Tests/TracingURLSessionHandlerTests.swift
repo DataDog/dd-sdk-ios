@@ -2023,8 +2023,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertTrue(snapshot.isTopLevel, "The parent's service is read when the request span finishes")
     }
 
-    func testGivenRequestThatSkippedModifyUnderParentWithAnotherService_whenItCompletes_itIsAServiceEntryWhetherUploadedOrNot() throws {
-        for samplingRate: SampleRate in [0, 100] {
+    func testGivenRequestThatSkippedModifyUnderParent_whenItCompletes_itIsAServiceEntryOnlyIfTheServiceDiffers() throws {
+        for (samplingRate, parentService): (SampleRate, String?) in [(0, "checkout"), (100, "checkout"), (0, nil), (100, nil)] {
             let capture = SpanSnapshotCapture()
             let statsTracer: DatadogTracer = .mockWith(core: core, onSpanFinished: capture.capture)
             let handler = TracingURLSessionHandler(
@@ -2035,7 +2035,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
                 traceContextInjection: .sampled,
                 telemetry: NOPTelemetry()
             )
-            let parent = statsTracer.startRootSpan(operationName: "parent", tags: [SpanTags.service: "checkout"], customSampleRate: 100)
+            let tags = parentService.map { [SpanTags.service: $0] }
+            let parent = statsTracer.startRootSpan(operationName: "parent", tags: tags, customSampleRate: 100)
             let interception = makeCompletedInterception()
             interception.register(activeSpanContext: parent.context)
 
@@ -2043,7 +2044,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
             let snapshot = try XCTUnwrap(capture.snapshots.first { $0.operationName == "urlsession.request" })
             XCTAssertEqual(snapshot.parentSpanID, parent.context.dd.spanID)
-            XCTAssertTrue(snapshot.isTopLevel, "Sampling rate \(samplingRate)")
+            XCTAssertEqual(snapshot.isTopLevel, parentService != nil, "Sampling rate \(samplingRate), parent service \(parentService ?? "default")")
         }
     }
 
