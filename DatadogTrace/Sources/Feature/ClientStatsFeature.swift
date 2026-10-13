@@ -81,7 +81,7 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
             }
             // Report only after the write: in some cases the event write context is not
             // available, and we do not want to signal a flush that never reached storage.
-            metricController.send(for: exportedBuckets, reason: force ? .forced : .periodic)
+            metricController.send(for: exportedBuckets, force: force)
         }
     }
 
