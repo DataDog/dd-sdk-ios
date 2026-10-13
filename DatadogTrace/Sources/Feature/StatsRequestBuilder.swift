@@ -65,9 +65,8 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
         var bucketsByIdentity: [DeploymentIdentity: [ClientStatsBucket]] = [:]
         var identityOrder: [DeploymentIdentity] = []
         // Partial buckets of one window hold disjoint groups, so pieces in this batch are merged back
-        // into one bucket. Other pieces may be in another batch, which `SplitPayload` signals.
-        var partialBucketIndexes: [PartialBucketKey: Int] = [:]
-        var hasPartialBuckets = false
+        // into one bucket. When some pieces are in another batch, `SplitPayload` signals it.
+        var partialBuckets: [PartialBucketKey: (index: Int, receivedPieces: Int, pieceCount: Int)] = [:]
         for bucket in decoded {
             // Buckets written before this field existed fall back to the upload-time context,
             // which is the previous behaviour and better than dropping the batch.
@@ -79,21 +78,21 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
             if bucketsByIdentity[identity] == nil {
                 identityOrder.append(identity)
             }
-            guard bucket.isPartial == true else {
+            guard let pieceCount = bucket.pieceCount else {
                 bucketsByIdentity[identity, default: []].append(ClientStatsBucket(bucket))
                 continue
             }
-            hasPartialBuckets = true
             let key = PartialBucketKey(identity: identity, start: bucket.start, duration: bucket.duration)
             let piece = ClientStatsBucket(bucket)
-            if let index = partialBucketIndexes[key], let existing = bucketsByIdentity[identity]?[index] {
-                bucketsByIdentity[identity]?[index] = ClientStatsBucket(
+            if let partial = partialBuckets[key], let existing = bucketsByIdentity[identity]?[partial.index] {
+                bucketsByIdentity[identity]?[partial.index] = ClientStatsBucket(
                     start: existing.start,
                     duration: existing.duration,
                     stats: existing.stats + piece.stats
                 )
+                partialBuckets[key]?.receivedPieces += 1
             } else {
-                partialBucketIndexes[key] = bucketsByIdentity[identity]?.count ?? 0
+                partialBuckets[key] = (bucketsByIdentity[identity]?.count ?? 0, 1, pieceCount)
                 bucketsByIdentity[identity, default: []].append(piece)
             }
         }
@@ -114,9 +113,11 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
                 stats: bucketsByIdentity[identity] ?? []
             )
         }
-        // `SplitPayload` marks a payload split across requests. Client payloads of different identities
-        // travel in one request, so only partial buckets can be split.
-        let payload = StatsPayload(clientStats: clientStats, splitPayload: hasPartialBuckets)
+        // `SplitPayload` marks a payload split across requests, which happens only when a window's
+        // pieces did not all land in this batch. Client payloads of different identities travel in
+        // one request.
+        let isSplit = partialBuckets.values.contains { $0.receivedPieces < $0.pieceCount }
+        let payload = StatsPayload(clientStats: clientStats, splitPayload: isSplit)
         let body = try encoder.encode(payload)
 
         let builder = URLRequestBuilder(
