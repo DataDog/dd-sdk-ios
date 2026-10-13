@@ -47,6 +47,31 @@ private final class PendingHTTPClientMock: HTTPClient {
     }
 }
 
+/// Holds the first request for up to a second, keeping its upload in progress.
+private final class HoldingHTTPClientMock: HTTPClient {
+    let requestSent = DispatchSemaphore(value: 0)
+    private let requestReleased = DispatchSemaphore(value: 0)
+    private let isFirstRequest = ReadWriteLock(wrappedValue: true)
+
+    func send(
+        request: URLRequest,
+        delegate: URLSessionTaskDelegate?,
+        completion: @escaping (Result<(HTTPURLResponse, Data?), any Error>) -> Void
+    ) {
+        var shouldHold = false
+        isFirstRequest.mutate { isFirst in
+            shouldHold = isFirst
+            isFirst = false
+        }
+        if shouldHold {
+            requestSent.signal()
+            // The timeout only bounds how long the upload stays in progress: nothing releases it earlier.
+            _ = requestReleased.wait(timeout: .now() + 1)
+        }
+        completion(.success((.mockResponseWith(statusCode: 202), nil)))
+    }
+}
+
 class DatadogCoreTests: XCTestCase {
     override func setUp() {
         super.setUp()
@@ -785,6 +810,73 @@ class DatadogCoreTests: XCTestCase {
 
         XCTAssertTrue(uploadedEvents.contains(#"{"event":"first"}"#))
         XCTAssertTrue(uploadedEvents.contains(#"{"event":"second"}"#))
+    }
+
+    func testFlushAndTearDown_whenUploadIsInProgress_itUploadsTelemetryRecordedFromIt() throws {
+        // Given
+        let httpClient = HoldingHTTPClientMock()
+        let requestBuilderSpy = FeatureRequestBuilderSpy()
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .combining(
+                storagePerformance: .readAllFiles,
+                uploadPerformance: UploadPerformanceMock(
+                    initialUploadDelay: 0,
+                    minUploadDelay: 0.05,
+                    maxUploadDelay: 0.05,
+                    uploadDelayChangeRate: 0
+                )
+            ),
+            httpClient: httpClient,
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: 1,
+            backgroundTasksEnabled: false
+        )
+        let isUploadInProgress = ReadWriteLock(wrappedValue: false)
+        let uploadQualityDeliveries = ReadWriteLock(wrappedValue: 0)
+        let contextQueueParked = DispatchSemaphore(value: 0)
+        let messageReceiver = FeatureMessageReceiverMock { [weak core] message in
+            guard case .telemetry(.metric(let metric)) = message, metric.name == UploadQualityMetric.name, let core = core else {
+                return
+            }
+            var delivery = 0
+            uploadQualityDeliveries.mutate {
+                $0 += 1
+                delivery = $0
+            }
+            if isUploadInProgress.wrappedValue {
+                // Park the context queue so that recording is still pending when the delivery completes. The timeout
+                // only bounds how long `flushAndTearDown()` waits on it: the event is written whenever the queue resumes.
+                core.contextProvider.queue.async { _ = contextQueueParked.wait(timeout: .now() + 1) }
+            }
+            // Record the telemetry as an event, like RUM does
+            core.scope(for: FeatureMock.self).eventWriteContext { _, writer in
+                writer.write(value: FeatureMock.Event(event: "upload telemetry \(delivery)"))
+            }
+        }
+        try core.register(feature: FeatureMock(requestBuilder: requestBuilderSpy, messageReceiver: messageReceiver))
+        core.scope(for: FeatureMock.self).eventWriteContext { _, writer in
+            writer.write(value: FeatureMock.Event(event: "test"))
+        }
+        XCTAssertEqual(httpClient.requestSent.wait(timeout: .now() + 5), .success, "An upload must be in progress")
+        isUploadInProgress.mutate { $0 = true }
+
+        // When
+        core.flushAndTearDown()
+
+        // Then
+        let lastDelivery = uploadQualityDeliveries.wrappedValue // the upload in progress reports last
+        let uploadedEvents = requestBuilderSpy.requestParameters
+            .flatMap { $0.events }
+            .map { $0.data.utf8String }
+        XCTAssertTrue(
+            uploadedEvents.contains(#"{"event":"upload telemetry \#(lastDelivery)"}"#),
+            "Telemetry recorded from the upload in progress must be uploaded"
+        )
     }
 
     func testFlushAndTearDown_whenMessageIsPostedDuringFinalUpload_itDeliversItBeforeReturning() throws {

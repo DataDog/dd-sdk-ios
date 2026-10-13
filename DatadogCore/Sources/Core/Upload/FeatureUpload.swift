@@ -83,6 +83,14 @@ internal struct FeatureUpload {
         uploader.flushSynchronously()
     }
 
+    /// Stops the periodic upload schedule. Pending batches stay on disk.
+    /// - It waits for the upload in progress, if any, to complete.
+    ///
+    /// This method is executed synchronously.
+    internal func cancelSynchronously() {
+        uploader.cancelSynchronously()
+    }
+
     /// Flushes all authorised data without tearing down the upload stack.
     /// - It flushes all data stored in authorized files by performing their arbitrary upload (without retrying).
     /// - Unlike `flushAndTearDown()`, the upload scheduler is kept running after this call.
