@@ -19,8 +19,8 @@ class StatsConcentratorTests: XCTestCase {
         bufferLen: Int = StatsConcentrator.defaultBufferLen,
         peerTagKeys: [String] = StatsConcentrator.defaultPeerTagKeys,
         maxGroupsPerBucket: Int = StatsConcentrator.defaultMaxGroupsPerBucket,
-        telemetry: Telemetry = NOPTelemetry(),
-        writeOverflow: @escaping (ExportedBucket) -> Void = { _ in XCTFail("Unexpected early overflow export") }
+        maxOverflowGroupsPerBucket: Int = StatsConcentrator.defaultMaxOverflowGroupsPerBucket,
+        telemetry: Telemetry = NOPTelemetry()
     ) -> StatsConcentrator {
         return StatsConcentrator(
             now: now,
@@ -29,8 +29,8 @@ class StatsConcentratorTests: XCTestCase {
             bufferLen: bufferLen,
             peerTagKeys: peerTagKeys,
             maxGroupsPerBucket: maxGroupsPerBucket,
-            telemetry: telemetry,
-            writeOverflow: writeOverflow
+            maxOverflowGroupsPerBucket: maxOverflowGroupsPerBucket,
+            telemetry: telemetry
         )
     }
 
@@ -95,16 +95,16 @@ class StatsConcentratorTests: XCTestCase {
         XCTAssertEqual(group.errorSummary, errorSketch.toProtoBytes())
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: TraceClientStatsMetric.collapsedSpansName))
         XCTAssertEqual(metric.attributes[TraceClientStatsMetric.collapsedSpansCountKey] as? UInt64, 2)
+        XCTAssertEqual(metric.attributes[TraceClientStatsMetric.droppedSpansCountKey] as? UInt64, 0)
         XCTAssertEqual(metric.attributes[TraceClientStatsMetric.maxGroupsPerBucketKey] as? Int, 2)
         XCTAssertEqual(metric.attributes[SDKMetricFields.typeKey] as? String, TraceClientStatsMetric.collapsedSpansTypeValue)
         XCTAssertEqual(metric.attributes["collapsed"] as? String, "whole_key")
-        XCTAssertEqual(metric.attributes.count, 4, "No resource, peer tag or deployment values in telemetry")
+        XCTAssertEqual(metric.attributes.count, 5, "No resource, peer tag or deployment values in telemetry")
     }
 
     func testLimitIncludesPeerTagsAndDeploymentIdentity() throws {
         let telemetry = TelemetryMock()
-        var earlyBuckets: [ExportedBucket] = []
-        let concentrator = makeConcentrator(now: 0, maxGroupsPerBucket: 2, telemetry: telemetry) { earlyBuckets.append($0) }
+        let concentrator = makeConcentrator(now: 0, maxGroupsPerBucket: 2, telemetry: telemetry)
         for peer in ["a", "b", "c"] {
             concentrator.add(.mockWith(spanKind: "client", startTime: 0, duration: 100, peerTags: ["peer.service": peer]))
         }
@@ -113,10 +113,11 @@ class StatsConcentratorTests: XCTestCase {
         let buckets = concentrator.flush(now: 0, force: true)
 
         XCTAssertEqual(buckets.count, 2)
-        XCTAssertEqual(buckets.flatMap(\.stats).count, 3)
-        XCTAssertEqual(earlyBuckets.count, 1)
-        XCTAssertEqual((earlyBuckets + buckets).flatMap(\.stats).map(\.hits).reduce(0, +), 4)
-        XCTAssertEqual(buckets.first { $0.version == "new-version" }?.stats.first?.hits, 1)
+        XCTAssertEqual(buckets.flatMap(\.stats).count, 4)
+        XCTAssertEqual(buckets.flatMap(\.stats).map(\.hits).reduce(0, +), 4)
+        let newVersion = try XCTUnwrap(buckets.first { $0.version == "new-version" })
+        XCTAssertEqual(newVersion.stats.map(\.resource), ["tracer_blocked_value"])
+        XCTAssertEqual(newVersion.stats.first?.hits, 1)
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: TraceClientStatsMetric.collapsedSpansName))
         XCTAssertEqual(metric.attributes[TraceClientStatsMetric.collapsedSpansCountKey] as? UInt64, 2)
     }
@@ -210,25 +211,29 @@ class StatsConcentratorTests: XCTestCase {
         XCTAssertEqual(metric.attributes[TraceClientStatsMetric.collapsedSpansCountKey] as? UInt64, UInt64(spanCount - limit))
     }
 
-    func testOverflowDeploymentChurnExportsBeforeReusingTheSingleSlot() throws {
-        let limit = 2
-        let spanCount = 10_000
-        var exportedCount = 0
-        var hits: UInt64 = 0
-        var errors: UInt64 = 0
-        let concentrator = makeConcentrator(now: 0, maxGroupsPerBucket: limit) { bucket in
-            // Keep only scalar totals in this sink, not a second unbounded in-memory buffer.
-            XCTAssertEqual(bucket.stats.count, 1)
-            XCTAssertEqual(bucket.env, "env-\(exportedCount)")
-            XCTAssertEqual(bucket.version, "version-\(exportedCount)")
-            XCTAssertEqual(bucket.service, "service-\(exportedCount)")
-            XCTAssertEqual(bucket.start, 0)
-            XCTAssertEqual(bucket.duration, self.bucketDuration)
-            XCTAssertEqual(bucket.stats.first?.resource, "tracer_blocked_value")
-            hits += bucket.stats.map(\.hits).reduce(0, +)
-            errors += bucket.stats.map(\.errors).reduce(0, +)
-            exportedCount += 1
+    func testAlternatingDeploymentsShareOneOverflowGroupEach() throws {
+        let concentrator = makeConcentrator(now: 0, maxGroupsPerBucket: 1)
+        concentrator.add(.mockWith(resource: "retained", startTime: 0, duration: 100))
+        for version in ["one", "one", "two", "one", "two", "one"] {
+            concentrator.add(.mockWith(resource: "overflow-\(version)", startTime: 0, duration: 100, deployment: .mockWith(version: version)))
         }
+
+        XCTAssertTrue(concentrator.flush(now: bucketDuration, force: false).isEmpty, "Nothing is exported before the bucket completes")
+        let buckets = concentrator.flush(now: 2 * bucketDuration, force: false)
+
+        let overflowBuckets = buckets.filter { ["one", "two"].contains($0.version) }
+        XCTAssertEqual(overflowBuckets.count, 2, "Each bucket and deployment is exported exactly once")
+        XCTAssertEqual(overflowBuckets.first { $0.version == "one" }?.stats.map(\.hits), [4])
+        XCTAssertEqual(overflowBuckets.first { $0.version == "two" }?.stats.map(\.hits), [2])
+        XCTAssertTrue(overflowBuckets.allSatisfy { $0.start == 0 && $0.stats.first?.resource == "tracer_blocked_value" })
+        XCTAssertEqual(buckets.flatMap(\.stats).map(\.hits).reduce(0, +), 7)
+        XCTAssertTrue(concentrator.flush(now: 2 * bucketDuration, force: true).isEmpty)
+    }
+
+    func testOverflowGroupsAreBoundedAndExtraDeploymentsAreDroppedAndCounted() throws {
+        let telemetry = TelemetryMock()
+        let spanCount = 10_000
+        let concentrator = makeConcentrator(now: 0, maxGroupsPerBucket: 2, maxOverflowGroupsPerBucket: 3, telemetry: telemetry)
         for resource in ["retained-a", "retained-b"] {
             concentrator.add(.mockWith(resource: resource, startTime: 0, duration: 100))
         }
@@ -241,22 +246,40 @@ class StatsConcentratorTests: XCTestCase {
                 deployment: .mockWith(env: "env-\(index)", version: "version-\(index)", service: "service-\(index)")
             ))
         }
+        // Spans of deployments that already have an overflow group are still aggregated.
+        concentrator.add(.mockWith(resource: "overflow-again", startTime: 0, duration: 100, deployment: .mockWith(env: "env-1", version: "version-1", service: "service-1")))
         concentrator.add(.mockWith(resource: "retained-a", startTime: 0, duration: 100))
-        let remaining = concentrator.flush(now: 0, force: true)
 
-        XCTAssertEqual(exportedCount, spanCount - 1)
-        XCTAssertEqual(remaining.flatMap(\.stats).count, limit + 1)
-        XCTAssertEqual(hits + remaining.flatMap(\.stats).map(\.hits).reduce(0, +), UInt64(spanCount + 3))
-        XCTAssertEqual(errors + remaining.flatMap(\.stats).map(\.errors).reduce(0, +), UInt64(spanCount))
-        XCTAssertEqual(remaining.first { $0.version == "version-9999" }?.stats.first?.hits, 1)
-        XCTAssertEqual(remaining.flatMap(\.stats).first { $0.resource == "retained-a" }?.hits, 2)
+        let buckets = concentrator.flush(now: 0, force: true)
+
+        XCTAssertEqual(buckets.flatMap(\.stats).count, 2 + 3)
+        for index in 0..<3 {
+            let bucket = try XCTUnwrap(buckets.first { $0.version == "version-\(index)" })
+            XCTAssertEqual(bucket.env, "env-\(index)")
+            XCTAssertEqual(bucket.service, "service-\(index)")
+            XCTAssertEqual(bucket.stats.map(\.resource), ["tracer_blocked_value"])
+            XCTAssertEqual(bucket.stats.first?.hits, index == 1 ? 2 : 1)
+        }
+        XCTAssertEqual(buckets.flatMap(\.stats).first { $0.resource == "retained-a" }?.hits, 2)
+        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: TraceClientStatsMetric.collapsedSpansName))
+        XCTAssertEqual(metric.attributes[TraceClientStatsMetric.collapsedSpansCountKey] as? UInt64, 4)
+        XCTAssertEqual(metric.attributes[TraceClientStatsMetric.droppedSpansCountKey] as? UInt64, UInt64(spanCount - 3))
         XCTAssertTrue(concentrator.flush(now: 0, force: true).isEmpty)
+    }
+
+    func testNonPositiveOverflowLimitsAreClampedToOne() {
+        for limit in [0, -1] {
+            let concentrator = makeConcentrator(now: 0, maxGroupsPerBucket: 1, maxOverflowGroupsPerBucket: limit)
+            for resource in ["a", "b"] {
+                concentrator.add(.mockWith(resource: resource, startTime: 0, duration: 100))
+            }
+            XCTAssertEqual(concentrator.flush(now: 0, force: true).first?.stats.count, 2)
+        }
     }
 
     func testConcurrentDeploymentChurnPreservesEverySpanUnderItsOriginalIdentity() {
         let spanCount = 1_000
-        var exported: [ExportedBucket] = []
-        let concentrator = makeConcentrator(now: 0, maxGroupsPerBucket: 1) { exported.append($0) }
+        let concentrator = makeConcentrator(now: 0, maxGroupsPerBucket: 1)
         concentrator.add(.mockWith(resource: "retained", startTime: 0, duration: 100))
         DispatchQueue.concurrentPerform(iterations: spanCount) { index in
             concentrator.add(.mockWith(
@@ -266,29 +289,35 @@ class StatsConcentratorTests: XCTestCase {
                 deployment: .mockWith(version: "v\(index % 3)")
             ))
         }
-        let remaining = concentrator.flush(now: 0, force: true)
-        XCTAssertEqual(remaining.flatMap(\.stats).count, 2)
-        exported += remaining
+        let buckets = concentrator.flush(now: 0, force: true)
+        XCTAssertEqual(buckets.flatMap(\.stats).count, 1 + 3)
         for identity in 0..<3 {
-            let hits = exported.filter { $0.version == "v\(identity)" }.flatMap(\.stats).map(\.hits).reduce(0, +)
-            XCTAssertEqual(hits, UInt64((0..<spanCount).filter { $0 % 3 == identity }.count))
+            let stats = buckets.filter { $0.version == "v\(identity)" }.flatMap(\.stats)
+            XCTAssertEqual(stats.count, 1)
+            XCTAssertEqual(stats.first?.hits, UInt64((0..<spanCount).filter { $0 % 3 == identity }.count))
         }
     }
 
-    func testRevokedConsentPreventsEarlyOverflowWrites() {
-        var exported: [ExportedBucket] = []
-        let concentrator = makeConcentrator(now: 0, maxGroupsPerBucket: 1) { exported.append($0) }
+    func testRevokingConsentClearsOverflowGroupsAndDroppedSpanCounts() throws {
+        let telemetry = TelemetryMock()
+        let concentrator = makeConcentrator(now: 0, maxGroupsPerBucket: 1, maxOverflowGroupsPerBucket: 1, telemetry: telemetry)
         concentrator.add(.mockWith(resource: "retained", startTime: 0, duration: 100))
-        concentrator.add(.mockWith(resource: "overflow", startTime: 0, duration: 100))
+        concentrator.add(.mockWith(startTime: 0, duration: 100, deployment: .mockWith(version: "v1")))
+        concentrator.add(.mockWith(startTime: 0, duration: 100, deployment: .mockWith(version: "v2")))
         concentrator.updateConsent(.notGranted)
-        for index in 0..<10 {
-            concentrator.add(.mockWith(startTime: 0, duration: 100, deployment: .mockWith(version: "v\(index)")))
-        }
         XCTAssertTrue(concentrator.flush(now: 0, force: true).isEmpty)
-        XCTAssertTrue(exported.isEmpty)
         concentrator.updateConsent(.granted)
-        concentrator.add(.mockWith(resource: "new", startTime: 0, duration: 100))
-        XCTAssertEqual(concentrator.flush(now: 0, force: true).first?.stats.first?.hits, 1)
+        concentrator.add(.mockWith(resource: "retained", startTime: 0, duration: 100))
+        concentrator.add(.mockWith(startTime: 0, duration: 100, deployment: .mockWith(version: "v2")))
+
+        let buckets = concentrator.flush(now: 0, force: true)
+
+        XCTAssertEqual(buckets.first { $0.version == "v2" }?.stats.first?.hits, 1)
+        XCTAssertNil(buckets.first { $0.version == "v1" })
+        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: TraceClientStatsMetric.collapsedSpansName))
+        XCTAssertEqual(metric.attributes[TraceClientStatsMetric.collapsedSpansCountKey] as? UInt64, 1)
+        XCTAssertEqual(metric.attributes[TraceClientStatsMetric.droppedSpansCountKey] as? UInt64, 0)
+        XCTAssertEqual(telemetry.messages.count, 1)
     }
 
     // MARK: - Eligibility
