@@ -44,6 +44,8 @@ internal enum TraceClientStatsMetric {
     static let collapsedSpansName = "Trace Client Stats Collapsed Spans"
     static let collapsedSpansTypeValue = "trace client stats collapsed spans"
     static let collapsedSpansCountKey = "collapsed_spans_count"
+    /// Spans dropped because their bucket had no overflow group left for their deployment.
+    static let droppedSpansCountKey = "dropped_spans_count"
     static let maxGroupsPerBucketKey = "max_groups_per_bucket"
 }
 
@@ -53,15 +55,16 @@ internal struct TraceClientStatsMetricController {
     let telemetry: Telemetry
 
     /// Reports cardinality loss without including resource names, peer tags or deployment values.
-    func sendCollapsedSpans(count: UInt64, limit: Int) {
-        guard count > 0 else {
+    func sendCollapsedSpans(collapsedCount: UInt64, droppedCount: UInt64, limit: Int) {
+        guard collapsedCount > 0 || droppedCount > 0 else {
             return
         }
         telemetry.metric(
             name: TraceClientStatsMetric.collapsedSpansName,
             attributes: [
                 SDKMetricFields.typeKey: TraceClientStatsMetric.collapsedSpansTypeValue,
-                TraceClientStatsMetric.collapsedSpansCountKey: count,
+                TraceClientStatsMetric.collapsedSpansCountKey: collapsedCount,
+                TraceClientStatsMetric.droppedSpansCountKey: droppedCount,
                 "collapsed": "whole_key",
                 TraceClientStatsMetric.maxGroupsPerBucketKey: limit
             ]

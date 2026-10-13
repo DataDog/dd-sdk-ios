@@ -47,12 +47,7 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
         self.metricController = TraceClientStatsMetricController(telemetry: featureScope.telemetry)
 
         let now = dateProvider.now.timeIntervalSince1970.dd.toNanoseconds
-        let concentrator = StatsConcentrator(now: now, telemetry: featureScope.telemetry) { [featureScope, metricController] bucket in
-            featureScope.eventWriteContext { _, writer in
-                writer.write(value: bucket)
-                metricController.send(for: [bucket], reason: .overflowDeploymentChange)
-            }
-        }
+        let concentrator = StatsConcentrator(now: now, telemetry: featureScope.telemetry)
         self.concentrator = concentrator
 
         // Observe consent changes through the message bus. The core delivers the current context
