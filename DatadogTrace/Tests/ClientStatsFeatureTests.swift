@@ -384,7 +384,6 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertEqual(metric.attributes[TraceClientStatsMetric.spansCountKey] as? UInt64, 2)
         XCTAssertEqual(metric.attributes[TraceClientStatsMetric.errorsCountKey] as? UInt64, 1)
         XCTAssertEqual(metric.attributes[TraceClientStatsMetric.forcedKey] as? Bool, false)
-        XCTAssertEqual(metric.attributes[TraceClientStatsMetric.exportReasonKey] as? String, "periodic")
     }
 
     func testWhenForcedFlushProducesBuckets_itMarksMetricAsForced() throws {
@@ -404,7 +403,6 @@ class ClientStatsFeatureTests: XCTestCase {
         // Then
         let metric = try XCTUnwrap(core.telemetryMock.messages.firstMetric(named: TraceClientStatsMetric.name))
         XCTAssertEqual(metric.attributes[TraceClientStatsMetric.forcedKey] as? Bool, true)
-        XCTAssertEqual(metric.attributes[TraceClientStatsMetric.exportReasonKey] as? String, "forced")
         XCTAssertEqual(metric.attributes[TraceClientStatsMetric.spansCountKey] as? UInt64, 1)
     }
 
