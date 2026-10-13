@@ -400,8 +400,8 @@ internal final class StatsConcentrator: @unchecked Sendable {
 
             // Check before allocating sketches. Do not retain the original overflow keys.
             guard bucket.groups.count < maxGroupsPerBucket else {
-                // One overflow group per deployment, like the agent's collapsed key, so each bucket
-                // and deployment is exported exactly once and never split across payloads.
+                // One overflow group per deployment, like the agent's collapsed key, so overflow is
+                // exported with the rest of its bucket and never split across payloads.
                 let deployment = aggregationKey.deployment
                 if let overflowGroup = bucket.overflowGroups[deployment] {
                     overflowGroup.update(with: snapshot)
@@ -477,7 +477,8 @@ internal final class StatsConcentrator: @unchecked Sendable {
                 metricController.sendCollapsedSpans(
                     collapsedCount: bucket.collapsedSpansCount,
                     droppedCount: bucket.droppedSpansCount,
-                    limit: maxGroupsPerBucket
+                    limit: maxGroupsPerBucket,
+                    overflowLimit: maxOverflowGroupsPerBucket
                 )
 
                 // Groups from different deployments can share a time window but never a payload, so
