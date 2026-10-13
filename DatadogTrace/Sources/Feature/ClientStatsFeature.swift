@@ -80,14 +80,20 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
         }
 
         featureScope.eventWriteContext { [metricController] _, writer in
+            var oversizedGroups: [ExportedGroupedStats] = []
             for bucket in exportedBuckets {
-                for piece in bucket.split(toFit: Self.maxStoredBucketSize) {
+                let split = bucket.split(toFit: Self.maxStoredBucketSize)
+                for piece in split.pieces {
                     writer.write(value: piece)
                 }
+                oversizedGroups += split.oversizedGroups
+            }
+            if !oversizedGroups.isEmpty {
+                DD.logger.warn("Client-side stats dropped \(oversizedGroups.count) group(s) too large to store, likely because of a very long resource name.")
             }
             // Report only after the write: in some cases the event write context is not
             // available, and we do not want to signal a flush that never reached storage.
-            metricController.send(for: exportedBuckets, force: force)
+            metricController.send(for: exportedBuckets, oversizedGroups: oversizedGroups, force: force)
         }
     }
 

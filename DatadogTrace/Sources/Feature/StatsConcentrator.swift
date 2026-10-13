@@ -170,33 +170,39 @@ internal struct ExportedBucket: Codable, Sendable {
     /// returns the bucket itself when it already fits.
     ///
     /// Latency sketches store every bin between the fastest and slowest span, so a bucket within the
-    /// cardinality limit can still exceed the storage event limit, which rejects it whole. A single
-    /// group is far below the limit, so each partial bucket gets at least one group.
-    func split(toFit maxEncodedSize: Int) -> [ExportedBucket] {
+    /// cardinality limit can still exceed the storage event limit, which rejects it whole. Sketches
+    /// alone keep a group well below the limit, but strings such as the resource are unbounded, so a
+    /// group that cannot fit even alone is returned in `oversizedGroups` instead of being stored.
+    func split(toFit maxEncodedSize: Int) -> (pieces: [ExportedBucket], oversizedGroups: [ExportedGroupedStats]) {
         // The storage writer's encoder, so sizes match what it writes.
         let encoder = JSONEncoder.dd.default()
         guard
-            stats.count > 1,
             let encodedSize = try? encoder.encode(self).count,
             encodedSize > maxEncodedSize,
             let emptySize = try? encoder.encode(makePartial(with: [])).count
         else {
-            return [self]
+            return ([self], [])
         }
 
-        var pieces: [[ExportedGroupedStats]] = [[]]
+        var pieces: [[ExportedGroupedStats]] = []
         var pieceSize = emptySize
+        var oversizedGroups: [ExportedGroupedStats] = []
         for group in stats {
-            // The group's encoding plus its separating comma.
-            let groupSize = ((try? encoder.encode(group).count) ?? 0) + 1
-            if !pieces[pieces.count - 1].isEmpty && pieceSize + groupSize > maxEncodedSize {
-                pieces.append([])
-                pieceSize = emptySize
+            // A group that cannot be encoded cannot be stored either.
+            guard let groupSize = try? encoder.encode(group).count, emptySize + groupSize <= maxEncodedSize else {
+                oversizedGroups.append(group)
+                continue
             }
-            pieces[pieces.count - 1].append(group)
-            pieceSize += groupSize
+            // Groups after the first in a piece are preceded by a comma.
+            if pieces.isEmpty || pieceSize + 1 + groupSize > maxEncodedSize {
+                pieces.append([group])
+                pieceSize = emptySize + groupSize
+            } else {
+                pieces[pieces.count - 1].append(group)
+                pieceSize += 1 + groupSize
+            }
         }
-        return pieces.map(makePartial(with:))
+        return (pieces.map(makePartial(with:)), oversizedGroups)
     }
 
     private func makePartial(with stats: [ExportedGroupedStats]) -> ExportedBucket {
