@@ -144,13 +144,18 @@ internal struct ExportedBucket: Codable, Sendable {
     let version: String?
     let service: String?
 
+    /// Whether this bucket holds only some of its window's groups, because the window was split to
+    /// fit the storage event limit. `nil` for whole buckets and buckets written by earlier builds.
+    let isPartial: Bool?
+
     init(
         start: UInt64,
         duration: UInt64,
         stats: [ExportedGroupedStats],
         env: String? = nil,
         version: String? = nil,
-        service: String? = nil
+        service: String? = nil,
+        isPartial: Bool? = nil
     ) {
         self.start = start
         self.duration = duration
@@ -158,6 +163,52 @@ internal struct ExportedBucket: Codable, Sendable {
         self.env = env
         self.version = version
         self.service = service
+        self.isPartial = isPartial
+    }
+
+    /// Splits the bucket into partial buckets whose JSON encoding fits in `maxEncodedSize`, or
+    /// returns the bucket itself when it already fits.
+    ///
+    /// Latency sketches store every bin between the fastest and slowest span, so a bucket within the
+    /// cardinality limit can still exceed the storage event limit, which rejects it whole. A single
+    /// group is far below the limit, so each partial bucket gets at least one group.
+    func split(toFit maxEncodedSize: Int) -> [ExportedBucket] {
+        // The storage writer's encoder, so sizes match what it writes.
+        let encoder = JSONEncoder.dd.default()
+        guard
+            stats.count > 1,
+            let encodedSize = try? encoder.encode(self).count,
+            encodedSize > maxEncodedSize,
+            let emptySize = try? encoder.encode(makePartial(with: [])).count
+        else {
+            return [self]
+        }
+
+        var pieces: [[ExportedGroupedStats]] = [[]]
+        var pieceSize = emptySize
+        for group in stats {
+            // The group's encoding plus its separating comma.
+            let groupSize = ((try? encoder.encode(group).count) ?? 0) + 1
+            if !pieces[pieces.count - 1].isEmpty && pieceSize + groupSize > maxEncodedSize {
+                pieces.append([])
+                pieceSize = emptySize
+            }
+            pieces[pieces.count - 1].append(group)
+            pieceSize += groupSize
+        }
+        return pieces.map(makePartial(with:))
+    }
+
+    private func makePartial(with stats: [ExportedGroupedStats]) -> ExportedBucket {
+        ExportedBucket(
+            start: start,
+            duration: duration,
+            stats: stats,
+            env: env,
+            version: version,
+            service: service,
+            isPartial: true
+        )
     }
 }
 
