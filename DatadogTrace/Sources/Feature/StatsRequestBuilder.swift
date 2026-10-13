@@ -64,9 +64,11 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
         // payload inside the envelope. Insertion order is preserved so payloads stay stable.
         var bucketsByIdentity: [DeploymentIdentity: [ClientStatsBucket]] = [:]
         var identityOrder: [DeploymentIdentity] = []
-        // Partial buckets of one window hold disjoint groups, so pieces in this batch are merged back
-        // into one bucket. When some pieces are in another batch, `SplitPayload` signals it.
-        var partialBuckets: [PartialBucketKey: (index: Int, receivedPieces: Int, pieceCount: Int)] = [:]
+        // Pieces of one split hold disjoint groups, so pieces in this batch are merged back into one
+        // bucket. Each split is tracked on its own: the same window can be exported more than once,
+        // and those exports stay separate buckets, as whole buckets do. When some pieces of a split
+        // are in another batch, `SplitPayload` signals it.
+        var splits: [UUID: (identity: DeploymentIdentity, index: Int, receivedPieces: Int, pieceCount: Int)] = [:]
         for bucket in decoded {
             // Buckets written before this field existed fall back to the upload-time context,
             // which is the previous behaviour and better than dropping the batch.
@@ -78,22 +80,21 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
             if bucketsByIdentity[identity] == nil {
                 identityOrder.append(identity)
             }
-            guard let pieceCount = bucket.pieceCount else {
+            guard let piece = bucket.piece else {
                 bucketsByIdentity[identity, default: []].append(ClientStatsBucket(bucket))
                 continue
             }
-            let key = PartialBucketKey(identity: identity, start: bucket.start, duration: bucket.duration)
-            let piece = ClientStatsBucket(bucket)
-            if let partial = partialBuckets[key], let existing = bucketsByIdentity[identity]?[partial.index] {
-                bucketsByIdentity[identity]?[partial.index] = ClientStatsBucket(
+            let wireBucket = ClientStatsBucket(bucket)
+            if let split = splits[piece.splitID], let existing = bucketsByIdentity[split.identity]?[split.index] {
+                bucketsByIdentity[split.identity]?[split.index] = ClientStatsBucket(
                     start: existing.start,
                     duration: existing.duration,
-                    stats: existing.stats + piece.stats
+                    stats: existing.stats + wireBucket.stats
                 )
-                partialBuckets[key]?.receivedPieces += 1
+                splits[piece.splitID]?.receivedPieces += 1
             } else {
-                partialBuckets[key] = (bucketsByIdentity[identity]?.count ?? 0, 1, pieceCount)
-                bucketsByIdentity[identity, default: []].append(piece)
+                splits[piece.splitID] = (identity, bucketsByIdentity[identity]?.count ?? 0, 1, piece.count)
+                bucketsByIdentity[identity, default: []].append(wireBucket)
             }
         }
 
@@ -113,10 +114,10 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
                 stats: bucketsByIdentity[identity] ?? []
             )
         }
-        // `SplitPayload` marks a payload split across requests, which happens only when a window's
+        // `SplitPayload` marks a payload split across requests, which happens only when a split's
         // pieces did not all land in this batch. Client payloads of different identities travel in
         // one request.
-        let isSplit = partialBuckets.values.contains { $0.receivedPieces < $0.pieceCount }
+        let isSplit = splits.values.contains { $0.receivedPieces < $0.pieceCount }
         let payload = StatsPayload(clientStats: clientStats, splitPayload: isSplit)
         let body = try encoder.encode(payload)
 
@@ -144,12 +145,5 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
 
     func url(with context: DatadogContext) -> URL {
         customIntakeURL ?? context.site.endpoint.appendingPathComponent("api/v0.2/stats")
-    }
-
-    /// Identifies the window that partial buckets were split from.
-    private struct PartialBucketKey: Hashable {
-        let identity: DeploymentIdentity
-        let start: UInt64
-        let duration: UInt64
     }
 }
