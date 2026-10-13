@@ -988,9 +988,11 @@ final class OriginalOperationProfileIntegrationTests: XCTestCase {
             fixture.destroyNativeProfiler()
         }
         try await settleAppLaunch(beforeProfilingIn: fixture)
+        let inputReceived = expectation(description: "One native UIKit tap completes its callback")
         controller.onTap = {
             callbackCount += 1
             guard callbackCount == 1 else { return }
+            defer { inputReceived.fulfill() }
             capturedInput = fixture.monitor.currentExecutionContext
             do {
                 // Construction is inside the real callback, so input waiting does not age the profile.
@@ -1030,7 +1032,10 @@ final class OriginalOperationProfileIntegrationTests: XCTestCase {
         controller.button.isEnabled = true
         // The independently owned Xcode input session performs one actual tap.
         // This wait is an operational bound, not a duration or performance assertion.
-        try await eventually(timeout: 120) { callbackCount > 0 }
+        await dd_fulfillment(for: [inputReceived], timeout: 120)
+        guard callbackCount > 0 else {
+            throw OperationProfileStorageFixture.Failure.conditionNotReached
+        }
         fixture.drain()
         controller.button.isEnabled = false
         attach(callbackInventory(), name: "inferred-original-callback")
