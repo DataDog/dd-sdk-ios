@@ -236,7 +236,7 @@ internal class OTelSpan: OpenTelemetryApi.Span {
 
         _attributes.mutate {
             $0[key] = value
-            if key == SpanTags.service || SpanTags.service.hasPrefix(key + ".") {
+            if ddSpan.ddContext.serviceForStats != nil, Self.affectsService(key) {
                 updateStatsService(from: $0)
             }
         }
@@ -251,10 +251,15 @@ internal class OTelSpan: OpenTelemetryApi.Span {
             for (key, value) in attributes {
                 $0[key] = value
             }
-            if attributes.keys.contains(where: { $0 == SpanTags.service || SpanTags.service.hasPrefix($0 + ".") }) {
+            if ddSpan.ddContext.serviceForStats != nil, attributes.keys.contains(where: Self.affectsService) {
                 updateStatsService(from: $0)
             }
         }
+    }
+
+    /// Whether setting `key` can change the `service.name` attribute, directly or as a nested value.
+    private static func affectsService(_ key: String) -> Bool {
+        key == SpanTags.service || SpanTags.service.hasPrefix(key + ".")
     }
 
     /// Makes current attributes visible to children before this span ends.
