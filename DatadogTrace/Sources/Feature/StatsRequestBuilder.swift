@@ -65,6 +65,8 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
         //
         // Buckets stored by earlier builds carry no payload identity. As before, those of one
         // deployment share a client payload, with this builder's runtime ID and a new sequence number.
+        // They are sent after the others: a new number is above every one already stored by this
+        // runtime, so sequence numbers still increase within the request.
         var payloads: [ClientPayloadDraft] = []
         var payloadIndexes: [ExportedBucket.PayloadIdentity: Int] = [:]
         var legacyPayloadIndexes: [DeploymentIdentity: Int] = [:]
@@ -109,7 +111,8 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
             }
         }
 
-        let clientStats = payloads.map { draft in
+        let orderedPayloads = payloads.filter { $0.payload != nil } + payloads.filter { $0.payload == nil }
+        let clientStats = orderedPayloads.map { draft in
             ClientStatsPayload(
                 // Always empty on mobile: there is no stable, meaningful device hostname
                 // (and reporting one would be a privacy concern), so `DatadogContext` exposes
