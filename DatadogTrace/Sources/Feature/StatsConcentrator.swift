@@ -184,73 +184,88 @@ internal struct ExportedBucket: Codable, Sendable {
         self.pieceCount = pieceCount
     }
 
-    /// Splits using a conservative JSON size estimate, without allocating encoded payloads.
+    /// Splits the bucket into partial buckets whose estimated storage JSON fits in `budget` bytes, or
+    /// returns the bucket itself when it already fits. Sizes are estimated, never encoded.
     ///
     /// Latency sketches store every bin between the fastest and slowest span, so a bucket within the
     /// cardinality limit can still exceed the storage event limit, which rejects it whole. Sketches
     /// alone keep a group well below the limit, but strings such as the resource are unbounded, so a
-    /// group whose estimate exceeds the budget even alone is returned in `oversizedGroups`.
-    /// Conservative estimates can split or reject a group before its actual JSON reaches the limit.
+    /// group that exceeds the budget even alone is returned in `oversizedGroups`. Estimates are
+    /// conservative, so a group can be split off or rejected before its actual JSON reaches the limit.
     ///
     /// Pieces keep the bucket's `payload`, so they are uploaded as one payload.
-    func split(toFit maxEncodedSize: Int) -> (pieces: [ExportedBucket], oversizedGroups: [ExportedGroupedStats]) {
-        guard maxEncodedSize > 0 else {
-            return ([], stats)
-        }
+    ///
+    /// - Parameter budget: The largest encoded size of a stored bucket. Must be positive and less
+    ///   than `Int.max`; see `EstimatedJSONSize`.
+    func split(toFit budget: Int) -> (pieces: [ExportedBucket], oversizedGroups: [ExportedGroupedStats]) {
         // Estimate each group once, for both the whole-bucket check and the packing below.
-        let groupSizes = stats.map { $0.estimatedJSONSize(limit: maxEncodedSize) }
-        guard estimatedJSONSize(groupSizes: groupSizes, limit: maxEncodedSize) > maxEncodedSize else {
+        let groupSizes = stats.map { $0.estimatedJSONSize(budget: budget) }
+        guard estimatedJSONSize(groupSizes: groupSizes, budget: budget) == .exceedsBudget else {
             return ([self], [])
         }
-        let emptySize = estimatedJSONHeaderSize(limit: maxEncodedSize)
+        // A piece repeats the bucket's metadata. When that alone exceeds the budget, nothing fits.
+        guard case .fits(let headerSize) = estimatedJSONHeaderSize(budget: budget) else {
+            return ([], stats)
+        }
 
         var pieces: [[ExportedGroupedStats]] = []
-        var pieceSize = emptySize
+        var pieceSize = headerSize
         var oversizedGroups: [ExportedGroupedStats] = []
         for (group, groupSize) in zip(stats, groupSizes) {
-            guard emptySize <= maxEncodedSize, groupSize <= maxEncodedSize - emptySize else {
+            guard case .fits(let size) = groupSize, size <= budget - headerSize else {
                 oversizedGroups.append(group)
                 continue
             }
-            // Groups after the first in a piece are preceded by a comma.
-            if pieces.isEmpty || pieceSize >= maxEncodedSize || groupSize > maxEncodedSize - pieceSize - 1 {
+            // Groups after the first in a piece are preceded by a comma. All sizes here are at most
+            // `budget`, so the arithmetic cannot overflow.
+            if pieces.isEmpty || size + 1 > budget - pieceSize {
                 pieces.append([group])
-                pieceSize = emptySize + groupSize
+                pieceSize = headerSize + size
             } else {
                 pieces[pieces.count - 1].append(group)
-                pieceSize += 1 + groupSize
+                pieceSize += 1 + size
             }
         }
         return (pieces.map { makePartial(with: $0, of: pieces.count) }, oversizedGroups)
     }
 
-    /// Upper bound for the storage JSON size, capped at `limit + 1` (or `Int.max`).
-    func estimatedJSONSize(limit: Int = .max) -> Int {
-        estimatedJSONSize(groupSizes: stats.map { $0.estimatedJSONSize(limit: limit) }, limit: limit)
+    /// A conservative estimate of this bucket's storage JSON size, measured against `budget`.
+    func estimatedJSONSize(budget: Int) -> EstimatedJSONSize {
+        estimatedJSONSize(groupSizes: stats.map { $0.estimatedJSONSize(budget: budget) }, budget: budget)
     }
 
     /// The calculation `split(toFit:)` uses, given each group's estimate.
-    private func estimatedJSONSize(groupSizes: [Int], limit: Int) -> Int {
-        var size = StatsJSONSize(limit: limit)
-        size.add(estimatedJSONHeaderSize(limit: limit))
+    private func estimatedJSONSize(groupSizes: [EstimatedJSONSize], budget: Int) -> EstimatedJSONSize {
+        var size = JSONSizeEstimator(budget: budget)
+        size.add(estimatedJSONHeaderSize(budget: budget))
         for (index, groupSize) in groupSizes.enumerated() {
-            if index > 0 { size.add(1) } // separating comma
+            if index > 0 {
+                size.add(bytes: 1) // separating comma
+            }
             size.add(groupSize)
         }
-        return size.value
+        return size.estimate
     }
 
-    private func estimatedJSONHeaderSize(limit: Int) -> Int {
-        var size = StatsJSONSize(limit: limit)
+    private func estimatedJSONHeaderSize(budget: Int) -> EstimatedJSONSize {
+        var size = JSONSizeEstimator(budget: budget)
         // Covers keys, punctuation, and maximum-width integers, including the payload identity and a
         // piece count, so a piece's header is never larger than this. String contents are counted
         // separately. Keep this bound in sync with the Codable fields.
-        size.add(256)
-        if let env = env { size.add(string: env) }
-        if let version = version { size.add(string: version) }
-        if let service = service { size.add(string: service) }
-        if let payload = payload { size.add(string: payload.runtimeID) }
-        return size.value
+        size.add(bytes: 256)
+        if let env = env {
+            size.add(string: env)
+        }
+        if let version = version {
+            size.add(string: version)
+        }
+        if let service = service {
+            size.add(string: service)
+        }
+        if let payload = payload {
+            size.add(string: payload.runtimeID)
+        }
+        return size.estimate
     }
 
     /// A copy of this bucket uploaded in `payload`.
@@ -300,52 +315,90 @@ internal struct ExportedGroupedStats: Codable, Sendable {
     let peerTags: [String]
     let serviceSource: String
 
-    func estimatedJSONSize(limit: Int = .max) -> Int {
-        var size = StatsJSONSize(limit: limit)
+    /// A conservative estimate of this group's storage JSON size, measured against `budget`.
+    func estimatedJSONSize(budget: Int) -> EstimatedJSONSize {
+        var size = JSONSizeEstimator(budget: budget)
         // Covers all 16 keys, punctuation, booleans, and maximum-width numeric fields.
         // Variable strings, data, and peer-tag array entries are added below.
-        size.add(512)
+        size.add(bytes: 512)
         for string in [service, name, resource, type, spanKind, serviceSource] {
             size.add(string: string)
         }
         size.add(base64Bytes: okSummary.count)
         size.add(base64Bytes: errorSummary.count)
         for tag in peerTags {
-            size.add(1) // separating comma (conservative for the first entry)
+            size.add(bytes: 1) // separating comma (conservative for the first entry)
             size.add(string: tag)
         }
-        return size.value
+        return size.estimate
     }
 }
 
-/// Bounded storage-size accounting without JSON or base64 allocations.
-private struct StatsJSONSize {
-    private let ceiling: Int
-    private(set) var value = 0
+// MARK: - Storage Size Estimation
 
-    init(limit: Int) {
-        ceiling = limit == .max ? .max : max(0, limit) + 1
+/// A conservative estimate of a value's storage JSON size, measured against a budget.
+///
+/// An estimate is never below the actual encoded size. It is only computed up to the budget: once a
+/// value is known not to fit, its exact size is not needed, and stopping there keeps the scan of long
+/// strings short. That is why an over-budget value has no size, rather than a number that could be
+/// mistaken for one in later arithmetic.
+internal enum EstimatedJSONSize: Equatable {
+    /// The value encodes to at most this many bytes, which is within the budget.
+    case fits(Int)
+    /// The value encodes to more than the budget.
+    case exceedsBudget
+}
+
+/// Accumulates an `EstimatedJSONSize` without encoding anything.
+///
+/// The running total stops at one byte over the budget, which only marks it as exceeded. The budget
+/// must be positive and less than `Int.max`, so that marker can always be represented; anything else
+/// is a programming error, caught in development and clamped in production.
+private struct JSONSizeEstimator {
+    private let budget: Int
+    /// Never above `budget + 1`.
+    private var total = 0
+
+    init(budget: Int) {
+        dd_assert(budget > 0 && budget < .max, "The storage size budget must be positive and less than Int.max, got \(budget).")
+        self.budget = min(max(budget, 1), .max - 1)
     }
 
-    mutating func add(_ bytes: Int) {
-        value += min(bytes, ceiling - value)
+    var estimate: EstimatedJSONSize {
+        total > budget ? .exceedsBudget : .fits(total)
+    }
+
+    private var remaining: Int {
+        budget + 1 - total
+    }
+
+    mutating func add(bytes: Int) {
+        total += min(bytes, remaining)
+    }
+
+    mutating func add(_ size: EstimatedJSONSize) {
+        switch size {
+        case .fits(let bytes):
+            add(bytes: bytes)
+        case .exceedsBudget:
+            total = budget + 1
+        }
     }
 
     mutating func add(string: String) {
-        add(2) // quotes
+        add(bytes: 2) // quotes
         let utf8 = string.utf8
-        let remaining = ceiling - value
-        // Escaping never shortens a string, so one already over the budget needs no scan. The count
-        // is constant time for native strings.
+        // Escaping never shortens a string, so one that does not fit unescaped needs no scan. The
+        // count is cheap for native Swift strings; bridged ones may compute it.
         guard utf8.count < remaining else {
-            value = ceiling
+            total = budget + 1
             return
         }
         let escapeLimit = remaining - utf8.count
         let escapeBytes = utf8.withContiguousStorageIfAvailable { Self.escapeBytes(in: $0, stoppingAt: escapeLimit) }
             ?? Self.escapeBytes(in: utf8, stoppingAt: escapeLimit)
-        add(utf8.count)
-        add(escapeBytes)
+        add(bytes: utf8.count)
+        add(bytes: escapeBytes)
     }
 
     /// Bytes that JSON escaping can add to `bytes`, an upper bound. Stops once it reaches `limit`,
@@ -372,14 +425,16 @@ private struct StatsJSONSize {
     }
 
     mutating func add(base64Bytes count: Int) {
-        add(2) // quotes
+        add(bytes: 2) // quotes
         // Four bytes per complete triplet plus a padded quartet for any remaining bytes.
         let triplets = count / 3
-        if triplets > (ceiling - value) / 4 {
-            value = ceiling
+        if triplets > remaining / 4 {
+            total = budget + 1
         } else {
-            add(triplets * 4)
-            if count % 3 != 0 { add(4) }
+            add(bytes: triplets * 4)
+            if count % 3 != 0 {
+                add(bytes: 4)
+            }
         }
     }
 }
