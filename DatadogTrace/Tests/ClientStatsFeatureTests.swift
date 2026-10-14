@@ -476,7 +476,7 @@ class ClientStatsFeatureTests: XCTestCase {
                     peerTags: Array(repeating: string, count: 6),
                     serviceSource: string
                 )
-                XCTAssertGreaterThanOrEqual(group.estimatedJSONSize(), try JSONEncoder.dd.default().encode(group).count)
+                XCTAssertGreaterThanOrEqual(try estimatedSize(of: group), try JSONEncoder.dd.default().encode(group).count)
                 let metadata: [(ExportedBucket.PayloadIdentity?, Int?)] = [(nil, nil), (.init(runtimeID: string, sequence: .max), .max)]
                 for (payload, pieceCount) in metadata {
                     let bucket = ExportedBucket(
@@ -489,23 +489,32 @@ class ClientStatsFeatureTests: XCTestCase {
                         payload: payload,
                         pieceCount: pieceCount
                     )
-                    XCTAssertGreaterThanOrEqual(bucket.estimatedJSONSize(), try encodedSize(of: bucket))
+                    XCTAssertGreaterThanOrEqual(try estimatedSize(of: bucket), try encodedSize(of: bucket))
                 }
             }
         }
     }
 
-    func testJSONSizeEstimateSaturatesAtTheBudgetWithoutIntegerOverflow() {
+    func testJSONSizeEstimateStopsAtTheBudgetAndSupportsTheLargestBudget() throws {
         let bucket = ExportedBucket(start: 0, duration: 10, stats: [makeGroup(resource: String(repeating: "x", count: 1_000_000))])
-        for limit in [0, 1, 512, 1_024] {
-            XCTAssertEqual(bucket.estimatedJSONSize(limit: limit), limit + 1)
+        for budget in [1, 512, 1_024] {
+            XCTAssertEqual(bucket.estimatedJSONSize(budget: budget), .exceedsBudget)
         }
-        XCTAssertGreaterThan(bucket.estimatedJSONSize(limit: .max), 1_000_000)
-        for limit in [Int.min, -1, 0] {
-            let result = split(bucket, toFit: limit)
-            XCTAssertTrue(result.pieces.isEmpty)
-            XCTAssertEqual(result.oversizedGroups.count, 1)
+        guard case .fits(let size) = bucket.estimatedJSONSize(budget: .max - 1) else {
+            return XCTFail("A finite value fits the largest budget")
         }
+        XCTAssertGreaterThan(size, 1_000_000)
+        let result = bucket.split(toFit: 1)
+        XCTAssertTrue(result.pieces.isEmpty)
+        XCTAssertEqual(result.oversizedGroups.count, 1)
+    }
+
+    func testJSONSizeEstimateAtExactlyTheBudgetFits() throws {
+        let bucket = makeExportedBucket(groupCount: 3, env: "prod", version: "1.0.0", service: "app")
+        let size = try estimatedSize(of: bucket)
+
+        XCTAssertEqual(bucket.estimatedJSONSize(budget: size), .fits(size))
+        XCTAssertEqual(bucket.estimatedJSONSize(budget: size - 1), .exceedsBudget)
     }
 
     func testWhenSplittingEscapedStrings_estimatesBoundEveryStoredPiece() throws {
@@ -524,8 +533,8 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertTrue(result.oversizedGroups.isEmpty)
         XCTAssertEqual(result.pieces.flatMap(\.stats).map(\.resource), groups.map(\.resource))
         for piece in result.pieces {
-            XCTAssertLessThanOrEqual(try encodedSize(of: piece), piece.estimatedJSONSize())
-            XCTAssertLessThanOrEqual(piece.estimatedJSONSize(), limit)
+            XCTAssertLessThanOrEqual(try encodedSize(of: piece), try estimatedSize(of: piece))
+            XCTAssertNotEqual(piece.estimatedJSONSize(budget: limit), .exceedsBudget)
         }
     }
 
@@ -540,7 +549,7 @@ class ClientStatsFeatureTests: XCTestCase {
         let bucket = makeExportedBucket(groupCount: 3, env: "prod", version: "1.0.0", service: "app")
             .assigning(.init(runtimeID: splitRuntimeID, sequence: 1))
 
-        let result = bucket.split(toFit: bucket.estimatedJSONSize())
+        let result = bucket.split(toFit: try estimatedSize(of: bucket))
 
         XCTAssertEqual(result.pieces.count, 1)
         XCTAssertFalse(result.pieces[0].isPartial)
@@ -717,7 +726,7 @@ class ClientStatsFeatureTests: XCTestCase {
 
     func testWhenBatchHoldsPartialBuckets_itMergesEachWindowAndMarksThePayloadSplit() throws {
         let window = makeExportedBucket(start: 1_000, groupCount: 4, env: "prod", version: "1.0.0", service: "app")
-        let onePiecePerGroup = ExportedBucket(
+        let onePiecePerGroup = try estimatedSize(of: ExportedBucket(
             start: window.start,
             duration: window.duration,
             stats: [window.stats[0]],
@@ -726,7 +735,7 @@ class ClientStatsFeatureTests: XCTestCase {
             service: "app",
             payload: .init(runtimeID: splitRuntimeID, sequence: 1),
             pieceCount: 4
-        ).estimatedJSONSize()
+        ))
         let pieces = split(window, toFit: onePiecePerGroup).pieces
         XCTAssertEqual(pieces.map(\.stats.count), [1, 1, 1, 1])
         let otherVersion = makeExportedBucket(start: 1_000, groupCount: 1, env: "prod", version: "2.0.0", service: "app")
@@ -751,7 +760,7 @@ class ClientStatsFeatureTests: XCTestCase {
 
     func testWhenBatchHoldsEveryPieceOfAWindow_itMergesThemWithoutMarkingThePayloadSplit() throws {
         let window = makeExportedBucket(start: 1_000, groupCount: 4, env: "prod", version: "1.0.0", service: "app")
-        let onePiecePerGroup = ExportedBucket(
+        let onePiecePerGroup = try estimatedSize(of: ExportedBucket(
             start: window.start,
             duration: window.duration,
             stats: [window.stats[0]],
@@ -760,7 +769,7 @@ class ClientStatsFeatureTests: XCTestCase {
             service: "app",
             payload: .init(runtimeID: splitRuntimeID, sequence: 1),
             pieceCount: 4
-        ).estimatedJSONSize()
+        ))
         let pieces = split(window, toFit: onePiecePerGroup).pieces
         XCTAssertEqual(pieces.count, 4)
 
@@ -780,7 +789,7 @@ class ClientStatsFeatureTests: XCTestCase {
         // Given: two exports of one window, for example a periodic flush and a later forced flush.
         let first = makeExportedBucket(start: 1_000, groupCount: 2, env: "prod", version: "1.0.0", service: "app")
         let second = makeExportedBucket(start: 1_000, groupCount: 3, env: "prod", version: "1.0.0", service: "app")
-        let onePiecePerGroup = ExportedBucket(
+        let onePiecePerGroup = try estimatedSize(of: ExportedBucket(
             start: 1_000,
             duration: first.duration,
             stats: [first.stats[0]],
@@ -789,7 +798,7 @@ class ClientStatsFeatureTests: XCTestCase {
             service: "app",
             payload: .init(runtimeID: splitRuntimeID, sequence: 1),
             pieceCount: 3
-        ).estimatedJSONSize()
+        ))
         let firstPieces = split(first, toFit: onePiecePerGroup).pieces
         let secondPieces = split(second, toFit: onePiecePerGroup).pieces
         XCTAssertEqual(firstPieces.count, 2)
@@ -821,7 +830,7 @@ class ClientStatsFeatureTests: XCTestCase {
 
     func testWhenSplitPiecesAreUploadedSeparatelyRetriedOrAfterARestart_theyKeepTheSplitsPayloadIdentity() throws {
         let window = makeExportedBucket(start: 1_000, groupCount: 2, env: "prod", version: "1.0.0", service: "app")
-        let onePiecePerGroup = ExportedBucket(
+        let onePiecePerGroup = try estimatedSize(of: ExportedBucket(
             start: 1_000,
             duration: window.duration,
             stats: [window.stats[0]],
@@ -830,7 +839,7 @@ class ClientStatsFeatureTests: XCTestCase {
             service: "app",
             payload: .init(runtimeID: splitRuntimeID, sequence: 1),
             pieceCount: 2
-        ).estimatedJSONSize()
+        ))
         let pieces = split(window, toFit: onePiecePerGroup).pieces
         XCTAssertEqual(pieces.count, 2)
         let splitSequence = Int64(try XCTUnwrap(pieces[0].payload?.sequence))
@@ -1229,6 +1238,21 @@ class ClientStatsFeatureTests: XCTestCase {
                 }
             }
         }
+    }
+
+    /// Reads an estimate as a number, with a budget no test value reaches.
+    private func estimatedSize(of bucket: ExportedBucket) throws -> Int {
+        guard case .fits(let size) = bucket.estimatedJSONSize(budget: 1 << 40) else {
+            return try XCTUnwrap(nil as Int?, "Unexpectedly over the test budget")
+        }
+        return size
+    }
+
+    private func estimatedSize(of group: ExportedGroupedStats) throws -> Int {
+        guard case .fits(let size) = group.estimatedJSONSize(budget: 1 << 40) else {
+            return try XCTUnwrap(nil as Int?, "Unexpectedly over the test budget")
+        }
+        return size
     }
 
     private func encodedSize(of bucket: ExportedBucket) throws -> Int {
