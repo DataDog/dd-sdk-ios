@@ -168,6 +168,46 @@ class DatadogTraceFeatureTests: XCTestCase {
 
     func testWhenClientStatsBucketExceedsTheStorageEventLimit_itIsStillUploaded() throws {
         let httpClient = HTTPClientMock(responseCode: 202)
+        let core = makeClientStatsCore(httpClient: httpClient, maxObjectsInFile: 1) // one request per stored event
+        let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
+
+        // Given: one bucket that encodes to more than the 1 MB storage event limit.
+        addWideLatencySpans(to: stats.concentrator, endingAt: Date().timeIntervalSince1970.dd.toNanoseconds)
+
+        // When
+        core.flushAndTearDown()
+
+        // Then: the bucket is stored and uploaded as several pieces instead of being rejected.
+        XCTAssertGreaterThan(statsRequests(in: httpClient).count, 1)
+    }
+
+    func testWhenStoredClientStatsExceedTheBatchLimit_eachRequestStaysWithinIt() throws {
+        let httpClient = HTTPClientMock(responseCode: 202)
+        let core = makeClientStatsCore(httpClient: httpClient, maxObjectsInFile: .max) // only the size limits files
+        let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
+
+        // Given: two windows whose pieces add up to more than one batch.
+        let end = Date().timeIntervalSince1970.dd.toNanoseconds
+        addWideLatencySpans(to: stats.concentrator, endingAt: end)
+        addWideLatencySpans(to: stats.concentrator, endingAt: end + 20_000_000_000) // a later window; earlier ones merge into the oldest
+
+        // When
+        core.flushAndTearDown()
+
+        // Then
+        let requests = statsRequests(in: httpClient)
+        XCTAssertGreaterThan(requests.count, 1)
+        for request in requests {
+            let body = try XCTUnwrap(request.decompressed().httpBody)
+            XCTAssertLessThanOrEqual(body.count, Int(ClientStatsFeature.maxBatchSize))
+        }
+    }
+
+    // MARK: - Client-Side Stats Helpers
+
+    /// A core with the real 1 MB storage event limit and no file size limit of its own, so the
+    /// client stats feature's limits apply.
+    private func makeClientStatsCore(httpClient: HTTPClientMock, maxObjectsInFile: Int) -> DatadogCore {
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
@@ -176,10 +216,10 @@ class DatadogTraceFeatureTests: XCTestCase {
                 storagePerformance: StoragePerformanceMock(
                     maxFileSize: .max,
                     maxDirectorySize: .max,
-                    maxFileAgeForWrite: 0,
+                    maxFileAgeForWrite: .distantFuture,
                     minFileAgeForRead: StoragePerformanceMock.readAllFiles.minFileAgeForRead,
                     maxFileAgeForRead: StoragePerformanceMock.readAllFiles.maxFileAgeForRead,
-                    maxObjectsInFile: 1, // one request per stored event
+                    maxObjectsInFile: maxObjectsInFile,
                     maxObjectSize: PerformancePreset.mockAny().maxObjectSize // the real 1 MB event limit
                 ),
                 uploadPerformance: .veryQuick
@@ -194,25 +234,23 @@ class DatadogTraceFeatureTests: XCTestCase {
         var config = Trace.Configuration()
         config.featureFlags[.clientSideStats] = true
         Trace.enable(with: config, in: core)
+        return core
+    }
 
-        // Given: 100 groups of fast and very slow successful and failed requests ending together,
-        // whose bucket encodes to more than the 1 MB storage event limit. Snapshots go straight to
-        // the concentrator so they are all in one bucket before the teardown flush.
-        let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
-        let end = Date().timeIntervalSince1970.dd.toNanoseconds
+    /// 100 groups of fast and very slow successful and failed requests ending together, whose bucket
+    /// encodes to more than the 1 MB storage event limit. Snapshots go straight to the concentrator,
+    /// so they are all aggregated before the teardown flush.
+    private func addWideLatencySpans(to concentrator: StatsConcentrator, endingAt end: UInt64) {
         for group in 0..<100 {
             for duration: UInt64 in [1_000_000, 60_000_000_000] {
                 for isError in [false, true] {
-                    stats.concentrator.add(.mockWith(resource: "GET /\(group)", isError: isError, startTime: end - duration, duration: duration))
+                    concentrator.add(.mockWith(resource: "GET /\(group)", isError: isError, startTime: end - duration, duration: duration))
                 }
             }
         }
+    }
 
-        // When
-        core.flushAndTearDown()
-
-        // Then: the bucket is stored and uploaded as several pieces instead of being rejected.
-        let statsRequests = httpClient.requestsSent().filter { $0.url?.path.hasSuffix("api/v0.2/stats") == true }
-        XCTAssertGreaterThan(statsRequests.count, 1)
+    private func statsRequests(in httpClient: HTTPClientMock) -> [URLRequest] {
+        httpClient.requestsSent().filter { $0.url?.path.hasSuffix("api/v0.2/stats") == true }
     }
 }

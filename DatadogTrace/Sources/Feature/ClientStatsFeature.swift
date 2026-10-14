@@ -20,6 +20,11 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
     /// hex encoding does, plus the 6-byte batch block header.
     static let maxStoredBucketSize = 500_000
 
+    /// Largest stats batch file. Each file is uploaded as one request, so this keeps a request within
+    /// the 1.5 MB the agent's stats writer targets, half the intake's limit of about 3 MB compressed.
+    /// Stored JSON is larger than the MessagePack body built from it.
+    static let maxBatchSize: UInt32 = 1_536 * 1_024
+
     let requestBuilder: FeatureRequestBuilder
     let messageReceiver: FeatureMessageReceiver
     let performanceOverride: PerformancePresetOverride?
@@ -49,7 +54,7 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
             runtimeID: runtimeID,
             sequenceNumberProvider: sequenceNumbers
         )
-        self.performanceOverride = nil
+        self.performanceOverride = PerformancePresetOverride(maxFileSize: Self.maxBatchSize)
         self.dateProvider = dateProvider
         self.flushInterval = flushInterval
         self.featureScope = core.scope(for: ClientStatsFeature.self)
