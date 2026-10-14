@@ -24,6 +24,10 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
     let performanceOverride: PerformancePresetOverride?
 
     let concentrator: StatsConcentrator
+    /// Identifies this tracer instance in the payloads it sends, shared with `requestBuilder`.
+    private let runtimeID = UUID().uuidString
+    /// Sequence numbers for those payloads, shared with `requestBuilder`.
+    private let sequenceNumbers = StatsSequenceNumberProvider()
     private let featureScope: FeatureScope
     private let dateProvider: DateProvider
     private let metricController: TraceClientStatsMetricController
@@ -41,8 +45,8 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
         self.requestBuilder = StatsRequestBuilder(
             customIntakeURL: configuration.customStatsEndpoint,
             telemetry: core.telemetry,
-            runtimeID: UUID().uuidString,
-            sequenceNumberProvider: StatsSequenceNumberProvider()
+            runtimeID: runtimeID,
+            sequenceNumberProvider: sequenceNumbers
         )
         self.performanceOverride = nil
         self.dateProvider = dateProvider
@@ -79,10 +83,10 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
             return
         }
 
-        featureScope.eventWriteContext { [metricController] _, writer in
+        featureScope.eventWriteContext { [metricController, runtimeID, sequenceNumbers] _, writer in
             var oversizedGroups: [ExportedGroupedStats] = []
             for bucket in exportedBuckets {
-                let split = bucket.split(toFit: Self.maxStoredBucketSize)
+                let split = bucket.split(toFit: Self.maxStoredBucketSize, runtimeID: runtimeID, sequenceNumbers: sequenceNumbers)
                 for piece in split.pieces {
                     writer.write(value: piece)
                 }
