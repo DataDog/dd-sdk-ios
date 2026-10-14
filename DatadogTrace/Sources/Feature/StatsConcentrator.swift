@@ -181,13 +181,13 @@ internal struct ExportedBucket: Codable, Sendable {
         self.piece = piece
     }
 
-    /// Splits the bucket into partial buckets whose JSON encoding fits in `maxEncodedSize`, or
-    /// returns the bucket itself when it already fits.
+    /// Splits using a conservative JSON size estimate, without allocating encoded payloads.
     ///
     /// Latency sketches store every bin between the fastest and slowest span, so a bucket within the
     /// cardinality limit can still exceed the storage event limit, which rejects it whole. Sketches
     /// alone keep a group well below the limit, but strings such as the resource are unbounded, so a
-    /// group that cannot fit even alone is returned in `oversizedGroups` instead of being stored.
+    /// group whose estimate exceeds the budget even alone is returned in `oversizedGroups`.
+    /// Conservative estimates can split or reject a group before its actual JSON reaches the limit.
     ///
     /// A split takes its payload's sequence number from `sequenceNumbers`, the same provider the
     /// request builder uses, so it never collides with another payload from `runtimeID`.
@@ -196,29 +196,34 @@ internal struct ExportedBucket: Codable, Sendable {
         runtimeID: String,
         sequenceNumbers: StatsSequenceNumberProvider
     ) -> (pieces: [ExportedBucket], oversizedGroups: [ExportedGroupedStats]) {
-        // The storage writer's encoder, so sizes match what it writes.
-        let encoder = JSONEncoder.dd.default()
-        guard let encodedSize = try? encoder.encode(self).count, encodedSize > maxEncodedSize else {
+        guard maxEncodedSize > 0 else {
+            return ([], stats)
+        }
+        // Estimate each group once. String scans stop once the budget is exceeded.
+        let groupSizes = stats.map { $0.estimatedJSONSize(limit: maxEncodedSize) }
+        var wholeSize = StatsJSONSize(limit: maxEncodedSize)
+        wholeSize.add(estimatedJSONHeaderSize(piece: piece, limit: maxEncodedSize))
+        for (index, size) in groupSizes.enumerated() {
+            if index > 0 { wholeSize.add(1) }
+            wholeSize.add(size)
+        }
+        guard wholeSize.value > maxEncodedSize else {
             return ([self], [])
         }
         let sequence = sequenceNumbers.next()
-        // The largest piece count this split can produce, so the estimate never runs short.
         let largestPiece = Piece(runtimeID: runtimeID, sequence: sequence, count: stats.count)
-        guard let emptySize = try? encoder.encode(makePartial(with: [], piece: largestPiece)).count else {
-            return ([self], [])
-        }
+        let emptySize = estimatedJSONHeaderSize(piece: largestPiece, limit: maxEncodedSize)
 
         var pieces: [[ExportedGroupedStats]] = []
         var pieceSize = emptySize
         var oversizedGroups: [ExportedGroupedStats] = []
-        for group in stats {
-            // A group that cannot be encoded cannot be stored either.
-            guard let groupSize = try? encoder.encode(group).count, emptySize + groupSize <= maxEncodedSize else {
+        for (group, groupSize) in zip(stats, groupSizes) {
+            guard emptySize <= maxEncodedSize, groupSize <= maxEncodedSize - emptySize else {
                 oversizedGroups.append(group)
                 continue
             }
             // Groups after the first in a piece are preceded by a comma.
-            if pieces.isEmpty || pieceSize + 1 + groupSize > maxEncodedSize {
+            if pieces.isEmpty || pieceSize >= maxEncodedSize || groupSize > maxEncodedSize - pieceSize - 1 {
                 pieces.append([group])
                 pieceSize = emptySize + groupSize
             } else {
@@ -228,6 +233,29 @@ internal struct ExportedBucket: Codable, Sendable {
         }
         let piece = Piece(runtimeID: runtimeID, sequence: sequence, count: pieces.count)
         return (pieces.map { makePartial(with: $0, piece: piece) }, oversizedGroups)
+    }
+
+    /// Upper bound for the storage JSON size, capped at `limit + 1` (or `Int.max`).
+    func estimatedJSONSize(limit: Int = .max) -> Int {
+        var size = StatsJSONSize(limit: limit)
+        size.add(estimatedJSONHeaderSize(piece: piece, limit: limit))
+        for (index, group) in stats.enumerated() {
+            if index > 0 { size.add(1) }
+            size.add(group.estimatedJSONSize(limit: limit))
+        }
+        return size.value
+    }
+
+    private func estimatedJSONHeaderSize(piece: Piece?, limit: Int) -> Int {
+        var size = StatsJSONSize(limit: limit)
+        // Covers keys, punctuation, and maximum-width integers, including optional piece metadata.
+        // String contents are counted separately. Keep this bound in sync with the Codable fields.
+        size.add(256)
+        if let env = env { size.add(string: env) }
+        if let version = version { size.add(string: version) }
+        if let service = service { size.add(string: service) }
+        if let piece = piece { size.add(string: piece.runtimeID) }
+        return size.value
     }
 
     private func makePartial(with stats: [ExportedGroupedStats], piece: Piece) -> ExportedBucket {
@@ -261,6 +289,69 @@ internal struct ExportedGroupedStats: Codable, Sendable {
     let errorSummary: Data
     let peerTags: [String]
     let serviceSource: String
+
+    func estimatedJSONSize(limit: Int = .max) -> Int {
+        var size = StatsJSONSize(limit: limit)
+        // Covers all 16 keys, punctuation, booleans, and maximum-width numeric fields.
+        // Variable strings, data, and peer-tag array entries are added below.
+        size.add(512)
+        for string in [service, name, resource, type, spanKind, serviceSource] {
+            size.add(string: string)
+        }
+        size.add(base64Bytes: okSummary.count)
+        size.add(base64Bytes: errorSummary.count)
+        for tag in peerTags {
+            size.add(1) // separating comma (conservative for the first entry)
+            size.add(string: tag)
+        }
+        return size.value
+    }
+}
+
+/// Bounded storage-size accounting without JSON or base64 allocations.
+private struct StatsJSONSize {
+    private let ceiling: Int
+    private(set) var value = 0
+
+    init(limit: Int) {
+        ceiling = limit == .max ? .max : max(0, limit) + 1
+    }
+
+    mutating func add(_ bytes: Int) {
+        value += min(bytes, ceiling - value)
+    }
+
+    mutating func add(string: String) {
+        add(2) // quotes
+        for byte in string.utf8 {
+            if value == ceiling { break }
+            switch byte {
+            case 0..<0x20:
+                // Controls can use six-byte escapes.
+                add(6)
+            case 0x80...0xff:
+                // At most three JSON bytes per UTF-8 byte even if Unicode is escaped:
+                // six bytes for a two-byte scalar, twelve for a four-byte surrogate pair.
+                add(3)
+            case 0x22, 0x5c:
+                add(2) // quote and backslash
+            default:
+                add(1) // the storage encoder uses withoutEscapingSlashes
+            }
+        }
+    }
+
+    mutating func add(base64Bytes count: Int) {
+        add(2) // quotes
+        // Four bytes per complete triplet plus a padded quartet for any remaining bytes.
+        let triplets = count / 3
+        if triplets > (ceiling - value) / 4 {
+            value = ceiling
+        } else {
+            add(triplets * 4)
+            if count % 3 != 0 { add(4) }
+        }
+    }
 }
 
 // MARK: - Eligible Span Kinds
