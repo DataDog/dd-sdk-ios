@@ -10,9 +10,10 @@ import DatadogInternal
 /// Provides monotonically increasing sequence numbers for uploaded stats payloads.
 ///
 /// The sequence number lets the intake order and uniquely identify the payloads sent by a
-/// single tracer (`runtimeID`). It is incremented once per built request; retries of the same
-/// batch therefore get distinct sequence numbers, which is acceptable because the value is used
-/// for identification, not for stats aggregation.
+/// single tracer (`runtimeID`). Payloads of whole buckets take one per built request, so retries
+/// of the same batch get distinct sequence numbers, which is acceptable because the value is used
+/// for identification, not for stats aggregation. A split bucket takes one when it is split and
+/// keeps it in every request and retry, so its pieces stay one payload.
 internal final class StatsSequenceNumberProvider {
     @ReadWriteLock
     private var value: UInt64 = 0
@@ -60,15 +61,16 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
 
         // A batch can mix buckets flushed under different deployment identities, for example when
         // it spans an app upgrade. `env`, `version` and `service` live on `ClientStatsPayload`, not
-        // on the bucket, so buckets are grouped by identity and each group becomes its own client
-        // payload inside the envelope. Insertion order is preserved so payloads stay stable.
-        var bucketsByIdentity: [DeploymentIdentity: [ClientStatsBucket]] = [:]
-        var identityOrder: [DeploymentIdentity] = []
-        // Pieces of one split hold disjoint groups, so pieces in this batch are merged back into one
-        // bucket. Each split is tracked on its own: the same window can be exported more than once,
-        // and those exports stay separate buckets, as whole buckets do. When some pieces of a split
-        // are in another batch, `SplitPayload` signals it.
-        var splits: [UUID: (identity: DeploymentIdentity, index: Int, receivedPieces: Int, pieceCount: Int)] = [:]
+        // on the bucket, so whole buckets are grouped by identity into one client payload each.
+        //
+        // Each split gets its own client payload, with the runtime ID and sequence number assigned
+        // when it was split, as the agent does for fragments of one payload. Its pieces hold disjoint
+        // groups, so those in this batch are merged back into one bucket. The same window can be
+        // exported more than once, and each export stays separate. Insertion order is preserved so
+        // payloads stay stable.
+        var payloads: [ClientPayloadDraft] = []
+        var wholeBucketPayloads: [DeploymentIdentity: Int] = [:]
+        var splitPayloads: [ExportedBucket.Piece: Int] = [:]
         for bucket in decoded {
             // Buckets written before this field existed fall back to the upload-time context,
             // which is the previous behaviour and better than dropping the batch.
@@ -77,47 +79,48 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
                 version: bucket.version ?? context.version,
                 service: bucket.service ?? context.service
             )
-            if bucketsByIdentity[identity] == nil {
-                identityOrder.append(identity)
-            }
-            guard let piece = bucket.piece else {
-                bucketsByIdentity[identity, default: []].append(ClientStatsBucket(bucket))
-                continue
-            }
             let wireBucket = ClientStatsBucket(bucket)
-            if let split = splits[piece.splitID], let existing = bucketsByIdentity[split.identity]?[split.index] {
-                bucketsByIdentity[split.identity]?[split.index] = ClientStatsBucket(
-                    start: existing.start,
-                    duration: existing.duration,
-                    stats: existing.stats + wireBucket.stats
-                )
-                splits[piece.splitID]?.receivedPieces += 1
+            if let piece = bucket.piece {
+                if let index = splitPayloads[piece], let existing = payloads[index].buckets.first {
+                    payloads[index].buckets = [
+                        ClientStatsBucket(
+                            start: existing.start,
+                            duration: existing.duration,
+                            stats: existing.stats + wireBucket.stats
+                        )
+                    ]
+                    payloads[index].receivedPieces += 1
+                } else {
+                    splitPayloads[piece] = payloads.count
+                    payloads.append(ClientPayloadDraft(identity: identity, piece: piece, buckets: [wireBucket], receivedPieces: 1))
+                }
+            } else if let index = wholeBucketPayloads[identity] {
+                payloads[index].buckets.append(wireBucket)
             } else {
-                splits[piece.splitID] = (identity, bucketsByIdentity[identity]?.count ?? 0, 1, piece.count)
-                bucketsByIdentity[identity, default: []].append(wireBucket)
+                wholeBucketPayloads[identity] = payloads.count
+                payloads.append(ClientPayloadDraft(identity: identity, piece: nil, buckets: [wireBucket], receivedPieces: 0))
             }
         }
 
-        let clientStats = identityOrder.map { identity in
+        let clientStats = payloads.map { draft in
             ClientStatsPayload(
                 // Always empty on mobile: there is no stable, meaningful device hostname
                 // (and reporting one would be a privacy concern), so `DatadogContext` exposes
                 // none. `Hostname` is a server-tracer field in the protobuf model; the intake
                 // accepts it empty. Matches the Android SDK.
                 hostname: "",
-                env: identity.env,
-                version: identity.version,
-                service: identity.service,
+                env: draft.identity.env,
+                version: draft.identity.version,
+                service: draft.identity.service,
                 tracerVersion: context.sdkVersion,
-                runtimeID: runtimeID,
-                sequenceNumber: sequenceNumberProvider.next(),
-                stats: bucketsByIdentity[identity] ?? []
+                runtimeID: draft.piece?.runtimeID ?? runtimeID,
+                sequenceNumber: draft.piece?.sequence ?? sequenceNumberProvider.next(),
+                stats: draft.buckets
             )
         }
         // `SplitPayload` marks a payload split across requests, which happens only when a split's
-        // pieces did not all land in this batch. Client payloads of different identities travel in
-        // one request.
-        let isSplit = splits.values.contains { $0.receivedPieces < $0.pieceCount }
+        // pieces did not all land in this batch.
+        let isSplit = payloads.contains { draft in draft.piece.map { draft.receivedPieces < $0.count } ?? false }
         let payload = StatsPayload(clientStats: clientStats, splitPayload: isSplit)
         let body = try encoder.encode(payload)
 
@@ -145,5 +148,14 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
 
     func url(with context: DatadogContext) -> URL {
         customIntakeURL ?? context.site.endpoint.appendingPathComponent("api/v0.2/stats")
+    }
+
+    /// A client payload being assembled from a batch: whole buckets of one identity, or the pieces of
+    /// one split found in this batch.
+    private struct ClientPayloadDraft {
+        let identity: DeploymentIdentity
+        let piece: ExportedBucket.Piece?
+        var buckets: [ClientStatsBucket]
+        var receivedPieces: Int
     }
 }
