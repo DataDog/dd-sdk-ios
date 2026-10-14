@@ -87,7 +87,7 @@
 		111201C42E93C13000375DA3 /* AppStateInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111201BE2E93C13000375DA3 /* AppStateInfo.swift */; };
 		111F0450307E6DE700CDB469 /* poisson_allocation_sampler.h in Headers */ = {isa = PBXBuildFile; fileRef = 111F044F307E6DE700CDB469 /* poisson_allocation_sampler.h */; };
 		111F0452307E6E0800CDB469 /* poisson_allocation_sampler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 111F0451307E6E0800CDB469 /* poisson_allocation_sampler.cpp */; };
-		111F0454307E6E8A00CDB469 /* PoissonAllocationSamplerTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 111F0453307E6E8A00CDB469 /* PoissonAllocationSamplerTests.mm */; };
+		111F0495307FAABD00CDB469 /* PoissonAllocationSamplerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111F0494307FAABD00CDB469 /* PoissonAllocationSamplerTests.swift */; };
 		1121FD002EE319F000297156 /* ProfilingTelemetryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FCFE2EE319E600297156 /* ProfilingTelemetryController.swift */; };
 		1121FD022EE33B3400297156 /* ConfigurationMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FD012EE33B2E00297156 /* ConfigurationMetric.swift */; };
 		1121FD052F00000000297156 /* ProfilingSessionMetric.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1121FD042F00000000297156 /* ProfilingSessionMetric.swift */; };
@@ -2046,7 +2046,7 @@
 		1117AA052D09A39400F86B29 /* RUMAttributesIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMAttributesIntegrationTests.swift; sourceTree = "<group>"; };
 		111F044F307E6DE700CDB469 /* poisson_allocation_sampler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = poisson_allocation_sampler.h; sourceTree = "<group>"; };
 		111F0451307E6E0800CDB469 /* poisson_allocation_sampler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = poisson_allocation_sampler.cpp; sourceTree = "<group>"; };
-		111F0453307E6E8A00CDB469 /* PoissonAllocationSamplerTests.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PoissonAllocationSamplerTests.mm; sourceTree = "<group>"; };
+		111F0494307FAABD00CDB469 /* PoissonAllocationSamplerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoissonAllocationSamplerTests.swift; sourceTree = "<group>"; };
 		1121FCFE2EE319E600297156 /* ProfilingTelemetryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingTelemetryController.swift; sourceTree = "<group>"; };
 		1121FD012EE33B2E00297156 /* ConfigurationMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigurationMetric.swift; sourceTree = "<group>"; };
 		1121FD042F00000000297156 /* ProfilingSessionMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilingSessionMetric.swift; sourceTree = "<group>"; };
@@ -7318,7 +7318,7 @@
 				11D5190F306AA6E7008C003F /* SwiftAllocHookTests.swift */,
 				11D51917306AF4B4008C003F /* ObjCAllocHookTests.m */,
 				11D5191D30716AE0008C003F /* MemoryLiveSetTests.swift */,
-				111F0453307E6E8A00CDB469 /* PoissonAllocationSamplerTests.mm */,
+				111F0494307FAABD00CDB469 /* PoissonAllocationSamplerTests.swift */,
 			);
 			name = DatadogProfilingTests;
 			path = ../DatadogProfiling/Tests;
@@ -9944,7 +9944,6 @@
 				D233E7E42E4A2AFE00E7CFDE /* RequestBuilderTests.swift in Sources */,
 				D262DA662E7D5D0F002A94C9 /* ProfileEventTests.swift in Sources */,
 				D2023AA02FFE64CE00A80981 /* ProfilingConfiguration+RemoteConfigurationTests.swift in Sources */,
-				111F0454307E6E8A00CDB469 /* PoissonAllocationSamplerTests.mm in Sources */,
 				11522CC72F8B90E000752E87 /* DatadogProfilerTests.swift in Sources */,
 				118ACA422EEEE0BD004E7F20 /* ProfilingTelemetryControllerTests.swift in Sources */,
 				D233E7DE2E4A109100E7CFDE /* ProfilingTest.swift in Sources */,
@@ -9952,6 +9951,7 @@
 				110DD1BE2EEC7095002F3B8B /* ProfilerFeatureTests.swift in Sources */,
 				0EFAE08216FC46BC84FEDF88 /* ProfilingHandlerTests.swift in Sources */,
 				11A14A642F9B740000B1C0DE /* ProfilingQuotaCheckerTests.swift in Sources */,
+				111F0495307FAABD00CDB469 /* PoissonAllocationSamplerTests.swift in Sources */,
 				A6DC5EA853D947FA9FEA4743 /* ProfilingConditionsTests.swift in Sources */,
 				D2D0E2072E3CEF1200BA4113 /* MachSamplingProfilerTests.swift in Sources */,
 				11D51918306AF4B4008C003F /* ObjCAllocHookTests.m in Sources */,
