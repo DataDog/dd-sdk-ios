@@ -444,6 +444,8 @@ extension FlagsRepository: FlagsRepositoryProtocol {
 
             switch result {
             case .success(let flags):
+                // Claim success before processing assignments or publishing ready can race the timeout.
+                let operationCompletion = takeCompletion()
                 let flagsData = FlagsData(
                     flags: flags,
                     context: context,
@@ -469,7 +471,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     notifyListeners = self.stateManager.updateStateWithoutNotifying(.ready)
                 }
                 guard let versionAfterSuccess else {
-                    complete(.success(()), notifyListeners: nil, completion: takeCompletion())
+                    complete(.success(()), notifyListeners: nil, completion: operationCompletion)
                     return
                 }
                 let pendingCompletions = callbacks.map { $0.prepare() }
@@ -477,7 +479,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                 complete(
                     .success(()),
                     notifyListeners: notifyListeners,
-                    completion: takeCompletion(),
+                    completion: operationCompletion,
                     pendingCompletions: pendingCompletions
                 )
             case .failure(let error):

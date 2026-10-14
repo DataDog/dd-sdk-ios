@@ -1172,6 +1172,7 @@ final class FlagsRepositoryTests: XCTestCase {
 
     func testInitializationSuccessDeliversCompletionBeforeReadyListeners() throws {
         // Given
+        let dateProvider = PausingDateProvider()
         var fetchCompletion: ((Result<[String: FlagAssignment], FlagsError>) -> Void)?
         var timeoutAction: (() -> Void)?
         var callbackResult: Result<Void, FlagsError>?
@@ -1181,7 +1182,7 @@ final class FlagsRepositoryTests: XCTestCase {
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
                 fetchCompletion = completion
             },
-            dateProvider: DateProviderMock(),
+            dateProvider: dateProvider,
             featureScope: featureScope,
             initializationTimeout: 2.5,
             scheduleInitializationTimeout: { _, action in
@@ -1200,7 +1201,24 @@ final class FlagsRepositoryTests: XCTestCase {
         flagsRepository.setEvaluationContext(.mockAny()) { callbackResult = $0 }
 
         // When
-        try XCTUnwrap(fetchCompletion)(.success([:]))
+        let completeFetch = try XCTUnwrap(fetchCompletion)
+        let fetchFinished = DispatchGroup()
+        fetchFinished.enter()
+        defer {
+            dateProvider.resume.signal()
+            XCTAssertEqual(fetchFinished.wait(timeout: .now() + 2), .success)
+            flagsRepository.flush()
+        }
+        DispatchQueue.global().async {
+            completeFetch(.success([:]))
+            fetchFinished.leave()
+        }
+        XCTAssertEqual(dateProvider.started.wait(timeout: .now() + 2), .success)
+        // A received success must claim completion before assignment processing can delay it.
+        try XCTUnwrap(timeoutAction)()
+        XCTAssertNil(callbackResult)
+        dateProvider.resume.signal()
+        XCTAssertEqual(fetchFinished.wait(timeout: .now() + 2), .success)
 
         // Then
         XCTAssertTrue(callbackWasDeliveredBeforeReadyListener)
@@ -1724,13 +1742,7 @@ final class FlagsRepositoryTests: XCTestCase {
                 dateProvider: DateProviderMock(),
                 featureScope: featureScope,
                 initializationTimeout: 5,
-                scheduleInitializationTimeout: { _, _ in
-                    return {
-                        // Pause after applying A's assignments but before delivering its completion.
-                        successApplied.signal()
-                        resumePublication.wait()
-                    }
-                }
+                scheduleInitializationTimeout: { _, _ in {} }
             )
             featureScope.dataStore.flush()
             @ReadWriteLock
@@ -1749,6 +1761,9 @@ final class FlagsRepositoryTests: XCTestCase {
                 if case .failure(let error) = result {
                     XCTFail("Expected success, got \(error)")
                 }
+                // Pause after applying A's assignments but before notifying its listeners.
+                successApplied.signal()
+                resumePublication.wait()
             }
             let olderCompletion = completions[0]
             DispatchQueue.global().async {
