@@ -15,9 +15,10 @@ import DatadogInternal
 internal final class ClientStatsFeature: DatadogRemoteFeature {
     static let name = "tracing-client-stats"
 
-    /// Largest encoded bucket written as one storage event. Half the 1 MB event limit, leaving room
-    /// for encryption and batch framing; larger buckets are split.
-    static let maxStoredBucketSize = 512 * 1_024
+    /// Largest encoded bucket written as one storage event; larger buckets are split. Below half the
+    /// 1 MB event limit, so a piece still fits when a custom `DataEncryption` doubles its size, as
+    /// hex encoding does, plus the 6-byte batch block header.
+    static let maxStoredBucketSize = 500_000
 
     let requestBuilder: FeatureRequestBuilder
     let messageReceiver: FeatureMessageReceiver

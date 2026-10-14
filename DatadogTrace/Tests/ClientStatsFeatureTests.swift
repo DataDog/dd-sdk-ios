@@ -545,6 +545,14 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertEqual(result.oversizedGroups.count, 3)
     }
 
+    func testStoredBucketBudgetSurvivesEncryptionThatDoublesTheSize() {
+        // Actual JSON never exceeds the estimate, which never exceeds the budget. A hex-encoding
+        // `DataEncryption` doubles it, and the batch block adds a 2-byte type and a 4-byte length.
+        let storageEventLimit = 1_024 * 1_024
+        let blockHeaderSize = 6
+        XCTAssertLessThanOrEqual(2 * ClientStatsFeature.maxStoredBucketSize + blockHeaderSize, storageEventLimit)
+    }
+
     func testWhenBucketFitsTheLimit_splitReturnsItWhole() throws {
         let bucket = makeExportedBucket(groupCount: 3, env: "prod", version: "1.0.0", service: "app")
             .assigning(.init(runtimeID: splitRuntimeID, sequence: 1))
