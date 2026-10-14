@@ -144,23 +144,24 @@ internal struct ExportedBucket: Codable, Sendable {
     let version: String?
     let service: String?
 
-    /// Set when this bucket is one piece of a bucket split to fit the storage event limit.
-    /// `nil` for whole buckets.
-    let piece: Piece?
+    /// The client payload this bucket is uploaded in, assigned when the bucket is flushed and kept in
+    /// every request, retry and upload after a restart, as the agent does for fragments of one payload.
+    /// `nil` for buckets stored by earlier builds, which take one when they are uploaded.
+    let payload: PayloadIdentity?
 
-    /// Whether this bucket holds only some of its window's groups.
-    var isPartial: Bool { piece != nil }
+    /// How many pieces this bucket's payload was split into to fit the storage event limit. `nil` for
+    /// whole buckets.
+    let pieceCount: Int?
 
-    /// Identifies the split a partial bucket comes from.
-    struct Piece: Codable, Hashable, Sendable {
-        /// The runtime ID and sequence number of the client payload the split forms, assigned when
-        /// the bucket is split and sent by every request carrying one of its pieces, as the agent
-        /// does for fragments of one payload. Together they are unique to one split, so pieces of
-        /// two exports of the same window are never mixed.
+    /// Whether this bucket holds only some of its payload's groups.
+    var isPartial: Bool { pieceCount != nil }
+
+    /// Identifies a client stats payload.
+    struct PayloadIdentity: Codable, Hashable, Sendable {
+        /// The tracer instance that flushed the bucket.
         let runtimeID: String
+        /// Unique among the payloads of `runtimeID`, and increasing in flush order.
         let sequence: UInt64
-        /// How many pieces the split produced.
-        let count: Int
     }
 
     init(
@@ -170,7 +171,8 @@ internal struct ExportedBucket: Codable, Sendable {
         env: String? = nil,
         version: String? = nil,
         service: String? = nil,
-        piece: Piece? = nil
+        payload: PayloadIdentity? = nil,
+        pieceCount: Int? = nil
     ) {
         self.start = start
         self.duration = duration
@@ -178,7 +180,8 @@ internal struct ExportedBucket: Codable, Sendable {
         self.env = env
         self.version = version
         self.service = service
-        self.piece = piece
+        self.payload = payload
+        self.pieceCount = pieceCount
     }
 
     /// Splits using a conservative JSON size estimate, without allocating encoded payloads.
@@ -189,24 +192,17 @@ internal struct ExportedBucket: Codable, Sendable {
     /// group whose estimate exceeds the budget even alone is returned in `oversizedGroups`.
     /// Conservative estimates can split or reject a group before its actual JSON reaches the limit.
     ///
-    /// A split takes its payload's sequence number from `sequenceNumbers`, the same provider the
-    /// request builder uses, so it never collides with another payload from `runtimeID`.
-    func split(
-        toFit maxEncodedSize: Int,
-        runtimeID: String,
-        sequenceNumbers: StatsSequenceNumberProvider
-    ) -> (pieces: [ExportedBucket], oversizedGroups: [ExportedGroupedStats]) {
+    /// Pieces keep the bucket's `payload`, so they are uploaded as one payload.
+    func split(toFit maxEncodedSize: Int) -> (pieces: [ExportedBucket], oversizedGroups: [ExportedGroupedStats]) {
         guard maxEncodedSize > 0 else {
             return ([], stats)
         }
         // Estimate each group once, for both the whole-bucket check and the packing below.
         let groupSizes = stats.map { $0.estimatedJSONSize(limit: maxEncodedSize) }
-        guard estimatedJSONSize(groupSizes: groupSizes, piece: piece, limit: maxEncodedSize) > maxEncodedSize else {
+        guard estimatedJSONSize(groupSizes: groupSizes, limit: maxEncodedSize) > maxEncodedSize else {
             return ([self], [])
         }
-        let sequence = sequenceNumbers.next()
-        let largestPiece = Piece(runtimeID: runtimeID, sequence: sequence, count: stats.count)
-        let emptySize = estimatedJSONHeaderSize(piece: largestPiece, limit: maxEncodedSize)
+        let emptySize = estimatedJSONHeaderSize(limit: maxEncodedSize)
 
         var pieces: [[ExportedGroupedStats]] = []
         var pieceSize = emptySize
@@ -225,19 +221,18 @@ internal struct ExportedBucket: Codable, Sendable {
                 pieceSize += 1 + groupSize
             }
         }
-        let piece = Piece(runtimeID: runtimeID, sequence: sequence, count: pieces.count)
-        return (pieces.map { makePartial(with: $0, piece: piece) }, oversizedGroups)
+        return (pieces.map { makePartial(with: $0, of: pieces.count) }, oversizedGroups)
     }
 
     /// Upper bound for the storage JSON size, capped at `limit + 1` (or `Int.max`).
     func estimatedJSONSize(limit: Int = .max) -> Int {
-        estimatedJSONSize(groupSizes: stats.map { $0.estimatedJSONSize(limit: limit) }, piece: piece, limit: limit)
+        estimatedJSONSize(groupSizes: stats.map { $0.estimatedJSONSize(limit: limit) }, limit: limit)
     }
 
-    /// The calculation `split(toFit:runtimeID:sequenceNumbers:)` uses, given each group's estimate.
-    private func estimatedJSONSize(groupSizes: [Int], piece: Piece?, limit: Int) -> Int {
+    /// The calculation `split(toFit:)` uses, given each group's estimate.
+    private func estimatedJSONSize(groupSizes: [Int], limit: Int) -> Int {
         var size = StatsJSONSize(limit: limit)
-        size.add(estimatedJSONHeaderSize(piece: piece, limit: limit))
+        size.add(estimatedJSONHeaderSize(limit: limit))
         for (index, groupSize) in groupSizes.enumerated() {
             if index > 0 { size.add(1) } // separating comma
             size.add(groupSize)
@@ -245,19 +240,21 @@ internal struct ExportedBucket: Codable, Sendable {
         return size.value
     }
 
-    private func estimatedJSONHeaderSize(piece: Piece?, limit: Int) -> Int {
+    private func estimatedJSONHeaderSize(limit: Int) -> Int {
         var size = StatsJSONSize(limit: limit)
-        // Covers keys, punctuation, and maximum-width integers, including optional piece metadata.
-        // String contents are counted separately. Keep this bound in sync with the Codable fields.
+        // Covers keys, punctuation, and maximum-width integers, including the payload identity and a
+        // piece count, so a piece's header is never larger than this. String contents are counted
+        // separately. Keep this bound in sync with the Codable fields.
         size.add(256)
         if let env = env { size.add(string: env) }
         if let version = version { size.add(string: version) }
         if let service = service { size.add(string: service) }
-        if let piece = piece { size.add(string: piece.runtimeID) }
+        if let payload = payload { size.add(string: payload.runtimeID) }
         return size.value
     }
 
-    private func makePartial(with stats: [ExportedGroupedStats], piece: Piece) -> ExportedBucket {
+    /// A copy of this bucket uploaded in `payload`.
+    func assigning(_ payload: PayloadIdentity) -> ExportedBucket {
         ExportedBucket(
             start: start,
             duration: duration,
@@ -265,7 +262,21 @@ internal struct ExportedBucket: Codable, Sendable {
             env: env,
             version: version,
             service: service,
-            piece: piece
+            payload: payload,
+            pieceCount: pieceCount
+        )
+    }
+
+    private func makePartial(with stats: [ExportedGroupedStats], of pieceCount: Int) -> ExportedBucket {
+        ExportedBucket(
+            start: start,
+            duration: duration,
+            stats: stats,
+            env: env,
+            version: version,
+            service: service,
+            payload: payload,
+            pieceCount: pieceCount
         )
     }
 }
