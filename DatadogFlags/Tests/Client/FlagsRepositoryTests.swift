@@ -31,7 +31,9 @@ final class FlagsRepositoryTests: XCTestCase {
         network.reason = "TARGETING_MATCH"
         let repository = FlagsRepository(
             clientName: "cached",
-            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in completion(.success(["flag": network])) },
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success(.init(flags: ["flag": network])))
+            },
             dateProvider: DateProviderMock(),
             featureScope: featureScope
         )
