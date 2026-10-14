@@ -147,7 +147,9 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
         for result in results {
             // Given
             let contextQueue = DispatchQueue(label: "com.datadoghq.flags-tests-context")
-            let featureScope = QueuedFeatureScope(contextQueue: contextQueue)
+            let contextQueueKey = DispatchSpecificKey<Void>()
+            contextQueue.setSpecific(key: contextQueueKey, value: ())
+            let featureScope = FeatureScopeMock()
             let queue = DispatchQueue(label: "com.datadoghq.flags-tests-assignment-fetch")
             let queueKey = DispatchSpecificKey<Void>()
             queue.setSpecific(key: queueKey, value: ())
@@ -157,7 +159,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
                 featureScope: featureScope,
                 assignmentFetchQueue: queue,
                 fetch: { _, completion in
-                    XCTAssertFalse(featureScope.isOnContextQueue)
+                    XCTAssertNil(DispatchQueue.getSpecific(key: contextQueueKey))
                     XCTAssertNotNil(DispatchQueue.getSpecific(key: queueKey))
                     completion(result)
                 }
@@ -171,58 +173,29 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
                 wait(for: [firstCompletionFinished], timeout: 1)
             }
 
-            fetcher.flagAssignments(for: .mockAny()) { _ in
-                XCTAssertFalse(featureScope.isOnContextQueue)
-                XCTAssertNil(DispatchQueue.getSpecific(key: queueKey))
-                firstCompletionStarted.fulfill()
-                releaseCompletion.wait()
-                firstCompletionFinished.fulfill()
+            // FeatureScopeMock supplies its context synchronously on the calling queue.
+            contextQueue.async {
+                fetcher.flagAssignments(for: .mockAny()) { _ in
+                    XCTAssertNil(DispatchQueue.getSpecific(key: contextQueueKey))
+                    XCTAssertNil(DispatchQueue.getSpecific(key: queueKey))
+                    firstCompletionStarted.fulfill()
+                    releaseCompletion.wait()
+                    firstCompletionFinished.fulfill()
+                }
             }
             wait(for: [firstCompletionStarted], timeout: 1)
 
             // When
-            fetcher.flagAssignments(for: .mockAny()) { _ in
-                XCTAssertFalse(featureScope.isOnContextQueue)
-                XCTAssertNil(DispatchQueue.getSpecific(key: queueKey))
-                secondCompleted.fulfill()
+            contextQueue.async {
+                fetcher.flagAssignments(for: .mockAny()) { _ in
+                    XCTAssertNil(DispatchQueue.getSpecific(key: contextQueueKey))
+                    XCTAssertNil(DispatchQueue.getSpecific(key: queueKey))
+                    secondCompleted.fulfill()
+                }
             }
 
             // Then
             wait(for: [secondCompleted], timeout: 1)
         }
     }
-}
-
-private final class QueuedFeatureScope: FeatureScope, @unchecked Sendable {
-    private let contextQueue: DispatchQueue
-    private let contextQueueKey = DispatchSpecificKey<Void>()
-    private let contextMock: DatadogContext
-
-    var isOnContextQueue: Bool {
-        DispatchQueue.getSpecific(key: contextQueueKey) != nil
-    }
-
-    init(contextQueue: DispatchQueue, context: DatadogContext = .mockAny()) {
-        self.contextQueue = contextQueue
-        self.contextMock = context
-        self.contextQueue.setSpecific(key: contextQueueKey, value: ())
-    }
-
-    func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {}
-
-    func context(_ block: @escaping (DatadogContext) -> Void) {
-        contextQueue.async {
-            block(self.contextMock)
-        }
-    }
-
-    var dataStore: DataStore { NOPDataStore() }
-
-    var telemetry: Telemetry { NOPTelemetry() }
-
-    func send(message: FeatureMessage, else fallback: @escaping () -> Void) {}
-
-    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext {}
-
-    func set(anonymousId: String?) {}
 }

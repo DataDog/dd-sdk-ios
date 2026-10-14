@@ -104,12 +104,12 @@ internal final class FlagsRepository {
 
     /// Synchronizes assignments, request supersession, and disk-read lifecycle. Client-state transitions
     /// acquire this lock before the state-manager lock; listeners and completions run after unlocking.
-    /// `contextUpdateID` and `flagsDataVersion` reject superseded results. Version zero means no success
-    /// or reset has superseded the initial disk read.
     private struct RepositoryState {
         var flagsData: FlagsData?
         var cachedFlagsData: FlagsData?
+        /// Advances on accepted fetches and reset; zero means the initial disk read can still apply.
         var flagsDataVersion: UInt64 = 0
+        /// Advances on every context request and reset, even when assignments have not changed.
         var contextUpdateID: UInt64 = 0
         var hasStartedEvaluationContextRequest = false
         var latestRequestedContext: FlagsEvaluationContext?
@@ -414,8 +414,8 @@ extension FlagsRepository: FlagsRepositoryProtocol {
         }
         func complete(
             _ result: Result<Void, FlagsError>,
-            _ notifyListeners: (() -> Void)?,
-            _ operationCompletion: InitializationCompletion.Completion?,
+            notifyListeners: (() -> Void)?,
+            completion operationCompletion: InitializationCompletion.Completion?,
             pendingCompletions: [() -> Void] = []
         ) {
             guard let notifyListeners else {
@@ -438,7 +438,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
 
         flagAssignmentsFetcher.flagAssignments(for: context) { [weak self] result in
             guard let self else {
-                complete(.failure(.clientNotInitialized), nil, takeCompletion())
+                complete(.failure(.clientNotInitialized), notifyListeners: nil, completion: takeCompletion())
                 return
             }
 
@@ -469,16 +469,21 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                     notifyListeners = self.stateManager.updateStateWithoutNotifying(.ready)
                 }
                 guard let versionAfterSuccess else {
-                    complete(.success(()), nil, takeCompletion())
+                    complete(.success(()), notifyListeners: nil, completion: takeCompletion())
                     return
                 }
                 let pendingCompletions = callbacks.map { $0.prepare() }
                 self.writeState(flagsData, version: versionAfterSuccess)
-                complete(.success(()), notifyListeners, takeCompletion(), pendingCompletions: pendingCompletions)
+                complete(
+                    .success(()),
+                    notifyListeners: notifyListeners,
+                    completion: takeCompletion(),
+                    pendingCompletions: pendingCompletions
+                )
             case .failure(let error):
                 self.whenCacheReady(PendingCacheReadCallback(takeCompletion: takeCompletion) { [weak self] operationCompletion in
                     guard let self else {
-                        complete(.failure(.clientNotInitialized), nil, operationCompletion)
+                        complete(.failure(.clientNotInitialized), notifyListeners: nil, completion: operationCompletion)
                         return
                     }
 
@@ -487,7 +492,7 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                         contextUpdateID: contextUpdateID,
                         versionAtStart: versionAtStart
                     )
-                    complete(.failure(error), notifyListeners, operationCompletion)
+                    complete(.failure(error), notifyListeners: notifyListeners, completion: operationCompletion)
                 })
             }
         }
