@@ -1,5 +1,6 @@
 # Unreleased
 
+- [FIX] Prevent incorrect RUM session expiration caused by device clock changes or cross-platform timestamp differences. See [#3288][]
 - [IMPROVEMENT] Flags: Report `CACHED` for disk-restored assignments and use that effective reason for evaluation telemetry.
 - [FEATURE] Add `spanCustomization` to `Trace.Configuration.URLSessionTracking` to customize spans created for intercepted network requests, for example to add request-based tags. See [#2741][]
 - [IMPROVEMENT] Include the application build number (`CFBundleVersion`) in trace spans as `build_version`. See [#3286][]
@@ -1294,6 +1295,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3245]: https://github.com/DataDog/dd-sdk-ios/pull/3245
 [#3215]: https://github.com/DataDog/dd-sdk-ios/pull/3215
 [#3286]: https://github.com/DataDog/dd-sdk-ios/pull/3286
+[#3288]: https://github.com/DataDog/dd-sdk-ios/pull/3288
 [#3282]: https://github.com/DataDog/dd-sdk-ios/pull/3282
 [#3285]: https://github.com/DataDog/dd-sdk-ios/pull/3285
 [#3218]: https://github.com/DataDog/dd-sdk-ios/pull/3218
