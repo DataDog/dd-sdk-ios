@@ -447,13 +447,15 @@ class ClientStatsFeatureTests: XCTestCase {
     // MARK: - Storage Event Limit
 
     func testJSONSizeEstimateBoundsEscapingBase64AndMaximumWidthFields() throws {
-        let strings = [
+        let swiftStrings = [
             "", "ascii /path", "\"\\\n\r\t", "\u{0000}\u{001f}",
             "é👩🏽‍💻e\u{0301}", "\u{2028}\u{2029}",
             String(repeating: "\"\\\u{0000}", count: 1_024),
             String(repeating: "é👩🏽‍💻", count: 512),
             String(repeating: "long-resource/", count: 1_000)
         ]
+        // Strings bridged from Objective-C have no contiguous UTF-8 storage, so they take the other scan.
+        let strings = swiftStrings + swiftStrings.map { NSMutableString(string: $0) as String }
         for string in strings {
             for byteCount in [0, 1, 2, 3, 4, 5, 16_384] {
                 let group = ExportedGroupedStats(
