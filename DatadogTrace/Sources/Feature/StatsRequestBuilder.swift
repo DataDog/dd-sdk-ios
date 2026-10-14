@@ -10,9 +10,9 @@ import DatadogInternal
 /// Provides monotonically increasing sequence numbers for uploaded stats payloads.
 ///
 /// The sequence number lets the intake order and uniquely identify the payloads sent by a
-/// single tracer (`runtimeID`). `ClientStatsFeature` takes one for every bucket it stores, which
-/// keeps it across retries and restarts. The request builder takes one only for buckets stored by
-/// earlier builds, which have none.
+/// single tracer runtime ID. `ClientStatsFeature` takes one for every bucket it stores, which keeps
+/// it across retries and restarts. The request builder has its own provider, under its own runtime
+/// ID, for buckets stored by earlier builds, which have none.
 internal final class StatsSequenceNumberProvider {
     @ReadWriteLock
     private var value: UInt64 = 0
@@ -37,10 +37,11 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
     let customIntakeURL: URL?
     /// Sends telemetry through the SDK core.
     let telemetry: Telemetry
-    /// Identifies the tracer instance uniquely across the payloads it sends.
-    let runtimeID: String
-    /// Supplies the per-payload sequence number.
-    let sequenceNumberProvider: StatsSequenceNumberProvider
+    /// The runtime ID of payloads for buckets stored by earlier builds, which have no identity. It is
+    /// distinct from the one `ClientStatsFeature` stores, so the two sequence streams never mix.
+    let legacyRuntimeID: String
+    /// Sequence numbers for those payloads, taken at upload, so a retry takes a new one.
+    let legacySequenceNumbers: StatsSequenceNumberProvider
 
     private let encoder = MsgPackEncoder()
     private let decoder = JSONDecoder()
@@ -64,9 +65,8 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
         // is preserved, so sequence numbers increase in the order payloads were stored.
         //
         // Buckets stored by earlier builds carry no payload identity. As before, those of one
-        // deployment share a client payload, with this builder's runtime ID and a new sequence number.
-        // They are sent after the others: a new number is above every one already stored by this
-        // runtime, so sequence numbers still increase within the request.
+        // deployment share a client payload, numbered at upload under `legacyRuntimeID`. That stream
+        // is separate, so whichever file is uploaded first, each runtime ID's sequence increases.
         var payloads: [ClientPayloadDraft] = []
         var payloadIndexes: [ExportedBucket.PayloadIdentity: Int] = [:]
         var legacyPayloadIndexes: [DeploymentIdentity: Int] = [:]
@@ -111,8 +111,7 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
             }
         }
 
-        let orderedPayloads = payloads.filter { $0.payload != nil } + payloads.filter { $0.payload == nil }
-        let clientStats = orderedPayloads.map { draft in
+        let clientStats = payloads.map { draft in
             ClientStatsPayload(
                 // Always empty on mobile: there is no stable, meaningful device hostname
                 // (and reporting one would be a privacy concern), so `DatadogContext` exposes
@@ -123,8 +122,8 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
                 version: draft.identity.version,
                 service: draft.identity.service,
                 tracerVersion: context.sdkVersion,
-                runtimeID: draft.payload?.runtimeID ?? runtimeID,
-                sequenceNumber: draft.payload?.sequence ?? sequenceNumberProvider.next(),
+                runtimeID: draft.payload?.runtimeID ?? legacyRuntimeID,
+                sequenceNumber: draft.payload?.sequence ?? legacySequenceNumbers.next(),
                 stats: draft.buckets
             )
         }
