@@ -65,7 +65,7 @@ internal struct DataUploadStatus {
 
     // MARK: - Debug Info
 
-    /// The actual HTTP status code received in response (`nil` if transport error).
+    /// The actual upload HTTP status code (`nil` for a transport error or a batch resolved without uploading).
     let responseCode: Int?
 
     /// Upload status description printed to the console if SDK `.debug` verbosity is enabled.
