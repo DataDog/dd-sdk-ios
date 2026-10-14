@@ -852,10 +852,9 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertEqual(pieces.count, 2)
         let splitSequence = Int64(try XCTUnwrap(pieces[0].payload?.sequence))
 
-        // Same process: the builder shares its runtime ID and sequence provider with the split.
-        let sameProcess = makeRequestBuilder(runtimeID: splitRuntimeID, sequenceNumberProvider: sequenceNumbers)
+        let sameProcess = makeRequestBuilder(legacyRuntimeID: "legacy-runtime-id")
         // After a restart: pieces left on disk are uploaded by a new runtime.
-        let afterRestart = makeRequestBuilder(runtimeID: "new-runtime-id")
+        let afterRestart = makeRequestBuilder(legacyRuntimeID: "new-runtime-id")
         let builds: [(StatsRequestBuilder, ExportedBucket)] = [
             (sameProcess, pieces[0]),
             (sameProcess, pieces[0]), // retry
@@ -869,10 +868,6 @@ class ClientStatsFeatureTests: XCTestCase {
             XCTAssertEqual(client["Sequence"] as? Int64, splitSequence)
             XCTAssertEqual(try decodeEnvelope(in: request)["SplitPayload"] as? Bool, true)
         }
-
-        // A whole bucket after the split takes the next sequence number, never the split's.
-        let whole = try sameProcess.request(for: [makeEvent(from: makeExportedBucket())], with: .mockAny(), execution: .init(previousResponseCode: nil, attempt: 0))
-        XCTAssertEqual(try firstClientStatsPayload(in: whole)["Sequence"] as? Int64, splitSequence + 1)
     }
 
     // MARK: - Payload Identity
@@ -921,7 +916,7 @@ class ClientStatsFeatureTests: XCTestCase {
         stats.flushStats(force: true)
         let events = core.exportedBuckets.map(makeEvent(from:))
         let builder = try XCTUnwrap(stats.requestBuilder as? StatsRequestBuilder)
-        let afterRestart = makeRequestBuilder(runtimeID: "new-runtime-id")
+        let afterRestart = makeRequestBuilder(legacyRuntimeID: "new-runtime-id")
 
         func identities(of request: URLRequest) throws -> [String] {
             try allClientStatsPayloads(in: request).map { "\($0["RuntimeID"] as? String ?? "")/\($0["Sequence"] as? Int64 ?? -1)" }
@@ -942,39 +937,60 @@ class ClientStatsFeatureTests: XCTestCase {
         let current = makeExportedBucket(start: 2_000, env: "prod", version: "1.0.0", service: "app")
             .assigning(.init(runtimeID: "stored-runtime-id", sequence: 7))
         let provider = StatsSequenceNumberProvider()
-        let builder = makeRequestBuilder(runtimeID: "runtime-id", sequenceNumberProvider: provider)
+        let builder = makeRequestBuilder(legacyRuntimeID: "runtime-id", legacySequenceNumbers: provider)
 
         // When
         let request = try builder.request(for: [legacy, makeEvent(from: current)], with: .mockAny(), execution: .init(previousResponseCode: nil, attempt: 0))
 
-        // Then: the legacy payload is sent last.
+        // Then
         let payloads = try allClientStatsPayloads(in: request)
-        XCTAssertEqual(payloads.map { $0["RuntimeID"] as? String }, ["stored-runtime-id", "runtime-id"])
-        XCTAssertEqual(payloads.map { $0["Sequence"] as? Int64 }, [7, 1])
+        XCTAssertEqual(payloads.map { $0["RuntimeID"] as? String }, ["runtime-id", "stored-runtime-id"])
+        XCTAssertEqual(payloads.map { $0["Sequence"] as? Int64 }, [1, 7])
         XCTAssertEqual(provider.next(), 2, "Only the legacy bucket took a sequence number at upload")
         XCTAssertEqual(try decodeEnvelope(in: request)["SplitPayload"] as? Bool, false)
     }
 
-    func testWhenALegacyBucketIsStoredBeforeACurrentOneOfTheSameRuntime_sequencesStillIncrease() throws {
-        // Given: after an upgrade, a bucket stored by an earlier build sits before one this runtime stored.
-        let (core, stats) = try enableClientStats()
-        stats.concentrator.add(.mockWith(startTime: 0, duration: 100))
-        stats.flushStats(force: true)
-        let stored = try XCTUnwrap(core.exportedBuckets.first?.payload)
+    func testWhenLegacyAndCurrentFilesUploadInEitherOrderOrRetry_eachRuntimeKeepsItsOwnIncreasingSequence() throws {
+        // Given: after an upgrade, an older-format bucket in one storage file and a current one in another.
         let legacy = Event(data: Data(#"{"start":1000,"duration":10000000000,"stats":[],"env":"prod","version":"1.0.0","service":"app"}"#.utf8))
-        let builder = try XCTUnwrap(stats.requestBuilder as? StatsRequestBuilder)
+        for legacyFirst in [true, false] {
+            let (core, stats) = try enableClientStats()
+            stats.concentrator.add(.mockWith(startTime: 0, duration: 100))
+            stats.flushStats(force: true)
+            let current = try XCTUnwrap(core.exportedBuckets.first)
+            let stored = try XCTUnwrap(current.payload)
+            let builder = try XCTUnwrap(stats.requestBuilder as? StatsRequestBuilder)
+            func upload(_ event: Event, attempt: UInt = 0) throws -> (runtimeID: String?, sequence: Int64?) {
+                let request = try builder.request(for: [event], with: .mockAny(), execution: .init(previousResponseCode: attempt > 0 ? 500 : nil, attempt: attempt))
+                let client = try firstClientStatsPayload(in: request)
+                return (client["RuntimeID"] as? String, client["Sequence"] as? Int64)
+            }
 
-        // When
-        let request = try builder.request(
-            for: [legacy] + core.exportedBuckets.map(makeEvent(from:)),
-            with: .mockAny(),
-            execution: .init(previousResponseCode: nil, attempt: 0)
-        )
+            // When: each file is uploaded on its own, in either order, and the legacy one is retried.
+            var legacyUploads: [(runtimeID: String?, sequence: Int64?)] = []
+            var currentUpload: (runtimeID: String?, sequence: Int64?)
+            if legacyFirst {
+                legacyUploads.append(try upload(legacy))
+                legacyUploads.append(try upload(legacy, attempt: 1))
+                currentUpload = try upload(makeEvent(from: current))
+            } else {
+                currentUpload = try upload(makeEvent(from: current))
+                legacyUploads.append(try upload(legacy))
+                legacyUploads.append(try upload(legacy, attempt: 1))
+            }
 
-        // Then: both payloads carry this runtime's ID, and the legacy one comes after with a higher number.
-        let payloads = try allClientStatsPayloads(in: request)
-        XCTAssertEqual(payloads.map { $0["RuntimeID"] as? String }, [stored.runtimeID, stored.runtimeID])
-        XCTAssertEqual(payloads.map { $0["Sequence"] as? Int64 }, [Int64(stored.sequence), Int64(stored.sequence) + 1])
+            // Then: the current bucket keeps its stored identity.
+            XCTAssertEqual(currentUpload.runtimeID, stored.runtimeID)
+            XCTAssertEqual(currentUpload.sequence, Int64(stored.sequence))
+            // Legacy uploads, retries included, use a separate runtime ID whose sequence increases.
+            XCTAssertEqual(Set(legacyUploads.map(\.runtimeID)).count, 1)
+            XCTAssertNotEqual(legacyUploads[0].runtimeID, stored.runtimeID)
+            XCTAssertEqual(legacyUploads.map(\.sequence), [1, 2])
+            // And never take a number from the stored stream: the next flush continues it.
+            stats.concentrator.add(.mockWith(startTime: 0, duration: 100))
+            stats.flushStats(force: true)
+            XCTAssertEqual(core.exportedBuckets.last?.payload?.sequence, stored.sequence + 1)
+        }
     }
 
     func testWhenBatchHoldsOnlyWholeBuckets_itDoesNotMarkThePayloadSplit() throws {
@@ -1033,7 +1049,7 @@ class ClientStatsFeatureTests: XCTestCase {
             version: "1.2.3",
             sdkVersion: "2.0.0"
         )
-        let builder = makeRequestBuilder(runtimeID: "runtime-id")
+        let builder = makeRequestBuilder(legacyRuntimeID: "runtime-id")
 
         // When
         let request = try builder.request(
@@ -1196,14 +1212,14 @@ class ClientStatsFeatureTests: XCTestCase {
 
     private func makeRequestBuilder(
         customIntakeURL: URL? = nil,
-        runtimeID: String = "runtime-id",
-        sequenceNumberProvider: StatsSequenceNumberProvider = StatsSequenceNumberProvider()
+        legacyRuntimeID: String = "runtime-id",
+        legacySequenceNumbers: StatsSequenceNumberProvider = StatsSequenceNumberProvider()
     ) -> StatsRequestBuilder {
         StatsRequestBuilder(
             customIntakeURL: customIntakeURL,
             telemetry: NOPTelemetry(),
-            runtimeID: runtimeID,
-            sequenceNumberProvider: sequenceNumberProvider
+            legacyRuntimeID: legacyRuntimeID,
+            legacySequenceNumbers: legacySequenceNumbers
         )
     }
 
