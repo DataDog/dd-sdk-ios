@@ -30,9 +30,9 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
     let performanceOverride: PerformancePresetOverride?
 
     let concentrator: StatsConcentrator
-    /// Identifies this tracer instance in the payloads it sends, shared with `requestBuilder`.
+    /// Identifies this tracer instance in the payloads it stores.
     private let runtimeID = UUID().uuidString
-    /// Sequence numbers for those payloads, shared with `requestBuilder`.
+    /// Sequence numbers for those payloads, taken in write order.
     private let sequenceNumbers = StatsSequenceNumberProvider()
     private let featureScope: FeatureScope
     private let dateProvider: DateProvider
@@ -51,8 +51,8 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
         self.requestBuilder = StatsRequestBuilder(
             customIntakeURL: configuration.customStatsEndpoint,
             telemetry: core.telemetry,
-            runtimeID: runtimeID,
-            sequenceNumberProvider: sequenceNumbers
+            legacyRuntimeID: UUID().uuidString,
+            legacySequenceNumbers: StatsSequenceNumberProvider()
         )
         self.performanceOverride = PerformancePresetOverride(maxFileSize: Self.maxBatchSize)
         self.dateProvider = dateProvider
