@@ -98,6 +98,24 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         XCTAssertEqual(event.dd.profiling?.quotaReason, quotaReason)
     }
 
+    func testFeatureOperationCommand_whenAppRunsAsAppExtension_createsVitalEventWithIsMainProcessFalse() throws {
+        // Given
+        let command = RUMOperationStepVitalCommand.mockRandom()
+        mockContext = .mockWith(applicationBundleType: .iOSAppExtension)
+
+        // When
+        manager.process(
+            command,
+            context: mockContext,
+            writer: mockWriter,
+            activeView: .mockAny()
+        )
+
+        // Then
+        let event = try XCTUnwrap(mockWriter.events(ofType: RUMVitalOperationStepEvent.self).first)
+        XCTAssertEqual(event.session.isMainProcess, false)
+    }
+
     func testFeatureOperationCommand_sanitizesContextAttributesBeforeWriting() throws {
         // Given
         let numberOfAttributes = AttributesSanitizer.Constraints.maxNumberOfAttributes * 2

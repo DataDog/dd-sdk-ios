@@ -245,9 +245,15 @@ internal final class FlagsRepository {
     private func readState() {
         // Retain the read lifecycle, not the repository, so the group is balanced even after deallocation.
         featureScope.flagsDataStore.flagsData(forClientNamed: clientName) { [_repositoryState] data in
+            var cachedData = data
+            cachedData?.flags = data?.flags.mapValues { assignment in
+                var cachedAssignment = assignment
+                cachedAssignment.reason = "CACHED"
+                return cachedAssignment
+            } ?? [:]
             var callbacks: [PendingCacheReadCallback] = []
             _repositoryState.mutate { state in
-                callbacks = state.applyInitialFlagsData(data)
+                callbacks = state.applyInitialFlagsData(cachedData)
             }
 
             // Pending failures report `.clientNotInitialized` if the repository has been released.

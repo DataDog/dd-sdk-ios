@@ -179,4 +179,33 @@ class CrashContextTests: XCTestCase {
             accuracy: 0.001 // assert with ms precision as we encode dates as ISO8601 string which is lossfull
         )
     }
+
+    func testGivenContextWithApplicationBundleTypeSet_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
+        let randomBundleType: BundleType = .mockRandom()
+
+        // Given
+        let context: CrashContext = .mockWith(applicationBundleType: randomBundleType)
+
+        // When
+        let serializedContext = try encoder.encode(context)
+
+        // Then
+        let deserializedContext = try decoder.decode(CrashContext.self, from: serializedContext)
+        XCTAssertEqual(deserializedContext.applicationBundleType, randomBundleType)
+    }
+
+    func testGivenContextEncodedWithoutApplicationBundleType_whenItGetsDecoded_thenItDefaultsToIOSApp() throws {
+        // Given
+        // Simulate a `CrashContext` persisted by a prior SDK version, before `applicationBundleType` existed.
+        let context: CrashContext = .mockWith(applicationBundleType: .iOSAppExtension)
+        var serializedContext = try JSONSerialization.jsonObject(with: encoder.encode(context)) as? [String: Any]
+        serializedContext?.removeValue(forKey: "applicationBundleType")
+        let legacyData = try JSONSerialization.data(withJSONObject: serializedContext as Any)
+
+        // When
+        let deserializedContext = try decoder.decode(CrashContext.self, from: legacyData)
+
+        // Then
+        XCTAssertEqual(deserializedContext.applicationBundleType, .iOSApp)
+    }
 }

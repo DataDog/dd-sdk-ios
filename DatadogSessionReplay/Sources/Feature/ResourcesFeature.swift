@@ -26,7 +26,8 @@ internal class ResourcesFeature: DatadogRemoteFeature {
         )
         self.performanceOverride = PerformancePresetOverride(
             maxFileSize: SessionReplay.maxObjectSize,
-            maxObjectSize: SessionReplay.maxObjectSize
+            maxObjectSize: SessionReplay.maxObjectSize,
+            maxFileAgeForRead: 48.hours
         )
     }
 }

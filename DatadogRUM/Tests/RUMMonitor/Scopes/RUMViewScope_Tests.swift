@@ -493,8 +493,7 @@ class RUMViewScope_Tests: XCTestCase {
 
     func testWhenViewUpdatesIsEnabled_everyFullEventIsMarkedAsDeltaBaseline() throws {
         // Every full `RUMViewEvent` written under `.viewUpdates` — the initial baseline and any later
-        // resync — must be marked `isDeltaBaseline` so `RUMViewEventsFilter` never collapses it as
-        // redundant, since deltas in the same upload batch may be diffed against it.
+        // resync — must be marked `isDeltaBaseline`, since deltas may be diffed against it.
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
@@ -529,9 +528,62 @@ class RUMViewScope_Tests: XCTestCase {
             writer: writer
         )
 
-        let fullEventMetadata = writer.metadata(ofType: RUMViewEvent.Metadata.self)
+        let fullEventMetadata = writer.metadata(ofType: RUMViewEvent.Metadata.self).filter { $0.isViewUpdate != true }
         XCTAssertEqual(fullEventMetadata.count, 2, "Both the initial baseline and the resync should carry metadata")
         XCTAssertTrue(fullEventMetadata.allSatisfy { $0.isDeltaBaseline == true }, "All full events under viewUpdates must be marked as delta baselines")
+    }
+
+    func testWhenViewUpdatesIsEnabled_everyDeltaCarriesViewUpdateMetadata() throws {
+        // Deltas must carry metadata so `RUMViewEventsFilter` can drop the ones superseded by a newer
+        // full event of the same view in the same upload batch (RUM-13988).
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockWith(),
+            identity: .mockViewIdentifier(),
+            path: .mockAny(),
+            name: .mockAny(),
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: INVMetricMock(),
+            viewIndexInSession: 1
+        )
+
+        XCTAssertTrue(scope.process(command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()), context: context, writer: writer))
+
+        // Exceed `maxConsecutiveViewUpdates` so the batch contains deltas on both sides of a resync.
+        for index in 0..<(RUMViewScope.Constants.maxConsecutiveViewUpdates * 2) {
+            currentTime.addTimeInterval(1)
+            _ = scope.process(
+                command: RUMAddViewTimingCommand.mockWith(time: currentTime, timingName: "timing-\(index)"),
+                context: context,
+                writer: writer
+            )
+        }
+
+        XCTAssertEqual(writer.events.count, writer.metadata.count)
+        let updatesWithMetadata: [(RUMViewUpdateEvent, RUMViewEvent.Metadata)] = zip(writer.events, writer.metadata).compactMap { event, metadata in
+            guard let update = event as? RUMViewUpdateEvent, let metadata = metadata as? RUMViewEvent.Metadata else {
+                return nil
+            }
+            return (update, metadata)
+        }
+
+        XCTAssertGreaterThan(updatesWithMetadata.count, Int(RUMViewScope.Constants.maxConsecutiveViewUpdates))
+        XCTAssertEqual(updatesWithMetadata.count, writer.events(ofType: RUMViewUpdateEvent.self).count, "Every delta must carry metadata")
+        updatesWithMetadata.forEach { update, metadata in
+            XCTAssertEqual(metadata.isViewUpdate, true)
+            XCTAssertEqual(metadata.id, update.view.id)
+            XCTAssertEqual(metadata.documentVersion, update.dd.documentVersion)
+            XCTAssertEqual(metadata.hasAccessibility, update.view.accessibility != nil)
+        }
+
+        let fullEventsMetadata: [RUMViewEvent.Metadata] = zip(writer.events, writer.metadata).compactMap { event, metadata in
+            event is RUMViewEvent ? metadata as? RUMViewEvent.Metadata : nil
+        }
+        XCTAssertTrue(fullEventsMetadata.allSatisfy { $0.isViewUpdate == nil }, "Full events must not be marked as view updates")
     }
 
     // MARK: - Custom Timings

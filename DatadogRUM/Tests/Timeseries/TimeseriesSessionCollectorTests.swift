@@ -291,6 +291,40 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(event.timeseries.data.timestamps[0], event.timeseries.start)
     }
 
+    func testWhenAppRunsAsAppExtension_itSendsIsMainProcessFalseOnMemoryAndCpuEvents() throws {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let scope = FeatureScopeMock(
+            context: .mockWith(applicationBundleType: .iOSAppExtension, additionalContext: [RUMCoreContext.mockAny()])
+        )
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: scope,
+            batchSize: 2,
+            samplingInterval: 0.05,
+            cpuUsageProvider: { 42.5 },
+            totalRAM: 4_000_000_000
+        )
+        let contextReader = RUMActiveContextReaderMock()
+        collector.activeContextReader = contextReader
+
+        // When
+        let expectation = self.expectation(description: "batch written")
+        expectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
+
+        collector.start(sessionID: "session-ext", applicationID: "app-ext", sessionType: .user)
+        waitForExpectations(timeout: 2)
+        collector.stop(sessionID: "session-ext")
+
+        // Then
+        let memoryEvent = try XCTUnwrap(scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).first)
+        XCTAssertEqual(memoryEvent.session.isMainProcess, false)
+
+        let cpuEvent = try XCTUnwrap(scope.eventsWritten(ofType: RUMTimeseriesCpuEvent.self).first)
+        XCTAssertEqual(cpuEvent.session.isMainProcess, false)
+    }
+
     func testWhenContextSourceIsReactNative_itUsesContextSource() {
         // Given
         memoryReader.vitalData = 1_000_000
