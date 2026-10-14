@@ -930,12 +930,34 @@ class ClientStatsFeatureTests: XCTestCase {
         // When
         let request = try builder.request(for: [legacy, makeEvent(from: current)], with: .mockAny(), execution: .init(previousResponseCode: nil, attempt: 0))
 
-        // Then
+        // Then: the legacy payload is sent last.
         let payloads = try allClientStatsPayloads(in: request)
-        XCTAssertEqual(payloads.map { $0["RuntimeID"] as? String }, ["runtime-id", "stored-runtime-id"])
-        XCTAssertEqual(payloads.map { $0["Sequence"] as? Int64 }, [1, 7])
+        XCTAssertEqual(payloads.map { $0["RuntimeID"] as? String }, ["stored-runtime-id", "runtime-id"])
+        XCTAssertEqual(payloads.map { $0["Sequence"] as? Int64 }, [7, 1])
         XCTAssertEqual(provider.next(), 2, "Only the legacy bucket took a sequence number at upload")
         XCTAssertEqual(try decodeEnvelope(in: request)["SplitPayload"] as? Bool, false)
+    }
+
+    func testWhenALegacyBucketIsStoredBeforeACurrentOneOfTheSameRuntime_sequencesStillIncrease() throws {
+        // Given: after an upgrade, a bucket stored by an earlier build sits before one this runtime stored.
+        let (core, stats) = try enableClientStats()
+        stats.concentrator.add(.mockWith(startTime: 0, duration: 100))
+        stats.flushStats(force: true)
+        let stored = try XCTUnwrap(core.exportedBuckets.first?.payload)
+        let legacy = Event(data: Data(#"{"start":1000,"duration":10000000000,"stats":[],"env":"prod","version":"1.0.0","service":"app"}"#.utf8))
+        let builder = try XCTUnwrap(stats.requestBuilder as? StatsRequestBuilder)
+
+        // When
+        let request = try builder.request(
+            for: [legacy] + core.exportedBuckets.map(makeEvent(from:)),
+            with: .mockAny(),
+            execution: .init(previousResponseCode: nil, attempt: 0)
+        )
+
+        // Then: both payloads carry this runtime's ID, and the legacy one comes after with a higher number.
+        let payloads = try allClientStatsPayloads(in: request)
+        XCTAssertEqual(payloads.map { $0["RuntimeID"] as? String }, [stored.runtimeID, stored.runtimeID])
+        XCTAssertEqual(payloads.map { $0["Sequence"] as? Int64 }, [Int64(stored.sequence), Int64(stored.sequence) + 1])
     }
 
     func testWhenBatchHoldsOnlyWholeBuckets_itDoesNotMarkThePayloadSplit() throws {
