@@ -1,10 +1,16 @@
 # Unreleased
 
 - [FEATURE] Support obfuscated keys in precomputed Flags assignments without changing evaluation calls or telemetry keys. The preview snapshot API returns `nil` for obfuscated assignments.
+- [FIX] Prevent incorrect RUM session expiration caused by device clock changes or cross-platform timestamp differences. See [#3288][]
+- [IMPROVEMENT] Flags: Report `CACHED` for disk-restored assignments and use that effective reason for evaluation telemetry.
+- [FEATURE] Add `spanCustomization` to `Trace.Configuration.URLSessionTracking` to customize spans created for intercepted network requests, for example to add request-based tags. See [#2741][]
+- [IMPROVEMENT] Include the application build number (`CFBundleVersion`) in trace spans as `build_version`. See [#3286][]
 - [FIX] Keep automatic URLSession spans linked to the RUM view and session captured when each request starts. See [#3220][]
 - [FIX] Reduce the risk of SwiftUI crashes during Session Replay recording by avoiding copies of unrelated view cache data. See [#3245][]
 - [FIX] Ensure repeated or concurrent URLSession task resumes apply request customization and start tracking only once per SDK instance. See [#3215][]
 - [IMPROVEMENT] Stop resolving `dd-sdk-swift-testing` when integrating the SDK through Swift Package Manager. See [#3282][]
+- [IMPROVEMENT] Stop uploading RUM view update events that a newer full view event in the same batch already covers. This reduces view update payload size. See [#3285][]
+- [FIX] Report failed URLSession body transfers as network errors with their received HTTP status, and keep late Resource completions from changing another view's action counters. See [#3218][]
 
 # 3.19.0 / 30-09-2026
 
@@ -1207,6 +1213,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#2759]: https://github.com/DataDog/dd-sdk-ios/pull/2759
 [#2761]: https://github.com/DataDog/dd-sdk-ios/pull/2761
 [#2740]: https://github.com/DataDog/dd-sdk-ios/pull/2740
+[#2741]: https://github.com/DataDog/dd-sdk-ios/pull/2741
 [#2750]: https://github.com/DataDog/dd-sdk-ios/pull/2750
 [#2714]: https://github.com/DataDog/dd-sdk-ios/pull/2714
 [#2751]: https://github.com/DataDog/dd-sdk-ios/pull/2751
@@ -1288,7 +1295,11 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3237]: https://github.com/DataDog/dd-sdk-ios/pull/3237
 [#3245]: https://github.com/DataDog/dd-sdk-ios/pull/3245
 [#3215]: https://github.com/DataDog/dd-sdk-ios/pull/3215
+[#3286]: https://github.com/DataDog/dd-sdk-ios/pull/3286
+[#3288]: https://github.com/DataDog/dd-sdk-ios/pull/3288
 [#3282]: https://github.com/DataDog/dd-sdk-ios/pull/3282
+[#3285]: https://github.com/DataDog/dd-sdk-ios/pull/3285
+[#3218]: https://github.com/DataDog/dd-sdk-ios/pull/3218
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

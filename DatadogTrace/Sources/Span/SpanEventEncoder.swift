@@ -69,6 +69,8 @@ public struct SpanEvent: Encodable {
     public let tracerVersion: String
     /// The client application version.
     public let applicationVersion: String
+    /// The client application build number.
+    internal let applicationBuildNumber: String
     /// The network connection information from the moment the span was completed.
     public let networkConnectionInfo: NetworkConnectionInfo?
     /// The mobile carrier information from the moment the span was completed.
@@ -142,6 +144,7 @@ internal struct SpanEventEncoder {
 
         case source = "meta._dd.source"
         case applicationVersion = "meta.version"
+        case applicationBuildNumber = "meta.build_version"
         case tracerVersion = "meta.tracer.version"
 
         case origin = "meta._dd.origin"
@@ -225,6 +228,7 @@ internal struct SpanEventEncoder {
         try container.encode(span.source, forKey: .source)
         try container.encode(span.tracerVersion, forKey: .tracerVersion)
         try container.encode(span.applicationVersion, forKey: .applicationVersion)
+        try container.encode(span.applicationBuildNumber, forKey: .applicationBuildNumber)
 
         try span.origin.dd.ifNotNil { try container.encode($0, forKey: .origin) }
 

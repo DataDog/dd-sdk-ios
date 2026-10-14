@@ -126,6 +126,8 @@ final class FlagKeyObfuscationTests: XCTestCase {
     }
 
     func testConcurrentReadersWithPlaintextAndObfuscatedAssignments() throws {
+        var expected = assignment
+        expected.reason = "CACHED"
         for encoded in [false, true] {
             // Given: populated assignments but an empty lookup-hash cache.
             let response = try decode(flags: [encoded ? digest : "flag": assignment], metadata: encoded ? metadata() : [:])
@@ -137,7 +139,7 @@ final class FlagKeyObfuscationTests: XCTestCase {
             // When / Then: concurrent misses populate hashes, then repeated reads reuse them.
             DispatchQueue.concurrentPerform(iterations: 16) { _ in
                 for _ in 0..<128 {
-                    XCTAssertEqual(repository.flagAssignment(for: "flag"), assignment)
+                    XCTAssertEqual(repository.flagAssignment(for: "flag"), expected)
                     XCTAssertNil(repository.flagAssignment(for: "missing"))
                 }
             }
@@ -455,13 +457,15 @@ final class FlagKeyObfuscationTests: XCTestCase {
     }
 
     func testMalformedRefreshKeepsOnlyMatchingCachedContext() throws {
+        var expected = assignment
+        expected.reason = "CACHED"
         let response = try decode(flags: [digest: assignment], metadata: metadata())
         let scope = FeatureScopeMock(context: .mockWith(source: "ios"))
         scope.flagsDataStore.setFlagsData(state(response), forClientNamed: "client")
         let malformed = try payload(flags: [digest: assignment], metadata: ["obfuscated": true])
         let repository = makeRepository(scope: scope, fetcher: makeFetcher(scope: scope) { malformed })
         scope.dataStore.flush()
-        XCTAssertEqual(repository.flagAssignment(for: "flag"), assignment)
+        XCTAssertEqual(repository.flagAssignment(for: "flag"), expected)
 
         for context in [FlagsEvaluationContext.mockAny(), .init(targetingKey: "different", attributes: [:])] {
             let completed = expectation(description: "invalid response")
@@ -474,7 +478,7 @@ final class FlagKeyObfuscationTests: XCTestCase {
             waitForExpectations(timeout: 1)
             if context == .mockAny() {
                 XCTAssertEqual(repository.state.currentState, .stale)
-                XCTAssertEqual(repository.flagAssignment(for: "flag"), assignment)
+                XCTAssertEqual(repository.flagAssignment(for: "flag"), expected)
             } else {
                 XCTAssertEqual(repository.state.currentState, .error)
                 XCTAssertNil(repository.flagAssignment(for: "flag"))
@@ -483,6 +487,8 @@ final class FlagKeyObfuscationTests: XCTestCase {
     }
 
     func testDelayedSourceDoesNotDelayDiskCompletionOrExposeEncodedCache() throws {
+        var expected = assignment
+        expected.reason = "CACHED"
         let response = try decode(flags: [digest: assignment], metadata: metadata())
         for source in ["ios", "react-native", "future-bridge"] {
             let scope = DeferredFlagsContextScope()
@@ -501,10 +507,10 @@ final class FlagKeyObfuscationTests: XCTestCase {
             repository.setEvaluationContext(.mockAny()) { _ in }
             XCTAssertNotNil(fetchCompletion, "Disk completion must not depend on the context callback")
             scope.completeContext(source: source)
-            XCTAssertEqual(repository.flagAssignment(for: "flag"), source == "ios" ? assignment : nil)
+            XCTAssertEqual(repository.flagAssignment(for: "flag"), source == "ios" ? expected : nil)
             fetchCompletion?(.failure(.invalidResponse))
             XCTAssertEqual(repository.state.currentState, source == "ios" ? .stale : .error)
-            XCTAssertEqual(repository.flagAssignment(for: "flag"), source == "ios" ? assignment : nil)
+            XCTAssertEqual(repository.flagAssignment(for: "flag"), source == "ios" ? expected : nil)
         }
     }
 

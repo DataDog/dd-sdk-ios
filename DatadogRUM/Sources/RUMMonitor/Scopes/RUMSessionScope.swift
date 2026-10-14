@@ -15,14 +15,16 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         static let sessionMaxDuration: TimeInterval = 4 * 60 * 60 // 4 hours
     }
 
-    /// Whether a session is timed out due to inactivity, given the time of its last interaction.
-    static func hasTimedOut(lastInteractionTime: Date, currentTime: Date) -> Bool {
-        currentTime.timeIntervalSince(lastInteractionTime) >= Constants.sessionTimeoutDuration
+    /// Whether a session is timed out due to inactivity, given the clock reading of its last interaction.
+    /// Both readings come from `MonotonicClock`, never from `RUMCommand.time`.
+    static func hasTimedOut(lastInteraction: TimeInterval, now: TimeInterval) -> Bool {
+        now - lastInteraction >= Constants.sessionTimeoutDuration
     }
 
-    /// Whether a session has exceeded its maximum duration, given its start time.
-    static func hasExpired(sessionStartTime: Date, currentTime: Date) -> Bool {
-        currentTime.timeIntervalSince(sessionStartTime) >= Constants.sessionMaxDuration
+    /// Whether a session has exceeded its maximum duration, given the clock reading of its start.
+    /// Both readings come from `MonotonicClock`, never from `RUMCommand.time`.
+    static func hasExpired(sessionStart: TimeInterval, now: TimeInterval) -> Bool {
+        now - sessionStart >= Constants.sessionMaxDuration
     }
 
     /// The reason of ending a session.
@@ -110,9 +112,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     /// If this is the very first session created in the current app process (`false` for session created upon expiration of a previous one).
     let isInitialSession: Bool
     /// The start time of this Session, measured in device date. In initial session this is the time of SDK init.
+    /// Reported in events; `sessionStart` is what bounds the session's lifetime.
     let sessionStartTime: Date
-    /// Time of the last RUM interaction noticed by this Session.
-    private(set) var lastInteractionTime: Date
+    /// Captured monotonic time of the command starting this session, used to measure its maximum duration.
+    let sessionStart: TimeInterval
+    /// Captured monotonic time of the last RUM interaction, used to measure inactivity.
+    private(set) var lastInteraction: TimeInterval
     /// Indicates whether the "ApplicationLaunch" view was active when the app entered the background.
     private var hadApplicationLaunchViewWhenEnteringBackground: Bool? = nil
     /// The reason why this session has ended or `nil` if it is still active.
@@ -136,6 +141,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         isInitialSession: Bool,
         parent: RUMContextProvider,
         startTime: Date,
+        monotonicStartTime: TimeInterval,
         startPrecondition: RUMSessionPrecondition?,
         context: DatadogContext,
         dependencies: RUMScopeDependencies,
@@ -159,7 +165,10 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         self.sessionUUID = sessionUUID
         self.isInitialSession = isInitialSession
         self.sessionStartTime = startTime
-        self.lastInteractionTime = startTime
+        // Use the starting command's captured monotonic time, so queue latency does not shift the
+        // session's lifetime. `startTime` remains the wall-clock date reported in events.
+        self.sessionStart = monotonicStartTime
+        self.lastInteraction = self.sessionStart
         self.trackBackgroundEvents = dependencies.trackBackgroundEvents
         self.endReason = nil
         self.state = RUMSessionState(
@@ -213,6 +222,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     convenience init(
         from expiredSession: RUMSessionScope,
         startTime: Date,
+        monotonicStartTime: TimeInterval,
         startPrecondition: RUMSessionPrecondition?,
         context: DatadogContext,
         transferActiveView: Bool,
@@ -223,6 +233,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             isInitialSession: expiredSession.state.isInitialSession && !expiredSession.state.hasTrackedAnyView,
             parent: expiredSession.parent,
             startTime: startTime,
+            monotonicStartTime: monotonicStartTime,
             startPrecondition: startPrecondition,
             context: context,
             dependencies: expiredSession.dependencies,
@@ -277,17 +288,29 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     // MARK: - RUMScope
 
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
-        if hasTimedOut(currentTime: command.time) {
+        process(command: command, monotonicTime: dependencies.monotonicClock.elapsedTime, context: context, writer: writer)
+    }
+
+    /// Processes a command using its captured monotonic time to evaluate session lifetime.
+    /// - Parameter monotonicTime: The monotonic clock reading captured before queueing or buffering.
+    func process(command: RUMCommand, monotonicTime: TimeInterval, context: DatadogContext, writer: Writer) -> Bool {
+        let command = command.resolvingResourceOwners(in: viewScopes)
+        // Use monotonic time captured before queueing, independently of processing delays and
+        // `command.time`, which may hold a cross-platform SDK's timestamp.
+        let now = monotonicTime
+
+        if hasTimedOut(now: now) {
             endReason = .timeOut
             return false // end this session (no longer keep the session scope)
         }
-        if hasExpired(currentTime: command.time) {
+        if hasExpired(now: now) {
             endReason = .maxDuration
             return false // end this session (no longer keep the session scope)
         }
 
         if command.isUserInteraction {
-            lastInteractionTime = command.time
+            // Concurrent callers can enqueue commands in a different order from their receipt times.
+            lastInteraction = max(lastInteraction, now)
         }
 
         if !sampler.isSampled {
@@ -539,11 +562,11 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         )
     }
 
-    private func hasTimedOut(currentTime: Date) -> Bool {
-        Self.hasTimedOut(lastInteractionTime: lastInteractionTime, currentTime: currentTime)
+    private func hasTimedOut(now: TimeInterval) -> Bool {
+        Self.hasTimedOut(lastInteraction: lastInteraction, now: now)
     }
 
-    private func hasExpired(currentTime: Date) -> Bool {
-        Self.hasExpired(sessionStartTime: sessionStartTime, currentTime: currentTime)
+    private func hasExpired(now: TimeInterval) -> Bool {
+        Self.hasExpired(sessionStart: sessionStart, now: now)
     }
 }

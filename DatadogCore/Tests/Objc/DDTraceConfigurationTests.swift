@@ -54,6 +54,35 @@ class DDTraceConfigurationTests: XCTestCase {
         DDAssertReflectionEqual(swift.urlSessionTracking, .init(firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: ["foo.com": [.b3, .datadog]], sampleRate: 99)))
     }
 
+    func testSetSpanCustomization() {
+        let expectation = expectation(description: "Call span customization")
+        let url: URL = .mockRandom()
+        let httpBody: Data = .mockRandom()
+        let response: HTTPURLResponse = .mockResponseWith(statusCode: 200)
+        let error = ErrorMock("error")
+
+        let tracking = objc_TraceURLSessionTracking(firstPartyHostsTracing: .init(hosts: ["foo.com"]))
+        tracking.setSpanCustomization { objcRequest, objcSpan, objcResponse, objcError in
+            XCTAssertEqual(objcRequest.url, url)
+            XCTAssertEqual(objcRequest.httpMethod, "POST")
+            XCTAssertEqual(objcRequest.httpBody, httpBody)
+            XCTAssertTrue((objcSpan as? objc_SpanObjc)?.swiftSpan is DDNoopSpan)
+            XCTAssertIdentical(objcResponse, response)
+            XCTAssertEqual((objcError as? ErrorMock)?.description, error.description)
+            expectation.fulfill()
+        }
+        objc.setURLSessionTracking(tracking)
+
+        swift.urlSessionTracking?.spanCustomization?(
+            .init(url: url, httpMethod: "POST", httpBody: httpBody),
+            DDNoopSpan(),
+            response,
+            error
+        )
+
+        waitForExpectations(timeout: 1)
+    }
+
     func testBundleWithRUM() {
         let random: Bool = .mockRandom()
         objc.bundleWithRumEnabled = random

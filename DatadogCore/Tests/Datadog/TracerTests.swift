@@ -38,6 +38,7 @@ class TracerTests: XCTestCase {
             service: "default-service-name",
             env: "custom",
             version: "1.0.0",
+            buildNumber: "42.1",
             source: "abc",
             sdkVersion: "1.2.3",
             ciAppOrigin: nil,
@@ -81,6 +82,7 @@ class TracerTests: XCTestCase {
               "type": "custom",
               "meta.tracer.version": "1.2.3",
               "meta.version": "1.0.0",
+              "meta.build_version": "42.1",
               "meta.device": {
                 "architecture": "arm64",
                 "battery_level": 0.5,
@@ -112,6 +114,18 @@ class TracerTests: XCTestCase {
           "env": "custom"
         }
         """)
+    }
+
+    func testSendingSpanWithCustomBuildVersionTag() throws {
+        core.context = .mockWith(buildNumber: "42")
+        Trace.enable(with: config, in: core)
+
+        let span = Tracer.shared(in: core).startSpan(operationName: "operation")
+        span.setTag(key: "build_version", value: "custom-build")
+        span.finish()
+
+        let spanMatcher = try core.waitAndReturnSpanMatchers()[0]
+        XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.build_version"), "custom-build")
     }
 
     func testSendingSpanWithCustomizedTracer() throws {
