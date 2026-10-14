@@ -86,7 +86,10 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
         featureScope.eventWriteContext { [metricController, runtimeID, sequenceNumbers] _, writer in
             var oversizedGroups: [ExportedGroupedStats] = []
             for bucket in exportedBuckets {
-                let split = bucket.split(toFit: Self.maxStoredBucketSize, runtimeID: runtimeID, sequenceNumbers: sequenceNumbers)
+                // Identify each payload here, in write order, so sequence numbers increase in the order
+                // payloads are stored and stay the same across retries and restarts.
+                let payload = ExportedBucket.PayloadIdentity(runtimeID: runtimeID, sequence: sequenceNumbers.next())
+                let split = bucket.assigning(payload).split(toFit: Self.maxStoredBucketSize)
                 for piece in split.pieces {
                     writer.write(value: piece)
                 }
