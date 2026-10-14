@@ -38,10 +38,10 @@ final class FlagKeyObfuscationTests: XCTestCase {
         ]
         for (key, expectedDigest) in vectors {
             let response = try decode(flags: [expectedDigest: assignment], metadata: metadata())
-            let data = state(response)
+            var cached = FlagsRepository.CachedFlagsData(data: state(response))
             XCTAssertEqual(response.obfuscation?.lookupKey(for: key), expectedDigest)
-            XCTAssertEqual(data.flagAssignment(for: key), assignment)
-            XCTAssertNil(data.flagAssignment(for: expectedDigest), "Do not retry lookup as plaintext")
+            XCTAssertEqual(cached.flagAssignment(for: key), assignment)
+            XCTAssertNil(cached.flagAssignment(for: expectedDigest), "Do not retry lookup as plaintext")
         }
     }
 
@@ -155,9 +155,10 @@ final class FlagKeyObfuscationTests: XCTestCase {
             flags: [digest: assignment, encoding.lookupKey(for: "new-flag"): assignment, encoding.lookupKey(for: "future"): unknown],
             metadata: metadata().merging(["future-field": ["enabled": true]]) { _, new in new }
         )
-        XCTAssertEqual(state(response).flagAssignment(for: "flag"), assignment)
-        XCTAssertEqual(state(response).flagAssignment(for: "new-flag"), assignment)
-        XCTAssertNil(state(response).flagAssignment(for: "future"))
+        var cached = FlagsRepository.CachedFlagsData(data: state(response))
+        XCTAssertEqual(cached.flagAssignment(for: "flag"), assignment)
+        XCTAssertEqual(cached.flagAssignment(for: "new-flag"), assignment)
+        XCTAssertNil(cached.flagAssignment(for: "future"))
         XCTAssertNotNil(response.failedFlags[encoding.lookupKey(for: "future")])
     }
 
@@ -271,7 +272,8 @@ final class FlagKeyObfuscationTests: XCTestCase {
             let response = try decode(flags: ["flag": assignment], metadata: metadata)
             XCTAssertNil(response.obfuscation)
             let restored = try JSONDecoder().decode(FlagsData.self, from: JSONEncoder().encode(state(response)))
-            XCTAssertEqual(restored.flagAssignment(for: "flag"), assignment)
+            var cached = FlagsRepository.CachedFlagsData(data: restored)
+            XCTAssertEqual(cached.flagAssignment(for: "flag"), assignment)
         }
     }
 
@@ -286,7 +288,8 @@ final class FlagKeyObfuscationTests: XCTestCase {
         XCTAssertNil(diskJSON["lookupKeys"], "Lookup hashes remain in memory")
         let restored = try JSONDecoder().decode(FlagsData.self, from: encoded)
         XCTAssertEqual(restored, data)
-        XCTAssertEqual(restored.flagAssignment(for: "flag"), assignment)
+        var cached = FlagsRepository.CachedFlagsData(data: restored)
+        XCTAssertEqual(cached.flagAssignment(for: "flag"), assignment)
         XCTAssertEqual(Array(restored.flags.keys), [digest])
     }
 
@@ -457,7 +460,8 @@ final class FlagKeyObfuscationTests: XCTestCase {
             let restored = try JSONDecoder().decode(FlagsData.self, from: persisted)
             XCTAssertEqual(restored.obfuscation, encoding)
             XCTAssertEqual(Array(restored.flags.keys), [key])
-            XCTAssertEqual(restored.flagAssignment(for: "flag"), assignment)
+            var cached = FlagsRepository.CachedFlagsData(data: restored)
+            XCTAssertEqual(cached.flagAssignment(for: "flag"), assignment)
         }
         XCTAssertEqual(evaluations.logEvaluationCalls.map(\.flagKey), ["flag", "flag", "flag"])
         XCTAssertEqual(evaluations.logEvaluationCalls.map(\.assignment.serialID), [123, 123, 123])

@@ -18,8 +18,4 @@ internal struct FlagsData: Equatable, Codable {
         self.date = date
         self.obfuscation = obfuscation
     }
-
-    func flagAssignment(for key: String) -> FlagAssignment? {
-        flags[obfuscation?.lookupKey(for: key) ?? key]
-    }
 }

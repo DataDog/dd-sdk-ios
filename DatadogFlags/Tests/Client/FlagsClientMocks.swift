@@ -168,7 +168,8 @@ final class FlagsRepositoryMock: FlagsRepositoryProtocol {
     }
 
     func flagAssignment(for key: String) -> DatadogFlags.FlagAssignment? {
-        flagsData?.flagAssignment(for: key)
+        var cached = flagsData.map { FlagsRepository.CachedFlagsData(data: $0) }
+        return cached?.flagAssignment(for: key)
     }
 
     func flagAssignments() -> [String: DatadogFlags.FlagAssignment]? {
