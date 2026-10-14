@@ -477,7 +477,8 @@ class ClientStatsFeatureTests: XCTestCase {
                     serviceSource: string
                 )
                 XCTAssertGreaterThanOrEqual(group.estimatedJSONSize(), try JSONEncoder.dd.default().encode(group).count)
-                for piece in [nil, ExportedBucket.Piece(runtimeID: string, sequence: .max, count: .max)] {
+                let metadata: [(ExportedBucket.PayloadIdentity?, Int?)] = [(nil, nil), (.init(runtimeID: string, sequence: .max), .max)]
+                for (payload, pieceCount) in metadata {
                     let bucket = ExportedBucket(
                         start: .max,
                         duration: .max,
@@ -485,7 +486,8 @@ class ClientStatsFeatureTests: XCTestCase {
                         env: string,
                         version: string,
                         service: string,
-                        piece: piece
+                        payload: payload,
+                        pieceCount: pieceCount
                     )
                     XCTAssertGreaterThanOrEqual(bucket.estimatedJSONSize(), try encodedSize(of: bucket))
                 }
@@ -536,8 +538,9 @@ class ClientStatsFeatureTests: XCTestCase {
 
     func testWhenBucketFitsTheLimit_splitReturnsItWhole() throws {
         let bucket = makeExportedBucket(groupCount: 3, env: "prod", version: "1.0.0", service: "app")
+            .assigning(.init(runtimeID: splitRuntimeID, sequence: 1))
 
-        let result = split(bucket, toFit: bucket.estimatedJSONSize())
+        let result = bucket.split(toFit: bucket.estimatedJSONSize())
 
         XCTAssertEqual(result.pieces.count, 1)
         XCTAssertFalse(result.pieces[0].isPartial)
@@ -556,7 +559,7 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertTrue(result.oversizedGroups.isEmpty)
         for piece in result.pieces {
             XCTAssertLessThanOrEqual(try encodedSize(of: piece), limit)
-            XCTAssertEqual(piece.piece?.count, result.pieces.count)
+            XCTAssertEqual(piece.pieceCount, result.pieces.count)
             XCTAssertEqual(piece.start, 7_000)
             XCTAssertEqual(piece.duration, bucket.duration)
             XCTAssertEqual(piece.env, "prod")
@@ -656,7 +659,7 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertGreaterThan(pieces.count, 1)
         for piece in pieces {
             XCTAssertLessThanOrEqual(try encodedSize(of: piece), ClientStatsFeature.maxStoredBucketSize)
-            XCTAssertEqual(piece.piece?.count, pieces.count)
+            XCTAssertEqual(piece.pieceCount, pieces.count)
         }
 
         // Then: with each piece in its own request, every request is marked split, keeps the identity,
@@ -680,7 +683,7 @@ class ClientStatsFeatureTests: XCTestCase {
             XCTAssertEqual(wireBuckets.map { $0["Start"] as? Int64 }, [Int64(expected.start)])
             uploadedGroups += try wireBuckets.flatMap { try XCTUnwrap($0["Stats"] as? [Any?]).map(mapFields) }
         }
-        let splitID = try XCTUnwrap(pieces.first?.piece)
+        let splitID = try XCTUnwrap(pieces.first?.payload)
         XCTAssertEqual(fragmentIDs, ["\(splitID.runtimeID)/\(splitID.sequence)"], "Every fragment carries the split's runtime ID and sequence number")
         XCTAssertEqual(uploadedGroups.count, groupCount)
         let uploadedByResource = Dictionary(uniqueKeysWithValues: uploadedGroups.map { ($0["Resource"] as? String ?? "", $0) })
@@ -721,7 +724,8 @@ class ClientStatsFeatureTests: XCTestCase {
             env: "prod",
             version: "1.0.0",
             service: "app",
-            piece: .init(runtimeID: splitRuntimeID, sequence: 1, count: 4)
+            payload: .init(runtimeID: splitRuntimeID, sequence: 1),
+            pieceCount: 4
         ).estimatedJSONSize()
         let pieces = split(window, toFit: onePiecePerGroup).pieces
         XCTAssertEqual(pieces.map(\.stats.count), [1, 1, 1, 1])
@@ -737,7 +741,7 @@ class ClientStatsFeatureTests: XCTestCase {
         let payloads = try allClientStatsPayloads(in: request)
         XCTAssertEqual(payloads.map { $0["Version"] as? String }, ["1.0.0", "1.0.0", "2.0.0"])
         XCTAssertEqual(payloads.map { $0["RuntimeID"] as? String }, [splitRuntimeID, "runtime-id", "runtime-id"])
-        XCTAssertEqual(payloads[0]["Sequence"] as? Int64, Int64(try XCTUnwrap(pieces[0].piece?.sequence)))
+        XCTAssertEqual(payloads[0]["Sequence"] as? Int64, Int64(try XCTUnwrap(pieces[0].payload?.sequence)))
         let splitBuckets = try XCTUnwrap(payloads[0]["Stats"] as? [Any?]).map(mapFields)
         XCTAssertEqual(splitBuckets.map { $0["Start"] as? Int64 }, [1_000])
         XCTAssertEqual(splitBuckets.map { ($0["Stats"] as? [Any?])?.count }, [3])
@@ -754,7 +758,8 @@ class ClientStatsFeatureTests: XCTestCase {
             env: "prod",
             version: "1.0.0",
             service: "app",
-            piece: .init(runtimeID: splitRuntimeID, sequence: 1, count: 4)
+            payload: .init(runtimeID: splitRuntimeID, sequence: 1),
+            pieceCount: 4
         ).estimatedJSONSize()
         let pieces = split(window, toFit: onePiecePerGroup).pieces
         XCTAssertEqual(pieces.count, 4)
@@ -782,13 +787,14 @@ class ClientStatsFeatureTests: XCTestCase {
             env: "prod",
             version: "1.0.0",
             service: "app",
-            piece: .init(runtimeID: splitRuntimeID, sequence: 1, count: 3)
+            payload: .init(runtimeID: splitRuntimeID, sequence: 1),
+            pieceCount: 3
         ).estimatedJSONSize()
         let firstPieces = split(first, toFit: onePiecePerGroup).pieces
         let secondPieces = split(second, toFit: onePiecePerGroup).pieces
         XCTAssertEqual(firstPieces.count, 2)
         XCTAssertEqual(secondPieces.count, 3)
-        XCTAssertNotEqual(firstPieces[0].piece?.sequence, secondPieces[0].piece?.sequence)
+        XCTAssertNotEqual(firstPieces[0].payload?.sequence, secondPieces[0].payload?.sequence)
 
         // When: a batch holds both pieces of the first split and one of the second.
         let partial = try makeRequestBuilder().request(
@@ -822,11 +828,12 @@ class ClientStatsFeatureTests: XCTestCase {
             env: "prod",
             version: "1.0.0",
             service: "app",
-            piece: .init(runtimeID: splitRuntimeID, sequence: 1, count: 2)
+            payload: .init(runtimeID: splitRuntimeID, sequence: 1),
+            pieceCount: 2
         ).estimatedJSONSize()
         let pieces = split(window, toFit: onePiecePerGroup).pieces
         XCTAssertEqual(pieces.count, 2)
-        let splitSequence = Int64(try XCTUnwrap(pieces[0].piece?.sequence))
+        let splitSequence = Int64(try XCTUnwrap(pieces[0].payload?.sequence))
 
         // Same process: the builder shares its runtime ID and sequence provider with the split.
         let sameProcess = makeRequestBuilder(runtimeID: splitRuntimeID, sequenceNumberProvider: sequenceNumbers)
@@ -849,6 +856,86 @@ class ClientStatsFeatureTests: XCTestCase {
         // A whole bucket after the split takes the next sequence number, never the split's.
         let whole = try sameProcess.request(for: [makeEvent(from: makeExportedBucket())], with: .mockAny(), execution: .init(previousResponseCode: nil, attempt: 0))
         XCTAssertEqual(try firstClientStatsPayload(in: whole)["Sequence"] as? Int64, splitSequence + 1)
+    }
+
+    // MARK: - Payload Identity
+
+    func testWhenFlushStoresBuckets_eachGetsAPayloadIdentityIncreasingInWriteOrder() throws {
+        let (core, stats) = try enableClientStats()
+        stats.concentrator.add(.mockWith(startTime: 0, duration: 100, deployment: .mockWith(version: "1.0.0")))
+        stats.concentrator.add(.mockWith(startTime: 0, duration: 100, deployment: .mockWith(version: "2.0.0")))
+        stats.flushStats(force: true)
+        stats.concentrator.add(.mockWith(startTime: 20_000_000_000, duration: 100))
+        stats.flushStats(force: true)
+
+        let payloads = core.exportedBuckets.compactMap(\.payload)
+        XCTAssertEqual(payloads.count, 3, "Every stored bucket has a payload identity")
+        XCTAssertEqual(Set(payloads.map(\.runtimeID)).count, 1)
+        XCTAssertEqual(payloads.map(\.sequence), payloads.map(\.sequence).sorted())
+        XCTAssertEqual(Set(payloads.map(\.sequence)).count, 3)
+    }
+
+    func testWhenAWholeBucketIsStoredBeforeASplitOne_oneRequestCarriesIncreasingSequences() throws {
+        // Given: a whole bucket stored first, then a bucket split into pieces.
+        let (core, stats) = try enableClientStats()
+        stats.concentrator.add(.mockWith(resource: "GET /small", startTime: 0, duration: 100))
+        stats.flushStats(force: true)
+        addWideLatencySpans(to: stats.concentrator, endingAt: 100_000_000_000)
+        stats.flushStats(force: true)
+        let events = core.exportedBuckets.map(makeEvent(from:))
+        XCTAssertGreaterThan(events.count, 2)
+        let builder = try XCTUnwrap(stats.requestBuilder as? StatsRequestBuilder)
+
+        // When
+        let request = try builder.request(for: events, with: .mockAny(), execution: .init(previousResponseCode: nil, attempt: 0))
+
+        // Then: payloads appear in storage order with increasing sequence numbers, and the split is complete.
+        let sequences = try allClientStatsPayloads(in: request).compactMap { $0["Sequence"] as? Int64 }
+        XCTAssertEqual(sequences.count, 2)
+        XCTAssertLessThan(sequences[0], sequences[1])
+        XCTAssertEqual(try decodeEnvelope(in: request)["SplitPayload"] as? Bool, false)
+    }
+
+    func testWhenABatchIsRetriedOrUploadedAfterARestart_itKeepsEveryPayloadIdentity() throws {
+        let (core, stats) = try enableClientStats()
+        stats.concentrator.add(.mockWith(resource: "GET /small", startTime: 0, duration: 100))
+        stats.flushStats(force: true)
+        addWideLatencySpans(to: stats.concentrator, endingAt: 100_000_000_000)
+        stats.flushStats(force: true)
+        let events = core.exportedBuckets.map(makeEvent(from:))
+        let builder = try XCTUnwrap(stats.requestBuilder as? StatsRequestBuilder)
+        let afterRestart = makeRequestBuilder(runtimeID: "new-runtime-id")
+
+        func identities(of request: URLRequest) throws -> [String] {
+            try allClientStatsPayloads(in: request).map { "\($0["RuntimeID"] as? String ?? "")/\($0["Sequence"] as? Int64 ?? -1)" }
+        }
+        let first = try identities(of: builder.request(for: events, with: .mockAny(), execution: .init(previousResponseCode: nil, attempt: 0)))
+        let retry = try identities(of: builder.request(for: events, with: .mockAny(), execution: .init(previousResponseCode: 500, attempt: 1)))
+        let restarted = try identities(of: afterRestart.request(for: events, with: .mockAny(), execution: .init(previousResponseCode: nil, attempt: 0)))
+
+        let stored = core.exportedBuckets.compactMap(\.payload).map { "\($0.runtimeID)/\($0.sequence)" }
+        XCTAssertEqual(first, Array(NSOrderedSet(array: stored)) as? [String])
+        XCTAssertEqual(retry, first)
+        XCTAssertEqual(restarted, first)
+    }
+
+    func testWhenABatchHoldsBucketsStoredByEarlierBuilds_theyTakeTheBuildersIdentityAndOthersKeepTheirs() throws {
+        // Given: a bucket stored before payload identities existed, as raw JSON, next to a current one.
+        let legacy = Event(data: Data(#"{"start":1000,"duration":10000000000,"stats":[],"env":"prod","version":"1.0.0","service":"app"}"#.utf8))
+        let current = makeExportedBucket(start: 2_000, env: "prod", version: "1.0.0", service: "app")
+            .assigning(.init(runtimeID: "stored-runtime-id", sequence: 7))
+        let provider = StatsSequenceNumberProvider()
+        let builder = makeRequestBuilder(runtimeID: "runtime-id", sequenceNumberProvider: provider)
+
+        // When
+        let request = try builder.request(for: [legacy, makeEvent(from: current)], with: .mockAny(), execution: .init(previousResponseCode: nil, attempt: 0))
+
+        // Then
+        let payloads = try allClientStatsPayloads(in: request)
+        XCTAssertEqual(payloads.map { $0["RuntimeID"] as? String }, ["runtime-id", "stored-runtime-id"])
+        XCTAssertEqual(payloads.map { $0["Sequence"] as? Int64 }, [1, 7])
+        XCTAssertEqual(provider.next(), 2, "Only the legacy bucket took a sequence number at upload")
+        XCTAssertEqual(try decodeEnvelope(in: request)["SplitPayload"] as? Bool, false)
     }
 
     func testWhenBatchHoldsOnlyWholeBuckets_itDoesNotMarkThePayloadSplit() throws {
@@ -1093,13 +1180,32 @@ class ClientStatsFeatureTests: XCTestCase {
     private let sequenceNumbers = StatsSequenceNumberProvider()
 
     private func split(_ bucket: ExportedBucket, toFit maxEncodedSize: Int) -> (pieces: [ExportedBucket], oversizedGroups: [ExportedGroupedStats]) {
-        bucket.split(toFit: maxEncodedSize, runtimeID: splitRuntimeID, sequenceNumbers: sequenceNumbers)
+        bucket.assigning(.init(runtimeID: splitRuntimeID, sequence: sequenceNumbers.next())).split(toFit: maxEncodedSize)
     }
 
     /// The number of groups in each bucket of each client payload of `request`.
     private func groupCountsPerPayload(in request: URLRequest) throws -> [[Int?]] {
         try allClientStatsPayloads(in: request).map { payload in
             try XCTUnwrap(payload["Stats"] as? [Any?]).map { try (mapFields($0)["Stats"] as? [Any?])?.count }
+        }
+    }
+
+    private func enableClientStats() throws -> (FeatureRegistrationPassthroughCoreMock, ClientStatsFeature) {
+        let core = FeatureRegistrationPassthroughCoreMock()
+        config.featureFlags[.clientSideStats] = true
+        config.dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
+        Trace.enable(with: config, in: core)
+        return (core, try XCTUnwrap(core.get(feature: ClientStatsFeature.self)))
+    }
+
+    /// 100 groups of fast and very slow successful and failed requests, whose bucket exceeds the storage limit.
+    private func addWideLatencySpans(to concentrator: StatsConcentrator, endingAt end: UInt64) {
+        for group in 0..<StatsConcentrator.defaultMaxGroupsPerBucket {
+            for duration: UInt64 in [1_000_000, 60_000_000_000] {
+                for isError in [false, true] {
+                    concentrator.add(.mockWith(resource: "GET /\(group)", isError: isError, startTime: end - duration, duration: duration))
+                }
+            }
         }
     }
 
