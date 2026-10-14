@@ -10,19 +10,20 @@ import DatadogInternal
 public class FileWriterMock: Writer {
     public init() { }
 
+    /// Recorded event and metadata pairs, stored together so their order stays aligned under concurrent writes.
+    @ReadWriteLock
+    private var records: [(event: Encodable, metadata: Encodable)] = []
+
     /// Recorded events.
-    @ReadWriteLock
-    public private(set) var events: [Encodable] = []
+    public var events: [Encodable] { records.map { $0.event } }
     /// Recorded metadata.
-    @ReadWriteLock
-    public private(set) var metadata: [Encodable] = []
+    public var metadata: [Encodable] { records.map { $0.metadata } }
 
     /// Adds an `Encodable` event to the events stack.
     ///
     /// - Parameter value: The event value to record.
     public func write<T: Encodable, M: Encodable>(value: T, metadata: M, completion: @escaping CompletionHandler) {
-        _events.mutate { $0.append(value) }
-        _metadata.mutate { $0.append(metadata) }
+        _records.mutate { $0.append((event: value, metadata: metadata)) }
         completion()
     }
 
