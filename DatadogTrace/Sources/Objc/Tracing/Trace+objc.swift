@@ -97,6 +97,34 @@ public final class objc_TraceURLSessionTracking: NSObject {
     public func setRedactedStatusCodes(_ codes: [NSNumber]) {
         swiftConfig.redactedStatusCodes = Set(codes.map { Int(truncating: $0) })
     }
+
+    public func setSpanCustomization(_ spanCustomization: @escaping @Sendable (objc_TraceInterceptedRequest, objc_OTSpan, URLResponse?, Error?) -> Void) {
+        swiftConfig.spanCustomization = { request, span, response, error in
+            spanCustomization(
+                objc_TraceInterceptedRequest(swiftType: request),
+                objc_SpanObjc(objcTracer: objc_Tracer(swiftTracer: span.tracer()), swiftSpan: span),
+                response,
+                error
+            )
+        }
+    }
+}
+
+@objc(DDTraceInterceptedRequest)
+@objcMembers
+@_spi(objc)
+public final class objc_TraceInterceptedRequest: NSObject {
+    internal let swiftType: Trace.Configuration.InterceptedRequest
+
+    internal init(swiftType: Trace.Configuration.InterceptedRequest) {
+        self.swiftType = swiftType
+    }
+
+    public var url: URL? { swiftType.url }
+
+    public var httpMethod: String? { swiftType.httpMethod }
+
+    public var httpBody: Data? { swiftType.httpBody }
 }
 
 @objc(DDTrace)
