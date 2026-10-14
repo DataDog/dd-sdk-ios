@@ -446,10 +446,96 @@ class ClientStatsFeatureTests: XCTestCase {
 
     // MARK: - Storage Event Limit
 
+    func testJSONSizeEstimateBoundsEscapingBase64AndMaximumWidthFields() throws {
+        let strings = [
+            "", "ascii /path", "\"\\\n\r\t", "\u{0000}\u{001f}",
+            "é👩🏽‍💻e\u{0301}", "\u{2028}\u{2029}",
+            String(repeating: "\"\\\u{0000}", count: 1_024),
+            String(repeating: "é👩🏽‍💻", count: 512),
+            String(repeating: "long-resource/", count: 1_000)
+        ]
+        for string in strings {
+            for byteCount in [0, 1, 2, 3, 4, 5, 16_384] {
+                let group = ExportedGroupedStats(
+                    service: string,
+                    name: string,
+                    resource: string,
+                    httpStatusCode: .max,
+                    type: string,
+                    spanKind: string,
+                    isTraceRoot: .notSet,
+                    synthetics: false,
+                    hits: .max,
+                    errors: .max,
+                    duration: .max,
+                    topLevelHits: .max,
+                    okSummary: Data(repeating: 0xff, count: byteCount),
+                    errorSummary: Data(repeating: 0, count: byteCount),
+                    peerTags: Array(repeating: string, count: 6),
+                    serviceSource: string
+                )
+                XCTAssertGreaterThanOrEqual(group.estimatedJSONSize(), try JSONEncoder.dd.default().encode(group).count)
+                for piece in [nil, ExportedBucket.Piece(runtimeID: string, sequence: .max, count: .max)] {
+                    let bucket = ExportedBucket(
+                        start: .max,
+                        duration: .max,
+                        stats: [group, group],
+                        env: string,
+                        version: string,
+                        service: string,
+                        piece: piece
+                    )
+                    XCTAssertGreaterThanOrEqual(bucket.estimatedJSONSize(), try encodedSize(of: bucket))
+                }
+            }
+        }
+    }
+
+    func testJSONSizeEstimateSaturatesAtTheBudgetWithoutIntegerOverflow() {
+        let bucket = ExportedBucket(start: 0, duration: 10, stats: [makeGroup(resource: String(repeating: "x", count: 1_000_000))])
+        for limit in [0, 1, 512, 1_024] {
+            XCTAssertEqual(bucket.estimatedJSONSize(limit: limit), limit + 1)
+        }
+        XCTAssertGreaterThan(bucket.estimatedJSONSize(limit: .max), 1_000_000)
+        for limit in [Int.min, -1, 0] {
+            let result = split(bucket, toFit: limit)
+            XCTAssertTrue(result.pieces.isEmpty)
+            XCTAssertEqual(result.oversizedGroups.count, 1)
+        }
+    }
+
+    func testWhenSplittingEscapedStrings_estimatesBoundEveryStoredPiece() throws {
+        let groups = (0..<20).map { makeGroup(resource: "\($0)\"\\\u{0000}é👩🏽‍💻") }
+        let bucket = ExportedBucket(
+            start: .max,
+            duration: .max,
+            stats: groups,
+            env: "prod\n",
+            version: "é",
+            service: "service\\name"
+        )
+        let limit = 2_000
+        let result = split(bucket, toFit: limit)
+        XCTAssertGreaterThan(result.pieces.count, 1)
+        XCTAssertTrue(result.oversizedGroups.isEmpty)
+        XCTAssertEqual(result.pieces.flatMap(\.stats).map(\.resource), groups.map(\.resource))
+        for piece in result.pieces {
+            XCTAssertLessThanOrEqual(try encodedSize(of: piece), piece.estimatedJSONSize())
+            XCTAssertLessThanOrEqual(piece.estimatedJSONSize(), limit)
+        }
+    }
+
+    func testWhenDeploymentMetadataCannotFit_noOversizedPieceIsWritten() {
+        let bucket = makeExportedBucket(groupCount: 3, env: String(repeating: "x", count: 2_000))
+        let result = split(bucket, toFit: 2_000)
+        XCTAssertTrue(result.pieces.isEmpty)
+        XCTAssertEqual(result.oversizedGroups.count, 3)
+    }
+
     func testWhenBucketFitsTheLimit_splitReturnsItWhole() throws {
         let bucket = makeExportedBucket(groupCount: 3, env: "prod", version: "1.0.0", service: "app")
 
-        let result = split(bucket, toFit: try encodedSize(of: bucket))
+        let result = split(bucket, toFit: bucket.estimatedJSONSize())
 
         XCTAssertEqual(result.pieces.count, 1)
         XCTAssertFalse(result.pieces[0].isPartial)
@@ -626,7 +712,7 @@ class ClientStatsFeatureTests: XCTestCase {
 
     func testWhenBatchHoldsPartialBuckets_itMergesEachWindowAndMarksThePayloadSplit() throws {
         let window = makeExportedBucket(start: 1_000, groupCount: 4, env: "prod", version: "1.0.0", service: "app")
-        let onePiecePerGroup = try encodedSize(of: ExportedBucket(
+        let onePiecePerGroup = ExportedBucket(
             start: window.start,
             duration: window.duration,
             stats: [window.stats[0]],
@@ -634,7 +720,7 @@ class ClientStatsFeatureTests: XCTestCase {
             version: "1.0.0",
             service: "app",
             piece: .init(runtimeID: splitRuntimeID, sequence: 1, count: 4)
-        ))
+        ).estimatedJSONSize()
         let pieces = split(window, toFit: onePiecePerGroup).pieces
         XCTAssertEqual(pieces.map(\.stats.count), [1, 1, 1, 1])
         let otherVersion = makeExportedBucket(start: 1_000, groupCount: 1, env: "prod", version: "2.0.0", service: "app")
@@ -659,7 +745,7 @@ class ClientStatsFeatureTests: XCTestCase {
 
     func testWhenBatchHoldsEveryPieceOfAWindow_itMergesThemWithoutMarkingThePayloadSplit() throws {
         let window = makeExportedBucket(start: 1_000, groupCount: 4, env: "prod", version: "1.0.0", service: "app")
-        let onePiecePerGroup = try encodedSize(of: ExportedBucket(
+        let onePiecePerGroup = ExportedBucket(
             start: window.start,
             duration: window.duration,
             stats: [window.stats[0]],
@@ -667,7 +753,7 @@ class ClientStatsFeatureTests: XCTestCase {
             version: "1.0.0",
             service: "app",
             piece: .init(runtimeID: splitRuntimeID, sequence: 1, count: 4)
-        ))
+        ).estimatedJSONSize()
         let pieces = split(window, toFit: onePiecePerGroup).pieces
         XCTAssertEqual(pieces.count, 4)
 
@@ -687,7 +773,7 @@ class ClientStatsFeatureTests: XCTestCase {
         // Given: two exports of one window, for example a periodic flush and a later forced flush.
         let first = makeExportedBucket(start: 1_000, groupCount: 2, env: "prod", version: "1.0.0", service: "app")
         let second = makeExportedBucket(start: 1_000, groupCount: 3, env: "prod", version: "1.0.0", service: "app")
-        let onePiecePerGroup = try encodedSize(of: ExportedBucket(
+        let onePiecePerGroup = ExportedBucket(
             start: 1_000,
             duration: first.duration,
             stats: [first.stats[0]],
@@ -695,7 +781,7 @@ class ClientStatsFeatureTests: XCTestCase {
             version: "1.0.0",
             service: "app",
             piece: .init(runtimeID: splitRuntimeID, sequence: 1, count: 3)
-        ))
+        ).estimatedJSONSize()
         let firstPieces = split(first, toFit: onePiecePerGroup).pieces
         let secondPieces = split(second, toFit: onePiecePerGroup).pieces
         XCTAssertEqual(firstPieces.count, 2)
@@ -727,7 +813,7 @@ class ClientStatsFeatureTests: XCTestCase {
 
     func testWhenSplitPiecesAreUploadedSeparatelyRetriedOrAfterARestart_theyKeepTheSplitsPayloadIdentity() throws {
         let window = makeExportedBucket(start: 1_000, groupCount: 2, env: "prod", version: "1.0.0", service: "app")
-        let onePiecePerGroup = try encodedSize(of: ExportedBucket(
+        let onePiecePerGroup = ExportedBucket(
             start: 1_000,
             duration: window.duration,
             stats: [window.stats[0]],
@@ -735,7 +821,7 @@ class ClientStatsFeatureTests: XCTestCase {
             version: "1.0.0",
             service: "app",
             piece: .init(runtimeID: splitRuntimeID, sequence: 1, count: 2)
-        ))
+        ).estimatedJSONSize()
         let pieces = split(window, toFit: onePiecePerGroup).pieces
         XCTAssertEqual(pieces.count, 2)
         let splitSequence = Int64(try XCTUnwrap(pieces[0].piece?.sequence))
