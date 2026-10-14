@@ -16,12 +16,14 @@ internal protocol ResourcesWriting {
 
 internal class ResourcesWriter: ResourcesWriting {
     private let scope: FeatureScope
+    private let availabilityStore: ResourceAvailabilityStore
 
     /// Identifiers scheduled for writing during this feature's lifetime.
-    private var scheduledIdentifiers = Set<String>()
+    private var scheduledIdentifiers: [String: Set<String>] = [:]
 
-    init(scope: FeatureScope) {
+    init(scope: FeatureScope, availabilityStore: ResourceAvailabilityStore) {
         self.scope = scope
+        self.availabilityStore = availabilityStore
 
         scope.dataStore.removeValue(forKey: Constants.legacyResourcesKey)
         scope.dataStore.removeValue(forKey: Constants.legacyCreationKey)
@@ -36,7 +38,10 @@ internal class ResourcesWriter: ResourcesWriting {
             }
 
             for resource in resources {
-                guard self.scheduledIdentifiers.insert(resource.identifier).inserted else {
+                guard
+                    !self.availabilityStore.contains(resource.identifier, forApplicationID: resource.applicationID),
+                    self.scheduledIdentifiers[resource.applicationID, default: []].insert(resource.identifier).inserted
+                else {
                     continue
                 }
                 recordWriter.write(value: resource)
@@ -47,6 +52,12 @@ internal class ResourcesWriter: ResourcesWriting {
     private enum Constants {
         static let legacyResourcesKey = "known-resources"
         static let legacyCreationKey = "store-creation"
+    }
+}
+
+extension EnrichedResource {
+    fileprivate var applicationID: String {
+        context.application.id
     }
 }
 #endif

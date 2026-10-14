@@ -14,15 +14,19 @@ import DatadogInternal
 class ResourcesWriterTests: XCTestCase {
     let resources: [EnrichedResource] = [.mockWith(identifier: "1"), .mockWith(identifier: "2")]
     var scopeMock: FeatureScopeMock! // swiftlint:disable:this implicitly_unwrapped_optional
+    let dateProvider = DateProviderMock(now: Date(timeIntervalSince1970: 1_000))
+    var availabilityStore: ResourceAvailabilityStore! // swiftlint:disable:this implicitly_unwrapped_optional
     var writer: ResourcesWriter! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         scopeMock = FeatureScopeMock()
-        writer = ResourcesWriter(scope: scopeMock)
+        availabilityStore = ResourceAvailabilityStore(scope: scopeMock, dateProvider: dateProvider)
+        writer = ResourcesWriter(scope: scopeMock, availabilityStore: availabilityStore)
     }
 
     override func tearDown() {
         writer = nil
+        availabilityStore = nil
         scopeMock = nil
     }
 
@@ -41,11 +45,43 @@ class ResourcesWriterTests: XCTestCase {
         writer.write(resources: resources)
 
         // When
-        writer = ResourcesWriter(scope: scopeMock)
+        writer = ResourcesWriter(scope: scopeMock, availabilityStore: availabilityStore)
         writer.write(resources: resources)
 
         // Then
         XCTAssertEqual(scopeMock.eventsWritten(ofType: EnrichedResource.self), resources + resources)
+    }
+
+    func test_whenConfirmationExpires_itWritesTheResource() {
+        // Given
+        let resource: EnrichedResource = .mockAny()
+        availabilityStore.insert([resource.identifier], forApplicationID: resource.context.application.id)
+        writer.write(resources: [resource])
+        XCTAssertTrue(scopeMock.eventsWritten(ofType: EnrichedResource.self).isEmpty)
+
+        // When
+        dateProvider.now.addTimeInterval(30.days)
+        writer.write(resources: [resource])
+
+        // Then
+        XCTAssertEqual(scopeMock.eventsWritten(ofType: EnrichedResource.self), [resource])
+    }
+
+    func test_whenApplicationsShareAnIdentifier_itDeduplicatesEachApplicationSeparately() {
+        // Given
+        let confirmedResource: EnrichedResource = .mockWith(identifier: "shared", context: .init("confirmed-app"))
+        let unconfirmedResources: [EnrichedResource] = [
+            .mockWith(identifier: "shared", context: .init("other-app")),
+            .mockWith(identifier: "shared", context: .init("another-app"))
+        ]
+        availabilityStore.insert([confirmedResource.identifier], forApplicationID: confirmedResource.context.application.id)
+
+        // When
+        writer.write(resources: [confirmedResource] + unconfirmedResources)
+        writer.write(resources: [confirmedResource] + unconfirmedResources)
+
+        // Then
+        XCTAssertEqual(scopeMock.eventsWritten(ofType: EnrichedResource.self), unconfirmedResources)
     }
 
     func test_whenLegacyIdentifiersExist_itDiscardsThemAndWritesResources() throws {
@@ -59,7 +95,7 @@ class ResourcesWriterTests: XCTestCase {
         ]
 
         // When
-        writer = ResourcesWriter(scope: scopeMock)
+        writer = ResourcesWriter(scope: scopeMock, availabilityStore: availabilityStore)
         writer.write(resources: resources)
 
         // Then

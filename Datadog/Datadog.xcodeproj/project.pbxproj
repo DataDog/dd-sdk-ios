@@ -471,6 +471,8 @@
 		5BD3E42A307F736A00F083B4 /* FeatureEventReconciler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BD3E429307F736A00F083B4 /* FeatureEventReconciler.swift */; };
 		5BD3E42C307F740900F083B4 /* DataUploaderReconciliationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BD3E42B307F740900F083B4 /* DataUploaderReconciliationTests.swift */; };
 		5BD3E42E307F855F00F083B4 /* FeatureEventReconcilerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BD3E42D307F855F00F083B4 /* FeatureEventReconcilerMock.swift */; };
+		5BD3E430307FBBC900F083B4 /* ResourceAvailabilityStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BD3E42F307FBBC900F083B4 /* ResourceAvailabilityStore.swift */; };
+		5BD3E432307FBC9500F083B4 /* ResourceAvailabilityStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BD3E431307FBC9500F083B4 /* ResourceAvailabilityStoreTests.swift */; };
 		5BD6C6572E8AC5E900F5D2CC /* FlagsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BD6C6552E8AC5E000F5D2CC /* FlagsRepository.swift */; };
 		5BE0EA2B2E66E8A800216E1C /* ShapeResourceBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BE0EA2A2E66E8A200216E1C /* ShapeResourceBuilder.swift */; };
 		5BE0EA2D2E66EFA300216E1C /* Path+SessionReplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BE0EA2C2E66EF9B00216E1C /* Path+SessionReplay.swift */; };
@@ -2375,6 +2377,8 @@
 		5BD3E429307F736A00F083B4 /* FeatureEventReconciler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureEventReconciler.swift; sourceTree = "<group>"; };
 		5BD3E42B307F740900F083B4 /* DataUploaderReconciliationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataUploaderReconciliationTests.swift; sourceTree = "<group>"; };
 		5BD3E42D307F855F00F083B4 /* FeatureEventReconcilerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureEventReconcilerMock.swift; sourceTree = "<group>"; };
+		5BD3E42F307FBBC900F083B4 /* ResourceAvailabilityStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceAvailabilityStore.swift; sourceTree = "<group>"; };
+		5BD3E431307FBC9500F083B4 /* ResourceAvailabilityStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceAvailabilityStoreTests.swift; sourceTree = "<group>"; };
 		5BD6C6552E8AC5E000F5D2CC /* FlagsRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagsRepository.swift; sourceTree = "<group>"; };
 		5BE0EA2A2E66E8A200216E1C /* ShapeResourceBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeResourceBuilder.swift; sourceTree = "<group>"; };
 		5BE0EA2C2E66EF9B00216E1C /* Path+SessionReplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Path+SessionReplay.swift"; sourceTree = "<group>"; };
@@ -4388,7 +4392,6 @@
 				A7B932F62B1F6A0A00AE6477 /* Models */,
 				61054E032A6EE10A00AAA894 /* Writers */,
 				D2023A8C2FFE588C00A80981 /* SessionReplayConfiguration+RemoteConfiguration.swift */,
-				D2023A902FFE598200A80981 /* Tests */,
 			);
 			name = DatadogSessionReplay;
 			path = ../DatadogSessionReplay/Sources;
@@ -4562,6 +4565,7 @@
 				D218B0452D072C8400E3F82C /* SessionReplayTelemetry.swift */,
 				61054E402A6EE10A00AAA894 /* RequestBuilders */,
 				5BD25CFA301A3BF40064A649 /* EmbeddedContentReceiver.swift */,
+				5BD3E42F307FBBC900F083B4 /* ResourceAvailabilityStore.swift */,
 			);
 			path = Feature;
 			sourceTree = "<group>";
@@ -4828,6 +4832,7 @@
 				D218B0472D072CF300E3F82C /* SessionReplayTelemetryTests.swift */,
 				61054F8B2A6EE1BA00AAA894 /* RequestBuilder */,
 				5BD25CF8301A3B860064A649 /* EmbeddedContentReceiverTests.swift */,
+				5BD3E431307FBC9500F083B4 /* ResourceAvailabilityStoreTests.swift */,
 			);
 			path = Feature;
 			sourceTree = "<group>";
@@ -6514,13 +6519,6 @@
 				5B5522473020ECA6008AC88A /* SRWireframe+ReplayID.swift */,
 			);
 			path = LayerTreeRecorder;
-			sourceTree = "<group>";
-		};
-		D2023A902FFE598200A80981 /* Tests */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Tests;
 			sourceTree = "<group>";
 		};
 		D207317D29A5226A00ECBF94 /* DatadogLogs */ = {
@@ -8942,6 +8940,7 @@
 				61054E9A2A6EE10A00AAA894 /* NodesFlattener.swift in Sources */,
 				61054E662A6EE10A00AAA894 /* KeyWindowObserver.swift in Sources */,
 				61054E972A6EE10A00AAA894 /* Diff.swift in Sources */,
+				5BD3E430307FBBC900F083B4 /* ResourceAvailabilityStore.swift in Sources */,
 				61054E6E2A6EE10A00AAA894 /* RecordingCoordinator.swift in Sources */,
 				61054E9F2A6EE10B00AAA894 /* Errors.swift in Sources */,
 				5BF7B51F2E44F7D300E0B772 /* ShapeResource.swift in Sources */,
@@ -9061,6 +9060,7 @@
 				61054FB62A6EE1BA00AAA894 /* UnsupportedViewRecorderTests.swift in Sources */,
 				D2A1FAB02D2ECDF3007E9B40 /* XoshiroTests.swift in Sources */,
 				61054F9F2A6EE1BA00AAA894 /* RecordsWriterTests.swift in Sources */,
+				5BD3E432307FBC9500F083B4 /* ResourceAvailabilityStoreTests.swift in Sources */,
 				5B7448402EFB0F7E003E622C /* CALayerChangeAggregatorTests.swift in Sources */,
 				5BD25CF9301A3B860064A649 /* EmbeddedContentReceiverTests.swift in Sources */,
 				B73450622F9F240000000001 /* CALayerChangesetTests.swift in Sources */,
