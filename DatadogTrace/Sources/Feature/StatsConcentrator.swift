@@ -153,8 +153,12 @@ internal struct ExportedBucket: Codable, Sendable {
 
     /// Identifies the split a partial bucket comes from.
     struct Piece: Codable, Hashable, Sendable {
-        /// Unique to one split, so pieces of two exports of the same window are never mixed.
-        let splitID: UUID
+        /// The runtime ID and sequence number of the client payload the split forms, assigned when
+        /// the bucket is split and sent by every request carrying one of its pieces, as the agent
+        /// does for fragments of one payload. Together they are unique to one split, so pieces of
+        /// two exports of the same window are never mixed.
+        let runtimeID: String
+        let sequence: UInt64
         /// How many pieces the split produced.
         let count: Int
     }
@@ -184,16 +188,23 @@ internal struct ExportedBucket: Codable, Sendable {
     /// cardinality limit can still exceed the storage event limit, which rejects it whole. Sketches
     /// alone keep a group well below the limit, but strings such as the resource are unbounded, so a
     /// group that cannot fit even alone is returned in `oversizedGroups` instead of being stored.
-    func split(toFit maxEncodedSize: Int) -> (pieces: [ExportedBucket], oversizedGroups: [ExportedGroupedStats]) {
+    ///
+    /// A split takes its payload's sequence number from `sequenceNumbers`, the same provider the
+    /// request builder uses, so it never collides with another payload from `runtimeID`.
+    func split(
+        toFit maxEncodedSize: Int,
+        runtimeID: String,
+        sequenceNumbers: StatsSequenceNumberProvider
+    ) -> (pieces: [ExportedBucket], oversizedGroups: [ExportedGroupedStats]) {
         // The storage writer's encoder, so sizes match what it writes.
         let encoder = JSONEncoder.dd.default()
-        let splitID = UUID()
-        guard
-            let encodedSize = try? encoder.encode(self).count,
-            encodedSize > maxEncodedSize,
-            // The largest piece count this split can produce, so the estimate never runs short.
-            let emptySize = try? encoder.encode(makePartial(with: [], piece: Piece(splitID: splitID, count: stats.count))).count
-        else {
+        guard let encodedSize = try? encoder.encode(self).count, encodedSize > maxEncodedSize else {
+            return ([self], [])
+        }
+        let sequence = sequenceNumbers.next()
+        // The largest piece count this split can produce, so the estimate never runs short.
+        let largestPiece = Piece(runtimeID: runtimeID, sequence: sequence, count: stats.count)
+        guard let emptySize = try? encoder.encode(makePartial(with: [], piece: largestPiece)).count else {
             return ([self], [])
         }
 
@@ -215,7 +226,7 @@ internal struct ExportedBucket: Codable, Sendable {
                 pieceSize += 1 + groupSize
             }
         }
-        let piece = Piece(splitID: splitID, count: pieces.count)
+        let piece = Piece(runtimeID: runtimeID, sequence: sequence, count: pieces.count)
         return (pieces.map { makePartial(with: $0, piece: piece) }, oversizedGroups)
     }
 
