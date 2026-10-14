@@ -11,16 +11,18 @@ public class FileWriterMock: Writer {
     public init() { }
 
     /// Recorded events.
+    @ReadWriteLock
     public private(set) var events: [Encodable] = []
     /// Recorded metadata.
+    @ReadWriteLock
     public private(set) var metadata: [Encodable] = []
 
     /// Adds an `Encodable` event to the events stack.
     ///
     /// - Parameter value: The event value to record.
     public func write<T: Encodable, M: Encodable>(value: T, metadata: M, completion: @escaping CompletionHandler) {
-        events.append(value)
-        self.metadata.append(metadata)
+        _events.mutate { $0.append(value) }
+        _metadata.mutate { $0.append(metadata) }
         completion()
     }
 
