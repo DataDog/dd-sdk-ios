@@ -97,10 +97,28 @@ internal final class FlagsRepository {
     }
 
     struct CachedFlagsData {
+        enum LookupResult: Equatable {
+            case resolved(FlagAssignment?)
+            case missingHash
+        }
+
         static let lookupCacheLimit = 1_024
         let data: FlagsData
         // Swift String equality treats canonically equivalent Unicode sequences as equal.
         private(set) var lookupKeys: [Data: String] = [:]
+
+        func cachedAssignment(for key: String, supportsObfuscation: Bool) -> LookupResult {
+            guard data.obfuscation != nil else {
+                return .resolved(data.flags[key])
+            }
+            guard supportsObfuscation else {
+                return .resolved(nil)
+            }
+            guard let lookupKey = lookupKeys[Data(key.utf8)] else {
+                return .missingHash
+            }
+            return .resolved(data.flags[lookupKey])
+        }
 
         mutating func flagAssignment(for key: String) -> FlagAssignment? {
             guard let obfuscation = data.obfuscation else {
@@ -318,8 +336,15 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             return nil
         }
         let supportsObfuscation = supportsFlagKeyObfuscation
+        switch cachedFlagsData?.cachedAssignment(for: key, supportsObfuscation: supportsObfuscation) {
+        case .resolved(let assignment): return assignment
+        case nil: return nil
+        case .missingHash: break
+        }
+
         var assignment: FlagAssignment?
         _cachedFlagsData.mutate { cached in
+            // A refresh or reset can replace the snapshot after the read. Recheck it under the write lock.
             guard cached?.data.obfuscation == nil || supportsObfuscation else {
                 return
             }

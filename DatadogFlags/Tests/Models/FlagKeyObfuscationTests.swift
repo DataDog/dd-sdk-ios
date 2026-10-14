@@ -83,6 +83,67 @@ final class FlagKeyObfuscationTests: XCTestCase {
         XCTAssertTrue(FlagsRepository.CachedFlagsData(data: restored).lookupKeys.isEmpty, "Lookup hashes are not persisted")
     }
 
+    func testPlaintextLookupDoesNotNeedWriteAccess() throws {
+        // Given: an immutable snapshot, including a source without obfuscation support.
+        let cache = FlagsRepository.CachedFlagsData(data: state(try decode(flags: ["flag": assignment], metadata: [:])))
+
+        // When / Then
+        for supportsObfuscation in [false, true] {
+            XCTAssertEqual(cache.cachedAssignment(for: "flag", supportsObfuscation: supportsObfuscation), .resolved(assignment))
+            XCTAssertEqual(cache.cachedAssignment(for: "missing", supportsObfuscation: supportsObfuscation), .resolved(nil))
+        }
+        XCTAssertTrue(cache.lookupKeys.isEmpty)
+    }
+
+    func testObfuscatedLookupNeedsWriteAccessOnlyForUncachedHashes() throws {
+        // Given
+        var cache = FlagsRepository.CachedFlagsData(data: state(try decode(flags: [digest: assignment], metadata: metadata())))
+        for key in ["flag", "missing"] {
+            XCTAssertEqual(cache.cachedAssignment(for: key, supportsObfuscation: true), .missingHash)
+            _ = cache.flagAssignment(for: key)
+        }
+
+        // When: read an immutable snapshot after warming both lookup hashes.
+        let snapshot = cache
+
+        // Then: a missing assignment is a resolved lookup, not a hash-cache miss.
+        XCTAssertEqual(snapshot.cachedAssignment(for: "flag", supportsObfuscation: true), .resolved(assignment))
+        XCTAssertEqual(snapshot.cachedAssignment(for: "missing", supportsObfuscation: true), .resolved(nil))
+        XCTAssertEqual(snapshot.cachedAssignment(for: "uncached", supportsObfuscation: true), .missingHash)
+        XCTAssertEqual(snapshot.lookupKeys.count, 2)
+    }
+
+    func testUnsupportedObfuscationDoesNotNeedWriteAccessOrExposeCachedAssignments() throws {
+        // Given
+        var cache = FlagsRepository.CachedFlagsData(data: state(try decode(flags: [digest: assignment], metadata: metadata())))
+        XCTAssertEqual(cache.cachedAssignment(for: "flag", supportsObfuscation: false), .resolved(nil))
+        _ = cache.flagAssignment(for: "flag")
+
+        // When / Then
+        let snapshot = cache
+        XCTAssertEqual(snapshot.cachedAssignment(for: "flag", supportsObfuscation: false), .resolved(nil))
+        XCTAssertEqual(snapshot.cachedAssignment(for: "missing", supportsObfuscation: false), .resolved(nil))
+    }
+
+    func testConcurrentReadersWithPlaintextAndObfuscatedAssignments() throws {
+        for encoded in [false, true] {
+            // Given: populated assignments but an empty lookup-hash cache.
+            let response = try decode(flags: [encoded ? digest : "flag": assignment], metadata: encoded ? metadata() : [:])
+            let scope = FeatureScopeMock(context: .mockWith(source: "ios"))
+            scope.flagsDataStore.setFlagsData(state(response), forClientNamed: "client")
+            let repository = makeRepository(scope: scope, fetcher: FlagAssignmentsFetcherMock())
+            scope.dataStore.flush()
+
+            // When / Then: concurrent misses populate hashes, then repeated reads reuse them.
+            DispatchQueue.concurrentPerform(iterations: 16) { _ in
+                for _ in 0..<128 {
+                    XCTAssertEqual(repository.flagAssignment(for: "flag"), assignment)
+                    XCTAssertNil(repository.flagAssignment(for: "missing"))
+                }
+            }
+        }
+    }
+
     func testRejectsInvalidWireMetadata() throws {
         let descriptor: [String: Any] = ["scheme": "flag-key-sha256-v1", "salt": salt]
         var invalidMetadata: [[String: Any]] = [
@@ -195,7 +256,7 @@ final class FlagKeyObfuscationTests: XCTestCase {
             let encoding = try XCTUnwrap(decode(flags: [:], metadata: metadata(salt: salt)).obfuscation)
             let flags = Dictionary(uniqueKeysWithValues: keys.map { (encoding.lookupKey(for: $0), assignment) })
             return try decode(flags: flags, metadata: metadata(salt: salt))
-        }
+        } + [decode(flags: Dictionary(uniqueKeysWithValues: keys.map { ($0, assignment) }), metadata: [:])]
         let scope = FeatureScopeMock(context: .mockWith(source: "ios"))
         scope.flagsDataStore.setFlagsData(state(responses[0]), forClientNamed: "client")
         var nextResponse = responses[0]
@@ -207,11 +268,11 @@ final class FlagKeyObfuscationTests: XCTestCase {
             XCTAssertEqual(repository.flagAssignment(for: key), assignment)
         }
 
-        // When: one writer rotates the salt while readers use cached and uncached keys.
+        // When: one writer changes the salt or encoding while readers use cached and uncached keys.
         DispatchQueue.concurrentPerform(iterations: 17) { worker in
             if worker == 0 {
                 for index in 0..<32 {
-                    nextResponse = responses[index % 2]
+                    nextResponse = responses[index % responses.count]
                     repository.setEvaluationContext(.mockAny()) { _ in }
                 }
             } else {
@@ -254,6 +315,39 @@ final class FlagKeyObfuscationTests: XCTestCase {
         response = try decode(flags: [digest: assignment], metadata: metadata())
         repository.setEvaluationContext(.mockAny()) { _ in }
         XCTAssertEqual(repository.flagAssignment(for: "flag"), assignment)
+    }
+
+    func testConcurrentLookupsDuringReset() throws {
+        // Given
+        let response = try decode(flags: [digest: assignment], metadata: metadata())
+        let scope = FeatureScopeMock(context: .mockWith(source: "ios"))
+        let repository = makeRepository(scope: scope, fetcher: FlagAssignmentsFetcherMock { _, completion in
+            completion(.success(response))
+        })
+        repository.setEvaluationContext(.mockAny()) { _ in }
+
+        // When: reset and reload while readers use the previous or current snapshot.
+        DispatchQueue.concurrentPerform(iterations: 17) { worker in
+            if worker == 0 {
+                for _ in 0..<32 {
+                    repository.reset()
+                    XCTAssertNil(repository.flagAssignment(for: "flag"))
+                    repository.setEvaluationContext(.mockAny()) { _ in }
+                    XCTAssertEqual(repository.flagAssignment(for: "flag"), assignment)
+                }
+            } else {
+                for _ in 0..<256 {
+                    let result = repository.flagAssignment(for: "flag")
+                    XCTAssertTrue(result == nil || result == assignment)
+                    XCTAssertNil(repository.flagAssignment(for: "missing"))
+                }
+            }
+        }
+
+        // Then: a hash-cache miss that raced with reset must not restore cleared assignments.
+        repository.reset()
+        XCTAssertNil(repository.flagAssignment(for: "flag"))
+        XCTAssertNil(repository.flagAssignment(for: "missing"))
     }
 
     func testRejectsMalformedEncodedKeysFromWire() throws {
