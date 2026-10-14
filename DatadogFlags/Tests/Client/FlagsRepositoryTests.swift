@@ -17,6 +17,7 @@ final class FlagsRepositoryTests: XCTestCase {
     // MARK: - Initialization Latency
 
     func testSetEvaluationContext_whenInitialReadIsDelayed_becomesReadyBeforeReadAndPreservesFetchedFlags() throws {
+        // Given an initial cache read that remains blocked, with or without cached flags
         let clientName = "client"
         let requestedContext = FlagsEvaluationContext(targetingKey: "fresh-user")
         let cachedData = FlagsData(
@@ -43,6 +44,7 @@ final class FlagsRepositoryTests: XCTestCase {
             }
             wait(for: [dataStore.readStarted], timeout: 1)
 
+            // When the assignment fetch succeeds
             let completed = expectation(description: "completed before cache read")
             repository.setEvaluationContext(requestedContext) { result in
                 if case .failure(let error) = result {
@@ -50,15 +52,19 @@ final class FlagsRepositoryTests: XCTestCase {
                 }
                 completed.fulfill()
             }
+
+            // Then initialization completes with fresh flags before the cache read
             wait(for: [fetchStarted, completed], timeout: 1)
             XCTAssertEqual(repository.state.currentState, .ready)
             XCTAssertEqual(repository.context, requestedContext)
             XCTAssertNotNil(repository.flagAssignment(for: "fresh"))
             XCTAssertNil(repository.flagAssignment(for: "cached"))
 
+            // When the delayed cache read finishes
             dataStore.resumeRead()
             dataStore.flush()
 
+            // Then it cannot replace the fresh flags
             XCTAssertEqual(repository.state.currentState, .ready)
             XCTAssertEqual(repository.context, requestedContext)
             XCTAssertNotNil(repository.flagAssignment(for: "fresh"))
@@ -76,6 +82,7 @@ final class FlagsRepositoryTests: XCTestCase {
     // MARK: - Cache Read and Fallback
 
     func testInitialDataStoreRead_duringFirstReconciliation_onlyServesMatchingContextRegardlessOfReadTiming() throws {
+        // Given cached flags and a fetch whose completion is controlled by the test
         let cachedContext = FlagsEvaluationContext(targetingKey: "cached-user", attributes: ["tier": .string("gold")])
         let cachedData = FlagsData(flags: ["cached": .mockAny()], context: cachedContext, date: .mockAny())
         let cachedValue = DataStoreValueResult.value(try JSONEncoder().encode(cachedData), dataStoreDefaultKeyVersion)
@@ -99,6 +106,8 @@ final class FlagsRepositoryTests: XCTestCase {
                     repository.flush()
                 }
                 wait(for: [dataStore.readStarted], timeout: 1)
+
+                // When the context is set and the cache becomes available, in either order
                 if readFirst {
                     dataStore.resumeRead()
                     dataStore.flush()
@@ -116,6 +125,7 @@ final class FlagsRepositoryTests: XCTestCase {
                     dataStore.flush()
                 }
 
+                // Then only matching cached flags are served while the fetch remains pending
                 XCTAssertEqual(repository.state.currentState, .reconciling)
                 XCTAssertEqual(repository.context, context == cachedContext ? cachedContext : nil)
                 XCTAssertEqual(repository.flagAssignment(for: "cached") != nil, context == cachedContext)
@@ -124,15 +134,20 @@ final class FlagsRepositoryTests: XCTestCase {
                 XCTAssertEqual(completionCount, 0)
 
                 if context == cachedContext {
+                    // When the fetch succeeds
                     try XCTUnwrap(fetchCompletion)(.success(["fresh": .mockAny()]))
+
+                    // Then fresh flags replace the cache and initialization completes
                     XCTAssertEqual(completionCount, 1)
                     XCTAssertEqual(repository.state.currentState, .ready)
                     XCTAssertEqual(repository.context, context)
                     XCTAssertNil(repository.flagAssignment(for: "cached"))
                     XCTAssertEqual(repository.flagAssignment(for: "fresh"), .mockAny())
                 } else {
-                    // The fallback remains available if we switch back before any successful fetch.
+                    // When we switch back before any successful fetch
                     repository.setEvaluationContext(cachedContext) { _ in }
+
+                    // Then the matching cache is still available
                     XCTAssertNotNil(repository.flagAssignment(for: "cached"))
                 }
             }
@@ -140,6 +155,7 @@ final class FlagsRepositoryTests: XCTestCase {
     }
 
     func testInitialDataStoreRead_whenFetchFails_waitsForReadAndOnlyUsesMatchingCachedFlags() throws {
+        // Given a blocked cache read and a fetch that fails
         let clientName = "client"
         let cachedContext = FlagsEvaluationContext(targetingKey: "cached-user")
         let otherContext = FlagsEvaluationContext(targetingKey: "other-user")
@@ -162,6 +178,7 @@ final class FlagsRepositoryTests: XCTestCase {
             let completed = expectation(description: "completed after cache read")
             var didComplete = false
 
+            // When the requested context triggers the failed fetch
             repository.setEvaluationContext(requestedContext) { result in
                 didComplete = true
                 if case .success = result {
@@ -169,13 +186,17 @@ final class FlagsRepositoryTests: XCTestCase {
                 }
                 completed.fulfill()
             }
+
+            // Then reconciliation waits for the cache before completing
             XCTAssertEqual(repository.state.currentState, .reconciling)
             XCTAssertFalse(didComplete)
 
+            // When the cache read finishes
             dataStore.resumeRead()
             dataStore.flush()
             wait(for: [completed], timeout: 1)
 
+            // Then only a matching cache provides a stale fallback
             let hasMatchingCache = requestedContext == cachedContext
             XCTAssertEqual(repository.state.currentState, hasMatchingCache ? .stale : .error)
             XCTAssertEqual(repository.context, hasMatchingCache ? requestedContext : nil)
@@ -393,6 +414,7 @@ final class FlagsRepositoryTests: XCTestCase {
     }
 
     func testPendingFailedContextUpdates_whenCacheReadIsSuperseded_completeBeforeListenersWithoutWaitingForDisk() throws {
+        // Given failed requests waiting for the initial cache read
         let scenarios = [
             (shouldReset: false, hasCache: false),
             (shouldReset: false, hasCache: true),
@@ -466,6 +488,7 @@ final class FlagsRepositoryTests: XCTestCase {
             repository.state.addListener(listener)
             defer { repository.state.removeListener(listener) }
 
+            // When a reset or a newer success supersedes the pending cache read
             if shouldReset {
                 repository.reset()
             } else {
@@ -478,14 +501,17 @@ final class FlagsRepositoryTests: XCTestCase {
                 fetchCompletions[2](.success(["fresh": .mockAny()]))
             }
 
+            // Then pending failures complete even while the listener is blocked and disk is unread
             wait(for: [stateObserved], timeout: 1)
             XCTAssertEqual(callbackCount, 2)
             XCTAssertEqual(timeoutCancellationCount, 1)
 
-            // A late disk read and an already-scheduled timeout must not complete requests again.
+            // When the late disk read and an already-scheduled timeout finish
             dataStore.resumeRead()
             dataStore.flush()
             try XCTUnwrap(timeoutAction)()
+
+            // Then requests do not complete again and the newer state is preserved
             XCTAssertEqual(completed.wait(timeout: .now() + 0.05), .timedOut)
             XCTAssertEqual(callbackCount, 2)
             XCTAssertEqual(repository.state.currentState, expectedState)
@@ -928,6 +954,7 @@ final class FlagsRepositoryTests: XCTestCase {
     }
 
     func testInitializationTimeout_whenCacheReadIsBlocked_boundsFailedOrPendingFetch() throws {
+        // Given initialization waiting on a blocked cache read and a failed or pending fetch
         let context = FlagsEvaluationContext(targetingKey: "cached-user")
         let cachedData = FlagsData(flags: ["cached": .mockAny()], context: context, date: .mockAny())
         let cachedValue = DataStoreValueResult.value(try JSONEncoder().encode(cachedData), dataStoreDefaultKeyVersion)
@@ -972,8 +999,10 @@ final class FlagsRepositoryTests: XCTestCase {
                 XCTAssertTrue(results.isEmpty)
                 XCTAssertEqual(repository.state.currentState, .reconciling)
 
+                // When the initialization deadline expires
                 try XCTUnwrap(timeoutAction)()
 
+                // Then initialization fails once without waiting for disk or the fetch
                 XCTAssertEqual(results.count, 1)
                 guard case .failure(.initializationTimedOut)? = results.first else {
                     XCTFail("Expected initializationTimedOut, got \(results)")
@@ -987,11 +1016,14 @@ final class FlagsRepositoryTests: XCTestCase {
                 repository.state.addListener(listener)
                 defer { repository.state.removeListener(listener) }
 
+                // When the cache read finishes and any pending fetch fails
                 dataStore.resumeRead()
                 dataStore.flush()
                 if !fetchFailsBeforeTimeout {
                     try XCTUnwrap(fetchCompletion)(.failure(.invalidResponse))
                 }
+
+                // Then matching cache can become stale without completing initialization again
                 if hasCache { wait(for: [staleObserved], timeout: 1) }
                 wait(for: [duplicateCompletion], timeout: 0.2)
                 XCTAssertEqual(results.count, 1)
@@ -1745,6 +1777,7 @@ final class FlagsRepositoryTests: XCTestCase {
 
     func testOverlappingContextUpdates_whenSuccessPublicationIsDelayed_preservesNewerState() {
         for expectedState: FlagsClientState in [.reconciling, .error, .ready, .notReady] {
+            // Given A's success paused after applying assignments but before notifying listeners
             let featureScope = FeatureScopeMock()
             let successApplied = DispatchSemaphore(value: 0)
             let resumePublication = DispatchSemaphore(value: 0)
@@ -1786,6 +1819,8 @@ final class FlagsRepositoryTests: XCTestCase {
                 olderFinished.leave()
             }
             XCTAssertEqual(successApplied.wait(timeout: .now() + 2), .success)
+
+            // When a newer context update or reset changes the state
             let newerContext = FlagsEvaluationContext(targetingKey: "user-B")
             repository.setEvaluationContext(newerContext) { _ in }
             switch expectedState {
@@ -1794,12 +1829,16 @@ final class FlagsRepositoryTests: XCTestCase {
             case .notReady: repository.reset()
             default: break
             }
+
+            // Then the newer state is visible before A resumes
             XCTAssertEqual(repository.state.currentState, expectedState)
             let statesBeforeResuming = states
 
+            // When A resumes listener notification
             resumePublication.signal()
             XCTAssertEqual(olderFinished.wait(timeout: .now() + 2), .success)
 
+            // Then it cannot overwrite the newer state or deliver its superseded notification
             XCTAssertEqual(repository.state.currentState, expectedState)
             XCTAssertEqual(states, statesBeforeResuming, "A must not deliver a superseded ready notification")
             if expectedState == .ready {
@@ -1812,6 +1851,7 @@ final class FlagsRepositoryTests: XCTestCase {
     }
 
     func testOverlappingContextUpdates_whenResultDeliveryIsReordered_preservesNewerSuccess() throws {
+        // Given overlapping requests for A and B with controllable result delivery
         let dateProvider = PausingDateProvider()
         let requested = expectation(description: "both requests started")
         requested.expectedFulfillmentCount = 2
@@ -1865,13 +1905,20 @@ final class FlagsRepositoryTests: XCTestCase {
         guard completions.count == 2 else {
             return
         }
+
+        // When A's success processing is paused and B's success arrives
         completions[0](.success(.mockAnyFlagAssignmentsResponse()))
         XCTAssertEqual(dateProvider.started.wait(timeout: .now() + 1), .success)
         completions[1](.success(.mockAnyFlagAssignmentsResponse()))
-        // B can finish while A is paused, but A must not overwrite it when resumed.
+
+        // Then B completes without waiting for A
         XCTAssertEqual(secondFinished.wait(timeout: .now() + 1), .success)
+
+        // When A resumes
         dateProvider.resume.signal()
         XCTAssertEqual(finished.wait(timeout: .now() + 1), .success)
+
+        // Then B's ready state and persisted context remain authoritative
         XCTAssertEqual(repository.context, contextB)
         XCTAssertEqual(repository.state.currentState, .ready)
 
