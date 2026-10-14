@@ -50,11 +50,6 @@ check_if_installed vault
 vault -v
 
 echo ""
-echo_succ "bundler:"
-check_if_installed bundler
-bundler --version
-
-echo ""
 echo_succ "python3:"
 check_if_installed python3
 python3 -V
