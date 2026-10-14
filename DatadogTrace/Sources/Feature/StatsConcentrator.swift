@@ -199,15 +199,9 @@ internal struct ExportedBucket: Codable, Sendable {
         guard maxEncodedSize > 0 else {
             return ([], stats)
         }
-        // Estimate each group once. String scans stop once the budget is exceeded.
+        // Estimate each group once, for both the whole-bucket check and the packing below.
         let groupSizes = stats.map { $0.estimatedJSONSize(limit: maxEncodedSize) }
-        var wholeSize = StatsJSONSize(limit: maxEncodedSize)
-        wholeSize.add(estimatedJSONHeaderSize(piece: piece, limit: maxEncodedSize))
-        for (index, size) in groupSizes.enumerated() {
-            if index > 0 { wholeSize.add(1) }
-            wholeSize.add(size)
-        }
-        guard wholeSize.value > maxEncodedSize else {
+        guard estimatedJSONSize(groupSizes: groupSizes, piece: piece, limit: maxEncodedSize) > maxEncodedSize else {
             return ([self], [])
         }
         let sequence = sequenceNumbers.next()
@@ -237,11 +231,16 @@ internal struct ExportedBucket: Codable, Sendable {
 
     /// Upper bound for the storage JSON size, capped at `limit + 1` (or `Int.max`).
     func estimatedJSONSize(limit: Int = .max) -> Int {
+        estimatedJSONSize(groupSizes: stats.map { $0.estimatedJSONSize(limit: limit) }, piece: piece, limit: limit)
+    }
+
+    /// The calculation `split(toFit:runtimeID:sequenceNumbers:)` uses, given each group's estimate.
+    private func estimatedJSONSize(groupSizes: [Int], piece: Piece?, limit: Int) -> Int {
         var size = StatsJSONSize(limit: limit)
         size.add(estimatedJSONHeaderSize(piece: piece, limit: limit))
-        for (index, group) in stats.enumerated() {
-            if index > 0 { size.add(1) }
-            size.add(group.estimatedJSONSize(limit: limit))
+        for (index, groupSize) in groupSizes.enumerated() {
+            if index > 0 { size.add(1) } // separating comma
+            size.add(groupSize)
         }
         return size.value
     }
@@ -323,22 +322,42 @@ private struct StatsJSONSize {
 
     mutating func add(string: String) {
         add(2) // quotes
-        for byte in string.utf8 {
-            if value == ceiling { break }
-            switch byte {
-            case 0..<0x20:
-                // Controls can use six-byte escapes.
-                add(6)
-            case 0x80...0xff:
+        let utf8 = string.utf8
+        let remaining = ceiling - value
+        // Escaping never shortens a string, so one already over the budget needs no scan. The count
+        // is constant time for native strings.
+        guard utf8.count < remaining else {
+            value = ceiling
+            return
+        }
+        let escapeLimit = remaining - utf8.count
+        let escapeBytes = utf8.withContiguousStorageIfAvailable { Self.escapeBytes(in: $0, stoppingAt: escapeLimit) }
+            ?? Self.escapeBytes(in: utf8, stoppingAt: escapeLimit)
+        add(utf8.count)
+        add(escapeBytes)
+    }
+
+    /// Bytes that JSON escaping can add to `bytes`, an upper bound. Stops once it reaches `limit`,
+    /// since the caller then only needs to know the budget is exceeded.
+    private static func escapeBytes<Bytes: Sequence>(in bytes: Bytes, stoppingAt limit: Int) -> Int where Bytes.Element == UInt8 {
+        var extra = 0
+        for byte in bytes {
+            if byte < 0x20 {
+                extra += 5 // controls can use six-byte escapes
+            } else if byte >= 0x80 {
                 // At most three JSON bytes per UTF-8 byte even if Unicode is escaped:
                 // six bytes for a two-byte scalar, twelve for a four-byte surrogate pair.
-                add(3)
-            case 0x22, 0x5c:
-                add(2) // quote and backslash
-            default:
-                add(1) // the storage encoder uses withoutEscapingSlashes
+                extra += 2
+            } else if byte == 0x22 || byte == 0x5c {
+                extra += 1 // quote and backslash; the storage encoder does not escape slashes
+            } else {
+                continue
+            }
+            if extra >= limit {
+                break
             }
         }
+        return extra
     }
 
     mutating func add(base64Bytes count: Int) {
