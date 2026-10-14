@@ -93,7 +93,7 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
                 oversizedGroups += split.oversizedGroups
             }
             if !oversizedGroups.isEmpty {
-                DD.logger.warn("Client-side stats dropped \(oversizedGroups.count) group(s) too large to store, likely because of a very long resource name.")
+                DD.logger.warn("Client-side stats dropped \(oversizedGroups.count) group(s) whose strings or bucket metadata exceed the storage budget.")
             }
             // Report only after the write: in some cases the event write context is not
             // available, and we do not want to signal a flush that never reached storage.
