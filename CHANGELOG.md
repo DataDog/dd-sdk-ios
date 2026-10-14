@@ -1,5 +1,7 @@
 # Unreleased
 
+# 3.16.1 / 15-10-2026
+
 - [FIX] Report slow frame and freeze rates for RUM views when navigation starts a new view without calling `stopView()` on the previous one. See [#3237][]
 - [FIX] Prevent incorrect RUM session expiration caused by device clock changes or cross-platform timestamp differences. See [#3288][]
 
@@ -1232,6 +1234,8 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3127]: https://github.com/DataDog/dd-sdk-ios/pull/3127
 [#3097]: https://github.com/DataDog/dd-sdk-ios/pull/3097
 [#3134]: https://github.com/DataDog/dd-sdk-ios/pull/3134
+[#3237]: https://github.com/DataDog/dd-sdk-ios/pull/3237
+[#3288]: https://github.com/DataDog/dd-sdk-ios/pull/3288
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
@@ -1272,5 +1276,3 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [@thedavidharris]: https://github.com/thedavidharris
 [@noremac]: https://github.com/noremac
 [@saladdays831]: https://github.com/saladdays831
-[#3237]: https://github.com/DataDog/dd-sdk-ios/pull/3237
-[#3288]: https://github.com/DataDog/dd-sdk-ios/pull/3288
