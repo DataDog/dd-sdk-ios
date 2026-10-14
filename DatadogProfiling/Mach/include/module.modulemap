@@ -11,6 +11,7 @@ module DatadogMachProfiler {
       header "mach_sampling_profiler.h"
       header "profile.h"
       header "profile_pprof_packer.h"
+      header "poisson_allocation_sampler.h"
       export *
   }
 

@@ -33,6 +33,9 @@ class poisson_allocation_sampler {
 public:
     static constexpr uint64_t sampling_interval_bytes = 512ULL * 1024ULL;
 
+    /// Returns the mean byte interval between Poisson points.
+    static constexpr uint64_t sampling_interval() noexcept { return sampling_interval_bytes; }
+
     /// Seeds the compact random source once from the system RNG. Construction calls arc4random_buf
     /// and is outside sample()'s synchronization and allocation guarantees.
     poisson_allocation_sampler() noexcept;
@@ -44,7 +47,7 @@ public:
 
     poisson_allocation_sampler(const poisson_allocation_sampler&) = delete;
     poisson_allocation_sampler& operator=(const poisson_allocation_sampler&) = delete;
-    poisson_allocation_sampler(poisson_allocation_sampler&&) = delete;
+    poisson_allocation_sampler(poisson_allocation_sampler&&) noexcept = default;
     poisson_allocation_sampler& operator=(poisson_allocation_sampler&&) = delete;
 
     /**
