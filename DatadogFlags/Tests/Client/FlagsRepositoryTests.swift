@@ -289,9 +289,12 @@ final class FlagsRepositoryTests: XCTestCase {
         }
     }
 
-    func testInitialDataStoreRead_whenFetchFailsBeforeReadCompletes_dispatchesFailureCallbacksOffDataStoreQueue() {
+    func testPendingFailedContextUpdates_whenCacheReadCompletes_doNotBlockEachOtherOrDataStoreQueue() {
         // Given
         let dataStore = DelayedReadDataStore()
+        let olderCompletionStarted = expectation(description: "older completion started")
+        let olderCompletionFinished = expectation(description: "older completion finished")
+        let releaseOlderCompletion = DispatchSemaphore(value: 0)
 
         let flagsRepository = makeRepository(
             dataStore: dataStore,
@@ -300,8 +303,10 @@ final class FlagsRepositoryTests: XCTestCase {
             }
         )
         defer {
+            releaseOlderCompletion.signal()
             dataStore.resumeRead()
             dataStore.flush()
+            wait(for: [olderCompletionFinished], timeout: 1)
         }
         wait(for: [dataStore.readStarted], timeout: 1)
 
@@ -320,6 +325,15 @@ final class FlagsRepositoryTests: XCTestCase {
         var wasCompletionCalledOnDataStoreQueue: Bool?
 
         // When
+        flagsRepository.setEvaluationContext(FlagsEvaluationContext(targetingKey: "older")) { result in
+            if case .success = result {
+                XCTFail("Expected the older fetch to fail")
+            }
+            XCTAssertFalse(dataStore.isOnReadQueue)
+            olderCompletionStarted.fulfill()
+            releaseOlderCompletion.wait()
+            olderCompletionFinished.fulfill()
+        }
         flagsRepository.setEvaluationContext(.mockAny()) { _ in
             wasCompletionCalledOnDataStoreQueue = dataStore.isOnReadQueue
             completed.fulfill()
@@ -329,7 +343,8 @@ final class FlagsRepositoryTests: XCTestCase {
         dataStore.resumeRead()
 
         // Then
-        wait(for: [errorStateObserved, completed], timeout: 1)
+        wait(for: [olderCompletionStarted, errorStateObserved, completed], timeout: 1)
+        XCTAssertEqual(flagsRepository.state.currentState, .error)
         XCTAssertEqual(wasErrorStateNotifiedOnDataStoreQueue, false)
         XCTAssertEqual(wasCompletionCalledOnDataStoreQueue, false)
     }

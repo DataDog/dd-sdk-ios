@@ -262,14 +262,12 @@ internal final class FlagsRepository {
     }
 
     private static func executePendingDiskReadCallbacks(_ callbacks: [() -> Void]) {
-        guard !callbacks.isEmpty else {
-            return
-        }
-
         // Disk reads can release callbacks on DatadogCore's shared read/write queue.
-        // Keep state listeners and public completions off that queue.
-        DispatchQueue.global(qos: .utility).async {
-            callbacks.forEach { $0() }
+        // Keep callbacks off that queue and independent of other application completions.
+        for callback in callbacks {
+            DispatchQueue.global(qos: .utility).async {
+                callback()
+            }
         }
     }
 
