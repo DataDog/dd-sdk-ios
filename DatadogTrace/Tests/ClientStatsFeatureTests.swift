@@ -183,23 +183,13 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertEqual(payloads.compactMap { $0["Sequence"] as? Int64 }, [1, 2, 3])
     }
 
-    func testWhenBucketPredatesIdentityPersistence_itFallsBackToTheUploadContext() throws {
-        // Given: a bucket written by an earlier build, with no persisted identity.
-        let uploadContext: DatadogContext = .mockWith(service: "ios-app", env: "staging", version: "1.2.3")
-        let builder = makeRequestBuilder()
+    func testWhenABucketHasNoDeploymentIdentity_theWholeBatchIsDropped() throws {
+        // Given: a bucket stored by an earlier internal build without env, version and service.
+        let earlierBuild = Event(data: Data(#"{"start":1000,"duration":10000000000,"stats":[],"payload":{"runtimeID":"runtime-id","sequence":1}}"#.utf8))
+        let current = makeEvent(from: makeExportedBucket())
 
-        // When
-        let request = try builder.request(
-            for: [makeEvent(from: makeExportedBucket())],
-            with: uploadContext,
-            execution: .init(previousResponseCode: nil, attempt: 0)
-        )
-
-        // Then: previous behaviour, rather than dropping the batch.
-        let clientStats = try firstClientStatsPayload(in: request)
-        XCTAssertEqual(clientStats["Env"] as? String, "staging")
-        XCTAssertEqual(clientStats["Version"] as? String, "1.2.3")
-        XCTAssertEqual(clientStats["Service"] as? String, "ios-app")
+        // Then: upgrades from those builds are not supported, so the batch cannot be built and is dropped.
+        XCTAssertThrowsError(try makeRequestBuilder().request(for: [earlierBuild, current], with: .mockAny(), execution: .init(previousResponseCode: nil, attempt: 0)))
     }
 
     func testWhenVersionChangesBeforeFlush_itReportsTheDeploymentTheSpanWasRecordedUnder() throws {
@@ -493,7 +483,7 @@ class ClientStatsFeatureTests: XCTestCase {
     }
 
     func testJSONSizeEstimateStopsAtTheBudgetAndSupportsTheLargestBudget() throws {
-        let bucket = ExportedBucket(start: 0, duration: 10, stats: [makeGroup(resource: String(repeating: "x", count: 1_000_000))])
+        let bucket = ExportedBucket(start: 0, duration: 10, stats: [makeGroup(resource: String(repeating: "x", count: 1_000_000))], env: "env", version: "1.0", service: "app")
         for budget in [1, 512, 1_024] {
             XCTAssertEqual(bucket.estimatedJSONSize(budget: budget), .exceedsBudget)
         }
@@ -607,7 +597,7 @@ class ClientStatsFeatureTests: XCTestCase {
 
     func testWhenTheOnlyGroupCannotFitAlone_nothingIsStored() throws {
         let limit = ClientStatsFeature.maxStoredBucketSize
-        let bucket = ExportedBucket(start: 1_000, duration: 10, stats: [makeGroup(resource: String(repeating: "a", count: limit))])
+        let bucket = ExportedBucket(start: 1_000, duration: 10, stats: [makeGroup(resource: String(repeating: "a", count: limit))], env: "env", version: "1.0", service: "app")
 
         let result = split(bucket, toFit: limit)
 
@@ -996,17 +986,17 @@ class ClientStatsFeatureTests: XCTestCase {
 
         // When
         let request = try builder.request(
-            for: [makeEvent(from: makeExportedBucket())],
+            for: [makeEvent(from: makeExportedBucket(env: "prod", version: "1.0.0", service: "app"))],
             with: context,
             execution: .init(previousResponseCode: nil, attempt: 0)
         )
 
-        // Then
+        // Then: the deployment identity comes from the bucket, not the upload-time context.
         let clientStats = try firstClientStatsPayload(in: request)
         XCTAssertEqual(clientStats["Hostname"] as? String, "")
-        XCTAssertEqual(clientStats["Env"] as? String, "staging")
-        XCTAssertEqual(clientStats["Version"] as? String, "1.2.3")
-        XCTAssertEqual(clientStats["Service"] as? String, "ios-app")
+        XCTAssertEqual(clientStats["Env"] as? String, "prod")
+        XCTAssertEqual(clientStats["Version"] as? String, "1.0.0")
+        XCTAssertEqual(clientStats["Service"] as? String, "app")
         XCTAssertEqual(clientStats["TracerVersion"] as? String, "2.0.0")
         XCTAssertEqual(clientStats["Lang"] as? String, "ios")
         XCTAssertEqual(clientStats["RuntimeID"] as? String, "runtime-id")
@@ -1245,9 +1235,9 @@ class ClientStatsFeatureTests: XCTestCase {
         start: UInt64 = 1_000,
         duration: UInt64 = 10_000_000_000,
         groupCount: Int = 1,
-        env: String? = nil,
-        version: String? = nil,
-        service: String? = nil,
+        env: String = "test-env",
+        version: String = "1.0.0",
+        service: String = "test-app",
         payload: ExportedBucket.PayloadIdentity? = nil
     ) -> ExportedBucket {
         let stats = (0..<groupCount).map { index in

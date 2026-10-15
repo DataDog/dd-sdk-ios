@@ -66,13 +66,7 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
             guard let payload = bucket.payload else {
                 throw InternalError(description: "[Trace] Client stats bucket has no payload identity.")
             }
-            // Buckets written before this field existed fall back to the upload-time context,
-            // which is the previous behaviour and better than dropping the batch.
-            let identity = DeploymentIdentity(
-                env: bucket.env ?? context.env,
-                version: bucket.version ?? context.version,
-                service: bucket.service ?? context.service
-            )
+            let identity = DeploymentIdentity(env: bucket.env, version: bucket.version, service: bucket.service)
             let wireBucket = ClientStatsBucket(bucket)
             if let index = payloadIndexes[payload] {
                 if bucket.isPartial, let existing = payloads[index].buckets.first {
