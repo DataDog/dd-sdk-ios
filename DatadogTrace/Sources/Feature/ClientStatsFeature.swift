@@ -30,7 +30,10 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
     let performanceOverride: PerformancePresetOverride?
 
     let concentrator: StatsConcentrator
-    /// Identifies this tracer instance in the payloads it stores.
+    /// The `RuntimeID` of the client stats payloads this feature stores: the identity under which
+    /// their sequence numbers are unique. It belongs to the stats feature, not to the tracer, because
+    /// the SDK has no tracer or process-level ID to reuse and the sequence counter has to live with the
+    /// code that stores the payloads. The name matches the stats protocol field.
     private let runtimeID = UUID().uuidString
     /// Sequence numbers for those payloads, taken in write order.
     private let sequenceNumbers = StatsSequenceNumberProvider()
