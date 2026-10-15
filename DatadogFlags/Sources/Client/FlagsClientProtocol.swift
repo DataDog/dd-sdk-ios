@@ -30,7 +30,9 @@ public protocol FlagsClientProtocol: AnyObject {
     ///
     /// Once the first event is published, replay is synchronous before this method returns and performs
     /// no SDK I/O itself. Work performed by the handler, including evaluation, has its usual behavior.
-    /// Otherwise the handler runs on the installing thread after installation bookkeeping, outside SDK locks.
+    /// Pending disk delivery runs on a background queue, away from shared SDK storage. Pending network
+    /// delivery runs on the installing thread. Both follow installation bookkeeping and synchronous
+    /// context continuations, outside SDK locks. Those continuations must return before delivery.
     /// Delivery order across registrations is not guaranteed: a later registration may be notified before
     /// an earlier pending one. Handlers are nonthrowing. Dispatch UI work as needed.
     ///

@@ -23,7 +23,7 @@ public enum FlagsClientEventType: String, Sendable {
     case configurationChanged = "CONFIGURATION_CHANGED"
 }
 
-/// A nonthrowing listener that may run on the installing thread or the registering thread.
+/// A nonthrowing listener that may run on a background queue, the network installing thread, or the registering thread.
 /// Capture only Sendable values; access actor-owned state through an explicit actor hop.
 public typealias FlagsClientEventListener = @Sendable (FlagsClientEvent) -> Void
 

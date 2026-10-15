@@ -23,6 +23,9 @@ final class FirstFlagsCallbackTests: XCTestCase {
         core.featureScopeOverride = scope
         Flags.enable(in: core)
         let client = FlagsClient.create(name: "test", in: core)
+        let published = expectation(description: "disk event published")
+        client.onFirstFlags { _ in published.fulfill() }
+        wait(for: [published], timeout: 5)
         let calls = ReadWriteLock(wrappedValue: 0)
         let subscription = client.onFirstFlags { event in
             XCTAssertEqual(event.type.rawValue, "CONFIGURATION_CHANGED")
@@ -42,6 +45,8 @@ final class FirstFlagsCallbackTests: XCTestCase {
         let repository = ReadWriteLock<FlagsRepository?>(wrappedValue: nil)
         let events = ReadWriteLock<[FlagsClientEvent]>(wrappedValue: [])
         let completed = ReadWriteLock(wrappedValue: false)
+        let delivered = expectation(description: "both disk registrations delivered")
+        delivered.expectedFulfillmentCount = 2
         repository.wrappedValue = FlagsRepository(
             clientName: "test",
             flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
@@ -55,14 +60,19 @@ final class FirstFlagsCallbackTests: XCTestCase {
             XCTAssertTrue(completed.wrappedValue)
             XCTAssertEqual(repository.wrappedValue?.flagAssignments()?.keys.sorted(), ["network"])
             events.mutate { $0.append(event) }
+            delivered.fulfill()
         }
         repository.wrappedValue?.setEvaluationContext(.mockAny()) { result in
             if case .failure(let error) = result { XCTFail("Unexpected failure: \(error)") }
-            _ = repository.wrappedValue?.onFirstFlags { event in events.mutate { $0.append(event) } }
+            _ = repository.wrappedValue?.onFirstFlags { event in
+                events.mutate { $0.append(event) }
+                delivered.fulfill()
+            }
             XCTAssertTrue(events.wrappedValue.isEmpty)
             completed.wrappedValue = true
         }
         store.readCompletion?(.value(try JSONEncoder().encode(data(["disk"])), dataStoreDefaultKeyVersion))
+        wait(for: [delivered], timeout: 5)
         XCTAssertEqual(events.wrappedValue.map(\.flagsChanged), [["disk"], ["disk"]])
         repository.wrappedValue?.reset()
         _ = repository.wrappedValue?.onFirstFlags { event in
@@ -83,13 +93,106 @@ final class FirstFlagsCallbackTests: XCTestCase {
             featureScope: FeatureScopeMock(dataStore: store)
         )
         let keys = ReadWriteLock<[String]?>(wrappedValue: nil)
-        _ = repository.onFirstFlags { keys.wrappedValue = $0.flagsChanged }
+        let delivered = expectation(description: "empty disk installation delivered")
+        _ = repository.onFirstFlags {
+            keys.wrappedValue = $0.flagsChanged
+            delivered.fulfill()
+        }
         repository.setEvaluationContext(.mockAny()) { _ in }
         store.readCompletion?(.value(try JSONEncoder().encode(data([])), dataStoreDefaultKeyVersion))
+        wait(for: [delivered], timeout: 5)
         XCTAssertEqual(keys.wrappedValue, [])
         XCTAssertNotNil(response)
         response?(.success(["later": .mockAny()]))
         _ = repository.onFirstFlags { XCTAssertEqual($0.flagsChanged, []) }
+    }
+
+    func testBlockedDiskHandlerDoesNotBlockStorageAndCanDrainIt() throws {
+        let store = FirstFlagsCallbackStore()
+        let storage = DispatchQueue(label: "test.first-flags.storage")
+        let storageKey = DispatchSpecificKey<Bool>()
+        storage.setSpecific(key: storageKey, value: true)
+        let repository = FlagsRepository(
+            clientName: "test",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
+            dateProvider: DateProviderMock(),
+            featureScope: FeatureScopeMock(dataStore: store)
+        )
+        let entered = expectation(description: "handler entered")
+        let drained = expectation(description: "handler drained storage")
+        let progressed = expectation(description: "storage progressed during handler")
+        let finished = expectation(description: "handler finished")
+        let release = DispatchSemaphore(value: 0)
+        defer { release.signal() }
+        _ = repository.onFirstFlags { event in
+            // Guard prevents the regression from trapping the test runner on same-queue sync.
+            guard DispatchQueue.getSpecific(key: storageKey) == nil else {
+                XCTFail("Disk handler must not execute on storage")
+                entered.fulfill()
+                finished.fulfill()
+                return
+            }
+            XCTAssertEqual(event.flagsChanged, ["disk"])
+            storage.sync { drained.fulfill() }
+            entered.fulfill()
+            XCTAssertEqual(release.wait(timeout: .now() + 5), .success)
+            finished.fulfill()
+        }
+        let encoded = try JSONEncoder().encode(data(["disk"]))
+        storage.async { store.readCompletion?(.value(encoded, dataStoreDefaultKeyVersion)) }
+        wait(for: [entered, drained], timeout: 2)
+        storage.async { progressed.fulfill() }
+        wait(for: [progressed], timeout: 2)
+        release.signal()
+        wait(for: [finished], timeout: 2)
+    }
+
+    func testDiskContinuationLeavesStorageAndPreservesReservationUntilPublication() throws {
+        let store = FirstFlagsCallbackStore()
+        let storage = DispatchQueue(label: "test.first-flags.storage")
+        let repository = ReadWriteLock<FlagsRepository?>(wrappedValue: nil)
+        repository.wrappedValue = FlagsRepository(
+            clientName: "test",
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock { _, completion in
+                completion(.success(["network": .mockAny()]))
+            },
+            dateProvider: DateProviderMock(),
+            featureScope: FeatureScopeMock(dataStore: store),
+            initializationTimeout: nil
+        )
+        let entered = expectation(description: "context completion entered")
+        let progressed = expectation(description: "storage progressed during completion")
+        let delivered = expectation(description: "reserved disk event delivered")
+        let release = DispatchSemaphore(value: 0)
+        defer { release.signal() }
+        let events = ReadWriteLock<[FlagsClientEvent]>(wrappedValue: [])
+        let cancelled = repository.wrappedValue!.onFirstFlags { _ in XCTFail("Cancelled before publication") }
+        _ = repository.wrappedValue!.onFirstFlags { event in
+            XCTAssertEqual(event.flagsChanged, ["disk"])
+            XCTAssertEqual(repository.wrappedValue?.flagAssignments()?.keys.sorted(), ["network"])
+            events.mutate { $0.append(event) }
+            delivered.fulfill()
+        }
+        repository.wrappedValue!.setEvaluationContext(.mockAny()) { _ in
+            entered.fulfill()
+            XCTAssertEqual(release.wait(timeout: .now() + 5), .success)
+        }
+        let encoded = try JSONEncoder().encode(data(["disk"]))
+        storage.async { store.readCompletion?(.value(encoded, dataStoreDefaultKeyVersion)) }
+        wait(for: [entered], timeout: 2)
+        storage.async { progressed.fulfill() }
+        wait(for: [progressed], timeout: 2)
+        XCTAssertTrue(events.wrappedValue.isEmpty)
+        cancelled.cancel()
+        release.signal()
+        wait(for: [delivered], timeout: 2)
+        XCTAssertEqual(events.wrappedValue.count, 1)
+        let replay = ReadWriteLock(wrappedValue: false)
+        _ = repository.wrappedValue!.onFirstFlags { event in
+            XCTAssertEqual(event.flagsChanged, ["disk"])
+            replay.wrappedValue = true
+        }
+        XCTAssertTrue(replay.wrappedValue)
     }
 
     func testMissingInvalidAndFailedLoadsWaitForSuccessfulEmptyNetwork() {

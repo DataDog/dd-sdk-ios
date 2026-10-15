@@ -204,9 +204,7 @@ internal final class FlagsRepository {
         featureScope.flagsDataStore.flagsData(forClientNamed: clientName) { [weak self, readSemaphore] data in
             guard let self else {
                 // Signal even if self is nil to unblock any waiting getters
-                DispatchQueue.global(qos: .userInitiated).async {
-                    readSemaphore.signal()
-                }
+                readSemaphore.signal()
                 return
             }
             var cachedData = data
@@ -231,11 +229,16 @@ internal final class FlagsRepository {
             // Release one waiting getter before invoking application callbacks.
             readSemaphore.signal()
 
-            // Execute async callbacks outside the lock
-            for callback in callbacks {
-                callback()
+            // Data-store callbacks run on the core's shared storage queue. Context continuations
+            // can invoke application code too, so move all callouts off that queue after bookkeeping.
+            // Keep the first installation reserved until those continuations have returned.
+            let delivery = DispatchWorkItem {
+                for callback in callbacks {
+                    callback()
+                }
+                publish?()
             }
-            publish?()
+            DispatchQueue.global(qos: .userInitiated).async(execute: delivery)
         }
     }
 
