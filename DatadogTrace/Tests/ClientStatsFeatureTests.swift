@@ -1096,26 +1096,47 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertEqual(clientStats["Sequence"] as? Int64, 1)
     }
 
-    func testWhenBuildingRequest_itMovesBucketStartsToTheServerClockAlignedToBuckets() throws {
+    func testShiftingToTheServerClockMovesTheStartAndKeepsItAlignedToBuckets() {
         let bucketDuration: UInt64 = 10_000_000_000
         let start = 170_000_000 * bucketDuration
         let cases: [(offset: TimeInterval, start: UInt64, expected: UInt64)] = [
-            (0, 1_000, 1_000), // no offset keeps the stored start exactly
+            (0, 1_000, 1_000), // no offset keeps the start exactly
             (3_600, start, start + 360 * bucketDuration), // device clock an hour behind
             (-7.4, start, start - bucketDuration), // rounds to the nearest boundary
             (2, start, start), // under half a bucket
-            (1, .max, .max), // saturates instead of trapping
+            (1, .max, .max), // a saturated start stays saturated
             (-100, 0, 0)
         ]
         for testCase in cases {
-            let request = try makeRequestBuilder().request(
-                for: [makeEvent(from: makeExportedBucket(start: testCase.start, duration: bucketDuration))],
-                with: .mockWith(serverTimeOffset: testCase.offset),
-                execution: .init(previousResponseCode: nil, attempt: 0)
+            let bucket = makeExportedBucket(start: testCase.start, duration: bucketDuration)
+            XCTAssertEqual(bucket.shiftedToServerClock(by: testCase.offset).start, testCase.expected, "Offset \(testCase.offset)")
+        }
+    }
+
+    func testWhenABucketIsStored_itKeepsTheServerOffsetOfThatMomentWhateverTheUploadContext() throws {
+        // Given: the device clock is an hour behind when the bucket is stored.
+        let core = FeatureRegistrationPassthroughCoreMock(context: .mockWith(serverTimeOffset: 3_600))
+        config.featureFlags[.clientSideStats] = true
+        config.dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
+        Trace.enable(with: config, in: core)
+        let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
+        stats.concentrator.add(.mockWith(startTime: 0, duration: 100))
+        stats.flushStats(force: true)
+        let stored = try XCTUnwrap(core.exportedBuckets.first)
+        XCTAssertEqual(stored.start, 3_600_000_000_000)
+
+        // When: it is uploaded, and retried, after the offset changed, for example after a relaunch.
+        let builder = try XCTUnwrap(stats.requestBuilder as? StatsRequestBuilder)
+        for (offset, attempt): (TimeInterval, UInt) in [(0, 0), (-500, 1)] {
+            let request = try builder.request(
+                for: [makeEvent(from: stored)],
+                with: .mockWith(serverTimeOffset: offset),
+                execution: .init(previousResponseCode: attempt > 0 ? 500 : nil, attempt: attempt)
             )
+
+            // Then: the uploaded start is the stored one.
             let bucket = try mapFields(try XCTUnwrap(firstClientStatsPayload(in: request)["Stats"] as? [Any?]).first ?? nil)
-            // The test decoder reads unsigned 64-bit values as `Int64` bit patterns.
-            XCTAssertEqual((bucket["Start"] as? Int64).map { UInt64(bitPattern: $0) }, testCase.expected, "Offset \(testCase.offset)")
+            XCTAssertEqual(bucket["Start"] as? Int64, 3_600_000_000_000, "Upload offset \(offset)")
         }
     }
 
