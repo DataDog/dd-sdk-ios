@@ -12,7 +12,9 @@ import DatadogInternal
 ///
 /// Registered as a separate `DatadogRemoteFeature` alongside `TraceFeature`
 /// so that it has its own storage and upload pipeline.
-internal final class ClientStatsFeature: DatadogRemoteFeature {
+// `@unchecked Sendable`: finished spans are recorded from any thread. The only mutable state is the
+// flush timer, set once in `init`, and the two lock-protected suspension flags.
+internal final class ClientStatsFeature: DatadogRemoteFeature, @unchecked Sendable {
     static let name = "tracing-client-stats"
 
     /// Largest encoded bucket written as one storage event; larger buckets are split. Below half the
@@ -75,8 +77,8 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
         self.messageReceiver = receiver
 
         startFlushTimer()
-        receiver.persistBufferedStats = { [weak self] in
-            self?.flushStats(force: true)
+        receiver.appMayBeSuspendedDidChange = { [weak self] mayBeSuspended in
+            self?.appMayBeSuspendedDidChange(mayBeSuspended)
         }
     }
 
@@ -84,12 +86,33 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
         flushTimer?.cancel()
     }
 
-    /// Flushes completed buckets and writes them to the feature storage for upload.
-    ///
-    /// - Parameter force: When `true`, flushes all buckets regardless of age (used during
-    ///   SDK teardown via `Flushable`). When `false`, only buckets older than the buffer
-    ///   window are flushed (normal periodic flush).
-    func flushStats(force: Bool = false) {
+    /// Why buffered stats are flushed to storage.
+    enum FlushReason {
+        /// The periodic timer, which flushes only buckets older than the buffer window.
+        case periodic
+        /// The app may be suspended, such as in the background on iOS, and then terminated without the
+        /// periodic flush running again, so every buffered bucket is flushed.
+        case appMayBeSuspended
+        /// SDK teardown through `Flushable`, which flushes every buffered bucket.
+        case teardown
+    }
+
+    /// The longest a span finished while the app may be suspended stays only in memory. Spans finished
+    /// within it are flushed together, so a burst of spans flushes once.
+    static let suspendableFlushDelay: TimeInterval = 1
+
+    /// Records a finished span. While the app may be suspended, it is also flushed to storage within
+    /// `suspendableFlushDelay`.
+    func record(_ snapshot: SpanSnapshot) {
+        concentrator.add(snapshot)
+        if appMayBeSuspended {
+            scheduleSuspendableFlush()
+        }
+    }
+
+    /// Flushes buffered buckets and writes them to the feature storage for upload.
+    func flushStats(_ reason: FlushReason = .periodic) {
+        let force = reason != .periodic
         let now = dateProvider.now.timeIntervalSince1970.dd.toNanoseconds
         let exportedBuckets = concentrator.flush(now: now, force: force)
 
@@ -115,7 +138,40 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
             }
             // Report only after the write: in some cases the event write context is not
             // available, and we do not want to signal a flush that never reached storage.
-            metricController.send(for: exportedBuckets, oversizedGroups: oversizedGroups, force: force)
+            metricController.send(for: exportedBuckets, oversizedGroups: oversizedGroups, isTeardown: reason == .teardown)
+        }
+    }
+
+    /// Whether the app may currently be suspended, as last reported by the context receiver.
+    @ReadWriteLock
+    private var appMayBeSuspended = false
+    /// Whether a flush of spans finished while the app may be suspended is already scheduled.
+    @ReadWriteLock
+    private var isSuspendableFlushScheduled = false
+
+    private func appMayBeSuspendedDidChange(_ mayBeSuspended: Bool) {
+        appMayBeSuspended = mayBeSuspended
+        if mayBeSuspended {
+            // Flush on the feature's queue, not the message bus queue this is called on: flushing waits
+            // for pending aggregation and exports every buffered sketch.
+            flushQueue.async { [weak self] in
+                self?.flushStats(.appMayBeSuspended)
+            }
+        }
+    }
+
+    private func scheduleSuspendableFlush() {
+        var isAlreadyScheduled = false
+        _isSuspendableFlushScheduled.mutate {
+            isAlreadyScheduled = $0
+            $0 = true
+        }
+        guard !isAlreadyScheduled else {
+            return
+        }
+        flushQueue.asyncAfter(deadline: .now() + Self.suspendableFlushDelay) { [weak self] in
+            self?.isSuspendableFlushScheduled = false
+            self?.flushStats(.appMayBeSuspended)
         }
     }
 
@@ -132,23 +188,24 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
 
 extension ClientStatsFeature: Flushable {
     func flush() {
-        flushStats(force: true)
+        flushStats(.teardown)
     }
 }
 
 /// Forwards context changes from the message bus to client-side stats.
 ///
-/// Tracking consent goes to the `StatsConcentrator`. When the app moves into a state where it may be
-/// suspended, such as the background on iOS, buffered stats are written to storage: the system can
-/// suspend and later terminate the app without the periodic flush running again, which would lose them.
+/// Tracking consent goes to the `StatsConcentrator`, and moves into or out of a state where the app may
+/// be suspended, such as the background on iOS, go to `ClientStatsFeature`.
 ///
 /// Holds the concentrator weakly: it is owned by `ClientStatsFeature`, while the bus owns this
 /// receiver, so a weak reference avoids keeping the concentrator alive past the feature.
 internal final class TraceClientStatsContextReceiver: FeatureMessageReceiver {
     weak var concentrator: StatsConcentrator?
 
-    /// Writes every buffered bucket to storage. Set once by `ClientStatsFeature` before it is registered.
-    var persistBufferedStats: (() -> Void)?
+    /// Called with the new value whenever the app moves into or out of a state where it may be
+    /// suspended. Set once by `ClientStatsFeature` before it is registered. It must not block, since it
+    /// runs on the message bus queue that every feature shares.
+    var appMayBeSuspendedDidChange: ((Bool) -> Void)?
 
     /// Whether the last context showed an app that may be suspended.
     @ReadWriteLock
@@ -165,13 +222,13 @@ internal final class TraceClientStatsContextReceiver: FeatureMessageReceiver {
         concentrator?.updateConsent(context.trackingConsent)
 
         let isNowSuspendable = context.applicationStateHistory.currentState.applicationMayBeSuspended
-        var didBecomeSuspendable = false
+        var didChange = false
         _mayBeSuspended.mutate {
-            didBecomeSuspendable = isNowSuspendable && !$0
+            didChange = isNowSuspendable != $0
             $0 = isNowSuspendable
         }
-        if didBecomeSuspendable {
-            persistBufferedStats?()
+        if didChange {
+            appMayBeSuspendedDidChange?(isNowSuspendable)
         }
         return true
     }
