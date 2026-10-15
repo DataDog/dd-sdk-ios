@@ -482,6 +482,13 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             resourceCompletion.error
         )
 
+        // A span that exists only for client-side stats stays dropped, even if the customization keeps
+        // it, for example with `keepTrace()`: enabling stats must not change which requests are uploaded.
+        // Its tags, such as a customized resource, still count in the stats.
+        if isStatsOnly {
+            span.setTag(key: SpanTags.manualDrop, value: true)
+        }
+
         span.finish(at: safeEndTime)
     }
 
