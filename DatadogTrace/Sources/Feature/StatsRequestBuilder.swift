@@ -67,7 +67,7 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
                 throw InternalError(description: "[Trace] Client stats bucket has no payload identity.")
             }
             let identity = DeploymentIdentity(env: bucket.env, version: bucket.version, service: bucket.service)
-            let wireBucket = ClientStatsBucket(bucket)
+            let wireBucket = ClientStatsBucket(bucket, serverTimeOffset: context.serverTimeOffset)
             if let index = payloadIndexes[payload] {
                 if bucket.isPartial, let existing = payloads[index].buckets.first {
                     payloads[index].buckets = [
