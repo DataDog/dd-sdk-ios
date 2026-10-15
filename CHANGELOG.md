@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FIX] Start the `DatadogFlags` assignments request without waiting for the initial cache read, and report successful assignments before cache persistence. See [#3078][]
+- [IMPROVEMENT] Overlapping `FlagsClient.setEvaluationContext` calls no longer let an earlier result replace assignments for a newer context. Earlier calls still complete, and listeners skip state notifications superseded before delivery. Fetch-result completions run on a global utility queue. See [#3078][]
 - [FIX] Prevent incorrect RUM session expiration caused by device clock changes or cross-platform timestamp differences. See [#3288][]
 - [IMPROVEMENT] Flags: Report `CACHED` for disk-restored assignments and use that effective reason for evaluation telemetry.
 - [FEATURE] Add `spanCustomization` to `Trace.Configuration.URLSessionTracking` to customize spans created for intercepted network requests, for example to add request-based tags. See [#2741][]
@@ -1260,6 +1262,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3061]: https://github.com/DataDog/dd-sdk-ios/pull/3061
 [#3066]: https://github.com/DataDog/dd-sdk-ios/pull/3066
 [#3073]: https://github.com/DataDog/dd-sdk-ios/pull/3073
+[#3078]: https://github.com/DataDog/dd-sdk-ios/pull/3078
 [#3087]: https://github.com/DataDog/dd-sdk-ios/pull/3087
 [#3089]: https://github.com/DataDog/dd-sdk-ios/pull/3089
 [#3092]: https://github.com/DataDog/dd-sdk-ios/pull/3092
