@@ -367,6 +367,30 @@ class SpanSnapshotTests: XCTestCase {
         XCTAssertEqual(snapshot.httpStatusCode, 404)
     }
 
+    func testSnapshotCapturesTheStableOpenTelemetryHTTPStatusCode() throws {
+        let core = PassthroughCoreMock()
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: core, onSpanFinished: capture.capture)
+
+        tracer.spanBuilder(spanName: "GET")
+            .setSpanKind(spanKind: .client)
+            .setAttribute(key: "http.response.status_code", value: 503)
+            .startSpan()
+            .end()
+
+        XCTAssertEqual(try XCTUnwrap(capture.snapshot).httpStatusCode, 503)
+    }
+
+    func testWhenBothHTTPStatusCodeKeysAreSet_theStableOpenTelemetryOneWins() throws {
+        let core = PassthroughCoreMock()
+        let capture = SpanSnapshotCapture()
+        let tracer: DatadogTracer = .mockWith(core: core, onSpanFinished: capture.capture)
+
+        tracer.startSpan(operationName: "http.request", tags: [OTTags.httpStatusCode: 200, "http.response.status_code": 404]).finish()
+
+        XCTAssertEqual(try XCTUnwrap(capture.snapshot).httpStatusCode, 404)
+    }
+
     func testSnapshotCapturesErrorFromTag() throws {
         let core = PassthroughCoreMock()
         let capture = SpanSnapshotCapture()
