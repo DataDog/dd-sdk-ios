@@ -186,6 +186,12 @@ internal final class ClientStatsFeature: DatadogRemoteFeature, @unchecked Sendab
     }
 }
 
+extension ClientStatsFeature: DataClearable {
+    func clearAllData() {
+        concentrator.clearAllData()
+    }
+}
+
 extension ClientStatsFeature: Flushable {
     func flush() {
         flushStats(.teardown)
