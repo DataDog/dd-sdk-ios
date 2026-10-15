@@ -15,11 +15,28 @@ import DatadogInternal
 internal final class ClientStatsFeature: DatadogRemoteFeature {
     static let name = "tracing-client-stats"
 
+    /// Largest encoded bucket written as one storage event; larger buckets are split. Below half the
+    /// 1 MB event limit, so a piece still fits when a custom `DataEncryption` doubles its size, as
+    /// hex encoding does, plus the 6-byte batch block header.
+    static let maxStoredBucketSize = 500_000
+
+    /// Largest stats batch file. Each file is uploaded as one request, so this keeps a request within
+    /// the 1.5 MB the agent's stats writer targets, half the intake's limit of about 3 MB compressed.
+    /// Stored JSON is larger than the MessagePack body built from it.
+    static let maxBatchSize: UInt32 = 1_536 * 1_024
+
     let requestBuilder: FeatureRequestBuilder
     let messageReceiver: FeatureMessageReceiver
     let performanceOverride: PerformancePresetOverride?
 
     let concentrator: StatsConcentrator
+    /// The `RuntimeID` of the client stats payloads this feature stores: the identity under which
+    /// their sequence numbers are unique. It belongs to the stats feature, not to the tracer, because
+    /// the SDK has no tracer or process-level ID to reuse and the sequence counter has to live with the
+    /// code that stores the payloads. The name matches the stats protocol field.
+    private let runtimeID = UUID().uuidString
+    /// Sequence numbers for those payloads, taken in write order.
+    private let sequenceNumbers = StatsSequenceNumberProvider()
     private let featureScope: FeatureScope
     private let dateProvider: DateProvider
     private let metricController: TraceClientStatsMetricController
@@ -36,11 +53,9 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
     ) {
         self.requestBuilder = StatsRequestBuilder(
             customIntakeURL: configuration.customStatsEndpoint,
-            telemetry: core.telemetry,
-            runtimeID: UUID().uuidString,
-            sequenceNumberProvider: StatsSequenceNumberProvider()
+            telemetry: core.telemetry
         )
-        self.performanceOverride = nil
+        self.performanceOverride = PerformancePresetOverride(maxFileSize: Self.maxBatchSize)
         self.dateProvider = dateProvider
         self.flushInterval = flushInterval
         self.featureScope = core.scope(for: ClientStatsFeature.self)
@@ -75,13 +90,24 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
             return
         }
 
-        featureScope.eventWriteContext { [metricController] _, writer in
+        featureScope.eventWriteContext { [metricController, runtimeID, sequenceNumbers] _, writer in
+            var oversizedGroups: [ExportedGroupedStats] = []
             for bucket in exportedBuckets {
-                writer.write(value: bucket)
+                // Identify each payload here, in write order, so sequence numbers increase in the order
+                // payloads are stored and stay the same across retries and restarts.
+                let payload = ExportedBucket.PayloadIdentity(runtimeID: runtimeID, sequence: sequenceNumbers.next())
+                let split = bucket.assigning(payload).split(toFit: Self.maxStoredBucketSize)
+                for piece in split.pieces {
+                    writer.write(value: piece)
+                }
+                oversizedGroups += split.oversizedGroups
+            }
+            if !oversizedGroups.isEmpty {
+                DD.logger.warn("Client-side stats dropped \(oversizedGroups.count) group(s) whose strings or bucket metadata exceed the storage budget.")
             }
             // Report only after the write: in some cases the event write context is not
             // available, and we do not want to signal a flush that never reached storage.
-            metricController.send(for: exportedBuckets, force: force)
+            metricController.send(for: exportedBuckets, oversizedGroups: oversizedGroups, force: force)
         }
     }
 
