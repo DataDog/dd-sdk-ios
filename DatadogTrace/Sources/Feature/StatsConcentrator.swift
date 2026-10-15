@@ -146,7 +146,7 @@ internal struct ExportedBucket: Codable, Sendable {
 
     /// The client payload this bucket is uploaded in, assigned when the bucket is flushed and kept in
     /// every request, retry and upload after a restart, as the agent does for fragments of one payload.
-    /// `nil` for buckets stored by earlier builds, which take one when they are uploaded.
+    /// `ClientStatsFeature` assigns it before storing the bucket, so it is `nil` only before that.
     let payload: PayloadIdentity?
 
     /// How many pieces this bucket's payload was split into to fit the storage event limit. `nil` for
