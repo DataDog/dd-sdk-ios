@@ -174,13 +174,41 @@ internal struct ClientGroupedStats: Encodable {
 // MARK: - Mapping from the concentrator's exported types
 
 extension ClientStatsBucket {
-    /// Maps a `StatsConcentrator`-exported bucket into the wire-format bucket.
-    init(_ exported: ExportedBucket) {
+    /// Maps a `StatsConcentrator`-exported bucket into the wire-format bucket, moving its start to the
+    /// server clock.
+    ///
+    /// The concentrator buckets spans on the device clock, so they flush on time even when that clock
+    /// is wrong. Uploaded spans are shifted by `serverTimeOffset`, so the bucket start is shifted too,
+    /// then rounded to the nearest bucket boundary to stay aligned. Offsets under half a bucket round
+    /// away, which is within the 10-second granularity of the stats.
+    init(_ exported: ExportedBucket, serverTimeOffset: TimeInterval) {
         self.init(
-            start: exported.start,
+            start: Self.serverStart(of: exported, offset: serverTimeOffset),
             duration: exported.duration,
             stats: exported.stats.map(ClientGroupedStats.init)
         )
+    }
+
+    private static func serverStart(of exported: ExportedBucket, offset: TimeInterval) -> UInt64 {
+        let offsetNanoseconds = (offset * 1_000_000_000).rounded()
+        // A start saturated at `UInt64.max` comes from a pathological span time and stays saturated.
+        guard offsetNanoseconds != 0, offsetNanoseconds.isFinite, exported.start < .max else {
+            return exported.start
+        }
+        // Doubles cover any real start or offset, and multiples of a 10-second bucket stay exact; the
+        // result is clamped so a pathological value cannot trap. A bucket of zero duration has no
+        // boundary to align to.
+        let shifted = Double(exported.start) + offsetNanoseconds
+        let aligned = exported.duration > 0
+            ? (shifted / Double(exported.duration)).rounded() * Double(exported.duration)
+            : shifted
+        guard aligned > 0 else {
+            return 0
+        }
+        guard aligned < Double(UInt64.max) else {
+            return .max
+        }
+        return UInt64(aligned)
     }
 }
 
