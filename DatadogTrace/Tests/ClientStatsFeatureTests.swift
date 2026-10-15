@@ -1067,6 +1067,29 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertEqual(clientStats["Sequence"] as? Int64, 1)
     }
 
+    func testWhenBuildingRequest_itMovesBucketStartsToTheServerClockAlignedToBuckets() throws {
+        let bucketDuration: UInt64 = 10_000_000_000
+        let start = 170_000_000 * bucketDuration
+        let cases: [(offset: TimeInterval, start: UInt64, expected: UInt64)] = [
+            (0, 1_000, 1_000), // no offset keeps the stored start exactly
+            (3_600, start, start + 360 * bucketDuration), // device clock an hour behind
+            (-7.4, start, start - bucketDuration), // rounds to the nearest boundary
+            (2, start, start), // under half a bucket
+            (1, .max, .max), // saturates instead of trapping
+            (-100, 0, 0)
+        ]
+        for testCase in cases {
+            let request = try makeRequestBuilder().request(
+                for: [makeEvent(from: makeExportedBucket(start: testCase.start, duration: bucketDuration))],
+                with: .mockWith(serverTimeOffset: testCase.offset),
+                execution: .init(previousResponseCode: nil, attempt: 0)
+            )
+            let bucket = try mapFields(try XCTUnwrap(firstClientStatsPayload(in: request)["Stats"] as? [Any?]).first ?? nil)
+            // The test decoder reads unsigned 64-bit values as `Int64` bit patterns.
+            XCTAssertEqual((bucket["Start"] as? Int64).map { UInt64(bitPattern: $0) }, testCase.expected, "Offset \(testCase.offset)")
+        }
+    }
+
     func testWhenBuildingRequest_itMapsExportedBucketsOntoWirePayload() throws {
         // Given
         let bucket = makeExportedBucket(start: 1_000, duration: 10_000_000_000, groupCount: 1)
