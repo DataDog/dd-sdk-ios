@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+@_spi(Internal)
 import DatadogInternal
 import Foundation
 
@@ -50,7 +51,18 @@ public enum RUM {
 
         // Register RUM feature:
         let rum = try RUMFeature(in: core, configuration: configuration)
-        try core.register(feature: rum)
+        do {
+            if let owner = rum.rumContextHandoffOwner, let activationCore = core as? RUMContextHandoffActivating {
+                try activationCore.registerRUMContextHandoff(feature: rum, owner: owner)
+            } else {
+                try core.register(feature: rum)
+            }
+        } catch {
+            if let owner = rum.rumContextHandoffOwner {
+                (core as? RUMContextHandoffActivating)?.deactivateRUMContextHandoff(owner: owner)
+            }
+            throw error
+        }
 
         if rum.timeseriesCollector != nil {
             core.telemetry.usage(event: .timeseries)

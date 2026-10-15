@@ -5,7 +5,81 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
+
+/// Identifies a scene for in-process routing; never encoded into RUM events.
+internal struct RUMSceneIdentifier: Hashable {
+    let rawValue: String
+}
+
+/// Selects the view branch that owns a command.
+internal enum RUMCommandTarget: Equatable {
+    case none
+    case processRepresentative
+    case scene(RUMSceneIdentifier)
+    case view(RUMUUID)
+    case allActiveViews
+    case continuousAction(RUMContinuousActionOwnership)
+}
+
+/// Private receipt for one automatic continuous action. Mutable state is confined to
+/// the existing event-write queue; input callbacks retain only its identity/source.
+internal final class RUMContinuousActionOwnership: Equatable {
+    struct Claim {
+        let sessionID: RUMUUID
+        let viewID: RUMUUID
+        let actionID: RUMUUID
+    }
+
+    let sceneIdentifier: RUMSceneIdentifier?
+    let owner: RUMContextHandoff.Owner
+    private(set) var claim: Claim?
+    private(set) var isClosed = false
+    private var hasAppliedStart = false
+    private var isApplyingStart = false
+
+    init(sceneIdentifier: RUMSceneIdentifier?, owner: RUMContextHandoff.Owner) {
+        self.sceneIdentifier = sceneIdentifier
+        self.owner = owner
+    }
+
+    /// Immutable selection; reading it does not inspect queued admission state.
+    var sourceTarget: RUMCommandTarget {
+        sceneIdentifier.map(RUMCommandTarget.scene) ?? .processRepresentative
+    }
+
+    /// A dropped or deferred Start must not be retried against a later view/action.
+    func beginStart() -> Bool {
+        guard !isClosed, !hasAppliedStart, owner.isValid else { return false }
+        hasAppliedStart = true
+        isApplyingStart = true
+        return true
+    }
+
+    func finishStart() { isApplyingStart = false }
+
+    /// Called only while applying the first actual Start on the event-write queue.
+    var canClaim: Bool { isApplyingStart && !isClosed && claim == nil && owner.isValid }
+
+    func claimAction(sessionID: RUMUUID, viewID: RUMUUID, actionID: RUMUUID) {
+        guard canClaim else { return }
+        claim = Claim(sessionID: sessionID, viewID: viewID, actionID: actionID)
+    }
+
+    /// Called at actual post-launch-resolution terminal application, never at enqueue.
+    func close() { isClosed = true; isApplyingStart = false }
+
+    static func == (lhs: RUMContinuousActionOwnership, rhs: RUMContinuousActionOwnership) -> Bool {
+        lhs === rhs
+    }
+}
+
+/// Carries an explicit view selection separately from inferred ownership.
+internal protocol RUMExplicitViewTargetCommand: RUMCommand {
+    var target: RUMCommandTarget { get set }
+    var explicitTarget: RUMCommandTarget? { get set }
+}
 
 /// Command processed through the tree of `RUMScopes`.
 internal protocol RUMCommand {
@@ -15,6 +89,8 @@ internal protocol RUMCommand {
     var globalAttributes: [AttributeKey: AttributeValue] { set get }
     /// Attributes associated with the command.
     var attributes: [AttributeKey: AttributeValue] { set get }
+    /// In-process ownership; routing consumers retain their existing behavior.
+    var target: RUMCommandTarget { get }
     /// Indicates whether this command should start the "ApplicationLaunch" view
     /// when received in the initial session and no view has started yet.
     var canStartApplicationLaunchView: Bool { get }
@@ -34,6 +110,10 @@ internal protocol RUMCommand {
     var isUserInteraction: Bool { get }
     /// Type of event that was missed (if any) due to no active view when this command was received.
     var missedEventType: SessionEndedMetric.MissedEventType? { get }
+}
+
+extension RUMCommand {
+    var target: RUMCommandTarget { .processRepresentative }
 }
 
 internal struct RUMSDKInitCommand: RUMCommand {
@@ -63,6 +143,7 @@ internal struct RUMApplicationStartCommand: RUMCommand {
 }
 
 internal struct RUMStopSessionCommand: RUMCommand {
+    let target: RUMCommandTarget = .allActiveViews
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue] = [:]
@@ -80,6 +161,7 @@ internal struct RUMStopSessionCommand: RUMCommand {
 }
 
 internal struct RUMHandleAppLifecycleEventCommand: RUMCommand {
+    let target: RUMCommandTarget = .allActiveViews
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue] = [:]
@@ -130,7 +212,9 @@ internal struct RUMTimeToFullDisplayCommand: RUMCommand {
 
 // MARK: - RUM View related commands
 
-internal struct RUMAddViewAttributesCommand: RUMCommand {
+internal struct RUMAddViewAttributesCommand: RUMExplicitViewTargetCommand {
+    var target: RUMCommandTarget = .processRepresentative
+    var explicitTarget: RUMCommandTarget? = nil
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
@@ -145,7 +229,9 @@ internal struct RUMAddViewAttributesCommand: RUMCommand {
     var areInternalAttributes = false
 }
 
-internal struct RUMRemoveViewAttributesCommand: RUMCommand {
+internal struct RUMRemoveViewAttributesCommand: RUMExplicitViewTargetCommand {
+    var target: RUMCommandTarget = .processRepresentative
+    var explicitTarget: RUMCommandTarget? = nil
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue] = [:]
@@ -182,6 +268,7 @@ internal struct RUMStartViewCommand: RUMCommand {
 
     /// The type of instrumentation that started this view.
     let instrumentationType: InstrumentationType
+    var target: RUMCommandTarget
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
 
     init(
@@ -191,9 +278,11 @@ internal struct RUMStartViewCommand: RUMCommand {
         path: String,
         globalAttributes: [AttributeKey: AttributeValue],
         attributes: [AttributeKey: AttributeValue],
-        instrumentationType: InstrumentationType
+        instrumentationType: InstrumentationType,
+        target: RUMCommandTarget = .processRepresentative
     ) {
         self.time = time
+        self.target = target
         self.globalAttributes = globalAttributes
         self.attributes = attributes
         self.identity = identity
@@ -204,6 +293,7 @@ internal struct RUMStartViewCommand: RUMCommand {
 }
 
 internal struct RUMStopViewCommand: RUMCommand {
+    var target: RUMCommandTarget = .processRepresentative
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
@@ -249,7 +339,9 @@ internal protocol RUMErrorCommand: RUMCommand {
 /// Adds exception error to current view.
 ///
 /// Using this command results with classifying the error as "Exception" in Datadog app (`@error.category: Exception`).
-internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
+internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand, RUMExplicitViewTargetCommand {
+    var target: RUMCommandTarget = .processRepresentative
+    var explicitTarget: RUMCommandTarget? = nil
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
@@ -271,7 +363,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
     let binaryImages: [BinaryImage]?
     let isStackTraceTruncated: Bool?
     let missedEventType: SessionEndedMetric.MissedEventType? = .error
-    let completionHandler: CompletionHandler
+    var completionHandler: CompletionHandler
 
     /// Constructor dedicated to errors defined by message, type and stack.
     init(
@@ -420,7 +512,9 @@ internal struct RUMAddCurrentViewMemoryWarningCommand: RUMErrorCommand {
     let completionHandler: CompletionHandler = NOPCompletionHandler
 }
 
-internal struct RUMAddViewLoadingTime: RUMCommand {
+internal struct RUMAddViewLoadingTime: RUMExplicitViewTargetCommand {
+    var target: RUMCommandTarget = .processRepresentative
+    var explicitTarget: RUMCommandTarget? = nil
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
@@ -435,7 +529,9 @@ internal struct RUMAddViewLoadingTime: RUMCommand {
     let overwrite: Bool
 }
 
-internal struct RUMAddViewTimingCommand: RUMCommand {
+internal struct RUMAddViewTimingCommand: RUMExplicitViewTargetCommand {
+    var target: RUMCommandTarget = .processRepresentative
+    var explicitTarget: RUMCommandTarget? = nil
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
@@ -533,7 +629,9 @@ internal struct RUMSpanContext {
     }
 }
 
-internal struct RUMStartResourceCommand: RUMResourceCommand {
+internal struct RUMStartResourceCommand: RUMResourceCommand, RUMExplicitViewTargetCommand {
+    var target: RUMCommandTarget = .processRepresentative
+    var explicitTarget: RUMCommandTarget? = nil
     let resourceKey: String
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
@@ -557,6 +655,7 @@ internal struct RUMStartResourceCommand: RUMResourceCommand {
 }
 
 internal struct RUMAddResourceMetricsCommand: RUMResourceCommand {
+    var target: RUMCommandTarget = .processRepresentative
     let resourceKey: String
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
@@ -574,6 +673,7 @@ internal struct RUMAddResourceMetricsCommand: RUMResourceCommand {
 }
 
 internal struct RUMStopResourceCommand: RUMResourceCompletionCommand {
+    var target: RUMCommandTarget = .processRepresentative
     let resourceKey: String
     var isAutomatic = false
     var ownership: RUMResourceOwnership? = nil
@@ -597,6 +697,7 @@ internal struct RUMStopResourceCommand: RUMResourceCompletionCommand {
 }
 
 internal struct RUMStopResourceWithErrorCommand: RUMResourceCompletionCommand {
+    var target: RUMCommandTarget = .processRepresentative
     let resourceKey: String
     var isAutomatic = false
     var ownership: RUMResourceOwnership? = nil
@@ -684,10 +785,20 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCompletionCommand {
 internal protocol RUMUserActionCommand: RUMCommand {
     /// The action identifying the RUM User Action.
     var actionType: RUMActionType { get }
+    var target: RUMCommandTarget { get set }
+    var explicitTarget: RUMCommandTarget? { get }
+    var actionReceipt: RUMContextHandoff.ActionReceipt? { get }
+}
+
+extension RUMUserActionCommand {
+    var actionReceipt: RUMContextHandoff.ActionReceipt? { nil }
 }
 
 /// Starts continuous User Action.
 internal struct RUMStartUserActionCommand: RUMUserActionCommand {
+    var actionReceipt: RUMContextHandoff.ActionReceipt? = nil
+    var target: RUMCommandTarget = .processRepresentative
+    var explicitTarget: RUMCommandTarget? = nil
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
@@ -707,6 +818,8 @@ internal struct RUMStartUserActionCommand: RUMUserActionCommand {
 
 /// Stops continuous User Action.
 internal struct RUMStopUserActionCommand: RUMUserActionCommand {
+    var target: RUMCommandTarget = .processRepresentative
+    var explicitTarget: RUMCommandTarget? = nil
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
@@ -724,6 +837,9 @@ internal struct RUMStopUserActionCommand: RUMUserActionCommand {
 
 /// Adds discrete (discontinuous) User Action.
 internal struct RUMAddUserActionCommand: RUMUserActionCommand {
+    var actionReceipt: RUMContextHandoff.ActionReceipt? = nil
+    var target: RUMCommandTarget = .processRepresentative
+    var explicitTarget: RUMCommandTarget? = nil
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
@@ -744,7 +860,9 @@ internal struct RUMAddUserActionCommand: RUMUserActionCommand {
 }
 
 /// Adds that a feature flag has been evaluated to the view
-internal struct RUMAddFeatureFlagEvaluationCommand: RUMCommand {
+internal struct RUMAddFeatureFlagEvaluationCommand: RUMExplicitViewTargetCommand {
+    var target: RUMCommandTarget = .processRepresentative
+    var explicitTarget: RUMCommandTarget? = nil
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
@@ -770,6 +888,7 @@ internal struct RUMAddFeatureFlagEvaluationCommand: RUMCommand {
 // MARK: - RUM Long Task related commands
 
 internal struct RUMAddLongTaskCommand: RUMCommand {
+    var target: RUMCommandTarget = .processRepresentative
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
@@ -803,6 +922,8 @@ internal struct RUMKeepSessionAliveCommand: RUMCommand {
 // MARK: - Feature Operation Steps (Vital) commands
 /// Vital is the model used under the hood to track Feature Operations in RUM. Each step in a Feature Operation is sent as a Vital.
 internal struct RUMOperationStepVitalCommand: RUMCommand {
+    var target: RUMCommandTarget = .processRepresentative
+    var explicitTarget: RUMCommandTarget? = nil
     /// The vital ID for this operation step
     var vitalId: String
     /// The name of the operation (e.g., `login_flow`)
@@ -831,6 +952,7 @@ internal struct RUMOperationStepVitalCommand: RUMCommand {
 // MARK: - Cross-platform attributes
 
 internal struct RUMUpdatePerformanceMetric: RUMCommand {
+    var target: RUMCommandTarget = .processRepresentative
     var canStartApplicationLaunchView = false
     let canStartBackgroundView = false
     let shouldRestartLastViewAfterSessionExpiration = false

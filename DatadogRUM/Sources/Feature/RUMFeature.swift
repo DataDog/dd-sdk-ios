@@ -5,6 +5,8 @@
  */
 
 import Foundation
+import CoreFoundation
+@_spi(Internal)
 import DatadogInternal
 #if canImport(UIKit)
 import UIKit
@@ -25,6 +27,11 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
 
     let configuration: RUM.Configuration
 
+    /// The scene-tracking mode frozen when this feature is enabled.
+    let isMultiSceneTrackingEnabled: Bool
+    let rumContextHandoffOwner: RUMContextHandoff.Owner?
+    let operationOrigin: RUMOperationOrigin?
+
     let anonymousIdentifierManager: AnonymousIdentifierManaging
 
     /// Collects memory/CPU timeseries samples during the RUM session, if enabled. Retained here so it can be
@@ -44,6 +51,43 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
         configuration: RUM.Configuration
     ) throws {
         self.configuration = configuration
+
+        let supportsMultiSceneTracking: Bool
+        #if os(iOS)
+        if #available(iOS 27.0, *) {
+            supportsMultiSceneTracking = true
+        } else {
+            supportsMultiSceneTracking = false
+        }
+        #else
+        supportsMultiSceneTracking = false
+        #endif
+
+        let featureFlags = Self.resolvedFeatureFlags(
+            configuration.featureFlags,
+            bundle: configuration.bundle,
+            supportsMultiSceneTracking: supportsMultiSceneTracking
+        )
+        self.isMultiSceneTrackingEnabled = featureFlags[.multiSceneTracking]
+
+        let activationCore: RUMContextHandoffActivating?
+        let issuedOwner: RUMContextHandoff.Owner?
+        if featureFlags[.multiSceneTracking] {
+            activationCore = core as? RUMContextHandoffActivating
+            issuedOwner = try activationCore?.activateRUMContextHandoff()
+        } else {
+            activationCore = nil
+            issuedOwner = nil
+        }
+        rumContextHandoffOwner = issuedOwner
+        let operationOrigin = issuedOwner.map { RUMOperationOrigin(core: core, owner: $0) }
+        self.operationOrigin = operationOrigin
+        var initializationCompleted = false
+        defer {
+            if !initializationCompleted, let owner = issuedOwner {
+                activationCore?.deactivateRUMContextHandoff(owner: owner)
+            }
+        }
 
         // Created first: the initial session identity is recorded into it further down, still inside
         // `RUM.enable()`, and `RUM.enableURLSessionTracking` wires the URLSession handler to it.
@@ -123,7 +167,8 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             }
         }()
 
-        let onSessionUpdate: RUM.SessionUpdater = { [onSessionStart = configuration.onSessionStart, sessionSamplingStore] sessionScope in
+        let onSessionUpdate: RUM.SessionUpdater = { [onSessionStart = configuration.onSessionStart, sessionSamplingStore, operationOrigin] sessionScope in
+            operationOrigin?.setSession(sessionScope?.sessionUUID.toRUMDataFormat)
             if let sessionScope {
                 let sessionID = sessionScope.sessionUUID.toRUMDataFormat
                 sessionSamplingStore.setSession(id: sessionID, sampler: sessionScope.sampler)
@@ -213,7 +258,10 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             vitalsReaders: vitalsReaders,
             accessibilityReader: accessibilityReader,
             onSessionUpdate: onSessionUpdate,
-            viewCache: ViewCache(dateProvider: configuration.dateProvider),
+            viewCache: ViewCache(
+                dateProvider: configuration.dateProvider,
+                isMultiSceneTrackingEnabled: featureFlags[.multiSceneTracking]
+            ),
             fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope),
             sessionEndedMetric: sessionEndedMetric,
             viewEndedMetricFactory: {
@@ -238,7 +286,7 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             },
             appStateManager: appStateManager,
             watchdogTermination: watchdogTermination,
-            featureFlags: configuration.featureFlags,
+            featureFlags: featureFlags,
             networkSettledMetricFactory: { viewStartDate, viewName in
                 return TNSMetric(
                     viewName: viewName,
@@ -257,12 +305,14 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             sessionType: configuration.sessionTypeOverride.flatMap { RUMSessionType(rawValue: $0) },
             monotonicClock: configuration.monotonicClock,
             initialSessionUUID: initialSessionUUID,
-            timeseriesCollector: timeseriesCollector
+            timeseriesCollector: timeseriesCollector,
+            operationOrigin: operationOrigin
         )
 
         self.monitor = Monitor(
             dependencies: dependencies,
-            dateProvider: configuration.dateProvider
+            dateProvider: configuration.dateProvider,
+            executionContextProvider: featureFlags[.multiSceneTracking] ? RUMContextHandoff.current(for:) : nil
         )
 
         timeseriesCollector?.activeContextReader = monitor
@@ -362,8 +412,19 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
             memoryWarningMonitor: memoryWarningMonitor,
             uuidGenerator: configuration.uuidGenerator,
             heatmapIdentifierRegistry: heatmapIdentifierStore,
+            isMultiSceneTrackingEnabled: dependencies.isMultiSceneTrackingEnabled,
+            rumContextHandoffOwner: issuedOwner,
+            handoffMonitor: dependencies.isMultiSceneTrackingEnabled ? monitor : nil,
             isAppHangBacktraceEnabled: isAppHangBacktraceEnabled
         )
+        #endif
+        #if os(iOS)
+        if dependencies.isMultiSceneTrackingEnabled {
+            let handler: AnyObject = instrumentation.viewsHandler
+            if let handler = handler as? any RUMSceneTargetedManualViewHandling {
+                monitor.bind(sceneTargetedManualViewHandler: handler)
+            }
+        }
         #endif
         self.requestBuilder = RequestBuilder(
             customIntakeURL: configuration.customEndpoint,
@@ -477,6 +538,45 @@ internal final class RUMFeature: DatadogRemoteFeature, SessionSampler {
 
         // Manage anonymous identifier depending on the configuration.
         anonymousIdentifierManager.manageAnonymousIdentifier(shouldTrack: configuration.trackAnonymousUser)
+        operationOrigin?.attach(feature: self, monitor: monitor)
+        initializationCompleted = true
+    }
+
+    deinit { operationOrigin?.retire() }
+}
+
+extension RUMFeature: RUMOperationOriginProviding, RUMOperationFeatureRetiring {
+    func isOperationMonitor(_ monitor: AnyObject) -> Bool { self.monitor === monitor }
+
+    func isOperationSessionActive(start: TimeInterval, lastInteraction: TimeInterval) -> Bool {
+        let now = monitor.applicationScope.dependencies.monotonicClock.elapsedTime
+        return !RUMSessionScope.hasTimedOut(lastInteraction: lastInteraction, now: now)
+            && !RUMSessionScope.hasExpired(sessionStart: start, now: now)
+    }
+
+    func retireOperationOrigin() { operationOrigin?.retire() }
+}
+
+extension RUMFeature {
+    /// Resolves the requested scene-tracking flag without changing other feature flags.
+    static func resolvedFeatureFlags(
+        _ requestedFlags: RUM.Configuration.FeatureFlags,
+        bundle: Bundle,
+        supportsMultiSceneTracking: Bool
+    ) -> RUM.Configuration.FeatureFlags {
+        var resolvedFlags = requestedFlags
+        resolvedFlags[.multiSceneTracking] = false
+
+        guard requestedFlags[.multiSceneTracking], supportsMultiSceneTracking,
+              let manifest = bundle.object(forInfoDictionaryKey: "UIApplicationSceneManifest") as? [String: Any],
+              let supportsMultipleScenes = manifest["UIApplicationSupportsMultipleScenes"] as? NSNumber,
+              CFGetTypeID(supportsMultipleScenes) == CFBooleanGetTypeID(),
+              supportsMultipleScenes.boolValue else {
+            return resolvedFlags
+        }
+
+        resolvedFlags[.multiSceneTracking] = true
+        return resolvedFlags
     }
 }
 
@@ -514,6 +614,7 @@ extension RUMFeature {
     func decision(for policy: SamplingRatePolicy, rate: SampleRate) -> SessionSamplingDecision? {
         sessionSamplingStore.decision(for: policy, rate: rate)
     }
+
 }
 
 extension RUMFeature: Flushable {

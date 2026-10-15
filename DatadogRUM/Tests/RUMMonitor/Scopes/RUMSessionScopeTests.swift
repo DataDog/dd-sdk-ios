@@ -5,7 +5,7 @@
  */
 
 import XCTest
-@testable import DatadogInternal
+@_spi(Internal) @testable import DatadogInternal
 @testable import DatadogRUM
 @testable import TestUtilities
 
@@ -1993,6 +1993,236 @@ extension RUMSessionScopeTests {
         XCTAssertEqual(fixture.errors.count, 1)
     }
 
+
+
+    func testContinuousActionTerminalUsesCapturedSessionLifetimeWithoutAdoptingPeer() throws {
+        for expired in [false, true] {
+            for eventDateShift in [-86_400.0, 86_400.0] {
+                let fixture = RUMResourceCompletionFixture(applicationScope: true, multiSceneTracking: true)
+                let sceneA = RUMSceneIdentifier(rawValue: "scene-a")
+                let targetA = RUMCommandTarget.scene(sceneA)
+                let targetB = RUMCommandTarget.scene(.init(rawValue: "scene-b"))
+                fixture.startView("original-a", target: targetA)
+                let ownership = RUMContinuousActionOwnership(
+                    sceneIdentifier: sceneA, owner: RUMContextHandoff.Owner()
+                )
+                var start = RUMStartUserActionCommand.mockWith(actionType: .scroll, name: "original-continuous")
+                start.target = .continuousAction(ownership)
+                fixture.send(start)
+                let session = try XCTUnwrap(fixture.application.activeSession)
+                let viewA = try XCTUnwrap(session.viewScopes.first { $0.identity == ViewIdentifier("original-a") })
+                let originalAction = try XCTUnwrap(viewA.userActionScope)
+                let claim = try XCTUnwrap(ownership.claim)
+                fixture.startView("peer-b", target: targetB)
+                fixture.startAction("peer-b", target: targetB)
+                let peer = try XCTUnwrap(session.viewScopes.first { $0.identity == ViewIdentifier("peer-b") })
+                let peerAction = try XCTUnwrap(peer.userActionScope)
+                let sessionsBefore = fixture.application.sessionScopes.map(\.sessionUUID)
+                let receipt = session.lastInteraction
+                    + (expired ? RUMSessionScope.Constants.sessionTimeoutDuration + 1 : 1)
+                fixture.time.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration + 1)
+                var stop = RUMStopUserActionCommand.mockWith(
+                    time: fixture.time.addingTimeInterval(eventDateShift), actionType: .scroll,
+                    name: "original-continuous"
+                )
+                stop.target = .continuousAction(ownership)
+                stop.attributes["terminal-owner"] = "original-a"
+
+                _ = fixture.application.process(
+                    command: stop, monotonicTime: receipt,
+                    context: fixture.context, writer: fixture.writer
+                )
+
+                XCTAssertTrue(fixture.application.activeSession === session)
+                XCTAssertEqual(fixture.application.sessionScopes.map(\.sessionUUID), sessionsBefore)
+                XCTAssertTrue(ownership.isClosed)
+                XCTAssertEqual(ownership.claim?.viewID, claim.viewID)
+                XCTAssertEqual(ownership.claim?.actionID, claim.actionID)
+                XCTAssertNil(peerAction.attributes["terminal-owner"])
+                let events = fixture.writer.events(ofType: RUMActionEvent.self)
+                    .filter { $0.action.target?.name == "original-continuous" }
+                if expired {
+                    XCTAssertTrue(viewA.userActionScope === originalAction)
+                    XCTAssertTrue(peer.userActionScope === peerAction)
+                    XCTAssertTrue(events.isEmpty)
+                } else {
+                    XCTAssertNil(viewA.userActionScope)
+                    XCTAssertEqual(events.count, 1)
+                    XCTAssertEqual(events.first?.session.id, claim.sessionID.toRUMDataFormat)
+                    XCTAssertEqual(events.first?.view.id, claim.viewID.toRUMDataFormat)
+                }
+            }
+        }
+    }
+
+    func testSceneErrorCompletionUsesCapturedLifetimeAfterDelayedProcessing() throws {
+        for eventDateShift in [-86_400.0, 86_400.0] {
+            let fixture = RUMResourceCompletionFixture(applicationScope: true, multiSceneTracking: true)
+            let targetA = RUMCommandTarget.scene(.init(rawValue: "scene-a"))
+            let targetB = RUMCommandTarget.scene(.init(rawValue: "scene-b"))
+            fixture.startView("original-a", target: targetA)
+            fixture.startView("peer-b", target: targetB)
+            let session = try XCTUnwrap(fixture.application.activeSession)
+            let viewA = try XCTUnwrap(session.viewScopes.first { $0.identity == ViewIdentifier("original-a") })
+            let peer = try XCTUnwrap(session.viewScopes.first { $0.identity == ViewIdentifier("peer-b") })
+            let receipt = session.lastInteraction + 1
+            fixture.time.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration + 1)
+            let completion = expectation(description: "original error completion")
+            completion.assertForOverFulfill = true
+            var command = RUMAddCurrentViewErrorCommand(
+                time: fixture.time.addingTimeInterval(eventDateShift),
+                message: "delayed scene error", type: nil, stack: nil, source: .custom,
+                globalAttributes: [:], attributes: ["error-owner": "original-a"],
+                completionHandler: { completion.fulfill() }
+            )
+            command.target = targetA
+
+            _ = fixture.application.process(
+                command: command, monotonicTime: receipt,
+                context: fixture.context, writer: fixture.writer
+            )
+
+            wait(for: [completion], timeout: 1)
+            XCTAssertTrue(fixture.application.activeSession === session)
+            XCTAssertEqual(fixture.errors.count, 1)
+            XCTAssertEqual(fixture.errors.first?.session.id, session.sessionUUID.toRUMDataFormat)
+            XCTAssertEqual(fixture.errors.first?.view.id, viewA.viewUUID.toRUMDataFormat)
+            XCTAssertNil(peer.attributes["error-owner"])
+        }
+    }
+
+    func testGivenExpiredResourceOnMultipleScenes_whenCompleted_itDoesNotAdoptEitherFreshAction() throws {
+        for reason in [RUMSessionScope.EndReason.timeOut, .maxDuration] {
+            for error in [false, true] {
+                let fixture = RUMResourceCompletionFixture(applicationScope: true, multiSceneTracking: true)
+                let targetA = RUMCommandTarget.scene(.init(rawValue: "scene-a"))
+                let targetB = RUMCommandTarget.scene(.init(rawValue: "scene-b"))
+                fixture.startView("expired", target: targetA)
+                fixture.startResource("late", target: targetA)
+                fixture.startResource("late-peer", target: targetA)
+                fixture.expireSession(by: reason)
+                fixture.startView("fresh-a", target: targetA)
+                fixture.startAction("fresh-a", target: targetA)
+                fixture.startView("fresh-b", target: targetB)
+                let session = try XCTUnwrap(fixture.application.activeSession)
+                let viewA = try XCTUnwrap(session.viewScopes.first { $0.identity == ViewIdentifier("fresh-a") })
+                let viewB = try XCTUnwrap(session.viewScopes.first { $0.identity == ViewIdentifier("fresh-b") })
+                let actionA = try XCTUnwrap(viewA.userActionScope)
+                let peerStart = fixture.time
+                var peer = RUMAddUserActionCommand.mockWith(name: "fresh-b")
+                peer.target = targetB
+                fixture.send(peer)
+                let actionB = try XCTUnwrap(viewB.userActionScope)
+                let viewIDs = session.viewScopes.map(\.viewUUID)
+
+                fixture.time = peerStart.addingTimeInterval(0.05)
+                fixture.completeResource("late", error: error)
+
+                XCTAssertTrue(viewA.userActionScope === actionA)
+                XCTAssertTrue(viewB.userActionScope === actionB)
+                XCTAssertEqual(session.viewScopes.map(\.viewUUID), viewIDs)
+                XCTAssertNil(viewA.attributes["completion-source"])
+                XCTAssertNil(viewB.attributes["completion-source"])
+                XCTAssertNil(actionA.attributes["completion-source"])
+                XCTAssertNil(actionB.attributes["completion-source"])
+                XCTAssertTrue(fixture.resources.isEmpty)
+                XCTAssertTrue(fixture.errors.isEmpty)
+
+                // A due peer must expire on the foreign terminal itself, without a selected command.
+                fixture.time = peerStart.addingTimeInterval(0.11)
+                fixture.completeResource("late-peer", error: error)
+                XCTAssertNil(viewB.userActionScope)
+                try fixture.assertAction("fresh-b", resources: 0, errors: 0)
+                fixture.stopAction(target: targetA)
+                try fixture.assertAction("fresh-a", resources: 0, errors: 0)
+            }
+        }
+    }
+
+    func testGivenTrackedInactiveSceneResourceAndExpiredKey_whenCompleted_itPrefersTrackedOwner() throws {
+        for error in [false, true] {
+            let fixture = RUMResourceCompletionFixture(applicationScope: true, multiSceneTracking: true)
+            let targetA = RUMCommandTarget.scene(.init(rawValue: "scene-a"))
+            let targetB = RUMCommandTarget.scene(.init(rawValue: "scene-b"))
+            fixture.startView("expired", target: targetA)
+            fixture.startResource("reused", target: targetA)
+            fixture.expireSession(by: .timeOut)
+            fixture.startView("owner-a", target: targetA)
+            fixture.startResource("reused", target: targetA)
+            let session = try XCTUnwrap(fixture.application.activeSession)
+            let owner = try XCTUnwrap(session.viewScopes.first { $0.identity == ViewIdentifier("owner-a") })
+            fixture.startView("replacement-a", target: targetA)
+            fixture.startAction("replacement-a", target: targetA)
+            fixture.startView("peer-b", target: targetB)
+            fixture.startAction("peer-b", target: targetB)
+            XCTAssertFalse(owner.isActiveView)
+            XCTAssertEqual(owner.resourceScopes.count, 1)
+
+            fixture.completeResource("reused", error: error)
+
+            XCTAssertTrue(owner.resourceScopes.isEmpty)
+            if error {
+                XCTAssertEqual(fixture.errors.map { $0.view.id }, [owner.viewUUID.toRUMDataFormat])
+                XCTAssertTrue(fixture.resources.isEmpty)
+            } else {
+                XCTAssertEqual(fixture.resources.map { $0.view.id }, [owner.viewUUID.toRUMDataFormat])
+                XCTAssertTrue(fixture.errors.isEmpty)
+            }
+            // The tracked owner wins first. The following old terminal consumes the expiry marker.
+            fixture.completeResource("reused", error: error)
+            XCTAssertEqual(fixture.resources.count + fixture.errors.count, 1)
+            let active = session.viewScopes.filter { $0.isActiveView }
+            XCTAssertEqual(active.count, 2)
+            for view in active {
+                XCTAssertNil(view.attributes["completion-source"])
+                XCTAssertNil(view.userActionScope?.attributes["completion-source"])
+            }
+            fixture.stopAction(target: targetA)
+            fixture.stopAction(target: targetB)
+            try fixture.assertAction("replacement-a", resources: 0, errors: 0)
+            try fixture.assertAction("peer-b", resources: 0, errors: 0)
+        }
+    }
+
+    func testGivenUntrackedMultiSceneCompletion_itPreservesManualRepresentativeAndAutomaticIsolation() throws {
+        for automatic in [false, true] {
+            for error in [false, true] {
+                let fixture = RUMResourceCompletionFixture(applicationScope: true, multiSceneTracking: true)
+                let targetA = RUMCommandTarget.scene(.init(rawValue: "scene-a"))
+                let targetB = RUMCommandTarget.scene(.init(rawValue: "scene-b"))
+                fixture.startView("peer-a", target: targetA)
+                fixture.startAction("peer-a", target: targetA)
+                fixture.startView("representative-b", target: targetB)
+                fixture.startAction("representative-b", target: targetB)
+                let session = try XCTUnwrap(fixture.application.activeSession)
+                let peer = try XCTUnwrap(session.viewScopes.first { $0.identity == ViewIdentifier("peer-a") })
+                let peerAction = try XCTUnwrap(peer.userActionScope)
+
+                if automatic {
+                    var command = try fixture.automaticCompletion(error: error)
+                    command.attributes["completion-source"] = "old-resource"
+                    fixture.send(command)
+                } else {
+                    fixture.completeResource("unknown", error: error)
+                }
+
+                XCTAssertTrue(peer.userActionScope === peerAction)
+                XCTAssertNil(peer.attributes["completion-source"])
+                XCTAssertNil(peerAction.attributes["completion-source"])
+                XCTAssertTrue(fixture.resources.isEmpty)
+                XCTAssertTrue(fixture.errors.isEmpty)
+                fixture.stopAction(target: targetA)
+                fixture.stopAction(target: targetB)
+                try fixture.assertAction("peer-a", resources: 0, errors: 0)
+                try fixture.assertAction(
+                    "representative-b",
+                    resources: !automatic && !error ? 1 : 0,
+                    errors: !automatic && error ? 1 : 0
+                )
+            }
+        }
+    }
+
     func testGivenUnknownManualCompletions_itPreservesLegacyActionCounts() throws {
         let fixture = RUMResourceCompletionFixture()
         fixture.startView("manual")
@@ -2160,8 +2390,12 @@ final class RUMResourceCompletionFixture {
         #endif
     }
 
-    init(applicationScope: Bool = false) {
-        let dependencies = RUMScopeDependencies.mockWith(samplingRate: 100, trackFrustrations: true, monotonicClock: monotonicClock)
+    init(applicationScope: Bool = false, multiSceneTracking: Bool = false) {
+        var flags = RUM.Configuration.FeatureFlags.defaults
+        flags[.multiSceneTracking] = multiSceneTracking
+        let dependencies = RUMScopeDependencies.mockWith(
+            samplingRate: 100, trackFrustrations: true, featureFlags: flags, monotonicClock: monotonicClock
+        )
         context = .mockWith(sdkInitDate: time, launchInfo: .mockWith(launchReason: .userLaunch))
         application = RUMApplicationScope(dependencies: dependencies)
         session = applicationScope ? nil : .mockWith(parent: application, startTime: time, dependencies: dependencies)
@@ -2174,10 +2408,40 @@ final class RUMResourceCompletionFixture {
         _ = (session as RUMScope? ?? application).process(command: command, context: context, writer: writer)
         time.addTimeInterval(0.01)
     }
-    func startView(_ key: String) { send(RUMStartViewCommand.mockWith(identity: ViewIdentifier(key))) }
-    func startAction(_ name: String) { send(RUMStartUserActionCommand.mockWith(actionType: actionType, name: name)) }
-    func stopAction() { send(RUMStopUserActionCommand.mockWith(actionType: actionType)) }
-    func startResource(_ key: String) { send(RUMStartResourceCommand.mockWith(resourceKey: key, url: "https://example.com/transfer")) }
+    func startView(_ key: String, target: RUMCommandTarget = .processRepresentative) {
+        var command = RUMStartViewCommand.mockWith(identity: ViewIdentifier(key))
+        command.target = target
+        send(command)
+    }
+    func startAction(_ name: String, target: RUMCommandTarget = .processRepresentative) {
+        var command = RUMStartUserActionCommand.mockWith(actionType: actionType, name: name)
+        command.target = target
+        send(command)
+    }
+    func stopAction(target: RUMCommandTarget = .processRepresentative) {
+        var command = RUMStopUserActionCommand.mockWith(actionType: actionType)
+        command.target = target
+        send(command)
+    }
+    func startResource(_ key: String, target: RUMCommandTarget = .processRepresentative) {
+        var command = RUMStartResourceCommand.mockWith(resourceKey: key, url: "https://example.com/transfer")
+        command.target = target
+        send(command)
+    }
+
+    func completeResource(_ key: String, error: Bool) {
+        if error {
+            var command = RUMStopResourceWithErrorCommand.mockWithErrorMessage(
+                resourceKey: key, source: .network, httpStatusCode: 200
+            )
+            command.attributes["completion-source"] = "old-resource"
+            send(command)
+        } else {
+            var command = RUMStopResourceCommand.mockWith(resourceKey: key, kind: .native, httpStatusCode: 200)
+            command.attributes["completion-source"] = "old-resource"
+            send(command)
+        }
+    }
     func stopResource(_ key: String) { send(RUMStopResourceCommand.mockWith(resourceKey: key, kind: .native, httpStatusCode: 200)) }
     func failResource(_ key: String) { send(RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: key, source: .network, httpStatusCode: 200)) }
 

@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+@_spi(Internal)
 import DatadogInternal
 import Foundation
 
@@ -45,6 +46,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     /// The value holding stable identity of this RUM View.
     let identity: ViewIdentifier
+    /// Scene ownership is absent on the process-wide path.
+    let sceneIdentifier: RUMSceneIdentifier?
     /// View attributes.
     private(set) var attributes: [AttributeKey: AttributeValue] = [:]
     /// Internal view attributes - used by cross platform frameworks and should not be propagated to events
@@ -85,6 +88,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         didSet {
             if oldValue && !isActiveView {
                 networkSettledMetric.trackViewWasStopped()
+                if dependencies.isMultiSceneTrackingEnabled {
+                    dependencies.viewCache.markInactive(id: viewUUID.toRUMDataFormat)
+                }
             }
         }
     }
@@ -153,13 +159,16 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         startTime: Date,
         serverTimeOffset: TimeInterval,
         interactionToNextViewMetric: INVMetricTracking?,
-        viewIndexInSession: Int
+        viewIndexInSession: Int,
+        sceneIdentifier: RUMSceneIdentifier? = nil,
+        didReceiveStartCommand: Bool = false
     ) {
         self.parent = parent
         self.dependencies = dependencies
         self.isInitialView = isInitialView
         self.hasReplay = false
         self.identity = identity
+        self.sceneIdentifier = sceneIdentifier
         self.customTimings = customTimings
         self.viewUUID = dependencies.rumUUIDGenerator.generateUnique()
         self.viewPath = path
@@ -168,6 +177,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.serverTimeOffset = serverTimeOffset
         self.interactionToNextViewMetric = interactionToNextViewMetric
         self.viewIndexInSession = viewIndexInSession
+        self.didReceiveStartCommand = didReceiveStartCommand
         self.accessibilityReader = dependencies.accessibilityReader
 
         self.vitalInfoSampler = dependencies.vitalsReaders.map {
@@ -218,8 +228,13 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
 extension RUMViewScope {
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
-        let wasActiveView = isActiveView
+        if dependencies.isMultiSceneTrackingEnabled,
+           command is RUMStartUserActionCommand,
+           case .continuousAction(let ownership) = command.target, !ownership.canClaim {
+            return true
+        }
         let command = command.resolvingResourceOwners(in: [self])
+        let wasActiveView = isActiveView
 
         // Tells if the View did change and an update event should be send.
         needsViewUpdate = false
@@ -313,6 +328,17 @@ extension RUMViewScope {
         case let command as RUMStartUserActionCommand where isActiveView:
             if userActionScope == nil {
                 startContinuousUserAction(on: command)
+                if dependencies.isMultiSceneTrackingEnabled,
+                   case .continuousAction(let ownership) = command.target, let action = userActionScope {
+                    ownership.claimAction(sessionID: self.context.sessionID, viewID: viewUUID, actionID: action.actionUUID)
+                }
+                if dependencies.isMultiSceneTrackingEnabled, let action = userActionScope {
+                    command.actionReceipt?.accept(
+                        sessionID: self.context.sessionID.toRUMDataFormat,
+                        viewID: viewUUID.toRUMDataFormat,
+                        actionID: action.actionUUID.toRUMDataFormat
+                    )
+                }
             } else {
                 reportActionDropped(type: command.actionType, name: command.name)
             }
@@ -345,6 +371,9 @@ extension RUMViewScope {
             updatePerformanceMetric(on: command)
 
         // Feature Operation commands
+        case _ as RUMOwnedOperationStepCommand where isActiveView:
+            needsViewUpdate = true
+
         case _ as RUMOperationStepVitalCommand where isActiveView:
             needsViewUpdate = true
 
@@ -388,6 +417,28 @@ extension RUMViewScope {
         }
 
         return !shouldComplete
+    }
+
+    /// Advance only expiration for a nonrecipient; never propagate foreign local attributes.
+    func expireActionIfNeeded(on command: RUMCommand, context: DatadogContext, writer: Writer) {
+        guard dependencies.isMultiSceneTrackingEnabled, let action = userActionScope else {
+            return
+        }
+        needsViewUpdate = false
+        let tick = RUMKeepSessionAliveCommand(time: command.time, globalAttributes: command.globalAttributes, attributes: [:])
+        if action.expireIfNeeded(on: tick, context: context, writer: writer) {
+            userActionScope = nil
+            if needsViewUpdate {
+                sendViewUpdateEvent(on: tick, context: context, writer: writer)
+            }
+        }
+    }
+
+    func emitRestoredBaseline(on command: RUMCommand, context: DatadogContext, writer: Writer) {
+        guard dependencies.isMultiSceneTrackingEnabled else {
+            return
+        }
+        sendViewUpdateEvent(on: command, context: context, writer: writer)
     }
 
     private func addViewLoadingTime(on command: RUMAddViewLoadingTime) {
@@ -453,7 +504,7 @@ extension RUMViewScope {
     }
 
     private func createDiscreteUserActionScope(on command: RUMAddUserActionCommand) -> RUMUserActionScope {
-        return RUMUserActionScope(
+        let action = RUMUserActionScope(
             parent: self,
             dependencies: dependencies,
             name: command.name,
@@ -469,6 +520,14 @@ extension RUMViewScope {
                 self?.onActionEventSent(event)
             }
         )
+        if dependencies.isMultiSceneTrackingEnabled {
+            command.actionReceipt?.accept(
+                sessionID: self.context.sessionID.toRUMDataFormat,
+                viewID: viewUUID.toRUMDataFormat,
+                actionID: action.actionUUID.toRUMDataFormat
+            )
+        }
+        return action
     }
 
     private func onActionEventSent(_ event: RUMActionEvent) {
@@ -724,7 +783,9 @@ extension RUMViewScope {
 
             // Only update fatal error context when this event describes the still-active view,
             // an inactive view's terminal event must not clobber the active view's pointer.
-            if isActiveView {
+            if dependencies.isMultiSceneTrackingEnabled {
+                (parent as? RUMMappedViewContextUpdating)?.recordMappedViewEvent(event, for: viewUUID)
+            } else if isActiveView {
                 dependencies.fatalErrorContext.view = event
             }
 
@@ -747,7 +808,9 @@ extension RUMViewScope {
             // Update the state of the view in watchdog termination monitor
             // if a watchdog termination occurs in this session, in the next session
             // a watchdog termination event will be sent using saved view event.
-            dependencies.watchdogTermination?.update(viewEvent: event)
+            if !dependencies.isMultiSceneTrackingEnabled {
+                dependencies.watchdogTermination?.update(viewEvent: event)
+            }
         } else { // if event was dropped by mapper
             version -= 1
             completionHandler()

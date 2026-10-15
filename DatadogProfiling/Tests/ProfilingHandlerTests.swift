@@ -7,7 +7,7 @@
 #if !os(watchOS)
 
 import XCTest
-import DatadogInternal
+@_spi(Internal) import DatadogInternal
 import TestUtilities
 @testable import DatadogProfiling
 //swiftlint:disable duplicate_imports
@@ -237,6 +237,125 @@ final class ProfilingHandlerTests: XCTestCase {
         XCTAssertEqual(metric.startReason, ProfilingSessionMetric.StartReason.rumOperation.rawValue)
     }
 
+    func testOwnedCustomProfile_keepsCapturedAttributionWhenHandlerAttributesChangeBeforeWrite() throws {
+        let fixture = OwnedProfileFixture()
+        let ownership = try fixture.ownership()
+        let scope = OwnedProfileDeferredScope(core: core)
+        let telemetry = TelemetryMock()
+        let correlation: [AttributeKey: AttributeValue] = [
+            RUMCoreContext.IDs.sessionID: "original-session",
+            RUMCoreContext.IDs.viewID: ["original-view"]
+        ]
+        let ownedHandler = makeOwnedHandler(scope: scope, telemetry: telemetry, attributes: correlation)
+        let vital = Vital(id: "original-operation", name: "operation", operationKey: nil,
+                          stepType: .start, date: fixture.date)
+        let stamp = OwnedProfileCorrelation(ownership: ownership, generation: UUID(),
+                                            installedKeys: Set(correlation.keys))
+        let profile = try startProfilerAndFlushSampledProfile()
+
+        ownedHandler.writeOwned(profile: profile, operation: .customProfiling, rumVitals: [],
+                           ownedOperations: [.init(vital: vital, ownership: ownership)], ownedCorrelation: stamp)
+        XCTAssertEqual(scope.pendingWrites, 1)
+        XCTAssertTrue(core.events.isEmpty)
+        ownedHandler.attributes = [RUMCoreContext.IDs.sessionID: "later-session"]
+        scope.flush()
+
+        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+        XCTAssertEqual(core.events.count, 1)
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.sessionID] as? String, "original-session")
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.viewID] as? [String], ["original-view"])
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.vitalID] as? [String], [vital.id])
+        let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        XCTAssertEqual(try typedRUMEvents(from: metadata).compactMap { $0["id"] as? String }, [vital.id])
+        XCTAssertNotNil(telemetry.messages.lastMetric(named: ProfilingSessionMetric.Constants.name))
+        XCTAssertEqual(scope.pendingWrites, 0)
+    }
+
+    func testOwnedCustomProfile_retiredBeforeDeferredWrite_emitsNoEventAttachmentsOrSuccessTelemetry() throws {
+        let fixture = OwnedProfileFixture()
+        let ownership = try fixture.ownership()
+        let scope = OwnedProfileDeferredScope(core: core)
+        let telemetry = TelemetryMock()
+        let correlation: [AttributeKey: AttributeValue] = [RUMCoreContext.IDs.sessionID: "original-session"]
+        let ownedHandler = makeOwnedHandler(scope: scope, telemetry: telemetry, attributes: correlation)
+        let vital = Vital(id: "retired-operation", name: "operation", operationKey: nil,
+                          stepType: .start, date: fixture.date)
+        let stamp = OwnedProfileCorrelation(ownership: ownership, generation: UUID(),
+                                            installedKeys: Set(correlation.keys))
+        let profile = try startProfilerAndFlushSampledProfile()
+
+        ownedHandler.writeOwned(profile: profile, operation: .customProfiling, rumVitals: [],
+                           ownedOperations: [.init(vital: vital, ownership: ownership)], ownedCorrelation: stamp)
+        XCTAssertEqual(scope.pendingWrites, 1)
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertTrue(ownership.isValid)
+        fixture.origin.retire()
+        XCTAssertFalse(ownership.isValid)
+        ownedHandler.attributes = [RUMCoreContext.IDs.sessionID: "replacement-session"]
+        scope.flush()
+
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertTrue(core.metadata.isEmpty)
+        XCTAssertTrue(telemetry.messages.isEmpty)
+        XCTAssertEqual(scope.pendingWrites, 0)
+    }
+
+    func testMixedAppLaunchProfile_retiredOwnedOperation_preservesLegacyVitalHangAndLongTask() throws {
+        let fixture = OwnedProfileFixture()
+        let ownership = try fixture.ownership()
+        let scope = OwnedProfileDeferredScope(core: core)
+        let telemetry = TelemetryMock()
+        let correlation: [AttributeKey: AttributeValue] = [
+            RUMCoreContext.IDs.sessionID: "original-session",
+            RUMCoreContext.IDs.viewID: ["original-view"]
+        ]
+        var attributes = correlation
+        attributes["customer-attribute"] = "preserved"
+        let ownedHandler = makeOwnedHandler(scope: scope, telemetry: telemetry, attributes: attributes)
+        let owned = Vital(id: "retired-operation", name: "operation", operationKey: nil,
+                          stepType: .start, date: fixture.date)
+        let legacy = Vital.mockWith(id: "legacy-vital", name: "legacy")
+        let hang = DurationEvent(id: "hang", type: .error, start: 40, duration: 50)
+        let longTask = DurationEvent(id: "long-task", type: .longTask, start: 20, duration: 30)
+        let stamp = OwnedProfileCorrelation(ownership: ownership, generation: UUID(),
+                                            installedKeys: Set(correlation.keys))
+        let profile = try startProfilerAndFlushSampledProfile()
+
+        ownedHandler.writeOwned(profile: profile, operation: .appLaunch, rumVitals: [legacy],
+                           hangs: [hang], longTasks: [longTask],
+                           ownedOperations: [.init(vital: owned, ownership: ownership)], ownedCorrelation: stamp)
+        XCTAssertEqual(scope.pendingWrites, 1)
+        fixture.origin.retire()
+        XCTAssertFalse(ownership.isValid)
+        scope.flush()
+
+        let event = try XCTUnwrap(core.events.first as? ProfileEvent)
+        XCTAssertEqual(core.events.count, 1)
+        XCTAssertTrue(event.tags.contains("operation:application_launch"))
+        XCTAssertNil(event.additionalAttributes?[RUMCoreContext.IDs.sessionID])
+        XCTAssertNil(event.additionalAttributes?[RUMCoreContext.IDs.viewID])
+        XCTAssertEqual(event.additionalAttributes?["customer-attribute"] as? String, "preserved")
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.vitalID] as? [String], [legacy.id])
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.errorID] as? [String], [hang.id])
+        XCTAssertEqual(event.additionalAttributes?[RUMCoreContext.IDs.longTaskID] as? [String], [longTask.id])
+        let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        let events = try typedRUMEvents(from: metadata)
+        XCTAssertEqual(events.count, 3)
+        XCTAssertEqual(Set(events.compactMap { $0["id"] as? String }), Set([legacy.id, hang.id, longTask.id]))
+        XCTAssertNotNil(telemetry.messages.lastMetric(named: ProfilingSessionMetric.Constants.name))
+        XCTAssertEqual(scope.pendingWrites, 0)
+    }
+
+    private func makeOwnedHandler(
+        scope: FeatureScope,
+        telemetry: TelemetryMock,
+        attributes: [AttributeKey: AttributeValue]
+    ) -> ProfilingHandlerMock {
+        ProfilingHandlerMock(attributes: attributes, currentServerTimeOffset: .zero,
+                             featureScope: scope, telemetryController: .init(telemetry: telemetry),
+                             encoder: JSONEncoder())
+    }
+
     private func typedRUMEvents(from metadata: ProfileAttachments) throws -> [[String: Any]] {
         let rumEventsData = try XCTUnwrap(metadata.rumEvents)
         return try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsData) as? [[String: Any]])
@@ -279,6 +398,61 @@ private final class ProfilingHandlerMock: ProfilingHandler {
         self.telemetryController = telemetryController
         self.encoder = encoder
     }
+}
+
+private final class OwnedProfileFixture {
+    private final class OriginalFeature: DatadogFeature, RUMOperationOriginProviding {
+        static let name = "rum"
+        let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
+        var operationOrigin: RUMOperationOrigin?
+        let monitor = NSObject()
+        func isOperationMonitor(_ monitor: AnyObject) -> Bool { self.monitor === monitor }
+        func isOperationSessionActive(start: TimeInterval, lastInteraction: TimeInterval) -> Bool { true }
+    }
+
+    private let feature = OriginalFeature()
+    private let core: SingleFeatureCoreMock<OriginalFeature>
+    let origin: RUMOperationOrigin
+    let date = Date(timeIntervalSince1970: 100)
+
+    init() {
+        core = SingleFeatureCoreMock(feature: feature)
+        origin = RUMOperationOrigin(core: core, owner: RUMContextHandoff.Owner())
+        feature.operationOrigin = origin
+        origin.attach(feature: feature, monitor: feature.monitor)
+        origin.setSession("original-session")
+        origin.updateSession("original-session", start: 0, lastInteraction: 0)
+    }
+
+    func ownership() throws -> RUMOperationOwnership {
+        try XCTUnwrap(origin.ownership(for: "original-session"))
+    }
+}
+
+/// Holds the real writer closure for an explicit synchronous test drain.
+private final class OwnedProfileDeferredScope: FeatureScope, @unchecked Sendable {
+    private let core: PassthroughCoreMock
+    private var deferred: [(Bool, (DatadogContext, Writer) -> Void)] = []
+    let telemetry: Telemetry = NOPTelemetry()
+    var dataStore: DataStore { core.dataStore }
+    var pendingWrites: Int { deferred.count }
+
+    init(core: PassthroughCoreMock) { self.core = core }
+
+    func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
+        deferred.append((bypassConsent, block))
+    }
+
+    func flush() {
+        let pending = deferred
+        deferred.removeAll()
+        pending.forEach { core.eventWriteContext(bypassConsent: $0.0, $0.1) }
+    }
+
+    func context(_ block: @escaping (DatadogContext) -> Void) { core.context(block) }
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) { core.send(message: message, else: fallback) }
+    func set<Context>(context: @escaping () -> Context?) where Context: AdditionalContext { core.set(context: context) }
+    func set(anonymousId: String?) { core.set(anonymousId: anonymousId) }
 }
 
 #endif // !os(watchOS)
