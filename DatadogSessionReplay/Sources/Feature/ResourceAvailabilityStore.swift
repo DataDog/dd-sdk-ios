@@ -112,6 +112,7 @@ internal final class ResourceAvailabilityStore: @unchecked Sendable {
             }
         } catch {
             scope.telemetry.error("Failed to decode confirmed resource identifiers", error: error)
+            scope.dataStore.removeValue(forKey: Constants.storageKey)
             stored = nil
         }
 
