@@ -18,9 +18,9 @@ internal protocol TimeseriesCollecting: AnyObject {
     func pause(sessionID: String)
     func resume(sessionID: String)
     func stop(sessionID: String)
-    /// Reports that a RUM interaction was just processed, so the collector can self-enforce
-    /// the session inactivity timeout even if no further commands ever arrive to call `stop(sessionID:)`.
-    func noteActivity(sessionID: String, at time: Date)
+    /// Restarts sampling if a delayed foreground interaction kept a self-stopped session alive.
+    /// Called after the monitor publishes the updated session activity.
+    func noteActivity(sessionID: String)
     /// Synchronously flushes any buffered samples. **Blocks the caller thread.**
     func flush()
 }
@@ -63,12 +63,6 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private var sessionType: RUMSessionType = .user
     private var timer: DispatchSourceTimer?
     private var isPaused: Bool = false
-    /// The start time of the current session, used to self-enforce `RUMSessionScope.Constants.sessionMaxDuration`
-    /// even if the RUM command pipeline never notifies this collector of the session's expiry.
-    private var sessionStartTime: Date = .distantPast
-    /// The time of the last RUM interaction reported via `noteActivity(sessionID:at:)`, used to self-enforce
-    /// `RUMSessionScope.Constants.sessionTimeoutDuration` even when the app goes idle with no RUM commands.
-    private var lastActivityTime: Date = .distantPast
     private let now: () -> Date
 
     /// All buffer mutations and timer events run on this queue.
@@ -211,6 +205,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
             self.isPaused = false
             self.flushMemory()
             self.flushCPU()
+            self.sessionID = ""
         }
     }
 
@@ -222,15 +217,15 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         }
     }
 
-    /// Records that a RUM interaction happened, resetting the inactivity clock this collector uses to
-    /// self-enforce `RUMSessionScope.Constants.sessionTimeoutDuration` (see `sample()`).
-    /// No-ops if `sessionID` no longer matches the currently active session.
-    func noteActivity(sessionID: String, at time: Date) {
+    /// Restarts a self-stopped timer after a delayed foreground interaction keeps the session alive.
+    /// Background pauses and sessions still expired according to the monitor remain stopped.
+    func noteActivity(sessionID: String) {
         queue.async { [weak self] in
-            guard let self = self, self.sessionID == sessionID else {
+            guard let self = self, self.sessionID == sessionID, !self.isPaused, self.timer == nil,
+                  self.activeContextReader?.isSessionExpired(sessionID: sessionID) == false else {
                 return
             }
-            self.lastActivityTime = time
+            self.timer = self.makeTimer()
         }
     }
 
@@ -247,14 +242,10 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private func sample() {
         let currentDate = now()
 
-        // Self-enforce the same session lifetime rules `RUMSessionScope` uses, in case this session
-        // has expired without any RUM command arriving to call `stop(sessionID:)` (e.g. the app went
-        // idle with no user interaction). This is a safety net only — it does not affect RUM's own
-        // session state, it just stops this collector from uploading data past session expiry.
-        //
-        // Pulled fresh from `activeContextReader` on every tick, rather than from a locally pushed
-        // copy, so there's a single live source of truth and no race with how/when that state is updated.
-        if activeContextReader?.isSessionExpired(sessionID: sessionID, at: currentDate) == true {
+        // Self-enforce `RUMSessionScope`'s lifetime rules in case this session expired with no RUM
+        // command arriving to call `stop(sessionID:)`. Session lifetime is measured on `Monitor`'s own
+        // monotonic clock, so the sample's wall-clock date does not take part in the check.
+        if activeContextReader?.isSessionExpired(sessionID: sessionID) == true {
             timer?.cancel()
             timer = nil
             flushMemory()

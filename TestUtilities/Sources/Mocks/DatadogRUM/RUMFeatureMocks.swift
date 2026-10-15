@@ -1124,6 +1124,29 @@ public class FatalErrorContextNotifierMock: FatalErrorContextNotifying {
     public init() {}
 }
 
+/// A `MonotonicClock` that reads elapsed time from a `DateProvider`, so a test that already simulates
+/// time by moving a `DateProviderMock` drives session timeout and max duration with that same clock.
+internal struct DateProviderMonotonicClock: MonotonicClock {
+    let dateProvider: DateProvider
+
+    var elapsedTime: TimeInterval { dateProvider.now.timeIntervalSinceReferenceDate }
+}
+
+/// A `MonotonicClock` whose readings only move when a test moves them, so session timeout and
+/// max-duration can be driven deterministically without sleeping.
+internal final class MonotonicClockMock: MonotonicClock {
+    @ReadWriteLock
+    var elapsedTime: TimeInterval
+
+    init(elapsedTime: TimeInterval = 0) {
+        self.elapsedTime = elapsedTime
+    }
+
+    func advance(by interval: TimeInterval) {
+        _elapsedTime.mutate { $0 += interval }
+    }
+}
+
 extension RUMScopeDependencies {
     public static func mockAny() -> RUMScopeDependencies {
         return mockWith()
@@ -1164,6 +1187,7 @@ extension RUMScopeDependencies {
             INVMetric(predicate: TimeBasedINVActionPredicate())
         },
         sessionType: RUMSessionType? = nil,
+        monotonicClock: MonotonicClock? = nil,
         timeseriesCollector: TimeseriesCollecting? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
@@ -1195,6 +1219,7 @@ extension RUMScopeDependencies {
             networkSettledMetricFactory: networkSettledMetricFactory,
             interactionToNextViewMetricFactory: interactionToNextViewMetricFactory,
             sessionType: sessionType,
+            monotonicClock: monotonicClock ?? MonotonicClockMock(),
             timeseriesCollector: timeseriesCollector
         )
     }
@@ -1227,7 +1252,8 @@ extension RUMScopeDependencies {
         watchdogTermination: WatchdogTerminationMonitor? = nil,
         networkSettledMetricFactory: ((Date, String) -> TNSMetricTracking)? = nil,
         interactionToNextViewMetricFactory: (() -> INVMetricTracking)? = nil,
-        sessionType: RUMSessionType? = nil
+        sessionType: RUMSessionType? = nil,
+        monotonicClock: MonotonicClock? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: self.featureScope,
@@ -1257,7 +1283,8 @@ extension RUMScopeDependencies {
             watchdogTermination: watchdogTermination ?? self.watchdogTermination,
             networkSettledMetricFactory: networkSettledMetricFactory ?? self.networkSettledMetricFactory,
             interactionToNextViewMetricFactory: interactionToNextViewMetricFactory ?? self.interactionToNextViewMetricFactory,
-            sessionType: sessionType
+            sessionType: sessionType,
+            monotonicClock: monotonicClock ?? self.monotonicClock
         )
     }
 }
@@ -1278,6 +1305,7 @@ extension RUMSessionScope {
         isInitialSession: Bool = .mockAny(),
         parent: RUMContextProvider = RUMContextProviderMock(),
         startTime: Date = .mockAny(),
+        monotonicStartTime: TimeInterval? = nil,
         startPrecondition: RUMSessionPrecondition? = .userAppLaunch,
         context: DatadogContext = .mockAny(),
         dependencies: RUMScopeDependencies = .mockAny(),
@@ -1288,6 +1316,7 @@ extension RUMSessionScope {
             isInitialSession: isInitialSession,
             parent: parent,
             startTime: startTime,
+            monotonicStartTime: monotonicStartTime ?? dependencies.monotonicClock.elapsedTime,
             startPrecondition: startPrecondition,
             context: context,
             dependencies: dependencies,

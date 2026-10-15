@@ -104,29 +104,39 @@ internal final class ViewHitchesReader: ViewHitchesModel {
 }
 
 extension ViewHitchesReader: RenderLoopReader {
-    func stop() { queue.async { self._isActive = false } }
+    func stop() {
+        queue.async {
+            self._isActive = false
+            self.nextFrameTimestamp = nil
+        }
+    }
 
     func didUpdateFrame(link: FrameInfoProvider) {
+        let currentFrameTimestamp = link.currentFrameTimestamp
+        let targetFrameTimestamp = link.nextFrameTimestamp
+
         queue.async {
             self._isActive = true
             // Baseline to capture View Hitches
             guard let nextFrameTimestamp = self.nextFrameTimestamp else {
-                self.startTimestamp = link.currentFrameTimestamp
-                self.nextFrameTimestamp = link.nextFrameTimestamp
-                self.startFrameRate = link.nextFrameTimestamp - link.currentFrameTimestamp
+                if self.startFrameRate == nil {
+                    self.startTimestamp = currentFrameTimestamp
+                    self.startFrameRate = targetFrameTimestamp - currentFrameTimestamp
+                }
+                self.nextFrameTimestamp = targetFrameTimestamp
                 return
             }
 
             // Updated Frame rate since it can change due to ProMotion,
             // low power mode, set of preferredFramesPerSecond and whatnot
             // (60 FPS = 1/60 s)
-            let idealFrameInterval = link.nextFrameTimestamp - link.currentFrameTimestamp
+            let idealFrameInterval = targetFrameTimestamp - currentFrameTimestamp
             if let startFrameRate = self.startFrameRate,
                abs(idealFrameInterval - startFrameRate) > Constants.timestampTolerance {
                 self.didApplyDynamicFraming = true
             }
 
-            let hitchFrameDuration = link.currentFrameTimestamp - nextFrameTimestamp
+            let hitchFrameDuration = currentFrameTimestamp - nextFrameTimestamp
             // Every time the frame appear later than expected, the delay is collected
             // Except when the issue is tracked by App hangs
             if hitchFrameDuration < self.config.hangThreshold {
@@ -148,7 +158,7 @@ extension ViewHitchesReader: RenderLoopReader {
                 self.ignoredHitchesCount += 1
             }
 
-            self.nextFrameTimestamp = link.nextFrameTimestamp
+            self.nextFrameTimestamp = targetFrameTimestamp
         }
     }
 }

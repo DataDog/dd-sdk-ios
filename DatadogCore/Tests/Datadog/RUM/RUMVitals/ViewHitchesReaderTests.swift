@@ -42,6 +42,37 @@ final class ViewHitchesReaderTests: XCTestCase {
         XCTAssertTrue(reader.dataModel.hitches.count == 1)
     }
 
+    func testViewHitches_doesNotCountPausedTimeAfterResuming() {
+        let reader = ViewHitchesReader()
+        let frameInfoProvider = FrameInfoProviderMock(target: self, selector: .noOp)
+
+        frameInfoProvider.currentFrameTimestamp = 0
+        frameInfoProvider.nextFrameTimestamp = 0.016
+        reader.didUpdateFrame(link: frameInfoProvider)
+
+        frameInfoProvider.currentFrameTimestamp = 0.032
+        frameInfoProvider.nextFrameTimestamp = 0.048
+        reader.didUpdateFrame(link: frameInfoProvider)
+        XCTAssertEqual(reader.dataModel.hitchesDuration, 0.016, accuracy: 0.001)
+
+        reader.stop()
+
+        // The pause is shorter than the hang threshold, but is not rendering time.
+        frameInfoProvider.currentFrameTimestamp = 0.48
+        frameInfoProvider.nextFrameTimestamp = 0.496
+        reader.didUpdateFrame(link: frameInfoProvider)
+        XCTAssertEqual(reader.dataModel.hitchesDuration, 0.016, accuracy: 0.001)
+
+        frameInfoProvider.currentFrameTimestamp = 0.528
+        frameInfoProvider.nextFrameTimestamp = 0.544
+        reader.didUpdateFrame(link: frameInfoProvider)
+
+        let dataModel = reader.dataModel
+        XCTAssertEqual(dataModel.hitchesDuration, 0.048, accuracy: 0.001)
+        XCTAssertEqual(dataModel.hitches.count, 2)
+        XCTAssertEqual(dataModel.hitches.last?.start, 496_000_000)
+    }
+
     /* View Hitches representation for 60FPS (acceptableLatency = 0.032 = 2 VSync)
      *
      * 0--------16ms--------32ms--------48ms--------64ms--------80ms--------96ms

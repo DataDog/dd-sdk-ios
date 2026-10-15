@@ -27,17 +27,18 @@ class LaunchReasonResolverTests: XCTestCase {
         file: StaticString = #file,
         line: UInt = #line
     ) throws -> LaunchReason {
-        var received: [(RUMCommand, DatadogContext)] = []
+        var received: [(RUMCommand, TimeInterval, DatadogContext)] = []
 
-        for command in commands {
-            resolver.deferUntilLaunchReasonResolved(command: command,context: context, writer: writer) { cmd, ctx, _ in
-                received.append((cmd, ctx))
+        for (index, command) in commands.enumerated() {
+            resolver.deferUntilLaunchReasonResolved(command: command, monotonicTime: TimeInterval(index), context: context, writer: writer) { cmd, monotonicTime, ctx, _ in
+                received.append((cmd, monotonicTime, ctx))
             }
         }
 
         XCTAssertEqual(received.count, commands.count, "Should forward all commands", file: file, line: line)
-        let reason = try XCTUnwrap(received.first?.1.launchInfo.launchReason, file: file, line: line)
-        for (index, (cmd, ctx)) in received.enumerated() {
+        let reason = try XCTUnwrap(received.first?.2.launchInfo.launchReason, file: file, line: line)
+        for (index, (cmd, monotonicTime, ctx)) in received.enumerated() {
+            XCTAssertEqual(monotonicTime, TimeInterval(index), "Receipt time must survive buffering", file: file, line: line)
             DDAssertReflectionEqual(cmd, commands[index], "Forwarded command[\(index)] must match original", file: file, line: line)
             XCTAssertEqual(ctx.launchInfo.launchReason, reason, "All contexts must share the same launchReason", file: file, line: line)
         }

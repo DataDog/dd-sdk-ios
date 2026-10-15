@@ -225,6 +225,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 )
             },
             sessionType: configuration.sessionTypeOverride.flatMap { RUMSessionType(rawValue: $0) },
+            monotonicClock: configuration.monotonicClock,
             timeseriesCollector: timeseriesCollector
         )
 

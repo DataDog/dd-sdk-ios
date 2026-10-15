@@ -71,6 +71,9 @@ internal struct RUMScopeDependencies {
     /// A factory function that creates a `INVMetric` when session starts.
     let interactionToNextViewMetricFactory: () -> INVMetricTracking?
 
+    /// Monotonic clock used to measure session inactivity and maximum duration.
+    let monotonicClock: MonotonicClock
+
     init(
         featureScope: FeatureScope,
         rumApplicationID: String,
@@ -100,6 +103,7 @@ internal struct RUMScopeDependencies {
         networkSettledMetricFactory: @escaping (Date, String) -> TNSMetricTracking,
         interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking?,
         sessionType: RUMSessionType?,
+        monotonicClock: MonotonicClock,
         timeseriesCollector: TimeseriesCollecting? = nil
     ) {
         self.featureScope = featureScope
@@ -131,6 +135,7 @@ internal struct RUMScopeDependencies {
         self.watchdogTermination = watchdogTermination
         self.networkSettledMetricFactory = networkSettledMetricFactory
         self.interactionToNextViewMetricFactory = interactionToNextViewMetricFactory
+        self.monotonicClock = monotonicClock
 
         if let sessionType = sessionType {
             self.sessionType = sessionType

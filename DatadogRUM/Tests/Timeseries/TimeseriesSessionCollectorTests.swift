@@ -7,7 +7,7 @@
 #if !os(watchOS)
 
 import XCTest
-import TestUtilities
+@testable import TestUtilities
 import DatadogInternal
 @_spi(Experimental)
 @testable import DatadogRUM
@@ -15,6 +15,13 @@ import DatadogInternal
 class TimeseriesSessionCollectorTests: XCTestCase {
     private let featureScope = FeatureScopeMock(context: .mockWith(additionalContext: [RUMCoreContext.mockAny()]))
     private let memoryReader = SamplingBasedVitalReaderMock()
+
+    /// Waits for the collector's sampling timer to fire before assertions run.
+    private func settle(_ duration: TimeInterval = 0.1) {
+        let expectation = self.expectation(description: "settled")
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + duration) { expectation.fulfill() }
+        waitForExpectations(timeout: 2)
+    }
 
     // MARK: - Memory events
 
@@ -632,6 +639,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         // When — pause and wait for more potential samples
         let pauseExpectation = self.expectation(description: "pause settled")
         collector.pause(sessionID: "session-pause")
+        collector.noteActivity(sessionID: "session-pause")
         DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.3) { pauseExpectation.fulfill() }
         waitForExpectations(timeout: 2)
 
@@ -878,6 +886,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         // Given
         memoryReader.vitalData = 1_000_000
         let clock = MutableClock()
+        let monotonicClock = MonotonicClockMock(elapsedTime: 123)
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
@@ -887,8 +896,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             totalRAM: 4_000_000_000,
             now: clock.now
         )
-        let startTime = clock.date
-        let contextReader = RUMActiveContextReaderMock(sessionID: "session-expired", sessionStartTime: startTime, lastInteractionTime: startTime)
+        let contextReader = RUMActiveContextReaderMock(sessionID: "session-expired", monotonicClock: monotonicClock)
         collector.activeContextReader = contextReader
         collector.start(sessionID: "session-expired", applicationID: "app-1", sessionType: .user)
 
@@ -898,11 +906,9 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         waitForExpectations(timeout: 2)
         XCTAssertTrue(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Batch should not be flushed while the session is still within its max duration")
 
-        // When — advance the (injected) clock and the activity reader's snapshot past the session's max
-        // duration, mirroring how `Monitor` refreshes its snapshot on every processed command, without ever
-        // calling stop() directly
-        clock.date = startTime.addingTimeInterval(RUMSessionScope.Constants.sessionMaxDuration)
-        contextReader.sessionActivity.lastInteractionTime = clock.date
+        // Only elapsed time advances; a recent interaction rules out inactivity as the expiry reason.
+        monotonicClock.advance(by: RUMSessionScope.Constants.sessionMaxDuration)
+        contextReader.sessionActivity.lastInteraction = monotonicClock.elapsedTime
         let selfStopExpectation = self.expectation(description: "self-stop settled")
         DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.3) { selfStopExpectation.fulfill() }
         waitForExpectations(timeout: 2)
@@ -911,6 +917,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         let events = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
         XCTAssertFalse(events.isEmpty, "Expected the collector to self-flush once the session exceeded max duration")
         let countAfterSelfStop = events.count
+        collector.noteActivity(sessionID: "session-expired")
 
         // And — no further samples accumulate afterwards (the timer was cancelled)
         let settleExpectation = self.expectation(description: "no further samples after self-stop")
@@ -923,6 +930,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         // Given
         memoryReader.vitalData = 1_000_000
         let clock = MutableClock()
+        let monotonicClock = MonotonicClockMock(elapsedTime: 123)
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
@@ -932,8 +940,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             totalRAM: 4_000_000_000,
             now: clock.now
         )
-        let startTime = clock.date
-        let contextReader = RUMActiveContextReaderMock(sessionID: "session-idle", sessionStartTime: startTime, lastInteractionTime: startTime)
+        let contextReader = RUMActiveContextReaderMock(sessionID: "session-idle", monotonicClock: monotonicClock)
         collector.activeContextReader = contextReader
         collector.start(sessionID: "session-idle", applicationID: "app-1", sessionType: .user)
 
@@ -943,9 +950,8 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         waitForExpectations(timeout: 2)
         XCTAssertTrue(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty)
 
-        // When — advance the clock past the inactivity timeout while the activity reader's `lastInteractionTime`
-        // stays fixed at `startTime` (i.e. no RUM interaction was ever processed)
-        clock.date = startTime.addingTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration)
+        // No command or wall-clock change is needed for the session to time out.
+        monotonicClock.advance(by: RUMSessionScope.Constants.sessionTimeoutDuration)
         let selfStopExpectation = self.expectation(description: "self-stop settled")
         DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.3) { selfStopExpectation.fulfill() }
         waitForExpectations(timeout: 2)
@@ -954,10 +960,46 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Expected the collector to self-flush once idle past the inactivity timeout")
     }
 
-    func testWhenActivityReaderReportsRecentInteraction_preventsSelfStopWithinTimeoutWindow() {
-        // Given
+    func testWhenDelayedActivityKeepsSessionAlive_itRestartsSamplingAfterSelfExpiry() {
+        memoryReader.vitalData = 1_000_000
+        let clock = MonotonicClockMock()
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 1,
+            samplingInterval: 0.01,
+            cpuUsageProvider: { nil }
+        )
+        let contextReader = RUMActiveContextReaderMock(sessionID: "session-delayed", monotonicClock: clock)
+        collector.activeContextReader = contextReader
+        collector.start(sessionID: "session-delayed", applicationID: "app-1", sessionType: .user)
+        settle()
+
+        clock.advance(by: RUMSessionScope.Constants.sessionTimeoutDuration + 1)
+        settle()
+        let countAfterExpiry = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
+        XCTAssertGreaterThan(countAfterExpiry, 0)
+
+        // The interaction was received before timeout but reached the monitor after sampling stopped.
+        contextReader.sessionActivity.lastInteraction = RUMSessionScope.Constants.sessionTimeoutDuration - 1
+        collector.noteActivity(sessionID: "session-delayed")
+        settle()
+        XCTAssertGreaterThan(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count, countAfterExpiry)
+
+        // Explicitly ending the session prevents stale activity from restarting its timer.
+        collector.stop(sessionID: "session-delayed")
+        settle()
+        let countAfterStop = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
+        collector.noteActivity(sessionID: "session-delayed")
+        settle()
+        XCTAssertEqual(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count, countAfterStop)
+    }
+
+    func testWhenWallClockChanges_itContinuesSamplingOnTheMonotonicClock() {
         memoryReader.vitalData = 1_000_000
         let clock = MutableClock()
+        let initialDate = clock.date
+        let monotonicClock = MonotonicClockMock(elapsedTime: 123)
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
@@ -967,16 +1009,53 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             totalRAM: 4_000_000_000,
             now: clock.now
         )
-        let startTime = clock.date
-        let contextReader = RUMActiveContextReaderMock(sessionID: "session-active", sessionStartTime: startTime, lastInteractionTime: startTime)
+        let contextReader = RUMActiveContextReaderMock(sessionID: "session-clock-jump", monotonicClock: monotonicClock)
+        collector.activeContextReader = contextReader
+        collector.start(sessionID: "session-clock-jump", applicationID: "app-1", sessionType: .user)
+
+        settle(0.2)
+        collector.flush()
+        var previousBatchCount = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
+        XCTAssertGreaterThan(previousBatchCount, 0)
+
+        for offset in [-2 * RUMSessionScope.Constants.sessionMaxDuration, 2 * RUMSessionScope.Constants.sessionMaxDuration] {
+            clock.date = initialDate.addingTimeInterval(offset)
+            monotonicClock.advance(by: 1)
+            contextReader.sessionActivity.lastInteraction = monotonicClock.elapsedTime
+            settle(0.2)
+            collector.flush()
+
+            // A stopped collector cannot produce another batch, even if its buffer was empty at expiry.
+            let batchCount = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
+            XCTAssertGreaterThan(batchCount, previousBatchCount)
+            previousBatchCount = batchCount
+        }
+        collector.stop(sessionID: "session-clock-jump")
+    }
+
+    func testWhenActivityReaderReportsRecentInteraction_preventsSelfStopWithinTimeoutWindow() {
+        // Given
+        memoryReader.vitalData = 1_000_000
+        let clock = MutableClock()
+        let monotonicClock = MonotonicClockMock(elapsedTime: 123)
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 2,
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil },
+            totalRAM: 4_000_000_000,
+            now: clock.now
+        )
+        let contextReader = RUMActiveContextReaderMock(sessionID: "session-active", monotonicClock: monotonicClock)
         collector.activeContextReader = contextReader
         collector.start(sessionID: "session-active", applicationID: "app-1", sessionType: .user)
 
         // When — a RUM interaction is reported right before what would have been the inactivity timeout,
         // resetting the clock the reader exposes to `sample()`
-        clock.date = startTime.addingTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration - 1)
-        contextReader.sessionActivity.lastInteractionTime = clock.date
-        clock.date = clock.date.addingTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration - 1)
+        monotonicClock.advance(by: RUMSessionScope.Constants.sessionTimeoutDuration - 1)
+        contextReader.sessionActivity.lastInteraction = monotonicClock.elapsedTime
+        monotonicClock.advance(by: RUMSessionScope.Constants.sessionTimeoutDuration - 1)
 
         let expectation = self.expectation(description: "still sampling")
         expectation.assertForOverFulfill = false
@@ -986,6 +1065,35 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         // Then — sampling continued since the reader's last interaction time reset the inactivity clock before it lapsed
         XCTAssertFalse(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).isEmpty, "Expected sampling to continue since activity reset the inactivity clock")
         collector.stop(sessionID: "session-active")
+    }
+
+    func testWhenSessionTimesOutWhilePaused_itDoesNotCollectSamplesAfterResuming() {
+        memoryReader.vitalData = 1_000_000
+        let clock = MonotonicClockMock(elapsedTime: 123)
+        let collector = TimeseriesSessionCollector(
+            memoryReader: memoryReader,
+            featureScope: featureScope,
+            batchSize: 2,
+            samplingInterval: 0.05,
+            cpuUsageProvider: { nil }
+        )
+        let contextReader = RUMActiveContextReaderMock(sessionID: "session-paused", monotonicClock: clock)
+        collector.activeContextReader = contextReader
+        collector.start(sessionID: "session-paused", applicationID: "app-1", sessionType: .user)
+        settle(0.2)
+        collector.pause(sessionID: "session-paused")
+        collector.flush()
+        let batchCount = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
+        XCTAssertGreaterThan(batchCount, 0)
+
+        // The continuous session clock advances during suspension even though no samples are collected.
+        clock.advance(by: RUMSessionScope.Constants.sessionTimeoutDuration)
+        collector.resume(sessionID: "session-paused")
+        settle(0.2)
+        collector.flush()
+
+        XCTAssertEqual(featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count, batchCount)
+        collector.stop(sessionID: "session-paused")
     }
 
     // MARK: - Session-ID guard against stale calls
@@ -1056,33 +1164,35 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 private class RUMActiveContextReaderMock: RUMActiveContextReader {
     var globalAttributes: [AttributeKey: AttributeValue]
     var activeView: (id: String?, path: String?, name: String?)
-    var sessionActivity: (sessionID: String?, sessionStartTime: Date?, lastInteractionTime: Date?)
+    @ReadWriteLock
+    var sessionActivity: (sessionID: String?, sessionStart: TimeInterval, lastInteraction: TimeInterval)
+    private let monotonicClock: MonotonicClock
 
     init(
         globalAttributes: [AttributeKey: AttributeValue] = [:],
         activeView: (id: String?, path: String?, name: String?) = (.mockAny(), .mockAny(), nil),
         sessionID: String? = nil,
-        sessionStartTime: Date? = nil,
-        lastInteractionTime: Date? = nil
+        monotonicClock: MonotonicClock = SystemMonotonicClock()
     ) {
         self.globalAttributes = globalAttributes
         self.activeView = activeView
-        self.sessionActivity = (sessionID, sessionStartTime, lastInteractionTime)
+        let now = monotonicClock.elapsedTime
+        self.sessionActivity = (sessionID, now, now)
+        self.monotonicClock = monotonicClock
     }
 
-    func isSessionExpired(sessionID: String, at date: Date) -> Bool {
-        guard sessionActivity.sessionID == sessionID,
-              let sessionStartTime = sessionActivity.sessionStartTime,
-              let lastInteractionTime = sessionActivity.lastInteractionTime else {
+    func isSessionExpired(sessionID: String) -> Bool {
+        let activity = sessionActivity
+        guard activity.sessionID == sessionID else {
             return false
         }
-        return RUMSessionScope.hasExpired(sessionStartTime: sessionStartTime, currentTime: date)
-            || RUMSessionScope.hasTimedOut(lastInteractionTime: lastInteractionTime, currentTime: date)
+        let now = monotonicClock.elapsedTime
+        return RUMSessionScope.hasExpired(sessionStart: activity.sessionStart, now: now)
+            || RUMSessionScope.hasTimedOut(lastInteraction: activity.lastInteraction, now: now)
     }
 }
 
-/// A `Date` provider whose current time can be advanced manually, used to deterministically test the
-/// collector's self-enforced session expiry without waiting on real wall-clock durations.
+/// A `Date` provider whose current time can be advanced manually to test wall-clock changes.
 private class MutableClock {
     var date: Date
 
