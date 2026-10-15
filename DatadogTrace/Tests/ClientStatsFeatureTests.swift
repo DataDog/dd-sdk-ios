@@ -73,7 +73,7 @@ class ClientStatsFeatureTests: XCTestCase {
     func testWhenContextMessageRevokesConsent_itStopsConcentratorFromExporting() {
         // Given: a concentrator with buffered data and the feature's consent receiver
         let concentrator = StatsConcentrator(now: 0, initialConsent: .granted)
-        let receiver = TraceClientStatsConsentReceiver(concentrator: concentrator)
+        let receiver = TraceClientStatsContextReceiver(concentrator: concentrator)
         concentrator.add(SpanSnapshot.mockWith(startTime: 0, duration: 2_000_000_000, isTopLevel: true))
 
         // When: the bus delivers a context carrying revoked consent
@@ -89,9 +89,38 @@ class ClientStatsFeatureTests: XCTestCase {
 
     func testWhenMessageIsNotContext_theConsentReceiverIgnoresIt() {
         let concentrator = StatsConcentrator(now: 0, initialConsent: .granted)
-        let receiver = TraceClientStatsConsentReceiver(concentrator: concentrator)
+        let receiver = TraceClientStatsContextReceiver(concentrator: concentrator)
 
         XCTAssertFalse(receiver.receive(message: .payload("irrelevant"), from: core))
+    }
+
+    // MARK: - App Lifecycle
+
+    func testWhenTheAppMayBeSuspended_bufferedStatsArePersistedOncePerTransition() {
+        let receiver = TraceClientStatsContextReceiver(concentrator: nil)
+        var persistCount = 0
+        receiver.persistBufferedStats = { persistCount += 1 }
+        let foreground: DatadogContext = .mockWith(applicationStateHistory: .mockAppInForeground())
+        let background: DatadogContext = .mockWith(applicationStateHistory: .mockAppInBackground())
+
+        for (context, expectedCount) in [(foreground, 0), (background, 1), (background, 1), (foreground, 1), (background, 2)] {
+            _ = receiver.receive(message: .context(context), from: core)
+            XCTAssertEqual(persistCount, expectedCount)
+        }
+    }
+
+    func testWhenTheAppGoesToTheBackground_theFeatureStoresBufferedStatsImmediately() throws {
+        // Given: buffered stats in the current window, which the periodic flush would keep for 20 s or more.
+        let (core, stats) = try enableClientStats()
+        stats.concentrator.add(.mockWith(startTime: 0, duration: 100))
+        _ = stats.messageReceiver.receive(message: .context(.mockWith(applicationStateHistory: .mockAppInForeground())), from: core)
+        XCTAssertTrue(core.exportedBuckets.isEmpty)
+
+        // When
+        _ = stats.messageReceiver.receive(message: .context(.mockWith(applicationStateHistory: .mockAppInBackground())), from: core)
+
+        // Then
+        XCTAssertEqual(core.exportedBuckets.flatMap(\.stats).map(\.hits), [1])
     }
 
     // MARK: - Request Builder
