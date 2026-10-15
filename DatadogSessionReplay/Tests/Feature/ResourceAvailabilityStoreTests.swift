@@ -20,6 +20,29 @@ struct ResourceAvailabilityStoreTests {
     private let identifiers: Set<String> = ["first", "second"]
     private let storageKey = "resource-availability"
 
+    @Test("Discards legacy identifiers without confirming them")
+    func discardsLegacyIdentifiersWithoutConfirmingThem() throws {
+        // Given
+        let storeCreation = withUnsafeBytes(of: dateProvider.now.timeIntervalSince1970) { Data($0) }
+        let otherValue = Data("other-value".utf8)
+        scope.dataStoreMock.storage = [
+            "known-resources": .value(try JSONEncoder().encode(identifiers), 1),
+            "store-creation": .value(storeCreation, 1),
+            "other-key": .value(otherValue, 1)
+        ]
+
+        // When
+        let store = ResourceAvailabilityStore(scope: scope, dateProvider: dateProvider)
+
+        // Then
+        for identifier in identifiers {
+            #expect(!store.contains(identifier, forApplicationID: applicationID))
+        }
+        #expect(scope.dataStoreMock.value(forKey: "known-resources") == nil)
+        #expect(scope.dataStoreMock.value(forKey: "store-creation") == nil)
+        #expect(scope.dataStoreMock.value(forKey: "other-key")?.data(expectedVersion: 1) == otherValue)
+    }
+
     @Test("Persists confirmations scoped to each application")
     func persistsConfirmationsScopedToEachApplication() {
         // Given

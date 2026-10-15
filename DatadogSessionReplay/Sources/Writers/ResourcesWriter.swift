@@ -24,9 +24,6 @@ internal class ResourcesWriter: ResourcesWriting {
     init(scope: FeatureScope, availabilityStore: ResourceAvailabilityStore) {
         self.scope = scope
         self.availabilityStore = availabilityStore
-
-        scope.dataStore.removeValue(forKey: Constants.legacyResourcesKey)
-        scope.dataStore.removeValue(forKey: Constants.legacyCreationKey)
     }
 
     // MARK: - Writing
@@ -47,11 +44,6 @@ internal class ResourcesWriter: ResourcesWriting {
                 recordWriter.write(value: resource)
             }
         }
-    }
-
-    private enum Constants {
-        static let legacyResourcesKey = "known-resources"
-        static let legacyCreationKey = "store-creation"
     }
 }
 

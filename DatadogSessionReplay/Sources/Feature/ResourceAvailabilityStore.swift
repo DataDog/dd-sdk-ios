@@ -33,6 +33,10 @@ internal final class ResourceAvailabilityStore: @unchecked Sendable {
         self.scope = scope
         self.dateProvider = dateProvider
 
+        // Legacy identifiers record local writes without confirming backend availability.
+        scope.dataStore.removeValue(forKey: Constants.legacyResourcesKey)
+        scope.dataStore.removeValue(forKey: Constants.legacyCreationKey)
+
         scope.dataStore.value(forKey: Constants.storageKey) { [weak self] result in
             self?.load(result)
         }
@@ -137,6 +141,9 @@ internal final class ResourceAvailabilityStore: @unchecked Sendable {
         static let storageKey = "resource-availability"
         static let storeVersion: DataStoreKeyVersion = 1
         static let maxAge: TimeInterval = 30.days
+
+        static let legacyResourcesKey = "known-resources"
+        static let legacyCreationKey = "store-creation"
     }
 }
 #endif

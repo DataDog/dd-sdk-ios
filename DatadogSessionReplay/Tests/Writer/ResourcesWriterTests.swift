@@ -83,26 +83,5 @@ class ResourcesWriterTests: XCTestCase {
         // Then
         XCTAssertEqual(scopeMock.eventsWritten(ofType: EnrichedResource.self), unconfirmedResources)
     }
-
-    func test_whenLegacyIdentifiersExist_itDiscardsThemAndWritesResources() throws {
-        // Given
-        let storeCreation = withUnsafeBytes(of: Date().timeIntervalSince1970) { Data($0) }
-        let otherValue = Data("other-value".utf8)
-        scopeMock.dataStoreMock.storage = [
-            "known-resources": .value(try JSONEncoder().encode(resources.map(\.identifier)), 1),
-            "store-creation": .value(storeCreation, 1),
-            "other-key": .value(otherValue, 1)
-        ]
-
-        // When
-        writer = ResourcesWriter(scope: scopeMock, availabilityStore: availabilityStore)
-        writer.write(resources: resources)
-
-        // Then
-        XCTAssertEqual(scopeMock.eventsWritten(ofType: EnrichedResource.self), resources)
-        XCTAssertNil(scopeMock.dataStoreMock.value(forKey: "known-resources"))
-        XCTAssertNil(scopeMock.dataStoreMock.value(forKey: "store-creation"))
-        XCTAssertEqual(scopeMock.dataStoreMock.value(forKey: "other-key")?.data(expectedVersion: 1), otherValue)
-    }
 }
 #endif
