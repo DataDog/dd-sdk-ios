@@ -21,6 +21,11 @@ public protocol FlagsClientProtocol: AnyObject {
 
     /// Calls the handler once per registration with the complete keys of the first accepted disk or network configuration.
     ///
+    /// Exception: a no-op fallback client immediately calls each registration on the registering thread
+    /// with a configuration-changed event and an empty key list. This completes the notification only:
+    /// the fallback remains in the error state, evaluations return defaults with providerNotReady,
+    /// and setting context still fails. It does not indicate an accepted configuration or initialization.
+    ///
     /// This is one configuration notification, not one notification per flag or an inventory of all server flags.
     /// Valid empty configurations complete it; missing, malformed or failed loads do not consume the signal.
     /// The first event is retained across subsequent updates and resets. Its keys do not pin a snapshot:
@@ -107,12 +112,6 @@ public protocol FlagsClientProtocol: AnyObject {
 }
 
 extension FlagsClientProtocol {
-    /// Compatibility default for conformers that do not produce first-flags notifications.
-    @discardableResult
-    public func onFirstFlags(_ listener: @escaping FlagsClientEventListener) -> any FlagsSubscription {
-        return NOPFlagsSubscription()
-    }
-
     /// Default state observable for backward compatibility with external conformers.
     ///
     /// External implementations of ``FlagsClientProtocol`` that don't provide their own

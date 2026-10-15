@@ -20,6 +20,7 @@ internal final class FallbackFlagsClient: FlagsClientProtocol {
 
     @discardableResult
     func onFirstFlags(_ listener: @escaping FlagsClientEventListener) -> any FlagsSubscription {
+        listener(FlagsClientEvent(type: .configurationChanged, flagsChanged: []))
         return NOPFlagsSubscription()
     }
 

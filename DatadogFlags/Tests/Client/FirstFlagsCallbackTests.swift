@@ -488,22 +488,28 @@ final class FirstFlagsCallbackTests: XCTestCase {
         subscription.cancel()
     }
 
-    func testDefaultAndFallbackDoNotRetainOrInvokeCallbacks() {
-        let clients: [any FlagsClientProtocol] = [
-            ExternalFlagsClient(),
-            FallbackFlagsClient(name: "test", core: SingleFeatureCoreMock<FlagsFeature>())
-        ]
-        for client in clients {
+    func testFallbackCompletesEachRegistrationImmediatelyWithoutRetainingCaptures() {
+        let client = FallbackFlagsClient(name: "test", core: SingleFeatureCoreMock<FlagsFeature>())
+        let calls = ReadWriteLock(wrappedValue: 0)
+        for index in 1...3 {
             var probe: LifetimeProbe? = LifetimeProbe()
             weak var weakProbe = probe
-            let subscription = client.onFirstFlags { [probe] _ in
+            let returned = ReadWriteLock(wrappedValue: false)
+            let subscription = client.onFirstFlags { [probe] event in
+                XCTAssertFalse(returned.wrappedValue)
+                XCTAssertEqual(event.type, .configurationChanged)
+                XCTAssertEqual(event.type.rawValue, "CONFIGURATION_CHANGED")
+                XCTAssertEqual(event.flagsChanged, [])
                 withExtendedLifetime(probe) {}
-                XCTFail("No event expected")
+                calls.mutate { $0 += 1 }
             }
+            returned.wrappedValue = true
+            XCTAssertEqual(calls.wrappedValue, index)
             probe = nil
             XCTAssertNil(weakProbe)
             subscription.cancel()
             subscription.cancel()
+            XCTAssertEqual(calls.wrappedValue, index)
         }
     }
 
@@ -562,11 +568,4 @@ private final class FirstFlagsCallbackStore: DataStore {
     func removeValue(forKey key: String) {}
     func clearAllData() {}
     func flush() {}
-}
-
-private final class ExternalFlagsClient: FlagsClientProtocol {
-    func setEvaluationContext(_ context: FlagsEvaluationContext, completion: @escaping (Result<Void, FlagsError>) -> Void) {}
-    func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue {
-        FlagDetails(key: key, value: defaultValue, error: .providerNotReady)
-    }
 }
