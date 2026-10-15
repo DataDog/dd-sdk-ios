@@ -821,6 +821,14 @@ internal final class StatsConcentrator: @unchecked Sendable {
 
     // MARK: - Consent
 
+    /// Drops every buffered bucket, for `Datadog.clearAllData()`. Spans recorded afterwards are kept.
+    /// Running on the queue orders this with any in-flight `add` and `flush` work.
+    func clearAllData() {
+        queue.async { [self] in
+            buckets.removeAll()
+        }
+    }
+
     /// Updates the tracking consent that gates aggregation.
     ///
     /// `.granted` and `.pending` are both recording states, so transitions between them need no

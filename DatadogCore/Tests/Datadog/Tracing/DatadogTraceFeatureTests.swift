@@ -203,6 +203,20 @@ class DatadogTraceFeatureTests: XCTestCase {
         }
     }
 
+    func testWhenAllDataIsCleared_clientStatsBufferedBeforeAreNeverUploaded() throws {
+        let httpClient = HTTPClientMock(responseCode: 202)
+        let core = makeClientStatsCore(httpClient: httpClient, maxObjectsInFile: .max)
+        let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
+        stats.record(.mockWith(startTime: 0, duration: 100))
+
+        // When
+        core.clearAllData()
+        core.flushAndTearDown()
+
+        // Then
+        XCTAssertTrue(statsRequests(in: httpClient).isEmpty)
+    }
+
     // MARK: - Client-Side Stats Helpers
 
     /// A core with the real 1 MB storage event limit and no file size limit of its own, so the
