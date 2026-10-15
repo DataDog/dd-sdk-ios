@@ -345,6 +345,26 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertEqual(core.exportedBuckets.count, count)
     }
 
+    func testPeriodicFlushRunsOffTheMainThread() throws {
+        // Given: a short flush interval and a bucket that is old enough to flush.
+        let core = FeatureRegistrationPassthroughCoreMock()
+        let dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
+        let feature = ClientStatsFeature(core: core, configuration: config, dateProvider: dateProvider, flushInterval: 0.05)
+        feature.concentrator.add(.mockWith(startTime: 0, duration: 100))
+        dateProvider.advance(bySeconds: 60)
+
+        // When: the main run loop keeps running, as in an app.
+        let deadline = Date().addingTimeInterval(5)
+        while core.exportedBuckets.isEmpty && Date() < deadline {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+        }
+
+        // Then: the periodic flush stored the bucket from its own queue.
+        XCTAssertEqual(core.exportedBuckets.count, 1)
+        XCTAssertEqual(core.writeContextOnMainThread.first, false)
+        withExtendedLifetime(feature) {}
+    }
+
     func testWhenFlushProducesBuckets_itSendsFlushMetric() throws {
         // Given
         let core = FeatureRegistrationPassthroughCoreMock()
@@ -1372,8 +1392,13 @@ private final class FeatureRegistrationPassthroughCoreMock: DatadogCoreProtocol,
 
     func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
         writeContextBypassConsentValues.append(bypassConsent)
+        _writeContextOnMainThread.mutate { $0.append(Thread.isMainThread) }
         block(contextValue, writer)
     }
+
+    /// Whether each write context was opened on the main thread.
+    @ReadWriteLock
+    var writeContextOnMainThread: [Bool] = []
 
     var writeContextBypassConsentValues: [Bool] = []
 
