@@ -384,7 +384,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
 
     func testConcurrentInstallAndRegistrationRetainOneEvent() {
         let callbacks = ReadWriteLock(wrappedValue: FirstFlagsCallbacks())
-        let values = ReadWriteLock<[[String]?]>(wrappedValue: [])
+        let values = ReadWriteLock<[[String]]>(wrappedValue: [])
         DispatchQueue.concurrentPerform(iterations: 100) { index in
             if index % 2 == 0 {
                 callbacks.wrappedValue.reserve(keys: [String(index)])?()
@@ -540,12 +540,11 @@ final class FirstFlagsCallbackTests: XCTestCase {
         XCTAssertEqual(calls.wrappedValue, 1)
     }
 
-    func testEventValueSemanticsPreserveNilEmptyAndInputOrder() {
+    func testEventValueSemanticsPreserveEmptyAndInputOrder() {
         var keys = ["b", "a", "b"]
         let event = FlagsClientEvent(type: .configurationChanged, flagsChanged: keys)
         keys.removeAll()
         XCTAssertEqual(event.flagsChanged, ["b", "a", "b"])
-        XCTAssertNil(FlagsClientEvent(type: .configurationChanged).flagsChanged)
         XCTAssertEqual(FlagsClientEvent(type: .configurationChanged, flagsChanged: []).flagsChanged, [])
     }
 }

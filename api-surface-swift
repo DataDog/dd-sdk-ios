@@ -1689,7 +1689,7 @@ public struct FlagSnapshot: Equatable, Encodable
 public protocol FlagValue: Encodable
 public struct FlagsClientEvent: Sendable
     public let type: FlagsClientEventType
-    public let flagsChanged: [String]?
+    public let flagsChanged: [String]
 public enum FlagsClientEventType: String, Sendable
     case configurationChanged = "CONFIGURATION_CHANGED"
 public typealias FlagsClientEventListener = @Sendable (FlagsClientEvent) -> Void

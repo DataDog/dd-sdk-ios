@@ -72,7 +72,7 @@ final class FlagsRUMIntegrationTests: XCTestCase {
         let client = FlagsClient.create(in: core)
         let delivered = expectation(description: "first flags")
         client.onFirstFlags { event in
-            XCTAssertEqual(event.flagsChanged?.sorted(), ["boolean-flag", "string-flag"])
+            XCTAssertEqual(event.flagsChanged.sorted(), ["boolean-flag", "string-flag"])
             XCTAssertEqual(FlagsClient.shared(in: core).getBooleanValue(key: "boolean-flag", defaultValue: false), true)
             delivered.fulfill()
         }

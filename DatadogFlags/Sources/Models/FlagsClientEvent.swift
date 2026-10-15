@@ -8,12 +8,12 @@
 public struct FlagsClientEvent: Sendable {
     /// The kind of notification.
     public let type: FlagsClientEventType
-    /// Complete keys of the first accepted configuration, not a per-flag change or all server flags.
+    /// Supplied keys of the first accepted configuration, not a per-flag change or all server flags.
     /// An empty array represents a valid empty configuration or immediate completion by a no-op fallback client.
     /// Fallback completion does not indicate successful initialization. These keys do not pin assignment values.
-    public let flagsChanged: [String]?
+    public let flagsChanged: [String]
 
-    internal init(type: FlagsClientEventType, flagsChanged: [String]? = nil) {
+    internal init(type: FlagsClientEventType, flagsChanged: [String]) {
         self.type = type
         self.flagsChanged = flagsChanged
     }

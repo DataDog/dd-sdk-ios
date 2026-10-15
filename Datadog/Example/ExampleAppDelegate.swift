@@ -128,7 +128,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
             client.onFirstFlags { [weak self] event in
                 Task { @MainActor in
                     guard let client = self?.flagsClient else { return }
-                    logger.info("First flag keys: \(event.flagsChanged.map { String(describing: $0) } ?? "unavailable")")
+                    logger.info("First flag keys: \(event.flagsChanged)")
                     let details = client.getBooleanDetails(key: flagKey, defaultValue: false)
                     logger.info("Flag \(flagKey): \(details.value), reason: \(details.reason ?? "unavailable"), error: \(String(describing: details.error))")
                 }
