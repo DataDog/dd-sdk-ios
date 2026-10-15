@@ -68,12 +68,16 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
         let concentrator = StatsConcentrator(now: now, telemetry: featureScope.telemetry)
         self.concentrator = concentrator
 
-        // Observe consent changes through the message bus. The core delivers the current context
+        // Observe context changes through the message bus. The core delivers the current context
         // right after registration, so the concentrator learns the real consent before the first
         // flush even though it starts in the `.pending` default.
-        self.messageReceiver = TraceClientStatsConsentReceiver(concentrator: concentrator)
+        let receiver = TraceClientStatsContextReceiver(concentrator: concentrator)
+        self.messageReceiver = receiver
 
         startFlushTimer()
+        receiver.persistBufferedStats = { [weak self] in
+            self?.flushStats(force: true)
+        }
     }
 
     deinit {
@@ -131,18 +135,43 @@ extension ClientStatsFeature: Flushable {
     }
 }
 
-/// Forwards tracking-consent changes from the message bus to the `StatsConcentrator`.
+/// Forwards context changes from the message bus to client-side stats.
+///
+/// Tracking consent goes to the `StatsConcentrator`. When the app moves into a state where it may be
+/// suspended, such as the background on iOS, buffered stats are written to storage: the system can
+/// suspend and later terminate the app without the periodic flush running again, which would lose them.
 ///
 /// Holds the concentrator weakly: it is owned by `ClientStatsFeature`, while the bus owns this
 /// receiver, so a weak reference avoids keeping the concentrator alive past the feature.
-internal struct TraceClientStatsConsentReceiver: FeatureMessageReceiver {
+internal final class TraceClientStatsContextReceiver: FeatureMessageReceiver {
     weak var concentrator: StatsConcentrator?
+
+    /// Writes every buffered bucket to storage. Set once by `ClientStatsFeature` before it is registered.
+    var persistBufferedStats: (() -> Void)?
+
+    /// Whether the last context showed an app that may be suspended.
+    @ReadWriteLock
+    private var mayBeSuspended = false
+
+    init(concentrator: StatsConcentrator?) {
+        self.concentrator = concentrator
+    }
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         guard case let .context(context) = message else {
             return false
         }
         concentrator?.updateConsent(context.trackingConsent)
+
+        let isNowSuspendable = context.applicationStateHistory.currentState.applicationMayBeSuspended
+        var didBecomeSuspendable = false
+        _mayBeSuspended.mutate {
+            didBecomeSuspendable = isNowSuspendable && !$0
+            $0 = isNowSuspendable
+        }
+        if didBecomeSuspendable {
+            persistBufferedStats?()
+        }
         return true
     }
 }
