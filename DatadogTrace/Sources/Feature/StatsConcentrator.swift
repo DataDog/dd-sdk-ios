@@ -607,6 +607,8 @@ internal final class StatsConcentrator: @unchecked Sendable {
     private let queue = DispatchQueue(label: "com.datadoghq.stats-concentrator", qos: .utility)
 
     private var buckets: [UInt64: StatsBucket] = [:]
+    /// Incremented by `clearAllData()`, so buckets exported before a clear can be told apart.
+    private var clearGeneration: UInt64 = 0
     private var oldestTs: UInt64
 
     /// The user's current tracking consent. `.granted` and `.pending` are both recording states;
@@ -738,11 +740,17 @@ internal final class StatsConcentrator: @unchecked Sendable {
     ///   Used during SDK teardown.
     /// - Returns: Array of exported buckets ready for serialization.
     func flush(now: Nanoseconds, force: Bool) -> [ExportedBucket] {
+        flushForStorage(now: now, force: force).buckets
+    }
+
+    /// Flushes like `flush(now:force:)`, and returns the clear generation the buckets were exported in,
+    /// for `performUnlessCleared(since:_:)`.
+    func flushForStorage(now: Nanoseconds, force: Bool) -> (buckets: [ExportedBucket], clearGeneration: UInt64) {
         return queue.sync {
             // Never export while consent is not granted. The storage writer already drops these
             // writes, but returning early avoids needlessly serializing the sketches.
             guard currentConsent != .notGranted else {
-                return []
+                return ([], clearGeneration)
             }
 
             // A bucket is complete once it is older than the retention window ending at `now`, i.e.
@@ -815,17 +823,33 @@ internal final class StatsConcentrator: @unchecked Sendable {
                 oldestTs = newOldestTs
             }
 
-            return flushed
+            return (flushed, clearGeneration)
         }
     }
 
     // MARK: - Consent
 
     /// Drops every buffered bucket, for `Datadog.clearAllData()`. Spans recorded afterwards are kept.
-    /// Running on the queue orders this with any in-flight `add` and `flush` work.
+    ///
+    /// Synchronous, so the core clears storage only after it. Buckets already exported but not yet
+    /// written are discarded through `performUnlessCleared(since:_:)`.
     func clearAllData() {
-        queue.async { [self] in
+        queue.sync {
+            clearGeneration &+= 1
             buckets.removeAll()
+        }
+    }
+
+    /// Runs `block` on the concentrator's queue unless data was cleared since `clearGeneration`.
+    ///
+    /// A flush writes its exported buckets through this. A clear runs on the same queue, so a write that
+    /// runs is queued before the core queues the storage deletion, and one exported before a clear but
+    /// not yet written is skipped instead of surviving it.
+    func performUnlessCleared(since clearGeneration: UInt64, _ block: () -> Void) {
+        queue.sync {
+            if clearGeneration == self.clearGeneration {
+                block()
+            }
         }
     }
 

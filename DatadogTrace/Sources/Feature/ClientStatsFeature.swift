@@ -114,13 +114,14 @@ internal final class ClientStatsFeature: DatadogRemoteFeature, @unchecked Sendab
     func flushStats(_ reason: FlushReason = .periodic) {
         let force = reason != .periodic
         let now = dateProvider.now.timeIntervalSince1970.dd.toNanoseconds
-        let exportedBuckets = concentrator.flush(now: now, force: force)
+        let (exportedBuckets, clearGeneration) = concentrator.flushForStorage(now: now, force: force)
 
         guard !exportedBuckets.isEmpty else {
             return
         }
 
-        featureScope.eventWriteContext { [metricController, runtimeID, sequenceNumbers] context, writer in
+        featureScope.eventWriteContext { [concentrator, metricController, runtimeID, sequenceNumbers] context, writer in
+            var pieces: [ExportedBucket] = []
             var oversizedGroups: [ExportedGroupedStats] = []
             for bucket in exportedBuckets {
                 // Identify each payload here, in write order, so sequence numbers increase in the order
@@ -128,10 +129,18 @@ internal final class ClientStatsFeature: DatadogRemoteFeature, @unchecked Sendab
                 let payload = ExportedBucket.PayloadIdentity(runtimeID: runtimeID, sequence: sequenceNumbers.next())
                 let stored = bucket.shiftedToServerClock(by: context.serverTimeOffset).assigning(payload)
                 let split = stored.split(toFit: Self.maxStoredBucketSize)
-                for piece in split.pieces {
-                    writer.write(value: piece)
-                }
+                pieces += split.pieces
                 oversizedGroups += split.oversizedGroups
+            }
+            // `Datadog.clearAllData()` may have run since the buckets were exported. Their data was
+            // collected before it, so they must not reach storage after it.
+            var isWritten = false
+            concentrator.performUnlessCleared(since: clearGeneration) {
+                pieces.forEach { writer.write(value: $0) }
+                isWritten = true
+            }
+            guard isWritten else {
+                return
             }
             if !oversizedGroups.isEmpty {
                 DD.logger.warn("Client-side stats dropped \(oversizedGroups.count) group(s) whose strings or bucket metadata exceed the storage budget.")
