@@ -50,9 +50,7 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
     ) {
         self.requestBuilder = StatsRequestBuilder(
             customIntakeURL: configuration.customStatsEndpoint,
-            telemetry: core.telemetry,
-            legacyRuntimeID: UUID().uuidString,
-            legacySequenceNumbers: StatsSequenceNumberProvider()
+            telemetry: core.telemetry
         )
         self.performanceOverride = PerformancePresetOverride(maxFileSize: Self.maxBatchSize)
         self.dateProvider = dateProvider

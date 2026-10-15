@@ -160,7 +160,7 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertEqual(clientStats["Service"] as? String, "old-service")
     }
 
-    func testWhenBatchMixesIdentities_itSplitsIntoOneClientPayloadPerIdentity() throws {
+    func testWhenBatchMixesIdentities_eachStoredPayloadKeepsItsDeploymentAndSequence() throws {
         // Given: a batch spanning an app upgrade.
         let builder = makeRequestBuilder()
         let events = [
@@ -176,14 +176,11 @@ class ClientStatsFeatureTests: XCTestCase {
             execution: .init(previousResponseCode: nil, attempt: 0)
         )
 
-        // Then: two payloads, and the two 1.0.0 buckets stay together.
+        // Then: each stored bucket is its own client payload, with its deployment and stored sequence.
         let payloads = try allClientStatsPayloads(in: request)
-        XCTAssertEqual(payloads.count, 2)
-        XCTAssertEqual(payloads.map { $0["Version"] as? String }, ["1.0.0", "2.0.0"])
-        XCTAssertEqual((payloads[0]["Stats"] as? [Any?])?.count, 2)
-        XCTAssertEqual((payloads[1]["Stats"] as? [Any?])?.count, 1)
-        // Each client payload carries its own sequence number.
-        XCTAssertEqual(payloads.compactMap { $0["Sequence"] as? Int64 }, [1, 2])
+        XCTAssertEqual(payloads.map { $0["Version"] as? String }, ["1.0.0", "2.0.0", "1.0.0"])
+        XCTAssertEqual(payloads.map { ($0["Stats"] as? [Any?])?.count }, [1, 1, 1])
+        XCTAssertEqual(payloads.compactMap { $0["Sequence"] as? Int64 }, [1, 2, 3])
     }
 
     func testWhenBucketPredatesIdentityPersistence_itFallsBackToTheUploadContext() throws {
@@ -852,9 +849,9 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertEqual(pieces.count, 2)
         let splitSequence = Int64(try XCTUnwrap(pieces[0].payload?.sequence))
 
-        let sameProcess = makeRequestBuilder(legacyRuntimeID: "legacy-runtime-id")
+        let sameProcess = makeRequestBuilder()
         // After a restart: pieces left on disk are uploaded by a new runtime.
-        let afterRestart = makeRequestBuilder(legacyRuntimeID: "new-runtime-id")
+        let afterRestart = makeRequestBuilder()
         let builds: [(StatsRequestBuilder, ExportedBucket)] = [
             (sameProcess, pieces[0]),
             (sameProcess, pieces[0]), // retry
@@ -916,7 +913,7 @@ class ClientStatsFeatureTests: XCTestCase {
         stats.flushStats(force: true)
         let events = core.exportedBuckets.map(makeEvent(from:))
         let builder = try XCTUnwrap(stats.requestBuilder as? StatsRequestBuilder)
-        let afterRestart = makeRequestBuilder(legacyRuntimeID: "new-runtime-id")
+        let afterRestart = makeRequestBuilder()
 
         func identities(of request: URLRequest) throws -> [String] {
             try allClientStatsPayloads(in: request).map { "\($0["RuntimeID"] as? String ?? "")/\($0["Sequence"] as? Int64 ?? -1)" }
@@ -931,66 +928,13 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertEqual(restarted, first)
     }
 
-    func testWhenABatchHoldsBucketsStoredByEarlierBuilds_theyTakeTheBuildersIdentityAndOthersKeepTheirs() throws {
-        // Given: a bucket stored before payload identities existed, as raw JSON, next to a current one.
-        let legacy = Event(data: Data(#"{"start":1000,"duration":10000000000,"stats":[],"env":"prod","version":"1.0.0","service":"app"}"#.utf8))
-        let current = makeExportedBucket(start: 2_000, env: "prod", version: "1.0.0", service: "app")
-            .assigning(.init(runtimeID: "stored-runtime-id", sequence: 7))
-        let provider = StatsSequenceNumberProvider()
-        let builder = makeRequestBuilder(legacyRuntimeID: "runtime-id", legacySequenceNumbers: provider)
+    func testWhenABatchHoldsABucketWithoutPayloadIdentity_theWholeBatchIsDropped() throws {
+        // Given: a bucket stored by an earlier internal build, next to a current one in the same file.
+        let earlierBuild = Event(data: Data(#"{"start":1000,"duration":10000000000,"stats":[],"env":"prod","version":"1.0.0","service":"app"}"#.utf8))
+        let current = makeEvent(from: makeExportedBucket(env: "prod", version: "1.0.0", service: "app"))
 
-        // When
-        let request = try builder.request(for: [legacy, makeEvent(from: current)], with: .mockAny(), execution: .init(previousResponseCode: nil, attempt: 0))
-
-        // Then
-        let payloads = try allClientStatsPayloads(in: request)
-        XCTAssertEqual(payloads.map { $0["RuntimeID"] as? String }, ["runtime-id", "stored-runtime-id"])
-        XCTAssertEqual(payloads.map { $0["Sequence"] as? Int64 }, [1, 7])
-        XCTAssertEqual(provider.next(), 2, "Only the legacy bucket took a sequence number at upload")
-        XCTAssertEqual(try decodeEnvelope(in: request)["SplitPayload"] as? Bool, false)
-    }
-
-    func testWhenLegacyAndCurrentFilesUploadInEitherOrderOrRetry_eachRuntimeKeepsItsOwnIncreasingSequence() throws {
-        // Given: after an upgrade, an older-format bucket in one storage file and a current one in another.
-        let legacy = Event(data: Data(#"{"start":1000,"duration":10000000000,"stats":[],"env":"prod","version":"1.0.0","service":"app"}"#.utf8))
-        for legacyFirst in [true, false] {
-            let (core, stats) = try enableClientStats()
-            stats.concentrator.add(.mockWith(startTime: 0, duration: 100))
-            stats.flushStats(force: true)
-            let current = try XCTUnwrap(core.exportedBuckets.first)
-            let stored = try XCTUnwrap(current.payload)
-            let builder = try XCTUnwrap(stats.requestBuilder as? StatsRequestBuilder)
-            func upload(_ event: Event, attempt: UInt = 0) throws -> (runtimeID: String?, sequence: Int64?) {
-                let request = try builder.request(for: [event], with: .mockAny(), execution: .init(previousResponseCode: attempt > 0 ? 500 : nil, attempt: attempt))
-                let client = try firstClientStatsPayload(in: request)
-                return (client["RuntimeID"] as? String, client["Sequence"] as? Int64)
-            }
-
-            // When: each file is uploaded on its own, in either order, and the legacy one is retried.
-            var legacyUploads: [(runtimeID: String?, sequence: Int64?)] = []
-            var currentUpload: (runtimeID: String?, sequence: Int64?)
-            if legacyFirst {
-                legacyUploads.append(try upload(legacy))
-                legacyUploads.append(try upload(legacy, attempt: 1))
-                currentUpload = try upload(makeEvent(from: current))
-            } else {
-                currentUpload = try upload(makeEvent(from: current))
-                legacyUploads.append(try upload(legacy))
-                legacyUploads.append(try upload(legacy, attempt: 1))
-            }
-
-            // Then: the current bucket keeps its stored identity.
-            XCTAssertEqual(currentUpload.runtimeID, stored.runtimeID)
-            XCTAssertEqual(currentUpload.sequence, Int64(stored.sequence))
-            // Legacy uploads, retries included, use a separate runtime ID whose sequence increases.
-            XCTAssertEqual(Set(legacyUploads.map(\.runtimeID)).count, 1)
-            XCTAssertNotEqual(legacyUploads[0].runtimeID, stored.runtimeID)
-            XCTAssertEqual(legacyUploads.map(\.sequence), [1, 2])
-            // And never take a number from the stored stream: the next flush continues it.
-            stats.concentrator.add(.mockWith(startTime: 0, duration: 100))
-            stats.flushStats(force: true)
-            XCTAssertEqual(core.exportedBuckets.last?.payload?.sequence, stored.sequence + 1)
-        }
+        // Then: upgrades from those builds are not supported, so the batch cannot be built and is dropped.
+        XCTAssertThrowsError(try makeRequestBuilder().request(for: [earlierBuild, current], with: .mockAny(), execution: .init(previousResponseCode: nil, attempt: 0)))
     }
 
     func testWhenBatchHoldsOnlyWholeBuckets_itDoesNotMarkThePayloadSplit() throws {
@@ -999,8 +943,7 @@ class ClientStatsFeatureTests: XCTestCase {
         let request = try makeRequestBuilder().request(for: events, with: .mockAny(), execution: .init(previousResponseCode: nil, attempt: 0))
 
         XCTAssertEqual(try decodeEnvelope(in: request)["SplitPayload"] as? Bool, false)
-        let buckets = try XCTUnwrap(firstClientStatsPayload(in: request)["Stats"] as? [Any?])
-        XCTAssertEqual(buckets.count, 2, "Whole buckets are never merged")
+        XCTAssertEqual(try groupCountsPerPayload(in: request), [[1], [1]], "Whole buckets are never merged")
     }
 
     func testWhenBuildingRequest_itTargetsStatsIntakeWithMsgPackContentType() throws {
@@ -1049,7 +992,7 @@ class ClientStatsFeatureTests: XCTestCase {
             version: "1.2.3",
             sdkVersion: "2.0.0"
         )
-        let builder = makeRequestBuilder(legacyRuntimeID: "runtime-id")
+        let builder = makeRequestBuilder()
 
         // When
         let request = try builder.request(
@@ -1122,14 +1065,10 @@ class ClientStatsFeatureTests: XCTestCase {
             execution: .init(previousResponseCode: nil, attempt: 0)
         )
 
-        // Then: all buckets land under a single ClientStatsPayload (one tracer).
-        let envelope = try decodeEnvelope(in: request)
-        let clientStatsArray = try XCTUnwrap(envelope["Stats"] as? [Any?])
-        XCTAssertEqual(clientStatsArray.count, 1)
-
-        let clientStats = try mapFields(clientStatsArray[0])
-        let buckets = try XCTUnwrap(clientStats["Stats"] as? [Any?])
-        XCTAssertEqual(buckets.count, 2)
+        // Then: each stored bucket is encoded, as its own client payload.
+        let payloads = try allClientStatsPayloads(in: request)
+        XCTAssertEqual(payloads.count, 2)
+        XCTAssertEqual(payloads.map { ($0["Stats"] as? [Any?])?.count }, [1, 1])
     }
 
     func testWhenEventsAreEmpty_itThrows() {
@@ -1180,7 +1119,7 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertEqual(provider.next(), UInt64(total) + 1)
     }
 
-    func testSequenceNumberIncrementsAcrossRequests() throws {
+    func testEachRequestCarriesTheSequenceNumberStoredWithItsBucket() throws {
         // Given
         let builder = makeRequestBuilder()
         let execution = ExecutionContext(previousResponseCode: nil, attempt: 0)
@@ -1212,14 +1151,10 @@ class ClientStatsFeatureTests: XCTestCase {
 
     private func makeRequestBuilder(
         customIntakeURL: URL? = nil,
-        legacyRuntimeID: String = "runtime-id",
-        legacySequenceNumbers: StatsSequenceNumberProvider = StatsSequenceNumberProvider()
     ) -> StatsRequestBuilder {
         StatsRequestBuilder(
             customIntakeURL: customIntakeURL,
-            telemetry: NOPTelemetry(),
-            legacyRuntimeID: legacyRuntimeID,
-            legacySequenceNumbers: legacySequenceNumbers
+            telemetry: NOPTelemetry()
         )
     }
 
@@ -1232,6 +1167,8 @@ class ClientStatsFeatureTests: XCTestCase {
     }
 
     private let splitRuntimeID = "split-runtime-id"
+    /// Sequence numbers of the payload identities that `makeExportedBucket` assigns by default.
+    private let bucketSequences = StatsSequenceNumberProvider()
     private let sequenceNumbers = StatsSequenceNumberProvider()
 
     private func split(_ bucket: ExportedBucket, toFit maxEncodedSize: Int) -> (pieces: [ExportedBucket], oversizedGroups: [ExportedGroupedStats]) {
@@ -1310,7 +1247,8 @@ class ClientStatsFeatureTests: XCTestCase {
         groupCount: Int = 1,
         env: String? = nil,
         version: String? = nil,
-        service: String? = nil
+        service: String? = nil,
+        payload: ExportedBucket.PayloadIdentity? = nil
     ) -> ExportedBucket {
         let stats = (0..<groupCount).map { index in
             ExportedGroupedStats(
@@ -1332,7 +1270,15 @@ class ClientStatsFeatureTests: XCTestCase {
                 serviceSource: "src"
             )
         }
-        return ExportedBucket(start: start, duration: duration, stats: stats, env: env, version: version, service: service)
+        return ExportedBucket(
+            start: start,
+            duration: duration,
+            stats: stats,
+            env: env,
+            version: version,
+            service: service,
+            payload: payload ?? .init(runtimeID: "runtime-id", sequence: bucketSequences.next())
+        )
     }
 
     private func decodeEnvelope(in request: URLRequest) throws -> [String: Any?] {
