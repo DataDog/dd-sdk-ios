@@ -40,7 +40,10 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
     private let featureScope: FeatureScope
     private let dateProvider: DateProvider
     private let metricController: TraceClientStatsMetricController
-    private var flushTimer: Timer?
+    /// Runs the periodic flush off the main thread: it waits for pending aggregation and exports every
+    /// completed bucket's sketches.
+    private let flushQueue = DispatchQueue(label: "com.datadoghq.client-stats-flush", qos: .utility)
+    private var flushTimer: DispatchSourceTimer?
 
     /// Interval between periodic flushes (default: 30 seconds).
     let flushInterval: TimeInterval
@@ -74,7 +77,7 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
     }
 
     deinit {
-        flushTimer?.invalidate()
+        flushTimer?.cancel()
     }
 
     /// Flushes completed buckets and writes them to the feature storage for upload.
@@ -112,12 +115,13 @@ internal final class ClientStatsFeature: DatadogRemoteFeature {
     }
 
     private func startFlushTimer() {
-        flushTimer = Timer.scheduledTimer(
-            withTimeInterval: flushInterval,
-            repeats: true
-        ) { [weak self] _ in
+        let timer = DispatchSource.makeTimerSource(queue: flushQueue)
+        timer.schedule(deadline: .now() + flushInterval, repeating: flushInterval, leeway: .seconds(1))
+        timer.setEventHandler { [weak self] in
             self?.flushStats()
         }
+        timer.resume()
+        flushTimer = timer
     }
 }
 
