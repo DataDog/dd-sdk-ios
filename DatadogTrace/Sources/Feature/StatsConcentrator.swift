@@ -158,7 +158,7 @@ internal struct ExportedBucket: Codable, Sendable {
 
     /// Identifies a client stats payload.
     struct PayloadIdentity: Codable, Hashable, Sendable {
-        /// The tracer instance that flushed the bucket.
+        /// The `RuntimeID` of the `ClientStatsFeature` instance that stored the bucket.
         let runtimeID: String
         /// Unique among the payloads of `runtimeID`, and increasing in flush order.
         let sequence: UInt64
