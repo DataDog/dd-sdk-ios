@@ -76,7 +76,9 @@ extension SpanSnapshot {
     init(from event: SpanEvent, startTime: Date, deployment: DeploymentIdentity, isServiceEntry: Bool = false) {
         let spanKind = event.tags[SpanTags.kind]
         let httpStatusCode: UInt32 = {
-            guard let raw = event.tags[OTTags.httpStatusCode],
+            // OpenTelemetry's stable HTTP conventions use `http.response.status_code`; the OpenTracing
+            // `http.status_code` is the fallback.
+            guard let raw = event.tags["http.response.status_code"] ?? event.tags[OTTags.httpStatusCode],
                   let intValue = Int(raw),
                   let uint32 = UInt32(exactly: intValue) else {
                 return 0
