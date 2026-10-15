@@ -96,31 +96,65 @@ class ClientStatsFeatureTests: XCTestCase {
 
     // MARK: - App Lifecycle
 
-    func testWhenTheAppMayBeSuspended_bufferedStatsArePersistedOncePerTransition() {
+    func testWhenTheAppMovesIntoOrOutOfASuspendableState_theReceiverReportsEachTransitionOnce() {
         let receiver = TraceClientStatsContextReceiver(concentrator: nil)
-        var persistCount = 0
-        receiver.persistBufferedStats = { persistCount += 1 }
+        var transitions: [Bool] = []
+        receiver.appMayBeSuspendedDidChange = { transitions.append($0) }
         let foreground: DatadogContext = .mockWith(applicationStateHistory: .mockAppInForeground())
         let background: DatadogContext = .mockWith(applicationStateHistory: .mockAppInBackground())
 
-        for (context, expectedCount) in [(foreground, 0), (background, 1), (background, 1), (foreground, 1), (background, 2)] {
+        for context in [foreground, background, background, foreground, background] {
             _ = receiver.receive(message: .context(context), from: core)
-            XCTAssertEqual(persistCount, expectedCount)
         }
+
+        XCTAssertEqual(transitions, [true, false, true])
     }
 
-    func testWhenTheAppGoesToTheBackground_theFeatureStoresBufferedStatsImmediately() throws {
+    func testWhenTheAppGoesToTheBackground_theFeatureStoresBufferedStatsOffTheCallingThread() throws {
         // Given: buffered stats in the current window, which the periodic flush would keep for 20 s or more.
         let (core, stats) = try enableClientStats()
-        stats.concentrator.add(.mockWith(startTime: 0, duration: 100))
+        stats.record(.mockWith(startTime: 0, duration: 100))
         _ = stats.messageReceiver.receive(message: .context(.mockWith(applicationStateHistory: .mockAppInForeground())), from: core)
         XCTAssertTrue(core.exportedBuckets.isEmpty)
 
         // When
         _ = stats.messageReceiver.receive(message: .context(.mockWith(applicationStateHistory: .mockAppInBackground())), from: core)
 
-        // Then
+        // Then: the flush runs on the feature's queue, not on the message bus caller.
+        waitUntil { !core.exportedBuckets.isEmpty }
         XCTAssertEqual(core.exportedBuckets.flatMap(\.stats).map(\.hits), [1])
+        XCTAssertEqual(core.writeContextOnMainThread, [false])
+        let metric = try XCTUnwrap(core.telemetryMock.messages.firstMetric(named: TraceClientStatsMetric.name))
+        XCTAssertEqual(metric.attributes[TraceClientStatsMetric.forcedKey] as? Bool, false, "Only teardown reports forced")
+    }
+
+    func testWhenSpansFinishWhileTheAppMayBeSuspended_theyAreStoredSoonInFewFlushes() throws {
+        // Given: the SDK starts while the app is already in the background, with nothing buffered yet.
+        let (core, stats) = try enableClientStats()
+        _ = stats.messageReceiver.receive(message: .context(.mockWith(applicationStateHistory: .mockAppInBackground())), from: core)
+
+        // When: a burst of spans finishes afterwards.
+        for _ in 0..<10 {
+            stats.record(.mockWith(startTime: 0, duration: 100))
+        }
+
+        // Then: every span is stored within the delay. The burst takes at most two flushes: the one the
+        // transition started, if it runs after the first span, and the one the burst scheduled.
+        let storedHits = { core.exportedBuckets.flatMap(\.stats).map(\.hits).reduce(0, +) }
+        waitUntil(timeout: ClientStatsFeature.suspendableFlushDelay + 3) { storedHits() == 10 }
+        XCTAssertEqual(storedHits(), 10)
+        let flushMetrics = core.telemetryMock.messages.compactMap(\.asMetric).filter { $0.name == TraceClientStatsMetric.name }
+        XCTAssertLessThanOrEqual(flushMetrics.count, 2)
+    }
+
+    func testWhenSpansFinishInTheForeground_theyWaitForThePeriodicFlush() throws {
+        let (core, stats) = try enableClientStats()
+        _ = stats.messageReceiver.receive(message: .context(.mockWith(applicationStateHistory: .mockAppInForeground())), from: core)
+
+        stats.record(.mockWith(startTime: 0, duration: 100))
+
+        RunLoop.current.run(until: Date().addingTimeInterval(ClientStatsFeature.suspendableFlushDelay + 0.5))
+        XCTAssertTrue(core.exportedBuckets.isEmpty)
     }
 
     // MARK: - Request Builder
@@ -267,7 +301,7 @@ class ClientStatsFeatureTests: XCTestCase {
             isTopLevel: true
         ))
 
-        stats.flushStats(force: false)
+        stats.flushStats(.periodic)
 
         XCTAssertTrue(core.exportedBuckets.isEmpty)
     }
@@ -288,7 +322,7 @@ class ClientStatsFeatureTests: XCTestCase {
                 stats.concentrator.add(.mockWith(resource: "GET /items/\(index)", startTime: 0, duration: 100))
             }
 
-            stats.flushStats(force: true)
+            stats.flushStats(.teardown)
 
             XCTAssertEqual(core.exportedBuckets.count, 1)
             let bucket = try XCTUnwrap(core.exportedBuckets.first)
@@ -342,10 +376,10 @@ class ClientStatsFeatureTests: XCTestCase {
         }
 
         // The time bucket is still recent, so nothing is stored early.
-        stats.flushStats(force: false)
+        stats.flushStats(.periodic)
         XCTAssertTrue(core.exportedBuckets.isEmpty)
 
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
         let overflowBuckets = core.exportedBuckets.filter { $0.env == "original-env" }
         XCTAssertEqual(overflowBuckets.compactMap(\.version).sorted(), ["one", "two"], "Each bucket and deployment is stored exactly once")
         XCTAssertEqual(overflowBuckets.first { $0.version == "one" }?.stats.map(\.hits), [3])
@@ -370,7 +404,7 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertEqual(exportMetrics.count, 1)
         XCTAssertEqual(exportMetrics.first?.attributes[TraceClientStatsMetric.spansCountKey] as? UInt64, UInt64(limit + 4))
         let count = core.exportedBuckets.count
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
         XCTAssertEqual(core.exportedBuckets.count, count)
     }
 
@@ -410,7 +444,7 @@ class ClientStatsFeatureTests: XCTestCase {
 
         // When: advancing past the buffer window makes the bucket flushable.
         dateProvider.advance(bySeconds: 60)
-        stats.flushStats(force: false)
+        stats.flushStats(.periodic)
 
         // Then
         let metric = try XCTUnwrap(core.telemetryMock.messages.firstMetric(named: TraceClientStatsMetric.name))
@@ -434,7 +468,7 @@ class ClientStatsFeatureTests: XCTestCase {
         stats.concentrator.add(.mockWith(startTime: 0, duration: 1_000_000_000, isTopLevel: true))
 
         // When: a forced flush (teardown) exports the still-recent bucket.
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
 
         // Then
         let metric = try XCTUnwrap(core.telemetryMock.messages.firstMetric(named: TraceClientStatsMetric.name))
@@ -452,7 +486,7 @@ class ClientStatsFeatureTests: XCTestCase {
         let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
 
         // When: nothing was aggregated, so the flush is empty.
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
 
         // Then
         XCTAssertNil(core.telemetryMock.messages.firstMetric(named: TraceClientStatsMetric.name))
@@ -472,7 +506,7 @@ class ClientStatsFeatureTests: XCTestCase {
         stats.concentrator.updateConsent(.notGranted)
         stats.concentrator.add(.mockWith(startTime: 0, duration: 1_000_000_000, isTopLevel: true))
         dateProvider.advance(bySeconds: 60)
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
 
         // Then: no buckets are exported, so no metric is emitted.
         XCTAssertNil(core.telemetryMock.messages.firstMetric(named: TraceClientStatsMetric.name))
@@ -708,7 +742,7 @@ class ClientStatsFeatureTests: XCTestCase {
         stats.concentrator.add(.mockWith(resource: "GET /items", startTime: 0, duration: 100))
         stats.concentrator.add(.mockWith(resource: "GET /items", startTime: 0, duration: 100))
 
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
 
         XCTAssertEqual(core.exportedBuckets.flatMap(\.stats).map(\.resource), ["GET /items"])
         XCTAssertEqual(core.exportedBuckets.flatMap(\.stats).map(\.hits), [2])
@@ -749,7 +783,7 @@ class ClientStatsFeatureTests: XCTestCase {
         addSpans(stats.concentrator)
 
         // When
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
 
         // Then: every stored piece fits.
         let pieces = core.exportedBuckets
@@ -956,9 +990,9 @@ class ClientStatsFeatureTests: XCTestCase {
         let (core, stats) = try enableClientStats()
         stats.concentrator.add(.mockWith(startTime: 0, duration: 100, deployment: .mockWith(version: "1.0.0")))
         stats.concentrator.add(.mockWith(startTime: 0, duration: 100, deployment: .mockWith(version: "2.0.0")))
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
         stats.concentrator.add(.mockWith(startTime: 20_000_000_000, duration: 100))
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
 
         let payloads = core.exportedBuckets.compactMap(\.payload)
         XCTAssertEqual(payloads.count, 3, "Every stored bucket has a payload identity")
@@ -971,9 +1005,9 @@ class ClientStatsFeatureTests: XCTestCase {
         // Given: a whole bucket stored first, then a bucket split into pieces.
         let (core, stats) = try enableClientStats()
         stats.concentrator.add(.mockWith(resource: "GET /small", startTime: 0, duration: 100))
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
         addWideLatencySpans(to: stats.concentrator, endingAt: 100_000_000_000)
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
         let events = core.exportedBuckets.map(makeEvent(from:))
         XCTAssertGreaterThan(events.count, 2)
         let builder = try XCTUnwrap(stats.requestBuilder as? StatsRequestBuilder)
@@ -991,9 +1025,9 @@ class ClientStatsFeatureTests: XCTestCase {
     func testWhenABatchIsRetriedOrUploadedAfterARestart_itKeepsEveryPayloadIdentity() throws {
         let (core, stats) = try enableClientStats()
         stats.concentrator.add(.mockWith(resource: "GET /small", startTime: 0, duration: 100))
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
         addWideLatencySpans(to: stats.concentrator, endingAt: 100_000_000_000)
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
         let events = core.exportedBuckets.map(makeEvent(from:))
         let builder = try XCTUnwrap(stats.requestBuilder as? StatsRequestBuilder)
         let afterRestart = makeRequestBuilder()
@@ -1121,7 +1155,7 @@ class ClientStatsFeatureTests: XCTestCase {
         Trace.enable(with: config, in: core)
         let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
         stats.concentrator.add(.mockWith(startTime: 0, duration: 100))
-        stats.flushStats(force: true)
+        stats.flushStats(.teardown)
         let stored = try XCTUnwrap(core.exportedBuckets.first)
         XCTAssertEqual(stored.start, 3_600_000_000_000)
 
@@ -1306,6 +1340,14 @@ class ClientStatsFeatureTests: XCTestCase {
     private func groupCountsPerPayload(in request: URLRequest) throws -> [[Int?]] {
         try allClientStatsPayloads(in: request).map { payload in
             try XCTUnwrap(payload["Stats"] as? [Any?]).map { try (mapFields($0)["Stats"] as? [Any?])?.count }
+        }
+    }
+
+    /// Spins the run loop until `condition` holds or `timeout` passes.
+    private func waitUntil(timeout: TimeInterval = 3, _ condition: () -> Bool) {
+        let deadline = Date().addingTimeInterval(timeout)
+        while !condition() && Date() < deadline {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.02))
         }
     }
 
