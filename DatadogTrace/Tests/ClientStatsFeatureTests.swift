@@ -94,6 +94,18 @@ class ClientStatsFeatureTests: XCTestCase {
         XCTAssertFalse(receiver.receive(message: .payload("irrelevant"), from: core))
     }
 
+    // MARK: - Clearing Data
+
+    func testWhenAllDataIsCleared_bufferedStatsAreNeverStored() throws {
+        let (core, stats) = try enableClientStats()
+        stats.record(.mockWith(startTime: 0, duration: 100))
+
+        stats.clearAllData()
+        stats.flushStats(.teardown)
+
+        XCTAssertTrue(core.exportedBuckets.isEmpty)
+    }
+
     // MARK: - App Lifecycle
 
     func testWhenTheAppMovesIntoOrOutOfASuspendableState_theReceiverReportsEachTransitionOnce() {

@@ -322,6 +322,19 @@ class StatsConcentratorTests: XCTestCase {
         XCTAssertEqual(telemetry.messages.count, 1)
     }
 
+    // MARK: - Clearing Data
+
+    func testWhenAllDataIsCleared_bufferedBucketsAreDroppedAndLaterSpansAreKept() throws {
+        let concentrator = makeConcentrator(now: 0)
+        concentrator.add(.mockWith(resource: "before", startTime: 0, duration: 100))
+
+        concentrator.clearAllData()
+        concentrator.add(.mockWith(resource: "after", startTime: 0, duration: 100))
+
+        let buckets = concentrator.flush(now: 0, force: true)
+        XCTAssertEqual(buckets.flatMap(\.stats).map(\.resource), ["after"])
+    }
+
     // MARK: - Eligibility
 
     func testTopLevelSpanIsEligible() {
