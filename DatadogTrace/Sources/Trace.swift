@@ -59,9 +59,8 @@ public enum Trace {
 
         let onSpanFinished: (@Sendable (SpanSnapshot) -> Void)?
         if let stats {
-            let concentrator = stats.concentrator
-            onSpanFinished = { [weak concentrator] snapshot in
-                concentrator?.add(snapshot)
+            onSpanFinished = { [weak stats] snapshot in
+                stats?.record(snapshot)
             }
         } else {
             onSpanFinished = nil
