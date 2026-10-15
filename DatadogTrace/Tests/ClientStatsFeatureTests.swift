@@ -482,6 +482,50 @@ class ClientStatsFeatureTests: XCTestCase {
         }
     }
 
+    func testFixedJSONSizeAllowancesCoverTheWorstCaseLayout() throws {
+        // Every string empty and every number at its widest. The estimator counts each string's and
+        // sketch's quotes with the value itself, so they are not part of the fixed size.
+        let header = ExportedBucket(
+            start: .max,
+            duration: .max,
+            stats: [],
+            env: "",
+            version: "",
+            service: "",
+            payload: .init(runtimeID: "", sequence: .max),
+            pieceCount: .min
+        )
+        let headerFixedSize = try encodedSize(of: header) - 2 * 4
+        XCTAssertEqual(headerFixedSize, 193)
+        XCTAssertLessThanOrEqual(headerFixedSize, ExportedBucket.fixedJSONSizeAllowance)
+
+        for isTraceRoot in [Trilean.notSet, .true, .false] {
+            for synthetics in [false, true] {
+                let group = ExportedGroupedStats(
+                    service: "",
+                    name: "",
+                    resource: "",
+                    httpStatusCode: .max,
+                    type: "",
+                    spanKind: "",
+                    isTraceRoot: isTraceRoot,
+                    synthetics: synthetics,
+                    hits: .max,
+                    errors: .max,
+                    duration: .max,
+                    topLevelHits: .max,
+                    okSummary: Data(),
+                    errorSummary: Data(),
+                    peerTags: [],
+                    serviceSource: ""
+                )
+                let groupFixedSize = try JSONEncoder.dd.default().encode(group).count - 2 * 8
+                XCTAssertLessThanOrEqual(groupFixedSize, 301)
+                XCTAssertLessThanOrEqual(groupFixedSize, ExportedGroupedStats.fixedJSONSizeAllowance)
+            }
+        }
+    }
+
     func testJSONSizeEstimateStopsAtTheBudgetAndSupportsTheLargestBudget() throws {
         let bucket = ExportedBucket(start: 0, duration: 10, stats: [makeGroup(resource: String(repeating: "x", count: 1_000_000))], env: "env", version: "1.0", service: "app")
         for budget in [1, 512, 1_024] {
