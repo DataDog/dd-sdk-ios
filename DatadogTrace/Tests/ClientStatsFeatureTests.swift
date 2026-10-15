@@ -96,6 +96,26 @@ class ClientStatsFeatureTests: XCTestCase {
 
     // MARK: - Clearing Data
 
+    func testWhenAllDataIsClearedWhileAFlushWaitsToWrite_itsBucketsAreNeverStored() throws {
+        // Given: a flush that exported a bucket but whose write context has not run yet.
+        let (core, stats) = try enableClientStats()
+        core.defersWriteContexts = true
+        stats.record(.mockWith(resource: "before", startTime: 0, duration: 100))
+        stats.flushStats(.teardown)
+
+        // When
+        stats.clearAllData()
+        core.runPendingWriteContexts()
+
+        // Then: the bucket collected before the clear is not stored, and later stats still are.
+        XCTAssertTrue(core.exportedBuckets.isEmpty)
+        XCTAssertFalse(core.telemetryMock.messages.compactMap(\.asMetric).contains { $0.name == TraceClientStatsMetric.name })
+        core.defersWriteContexts = false
+        stats.record(.mockWith(resource: "after", startTime: 0, duration: 100))
+        stats.flushStats(.teardown)
+        XCTAssertEqual(core.exportedBuckets.flatMap(\.stats).map(\.resource), ["after"])
+    }
+
     func testWhenAllDataIsCleared_bufferedStatsAreNeverStored() throws {
         let (core, stats) = try enableClientStats()
         stats.record(.mockWith(startTime: 0, duration: 100))
@@ -1520,7 +1540,22 @@ private final class FeatureRegistrationPassthroughCoreMock: DatadogCoreProtocol,
     func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
         writeContextBypassConsentValues.append(bypassConsent)
         _writeContextOnMainThread.mutate { $0.append(Thread.isMainThread) }
-        block(contextValue, writer)
+        if defersWriteContexts {
+            pendingWriteContexts.append { [contextValue, writer] in block(contextValue, writer) }
+        } else {
+            block(contextValue, writer)
+        }
+    }
+
+    /// When `true`, write contexts wait for `runPendingWriteContexts()`, like a context read that has
+    /// not completed yet.
+    var defersWriteContexts = false
+    private var pendingWriteContexts: [() -> Void] = []
+
+    func runPendingWriteContexts() {
+        let pending = pendingWriteContexts
+        pendingWriteContexts = []
+        pending.forEach { $0() }
     }
 
     /// Whether each write context was opened on the main thread.
