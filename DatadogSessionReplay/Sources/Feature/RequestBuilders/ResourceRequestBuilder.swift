@@ -10,10 +10,10 @@ import DatadogInternal
 
 internal struct ResourceRequestBuilder: FeatureEventReconciler {
     struct Response: Decodable {
-        let storedResourceIDs: Set<String>
+        let storedResourceIdentifiers: Set<String>
 
         private enum CodingKeys: String, CodingKey {
-            case storedResourceIDs = "stored_resource_ids"
+            case storedResourceIdentifiers = "stored_resource_ids"
         }
     }
 
@@ -93,10 +93,14 @@ internal struct ResourceRequestBuilder: FeatureEventReconciler {
             return events
         }
 
-        availabilityStore.insert(response.storedResourceIDs, forApplicationID: applicationID)
+        let missingResourceIdentifiers = Set(resourceRefs.map(\.identifier))
+            .subtracting(response.storedResourceIdentifiers)
+
+        availabilityStore.invalidate(missingResourceIdentifiers, forApplicationID: applicationID)
+        availabilityStore.insert(response.storedResourceIdentifiers, forApplicationID: applicationID)
 
         return zip(events, resourceRefs).compactMap { event, resource in
-            response.storedResourceIDs.contains(resource.identifier) ? nil : event
+            response.storedResourceIdentifiers.contains(resource.identifier) ? nil : event
         }
     }
 

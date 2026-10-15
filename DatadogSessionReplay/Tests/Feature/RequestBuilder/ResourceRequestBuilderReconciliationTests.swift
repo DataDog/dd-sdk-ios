@@ -80,22 +80,33 @@ struct ResourceRequestBuilderReconciliationTests {
         // Then
         #expect(remaining == remainingIndices.map { events[$0] })
         for identifier in ["first", "second"] {
-            #expect(availabilityStore.contains(identifier, forApplicationID: "application") == response.storedResourceIDs.contains(identifier))
+            #expect(availabilityStore.contains(identifier, forApplicationID: "application") == response.storedResourceIdentifiers.contains(identifier))
         }
         #expect(!availabilityStore.contains("first", forApplicationID: "other-application"))
     }
 
-    @Test("Filters the entire batch using the latest response")
-    func filtersTheEntireBatchUsingTheLatestResponse() throws {
+    @Test("Keeps resources omitted from the latest response eligible for retry")
+    func keepsResourcesOmittedFromTheLatestResponseEligibleForRetry() throws {
         // Given
         availabilityStore.insert(["first"], forApplicationID: "application")
-        let response = ResourceRequestBuilder.Response(storedResourceIDs: ["second"])
+        let response = ResourceRequestBuilder.Response(storedResourceIdentifiers: ["second"])
 
         // When
         let remaining = try builder.events(from: events, using: response)
+        let retry = try builder.reconciliation(
+            for: events,
+            with: .mockAny(),
+            execution: .init(previousResponseCode: 503, attempt: 1)
+        )
 
         // Then
         #expect(remaining == [events[0]])
+        #expect(!availabilityStore.contains("first", forApplicationID: "application"))
+        #expect(availabilityStore.contains("second", forApplicationID: "application"))
+        guard case .skip = retry else {
+            Issue.record("Expected unconfirmed resources to remain eligible for upload on retry")
+            return
+        }
     }
 
     @Test(
@@ -116,7 +127,7 @@ struct ResourceRequestBuilderReconciliationTests {
 
         // When, Then
         #expect(throws: DecodingError.self) {
-            try builder.events(from: malformedEvents, using: .init(storedResourceIDs: ["first"]))
+            try builder.events(from: malformedEvents, using: .init(storedResourceIdentifiers: ["first"]))
         }
         #expect(!availabilityStore.contains("first", forApplicationID: "application"))
     }

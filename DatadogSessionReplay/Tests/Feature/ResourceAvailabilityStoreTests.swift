@@ -62,6 +62,24 @@ struct ResourceAvailabilityStoreTests {
         #expect(!restored.contains("other", forApplicationID: applicationID))
     }
 
+    @Test("Persists invalidations without affecting other resources or applications")
+    func persistsInvalidationsWithoutAffectingOtherResourcesOrApplications() {
+        // Given
+        let store = ResourceAvailabilityStore(scope: scope, dateProvider: dateProvider)
+        store.insert(identifiers, forApplicationID: applicationID)
+        store.insert(identifiers, forApplicationID: "other-application")
+
+        // When
+        store.invalidate(["first"], forApplicationID: applicationID)
+        let restored = ResourceAvailabilityStore(scope: scope, dateProvider: dateProvider)
+
+        // Then
+        #expect(!store.contains("first", forApplicationID: applicationID))
+        #expect(!restored.contains("first", forApplicationID: applicationID))
+        #expect(restored.contains("second", forApplicationID: applicationID))
+        #expect(restored.contains(allOf: identifiers, forApplicationID: "other-application"))
+    }
+
     @Test("Requires every identifier to be confirmed for the application")
     func requiresEveryIdentifierToBeConfirmedForTheApplication() {
         // Given
@@ -144,13 +162,13 @@ struct ResourceAvailabilityStoreTests {
     }
 
     @Test(
-        "Preserves confirmations received while loading",
+        "Preserves availability changes made while loading",
         arguments: [
             (age: 29.days, keepsStoredIdentifiers: true, remainingLifetime: 1.days),
             (age: 30.days, keepsStoredIdentifiers: false, remainingLifetime: 30.days)
         ]
     )
-    func preservesConfirmationsReceivedWhileLoading(
+    func preservesAvailabilityChangesMadeWhileLoading(
         age: TimeInterval,
         keepsStoredIdentifiers: Bool,
         remainingLifetime: TimeInterval
@@ -169,7 +187,10 @@ struct ResourceAvailabilityStoreTests {
         let store = ResourceAvailabilityStore(scope: asyncScope, dateProvider: dateProvider)
 
         // When
+        store.insert(["first", "new"], forApplicationID: applicationID)
+        store.invalidate(["first", "new"], forApplicationID: applicationID)
         store.insert(["new"], forApplicationID: applicationID)
+        #expect(!store.contains("first", forApplicationID: applicationID))
         #expect(store.contains("new", forApplicationID: applicationID))
         #expect(dataStore.storage[storageKey]?.data() == storedData)
         releaseLoad.signal()
@@ -178,9 +199,9 @@ struct ResourceAvailabilityStoreTests {
         dataStore.flush()
 
         // Then
-        for identifier in identifiers {
-            #expect(restored.contains(identifier, forApplicationID: applicationID) == keepsStoredIdentifiers)
-        }
+        #expect(!store.contains("first", forApplicationID: applicationID))
+        #expect(!restored.contains("first", forApplicationID: applicationID))
+        #expect(restored.contains("second", forApplicationID: applicationID) == keepsStoredIdentifiers)
         dateProvider.now = expiration.addingTimeInterval(-1)
         #expect(restored.contains("new", forApplicationID: applicationID))
         dateProvider.now = expiration

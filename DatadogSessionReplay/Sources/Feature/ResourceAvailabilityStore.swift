@@ -18,6 +18,7 @@ internal final class ResourceAvailabilityStore: @unchecked Sendable {
     private struct State {
         var value: Value?
         var isLoaded = false
+        var pendingInvalidations: [String: Set<String>] = [:]
     }
 
     private let scope: FeatureScope
@@ -85,6 +86,24 @@ internal final class ResourceAvailabilityStore: @unchecked Sendable {
         }
     }
 
+    /// Removes previous confirmations for these resources in the application.
+    func invalidate(_ identifiers: Set<String>, forApplicationID applicationID: String) {
+        guard !identifiers.isEmpty else {
+            return
+        }
+
+        _state.mutate { state in
+            state.value?.identifiers[applicationID]?.subtract(identifiers)
+
+            if state.isLoaded {
+                save(state.value)
+            } else {
+                // Prevent the initial read from restoring invalidated confirmations.
+                state.pendingInvalidations[applicationID, default: []].formUnion(identifiers)
+            }
+        }
+    }
+
     private func load(_ result: DataStoreValueResult) {
         let stored: Value?
         do {
@@ -102,6 +121,9 @@ internal final class ResourceAvailabilityStore: @unchecked Sendable {
             if let stored, stored.expirationDate > now {
                 value = stored
             }
+            for (applicationID, identifiers) in state.pendingInvalidations {
+                value?.identifiers[applicationID]?.subtract(identifiers)
+            }
             if let pending = state.value, pending.expirationDate > now {
                 if var loaded = value {
                     for (applicationID, identifiers) in pending.identifiers {
@@ -116,6 +138,7 @@ internal final class ResourceAvailabilityStore: @unchecked Sendable {
                 }
             }
             state.value = value
+            state.pendingInvalidations.removeAll()
             state.isLoaded = true
             if value != stored {
                 save(value)
