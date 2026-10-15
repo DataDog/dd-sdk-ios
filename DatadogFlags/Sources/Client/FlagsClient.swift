@@ -36,6 +36,24 @@ import DatadogInternal
 /// let themeColor = client.getStringValue(key: "theme-color", defaultValue: "blue")
 /// ```
 public final class FlagsClient {
+    /// Configuration for an individual Flags client.
+    public struct Configuration {
+        /// Enables the `dd_evaluation_telemetry_opt_out` context attribute as a local telemetry control.
+        ///
+        /// Only a boolean `true` suppresses new evaluation events, counts, and automatic RUM flag annotations.
+        /// Exposure logging and flag assignments remain unchanged. Previously recorded telemetry is not removed.
+        /// When enabled, the reserved attribute is excluded from assignment requests.
+        ///
+        /// Default: `false`.
+        public var enableEvaluationTelemetryOptOutParameter: Bool
+
+        /// Creates configuration for an individual Flags client.
+        /// - Parameter enableEvaluationTelemetryOptOutParameter: Enables the local evaluation telemetry control. Default: `false`.
+        public init(enableEvaluationTelemetryOptOutParameter: Bool = false) {
+            self.enableEvaluationTelemetryOptOutParameter = enableEvaluationTelemetryOptOutParameter
+        }
+    }
+
     /// The default client name used when no name is specified.
     ///
     /// Use this constant when you need to reference the default client by name.
@@ -51,17 +69,26 @@ public final class FlagsClient {
     private let exposureLogger: any ExposureLogging
     private let evaluationLogger: any EvaluationLogging
     private let rumFlagEvaluationReporter: any RUMFlagEvaluationReporting
+    private let configuration: Configuration
+
+    /// The latest requested policy must not depend on assignment loading, persistence, or network completion.
+    @ReadWriteLock
+    private var telemetryContext: FlagsEvaluationContext?
+
+    private static let telemetryOptOutAttribute = "dd_evaluation_telemetry_opt_out"
 
     internal init(
         repository: any FlagsRepositoryProtocol,
         exposureLogger: any ExposureLogging,
         evaluationLogger: any EvaluationLogging,
-        rumFlagEvaluationReporter: any RUMFlagEvaluationReporting
+        rumFlagEvaluationReporter: any RUMFlagEvaluationReporting,
+        configuration: Configuration = .init()
     ) {
         self.repository = repository
         self.exposureLogger = exposureLogger
         self.evaluationLogger = evaluationLogger
         self.rumFlagEvaluationReporter = rumFlagEvaluationReporter
+        self.configuration = configuration
     }
 
     /// Creates a new `FlagsClient` instance.
@@ -103,10 +130,29 @@ public final class FlagsClient {
         name: String = FlagsClient.defaultName,
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) -> FlagsClientProtocol {
+        create(configuration: .init(), name: name, in: core)
+    }
+
+    /// Creates a client with its own configuration.
+    ///
+    /// Clients are retained by name. If the name already exists, its original configuration remains in effect.
+    /// Enable the Flags feature before creating clients.
+    ///
+    /// - Parameters:
+    ///   - configuration: Configuration for this client.
+    ///   - name: A unique client name. Defaults to ``defaultName``.
+    ///   - core: The Datadog SDK core instance. Defaults to the global shared instance.
+    /// - Returns: A client for evaluating flags.
+    @discardableResult
+    public static func create(
+        configuration: Configuration,
+        name: String = FlagsClient.defaultName,
+        in core: DatadogCoreProtocol = CoreRegistry.default
+    ) -> FlagsClientProtocol {
         // To ensure the correct registration order between Core and Features,
         // the entire initialization flow is synchronized on the main thread.
         runOnMainThreadSync {
-            doCreate(name: name, in: core)
+            doCreate(name: name, configuration: configuration, in: core)
         }
     }
 
@@ -154,6 +200,7 @@ public final class FlagsClient {
 
     internal static func doCreate(
         name: String,
+        configuration: Configuration,
         in core: DatadogCoreProtocol
     ) -> FlagsClientProtocol {
         guard let feature = core.get(feature: FlagsFeature.self) else {
@@ -190,7 +237,8 @@ public final class FlagsClient {
             ),
             exposureLogger: feature.makeExposureLogger(featureScope),
             evaluationLogger: feature.makeEvaluationLogger(featureScope),
-            rumFlagEvaluationReporter: feature.makeRUMFlagEvaluationReporter(featureScope)
+            rumFlagEvaluationReporter: feature.makeRUMFlagEvaluationReporter(featureScope),
+            configuration: configuration
         )
 
         feature.clientRegistry.register(client, named: name)
@@ -207,10 +255,29 @@ extension FlagsClient: FlagsClientProtocol {
         _ context: FlagsEvaluationContext,
         completion: @escaping (Result<Void, FlagsError>) -> Void
     ) {
-        repository.setEvaluationContext(context, completion: completion)
+        guard configuration.enableEvaluationTelemetryOptOutParameter else {
+            repository.setEvaluationContext(context, completion: completion)
+            return
+        }
+
+        let assignmentContext = Self.assignmentContext(context)
+        var isTelemetryOnlyUpdate = false
+        _telemetryContext.mutate { previous in
+            if let previous {
+                isTelemetryOnlyUpdate = previous != context && Self.assignmentContext(previous) == assignmentContext
+            }
+            previous = context
+        }
+
+        if isTelemetryOnlyUpdate {
+            completion(.success(()))
+        } else {
+            repository.setEvaluationContext(assignmentContext, completion: completion)
+        }
     }
 
     public func getDetails<T>(key: String, defaultValue: T) -> FlagDetails<T> where T: Equatable, T: FlagValue {
+        let trackEvaluationTelemetry = !isEvaluationTelemetryOptedOut(in: telemetryContext)
         let defaultAssignment = FlagAssignment(
             allocationKey: "",
             variationKey: "",
@@ -220,7 +287,8 @@ extension FlagsClient: FlagsClientProtocol {
         )
 
         guard let context = repository.context else {
-            evaluationLogger.logEvaluation(
+            logEvaluation(
+                enabled: trackEvaluationTelemetry,
                 for: key,
                 assignment: defaultAssignment,
                 evaluationContext: .empty,
@@ -230,7 +298,8 @@ extension FlagsClient: FlagsClientProtocol {
         }
 
         guard let flagAssignment = repository.flagAssignment(for: key) else {
-            evaluationLogger.logEvaluation(
+            logEvaluation(
+                enabled: trackEvaluationTelemetry,
                 for: key,
                 assignment: defaultAssignment,
                 evaluationContext: context,
@@ -240,7 +309,8 @@ extension FlagsClient: FlagsClientProtocol {
         }
 
         guard let value = flagAssignment.variation(as: T.self) else {
-            evaluationLogger.logEvaluation(
+            logEvaluation(
+                enabled: trackEvaluationTelemetry,
                 for: key,
                 assignment: flagAssignment,
                 evaluationContext: context,
@@ -257,17 +327,21 @@ extension FlagsClient: FlagsClientProtocol {
             allocationKey: flagAssignment.allocationKey.isEmpty ? nil : flagAssignment.allocationKey
         )
 
-        trackEvaluation(key: key, assignment: flagAssignment, context: context)
+        trackEvaluation(key: key, assignment: flagAssignment, context: context, trackEvaluationTelemetry: trackEvaluationTelemetry)
 
         return details
     }
 
-    private func trackEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
+    private func trackEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext, trackEvaluationTelemetry: Bool) {
         exposureLogger.logExposure(
             for: key,
             assignment: assignment,
             evaluationContext: context
         )
+
+        guard trackEvaluationTelemetry else {
+            return
+        }
 
         evaluationLogger.logEvaluation(
             for: key,
@@ -281,6 +355,29 @@ extension FlagsClient: FlagsClientProtocol {
             value: assignment.variationKey
         )
     }
+
+    private func logEvaluation(
+        enabled: Bool,
+        for key: String,
+        assignment: FlagAssignment,
+        evaluationContext: FlagsEvaluationContext,
+        flagError: String
+    ) {
+        guard enabled else {
+            return
+        }
+        evaluationLogger.logEvaluation(for: key, assignment: assignment, evaluationContext: evaluationContext, flagError: flagError)
+    }
+
+    private func isEvaluationTelemetryOptedOut(in context: FlagsEvaluationContext?) -> Bool {
+        configuration.enableEvaluationTelemetryOptOutParameter && context?.attributes[Self.telemetryOptOutAttribute] == .bool(true)
+    }
+
+    private static func assignmentContext(_ context: FlagsEvaluationContext) -> FlagsEvaluationContext {
+        var attributes = context.attributes
+        attributes.removeValue(forKey: telemetryOptOutAttribute)
+        return .init(targetingKey: context.targetingKey, attributes: attributes)
+    }
 }
 
 // MARK: - Internal methods consumed by the React Native SDK
@@ -293,6 +390,11 @@ extension FlagsClient: FlagsClientInternal {
 
     @_spi(Internal)
     public func sendFlagEvaluation(key: String, assignment: FlagAssignment, context: FlagsEvaluationContext) {
-        trackEvaluation(key: key, assignment: assignment, context: context)
+        trackEvaluation(
+            key: key,
+            assignment: assignment,
+            context: configuration.enableEvaluationTelemetryOptOutParameter ? Self.assignmentContext(context) : context,
+            trackEvaluationTelemetry: !isEvaluationTelemetryOptedOut(in: context)
+        )
     }
 }

@@ -12,6 +12,190 @@ import DatadogInternal
 @testable import DatadogFlags
 
 final class FlagsClientTests: XCTestCase {
+    func testEvaluationTelemetryConfigurationDefaultsToDisabled() {
+        XCTAssertFalse(FlagsClient.Configuration().enableEvaluationTelemetryOptOutParameter)
+    }
+
+    func testEvaluationTelemetryOptOutRequiresActivationAndTypedTrue() {
+        let values: [AnyValue?] = [nil, .bool(false), .bool(true), .null, .string("true"), .int(1), .double(1), .array([.bool(true)]), .dictionary(["value": .bool(true)])]
+        for enabled in [false, true] {
+            for value in values {
+                let fixture = makeTelemetryFixture(enabled: enabled)
+                let context = telemetryContext(value)
+                fixture.client.setEvaluationContext(context) { _ in }
+                let details = fixture.client.getDetails(key: "flag", defaultValue: false)
+                XCTAssertTrue(details.value)
+                XCTAssertEqual(details.variant, "variant")
+                XCTAssertEqual(details.allocationKey, "allocation")
+                XCTAssertEqual(details.reason, "TARGETING_MATCH")
+                XCTAssertNil(details.error)
+                let expectedCount = enabled && value == .bool(true) ? 0 : 1
+                XCTAssertEqual(fixture.evaluations.logEvaluationCalls.count, expectedCount, "enabled=\(enabled), value=\(String(describing: value))")
+                XCTAssertEqual(fixture.rum.sendFlagEvaluationCalls.count, expectedCount)
+                XCTAssertEqual(fixture.exposures.logExposureCalls.count, 1)
+                XCTAssertEqual(fixture.repository.context?.attributes["dd_evaluation_telemetry_opt_out"], enabled ? nil : value)
+            }
+        }
+    }
+
+    func testOptOutSuppressesAllEvaluationErrorsAndDefaults() {
+        let fixture = makeTelemetryFixture(enabled: true)
+        fixture.client.setEvaluationContext(telemetryContext(.bool(true))) { _ in }
+        XCTAssertEqual(fixture.client.getDetails(key: "missing", defaultValue: false).error, .flagNotFound)
+        XCTAssertEqual(fixture.client.getDetails(key: "flag", defaultValue: "fallback").error, .typeMismatch)
+        fixture.repository.flagsData = nil
+        XCTAssertEqual(fixture.client.getDetails(key: "flag", defaultValue: false).error, .providerNotReady)
+        XCTAssertTrue(fixture.evaluations.logEvaluationCalls.isEmpty)
+        XCTAssertTrue(fixture.rum.sendFlagEvaluationCalls.isEmpty)
+        XCTAssertTrue(fixture.exposures.logExposureCalls.isEmpty)
+    }
+
+    func testPolicyOnlyUpdatesDoNotRefreshOrChangeAssignments() {
+        let fixture = makeTelemetryFixture(enabled: true)
+        var requested: [FlagsEvaluationContext] = []
+        fixture.repository.setEvaluationContextStub = { [weak repository = fixture.repository] context, completion in
+            requested.append(context)
+            repository?.flagsData?.context = context
+            completion(.success(()))
+        }
+        fixture.client.setEvaluationContext(telemetryContext(.bool(false))) { _ in }
+        let original = fixture.repository.flagsData
+        var completed = 0
+        fixture.client.setEvaluationContext(telemetryContext(.bool(true))) { _ in completed += 1 }
+        XCTAssertEqual(completed, 1)
+        XCTAssertEqual(requested.count, 1)
+        XCTAssertEqual(fixture.repository.flagsData, original)
+        _ = fixture.client.getDetails(key: "flag", defaultValue: false)
+        XCTAssertTrue(fixture.evaluations.logEvaluationCalls.isEmpty)
+        fixture.client.setEvaluationContext(telemetryContext(.bool(false))) { _ in completed += 1 }
+        _ = fixture.client.getDetails(key: "flag", defaultValue: false)
+        XCTAssertEqual(completed, 2)
+        XCTAssertEqual(requested.count, 1)
+        XCTAssertEqual(fixture.evaluations.logEvaluationCalls.count, 1)
+        XCTAssertEqual(fixture.rum.sendFlagEvaluationCalls.count, 1)
+        XCTAssertEqual(fixture.repository.flagsData, original)
+
+        // Repeating the same full context preserves the existing explicit refresh behavior.
+        fixture.client.setEvaluationContext(telemetryContext(.bool(false))) { _ in }
+        XCTAssertEqual(requested.count, 2)
+        fixture.client.setEvaluationContext(telemetryContext(.bool(false), subject: "other-user")) { _ in }
+        XCTAssertEqual(requested.count, 3)
+        fixture.client.setEvaluationContext(.init(targetingKey: "other-user", attributes: ["plan": .string("new")])) { _ in }
+        XCTAssertEqual(requested.count, 4)
+    }
+
+    func testDisabledControlPreservesAllContextUpdates() {
+        let fixture = makeTelemetryFixture(enabled: false)
+        var requested: [FlagsEvaluationContext] = []
+        fixture.repository.setEvaluationContextStub = { [weak repository = fixture.repository] context, completion in
+            requested.append(context)
+            repository?.flagsData?.context = context
+            completion(.success(()))
+        }
+        fixture.client.setEvaluationContext(telemetryContext(.bool(false))) { _ in }
+        fixture.client.setEvaluationContext(telemetryContext(.bool(true))) { _ in }
+        _ = fixture.client.getDetails(key: "flag", defaultValue: false)
+        XCTAssertEqual(requested.map { $0.attributes["dd_evaluation_telemetry_opt_out"] }, [.bool(false), .bool(true)])
+        XCTAssertEqual(fixture.evaluations.logEvaluationCalls.count, 1)
+        XCTAssertEqual(fixture.rum.sendFlagEvaluationCalls.count, 1)
+    }
+
+    func testPendingOrFailedAssignmentCannotRestorePreviousTelemetryPolicy() throws {
+        let fixture = makeTelemetryFixture(enabled: true)
+        var pending: [(FlagsEvaluationContext, (Result<Void, FlagsError>) -> Void)] = []
+        fixture.repository.setEvaluationContextStub = { context, completion in pending.append((context, completion)) }
+        fixture.repository.flagsData = nil
+        fixture.client.setEvaluationContext(telemetryContext(.bool(false))) { _ in }
+        var localCompleted = false
+        fixture.client.setEvaluationContext(telemetryContext(.bool(true))) { _ in localCompleted = true }
+        XCTAssertTrue(localCompleted)
+        XCTAssertEqual(pending.count, 1)
+        XCTAssertEqual(fixture.client.getDetails(key: "flag", defaultValue: false).error, .providerNotReady)
+        XCTAssertTrue(fixture.evaluations.logEvaluationCalls.isEmpty)
+
+        fixture.repository.flagsData = telemetryFlagsData(context: pending[0].0)
+        pending[0].1(.success(()))
+        XCTAssertTrue(fixture.client.getDetails(key: "flag", defaultValue: false).value)
+        XCTAssertTrue(fixture.evaluations.logEvaluationCalls.isEmpty)
+
+        fixture.client.setEvaluationContext(telemetryContext(.bool(true), subject: "other-user")) { _ in }
+        XCTAssertEqual(pending.count, 2)
+        fixture.repository.flagsData = nil
+        pending[1].1(.failure(.invalidResponse))
+        XCTAssertEqual(fixture.client.getDetails(key: "flag", defaultValue: false).error, .providerNotReady)
+        XCTAssertTrue(fixture.evaluations.logEvaluationCalls.isEmpty)
+        fixture.client.setEvaluationContext(telemetryContext(.bool(false), subject: "other-user")) { _ in }
+        XCTAssertEqual(pending.count, 2)
+        _ = fixture.client.getDetails(key: "flag", defaultValue: false)
+        XCTAssertEqual(fixture.evaluations.logEvaluationCalls.count, 1)
+    }
+
+    func testTelemetryPolicyIsIndependentAcrossClientsAndCachedAssignments() {
+        let optedOut = makeTelemetryFixture(enabled: true)
+        let normal = makeTelemetryFixture(enabled: true)
+        optedOut.repository.flagsData?.flags["flag"]?.reason = "CACHED"
+        optedOut.client.setEvaluationContext(telemetryContext(.bool(true))) { _ in }
+        normal.client.setEvaluationContext(telemetryContext(.bool(false))) { _ in }
+        XCTAssertEqual(optedOut.client.getDetails(key: "flag", defaultValue: false).reason, "CACHED")
+        XCTAssertTrue(normal.client.getDetails(key: "flag", defaultValue: false).value)
+        XCTAssertTrue(optedOut.evaluations.logEvaluationCalls.isEmpty)
+        XCTAssertEqual(normal.evaluations.logEvaluationCalls.count, 1)
+        XCTAssertEqual(optedOut.exposures.logExposureCalls.count, 1)
+    }
+
+    func testSPIUsesTypedContextWithoutSuppressingExposures() throws {
+        for enabled in [false, true] {
+            let fixture = makeTelemetryFixture(enabled: enabled)
+            let assignment = try XCTUnwrap(fixture.repository.flagAssignment(for: "flag"))
+            fixture.client.sendFlagEvaluation(key: "flag", assignment: assignment, context: telemetryContext(.bool(true)))
+            fixture.client.sendFlagEvaluation(key: "flag", assignment: assignment, context: telemetryContext(.string("true")))
+            XCTAssertEqual(fixture.exposures.logExposureCalls.count, 2)
+            XCTAssertEqual(fixture.evaluations.logEvaluationCalls.count, enabled ? 1 : 2)
+            XCTAssertEqual(fixture.rum.sendFlagEvaluationCalls.count, enabled ? 1 : 2)
+        }
+    }
+
+    private func telemetryContext(_ value: AnyValue?, subject: String = "user") -> FlagsEvaluationContext {
+        var attributes: [String: AnyValue] = ["plan": .string("standard")]
+        attributes["dd_evaluation_telemetry_opt_out"] = value
+        return .init(targetingKey: subject, attributes: attributes)
+    }
+
+    private func telemetryFlagsData(context: FlagsEvaluationContext) -> FlagsData {
+        .init(
+            flags: ["flag": .init(allocationKey: "allocation", variationKey: "variant", variation: .boolean(true), reason: "TARGETING_MATCH", doLog: true)],
+            context: context,
+            date: .mockAny()
+        )
+    }
+
+    private func makeTelemetryFixture(enabled: Bool) -> (
+        client: FlagsClient,
+        repository: FlagsRepositoryMock,
+        exposures: ExposureLoggerMock,
+        evaluations: EvaluationLoggerMock,
+        rum: RUMFlagEvaluationReporterMock
+    ) {
+        let repository = FlagsRepositoryMock(flagsData: telemetryFlagsData(context: telemetryContext(nil)))
+        repository.setEvaluationContextStub = { [weak repository] context, completion in
+            repository?.flagsData?.context = context
+            completion(.success(()))
+        }
+        let exposures = ExposureLoggerMock()
+        let evaluations = EvaluationLoggerMock()
+        let rum = RUMFlagEvaluationReporterMock()
+        return (
+            FlagsClient(
+                repository: repository,
+                exposureLogger: exposures,
+                evaluationLogger: evaluations,
+                rumFlagEvaluationReporter: rum,
+                configuration: .init(enableEvaluationTelemetryOptOutParameter: enabled)
+            ),
+            repository, exposures, evaluations, rum
+        )
+    }
+
     func testCreate() {
         // Given
         let printFunction = PrintFunctionSpy()
