@@ -210,10 +210,12 @@ final class FirstFlagsCallbackTests: XCTestCase {
                 initializationTimeout: nil
             )
             let events = ReadWriteLock<[FlagsClientEvent]>(wrappedValue: [])
+            let delivered = expectation(description: "network event delivered")
             let completed = ReadWriteLock(wrappedValue: false)
             _ = repository.onFirstFlags { event in
                 XCTAssertTrue(completed.wrappedValue)
                 events.mutate { $0.append(event) }
+                delivered.fulfill()
             }
             repository.setEvaluationContext(.mockAny()) { _ in }
             response?(.failure(.invalidResponse))
@@ -223,6 +225,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
                 completed.wrappedValue = true
             }
             response?(.success([:]))
+            wait(for: [delivered], timeout: 5)
             XCTAssertEqual(events.wrappedValue.map(\.flagsChanged), [[]])
         }
     }
@@ -236,6 +239,7 @@ final class FirstFlagsCallbackTests: XCTestCase {
             initializationTimeout: nil
         )
         let repositoryAccess = ReadWriteLock(wrappedValue: repository)
+        let delivered = expectation(description: "network handler completed")
         let completed = ReadWriteLock(wrappedValue: false)
         _ = repositoryAccess.wrappedValue.onFirstFlags { _ in
             XCTAssertTrue(completed.wrappedValue)
@@ -249,11 +253,13 @@ final class FirstFlagsCallbackTests: XCTestCase {
             }
             self.wait(for: [reentered], timeout: 5)
             repositoryAccess.wrappedValue.reset()
+            delivered.fulfill()
         }
         repository.setEvaluationContext(.mockAny()) { result in
             if case .failure(let error) = result { XCTFail("Unexpected failure: \(error)") }
             completed.wrappedValue = true
         }
+        wait(for: [delivered], timeout: 5)
         XCTAssertEqual(repository.state.currentState, .notReady)
         XCTAssertNil(repository.flagAssignments())
         _ = repository.onFirstFlags { XCTAssertEqual($0.flagsChanged, ["network"]) }
@@ -271,12 +277,17 @@ final class FirstFlagsCallbackTests: XCTestCase {
             scheduleInitializationTimeout: { _, action in timeout = action; return {} }
         )
         let calls = ReadWriteLock(wrappedValue: 0)
-        _ = repository.onFirstFlags { _ in calls.mutate { $0 += 1 } }
+        let delivered = expectation(description: "network event after timeout")
+        _ = repository.onFirstFlags { _ in
+            calls.mutate { $0 += 1 }
+            delivered.fulfill()
+        }
         repository.setEvaluationContext(.mockAny()) { _ in }
         timeout?()
         repository.reset()
         XCTAssertEqual(calls.wrappedValue, 0)
         response?(.success([:]))
+        wait(for: [delivered], timeout: 5)
         XCTAssertEqual(calls.wrappedValue, 1)
     }
 
@@ -298,13 +309,18 @@ final class FirstFlagsCallbackTests: XCTestCase {
                 )
                 store.readCompletion?(.noValue)
                 let events = ReadWriteLock<[FlagsClientEvent]>(wrappedValue: [])
-                _ = repository.onFirstFlags { event in events.mutate { $0.append(event) } }
+                let delivered = expectation(description: "first network installation")
+                _ = repository.onFirstFlags { event in
+                    events.mutate { $0.append(event) }
+                    delivered.fulfill()
+                }
                 XCTAssertTrue(events.wrappedValue.isEmpty)
                 let context = FlagsEvaluationContext(targetingKey: "first")
                 repository.setEvaluationContext(context) { result in
                     if case .failure(let error) = result { XCTFail("Unexpected failure: \(error)") }
                 }
                 response?(.success(["first": .mockAny()]))
+                wait(for: [delivered], timeout: 5)
                 XCTAssertEqual(events.wrappedValue.count, 1)
                 let first = events.wrappedValue[0]
                 var failed = false
@@ -351,14 +367,17 @@ final class FirstFlagsCallbackTests: XCTestCase {
             featureScope: FeatureScopeMock(),
             initializationTimeout: nil
         )
+        let delivered = expectation(description: "winning installation published")
         let events = ReadWriteLock<[FlagsClientEvent]>(wrappedValue: [])
         _ = repository.onFirstFlags { event in
             events.mutate { $0.append(event) }
+            delivered.fulfill()
         }
         for _ in 0..<20 { repository.setEvaluationContext(.mockAny()) { _ in } }
         DispatchQueue.concurrentPerform(iterations: 20) { index in
             responses[index](.success([String(index): .mockAny()]))
         }
+        wait(for: [delivered], timeout: 5)
         XCTAssertEqual(events.wrappedValue.count, 1)
         _ = repository.onFirstFlags { XCTAssertEqual($0.flagsChanged, events.wrappedValue.first?.flagsChanged) }
     }

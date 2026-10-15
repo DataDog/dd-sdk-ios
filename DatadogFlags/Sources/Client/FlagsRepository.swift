@@ -360,7 +360,11 @@ extension FlagsRepository: FlagsRepositoryProtocol {
                         self.stateManager.updateState(.ready)
                         operationCompletion?(.success(()))
                     }
-                    publish?()
+                    // URLSession invokes this completion on its serial delegate queue. A customer
+                    // handler must not prevent that session from completing another context request.
+                    if let publish {
+                        DispatchQueue.global(qos: .userInitiated).async(execute: DispatchWorkItem(block: publish))
+                    }
                 case .failure(let error):
                     // Only update state if no newer request has succeeded.
                     // This prevents an older failing request from clearing data
