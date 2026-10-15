@@ -247,12 +247,15 @@ internal struct ExportedBucket: Codable, Sendable {
         return size.estimate
     }
 
+    /// Bytes reserved for the bucket's JSON outside its string values and groups: every key and all
+    /// punctuation, the payload identity and piece count included, with numbers at maximum width.
+    /// That worst case is 193 bytes, rounded up to leave room for a new field. Each string's quotes
+    /// are counted with the string. Keep this in sync with the `Codable` fields.
+    static let fixedJSONSizeAllowance = 256
+
     private func estimatedJSONHeaderSize(budget: Int) -> EstimatedJSONSize {
         var size = JSONSizeEstimator(budget: budget)
-        // Covers keys, punctuation, and maximum-width integers, including the payload identity and a
-        // piece count, so a piece's header is never larger than this. String contents are counted
-        // separately. Keep this bound in sync with the Codable fields.
-        size.add(bytes: 256)
+        size.add(bytes: Self.fixedJSONSizeAllowance)
         size.add(string: env)
         size.add(string: version)
         size.add(string: service)
@@ -309,12 +312,16 @@ internal struct ExportedGroupedStats: Codable, Sendable {
     let peerTags: [String]
     let serviceSource: String
 
+    /// Bytes reserved for a group's JSON outside its strings, sketches and peer tags: all 16 keys and
+    /// punctuation, with booleans and numbers at maximum width. That worst case is 301 bytes, rounded
+    /// up to leave room for new fields. Each string's and sketch's quotes are counted with it, and
+    /// each peer tag's comma with the tag. Keep this in sync with the `Codable` fields.
+    static let fixedJSONSizeAllowance = 512
+
     /// A conservative estimate of this group's storage JSON size, measured against `budget`.
     func estimatedJSONSize(budget: Int) -> EstimatedJSONSize {
         var size = JSONSizeEstimator(budget: budget)
-        // Covers all 16 keys, punctuation, booleans, and maximum-width numeric fields.
-        // Variable strings, data, and peer-tag array entries are added below.
-        size.add(bytes: 512)
+        size.add(bytes: Self.fixedJSONSizeAllowance)
         for string in [service, name, resource, type, spanKind, serviceSource] {
             size.add(string: string)
         }
