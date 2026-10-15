@@ -138,11 +138,11 @@ internal struct ExportedBucket: Codable, Sendable {
     /// upload time. Reporting the latter silently reattributes traffic to another version, and
     /// `_dd.compute_stats=0` stops the backend from correcting it.
     ///
-    /// Optional so that buckets written by an earlier build still decode: `StatsRequestBuilder`
-    /// falls back to the upload-time context for those rather than dropping the batch.
-    let env: String?
-    let version: String?
-    let service: String?
+    /// Required: we don't intend to support upgrades from earlier internal builds that stored
+    /// buckets without it. Such a bucket fails to decode, which drops its whole batch.
+    let env: String
+    let version: String
+    let service: String
 
     /// The client payload this bucket is uploaded in, assigned when the bucket is flushed and kept in
     /// every request, retry and upload after a restart, as the agent does for fragments of one payload.
@@ -168,9 +168,9 @@ internal struct ExportedBucket: Codable, Sendable {
         start: UInt64,
         duration: UInt64,
         stats: [ExportedGroupedStats],
-        env: String? = nil,
-        version: String? = nil,
-        service: String? = nil,
+        env: String,
+        version: String,
+        service: String,
         payload: PayloadIdentity? = nil,
         pieceCount: Int? = nil
     ) {
@@ -253,15 +253,9 @@ internal struct ExportedBucket: Codable, Sendable {
         // piece count, so a piece's header is never larger than this. String contents are counted
         // separately. Keep this bound in sync with the Codable fields.
         size.add(bytes: 256)
-        if let env = env {
-            size.add(string: env)
-        }
-        if let version = version {
-            size.add(string: version)
-        }
-        if let service = service {
-            size.add(string: service)
-        }
+        size.add(string: env)
+        size.add(string: version)
+        size.add(string: service)
         if let payload = payload {
             size.add(string: payload.runtimeID)
         }
