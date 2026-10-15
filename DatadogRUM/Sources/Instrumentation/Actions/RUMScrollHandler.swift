@@ -25,6 +25,7 @@ internal final class RUMScrollHandler: UIScrollViewHandler {
         let startTime: Date
         let startOffset: CGPoint
         let actionName: String
+        let target: RUMCommandTarget
         /// Velocity captured when the user lifts their finger (end of drag).
         /// This is the only reliable moment to read velocity — after deceleration it's zero.
         var liftVelocity: CGPoint?
@@ -32,6 +33,7 @@ internal final class RUMScrollHandler: UIScrollViewHandler {
 
     private let dateProvider: DateProvider
     private let predicate: UITouchRUMActionsPredicate
+    private let sceneIdentifierProvider: (UIScrollView) -> RUMSceneIdentifier?
 
     weak var subscriber: RUMCommandSubscriber?
 
@@ -40,10 +42,17 @@ internal final class RUMScrollHandler: UIScrollViewHandler {
 
     init(
         dateProvider: DateProvider,
-        predicate: UITouchRUMActionsPredicate
+        predicate: UITouchRUMActionsPredicate,
+        sceneIdentifierProvider: @escaping (UIScrollView) -> RUMSceneIdentifier? = { scrollView in
+            guard let identifier = scrollView.window?.windowScene?.session.persistentIdentifier else {
+                return nil
+            }
+            return RUMSceneIdentifier(rawValue: identifier)
+        }
     ) {
         self.dateProvider = dateProvider
         self.predicate = predicate
+        self.sceneIdentifierProvider = sceneIdentifierProvider
     }
 
     // MARK: - RUMCommandPublisher
@@ -72,7 +81,9 @@ internal final class RUMScrollHandler: UIScrollViewHandler {
         let state = ScrollState(
             startTime: dateProvider.now,
             startOffset: scrollView.contentOffset,
-            actionName: action.name
+            actionName: action.name,
+            target: sceneIdentifierProvider(scrollView).map(RUMCommandTarget.scene)
+                ?? .processRepresentative
         )
 
         activeScrolls[ObjectIdentifier(scrollView)] = state
@@ -83,7 +94,8 @@ internal final class RUMScrollHandler: UIScrollViewHandler {
             attributes: action.attributes,
             instrumentation: .uikit,
             actionType: .scroll,
-            name: action.name
+            name: action.name,
+            target: state.target
         )
 
         subscriber?.process(command: command)
@@ -139,7 +151,8 @@ internal final class RUMScrollHandler: UIScrollViewHandler {
             globalAttributes: [:],
             attributes: attributes,
             actionType: gestureType,
-            name: state.actionName
+            name: state.actionName,
+            target: state.target
         )
 
         subscriber?.process(command: command)

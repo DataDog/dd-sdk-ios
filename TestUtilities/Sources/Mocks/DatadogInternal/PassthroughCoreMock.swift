@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 /// Passthrough core mocks feature-scope allowing recording events in **sync**.
@@ -27,6 +28,9 @@ import DatadogInternal
 ///     core.get(feature: MyCustomFeature.self) // returns nil
 ///
 open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Sendable {
+    @_spi(Internal)
+    public let rumContextHandoffOwner: RUMContextHandoff.Owner? = .init()
+
     /// Counts references to `PassthroughCoreMock` instances, so we can prevent memory
     /// leaks of SDK core in `DatadogTestsObserver`.
     public private(set) static var referenceCount = 0
@@ -65,6 +69,7 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
     }
 
     deinit {
+        rumContextHandoffOwner?.invalidate()
         PassthroughCoreMock.referenceCount -= 1
     }
 
@@ -139,3 +144,6 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope, @unchecked Se
         return nil
     }
 }
+
+@_spi(Internal)
+extension PassthroughCoreMock: RUMContextHandoffOwnerProviding {}

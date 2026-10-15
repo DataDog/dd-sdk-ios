@@ -1,0 +1,459 @@
+"""Finite F08 smoke semantics; raw capture and backend metadata remain separate."""
+import hashlib
+import math
+from pathlib import Path
+
+import journey_contract as contract
+import journey_phases as phases
+import browser_contract as browser
+from capture_contract import prefix, loads, MAPPER_FAMILIES, CORRECTNESS_COST_POLICY
+
+COST_POLICY = CORRECTNESS_COST_POLICY
+from acceptance_common import require
+
+PHASES = ['login-initial', 'login-subdomain', 'login-returned', 'service-list',
+          'service-detail', 'service-list-returned', 'dashboard-begin',
+          'dashboard-before-input', 'dashboard-after-input',
+          'service-list-after-dashboard', 'service-list-reactivated']
+MODES = {'smoke', 'signed-in-smoke'}
+
+
+def phase_names(spec):
+    return PHASES[3:] if spec['mode'] == 'signed-in-smoke' else PHASES
+
+
+FIELDS = {
+    'view': ['view.name', 'view.url', 'view.is_active'],
+    'action': ['action.id', 'action.type', 'action.target.name'],
+    'resource': ['resource.id', 'resource.url', 'resource.method', 'resource.status_code', 'resource.type',
+                 'action.id', '_dd.trace_id', '_dd.span_id'],
+    'error': ['error.id', 'error.source', 'error.type', 'error.is_crash', 'action.id', '_dd.trace_id', '_dd.span_id'],
+    'long_task': ['long_task.id'],
+    'vital': ['vital.id', 'vital.type', 'vital.name', 'vital.duration'],
+}
+COMMON = ['type', 'date', 'source', 'application.id', 'session.id', 'view.id']
+
+
+def definition(value):
+    require(value['gate'] == 'S2:F08' and value['mode'] in MODES, 'wrong smoke definition')
+    require(value.get('capture_cost_policy') == COST_POLICY, 'smoke observer cost policy differs')
+    limits = value['limits']
+    require((limits['journey_home_cycles_per_arm'], limits['terminal_drains_per_arm'],
+             limits['dashboard_wait_seconds'], limits['retries'], limits['deadline_extension']) == (1, 0, 0, 0, False),
+            'smoke adds a duplicate lifecycle, expiry wait or retry')
+    selected = phase_names(value)
+    require(value['sequence'] == selected[:-1] + ['j04-home', selected[-1]], 'smoke sequence changed')
+    expected = value['expected']
+    require(set(expected['phase_views']) == set(selected) and expected['minimum_resources'] == 1
+            and expected['minimum_browser_views'] == 1, 'missing source-defined smoke coverage')
+    for name, allowed in expected['phase_views'].items():
+        screen = 'login' if name.startswith('login-') else 'detail' if name == 'service-detail' else 'dashboard' if name.startswith('dashboard-') else 'list'
+        require(allowed == phases.NAMES[screen], 'source-defined view family changed')
+    actions = [] if value['mode'] == 'signed-in-smoke' else [dict(name='LoginWithSubdomainTapped', owner_phase='login-initial', count=1)]
+    require(expected['named_actions'] == actions,
+            'missing source-defined subdomain action')
+    require(value['source_manifest'] and all(len(digest) == 64 for digest in value['source_manifest'].values()),
+            'source manifest unavailable')
+    if value['mode'] == 'signed-in-smoke':
+        require(value['limits']['authentication_seconds'] == 0 and set(value['account_contract']) == {'setup','capture','retention','cleanup'},
+                'signed-in account contract missing')
+        choice=value.get('dashboard_interaction',{})
+        require([choice.get(k) for k in ['kind','before','menu_choice','after']]
+                ==['native-dashboard-timeframe','1h','15 minutes','15m'], 'source-defined dashboard interaction differs')
+    return value
+
+
+def freeze(raw, checkpoint, identity):
+    """Only a real writer checkpoint defines behavior; later bytes stay outside it."""
+    result = prefix(raw, checkpoint, identity, cost_policy=COST_POLICY)
+    return raw[:result['prefix_bytes']], result
+
+
+def tail(raw, frozen, checkpoint, identity):
+    require(raw.startswith(frozen), 'behavior prefix changed during ordinary delivery')
+    original = prefix(frozen, checkpoint, identity, cost_policy=COST_POLICY)
+    require(len(frozen) == original['prefix_bytes'], 'behavior bytes extend past writer cutoff')
+    require(raw.endswith(b'\n'), 'partial delivery tail', 'PENDING')
+    receipt = dict(checkpoint, sequence=len(raw.splitlines()), byte_count=len(raw),
+                   sha256=hashlib.sha256(raw).hexdigest())
+    full = prefix(raw, receipt, identity, cost_policy=COST_POLICY)
+    return dict(rows=full['rows'], later=full['rows'][len(original['rows']):],
+                cutoff_sequence=checkpoint['sequence'], prefix_sha256=checkpoint['sha256'],
+                readback_sha256=receipt['sha256'])
+
+
+def dashboard_interval(rows, begin, before, end, owners, expected):
+    require(begin['sequence'] < before['sequence'] < end['sequence'] and len(owners) == 3,
+            'ordinary dashboard boundary order differs')
+    require(len({owner['view_id'] for owner in owners}) == 1, 'dashboard owner changed')
+    attachment = browser.dashboard_attachment(rows, begin, owners[0])
+    require(all(browser.dashboard_attachment(rows, snap, owner) == attachment
+                for snap, owner in zip([before, end], owners[1:])), 'dashboard attachment changed')
+    local = contract.mapper_inventory([r for r in rows if r['sequence'] < end['sequence']], expected)
+    owner = owners[0]['view_id'];event = local['views'][owner]['event']
+    require(contract.field(event, 'view.name') == 'DashboardDetails'
+            and contract.field(event, 'view.is_active') is True, 'dashboard no longer active')
+    eligible = all(item.get('has_replay') is True for item in owners)
+    for row in rows:
+        if not begin['sequence'] < row['sequence'] < end['sequence']:continue
+        if row['kind'] == 'mapper' and row['fields']['family'] == 'view':
+            value = loads(row['fields']['event_json'])
+            require((value['view']['id'] == owner) == (value['view']['is_active'] is True),
+                    'dashboard active occurrence interrupted')
+        if row['kind'] == 'context':
+            require(row['fields'].get('view_id') == owner, 'dashboard context owner changed')
+            eligible = eligible and row['fields'].get('has_replay') is True
+        if row['kind'] == 'scene_callback':
+            require(row['fields']['activation'] == 0 and row['fields']['app_state'] == 0,
+                    'dashboard lifecycle interrupted')
+        if row['kind'] == 'controller_callback' and row['fields']['controller']['id'] == attachment['controller']:
+            require('Disappear' not in row['fields']['callback'], 'dashboard controller disappeared')
+    return dict(owner=owner, owner_date=event['date'], begin=begin['sequence'], before_input=before['sequence'],
+                end=end['sequence'], attachment=attachment, replay_eligible=eligible,
+                container_coverage='ELIGIBLE' if eligible else 'UNAVAILABLE_REPLAY_INELIGIBLE',
+                ttl_claim=False, browser_causality_claim=False)
+
+
+def dashboard_setup_needed(ready):
+    """WebView-confirmed state overrides TimeframeView's native initializer."""
+    labels=[label for label in ['1h','15m'] if phases.matches(ready['ax'],label,'button')]
+    require(len(labels)==1, 'dashboard setup range is unknown or ambiguous')
+    phases.dashboard_timeframe(ready,labels[0])
+    return labels[0]=='15m'
+
+
+def dashboard_setup(rows, native):
+    setup=native.get('dashboard_setup')
+    prompts=[p for p in native.get('inputs',[]) if p['phase']=='dashboard-setup']
+    observed=native['phases']
+    require(bool(setup)==bool(prompts)==('dashboard-setup-complete' in observed),
+            'dashboard setup capture or prompt missing')
+    if setup is None:return None
+    require(native['mode']=='signed-in-smoke' and len(prompts)==1
+            and set(setup)=={'before_phase','after_phase','effect_path','effect_sha256'}
+            and (setup['before_phase'],setup['after_phase'])==('dashboard-begin','dashboard-setup-complete'),
+            'dashboard setup repeated or outside its defined scope')
+    before=observed['dashboard-begin'];after=observed['dashboard-setup-complete']
+    require(dashboard_setup_needed(before) and not dashboard_setup_needed(after), 'dashboard setup did not change 15m to 1h')
+    require(before['snapshot'] in rows and after['snapshot'] in rows
+            and before['snapshot']['sequence']<after['snapshot']['sequence']
+            and before['owner']['view_id']==after['owner']['view_id'] and before['binding']==after['binding'],
+            'dashboard setup has stale snapshots or a different owner')
+    if 'dashboard-before-input' in observed:
+        require(after['snapshot']['sequence']<observed['dashboard-before-input']['snapshot']['sequence'],
+                'dashboard setup occurs after the comparison boundary')
+    require(browser.dashboard_attachment(rows,before['snapshot'],before['owner'])
+            ==browser.dashboard_attachment(rows,after['snapshot'],after['owner']), 'dashboard setup WebView changed')
+    prompt=prompts[0]
+    require(prompt['native_snapshot_sequence']==before['snapshot']['sequence']
+            and prompt['request_id']==before['snapshot']['request_id'], 'dashboard setup prompt used different readiness')
+    publication=loads((Path(before['folder'])/'prompt.json').read_bytes())
+    readiness=publication['readiness']
+    require(publication['prompt']==prompt and readiness['state']=='READY_TO_PUBLISH_PROMPT'
+            and readiness['snapshot_sequence']==before['snapshot']['sequence']
+            and readiness['observed_sequence']>=before['snapshot']['sequence']+1
+            and before['captured_at']<=readiness['checked_at']<=publication['published_at']<prompt['deadline'],
+            'dashboard setup prompt publication or readiness differs')
+    path=Path(setup['effect_path'])
+    require(path==Path(before['folder']).parent/'dashboard-timeframe-setup-effect.json'
+            and not path.is_symlink() and hashlib.sha256(path.read_bytes()).hexdigest()==setup['effect_sha256'],
+            'dashboard setup effect receipt changed')
+    effect=loads(path.read_bytes())
+    require(effect['prompt']==prompt and effect['deadline']==prompt['deadline']
+            and publication['published_at']<=effect['observed_at']<=after['captured_at']<prompt['deadline']
+            and path.stat().st_mtime<prompt['deadline'], 'dashboard setup effect is late or belongs to another prompt')
+    phases.dashboard_timeframe(dict(after,ax=effect['ax']),'1h')
+    require(not phases.matches(effect['ax'],'15m','button'), 'dashboard setup old range remains')
+    return dict(state='DASHBOARD_RANGE_PREPARED',from_label='15m',to_label='1h',
+                before_sequence=before['snapshot']['sequence'],after_sequence=after['snapshot']['sequence'],
+                owner=before['owner']['view_id'],effect_sha256=setup['effect_sha256'],
+                scope='Setup only; the following 1h to 15m comparison and all captured events remain required.')
+
+
+def native_manifest(rows, native, expected, spec):
+    definition(spec)
+    selected = phase_names(spec)
+    require(len(native['backgrounds']) == 1, 'smoke must contain exactly one Home cycle')
+    observed = native['phases'];local = contract.mapper_inventory(rows, expected)
+    require(all(name in observed for name in selected), 'missing named smoke phase')
+    setup=dashboard_setup(rows,native)
+    validation_names=list(selected)
+    if setup is not None:validation_names.insert(validation_names.index('dashboard-before-input'),'dashboard-setup-complete')
+    ordered = [observed[name]['snapshot']['sequence'] for name in validation_names]
+    require(ordered == sorted(set(ordered)), 'smoke phase order differs')
+    owners = {};previous = None
+    require(native['process_id'] == expected['pid'], 'native smoke process differs')
+    for name in validation_names:
+        phase = observed[name];vid = phase['owner']['view_id']
+        allowed=spec['expected']['phase_views']['dashboard-before-input' if name=='dashboard-setup-complete' else name]
+        require(phase['snapshot'] in rows and phase['snapshot']['fields']['topology']['pid'] == expected['pid'],
+                'foreign smoke phase or process')
+        require(vid in local['views'] and contract.field(local['views'][vid]['event'], 'view.name') in allowed,
+                'missing or wrong named smoke owner')
+        binding = phases.foreground_binding(rows, phase['snapshot'], previous, authenticated_transition=name == 'service-list')
+        require(binding == phase['binding'], 'recorded smoke scene/window/root binding differs')
+        actual = (Path(phase['folder'])/'display.raw.json').read_bytes()
+        owner = contract.snapshot_owner(rows, phase['snapshot'], expected, binding, actual, native['device'],
+                                        names=allowed)
+        require(owner == phase['owner'], 'recorded smoke native owner differs')
+        if phase['screen'] != 'login':
+            require(phases.visible(rows,phase['snapshot'],phase['screen'],binding) == phase['visible'],
+                    'recorded smoke controller differs')
+        previous = binding;owners[name] = vid
+    if spec['mode'] == 'smoke':
+        require(len({owners[name] for name in PHASES[:3]}) == 1, 'subdomain navigation replaced login owner')
+    else:
+        import signed_in_account
+        signed_in_account.verify_subject(rows, observed['service-list'], expected['account_salt'], native['account_binding'])
+    actions = []
+    for wanted in spec['expected']['named_actions']:
+        values = [v['event'] for k,v in local['accepted'].items()
+                  if k[0] == 'action' and contract.field(v['event'], 'action.target.name') == wanted['name']]
+        require(len(values) == wanted['count'] and all(v['view']['id'] == owners[wanted['owner_phase']] for v in values),
+                'source-defined named action missing, duplicated or wrong owner')
+        actions.extend(contract.event_key(v) for v in values)
+    require(sum(k[0] == 'resource' for k in local['accepted']) >= spec['expected']['minimum_resources'],
+            'no captured ordinary Resource coverage')
+    active = contract.one([vid for vid,v in local['views'].items() if v['event']['view']['is_active']], 'final active smoke owner')
+    require(active == owners['service-list-reactivated'], 'final foreground owner differs')
+    lifecycle = phases.j04(rows, observed, expected, native['backgrounds'][0])
+    start, end = ordered[0], ordered[-1]
+    phases.lifecycle_cycle(rows, start, end, observed[selected[0]]['binding']['scene'])
+    result=dict(state='SMOKE_LOCAL_MANIFEST_QUALIFIED', phase_owners={name:owners[name] for name in selected},
+                named_action_keys=[list(k) for k in actions], lifecycle=lifecycle,
+                captured_view_occurrences=len(local['views']), captured_resource_events=sum(k[0] == 'resource' for k in local['accepted']),
+                source_manifest=spec['source_manifest'], runtime_acceptance=False)
+    if setup is not None:result['dashboard_setup']=setup
+    return result
+
+
+def semantic_equal(actual, captured, paths):
+    require(all(contract.field(actual, path) == contract.field(captured, path) for path in paths),
+            'persisted semantic identity or owner differs')
+
+
+def reduced_view(event, captured):
+    """Reducers identify occurrences; raw capture owns activity and revision history."""
+    require(contract.field(event, '_dd.origin') == 'reducer', 'unknown view projection')
+    version = contract.field(event, '_dd.document_version')
+    require(type(version) is int and version > 0 and type(contract.field(event, 'view.is_active')) is bool,
+            'malformed reduced view metadata')
+    semantic_equal(event, captured, COMMON + ['view.name', 'view.url'])
+
+
+def incidental_view(event, path, views, *, required=False):
+    value = contract.field(event, path)
+    if value is None:
+        require(not required, 'incidental view owner missing')
+        return None
+    require(isinstance(value, dict), 'malformed incidental view reference')
+    owner = contract.identifier(value.get('id'))
+    require(owner in views, 'foreign incidental view owner')
+    return owner
+
+
+def operation_identity(event, views):
+    require(contract.field(event, '_dd.origin') == 'reducer', 'unknown operation projection')
+    operation = contract.identifier(contract.field(event, 'operation.id'))
+    vital = contract.identifier(contract.field(event, 'vital.id'))
+    require(isinstance(contract.field(event, 'operation.name'), str)
+            and contract.field(event, 'operation.name'), 'operation name missing')
+    endpoints = [incidental_view(event, 'operation.' + edge, views) for edge in ['start_view', 'end_view']]
+    require(any(endpoints), 'operation has no captured endpoint')
+    incidental_view(event, 'view', views)
+    return ('operation', operation), vital
+
+
+def native_incidental(event, views):
+    """Direct SDK metrics and backend operations never satisfy mapper coverage."""
+    family = event['type'];origin = contract.field(event, '_dd.origin')
+    require(type(event.get('date')) is int, 'incidental date missing')
+    if family == 'operation':
+        return operation_identity(event, views)[0]
+    identity = contract.identifier(contract.field(event, family + '.id'))
+    if family == 'vital':
+        kind = contract.field(event, 'vital.type')
+        require((kind, origin) in {('operation_step', 'reducer'), ('app_launch', 'sdk')},
+                'unclassified incidental vital')
+        incidental_view(event, 'view', views, required=True)
+        if kind == 'operation_step':contract.identifier(contract.field(event, 'operation.id'))
+    elif family == 'timeseries':
+        # TimeseriesSessionCollector writes CPU/memory batches directly with a
+        # session identity, outside the five public mappers and without a view.
+        require(origin == 'sdk' and 'view' not in event, 'unknown timeseries ownership')
+        require(contract.field(event, 'timeseries.schema') == 'object-v2', 'unknown timeseries schema')
+        name = contract.field(event, 'timeseries.name')
+        columns = {'cpu': {'cpu_usage'}, 'memory': {'memory_footprint', 'memory_percent'}}
+        timestamps = contract.field(event, 'timeseries.data.timestamps')
+        values = contract.field(event, 'timeseries.data.values')
+        require(name in columns and isinstance(timestamps, list) and timestamps
+                and all(type(t) is int for t in timestamps)
+                and isinstance(values, dict) and set(values) == columns[name], 'malformed timeseries data')
+        require(all(isinstance(v, list) and len(v) == len(timestamps)
+                    and all(type(n) in (int, float) and math.isfinite(n) for n in v) for v in values.values()),
+                'malformed timeseries values')
+    else:
+        require(False, 'unclassified incidental family')
+    return family, identity
+
+
+def browser_operation(event, full):
+    key, vital = operation_identity(event, full['latest'])
+    anchor = contract.one([value for k, value in full.get('incidental', {}).items() if k[-1] == vital],
+                          'captured Browser operation anchor')
+    require(contract.field(anchor['expected'], 'vital.type') == 'operation_step'
+            and contract.field(anchor['expected'], 'vital.step_type') == 'start'
+            and contract.field(anchor['expected'], 'vital.name') == contract.field(event, 'operation.name')
+            and contract.field(anchor['expected'], 'view.id') == contract.field(event, 'operation.start_view.id'),
+            'Browser operation differs from captured start')
+    return key, anchor
+
+
+def native_operation_links(rows, *, pending):
+    """Cross-check backend aggregates; native operation steps have no public mapper."""
+    events = [contract.backend_event(row) for row in rows]
+    steps = [e for e in events if e['type'] == 'vital' and contract.field(e, 'vital.type') == 'operation_step']
+    linked = set();operations = 0
+    for event in events:
+        if event['type'] != 'operation':continue
+        operations += 1
+        starts = [e for e in steps if contract.field(e, 'vital.id') == contract.field(event, 'vital.id')]
+        require(len(starts) == 1, 'native operation start not yet indexed', 'PENDING' if pending else 'INVALID')
+        start = starts[0]
+        semantic_equal(start, event, ['application.id', 'session.id', 'source', 'operation.id'])
+        require(contract.field(start, 'vital.step_type') == 'start'
+                and contract.field(start, 'vital.name') == contract.field(event, 'operation.name')
+                and contract.field(start, 'view.id') == contract.field(event, 'operation.start_view.id'),
+                'native operation differs from indexed start')
+        ends = [e for e in steps if contract.field(e, 'operation.id') == contract.field(event, 'operation.id')
+                and contract.field(e, 'vital.step_type') == 'end']
+        require(len(ends) == 1, 'native operation end not yet indexed', 'PENDING' if pending else 'INVALID')
+        end = ends[0]
+        require(contract.field(end, 'vital.name') == contract.field(event, 'operation.name')
+                and contract.field(end, 'view.id') == contract.field(event, 'operation.end_view.id'),
+                'native operation differs from indexed end')
+        linked.update([contract.field(start, 'vital.id'), contract.field(end, 'vital.id')])
+    return dict(operations=operations, linked_steps=len(linked),
+                unlinked_steps=[contract.field(e, 'vital.id') for e in steps if contract.field(e, 'vital.id') not in linked],
+                independent_native_step_capture=False)
+
+
+def native_backend(rows, local, full, expected, *, pending=True):
+    """Raw revisions and explicit reducers independently represent known occurrences."""
+    state = 'PENDING' if pending else 'INVALID'
+    seen = {};incidental=[];incidental_keys=set();browser_rows=[];reducers=[];later=[];reduced={}
+    for row in rows:
+        event = contract.backend_event(row);family = event['type']
+        require(contract.field(event, 'application.id') == expected['application_id']
+                and contract.field(event, 'session.id') == expected['session_id'], 'foreign persisted smoke identity')
+        if family == 'session':
+            require(contract.field(event, '_dd.origin') == 'reducer', 'unknown session aggregate')
+            reducers.append(row);continue
+        if event['source'] == 'browser':browser_rows.append(row);continue
+        require(event['source'] == 'ios' and event.get('service') == expected['service']
+                and contract.field(row['attributes'], 'tag.sdk_version') == expected['backend_sdk_version'],
+                'foreign persisted native source')
+        require(contract.field(event, 'error.is_crash', False) is False, 'persisted crash')
+        if family not in MAPPER_FAMILIES:
+            key = native_incidental(event, full['views'])
+            require(key not in incidental_keys, 'duplicate incidental event')
+            incidental_keys.add(key)
+            incidental.append(row);continue
+        key = contract.event_key(event)
+        require(key not in seen and key not in full['dropped'], 'duplicate or dropped event persisted')
+        if family == 'view' and contract.field(event, '_dd.origin') == 'reducer':
+            require(key[1] in full['views'], 'reduced view absent from complete captured stream')
+            reduced_view(event, full['views'][key[1]]['event'])
+            reduced[key] = row
+        else:
+            require(key in full['accepted'], 'backend event absent from complete captured stream')
+            semantic_equal(event, full['accepted'][key]['event'], COMMON + FIELDS[family] +
+                           (['usr.id', 'usr.org_uuid'] if 'account_salt' in expected else []))
+            if key not in local['accepted']:later.append(list(key))
+        seen[key] = row
+    operation_consistency = native_operation_links(incidental, pending=pending)
+    needed = {k for k in local['accepted'] if k[0] != 'view'}
+    require(needed <= set(seen), 'behavior event not yet delivered', state)
+    for vid, value in local['views'].items():
+        minimum = value['event']['_dd']['document_version']
+        require(any(k[0] == 'view' and k[1] == vid and (k in reduced or k[2] >= minimum) for k in seen),
+                'behavior view not yet delivered', state)
+    return dict(keys=set(seen), required_non_view=needed, browser=browser_rows,
+                incidental=incidental, reducers=reducers, reduced_views=list(reduced.values()), delivery_tail_keys=later,
+                operation_consistency=operation_consistency,
+                view_ids={k[1] for k in seen if k[0] == 'view'})
+
+
+def browser_backend(rows, local, full, interval, expected, *, pending=True):
+    state = 'PENDING' if pending else 'INVALID';seen={};witness=[];outside=[];later=[];incidental=[];reduced={}
+    service, version = local['source_identity']
+    require(full['source_identity'] == local['source_identity'], 'Browser partition changed during delivery')
+    for row in rows:
+        event = contract.backend_event(row)
+        require(contract.field(event, 'application.id') == expected['application_id']
+                and contract.field(event, 'session.id') == expected['session_id'], 'foreign persisted Browser identity')
+        require(event['source'] == 'browser' and event['service'] == service
+                and contract.field(row['attributes'], 'tag.sdk_version') == version, 'foreign Browser source')
+        if event['type'] == 'operation':
+            key, captured = browser_operation(event, full)
+            is_incidental = True
+        else:
+            key = browser.key(event);is_incidental=key[0] in browser.INCIDENTAL_FAMILIES
+            if key[0] == 'view' and contract.field(event, '_dd.origin') == 'reducer':
+                require(key[1] in full['latest'], 'unmapped reduced Browser view')
+                # Ordinary upload can append more revisions before final seal.
+                # It must not move an occurrence across the frozen input boundary.
+                frozen_key = local['latest'].get(key[1])
+                captured = (local['events'][frozen_key] if frozen_key else
+                            min((v for k, v in full['events'].items() if k[0] == 'view' and k[1] == key[1]),
+                                key=lambda v: v['sequence']))
+                reduced_view(event, captured['expected']);reduced[key] = row
+            else:
+                partition=full.get('incidental',{}) if is_incidental else full['events']
+                require(key in partition, 'unmapped Browser event')
+                captured = partition[key]
+                # Browser resource/action keys include their independent Browser view ID.
+                semantic_equal(event, captured['expected'], COMMON + FIELDS[event['type']])
+        require(key not in seen, 'duplicate Browser event')
+        container = contract.field(event, 'container.view.id')
+        require(container is None or (contract.field(event, 'container.source') == 'ios'
+                and container in full['native']['views']), 'foreign Browser native container')
+        if interval['begin'] < captured['sequence'] < interval['end'] and event['date'] > interval['owner_date']:
+            if interval['replay_eligible']:
+                require(container == interval['owner'], 'wrong eligible dashboard container')
+                if not is_incidental:witness.append(list(key))
+            elif container is not None:
+                require(container == interval['owner'], 'wrong ineligible dashboard container')
+        else:outside.append(dict(key=list(key), sequence=captured['sequence'], container=container))
+        if is_incidental:incidental.append(row)
+        elif key not in local['events'] and key not in reduced:later.append(list(key))
+        seen[key]=row
+    needed = {k for k in local['events'] if k[0] != 'view'}
+    require(needed <= set(seen), 'behavior Browser event not yet delivered', state)
+    for vid, key in local['latest'].items():
+        require(any(k[0] == 'view' and k[1] == vid and (k in reduced or k[2] >= key[2]) for k in seen),
+                'behavior Browser view not yet delivered', state)
+    return dict(source_identity=list(local['source_identity']), persisted_rows=len(seen),
+                container_witnesses=witness, container_coverage='PROVEN' if witness else 'UNAVAILABLE',
+                unavailable_reason=None if witness else interval['container_coverage'] if not interval['replay_eligible'] else 'NO_MESSAGE_IN_CAPTURED_INTERVAL',
+                outside_interval=outside, delivery_tail_keys=later, incidental=incidental,
+                reduced_views=list(reduced.values()), runtime_acceptance=False)
+
+
+def joined(rows, native_rows, behavior_rows, full_rows, interval, expected, *, pending=True):
+    local = contract.mapper_inventory(behavior_rows, expected);full = contract.mapper_inventory(full_rows, expected)
+    native = native_backend(rows, local, full, expected, pending=pending)
+    partition = native_backend(native_rows, local, full, expected, pending=pending)
+    require(not partition['browser'], 'Browser row in native-only query')
+    # Separate complete queries can observe newer revisions as the uploader runs.
+    # Both must independently contain every frozen event and occurrence owner.
+    require(native['required_non_view'] == partition['required_non_view'], 'native partition lacks required events')
+    local_browser = browser.local_inventory(behavior_rows, expected)
+    full_browser = browser.local_inventory(full_rows, expected)
+    browser_join = browser_backend(native['browser'], local_browser, full_browser, interval, expected, pending=pending)
+    return dict(state='SMOKE_SEMANTICS_JOINED_SOURCE_CLASSIFICATION_REQUIRED',
+                native_required_events=len(native['required_non_view']), native_required_views=len(local['views']),
+                browser=browser_join, incidental=native['incidental'], reducers=native['reducers'],
+                reduced_native_views=native['reduced_views'],
+                native_operation_consistency=native['operation_consistency'],
+                later_native_keys=native['delivery_tail_keys'], mode='smoke', runtime_acceptance=False)

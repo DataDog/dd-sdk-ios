@@ -30,3 +30,31 @@ public enum FeatureMessage {
     /// The core can send telemetry data coming from all Features.
     case telemetry(TelemetryMessage)
 }
+
+/// In-process ownership for a flag evaluation emitted inside a trusted RUM handoff.
+/// The envelope is never serialized and owns no core, feature, scene or view.
+@_spi(Internal)
+public struct RUMFlagEvaluationContextMessage {
+    public let evaluation: RUMFlagEvaluationMessage
+    private let owner: RUMContextHandoff.Owner
+    private let capturedContext: RUMContextHandoff.CurrentValue
+
+    /// A missing handoff keeps the legacy message's representative fallback.
+    public init?(evaluation: RUMFlagEvaluationMessage, in scope: Any) {
+        guard let owner = RUMContextHandoff.owner(in: scope),
+              let context = RUMContextHandoff.current(for: owner) else {
+            return nil
+        }
+        self.evaluation = evaluation
+        self.owner = owner
+        self.capturedContext = context
+    }
+
+    /// Nil rejects a foreign or retired core generation; it is not new inference.
+    public func context(for owner: RUMContextHandoff.Owner?) -> RUMContextHandoff.CurrentValue? {
+        guard owner === self.owner, self.owner.isValid else {
+            return nil
+        }
+        return capturedContext
+    }
+}

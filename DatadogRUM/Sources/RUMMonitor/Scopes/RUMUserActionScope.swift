@@ -110,9 +110,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     // MARK: - RUMScope
 
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
-        if let expirationTime = possibleExpirationTime(currentTime: command.time), allResourcesCompletedLoading() {
-            // Stop user action due to timeout
-            sendActionEvent(completionTime: expirationTime, on: command, context: context, writer: writer)
+        if expireIfNeeded(on: command, context: context, writer: writer) {
             return false
         }
 
@@ -142,6 +140,20 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         default:
             break
         }
+        return true
+    }
+
+    /// Expires this action based only on elapsed time.
+    ///
+    /// Concurrent scene branches call this before targeted command propagation so
+    /// activity in one window still advances action timeouts in another without
+    /// attributing the other window's resources, errors, or action attributes.
+    func expireIfNeeded(on command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
+        guard let expirationTime = possibleExpirationTime(currentTime: command.time),
+              allResourcesCompletedLoading() else {
+            return false
+        }
+        sendActionEvent(completionTime: expirationTime, on: command, context: context, writer: writer)
         return true
     }
 

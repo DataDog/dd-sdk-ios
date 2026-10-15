@@ -5,6 +5,7 @@
  */
 
 import UIKit
+@_spi(Internal)
 import DatadogInternal
 
 internal extension RUMMethod {
@@ -119,6 +120,10 @@ internal protocol RUMActiveContextReader: AnyObject {
 
 internal class Monitor: RUMCommandSubscriber {
     /// RUM feature scope.
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? {
+        (featureScope as? RUMContextHandoffOwnerProviding)?.rumContextHandoffOwner
+    }
+
     let featureScope: FeatureScope
     let applicationScope: RUMApplicationScope
     let dateProvider: DateProvider
@@ -131,6 +136,12 @@ internal class Monitor: RUMCommandSubscriber {
 
     @ReadWriteLock
     private var activeViewSnapshot: (id: String?, path: String?, name: String?) = (nil, nil, nil)
+
+    @ReadWriteLock
+    private var representativeRUMContextSnapshot: RUMCoreContext?
+
+    @ReadWriteLock
+    private var rumContextSnapshotsByScene: [RUMSceneIdentifier: RUMCoreContext] = [:]
 
     @ReadWriteLock
     private var sessionActivitySnapshot: (sessionID: String?, sessionStartTime: Date?, lastInteractionTime: Date?) = (nil, nil, nil)
@@ -149,6 +160,16 @@ internal class Monitor: RUMCommandSubscriber {
     private let rumUUIDGenerator: RUMUUIDGenerator
     private let telemetry: Telemetry
 
+    #if os(iOS)
+    /// Per-scene navigation owner for future explicitly targeted manual views.
+    /// Kept weak so the monitor cannot extend instrumentation lifetime.
+    private weak var sceneTargetedManualViewHandler: (any RUMSceneTargetedManualViewHandling)?
+    private var hasBoundSceneTargetedManualViewHandler = false
+    /// Freeze the route at first use so a start/stop pair cannot change owners
+    /// when instrumentation is missing, bound late, or released.
+    private var isManualViewSceneRoutingEnabled: Bool?
+    #endif
+
     init(
         dependencies: RUMScopeDependencies,
         dateProvider: DateProvider
@@ -161,12 +182,31 @@ internal class Monitor: RUMCommandSubscriber {
         self.telemetry = dependencies.telemetry
     }
 
+    #if os(iOS)
+    // Called once during RUMFeature initialization, before feature publication.
+    // RUM.enable synchronizes that initialization on the main thread.
+    func bind(
+        sceneTargetedManualViewHandler: any RUMSceneTargetedManualViewHandling
+    ) {
+        guard !hasBoundSceneTargetedManualViewHandler, isManualViewSceneRoutingEnabled == nil else {
+            return
+        }
+        hasBoundSceneTargetedManualViewHandler = true
+        self.sceneTargetedManualViewHandler = sceneTargetedManualViewHandler
+    }
+    #endif
+
     func process(command: RUMCommand) {
+        guard command.target != .none else {
+            (command as? RUMAddCurrentViewErrorCommand)?.completionHandler()
+            return
+        }
         var command = command
         command.globalAttributes = attributes
         // process command in event context
         featureScope.eventWriteContext { [weak self] context, writer in
             guard let self = self else {
+                (command as? RUMAddCurrentViewErrorCommand)?.completionHandler()
                 return
             }
 
@@ -189,7 +229,8 @@ internal class Monitor: RUMCommandSubscriber {
             }
 
             if let activeSession = self.applicationScope.activeSession {
-                let viewContext = activeSession.viewScopes.last(where: { $0.isActiveView })?.context ?? activeSession.context
+                let representativeView = activeSession.activeView
+                let viewContext = representativeView?.context ?? activeSession.context
                 self.activeViewSnapshot = (
                     id: viewContext.activeViewID?.toRUMDataFormat,
                     path: viewContext.activeViewPath,
@@ -200,9 +241,26 @@ internal class Monitor: RUMCommandSubscriber {
                     sessionStartTime: activeSession.sessionStartTime,
                     lastInteractionTime: activeSession.lastInteractionTime
                 )
+                self.representativeRUMContextSnapshot = self.makeCoreContext(
+                    session: activeSession,
+                    view: representativeView
+                )
+
+                var contextsByScene: [RUMSceneIdentifier: RUMCoreContext] = [:]
+                for view in activeSession.viewScopes where view.isActiveView {
+                    if let sceneIdentifier = view.sceneIdentifier {
+                        contextsByScene[sceneIdentifier] = self.makeCoreContext(
+                            session: activeSession,
+                            view: view
+                        )
+                    }
+                }
+                self.rumContextSnapshotsByScene = contextsByScene
             } else {
                 self.activeViewSnapshot = (nil, nil, nil)
                 self.sessionActivitySnapshot = (nil, nil, nil)
+                self.representativeRUMContextSnapshot = nil
+                self.rumContextSnapshotsByScene = [:]
             }
         }
 
@@ -217,7 +275,7 @@ internal class Monitor: RUMCommandSubscriber {
                     return nil
                 }
 
-                let activeViewScope = activeSession.viewScopes.last(where: { $0.isActiveView })
+                let activeViewScope = activeSession.activeView
                 let context = activeViewScope?.context ?? activeSession.context
 
                 return RUMCoreContext(
@@ -231,6 +289,23 @@ internal class Monitor: RUMCommandSubscriber {
                     viewName: context.activeViewName
                 )
             }
+        )
+    }
+
+    private func makeCoreContext(
+        session: RUMSessionScope,
+        view: RUMViewScope?
+    ) -> RUMCoreContext {
+        let context = view?.context ?? session.context
+        return RUMCoreContext(
+            applicationID: context.rumApplicationID,
+            sessionID: context.sessionID.toRUMDataFormat,
+            sessionSampler: session.sampler,
+            viewID: context.activeViewID?.toRUMDataFormat,
+            userActionID: context.activeUserActionID?.toRUMDataFormat,
+            viewServerTimeOffset: view?.serverTimeOffset,
+            viewPath: context.activeViewPath,
+            viewName: context.activeViewName
         )
     }
 
@@ -271,6 +346,42 @@ extension Monitor: RUMActiveContextReader {
         }
         return RUMSessionScope.hasExpired(sessionStartTime: sessionStartTime, currentTime: date)
             || RUMSessionScope.hasTimedOut(lastInteractionTime: lastInteractionTime, currentTime: date)
+    }
+}
+
+extension Monitor: RUMContextSnapshotProviding {
+    func rumContextSnapshot(for target: RUMCommandTarget) -> RUMCoreContext? {
+        switch target {
+        case .none:
+            return nil
+        case .scene(let sceneIdentifier):
+            return rumContextSnapshotsByScene[sceneIdentifier]
+        case .view(let viewID):
+            return rumContextSnapshotsByScene.values.first {
+                $0.viewID == viewID.toRUMDataFormat
+            }
+        case .processRepresentative, .allActiveViews:
+            return representativeRUMContextSnapshot
+        }
+    }
+
+    func rumContextSnapshot(for target: RUMCommandTarget, at date: Date?) -> RUMCoreContext? {
+        let date = date ?? dateProvider.now
+        guard let snapshot = rumContextSnapshot(for: target) else {
+            return nil
+        }
+        let activity = sessionActivitySnapshot
+        // Snapshot dictionaries and session activity use independent locks.
+        // If a boundary is being published between these reads, fail closed
+        // instead of returning a context from the previous session.
+        guard activity.sessionID == snapshot.sessionID,
+              let sessionStartTime = activity.sessionStartTime,
+              let lastInteractionTime = activity.lastInteractionTime,
+              !RUMSessionScope.hasExpired(sessionStartTime: sessionStartTime, currentTime: date),
+              !RUMSessionScope.hasTimedOut(lastInteractionTime: lastInteractionTime, currentTime: date) else {
+            return nil
+        }
+        return snapshot
     }
 }
 
@@ -331,6 +442,19 @@ extension Monitor: RUMMonitorProtocol {
     // MARK: - errors
 
     func addError(message: String, type: String?, stack: String?, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue], file: StaticString?, line: UInt?) {
+        addError(message: message, type: type, stack: stack, source: source, attributes: attributes, file: file, line: line, explicitTarget: nil)
+    }
+
+    func addError(
+        message: String,
+        type: String?,
+        stack: String?,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue],
+        file: StaticString?,
+        line: UInt?,
+        explicitTarget: RUMCommandTarget?
+    ) {
         let stack: String? = stack ?? {
             if let file = file,
                let fileName = "\(file)".split(separator: "/").last,
@@ -339,8 +463,8 @@ extension Monitor: RUMMonitorProtocol {
             }
             return nil
         }()
-        process(
-            command: RUMAddCurrentViewErrorCommand(
+        processCurrentViewError(
+            RUMAddCurrentViewErrorCommand(
                 time: dateProvider.now,
                 message: message,
                 type: type,
@@ -349,67 +473,110 @@ extension Monitor: RUMMonitorProtocol {
                 globalAttributes: self.attributes,
                 attributes: attributes,
                 completionHandler: NOPCompletionHandler
-            )
+            ),
+            explicitTarget: explicitTarget
         )
     }
 
     func addError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]) {
-        process(
-            command: RUMAddCurrentViewErrorCommand(
+        addError(error: error, source: source, attributes: attributes, explicitTarget: nil)
+    }
+
+    func addError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue], explicitTarget: RUMCommandTarget?) {
+        processCurrentViewError(
+            RUMAddCurrentViewErrorCommand(
                 time: dateProvider.now,
                 error: error,
                 source: RUMInternalErrorSource(source),
                 globalAttributes: self.attributes,
                 attributes: attributes,
                 completionHandler: NOPCompletionHandler
-            )
+            ),
+            explicitTarget: explicitTarget
         )
     }
 
     // MARK: - resources
 
     func startResource(resourceKey: String, request: URLRequest, attributes: [AttributeKey: AttributeValue]) {
+        startResource(resourceKey: resourceKey, request: request, attributes: attributes, explicitTarget: nil)
+    }
+
+    func startResource(
+        resourceKey: String,
+        request: URLRequest,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    ) {
+        var command = RUMStartResourceCommand(
+            resourceKey: resourceKey,
+            time: dateProvider.now,
+            globalAttributes: self.attributes,
+            attributes: attributes,
+            url: request.url?.absoluteString ?? "unknown_url",
+            httpMethod: RUMMethod(httpMethod: request.httpMethod),
+            kind: RUMResourceType(request: request),
+            spanContext: nil
+        )
+        command.target = currentExecutionTarget
+        command.explicitTarget = explicitTarget
         process(
-            command: RUMStartResourceCommand(
-                resourceKey: resourceKey,
-                time: dateProvider.now,
-                globalAttributes: self.attributes,
-                attributes: attributes,
-                url: request.url?.absoluteString ?? "unknown_url",
-                httpMethod: RUMMethod(httpMethod: request.httpMethod),
-                kind: RUMResourceType(request: request),
-                spanContext: nil
-            )
+            command: command
         )
     }
 
     func startResource(resourceKey: String, url: URL, attributes: [AttributeKey: AttributeValue]) {
+        startResource(resourceKey: resourceKey, url: url, attributes: attributes, explicitTarget: nil)
+    }
+
+    func startResource(
+        resourceKey: String,
+        url: URL,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    ) {
+        var command = RUMStartResourceCommand(
+            resourceKey: resourceKey,
+            time: dateProvider.now,
+            globalAttributes: self.attributes,
+            attributes: attributes,
+            url: url.absoluteString,
+            httpMethod: .get,
+            kind: nil,
+            spanContext: nil
+        )
+        command.target = currentExecutionTarget
+        command.explicitTarget = explicitTarget
         process(
-            command: RUMStartResourceCommand(
-                resourceKey: resourceKey,
-                time: dateProvider.now,
-                globalAttributes: self.attributes,
-                attributes: attributes,
-                url: url.absoluteString,
-                httpMethod: .get,
-                kind: nil,
-                spanContext: nil
-            )
+            command: command
         )
     }
 
     func startResource(resourceKey: String, httpMethod: RUMMethod, urlString: String, attributes: [AttributeKey: AttributeValue]) {
+        startResource(resourceKey: resourceKey, httpMethod: httpMethod, urlString: urlString, attributes: attributes, explicitTarget: nil)
+    }
+
+    func startResource(
+        resourceKey: String,
+        httpMethod: RUMMethod,
+        urlString: String,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    ) {
+        var command = RUMStartResourceCommand(
+            resourceKey: resourceKey,
+            time: dateProvider.now,
+            globalAttributes: self.attributes,
+            attributes: attributes,
+            url: urlString,
+            httpMethod: httpMethod,
+            kind: nil,
+            spanContext: nil
+        )
+        command.target = currentExecutionTarget
+        command.explicitTarget = explicitTarget
         process(
-            command: RUMStartResourceCommand(
-                resourceKey: resourceKey,
-                time: dateProvider.now,
-                globalAttributes: self.attributes,
-                attributes: attributes,
-                url: urlString,
-                httpMethod: httpMethod,
-                kind: nil,
-                spanContext: nil
-            )
+            command: command
         )
     }
 
@@ -495,64 +662,132 @@ extension Monitor: RUMMonitorProtocol {
     // MARK: - actions
 
     func addAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue]) {
+        addAction(
+            type: type,
+            name: name,
+            attributes: attributes,
+            explicitTarget: nil
+        )
+    }
+
+    func addAction(
+        type: RUMActionType,
+        name: String,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    ) {
+        var command = RUMAddUserActionCommand(
+            time: dateProvider.now,
+            globalAttributes: self.attributes,
+            attributes: attributes,
+            instrumentation: .manual,
+            actionType: type,
+            name: name
+        )
+        command.target = currentExecutionTarget
+        command.explicitTarget = explicitTarget
         process(
-            command: RUMAddUserActionCommand(
-                time: dateProvider.now,
-                globalAttributes: self.attributes,
-                attributes: attributes,
-                instrumentation: .manual,
-                actionType: type,
-                name: name
-            )
+            command: command
         )
     }
 
     func startAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue]) {
+        startAction(type: type, name: name, attributes: attributes, explicitTarget: nil)
+    }
+
+    func startAction(
+        type: RUMActionType,
+        name: String,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    ) {
+        var command = RUMStartUserActionCommand(
+            time: dateProvider.now,
+            globalAttributes: self.attributes,
+            attributes: attributes,
+            instrumentation: .manual,
+            actionType: type,
+            name: name
+        )
+        command.target = currentExecutionTarget
+        command.explicitTarget = explicitTarget
         process(
-            command: RUMStartUserActionCommand(
-                time: dateProvider.now,
-                globalAttributes: self.attributes,
-                attributes: attributes,
-                instrumentation: .manual,
-                actionType: type,
-                name: name
-            )
+            command: command
         )
     }
 
     func stopAction(type: RUMActionType, name: String?, attributes: [AttributeKey: AttributeValue]) {
+        stopAction(type: type, name: name, attributes: attributes, explicitTarget: nil)
+    }
+
+    func stopAction(
+        type: RUMActionType,
+        name: String?,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    ) {
+        var command = RUMStopUserActionCommand(
+            time: dateProvider.now,
+            globalAttributes: self.attributes,
+            attributes: attributes,
+            actionType: type,
+            name: name
+        )
+        command.target = currentExecutionTarget
+        command.explicitTarget = explicitTarget
         process(
-            command: RUMStopUserActionCommand(
-                time: dateProvider.now,
-                globalAttributes: self.attributes,
-                attributes: attributes,
-                actionType: type,
-                name: name
-            )
+            command: command
         )
     }
 
     // MARK: - feature flags
 
     func addFeatureFlagEvaluation(name: String, value: Encodable) {
-        process(
-            command: RUMAddFeatureFlagEvaluationCommand(
-                time: dateProvider.now,
-                name: name,
-                value: value
-            )
+        addFeatureFlagEvaluation(name: name, value: value, explicitTarget: nil)
+    }
+
+    func addFeatureFlagEvaluation(name: String, value: Encodable, explicitTarget: RUMCommandTarget?) {
+        addFeatureFlagEvaluation(name: name, value: value, target: currentExecutionTarget, explicitTarget: explicitTarget)
+    }
+
+    func addFeatureFlagEvaluation(
+        name: String, value: Encodable, target: RUMCommandTarget, explicitTarget: RUMCommandTarget? = nil
+    ) {
+        var command = RUMAddFeatureFlagEvaluationCommand(
+            time: dateProvider.now,
+            name: name,
+            value: value
         )
+        command.target = target
+        command.explicitTarget = explicitTarget
+        process(command: command)
     }
 
     // MARK: - Feature Operations
 
     func startOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue], options: OperationOptions?) {
+        startOperation(
+            name: name,
+            operationKey: operationKey,
+            attributes: attributes,
+            options: options,
+            explicitTarget: nil
+        )
+    }
+
+    func startOperation(
+        name: String,
+        operationKey: String?,
+        attributes: [AttributeKey: AttributeValue],
+        options: OperationOptions?,
+        explicitTarget: RUMCommandTarget?
+    ) {
         DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) started")
 
         telemetry.usage(event: .addOperationStepVital(.init(actionType: .start)))
 
-        process(
-            command: RUMOperationStepVitalCommand(
+        processOperationStep(
+            RUMOperationStepVitalCommand(
                 vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
                 name: name,
                 operationKey: operationKey,
@@ -561,7 +796,8 @@ extension Monitor: RUMMonitorProtocol {
                 options: options,
                 time: dateProvider.now,
                 attributes: attributes
-            )
+            ),
+            explicitTarget: explicitTarget
         )
     }
 
@@ -570,12 +806,26 @@ extension Monitor: RUMMonitorProtocol {
     }
 
     func succeedOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) {
+        succeedOperation(
+            name: name,
+            operationKey: operationKey,
+            attributes: attributes,
+            explicitTarget: nil
+        )
+    }
+
+    func succeedOperation(
+        name: String,
+        operationKey: String?,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    ) {
         DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) successfully ended")
 
         telemetry.usage(event: .addOperationStepVital(.init(actionType: .succeed)))
 
-        process(
-            command: RUMOperationStepVitalCommand(
+        processOperationStep(
+            RUMOperationStepVitalCommand(
                 vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
                 name: name,
                 operationKey: operationKey,
@@ -583,7 +833,8 @@ extension Monitor: RUMMonitorProtocol {
                 failureReason: nil,
                 time: dateProvider.now,
                 attributes: attributes
-            )
+            ),
+            explicitTarget: explicitTarget
         )
     }
 
@@ -592,12 +843,28 @@ extension Monitor: RUMMonitorProtocol {
     }
 
     func failOperation(name: String, operationKey: String?, reason: RUMFeatureOperationFailureReason, attributes: [AttributeKey: AttributeValue]) {
+        failOperation(
+            name: name,
+            operationKey: operationKey,
+            reason: reason,
+            attributes: attributes,
+            explicitTarget: nil
+        )
+    }
+
+    func failOperation(
+        name: String,
+        operationKey: String?,
+        reason: RUMFeatureOperationFailureReason,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    ) {
         DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) unsuccessfully ended with the following failure reason: \(reason.rawValue)")
 
         telemetry.usage(event: .addOperationStepVital(.init(actionType: .fail)))
 
-        process(
-            command: RUMOperationStepVitalCommand(
+        processOperationStep(
+            RUMOperationStepVitalCommand(
                 vitalId: rumUUIDGenerator.generateUnique().toRUMDataFormat,
                 name: name,
                 operationKey: operationKey,
@@ -605,12 +872,46 @@ extension Monitor: RUMMonitorProtocol {
                 failureReason: reason,
                 time: dateProvider.now,
                 attributes: attributes
-            )
+            ),
+            explicitTarget: explicitTarget
         )
     }
 
     func failFeatureOperation(name: String, operationKey: String?, reason: RUMFeatureOperationFailureReason, attributes: [AttributeKey: AttributeValue]) {
         failOperation(name: name, operationKey: operationKey, reason: reason, attributes: attributes)
+    }
+
+    private func processOperationStep(
+        _ operationStep: RUMOperationStepVitalCommand,
+        explicitTarget: RUMCommandTarget?
+    ) {
+        var operationStep = operationStep
+        operationStep.explicitTarget = explicitTarget
+        operationStep.target = currentExecutionTarget
+        process(command: operationStep)
+    }
+
+    private func processCurrentViewError(_ error: RUMAddCurrentViewErrorCommand, explicitTarget: RUMCommandTarget? = nil) {
+        var error = error
+        error.explicitTarget = explicitTarget
+        error.target = currentExecutionTarget
+        process(command: error)
+    }
+
+    private var currentExecutionSceneTarget: RUMCommandTarget {
+        guard let handoff = RUMContextHandoff.current(for: rumContextHandoffOwner) else {
+            return .processRepresentative
+        }
+        if let viewID = handoff.rumContext?.viewID,
+           let sceneIdentifier = rumContextSnapshotsByScene.first(where: {
+               $0.value.viewID == viewID
+           })?.key {
+            return .scene(sceneIdentifier)
+        }
+        if let sceneIdentifier = handoff.sceneIdentifier {
+            return .scene(RUMSceneIdentifier(rawValue: sceneIdentifier))
+        }
+        return .processRepresentative
     }
 
     private func instanceSuffix(_ operationKey: String?) -> String {
@@ -648,15 +949,26 @@ extension Monitor: RUMMonitorProtocol {
         attributes: [AttributeKey: AttributeValue],
         completionHandler: @escaping CompletionHandler
     ) {
-        process(
-            command: RUMAddCurrentViewErrorCommand(
+        addError(error: error, source: source, attributes: attributes, completionHandler: completionHandler, explicitTarget: nil)
+    }
+
+    func addError(
+        error: Error,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue],
+        completionHandler: @escaping CompletionHandler,
+        explicitTarget: RUMCommandTarget?
+    ) {
+        processCurrentViewError(
+            RUMAddCurrentViewErrorCommand(
                 time: dateProvider.now,
                 error: error,
                 source: RUMInternalErrorSource(source),
                 globalAttributes: self.attributes,
                 attributes: attributes,
                 completionHandler: completionHandler
-            )
+            ),
+            explicitTarget: explicitTarget
         )
     }
 }
@@ -666,39 +978,41 @@ extension Monitor: RUMMonitorProtocol {
 /// Declares `Monitor` conformance to public `RUMMonitorViewProtocol`.
 extension Monitor: RUMMonitorViewProtocol {
     func addViewAttribute(forKey key: AttributeKey, value: AttributeValue) {
-        process(
-            command: RUMAddViewAttributesCommand(
-                time: dateProvider.now,
-                attributes: [key: value]
-            )
-        )
+        addViewAttribute(forKey: key, value: value, explicitTarget: nil)
+    }
+
+    func addViewAttribute(forKey key: AttributeKey, value: AttributeValue, explicitTarget: RUMCommandTarget?) {
+        addViewAttributes([key: value], explicitTarget: explicitTarget)
     }
 
     func addViewAttributes(_ attributes: [AttributeKey: AttributeValue]) {
-        process(
-            command: RUMAddViewAttributesCommand(
-                time: dateProvider.now,
-                attributes: attributes
-            )
-        )
+        addViewAttributes(attributes, explicitTarget: nil)
+    }
+
+    func addViewAttributes(_ attributes: [AttributeKey: AttributeValue], explicitTarget: RUMCommandTarget?) {
+        var command = RUMAddViewAttributesCommand(time: dateProvider.now, attributes: attributes)
+        command.target = currentExecutionTarget
+        command.explicitTarget = explicitTarget
+        process(command: command)
     }
 
     func removeViewAttribute(forKey key: AttributeKey) {
-        process(
-            command: RUMRemoveViewAttributesCommand(
-                time: dateProvider.now,
-                keysToRemove: [key]
-            )
-        )
+        removeViewAttribute(forKey: key, explicitTarget: nil)
+    }
+
+    func removeViewAttribute(forKey key: AttributeKey, explicitTarget: RUMCommandTarget?) {
+        removeViewAttributes(forKeys: [key], explicitTarget: explicitTarget)
     }
 
     func removeViewAttributes(forKeys keys: [AttributeKey]) {
-        process(
-            command: RUMRemoveViewAttributesCommand(
-                time: dateProvider.now,
-                keysToRemove: keys
-            )
-        )
+        removeViewAttributes(forKeys: keys, explicitTarget: nil)
+    }
+
+    func removeViewAttributes(forKeys keys: [AttributeKey], explicitTarget: RUMCommandTarget?) {
+        var command = RUMRemoveViewAttributesCommand(time: dateProvider.now, keysToRemove: keys)
+        command.target = currentExecutionTarget
+        command.explicitTarget = explicitTarget
+        process(command: command)
     }
 
     #if !os(watchOS)
@@ -711,20 +1025,37 @@ extension Monitor: RUMMonitorViewProtocol {
                 path: viewController.canonicalClassName,
                 globalAttributes: self.attributes,
                 attributes: attributes,
-                instrumentationType: .manual
+                instrumentationType: .manual,
+                target: sceneTarget(for: viewController)
             )
         )
     }
 
     func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]) {
-        process(
-            command: RUMStopViewCommand(
+        var command = RUMStopViewCommand(
                 time: dateProvider.now,
                 globalAttributes: self.attributes,
                 attributes: attributes,
                 identity: ViewIdentifier(viewController)
-            )
         )
+        command.target = sceneTarget(for: viewController)
+        process(command: command)
+    }
+
+    private func sceneTarget(for viewController: UIViewController) -> RUMCommandTarget {
+        // Existing controller APIs accept calls from any thread. Keep background
+        // callers on inferred routing without reading UIKit or waiting for main.
+        guard Thread.isMainThread else {
+            return currentExecutionSceneTarget
+        }
+        guard let identifier = viewController.viewIfLoaded?
+            .window?
+            .windowScene?
+            .session
+            .persistentIdentifier else {
+            return currentExecutionSceneTarget
+        }
+        return .scene(RUMSceneIdentifier(rawValue: identifier))
     }
     #endif
 
@@ -737,44 +1068,121 @@ extension Monitor: RUMMonitorViewProtocol {
                 path: key,
                 globalAttributes: self.attributes,
                 attributes: attributes,
-                instrumentationType: .manual
+                instrumentationType: .manual,
+                target: currentExecutionSceneTarget
             )
         )
     }
 
     func stopView(key: String, attributes: [AttributeKey: AttributeValue]) {
-        process(
-            command: RUMStopViewCommand(
-                time: dateProvider.now,
-                globalAttributes: self.attributes,
-                attributes: attributes,
-                identity: ViewIdentifier(key)
-            )
+        var command = RUMStopViewCommand(
+            time: dateProvider.now,
+            globalAttributes: self.attributes,
+            attributes: attributes,
+            identity: ViewIdentifier(key)
         )
+        command.target = currentExecutionSceneTarget
+        process(command: command)
     }
 
     func addTiming(name: String) {
+        addTiming(name: name, explicitTarget: nil)
+    }
+
+    func addTiming(name: String, explicitTarget: RUMCommandTarget?) {
+        var command = RUMAddViewTimingCommand(
+            time: dateProvider.now,
+            globalAttributes: self.attributes,
+            attributes: [:],
+            timingName: name
+        )
+        command.target = currentExecutionTarget
+        command.explicitTarget = explicitTarget
         process(
-            command: RUMAddViewTimingCommand(
-                time: dateProvider.now,
-                globalAttributes: self.attributes,
-                attributes: [:],
-                timingName: name
-            )
+            command: command
         )
     }
 
     func addViewLoadingTime(overwrite: Bool) {
+        addViewLoadingTime(overwrite: overwrite, explicitTarget: nil)
+    }
+
+    func addViewLoadingTime(overwrite: Bool, explicitTarget: RUMCommandTarget?) {
+        var command = RUMAddViewLoadingTime(
+            time: dateProvider.now,
+            globalAttributes: self.attributes,
+            attributes: [:],
+            overwrite: overwrite
+        )
+        command.target = currentExecutionTarget
+        command.explicitTarget = explicitTarget
         process(
-            command: RUMAddViewLoadingTime(
-                time: dateProvider.now,
-                globalAttributes: self.attributes,
-                attributes: [:],
-                overwrite: overwrite
-            )
+            command: command
         )
     }
 }
+
+#if os(iOS)
+extension Monitor: RUMFeatureFlagTargetHandling {}
+
+extension Monitor: RUMViewTimingTargetHandling {}
+
+extension Monitor: RUMViewAttributeTargetHandling {}
+
+extension Monitor: RUMErrorViewTargetHandling {}
+
+extension Monitor: RUMResourceViewTargetHandling {}
+
+extension Monitor: RUMActionViewTargetHandling {}
+
+extension Monitor: RUMOperationViewTargetHandling {}
+
+extension Monitor: RUMSceneTargetedManualViewHandling {
+    func startView(
+        key: String,
+        name: String?,
+        attributes: [AttributeKey: AttributeValue],
+        sceneIdentifier: RUMSceneIdentifier
+    ) {
+        guard routesManualViewsToScene() else {
+            startView(key: key, name: name, attributes: attributes)
+            return
+        }
+        sceneTargetedManualViewHandler?.startView(
+            key: key,
+            name: name,
+            attributes: attributes,
+            sceneIdentifier: sceneIdentifier
+        )
+    }
+
+    func stopView(
+        key: String,
+        attributes: [AttributeKey: AttributeValue],
+        sceneIdentifier: RUMSceneIdentifier
+    ) {
+        guard routesManualViewsToScene() else {
+            stopView(key: key, attributes: attributes)
+            return
+        }
+        sceneTargetedManualViewHandler?.stopView(
+            key: key,
+            attributes: attributes,
+            sceneIdentifier: sceneIdentifier
+        )
+    }
+
+    @MainActor
+    private func routesManualViewsToScene() -> Bool {
+        if let isManualViewSceneRoutingEnabled {
+            return isManualViewSceneRoutingEnabled
+        }
+        let enabled = sceneTargetedManualViewHandler != nil
+        isManualViewSceneRoutingEnabled = enabled
+        return enabled
+    }
+}
+#endif
 
 /// An internal interface of RUM monitor.
 extension Monitor {
@@ -792,8 +1200,8 @@ extension Monitor {
         source: RUMInternalErrorSource,
         attributes: [AttributeKey: AttributeValue]
     ) {
-        process(
-            command: RUMAddCurrentViewErrorCommand(
+        processCurrentViewError(
+            RUMAddCurrentViewErrorCommand(
                 time: dateProvider.now,
                 message: message,
                 type: type,

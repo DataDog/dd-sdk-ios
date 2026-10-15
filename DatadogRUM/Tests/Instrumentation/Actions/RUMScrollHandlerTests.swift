@@ -16,11 +16,13 @@ class RUMScrollHandlerTests: XCTestCase {
     private let commandSubscriber = RUMCommandSubscriberMock()
 
     private func createHandler(
-        predicate: UITouchRUMActionsPredicate = MockScrollPredicate()
+        predicate: UITouchRUMActionsPredicate = MockScrollPredicate(),
+        sceneIdentifierProvider: @escaping (UIScrollView) -> RUMSceneIdentifier? = { _ in nil }
     ) -> RUMScrollHandler {
         let handler = RUMScrollHandler(
             dateProvider: dateProvider,
-            predicate: predicate
+            predicate: predicate,
+            sceneIdentifierProvider: sceneIdentifierProvider
         )
         handler.publish(to: commandSubscriber)
         return handler
@@ -72,6 +74,20 @@ class RUMScrollHandlerTests: XCTestCase {
             stopCommand?.attributes[RUMScrollHandler.gestureDirectionAttribute] as? String,
             "down"
         )
+    }
+
+    func testWhenScrollBelongsToScene_itKeepsSceneTargetThroughGestureLifecycle() {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let handler = createHandler(sceneIdentifierProvider: { _ in scene })
+        let scrollView = createMockScrollView()
+
+        handler.notify_scrollViewWillBeginDragging(scrollView)
+        handler.notify_scrollViewDidEndDragging(scrollView, willDecelerate: false)
+
+        let start = commandSubscriber.receivedCommands[0] as? RUMStartUserActionCommand
+        let stop = commandSubscriber.receivedCommands[1] as? RUMStopUserActionCommand
+        XCTAssertEqual(start?.target, .scene(scene))
+        XCTAssertEqual(stop?.target, .scene(scene))
     }
 
     func testWhenUserSwipesUp_itClassifiesAsSwipeWithCorrectDirection() {

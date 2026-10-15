@@ -15,6 +15,9 @@ internal enum WebViewMessageError: Error, Equatable {
 
 /// A type forwarding type-less messages received from Datadog Browser SDK to either `DatadogRUM` or `DatadogLogs`.
 internal final class MessageEmitter: InternalExtension<WebViewTracking>.AbstractMessageEmitter {
+    /// Private routing metadata removed by DatadogRUM before encoding.
+    static let nativeSceneIdentifierKey = "_dd.internal.native_scene_id"
+
     /// The core for events forwarding.
     private weak var core: DatadogCoreProtocol?
     /// Log events sampler.
@@ -31,6 +34,11 @@ internal final class MessageEmitter: InternalExtension<WebViewTracking>.Abstract
     /// Sends a bag of data to the message bus
     /// - Parameter body: The data to send, it must be parsable to `WebViewMessage`
     override func send(body: Any, slotId: String? = nil) {
+        send(body: body, slotId: slotId, sceneIdentifier: nil)
+    }
+
+    /// Sends a bridge message while retaining the scene of its source WebView.
+    func send(body: Any, slotId: String?, sceneIdentifier: String?) {
         guard let core = core else {
             return DD.logger.debug("Core must not be nil when using WebViewTracking")
         }
@@ -50,7 +58,10 @@ internal final class MessageEmitter: InternalExtension<WebViewTracking>.Abstract
             switch message {
             case .log:
                 send(log: message, in: core)
-            case .rum, .telemetry:
+            case .rum(var event):
+                event[Self.nativeSceneIdentifierKey] = sceneIdentifier
+                send(rum: .rum(event), in: core)
+            case .telemetry:
                 send(rum: message, in: core)
             case let .record(event, view):
                 send(record: event, view: view, slotId: slotId, in: core)

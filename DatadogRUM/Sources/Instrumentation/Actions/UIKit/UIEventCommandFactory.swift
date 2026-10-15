@@ -11,10 +11,17 @@ import DatadogInternal
 /// Factory responsible for creating RUM user action commands from UIEvents.
 /// This abstraction allows for platform-specific implementations (iOS/tvOS).
 internal protocol UIEventCommandFactory {
-    /// Creates a RUM command from a `UIEvent` if applicable
+    /// Resolves the event's scene and creates a RUM command if applicable.
+    /// Scene resolution is independent from action eligibility so customer
+    /// work dispatched by a filtered interaction still receives the correct
+    /// request-local RUM context.
     /// - Parameter event: The `UIEvent` to process
-    /// - Returns: A command to add a user action, or `nil` if the event shouldn't be tracked
-    func command(from event: UIEvent) -> RUMAddUserActionCommand?
+    func result(from event: UIEvent) -> UIEventCommandResult
+}
+
+internal struct UIEventCommandResult {
+    let command: RUMAddUserActionCommand?
+    let target: RUMCommandTarget?
 }
 
 // MARK: iOS implementation
@@ -26,36 +33,74 @@ internal final class UITouchCommandFactory: UIEventCommandFactory {
     let uiKitPredicate: UITouchRUMActionsPredicate?
     let swiftUIPredicate: SwiftUIRUMActionsPredicate?
     let swiftUIDetector: SwiftUIComponentDetector?
+    let sceneIdentifierProvider: (UIView) -> RUMSceneIdentifier?
 
     init(
         dateProvider: DateProvider,
         heatmapIdentifierRegistry: any HeatmapIdentifierRegistry,
         uiKitPredicate: UITouchRUMActionsPredicate?,
         swiftUIPredicate: SwiftUIRUMActionsPredicate?,
-        swiftUIDetector: SwiftUIComponentDetector?
+        swiftUIDetector: SwiftUIComponentDetector?,
+        sceneIdentifierProvider: @escaping (UIView) -> RUMSceneIdentifier? = { view in
+            guard let identifier = view.window?
+                .windowScene?
+                .session
+                .persistentIdentifier else {
+                return nil
+            }
+            return RUMSceneIdentifier(rawValue: identifier)
+        }
     ) {
         self.dateProvider = dateProvider
         self.heatmapIdentifierRegistry = heatmapIdentifierRegistry
         self.uiKitPredicate = uiKitPredicate
         self.swiftUIPredicate = swiftUIPredicate
         self.swiftUIDetector = swiftUIDetector
+        self.sceneIdentifierProvider = sceneIdentifierProvider
     }
 
-    func command(from event: UIEvent) -> RUMAddUserActionCommand? {
+    func result(from event: UIEvent) -> UIEventCommandResult {
         guard let allTouches = event.allTouches else {
-            return nil // not a touch event
+            return UIEventCommandResult(command: nil, target: nil)
         }
-        guard allTouches.count == 1, let tap = allTouches.first else {
-            return nil // not a single touch event
+        guard !allTouches.isEmpty else {
+            return UIEventCommandResult(command: nil, target: nil)
         }
+
+        if allTouches.count > 1 {
+            let sceneIdentifiers = allTouches.compactMap { touch in
+                touch.view.flatMap(sceneIdentifierProvider)
+            }
+            let uniqueScenes = Set(sceneIdentifiers)
+            let target = sceneIdentifiers.count == allTouches.count && uniqueScenes.count == 1
+                ? uniqueScenes.first.map(RUMCommandTarget.scene)
+                : nil
+            // Multi-touch gestures are not tap actions, but customer callbacks
+            // still receive a source-scene scope when every touch agrees.
+            return UIEventCommandResult(command: nil, target: target)
+        }
+        guard let tap = allTouches.first else {
+            return UIEventCommandResult(command: nil, target: nil)
+        }
+        let target = target(for: tap.view)
 
         // Detect UIKit interactions first,
         // as they are more likely to happen.
-        if let rumAction = createUIKitActionCommand(from: tap) {
-            return rumAction
+        if var rumAction = createUIKitActionCommand(from: tap) {
+            rumAction.target = target
+            return UIEventCommandResult(command: rumAction, target: target)
         }
 
-        return swiftUIDetector?.createActionCommand(from: tap, predicate: swiftUIPredicate, dateProvider: dateProvider)
+        guard swiftUIPredicate != nil,
+              var command = swiftUIDetector?.createActionCommand(
+            from: tap,
+            predicate: swiftUIPredicate,
+            dateProvider: dateProvider
+        ) else {
+            return UIEventCommandResult(command: nil, target: target)
+        }
+        command.target = target
+        return UIEventCommandResult(command: command, target: target)
     }
 
     // MARK: UIKit
@@ -106,6 +151,11 @@ internal final class UITouchCommandFactory: UIEventCommandFactory {
         )
     }
 
+    private func target(for view: UIView?) -> RUMCommandTarget {
+        view.flatMap(sceneIdentifierProvider).map(RUMCommandTarget.scene)
+            ?? .processRepresentative
+    }
+
     /// Traverses the hierarchy of the `view` bottom-up to find the best view which could be considered for RUM Action's target,
     /// e.g. if the tapped `view` is a `UILabel` embedded in a `UIStackView` inside the `UITableViewCell` it will
     /// return the `UITableViewCell` as the best guess of user interaction.
@@ -139,29 +189,36 @@ internal struct UIPressCommandFactory: UIEventCommandFactory {
 
     let uiKitPredicate: UIPressRUMActionsPredicate
 
-    func command(from event: UIEvent) -> RUMAddUserActionCommand? {
+    func result(from event: UIEvent) -> UIEventCommandResult {
         guard let event = event as? UIPressesEvent else {
-            return nil // not a press event
+            return UIEventCommandResult(command: nil, target: nil)
         }
         guard event.allPresses.count == 1, let press = event.allPresses.first else {
-            return nil // not a single press event
+            return UIEventCommandResult(command: nil, target: nil)
         }
-        guard press.phase == .ended else {
-            return nil // not in `.ended` phase
+        guard let view = press.responder as? UIView else {
+            return UIEventCommandResult(command: nil, target: nil)
         }
-        guard let view = press.responder as? UIView, view.isSafeForPrivacy else {
-            return nil // no valid view
+        let target: RUMCommandTarget
+        if let identifier = view.window?.windowScene?.session.persistentIdentifier {
+            target = .scene(RUMSceneIdentifier(rawValue: identifier))
+        } else {
+            target = .processRepresentative
         }
-        guard let action = uiKitPredicate.rumAction(press: press.type, targetView: view) else {
-            return nil
+        guard press.phase == .ended,
+              view.isSafeForPrivacy,
+              let action = uiKitPredicate.rumAction(press: press.type, targetView: view) else {
+            return UIEventCommandResult(command: nil, target: target)
         }
-        return RUMAddUserActionCommand(
+        var command = RUMAddUserActionCommand(
             time: dateProvider.now,
             attributes: action.attributes,
             instrumentation: .uikit,
             actionType: .click,
             name: action.name
         )
+        command.target = target
+        return UIEventCommandResult(command: command, target: target)
     }
 }
 #endif

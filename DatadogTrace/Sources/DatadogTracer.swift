@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 import OpenTelemetryApi
 
@@ -143,7 +144,28 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
         )
     }
 
-    internal func startSpan(spanContext: DDSpanContext, operationName: String, tags: [String: OTTagValue]? = nil, startTime: Date? = nil) -> OTSpan {
+    /// Captures the RUM context valid at span creation for every tracing API.
+    /// A scene handoff with no view snapshot is an intentional nil override and
+    /// must not fall through to another window's process representative.
+    internal func makeSpanWriteContext() -> SpanWriteContext {
+        guard let rumContextHandoff = RUMContextHandoff.current(in: featureScope) else {
+            return LazySpanWriteContext(featureScope: featureScope)
+        }
+        return LazySpanWriteContext(
+            featureScope: featureScope,
+            rumContext: rumContextHandoff.rumContext,
+            hasPendingUserAction: rumContextHandoff.hasPendingUserAction,
+            excludedUserActionID: rumContextHandoff.excludedUserActionID
+        )
+    }
+
+    internal func startSpan(
+        spanContext: DDSpanContext,
+        operationName: String,
+        tags: [String: OTTagValue]? = nil,
+        startTime: Date? = nil,
+        eventWriter: SpanWriteContext? = nil
+    ) -> OTSpan {
         var combinedTags = self.tags
         if let userTags = tags {
             combinedTags.merge(userTags) { $1 }
@@ -152,7 +174,7 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
         // Initialize `LazySpanWriteContext` here in `startSpan()` so it captures the `DatadogContext` valid
         // for this moment of time. Added in RUM-699 to ensure spans are correctly linked with RUM information
         // available on the caller thread.
-        let writer = LazySpanWriteContext(featureScope: featureScope)
+        let writer = eventWriter ?? makeSpanWriteContext()
         let span = DDSpan(
             tracer: self,
             context: spanContext,

@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+@_spi(Internal)
 import DatadogInternal
 
 @testable import DatadogTrace
@@ -28,6 +29,199 @@ class DDSpanTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
+    }
+
+    func testWhenSpanStartsDuringSceneUIEvent_itUsesThatScenesRUMContext() throws {
+        let representativeContext: RUMCoreContext = .mockWith(
+            viewID: UUID().uuidString,
+            userActionID: UUID().uuidString,
+            viewName: "View A"
+        )
+        let sourceSceneContext: RUMCoreContext = .mockWith(
+            viewID: UUID().uuidString,
+            userActionID: nil,
+            viewName: "View B"
+        )
+        let core = PassthroughCoreMock(
+            context: .mockWith(additionalContext: [representativeContext])
+        )
+        let tracer: DatadogTracer = .mockWith(
+            core: core,
+            spanEventBuilder: .mockWith(bundleWithRUM: true)
+        )
+        RUMContextHandoff.withValue(
+            owner: RUMContextHandoff.owner(in: core),
+            rumContext: sourceSceneContext,
+            sceneIdentifier: "scene-B"
+        ) {
+            tracer.startSpan(operationName: "scene B work").finish()
+        }
+
+        let span = try XCTUnwrap(core.events(ofType: SpanEventsEnvelope.self).first?.spans.first)
+        XCTAssertEqual(span.tags[SpanTags.rumApplicationID], sourceSceneContext.applicationID)
+        XCTAssertEqual(span.tags[SpanTags.rumSessionID], sourceSceneContext.sessionID)
+        XCTAssertEqual(span.tags[SpanTags.rumViewID], sourceSceneContext.viewID)
+        XCTAssertNil(span.tags[SpanTags.rumActionID])
+    }
+
+    func testWhenSpanStartsDuringSceneUIEventWithoutSnapshot_itDoesNotUseRepresentativeRUMContext() throws {
+        let representativeContext: RUMCoreContext = .mockWith(viewID: UUID().uuidString)
+        let core = PassthroughCoreMock(
+            context: .mockWith(additionalContext: [representativeContext])
+        )
+        let tracer: DatadogTracer = .mockWith(
+            core: core,
+            spanEventBuilder: .mockWith(bundleWithRUM: true)
+        )
+        RUMContextHandoff.withValue(owner: RUMContextHandoff.owner(in: core), rumContext: nil, sceneIdentifier: "scene-B") {
+            tracer.startSpan(operationName: "unresolved scene work").finish()
+        }
+
+        let span = try XCTUnwrap(core.events(ofType: SpanEventsEnvelope.self).first?.spans.first)
+        XCTAssertNil(span.tags[SpanTags.rumApplicationID])
+        XCTAssertNil(span.tags[SpanTags.rumSessionID])
+        XCTAssertNil(span.tags[SpanTags.rumViewID])
+        XCTAssertNil(span.tags[SpanTags.rumActionID])
+    }
+
+    func testWhenPendingActionHasNoSceneSnapshot_spanDoesNotAdoptRepresentativeAction() throws {
+        let representativeContext: RUMCoreContext = .mockWith(
+            viewID: UUID().uuidString,
+            userActionID: UUID().uuidString
+        )
+        let core = PassthroughCoreMock(
+            context: .mockWith(additionalContext: [representativeContext])
+        )
+        let tracer: DatadogTracer = .mockWith(
+            core: core,
+            spanEventBuilder: .mockWith(bundleWithRUM: true)
+        )
+        RUMContextHandoff.withValue(
+            owner: RUMContextHandoff.owner(in: core),
+            rumContext: nil,
+            sceneIdentifier: "scene-B",
+            hasPendingUserAction: true
+        ) {
+            tracer.startSpan(operationName: "unresolved scene action").finish()
+        }
+
+        let span = try XCTUnwrap(core.events(ofType: SpanEventsEnvelope.self).first?.spans.first)
+        XCTAssertNil(span.tags[SpanTags.rumApplicationID])
+        XCTAssertNil(span.tags[SpanTags.rumSessionID])
+        XCTAssertNil(span.tags[SpanTags.rumViewID])
+        XCTAssertNil(span.tags[SpanTags.rumActionID])
+    }
+
+    func testGivenForeignCoreDispatch_spanKeepsConsumerOwnership() throws {
+        let own: RUMCoreContext = .mockWith(sessionID: UUID(), viewID: UUID().uuidString, userActionID: UUID().uuidString)
+        let origins: [RUMCoreContext?] = [
+            .mockWith(applicationID: own.applicationID, sessionID: UUID(), viewID: UUID().uuidString),
+            .mockWith(applicationID: "another-application", viewID: UUID().uuidString),
+            nil
+        ]
+        for ownContext in [own, nil] {
+            for origin in origins {
+                let scope = FeatureScopeMock(context: .mockWith(additionalContext: ownContext.map { [$0] } ?? []))
+                let tracer: DatadogTracer = .mockWith(featureScope: scope, spanEventBuilder: .mockWith(bundleWithRUM: true))
+                RUMContextHandoff.withValue(owner: .init(), rumContext: origin, sceneIdentifier: "foreign") {
+                    tracer.startSpan(operationName: "consumer").finish()
+                }
+                let spans = try scope.spanEventsWritten()
+                let span = try XCTUnwrap(spans.first)
+                XCTAssertEqual(spans.count, 1)
+                XCTAssertEqual(span.tags[SpanTags.rumApplicationID], ownContext?.applicationID)
+                XCTAssertEqual(span.tags[SpanTags.rumSessionID], ownContext?.sessionID)
+                XCTAssertEqual(span.tags[SpanTags.rumViewID], ownContext?.viewID)
+                XCTAssertEqual(span.tags[SpanTags.rumActionID], ownContext?.userActionID)
+            }
+        }
+    }
+
+    func testCapturedNativeSpansKeepStartOwnersThroughReverseDuplicateFinishAndDeferredWrite() throws {
+        for retireAfterStart in [false, true] {
+            let a: RUMCoreContext = .mockWith(
+                sessionID: UUID(), viewID: UUID().uuidString, userActionID: UUID().uuidString
+            )
+            let b: RUMCoreContext = .mockWith(
+                applicationID: a.applicationID,
+                sessionID: UUID(uuidString: a.sessionID)!,
+                viewID: UUID().uuidString,
+                userActionID: nil
+            )
+            let scope = FeatureScopeMock(context: .mockWith(additionalContext: [b]), deferEventWriteContext: true)
+            let tracer: DatadogTracer = .mockWith(featureScope: scope, spanEventBuilder: .mockWith(bundleWithRUM: true))
+            let owner = RUMContextHandoff.owner(in: scope)
+            let spanA = RUMContextHandoff.withValue(owner: owner, rumContext: a, sceneIdentifier: "scene-A") {
+                tracer.startSpan(operationName: "captured-A")
+            }
+            scope.contextMock = .mockWith(additionalContext: [a])
+            let spanB = RUMContextHandoff.withValue(owner: owner, rumContext: b, sceneIdentifier: "scene-B") {
+                tracer.startSpan(operationName: "captured-B")
+            }
+            if retireAfterStart { owner?.invalidate() }
+            RUMContextHandoff.withValue(owner: owner, rumContext: a, sceneIdentifier: "scene-A") {
+                spanB.finish()
+                spanB.finish()
+            }
+            RUMContextHandoff.withValue(owner: owner, rumContext: b, sceneIdentifier: "scene-B") {
+                spanA.finish()
+                spanA.finish()
+            }
+            XCTAssertTrue(try scope.spanEventsWritten().isEmpty)
+            let later: RUMCoreContext = .mockWith(
+                applicationID: "later-application",
+                sessionID: UUID(),
+                viewID: UUID().uuidString,
+                userActionID: UUID().uuidString
+            )
+            scope.contextMock = .mockWith(additionalContext: [later])
+            scope.flushDeferredEventWriteContexts()
+            let spans = try scope.spanEventsWritten()
+            XCTAssertEqual(spans.map(\.operationName), ["captured-B", "captured-A"])
+            for (span, expected) in zip(spans, [b, a]) {
+                XCTAssertEqual(span.tags[SpanTags.rumApplicationID], expected.applicationID)
+                XCTAssertEqual(span.tags[SpanTags.rumSessionID], expected.sessionID)
+                XCTAssertEqual(span.tags[SpanTags.rumViewID], expected.viewID)
+                XCTAssertEqual(span.tags[SpanTags.rumActionID], expected.userActionID)
+            }
+        }
+    }
+
+    func testDelayedNativeSpanKeepsNilOrStartRepresentativePolicy() throws {
+        for mode in ["explicit-nil", "source-less", "foreign", "retired"] {
+            let representative: RUMCoreContext = .mockWith(
+                sessionID: UUID(), viewID: UUID().uuidString, userActionID: UUID().uuidString
+            )
+            let peer: RUMCoreContext = .mockWith(
+                sessionID: UUID(), viewID: UUID().uuidString, userActionID: UUID().uuidString
+            )
+            let scope = FeatureScopeMock(context: .mockWith(additionalContext: [representative]), deferEventWriteContext: true)
+            let tracer: DatadogTracer = .mockWith(featureScope: scope, spanEventBuilder: .mockWith(bundleWithRUM: true))
+            let owner = RUMContextHandoff.owner(in: scope)
+            let handoffOwner = mode == "foreign" ? RUMContextHandoff.Owner() : owner
+            if mode == "retired" { handoffOwner?.invalidate() }
+            let span = RUMContextHandoff.withValue(
+                owner: mode == "source-less" ? nil : handoffOwner,
+                rumContext: mode == "explicit-nil" ? nil : peer,
+                sceneIdentifier: "unrelated-scene"
+            ) {
+                tracer.startSpan(operationName: mode)
+            }
+            scope.contextMock = .mockWith(additionalContext: [peer])
+            RUMContextHandoff.withValue(owner: owner, rumContext: peer, sceneIdentifier: "completion-peer") {
+                span.finish()
+                span.finish()
+            }
+            scope.flushDeferredEventWriteContexts()
+            let spans = try scope.spanEventsWritten()
+            XCTAssertEqual(spans.count, 1, mode)
+            let event = try XCTUnwrap(spans.first)
+            let expected = mode == "explicit-nil" ? nil : representative
+            XCTAssertEqual(event.tags[SpanTags.rumApplicationID], expected?.applicationID, mode)
+            XCTAssertEqual(event.tags[SpanTags.rumSessionID], expected?.sessionID, mode)
+            XCTAssertEqual(event.tags[SpanTags.rumViewID], expected?.viewID, mode)
+            XCTAssertEqual(event.tags[SpanTags.rumActionID], expected?.userActionID, mode)
+        }
     }
 
     // MARK: - Customizing SpanEvents

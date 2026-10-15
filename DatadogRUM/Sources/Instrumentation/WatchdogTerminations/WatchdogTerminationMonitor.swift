@@ -85,6 +85,17 @@ internal final class WatchdogTerminationMonitor {
         feature.rumDataStore.setValue(viewEvent, forKey: .watchdogRUMViewEvent)
     }
 
+    /// Clears the persisted view when no valid representative snapshot exists.
+    /// Keeping the previous scene would falsely attribute a later termination
+    /// after the representative window changed or closed.
+    func clearView() {
+        guard currentState == .started else {
+            return
+        }
+
+        feature.rumDataStore.removeValue(forKey: .watchdogRUMViewEvent)
+    }
+
     /// Checks if the app was terminated by Watchdog and sends the Watchdog Termination event to Datadog.
     /// - Parameter launch: The launch report containing information about the app launch.
     private func sendWatchTerminationIfFound(launch: LaunchReport, completion: @escaping () -> Void) {

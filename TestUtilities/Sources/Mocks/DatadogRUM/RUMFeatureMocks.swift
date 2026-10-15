@@ -8,6 +8,7 @@ import Foundation
 #if !os(watchOS)
 import UIKit
 #endif
+@_spi(Internal)
 import DatadogInternal
 import XCTest
 
@@ -435,7 +436,8 @@ extension RUMStartViewCommand: AnyMockable, RandomMockable {
         identity: ViewIdentifier = .mockViewIdentifier(),
         name: String = .mockAny(),
         path: String = .mockAny(),
-        instrumentationType: InstrumentationType = .manual
+        instrumentationType: InstrumentationType = .manual,
+        target: RUMCommandTarget = .processRepresentative
     ) -> RUMStartViewCommand {
         return RUMStartViewCommand(
             time: time,
@@ -444,7 +446,8 @@ extension RUMStartViewCommand: AnyMockable, RandomMockable {
             path: path,
             globalAttributes: globalAttributes,
             attributes: attributes,
-            instrumentationType: instrumentationType
+            instrumentationType: instrumentationType,
+            target: target
         )
     }
 }
@@ -464,14 +467,17 @@ extension RUMStopViewCommand: AnyMockable, RandomMockable {
         time: Date = Date(),
         globalAttributes: [AttributeKey: AttributeValue] = [:],
         attributes: [AttributeKey: AttributeValue] = [:],
-        identity: ViewIdentifier = .mockViewIdentifier()
+        identity: ViewIdentifier = .mockViewIdentifier(),
+        target: RUMCommandTarget = .processRepresentative
     ) -> RUMStopViewCommand {
-        return RUMStopViewCommand(
+        var command = RUMStopViewCommand(
             time: time,
             globalAttributes: globalAttributes,
             attributes: attributes,
             identity: identity
         )
+        command.target = target
+        return command
     }
 }
 
@@ -854,9 +860,10 @@ extension RUMAddUserActionCommand: AnyMockable, RandomMockable {
         instrumentation: InstrumentationType = .manual,
         actionType: RUMActionType = .tap,
         name: String = .mockAny(),
-        heatmapAttributes: HeatmapAttributes? = nil
+        heatmapAttributes: HeatmapAttributes? = nil,
+        target: RUMCommandTarget = .processRepresentative
     ) -> RUMAddUserActionCommand {
-        return RUMAddUserActionCommand(
+        var command = RUMAddUserActionCommand(
             time: time,
             globalAttributes: globalAttributes,
             attributes: attributes,
@@ -865,6 +872,8 @@ extension RUMAddUserActionCommand: AnyMockable, RandomMockable {
             name: name,
             heatmapAttributes: heatmapAttributes
         )
+        command.target = target
+        return command
     }
 }
 
@@ -1324,7 +1333,8 @@ extension RUMViewScope {
         startTime: Date = .mockAny(),
         serverTimeOffset: TimeInterval = .zero,
         interactionToNextViewMetric: INVMetricTracking = INVMetric(predicate: TimeBasedINVActionPredicate()),
-        viewIndexInSession: Int = 0
+        viewIndexInSession: Int = 0,
+        sceneIdentifier: RUMSceneIdentifier? = nil
     ) -> RUMViewScope {
         return RUMViewScope(
             isInitialView: isInitialView,
@@ -1337,7 +1347,8 @@ extension RUMViewScope {
             startTime: startTime,
             serverTimeOffset: serverTimeOffset,
             interactionToNextViewMetric: interactionToNextViewMetric,
-            viewIndexInSession: viewIndexInSession
+            viewIndexInSession: viewIndexInSession,
+            sceneIdentifier: sceneIdentifier
         )
     }
 }
@@ -1453,6 +1464,9 @@ public class RUMContextProviderMock: RUMContextProvider {
 // MARK: - Auto Instrumentation Mocks
 
 public class RUMCommandSubscriberMock: RUMCommandSubscriber {
+    @_spi(Internal)
+    public let rumContextHandoffOwner: RUMContextHandoff.Owner? = .init()
+
     public var onCommandReceived: ((RUMCommand) -> Void)?
     public var receivedCommands: [RUMCommand] = []
     public var lastReceivedCommand: RUMCommand? { receivedCommands.last }

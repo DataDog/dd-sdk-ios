@@ -46,7 +46,9 @@ extension DatadogCoreProtocol {
     ///
     /// - Parameter urlSessionHandler: The `URLSession` handler to register.
     public func register(urlSessionHandler: DatadogURLSessionHandler) throws {
-        let contextProvider = NetworkContextCoreProvider()
+        let contextProvider = NetworkContextCoreProvider(
+            rumContextHandoffOwner: (self as? RUMContextHandoffOwnerProviding)?.rumContextHandoffOwner
+        )
         let feature = get(feature: NetworkInstrumentationFeature.self) ?? .init(networkContextProvider: contextProvider, messageReceiver: contextProvider)
         feature.handlers.append(urlSessionHandler)
         try register(feature: feature)
@@ -58,3 +60,10 @@ public protocol DatadogURLSessionHandlerSupportingDistributedTracing: DatadogURL
     /// The currently configured distributed tracing sample rate. `nil` if distributed tracing (first part hosts tracing) is not configured.
     var distributedTracingSampleRate: SampleRate? { get }
 }
+
+/// Marks the first-party RUM handler that needs a synchronous callback for a
+/// UI-event context even when a URL is third party and has no trace headers.
+/// Other public/custom handlers retain the historical contract: `modify` is
+/// not called for third-party requests with an empty header set.
+@_spi(Internal)
+public protocol DatadogURLSessionHandlerCapturingRUMContext: DatadogURLSessionHandler { }

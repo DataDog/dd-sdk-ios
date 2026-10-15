@@ -1,0 +1,391 @@
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ */
+
+import Foundation
+
+enum ProbeStepKind: String, Codable, CaseIterable {
+    case waitForSceneReady = "wait-for-scene-ready"
+    case openWindow = "open-window"
+    case activateWindow = "activate-window"
+    case closeWindow = "close-window"
+    case setSwiftUIPath = "set-swiftui-path"
+    case setSwiftUIPresentation = "set-swiftui-presentation"
+    case startKeyedManualView = "start-keyed-manual-view"
+    case stopKeyedManualView = "stop-keyed-manual-view"
+    case replaceSwiftUIDestination = "replace-swiftui-destination"
+    case pushAndRevertSwiftUIPath = "push-and-revert-swiftui-path"
+    case setSplitSelection = "set-split-selection"
+    case beginUIKitInteractiveTransition = "begin-uikit-interactive-transition"
+    case updateUIKitInteractiveTransition = "update-uikit-interactive-transition"
+    case resolveUIKitInteractiveTransition = "resolve-uikit-interactive-transition"
+    case armNativeSwiftUIGesture = "arm-native-swiftui-gesture"
+    case armNativeUIKitGesture = "arm-native-uikit-gesture"
+    case emitMarker = "emit-marker"
+    case emitSceneContextMarker = "emit-scene-context-marker"
+    case emitExplicitTargetAction = "emit-explicit-target-action"
+    case runContinuousActionTargetBatch = "run-continuous-action-target-batch"
+    case runResourceOwnershipBatch = "run-resource-ownership-batch"
+    case runCurrentViewErrorBatch = "run-current-view-error-batch"
+    case runViewAttributeBatch = "run-view-attribute-batch"
+    case runViewTimingBatch = "run-view-timing-batch"
+    case sampleSharedVitals = "sample-shared-vitals"
+    case runProcessSignalBatch = "run-process-signal-batch"
+    case runFatalPreparation = "run-fatal-preparation"
+    case captureReplayRecords = "capture-replay-records"
+    case runWebViewOwnershipBatch = "run-webview-ownership-batch"
+    case runLogOwnershipBatch = "run-log-ownership-batch"
+    case runTraceOwnershipBatch = "run-trace-ownership-batch"
+    case runViewFlagBatch = "run-view-flag-batch"
+    case startExplicitTargetAction = "start-explicit-target-action"
+    case stopExplicitTargetAction = "stop-explicit-target-action"
+    case startLegacyAction = "start-legacy-action"
+    case stopLegacyAction = "stop-legacy-action"
+    case startTraceOnlyURLSessionRequest = "start-trace-only-url-session-request"
+    case joinTraceOnlyURLSessionRequest = "join-trace-only-url-session-request"
+    case completeTraceOnlyURLSessionRequest = "complete-trace-only-url-session-request"
+    case releaseSwiftUIButtonStructuredTask = "release-swiftui-button-structured-task"
+    case startOperation = "start-operation"
+    case succeedOperation = "succeed-operation"
+    case failOperation = "fail-operation"
+    case disconnectRetainedReader = "disconnect-retained-reader"
+    case bounceSemanticNavigationHostReader = "bounce-semantic-navigation-host-reader"
+    case removeSemanticNavigationHost = "remove-semantic-navigation-host"
+    case waitForSignal = "wait-for-signal"
+}
+
+enum ProbeSwiftUIButtonStructuredTaskContract {
+    static let buttonTitle = "Run structured task"
+    static let automaticActionName = "SwiftUI_Button"
+    static let startedAssertion = "swiftui-button-structured-task-started"
+    static let completedAssertion = "swiftui-button-structured-task-completed"
+    static let resumedMarker = "swiftui-button-structured-task-resumed"
+    static let representativeMarker = "swiftui-button-task-completion-representative"
+}
+
+enum ProbeTraceOnlyURLSessionContract {
+    static let host = "multi-scene-probe.invalid"
+    static let requestName = "trace-only-home-request"
+    static let sharedRequestName = "trace-only-shared-request"
+    static let reverseSceneARequestName = "trace-only-reverse-scene-a"
+    static let reverseSceneBRequestName = "trace-only-reverse-scene-b"
+
+    static func supports(requestName: String) -> Bool {
+        requestName == self.requestName
+            || requestName == sharedRequestName
+            || requestName == reverseSceneARequestName
+            || requestName == reverseSceneBRequestName
+    }
+
+    static func requestURL(
+        runID: String,
+        sourceScene: String,
+        sourceScreen: String,
+        requestName: String
+    ) -> URL {
+        URL(string: "https://\(host)")!
+            .appendingPathComponent("trace-only")
+            .appendingPathComponent(runID)
+            .appendingPathComponent(sourceScene)
+            .appendingPathComponent(sourceScreen)
+            .appendingPathComponent(requestName)
+    }
+
+    static func sourceContext(
+        from url: URL,
+        expectedRunID: String
+    ) -> ProbeSourceContext? {
+        guard url.host == host else {
+            return nil
+        }
+        let components = url.pathComponents.filter { $0 != "/" }
+        guard
+            components.count == 5,
+            components[0] == "trace-only",
+            components[1] == expectedRunID
+        else {
+            return nil
+        }
+        return ProbeSourceContext(
+            logicalSceneID: components[2],
+            screen: components[3],
+            phase: components[4]
+        )
+    }
+}
+
+enum ProbeOperationContract {
+    static let name = "multi_scene_probe_navigation"
+
+    static func key(runID: String, instance: String) -> String {
+        "\(runID)-\(instance)"
+    }
+}
+
+enum ProbeSemanticRouterContract {
+    static let rejectedAssertion = "semantic-router-write-rejected"
+    static let canonicalizedAssertion = "semantic-router-write-canonicalized"
+    static let settledAssertion = "semantic-router-write-settled"
+}
+
+enum ProbeSemanticHostContract {
+    static let capabilityReconstructedAssertion =
+        "semantic-host-capability-reconstructed"
+    static let capabilityReplacedAssertion =
+        "semantic-host-capability-replaced"
+    static let transientReaderReattachedAssertion =
+        "semantic-host-transient-reader-reattached"
+    static let finalDetachedAssertion = "semantic-host-final-detached"
+    static let conflictingCapabilityScreen = "semantic-capability-decoy"
+    static let conflictingCapabilityViewName = "ProbeSemanticCapabilityDecoyView"
+}
+
+enum ProbeNativeDismissCallbackContract {
+    static let sheetContentAppeared =
+        "exp152-sheet-native-content-appeared"
+    static let sheetOnDismissEntered =
+        "exp152-sheet-native-on-dismiss-entered"
+    static let coverContentAppeared =
+        "exp152-full-screen-cover-native-content-appeared"
+    static let coverOnDismissEntered =
+        "exp152-full-screen-cover-native-on-dismiss-entered"
+}
+
+enum ProbeThirdPartyCallbackAdapterContract {
+    static let singleRegistrationAssertion =
+        "exp153-third-party-adapter-single-registration"
+}
+
+enum ProbeTransitionOutcome: String, Codable, CaseIterable {
+    case cancel
+    case finish
+}
+
+struct ProbeStep: Codable, Equatable {
+    let kind: ProbeStepKind
+    let scene: String?
+    let value: String?
+    let outcome: ProbeTransitionOutcome?
+    let percentage: Double?
+    let signal: String?
+
+    init(
+        _ kind: ProbeStepKind,
+        scene: String? = nil,
+        value: String? = nil,
+        outcome: ProbeTransitionOutcome? = nil,
+        percentage: Double? = nil,
+        signal: String? = nil
+    ) {
+        self.kind = kind
+        self.scene = scene
+        self.value = value
+        self.outcome = outcome
+        self.percentage = percentage
+        self.signal = signal
+    }
+}
+
+enum ProbeResourceContract {
+    static let scenarioID = "resources.explicit-start.captured-owner-cross-scene-serial"
+    static let manualSuccess = ["resource-swift-request", "resource-swift-url", "resource-swift-method"]
+    static let manualFailure = ["resource-objc-request", "resource-objc-url", "resource-objc-method"]
+    static let automatic = ["resource-auto-success", "resource-auto-error"]
+    static let legacy = "resource-legacy-source-a"
+    static let peerAction = "resource-peer-finished"
+    static let completed = "resource-batch-finished"
+}
+
+enum ProbeErrorContract {
+    static let scenarioID = "errors.explicit-target.current-view-cross-scene-serial"
+    static let phases = [
+        "error-swift-message", "error-swift-error", "error-swift-callback",
+        "error-objc-message", "error-objc-error", "error-invalid-exact-a",
+        "error-invalid-representative-b", "error-legacy-source-a", "error-resource-captured-a",
+    ]
+    static let peerPhases = Array(phases[6...7])
+    static let resource = phases[8]
+    static let actionA = "error-action-a"
+    static let actionB = "error-action-b"
+    static let completed = "error-batch-finished"
+}
+
+enum ProbeAttributeContract {
+    static let scenarioID = "attributes.explicit-target.current-view-cross-scene-serial"
+    static let checkpoints = [
+        "initial", "swift-single-add", "swift-batch-add", "swift-single-remove", "swift-batch-remove",
+        "objc-single-add", "objc-batch-add", "objc-single-remove", "objc-batch-remove", "global-update",
+    ]
+    static let phases = checkpoints.flatMap { ["attribute-" + $0 + "-a", "attribute-" + $0 + "-b"] }
+    static let completed = "attribute-batch-finished"
+}
+
+enum ProbeTimingContract {
+    static let scenarioID = "timing.explicit-target.current-view-cross-scene-serial"
+    static let checkpoints = [
+        "initial", "swift-initial", "swift-repeat", "swift-overwrite",
+        "objc-initial", "objc-repeat", "objc-overwrite", "final",
+    ]
+    static let phases = checkpoints.flatMap { ["timing-" + $0 + "-a", "timing-" + $0 + "-b"] }
+    static let shared = "exp179_shared"
+    static let finalA = "exp179_final_a"
+    static let finalB = "exp179_final_b"
+    static let keys = [shared, finalA, finalB]
+    static let completed = "timing-batch-finished"
+}
+
+
+enum ProbeFlagContract {
+    static let scenarioID = "flags.explicit-target.internal-mutations-cross-scene-serial"
+    static let checkpoints = [
+        "initial", "swift-boolean", "swift-integer", "objc-string",
+        "objc-nested", "internal-a", "internal-b", "final",
+    ]
+    static let phases = checkpoints.flatMap { ["flag-" + $0 + "-a", "flag-" + $0 + "-b"] }
+    static let shared = "exp180_shared"
+    static let finalA = "exp180_final_a"
+    static let finalB = "exp180_final_b"
+    static let keys = [shared, finalA, finalB]
+    static let completed = "flag-batch-finished"
+}
+
+enum ProbeTraceContract {
+    static let scenarioID = "traces.captured-start.native-otel-urlsession-cross-scene-serial"
+    static let phases = [
+        "native-b", "otel-b", "native-a", "otel-a",
+        "native-fallback", "otel-fallback", "url-b", "url-a", "url-fallback",
+    ]
+    static let urlPhases = ["url-a", "url-b", "url-fallback"]
+    static let completed = "trace-batch-finished"
+
+    static func source(for phase: String) -> String {
+        phase.hasSuffix("-a") ? "scene-A" : phase.hasSuffix("-b") ? "scene-B" : "source-less"
+    }
+}
+
+enum ProbeLogContract {
+    static let scenarioID = "logs.captured-emission.native-mirrors-cross-scene-serial"
+    static let phases = ["log-info-a", "log-error-a", "log-info-b", "log-error-b", "log-info-fallback", "log-error-fallback"]
+    static let errorPhases = ["log-error-a", "log-error-b", "log-error-fallback"]
+    static let actionA = "log-action-a"
+    static let actionB = "log-action-b"
+    static let inventory = [
+        "log-info-a", "log-error-a", "mirror-log-error-a",
+        "log-info-b", "log-error-b", "mirror-log-error-b",
+        "log-info-fallback", "log-error-fallback", "mirror-log-error-fallback",
+        actionA, actionB,
+    ]
+    static let completed = "log-batch-finished"
+
+    static func source(for phase: String) -> String {
+        phase.hasSuffix("-a") ? "scene-A" : phase.hasSuffix("-b") ? "scene-B" : "source-less"
+    }
+}
+
+enum ProbeWebViewContract {
+    static let scenarioID = "webview.captured-container.native-navigation-rebind-serial"
+    static let phases = [
+        "web-a-original", "web-b-original", "web-a-navigation",
+        "web-a-detached", "web-a-rebound-b", "web-b-after-teardown",
+    ]
+    static let completed = "web-batch-finished"
+    static let host = "multi-scene-probe.invalid"
+
+    static func source(for phase: String) -> String {
+        switch phase {
+        case "web-a-original", "web-a-navigation": return "scene-A"
+        case "web-a-detached": return "detached"
+        default: return "scene-B"
+        }
+    }
+}
+
+enum ProbeFatalContract {
+    static let prepare = "fatal.process-context.prepare-crash"
+    static let recover = "fatal.process-context.recover"
+    static let consumed = "fatal.process-context.verify-consumed"
+    static let prepared = "fatal-prepare-complete"
+    static let prepareGuards = [
+        "fatal-process", "fatal-owner-a", "fatal-owner-b", "fatal-export-before", "fatal-provider-before",
+        "fatal-mutation-dispatched", "fatal-export-after", "fatal-provider-after",
+        "fatal-capture-unchanged", "fatal-injection-drained", prepared,
+    ]
+    static let recoveryGuards = [
+        "fatal-process", "fatal-recovery-current", "fatal-reporter-enable",
+        "fatal-launch-report", "fatal-recovery-complete",
+    ]
+
+    static func isRecovery(_ identifier: String) -> Bool {
+        identifier == recover || identifier == consumed
+    }
+
+    static func contains(_ identifier: String) -> Bool {
+        identifier == prepare || isRecovery(identifier)
+    }
+}
+
+internal enum ProbeVitalsContract {
+    static let scenarioID = "vitals.shared-process.cross-scene-serial"
+    static let physicalScenarioID = "vitals.shared-process.single-scene-physical"
+    static let physicalGuards = [
+        "vitals-configuration", "vitals-a-owner", "vitals-a-sampling-began",
+        "vitals-a-samples-acknowledged", "vitals-stop-boundary",
+        "vitals-final-a", "vitals-inventory-verified", "vitals-a-complete",
+    ]
+
+    static func contains(_ identifier: String?) -> Bool {
+        [scenarioID, physicalScenarioID].contains(identifier ?? "")
+    }
+
+    static let zeroCounters: [String: Int64] = ["actions": 0, "resources": 0, "errors": 0, "longTasks": 0, "crashes": 0]
+    static let guards = [
+        "vitals-configuration", "vitals-a-owner", "vitals-a-sampling-began",
+        "vitals-a-samples-acknowledged", "vitals-a-complete",
+        "vitals-b-owner", "vitals-a-retired", "vitals-b-sampling-began",
+        "vitals-b-samples-acknowledged", "vitals-stop-boundary",
+        "vitals-final-a", "vitals-final-b", "vitals-inventory-verified", "vitals-b-complete",
+    ]
+}
+
+internal enum ProbeProcessContract {
+    static let scenarioID = "process-signals.representative.cross-scene-serial"
+    static let selection = "process-select-a"
+    static let completed = "process-batch-complete"
+    static let guards = [
+        "process-configuration",
+        "process-owner-a",
+        "process-owner-b",
+        "process-b-representative",
+        "process-b-memory-boundary",
+        "process-b-memory-acknowledged",
+        "process-b-block-began",
+        "process-b-block-ended",
+        "process-b-signals-acknowledged",
+        "process-a-retired",
+        "process-a-activation-requested",
+        "process-a-activation-acknowledged",
+        "process-selection-boundary",
+        "process-selection-acknowledged",
+        "process-a-representative",
+        "process-a-memory-boundary",
+        "process-a-memory-acknowledged",
+        "process-a-block-began",
+        "process-a-block-ended",
+        "process-a-signals-acknowledged",
+        "process-inventory-verified",
+        "process-batch-complete",
+    ]
+}
+
+
+enum ProbeReplayContract {
+    static let scenarioID = "replay.native-recording.navigation-teardown-serial"
+    static let phases = [
+        "replay-a-before-peer", "replay-b-after-open",
+        "replay-b-after-navigation", "replay-a-after-teardown",
+    ]
+    static let scenes = ["scene-A", "scene-B", "scene-B", "scene-A"]
+    static let screens = ["home", "home", "detail-1", "detail-1"]
+}

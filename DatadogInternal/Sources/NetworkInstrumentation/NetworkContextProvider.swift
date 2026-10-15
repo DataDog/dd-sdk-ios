@@ -10,10 +10,21 @@ import Foundation
 internal protocol NetworkContextProvider: AnyObject {
     /// Returns current `NetworkContext` value.
     var currentNetworkContext: NetworkContext? { get }
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? { get }
+}
+
+extension NetworkContextProvider {
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? { nil }
 }
 
 /// Manages the `NetworkContext` reads and writes in a thread-safe manner.
 internal class NetworkContextCoreProvider: NetworkContextProvider {
+    let rumContextHandoffOwner: RUMContextHandoff.Owner?
+
+    init(rumContextHandoffOwner: RUMContextHandoff.Owner? = nil) {
+        self.rumContextHandoffOwner = rumContextHandoffOwner
+    }
+
     // MARK: - NetworkContextProviderType
     @ReadWriteLock
     var currentNetworkContext: NetworkContext?

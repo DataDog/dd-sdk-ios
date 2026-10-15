@@ -773,6 +773,37 @@ public class objc_RUM: NSObject {
     }
 }
 
+#if os(iOS) && (DEBUG || DD_SCENE_API_VALIDATION)
+/// Objective-C companion for the experimental RUM view target.
+///
+/// Objective-C has no Swift SPI import boundary, so this type remains Debug-only
+/// until normal API review approves its release. Internal Release validation
+/// can compile it with DD_SCENE_API_VALIDATION without changing default exposure.
+@available(iOS 15.0, *)
+@objc(DDRUMViewTarget)
+@objcMembers
+@_spi(objc)
+public final class objc_RUMViewTarget: NSObject {
+    fileprivate let swiftType: RUMViewTarget
+
+    private init(swiftType: RUMViewTarget) {
+        self.swiftType = swiftType
+    }
+
+    @objc(currentInScene:)
+    public static func current(in scene: UIWindowScene) -> objc_RUMViewTarget? {
+        guard Thread.isMainThread else {
+            return nil
+        }
+        var target: objc_RUMViewTarget?
+        MainActor.assumeIsolated {
+            target = objc_RUMViewTarget(swiftType: .current(in: scene))
+        }
+        return target
+    }
+}
+#endif
+
 @objc(DDRUMMonitor)
 @objcMembers
 @_spi(objc)
@@ -823,6 +854,80 @@ public class objc_RUMMonitor: NSObject {
         swiftRUMMonitor.removeViewAttributes(forKeys: keys)
     }
 
+    #if os(iOS) && (DEBUG || DD_SCENE_API_VALIDATION)
+    /// Adds an attribute to the selected current view. This API is experimental.
+    @available(iOS 15.0, *)
+    @objc(addViewAttributeForKey:value:view:)
+    public func addViewAttribute(forKey key: String, value: Any, view: objc_RUMViewTarget) {
+        guard Thread.isMainThread else {
+            return
+        }
+        MainActor.assumeIsolated {
+            swiftRUMMonitor.addViewAttribute(forKey: key, value: AnyEncodable(value), view: view.swiftType)
+        }
+    }
+
+    /// Adds attributes to the selected current view. This API is experimental.
+    @available(iOS 15.0, *)
+    @objc(addViewAttributes:view:)
+    public func addViewAttributes(_ attributes: [String: Any], view: objc_RUMViewTarget) {
+        guard Thread.isMainThread else {
+            return
+        }
+        MainActor.assumeIsolated {
+            swiftRUMMonitor.addViewAttributes(attributes.dd.swiftAttributes, view: view.swiftType)
+        }
+    }
+
+    /// Removes one view attribute without removing globals. This API is experimental.
+    @available(iOS 15.0, *)
+    @objc(removeViewAttributeForKey:view:)
+    public func removeViewAttribute(forKey key: String, view: objc_RUMViewTarget) {
+        guard Thread.isMainThread else {
+            return
+        }
+        MainActor.assumeIsolated {
+            swiftRUMMonitor.removeViewAttribute(forKey: key, view: view.swiftType)
+        }
+    }
+
+    /// Removes view attributes without removing globals. This API is experimental.
+    @available(iOS 15.0, *)
+    @objc(removeViewAttributesForKeys:view:)
+    public func removeViewAttributes(forKeys keys: [String], view: objc_RUMViewTarget) {
+        guard Thread.isMainThread else {
+            return
+        }
+        MainActor.assumeIsolated {
+            swiftRUMMonitor.removeViewAttributes(forKeys: keys, view: view.swiftType)
+        }
+    }
+
+    /// Adds a timing to the selected current view. This API is experimental.
+    @available(iOS 15.0, *)
+    @objc(addTimingWithName:view:)
+    public func addTiming(name: String, view: objc_RUMViewTarget) {
+        guard Thread.isMainThread else {
+            return
+        }
+        MainActor.assumeIsolated {
+            swiftRUMMonitor.addTiming(name: name, view: view.swiftType)
+        }
+    }
+
+    /// Adds loading time with the existing overwrite rule. This API is experimental.
+    @available(iOS 15.0, *)
+    @objc(addViewLoadingTimeWithOverwrite:view:)
+    public func addViewLoadingTime(overwrite: Bool, view: objc_RUMViewTarget) {
+        guard Thread.isMainThread else {
+            return
+        }
+        MainActor.assumeIsolated {
+            swiftRUMMonitor.addViewLoadingTime(overwrite: overwrite, view: view.swiftType)
+        }
+    }
+    #endif
+
     #if !os(watchOS)
     public func startView(
         viewController: UIViewController,
@@ -855,6 +960,58 @@ public class objc_RUMMonitor: NSObject {
         swiftRUMMonitor.stopView(key: key, attributes: attributes.dd.swiftAttributes)
     }
 
+    // Objective-C has no Swift SPI import boundary. Keep these customer-shaped
+    // selectors in Debug builds until normal API review approves their release.
+    #if os(iOS) && (DEBUG || DD_SCENE_API_VALIDATION)
+    /// Starts a RUM view in a specific window scene.
+    ///
+    /// This API is experimental and may change before becoming generally available.
+    /// Pair this call with `stopView(key:in:attributes:)` using the same key and scene.
+    @available(iOS 15.0, *)
+    @objc(startViewWithKey:name:inScene:attributes:)
+    public func startView(
+        key: String,
+        name: String?,
+        in scene: UIWindowScene,
+        attributes: [String: Any]
+    ) {
+        guard Thread.isMainThread else {
+            return
+        }
+        MainActor.assumeIsolated {
+            swiftRUMMonitor.startView(
+                key: key,
+                name: name,
+                in: scene,
+                attributes: attributes.dd.swiftAttributes
+            )
+        }
+    }
+
+    /// Stops a RUM view in a specific window scene.
+    ///
+    /// This API is experimental and may change before becoming generally available.
+    /// It only pairs with a targeted start made for the same key and scene.
+    @available(iOS 15.0, *)
+    @objc(stopViewWithKey:inScene:attributes:)
+    public func stopView(
+        key: String,
+        in scene: UIWindowScene,
+        attributes: [String: Any]
+    ) {
+        guard Thread.isMainThread else {
+            return
+        }
+        MainActor.assumeIsolated {
+            swiftRUMMonitor.stopView(
+                key: key,
+                in: scene,
+                attributes: attributes.dd.swiftAttributes
+            )
+        }
+    }
+    #endif
+
     @available(*, message: "This API is experimental and may change in future releases")
     public func addViewLoadingTime(overwrite: Bool) {
         swiftRUMMonitor.addViewLoadingTime(overwrite: overwrite)
@@ -881,6 +1038,47 @@ public class objc_RUMMonitor: NSObject {
         swiftRUMMonitor.addError(error: error, source: source.swiftType, attributes: attributes.dd.swiftAttributes)
     }
 
+    #if os(iOS) && (DEBUG || DD_SCENE_API_VALIDATION)
+    /// Adds an error to the selected scene's current tracked view.
+    /// This API is experimental; unavailable targets keep existing inference.
+    @available(iOS 15.0, *)
+    @objc(addErrorWithMessage:stack:source:view:attributes:)
+    public func addError(
+        message: String,
+        stack: String?,
+        source: objc_RUMErrorSource,
+        view: objc_RUMViewTarget,
+        attributes: [String: Any]
+    ) {
+        guard Thread.isMainThread else {
+            return
+        }
+        MainActor.assumeIsolated {
+            swiftRUMMonitor.addError(
+                message: message, stack: stack, source: source.swiftType, view: view.swiftType, attributes: attributes.dd.swiftAttributes
+            )
+        }
+    }
+
+    /// Adds an Error to the selected scene's current tracked view.
+    /// This API is experimental; Resource errors keep their captured start owner.
+    @available(iOS 15.0, *)
+    @objc(addErrorWithError:source:view:attributes:)
+    public func addError(
+        error: Error,
+        source: objc_RUMErrorSource,
+        view: objc_RUMViewTarget,
+        attributes: [String: Any]
+    ) {
+        guard Thread.isMainThread else {
+            return
+        }
+        MainActor.assumeIsolated {
+            swiftRUMMonitor.addError(error: error, source: source.swiftType, view: view.swiftType, attributes: attributes.dd.swiftAttributes)
+        }
+    }
+    #endif
+
     public func startResource(
         resourceKey: String,
         request: URLRequest,
@@ -905,6 +1103,76 @@ public class objc_RUMMonitor: NSObject {
     ) {
         swiftRUMMonitor.startResource(resourceKey: resourceKey, httpMethod: httpMethod.swiftType, urlString: urlString, attributes: attributes.dd.swiftAttributes)
     }
+
+    #if os(iOS) && (DEBUG || DD_SCENE_API_VALIDATION)
+    /// Starts a Resource on the selected scene's current tracked view.
+    @available(iOS 15.0, *)
+    @objc(startResourceWithResourceKey:request:view:attributes:)
+    public func startResource(
+        resourceKey: String,
+        request: URLRequest,
+        view: objc_RUMViewTarget,
+        attributes: [String: Any]
+    ) {
+        guard Thread.isMainThread else {
+            return
+        }
+        MainActor.assumeIsolated {
+            swiftRUMMonitor.startResource(
+                resourceKey: resourceKey,
+                request: request,
+                view: view.swiftType,
+                attributes: attributes.dd.swiftAttributes
+            )
+        }
+    }
+
+    /// Starts a Resource on the selected scene's current tracked view.
+    @available(iOS 15.0, *)
+    @objc(startResourceWithResourceKey:url:view:attributes:)
+    public func startResource(
+        resourceKey: String,
+        url: URL,
+        view: objc_RUMViewTarget,
+        attributes: [String: Any]
+    ) {
+        guard Thread.isMainThread else {
+            return
+        }
+        MainActor.assumeIsolated {
+            swiftRUMMonitor.startResource(
+                resourceKey: resourceKey,
+                url: url,
+                view: view.swiftType,
+                attributes: attributes.dd.swiftAttributes
+            )
+        }
+    }
+
+    /// Starts a Resource on the selected scene's current tracked view.
+    @available(iOS 15.0, *)
+    @objc(startResourceWithResourceKey:httpMethod:urlString:view:attributes:)
+    public func startResource(
+        resourceKey: String,
+        httpMethod: objc_RUMMethod,
+        urlString: String,
+        view: objc_RUMViewTarget,
+        attributes: [String: Any]
+    ) {
+        guard Thread.isMainThread else {
+            return
+        }
+        MainActor.assumeIsolated {
+            swiftRUMMonitor.startResource(
+                resourceKey: resourceKey,
+                httpMethod: httpMethod.swiftType,
+                urlString: urlString,
+                view: view.swiftType,
+                attributes: attributes.dd.swiftAttributes
+            )
+        }
+    }
+    #endif
 
     public func addResourceMetrics(
         resourceKey: String,
@@ -981,6 +1249,73 @@ public class objc_RUMMonitor: NSObject {
         swiftRUMMonitor.addAction(type: type.swiftType, name: name, attributes: attributes.dd.swiftAttributes)
     }
 
+    #if os(iOS) && (DEBUG || DD_SCENE_API_VALIDATION)
+    /// Adds a RUM action to the current tracked view in an explicitly selected
+    /// window scene.
+    @available(iOS 15.0, *)
+    @objc(addActionWithType:name:view:attributes:)
+    public func addAction(
+        type: objc_RUMActionType,
+        name: String,
+        view: objc_RUMViewTarget,
+        attributes: [String: Any]
+    ) {
+        guard Thread.isMainThread else {
+            return
+        }
+        MainActor.assumeIsolated {
+            swiftRUMMonitor.addAction(
+                type: type.swiftType,
+                name: name,
+                view: view.swiftType,
+                attributes: attributes.dd.swiftAttributes
+            )
+        }
+    }
+
+    @available(iOS 15.0, *)
+    @objc(startActionWithType:name:view:attributes:)
+    public func startAction(
+        type: objc_RUMActionType,
+        name: String,
+        view: objc_RUMViewTarget,
+        attributes: [String: Any]
+    ) {
+        guard Thread.isMainThread else {
+            return
+        }
+        MainActor.assumeIsolated {
+            swiftRUMMonitor.startAction(
+                type: type.swiftType,
+                name: name,
+                view: view.swiftType,
+                attributes: attributes.dd.swiftAttributes
+            )
+        }
+    }
+
+    @available(iOS 15.0, *)
+    @objc(stopActionWithType:name:view:attributes:)
+    public func stopAction(
+        type: objc_RUMActionType,
+        name: String?,
+        view: objc_RUMViewTarget,
+        attributes: [String: Any]
+    ) {
+        guard Thread.isMainThread else {
+            return
+        }
+        MainActor.assumeIsolated {
+            swiftRUMMonitor.stopAction(
+                type: type.swiftType,
+                name: name,
+                view: view.swiftType,
+                attributes: attributes.dd.swiftAttributes
+            )
+        }
+    }
+    #endif
+
     public func addAttribute(
         forKey key: String,
         value: Any
@@ -1003,6 +1338,20 @@ public class objc_RUMMonitor: NSObject {
     public func addFeatureFlagEvaluation(name: String, value: Any) {
         swiftRUMMonitor.addFeatureFlagEvaluation(name: name, value: AnyEncodable(value))
     }
+
+    #if os(iOS) && (DEBUG || DD_SCENE_API_VALIDATION)
+    /// Records a flag evaluation on the selected current view. This API is experimental.
+    @available(iOS 15.0, *)
+    @objc(addFeatureFlagEvaluationWithName:value:view:)
+    public func addFeatureFlagEvaluation(name: String, value: Any, view: objc_RUMViewTarget) {
+        guard Thread.isMainThread else {
+            return
+        }
+        MainActor.assumeIsolated {
+            swiftRUMMonitor.addFeatureFlagEvaluation(name: name, value: AnyEncodable(value), view: view.swiftType)
+        }
+    }
+    #endif
 
     public func startOperation(
         name: String,
@@ -1057,6 +1406,81 @@ public class objc_RUMMonitor: NSObject {
             attributes: attributes.dd.swiftAttributes
         )
     }
+
+    #if os(iOS) && (DEBUG || DD_SCENE_API_VALIDATION)
+    /// Starts a RUM Operation on the current tracked view in an explicitly
+    /// selected window scene.
+    @available(iOS 15.0, *)
+    @objc(startOperationWithName:operationKey:view:attributes:options:)
+    public func startOperation(
+        name: String,
+        operationKey: String?,
+        view: objc_RUMViewTarget,
+        attributes: [String: Any],
+        options: objc_OperationOptions?
+    ) {
+        guard Thread.isMainThread else {
+            return
+        }
+        MainActor.assumeIsolated {
+            swiftRUMMonitor.startOperation(
+                name: name,
+                operationKey: operationKey,
+                view: view.swiftType,
+                attributes: attributes.dd.swiftAttributes,
+                options: options?.swiftType
+            )
+        }
+    }
+
+    /// Completes a RUM Operation successfully on the current tracked view in an
+    /// explicitly selected window scene.
+    @available(iOS 15.0, *)
+    @objc(succeedOperationWithName:operationKey:view:attributes:)
+    public func succeedOperation(
+        name: String,
+        operationKey: String?,
+        view: objc_RUMViewTarget,
+        attributes: [String: Any]
+    ) {
+        guard Thread.isMainThread else {
+            return
+        }
+        MainActor.assumeIsolated {
+            swiftRUMMonitor.succeedOperation(
+                name: name,
+                operationKey: operationKey,
+                view: view.swiftType,
+                attributes: attributes.dd.swiftAttributes
+            )
+        }
+    }
+
+    /// Fails a RUM Operation on the current tracked view in an explicitly
+    /// selected window scene.
+    @available(iOS 15.0, *)
+    @objc(failOperationWithName:operationKey:reason:view:attributes:)
+    public func failOperation(
+        name: String,
+        operationKey: String?,
+        reason: objc_RUMFeatureOperationFailureReason,
+        view: objc_RUMViewTarget,
+        attributes: [String: Any]
+    ) {
+        guard Thread.isMainThread else {
+            return
+        }
+        MainActor.assumeIsolated {
+            swiftRUMMonitor.failOperation(
+                name: name,
+                operationKey: operationKey,
+                reason: reason.swiftType,
+                view: view.swiftType,
+                attributes: attributes.dd.swiftAttributes
+            )
+        }
+    }
+    #endif
 
     @available(*, deprecated, renamed: "failOperation(name:operationKey:reason:attributes:)", message: "Use failOperation(name:operationKey:reason:attributes:) instead.")
     public func failFeatureOperation(

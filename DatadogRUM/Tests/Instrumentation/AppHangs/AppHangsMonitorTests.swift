@@ -77,6 +77,7 @@ class AppHangsMonitorTests: XCTestCase {
 
         // Then
         let command = try XCTUnwrap(subscriber.lastReceivedCommand as? RUMAddCurrentViewAppHangCommand)
+        XCTAssertEqual(command.target, .processRepresentative)
         XCTAssertEqual(command.time, hang.startDate)
         XCTAssertEqual(command.hangDuration, duration)
         XCTAssertEqual(command.message, AppHangsMonitor.Constants.appHangErrorMessage)
@@ -230,6 +231,70 @@ class AppHangsMonitorTests: XCTestCase {
         XCTAssertEqual(featureScope.eventsWritten(ofType: RUMErrorEvent.self).count, 1)
         XCTAssertEqual(featureScope.eventsWritten(ofType: RUMViewEvent.self).count, 1)
         XCTAssertNil(featureScope.dataStoreMock.value(forKey: RUMDataStore.Key.fatalAppHangKey.rawValue))
+    }
+
+    func testPendingHangKeepsCapturedOwnerAfterLiveSessionChangesAndIsConsumedOnce() throws {
+        let now = Date.mockDecember15th2019At10AMUTC()
+        let capturedA = RUMViewEvent.mockRandomWith(viewIsActive: true, crashCount: nil)
+        let liveB = RUMViewEvent.mockRandomWith(viewIsActive: true, crashCount: nil)
+        XCTAssertNotEqual(capturedA.view.id, liveB.view.id)
+        XCTAssertNotEqual(capturedA.session.id, liveB.session.id)
+        featureScope.contextMock.trackingConsent = .granted
+        monitor.start()
+        fatalErrorContext.view = capturedA
+        let hang = AppHang.mockWith(startDate: now.secondsAgo(10))
+        watchdogThread.delegate?.hangStarted(hang)
+
+        var pending: FatalAppHang?
+        featureScope.rumDataStore.value(forKey: .fatalAppHangKey) { pending = $0 }
+        let persisted = try XCTUnwrap(pending)
+        DDAssertJSONEqual(persisted.lastRUMView, capturedA)
+        XCTAssertEqual(persisted.processID, currentProcessID)
+        XCTAssertEqual(persisted.trackingConsent, .granted)
+
+        fatalErrorContext.view = liveB
+        featureScope.contextMock.trackingConsent = .notGranted
+        monitor.stop()
+        let recovery = AppHangsMonitor(
+            featureScope: featureScope,
+            watchdogThread: WatchdogThreadMock(),
+            fatalErrorContext: fatalErrorContext,
+            processID: UUID(),
+            dateProvider: DateProviderMock(now: now),
+            uuidGenerator: uuidGenerator
+        )
+        recovery.start()
+        recovery.stop()
+
+        XCTAssertEqual(featureScope.eventsWritten.count, 2)
+        let error = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self, withBypassConsent: true).first)
+        let view = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self, withBypassConsent: true).first)
+        XCTAssertEqual(error.error.id, uuidGenerator.uuid.toRUMDataFormat)
+        XCTAssertEqual(error.view.id, capturedA.view.id)
+        XCTAssertEqual(error.session.id, capturedA.session.id)
+        XCTAssertEqual(error.error.category, .appHang)
+        XCTAssertEqual(error.error.isCrash, true)
+        XCTAssertEqual(view.view.id, capturedA.view.id)
+        XCTAssertEqual(view.session.id, capturedA.session.id)
+        XCTAssertEqual(view.dd.documentVersion, capturedA.dd.documentVersion + 1)
+        XCTAssertEqual(view.view.error.count, capturedA.view.error.count + 1)
+        XCTAssertEqual(view.view.crash?.count, 1)
+        XCTAssertEqual(view.view.isActive, false)
+        DDAssertJSONEqual(fatalErrorContext.view, liveB)
+        XCTAssertNil(featureScope.dataStoreMock.value(forKey: RUMDataStore.Key.fatalAppHangKey.rawValue))
+
+        let nextProcess = AppHangsMonitor(
+            featureScope: featureScope,
+            watchdogThread: WatchdogThreadMock(),
+            fatalErrorContext: fatalErrorContext,
+            processID: UUID(),
+            dateProvider: DateProviderMock(now: now.addingTimeInterval(1)),
+            uuidGenerator: uuidGenerator
+        )
+        nextProcess.start()
+        nextProcess.stop()
+        XCTAssertEqual(featureScope.eventsWritten.count, 2, "A consumed pending hang must not be reported again")
+        DDAssertJSONEqual(fatalErrorContext.view, liveB)
     }
 
     func testGivenPendingHangStartedMoreThan4HoursAgo_whenStartedInAnotherProcess_itSendsOnlyRUMError() throws {

@@ -26,9 +26,55 @@ import Foundation
 internal class RUMFeatureOperationManager {
     // MARK: - Properties
 
-    /// Set of active operation lookup keys for tracking and warning purposes
-    /// Key format: "operationName" + "operationKey" (if any)
-    private var activeOperations: Set<String> = []
+    private struct OperationIdentity: Hashable {
+        let name: String
+        let key: String?
+    }
+
+    private struct OperationViewContext {
+        let id: RUMUUID
+        let name: String
+        let path: String
+        let attributes: [AttributeKey: AttributeValue]
+
+        init(view: RUMViewScope) {
+            self.id = view.viewUUID
+            self.name = view.viewName
+            self.path = view.viewPath
+            self.attributes = view.attributes
+        }
+
+        private init(
+            id: RUMUUID,
+            name: String,
+            path: String,
+            attributes: [AttributeKey: AttributeValue]
+        ) {
+            self.id = id
+            self.name = name
+            self.path = path
+            self.attributes = attributes
+        }
+
+        var retainedSnapshot: OperationViewContext {
+            OperationViewContext(
+                id: id,
+                name: name,
+                path: path,
+                attributes: [:]
+            )
+        }
+    }
+
+    private struct ActiveOperation {
+        /// Last view proven at an operation step's call site. Retaining this
+        /// lightweight snapshot lets a later step preserve its most recent
+        /// trustworthy context without retaining a completed `RUMViewScope`.
+        var viewContext: OperationViewContext?
+    }
+
+    /// Active operation state for tracking, warnings, and last-proven view attribution.
+    private var activeOperations: [OperationIdentity: ActiveOperation] = [:]
     private let maxActiveOperations = 500
 
     // MARK: - Dependencies
@@ -48,13 +94,35 @@ internal class RUMFeatureOperationManager {
 
     // MARK: - Public Interface
 
-    func process(_ command: RUMOperationStepVitalCommand, context: DatadogContext, writer: Writer, activeView: RUMViewScope?) {
+    @discardableResult
+    func process(
+        _ command: RUMOperationStepVitalCommand,
+        context: DatadogContext,
+        writer: Writer,
+        activeView: RUMViewScope?,
+        activeViews: [RUMViewScope] = [],
+        processRepresentativeView: RUMViewScope? = nil
+    ) -> RUMViewScope? {
         // Validate command parameters
         guard validateCommand(command) else {
-            return
+            return nil
         }
 
-        if activeView == nil {
+        let identity = OperationIdentity(name: command.name, key: command.operationKey)
+        let operationView = view(
+            for: command,
+            identity: identity,
+            resolvedView: activeView,
+            activeViews: activeViews,
+            processRepresentativeView: processRepresentativeView
+        )
+        let operationViewContext = viewContext(
+            for: command,
+            identity: identity,
+            activeView: operationView
+        )
+
+        if operationViewContext == nil {
             DD.logger.warn("RUM operation step command received without an active view. This may result in incomplete context information.")
         }
 
@@ -63,24 +131,48 @@ internal class RUMFeatureOperationManager {
             from: command,
             context: context,
             writer: writer,
-            activeView: activeView
+            viewContext: operationViewContext
         )
-
-        let lookupKey = "\(command.name)\(command.operationKey ?? "")"
 
         // Track operation state for troubleshooting warnings
         switch command.stepType {
         case .start:
-            trackOperationStart(name: command.name, operationKey: command.operationKey, lookupKey: lookupKey)
+            trackOperationStart(
+                name: command.name,
+                operationKey: command.operationKey,
+                identity: identity,
+                provenViewContext: provenViewContext(
+                    for: command,
+                    directlyResolvedView: activeView,
+                    viewContext: operationViewContext
+                )
+            )
 
         case .end, .update, .retry:
-            trackOperationUpdate(name: command.name, operationKey: command.operationKey, lookupKey: lookupKey, stepType: command.stepType)
+            trackOperationUpdate(
+                name: command.name,
+                operationKey: command.operationKey,
+                identity: identity,
+                stepType: command.stepType,
+                provenViewContext: provenViewContext(
+                    for: command,
+                    directlyResolvedView: activeView,
+                    viewContext: operationViewContext
+                )
+            )
         }
+
+        return operationView
     }
 
     // MARK: - Private Methods
 
-    private func writeVitalEvent(from command: RUMOperationStepVitalCommand, context: DatadogContext, writer: Writer, activeView: RUMViewScope?) {
+    private func writeVitalEvent(
+        from command: RUMOperationStepVitalCommand,
+        context: DatadogContext,
+        writer: Writer,
+        viewContext: OperationViewContext?
+    ) {
         let vital = RUMVitalOperationStepEvent.Vital(
             failureReason: command.failureReason,
             id: command.vitalId,
@@ -91,14 +183,14 @@ internal class RUMFeatureOperationManager {
 
         let mergedAttributes = command.globalAttributes
             .merging(parent.attributes) { $1 }
-            .merging(activeView?.attributes ?? [:]) { $1 }
+            .merging(viewContext?.attributes ?? [:]) { $1 }
             .merging(command.attributes) { $1 }
 
         let profiling = context.additionalContext(ofType: ProfilingContext.self)?.ddProfiling
 
         if shouldSendOperationMessage(for: command) {
             let message = OperationMessage(
-                attributes: parent.rumContextAttributes,
+                attributes: rumContextAttributes(for: viewContext),
                 operation: Vital(
                     id: command.vitalId,
                     name: command.name,
@@ -137,13 +229,34 @@ internal class RUMFeatureOperationManager {
             usr: .init(context: context),
             version: context.version,
             view: .init(
-                id: (activeView?.viewUUID).orNull.toRUMDataFormat,
-                url: activeView?.viewPath ?? ""
+                id: (viewContext?.id).orNull.toRUMDataFormat,
+                url: viewContext?.path ?? ""
             ),
             vital: vital
         )
 
         writer.write(value: sanitizer.sanitize(event: vitalEvent))
+    }
+
+    /// Builds the operation correlation from the session context and overlays the
+    /// selected view. Reading `activeView.context` would walk through the view's
+    /// unowned parent even though the manager already owns the same session
+    /// context, and is unnecessary for operation messages.
+    private func rumContextAttributes(for viewContext: OperationViewContext?) -> [String: AttributeValue] {
+        var attributes = parent.rumContextAttributes
+
+        if let viewContext {
+            attributes[RUMCoreContext.IDs.viewID] = [viewContext.id.toRUMDataFormat]
+            attributes[RUMCoreContext.IDs.viewName] = [viewContext.name]
+        } else {
+            // The parent context describes the process representative and may
+            // belong to another concurrently active scene. Leave the view
+            // unset when no originating context is known.
+            attributes.removeValue(forKey: RUMCoreContext.IDs.viewID)
+            attributes.removeValue(forKey: RUMCoreContext.IDs.viewName)
+        }
+
+        return attributes
     }
 
     private func shouldSendOperationMessage(for command: RUMOperationStepVitalCommand) -> Bool {
@@ -160,29 +273,52 @@ internal class RUMFeatureOperationManager {
         }
     }
 
-    private func trackOperationStart(name: String, operationKey: String?, lookupKey: String) {
+    private func trackOperationStart(
+        name: String,
+        operationKey: String?,
+        identity: OperationIdentity,
+        provenViewContext: OperationViewContext?
+    ) {
         // Check if operation is already being tracked
-        if activeOperations.contains(lookupKey) {
+        if activeOperations[identity] != nil {
             // Warning: Operation appears to be started multiple times
-            DD.logger.warn("Operation \(formatOperationName(name, operationKey: operationKey)) has already been started. This may result in the backend terminating the previous instance with an `auto_restart` failure. Note that the SDK only tracks operations locally and not across sessions.")
+            DD.logger.warn(
+                "Operation \(formatOperationName(name, operationKey: operationKey)) has already been started. "
+                + "The SDK will track only the latest start; the earlier backend operation will remain open "
+                + "until its four-hour timeout. Use a unique `operationKey` for each concurrent operation "
+                + "instance. Note that the SDK only tracks operations locally and not across sessions."
+            )
         }
 
         cleanUpActiveOperations()
 
         // Add operation to local tracking for future reference
-        activeOperations.insert(lookupKey)
+        activeOperations[identity] = ActiveOperation(
+            viewContext: provenViewContext?.retainedSnapshot
+        )
     }
 
-    private func trackOperationUpdate(name: String, operationKey: String?, lookupKey: String, stepType: RUMVitalOperationStepEvent.Vital.StepType) {
+    private func trackOperationUpdate(
+        name: String,
+        operationKey: String?,
+        identity: OperationIdentity,
+        stepType: RUMVitalOperationStepEvent.Vital.StepType,
+        provenViewContext: OperationViewContext?
+    ) {
         // Check if operation is currently being tracked
-        if !activeOperations.contains(lookupKey) {
+        if activeOperations[identity] == nil {
             // Warning: Operation step called without a corresponding start
             DD.logger.warn("`\(stepType.rawValue)` was called, but operation \(formatOperationName(name, operationKey: operationKey)) is currently not active. This may lead to a backend `instrumentation_error`. Make sure to call `startOperation(name:operationKey:attributes:options:)` first. Note that the SDK only tracks operations locally and not across sessions.")
         }
 
+        if var operation = activeOperations[identity], let provenViewContext {
+            operation.viewContext = provenViewContext.retainedSnapshot
+            activeOperations[identity] = operation
+        }
+
         // Remove operation from tracking when it ends
         if stepType == .end {
-            activeOperations.remove(lookupKey)
+            activeOperations.removeValue(forKey: identity)
         }
     }
 
@@ -253,9 +389,75 @@ internal class RUMFeatureOperationManager {
 
     /// Keeps the number of active operations below the maximum allowed
     private func cleanUpActiveOperations() {
-        if activeOperations.count > maxActiveOperations {
-            activeOperations.removeFirst()
+        if activeOperations.count > maxActiveOperations,
+           let oldestOperation = activeOperations.keys.first {
+            activeOperations.removeValue(forKey: oldestOperation)
         }
+    }
+
+    private func view(
+        for command: RUMOperationStepVitalCommand,
+        identity: OperationIdentity,
+        resolvedView: RUMViewScope?,
+        activeViews: [RUMViewScope],
+        processRepresentativeView: RUMViewScope?
+    ) -> RUMViewScope? {
+        if hasTrustworthyViewTarget(command), let resolvedView {
+            return resolvedView
+        }
+
+        if command.stepType != .start,
+           let retainedView = activeOperations[identity]?.viewContext {
+            return activeViews.last {
+                $0.isActiveView && $0.viewUUID == retainedView.id
+            }
+        }
+
+        guard command.target != .none else {
+            return nil
+        }
+
+        return processRepresentativeView ?? resolvedView
+    }
+
+    private func viewContext(
+        for command: RUMOperationStepVitalCommand,
+        identity: OperationIdentity,
+        activeView: RUMViewScope?
+    ) -> OperationViewContext? {
+        if let activeView {
+            return OperationViewContext(view: activeView)
+        }
+
+        guard command.stepType != .start,
+              let operation = activeOperations[identity] else {
+            return nil
+        }
+
+        return operation.viewContext
+    }
+
+    /// A scene or exact-view target came from customer intent or call-site
+    /// inference. Process-representative routing is a compatibility fallback,
+    /// so it must not replace an operation's last proven view context.
+    private func hasTrustworthyViewTarget(_ command: RUMOperationStepVitalCommand) -> Bool {
+        switch command.target {
+        case .scene, .view:
+            return true
+        case .none, .processRepresentative, .allActiveViews:
+            return false
+        }
+    }
+
+    private func provenViewContext(
+        for command: RUMOperationStepVitalCommand,
+        directlyResolvedView: RUMViewScope?,
+        viewContext: OperationViewContext?
+    ) -> OperationViewContext? {
+        guard hasTrustworthyViewTarget(command), directlyResolvedView != nil else {
+            return nil
+        }
+        return viewContext
     }
 
     /// Formats operation name and key for consistent warning message display

@@ -10,6 +10,179 @@ import DatadogInternal
 
 @testable import DatadogRUM
 
+#if os(iOS)
+private final class SceneTargetedFallbackMonitor: RUMMonitorViewProtocol {
+    var starts: [(key: String, name: String?, attributes: [AttributeKey: AttributeValue])] = []
+    var stops: [(key: String, attributes: [AttributeKey: AttributeValue])] = []
+
+    var timingNames: [String] = []
+    var loadingOverwrites: [Bool] = []
+    var attributeForms: [String] = []
+    var singleValue: AttributeValue?
+    var batchValues: [AttributeKey: AttributeValue] = [:]
+    var removedKeys: [String] = []
+
+    func addViewAttribute(forKey key: AttributeKey, value: AttributeValue) {
+        attributeForms.append("add-single")
+        singleValue = value
+    }
+    func addViewAttributes(_ attributes: [AttributeKey: AttributeValue]) {
+        attributeForms.append("add-batch")
+        batchValues = attributes
+    }
+    func removeViewAttribute(forKey key: AttributeKey) {
+        attributeForms.append("remove-single")
+        removedKeys.append(key)
+    }
+    func removeViewAttributes(forKeys keys: [AttributeKey]) {
+        attributeForms.append("remove-batch")
+        removedKeys.append(contentsOf: keys)
+    }
+    func startView(
+        viewController: UIViewController,
+        name: String?,
+        attributes: [AttributeKey: AttributeValue]
+    ) {}
+    func stopView(
+        viewController: UIViewController,
+        attributes: [AttributeKey: AttributeValue]
+    ) {}
+    func startView(
+        key: String,
+        name: String?,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
+        starts.append((key: key, name: name, attributes: attributes))
+    }
+
+    func stopView(
+        key: String,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
+        stops.append((key: key, attributes: attributes))
+    }
+    func addTiming(name: String) { timingNames.append(name) }
+    func addViewLoadingTime(overwrite: Bool) { loadingOverwrites.append(overwrite) }
+}
+
+private final class FlagTargetFallbackMonitor: NOPMonitor {
+    var evaluations: [(String, Encodable)] = []
+
+    override func addFeatureFlagEvaluation(name: String, value: Encodable) {
+        evaluations.append((name, value))
+    }
+}
+
+private final class OperationTargetFallbackMonitor: NOPMonitor {
+    var starts: [(name: String, key: String?, attributes: [AttributeKey: AttributeValue])] = []
+    var successes: [(name: String, key: String?, attributes: [AttributeKey: AttributeValue])] = []
+    var failures: [(name: String, key: String?, reason: RUMFeatureOperationFailureReason)] = []
+
+    override func startOperation(
+        name: String,
+        operationKey: String?,
+        attributes: [AttributeKey: AttributeValue],
+        options: OperationOptions?
+    ) {
+        starts.append((name: name, key: operationKey, attributes: attributes))
+    }
+
+    override func succeedOperation(
+        name: String,
+        operationKey: String?,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
+        successes.append((name: name, key: operationKey, attributes: attributes))
+    }
+
+    override func failOperation(
+        name: String,
+        operationKey: String?,
+        reason: RUMFeatureOperationFailureReason,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
+        failures.append((name: name, key: operationKey, reason: reason))
+    }
+}
+
+private final class ErrorTargetFallbackMonitor: NOPMonitor {
+    var forms: [String] = []
+    var attributes: [[AttributeKey: AttributeValue]] = []
+    var message: String?
+    var stack: String?
+    var file: StaticString?
+    var line: UInt?
+
+    override func addError(
+        message: String,
+        type: String?,
+        stack: String?,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue],
+        file: StaticString?,
+        line: UInt?
+    ) {
+        forms.append("message")
+        self.attributes.append(attributes)
+        self.message = message
+        self.stack = stack
+        self.file = file
+        self.line = line
+    }
+
+    override func addError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]) {
+        forms.append("error")
+        self.attributes.append(attributes)
+    }
+
+    override func addError(
+        error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue], completionHandler: () -> Void
+    ) {
+        forms.append("callback")
+        self.attributes.append(attributes)
+        completionHandler()
+    }
+}
+
+private final class ResourceTargetFallbackMonitor: NOPMonitor {
+    var starts: [(key: String, method: String?, url: String?, attributes: [AttributeKey: AttributeValue])] = []
+
+    override func startResource(resourceKey: String, request: URLRequest, attributes: [AttributeKey: AttributeValue]) {
+        starts.append((resourceKey, request.httpMethod, request.url?.absoluteString, attributes))
+    }
+
+    override func startResource(resourceKey: String, url: URL, attributes: [AttributeKey: AttributeValue]) {
+        starts.append((resourceKey, "GET", url.absoluteString, attributes))
+    }
+
+    override func startResource(resourceKey: String, httpMethod: RUMMethod, urlString: String, attributes: [AttributeKey: AttributeValue]) {
+        starts.append((resourceKey, httpMethod.rawValue, urlString, attributes))
+    }
+}
+
+private final class ActionTargetFallbackMonitor: NOPMonitor {
+    var actions: [(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue])] = []
+
+    override func addAction(
+        type: RUMActionType,
+        name: String,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
+        actions.append((type: type, name: name, attributes: attributes))
+    }
+    var starts: [String] = []
+    var stops: [String?] = []
+
+    override func startAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue]) {
+        starts.append(name)
+    }
+
+    override func stopAction(type: RUMActionType, name: String?, attributes: [AttributeKey: AttributeValue]) {
+        stops.append(name)
+    }
+}
+#endif
+
 class NOPMonitorTests: XCTestCase {
     func testWhenUsingNOPMonitorAPIs_itPrintsWarning() {
         let dd = DD.mockWith(logger: CoreLoggerMock())
@@ -99,4 +272,352 @@ class NOPMonitorTests: XCTestCase {
         }
         XCTAssertEqual(expectedMessages, actualMessages)
     }
+
+    #if os(iOS)
+    @MainActor
+    func testCustomManualFallbackDoesNotResolveSceneIdentity() {
+        let monitor = SceneTargetedFallbackMonitor()
+        var reads = 0
+        func sceneIdentifier() -> RUMSceneIdentifier {
+            reads += 1
+            return RUMSceneIdentifier(rawValue: "unused")
+        }
+
+        RUMSceneTargetedManualViewBridge.startView(
+            on: monitor,
+            key: "same",
+            name: "Manual",
+            attributes: ["start": 1],
+            sceneIdentifier: sceneIdentifier()
+        )
+        RUMSceneTargetedManualViewBridge.stopView(
+            on: monitor,
+            key: "same",
+            attributes: ["stop": 2],
+            sceneIdentifier: sceneIdentifier()
+        )
+
+        XCTAssertEqual(reads, 0)
+        XCTAssertEqual(monitor.starts.count, 1)
+        XCTAssertEqual(monitor.stops.count, 1)
+        XCTAssertEqual(monitor.starts.first?.attributes["start"] as? Int, 1)
+        XCTAssertEqual(monitor.stops.first?.attributes["stop"] as? Int, 2)
+    }
+
+    @MainActor
+    func testWhenUsingSceneTargetedManualViewBridgeOnNOPMonitor_itFallsBackExactlyOnce() {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        // Given
+        let noop: any RUMMonitorProtocol = NOPMonitor()
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+
+        // When
+        RUMSceneTargetedManualViewBridge.startView(
+            on: noop,
+            key: "compose",
+            name: "Compose",
+            attributes: [:],
+            sceneIdentifier: scene
+        )
+        RUMSceneTargetedManualViewBridge.stopView(
+            on: noop,
+            key: "compose",
+            attributes: [:],
+            sceneIdentifier: scene
+        )
+
+        // Then
+        XCTAssertEqual(
+            dd.logger.criticalLogs.map(\.message),
+            [
+                """
+                Calling `startView(key:name:attributes:)` on NOPMonitor.
+                Make sure RUM feature is enabled before using `RUMMonitor.shared()`.
+                """,
+                """
+                Calling `stopView(key:attributes:)` on NOPMonitor.
+                Make sure RUM feature is enabled before using `RUMMonitor.shared()`.
+                """
+            ]
+        )
+    }
+
+    @MainActor
+    func testWhenUsingSceneTargetedManualViewBridgeOnCustomMonitor_itFallsBackExactlyOnce() {
+        // Given
+        let monitor = SceneTargetedFallbackMonitor()
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+
+        // When
+        RUMSceneTargetedManualViewBridge.startView(
+            on: monitor,
+            key: "compose",
+            name: "Compose",
+            attributes: ["start": "attribute"],
+            sceneIdentifier: scene
+        )
+        RUMSceneTargetedManualViewBridge.stopView(
+            on: monitor,
+            key: "compose",
+            attributes: ["stop": "attribute"],
+            sceneIdentifier: scene
+        )
+
+        // Then
+        XCTAssertEqual(monitor.starts.count, 1)
+        XCTAssertEqual(monitor.starts.first?.key, "compose")
+        XCTAssertEqual(monitor.starts.first?.name, "Compose")
+        XCTAssertEqual(monitor.starts.first?.attributes["start"] as? String, "attribute")
+        XCTAssertEqual(monitor.stops.count, 1)
+        XCTAssertEqual(monitor.stops.first?.key, "compose")
+        XCTAssertEqual(monitor.stops.first?.attributes["stop"] as? String, "attribute")
+    }
+
+    @MainActor
+    func testFlagTargetBridgePreservesCustomAndNOPMonitorCalls() {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let custom = FlagTargetFallbackMonitor()
+        let target = RUMCommandTarget.scene(RUMSceneIdentifier(rawValue: "scene-A"))
+        for monitor: any RUMMonitorProtocol in [custom, NOPMonitor()] {
+            RUMFeatureFlagTargetBridge.addEvaluation(on: monitor, name: "flag", value: 7, explicitTarget: target)
+        }
+        XCTAssertEqual(custom.evaluations.count, 1)
+        XCTAssertEqual(custom.evaluations.first?.0, "flag")
+        XCTAssertEqual(custom.evaluations.first?.1 as? Int, 7)
+        XCTAssertEqual(dd.logger.criticalLogs.count, 1)
+        XCTAssertTrue(dd.logger.criticalLogs[0].message.contains("addFeatureFlagEvaluation(name:value:)"))
+    }
+
+    @MainActor
+    func testTimingTargetBridgePreservesCustomAndNOPMonitorCalls() {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let custom = SceneTargetedFallbackMonitor()
+        let target = RUMCommandTarget.scene(RUMSceneIdentifier(rawValue: "scene-A"))
+        for monitor: any RUMMonitorViewProtocol in [custom, NOPMonitor()] {
+            RUMViewTimingTargetBridge.addTiming(on: monitor, name: "same-name", explicitTarget: target)
+            RUMViewTimingTargetBridge.addViewLoadingTime(on: monitor, overwrite: false, explicitTarget: target)
+            RUMViewTimingTargetBridge.addViewLoadingTime(on: monitor, overwrite: true, explicitTarget: target)
+        }
+        XCTAssertEqual(custom.timingNames, ["same-name"])
+        XCTAssertEqual(custom.loadingOverwrites, [false, true])
+        XCTAssertEqual(dd.logger.criticalLogs.count, 3)
+        XCTAssertEqual(dd.logger.criticalLogs.filter { $0.message.contains("addTiming(name:)") }.count, 1)
+        XCTAssertEqual(dd.logger.criticalLogs.filter { $0.message.contains("addViewLoadingTime(overwrite:)") }.count, 2)
+    }
+
+    @MainActor
+    func testViewAttributeTargetBridgePreservesCustomAndNOPMonitorCompatibility() {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let custom = SceneTargetedFallbackMonitor()
+        let target = RUMCommandTarget.scene(RUMSceneIdentifier(rawValue: "scene-A"))
+        for monitor: any RUMMonitorViewProtocol in [custom, NOPMonitor()] {
+            RUMViewAttributeTargetBridge.addViewAttribute(on: monitor, forKey: "single", value: "value", explicitTarget: target)
+            RUMViewAttributeTargetBridge.addViewAttributes(on: monitor, attributes: ["batch": 7], explicitTarget: target)
+            RUMViewAttributeTargetBridge.removeViewAttribute(on: monitor, forKey: "single", explicitTarget: target)
+            RUMViewAttributeTargetBridge.removeViewAttributes(on: monitor, forKeys: ["batch"], explicitTarget: target)
+        }
+        XCTAssertEqual(custom.attributeForms, ["add-single", "add-batch", "remove-single", "remove-batch"])
+        XCTAssertEqual(custom.singleValue as? String, "value")
+        XCTAssertEqual(custom.batchValues["batch"] as? Int, 7)
+        XCTAssertEqual(custom.removedKeys, ["single", "batch"])
+        XCTAssertEqual(dd.logger.criticalLogs.count, 4)
+        for signature in ["addViewAttribute(forKey:value:)", "addViewAttributes(_:)", "removeViewAttribute(forKey:)", "removeViewAttributes(forKeys:)"] {
+            XCTAssertEqual(dd.logger.criticalLogs.filter { $0.message.contains(signature) }.count, 1)
+        }
+    }
+
+    @MainActor
+    func testErrorTargetBridgePreservesCustomAndNOPMonitorCompatibility() {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let custom = ErrorTargetFallbackMonitor()
+        var completions = 0
+        let target = RUMCommandTarget.scene(RUMSceneIdentifier(rawValue: "scene-A"))
+        for monitor in [custom, NOPMonitor()] {
+            RUMErrorViewTargetBridge.addError(
+                on: monitor,
+                message: "message",
+                type: "type",
+                stack: "stack",
+                source: .custom,
+                attributes: ["form": "message"],
+                file: "Example.swift",
+                line: 42,
+                explicitTarget: target
+            )
+            RUMErrorViewTargetBridge.addError(
+                on: monitor, error: ErrorMock("error"), source: .custom, attributes: ["form": "error"], explicitTarget: target
+            )
+            RUMErrorViewTargetBridge.addError(
+                on: monitor,
+                error: ErrorMock("callback"),
+                source: .custom,
+                attributes: ["form": "callback"],
+                completionHandler: { completions += 1 },
+                explicitTarget: target
+            )
+        }
+        XCTAssertEqual(custom.forms, ["message", "error", "callback"])
+        XCTAssertEqual(custom.attributes.map { $0["form"] as? String }, ["message", "error", "callback"])
+        XCTAssertEqual(custom.message, "message")
+        XCTAssertEqual(custom.stack, "stack")
+        XCTAssertEqual(custom.file.map { "\($0)" }, "Example.swift")
+        XCTAssertEqual(custom.line, 42)
+        XCTAssertEqual(completions, 2)
+        XCTAssertEqual(dd.logger.criticalLogs.count, 3)
+    }
+
+    @MainActor
+    func testResourceTargetBridgePreservesCustomAndNOPMonitorCompatibility() throws {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let custom = ResourceTargetFallbackMonitor()
+        let url = try XCTUnwrap(URL(string: "https://example.com/resource"))
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        let target = RUMCommandTarget.scene(RUMSceneIdentifier(rawValue: "scene-A"))
+        for monitor in [custom, NOPMonitor()] {
+            RUMResourceViewTargetBridge.startResource(
+                on: monitor, resourceKey: "request", request: request, attributes: ["form": "request"], explicitTarget: target
+            )
+            RUMResourceViewTargetBridge.startResource(
+                on: monitor, resourceKey: "url", url: url, attributes: ["form": "url"], explicitTarget: target
+            )
+            RUMResourceViewTargetBridge.startResource(
+                on: monitor, resourceKey: "method", httpMethod: .put, urlString: url.absoluteString, attributes: ["form": "method"], explicitTarget: target
+            )
+        }
+        XCTAssertEqual(custom.starts.map(\.key), ["request", "url", "method"])
+        XCTAssertEqual(custom.starts.map(\.method), ["POST", "GET", "PUT"])
+        XCTAssertEqual(custom.starts.map(\.url), Array(repeating: url.absoluteString, count: 3))
+        XCTAssertEqual(custom.starts.map { $0.attributes["form"] as? String }, ["request", "url", "method"])
+        XCTAssertEqual(dd.logger.criticalLogs.count, 3)
+        for signature in ["startResource(resourceKey:request:attributes:)", "startResource(resourceKey:url:attributes:)", "startResource(resourceKey:httpMethod:urlString:attributes:)"] {
+            XCTAssertEqual(dd.logger.criticalLogs.filter { $0.message.contains(signature) }.count, 1)
+        }
+    }
+
+    @MainActor
+    func testWhenUsingActionViewTargetBridgeOnNOPMonitor_itFallsBackExactlyOnce() {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        RUMActionViewTargetBridge.addAction(
+            on: NOPMonitor(),
+            type: .custom,
+            name: "targeted",
+            attributes: [:],
+            explicitTarget: .scene(RUMSceneIdentifier(rawValue: "scene-A"))
+        )
+
+        XCTAssertEqual(
+            dd.logger.criticalLogs.map(\.message),
+            [
+                """
+                Calling `addAction(type:name:attributes:)` on NOPMonitor.
+                Make sure RUM feature is enabled before using `RUMMonitor.shared()`.
+                """
+            ]
+        )
+    }
+
+    @MainActor
+    func testWhenUsingActionViewTargetBridgeOnCustomMonitor_itFallsBackExactlyOnce() {
+        let monitor = ActionTargetFallbackMonitor()
+
+        RUMActionViewTargetBridge.addAction(
+            on: monitor,
+            type: .custom,
+            name: "targeted",
+            attributes: ["test": "attribute"],
+            explicitTarget: .scene(RUMSceneIdentifier(rawValue: "scene-A"))
+        )
+
+        XCTAssertEqual(monitor.actions.count, 1)
+        XCTAssertEqual(monitor.actions.first?.type, .custom)
+        XCTAssertEqual(monitor.actions.first?.name, "targeted")
+        XCTAssertEqual(monitor.actions.first?.attributes["test"] as? String, "attribute")
+    }
+
+    @MainActor
+    func testWhenUsingContinuousActionTargetBridgeOnCustomOrNOPMonitor_itFallsBackExactlyOnce() {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let custom = ActionTargetFallbackMonitor()
+        let target = RUMCommandTarget.scene(RUMSceneIdentifier(rawValue: "scene-A"))
+        for monitor in [custom, NOPMonitor()] {
+            RUMActionViewTargetBridge.startAction(
+                on: monitor, type: .custom, name: "start", attributes: [:], explicitTarget: target
+            )
+            RUMActionViewTargetBridge.stopAction(
+                on: monitor, type: .custom, name: nil, attributes: [:], explicitTarget: target
+            )
+        }
+        XCTAssertEqual(custom.starts, ["start"])
+        XCTAssertEqual(custom.stops, [nil])
+        XCTAssertEqual(dd.logger.criticalLogs.map(\.message), [
+            """
+            Calling `startAction(type:name:attributes:)` on NOPMonitor.
+            Make sure RUM feature is enabled before using `RUMMonitor.shared()`.
+            """,
+            """
+            Calling `stopAction(type:name:attributes:)` on NOPMonitor.
+            Make sure RUM feature is enabled before using `RUMMonitor.shared()`.
+            """
+        ])
+    }
+
+    @MainActor
+    func testWhenUsingOperationViewTargetBridgeOnCustomMonitor_itFallsBackExactlyOnce() {
+        // Given
+        let monitor = OperationTargetFallbackMonitor()
+        let target = RUMCommandTarget.scene(
+            RUMSceneIdentifier(rawValue: "scene-A")
+        )
+
+        // When
+        RUMOperationViewTargetBridge.startOperation(
+            on: monitor,
+            name: "thread_open",
+            operationKey: "key-123",
+            attributes: ["start": "attribute"],
+            options: nil,
+            explicitTarget: target
+        )
+        RUMOperationViewTargetBridge.succeedOperation(
+            on: monitor,
+            name: "thread_open",
+            operationKey: "key-123",
+            attributes: ["success": "attribute"],
+            explicitTarget: target
+        )
+        RUMOperationViewTargetBridge.failOperation(
+            on: monitor,
+            name: "thread_open",
+            operationKey: "key-123",
+            reason: .error,
+            attributes: ["failure": "attribute"],
+            explicitTarget: target
+        )
+
+        // Then
+        XCTAssertEqual(monitor.starts.count, 1)
+        XCTAssertEqual(monitor.starts.first?.name, "thread_open")
+        XCTAssertEqual(monitor.starts.first?.key, "key-123")
+        XCTAssertEqual(monitor.starts.first?.attributes["start"] as? String, "attribute")
+        XCTAssertEqual(monitor.successes.count, 1)
+        XCTAssertEqual(monitor.successes.first?.name, "thread_open")
+        XCTAssertEqual(monitor.successes.first?.key, "key-123")
+        XCTAssertEqual(monitor.successes.first?.attributes["success"] as? String, "attribute")
+        XCTAssertEqual(monitor.failures.count, 1)
+        XCTAssertEqual(monitor.failures.first?.name, "thread_open")
+        XCTAssertEqual(monitor.failures.first?.key, "key-123")
+        XCTAssertEqual(monitor.failures.first?.reason, .error)
+    }
+    #endif
 }

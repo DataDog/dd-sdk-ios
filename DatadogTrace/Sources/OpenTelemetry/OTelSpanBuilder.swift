@@ -127,7 +127,7 @@ internal class OTelSpanBuilder: OpenTelemetryApi.SpanBuilder {
             traceState: traceState
         )
 
-        let writer = LazySpanWriteContext(featureScope: tracer.featureScope)
+        let writer = tracer.makeSpanWriteContext()
 
         let createdSpan = OTelSpan(
             attributes: attributes,

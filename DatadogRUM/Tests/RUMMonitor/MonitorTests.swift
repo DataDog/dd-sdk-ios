@@ -5,9 +5,27 @@
  */
 
 import XCTest
-import DatadogInternal
+#if os(iOS)
+import UIKit
+#endif
+@_spi(Internal)
+@testable import DatadogInternal
 @testable import DatadogRUM
 @testable import TestUtilities
+
+#if os(iOS)
+@MainActor
+private final class ManualViewHandlerSpy: RUMSceneTargetedManualViewHandling {
+    var starts: [String] = []
+    var stops: [String] = []
+    func startView(key: String, name: String?, attributes: [AttributeKey: AttributeValue], sceneIdentifier: RUMSceneIdentifier) {
+        starts.append(key)
+    }
+    func stopView(key: String, attributes: [AttributeKey: AttributeValue], sceneIdentifier: RUMSceneIdentifier) {
+        stops.append(key)
+    }
+}
+#endif
 
 class MonitorTests: XCTestCase {
     private var featureScope: FeatureScope! // swiftlint:disable:this implicitly_unwrapped_optional
@@ -23,6 +41,140 @@ class MonitorTests: XCTestCase {
             )
         )
     }
+
+    #if os(iOS)
+    @MainActor
+    func testMissingManualHandlerUsesOneLegacyRouteEvenAfterLateBinding() throws {
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: DateProviderMock())
+        let scene = RUMSceneIdentifier(rawValue: "scene")
+        monitor.startView(key: "same", name: "Manual", attributes: ["start": 1], sceneIdentifier: scene)
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewName, "Manual")
+        let handler = ManualViewHandlerSpy()
+        monitor.bind(sceneTargetedManualViewHandler: handler)
+        monitor.stopView(key: "same", attributes: ["stop": 2], sceneIdentifier: scene)
+        XCTAssertTrue(handler.starts.isEmpty)
+        XCTAssertTrue(handler.stops.isEmpty)
+        XCTAssertNil(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID)
+        let scope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        let views = scope.eventsWritten(ofType: RUMViewEvent.self).filter { $0.view.name == "Manual" }
+        let final = try XCTUnwrap(views.last)
+        XCTAssertEqual(Set(views.map { $0.view.id }).count, 1)
+        XCTAssertEqual(final.view.isActive, false)
+        XCTAssertEqual(final.context?.contextInfo["start"] as? Int, 1)
+        XCTAssertEqual(final.context?.contextInfo["stop"] as? Int, 2)
+    }
+
+    @MainActor
+    func testManualHandlerCannotBeReboundAcrossAStartStopPair() {
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope), dateProvider: DateProviderMock())
+        let first = ManualViewHandlerSpy()
+        let second = ManualViewHandlerSpy()
+        let scene = RUMSceneIdentifier(rawValue: "scene")
+        monitor.bind(sceneTargetedManualViewHandler: first)
+        monitor.startView(key: "same", name: nil, attributes: [:], sceneIdentifier: scene)
+        monitor.bind(sceneTargetedManualViewHandler: second)
+        monitor.stopView(key: "same", attributes: [:], sceneIdentifier: scene)
+        XCTAssertEqual(first.starts, ["same"])
+        XCTAssertEqual(first.stops, ["same"])
+        XCTAssertTrue(second.starts.isEmpty)
+        XCTAssertTrue(second.stops.isEmpty)
+    }
+
+    @MainActor
+    func testReleasedManualHandlerDoesNotStopALegacyViewOrRetainInstrumentation() throws {
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: DateProviderMock())
+        let scene = RUMSceneIdentifier(rawValue: "scene")
+        var handler: ManualViewHandlerSpy? = ManualViewHandlerSpy()
+        weak var weakHandler = handler
+        monitor.bind(sceneTargetedManualViewHandler: try XCTUnwrap(handler))
+        monitor.startView(key: "same", name: nil, attributes: [:], sceneIdentifier: scene)
+        handler = nil
+        XCTAssertNil(weakHandler)
+        monitor.startView(key: "same", name: "Legacy peer", attributes: [:])
+        let peer = monitor.rumContextSnapshot(for: .processRepresentative)
+        monitor.stopView(key: "same", attributes: [:], sceneIdentifier: scene)
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, peer?.viewID)
+        XCTAssertNotNil(peer)
+    }
+
+    @MainActor
+    func testOrdinaryTargetBridgesUseQualifiedSceneOrLegacyOwner() throws {
+        let clock = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: clock)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+        let expectedScene: RUMSceneIdentifier
+        if #available(iOS 27.0, *) { expectedScene = sceneA } else { expectedScene = sceneB }
+        let owner = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(expectedScene)))
+        let target = RUMCommandTarget.scene(sceneA)
+        RUMFeatureFlagTargetBridge.addEvaluation(on: monitor, name: "flag", value: true, explicitTarget: target)
+        RUMViewTimingTargetBridge.addTiming(on: monitor, name: "loaded", explicitTarget: target)
+        RUMViewTimingTargetBridge.addViewLoadingTime(on: monitor, overwrite: true, explicitTarget: target)
+        RUMViewAttributeTargetBridge.addViewAttribute(on: monitor, forKey: "retained", value: "yes", explicitTarget: target)
+        RUMViewAttributeTargetBridge.addViewAttributes(on: monitor, attributes: ["removed": "no"], explicitTarget: target)
+        RUMViewAttributeTargetBridge.removeViewAttributes(on: monitor, forKeys: ["removed"], explicitTarget: target)
+        RUMViewAttributeTargetBridge.removeViewAttribute(on: monitor, forKey: "absent", explicitTarget: target)
+        var callbacks = 0
+        RUMErrorViewTargetBridge.addError(
+            on: monitor,
+            error: ErrorMock("expected"),
+            source: .custom,
+            attributes: ["error": 1],
+            completionHandler: { callbacks += 1 },
+            explicitTarget: target
+        )
+        RUMResourceViewTargetBridge.startResource(
+            on: monitor,
+            resourceKey: "request",
+            request: URLRequest(url: URL(string: "https://example.com/request")!),
+            attributes: ["start": 1],
+            explicitTarget: target
+        )
+        RUMResourceViewTargetBridge.startResource(
+            on: monitor,
+            resourceKey: "url",
+            url: URL(string: "https://example.com/url")!,
+            attributes: ["start": 1],
+            explicitTarget: target
+        )
+        RUMResourceViewTargetBridge.startResource(
+            on: monitor,
+            resourceKey: "method",
+            httpMethod: .put,
+            urlString: "https://example.com/method",
+            attributes: ["start": 1],
+            explicitTarget: target
+        )
+        RUMActionViewTargetBridge.startAction(on: monitor, type: .custom, name: "continuous", attributes: [:], explicitTarget: target)
+        clock.now = clock.now.addingTimeInterval(1)
+        RUMActionViewTargetBridge.stopAction(on: monitor, type: .custom, name: "complete", attributes: [:], explicitTarget: target)
+        RUMOperationViewTargetBridge.startOperation(on: monitor, name: "load", operationKey: "key", attributes: [:], options: nil, explicitTarget: target)
+        RUMOperationViewTargetBridge.succeedOperation(on: monitor, name: "load", operationKey: "key", attributes: [:], explicitTarget: target)
+        for key in ["request", "url", "method"] {
+            monitor.stopResource(resourceKey: key, statusCode: 200, kind: .native, size: 1, attributes: ["stop": 2])
+        }
+        let scope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        XCTAssertEqual(callbacks, 1)
+        let errors = scope.eventsWritten(ofType: RUMErrorEvent.self)
+        XCTAssertEqual(errors.count, 1)
+        XCTAssertEqual(errors.first?.view.id, owner.viewID)
+        let resources = scope.eventsWritten(ofType: RUMResourceEvent.self)
+        XCTAssertEqual(resources.count, 3)
+        XCTAssertEqual(Set(resources.map { $0.view.id }), [owner.viewID])
+        XCTAssertTrue(resources.allSatisfy { $0.context?.contextInfo["start"] as? Int == 1 && $0.context?.contextInfo["stop"] as? Int == 2 })
+        let actions = scope.eventsWritten(ofType: RUMActionEvent.self).filter { $0.action.target?.name == "complete" }
+        XCTAssertEqual(actions.count, 1)
+        XCTAssertEqual(actions.first?.view.id, owner.viewID)
+        let operations = scope.eventsWritten(ofType: RUMVitalOperationStepEvent.self)
+        XCTAssertEqual(operations.count, 2)
+        XCTAssertEqual(Set(operations.map { $0.view.id }), [owner.viewID])
+        let views = scope.eventsWritten(ofType: RUMViewEvent.self)
+        let selected = try XCTUnwrap(views.last { $0.view.id == owner.viewID })
+        XCTAssertEqual(selected.featureFlags?.featureFlagsInfo["flag"] as? Bool, true)
+        XCTAssertEqual(selected.context?.contextInfo["retained"] as? String, "yes")
+        XCTAssertNil(selected.context?.contextInfo["removed"])
+        XCTAssertNotNil(selected.view.customTimings?.customTimingsInfo["loaded"])
+    }
+    #endif
 
     func testWhenSessionIsSampled_itSetsRUMContextInCore() throws {
         // Given
@@ -59,6 +211,1920 @@ class MonitorTests: XCTestCase {
         featureScope.context { context = $0 }
         let rumContext = try XCTUnwrap(context?.additionalContext(ofType: RUMCoreContext.self))
         XCTAssertFalse(rumContext.sessionSampler.isSampled)
+    }
+
+    func testGivenConcurrentScenes_itKeepsSynchronousContextSnapshotForEachScene() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        monitor.process(
+            command: RUMStartViewCommand(
+                time: dateProvider.now,
+                identity: ViewIdentifier("view-A"),
+                name: "View A",
+                path: "View A",
+                globalAttributes: [:],
+                attributes: [:],
+                instrumentationType: .uikit,
+                target: .scene(sceneA)
+            )
+        )
+        dateProvider.now = dateProvider.now.addingTimeInterval(1)
+        monitor.process(
+            command: RUMStartViewCommand(
+                time: dateProvider.now,
+                identity: ViewIdentifier("view-B"),
+                name: "View B",
+                path: "View B",
+                globalAttributes: [:],
+                attributes: [:],
+                instrumentationType: .uikit,
+                target: .scene(sceneB)
+            )
+        )
+
+        let provider: RUMContextSnapshotProviding = monitor
+        let contextA = try XCTUnwrap(provider.rumContextSnapshot(for: .scene(sceneA)))
+        let contextB = try XCTUnwrap(provider.rumContextSnapshot(for: .scene(sceneB)))
+
+        XCTAssertEqual(contextA.viewName, "View A")
+        XCTAssertEqual(contextB.viewName, "View B")
+        XCTAssertNotEqual(contextA.viewID, contextB.viewID)
+        XCTAssertEqual(
+            provider.rumContextSnapshot(for: .processRepresentative)?.viewID,
+            contextB.viewID
+        )
+        XCTAssertEqual(
+            provider.rumContextSnapshot(for: .scene(sceneA), at: dateProvider.now)?.viewID,
+            contextA.viewID
+        )
+        XCTAssertNil(
+            provider.rumContextSnapshot(for: .scene(sceneA), at: .distantFuture)
+        )
+        XCTAssertEqual(provider.rumContextSnapshot(for: .scene(sceneA), at: nil)?.viewID, contextA.viewID)
+        dateProvider.now = .distantFuture
+        XCTAssertNil(provider.rumContextSnapshot(for: .scene(sceneA), at: nil))
+    }
+
+    func testConcurrentSceneExportAndFatalContextIgnorePeerMutationAndClearAfterStop() throws {
+        for stopSession in [false, true] {
+            let scope = FeatureScopeMock(context: .mockWith(launchInfo: .mockWith(launchReason: .userLaunch)))
+            let fatalContext = FatalErrorContextNotifierMock()
+            let dateProvider = DateProviderMock()
+            let monitor = Monitor(
+                dependencies: .mockWith(featureScope: scope, samplingRate: 100, fatalErrorContext: fatalContext),
+                dateProvider: dateProvider
+            )
+            let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+            let capturedA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+            let capturedB = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+            let fatalB = try XCTUnwrap(fatalContext.view)
+            XCTAssertNotEqual(capturedA.viewID, capturedB.viewID)
+            XCTAssertEqual(capturedA.sessionID, capturedB.sessionID)
+            XCTAssertEqual(scope.contextMock.additionalContext(ofType: RUMCoreContext.self), capturedB)
+            XCTAssertEqual(fatalB.view.id, capturedB.viewID)
+            XCTAssertEqual(fatalB.session.id, capturedB.sessionID)
+
+            dateProvider.now = dateProvider.now.addingTimeInterval(1)
+            monitor.process(command: RUMAddViewAttributesCommand(
+                time: dateProvider.now,
+                attributes: ["peer.mutation": "A"],
+                target: .scene(sceneA)
+            ))
+            // Attributes are emitted with the next view update; timing supplies a non-interactive witness.
+            monitor.process(command: RUMAddViewTimingCommand(
+                time: dateProvider.now,
+                globalAttributes: [:],
+                attributes: [:],
+                target: .scene(sceneA),
+                timingName: "peer-mutation-visible"
+            ))
+
+            let updatedA = try XCTUnwrap(scope.eventsWritten(ofType: RUMViewEvent.self).last {
+                $0.view.id == capturedA.viewID
+            })
+            XCTAssertEqual(updatedA.context?.contextInfo["peer.mutation"] as? String, "A")
+            XCTAssertEqual(scope.contextMock.additionalContext(ofType: RUMCoreContext.self), capturedB)
+            DDAssertJSONEqual(fatalContext.view, fatalB)
+            XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(sceneA)), capturedA)
+
+            var stopB = RUMStopViewCommand.mockWith(time: dateProvider.now, identity: ViewIdentifier("view-B"))
+            stopB.target = .scene(sceneB)
+            monitor.process(command: stopB)
+            XCTAssertEqual(scope.contextMock.additionalContext(ofType: RUMCoreContext.self), capturedA)
+            XCTAssertEqual(fatalContext.view?.view.id, capturedA.viewID)
+            XCTAssertEqual(fatalContext.view?.session.id, capturedA.sessionID)
+            XCTAssertNil(monitor.rumContextSnapshot(for: .scene(sceneB)))
+
+            if stopSession {
+                monitor.process(command: RUMStopSessionCommand.mockWith(time: dateProvider.now))
+            } else {
+                var stopA = RUMStopViewCommand.mockWith(time: dateProvider.now, identity: ViewIdentifier("view-A"))
+                stopA.target = .scene(sceneA)
+                monitor.process(command: stopA)
+            }
+
+            XCTAssertNil(fatalContext.view)
+            XCTAssertNil(scope.contextMock.additionalContext(ofType: RUMCoreContext.self)?.viewID)
+            XCTAssertNil(monitor.rumContextSnapshot(for: .scene(sceneA)))
+            XCTAssertEqual(capturedA.viewID, updatedA.view.id)
+            XCTAssertEqual(capturedA.sessionID, updatedA.session.id)
+        }
+    }
+
+    func testProcessSignalsFollowRepresentativeWithoutAdoptingPeerHandoffOrBroadcasting() throws {
+        let scope = FeatureScopeMock(context: .mockWith(
+            serverTimeOffset: 0,
+            launchInfo: .mockWith(launchReason: .userLaunch)
+        ))
+        let clock = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: scope, samplingRate: 100),
+            dateProvider: clock
+        )
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+        let contextA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        let contextB = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+        XCTAssertNotEqual(contextA.viewID, contextB.viewID)
+        XCTAssertEqual(contextA.sessionID, contextB.sessionID)
+
+        for (index, owner) in [contextB, contextA].enumerated() {
+            clock.now = clock.now.addingTimeInterval(3)
+            if index == 1 {
+                monitor.addAction(type: .custom, name: "Select A", attributes: [:], explicitTarget: .scene(sceneA))
+            }
+            XCTAssertEqual(scope.contextMock.additionalContext(ofType: RUMCoreContext.self)?.viewID, owner.viewID)
+            XCTAssertNil(monitor.rumContextSnapshot(for: .processRepresentative)?.userActionID)
+
+            let commands: [RUMCommand] = [
+                RUMAddLongTaskCommand(time: clock.now, globalAttributes: [:], attributes: [:], duration: 1.5),
+                RUMAddCurrentViewAppHangCommand.mockWith(
+                    time: clock.now,
+                    message: "App Hang",
+                    type: "AppHang",
+                    stack: nil,
+                    threads: nil,
+                    binaryImages: nil,
+                    isStackTraceTruncated: nil,
+                    hangDuration: 1.5
+                ),
+                RUMAddCurrentViewMemoryWarningCommand(
+                    time: clock.now,
+                    globalAttributes: [:],
+                    attributes: [:],
+                    message: "Memory Warning",
+                    type: "MemoryWarning",
+                    stack: nil,
+                    threads: nil,
+                    binaryImages: nil,
+                    isStackTraceTruncated: nil
+                )
+            ]
+            let peerScene = index == 0 ? sceneA : sceneB
+            let peerContext = index == 0 ? contextA : contextB
+            for command in commands {
+                XCTAssertEqual(command.target, .processRepresentative)
+                RUMContextHandoff.withValue(
+                    owner: monitor.rumContextHandoffOwner,
+                    rumContext: peerContext,
+                    sceneIdentifier: peerScene.rawValue
+                ) {
+                    monitor.process(command: command)
+                }
+                XCTAssertEqual(scope.contextMock.additionalContext(ofType: RUMCoreContext.self)?.viewID, owner.viewID)
+            }
+
+            let tasks = scope.eventsWritten(ofType: RUMLongTaskEvent.self)
+            let errors = scope.eventsWritten(ofType: RUMErrorEvent.self)
+            XCTAssertEqual(tasks.count, index + 1)
+            XCTAssertEqual(errors.count, (index + 1) * 2)
+            let task = try XCTUnwrap(tasks.last)
+            XCTAssertEqual(task.view.id, owner.viewID)
+            XCTAssertEqual(task.session.id, owner.sessionID)
+            XCTAssertEqual(task.longTask.duration, 1_500_000_000)
+            XCTAssertEqual(task.date, (clock.now - 1.5).timeIntervalSince1970.dd.toInt64Milliseconds)
+            XCTAssertNil(task.action)
+            XCTAssertNil(task.container)
+            DDTAssertValidRUMUUID(task.longTask.id)
+            let roundErrors = Array(errors.suffix(2))
+            XCTAssertEqual(roundErrors.map { $0.error.category }, [.appHang, .memoryWarning])
+            XCTAssertEqual(roundErrors.map { $0.error.type }, ["AppHang", "MemoryWarning"])
+            XCTAssertEqual(roundErrors.first?.freeze?.duration, 1_500_000_000)
+            for error in roundErrors {
+                XCTAssertEqual(error.view.id, owner.viewID)
+                XCTAssertEqual(error.session.id, owner.sessionID)
+                XCTAssertEqual(error.date, clock.now.timeIntervalSince1970.dd.toInt64Milliseconds)
+                XCTAssertEqual(error.error.isCrash, false)
+                XCTAssertEqual(error.error.sourceType, .ios)
+                XCTAssertEqual(error.error.source, .source)
+                XCTAssertNil(error.action)
+                XCTAssertNil(error.container)
+                DDTAssertValidRUMUUID(error.error.id)
+            }
+
+            for context in [contextA, contextB] {
+                let view = try XCTUnwrap(scope.eventsWritten(ofType: RUMViewEvent.self).last { $0.view.id == context.viewID })
+                let expectedCount: Int64 = index == 1 || context.viewID == contextB.viewID ? 1 : 0
+                XCTAssertEqual(view.view.longTask?.count ?? 0, expectedCount)
+                XCTAssertEqual(view.view.error.count, expectedCount * 2)
+                XCTAssertEqual(view.view.crash?.count ?? 0, 0)
+            }
+        }
+
+        let tasks = scope.eventsWritten(ofType: RUMLongTaskEvent.self)
+        let errors = scope.eventsWritten(ofType: RUMErrorEvent.self)
+        XCTAssertEqual(Set(tasks.compactMap { $0.longTask.id }).count, 2)
+        XCTAssertEqual(Set(errors.map { $0.error.id }).count, 4)
+        let actions = scope.eventsWritten(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actions.count, 1)
+        XCTAssertEqual(actions.first?.view.id, contextA.viewID)
+        XCTAssertTrue(scope.eventsWritten(ofType: RUMResourceEvent.self).isEmpty)
+    }
+
+    func testGivenOperationStartedDuringSceneHandoff_itUsesThatSceneInsteadOfRepresentative() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        monitor.process(
+            command: RUMStartViewCommand(
+                time: dateProvider.now,
+                identity: ViewIdentifier("view-A"),
+                name: "View A",
+                path: "View A",
+                globalAttributes: [:],
+                attributes: [:],
+                instrumentationType: .uikit,
+                target: .scene(sceneA)
+            )
+        )
+        monitor.process(
+            command: RUMStartViewCommand(
+                time: dateProvider.now,
+                identity: ViewIdentifier("view-B"),
+                name: "View B",
+                path: "View B",
+                globalAttributes: [:],
+                attributes: [:],
+                instrumentationType: .uikit,
+                target: .scene(sceneB)
+            )
+        )
+
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.startOperation(
+                name: "load_note",
+                operationKey: nil,
+                attributes: [:],
+                options: nil
+            )
+        }
+
+        let featureScope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        let operation = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMVitalOperationStepEvent.self).last)
+        XCTAssertEqual(operation.view.url, "View A")
+    }
+
+    private enum ResourceStartForm: CaseIterable {
+        case request, url, method
+    }
+
+    private func startTargetedResource(
+        in monitor: Monitor,
+        form: ResourceStartForm,
+        key: String,
+        target: RUMCommandTarget
+    ) {
+        let url = URL(string: "https://example.com/resource")!
+        let attributes: [AttributeKey: AttributeValue] = ["start": "selected"]
+        switch form {
+        case .request:
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            monitor.startResource(resourceKey: key, request: request, attributes: attributes, explicitTarget: target)
+        case .url:
+            monitor.startResource(resourceKey: key, url: url, attributes: attributes, explicitTarget: target)
+        case .method:
+            monitor.startResource(resourceKey: key, httpMethod: .put, urlString: url.absoluteString, attributes: attributes, explicitTarget: target)
+        }
+    }
+
+    func testExplicitResourceStartOverridesInferredSceneForAllForms() throws {
+        for form in ResourceStartForm.allCases {
+            let dateProvider = DateProviderMock()
+            let monitor = Monitor(
+                dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+                dateProvider: dateProvider
+            )
+            let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+            let owner = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+            RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneB.rawValue) {
+                startTargetedResource(in: monitor, form: form, key: "targeted", target: .scene(sceneA))
+            }
+            XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewName, "View B")
+            monitor.stopResource(resourceKey: "targeted", statusCode: 201, kind: .native, size: 55, attributes: ["stop": "original"])
+
+            let scope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+            let event = try XCTUnwrap(scope.eventsWritten(ofType: RUMResourceEvent.self).last)
+            XCTAssertEqual(event.view.id, owner.viewID, "Form: \(form)")
+            XCTAssertEqual(event.session.id, owner.sessionID)
+            XCTAssertEqual(event.resource.url, "https://example.com/resource")
+            XCTAssertEqual(event.resource.method?.rawValue, form == .request ? "POST" : form == .url ? "GET" : "PUT")
+            XCTAssertEqual(event.context?.contextInfo["start"] as? String, "selected")
+            XCTAssertEqual(event.context?.contextInfo["stop"] as? String, "original")
+        }
+    }
+
+    func testExplicitResourceStartKeepsOwnerAfterNavigationAndPeerAction() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        let owner = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        startTargetedResource(in: monitor, form: .request, key: "targeted", target: .scene(sceneA))
+        monitor.process(command: RUMStartViewCommand.mockWith(
+            time: dateProvider.now, identity: ViewIdentifier("next-A"), name: "Next A", target: .scene(sceneA)
+        ))
+        monitor.startAction(type: .tap, name: "Peer", attributes: [:], explicitTarget: .scene(sceneB))
+        monitor.stopResourceWithError(resourceKey: "targeted", message: "Expected failure", type: "Fixture", response: nil, attributes: [:])
+        monitor.stopAction(type: .tap, name: nil, attributes: [:], explicitTarget: .scene(sceneB))
+
+        let scope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        let error = try XCTUnwrap(scope.eventsWritten(ofType: RUMErrorEvent.self).last)
+        let action = try XCTUnwrap(scope.eventsWritten(ofType: RUMActionEvent.self).last)
+        XCTAssertEqual(error.view.id, owner.viewID)
+        XCTAssertEqual(error.session.id, owner.sessionID)
+        XCTAssertEqual(action.action.error?.count, 0)
+        XCTAssertEqual(action.action.resource?.count, 0)
+    }
+
+    func testUnavailableResourceTargetPreservesInferenceAndRepresentativeForAllForms() throws {
+        for form in ResourceStartForm.allCases {
+            let dateProvider = DateProviderMock()
+            let monitor = Monitor(
+                dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+                dateProvider: dateProvider
+            )
+            let (sceneA, _) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+            let target = RUMCommandTarget.scene(RUMSceneIdentifier(rawValue: "missing"))
+            RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+                startTargetedResource(in: monitor, form: form, key: "inferred", target: target)
+            }
+            startTargetedResource(in: monitor, form: form, key: "representative", target: target)
+            monitor.stopResource(resourceKey: "inferred", kind: .native)
+            monitor.stopResource(resourceKey: "representative", kind: .native)
+            let scope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+            XCTAssertEqual(scope.eventsWritten(ofType: RUMResourceEvent.self).suffix(2).map(\.view.name), ["View A", "View B"])
+        }
+    }
+
+    func testExplicitResourceStartOverridesExactInferenceAndResolvesCurrentView() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        let contextB = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+        let oldA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        startTargetedResource(in: monitor, form: .url, key: "reused", target: .scene(sceneA))
+        monitor.stopResource(resourceKey: "reused", kind: .native)
+        monitor.process(command: RUMStartViewCommand.mockWith(
+            time: dateProvider.now, identity: ViewIdentifier("next-A"), name: "Next A", target: .scene(sceneA)
+        ))
+        let newA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextB, sceneIdentifier: sceneB.rawValue) {
+            startTargetedResource(in: monitor, form: .url, key: "reused", target: .scene(sceneA))
+        }
+        monitor.stopResource(resourceKey: "reused", kind: .native)
+        let scope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        let events = scope.eventsWritten(ofType: RUMResourceEvent.self)
+        XCTAssertEqual(events.count, 2)
+        XCTAssertEqual(events.map(\.view.id), [oldA.viewID, newA.viewID])
+        XCTAssertNotEqual(oldA.viewID, newA.viewID)
+    }
+
+    func testExplicitResourceStartAfterSessionExpirationUsesFreshTargetScene() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+        let (sceneA, _) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        let oldA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        dateProvider.now = dateProvider.now.addingTimeInterval(4 * 60 * 60 + 1)
+        startTargetedResource(in: monitor, form: .url, key: "expired", target: .scene(sceneA))
+        monitor.stopResource(resourceKey: "expired", kind: .native)
+        let scope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        let event = try XCTUnwrap(scope.eventsWritten(ofType: RUMResourceEvent.self).last)
+        XCTAssertEqual(event.view.name, "View A")
+        XCTAssertNotEqual(event.view.id, oldA.viewID)
+        XCTAssertNotEqual(event.session.id, oldA.sessionID)
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewName, "View B")
+    }
+
+    func testResourceSessionRestorationPreservesRepresentativeWithoutExplicitTarget() throws {
+        for delayed in [false, true] {
+            let dateProvider = DateProviderMock()
+            let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+            _ = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+            dateProvider.now = dateProvider.now.addingTimeInterval(4 * 60 * 60 + 1)
+            if delayed {
+                monitor.process(command: RUMHandleAppLifecycleEventCommand(time: dateProvider.now, event: .willEnterForeground))
+            }
+            monitor.startResource(resourceKey: "legacy", url: URL(string: "https://example.com/legacy")!, attributes: [:])
+            monitor.stopResource(resourceKey: "legacy", kind: .native)
+            let scope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+            let event = try XCTUnwrap(scope.eventsWritten(ofType: RUMResourceEvent.self).last)
+            XCTAssertEqual(event.view.name, "View B", "Delayed boundary: \(delayed)")
+            XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewName, "View B")
+        }
+    }
+
+    func testExplicitResourceStartDoesNotRestoreViewsAfterSessionStop() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+        let (sceneA, _) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        monitor.stopSession()
+        startTargetedResource(in: monitor, form: .url, key: "stopped", target: .scene(sceneA))
+        monitor.stopResource(resourceKey: "stopped", kind: .native)
+        let scope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        XCTAssertTrue(scope.eventsWritten(ofType: RUMResourceEvent.self).isEmpty)
+        XCTAssertNil(monitor.rumContextSnapshot(for: .scene(sceneA)))
+    }
+
+    func testResourceMetricsAndCompletionRetainExplicitOwnerAfterViewStop() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+        let (sceneA, _) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        let owner = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        startTargetedResource(in: monitor, form: .url, key: "disconnected", target: .scene(sceneA))
+        monitor.process(command: RUMStopViewCommand.mockWith(
+            time: dateProvider.now, identity: ViewIdentifier("view-A"), target: .scene(sceneA)
+        ))
+        monitor.addResourceMetrics(resourceKey: "disconnected", metrics: .mockAny(), attributes: ["metrics": "owner"])
+        monitor.stopResource(resourceKey: "disconnected", kind: .native)
+        startTargetedResource(in: monitor, form: .url, key: "closed-target", target: .scene(sceneA))
+        monitor.stopResource(resourceKey: "closed-target", kind: .native)
+        let scope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        let events = scope.eventsWritten(ofType: RUMResourceEvent.self)
+        XCTAssertEqual(events.count, 2)
+        XCTAssertEqual(events.first?.view.id, owner.viewID)
+        XCTAssertEqual(events.first?.session.id, owner.sessionID)
+        XCTAssertEqual(events.first?.context?.contextInfo["metrics"] as? String, "owner")
+        XCTAssertEqual(events.last?.view.name, "View B")
+    }
+
+    func testURLSessionCapturedResourceKeepsOwnerAcrossSessionStopAndPeerActions() throws {
+        for completion in 0...2 {
+            let fails = completion != 0
+            let featureScope = FeatureScopeMock(context: .mockWith(
+                launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: Date())
+            ))
+            let dateProvider = DateProviderMock()
+            let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+            let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+            let owner = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+            let handler = URLSessionRUMResourcesHandler(
+                dateProvider: dateProvider,
+                rumAttributesProvider: { _, _, _, _ in ["automatic": "owner"] },
+                distributedTracing: nil,
+                headerProcessor: nil,
+                disallowList: nil,
+                telemetry: NOPTelemetry()
+            )
+            handler.publish(to: monitor)
+            let (request, _, state) = handler.modify(
+                request: URLRequest(url: URL(string: "https://example.com/automatic")!),
+                headerTypes: [],
+                networkContext: NetworkContext(rumContext: owner)
+            )
+            let interception = URLSessionTaskInterception(
+                request: ImmutableRequest(request: request), isFirstParty: false, trackingMode: .automatic
+            )
+            handler.interceptionDidStart(interception: interception, capturedStates: [try XCTUnwrap(state)])
+            monitor.stopSession()
+            _ = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+            monitor.startAction(type: .tap, name: "New B", attributes: [:], explicitTarget: .scene(sceneB))
+            let metrics = ResourceMetrics.mockWith(
+                fetch: .init(start: dateProvider.now, end: dateProvider.now.addingTimeInterval(0.2)),
+                responseBodySize: (encoded: 25, decoded: 50)
+            )
+            interception.register(metrics: metrics)
+            interception.register(
+                response: completion == 1 ? nil : HTTPURLResponse.mockResponseWith(statusCode: 200),
+                error: fails ? ErrorMock() : nil
+            )
+            handler.interceptionDidComplete(interception: interception)
+            handler.interceptionDidComplete(interception: interception)
+            monitor.stopAction(type: .tap, name: nil, attributes: [:], explicitTarget: .scene(sceneB))
+
+            let scope = featureScope
+            let action = try XCTUnwrap(scope.eventsWritten(ofType: RUMActionEvent.self).last)
+            XCTAssertEqual(action.action.resource?.count, 0)
+            XCTAssertEqual(action.action.error?.count, 0)
+            if fails {
+                let errors = scope.eventsWritten(ofType: RUMErrorEvent.self)
+                XCTAssertEqual(errors.count, 1)
+                XCTAssertTrue(scope.eventsWritten(ofType: RUMResourceEvent.self).isEmpty)
+                XCTAssertEqual(errors.last?.error.resource?.statusCode, completion == 2 ? 200 : 0)
+                XCTAssertEqual(errors.last?.view.id, owner.viewID)
+                XCTAssertEqual(errors.last?.session.id, owner.sessionID)
+                XCTAssertEqual(errors.last?.context?.contextInfo["automatic"] as? String, "owner")
+            } else {
+                let resources = scope.eventsWritten(ofType: RUMResourceEvent.self)
+                XCTAssertEqual(resources.count, 1)
+                XCTAssertEqual(resources.last?.view.id, owner.viewID)
+                XCTAssertEqual(resources.last?.session.id, owner.sessionID)
+                XCTAssertEqual(resources.last?.context?.contextInfo["automatic"] as? String, "owner")
+                XCTAssertEqual(resources.last?.resource.size, 50)
+                XCTAssertEqual(resources.last?.resource.duration, metrics.fetch.duration.dd.toInt64Nanoseconds)
+            }
+        }
+    }
+
+    func testGivenExplicitOperationScene_itOverridesInferredSceneAndRepresentative() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let (sceneA, sceneB) = startConcurrentSceneViews(
+            in: monitor,
+            dateProvider: dateProvider
+        )
+
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneB.rawValue) {
+            monitor.startOperation(
+                name: "thread_open",
+                operationKey: "key-123",
+                attributes: [:],
+                options: nil,
+                explicitTarget: .scene(sceneA)
+            )
+        }
+
+        let featureScope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        let operation = try XCTUnwrap(
+            featureScope.eventsWritten(ofType: RUMVitalOperationStepEvent.self).last
+        )
+        XCTAssertEqual(operation.view.url, "View A")
+    }
+
+    func testGivenExplicitOperationSceneHasNoView_itUsesTrustworthyInferredSceneBeforeSnapshotAndRepresentative() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let (sceneA, sceneB) = startConcurrentSceneViews(
+            in: monitor,
+            dateProvider: dateProvider
+        )
+
+        monitor.startOperation(
+            name: "thread_open",
+            operationKey: "key-123",
+            attributes: [:],
+            options: nil,
+            explicitTarget: .scene(sceneA)
+        )
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.addAction(type: .custom, name: "make A representative", attributes: [:])
+        }
+        XCTAssertEqual(
+            monitor.rumContextSnapshot(for: .processRepresentative)?.viewName,
+            "View A"
+        )
+
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneB.rawValue) {
+            monitor.succeedOperation(
+                name: "thread_open",
+                operationKey: "key-123",
+                attributes: [:],
+                explicitTarget: .scene(
+                    RUMSceneIdentifier(rawValue: "missing-scene")
+                )
+            )
+        }
+
+        let featureScope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        let operations = featureScope.eventsWritten(ofType: RUMVitalOperationStepEvent.self)
+        XCTAssertEqual(operations.map(\.view.url), ["View A", "View B"])
+    }
+
+    func testGivenManualActionsDuringSceneHandoff_theyUseThatSceneInsteadOfRepresentative() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        let contextA = try XCTUnwrap(
+            monitor.rumContextSnapshot(for: .scene(sceneA))
+        )
+
+        monitor.addAction(type: .custom, name: "representative-action", attributes: [:])
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.addAction(type: .custom, name: "scene-action", attributes: [:])
+            monitor.startAction(type: .custom, name: "scene-continuous-action", attributes: [:])
+            dateProvider.now = dateProvider.now.addingTimeInterval(1)
+            monitor.stopAction(type: .custom, name: "scene-continuous-action", attributes: [:])
+        }
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextA, sceneIdentifier: sceneB.rawValue) {
+            monitor.addAction(type: .custom, name: "exact-view-action", attributes: [:])
+        }
+
+        let featureScope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        let actions = featureScope.eventsWritten(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actions.map(\.action.target?.name), [
+            "representative-action",
+            "scene-action",
+            "scene-continuous-action",
+            "exact-view-action"
+        ])
+        XCTAssertEqual(actions.map(\.view.url), ["View B", "View A", "View A", "View A"])
+    }
+
+    func testGivenExplicitActionScene_itOverridesInferredSceneAndRepresentative() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let (sceneA, sceneB) = startConcurrentSceneViews(
+            in: monitor,
+            dateProvider: dateProvider
+        )
+
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneB.rawValue) {
+            monitor.addAction(
+                type: .custom,
+                name: "explicit A",
+                attributes: [:],
+                explicitTarget: .scene(sceneA)
+            )
+        }
+
+        let featureScope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        let action = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMActionEvent.self).last)
+        XCTAssertEqual(action.action.target?.name, "explicit A")
+        XCTAssertEqual(action.view.url, "View A")
+        XCTAssertEqual(
+            monitor.rumContextSnapshot(for: .processRepresentative)?.viewName,
+            "View A"
+        )
+    }
+
+    func testGivenExplicitActionSceneHasNoView_itUsesTrustworthyInferredScene() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let (sceneA, sceneB) = startConcurrentSceneViews(
+            in: monitor,
+            dateProvider: dateProvider
+        )
+
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.addAction(type: .custom, name: "represent A", attributes: [:])
+        }
+        XCTAssertEqual(
+            monitor.rumContextSnapshot(for: .processRepresentative)?.viewName,
+            "View A"
+        )
+
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneB.rawValue) {
+            monitor.addAction(
+                type: .custom,
+                name: "inferred B",
+                attributes: [:],
+                explicitTarget: .scene(RUMSceneIdentifier(rawValue: "missing-scene"))
+            )
+        }
+
+        let featureScope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        let actions = featureScope.eventsWritten(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actions.suffix(2).map(\.view.url), ["View A", "View B"])
+        XCTAssertEqual(
+            monitor.rumContextSnapshot(for: .processRepresentative)?.viewName,
+            "View B"
+        )
+    }
+
+    func testGivenExplicitContinuousActions_theyOverrideContradictoryInferenceAndStopIndependently() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        let contextB = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextB, sceneIdentifier: sceneB.rawValue) {
+            monitor.startAction(type: .custom, name: "same", attributes: ["start": "A"], explicitTarget: .scene(sceneA))
+        }
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.startAction(type: .custom, name: "same", attributes: ["start": "B"], explicitTarget: .scene(sceneB))
+        }
+        dateProvider.now = dateProvider.now.addingTimeInterval(1)
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.stopAction(type: .swipe, name: "finished B", attributes: ["stop": "B"], explicitTarget: .scene(sceneB))
+            // B is a valid view even though its action slot is now empty.
+            monitor.stopAction(type: .custom, name: "must not stop A", attributes: [:], explicitTarget: .scene(sceneB))
+        }
+        let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+        XCTAssertNotNil(session.viewScopes.first { $0.sceneIdentifier == sceneA }?.userActionScope)
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextB, sceneIdentifier: sceneB.rawValue) {
+            monitor.stopAction(type: .tap, name: "finished A", attributes: ["stop": "A"], explicitTarget: .scene(sceneA))
+        }
+
+        let actions = try XCTUnwrap(featureScope as? FeatureScopeMock).eventsWritten(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actions.map(\.view.url), ["View B", "View A"])
+        XCTAssertEqual(actions.map(\.action.target?.name), ["finished B", "finished A"])
+        XCTAssertEqual(actions.map(\.action.type), [.swipe, .tap])
+        XCTAssertEqual(actions.map { $0.context?.contextInfo["start"] as? String }, ["B", "A"])
+        XCTAssertEqual(actions.map { $0.context?.contextInfo["stop"] as? String }, ["B", "A"])
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewName, "View A")
+    }
+
+    func testGivenUnavailableContinuousActionTarget_itPreservesInferenceThenRepresentative() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let (sceneA, _) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        let contextA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        let unavailable = RUMCommandTarget.scene(RUMSceneIdentifier(rawValue: "closed-scene"))
+        monitor.startAction(type: .custom, name: "representative B", attributes: [:], explicitTarget: unavailable)
+        monitor.stopAction(type: .custom, name: nil, attributes: [:], explicitTarget: unavailable)
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextA, sceneIdentifier: "contradictory-scene") {
+            monitor.startAction(type: .custom, name: "exact A", attributes: [:], explicitTarget: unavailable)
+            monitor.stopAction(type: .custom, name: nil, attributes: [:], explicitTarget: unavailable)
+        }
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.startAction(type: .custom, name: "scene A", attributes: [:], explicitTarget: unavailable)
+            monitor.stopAction(type: .custom, name: nil, attributes: [:], explicitTarget: unavailable)
+        }
+        let actions = try XCTUnwrap(featureScope as? FeatureScopeMock).eventsWritten(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actions.map(\.view.url), ["View B", "View A", "View A"])
+        XCTAssertEqual(actions.map(\.action.target?.name), ["representative B", "exact A", "scene A"])
+    }
+
+    func testGivenTargetedContinuousActions_duplicateStartAndNavigationKeepPeerAction() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        monitor.startAction(type: .custom, name: "original A", attributes: [:], explicitTarget: .scene(sceneA))
+        monitor.startAction(type: .custom, name: "duplicate A", attributes: [:], explicitTarget: .scene(sceneA))
+        monitor.startAction(type: .custom, name: "original B", attributes: [:], explicitTarget: .scene(sceneB))
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.startView(key: "next-A", name: "Next A")
+        }
+        let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+        XCTAssertNotNil(session.viewScopes.first { $0.sceneIdentifier == sceneB }?.userActionScope)
+        monitor.startAction(type: .custom, name: "next action A", attributes: [:], explicitTarget: .scene(sceneA))
+        monitor.stopAction(type: .custom, name: nil, attributes: [:], explicitTarget: .scene(sceneA))
+        monitor.stopAction(type: .custom, name: nil, attributes: [:], explicitTarget: .scene(sceneB))
+        let actions = try XCTUnwrap(featureScope as? FeatureScopeMock).eventsWritten(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actions.map(\.view.url), ["View A", "next-A", "View B"])
+        XCTAssertEqual(actions.map(\.action.target?.name), ["original A", "next action A", "original B"])
+    }
+
+    func testGivenExpiredContinuousAction_peerStopDoesNotContaminateItsAttributes() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        monitor.startAction(type: .custom, name: "expires A", attributes: ["owner": "A"], explicitTarget: .scene(sceneA))
+        dateProvider.now = dateProvider.now.addingTimeInterval(9)
+        monitor.startAction(type: .custom, name: "stops B", attributes: ["owner": "B"], explicitTarget: .scene(sceneB))
+        dateProvider.now = dateProvider.now.addingTimeInterval(2)
+        monitor.stopAction(type: .custom, name: nil, attributes: ["completion": "B"], explicitTarget: .scene(sceneB))
+        let actions = try XCTUnwrap(featureScope as? FeatureScopeMock).eventsWritten(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actions.map(\.action.target?.name), ["expires A", "stops B"])
+        XCTAssertNil(actions.first?.context?.contextInfo["completion"])
+        XCTAssertEqual(actions.last?.context?.contextInfo["completion"] as? String, "B")
+    }
+
+    func testExplicitCurrentViewErrorsOverrideInferenceForEveryForm() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        monitor.startAction(type: .tap, name: "A", attributes: [:], explicitTarget: .scene(sceneA))
+        monitor.startAction(type: .tap, name: "B", attributes: [:], explicitTarget: .scene(sceneB))
+        let owner = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        let peer = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+        var completions = 0
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: peer, sceneIdentifier: sceneB.rawValue) {
+            monitor.addError(
+                message: "message A",
+                type: "MessageType",
+                stack: "selected stack",
+                source: .source,
+                attributes: ["form": "message"],
+                file: nil,
+                line: nil,
+                explicitTarget: .scene(sceneA)
+            )
+            monitor.addError(error: ErrorMock("error A"), source: .custom, attributes: ["form": "error"], explicitTarget: .scene(sceneA))
+            monitor.addError(
+                error: ErrorMock("callback A"),
+                source: .custom,
+                attributes: ["form": "callback"],
+                completionHandler: { completions += 1 },
+                explicitTarget: .scene(sceneA)
+            )
+        }
+        let scope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        let errors = scope.eventsWritten(ofType: RUMErrorEvent.self)
+        XCTAssertEqual(errors.count, 3)
+        XCTAssertEqual(errors.map(\.view.id), Array(repeating: owner.viewID, count: 3))
+        XCTAssertEqual(errors.map(\.session.id), Array(repeating: owner.sessionID, count: 3))
+        XCTAssertEqual(errors.map(\.action?.id), Array(repeating: owner.userActionID.map { RUMActionID.string(value: $0) }, count: 3))
+        XCTAssertEqual(errors.first?.error.type, "MessageType")
+        XCTAssertEqual(errors.first?.error.stack, "selected stack")
+        XCTAssertEqual(errors.map { $0.context?.contextInfo["form"] as? String }, ["message", "error", "callback"])
+        XCTAssertEqual(completions, 1)
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, peer.viewID)
+        monitor.stopAction(type: .tap, name: nil, attributes: [:], explicitTarget: .scene(sceneA))
+        monitor.stopAction(type: .tap, name: nil, attributes: [:], explicitTarget: .scene(sceneB))
+        let actions = scope.eventsWritten(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actions.map(\.action.error?.count), [3, 0])
+    }
+
+    func testCurrentViewErrorCompletesWhenSessionIsNotSampled() throws {
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 0), dateProvider: DateProviderMock())
+        monitor.startView(key: "ordinary")
+        var completions = 0
+        monitor.addError(error: ErrorMock("unsampled"), source: .custom, attributes: [:], completionHandler: { completions += 1 })
+        XCTAssertEqual(completions, 1)
+        XCTAssertTrue(try XCTUnwrap(featureScope as? FeatureScopeMock).eventsWritten(ofType: RUMErrorEvent.self).isEmpty)
+    }
+
+    func testCurrentViewErrorCompletesWithoutSceneRecipient() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+        _ = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        let scope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        let eventCount = scope.eventsWritten.count
+        var completions = 0
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: "missing") {
+            monitor.addError(error: ErrorMock("no recipient"), source: .custom, attributes: [:], completionHandler: { completions += 1 })
+        }
+        XCTAssertEqual(completions, 1)
+        XCTAssertEqual(scope.eventsWritten.count, eventCount)
+    }
+
+    func testUnavailableErrorTargetsPreserveIndependentFallbacks() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        let a = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        let b = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+        let unavailable = RUMCommandTarget.scene(RUMSceneIdentifier(rawValue: "closed"))
+        var completions = 0
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: a, sceneIdentifier: sceneB.rawValue) {
+            monitor.addError(error: ErrorMock("exact"), source: .custom, attributes: [:], explicitTarget: unavailable)
+        }
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.addError(
+                message: "scene",
+                type: nil,
+                stack: nil,
+                source: .custom,
+                attributes: [:],
+                file: "Example/Error.swift",
+                line: 42,
+                explicitTarget: unavailable
+            )
+        }
+        monitor.addError(error: ErrorMock("representative"), source: .custom, attributes: [:], completionHandler: { completions += 1 }, explicitTarget: unavailable)
+        monitor.process(command: RUMStopViewCommand.mockWith(time: dateProvider.now, identity: ViewIdentifier("view-A"), target: .scene(sceneA)))
+        monitor.addError(error: ErrorMock("ended"), source: .custom, attributes: [:], explicitTarget: .scene(sceneA))
+        let errors = try XCTUnwrap(featureScope as? FeatureScopeMock).eventsWritten(ofType: RUMErrorEvent.self)
+        XCTAssertEqual(errors.map(\.view.id), [a.viewID, a.viewID, b.viewID, b.viewID])
+        XCTAssertEqual(errors[1].error.stack, "Error.swift:42")
+        XCTAssertEqual(completions, 1)
+    }
+
+    func testExplicitErrorUsesCurrentOccurrenceAfterNavigationAndExpiration() throws {
+        for delayed in [false, true] {
+            let dateProvider = DateProviderMock()
+            let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+            let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+            let oldA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+            monitor.process(command: RUMStartViewCommand.mockWith(
+                time: dateProvider.now, identity: ViewIdentifier("next-A"), name: "Next A", target: .scene(sceneA)
+            ))
+            monitor.addAction(type: .custom, name: "representative B", attributes: [:], explicitTarget: .scene(sceneB))
+            let nextA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+            monitor.addError(error: ErrorMock("next A"), source: .custom, attributes: [:], explicitTarget: .scene(sceneA))
+            dateProvider.now = dateProvider.now.addingTimeInterval(4 * 60 * 60 + 1)
+            if delayed {
+                monitor.process(command: RUMHandleAppLifecycleEventCommand(time: dateProvider.now, event: .willEnterForeground))
+            }
+            var completions = 0
+            monitor.addError(
+                error: ErrorMock("restored A"),
+                source: .custom,
+                attributes: [:],
+                completionHandler: { completions += 1 },
+                explicitTarget: .scene(sceneA)
+            )
+            let errors = try XCTUnwrap(featureScope as? FeatureScopeMock).eventsWritten(ofType: RUMErrorEvent.self).suffix(2)
+            XCTAssertEqual(errors.first?.view.id, nextA.viewID)
+            XCTAssertNotEqual(nextA.viewID, oldA.viewID)
+            XCTAssertEqual(errors.last?.view.name, "Next A")
+            XCTAssertNotEqual(errors.last?.view.id, nextA.viewID)
+            XCTAssertNotEqual(errors.last?.session.id, nextA.sessionID)
+            XCTAssertEqual(completions, 1)
+            XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewName, "View B")
+        }
+    }
+
+    func testCurrentErrorTargetDoesNotReplaceCapturedResourceErrorOwner() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        monitor.startAction(type: .tap, name: "A", attributes: [:], explicitTarget: .scene(sceneA))
+        monitor.startAction(type: .tap, name: "B", attributes: [:], explicitTarget: .scene(sceneB))
+        let owner = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        let peer = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+        startTargetedResource(in: monitor, form: .url, key: "original-A", target: .scene(sceneA))
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: peer, sceneIdentifier: sceneB.rawValue) {
+            monitor.addError(error: ErrorMock("current B"), source: .custom, attributes: [:], explicitTarget: .scene(sceneB))
+            monitor.stopResourceWithError(resourceKey: "original-A", message: "captured A")
+        }
+        monitor.stopAction(type: .tap, name: nil, attributes: [:], explicitTarget: .scene(sceneA))
+        monitor.stopAction(type: .tap, name: nil, attributes: [:], explicitTarget: .scene(sceneB))
+        let scope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        let errors = scope.eventsWritten(ofType: RUMErrorEvent.self)
+        XCTAssertEqual(errors.map(\.view.id), [peer.viewID, owner.viewID])
+        XCTAssertEqual(errors.map(\.action?.id), [peer.userActionID, owner.userActionID].map { $0.map { RUMActionID.string(value: $0) } })
+        let actions = scope.eventsWritten(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actions.map(\.action.error?.count), [1, 1])
+        XCTAssertEqual(actions.map(\.action.resource?.count), [0, 0])
+        XCTAssertTrue(scope.eventsWritten(ofType: RUMResourceEvent.self).isEmpty)
+    }
+
+    func testErrorCompletionCoversMapperDropsAndReentrantCalls() throws {
+        for dropsError in [false, true] {
+            let scope = FeatureScopeMock()
+            let builder = RUMEventBuilder(eventsMapper: .mockWith(errorEventMapper: { dropsError ? nil : $0 }))
+            let monitor = Monitor(
+                dependencies: .mockWith(featureScope: scope, samplingRate: 100, eventBuilder: builder),
+                dateProvider: DateProviderMock()
+            )
+            monitor.startView(key: "ordinary")
+            var completions = 0
+            monitor.addError(error: ErrorMock("outer"), source: .custom, attributes: [:]) {
+                completions += 1
+                monitor.addError(error: ErrorMock("nested"), source: .custom, attributes: [:]) { completions += 1 }
+            }
+            XCTAssertEqual(completions, 2)
+            XCTAssertEqual(scope.eventsWritten(ofType: RUMErrorEvent.self).count, dropsError ? 0 : 2)
+        }
+    }
+
+    func testDroppedErrorCompletesWhenMonitorIsReleasedBeforeDeferredProcessing() {
+        let scope = FeatureScopeMock(deferEventWriteContext: true)
+        var monitor: Monitor? = Monitor(dependencies: .mockWith(featureScope: scope, samplingRate: 100), dateProvider: DateProviderMock())
+        var completions = 0
+        monitor?.addError(error: ErrorMock("queued"), source: .custom, attributes: [:]) { completions += 1 }
+        XCTAssertEqual(completions, 0)
+        monitor = nil
+        scope.flushDeferredEventWriteContexts()
+        XCTAssertEqual(completions, 1)
+        XCTAssertTrue(scope.eventsWritten(ofType: RUMErrorEvent.self).isEmpty)
+    }
+
+    func testSuppressedCurrentViewErrorCompletesWithoutWriting() throws {
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: DateProviderMock())
+        var completions = 0
+        var command = RUMAddCurrentViewErrorCommand.mockWithErrorMessage(completionHandler: { completions += 1 })
+        command.target = .none
+        monitor.process(command: command)
+        XCTAssertEqual(completions, 1)
+        XCTAssertTrue(try XCTUnwrap(featureScope as? FeatureScopeMock).eventsWritten(ofType: RUMErrorEvent.self).isEmpty)
+    }
+
+    func testGivenManualErrorsDuringSceneHandoff_theyUseExactOrSceneContext() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.startAction(type: .tap, name: "Tap A", attributes: [:])
+        }
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneB.rawValue) {
+            monitor.startAction(type: .tap, name: "Tap B", attributes: [:])
+        }
+        let contextA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        let contextB = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextA, sceneIdentifier: sceneB.rawValue) {
+            monitor.addError(
+                message: "exact A error",
+                type: nil,
+                stack: nil,
+                source: .source,
+                attributes: [:],
+                file: nil,
+                line: nil
+            )
+        }
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.addError(error: ErrorMock("scene A error"), source: .source, attributes: [:])
+        }
+        var didComplete = false
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextA, sceneIdentifier: sceneB.rawValue) {
+            monitor.addError(
+                error: ErrorMock("completion A error"),
+                source: .source,
+                attributes: [:],
+                completionHandler: { didComplete = true }
+            )
+        }
+        monitor.addError(
+            message: "representative B error",
+            type: nil,
+            stack: nil,
+            source: RUMInternalErrorSource.source,
+            attributes: [:]
+        )
+
+        let featureScope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        let errors = featureScope.eventsWritten(ofType: RUMErrorEvent.self)
+        XCTAssertEqual(errors.map(\.view.url), ["View A", "View A", "View A", "View B"])
+        let actionIDs: [RUMActionID?] = errors.map { $0.action?.id }
+        let actionAID = contextA.userActionID.map { RUMActionID.string(value: $0) }
+        let actionBID = contextB.userActionID.map { RUMActionID.string(value: $0) }
+        XCTAssertEqual(actionIDs, [
+            actionAID,
+            actionAID,
+            actionAID,
+            actionBID
+        ])
+        XCTAssertTrue(didComplete)
+    }
+
+    func testTargetedTimingOverridesPeerAndReplacesOnlyRequestedValue() throws {
+        let clock = DateProviderMock(now: Date(timeIntervalSinceReferenceDate: 0))
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: clock)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+        let peer = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+        monitor.addAttribute(forKey: "process", value: "global")
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: peer, sceneIdentifier: sceneB.rawValue) {
+            clock.now = clock.now.addingTimeInterval(1)
+            monitor.addTiming(name: "same", explicitTarget: .scene(sceneA))
+            clock.now = clock.now.addingTimeInterval(2)
+            monitor.addTiming(name: "same", explicitTarget: .scene(sceneA))
+        }
+        let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+        let a = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneA })
+        let b = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneB })
+        XCTAssertEqual(a.customTimings, ["same": 3_000_000_000])
+        XCTAssertTrue(b.customTimings.isEmpty)
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, peer.viewID)
+        XCTAssertEqual(monitor.globalAttributes["process"] as? String, "global")
+        let events = try XCTUnwrap(featureScope as? FeatureScopeMock).eventsWritten(ofType: RUMViewEvent.self)
+            .filter { $0.view.id == a.viewUUID.toRUMDataFormat }
+        XCTAssertTrue(events.contains { $0.view.customTimings?.customTimingsInfo["same"] == 1_000_000_000 })
+    }
+
+    func testTargetedLoadingPreservesOverwriteRulesAndPeerState() throws {
+        let clock = DateProviderMock(now: Date(timeIntervalSinceReferenceDate: 0))
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: clock)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+        let peer = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+        let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+        let a = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneA })
+        let b = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneB })
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: peer, sceneIdentifier: sceneB.rawValue) {
+            clock.now = clock.now.addingTimeInterval(1)
+            monitor.addViewLoadingTime(overwrite: false, explicitTarget: .scene(sceneA))
+            XCTAssertEqual(a.viewLoadingTime, 1)
+            clock.now = clock.now.addingTimeInterval(1)
+            monitor.addViewLoadingTime(overwrite: false, explicitTarget: .scene(sceneA))
+            XCTAssertEqual(a.viewLoadingTime, 1)
+            clock.now = clock.now.addingTimeInterval(1)
+            monitor.addViewLoadingTime(overwrite: true, explicitTarget: .scene(sceneA))
+        }
+        XCTAssertEqual(a.viewLoadingTime, 3)
+        XCTAssertNil(b.viewLoadingTime)
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, peer.viewID)
+    }
+
+    func testUnavailableTimingTargetsPreserveIndependentFallback() throws {
+        for fallback in ["exact", "scene", "representative", "ended"] {
+            let clock = DateProviderMock(now: Date(timeIntervalSinceReferenceDate: 0))
+            let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: clock)
+            let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+            let contextA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+            let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+            let oldViews = session.viewScopes
+            if fallback == "ended" {
+                monitor.process(command: RUMStopViewCommand.mockWith(time: clock.now, identity: ViewIdentifier("view-A"), target: .scene(sceneA)))
+            }
+            let target: RUMCommandTarget = fallback == "ended" ? .scene(sceneA) : .scene(RUMSceneIdentifier(rawValue: "missing"))
+            clock.now = clock.now.addingTimeInterval(2)
+            let operation = {
+                monitor.addTiming(name: "fallback", explicitTarget: target)
+                monitor.addViewLoadingTime(overwrite: false, explicitTarget: target)
+            }
+            if fallback == "exact" {
+                RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextA, sceneIdentifier: sceneB.rawValue, operation: operation)
+            } else if fallback == "scene" {
+                RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue, operation: operation)
+            } else {
+                operation()
+            }
+            let selected = fallback == "exact" || fallback == "scene" ? sceneA : sceneB
+            for view in oldViews {
+                XCTAssertEqual(view.customTimings["fallback"], view.sceneIdentifier == selected ? 2_000_000_000 : nil, fallback)
+                XCTAssertEqual(view.viewLoadingTime, view.sceneIdentifier == selected ? 2 : nil, fallback)
+            }
+        }
+    }
+
+    func testTargetedTimingUsesNewOccurrenceStartWithoutMutatingRetainedViews() throws {
+        let clock = DateProviderMock(now: Date(timeIntervalSinceReferenceDate: 0))
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: clock)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+        let peer = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+        let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+        let old = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneA })
+        startTargetedResource(in: monitor, form: .url, key: "retain-old-timing", target: .scene(sceneA))
+        clock.now = clock.now.addingTimeInterval(1)
+        monitor.addTiming(name: "value", explicitTarget: .scene(sceneA))
+        monitor.addViewLoadingTime(overwrite: false, explicitTarget: .scene(sceneA))
+        clock.now = clock.now.addingTimeInterval(4)
+        monitor.process(command: RUMStartViewCommand.mockWith(time: clock.now, identity: ViewIdentifier("next-A"), name: "Next A", target: .scene(sceneA)))
+        let next = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneA && $0.isActiveView })
+        startTargetedResource(in: monitor, form: .url, key: "retain-next-timing", target: .scene(sceneA))
+        clock.now = clock.now.addingTimeInterval(3)
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: peer, sceneIdentifier: sceneB.rawValue) {
+            monitor.addTiming(name: "value", explicitTarget: .scene(sceneA))
+            monitor.addViewLoadingTime(overwrite: true, explicitTarget: .scene(sceneA))
+        }
+        XCTAssertNotEqual(old.viewUUID, next.viewUUID)
+        XCTAssertEqual(old.customTimings, ["value": 1_000_000_000])
+        XCTAssertEqual(old.viewLoadingTime, 1)
+        XCTAssertEqual(next.customTimings, ["value": 3_000_000_000])
+        XCTAssertEqual(next.viewLoadingTime, 3)
+        monitor.process(command: RUMStopViewCommand.mockWith(time: clock.now, identity: ViewIdentifier("next-A"), target: .scene(sceneA)))
+        clock.now = clock.now.addingTimeInterval(1)
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: peer, sceneIdentifier: sceneB.rawValue) {
+            monitor.addTiming(name: "ended", explicitTarget: .view(next.viewUUID))
+            monitor.addViewLoadingTime(overwrite: true, explicitTarget: .scene(sceneA))
+        }
+        let b = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneB })
+        XCTAssertEqual(b.customTimings, ["ended": 9_000_000_000])
+        XCTAssertEqual(b.viewLoadingTime, 9)
+        XCTAssertNil(old.customTimings["ended"])
+        XCTAssertNil(next.customTimings["ended"])
+        XCTAssertEqual(old.viewLoadingTime, 1)
+        XCTAssertEqual(next.viewLoadingTime, 3)
+    }
+
+    func testTimingAndLoadingKeepDistinctSessionRestorationPolicies() throws {
+        for loading in [false, true] {
+            for boundary in ["stop", "expire-immediate", "expire-delayed"] {
+                let clock = DateProviderMock()
+                let scope = FeatureScopeMock(context: .mockWith(applicationStateHistory: .mockAppInForeground()))
+                let monitor = Monitor(dependencies: .mockWith(featureScope: scope, samplingRate: 100), dateProvider: clock)
+                let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+                let oldSession = try XCTUnwrap(monitor.applicationScope.activeSession)
+                let oldViews = oldSession.viewScopes
+                let peer = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+                if boundary == "stop" {
+                    monitor.stopSession()
+                } else {
+                    clock.now = clock.now.addingTimeInterval(4 * 60 * 60 + 1)
+                    if boundary == "expire-delayed" {
+                        monitor.process(command: RUMHandleAppLifecycleEventCommand(time: clock.now, event: .willEnterForeground))
+                    }
+                }
+                RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: peer, sceneIdentifier: sceneB.rawValue) {
+                    if loading {
+                        monitor.addViewLoadingTime(overwrite: true, explicitTarget: .scene(sceneA))
+                    } else {
+                        monitor.addTiming(name: "boundary", explicitTarget: .scene(sceneA))
+                    }
+                }
+                let active = monitor.applicationScope.sessionScopes.flatMap(\.viewScopes).filter(\.isActiveView)
+                if !loading && boundary != "stop" {
+                    XCTAssertEqual(active.count, 2, boundary)
+                    let restored = try XCTUnwrap(active.first { $0.sceneIdentifier == sceneA })
+                    XCTAssertFalse(oldViews.contains { $0.viewUUID == restored.viewUUID })
+                    XCTAssertEqual(restored.customTimings["boundary"], 0)
+                    XCTAssertNil(active.first { $0.sceneIdentifier == sceneB }?.customTimings["boundary"])
+                    XCTAssertNotEqual(monitor.rumContextSnapshot(for: .scene(sceneA))?.sessionID, peer.sessionID)
+                } else {
+                    XCTAssertTrue(active.isEmpty, boundary)
+                }
+                XCTAssertTrue(oldViews.allSatisfy { $0.customTimings["boundary"] == nil && $0.viewLoadingTime == nil })
+            }
+        }
+    }
+
+    func testTargetedTimingOffViewPolicyMatchesLegacyInForegroundAndBackground() throws {
+        for background in [false, true] {
+            for loading in [false, true] {
+                var observed: [[String]] = []
+                for targeted in [false, true] {
+                    let clock = DateProviderMock(now: Date(timeIntervalSinceReferenceDate: 0))
+                    let history: AppStateHistory = background ? .mockAppInBackground(since: clock.now) : .mockAppInForeground(since: clock.now)
+                    let scope = FeatureScopeMock(context: .mockWith(sdkInitDate: clock.now, applicationStateHistory: history))
+                    let monitor = Monitor(dependencies: .mockWith(featureScope: scope, samplingRate: 100), dateProvider: clock)
+                    clock.now = clock.now.addingTimeInterval(1)
+                    let target: RUMCommandTarget? = targeted ? .scene(RUMSceneIdentifier(rawValue: "missing")) : nil
+                    if loading {
+                        monitor.addViewLoadingTime(overwrite: false, explicitTarget: target)
+                    } else {
+                        monitor.addTiming(name: "offview", explicitTarget: target)
+                    }
+                    observed.append(scope.eventsWritten(ofType: RUMViewEvent.self).map {
+                        "\($0.view.url):\($0.view.customTimings?.customTimingsInfo["offview"] ?? -1):\($0.view.loadingTime ?? -1)"
+                    })
+                }
+                XCTAssertEqual(observed[0], observed[1], "background=\(background), loading=\(loading)")
+            }
+        }
+    }
+
+    func testTargetedViewAttributeAddsMutateOnlyRequestedView() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        let contextB = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+        monitor.addAttribute(forKey: "process", value: "global")
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextB, sceneIdentifier: sceneB.rawValue) {
+            monitor.addViewAttribute(forKey: "single", value: "A", explicitTarget: .scene(sceneA))
+            monitor.addViewAttributes(["count": 7, "flag": true, "nested": ["origin": "A"]], explicitTarget: .scene(sceneA))
+        }
+        let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+        let a = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneA })
+        let b = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneB })
+        XCTAssertEqual(a.attributes["single"] as? String, "A")
+        XCTAssertEqual(a.attributes["count"] as? Int, 7)
+        XCTAssertEqual(a.attributes["flag"] as? Bool, true)
+        XCTAssertEqual(a.attributes["nested"] as? [String: String], ["origin": "A"])
+        XCTAssertNil(b.attributes["single"])
+        XCTAssertNil(b.attributes["count"])
+        XCTAssertNil(b.attributes["flag"])
+        XCTAssertNil(b.attributes["nested"])
+        XCTAssertEqual(monitor.globalAttributes["process"] as? String, "global")
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, contextB.viewID)
+    }
+
+    func testTargetedViewAttributeRemovalsMutateOnlyRequestedView() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        for scene in [sceneA, sceneB] {
+            RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: scene.rawValue) {
+                monitor.addViewAttributes(["single": "keep", "batch": true, "untouched": 7])
+            }
+        }
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneB.rawValue) {
+            monitor.removeViewAttribute(forKey: "single", explicitTarget: .scene(sceneA))
+            monitor.removeViewAttributes(forKeys: ["batch", "missing", "batch"], explicitTarget: .scene(sceneA))
+        }
+        let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+        let a = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneA })
+        let b = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneB })
+        XCTAssertNil(a.attributes["single"])
+        XCTAssertNil(a.attributes["batch"])
+        XCTAssertEqual(a.attributes["untouched"] as? Int, 7)
+        XCTAssertEqual(b.attributes["single"] as? String, "keep")
+        XCTAssertEqual(b.attributes["batch"] as? Bool, true)
+        XCTAssertEqual(b.attributes["untouched"] as? Int, 7)
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewName, "View B")
+    }
+
+    func testUnavailableViewAttributeTargetsPreserveEachIndependentFallback() throws {
+        for fallback in ["exact", "scene", "representative", "ended"] {
+            let dateProvider = DateProviderMock()
+            let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+            let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+            let a = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+            var target = RUMCommandTarget.scene(RUMSceneIdentifier(rawValue: "missing"))
+            if fallback == "ended" {
+                monitor.process(command: RUMStopViewCommand.mockWith(time: dateProvider.now, identity: ViewIdentifier("view-A"), target: .scene(sceneA)))
+                target = .scene(sceneA)
+            }
+            let expectedScene = ["exact", "scene"].contains(fallback) ? sceneA : sceneB
+            let snapshot = fallback == "exact" ? a : nil
+            func withInference(_ body: () -> Void) {
+                if ["exact", "scene"].contains(fallback) {
+                    let inferredScene = fallback == "scene" ? sceneA.rawValue : sceneB.rawValue
+                    RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: snapshot, sceneIdentifier: inferredScene, operation: body)
+                } else {
+                    body()
+                }
+            }
+            withInference {
+                monitor.addViewAttribute(forKey: "single", value: fallback, explicitTarget: target)
+                monitor.addViewAttributes(["batch": 7], explicitTarget: target)
+            }
+            let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+            let expected = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == expectedScene && $0.isActiveView })
+            XCTAssertEqual(expected.attributes["single"] as? String, fallback)
+            XCTAssertEqual(expected.attributes["batch"] as? Int, 7)
+            for peer in session.viewScopes where peer !== expected {
+                XCTAssertNil(peer.attributes["single"])
+                XCTAssertNil(peer.attributes["batch"])
+            }
+            withInference {
+                monitor.removeViewAttribute(forKey: "single", explicitTarget: target)
+                monitor.removeViewAttributes(forKeys: ["batch"], explicitTarget: target)
+            }
+            XCTAssertNil(expected.attributes["single"])
+            XCTAssertNil(expected.attributes["batch"])
+            XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewName, "View B")
+        }
+    }
+
+    func testViewAttributeTargetUsesCurrentOccurrenceAndLeavesRetainedEndedViewsUnchanged() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        startTargetedResource(in: monitor, form: .url, key: "retain-old", target: .scene(sceneA))
+        monitor.addViewAttribute(forKey: "retained", value: "old", explicitTarget: .scene(sceneA))
+        let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+        let old = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneA })
+        monitor.process(command: RUMStartViewCommand.mockWith(time: dateProvider.now, identity: ViewIdentifier("next-A"), name: "Next A", target: .scene(sceneA)))
+        monitor.addAction(type: .custom, name: "representative B", attributes: [:], explicitTarget: .scene(sceneB))
+        startTargetedResource(in: monitor, form: .url, key: "retain-next", target: .scene(sceneA))
+        monitor.addViewAttributes(["retained": "next", "remove": true], explicitTarget: .scene(sceneA))
+        monitor.removeViewAttribute(forKey: "remove", explicitTarget: .scene(sceneA))
+        let next = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneA && $0.isActiveView })
+        XCTAssertNotEqual(old.viewUUID, next.viewUUID)
+        XCTAssertFalse(old.isActiveView)
+        XCTAssertEqual(old.attributes["retained"] as? String, "old")
+        XCTAssertEqual(next.attributes["retained"] as? String, "next")
+        XCTAssertNil(next.attributes["remove"])
+        monitor.process(command: RUMStopViewCommand.mockWith(time: dateProvider.now, identity: ViewIdentifier("next-A"), target: .scene(sceneA)))
+        monitor.addViewAttribute(forKey: "fallback", value: true, explicitTarget: .scene(sceneA))
+        monitor.removeViewAttributes(forKeys: ["retained"], explicitTarget: .scene(sceneA))
+        let peer = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneB })
+        XCTAssertEqual(peer.attributes["fallback"] as? Bool, true)
+        XCTAssertNil(old.attributes["fallback"])
+        XCTAssertNil(next.attributes["fallback"])
+        XCTAssertEqual(old.attributes["retained"] as? String, "old")
+        XCTAssertEqual(next.attributes["retained"] as? String, "next")
+    }
+
+    func testTargetedAttributesPreserveGlobalViewAndEventPrecedenceWithoutRewritingPastEvents() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        monitor.addAttribute(forKey: "shadow", value: "global")
+        monitor.addAttribute(forKey: "process", value: 1)
+        monitor.addViewAttribute(forKey: "shadow", value: "view", explicitTarget: .scene(sceneA))
+        monitor.addError(error: ErrorMock("event wins"), source: .custom, attributes: ["shadow": "event"], explicitTarget: .scene(sceneA))
+        monitor.addError(error: ErrorMock("view wins"), source: .custom, attributes: [:], explicitTarget: .scene(sceneA))
+        monitor.addError(error: ErrorMock("peer"), source: .custom, attributes: [:], explicitTarget: .scene(sceneB))
+        monitor.removeViewAttribute(forKey: "shadow", explicitTarget: .scene(sceneA))
+        monitor.addAttribute(forKey: "process", value: 2)
+        monitor.addError(error: ErrorMock("removed"), source: .custom, attributes: [:], explicitTarget: .scene(sceneA))
+        monitor.addError(error: ErrorMock("global peer"), source: .custom, attributes: [:], explicitTarget: .scene(sceneB))
+        let errors = try XCTUnwrap(featureScope as? FeatureScopeMock).eventsWritten(ofType: RUMErrorEvent.self)
+        XCTAssertEqual(errors.map { $0.context?.contextInfo["shadow"] as? String }, ["event", "view", "global", "global", "global"])
+        XCTAssertEqual(errors.map { $0.context?.contextInfo["process"] as? Int }, [1, 1, 1, 2, 2])
+        XCTAssertEqual(errors.map(\.view.name), ["View A", "View A", "View B", "View A", "View B"])
+        XCTAssertEqual(monitor.globalAttributes["shadow"] as? String, "global")
+    }
+
+    func testTargetedViewAttributesDoNotRestoreStoppedOrExpiredSessions() throws {
+        for boundary in ["stop", "expire-immediate", "expire-delayed"] {
+            let dateProvider = DateProviderMock()
+            let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+            let (sceneA, _) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+            if boundary == "stop" {
+                monitor.stopSession()
+            } else {
+                dateProvider.now = dateProvider.now.addingTimeInterval(4 * 60 * 60 + 1)
+                if boundary == "expire-delayed" {
+                    monitor.process(command: RUMHandleAppLifecycleEventCommand(time: dateProvider.now, event: .willEnterForeground))
+                }
+            }
+            monitor.addViewAttribute(forKey: "single", value: true, explicitTarget: .scene(sceneA))
+            monitor.addViewAttributes(["batch": true], explicitTarget: .scene(sceneA))
+            monitor.removeViewAttribute(forKey: "single", explicitTarget: .scene(sceneA))
+            monitor.removeViewAttributes(forKeys: ["batch"], explicitTarget: .scene(sceneA))
+            XCTAssertFalse(monitor.applicationScope.sessionScopes.flatMap(\.viewScopes).contains { $0.isActiveView }, boundary)
+            XCTAssertNil(monitor.rumContextSnapshot(for: .scene(sceneA)), boundary)
+            XCTAssertNil(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, boundary)
+        }
+    }
+
+    func testTargetedFlagOverridesPeerAndReplacesOnlyRequestedValue() throws {
+        let clock = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: clock)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+        let contextB = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+        let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+        let viewA = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneA })
+        let viewB = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneB })
+        let interaction = session.lastInteractionTime
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextB, sceneIdentifier: sceneB.rawValue) {
+            monitor.addFeatureFlagEvaluation(name: "shared", value: true, explicitTarget: .scene(sceneA))
+            XCTAssertEqual(viewA.featureFlags["shared"] as? Bool, true)
+            XCTAssertNil(viewB.featureFlags["shared"])
+            monitor.addFeatureFlagEvaluation(name: "shared", value: 7, explicitTarget: .scene(sceneA))
+        }
+        XCTAssertEqual(viewA.featureFlags["shared"] as? Int, 7)
+        XCTAssertNil(viewB.featureFlags["shared"])
+        XCTAssertEqual(session.lastInteractionTime, interaction)
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, contextB.viewID)
+    }
+
+    func testDelayedFlagMessageKeepsCapturedOriginOutsideItsHandoff() throws {
+        let clock = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: clock)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+        let contextA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        let contextB = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+        let message = RUMContextHandoff.withValue(
+            owner: monitor.rumContextHandoffOwner, rumContext: contextA, sceneIdentifier: sceneA.rawValue
+        ) {
+            capturedFlagMessage(name: "delayed", value: true)
+        }
+        let receiver = FlagEvaluationReceiver(monitor: monitor)
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextB, sceneIdentifier: sceneB.rawValue) {
+            XCTAssertTrue(receiver.receive(message: message, from: NOPDatadogCore()))
+        }
+        let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+        let viewA = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneA })
+        let viewB = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneB })
+        XCTAssertEqual(viewA.featureFlags["delayed"] as? Bool, true)
+        XCTAssertNil(viewB.featureFlags["delayed"])
+    }
+
+    private func capturedFlagMessage(name: String, value: Encodable) -> FeatureMessage {
+        let evaluation = RUMFlagEvaluationMessage(flagKey: name, value: value)
+        if let captured = RUMFlagEvaluationContextMessage(evaluation: evaluation, in: featureScope as Any) {
+            return .payload(captured)
+        }
+        return .payload(evaluation)
+    }
+
+    func testUnavailableFlagTargetsPreserveIndependentFallback() throws {
+        for fallback in ["exact", "scene", "representative", "ended"] {
+            let clock = DateProviderMock()
+            let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: clock)
+            let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+            let contextA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+            let views = try XCTUnwrap(monitor.applicationScope.activeSession).viewScopes
+            if fallback == "ended" {
+                monitor.process(command: RUMStopViewCommand.mockWith(time: clock.now, identity: ViewIdentifier("view-A"), target: .scene(sceneA)))
+            }
+            let target: RUMCommandTarget = fallback == "ended" ? .scene(sceneA) : .scene(.init(rawValue: "missing"))
+            let operation = { monitor.addFeatureFlagEvaluation(name: "fallback", value: 7, explicitTarget: target) }
+            if fallback == "exact" {
+                RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextA, sceneIdentifier: sceneB.rawValue, operation: operation)
+            } else if fallback == "scene" {
+                RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue, operation: operation)
+            } else {
+                operation()
+            }
+            let selected = fallback == "exact" || fallback == "scene" ? sceneA : sceneB
+            for view in views {
+                XCTAssertEqual(view.featureFlags["fallback"] as? Int, view.sceneIdentifier == selected ? 7 : nil, fallback)
+            }
+        }
+    }
+
+    func testFlagsAndInternalMutationsFallBackToFreshSameSceneWithoutChangingRetainedViews() throws {
+        for retainOld in [false, true] {
+            let scope = FeatureScopeMock()
+            let clock = DateProviderMock()
+            let monitor = Monitor(dependencies: .mockWith(featureScope: scope, samplingRate: 100), dateProvider: clock)
+            let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+            let captured = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+            let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+            let old = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneA })
+            if retainOld { startTargetedResource(in: monitor, form: .url, key: "retained", target: .scene(sceneA)) }
+            monitor.process(command: RUMStartViewCommand.mockWith(time: clock.now, identity: ViewIdentifier("next-A"), name: "Next A", target: .scene(sceneA)))
+            let next = try XCTUnwrap(session.viewScopes.first { $0.isActiveView && $0.sceneIdentifier == sceneA })
+            monitor.addAction(type: .custom, name: "B represents", attributes: [:], explicitTarget: .scene(sceneB))
+            RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: captured, sceneIdentifier: sceneB.rawValue) {
+                monitor.addFeatureFlagEvaluation(name: "stale", value: true)
+                monitor._internal?.updatePerformanceMetric(at: clock.now, metric: .flutterBuildTime, value: 32)
+                monitor._internal?.updatePerformanceMetric(at: clock.now, metric: .flutterBuildTime, value: 52)
+                monitor._internal?.setInternalViewAttribute(at: clock.now, key: CrossPlatformAttributes.flutterFirstBuildComplete, value: 101)
+            }
+            monitor.addFeatureFlagEvaluation(name: "current", value: "Next A", explicitTarget: .scene(sceneA))
+            XCTAssertEqual(next.featureFlags["current"] as? String, "Next A")
+            monitor.addTiming(name: "flush", explicitTarget: .scene(sceneA))
+            monitor.addError(error: ErrorMock("marker"), source: .custom, attributes: [:], explicitTarget: .scene(sceneA))
+            XCTAssertEqual(next.featureFlags["stale"] as? Bool, true)
+            XCTAssertEqual(next.internalAttributes[CrossPlatformAttributes.flutterFirstBuildComplete] as? Int, 101)
+            XCTAssertTrue(old.featureFlags.isEmpty)
+            XCTAssertTrue(old.internalAttributes.isEmpty)
+            let peer = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneB })
+            XCTAssertTrue(peer.featureFlags.isEmpty)
+            XCTAssertTrue(peer.internalAttributes.isEmpty)
+            let event = try XCTUnwrap(scope.eventsWritten(ofType: RUMViewEvent.self).last { $0.view.id == next.viewUUID.toRUMDataFormat })
+            XCTAssertEqual(event.view.flutterBuildTime?.min, 32)
+            XCTAssertEqual(event.view.flutterBuildTime?.max, 52)
+            XCTAssertEqual(event.view.flutterBuildTime?.average, 42)
+            XCTAssertEqual(event.view.performance?.fbc?.timestamp, 101)
+            XCTAssertNil(event.context?.contextInfo[CrossPlatformAttributes.flutterFirstBuildComplete])
+            XCTAssertNil(scope.eventsWritten(ofType: RUMErrorEvent.self).last?.context?.contextInfo[CrossPlatformAttributes.flutterFirstBuildComplete])
+            XCTAssertNotEqual(next.viewUUID, old.viewUUID)
+            XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, peer.viewUUID.toRUMDataFormat)
+            monitor._internal?.updatePerformanceMetric(at: clock.now, metric: .flutterBuildTime, value: 21)
+            monitor._internal?.setInternalViewAttribute(at: clock.now, key: CrossPlatformAttributes.flutterFirstBuildComplete, value: 303)
+            monitor.addTiming(name: "representative-flush")
+            let representative = try XCTUnwrap(scope.eventsWritten(ofType: RUMViewEvent.self).last { $0.view.id == peer.viewUUID.toRUMDataFormat })
+            XCTAssertEqual(representative.view.flutterBuildTime?.average, 21)
+            XCTAssertEqual(representative.view.performance?.fbc?.timestamp, 303)
+            XCTAssertEqual(next.internalAttributes[CrossPlatformAttributes.flutterFirstBuildComplete] as? Int, 101)
+        }
+    }
+
+    func testCapturedInternalFBCIsEncodedOnlyOnItsOwnerAtBothDiagnosticScales() throws {
+        for scale in [1, 1_000_000] {
+            let scope = FeatureScopeMock()
+            let clock = DateProviderMock()
+            let monitor = Monitor(dependencies: .mockWith(featureScope: scope, samplingRate: 100), dateProvider: clock)
+            let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+            let a = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+            let b = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+            for (owner, peer, value) in [(a, sceneB, 101 * scale), (b, sceneA, 202 * scale)] {
+                RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: owner, sceneIdentifier: peer.rawValue) {
+                    monitor._internal?.setInternalViewAttribute(
+                        at: clock.now, key: CrossPlatformAttributes.flutterFirstBuildComplete, value: value
+                    )
+                }
+            }
+            for (scene, owner, expected) in [(sceneA, a, 101 * scale), (sceneB, b, 202 * scale)] {
+                monitor.addTiming(name: "encoding-flush", explicitTarget: .scene(scene))
+                let event = try XCTUnwrap(scope.eventsWritten(ofType: RUMViewEvent.self).last { $0.view.id == owner.viewID })
+                let data = try JSONEncoder().encode(event)
+                let payload = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+                let view = try XCTUnwrap(payload["view"] as? [String: Any])
+                let performance = try XCTUnwrap(view["performance"] as? [String: Any])
+                let fbc = try XCTUnwrap(performance["fbc"] as? [String: Any])
+                XCTAssertEqual(view["id"] as? String, owner.viewID)
+                XCTAssertEqual(fbc["timestamp"] as? Int, expected)
+                let context = payload["context"] as? [String: Any]
+                XCTAssertNil(context?[CrossPlatformAttributes.flutterFirstBuildComplete])
+            }
+        }
+    }
+
+    func testInternalMutationsCaptureBeforeDeferredProcessingUnderPeer() throws {
+        let scope = FeatureScopeMock(deferEventWriteContext: true)
+        let clock = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: scope, samplingRate: 100), dateProvider: clock)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+        scope.flushDeferredEventWriteContexts()
+        let a = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        let b = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: a, sceneIdentifier: sceneB.rawValue) {
+            monitor._internal?.updatePerformanceMetric(at: clock.now, metric: .flutterBuildTime, value: 42)
+            monitor._internal?.setInternalViewAttribute(at: clock.now, key: CrossPlatformAttributes.flutterFirstBuildComplete, value: 101)
+        }
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: b, sceneIdentifier: sceneB.rawValue) {
+            scope.flushDeferredEventWriteContexts()
+        }
+        monitor.addTiming(name: "flush", explicitTarget: .scene(sceneA))
+        scope.flushDeferredEventWriteContexts()
+        let event = try XCTUnwrap(scope.eventsWritten(ofType: RUMViewEvent.self).last { $0.view.id == a.viewID })
+        XCTAssertEqual(event.view.flutterBuildTime?.average, 42)
+        XCTAssertEqual(event.view.performance?.fbc?.timestamp, 101)
+        let peer = try XCTUnwrap(scope.eventsWritten(ofType: RUMViewEvent.self).last { $0.view.id == b.viewID })
+        XCTAssertNil(peer.view.flutterBuildTime)
+        XCTAssertNil(peer.view.performance?.fbc)
+    }
+
+    func testFlagMessagesPreserveSceneCaptureAndRejectForeignOrRetiredOwners() throws {
+        for source in ["scene", "missing-scene", "empty", "foreign", "retired", "legacy"] {
+            let clock = DateProviderMock()
+            let scope = FeatureScopeMock()
+            let monitor = Monitor(dependencies: .mockWith(featureScope: scope, samplingRate: 100), dateProvider: clock)
+            let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+            let foreignScope = FeatureScopeMock()
+            let sourceScope = source == "foreign" ? foreignScope : scope
+            let scene = source == "missing-scene" ? "missing" : source == "empty" ? "" : sceneA.rawValue
+            let evaluation = RUMFlagEvaluationMessage(flagKey: "flag", value: true)
+            let payload = try RUMContextHandoff.withValue(owner: sourceScope.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: scene) {
+                try XCTUnwrap(RUMFlagEvaluationContextMessage(evaluation: evaluation, in: sourceScope))
+            }
+            if source == "retired" { scope.rumContextHandoffOwner?.invalidate() }
+            let receiver = FlagEvaluationReceiver(monitor: monitor)
+            let b = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+            RUMContextHandoff.withValue(owner: scope.rumContextHandoffOwner, rumContext: b, sceneIdentifier: sceneB.rawValue) {
+                let message: FeatureMessage = source == "legacy" ? .payload(evaluation) : .payload(payload)
+                XCTAssertTrue(receiver.receive(message: message, from: NOPDatadogCore()))
+            }
+            let views = try XCTUnwrap(monitor.applicationScope.activeSession).viewScopes
+            for view in views {
+                let expected = source == "scene" && view.sceneIdentifier == sceneA || source == "legacy" && view.sceneIdentifier == sceneB
+                XCTAssertEqual(view.featureFlags["flag"] as? Bool, expected ? true : nil, source)
+            }
+        }
+    }
+
+    func testFlagsAndInternalMutationsKeepDistinctRestorationPolicies() throws {
+        for family in ["flag", "metric", "internal-attribute"] {
+            for boundary in ["stop", "expire-immediate", "expire-delayed", "missing-scene"] {
+                let clock = DateProviderMock()
+                let scope = FeatureScopeMock(context: .mockWith(applicationStateHistory: .mockAppInForeground()))
+                let monitor = Monitor(dependencies: .mockWith(featureScope: scope, samplingRate: 100), dateProvider: clock)
+                let (sceneA, _) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+                let oldViews = try XCTUnwrap(monitor.applicationScope.activeSession).viewScopes
+                if boundary == "stop" {
+                    monitor.stopSession()
+                } else if boundary != "missing-scene" {
+                    clock.now = clock.now.addingTimeInterval(4 * 60 * 60 + 1)
+                    if boundary == "expire-delayed" {
+                        monitor.process(command: RUMHandleAppLifecycleEventCommand(time: clock.now, event: .willEnterForeground))
+                    }
+                }
+                let targetScene = boundary == "missing-scene" ? "missing" : sceneA.rawValue
+                RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: targetScene) {
+                    switch family {
+                    case "flag": monitor.addFeatureFlagEvaluation(name: "boundary", value: true, explicitTarget: .scene(.init(rawValue: targetScene)))
+                    case "metric": monitor._internal?.updatePerformanceMetric(at: clock.now, metric: .flutterBuildTime, value: 42)
+                    default: monitor._internal?.setInternalViewAttribute(at: clock.now, key: CrossPlatformAttributes.flutterFirstBuildComplete, value: 101)
+                    }
+                }
+                let active = monitor.applicationScope.sessionScopes.flatMap(\.viewScopes).filter(\.isActiveView)
+                if family == "flag" && boundary.hasPrefix("expire") {
+                    XCTAssertEqual(active.count, 2)
+                    XCTAssertEqual(active.first { $0.sceneIdentifier == sceneA }?.featureFlags["boundary"] as? Bool, true)
+                    XCTAssertFalse(active.contains { current in oldViews.contains { $0.viewUUID == current.viewUUID } })
+                } else if boundary != "missing-scene" {
+                    XCTAssertTrue(active.isEmpty, family + boundary)
+                }
+                XCTAssertTrue(oldViews.allSatisfy { $0.featureFlags["boundary"] == nil && $0.internalAttributes.isEmpty })
+            }
+        }
+    }
+
+    func testTargetedFlagsMatchLegacyOffViewPolicy() {
+        for background in [false, true] {
+            var observed: [[String]] = []
+            for targeted in [false, true] {
+                let clock = DateProviderMock(now: Date(timeIntervalSinceReferenceDate: 0))
+                let history: AppStateHistory = background ? .mockAppInBackground(since: clock.now) : .mockAppInForeground(since: clock.now)
+                let scope = FeatureScopeMock(context: .mockWith(sdkInitDate: clock.now, applicationStateHistory: history))
+                let monitor = Monitor(dependencies: .mockWith(featureScope: scope, samplingRate: 100), dateProvider: clock)
+                monitor.addFeatureFlagEvaluation(name: "offview", value: 7, explicitTarget: targeted ? .scene(.init(rawValue: "missing")) : nil)
+                observed.append(scope.eventsWritten(ofType: RUMViewEvent.self).map {
+                    "\($0.view.url):\($0.featureFlags?.featureFlagsInfo["offview"] as? Int ?? -1)"
+                })
+            }
+            XCTAssertEqual(observed[0], observed[1])
+        }
+    }
+
+    func testGivenViewMutationsDuringSceneHandoff_theyOnlyUpdateThatView() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        let contextA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        dateProvider.now = dateProvider.now.addingTimeInterval(1)
+
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextA, sceneIdentifier: sceneB.rawValue) {
+            monitor.addViewAttribute(forKey: "exact", value: "A")
+            monitor.addViewAttributes([
+                "batch": "A",
+                "remove-one": true,
+                "remove-many": true
+            ])
+            monitor.addTiming(name: "timing-A")
+            monitor.addViewLoadingTime(overwrite: false)
+            monitor.addFeatureFlagEvaluation(name: "flag-A", value: "A")
+        }
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.removeViewAttribute(forKey: "remove-one")
+            monitor.removeViewAttributes(forKeys: ["remove-many"])
+        }
+
+        monitor.addViewAttribute(forKey: "representative", value: "B")
+        monitor.addTiming(name: "timing-B")
+        monitor.addViewLoadingTime(overwrite: false)
+        monitor.addFeatureFlagEvaluation(name: "flag-B", value: "B")
+
+        let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+        let viewA = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneA })
+        let viewB = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneB })
+        XCTAssertEqual(viewA.attributes["exact"] as? String, "A")
+        XCTAssertEqual(viewA.attributes["batch"] as? String, "A")
+        XCTAssertNil(viewA.attributes["remove-one"])
+        XCTAssertNil(viewA.attributes["remove-many"])
+        XCTAssertNil(viewA.attributes["representative"])
+        XCTAssertEqual(viewB.attributes["representative"] as? String, "B")
+        XCTAssertNil(viewB.attributes["exact"])
+        XCTAssertNotNil(viewA.customTimings["timing-A"])
+        XCTAssertNil(viewA.customTimings["timing-B"])
+        XCTAssertNotNil(viewB.customTimings["timing-B"])
+        XCTAssertNil(viewB.customTimings["timing-A"])
+        XCTAssertNotNil(viewA.viewLoadingTime)
+        XCTAssertNotNil(viewB.viewLoadingTime)
+        XCTAssertEqual(viewA.featureFlags["flag-A"] as? String, "A")
+        XCTAssertNil(viewA.featureFlags["flag-B"])
+        XCTAssertEqual(viewB.featureFlags["flag-B"] as? String, "B")
+        XCTAssertNil(viewB.featureFlags["flag-A"])
+    }
+
+    func testGivenMatchingManualViewKeysInTwoScenes_whenAStopsAndReturns_itKeepsIndependentOccurrences() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.startView(key: "Home", name: "Home A", attributes: [:])
+        }
+        let firstA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneB.rawValue) {
+            monitor.startView(key: "Home", name: "Home B", attributes: [:])
+        }
+        let firstB = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+        XCTAssertNotEqual(firstA.viewID, firstB.viewID)
+
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.stopView(key: "Home", attributes: [:])
+        }
+        XCTAssertNil(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(sceneB))?.viewID, firstB.viewID)
+
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.startView(key: "Home", name: "Home A", attributes: [:])
+        }
+        let returnedA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        XCTAssertNotEqual(returnedA.viewID, firstA.viewID)
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(sceneB))?.viewID, firstB.viewID)
+    }
+
+    func testGivenExactViewAndContradictoryScene_whenStartingManualView_itUsesExactViewsScene() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        let contextA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        let contextB = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextA, sceneIdentifier: sceneB.rawValue) {
+            monitor.startView(key: "detail", name: "Detail A", attributes: [:])
+        }
+
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(sceneA))?.viewName, "Detail A")
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(sceneB))?.viewID, contextB.viewID)
+    }
+
+    #if os(iOS)
+    @MainActor
+    func testGivenBackgroundControllerCalls_itAvoidsHierarchyReadsAndKeepsRepresentativeFallback() async throws {
+        try await assertBackgroundControllerCalls(inSceneA: false)
+    }
+
+    @MainActor
+    func testGivenBackgroundControllerCallsDuringHandoff_itAvoidsHierarchyReadsAndKeepsInferredScene() async throws {
+        try await assertBackgroundControllerCalls(inSceneA: true)
+    }
+
+    @MainActor
+    private func assertBackgroundControllerCalls(inSceneA: Bool) async throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        let peerScene = inSceneA ? sceneB : sceneA
+        let peerID = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(peerScene))?.viewID)
+        let controller = HierarchyReadSpy()
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            DispatchQueue.global().async {
+                XCTAssertFalse(Thread.isMainThread)
+                let call = {
+                    monitor.startView(viewController: controller, name: "Background Controller", attributes: [:])
+                    monitor.stopView(viewController: controller, attributes: [:])
+                }
+                if inSceneA {
+                    RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue, operation: call)
+                } else {
+                    call()
+                }
+                continuation.resume()
+            }
+        }
+
+        XCTAssertEqual(controller.hierarchyReadCount, 0)
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(peerScene))?.viewID, peerID)
+        XCTAssertNil(monitor.rumContextSnapshot(for: .scene(inSceneA ? sceneA : sceneB)))
+        let views = try XCTUnwrap(featureScope as? FeatureScopeMock).eventsWritten(ofType: RUMViewEvent.self)
+        let backgroundViews = views.filter { $0.view.name == "Background Controller" }
+        XCTAssertEqual(Set(backgroundViews.map(\.view.id)).count, 1)
+        XCTAssertEqual(backgroundViews.last?.view.isActive, false)
+    }
+    #endif
+
+    #if os(iOS)
+    func testGivenUnattachedViewController_whenStartedDuringSceneHandoff_itUsesThatScene() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.startView(viewController: UIViewController(), name: "Controller A", attributes: [:])
+        }
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(sceneA))?.viewName, "Controller A")
+
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneB.rawValue) {
+            monitor.addAction(type: .custom, name: "Represent B", attributes: [:])
+        }
+        monitor.startView(viewController: UIViewController(), name: "Representative Controller", attributes: [:])
+        XCTAssertEqual(
+            monitor.rumContextSnapshot(for: .scene(sceneB))?.viewName,
+            "Representative Controller"
+        )
+    }
+    #endif
+
+    func testGivenManualResourcesStartedDuringSceneHandoff_theyCompleteOnThatScene() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let (sceneA, _) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        let resourceURL = URL(string: "https://example.com/scene-resource")!
+
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.startResource(resourceKey: "url-resource", url: resourceURL, attributes: [:])
+            monitor.startResource(
+                resourceKey: "request-resource",
+                request: URLRequest(url: resourceURL),
+                attributes: [:]
+            )
+            monitor.startResource(
+                resourceKey: "url-string-resource",
+                httpMethod: .get,
+                urlString: resourceURL.absoluteString,
+                attributes: [:]
+            )
+        }
+        ["url-resource", "request-resource", "url-string-resource"].forEach { resourceKey in
+            dateProvider.now = dateProvider.now.addingTimeInterval(1)
+            monitor.stopResource(
+                resourceKey: resourceKey,
+                statusCode: 200,
+                kind: .native,
+                size: 1,
+                attributes: [:]
+            )
+        }
+
+        monitor.startResource(resourceKey: "representative-resource", url: resourceURL, attributes: [:])
+        dateProvider.now = dateProvider.now.addingTimeInterval(1)
+        monitor.stopResource(
+            resourceKey: "representative-resource",
+            statusCode: 200,
+            kind: .native,
+            size: 1,
+            attributes: [:]
+        )
+
+        let featureScope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        let resources = featureScope.eventsWritten(ofType: RUMResourceEvent.self)
+        XCTAssertEqual(resources.map(\.resource.url), Array(repeating: resourceURL.absoluteString, count: 4))
+        XCTAssertEqual(resources.map(\.view.url), ["View A", "View A", "View A", "View B"])
     }
 
     #if !os(watchOS)
@@ -278,6 +2344,43 @@ class MonitorTests: XCTestCase {
     }
 }
 
+private extension MonitorTests {
+    func startConcurrentSceneViews(
+        in monitor: Monitor,
+        dateProvider: DateProviderMock
+    ) -> (sceneA: RUMSceneIdentifier, sceneB: RUMSceneIdentifier) {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        monitor.process(
+            command: RUMStartViewCommand(
+                time: dateProvider.now,
+                identity: ViewIdentifier("view-A"),
+                name: "View A",
+                path: "View A",
+                globalAttributes: [:],
+                attributes: [:],
+                instrumentationType: .uikit,
+                target: .scene(sceneA)
+            )
+        )
+        monitor.process(
+            command: RUMStartViewCommand(
+                time: dateProvider.now,
+                identity: ViewIdentifier("view-B"),
+                name: "View B",
+                path: "View B",
+                globalAttributes: [:],
+                attributes: [:],
+                instrumentationType: .uikit,
+                target: .scene(sceneB)
+            )
+        )
+
+        return (sceneA, sceneB)
+    }
+}
+
 private class TimeseriesCollectorStub: TimeseriesCollecting {
     weak var activeContextReader: RUMActiveContextReader?
     func start(sessionID: String, applicationID: String, sessionType: RUMSessionType) {}
@@ -294,3 +2397,23 @@ private extension Monitor {
     /// Returns RUM context assuming that some view is started.
     var currentRUMContext: RUMContext { applicationScope.activeSession!.viewScopes.last!.context }
 }
+
+#if os(iOS)
+private final class HierarchyReadSpy: UIViewController {
+    private let readsLock = NSLock()
+    private var reads = 0
+
+    var hierarchyReadCount: Int {
+        readsLock.lock()
+        defer { readsLock.unlock() }
+        return reads
+    }
+
+    override var viewIfLoaded: UIView? {
+        readsLock.lock()
+        reads += 1
+        readsLock.unlock()
+        return nil
+    }
+}
+#endif

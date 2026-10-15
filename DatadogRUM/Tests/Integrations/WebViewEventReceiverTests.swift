@@ -470,6 +470,312 @@ class WebViewEventReceiverTests: XCTestCase {
         DDAssertJSONEqual(AnyCodable(actualWebEventWritten), AnyCodable(expectedWebEventWritten))
     }
 
+    func testGivenSceneMetadata_whenReceivingWebEvent_itUsesContainerViewFromThatScene() throws {
+        let dateProvider = RelativeDateProvider()
+        let rumContext: RUMCoreContext = .mockRandom()
+        featureScope.contextMock = .mockWith(
+            source: "ios",
+            additionalContext: [
+                rumContext,
+                SessionReplayCoreContext.HasReplay(value: true)
+            ]
+        )
+
+        let viewCache = ViewCache(dateProvider: dateProvider)
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        viewCache.insert(
+            id: "native-view-A",
+            timestamp: dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds,
+            hasReplay: true,
+            sceneIdentifier: sceneA
+        )
+        dateProvider.advance(bySeconds: 1)
+        viewCache.insert(
+            id: "native-view-B",
+            timestamp: dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds,
+            hasReplay: true,
+            sceneIdentifier: sceneB
+        )
+        dateProvider.advance(bySeconds: 1)
+
+        let receiver = WebViewEventReceiver(
+            featureScope: featureScope,
+            dateProvider: DateProviderMock(),
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: viewCache
+        )
+        let date = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        let webEvent: JSON = [
+            "application": ["id": String.mockRandom()],
+            "session": ["id": String.mockRandom()],
+            "view": ["id": "browser-view"],
+            "date": Int(date),
+            WebViewEventReceiver.nativeSceneIdentifierKey: sceneA.rawValue
+        ]
+
+        XCTAssertTrue(receiver.receive(message: webViewTrackingMessage(with: webEvent), from: NOPDatadogCore()))
+
+        let expected: JSON = [
+            "application": ["id": rumContext.applicationID],
+            "session": ["id": rumContext.sessionID],
+            "view": ["id": "browser-view"],
+            "container": [
+                "source": "ios",
+                "view": ["id": "native-view-A"]
+            ] as [String: Any],
+            "date": date + featureScope.contextMock.serverTimeOffset.dd.toInt64Milliseconds,
+            "ddtags": featureScope.contextMock.ddTags
+        ]
+        let actual = try XCTUnwrap(featureScope.eventsWritten.first)
+        DDAssertJSONEqual(AnyCodable(actual), AnyCodable(expected))
+    }
+
+    func testDeferredWebEventsKeepHistoricalSceneOwnersAfterNavigationAndRebind() throws {
+        let dateProvider = RelativeDateProvider()
+        let timestamp = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        let sessionID = UUID()
+        let rumContext = RUMCoreContext.mockWith(
+            applicationID: "native-app",
+            sessionID: sessionID,
+            viewID: "native-B1",
+            serverTimeOffset: 0
+        )
+        let scope = FeatureScopeMock(
+            context: .mockWith(
+                source: "ios",
+                serverTimeOffset: 0,
+                additionalContext: [rumContext, SessionReplayCoreContext.HasReplay(value: true)]
+            ),
+            deferEventWriteContext: true
+        )
+        let cache = ViewCache(dateProvider: dateProvider)
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        cache.insert(id: "native-A1", timestamp: timestamp, hasReplay: true, sceneIdentifier: sceneA)
+        cache.insert(id: "native-B1", timestamp: timestamp, hasReplay: true, sceneIdentifier: sceneB)
+        let receiver = WebViewEventReceiver(
+            featureScope: scope,
+            dateProvider: dateProvider,
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: cache,
+            isMultiSceneApplication: true
+        )
+        func enqueue(_ browser: String, scene: String, milliseconds: Int64) {
+            let event: JSON = [
+                "application": ["id": "browser-app"],
+                "session": ["id": "browser-session"],
+                "view": ["id": browser],
+                "date": Int(timestamp + milliseconds),
+                WebViewEventReceiver.nativeSceneIdentifierKey: scene,
+            ]
+            XCTAssertTrue(receiver.receive(message: .webview(.rum(event)), from: NOPDatadogCore()))
+        }
+
+        // Reverse delivery and defer the Core writes until both native owners have changed.
+        enqueue("browser-B", scene: sceneB.rawValue, milliseconds: 20)
+        enqueue("browser-A", scene: sceneA.rawValue, milliseconds: 10)
+        XCTAssertTrue(scope.eventsWritten.isEmpty)
+        cache.insert(id: "native-A2", timestamp: timestamp + 30, hasReplay: true, sceneIdentifier: sceneA)
+        cache.insert(id: "native-B2", timestamp: timestamp + 40, hasReplay: true, sceneIdentifier: sceneB)
+        scope.contextMock.set(additionalContext: RUMCoreContext.mockWith(
+            applicationID: "native-app",
+            sessionID: sessionID,
+            viewID: "native-B2",
+            serverTimeOffset: 0
+        ))
+        dateProvider.advance(bySeconds: 1)
+        scope.flushDeferredEventWriteContexts()
+
+        // Reuse the browser identity across native navigation and an actual-source rebind.
+        enqueue("browser-A", scene: sceneA.rawValue, milliseconds: 50)
+        enqueue("browser-A", scene: sceneB.rawValue, milliseconds: 60)
+        scope.flushDeferredEventWriteContexts()
+
+        let expected = [
+            ("browser-B", "native-B1", 20),
+            ("browser-A", "native-A1", 10),
+            ("browser-A", "native-A2", 50),
+            ("browser-A", "native-B2", 60),
+        ]
+        XCTAssertEqual(scope.eventsWritten.count, expected.count)
+        for (encoded, (browser, owner, milliseconds)) in zip(scope.eventsWritten, expected) {
+            let event = try XCTUnwrap((encoded as? AnyEncodable)?.value as? JSON)
+            let container = try XCTUnwrap(event["container"] as? RUMViewEvent.Container)
+            XCTAssertEqual(container.view.id, owner)
+            XCTAssertEqual(container.source, .ios)
+            XCTAssertEqual((event["view"] as? JSON)?["id"] as? String, browser)
+            XCTAssertEqual((event["application"] as? JSON)?["id"] as? String, "native-app")
+            XCTAssertEqual((event["session"] as? JSON)?["id"] as? String, sessionID.uuidString.lowercased())
+            XCTAssertEqual(event["date"] as? Int64, timestamp + Int64(milliseconds))
+            XCTAssertNil(event[WebViewEventReceiver.nativeSceneIdentifierKey])
+        }
+    }
+
+    func testUnavailableOrDetachedWebContainerNeverBorrowsTheRepresentative() throws {
+        let dateProvider = RelativeDateProvider()
+        let timestamp = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        let scope = FeatureScopeMock(context: .mockWith(
+            serverTimeOffset: 0,
+            additionalContext: [
+                RUMCoreContext.mockWith(viewID: "native-B"),
+                SessionReplayCoreContext.HasReplay(value: true),
+            ]
+        ))
+        let cache = ViewCache(dateProvider: dateProvider)
+        for scene in ["A", "B"] {
+            cache.insert(
+                id: "native-" + scene,
+                timestamp: timestamp,
+                hasReplay: true,
+                sceneIdentifier: .init(rawValue: "scene-" + scene)
+            )
+        }
+        let receiver = WebViewEventReceiver(
+            featureScope: scope,
+            dateProvider: dateProvider,
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: cache,
+            isMultiSceneApplication: true
+        )
+        let sources: [String?] = ["unavailable-scene", nil]
+        for source in sources {
+            var event: JSON = [
+                "application": ["id": "browser-app"],
+                "session": ["id": "browser-session"],
+                "view": ["id": "browser-view"],
+                "date": Int(timestamp + 1),
+            ]
+            event[WebViewEventReceiver.nativeSceneIdentifierKey] = source
+            XCTAssertTrue(receiver.receive(message: .webview(.rum(event)), from: NOPDatadogCore()))
+        }
+        XCTAssertEqual(scope.eventsWritten.count, sources.count)
+        for encoded in scope.eventsWritten {
+            let event = try XCTUnwrap((encoded as? AnyEncodable)?.value as? JSON)
+            XCTAssertNil(event["container"])
+            XCTAssertNil(event[WebViewEventReceiver.nativeSceneIdentifierKey])
+        }
+    }
+
+    func testGivenLegacyReplayViewAndNativeScene_whenReceivingWebEvent_itKeepsContainer() throws {
+        let written = try receiveSceneEventWithLegacyCache()
+        let container = try XCTUnwrap(written["container"] as? RUMViewEvent.Container)
+        XCTAssertEqual(container.view.id, "legacy-view")
+        XCTAssertNil(written[WebViewEventReceiver.nativeSceneIdentifierKey])
+    }
+
+    func testGivenLegacyViewWithoutReplay_whenReceivingSceneEvent_itOmitsContainer() throws {
+        let written = try receiveSceneEventWithLegacyCache(hasReplay: false)
+        XCTAssertNil(written["container"])
+    }
+
+    func testGivenFutureLegacyView_whenReceivingSceneEvent_itOmitsContainer() throws {
+        let written = try receiveSceneEventWithLegacyCache(eventDelay: -1)
+        XCTAssertNil(written["container"])
+    }
+
+    func testGivenLegacyAndPeerSceneViews_whenReceivingSceneEvent_itOmitsContainer() throws {
+        let written = try receiveSceneEventWithLegacyCache(otherScene: "scene-B")
+        XCTAssertNil(written["container"])
+    }
+
+    func testGivenLegacyAndMatchingSceneViews_whenReceivingSceneEvent_itUsesExactContainer() throws {
+        let written = try receiveSceneEventWithLegacyCache(otherScene: "scene-A")
+        let container = try XCTUnwrap(written["container"] as? RUMViewEvent.Container)
+        XCTAssertEqual(container.view.id, "scene-view")
+    }
+
+    func testGivenDeclaredMultiSceneAppAndLegacyView_whenReceivingSceneEvent_itOmitsContainer() throws {
+        let written = try receiveSceneEventWithLegacyCache(isMultiSceneApplication: true)
+        XCTAssertNil(written["container"])
+    }
+
+    private func receiveSceneEventWithLegacyCache(
+        hasReplay: Bool = true,
+        eventDelay: TimeInterval = 1,
+        otherScene: String? = nil,
+        isMultiSceneApplication: Bool = false
+    ) throws -> JSON {
+        let dateProvider = RelativeDateProvider()
+        featureScope.contextMock = .mockWith(
+            serverTimeOffset: 0,
+            additionalContext: [RUMCoreContext.mockRandom(), SessionReplayCoreContext.HasReplay(value: true)]
+        )
+        let viewCache = ViewCache(dateProvider: dateProvider)
+        let timestamp = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        viewCache.insert(id: "legacy-view", timestamp: timestamp, hasReplay: hasReplay)
+        if let otherScene {
+            viewCache.insert(
+                id: "scene-view",
+                timestamp: timestamp,
+                hasReplay: true,
+                sceneIdentifier: .init(rawValue: otherScene)
+            )
+        }
+        let receiver = WebViewEventReceiver(
+            featureScope: featureScope,
+            dateProvider: dateProvider,
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: viewCache,
+            isMultiSceneApplication: isMultiSceneApplication
+        )
+        let event: JSON = [
+            "application": ["id": "browser-app"], "session": ["id": "browser-session"],
+            "view": ["id": "browser-view"], "date": Int(timestamp + eventDelay.dd.toInt64Milliseconds),
+            WebViewEventReceiver.nativeSceneIdentifierKey: "scene-A"
+        ]
+        XCTAssertTrue(receiver.receive(message: webViewTrackingMessage(with: event), from: NOPDatadogCore()))
+        let encoded = try XCTUnwrap(featureScope.eventsWritten.last as? AnyEncodable)
+        return try XCTUnwrap(encoded.value as? JSON)
+    }
+
+    func testGivenNoSceneMetadataAndMultipleScenes_whenReceivingWebEvent_itOmitsAmbiguousContainer() throws {
+        let dateProvider = RelativeDateProvider()
+        let rumContext: RUMCoreContext = .mockRandom()
+        featureScope.contextMock = .mockWith(
+            source: "ios",
+            additionalContext: [
+                rumContext,
+                SessionReplayCoreContext.HasReplay(value: true)
+            ]
+        )
+
+        let viewCache = ViewCache(dateProvider: dateProvider)
+        viewCache.insert(
+            id: "native-view-A",
+            timestamp: dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds,
+            hasReplay: true,
+            sceneIdentifier: .init(rawValue: "scene-A")
+        )
+        dateProvider.advance(bySeconds: 1)
+        viewCache.insert(
+            id: "native-view-B",
+            timestamp: dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds,
+            hasReplay: true,
+            sceneIdentifier: .init(rawValue: "scene-B")
+        )
+        dateProvider.advance(bySeconds: 1)
+
+        let receiver = WebViewEventReceiver(
+            featureScope: featureScope,
+            dateProvider: DateProviderMock(),
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: viewCache
+        )
+        let event: JSON = [
+            "application": ["id": String.mockRandom()],
+            "session": ["id": String.mockRandom()],
+            "view": ["id": "browser-view"],
+            "date": Int(dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds)
+        ]
+
+        XCTAssertTrue(receiver.receive(message: webViewTrackingMessage(with: event), from: NOPDatadogCore()))
+
+        let encodedEvent = try XCTUnwrap(featureScope.eventsWritten.first as? AnyEncodable)
+        let writtenEvent = try XCTUnwrap(encodedEvent.value as? JSON)
+        XCTAssertNil(writtenEvent[RUMViewEvent.CodingKeys.container.rawValue])
+    }
+
     func testGivenReplayContextNotAvailable_whenReceivingWebEvent_itRemovesReplayInfo() throws {
         // Given
         let dateProvider = RelativeDateProvider()

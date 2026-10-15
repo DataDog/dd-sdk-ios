@@ -17,6 +17,25 @@ class RUMSessionScopeTests: XCTestCase {
         dependencies: .mockWith(rumApplicationID: "rum-123")
     )
 
+    private func startViewCommand(
+        identity: ViewIdentifier,
+        name: String,
+        sceneIdentifier: RUMSceneIdentifier,
+        attributes: [AttributeKey: AttributeValue] = [:],
+        time: Date = Date()
+    ) -> RUMStartViewCommand {
+        RUMStartViewCommand(
+            time: time,
+            identity: identity,
+            name: name,
+            path: name,
+            globalAttributes: [:],
+            attributes: attributes,
+            instrumentationType: .uikit,
+            target: .scene(sceneIdentifier)
+        )
+    }
+
     func testDefaultContext() {
         let scope: RUMSessionScope = .mockWith(parent: parent)
 
@@ -55,6 +74,46 @@ class RUMSessionScopeTests: XCTestCase {
         currentTime.addTimeInterval(RUMSessionScope.Constants.sessionMaxDuration)
 
         XCTAssertFalse(scope.process(command: RUMCommandMock(time: currentTime), context: context, writer: writer))
+    }
+
+    func testWhenSessionExpiresWithoutTransferringActiveView_itReleasesViewCachePin() throws {
+        let dateProvider = RelativeDateProvider()
+        let viewCache = ViewCache(dateProvider: dateProvider, ttl: 1)
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: dateProvider.now,
+            dependencies: .mockWith(samplingRate: 100, viewCache: viewCache)
+        )
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-A"),
+                name: "View A",
+                sceneIdentifier: scene,
+                time: dateProvider.now
+            ),
+            context: context,
+            writer: writer
+        )
+        let viewID = try XCTUnwrap(scope.activeView?.viewUUID.toRUMDataFormat)
+
+        dateProvider.advance(bySeconds: RUMSessionScope.Constants.sessionMaxDuration)
+        XCTAssertFalse(
+            scope.process(
+                command: RUMCommandMock(time: dateProvider.now),
+                context: context,
+                writer: writer
+            )
+        )
+        XCTAssertEqual(viewCache.sceneIdentifier(forViewID: viewID), scene)
+
+        dateProvider.advance(bySeconds: 2)
+        viewCache.insert(
+            id: "replacement-view",
+            timestamp: dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds,
+            sceneIdentifier: RUMSceneIdentifier(rawValue: "scene-B")
+        )
+        XCTAssertNil(viewCache.sceneIdentifier(forViewID: viewID))
     }
 
     func testWhenSessionIsInactiveForCertainDuration_itGetsClosed() {
@@ -126,6 +185,1665 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(scope.viewScopes.count, 1)
         _ = scope.process(command: RUMStopViewCommand.mockWith(identity: .mockViewIdentifier()), context: context, writer: writer)
         XCTAssertEqual(scope.viewScopes.count, 0)
+    }
+
+    func testGivenSameViewIdentity_whenNavigatingAwayAndBack_itCreatesDistinctRUMViewOccurrences() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let homeIdentity = ViewIdentifier("home")
+        let detailIdentity = ViewIdentifier("detail")
+
+        _ = scope.process(
+            command: startViewCommand(identity: homeIdentity, name: "Home", sceneIdentifier: scene),
+            context: context,
+            writer: writer
+        )
+        let firstHomeViewID = try XCTUnwrap(scope.activeView?.viewUUID)
+
+        var stopHome = RUMStopViewCommand.mockWith(identity: homeIdentity)
+        stopHome.target = .scene(scene)
+        _ = scope.process(command: stopHome, context: context, writer: writer)
+        _ = scope.process(
+            command: startViewCommand(identity: detailIdentity, name: "Detail", sceneIdentifier: scene),
+            context: context,
+            writer: writer
+        )
+        let detailViewID = try XCTUnwrap(scope.activeView?.viewUUID)
+
+        var stopDetail = RUMStopViewCommand.mockWith(identity: detailIdentity)
+        stopDetail.target = .scene(scene)
+        _ = scope.process(command: stopDetail, context: context, writer: writer)
+        _ = scope.process(
+            command: startViewCommand(identity: homeIdentity, name: "Home", sceneIdentifier: scene),
+            context: context,
+            writer: writer
+        )
+        let returnedHomeViewID = try XCTUnwrap(scope.activeView?.viewUUID)
+
+        XCTAssertEqual(Set([firstHomeViewID, detailViewID, returnedHomeViewID]).count, 3)
+        XCTAssertNotEqual(firstHomeViewID, returnedHomeViewID)
+    }
+
+    func testGivenFirstOccurrenceHasPendingResource_whenSameIdentityReturns_itKeepsOccurrencesIsolated() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let homeIdentity = ViewIdentifier("home")
+        let detailIdentity = ViewIdentifier("detail")
+        let resourceKey = "home-1-resource"
+
+        _ = scope.process(
+            command: startViewCommand(
+                identity: homeIdentity,
+                name: "Home",
+                sceneIdentifier: scene,
+                attributes: ["occurrence": "home-1"]
+            ),
+            context: context,
+            writer: writer
+        )
+        let firstHomeViewID = try XCTUnwrap(scope.activeView?.viewUUID)
+        let firstHomeScope = try XCTUnwrap(scope.activeView)
+
+        var startResource = RUMStartResourceCommand.mockWith(resourceKey: resourceKey)
+        startResource.target = .view(firstHomeViewID)
+        _ = scope.process(command: startResource, context: context, writer: writer)
+
+        var stopHome = RUMStopViewCommand.mockWith(identity: homeIdentity)
+        stopHome.target = .scene(scene)
+        _ = scope.process(command: stopHome, context: context, writer: writer)
+        _ = scope.process(
+            command: startViewCommand(identity: detailIdentity, name: "Detail", sceneIdentifier: scene),
+            context: context,
+            writer: writer
+        )
+        let detailViewID = try XCTUnwrap(scope.activeView?.viewUUID)
+
+        let firstHomeEventCountBeforeLateStop = writer.events(ofType: RUMViewEvent.self).filter {
+            $0.view.id == firstHomeViewID.toRUMDataFormat
+        }.count + writer.events(ofType: RUMViewUpdateEvent.self).filter {
+            $0.view.id == firstHomeViewID.toRUMDataFormat
+        }.count
+        var lateStopHome = RUMStopViewCommand.mockWith(
+            attributes: ["occurrence": "late-stop"],
+            identity: homeIdentity
+        )
+        lateStopHome.target = .scene(scene)
+        _ = scope.process(command: lateStopHome, context: context, writer: writer)
+        let firstHomeEventCountAfterLateStop = writer.events(ofType: RUMViewEvent.self).filter {
+            $0.view.id == firstHomeViewID.toRUMDataFormat
+        }.count + writer.events(ofType: RUMViewUpdateEvent.self).filter {
+            $0.view.id == firstHomeViewID.toRUMDataFormat
+        }.count
+        XCTAssertEqual(firstHomeEventCountAfterLateStop, firstHomeEventCountBeforeLateStop)
+        XCTAssertEqual(firstHomeScope.attributes["occurrence"] as? String, "home-1")
+
+        var stopDetail = RUMStopViewCommand.mockWith(identity: detailIdentity)
+        stopDetail.target = .scene(scene)
+        _ = scope.process(command: stopDetail, context: context, writer: writer)
+        _ = scope.process(
+            command: startViewCommand(
+                identity: homeIdentity,
+                name: "Home",
+                sceneIdentifier: scene,
+                attributes: ["occurrence": "home-2"]
+            ),
+            context: context,
+            writer: writer
+        )
+        let returnedHomeViewID = try XCTUnwrap(scope.activeView?.viewUUID)
+        let returnedHomeScope = try XCTUnwrap(scope.activeView)
+
+        XCTAssertTrue(scope.viewScopes.contains { $0 === firstHomeScope })
+        XCTAssertEqual(firstHomeScope.attributes["occurrence"] as? String, "home-1")
+        XCTAssertEqual(returnedHomeScope.attributes["occurrence"] as? String, "home-2")
+        XCTAssertEqual(scope.viewScopes.filter(\.isActiveView).count, 1)
+
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(
+                actionType: .custom,
+                name: "post-pop",
+                target: .scene(scene)
+            ),
+            context: context,
+            writer: writer
+        )
+
+        var stopResource = RUMStopResourceCommand.mockWith(resourceKey: resourceKey)
+        stopResource.target = .view(firstHomeViewID)
+        _ = scope.process(command: stopResource, context: context, writer: writer)
+
+        XCTAssertEqual(Set([firstHomeViewID, detailViewID, returnedHomeViewID]).count, 3)
+        XCTAssertFalse(scope.viewScopes.contains { $0 === firstHomeScope })
+        XCTAssertEqual(scope.viewScopes.filter(\.isActiveView).count, 1)
+        XCTAssertTrue(scope.activeView === returnedHomeScope)
+
+        let firstHomeEvents = writer.events(ofType: RUMViewEvent.self).filter {
+            $0.view.id == firstHomeViewID.toRUMDataFormat
+        }
+        XCTAssertFalse(firstHomeEvents.isEmpty)
+        XCTAssertTrue(firstHomeEvents.allSatisfy {
+            ($0.context?.contextInfo["occurrence"] as? String) == "home-1"
+        })
+
+        let resource = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).last)
+        XCTAssertEqual(resource.view.id, firstHomeViewID.toRUMDataFormat)
+        let action = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
+        XCTAssertEqual(action.view.id, returnedHomeViewID.toRUMDataFormat)
+    }
+
+    func testGivenRestoredActiveView_whenSameIdentityStarts_itKeepsOnlyLatestOccurrenceActive() throws {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let identity = ViewIdentifier("home")
+        let restoredSource: RUMViewScope = .mockWith(
+            parent: parent,
+            identity: identity,
+            path: "Home",
+            name: "Home",
+            sceneIdentifier: scene
+        )
+        let scope = RUMSessionScope(
+            isInitialSession: false,
+            parent: parent,
+            startTime: Date(),
+            startPrecondition: .maxDuration,
+            context: context,
+            dependencies: .mockWith(samplingRate: 100),
+            applicationState: .mockAny(),
+            resumingViewScopes: [restoredSource]
+        )
+        let restoredOccurrenceID = try XCTUnwrap(scope.activeView?.viewUUID)
+
+        _ = scope.process(
+            command: startViewCommand(
+                identity: identity,
+                name: "Home",
+                sceneIdentifier: scene
+            ),
+            context: context,
+            writer: writer
+        )
+
+        let activeViews = scope.viewScopes.filter(\.isActiveView)
+        XCTAssertEqual(activeViews.count, 1)
+        XCTAssertEqual(scope.viewScopes.count, 1)
+        XCTAssertEqual(activeViews.first?.identity, identity)
+        XCTAssertNotEqual(activeViews.first?.viewUUID, restoredOccurrenceID)
+    }
+
+    func testWhenViewsStartInDifferentScenes_itKeepsBothViewsActive() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-A"), name: "View A", sceneIdentifier: sceneA),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-B"), name: "View B", sceneIdentifier: sceneB),
+            context: context,
+            writer: writer
+        )
+
+        XCTAssertEqual(scope.viewScopes.count, 2)
+        XCTAssertEqual(scope.viewScopes.filter(\.isActiveView).count, 2)
+        XCTAssertEqual(Set(scope.viewScopes.compactMap(\.sceneIdentifier)), Set([sceneA, sceneB]))
+        XCTAssertEqual(scope.activeView?.sceneIdentifier, sceneB)
+    }
+
+    func testGivenConcurrentScenes_whenNonRepresentativeViewUpdates_watchdogKeepsRepresentativeView() throws {
+        let featureScope = FeatureScopeMock()
+        let watchdog = WatchdogTerminationMonitor(
+            appStateManager: .mockRandom(),
+            checker: .mockRandom(),
+            storage: nil,
+            feature: featureScope,
+            reporter: WatchdogTerminationReporter.mockRandom()
+        )
+        watchdog.currentState = .started
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: Date(),
+            dependencies: .mockWith(featureScope: featureScope, watchdogTermination: watchdog)
+        )
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-A"), name: "View A", sceneIdentifier: sceneA),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-B"), name: "View B", sceneIdentifier: sceneB),
+            context: context,
+            writer: writer
+        )
+        let representativeID = try XCTUnwrap(scope.activeView?.viewUUID.toRUMDataFormat)
+
+        var resource = RUMStartResourceCommand.mockWith(resourceKey: "resource-A")
+        resource.target = .scene(sceneA)
+        _ = scope.process(command: resource, context: context, writer: writer)
+        var stopResource = RUMStopResourceCommand.mockWith(resourceKey: "resource-A")
+        stopResource.target = .scene(sceneA)
+        _ = scope.process(command: stopResource, context: context, writer: writer)
+
+        XCTAssertEqual(try storedWatchdogViewID(in: featureScope), representativeID)
+    }
+
+    func testGivenConcurrentScenes_whenRepresentativeViewStops_watchdogMovesToSurvivingRepresentative() throws {
+        let featureScope = FeatureScopeMock()
+        let watchdog = WatchdogTerminationMonitor(
+            appStateManager: .mockRandom(),
+            checker: .mockRandom(),
+            storage: nil,
+            feature: featureScope,
+            reporter: WatchdogTerminationReporter.mockRandom()
+        )
+        watchdog.currentState = .started
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: Date(),
+            dependencies: .mockWith(featureScope: featureScope, watchdogTermination: watchdog)
+        )
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let viewAIdentity = ViewIdentifier("view-A")
+        let viewBIdentity = ViewIdentifier("view-B")
+
+        _ = scope.process(
+            command: startViewCommand(identity: viewAIdentity, name: "View A", sceneIdentifier: sceneA),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: startViewCommand(identity: viewBIdentity, name: "View B", sceneIdentifier: sceneB),
+            context: context,
+            writer: writer
+        )
+        let survivingViewID = try XCTUnwrap(
+            scope.viewScopes.first(where: { $0.sceneIdentifier == sceneA })?.viewUUID.toRUMDataFormat
+        )
+
+        var stopB = RUMStopViewCommand.mockWith(identity: viewBIdentity)
+        stopB.target = .scene(sceneB)
+        _ = scope.process(command: stopB, context: context, writer: writer)
+
+        XCTAssertEqual(scope.activeView?.sceneIdentifier, sceneA)
+        XCTAssertEqual(try storedWatchdogViewID(in: featureScope), survivingViewID)
+    }
+
+    func testGivenSameViewIdentityInTwoScenes_whenOneStops_itKeepsOtherSceneActive() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let sharedIdentity = ViewIdentifier("shared-view")
+
+        _ = scope.process(
+            command: startViewCommand(identity: sharedIdentity, name: "Shared A", sceneIdentifier: sceneA),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: startViewCommand(identity: sharedIdentity, name: "Shared B", sceneIdentifier: sceneB),
+            context: context,
+            writer: writer
+        )
+
+        var stopA = RUMStopViewCommand.mockWith(identity: sharedIdentity)
+        stopA.target = .scene(sceneA)
+        _ = scope.process(command: stopA, context: context, writer: writer)
+
+        XCTAssertEqual(scope.viewScopes.count, 1)
+        XCTAssertEqual(scope.viewScopes.first?.sceneIdentifier, sceneB)
+        XCTAssertEqual(scope.viewScopes.first?.viewName, "Shared B")
+        XCTAssertTrue(try XCTUnwrap(scope.viewScopes.first).isActiveView)
+    }
+
+    func testGivenLegacyView_whenFirstSceneViewStarts_itPreservesSingleWindowReplacementSemantics() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(name: "Manual", path: "Manual"),
+            context: context,
+            writer: writer
+        )
+        XCTAssertEqual(scope.viewScopes.count, 1)
+        XCTAssertNil(scope.viewScopes.first?.sceneIdentifier)
+
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("automatic"),
+                name: "Automatic",
+                sceneIdentifier: sceneA
+            ),
+            context: context,
+            writer: writer
+        )
+
+        XCTAssertEqual(scope.viewScopes.count, 1)
+        XCTAssertEqual(scope.viewScopes.first?.sceneIdentifier, sceneA)
+        XCTAssertEqual(scope.viewScopes.first?.viewName, "Automatic")
+    }
+
+    func testGivenConcurrentContinuousActions_whenRepresentativeActionStops_itDoesNotStopAnotherSceneAction() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-A"), name: "View A", sceneIdentifier: sceneA),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-B"), name: "View B", sceneIdentifier: sceneB),
+            context: context,
+            writer: writer
+        )
+
+        var startActionA = RUMStartUserActionCommand.mockWith(actionType: .scroll, name: "Scroll A")
+        startActionA.target = .scene(sceneA)
+        _ = scope.process(command: startActionA, context: context, writer: writer)
+
+        var startActionB = RUMStartUserActionCommand.mockWith(actionType: .scroll, name: "Scroll B")
+        startActionB.target = .scene(sceneB)
+        _ = scope.process(command: startActionB, context: context, writer: writer)
+
+        _ = scope.process(
+            command: RUMStopUserActionCommand.mockWith(actionType: .swipe, name: "Scroll B"),
+            context: context,
+            writer: writer
+        )
+
+        let viewA = try XCTUnwrap(scope.viewScopes.first(where: { $0.sceneIdentifier == sceneA }))
+        let viewB = try XCTUnwrap(scope.viewScopes.first(where: { $0.sceneIdentifier == sceneB }))
+        XCTAssertNotNil(viewA.userActionScope)
+        XCTAssertNil(viewB.userActionScope)
+
+        let actions = writer.events(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actions.count, 1)
+        XCTAssertEqual(actions.first?.view.name, "View B")
+        XCTAssertEqual(actions.first?.action.target?.name, "Scroll B")
+        XCTAssertEqual(actions.first?.action.type, .swipe)
+    }
+
+    func testGivenOverdueLegacyContinuousAction_whenStopped_itPreservesStopAttributes() throws {
+        try assertOverdueLegacyActionPreservesStopAttributes(isContinuous: true)
+    }
+
+    func testGivenOverdueLegacyDiscreteAction_whenStopped_itPreservesStopAttributes() throws {
+        try assertOverdueLegacyActionPreservesStopAttributes(isContinuous: false)
+    }
+
+    private func assertOverdueLegacyActionPreservesStopAttributes(isContinuous: Bool) throws {
+        let startTime = Date(timeIntervalSinceReferenceDate: 0)
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: startTime)
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: startTime, name: "Legacy View", path: "Legacy View"),
+            context: context,
+            writer: writer
+        )
+        let view = try XCTUnwrap(scope.activeView)
+        let attributes = ["started": "yes", "phase": "start"]
+        let startAction: RUMCommand = isContinuous
+            ? RUMStartUserActionCommand.mockWith(
+                time: startTime, attributes: attributes, actionType: .tap, name: "Original action"
+            )
+            : RUMAddUserActionCommand.mockWith(
+                time: startTime, attributes: attributes, actionType: .tap, name: "Original action"
+            )
+        _ = scope.process(command: startAction, context: context, writer: writer)
+        let actionID = try XCTUnwrap(view.userActionScope?.actionUUID.toRUMDataFormat)
+        let duration = isContinuous
+            ? RUMUserActionScope.Constants.continuousActionMaxDuration
+            : RUMUserActionScope.Constants.discreteActionTimeoutDuration
+        XCTAssertTrue(writer.events(ofType: RUMActionEvent.self).isEmpty)
+
+        _ = scope.process(
+            command: RUMStopUserActionCommand.mockWith(
+                time: startTime.addingTimeInterval(duration + 1),
+                attributes: ["stopped": "yes", "phase": "stop"],
+                actionType: .scroll,
+                name: "Late replacement"
+            ),
+            context: context,
+            writer: writer
+        )
+
+        let actions = writer.events(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actions.count, 1)
+        let action = try XCTUnwrap(actions.first)
+        XCTAssertEqual(action.action.id, actionID)
+        XCTAssertEqual(action.view.id, view.viewUUID.toRUMDataFormat)
+        XCTAssertEqual(action.action.loadingTime, duration.dd.toInt64Nanoseconds)
+        XCTAssertEqual(action.action.target?.name, "Original action")
+        XCTAssertEqual(action.action.type, .tap)
+        XCTAssertEqual(action.context?.contextInfo["started"] as? String, "yes")
+        XCTAssertEqual(action.context?.contextInfo["stopped"] as? String, "yes")
+        XCTAssertEqual(action.context?.contextInfo["phase"] as? String, "stop")
+        XCTAssertNil(view.userActionScope)
+    }
+
+    func testGivenOverdueConcurrentActions_whenExplicitStopTargetsA_itPreservesOnlyRecipientAttributes() throws {
+        for useExactView in [false, true] {
+            let writer = FileWriterMock()
+            let startTime = Date()
+            let scope: RUMSessionScope = .mockWith(parent: parent, startTime: startTime)
+            let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+            let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+            for (scene, name) in [(sceneA, "A"), (sceneB, "B")] {
+                _ = scope.process(
+                    command: startViewCommand(
+                        identity: ViewIdentifier(name), name: name, sceneIdentifier: scene, time: startTime
+                    ),
+                    context: context,
+                    writer: writer
+                )
+                var startAction = RUMStartUserActionCommand.mockWith(
+                    time: startTime, attributes: ["owner": name], actionType: .scroll, name: name
+                )
+                startAction.target = .scene(scene)
+                _ = scope.process(command: startAction, context: context, writer: writer)
+            }
+            let viewA = try XCTUnwrap(scope.viewScopes.first { $0.sceneIdentifier == sceneA })
+            let viewB = try XCTUnwrap(scope.viewScopes.first { $0.sceneIdentifier == sceneB })
+            let actionAID = try XCTUnwrap(viewA.userActionScope?.actionUUID.toRUMDataFormat)
+            let actionBID = try XCTUnwrap(viewB.userActionScope?.actionUUID.toRUMDataFormat)
+            XCTAssertTrue(scope.activeView === viewB)
+            XCTAssertTrue(writer.events(ofType: RUMActionEvent.self).isEmpty)
+            var stopAction = RUMStopUserActionCommand.mockWith(
+                time: startTime.addingTimeInterval(11),
+                attributes: ["stopped": "A", "owner": "A-stop"],
+                actionType: .swipe,
+                name: "Late replacement"
+            )
+            stopAction.target = .scene(sceneB)
+            stopAction.explicitTarget = useExactView ? .view(viewA.viewUUID) : .scene(sceneA)
+
+            _ = scope.process(command: stopAction, context: context, writer: writer)
+
+            let actions = writer.events(ofType: RUMActionEvent.self)
+            XCTAssertEqual(actions.count, 2)
+            let actionA = try XCTUnwrap(actions.first { $0.view.id == viewA.viewUUID.toRUMDataFormat })
+            let actionB = try XCTUnwrap(actions.first { $0.view.id == viewB.viewUUID.toRUMDataFormat })
+            XCTAssertEqual(actionA.action.id, actionAID)
+            XCTAssertEqual(actionB.action.id, actionBID)
+            XCTAssertEqual(actionA.action.target?.name, "A")
+            XCTAssertEqual(actionB.action.target?.name, "B")
+            XCTAssertEqual(actionA.action.type, .scroll)
+            XCTAssertEqual(actionB.action.type, .scroll)
+            XCTAssertEqual(actionA.action.loadingTime, 10_000_000_000)
+            XCTAssertEqual(actionB.action.loadingTime, 10_000_000_000)
+            XCTAssertEqual(actionA.context?.contextInfo["stopped"] as? String, "A")
+            XCTAssertEqual(actionA.context?.contextInfo["owner"] as? String, "A-stop")
+            XCTAssertNil(actionB.context?.contextInfo["stopped"])
+            XCTAssertEqual(actionB.context?.contextInfo["owner"] as? String, "B")
+            XCTAssertNil(viewA.userActionScope)
+            XCTAssertNil(viewB.userActionScope)
+        }
+    }
+
+    func testGivenOverdueAction_whenStopTargetsMissingScene_itExpiresWithoutForeignAttributes() throws {
+        let startTime = Date()
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: startTime)
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-A"), name: "A", sceneIdentifier: scene, time: startTime
+            ),
+            context: context,
+            writer: writer
+        )
+        let view = try XCTUnwrap(scope.activeView)
+        var startAction = RUMStartUserActionCommand.mockWith(
+            time: startTime, attributes: ["owner": "A"], actionType: .scroll, name: "A"
+        )
+        startAction.target = .scene(scene)
+        _ = scope.process(command: startAction, context: context, writer: writer)
+        let actionID = try XCTUnwrap(view.userActionScope?.actionUUID.toRUMDataFormat)
+        var stopAction = RUMStopUserActionCommand.mockWith(
+            time: startTime.addingTimeInterval(11), attributes: ["stopped": "missing", "owner": "missing"]
+        )
+        stopAction.target = .scene(.init(rawValue: "missing-scene"))
+
+        _ = scope.process(command: stopAction, context: context, writer: writer)
+
+        let actions = writer.events(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actions.count, 1)
+        let action = try XCTUnwrap(actions.first)
+        XCTAssertEqual(action.action.id, actionID)
+        XCTAssertEqual(action.view.id, view.viewUUID.toRUMDataFormat)
+        XCTAssertEqual(action.action.loadingTime, 10_000_000_000)
+        XCTAssertEqual(action.context?.contextInfo["owner"] as? String, "A")
+        XCTAssertNil(action.context?.contextInfo["stopped"])
+        XCTAssertNil(view.userActionScope)
+    }
+
+    func testGivenDiscreteActionInOneScene_whenOnlyAnotherSceneInteracts_itStillExpiresTheFirstAction() throws {
+        let startTime = Date()
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: startTime)
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-A"), name: "View A", sceneIdentifier: sceneA),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-B"), name: "View B", sceneIdentifier: sceneB),
+            context: context,
+            writer: writer
+        )
+
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(
+                time: startTime,
+                attributes: ["origin": "A"],
+                actionType: .tap,
+                name: "Tap A",
+                target: .scene(sceneA)
+            ),
+            context: context,
+            writer: writer
+        )
+
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(
+                time: startTime.addingTimeInterval(RUMUserActionScope.Constants.discreteActionTimeoutDuration),
+                attributes: ["origin": "B"],
+                actionType: .custom,
+                name: "Action B",
+                target: .scene(sceneB)
+            ),
+            context: context,
+            writer: writer
+        )
+
+        let viewA = try XCTUnwrap(scope.viewScopes.first(where: { $0.sceneIdentifier == sceneA }))
+        XCTAssertNil(viewA.userActionScope)
+
+        let actionA = try XCTUnwrap(
+            writer.events(ofType: RUMActionEvent.self).first(where: { $0.action.target?.name == "Tap A" })
+        )
+        XCTAssertEqual(actionA.view.name, "View A")
+        XCTAssertEqual(actionA.context?.contextInfo["origin"] as? String, "A")
+    }
+
+    func testGivenConcurrentScenes_whenNavigatingInOneScene_itLeavesOtherSceneActive() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let viewA1 = ViewIdentifier("view-A-1")
+        let viewA2 = ViewIdentifier("view-A-2")
+        let viewB = ViewIdentifier("view-B")
+
+        _ = scope.process(
+            command: startViewCommand(identity: viewA1, name: "View A1", sceneIdentifier: sceneA),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: startViewCommand(identity: viewB, name: "View B", sceneIdentifier: sceneB),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: startViewCommand(identity: viewA2, name: "View A2", sceneIdentifier: sceneA),
+            context: context,
+            writer: writer
+        )
+
+        XCTAssertEqual(scope.viewScopes.filter(\.isActiveView).count, 2)
+        XCTAssertNil(scope.viewScopes.first(where: { $0.identity == viewA1 }))
+        XCTAssertTrue(try XCTUnwrap(scope.viewScopes.first(where: { $0.identity == viewA2 })).isActiveView)
+        XCTAssertTrue(try XCTUnwrap(scope.viewScopes.first(where: { $0.identity == viewB })).isActiveView)
+        XCTAssertEqual(scope.activeView?.identity, viewA2)
+    }
+
+    func testGivenConcurrentScenes_whenUnscopedViewStarts_itReplacesRepresentativeSceneOnly() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-A"), name: "View A", sceneIdentifier: sceneA),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-B"), name: "View B", sceneIdentifier: sceneB),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(
+                actionType: .custom,
+                name: "Select A",
+                target: .scene(sceneA)
+            ),
+            context: context,
+            writer: writer
+        )
+
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(
+                identity: ViewIdentifier("manual-view"),
+                name: "Manual View",
+                path: "Manual View"
+            ),
+            context: context,
+            writer: writer
+        )
+
+        XCTAssertEqual(scope.viewScopes.filter(\.isActiveView).count, 2)
+        XCTAssertNil(scope.viewScopes.first(where: { $0.identity == ViewIdentifier("view-A") }))
+        XCTAssertEqual(
+            scope.viewScopes.first(where: { $0.identity == ViewIdentifier("manual-view") })?.sceneIdentifier,
+            sceneA
+        )
+        XCTAssertTrue(try XCTUnwrap(scope.viewScopes.first(where: { $0.identity == ViewIdentifier("view-B") })).isActiveView)
+    }
+
+    func testGivenConcurrentScenes_whenUnscopedStopMatchesEarlierSceneIdentity_itStopsThatScene() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let viewA = ViewIdentifier("view-A")
+
+        _ = scope.process(
+            command: startViewCommand(identity: viewA, name: "View A", sceneIdentifier: sceneA),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-B"), name: "View B", sceneIdentifier: sceneB),
+            context: context,
+            writer: writer
+        )
+
+        _ = scope.process(
+            command: RUMStopViewCommand.mockWith(identity: viewA),
+            context: context,
+            writer: writer
+        )
+
+        XCTAssertNil(scope.viewScopes.first(where: { $0.identity == viewA }))
+        XCTAssertEqual(scope.viewScopes.filter(\.isActiveView).count, 1)
+        XCTAssertEqual(scope.activeView?.sceneIdentifier, sceneB)
+    }
+
+    func testGivenConcurrentScenes_whenActionTargetsEarlierScene_itUsesThatSceneViewOnce() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-A"), name: "View A", sceneIdentifier: sceneA),
+            context: context,
+            writer: writer
+        )
+        let viewAID = try XCTUnwrap(scope.activeView?.viewUUID.toRUMDataFormat)
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-B"), name: "View B", sceneIdentifier: sceneB),
+            context: context,
+            writer: writer
+        )
+
+        var action = RUMAddUserActionCommand.mockWith(actionType: .custom, name: "Action in A")
+        action.target = .scene(sceneA)
+        _ = scope.process(command: action, context: context, writer: writer)
+
+        let actionEvents = writer.events(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actionEvents.count, 1)
+        XCTAssertEqual(actionEvents.first?.view.id, viewAID)
+        XCTAssertEqual(actionEvents.first?.view.name, "View A")
+        XCTAssertEqual(scope.activeView?.sceneIdentifier, sceneA)
+    }
+
+    func testGivenConcurrentScenes_whenActionTargetsExactEarlierView_itBecomesRepresentativeForLaterSourceLessWork() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-A"), name: "View A", sceneIdentifier: sceneA),
+            context: context,
+            writer: writer
+        )
+        let viewAID = try XCTUnwrap(scope.activeView?.viewUUID)
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-B"), name: "View B", sceneIdentifier: sceneB),
+            context: context,
+            writer: writer
+        )
+
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(
+                actionType: .tap,
+                name: "Exact action in A",
+                target: .view(viewAID)
+            ),
+            context: context,
+            writer: writer
+        )
+        let resourceStartTime = Date().addingTimeInterval(1)
+        _ = scope.process(
+            command: RUMStartResourceCommand.mockWith(
+                resourceKey: "later-resource",
+                time: resourceStartTime
+            ),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStopResourceCommand.mockWith(
+                resourceKey: "later-resource",
+                time: resourceStartTime.addingTimeInterval(1)
+            ),
+            context: context,
+            writer: writer
+        )
+
+        let actionEvents = writer.events(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actionEvents.count, 1)
+        XCTAssertEqual(actionEvents.first?.view.id, viewAID.toRUMDataFormat)
+        let resourceEvents = writer.events(ofType: RUMResourceEvent.self)
+        XCTAssertEqual(resourceEvents.count, 1)
+        XCTAssertEqual(resourceEvents.first?.view.id, viewAID.toRUMDataFormat)
+        XCTAssertEqual(scope.activeView?.sceneIdentifier, sceneA)
+    }
+
+    func testGivenConcurrentScenes_whenUnscopedActionIsAdded_itDoesNotDuplicateIt() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-A"), name: "View A", sceneIdentifier: sceneA),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-B"), name: "View B", sceneIdentifier: sceneB),
+            context: context,
+            writer: writer
+        )
+        let representativeViewID = try XCTUnwrap(scope.activeView?.viewUUID.toRUMDataFormat)
+
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(actionType: .custom, name: "Legacy action"),
+            context: context,
+            writer: writer
+        )
+
+        let actionEvents = writer.events(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actionEvents.count, 1)
+        XCTAssertEqual(actionEvents.first?.view.id, representativeViewID)
+    }
+
+    func testGivenConcurrentScenesWithActionInEarlierScene_whenUnscopedActionIsAdded_itDoesNotDuplicateIt() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-A"), name: "View A", sceneIdentifier: sceneA),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(
+                actionType: .tap,
+                name: "Ongoing action in A",
+                target: .scene(sceneA)
+            ),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-B"), name: "View B", sceneIdentifier: sceneB),
+            context: context,
+            writer: writer
+        )
+        let representativeViewID = try XCTUnwrap(scope.activeView?.viewUUID.toRUMDataFormat)
+
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(actionType: .custom, name: "Legacy action"),
+            context: context,
+            writer: writer
+        )
+
+        let legacyActionEvents = writer.events(ofType: RUMActionEvent.self)
+            .filter { $0.action.target?.name == "Legacy action" }
+        XCTAssertEqual(legacyActionEvents.count, 1)
+        XCTAssertEqual(legacyActionEvents.first?.view.id, representativeViewID)
+    }
+
+    func testGivenConcurrentScenes_whenResourceCompletesAfterAnotherSceneInteracts_itKeepsItsCapturedView() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-A"), name: "View A", sceneIdentifier: sceneA),
+            context: context,
+            writer: writer
+        )
+        let viewAID = try XCTUnwrap(scope.activeView?.viewUUID)
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-B"), name: "View B", sceneIdentifier: sceneB),
+            context: context,
+            writer: writer
+        )
+
+        let resourceKey = "resource-owned-by-A"
+        var startResource = RUMStartResourceCommand.mockWith(resourceKey: resourceKey)
+        startResource.target = .view(viewAID)
+        _ = scope.process(command: startResource, context: context, writer: writer)
+
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(
+                actionType: .custom,
+                name: "Action in B",
+                target: .scene(sceneB)
+            ),
+            context: context,
+            writer: writer
+        )
+        XCTAssertEqual(scope.activeView?.sceneIdentifier, sceneB)
+
+        var stopResource = RUMStopResourceCommand.mockWith(resourceKey: resourceKey)
+        stopResource.target = .view(viewAID)
+        _ = scope.process(command: stopResource, context: context, writer: writer)
+
+        let resourceEvents = writer.events(ofType: RUMResourceEvent.self)
+        XCTAssertEqual(resourceEvents.count, 1)
+        XCTAssertEqual(resourceEvents.first?.view.id, viewAID.toRUMDataFormat)
+        XCTAssertEqual(resourceEvents.first?.view.name, "View A")
+    }
+
+    func testUnknownResourceCompletionDoesNotChangeCurrentActionCounts() throws {
+        let time = Date()
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: time)
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("A"), name: "A", sceneIdentifier: scene, time: time),
+            context: context,
+            writer: writer
+        )
+        var action = RUMStartUserActionCommand.mockWith(time: time, actionType: .tap, name: "Current")
+        action.target = .scene(scene)
+        _ = scope.process(command: action, context: context, writer: writer)
+        _ = scope.process(
+            command: RUMAddResourceMetricsCommand.mockWith(resourceKey: "unknown", time: time.addingTimeInterval(0.01)),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStopResourceCommand.mockWith(resourceKey: "unknown", time: time.addingTimeInterval(0.02)),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "unknown", time: time.addingTimeInterval(0.03)),
+            context: context,
+            writer: writer
+        )
+        var stop = RUMStopUserActionCommand.mockWith(time: time.addingTimeInterval(0.04), actionType: .tap)
+        stop.target = .scene(scene)
+        _ = scope.process(command: stop, context: context, writer: writer)
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
+        XCTAssertEqual(event.action.resource?.count, 0)
+        XCTAssertEqual(event.action.error?.count, 0)
+        XCTAssertTrue(writer.events(ofType: RUMResourceEvent.self).isEmpty)
+        XCTAssertTrue(writer.events(ofType: RUMErrorEvent.self).isEmpty)
+    }
+
+    func testUnownedResourceCommandStillExpiresUnrelatedActionAtItsDeadline() throws {
+        let time = Date(timeIntervalSinceReferenceDate: 0)
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: time)
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("A"), name: "A", sceneIdentifier: scene, time: time),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(time: time, actionType: .tap, name: "Tap", target: .scene(scene)),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMAddResourceMetricsCommand.mockWith(resourceKey: "unknown", time: time.addingTimeInterval(0.05)),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "unknown", time: time.addingTimeInterval(0.2)),
+            context: context,
+            writer: writer
+        )
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
+        XCTAssertEqual(event.action.loadingTime, 100_000_000)
+        XCTAssertEqual(event.action.error?.count, 0)
+        XCTAssertEqual(event.action.resource?.count, 0)
+        XCTAssertNil(scope.activeView?.userActionScope)
+    }
+
+    func testGivenAOwnedResourceAndBAction_whenSourceLessResourceSucceeds_itDoesNotIncrementBAction() throws {
+        let startTime = Date()
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: startTime)
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-A"),
+                name: "View A",
+                sceneIdentifier: sceneA,
+                time: startTime
+            ),
+            context: context,
+            writer: writer
+        )
+        let viewAID = try XCTUnwrap(scope.activeView?.viewUUID)
+        var startResource = RUMStartResourceCommand.mockWith(
+            resourceKey: "resource-owned-by-A",
+            time: startTime.addingTimeInterval(0.01)
+        )
+        startResource.target = .view(viewAID)
+        _ = scope.process(command: startResource, context: context, writer: writer)
+
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-B"),
+                name: "View B",
+                sceneIdentifier: sceneB,
+                time: startTime.addingTimeInterval(0.02)
+            ),
+            context: context,
+            writer: writer
+        )
+        var startAction = RUMStartUserActionCommand.mockWith(
+            time: startTime.addingTimeInterval(0.03),
+            actionType: .tap,
+            name: "Tap B"
+        )
+        startAction.target = .scene(sceneB)
+        _ = scope.process(command: startAction, context: context, writer: writer)
+
+        _ = scope.process(
+            command: RUMStopResourceCommand.mockWith(
+                resourceKey: "resource-owned-by-A",
+                time: startTime.addingTimeInterval(0.04)
+            ),
+            context: context,
+            writer: writer
+        )
+        var stopAction = RUMStopUserActionCommand.mockWith(
+            time: startTime.addingTimeInterval(0.05),
+            actionType: .tap,
+            name: "Tap B"
+        )
+        stopAction.target = .scene(sceneB)
+        _ = scope.process(command: stopAction, context: context, writer: writer)
+
+        let resource = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).last)
+        XCTAssertEqual(resource.view.id, viewAID.toRUMDataFormat)
+        let action = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
+        XCTAssertEqual(action.view.name, "View B")
+        XCTAssertEqual(action.action.resource?.count, 0)
+    }
+
+    func testGivenAOwnedResourceAndBAction_whenSourceLessResourceFails_itDoesNotIncrementBAction() throws {
+        let startTime = Date()
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: startTime)
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-A"),
+                name: "View A",
+                sceneIdentifier: sceneA,
+                time: startTime
+            ),
+            context: context,
+            writer: writer
+        )
+        let viewAID = try XCTUnwrap(scope.activeView?.viewUUID)
+        var startResource = RUMStartResourceCommand.mockWith(
+            resourceKey: "resource-owned-by-A",
+            time: startTime.addingTimeInterval(0.01)
+        )
+        startResource.target = .view(viewAID)
+        _ = scope.process(command: startResource, context: context, writer: writer)
+
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-B"),
+                name: "View B",
+                sceneIdentifier: sceneB,
+                time: startTime.addingTimeInterval(0.02)
+            ),
+            context: context,
+            writer: writer
+        )
+        var startAction = RUMStartUserActionCommand.mockWith(
+            time: startTime.addingTimeInterval(0.03),
+            actionType: .tap,
+            name: "Tap B"
+        )
+        startAction.target = .scene(sceneB)
+        _ = scope.process(command: startAction, context: context, writer: writer)
+
+        _ = scope.process(
+            command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(
+                resourceKey: "resource-owned-by-A",
+                time: startTime.addingTimeInterval(0.04),
+                message: "resource failed"
+            ),
+            context: context,
+            writer: writer
+        )
+        var stopAction = RUMStopUserActionCommand.mockWith(
+            time: startTime.addingTimeInterval(0.05),
+            actionType: .tap,
+            name: "Tap B"
+        )
+        stopAction.target = .scene(sceneB)
+        _ = scope.process(command: stopAction, context: context, writer: writer)
+
+        let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
+        XCTAssertEqual(error.view.id, viewAID.toRUMDataFormat)
+        let action = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
+        XCTAssertEqual(action.view.name, "View B")
+        XCTAssertEqual(action.action.error?.count, 0)
+        XCTAssertFalse(action.action.frustration?.type.contains(.errorTap) == true)
+    }
+
+    func testGivenResourceOwnedByInactiveView_whenItCompletes_itDoesNotAlsoReachCurrentViewsAction() throws {
+        let startTime = Date()
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: startTime)
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-A1"),
+                name: "View A1",
+                sceneIdentifier: sceneA,
+                time: startTime
+            ),
+            context: context,
+            writer: writer
+        )
+        let viewA1ID = try XCTUnwrap(scope.activeView?.viewUUID)
+
+        let resourceKey = "resource-owned-by-A1"
+        var startResource = RUMStartResourceCommand.mockWith(
+            resourceKey: resourceKey,
+            time: startTime.addingTimeInterval(0.01)
+        )
+        startResource.target = .view(viewA1ID)
+        _ = scope.process(command: startResource, context: context, writer: writer)
+
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-A2"),
+                name: "View A2",
+                sceneIdentifier: sceneA,
+                time: startTime.addingTimeInterval(0.02)
+            ),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(
+                time: startTime.addingTimeInterval(0.03),
+                actionType: .tap,
+                name: "Action in A2",
+                target: .scene(sceneA)
+            ),
+            context: context,
+            writer: writer
+        )
+
+        var stopResource = RUMStopResourceCommand.mockWith(
+            resourceKey: resourceKey,
+            time: startTime.addingTimeInterval(0.04)
+        )
+        stopResource.target = .view(viewA1ID)
+        _ = scope.process(command: stopResource, context: context, writer: writer)
+
+        var expireAction = RUMStopUserActionCommand(
+            time: startTime.addingTimeInterval(0.2),
+            globalAttributes: [:],
+            attributes: [:],
+            actionType: .tap,
+            name: nil
+        )
+        expireAction.target = .scene(sceneA)
+        _ = scope.process(command: expireAction, context: context, writer: writer)
+
+        let resource = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).last)
+        XCTAssertEqual(resource.view.id, viewA1ID.toRUMDataFormat)
+        let action = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
+        XCTAssertEqual(action.view.name, "View A2")
+        XCTAssertEqual(action.action.resource?.count, 0)
+    }
+
+    func testGivenCachedLegacyViewAndActiveSceneView_whenExactErrorArrives_itKeepsLegacyFallback() throws {
+        let dateProvider = RelativeDateProvider()
+        let viewCache = ViewCache(dateProvider: dateProvider)
+        let legacyViewID = RUMUUID(rawValue: UUID())
+        viewCache.insert(
+            id: legacyViewID.toRUMDataFormat,
+            timestamp: dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        )
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: dateProvider.now,
+            dependencies: .mockWith(viewCache: viewCache)
+        )
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-A"),
+                name: "View A",
+                sceneIdentifier: RUMSceneIdentifier(rawValue: "scene-A"),
+                time: dateProvider.now
+            ),
+            context: context,
+            writer: writer
+        )
+
+        var error = RUMAddCurrentViewErrorCommand.mockWithErrorMessage(message: "legacy delayed error")
+        error.target = .view(legacyViewID)
+        _ = scope.process(command: error, context: context, writer: writer)
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
+        XCTAssertEqual(event.view.name, "View A")
+    }
+
+    func testGivenInactiveExactLegacyViewAndActiveSceneView_whenErrorArrives_itKeepsLegacyFallback() throws {
+        let startTime = Date()
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: startTime)
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(
+                time: startTime,
+                identity: ViewIdentifier("legacy-view"),
+                name: "Legacy View",
+                path: "Legacy View"
+            ),
+            context: context,
+            writer: writer
+        )
+        let legacyViewID = try XCTUnwrap(scope.activeView?.viewUUID)
+        var keepLegacyAlive = RUMStartResourceCommand.mockWith(resourceKey: "legacy-resource")
+        keepLegacyAlive.target = .view(legacyViewID)
+        _ = scope.process(command: keepLegacyAlive, context: context, writer: writer)
+
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-A"),
+                name: "View A",
+                sceneIdentifier: RUMSceneIdentifier(rawValue: "scene-A"),
+                time: startTime.addingTimeInterval(0.01)
+            ),
+            context: context,
+            writer: writer
+        )
+        XCTAssertTrue(scope.viewScopes.contains { $0.viewUUID == legacyViewID && !$0.isActiveView })
+
+        var error = RUMAddCurrentViewErrorCommand.mockWithErrorMessage(message: "exact legacy delayed error")
+        error.target = .view(legacyViewID)
+        _ = scope.process(command: error, context: context, writer: writer)
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
+        XCTAssertEqual(event.view.name, "View A")
+    }
+
+    func testGivenCapturedViewNoLongerExists_whenResourceRuns_itFallsBackWithoutLosingCompletion() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let initialView = ViewIdentifier("initial-view")
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(identity: initialView, name: "Initial", path: "Initial"),
+            context: context,
+            writer: writer
+        )
+
+        let missingViewID = RUMUUID(rawValue: UUID())
+        let resourceKey = "resource-with-expired-owner"
+        var startResource = RUMStartResourceCommand.mockWith(resourceKey: resourceKey)
+        startResource.target = .view(missingViewID)
+        _ = scope.process(command: startResource, context: context, writer: writer)
+
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(
+                identity: ViewIdentifier("next-view"),
+                name: "Next",
+                path: "Next"
+            ),
+            context: context,
+            writer: writer
+        )
+
+        var stopResource = RUMStopResourceCommand.mockWith(resourceKey: resourceKey)
+        stopResource.target = .view(missingViewID)
+        _ = scope.process(command: stopResource, context: context, writer: writer)
+
+        let resourceEvents = writer.events(ofType: RUMResourceEvent.self)
+        XCTAssertEqual(resourceEvents.count, 1)
+        XCTAssertEqual(resourceEvents.first?.view.name, "Initial")
+    }
+
+    func testGivenCapturedViewNoLongerExists_whenErrorArrives_itFallsBackToRepresentativeView() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(name: "Representative", path: "Representative"),
+            context: context,
+            writer: writer
+        )
+
+        var error = RUMAddCurrentViewErrorCommand.mockWithErrorMessage(message: "delayed error")
+        error.target = .view(RUMUUID(rawValue: UUID()))
+        _ = scope.process(command: error, context: context, writer: writer)
+
+        let errorEvents = writer.events(ofType: RUMErrorEvent.self)
+        XCTAssertEqual(errorEvents.count, 1)
+        XCTAssertEqual(errorEvents.first?.view.name, "Representative")
+    }
+
+    func testGivenUnknownCapturedViewAndConcurrentScenes_whenErrorArrives_itDoesNotGuessAnotherScene() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-A"),
+                name: "View A",
+                sceneIdentifier: .init(rawValue: "scene-A")
+            ),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-B"),
+                name: "View B",
+                sceneIdentifier: .init(rawValue: "scene-B")
+            ),
+            context: context,
+            writer: writer
+        )
+
+        var error = RUMAddCurrentViewErrorCommand.mockWithErrorMessage(message: "delayed error")
+        error.target = .view(RUMUUID(rawValue: UUID()))
+        _ = scope.process(command: error, context: context, writer: writer)
+
+        XCTAssertTrue(writer.events(ofType: RUMErrorEvent.self).isEmpty)
+    }
+
+    func testGivenCapturedSceneViewNoLongerExists_whenErrorArrives_itFallsBackWithinTheSameScene() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-A-1"), name: "View A1", sceneIdentifier: sceneA),
+            context: context,
+            writer: writer
+        )
+        let capturedViewAID = try XCTUnwrap(scope.activeView?.viewUUID)
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-B"), name: "View B", sceneIdentifier: sceneB),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-A-2"), name: "View A2", sceneIdentifier: sceneA),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(
+                actionType: .custom,
+                name: "Make B representative",
+                target: .scene(sceneB)
+            ),
+            context: context,
+            writer: writer
+        )
+
+        var error = RUMAddCurrentViewErrorCommand.mockWithErrorMessage(message: "delayed error from A")
+        error.target = .view(capturedViewAID)
+        _ = scope.process(command: error, context: context, writer: writer)
+
+        let errorEvent = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
+        XCTAssertEqual(errorEvent.view.name, "View A2")
+    }
+
+    func testGivenCapturedSceneViewAndItsSceneNoLongerExist_whenErrorArrives_itDoesNotUseAnotherScene() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let viewA = ViewIdentifier("view-A")
+
+        _ = scope.process(
+            command: startViewCommand(identity: viewA, name: "View A", sceneIdentifier: sceneA),
+            context: context,
+            writer: writer
+        )
+        let capturedViewAID = try XCTUnwrap(scope.activeView?.viewUUID)
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-B"), name: "View B", sceneIdentifier: sceneB),
+            context: context,
+            writer: writer
+        )
+        var stopA = RUMStopViewCommand.mockWith(identity: viewA)
+        stopA.target = .scene(sceneA)
+        _ = scope.process(command: stopA, context: context, writer: writer)
+
+        var error = RUMAddCurrentViewErrorCommand.mockWithErrorMessage(message: "delayed error from closed A")
+        error.target = .view(capturedViewAID)
+        _ = scope.process(command: error, context: context, writer: writer)
+
+        XCTAssertTrue(writer.events(ofType: RUMErrorEvent.self).isEmpty)
+    }
+
+    func testGivenCapturedViewOwnershipExpiredAndOneOtherSceneRemains_whenErrorArrives_itDoesNotGuessThatScene() throws {
+        let dateProvider = RelativeDateProvider()
+        let viewCache = ViewCache(dateProvider: dateProvider, ttl: 1)
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: dateProvider.now,
+            dependencies: .mockWith(viewCache: viewCache)
+        )
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let viewAIdentity = ViewIdentifier("view-A")
+        _ = scope.process(
+            command: startViewCommand(
+                identity: viewAIdentity,
+                name: "View A",
+                sceneIdentifier: sceneA,
+                time: dateProvider.now
+            ),
+            context: context,
+            writer: writer
+        )
+        let capturedViewAID = try XCTUnwrap(scope.activeView?.viewUUID)
+        var stopA = RUMStopViewCommand.mockWith(time: dateProvider.now, identity: viewAIdentity)
+        stopA.target = .scene(sceneA)
+        _ = scope.process(command: stopA, context: context, writer: writer)
+
+        dateProvider.advance(bySeconds: 2)
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-B"),
+                name: "View B",
+                sceneIdentifier: sceneB,
+                time: dateProvider.now
+            ),
+            context: context,
+            writer: writer
+        )
+        XCTAssertNil(viewCache.sceneIdentifier(forViewID: capturedViewAID.toRUMDataFormat))
+
+        var error = RUMAddCurrentViewErrorCommand.mockWithErrorMessage(message: "delayed error from A")
+        error.target = .view(capturedViewAID)
+        _ = scope.process(command: error, context: context, writer: writer)
+
+        XCTAssertTrue(writer.events(ofType: RUMErrorEvent.self).isEmpty)
+    }
+
+    func testGivenOperationStartedInOneScene_whenItEndsThereAfterNavigation_itOverridesAnotherProcessRepresentative() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-A-1"),
+                name: "View A1",
+                sceneIdentifier: sceneA
+            ),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-B"),
+                name: "View B",
+                sceneIdentifier: sceneB
+            ),
+            context: context,
+            writer: writer
+        )
+        let operationKey = "operation-A"
+        var operationStart = RUMOperationStepVitalCommand(
+            vitalId: UUID().uuidString,
+            name: "load_note",
+            operationKey: operationKey,
+            stepType: .start,
+            failureReason: nil,
+            time: Date(),
+            attributes: [:]
+        )
+        operationStart.target = .scene(sceneA)
+        _ = scope.process(
+            command: operationStart,
+            context: context,
+            writer: writer
+        )
+
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-A-2"),
+                name: "View A2",
+                sceneIdentifier: sceneA
+            ),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(
+                actionType: .custom,
+                name: "Interaction in B",
+                target: .scene(sceneB)
+            ),
+            context: context,
+            writer: writer
+        )
+        XCTAssertEqual(scope.activeView?.sceneIdentifier, sceneB)
+
+        var operationEnd = RUMOperationStepVitalCommand(
+            vitalId: UUID().uuidString,
+            name: "load_note",
+            operationKey: operationKey,
+            stepType: .end,
+            failureReason: nil,
+            time: Date(),
+            attributes: [:]
+        )
+        operationEnd.target = .scene(sceneA)
+        _ = scope.process(
+            command: operationEnd,
+            context: context,
+            writer: writer
+        )
+
+        let operationEvents = writer.events(ofType: RUMVitalOperationStepEvent.self)
+        XCTAssertEqual(operationEvents.count, 2)
+        XCTAssertEqual(operationEvents[0].view.url, "View A1")
+        XCTAssertEqual(operationEvents[1].view.url, "View A2")
+    }
+
+    func testGivenOperationStartedInSceneA_whenItEndsInSceneB_itUsesEachScenesCurrentView() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-A"),
+                name: "Message List",
+                sceneIdentifier: sceneA
+            ),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-B"),
+                name: "Full Thread",
+                sceneIdentifier: sceneB
+            ),
+            context: context,
+            writer: writer
+        )
+
+        var operationStart = RUMOperationStepVitalCommand(
+            vitalId: UUID().uuidString,
+            name: "thread_open",
+            operationKey: "key-123",
+            stepType: .start,
+            failureReason: nil,
+            time: Date(),
+            attributes: [:]
+        )
+        operationStart.target = .scene(sceneA)
+        _ = scope.process(command: operationStart, context: context, writer: writer)
+
+        var operationEnd = RUMOperationStepVitalCommand(
+            vitalId: UUID().uuidString,
+            name: "thread_open",
+            operationKey: "key-123",
+            stepType: .end,
+            failureReason: nil,
+            time: Date(),
+            attributes: [:]
+        )
+        operationEnd.target = .scene(sceneB)
+        _ = scope.process(command: operationEnd, context: context, writer: writer)
+
+        let operationEvents = writer.events(ofType: RUMVitalOperationStepEvent.self)
+        XCTAssertEqual(operationEvents.count, 2)
+        XCTAssertEqual(operationEvents[0].view.url, "Message List")
+        XCTAssertEqual(operationEvents[1].view.url, "Full Thread")
+    }
+
+    func testGivenOperationTargetSceneHasNoView_whenNoSnapshot_itUsesProcessRepresentative() throws {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-A"),
+                name: "View A",
+                sceneIdentifier: sceneA
+            ),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-B"),
+                name: "View B",
+                sceneIdentifier: sceneB
+            ),
+            context: context,
+            writer: writer
+        )
+
+        var operationStart = RUMOperationStepVitalCommand(
+            vitalId: UUID().uuidString,
+            name: "operation",
+            operationKey: "key",
+            stepType: .start,
+            failureReason: nil,
+            time: Date(),
+            attributes: [:]
+        )
+        operationStart.target = .scene(RUMSceneIdentifier(rawValue: "missing-scene"))
+        _ = scope.process(command: operationStart, context: context, writer: writer)
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMVitalOperationStepEvent.self).last)
+        XCTAssertEqual(event.view.url, "View B")
+    }
+
+    func testGivenConcurrentScenes_whenSessionStops_itStopsEverySceneView() {
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-A"), name: "View A", sceneIdentifier: sceneA),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-B"), name: "View B", sceneIdentifier: sceneB),
+            context: context,
+            writer: writer
+        )
+
+        _ = scope.process(command: RUMStopSessionCommand.mockWith(), context: context, writer: writer)
+
+        XCTAssertFalse(scope.isActive)
+        XCTAssertTrue(scope.viewScopes.isEmpty)
+    }
+
+    func testGivenConcurrentScenes_itKeepsIndependentINVHistories() {
+        var metrics: [INVMetricMock] = []
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: Date(),
+            dependencies: .mockWith(
+                interactionToNextViewMetricFactory: {
+                    let metric = INVMetricMock()
+                    metrics.append(metric)
+                    return metric
+                }
+            )
+        )
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-A-1"), name: "View A1", sceneIdentifier: sceneA),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-B"), name: "View B", sceneIdentifier: sceneB),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(
+                actionType: .custom,
+                name: "Action in A",
+                target: .scene(sceneA)
+            ),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-A-2"), name: "View A2", sceneIdentifier: sceneA),
+            context: context,
+            writer: writer
+        )
+
+        XCTAssertEqual(metrics.count, 3, "legacy fallback plus one tracker for each scene")
+        XCTAssertEqual(metrics[0].trackedViewStarts.count, 0)
+        XCTAssertEqual(metrics[1].trackedViewStarts.map(\.viewName), ["View A1", "View A2"])
+        XCTAssertEqual(metrics[1].trackedActions.map(\.actionName), ["Action in A"])
+        XCTAssertEqual(metrics[2].trackedViewStarts.map(\.viewName), ["View B"])
+        XCTAssertTrue(metrics[2].trackedActions.isEmpty)
     }
 
     func testWhenViewStarts_itUpdatesTheViewCache() throws {
@@ -237,6 +1955,95 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(scope.viewScopes[1].viewStartTime, commandTime, "Background view should be started at command time")
         XCTAssertEqual(scope.viewScopes[1].viewName, RUMOffViewEventsHandlingRule.Constants.backgroundViewName)
         XCTAssertEqual(scope.viewScopes[1].viewPath, RUMOffViewEventsHandlingRule.Constants.backgroundViewURL)
+    }
+
+    func testGivenSceneAViewAndSceneBBackgroundView_whenSceneAActs_itDoesNotDuplicateIntoBackground() throws {
+        let sessionStartTime = Date()
+        var backgroundContext = context
+        backgroundContext.applicationStateHistory = .mockAppInBackground(since: sessionStartTime)
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: sessionStartTime,
+            dependencies: .mockWith(trackBackgroundEvents: true)
+        )
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-A"),
+                name: "View A",
+                sceneIdentifier: sceneA,
+                time: sessionStartTime
+            ),
+            context: backgroundContext,
+            writer: writer
+        )
+
+        var error = RUMAddCurrentViewErrorCommand.mockWithErrorMessage(message: "scene B background error")
+        error.target = .scene(sceneB)
+        _ = scope.process(command: error, context: backgroundContext, writer: writer)
+
+        let backgroundView = try XCTUnwrap(scope.viewScopes.first(where: {
+            $0.sceneIdentifier == sceneB && $0.viewPath == RUMOffViewEventsHandlingRule.Constants.backgroundViewURL
+        }))
+        XCTAssertTrue(backgroundView.isActiveView)
+
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(
+                actionType: .custom,
+                name: "Scene A action",
+                target: .scene(sceneA)
+            ),
+            context: backgroundContext,
+            writer: writer
+        )
+
+        let action = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
+        XCTAssertEqual(action.view.name, "View A")
+        XCTAssertEqual(writer.events(ofType: RUMActionEvent.self).count, 1)
+    }
+
+    func testGivenConcurrentScenesAndBET_whenUnknownExactViewErrorArrives_itDoesNotCreateLegacyBackgroundView() {
+        let sessionStartTime = Date()
+        var backgroundContext = context
+        backgroundContext.applicationStateHistory = .mockAppInBackground(since: sessionStartTime)
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: sessionStartTime,
+            dependencies: .mockWith(trackBackgroundEvents: true)
+        )
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-A"),
+                name: "View A",
+                sceneIdentifier: RUMSceneIdentifier(rawValue: "scene-A"),
+                time: sessionStartTime
+            ),
+            context: backgroundContext,
+            writer: writer
+        )
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-B"),
+                name: "View B",
+                sceneIdentifier: RUMSceneIdentifier(rawValue: "scene-B"),
+                time: sessionStartTime
+            ),
+            context: backgroundContext,
+            writer: writer
+        )
+        let initialScopeCount = scope.viewScopes.count
+
+        var error = RUMAddCurrentViewErrorCommand.mockWithErrorMessage(message: "unknown-view error")
+        error.target = .view(RUMUUID(rawValue: UUID()))
+        _ = scope.process(command: error, context: backgroundContext, writer: writer)
+
+        XCTAssertEqual(scope.viewScopes.count, initialScopeCount)
+        XCTAssertFalse(scope.viewScopes.contains {
+            $0.sceneIdentifier == nil
+                && $0.viewPath == RUMOffViewEventsHandlingRule.Constants.backgroundViewURL
+        })
+        XCTAssertTrue(writer.events(ofType: RUMErrorEvent.self).isEmpty)
     }
 
     func testGivenAppInBackgroundAndNoViewScopeAndBackgroundEventsTrackingEnabled_whenCommandCanNotStartBackgroundView_itDoesNotCreateBackgroundScope() {
@@ -445,6 +2252,85 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertNil(fatalErrorContext.view)
     }
 
+    func testGivenConcurrentScenes_fatalContextFollowsRepresentativeAndIgnoresOtherViewUpdates() throws {
+        let fatalErrorContext = FatalErrorContextNotifierMock()
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: Date(),
+            dependencies: .mockWith(fatalErrorContext: fatalErrorContext)
+        )
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let viewA = ViewIdentifier("view-A")
+        let viewB = ViewIdentifier("view-B")
+
+        _ = scope.process(
+            command: startViewCommand(identity: viewA, name: "View A", sceneIdentifier: sceneA),
+            context: context,
+            writer: writer
+        )
+        let viewAID = try XCTUnwrap(scope.activeView?.viewUUID)
+        _ = scope.process(
+            command: startViewCommand(identity: viewB, name: "View B", sceneIdentifier: sceneB),
+            context: context,
+            writer: writer
+        )
+        XCTAssertEqual(fatalErrorContext.view?.view.name, "View B")
+
+        var resource = RUMStartResourceCommand.mockWith(resourceKey: "resource-A")
+        resource.target = .view(viewAID)
+        _ = scope.process(command: resource, context: context, writer: writer)
+
+        XCTAssertEqual(fatalErrorContext.view?.view.name, "View B")
+
+        var stopB = RUMStopViewCommand.mockWith(identity: viewB)
+        stopB.target = .scene(sceneB)
+        _ = scope.process(command: stopB, context: context, writer: writer)
+
+        XCTAssertEqual(fatalErrorContext.view?.view.name, "View A")
+    }
+
+    func testGivenLastRepresentativeSceneStops_itClearsCrashAndWatchdogContext() throws {
+        let featureScope = FeatureScopeMock()
+        let fatalErrorContext = FatalErrorContextNotifierMock()
+        let watchdog = WatchdogTerminationMonitor(
+            appStateManager: .mockRandom(),
+            checker: .mockRandom(),
+            storage: nil,
+            feature: featureScope,
+            reporter: WatchdogTerminationReporter.mockRandom()
+        )
+        watchdog.currentState = .started
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: Date(),
+            dependencies: .mockWith(
+                featureScope: featureScope,
+                fatalErrorContext: fatalErrorContext,
+                watchdogTermination: watchdog
+            )
+        )
+        let viewA = ViewIdentifier("view-A")
+        _ = scope.process(
+            command: startViewCommand(
+                identity: viewA,
+                name: "View A",
+                sceneIdentifier: RUMSceneIdentifier(rawValue: "scene-A")
+            ),
+            context: context,
+            writer: writer
+        )
+        XCTAssertEqual(fatalErrorContext.view?.view.name, "View A")
+        XCTAssertNotNil(featureScope.dataStoreMock.value(forKey: RUMDataStore.Key.watchdogRUMViewEvent.rawValue))
+
+        var stopA = RUMStopViewCommand.mockWith(identity: viewA)
+        stopA.target = .scene(RUMSceneIdentifier(rawValue: "scene-A"))
+        _ = scope.process(command: stopA, context: context, writer: writer)
+
+        XCTAssertNil(fatalErrorContext.view)
+        XCTAssertNil(featureScope.dataStoreMock.value(forKey: RUMDataStore.Key.watchdogRUMViewEvent.rawValue))
+    }
+
     func testWhenSessionEnds_itUpdatesFatalErrorContextWithView() throws {
         let featureScope = FeatureScopeMock()
         let fatalErrorContext = FatalErrorContextNotifierMock()
@@ -636,6 +2522,32 @@ class RUMSessionScopeTests: XCTestCase {
         )
     }
 
+    func testGivenAnotherSceneHasAnActiveView_whenCommandTargetsSceneWithoutAView_itLogsWarning() throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: Date())
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("view-B"), name: "View B", sceneIdentifier: sceneB),
+            context: context,
+            writer: writer
+        )
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(
+                actionType: .custom,
+                name: "Action from missing A",
+                target: .scene(sceneA)
+            ),
+            context: context,
+            writer: writer
+        )
+
+        XCTAssertNotNil(dd.logger.warnLog)
+        XCTAssertTrue(writer.events(ofType: RUMActionEvent.self).isEmpty)
+    }
+
     func testGivenSessionWithNoActiveScope_whenReceivingSilentCommand_itDoesNotLogWarning() throws {
         func recordWarningOnReceiving(command: RUMCommand) -> String? {
             // Given
@@ -705,6 +2617,173 @@ class RUMSessionScopeTests: XCTestCase {
 
         // Then
         XCTAssertTrue(result)
+    }
+
+    func testConcurrentScenesKeepSharedVitalsInTheirOwnViewIntervals() throws {
+        let cpu = BoundedVitalReader()
+        let memory = BoundedVitalReader()
+        let refresh = ContinuousVitalReaderMock()
+        var readers = VitalsReaders(frequency: 0.1)
+        readers.cpu = cpu
+        readers.memory = memory
+        readers.refreshRate = refresh
+        let start = Date()
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: start,
+            dependencies: .mockWith(vitalsReaders: readers)
+        )
+        let sceneA = RUMSceneIdentifier(rawValue: "vitals-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "vitals-B")
+
+        func samples(cpuValues: [Double], memoryValues: [Double]) -> XCTestExpectation {
+            let sampled = expectation(description: "bounded memory samples")
+            cpu.values = cpuValues
+            memory.values = memoryValues
+            memory.onDrained = { sampled.fulfill() }
+            return sampled
+        }
+
+        func startView(_ key: String, scene: RUMSceneIdentifier, time: Date) {
+            _ = scope.process(
+                command: startViewCommand(identity: ViewIdentifier(key), name: key, sceneIdentifier: scene, time: time),
+                context: context,
+                writer: writer
+            )
+        }
+
+        func stopView(_ key: String, scene: RUMSceneIdentifier, time: Date) {
+            var command = RUMStopViewCommand.mockWith(time: time, identity: ViewIdentifier(key))
+            command.target = .scene(scene)
+            _ = scope.process(command: command, context: context, writer: writer)
+        }
+
+        let initial = samples(cpuValues: [100, 100], memoryValues: [1_024, 1_024])
+        startView("A", scene: sceneA, time: start)
+        startView("B", scene: sceneB, time: start)
+        XCTAssertEqual(refresh.publishers.count, 2)
+        wait(for: [initial], timeout: 2)
+        let second = samples(cpuValues: [140, 140], memoryValues: [3_072, 3_072])
+        wait(for: [second], timeout: 2)
+        var frames = VitalInfo()
+        frames.addSample(60)
+        frames.addSample(30)
+        refresh.vitalInfo = frames
+
+        let viewAID = try XCTUnwrap(scope.viewScopes.first { $0.sceneIdentifier == sceneA }?.viewUUID.toRUMDataFormat)
+        let viewBID = try XCTUnwrap(scope.viewScopes.first { $0.sceneIdentifier == sceneB }?.viewUUID.toRUMDataFormat)
+        XCTAssertNotEqual(viewAID, viewBID)
+        stopView("A", scene: sceneA, time: start.addingTimeInterval(10))
+        XCTAssertEqual(refresh.publishers.count, 1)
+        XCTAssertEqual(scope.activeView?.viewUUID.toRUMDataFormat, viewBID)
+        let finalA = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last { $0.view.id == viewAID })
+        XCTAssertEqual(finalA.view.cpuTicksCount, 40)
+        XCTAssertEqual(finalA.view.cpuTicksPerSecond, 4)
+        XCTAssertEqual(finalA.view.memoryAverage, 2_048)
+        XCTAssertEqual(finalA.view.memoryMax, 3_072)
+        XCTAssertEqual(finalA.view.refreshRateAverage, 45)
+        XCTAssertEqual(finalA.view.refreshRateMin, 30)
+        XCTAssertEqual(finalA.view.isActive, false)
+
+        var survivingFrames = VitalInfo()
+        survivingFrames.addSample(15)
+        refresh.vitalInfo = survivingFrames
+        stopView("B", scene: sceneB, time: start.addingTimeInterval(20))
+        XCTAssertEqual(refresh.publishers.count, 0)
+        let finalB = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last { $0.view.id == viewBID })
+        XCTAssertEqual(finalB.session.id, finalA.session.id)
+        XCTAssertEqual(finalB.view.cpuTicksCount, 40)
+        XCTAssertEqual(finalB.view.cpuTicksPerSecond, 2)
+        XCTAssertEqual(finalB.view.memoryAverage, 2_048)
+        XCTAssertEqual(finalB.view.memoryMax, 3_072)
+        XCTAssertEqual(finalB.view.refreshRateAverage, 15)
+        XCTAssertEqual(finalB.view.refreshRateMin, 15)
+        XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).last { $0.view.id == viewAID }, finalA)
+
+        let replacement = samples(cpuValues: [240], memoryValues: [4_096])
+        startView("A", scene: sceneA, time: start.addingTimeInterval(30))
+        wait(for: [replacement], timeout: 2)
+        refresh.vitalInfo = survivingFrames
+        stopView("A", scene: sceneA, time: start.addingTimeInterval(30.5))
+        let freshA = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        XCTAssertNotEqual(freshA.view.id, viewAID)
+        XCTAssertEqual(freshA.session.id, finalA.session.id)
+        XCTAssertEqual(freshA.view.cpuTicksCount, 0)
+        XCTAssertNil(freshA.view.cpuTicksPerSecond)
+        XCTAssertEqual(freshA.view.memoryAverage, 4_096)
+        XCTAssertEqual(freshA.view.memoryMax, 4_096)
+        XCTAssertEqual(freshA.view.refreshRateAverage, 15)
+        XCTAssertEqual(refresh.publishers.count, 0)
+        XCTAssertEqual(Set(writer.events(ofType: RUMViewEvent.self).map { $0.view.id }).count, 3)
+        XCTAssertTrue(writer.events(ofType: RUMActionEvent.self).isEmpty)
+        XCTAssertTrue(writer.events(ofType: RUMErrorEvent.self).isEmpty)
+        XCTAssertTrue(writer.events(ofType: RUMResourceEvent.self).isEmpty)
+    }
+
+    func testConcurrentScenesWithDisabledVitalsKeepMetricFieldsAbsent() {
+        let start = Date()
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: start, dependencies: .mockWith(vitalsReaders: nil))
+        for label in ["A", "B"] {
+            _ = scope.process(
+                command: startViewCommand(
+                    identity: ViewIdentifier(label),
+                    name: label,
+                    sceneIdentifier: RUMSceneIdentifier(rawValue: label),
+                    time: start
+                ),
+                context: context,
+                writer: writer
+            )
+        }
+        _ = scope.process(
+            command: RUMStopSessionCommand.mockWith(time: start.addingTimeInterval(2)),
+            context: context,
+            writer: writer
+        )
+        let views = writer.events(ofType: RUMViewEvent.self)
+        XCTAssertEqual(Set(views.map { $0.view.id }).count, 2)
+        for event in views {
+            XCTAssertNil(event.view.cpuTicksCount)
+            XCTAssertNil(event.view.cpuTicksPerSecond)
+            XCTAssertNil(event.view.memoryAverage)
+            XCTAssertNil(event.view.memoryMax)
+            XCTAssertNil(event.view.refreshRateAverage)
+            XCTAssertNil(event.view.refreshRateMin)
+        }
+    }
+
+    func testConcurrentSceneChurnDoesNotRestartOrPauseSessionTimeseries() {
+        let collector = TimeseriesCollectorSpy()
+        let start = Date()
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: start,
+            dependencies: .mockWith(timeseriesCollector: collector)
+        )
+        for (key, scene) in [("A1", "A"), ("B1", "B"), ("A2", "A")] {
+            _ = scope.process(
+                command: startViewCommand(
+                    identity: ViewIdentifier(key),
+                    name: key,
+                    sceneIdentifier: RUMSceneIdentifier(rawValue: scene),
+                    time: start
+                ),
+                context: context,
+                writer: writer
+            )
+        }
+        var stop = RUMStopViewCommand.mockWith(time: start, identity: ViewIdentifier("A2"))
+        stop.target = .scene(RUMSceneIdentifier(rawValue: "A"))
+        _ = scope.process(command: stop, context: context, writer: writer)
+        XCTAssertEqual(scope.activeView?.viewName, "B1")
+        XCTAssertEqual(collector.startCallCount, 1)
+        XCTAssertEqual(collector.pauseCallCount, 0)
+        XCTAssertEqual(collector.resumeCallCount, 0)
+        XCTAssertEqual(collector.stopCallCount, 0)
+        _ = scope.process(command: RUMStopSessionCommand.mockWith(time: start), context: context, writer: writer)
+        XCTAssertEqual(collector.startCallCount, 1)
+        XCTAssertEqual(collector.stopCallCount, 1)
+        XCTAssertEqual(collector.lastStartedSessionID, scope.context.sessionID.toRUMDataFormat)
     }
 
     // MARK: - Timeseries collector lifecycle
@@ -864,6 +2943,32 @@ class RUMSessionScopeTests: XCTestCase {
 }
 
 // MARK: - Test Helpers
+
+private func storedWatchdogViewID(in featureScope: FeatureScopeMock) throws -> String {
+    let storedValue = try XCTUnwrap(
+        featureScope.dataStoreMock.value(forKey: RUMDataStore.Key.watchdogRUMViewEvent.rawValue)
+    )
+    let data = try XCTUnwrap(storedValue.data())
+    let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+    let view = try XCTUnwrap(json["view"] as? [String: Any])
+    return try XCTUnwrap(view["id"] as? String)
+}
+
+private final class BoundedVitalReader: SamplingBasedVitalReader {
+    var values: [Double] = []
+    var onDrained: (() -> Void)?
+
+    func readVitalData() -> Double? {
+        guard !values.isEmpty else {
+            return nil
+        }
+        let value = values.removeFirst()
+        if values.isEmpty {
+            onDrained?()
+        }
+        return value
+    }
+}
 
 private class TimeseriesCollectorSpy: TimeseriesCollecting {
     weak var activeContextReader: RUMActiveContextReader?

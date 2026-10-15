@@ -1129,3 +1129,85 @@ class RUMSessionTimeOutTests: RUMSessionTestsBase {
     }
     #endif
 }
+
+#if os(iOS)
+extension RUMSessionTimeOutTests {
+    func testAppRunner_whenViewOwnsScene_itPostsOrderedLifecycleForThatScene() throws {
+        try assertAppRunnerLifecycle(attached: true, disappeared: false)
+    }
+
+    func testAppRunner_whenViewIsDetached_itPreservesApplicationOnlyLifecycle() throws {
+        try assertAppRunnerLifecycle(attached: false, disappeared: false)
+    }
+
+    func testAppRunner_whenViewDisappeared_itDoesNotPostToItsFormerScene() throws {
+        try assertAppRunnerLifecycle(attached: true, disappeared: true)
+    }
+
+    private func assertAppRunnerLifecycle(attached: Bool, disappeared: Bool) throws {
+        let app = AppRunner()
+        app.setUp()
+        defer { app.tearDown() }
+        app.launch(.userLaunchInAppDelegateBasedApp(processLaunchDate: Date()))
+        app.transitionToActive()
+        let controller = UIViewController()
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let window = UIWindow(windowScene: scene)
+        if attached {
+            window.addSubview(controller.view)
+            XCTAssertTrue(controller.view.window === window)
+        } else {
+            XCTAssertNil(controller.view.window)
+        }
+        app.viewDidAppear(vc: controller)
+        if disappeared { app.viewDidDisappear(vc: controller) }
+        var notifications: [Notification] = []
+        let observer = app.notificationCenter.addObserver(forName: nil, object: nil, queue: nil) { notifications.append($0) }
+        defer { app.notificationCenter.removeObserver(observer) }
+
+        app.transitionToBackground()
+        app.transitionToActive()
+
+        let expectsScene = attached && !disappeared
+        let expected: [Notification.Name] = expectsScene ? [
+            ApplicationNotifications.willResignActive, UIScene.didEnterBackgroundNotification,
+            ApplicationNotifications.didEnterBackground, ApplicationNotifications.willEnterForeground,
+            UIScene.willEnterForegroundNotification, ApplicationNotifications.didBecomeActive
+        ] : [
+            ApplicationNotifications.willResignActive, ApplicationNotifications.didEnterBackground,
+            ApplicationNotifications.willEnterForeground, ApplicationNotifications.didBecomeActive
+        ]
+        XCTAssertEqual(notifications.map(\.name), expected)
+        let sceneNotifications = notifications.filter { $0.object is UIScene }
+        XCTAssertEqual(sceneNotifications.count, expectsScene ? 2 : 0)
+        XCTAssertTrue(sceneNotifications.allSatisfy { ($0.object as? UIScene) === scene })
+        withExtendedLifetime(window) {}
+    }
+
+    func testAppRunner_whenScenePostIsOffMain_itFailsBeforeReadingUIKit() {
+        final class ViewReadProbe: UIViewController {
+            private(set) var reads = 0
+            override var viewIfLoaded: UIView? {
+                reads += 1
+                return nil
+            }
+        }
+        var failures: [String] = []
+        let app = AppRunner(reportSceneFailure: { failures.append($0) })
+        app.setUp()
+        defer { app.tearDown() }
+        app.launch(.userLaunchInAppDelegateBasedApp(processLaunchDate: Date()))
+        let controller = ViewReadProbe()
+        app.viewDidAppear(vc: controller)
+        let readsBefore = controller.reads
+        let completed = expectation(description: "Off-main scene post rejected")
+        DispatchQueue.global().async {
+            app.postOwnedSceneNotification(UIScene.didEnterBackgroundNotification)
+            completed.fulfill()
+        }
+        wait(for: [completed], timeout: 5)
+        XCTAssertEqual(failures, ["Scene lifecycle simulation requires the main thread"])
+        XCTAssertEqual(controller.reads, readsBefore)
+    }
+}
+#endif

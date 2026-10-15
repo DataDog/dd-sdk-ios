@@ -30,7 +30,9 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     let viewControllerSwizzler: UIViewControllerSwizzler?
 
     /// Swizzles `UIApplication` for intercepting `UIEvents` passed to the app.
-    /// It is `nil` (no swizzling) if RUM Action automatic instrumentation is not enabled.
+    /// On iOS it is `nil` only when neither automatic View nor Action
+    /// instrumentation is enabled. Views also opt in because UI events provide
+    /// the immediate source-scene handoff used by downstream integrations.
     let uiApplicationSwizzler: UIApplicationSwizzler?
 
     #if !os(tvOS)
@@ -53,6 +55,27 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
 
     let memoryWarningMonitor: MemoryWarningMonitor?
 
+    /// Whether the configured application explicitly supports concurrent scenes.
+    /// Scene-only instrumentation stays disabled for ordinary applications.
+    let isMultiSceneApplication: Bool
+
+    #if canImport(SwiftUI)
+    #if os(iOS) || os(visionOS)
+    /// Publishes scene identity into the UIKit and SwiftUI trait hierarchy on
+    /// systems that support custom traits.
+    let sceneIdentifierTraitPublisher: AnyObject?
+    #endif
+    #if os(iOS)
+    /// Commits explicit SwiftUI view lifecycles only after interactive UIKit
+    /// navigation finishes, keeping cancelled gestures out of RUM history.
+    let swiftUIInteractiveTransitionArbiter: RUMSwiftUIInteractiveTransitionArbiter?
+
+    /// Keeps automatic SwiftUI discovery enabled outside subtrees currently
+    /// owned by an explicit view modifier.
+    let swiftUIViewAuthorityRegistry: RUMSwiftUIViewAuthorityRegistry?
+    #endif
+    #endif
+
     // MARK: - Initialization
 
     #if !os(watchOS)
@@ -73,12 +96,47 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         processID: UUID,
         notificationCenter: NotificationCenter,
         bundleType: BundleType,
+        isMultiSceneApplication: Bool = false,
         watchdogTermination: WatchdogTerminationMonitor?,
         memoryWarningMonitor: MemoryWarningMonitor?,
         uuidGenerator: RUMUUIDGenerator,
         heatmapIdentifierRegistry: any HeatmapIdentifierRegistry,
         isAppHangBacktraceEnabled: @escaping @Sendable () -> Bool = { true }
     ) {
+        #if canImport(SwiftUI)
+        #if os(iOS) || os(visionOS)
+        let sceneIdentifierTraitPublisher: AnyObject? = {
+            guard isMultiSceneApplication else {
+                return nil
+            }
+            if #available(iOS 17.0, visionOS 1.0, *) {
+                return RUMSceneIdentifierTraitPublisher(notificationCenter: notificationCenter)
+            }
+            return nil
+        }()
+        #endif
+        #if os(iOS)
+        let swiftUIInteractiveTransitionArbiter: RUMSwiftUIInteractiveTransitionArbiter? = {
+            guard isMultiSceneApplication else {
+                return nil
+            }
+            if #available(iOS 27.0, *) {
+                return RUMSwiftUIInteractiveTransitionArbiter(notificationCenter: notificationCenter)
+            }
+            return nil
+        }()
+        let swiftUIViewAuthorityRegistry: RUMSwiftUIViewAuthorityRegistry? = {
+            guard isMultiSceneApplication, swiftUIRUMViewsPredicate != nil else {
+                return nil
+            }
+            if #available(iOS 27.0, *) {
+                return RUMSwiftUIViewAuthorityRegistry()
+            }
+            return nil
+        }()
+        #endif
+        #endif
+
         // Always create views handler (we can't know if it will be used by SwiftUI manual instrumentation)
         // and only activate `UIViewControllerSwizzler` if automatic instrumentation for UIKit or SwiftUI is configured:
         let viewsHandler = RUMViewsHandler(
@@ -86,7 +144,16 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             uiKitPredicate: uiKitRUMViewsPredicate,
             swiftUIPredicate: swiftUIRUMViewsPredicate,
             swiftUIViewNameExtractor: SwiftUIReflectionBasedViewNameExtractor(),
-            notificationCenter: notificationCenter
+            isSwiftUIAutomaticViewSuppressed: { viewController in
+                #if canImport(SwiftUI) && os(iOS)
+                return swiftUIViewAuthorityRegistry?
+                    .isAutomaticViewSuppressed(for: viewController) == true
+                #else
+                return false
+                #endif
+            },
+            notificationCenter: notificationCenter,
+            isMultiSceneApplication: isMultiSceneApplication
         )
         let viewControllerSwizzler: UIViewControllerSwizzler? = {
             do {
@@ -103,8 +170,9 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             return nil
         }()
 
-        // Always create the actions handler (we can't know if it will be used by SwiftUI manual instrumentation)
-        // and only activate `UIApplicationSwizzler` if automatic instrumentation for UIKit or SwiftUI is configured
+        // Always create the actions handler (we can't know if it will be used by SwiftUI manual instrumentation).
+        // On iOS it also resolves the source scene independently of whether an
+        // automatic action predicate accepts the event.
         let actionsHandler: RUMActionsHandling = {
             #if os(tvOS)
             return RUMActionsHandler(
@@ -117,15 +185,26 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
                 heatmapIdentifierRegistry: heatmapIdentifierRegistry,
                 uiKitPredicate: uiKitRUMActionsPredicate,
                 swiftUIPredicate: swiftUIRUMActionsPredicate,
-                swiftUIDetector: SwiftUIComponentFactory.createDetector()
+                swiftUIDetector: SwiftUIComponentFactory.createDetector(),
+                isUIEventContextHandoffEnabled: isMultiSceneApplication
             )
             #endif
         }()
 
         let uiApplicationSwizzler: UIApplicationSwizzler? = {
             do {
-                // Enable event interception if either UIKit or SwiftUI automatic action tracking is enabled
-                if uiKitRUMActionsPredicate != nil || swiftUIRUMActionsPredicate != nil {
+                #if os(tvOS)
+                let needsUIEventInterception = uiKitRUMActionsPredicate != nil || swiftUIRUMActionsPredicate != nil
+                #else
+                // Multi-scene RUM also needs this short-lived event scope so
+                // requests, logs, and spans created by an interaction cannot
+                // inherit another window's representative context when action
+                // tracking is disabled or filters the action.
+                let needsUIEventInterception = isMultiSceneApplication
+                    || uiKitRUMActionsPredicate != nil
+                    || swiftUIRUMActionsPredicate != nil
+                #endif
+                if needsUIEventInterception {
                     return try UIApplicationSwizzler(handler: actionsHandler)
                 }
             } catch {
@@ -188,6 +267,16 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         )
         self.watchdogTermination = watchdogTermination
         self.memoryWarningMonitor = memoryWarningMonitor
+        self.isMultiSceneApplication = isMultiSceneApplication
+        #if canImport(SwiftUI)
+        #if os(iOS) || os(visionOS)
+        self.sceneIdentifierTraitPublisher = sceneIdentifierTraitPublisher
+        #endif
+        #if os(iOS)
+        self.swiftUIInteractiveTransitionArbiter = swiftUIInteractiveTransitionArbiter
+        self.swiftUIViewAuthorityRegistry = swiftUIViewAuthorityRegistry
+        #endif
+        #endif
 
         // Enable configured instrumentations:
         self.viewControllerSwizzler?.swizzle()
@@ -238,6 +327,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         )
         self.watchdogTermination = watchdogTermination
         self.memoryWarningMonitor = memoryWarningMonitor
+        self.isMultiSceneApplication = false
 
         // Enable configured instrumentations:
         self.longTasks?.start()

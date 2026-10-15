@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 /// Receives flag evaluation messages and adds them to RUM.
@@ -14,6 +15,26 @@ internal struct FlagEvaluationReceiver: FeatureMessageReceiver {
 
     /// Adds feature flag evaluation to the current RUM view.
     func receive(message: FeatureMessage, from core: any DatadogCoreProtocol) -> Bool {
+        if case let .payload(captured as RUMFlagEvaluationContextMessage) = message {
+            guard let context = captured.context(for: monitor.rumContextHandoffOwner) else {
+                return true
+            }
+            let target: RUMCommandTarget
+            if let viewID = context.rumContext?.viewID.flatMap(UUID.init(uuidString:)) {
+                target = .view(RUMUUID(rawValue: viewID))
+            } else if let scene = context.sceneIdentifier, !scene.isEmpty {
+                target = .scene(RUMSceneIdentifier(rawValue: scene))
+            } else {
+                target = .none
+            }
+            monitor.addFeatureFlagEvaluation(
+                name: captured.evaluation.flagKey,
+                value: captured.evaluation.value,
+                target: target
+            )
+            return true
+        }
+
         guard case let .payload(flagEvaluation as RUMFlagEvaluationMessage) = message else {
             return false
         }

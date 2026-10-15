@@ -7,6 +7,44 @@
 import Foundation
 import DatadogInternal
 
+/// Stable identity of a UIKit scene used only for in-process RUM command routing.
+///
+/// This value is never serialized into RUM events. It lets independently visible
+/// windows keep independent view lifecycles while sharing one application session.
+internal struct RUMSceneIdentifier: Hashable {
+    let rawValue: String
+}
+
+/// Selects which active view branch should process a command.
+internal enum RUMCommandTarget: Equatable {
+    /// Deliberately drop a command whose originating window is known but has
+    /// no safe RUM context yet. This prevents falling back to another scene.
+    case none
+    /// Preserve the historical process-wide behavior by selecting one representative view.
+    case processRepresentative
+    /// Route to the view branch owned by a particular `UIWindowScene`.
+    case scene(RUMSceneIdentifier)
+    /// Route to an exact view captured when asynchronous work started.
+    case view(RUMUUID)
+    /// Route a process lifecycle command to every view branch.
+    case allActiveViews
+}
+
+/// A customer-selected current view, resolved independently from inferred ownership.
+/// Only a live explicit target overrides inference; this does not change lifecycle policy.
+internal protocol RUMExplicitViewTargetCommand: RUMCommand {
+    var target: RUMCommandTarget { get set }
+    var explicitTarget: RUMCommandTarget? { get set }
+}
+
+/// Selects the user-action correlation used when building a RUM error.
+/// Mirrored log errors carry a frozen snapshot, including an explicit absence
+/// of action, while regular monitor errors preserve live-context behavior.
+internal enum RUMErrorUserActionTarget: Equatable {
+    case current
+    case captured(RUMUUID?)
+}
+
 /// Command processed through the tree of `RUMScopes`.
 internal protocol RUMCommand {
     /// The time of command issue.
@@ -15,6 +53,9 @@ internal protocol RUMCommand {
     var globalAttributes: [AttributeKey: AttributeValue] { set get }
     /// Attributes associated with the command.
     var attributes: [AttributeKey: AttributeValue] { set get }
+    /// In-process routing target. Commands without an intrinsic scene keep the
+    /// historical representative-view behavior.
+    var target: RUMCommandTarget { get }
     /// Indicates whether this command should start the "ApplicationLaunch" view
     /// when received in the initial session and no view has started yet.
     var canStartApplicationLaunchView: Bool { get }
@@ -34,6 +75,10 @@ internal protocol RUMCommand {
     var isUserInteraction: Bool { get }
     /// Type of event that was missed (if any) due to no active view when this command was received.
     var missedEventType: SessionEndedMetric.MissedEventType? { get }
+}
+
+extension RUMCommand {
+    var target: RUMCommandTarget { .processRepresentative }
 }
 
 internal struct RUMSDKInitCommand: RUMCommand {
@@ -73,6 +118,7 @@ internal struct RUMStopSessionCommand: RUMCommand {
     let canStartBackgroundViewAfterSessionStop = false
     let isUserInteraction = false
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
+    let target: RUMCommandTarget = .allActiveViews
 
     init(time: Date) {
         self.time = time
@@ -90,6 +136,7 @@ internal struct RUMHandleAppLifecycleEventCommand: RUMCommand {
     let canStartBackgroundViewAfterSessionStop = false
     var isUserInteraction = false
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
+    let target: RUMCommandTarget = .allActiveViews
 
     enum LifecycleEvent {
         case didEnterBackground
@@ -130,7 +177,7 @@ internal struct RUMTimeToFullDisplayCommand: RUMCommand {
 
 // MARK: - RUM View related commands
 
-internal struct RUMAddViewAttributesCommand: RUMCommand {
+internal struct RUMAddViewAttributesCommand: RUMExplicitViewTargetCommand {
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
@@ -141,11 +188,13 @@ internal struct RUMAddViewAttributesCommand: RUMCommand {
     let canStartBackgroundViewAfterSessionStop = false
     var isUserInteraction = false
     var missedEventType: SessionEndedMetric.MissedEventType? = nil
+    var target: RUMCommandTarget = .processRepresentative
+    var explicitTarget: RUMCommandTarget?
 
     var areInternalAttributes = false
 }
 
-internal struct RUMRemoveViewAttributesCommand: RUMCommand {
+internal struct RUMRemoveViewAttributesCommand: RUMExplicitViewTargetCommand {
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue] = [:]
@@ -156,6 +205,8 @@ internal struct RUMRemoveViewAttributesCommand: RUMCommand {
     let canStartBackgroundViewAfterSessionStop = false
     var isUserInteraction = false
     var missedEventType: SessionEndedMetric.MissedEventType? = nil
+    var target: RUMCommandTarget = .processRepresentative
+    var explicitTarget: RUMCommandTarget?
 
     var keysToRemove: [AttributeKey]
 }
@@ -182,6 +233,8 @@ internal struct RUMStartViewCommand: RUMCommand {
 
     /// The type of instrumentation that started this view.
     let instrumentationType: InstrumentationType
+    /// Scene that owns this view, or the legacy representative when unavailable.
+    var target: RUMCommandTarget
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
 
     init(
@@ -191,7 +244,8 @@ internal struct RUMStartViewCommand: RUMCommand {
         path: String,
         globalAttributes: [AttributeKey: AttributeValue],
         attributes: [AttributeKey: AttributeValue],
-        instrumentationType: InstrumentationType
+        instrumentationType: InstrumentationType,
+        target: RUMCommandTarget = .processRepresentative
     ) {
         self.time = time
         self.globalAttributes = globalAttributes
@@ -200,6 +254,7 @@ internal struct RUMStartViewCommand: RUMCommand {
         self.name = name
         self.path = path
         self.instrumentationType = InstrumentationType.extract(from: &self.attributes) ?? instrumentationType
+        self.target = target
     }
 }
 
@@ -216,6 +271,8 @@ internal struct RUMStopViewCommand: RUMCommand {
 
     /// The value holding stable identity of the RUM View.
     let identity: ViewIdentifier
+    /// Scene that owns this view, or the legacy representative when unavailable.
+    var target: RUMCommandTarget = .processRepresentative
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
 }
 
@@ -249,7 +306,7 @@ internal protocol RUMErrorCommand: RUMCommand {
 /// Adds exception error to current view.
 ///
 /// Using this command results with classifying the error as "Exception" in Datadog app (`@error.category: Exception`).
-internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
+internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand, RUMExplicitViewTargetCommand {
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
@@ -259,6 +316,10 @@ internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
     let shouldRestartLastViewAfterSessionStop = false
     let canStartBackgroundViewAfterSessionStop = false
     let isUserInteraction = false // an error is not an interactive event
+    var target: RUMCommandTarget = .processRepresentative
+    /// Valid live target takes precedence over independent inference.
+    var explicitTarget: RUMCommandTarget?
+    var userActionTarget: RUMErrorUserActionTarget = .current
 
     let message: String
     let type: String?
@@ -271,7 +332,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
     let binaryImages: [BinaryImage]?
     let isStackTraceTruncated: Bool?
     let missedEventType: SessionEndedMetric.MissedEventType? = .error
-    let completionHandler: CompletionHandler
+    var completionHandler: CompletionHandler
 
     /// Constructor dedicated to errors defined by message, type and stack.
     init(
@@ -420,7 +481,7 @@ internal struct RUMAddCurrentViewMemoryWarningCommand: RUMErrorCommand {
     let completionHandler: CompletionHandler = NOPCompletionHandler
 }
 
-internal struct RUMAddViewLoadingTime: RUMCommand {
+internal struct RUMAddViewLoadingTime: RUMExplicitViewTargetCommand {
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
@@ -430,12 +491,14 @@ internal struct RUMAddViewLoadingTime: RUMCommand {
     let shouldRestartLastViewAfterSessionStop = false
     let canStartBackgroundViewAfterSessionStop = false
     let isUserInteraction = false // a custom view timing is not an interactive event
+    var target: RUMCommandTarget = .processRepresentative
+    var explicitTarget: RUMCommandTarget?
 
     let missedEventType: SessionEndedMetric.MissedEventType? = .viewLoadingTime
     let overwrite: Bool
 }
 
-internal struct RUMAddViewTimingCommand: RUMCommand {
+internal struct RUMAddViewTimingCommand: RUMExplicitViewTargetCommand {
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
@@ -445,6 +508,8 @@ internal struct RUMAddViewTimingCommand: RUMCommand {
     let shouldRestartLastViewAfterSessionStop = false
     let canStartBackgroundViewAfterSessionStop = false
     let isUserInteraction = false // a custom view timing is not an interactive event
+    var target: RUMCommandTarget = .processRepresentative
+    var explicitTarget: RUMCommandTarget?
 
     /// The name of the timing. It will be used as a JSON key, whereas the value will be the timing duration,
     /// measured since the start of the View.
@@ -480,7 +545,7 @@ internal struct RUMSpanContext {
     }
 }
 
-internal struct RUMStartResourceCommand: RUMResourceCommand {
+internal struct RUMStartResourceCommand: RUMResourceCommand, RUMExplicitViewTargetCommand {
     let resourceKey: String
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
@@ -491,6 +556,9 @@ internal struct RUMStartResourceCommand: RUMResourceCommand {
     let shouldRestartLastViewAfterSessionStop = false
     let canStartBackgroundViewAfterSessionStop = false
     let isUserInteraction = false // a resource is not an interactive event
+    var target: RUMCommandTarget = .processRepresentative
+    /// Optional explicit start candidate; inference remains available as fallback.
+    var explicitTarget: RUMCommandTarget? = nil
 
     /// Resource url
     let url: String
@@ -514,6 +582,7 @@ internal struct RUMAddResourceMetricsCommand: RUMResourceCommand {
     let shouldRestartLastViewAfterSessionStop = false
     let canStartBackgroundViewAfterSessionStop = false
     let isUserInteraction = false // an error is not an interactive event
+    var target: RUMCommandTarget = .processRepresentative
 
     /// Resource metrics.
     let metrics: ResourceMetrics
@@ -531,6 +600,7 @@ internal struct RUMStopResourceCommand: RUMResourceCommand {
     let shouldRestartLastViewAfterSessionStop = false
     let canStartBackgroundViewAfterSessionStop = false
     let isUserInteraction = false // a resource is not an interactive event
+    var target: RUMCommandTarget = .processRepresentative
 
     /// A type of the Resource
     let kind: RUMResourceType
@@ -552,6 +622,7 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
     let shouldRestartLastViewAfterSessionStop = false
     let canStartBackgroundViewAfterSessionStop = false
     let isUserInteraction = false // a resource is not an interactive event
+    var target: RUMCommandTarget = .processRepresentative
 
     /// The error message.
     let errorMessage: String
@@ -627,6 +698,9 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
 internal protocol RUMUserActionCommand: RUMCommand {
     /// The action identifying the RUM User Action.
     var actionType: RUMActionType { get }
+    /// Inferred ownership remains available when the explicit view is unavailable.
+    var target: RUMCommandTarget { get set }
+    var explicitTarget: RUMCommandTarget? { get }
 }
 
 /// Starts continuous User Action.
@@ -645,6 +719,9 @@ internal struct RUMStartUserActionCommand: RUMUserActionCommand {
 
     let actionType: RUMActionType
     let name: String
+    /// Scene containing the scroll gesture, or the legacy representative when unavailable.
+    var target: RUMCommandTarget = .processRepresentative
+    var explicitTarget: RUMCommandTarget? = nil
     let missedEventType: SessionEndedMetric.MissedEventType? = .action
 }
 
@@ -662,6 +739,9 @@ internal struct RUMStopUserActionCommand: RUMUserActionCommand {
 
     let actionType: RUMActionType
     let name: String?
+    /// Scene containing the scroll gesture, or the legacy representative when unavailable.
+    var target: RUMCommandTarget = .processRepresentative
+    var explicitTarget: RUMCommandTarget? = nil
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
 }
 
@@ -683,11 +763,16 @@ internal struct RUMAddUserActionCommand: RUMUserActionCommand {
     let name: String
     /// Heatmap information for this action, if available.
     var heatmapAttributes: HeatmapAttributes?
+    /// Scene containing the touched control, or the legacy representative when unavailable.
+    var target: RUMCommandTarget = .processRepresentative
+    /// Customer-selected target evaluated before the independently inferred
+    /// `target`. Kept separate so a stale explicit scene can fall back safely.
+    var explicitTarget: RUMCommandTarget? = nil
     let missedEventType: SessionEndedMetric.MissedEventType? = .action
 }
 
 /// Adds that a feature flag has been evaluated to the view
-internal struct RUMAddFeatureFlagEvaluationCommand: RUMCommand {
+internal struct RUMAddFeatureFlagEvaluationCommand: RUMExplicitViewTargetCommand {
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
@@ -697,6 +782,8 @@ internal struct RUMAddFeatureFlagEvaluationCommand: RUMCommand {
     let shouldRestartLastViewAfterSessionStop = false
     let canStartBackgroundViewAfterSessionStop = false
     let isUserInteraction = false
+    var target: RUMCommandTarget = .processRepresentative
+    var explicitTarget: RUMCommandTarget? = nil
     let name: String
     let value: Encodable
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
@@ -722,6 +809,7 @@ internal struct RUMAddLongTaskCommand: RUMCommand {
     let shouldRestartLastViewAfterSessionStop = false
     let canStartBackgroundViewAfterSessionStop = false
     let isUserInteraction = false // a long task is not an interactive event
+    var target: RUMCommandTarget = .processRepresentative
 
     let duration: TimeInterval
     let missedEventType: SessionEndedMetric.MissedEventType? = .longTask
@@ -769,6 +857,11 @@ internal struct RUMOperationStepVitalCommand: RUMCommand {
     let shouldRestartLastViewAfterSessionExpiration = true
     let shouldRestartLastViewAfterSessionStop = false
     let canStartBackgroundViewAfterSessionStop = false
+    /// Customer-selected target resolved before the independently captured
+    /// call-site `target`. Kept separate so an unavailable explicit scene can
+    /// still fall through to trustworthy inference.
+    var explicitTarget: RUMCommandTarget? = nil
+    var target: RUMCommandTarget = .processRepresentative
 }
 
 // MARK: - Cross-platform attributes
@@ -785,6 +878,7 @@ internal struct RUMUpdatePerformanceMetric: RUMCommand {
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
+    var target: RUMCommandTarget = .processRepresentative
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
 }
 

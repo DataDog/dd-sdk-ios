@@ -1,0 +1,320 @@
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ */
+
+import Foundation
+import DatadogRUM
+import DatadogTrace
+@_spi(Internal) import DatadogInternal
+
+internal enum ProbeRUMEventAdapter {
+    static func sessionStarted(
+        sessionID: String,
+        isDiscarded: Bool
+    ) -> ProbeSignal {
+        ProbeSignal(
+            kind: .rumSessionStarted,
+            evidenceSource: .rumMapper,
+            rumContext: ProbeRUMContext(
+                sessionID: sessionID,
+                sessionDiscarded: isDiscarded
+            )
+        )
+    }
+
+    static func viewSnapshot(_ event: RUMViewEvent, timingState: ProbeTimingState? = nil, flagState: ProbeFlagState? = nil, process: ProbeProcessObservation? = nil, vitals: ProbeVitalsObservation? = nil, fatal: ProbeFatalObservation? = nil) -> ProbeSignal {
+        ProbeSignal(
+            kind: .rumViewSnapshot,
+            evidenceSource: .rumMapper,
+            semanticContext: semanticContext(from: event.context?.contextInfo),
+            rumContext: ProbeRUMContext(
+                eventDateMilliseconds: event.date,
+                sessionID: event.session.id,
+                sessionHasReplay: event.session.hasReplay,
+                viewID: event.view.id,
+                viewName: event.view.name,
+                viewURL: event.view.url,
+                viewActive: event.view.isActive,
+                viewDocumentVersion: event.dd.documentVersion,
+                viewTimeSpentNanoseconds: event.view.timeSpent
+            ),
+            vitals: vitals,
+            processSignal: process,
+            fatal: fatal,
+            timingState: timingState,
+            flagState: flagState
+        )
+    }
+
+    static func action(_ event: RUMActionEvent) -> ProbeSignal {
+        let source = sourceContext(from: event.context?.contextInfo)
+        return ProbeSignal(
+            kind: .rumAction,
+            evidenceSource: .rumMapper,
+            sourceContext: source,
+            rumContext: ProbeRUMContext(
+                eventDateMilliseconds: event.date,
+                sessionID: event.session.id,
+                viewID: event.view.id,
+                viewName: event.view.name,
+                viewURL: event.view.url,
+                actionIDs: event.action.id.map { [$0] }
+            ),
+            eventID: event.action.id,
+            name: source?.phase ?? event.action.target?.name,
+            action: ProbeActionSignal(
+                id: event.action.id,
+                type: event.action.type.rawValue,
+                target: event.action.target?.name,
+                loadingTimeNanoseconds: event.action.loadingTime,
+                resourceCount: event.action.resource?.count,
+                errorCount: event.action.error?.count
+            )
+        )
+    }
+
+    static func resource(_ event: RUMResourceEvent) -> ProbeSignal {
+        let source = sourceContext(from: event.context?.contextInfo)
+        let correlatedActionIDs: [String]?
+        switch event.action?.id {
+        case .string(let value):
+            correlatedActionIDs = [value]
+        case .stringsArray(let values):
+            correlatedActionIDs = values
+        case nil:
+            correlatedActionIDs = nil
+        }
+        return ProbeSignal(
+            kind: .rumResource,
+            evidenceSource: .rumMapper,
+            sourceContext: source,
+            rumContext: ProbeRUMContext(
+                eventDateMilliseconds: event.date,
+                sessionID: event.session.id,
+                viewID: event.view.id,
+                viewName: event.view.name,
+                viewURL: event.view.url,
+                actionIDs: correlatedActionIDs
+            ),
+            eventID: event.resource.id,
+            name: source?.phase,
+            resource: ProbeResourceSignal(
+                id: event.resource.id,
+                type: event.resource.type.rawValue,
+                statusCode: event.resource.statusCode,
+                durationNanoseconds: event.resource.duration,
+                size: event.resource.size,
+                encodedBodySize: event.resource.encodedBodySize,
+                method: event.resource.method?.rawValue,
+                url: event.resource.url,
+                traceID: event.dd.traceId,
+                spanID: event.dd.spanId,
+                parentSpanID: event.dd.parentSpanId
+            )
+        )
+    }
+
+    static func error(_ event: RUMErrorEvent, process: ProbeProcessObservation? = nil) -> ProbeSignal {
+        let source = sourceContext(from: event.context?.contextInfo)
+        let correlatedActionIDs: [String]?
+        switch event.action?.id {
+        case .string(let value):
+            correlatedActionIDs = [value]
+        case .stringsArray(let values):
+            correlatedActionIDs = values
+        case nil:
+            correlatedActionIDs = nil
+        }
+        return ProbeSignal(
+            kind: .rumError,
+            evidenceSource: .rumMapper,
+            sourceContext: source,
+            rumContext: ProbeRUMContext(
+                eventDateMilliseconds: event.date,
+                sessionID: event.session.id,
+                viewID: event.view.id,
+                viewName: event.view.name,
+                viewURL: event.view.url,
+                actionIDs: correlatedActionIDs
+            ),
+            eventID: event.error.id,
+            name: ProbeRuntime.resolution.scenario?.identifier == ProbeLogContract.scenarioID
+                ? source?.phase.map { "mirror-" + $0 } : source?.phase ?? event.error.type,
+            error: ProbeErrorSignal(
+                id: event.error.id,
+                source: event.error.source.rawValue,
+                type: event.error.type,
+                category: event.error.category?.rawValue,
+                handling: event.error.handling?.rawValue,
+                isCrash: event.error.isCrash,
+                resourceURL: event.error.resource?.url,
+                resourceStatusCode: event.error.resource?.statusCode,
+                traceID: event.dd.traceId,
+                spanID: event.dd.spanId,
+                parentSpanID: event.dd.parentSpanId
+            ),
+            processSignal: process
+        )
+    }
+
+    static func trace(_ event: SpanEvent, runID: String) -> ProbeSignal? {
+        #if DEBUG
+        if ProbeRuntime.resolution.scenario?.identifier == ProbeTraceContract.scenarioID {
+            return ProbeTraceAcceptance.signal(event)
+        }
+        #endif
+        guard
+            event.operationName == "urlsession.request",
+            event.tags[ProbeRuntime.Attribute.runID] == runID,
+            let url = URL(string: event.resource),
+            let source = ProbeTraceOnlyURLSessionContract.sourceContext(
+                from: url,
+                expectedRunID: runID
+            ),
+            let encoded = try? JSONEncoder().encode(event),
+            let wire = ProbeTraceWireIdentity.decode(encoded)
+        else {
+            return nil
+        }
+        return ProbeSignal(
+            kind: .rumTrace,
+            evidenceSource: .traceMapper,
+            sourceContext: source,
+            rumContext: ProbeRUMContext(
+                eventDateMilliseconds: wire.start / 1_000_000,
+                sessionID: event.tags["_dd.session.id"],
+                viewID: event.tags["_dd.view.id"],
+                actionIDs: event.tags["_dd.action.id"].map { [$0] }
+            ),
+            eventID: wire.normalizedSpanID,
+            name: source.phase,
+            trace: ProbeTraceSignal(
+                operationName: event.operationName,
+                serviceName: event.serviceName,
+                resourceName: event.resource,
+                startTimeMilliseconds: wire.start / 1_000_000,
+                durationNanoseconds: wire.duration,
+                isError: event.isError,
+                rumSessionID: event.tags["_dd.session.id"],
+                rumViewID: event.tags["_dd.view.id"],
+                rumActionIDs: event.tags["_dd.action.id"].map { [$0] },
+                traceID: wire.fullTraceID,
+                spanID: wire.normalizedSpanID,
+                parentSpanID: wire.normalizedParentID,
+                startTimeNanoseconds: wire.start,
+                rumApplicationID: event.tags["_dd.application.id"]
+            )
+        )
+    }
+
+    private static func semanticContext(
+        from contextInfo: [String: Encodable]?
+    ) -> ProbeSemanticContext? {
+        guard
+            let logicalSceneID: String = value(
+                ProbeRuntime.Attribute.viewScene,
+                in: contextInfo
+            ),
+            let screen: String = value(
+                ProbeRuntime.Attribute.viewScreen,
+                in: contextInfo
+            )
+        else {
+            return nil
+        }
+        let nativeSceneID: String? = normalizedIdentifier(
+            value(ProbeRuntime.Attribute.viewSceneSessionID, in: contextInfo)
+        )
+        return ProbeSemanticContext(
+            logicalSceneID: logicalSceneID,
+            nativeSceneID: nativeSceneID,
+            screen: screen
+        )
+    }
+
+    private static func sourceContext(
+        from contextInfo: [String: Encodable]?
+    ) -> ProbeSourceContext? {
+        let logicalSceneID: String? = value(
+            ProbeRuntime.Attribute.sourceScene,
+            in: contextInfo
+        )
+        let nativeSceneID: String? = normalizedIdentifier(
+            value(ProbeRuntime.Attribute.sceneSessionID, in: contextInfo)
+        )
+        let screen: String? = value(ProbeRuntime.Attribute.screen, in: contextInfo)
+        let phase: String? = value(ProbeRuntime.Attribute.phase, in: contextInfo)
+        let uptime: Double? = numericValue(
+            ProbeRuntime.Attribute.uptime,
+            in: contextInfo
+        )
+        let readerGeneration: Int? = integerValue(
+            ProbeRuntime.Attribute.readerControlGeneration,
+            in: contextInfo
+        )
+
+        guard
+            logicalSceneID != nil
+                || nativeSceneID != nil
+                || screen != nil
+                || phase != nil
+                || uptime != nil
+                || readerGeneration != nil
+        else {
+            return nil
+        }
+        return ProbeSourceContext(
+            logicalSceneID: logicalSceneID,
+            nativeSceneID: nativeSceneID,
+            screen: screen,
+            phase: phase,
+            uptime: uptime,
+            readerControlGeneration: readerGeneration
+        )
+    }
+
+    private static func value<T>(
+        _ key: String,
+        in contextInfo: [String: Encodable]?
+    ) -> T? {
+        contextInfo?[key].flatMap { $0.dd.decode(T.self) }
+    }
+
+    private static func numericValue(
+        _ key: String,
+        in contextInfo: [String: Encodable]?
+    ) -> Double? {
+        if let value: Double = value(key, in: contextInfo) {
+            return value
+        }
+        if let value: Int = value(key, in: contextInfo) {
+            return Double(value)
+        }
+        if let value: Int64 = value(key, in: contextInfo) {
+            return Double(value)
+        }
+        return nil
+    }
+
+    private static func integerValue(
+        _ key: String,
+        in contextInfo: [String: Encodable]?
+    ) -> Int? {
+        if let value: Int = value(key, in: contextInfo) {
+            return value
+        }
+        if let value: Int64 = value(key, in: contextInfo) {
+            return Int(exactly: value)
+        }
+        return nil
+    }
+
+    private static func normalizedIdentifier(_ value: String?) -> String? {
+        guard let value, value != "unresolved" else {
+            return nil
+        }
+        return value
+    }
+}

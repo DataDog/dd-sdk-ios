@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 /// Core implementation of Datadog SDK.
@@ -14,7 +15,13 @@ import DatadogInternal
 ///
 /// By complying with `DatadogCoreProtocol`, the core can
 /// provide context and writing scopes to Features for event recording.
-internal final class DatadogCore {
+internal final class DatadogCore: RUMContextHandoffOwnerProviding {
+    let rumContextHandoffOwner: RUMContextHandoff.Owner? = .init()
+
+    deinit {
+        rumContextHandoffOwner?.invalidate()
+    }
+
     /// The root location for storing Features data in this instance of the SDK.
     /// For each Feature a set of subdirectories is created inside `CoreDirectory` based on their storage configuration.
     let directory: CoreDirectory
@@ -333,6 +340,7 @@ internal final class DatadogCore {
     /// Stops all processes for this instance of the Datadog core by
     /// deallocating all Features and their storage & upload units.
     func stop() {
+        rumContextHandoffOwner?.invalidate()
         remoteConfigurationProvider?.stop()
         stores = [:]
         features = [:]
@@ -429,7 +437,9 @@ extension DatadogCore: DatadogCoreProtocol {
     }
 }
 
-internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope where Feature: DatadogFeature {
+internal class CoreFeatureScope<Feature>: @unchecked Sendable, FeatureScope, RUMContextHandoffOwnerProviding where Feature: DatadogFeature {
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? { core?.rumContextHandoffOwner }
+
     private weak var core: DatadogCore?
     private let store: FeatureDataStore
 

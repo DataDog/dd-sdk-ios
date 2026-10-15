@@ -10,6 +10,8 @@ import TestUtilities
 @testable import DatadogInternal
 
 class NetworkInstrumentationFeatureTests: XCTestCase {
+    private let handoffOwner = RUMContextHandoff.Owner()
+
     // swiftlint:disable implicitly_unwrapped_optional
     private var core: SingleFeatureCoreMock<NetworkInstrumentationFeature>!
     private var handler: URLSessionHandlerMock!
@@ -85,6 +87,257 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     // MARK: - Registered Delegate Mode
+
+    func testGivenUIEventRUMContext_whenInterceptingRequest_itOverridesProcessRepresentativeOnlyForDispatchScope() throws {
+        let provider = NetworkContextCoreProvider(rumContextHandoffOwner: handoffOwner)
+        let feature = NetworkInstrumentationFeature(
+            networkContextProvider: provider,
+            messageReceiver: provider
+        )
+        let url = try XCTUnwrap(URL(string: "https://example.com/resource"))
+        let handler = RUMContextCapturingURLSessionHandlerMock()
+        let customHandler = URLSessionHandlerMock()
+        feature.handlers = [handler, customHandler]
+
+        let representativeContext: RUMCoreContext = .mockWith(viewID: UUID().uuidString)
+        let sourceSceneContext: RUMCoreContext = .mockWith(viewID: UUID().uuidString)
+        provider.currentNetworkContext = NetworkContext(rumContext: representativeContext)
+
+        var capturedContexts: [RUMCoreContext?] = []
+        var capturedHeaderTypes: [Set<TracingHeaderType>] = []
+        var customHandlerHeaderTypes: [Set<TracingHeaderType>] = []
+        handler.onRequestMutation = { _, headerTypes, networkContext in
+            capturedHeaderTypes.append(headerTypes)
+            capturedContexts.append(networkContext?.rumContext)
+        }
+        customHandler.onRequestMutation = { _, headerTypes, _ in
+            customHandlerHeaderTypes.append(headerTypes)
+        }
+
+        RUMContextHandoff.withValue(
+            owner: handoffOwner,
+            rumContext: sourceSceneContext,
+            sceneIdentifier: "scene-A"
+        ) {
+            _ = feature.intercept(request: URLRequest(url: url), additionalFirstPartyHosts: nil)
+        }
+
+        RUMContextHandoff.withValue(owner: handoffOwner, rumContext: nil, sceneIdentifier: "scene-B") {
+            _ = feature.intercept(request: URLRequest(url: url), additionalFirstPartyHosts: nil)
+        }
+
+        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])
+        _ = feature.intercept(request: URLRequest(url: url), additionalFirstPartyHosts: nil)
+
+        XCTAssertEqual(capturedContexts.count, 3)
+        XCTAssertEqual(capturedHeaderTypes, [[], [], [.datadog]])
+        XCTAssertEqual(capturedContexts[0]?.viewID, sourceSceneContext.viewID)
+        XCTAssertNil(capturedContexts[1])
+        XCTAssertEqual(capturedContexts[2]?.viewID, representativeContext.viewID)
+        XCTAssertEqual(customHandlerHeaderTypes, [[.datadog]])
+    }
+
+    func testGivenTaskLocalRUMContext_whenChildTaskInterceptsRequest_itInheritsSourceSceneContext() async throws {
+        let provider = NetworkContextCoreProvider(rumContextHandoffOwner: handoffOwner)
+        let feature = NetworkInstrumentationFeature(
+            networkContextProvider: provider,
+            messageReceiver: provider
+        )
+        let handler = RUMContextCapturingURLSessionHandlerMock()
+        feature.handlers = [handler]
+        let sourceSceneContext: RUMCoreContext = .mockWith(viewID: UUID().uuidString)
+        provider.currentNetworkContext = NetworkContext(rumContext: .mockWith(viewID: UUID().uuidString))
+        let request = URLRequest(url: try XCTUnwrap(URL(string: "https://example.com/resource")))
+
+        let task = RUMContextHandoff.withValue(
+            owner: handoffOwner,
+            rumContext: sourceSceneContext,
+            sceneIdentifier: "scene-A"
+        ) {
+            Task {
+                _ = feature.intercept(request: request, additionalFirstPartyHosts: nil)
+            }
+        }
+        await task.value
+
+        let capturedContext = try XCTUnwrap(handler.capturedNetworkContexts.last ?? nil)
+        XCTAssertEqual(capturedContext.rumContext?.viewID, sourceSceneContext.viewID)
+    }
+
+    func testRUMContextHandoff_preservesExplicitNilAndRestoresNestedValue() {
+        let outerContext: RUMCoreContext = .mockWith(viewID: UUID().uuidString)
+        XCTAssertNil(RUMContextHandoff.current(for: handoffOwner))
+
+        RUMContextHandoff.withValue(
+            owner: handoffOwner,
+            rumContext: outerContext,
+            sceneIdentifier: "scene-A"
+        ) {
+            XCTAssertEqual(RUMContextHandoff.current(for: handoffOwner)?.rumContext?.viewID, outerContext.viewID)
+            XCTAssertEqual(RUMContextHandoff.current(for: handoffOwner)?.sceneIdentifier, "scene-A")
+
+            RUMContextHandoff.withValue(
+                owner: handoffOwner,
+                rumContext: nil,
+                sceneIdentifier: "scene-B",
+                hasPendingUserAction: true,
+                excludedUserActionID: "action-B"
+            ) {
+                XCTAssertNotNil(RUMContextHandoff.current(for: handoffOwner))
+                XCTAssertNil(RUMContextHandoff.current(for: handoffOwner)?.rumContext)
+                XCTAssertEqual(RUMContextHandoff.current(for: handoffOwner)?.sceneIdentifier, "scene-B")
+                XCTAssertEqual(RUMContextHandoff.current(for: handoffOwner)?.hasPendingUserAction, true)
+                XCTAssertEqual(RUMContextHandoff.current(for: handoffOwner)?.excludedUserActionID, "action-B")
+            }
+
+            XCTAssertEqual(RUMContextHandoff.current(for: handoffOwner)?.rumContext?.viewID, outerContext.viewID)
+            XCTAssertEqual(RUMContextHandoff.current(for: handoffOwner)?.sceneIdentifier, "scene-A")
+        }
+
+        XCTAssertNil(RUMContextHandoff.current(for: handoffOwner))
+    }
+
+    func testGivenForeignCoreDispatch_networkUsesOnlyItsOwnContextForFirstAndThirdPartyRequests() throws {
+        let own: RUMCoreContext = .mockWith(sessionID: UUID(), viewID: UUID().uuidString)
+        let origins: [RUMCoreContext?] = [
+            .mockWith(applicationID: own.applicationID, sessionID: UUID(), viewID: UUID().uuidString),
+            .mockWith(applicationID: "another-application", viewID: UUID().uuidString),
+            nil
+        ]
+        for ownContext in [own, nil] {
+            for origin in origins {
+                let provider = NetworkContextCoreProvider(rumContextHandoffOwner: handoffOwner)
+                provider.currentNetworkContext = NetworkContext(rumContext: ownContext)
+                let feature = NetworkInstrumentationFeature(networkContextProvider: provider, messageReceiver: provider)
+                let handler = RUMContextCapturingURLSessionHandlerMock()
+                handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["first.example": [.datadog]])
+                feature.handlers = [handler]
+                let foreign = RUMContextHandoff.Owner()
+                RUMContextHandoff.withValue(owner: foreign, rumContext: origin, sceneIdentifier: "foreign") {
+                    for host in ["first.example", "third.example"] {
+                        _ = feature.intercept(request: .mockWith(url: "https://\(host)/resource"), additionalFirstPartyHosts: nil)
+                    }
+                }
+                // A foreign scope must not activate the third-party callback.
+                XCTAssertEqual(handler.capturedNetworkContexts.count, 1)
+                for captured in handler.capturedNetworkContexts {
+                    XCTAssertEqual(captured?.rumContext?.applicationID, ownContext?.applicationID)
+                    XCTAssertEqual(captured?.rumContext?.sessionID, ownContext?.sessionID)
+                    XCTAssertEqual(captured?.rumContext?.viewID, ownContext?.viewID)
+                }
+            }
+        }
+    }
+
+    @MainActor
+    func testRUMContextHandoff_keepsDispatchSnapshotAndRefreshesInheritedTask() async {
+        let initial: RUMCoreContext = .mockWith(viewID: "initial")
+        let later: RUMCoreContext = .mockWith(viewID: "later")
+        var context = initial
+        let child = RUMContextHandoff.withValue(
+            owner: handoffOwner,
+            rumContextProvider: { context },
+            sceneIdentifier: "scene-A"
+        ) {
+            context = later
+            XCTAssertEqual(RUMContextHandoff.current(for: handoffOwner)?.rumContext?.viewID, initial.viewID)
+            return Task { RUMContextHandoff.current(for: handoffOwner)?.rumContext?.viewID }
+        }
+        let inheritedView = await child.value
+        XCTAssertEqual(inheritedView, later.viewID)
+        XCTAssertNil(RUMContextHandoff.current(for: handoffOwner))
+    }
+
+    func testRUMContextHandoff_nestedOwnersRestoreAfterThrowAndExplicitNil() throws {
+        enum Expected: Error { case failure }
+        let peer = RUMContextHandoff.Owner()
+        let context: RUMCoreContext = .mockWith(viewID: "owner-A")
+        try RUMContextHandoff.withValue(owner: handoffOwner, rumContext: context, sceneIdentifier: "A") {
+            try RUMContextHandoff.withValue(owner: peer, rumContext: nil, sceneIdentifier: "B") {
+                XCTAssertEqual(RUMContextHandoff.current(for: handoffOwner)?.rumContext?.viewID, "owner-A")
+                XCTAssertNotNil(RUMContextHandoff.current(for: peer))
+                XCTAssertNil(RUMContextHandoff.current(for: peer)?.rumContext)
+                XCTAssertThrowsError(try RUMContextHandoff.withValue(
+                    owner: handoffOwner, rumContext: nil, sceneIdentifier: "A-inner"
+                ) {
+                    XCTAssertEqual(RUMContextHandoff.current(for: handoffOwner)?.sceneIdentifier, "A-inner")
+                    XCTAssertEqual(RUMContextHandoff.current(for: peer)?.sceneIdentifier, "B")
+                    throw Expected.failure
+                })
+                XCTAssertEqual(RUMContextHandoff.current(for: handoffOwner)?.sceneIdentifier, "A")
+                XCTAssertEqual(RUMContextHandoff.current(for: peer)?.sceneIdentifier, "B")
+            }
+            XCTAssertNil(RUMContextHandoff.current(for: peer))
+            XCTAssertEqual(RUMContextHandoff.current(for: handoffOwner)?.rumContext?.viewID, "owner-A")
+        }
+        XCTAssertNil(RUMContextHandoff.current(for: handoffOwner))
+        XCTAssertNil(RUMContextHandoff.current(for: peer))
+    }
+
+    @MainActor
+    func testRUMContextHandoff_inheritedNestedOwnersRejectInvalidatedGeneration() async {
+        let peer = RUMContextHandoff.Owner()
+        let replacement = RUMContextHandoff.Owner()
+        let child = RUMContextHandoff.withValue(owner: handoffOwner, rumContext: nil, sceneIdentifier: "A") {
+            RUMContextHandoff.withValue(owner: peer, rumContext: nil, sceneIdentifier: "B") {
+                Task {
+                    XCTAssertNil(RUMContextHandoff.current(for: self.handoffOwner))
+                    XCTAssertNil(RUMContextHandoff.current(for: replacement))
+                    XCTAssertEqual(RUMContextHandoff.current(for: peer)?.sceneIdentifier, "B")
+                }
+            }
+        }
+        handoffOwner.invalidate()
+        await child.value
+        var calls = 0
+        RUMContextHandoff.withValue(owner: handoffOwner, rumContext: nil, sceneIdentifier: "stopped") {
+            calls += 1
+            XCTAssertNil(RUMContextHandoff.current(for: handoffOwner))
+        }
+        RUMContextHandoff.withValue(owner: nil, rumContext: nil, sceneIdentifier: "custom") {
+            calls += 1
+            XCTAssertNil(RUMContextHandoff.current(for: nil))
+        }
+        XCTAssertEqual(calls, 2)
+    }
+
+    @MainActor
+    func testRUMContextHandoff_childInheritsEachNestedOwnerAndDetachedTaskInheritsNeither() async {
+        let peer = RUMContextHandoff.Owner()
+        let child = RUMContextHandoff.withValue(owner: handoffOwner, rumContext: nil, sceneIdentifier: "A") {
+            RUMContextHandoff.withValue(owner: peer, rumContext: nil, sceneIdentifier: "B") {
+                RUMContextHandoff.withValue(owner: handoffOwner, rumContext: nil, sceneIdentifier: "A-inner") {
+                    Task {
+                        XCTAssertEqual(RUMContextHandoff.current(for: self.handoffOwner)?.sceneIdentifier, "A-inner")
+                        XCTAssertEqual(RUMContextHandoff.current(for: peer)?.sceneIdentifier, "B")
+                        let detached = Task.detached { [handoffOwner] in
+                            XCTAssertNil(RUMContextHandoff.current(for: handoffOwner))
+                            XCTAssertNil(RUMContextHandoff.current(for: peer))
+                        }
+                        await detached.value
+                    }
+                }
+            }
+        }
+        await child.value
+        XCTAssertNil(RUMContextHandoff.current(for: handoffOwner))
+        XCTAssertNil(RUMContextHandoff.current(for: peer))
+    }
+
+    func testRUMContextHandoff_concurrentThreadsKeepSeparateDispatchSnapshots() {
+        let owner = handoffOwner
+        DispatchQueue.concurrentPerform(iterations: 100) { index in
+            let scene = "scene-\(index)"
+            RUMContextHandoff.withValue(owner: owner, rumContext: nil, sceneIdentifier: scene) {
+                XCTAssertEqual(RUMContextHandoff.current(for: owner)?.sceneIdentifier, scene)
+                RUMContextHandoff.withValue(owner: owner, rumContext: nil, sceneIdentifier: "nested") {
+                    XCTAssertEqual(RUMContextHandoff.current(for: owner)?.sceneIdentifier, "nested")
+                }
+                XCTAssertEqual(RUMContextHandoff.current(for: owner)?.sceneIdentifier, scene)
+            }
+            XCTAssertNil(RUMContextHandoff.current(for: owner))
+        }
+    }
 
     func testRegisteredDelegate_capturesMetricsForDataTaskWithURL() throws {
         let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
@@ -687,6 +940,35 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(interception.completion, "Should capture completion")
         XCTAssertNotNil(interception.startDate, "Should capture approximate start date")
         XCTAssertNotNil(interception.endDate, "Should capture approximate end date")
+    }
+
+    func testAutomaticMode_whenTaskIsResumedTwice_itMutatesAndStartsItOnlyOnce() throws {
+        let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()
+
+        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        let session = server.getInterceptedURLSession(delegate: nil)
+        let requestMutation = expectation(description: "Mutate request once")
+        requestMutation.assertForOverFulfill = true
+        let url = try XCTUnwrap(URL(string: "https://example.com/repeated-resume-\(UUID().uuidString)"))
+        handler.onRequestMutation = { request, _, _ in
+            if request.url == url {
+                requestMutation.fulfill()
+            }
+        }
+
+        let task = session.dataTask(with: url)
+        task.resume()
+        task.resume()
+
+        wait(
+            for: [requestMutation, notifyInterceptionDidStart, notifyInterceptionDidComplete],
+            timeout: 5,
+            enforceOrder: false
+        )
+        _ = server.waitAndReturnRequests(count: 1)
+
+        XCTAssertEqual(handler.interceptions.count, 1)
     }
 
     func testAutomaticMode_tracksAsyncAwaitTasks() async throws {
@@ -2288,7 +2570,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     func testWhenReceivingContextMessage_itCreatesNetworkContextWithUserAndAccountInformation() throws {
         // Given
-        let provider = NetworkContextCoreProvider()
+        let provider = NetworkContextCoreProvider(rumContextHandoffOwner: handoffOwner)
         let userInfo = UserInfo(id: "user123", name: "TestUser", email: "test@example.com")
         let accountInfo = AccountInfo(id: "account456", name: "TestAccount")
         let rumContext: RUMCoreContext = .mockWith(applicationID: "app123", sessionID: .mockWith("E621E1F8-C36C-495A-93FC-0C247A3E6E5F"))
@@ -2322,7 +2604,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     func testWhenReceivingContextMessage_withoutUserAndAccountInfo_itCreatesNetworkContextWithNilValues() throws {
         // Given
-        let provider = NetworkContextCoreProvider()
+        let provider = NetworkContextCoreProvider(rumContextHandoffOwner: handoffOwner)
         let rumContext: RUMCoreContext = .mockWith(applicationID: "app123", sessionID: .mockWith("E621E1F8-C36C-495A-93FC-0C247A3E6E5F"))
 
         let context = DatadogContext.mockWith(
@@ -2349,7 +2631,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     func testWhenReceivingNonContextMessage_itReturnsFalse() {
         // Given
-        let provider = NetworkContextCoreProvider()
+        let provider = NetworkContextCoreProvider(rumContextHandoffOwner: handoffOwner)
 
         // When
         let result = provider.receive(message: .payload("some data"), from: core)
@@ -2409,4 +2691,28 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     class DelegateSubClass: DelegateBaseClass {
     }
+}
+
+private final class RUMContextCapturingURLSessionHandlerMock: DatadogURLSessionHandlerCapturingRUMContext {
+    var firstPartyHosts = FirstPartyHosts()
+    var onRequestMutation: ((URLRequest, Set<TracingHeaderType>, NetworkContext?) -> Void)?
+    @ReadWriteLock
+    private(set) var capturedNetworkContexts: [NetworkContext?] = []
+
+    func modify(
+        request: URLRequest,
+        headerTypes: Set<TracingHeaderType>,
+        networkContext: NetworkContext?
+    ) -> (URLRequest, TraceContext?, URLSessionHandlerCapturedState?) {
+        capturedNetworkContexts.append(networkContext)
+        onRequestMutation?(request, headerTypes, networkContext)
+        return (request, nil, nil)
+    }
+
+    func interceptionDidStart(
+        interception: URLSessionTaskInterception,
+        capturedStates: [any URLSessionHandlerCapturedState]
+    ) {}
+
+    func interceptionDidComplete(interception: URLSessionTaskInterception) {}
 }

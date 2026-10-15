@@ -57,7 +57,7 @@ internal final class DatadogProfiler: ProfilingHandler {
     // Interval between device and server time.
     private(set) var currentServerTimeOffset: TimeInterval = .zero
     // Ongoing RUM Operations to attach to profiles.
-    private var currentRUMVitals: [String: Vital] = [:]
+    private var currentRUMVitals: [RUMVitalIdentity: Vital] = [:]
     // App hangs to attach to profiles.
     private var hangs: [DurationEvent] = []
     // Long tasks to attach to profiles.
@@ -300,16 +300,16 @@ private extension DatadogProfiler {
 
             // Capture vitals like TTFD that are not operation steps.
             if message.operation.stepType == nil {
-                currentRUMVitals[message.operation.key] = message.operation
+                currentRUMVitals[RUMVitalIdentity(message.operation)] = message.operation
             } else if message.operation.stepType == .start {
-                currentRUMVitals[message.operation.key] = message.operation
+                currentRUMVitals[RUMVitalIdentity(message.operation)] = message.operation
                 updateProfilerState(canProfile: shouldKeepProfilerRunning())
             } else if message.operation.stepType == .end {
-                if var startVital = currentRUMVitals[message.operation.key] {
+                if var startVital = currentRUMVitals[RUMVitalIdentity(message.operation)] {
                     // Add duration to vital to help Profiling backend label correctly the samples of this vital
                     let duration = message.operation.date.timeIntervalSince(startVital.date)
                     startVital.duration = duration.dd.toInt64Nanoseconds
-                    currentRUMVitals[message.operation.key] = startVital
+                    currentRUMVitals[RUMVitalIdentity(message.operation)] = startVital
 
                     // If profiling is effectively running in custom mode, trigger timer when the last operation completes.
                     if currentRUMVitals.didCompleteOperations() && isCustomProfiling {

@@ -21,9 +21,9 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// Might be re-created later according to session duration constraints.
     private(set) var sessionScopes: [RUMSessionScope] = []
 
-    /// The last active foreground view from the previous session.
-    /// Used to restore the view when a new session starts after `sessionStop()`.
-    private var lastActiveView: RUMViewScope?
+    /// Last active foreground views from the previous session, one per scene.
+    /// Used to restore concurrent views when a new session starts after `sessionStop()`.
+    private var lastActiveViews: [RUMViewScope] = []
 
     /// The end reason from the last active session. Used as "start reason" for the new session.
     private var lastSessionEndReason: RUMSessionScope.EndReason?
@@ -94,7 +94,20 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         return true
     }
 
-    private func _process(command: RUMCommand, context: DatadogContext, writer: Writer) {
+    private func _process(command incomingCommand: RUMCommand, context: DatadogContext, writer: Writer) {
+        guard var error = incomingCommand as? RUMAddCurrentViewErrorCommand else {
+            processCommand(command: incomingCommand, context: context, writer: writer)
+            return
+        }
+        let completion = RUMErrorCompletion(error.completionHandler)
+        error.completionHandler = NOPCompletionHandler
+        let errorWriter = RUMErrorCompletionWriter(writer: writer, errorCompletion: completion)
+        processCommand(command: error, context: context, writer: errorWriter)
+        completion.finish()
+    }
+
+    private func processCommand(command incomingCommand: RUMCommand, context: DatadogContext, writer: Writer) {
+        var command = incomingCommand
         // `RUMSDKInitCommand` forces the creation of the initial session
         // Added in https://github.com/DataDog/dd-sdk-ios/pull/1278 to ensure that logs and traces
         // can be correlated with valid RUM session id (even if occurring before any user interaction).
@@ -140,14 +153,25 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         if activeSession == nil {
             // No active sessions, start a new one
             if !(command is RUMHandleAppLifecycleEventCommand) {
-                startNewSession(on: command, context: context, writer: writer)
+                command = startNewSession(on: command, context: context, writer: writer)
             }
         }
 
         // Store the last foreground view that was active before the session expired or was stopped.
         // This allows the next session to lazily restart the same view if needed.
-        let lastActiveForegroundView = activeSession?.viewScopes.first(where: { $0.isActiveView && $0.viewPath != RUMOffViewEventsHandlingRule.Constants.backgroundViewURL })
-        lastActiveView = lastActiveForegroundView ?? lastActiveView
+        if let activeSession {
+            var activeForegroundViews = activeSession.viewScopes.filter {
+                $0.isActiveView
+                    && $0.viewPath != RUMOffViewEventsHandlingRule.Constants.backgroundViewURL
+            }
+            if let representative = activeSession.activeView,
+               let index = activeForegroundViews.firstIndex(where: { $0 === representative }) {
+                activeForegroundViews.append(activeForegroundViews.remove(at: index))
+            }
+            if !activeForegroundViews.isEmpty {
+                lastActiveViews = activeForegroundViews
+            }
+        }
 
         if command is RUMStopSessionCommand {
             applicationState.wasAnySessionStopped = true
@@ -250,7 +274,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     }
 
     /// Starts new RUM Session immediately after previous one expires or time outs. It transfers some of the state from the expired session to the new one.
-    private func refresh(expiredSession: RUMSessionScope, on command: RUMCommand, context: DatadogContext, writer: Writer) -> RUMSessionScope {
+    private func refresh(expiredSession: RUMSessionScope, on incomingCommand: RUMCommand, context: DatadogContext, writer: Writer) -> RUMSessionScope {
         var startPrecondition: RUMSessionPrecondition? = nil
 
         // If the app is in background, use the background-aware precondition; otherwise fall through to the end-reason logic.
@@ -265,28 +289,34 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             dependencies.telemetry.error("Failed to determine session precondition for REFRESHED session with end reason: \(lastSessionEndReason?.rawValue ?? "unknown")")
         }
 
-        let refreshingInForeground = context.applicationStateHistory.currentState == .active
-        let lastActiveViewPath = expiredSession.viewScopes.last(where: { $0.isActiveView })?.viewPath
-        let transferActiveView = command.shouldRestartLastViewAfterSessionExpiration
-            && refreshingInForeground
-            && lastActiveViewPath != RUMOffViewEventsHandlingRule.Constants.backgroundViewURL
+        var previousViews = expiredSession.viewScopes.filter {
+            $0.isActiveView && $0.viewPath != RUMOffViewEventsHandlingRule.Constants.backgroundViewURL
+        }
+        if let representative = expiredSession.activeView,
+           let index = previousViews.firstIndex(where: { $0 === representative }) {
+            previousViews.append(previousViews.remove(at: index))
+        }
+        let command = previousViews.resolvingNavigationOwner(of: incomingCommand)
+        let viewsToResume = viewsToRestore(on: command, from: previousViews, context: context)
 
         let refreshedSession = RUMSessionScope(
             from: expiredSession,
             startTime: command.time,
             startPrecondition: startPrecondition,
             context: context,
-            transferActiveView: transferActiveView,
-            applicationState: applicationState
+            transferActiveView: !viewsToResume.isEmpty,
+            applicationState: applicationState,
+            resumingViewScopes: viewsToResume
         )
         sessionScopeDidUpdate(refreshedSession)
-        lastActiveView = nil
+        lastActiveViews = []
         lastSessionEndReason = nil
         _ = refreshedSession.process(command: command, context: context, writer: writer)
         return refreshedSession
     }
 
-    private func startNewSession(on command: RUMCommand, context: DatadogContext, writer: Writer) {
+    private func startNewSession(on incomingCommand: RUMCommand, context: DatadogContext, writer: Writer) -> RUMCommand {
+        let command = lastActiveViews.resolvingNavigationOwner(of: incomingCommand)
         var startPrecondition: RUMSessionPrecondition? = nil
 
         // If the app is in background, use the background-aware precondition; otherwise fall through to the end-reason logic.
@@ -308,14 +338,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             dependencies.telemetry.debug("Starting new session triggered by \(type(of: command)). Previous session was stopped for the following reason: \(startPrecondition?.rawValue ?? "unknown")")
         }
 
-        let startingInForeground = context.applicationStateHistory.currentState == .active
-        var resumeViewScope = false
-
-        if lastSessionEndReason == .stopAPI {
-            resumeViewScope = command.shouldRestartLastViewAfterSessionStop && startingInForeground
-        } else if lastSessionEndReason == .timeOut || lastSessionEndReason == .maxDuration {
-            resumeViewScope = command.shouldRestartLastViewAfterSessionExpiration && startingInForeground
-        }
+        let viewsToResume = viewsToRestore(on: command, from: lastActiveViews, context: context)
 
         let newSession = RUMSessionScope(
             isInitialSession: false,
@@ -325,12 +348,37 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             context: context,
             dependencies: dependencies,
             applicationState: applicationState,
-            resumingViewScope: resumeViewScope ? lastActiveView : nil
+            resumingViewScopes: viewsToResume
         )
-        lastActiveView = nil
+        lastActiveViews = []
         lastSessionEndReason = nil
         sessionScopes.append(newSession)
         sessionScopeDidUpdate(newSession)
+        return command
+    }
+
+    /// Both immediate and delayed boundaries restore the same eligible peers.
+    /// Navigation ownership is already resolved against the previous session.
+    private func viewsToRestore(on command: RUMCommand, from views: [RUMViewScope], context: DatadogContext) -> [RUMViewScope] {
+        guard context.applicationStateHistory.currentState == .active else {
+            return []
+        }
+        let shouldRestart: Bool
+        switch lastSessionEndReason {
+        case .stopAPI:
+            shouldRestart = command.shouldRestartLastViewAfterSessionStop
+        case .timeOut, .maxDuration:
+            shouldRestart = command.shouldRestartLastViewAfterSessionExpiration
+        case nil:
+            return []
+        }
+        if shouldRestart {
+            return views
+        }
+        if command is RUMStartViewCommand || command is RUMStopViewCommand {
+            return views.excludingViewTargeted(by: command.target)
+        }
+        return []
     }
 
     private func sessionScopeDidUpdate(_ sessionScope: RUMSessionScope?) {
@@ -379,6 +427,83 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
                 "Starting session in background with unexpected launch reason: \(context.launchInfo.launchReason)"
             )
             return nil
+        }
+    }
+}
+
+private extension Array where Element == RUMViewScope {
+    /// The previous representative is last. A manual stop first matches its
+    /// identity; choosing a representative after exclusion would change owners.
+    func resolvingNavigationOwner(of command: RUMCommand) -> RUMCommand {
+        guard command.target == .processRepresentative else {
+            return command
+        }
+        if var start = command as? RUMStartViewCommand,
+           let scene = last?.sceneIdentifier {
+            start.target = .scene(scene)
+            return start
+        }
+        if var stop = command as? RUMStopViewCommand,
+           let scene = (last(where: { $0.identity == stop.identity }) ?? last)?.sceneIdentifier {
+            stop.target = .scene(scene)
+            return stop
+        }
+        return command
+    }
+
+    func excludingViewTargeted(by target: RUMCommandTarget) -> [RUMViewScope] {
+        switch target {
+        case .scene(let sceneIdentifier):
+            return filter { $0.sceneIdentifier != sceneIdentifier }
+        case .view(let viewID):
+            return filter { $0.viewUUID != viewID }
+        case .processRepresentative:
+            // `lastActiveViews` keeps the representative branch last.
+            return isEmpty ? [] : Array(dropLast())
+        case .none, .allActiveViews:
+            return []
+        }
+    }
+}
+
+/// Finishes an error once processing and every scheduled write have completed.
+/// The processing reservation also covers dropped errors with no recipient.
+private final class RUMErrorCompletion {
+    private let lock = NSLock()
+    private var pending = 1
+    private var completion: CompletionHandler?
+
+    init(_ completion: @escaping CompletionHandler) {
+        self.completion = completion
+    }
+
+    func beginWrite() {
+        lock.lock()
+        pending += 1
+        lock.unlock()
+    }
+
+    func finish() {
+        lock.lock()
+        pending -= 1
+        let callback = pending == 0 ? completion : nil
+        if pending == 0 {
+            completion = nil
+        }
+        lock.unlock()
+        callback?()
+    }
+}
+
+private struct RUMErrorCompletionWriter: Writer {
+    let writer: Writer
+    let errorCompletion: RUMErrorCompletion
+
+    func write<T: Encodable, M: Encodable>(value: T, metadata: M?, completion: @escaping CompletionHandler) {
+        errorCompletion.beginWrite()
+        writer.write(value: value, metadata: metadata) {
+            completion()
+            self.errorCompletion.finish()
         }
     }
 }

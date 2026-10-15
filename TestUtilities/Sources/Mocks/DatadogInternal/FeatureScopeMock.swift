@@ -5,9 +5,13 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 public final class FeatureScopeMock: FeatureScope, @unchecked Sendable {
+    @_spi(Internal)
+    public let rumContextHandoffOwner: RUMContextHandoff.Owner? = .init()
+
     private struct DeferredEventWriteContext {
         let bypassConsent: Bool
         let block: (DatadogContext, Writer) -> Void
@@ -118,3 +122,6 @@ public final class FeatureScopeMock: FeatureScope, @unchecked Sendable {
     /// Retrieve last set anonymous ID.
     public private(set) var anonymousId: String?
 }
+
+@_spi(Internal)
+extension FeatureScopeMock: RUMContextHandoffOwnerProviding {}

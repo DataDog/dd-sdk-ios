@@ -5,8 +5,12 @@
  */
 
 import XCTest
+#if os(iOS)
+import UIKit
+#endif
 import TestUtilities
 import DatadogInternal
+@_spi(Experimental)
 @testable import DatadogRUM
 
 class RUMMonitorProtocol_ConvenienceTests: XCTestCase {
@@ -14,6 +18,7 @@ class RUMMonitorProtocol_ConvenienceTests: XCTestCase {
     /// infinite loop and crash.
     ///
     /// TODO: RUMM-3347 Remove this test once protocol extension methods are safe by desing
+    @MainActor
     func testCallingExtensionMethodsIsSafe() {
         // Given
         let monitor = Monitor(
@@ -44,5 +49,29 @@ class RUMMonitorProtocol_ConvenienceTests: XCTestCase {
         monitor.startOperation(name: .mockAny())
         monitor.succeedOperation(name: .mockAny())
         monitor.failOperation(name: .mockAny(), reason: .mockAny())
+        #if os(iOS)
+        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+            let target = RUMViewTarget.current(in: scene)
+            monitor.addFeatureFlagEvaluation(name: "flag", value: true, view: target)
+            monitor.addTiming(name: "timing", view: target)
+            monitor.addViewLoadingTime(overwrite: false, view: target)
+            monitor.addViewAttribute(forKey: "single", value: "value", view: target)
+            monitor.addViewAttributes(["batch": 7], view: target)
+            monitor.removeViewAttribute(forKey: "single", view: target)
+            monitor.removeViewAttributes(forKeys: ["batch"], view: target)
+            monitor.addError(message: "targeted", view: target)
+            monitor.addError(error: ProgrammerError(description: "targeted"), view: target)
+            monitor.addError(error: ProgrammerError(description: "targeted callback"), view: target) {}
+            monitor.startResource(resourceKey: "targeted-request", request: .mockAny(), view: target)
+            monitor.startResource(resourceKey: "targeted-url", url: .mockRandom(), view: target)
+            monitor.startResource(resourceKey: "targeted-method", httpMethod: .get, urlString: "https://example.com", view: target)
+            monitor.addAction(type: .custom, name: "targeted", view: target)
+            monitor.startAction(type: .custom, name: "targeted", view: target)
+            monitor.stopAction(type: .custom, view: target)
+            monitor.startOperation(name: "targeted", view: target)
+            monitor.succeedOperation(name: "targeted", view: target)
+            monitor.failOperation(name: "targeted", reason: .error, view: target)
+        }
+        #endif
     }
 }

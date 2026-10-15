@@ -144,6 +144,11 @@ internal struct SwiftUIReflectionBasedViewNameExtractor: SwiftUIViewNameExtracto
     private static let HostingControllerFallbackViewName = "AutoTracked_HostingController_Fallback"
     private static let NavigationStackControllerFallbackViewName = "AutoTracked_NavigationStackController_Fallback"
 
+    internal static func isGenericFallbackViewName(_ name: String) -> Bool {
+        name == HostingControllerFallbackViewName
+            || name == NavigationStackControllerFallbackViewName
+    }
+
     /// Extracts a fallback view name when reflection-based extraction fails.
     /// This method attempts to extract a reasonable name from the controller's description
     /// when our primary reflection-based methods cannot identify the hosted SwiftUI view.

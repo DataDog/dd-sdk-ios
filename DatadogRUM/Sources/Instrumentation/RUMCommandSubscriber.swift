@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 /// The Command Subscriber is able to process RUM Commands.
@@ -15,6 +16,51 @@ internal protocol RUMCommandSubscriber: AnyObject {
     ///
     /// - Parameter command: The RUM command to process.
     func process(command: RUMCommand)
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? { get }
+}
+
+internal extension RUMCommandSubscriber {
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? { nil }
+
+    /// Resolves work invoked synchronously inside a trustworthy UI-event
+    /// handoff. Calls outside that bounded scope preserve the historical
+    /// process-representative behavior.
+    var currentExecutionTarget: RUMCommandTarget {
+        guard let handoff = RUMContextHandoff.current(for: rumContextHandoffOwner) else {
+            return .processRepresentative
+        }
+        if let viewID = handoff.rumContext?.viewID
+            .flatMap(UUID.init(uuidString:))
+            .map(RUMUUID.init(rawValue:)) {
+            return .view(viewID)
+        }
+        if let sceneIdentifier = handoff.sceneIdentifier {
+            return .scene(RUMSceneIdentifier(rawValue: sceneIdentifier))
+        }
+        return .processRepresentative
+    }
+}
+
+/// Provides immutable RUM context snapshots for instrumentation that must hand
+/// context to customer work before the asynchronous command pipeline catches up.
+///
+/// The primary example is `UIApplication.sendEvent(_:)`: a control in scene B
+/// can synchronously create a URL request while scene A is still the exported
+/// process representative. Looking up B's already-active view here avoids
+/// carrying A's context into that request without making command processing
+/// synchronous.
+internal protocol RUMContextSnapshotProviding: AnyObject {
+    func rumContextSnapshot(for target: RUMCommandTarget) -> RUMCoreContext?
+    /// Returns the snapshot only if it still belongs to a live session at the
+    /// time customer work is about to be dispatched. A nil date uses the
+    /// provider's clock when an inherited task resumes.
+    func rumContextSnapshot(for target: RUMCommandTarget, at date: Date?) -> RUMCoreContext?
+}
+
+extension RUMContextSnapshotProviding {
+    func rumContextSnapshot(for target: RUMCommandTarget, at date: Date?) -> RUMCoreContext? {
+        rumContextSnapshot(for: target)
+    }
 }
 
 /// A Command Publisher is responsible for creating RUM Commands

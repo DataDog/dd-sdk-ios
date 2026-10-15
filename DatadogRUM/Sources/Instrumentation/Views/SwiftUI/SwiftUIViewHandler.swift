@@ -14,4 +14,15 @@ internal protocol SwiftUIViewHandler: RUMCommandPublisher {
 
     /// Respond to a `SwiftUI.View.onDisappear` event.
     func notify_onDisappear(identity: String)
+
+    /// Replace one materialized SwiftUI navigation occurrence without exposing
+    /// the underlying view in the handler's navigation stack.
+    func notify_replaceOccurrence(
+        oldIdentity: String,
+        newIdentity: String,
+        name: String,
+        path: String,
+        attributes: [AttributeKey: AttributeValue],
+        sceneIdentifier: RUMSceneIdentifier?
+    )
 }

@@ -282,10 +282,16 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject {
 
     // MARK: - features
 
-    /// Starts a RUM Operation
+    /// Starts a RUM Operation.
+    ///
+    /// An operation is identified application-wide by its exact `name` and `operationKey`.
+    /// Scenes do not namespace that identity. Use a unique key for each concurrent instance.
+    /// Starting the same identity again makes the SDK track only the latest start; the earlier
+    /// backend operation remains open until its four-hour timeout.
     /// - Parameters:
     ///   - name: the name of the operation (e.g., `login_flow`)
-    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
+    ///   - operationKey: an opaque key identifying this operation instance.
+    ///     Reuse the exact value for every step.
     ///   - attributes: custom attributes to attach to this operation
     ///   - options: options to attach to this operation (e.g. profiling options)
     @available(*, message: "This API is in preview and may change in future releases")
@@ -299,7 +305,8 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject {
     /// Starts a Feature Operation
     /// - Parameters:
     ///   - name: the name of the operation (e.g., `login_flow`)
-    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
+    ///   - operationKey: an opaque key identifying this operation instance.
+    ///     Reuse the exact value for every step.
     ///   - attributes: custom attributes to attach to this operation
     @available(*, deprecated, renamed: "startOperation(name:operationKey:attributes:options:)", message: "Use startOperation(name:operationKey:attributes:options:) instead.")
     func startFeatureOperation(
@@ -309,9 +316,13 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject {
     )
 
     /// Completes a RUM Operation successfully.
+    ///
+    /// The completion may occur in a different scene from the start. It is attributed using
+    /// the view context available at this call site.
     /// - Parameters:
     ///   - name: the name of the operation (e.g., `login_flow`)
-    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation); it should be provided if `operationKey` was provided when invoking `startOperation`
+    ///   - operationKey: the exact key passed to `startOperation`. Together with
+    ///     `name`, it identifies the operation application-wide.
     ///   - attributes: custom attributes to attach to this operation
     @available(*, message: "This API is in preview and may change in future releases")
     func succeedOperation(
@@ -323,7 +334,8 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject {
     /// Completes a Feature successfully.
     /// - Parameters:
     ///   - name: the name of the operation (e.g., `login_flow`)
-    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation); it should be provided if `operationKey` was provided when invoking `startOperation`
+    ///   - operationKey: the exact key passed to `startOperation`. Together with
+    ///     `name`, it identifies the operation application-wide.
     ///   - attributes: custom attributes to attach to this operation
     @available(*, deprecated, renamed: "succeedOperation(name:operationKey:attributes:)", message: "Use succeedOperation(name:operationKey:attributes:) instead.")
     func succeedFeatureOperation(
@@ -333,9 +345,13 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject {
     )
 
     /// Fails a RUM Operation.
+    ///
+    /// The failure may occur in a different scene from the start. It is attributed using
+    /// the view context available at this call site.
     /// - Parameters:
     ///   - name: the name of the operation (e.g., `login_flow`)
-    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation); it should be provided if `operationKey` was provided when invoking `startOperation`
+    ///   - operationKey: the exact key passed to `startOperation`. Together with
+    ///     `name`, it identifies the operation application-wide.
     ///   - reason: the reason for the failure
     ///   - attributes: custom attributes to attach to this operation
     @available(*, message: "This API is in preview and may change in future releases")
@@ -349,7 +365,8 @@ public protocol RUMMonitorProtocol: RUMMonitorViewProtocol, AnyObject {
     /// Fails a Feature Operation.
     /// - Parameters:
     ///   - name: the name of the operation (e.g., `login_flow`)
-    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation); it should be provided if `operationKey` was provided when invoking `startOperation`
+    ///   - operationKey: the exact key passed to `startOperation`. Together with
+    ///     `name`, it identifies the operation application-wide.
     ///   - reason: the reason for the failure
     ///   - attributes: custom attributes to attach to this operation
     @available(*, deprecated, renamed: "failOperation(name:operationKey:reason:attributes:)", message: "Use failOperation(name:operationKey:reason:attributes:) instead.")

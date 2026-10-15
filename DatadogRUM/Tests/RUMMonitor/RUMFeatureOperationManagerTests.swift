@@ -39,6 +39,26 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         super.tearDown()
     }
 
+    private func operationCommand(
+        stepType: RUMVitalOperationStepEvent.Vital.StepType,
+        name: String = "operation",
+        operationKey: String? = "key",
+        failureReason: RUMFeatureOperationFailureReason? = nil,
+        target: RUMCommandTarget = .processRepresentative
+    ) -> RUMOperationStepVitalCommand {
+        var command = RUMOperationStepVitalCommand(
+            vitalId: UUID().uuidString,
+            name: name,
+            operationKey: operationKey,
+            stepType: stepType,
+            failureReason: failureReason,
+            time: .mockAny(),
+            attributes: [:]
+        )
+        command.target = target
+        return command
+    }
+
     // MARK: - Process Command Tests
 
     func testFeatureOperationCommand_CreatesVitalEvent() throws {
@@ -129,9 +149,11 @@ class RUMFeatureOperationManagerTests: XCTestCase {
             options: ProfilingOptions(sampleRate: .maxSampleRate),
             time: Date()
         )
+        let activeViewParent = RUMContextProviderMock()
+        let activeView = RUMViewScope.mockWith(parent: activeViewParent)
 
         // When
-        manager.process(command, context: mockContext, writer: mockWriter, activeView: .mockAny())
+        manager.process(command, context: mockContext, writer: mockWriter, activeView: activeView)
 
         // Then
         let message = try XCTUnwrap(
@@ -139,6 +161,10 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         )
         XCTAssertEqual(message.operation.serverTimeOffset, mockContext.serverTimeOffset)
         XCTAssertEqual(message.operation.date, command.time)
+        XCTAssertEqual(
+            message.attributes[RUMCoreContext.IDs.viewID] as? [String],
+            [activeView.viewUUID.toRUMDataFormat]
+        )
 
         let event = try XCTUnwrap(mockWriter.events(ofType: RUMVitalOperationStepEvent.self).first)
         XCTAssertEqual(
@@ -147,6 +173,68 @@ class RUMFeatureOperationManagerTests: XCTestCase {
                 .addingTimeInterval(mockContext.serverTimeOffset)
                 .timeIntervalSince1970.dd.toInt64Milliseconds
         )
+    }
+
+    func testParallelSampledOperationsSendEachStepsResolvedViewAndExactVitalIdentity() throws {
+        let featureScope = FeatureScopeMock()
+        manager = RUMFeatureOperationManager(
+            parent: mockParent,
+            dependencies: .mockWith(featureScope: featureScope),
+            sessionSampler: .mockKeepAll()
+        )
+        mockContext.serverTimeOffset = 2
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-a")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-b")
+        let viewA = RUMViewScope.mockWith(name: "View A", sceneIdentifier: sceneA)
+        let viewB = RUMViewScope.mockWith(name: "View B", sceneIdentifier: sceneB)
+        let steps: [(RUMVitalOperationStepEvent.Vital.StepType, String, RUMSceneIdentifier, RUMViewScope)] = [
+            (.start, "a", sceneA, viewA),
+            (.start, "b", sceneB, viewB),
+            (.end, "b", sceneA, viewA),
+            (.end, "a", sceneB, viewB)
+        ]
+
+        for (index, step) in steps.enumerated() {
+            var command = RUMOperationStepVitalCommand.mockWith(
+                vitalId: "step-\(index)",
+                name: "load",
+                operationKey: step.1,
+                stepType: step.0,
+                options: step.0 == .start ? ProfilingOptions(sampleRate: .maxSampleRate) : nil,
+                time: Date(timeIntervalSince1970: 100 + Double(index))
+            )
+            command.target = .scene(step.2)
+            manager.process(
+                command,
+                context: mockContext,
+                writer: mockWriter,
+                activeView: step.3,
+                activeViews: [viewA, viewB],
+                processRepresentativeView: step.2 == sceneA ? viewB : viewA
+            )
+        }
+
+        let messages = featureScope.messagesSent().compactMap { $0.asPayload as? OperationMessage }
+        let events = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
+        XCTAssertEqual(messages.count, 4)
+        XCTAssertEqual(events.count, 4)
+        for (index, pair) in zip(messages.prefix(steps.count), events).enumerated() {
+            let (message, event) = pair
+            let viewID = steps[index].3.viewUUID.toRUMDataFormat
+            XCTAssertEqual(message.operation.id, "step-\(index)")
+            XCTAssertEqual(message.operation.name, "load")
+            XCTAssertEqual(message.operation.operationKey, steps[index].1)
+            XCTAssertEqual(message.operation.stepType, steps[index].0)
+            XCTAssertEqual(message.operation.date, Date(timeIntervalSince1970: 100 + Double(index)))
+            XCTAssertEqual(message.operation.serverTimeOffset, 2)
+            XCTAssertEqual(message.attributes[RUMCoreContext.IDs.viewID] as? [String], [viewID])
+            XCTAssertEqual(message.attributes[RUMCoreContext.IDs.sessionID] as? String, event.session.id)
+            XCTAssertEqual(event.view.id, viewID)
+            XCTAssertEqual(event.vital.id, message.operation.id)
+            XCTAssertEqual(event.vital.operationKey, message.operation.operationKey)
+            XCTAssertEqual(event.vital.stepType, message.operation.stepType)
+            XCTAssertEqual(event.date, Int64(102 + index) * 1_000)
+        }
     }
 
     func testProcess_MultipleOperations_CreatesCorrectNumberOfEvents() {
@@ -347,30 +435,114 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         XCTAssertEqual(logMessage, "`\(stepType.rawValue)` was called, but operation `\(operationName)` is currently not active. This may lead to a backend `instrumentation_error`. Make sure to call `startOperation(name:operationKey:attributes:options:)` first. Note that the SDK only tracks operations locally and not across sessions.")
     }
 
-    func testProcess_OperationStartTwice_LogsWarning() throws {
-        // Given
+    func testProcess_OperationStartTwice_LogsOrphanTimeoutWarningAndTracksOnlyLatestStart() throws {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
-        let operationName: String = .mockRandom()
-        let operationKey: String = .mockAny()
-        let startCommand1 = RUMOperationStepVitalCommand.mockWith(
+        let operationName = "operation"
+        let operationKey = "shared-key"
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-a")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-b")
+        let viewA = RUMViewScope.mockWith(name: "View A", sceneIdentifier: sceneA)
+        let viewB = RUMViewScope.mockWith(name: "View B", sceneIdentifier: sceneB)
+        let firstStart = operationCommand(
+            stepType: .start,
             name: operationName,
             operationKey: operationKey,
-            stepType: .start
+            target: .scene(sceneA)
         )
-        let startCommand2 = RUMOperationStepVitalCommand.mockWith(
+        let latestStart = operationCommand(
+            stepType: .start,
             name: operationName,
             operationKey: operationKey,
-            stepType: .start
+            target: .scene(sceneB)
         )
 
-        // When
-        manager.process(startCommand1, context: mockContext, writer: mockWriter, activeView: .mockAny())
-        manager.process(startCommand2, context: mockContext, writer: mockWriter, activeView: .mockAny())
+        manager.process(
+            firstStart,
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewA,
+            activeViews: [viewA, viewB]
+        )
+        manager.process(
+            latestStart,
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewB,
+            activeViews: [viewA, viewB]
+        )
+        manager.process(
+            operationCommand(stepType: .end, name: operationName, operationKey: operationKey),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewA,
+            activeViews: [viewA, viewB]
+        )
 
-        // Then
         let logMessage = try XCTUnwrap(dd.logger.warnLog?.message)
-        XCTAssertEqual(logMessage, "Operation `\(operationName)` (key `\(operationKey)`) has already been started. This may result in the backend terminating the previous instance with an `auto_restart` failure. Note that the SDK only tracks operations locally and not across sessions.")
+        let expectedMessage = "Operation `\(operationName)` (key `\(operationKey)`) has already been started. "
+            + "The SDK will track only the latest start; the earlier backend operation will remain open "
+            + "until its four-hour timeout. Use a unique `operationKey` for each concurrent operation "
+            + "instance. Note that the SDK only tracks operations locally and not across sessions."
+        XCTAssertEqual(logMessage, expectedMessage)
+        let events = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
+        XCTAssertEqual(events.map(\.vital.stepType), [.start, .start, .end])
+        XCTAssertEqual(events.map(\.view.id), [
+            viewA.viewUUID.toRUMDataFormat,
+            viewB.viewUUID.toRUMDataFormat,
+            viewB.viewUUID.toRUMDataFormat,
+        ])
+    }
+
+    func testProcess_OperationStartTwiceWithoutKey_UsesSameApplicationWideIdentity() throws {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-a")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-b")
+        let viewA = RUMViewScope.mockWith(name: "View A", sceneIdentifier: sceneA)
+        let viewB = RUMViewScope.mockWith(name: "View B", sceneIdentifier: sceneB)
+
+        manager.process(
+            operationCommand(
+                stepType: .start,
+                name: "feed_load",
+                operationKey: nil,
+                target: .scene(sceneA)
+            ),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewA,
+            activeViews: [viewA, viewB]
+        )
+        manager.process(
+            operationCommand(
+                stepType: .start,
+                name: "feed_load",
+                operationKey: nil,
+                target: .scene(sceneB)
+            ),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewB,
+            activeViews: [viewA, viewB]
+        )
+        manager.process(
+            operationCommand(stepType: .end, name: "feed_load", operationKey: nil),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewA,
+            activeViews: [viewA, viewB]
+        )
+
+        let warning = try XCTUnwrap(dd.logger.warnLog?.message)
+        XCTAssertTrue(warning.contains("Use a unique `operationKey`"))
+        let events = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
+        XCTAssertEqual(events.map(\.vital.stepType), [.start, .start, .end])
+        XCTAssertEqual(events.map(\.view.id), [
+            viewA.viewUUID.toRUMDataFormat,
+            viewB.viewUUID.toRUMDataFormat,
+            viewB.viewUUID.toRUMDataFormat,
+        ])
     }
 
     func testProcess_ValidOperationFlow_NoWarnings() {
@@ -386,6 +558,477 @@ class RUMFeatureOperationManagerTests: XCTestCase {
 
         // Then
         XCTAssertNil(dd.logger.warnLog)
+    }
+
+    func testGivenOperationsWhoseConcatenatedNamesAndKeysCollide_whenTheyEnd_theyRemainIndependent() throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-a")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-b")
+        let viewA = RUMViewScope.mockWith(name: "View A", sceneIdentifier: sceneA)
+        let viewB = RUMViewScope.mockWith(name: "View B", sceneIdentifier: sceneB)
+        let firstStart = operationCommand(
+            stepType: .start,
+            name: "ab",
+            operationKey: "c",
+            target: .scene(sceneA)
+        )
+        let secondStart = operationCommand(
+            stepType: .start,
+            name: "a",
+            operationKey: "bc",
+            target: .scene(sceneB)
+        )
+
+        manager.process(
+            firstStart,
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewA,
+            activeViews: [viewA, viewB]
+        )
+        manager.process(
+            secondStart,
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewB,
+            activeViews: [viewA, viewB]
+        )
+        manager.process(
+            operationCommand(stepType: .end, name: "ab", operationKey: "c", target: .scene(sceneA)),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewA,
+            activeViews: [viewA, viewB]
+        )
+        manager.process(
+            operationCommand(stepType: .end, name: "a", operationKey: "bc", target: .scene(sceneB)),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewB,
+            activeViews: [viewA, viewB]
+        )
+
+        let events = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
+        XCTAssertEqual(events.count, 4)
+        XCTAssertEqual(events[2].view.id, viewA.viewUUID.toRUMDataFormat)
+        XCTAssertEqual(events[3].view.id, viewB.viewUUID.toRUMDataFormat)
+    }
+
+    func testGivenOperationStartedInSceneA_whenItSucceedsInSceneB_eachStepUsesItsCallSiteView() throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-a")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-b")
+        let viewA = RUMViewScope.mockWith(name: "Message List", sceneIdentifier: sceneA)
+        let viewB = RUMViewScope.mockWith(name: "Full Thread", sceneIdentifier: sceneB)
+
+        manager.process(
+            operationCommand(stepType: .start, target: .scene(sceneA)),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewA,
+            activeViews: [viewA, viewB]
+        )
+        manager.process(
+            operationCommand(stepType: .end, target: .scene(sceneB)),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewB,
+            activeViews: [viewA, viewB]
+        )
+
+        let events = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
+        XCTAssertEqual(events.count, 2)
+        XCTAssertEqual(events[0].view.id, viewA.viewUUID.toRUMDataFormat)
+        XCTAssertEqual(events[1].view.id, viewB.viewUUID.toRUMDataFormat)
+        XCTAssertNil(events[1].vital.failureReason)
+    }
+
+    func testGivenOperationStartedInSceneA_whenItFailsInSceneB_eachStepUsesItsCallSiteView() throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-a")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-b")
+        let viewA = RUMViewScope.mockWith(name: "Message List", sceneIdentifier: sceneA)
+        let viewB = RUMViewScope.mockWith(name: "Full Thread", sceneIdentifier: sceneB)
+
+        manager.process(
+            operationCommand(stepType: .start, target: .scene(sceneA)),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewA,
+            activeViews: [viewA, viewB]
+        )
+        manager.process(
+            operationCommand(stepType: .end, failureReason: .error, target: .scene(sceneB)),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewB,
+            activeViews: [viewA, viewB]
+        )
+
+        let events = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
+        XCTAssertEqual(events.count, 2)
+        XCTAssertEqual(events[0].view.id, viewA.viewUUID.toRUMDataFormat)
+        XCTAssertEqual(events[1].view.id, viewB.viewUUID.toRUMDataFormat)
+        XCTAssertEqual(events[1].vital.failureReason, .error)
+    }
+
+    func testGivenOperationNavigatesWithinSceneA_whenItEnds_itUsesTheNewCallSiteView() throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-a")
+        let viewA1 = RUMViewScope.mockWith(name: "View A1", sceneIdentifier: sceneA)
+        let viewA2 = RUMViewScope.mockWith(name: "View A2", sceneIdentifier: sceneA)
+
+        manager.process(
+            operationCommand(stepType: .start, target: .scene(sceneA)),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewA1,
+            activeViews: [viewA1]
+        )
+        manager.process(
+            operationCommand(stepType: .end, target: .scene(sceneA)),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewA2,
+            activeViews: [viewA2]
+        )
+
+        let events = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
+        XCTAssertEqual(events.map(\.view.id), [
+            viewA1.viewUUID.toRUMDataFormat,
+            viewA2.viewUUID.toRUMDataFormat,
+        ])
+    }
+
+    func testGivenParallelOperationsWithSameNameAndDifferentKeys_whenTheyEnd_theyUseTheirOwnViews() throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-a")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-b")
+        let viewA = RUMViewScope.mockWith(name: "View A", sceneIdentifier: sceneA)
+        let viewB = RUMViewScope.mockWith(name: "View B", sceneIdentifier: sceneB)
+
+        manager.process(
+            operationCommand(
+                stepType: .start,
+                name: "feed_load",
+                operationKey: "key-a",
+                target: .scene(sceneA)
+            ),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewA,
+            activeViews: [viewA, viewB]
+        )
+        manager.process(
+            operationCommand(
+                stepType: .start,
+                name: "feed_load",
+                operationKey: "key-b",
+                target: .scene(sceneB)
+            ),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewB,
+            activeViews: [viewA, viewB]
+        )
+        manager.process(
+            operationCommand(
+                stepType: .end,
+                name: "feed_load",
+                operationKey: "key-a",
+                target: .scene(sceneA)
+            ),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewA,
+            activeViews: [viewA, viewB]
+        )
+        manager.process(
+            operationCommand(
+                stepType: .end,
+                name: "feed_load",
+                operationKey: "key-b",
+                target: .scene(sceneB)
+            ),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewB,
+            activeViews: [viewA, viewB]
+        )
+
+        let events = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
+        XCTAssertEqual(events.map(\.vital.operationKey), ["key-a", "key-b", "key-a", "key-b"])
+        XCTAssertEqual(events.map(\.view.id), [
+            viewA.viewUUID.toRUMDataFormat,
+            viewB.viewUUID.toRUMDataFormat,
+            viewA.viewUUID.toRUMDataFormat,
+            viewB.viewUUID.toRUMDataFormat,
+        ])
+    }
+
+    func testGivenParallelOperationsWithSameNameAndDifferentKeys_whenTheyEndInReverseOrder_theyUseTheirOwnViews() throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-a")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-b")
+        let viewA = RUMViewScope.mockWith(name: "View A", sceneIdentifier: sceneA)
+        let viewB = RUMViewScope.mockWith(name: "View B", sceneIdentifier: sceneB)
+
+        manager.process(
+            operationCommand(
+                stepType: .start,
+                name: "feed_load",
+                operationKey: "key-a",
+                target: .scene(sceneA)
+            ),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewA,
+            activeViews: [viewA, viewB]
+        )
+        manager.process(
+            operationCommand(
+                stepType: .start,
+                name: "feed_load",
+                operationKey: "key-b",
+                target: .scene(sceneB)
+            ),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewB,
+            activeViews: [viewA, viewB]
+        )
+        manager.process(
+            operationCommand(
+                stepType: .end,
+                name: "feed_load",
+                operationKey: "key-b",
+                target: .scene(sceneB)
+            ),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewB,
+            activeViews: [viewA, viewB]
+        )
+        manager.process(
+            operationCommand(
+                stepType: .end,
+                name: "feed_load",
+                operationKey: "key-a",
+                target: .scene(sceneA)
+            ),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewA,
+            activeViews: [viewA, viewB]
+        )
+
+        let events = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
+        XCTAssertEqual(events.map(\.vital.operationKey), ["key-a", "key-b", "key-b", "key-a"])
+        XCTAssertEqual(events.map(\.view.id), [
+            viewA.viewUUID.toRUMDataFormat,
+            viewB.viewUUID.toRUMDataFormat,
+            viewB.viewUUID.toRUMDataFormat,
+            viewA.viewUUID.toRUMDataFormat,
+        ])
+    }
+
+    func testGivenOperationOwningSceneIsClosed_whenItEnds_itRetainsItsOriginatingView() throws {
+        let featureScope = FeatureScopeMock()
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-a")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-b")
+        let viewA = RUMViewScope.mockWith(name: "View A", sceneIdentifier: sceneA)
+        let viewB = RUMViewScope.mockWith(name: "View B", sceneIdentifier: sceneB)
+        mockParent.context = .mockWith(
+            activeViewID: viewB.viewUUID,
+            activeViewName: viewB.viewName
+        )
+        manager = RUMFeatureOperationManager(
+            parent: mockParent,
+            dependencies: .mockWith(featureScope: featureScope),
+            sessionSampler: .mockKeepAll()
+        )
+        let start = operationCommand(stepType: .start, target: .scene(sceneA))
+
+        manager.process(start, context: mockContext, writer: mockWriter, activeView: viewA, activeViews: [viewA, viewB])
+        let selectedView = manager.process(
+            operationCommand(stepType: .end),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewB,
+            activeViews: [viewB]
+        )
+
+        XCTAssertNil(selectedView)
+        let event = try XCTUnwrap(mockWriter.events(ofType: RUMVitalOperationStepEvent.self).last)
+        XCTAssertEqual(event.view.id, viewA.viewUUID.toRUMDataFormat)
+        XCTAssertEqual(event.view.url, viewA.viewPath)
+        let message = try XCTUnwrap(
+            featureScope.messagesSent().compactMap { $0.asPayload as? OperationMessage }.last
+        )
+        XCTAssertEqual(
+            message.attributes[RUMCoreContext.IDs.viewID] as? [String],
+            [viewA.viewUUID.toRUMDataFormat]
+        )
+        XCTAssertEqual(
+            message.attributes[RUMCoreContext.IDs.viewName] as? [String],
+            [viewA.viewName]
+        )
+    }
+
+    func testGivenOperationGetsATrustworthyIntermediateStepInSceneB_whenSceneBCloses_itRetainsSceneBAsLastProvenView() throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-a")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-b")
+        let viewA = RUMViewScope.mockWith(name: "View A", sceneIdentifier: sceneA)
+        let viewB = RUMViewScope.mockWith(name: "View B", sceneIdentifier: sceneB)
+
+        for (index, stepType) in [
+            RUMVitalOperationStepEvent.Vital.StepType.update,
+            .retry,
+        ].enumerated() {
+            let operationKey = "key-\(index)"
+            manager.process(
+                operationCommand(stepType: .start, operationKey: operationKey, target: .scene(sceneA)),
+                context: mockContext,
+                writer: mockWriter,
+                activeView: viewA,
+                activeViews: [viewA, viewB]
+            )
+            manager.process(
+                operationCommand(stepType: stepType, operationKey: operationKey, target: .scene(sceneB)),
+                context: mockContext,
+                writer: mockWriter,
+                activeView: viewB,
+                activeViews: [viewA, viewB]
+            )
+            let selectedView = manager.process(
+                operationCommand(stepType: .end, operationKey: operationKey),
+                context: mockContext,
+                writer: mockWriter,
+                activeView: viewA,
+                activeViews: [viewA]
+            )
+
+            XCTAssertNil(selectedView)
+        }
+
+        let events = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
+        XCTAssertEqual(events.map(\.view.id), [
+            viewA.viewUUID.toRUMDataFormat,
+            viewB.viewUUID.toRUMDataFormat,
+            viewB.viewUUID.toRUMDataFormat,
+            viewA.viewUUID.toRUMDataFormat,
+            viewB.viewUUID.toRUMDataFormat,
+            viewB.viewUUID.toRUMDataFormat,
+        ])
+    }
+
+    func testGivenOperationOriginatingSceneIsClosed_whenItExplicitlyEndsInSceneB_itUsesSceneB() throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-a")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-b")
+        let viewA = RUMViewScope.mockWith(name: "View A", sceneIdentifier: sceneA)
+        let viewB = RUMViewScope.mockWith(name: "View B", sceneIdentifier: sceneB)
+
+        manager.process(
+            operationCommand(stepType: .start, target: .scene(sceneA)),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewA,
+            activeViews: [viewA, viewB]
+        )
+        let selectedView = manager.process(
+            operationCommand(stepType: .end, target: .scene(sceneB)),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewB,
+            activeViews: [viewB]
+        )
+
+        XCTAssertTrue(selectedView === viewB)
+        let event = try XCTUnwrap(mockWriter.events(ofType: RUMVitalOperationStepEvent.self).last)
+        XCTAssertEqual(event.view.id, viewB.viewUUID.toRUMDataFormat)
+        XCTAssertEqual(event.view.url, viewB.viewPath)
+    }
+
+    func testGivenSourceLessOperationSteps_whenRepresentativeChanges_theyPreserveRepresentativeBehavior() throws {
+        let viewA = RUMViewScope.mockWith(name: "View A", sceneIdentifier: RUMSceneIdentifier(rawValue: "scene-a"))
+        let viewB = RUMViewScope.mockWith(name: "View B", sceneIdentifier: RUMSceneIdentifier(rawValue: "scene-b"))
+
+        manager.process(
+            operationCommand(stepType: .start),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewA,
+            activeViews: [viewA, viewB]
+        )
+        manager.process(
+            operationCommand(stepType: .end),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: viewB,
+            activeViews: [viewA, viewB]
+        )
+
+        let events = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
+        XCTAssertEqual(events.map(\.view.id), [
+            viewA.viewUUID.toRUMDataFormat,
+            viewB.viewUUID.toRUMDataFormat,
+        ])
+    }
+
+    func testGivenTargetCannotResolveAndNoSnapshot_whenRepresentativeChanges_itUsesCurrentRepresentative() throws {
+        let missingScene = RUMSceneIdentifier(rawValue: "missing-scene")
+        let representativeA = RUMViewScope.mockWith(
+            name: "Representative A",
+            sceneIdentifier: RUMSceneIdentifier(rawValue: "scene-a")
+        )
+        let representativeB = RUMViewScope.mockWith(
+            name: "Representative B",
+            sceneIdentifier: RUMSceneIdentifier(rawValue: "scene-b")
+        )
+
+        manager.process(
+            operationCommand(stepType: .start, target: .scene(missingScene)),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: nil,
+            activeViews: [representativeA],
+            processRepresentativeView: representativeA
+        )
+        manager.process(
+            operationCommand(stepType: .end, target: .scene(missingScene)),
+            context: mockContext,
+            writer: mockWriter,
+            activeView: nil,
+            activeViews: [representativeB],
+            processRepresentativeView: representativeB
+        )
+
+        let events = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
+        XCTAssertEqual(events.map(\.view.id), [
+            representativeA.viewUUID.toRUMDataFormat,
+            representativeB.viewUUID.toRUMDataFormat,
+        ])
+    }
+
+    func testGivenLegacyOperationViewIsClosed_whenItEnds_itPreservesNoViewBehavior() throws {
+        let view = RUMViewScope.mockWith(name: "Legacy View", sceneIdentifier: nil)
+        let start = RUMOperationStepVitalCommand.mockWith(
+            name: "operation",
+            operationKey: "key",
+            stepType: .start
+        )
+        let end = RUMOperationStepVitalCommand.mockWith(
+            name: "operation",
+            operationKey: "key",
+            stepType: .end
+        )
+
+        manager.process(start, context: mockContext, writer: mockWriter, activeView: view)
+        let selectedView = manager.process(
+            end,
+            context: mockContext,
+            writer: mockWriter,
+            activeView: nil
+        )
+
+        XCTAssertNil(selectedView)
+        let event = try XCTUnwrap(mockWriter.events(ofType: RUMVitalOperationStepEvent.self).last)
+        XCTAssertEqual(event.view.id, RUMUUID.nullUUID.toRUMDataFormat)
+        XCTAssertEqual(event.view.url, "")
     }
 
     // MARK: - Synthetics Test ID Tests

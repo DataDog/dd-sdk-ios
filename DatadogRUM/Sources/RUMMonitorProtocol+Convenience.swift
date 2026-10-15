@@ -10,6 +10,206 @@ import DatadogInternal
 
 // swiftlint:disable function_default_parameter_at_end
 
+#if os(iOS)
+/// Selects the RUM view used to attribute explicitly targeted telemetry.
+/// Unsupported scene targeting preserves the receiving monitor’s legacy behavior.
+///
+/// This API is experimental and may change before becoming generally available.
+/// It does not expose or retain an internal RUM view identifier.
+@_spi(Experimental)
+@available(iOS 15.0, *)
+public struct RUMViewTarget {
+    fileprivate let sceneIdentifier: RUMSceneIdentifier
+
+    private init(sceneIdentifier: RUMSceneIdentifier) {
+        self.sceneIdentifier = sceneIdentifier
+    }
+
+    /// Targets the current tracked RUM view in `scene` when telemetry is
+    /// processed.
+    @MainActor
+    public static func current(in scene: UIWindowScene) -> Self {
+        Self(
+            sceneIdentifier: RUMSceneIdentifier(
+                rawValue: scene.session.persistentIdentifier
+            )
+        )
+    }
+}
+
+/// Compatibility spelling retained while the experimental API is under review.
+@_spi(Experimental)
+@available(iOS 15.0, *)
+public typealias RUMOperationViewTarget = RUMViewTarget
+#endif
+
+#if os(iOS)
+public extension RUMMonitorProtocol {
+    /// Records a flag evaluation on the selected scene's current view.
+    ///
+    /// This API is experimental. An unavailable target preserves independent
+    /// inference. Repeated names retain the existing replacement behavior.
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func addFeatureFlagEvaluation(name: String, value: Encodable, view: RUMViewTarget) {
+        RUMFeatureFlagTargetBridge.addEvaluation(on: self, name: name, value: value, explicitTarget: .scene(view.sceneIdentifier))
+    }
+}
+
+/// Private capability preserving the legacy custom-monitor evaluation call.
+internal protocol RUMFeatureFlagTargetHandling: AnyObject {
+    func addFeatureFlagEvaluation(name: String, value: Encodable, explicitTarget: RUMCommandTarget?)
+}
+
+@MainActor
+internal enum RUMFeatureFlagTargetBridge {
+    static func addEvaluation(on monitor: any RUMMonitorProtocol, name: String, value: Encodable, explicitTarget: RUMCommandTarget) {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMFeatureFlagTargetHandling else {
+            monitor.addFeatureFlagEvaluation(name: name, value: value)
+            return
+        }
+        monitor.addFeatureFlagEvaluation(name: name, value: value, explicitTarget: explicitTarget)
+    }
+}
+
+public extension RUMMonitorViewProtocol {
+    /// Records a timing on the selected scene's current view.
+    ///
+    /// This API is experimental. An unavailable target preserves independent
+    /// inference. Repeated names retain the existing replacement behavior.
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func addTiming(name: String, view: RUMViewTarget) {
+        RUMViewTimingTargetBridge.addTiming(on: self, name: name, explicitTarget: .scene(view.sceneIdentifier))
+    }
+
+    /// Records loading time on the selected scene's current view.
+    ///
+    /// This API is experimental. An unavailable target preserves independent
+    /// inference. Loading time changes only when absent or overwrite is true.
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func addViewLoadingTime(overwrite: Bool, view: RUMViewTarget) {
+        RUMViewTimingTargetBridge.addViewLoadingTime(on: self, overwrite: overwrite, explicitTarget: .scene(view.sceneIdentifier))
+    }
+
+    /// Adds an attribute to the selected scene's current view.
+    ///
+    /// This API is experimental. An unavailable target preserves independent
+    /// inference. Global monitor attributes remain process-wide.
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func addViewAttribute(forKey key: AttributeKey, value: AttributeValue, view: RUMViewTarget) {
+        RUMViewAttributeTargetBridge.addViewAttribute(on: self, forKey: key, value: value, explicitTarget: .scene(view.sceneIdentifier))
+    }
+
+    /// Adds attributes to the selected scene's current view.
+    ///
+    /// This API is experimental. An unavailable target preserves independent
+    /// inference. These values retain the existing view-attribute precedence.
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func addViewAttributes(_ attributes: [AttributeKey: AttributeValue], view: RUMViewTarget) {
+        RUMViewAttributeTargetBridge.addViewAttributes(on: self, attributes: attributes, explicitTarget: .scene(view.sceneIdentifier))
+    }
+
+    /// Removes an attribute from the selected scene's current view.
+    ///
+    /// This API is experimental. A same-key global value remains available.
+    /// Events created before removal keep their attributes.
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func removeViewAttribute(forKey key: AttributeKey, view: RUMViewTarget) {
+        RUMViewAttributeTargetBridge.removeViewAttribute(on: self, forKey: key, explicitTarget: .scene(view.sceneIdentifier))
+    }
+
+    /// Removes attributes from the selected scene's current view.
+    ///
+    /// This API is experimental. An unavailable target preserves independent
+    /// inference. Removing view values does not remove global monitor values.
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func removeViewAttributes(forKeys keys: [AttributeKey], view: RUMViewTarget) {
+        RUMViewAttributeTargetBridge.removeViewAttributes(on: self, forKeys: keys, explicitTarget: .scene(view.sceneIdentifier))
+    }
+}
+
+/// Private capability preserving legacy custom-monitor timing/loading calls.
+internal protocol RUMViewTimingTargetHandling: AnyObject {
+    func addTiming(name: String, explicitTarget: RUMCommandTarget?)
+    func addViewLoadingTime(overwrite: Bool, explicitTarget: RUMCommandTarget?)
+}
+
+@MainActor
+internal enum RUMViewTimingTargetBridge {
+    static func addTiming(on monitor: any RUMMonitorViewProtocol, name: String, explicitTarget: RUMCommandTarget) {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMViewTimingTargetHandling else {
+            monitor.addTiming(name: name)
+            return
+        }
+        monitor.addTiming(name: name, explicitTarget: explicitTarget)
+    }
+
+    static func addViewLoadingTime(on monitor: any RUMMonitorViewProtocol, overwrite: Bool, explicitTarget: RUMCommandTarget) {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMViewTimingTargetHandling else {
+            monitor.addViewLoadingTime(overwrite: overwrite)
+            return
+        }
+        monitor.addViewLoadingTime(overwrite: overwrite, explicitTarget: explicitTarget)
+    }
+}
+
+/// Private capability preserving each existing single/batch custom-monitor call.
+internal protocol RUMViewAttributeTargetHandling: AnyObject {
+    func addViewAttribute(forKey key: AttributeKey, value: AttributeValue, explicitTarget: RUMCommandTarget?)
+    func addViewAttributes(_ attributes: [AttributeKey: AttributeValue], explicitTarget: RUMCommandTarget?)
+    func removeViewAttribute(forKey key: AttributeKey, explicitTarget: RUMCommandTarget?)
+    func removeViewAttributes(forKeys keys: [AttributeKey], explicitTarget: RUMCommandTarget?)
+}
+
+@MainActor
+internal enum RUMViewAttributeTargetBridge {
+    static func addViewAttribute(on monitor: any RUMMonitorViewProtocol, forKey key: AttributeKey, value: AttributeValue, explicitTarget: RUMCommandTarget) {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMViewAttributeTargetHandling else {
+            monitor.addViewAttribute(forKey: key, value: value)
+            return
+        }
+        monitor.addViewAttribute(forKey: key, value: value, explicitTarget: explicitTarget)
+    }
+
+    static func addViewAttributes(on monitor: any RUMMonitorViewProtocol, attributes: [AttributeKey: AttributeValue], explicitTarget: RUMCommandTarget) {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMViewAttributeTargetHandling else {
+            monitor.addViewAttributes(attributes)
+            return
+        }
+        monitor.addViewAttributes(attributes, explicitTarget: explicitTarget)
+    }
+
+    static func removeViewAttribute(on monitor: any RUMMonitorViewProtocol, forKey key: AttributeKey, explicitTarget: RUMCommandTarget) {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMViewAttributeTargetHandling else {
+            monitor.removeViewAttribute(forKey: key)
+            return
+        }
+        monitor.removeViewAttribute(forKey: key, explicitTarget: explicitTarget)
+    }
+
+    static func removeViewAttributes(on monitor: any RUMMonitorViewProtocol, forKeys keys: [AttributeKey], explicitTarget: RUMCommandTarget) {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMViewAttributeTargetHandling else {
+            monitor.removeViewAttributes(forKeys: keys)
+            return
+        }
+        monitor.removeViewAttributes(forKeys: keys, explicitTarget: explicitTarget)
+    }
+}
+#endif
+
 /// Convenience extension for defining `RUMMonitorProtocol` methods with default parameter values.
 ///
 /// ⚠️ Be extra cautious when adding new methods here. Each method overloads (shadows) its original
@@ -70,6 +270,64 @@ public extension RUMMonitorProtocol {
         stopView(key: key, attributes: attributes)
     }
 
+    #if os(iOS)
+    /// Starts a RUM view in a specific window scene.
+    ///
+    /// This API is experimental and may change before becoming generally available.
+    /// Pair this call with `stopView(key:in:attributes:)` using the same key and scene.
+    /// - Parameters:
+    ///   - key: a `String` value identifying this view within `scene`.
+    ///   - name: the name of the view. If not provided, the `key` name will be used.
+    ///   - scene: the window scene that owns this view.
+    ///   - attributes: custom attributes to attach to this view.
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func startView(
+        key: String,
+        name: String? = nil,
+        in scene: UIWindowScene,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        RUMSceneTargetedManualViewBridge.startView(
+            on: self,
+            key: key,
+            name: name,
+            attributes: attributes,
+            sceneIdentifier: RUMSceneIdentifier(
+                rawValue: scene.session.persistentIdentifier
+            )
+        )
+    }
+
+    /// Stops a RUM view in a specific window scene.
+    ///
+    /// This API is experimental and may change before becoming generally available.
+    /// It only pairs with `startView(key:name:in:attributes:)` made for the same
+    /// key and scene.
+    /// - Parameters:
+    ///   - key: a `String` value identifying the view within `scene`.
+    ///   - scene: the window scene that owns this view.
+    ///   - attributes: custom attributes to attach to this view.
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func stopView(
+        key: String,
+        in scene: UIWindowScene,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        RUMSceneTargetedManualViewBridge.stopView(
+            on: self,
+            key: key,
+            attributes: attributes,
+            sceneIdentifier: RUMSceneIdentifier(
+                rawValue: scene.session.persistentIdentifier
+            )
+        )
+    }
+    #endif
+
     // MARK: - errors
 
     /// Adds RUM error to current RUM view.
@@ -114,6 +372,82 @@ public extension RUMMonitorProtocol {
         addError(error: error, source: source, attributes: attributes)
     }
 
+    #if os(iOS)
+    /// Adds an error to the selected scene's current tracked view.
+    ///
+    /// This API is experimental. A scene without a live view falls back to the
+    /// independently inferred view or process representative. Reporting an error
+    /// does not change that representative. File and line supply a missing stack.
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func addError(
+        message: String,
+        type: String? = nil,
+        stack: String? = nil,
+        source: RUMErrorSource = .custom,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:],
+        file: StaticString? = #fileID,
+        line: UInt? = #line
+    ) {
+        RUMErrorViewTargetBridge.addError(
+            on: self,
+            message: message,
+            type: type,
+            stack: stack,
+            source: source,
+            attributes: attributes,
+            file: file,
+            line: line,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+
+    /// Adds an Error to the selected scene's current tracked view.
+    ///
+    /// This experimental overload uses independent inference when the scene has
+    /// no live view. Resource errors retain the owner captured by startResource.
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func addError(
+        error: Error,
+        source: RUMErrorSource = .custom,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        RUMErrorViewTargetBridge.addError(
+            on: self, error: error, source: source, attributes: attributes, explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+
+    /// Adds an Error to the selected current view and completes after processing.
+    ///
+    /// This API is experimental. The callback also runs when the SDK drops the
+    /// error; it does not indicate backend delivery. Custom monitors retain their
+    /// existing completion-handler behavior.
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func addError(
+        error: Error,
+        source: RUMErrorSource = .custom,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:],
+        completionHandler: @escaping CompletionHandler
+    ) {
+        RUMErrorViewTargetBridge.addError(
+            on: self,
+            error: error,
+            source: source,
+            attributes: attributes,
+            completionHandler: completionHandler,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+    #endif
+
     // MARK: - resources
 
     /// Starts RUM resource.
@@ -156,6 +490,85 @@ public extension RUMMonitorProtocol {
     ) {
         startResource(resourceKey: resourceKey, httpMethod: httpMethod, urlString: urlString, attributes: attributes)
     }
+
+    #if os(iOS)
+    /// Starts a Resource on the selected scene's current tracked view.
+    ///
+    /// This API is experimental. If the selected scene has no live view, existing
+    /// inferred and process-representative fallbacks apply. The Resource key must
+    /// be unique among all Resources being tracked. Metrics and completion keep
+    /// the start owner even after navigation; they do not need another target.
+    /// The request supplies the URL, method and inferred Resource type.
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func startResource(
+        resourceKey: String,
+        request: URLRequest,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        RUMResourceViewTargetBridge.startResource(
+            on: self,
+            resourceKey: resourceKey,
+            request: request,
+            attributes: attributes,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+
+    /// Starts a Resource on the selected scene's current tracked view.
+    ///
+    /// This API is experimental. If the selected scene has no live view, existing
+    /// inferred and process-representative fallbacks apply. The Resource key must
+    /// be unique among all Resources being tracked. Metrics and completion keep
+    /// the start owner even after navigation; they do not need another target.
+    /// The URL form uses the GET method.
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func startResource(
+        resourceKey: String,
+        url: URL,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        RUMResourceViewTargetBridge.startResource(
+            on: self,
+            resourceKey: resourceKey,
+            url: url,
+            attributes: attributes,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+
+    /// Starts a Resource on the selected scene's current tracked view.
+    ///
+    /// This API is experimental. If the selected scene has no live view, existing
+    /// inferred and process-representative fallbacks apply. The Resource key must
+    /// be unique among all Resources being tracked. Metrics and completion keep
+    /// the start owner even after navigation; they do not need another target.
+    /// The supplied method and URL string are preserved.
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func startResource(
+        resourceKey: String,
+        httpMethod: RUMMethod,
+        urlString: String,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        RUMResourceViewTargetBridge.startResource(
+            on: self,
+            resourceKey: resourceKey,
+            httpMethod: httpMethod,
+            urlString: urlString,
+            attributes: attributes,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+    #endif
 
     /// Adds temporal metrics to given RUM resource.
     ///
@@ -273,6 +686,32 @@ public extension RUMMonitorProtocol {
         addAction(type: type, name: name, attributes: attributes)
     }
 
+    #if os(iOS)
+    /// Adds a RUM action to the current tracked view in an explicitly selected
+    /// window scene.
+    ///
+    /// This API is experimental and may change before becoming generally available.
+    /// If the selected scene has no current tracked view, the SDK preserves the
+    /// call site's inferred and process-representative fallbacks.
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func addAction(
+        type: RUMActionType,
+        name: String,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        RUMActionViewTargetBridge.addAction(
+            on: self,
+            type: type,
+            name: name,
+            attributes: attributes,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+    #endif
+
     /// Starts RUM action.
     ///
     /// If the action is not stopped with `stopAction(type:)`, it will be stopped automatically after 10 seconds.
@@ -287,6 +726,32 @@ public extension RUMMonitorProtocol {
     ) {
         startAction(type: type, name: name, attributes: attributes)
     }
+
+    #if os(iOS)
+    /// Starts a RUM action in the current tracked view of the selected scene.
+    /// The existing per-view action slot and automatic timeout still apply.
+    ///
+    /// This API is experimental and may change before becoming generally available.
+    /// If the selected scene has no current tracked view, the SDK preserves the
+    /// call site's inferred and process-representative fallbacks.
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func startAction(
+        type: RUMActionType,
+        name: String,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        RUMActionViewTargetBridge.startAction(
+            on: self,
+            type: type,
+            name: name,
+            attributes: attributes,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+    #endif
 
     /// Stops RUM action.
     /// 
@@ -303,12 +768,45 @@ public extension RUMMonitorProtocol {
         stopAction(type: type, name: name, attributes: attributes)
     }
 
+    #if os(iOS)
+    /// Stops the action in the current tracked view of the selected scene.
+    /// A live view with no action leaves actions in other scenes unchanged.
+    /// The name and type describe the completed action; they are not lookup keys.
+    ///
+    /// This API is experimental and may change before becoming generally available.
+    /// If the selected scene has no current tracked view, the SDK preserves the
+    /// call site's inferred and process-representative fallbacks.
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func stopAction(
+        type: RUMActionType,
+        name: String? = nil,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        RUMActionViewTargetBridge.stopAction(
+            on: self,
+            type: type,
+            name: name,
+            attributes: attributes,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+    #endif
+
     // MARK: - Operations
 
     /// Starts a RUM Operation.
+    ///
+    /// An operation is identified application-wide by its exact `name` and `operationKey`.
+    /// Scenes do not namespace that identity. Use a unique key for each concurrent instance.
+    /// Starting the same identity again makes the SDK track only the latest start; the earlier
+    /// backend operation remains open until its four-hour timeout.
     /// - Parameters:
     ///   - name: the name of the operation (e.g., `login_flow`)
-    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
+    ///   - operationKey: an opaque key identifying this operation instance.
+    ///     Reuse the exact value for every step.
     ///   - attributes: custom attributes to attach to this operation
     ///   - options: options to attach to this operation (e.g. profiling options)
     @available(*, message: "This API is in preview and may change in future releases")
@@ -324,7 +822,8 @@ public extension RUMMonitorProtocol {
     /// Starts a Feature Operation.
     /// - Parameters:
     ///   - name: the name of the operation (e.g., `login_flow`)
-    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation)
+    ///   - operationKey: an opaque key identifying this operation instance.
+    ///     Reuse the exact value for every step.
     ///   - attributes: custom attributes to attach to this operation
     @available(*, deprecated, renamed: "startOperation(name:operationKey:attributes:options:)", message: "Use startOperation(name:operationKey:attributes:options:) instead.")
     func startFeatureOperation(
@@ -336,9 +835,13 @@ public extension RUMMonitorProtocol {
     }
 
     /// Completes a RUM Operation successfully.
+    ///
+    /// The completion may occur in a different scene from the start. It is attributed using
+    /// the view context available at this call site.
     /// - Parameters:
     ///   - name: the name of the operation (e.g., `login_flow`)
-    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation); it should be provided if `operationKey` was provided when invoking `startOperation`
+    ///   - operationKey: the exact key passed to `startOperation`. Together with
+    ///     `name`, it identifies the operation application-wide.
     ///   - attributes: custom attributes to attach to this operation
     @available(*, message: "This API is in preview and may change in future releases")
     func succeedOperation(
@@ -352,7 +855,8 @@ public extension RUMMonitorProtocol {
     /// Completes a Feature Operation successfully.
     /// - Parameters:
     ///   - name: the name of the operation (e.g., `login_flow`)
-    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation); it should be provided if `operationKey` was provided when invoking `startOperation`
+    ///   - operationKey: the exact key passed to `startOperation`. Together with
+    ///     `name`, it identifies the operation application-wide.
     ///   - attributes: custom attributes to attach to this operation
     @available(*, deprecated, renamed: "succeedOperation(name:operationKey:attributes:)", message: "Use succeedOperation(name:operationKey:attributes:) instead.")
     func succeedFeatureOperation(
@@ -364,9 +868,13 @@ public extension RUMMonitorProtocol {
     }
 
     /// Fails a RUM Operation.
+    ///
+    /// The failure may occur in a different scene from the start. It is attributed using
+    /// the view context available at this call site.
     /// - Parameters:
     ///   - name: the name of the operation (e.g., `login_flow`)
-    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation); it should be provided if `operationKey` was provided when invoking `startOperation`
+    ///   - operationKey: the exact key passed to `startOperation`. Together with
+    ///     `name`, it identifies the operation application-wide.
     ///   - reason: the reason for the failure
     ///   - attributes: custom attributes to attach to this operation
     @available(*, message: "This API is in preview and may change in future releases")
@@ -379,10 +887,81 @@ public extension RUMMonitorProtocol {
         failOperation(name: name, operationKey: operationKey, reason: reason, attributes: attributes)
     }
 
+    #if os(iOS)
+    /// Starts a RUM Operation on the current tracked view in an explicitly
+    /// selected window scene.
+    ///
+    /// This API is experimental and may change before becoming generally available.
+    /// The scene does not namespace the Operation identity: every later step must
+    /// reuse the same `name` and `operationKey`.
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func startOperation(
+        name: String,
+        operationKey: String? = nil,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:],
+        options: OperationOptions? = nil
+    ) {
+        RUMOperationViewTargetBridge.startOperation(
+            on: self,
+            name: name,
+            operationKey: operationKey,
+            attributes: attributes,
+            options: options,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+
+    /// Completes a RUM Operation successfully on the current tracked view in
+    /// an explicitly selected window scene.
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func succeedOperation(
+        name: String,
+        operationKey: String? = nil,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        RUMOperationViewTargetBridge.succeedOperation(
+            on: self,
+            name: name,
+            operationKey: operationKey,
+            attributes: attributes,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+
+    /// Fails a RUM Operation on the current tracked view in an explicitly
+    /// selected window scene.
+    @_spi(Experimental)
+    @available(iOS 15.0, *)
+    @MainActor
+    func failOperation(
+        name: String,
+        operationKey: String? = nil,
+        reason: RUMFeatureOperationFailureReason,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        RUMOperationViewTargetBridge.failOperation(
+            on: self,
+            name: name,
+            operationKey: operationKey,
+            reason: reason,
+            attributes: attributes,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+    #endif
+
     /// Fails a Feature Operation.
     /// - Parameters:
     ///   - name: the name of the operation (e.g., `login_flow`)
-    ///   - operationKey: the key of the operation for this step (when running several instances of the same operation); it should be provided if `operationKey` was provided when invoking `startOperation`
+    ///   - operationKey: the exact key passed to `startOperation`. Together with
+    ///     `name`, it identifies the operation application-wide.
     ///   - reason: the reason for the failure
     ///   - attributes: custom attributes to attach to this operation
     @available(*, deprecated, renamed: "failOperation(name:operationKey:reason:attributes:)", message: "Use failOperation(name:operationKey:reason:attributes:) instead.")
@@ -395,5 +974,424 @@ public extension RUMMonitorProtocol {
         failOperation(name: name, operationKey: operationKey, reason: reason, attributes: attributes)
     }
 }
+
+#if os(iOS)
+/// Private capability preserving existing custom monitor requirements.
+internal protocol RUMErrorViewTargetHandling: AnyObject {
+    func addError(
+        message: String,
+        type: String?,
+        stack: String?,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue],
+        file: StaticString?,
+        line: UInt?,
+        explicitTarget: RUMCommandTarget?
+    )
+    func addError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue], explicitTarget: RUMCommandTarget?)
+    func addError(
+        error: Error,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue],
+        completionHandler: @escaping CompletionHandler,
+        explicitTarget: RUMCommandTarget?
+    )
+}
+
+/// Forwards exactly once through the targeted capability or the legacy API.
+@MainActor
+internal enum RUMErrorViewTargetBridge {
+    static func addError(
+        on monitor: any RUMMonitorProtocol,
+        message: String,
+        type: String?,
+        stack: String?,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue],
+        file: StaticString?,
+        line: UInt?,
+        explicitTarget: RUMCommandTarget
+    ) {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMErrorViewTargetHandling else {
+            monitor.addError(message: message, type: type, stack: stack, source: source, attributes: attributes, file: file, line: line)
+            return
+        }
+        monitor.addError(
+            message: message,
+            type: type,
+            stack: stack,
+            source: source,
+            attributes: attributes,
+            file: file,
+            line: line,
+            explicitTarget: explicitTarget
+        )
+    }
+
+    static func addError(
+        on monitor: any RUMMonitorProtocol,
+        error: Error,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget
+    ) {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMErrorViewTargetHandling else {
+            monitor.addError(error: error, source: source, attributes: attributes)
+            return
+        }
+        monitor.addError(error: error, source: source, attributes: attributes, explicitTarget: explicitTarget)
+    }
+
+    static func addError(
+        on monitor: any RUMMonitorProtocol,
+        error: Error,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue],
+        completionHandler: @escaping CompletionHandler,
+        explicitTarget: RUMCommandTarget
+    ) {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMErrorViewTargetHandling else {
+            monitor.addError(error: error, source: source, attributes: attributes, completionHandler: completionHandler)
+            return
+        }
+        monitor.addError(
+            error: error, source: source, attributes: attributes, completionHandler: completionHandler, explicitTarget: explicitTarget
+        )
+    }
+}
+#endif
+
+#if os(iOS)
+/// Private capability preserving existing custom monitor requirements.
+internal protocol RUMResourceViewTargetHandling: AnyObject {
+    func startResource(
+        resourceKey: String,
+        request: URLRequest,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    )
+
+    func startResource(
+        resourceKey: String,
+        url: URL,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    )
+
+    func startResource(
+        resourceKey: String,
+        httpMethod: RUMMethod,
+        urlString: String,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    )
+}
+
+/// Forwards exactly once through the targeted capability or the legacy API.
+@MainActor
+internal enum RUMResourceViewTargetBridge {
+    static func startResource(
+        on monitor: any RUMMonitorProtocol,
+        resourceKey: String,
+        request: URLRequest,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget
+    ) {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMResourceViewTargetHandling else {
+            monitor.startResource(resourceKey: resourceKey, request: request, attributes: attributes)
+            return
+        }
+        monitor.startResource(
+            resourceKey: resourceKey,
+            request: request,
+            attributes: attributes,
+            explicitTarget: explicitTarget
+        )
+    }
+
+    static func startResource(
+        on monitor: any RUMMonitorProtocol,
+        resourceKey: String,
+        url: URL,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget
+    ) {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMResourceViewTargetHandling else {
+            monitor.startResource(resourceKey: resourceKey, url: url, attributes: attributes)
+            return
+        }
+        monitor.startResource(
+            resourceKey: resourceKey,
+            url: url,
+            attributes: attributes,
+            explicitTarget: explicitTarget
+        )
+    }
+
+    static func startResource(
+        on monitor: any RUMMonitorProtocol,
+        resourceKey: String,
+        httpMethod: RUMMethod,
+        urlString: String,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget
+    ) {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMResourceViewTargetHandling else {
+            monitor.startResource(resourceKey: resourceKey, httpMethod: httpMethod, urlString: urlString, attributes: attributes)
+            return
+        }
+        monitor.startResource(
+            resourceKey: resourceKey,
+            httpMethod: httpMethod,
+            urlString: urlString,
+            attributes: attributes,
+            explicitTarget: explicitTarget
+        )
+    }
+}
+#endif
+
+#if os(iOS)
+/// Private capability used by extension-only action overloads so existing
+/// third-party `RUMMonitorProtocol` conformers do not gain a new requirement.
+internal protocol RUMActionViewTargetHandling: AnyObject {
+    func addAction(
+        type: RUMActionType,
+        name: String,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    )
+    func startAction(
+        type: RUMActionType,
+        name: String,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    )
+
+    func stopAction(
+        type: RUMActionType,
+        name: String?,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    )
+}
+
+/// Dispatches an explicit action target when the SDK monitor supports it and
+/// otherwise calls the existing inferred API exactly once.
+@MainActor
+internal enum RUMActionViewTargetBridge {
+    static func addAction(
+        on monitor: any RUMMonitorProtocol,
+        type: RUMActionType,
+        name: String,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget
+    ) {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMActionViewTargetHandling else {
+            monitor.addAction(type: type, name: name, attributes: attributes)
+            return
+        }
+
+        monitor.addAction(
+            type: type,
+            name: name,
+            attributes: attributes,
+            explicitTarget: explicitTarget
+        )
+    }
+    static func startAction(
+        on monitor: any RUMMonitorProtocol,
+        type: RUMActionType,
+        name: String,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget
+    ) {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMActionViewTargetHandling else {
+            monitor.startAction(type: type, name: name, attributes: attributes)
+            return
+        }
+
+        monitor.startAction(
+            type: type,
+            name: name,
+            attributes: attributes,
+            explicitTarget: explicitTarget
+        )
+    }
+
+    static func stopAction(
+        on monitor: any RUMMonitorProtocol,
+        type: RUMActionType,
+        name: String?,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget
+    ) {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMActionViewTargetHandling else {
+            monitor.stopAction(type: type, name: name, attributes: attributes)
+            return
+        }
+
+        monitor.stopAction(
+            type: type,
+            name: name,
+            attributes: attributes,
+            explicitTarget: explicitTarget
+        )
+    }
+}
+
+/// Private capability used by extension-only Operation overloads so existing
+/// third-party `RUMMonitorProtocol` conformers do not gain a new requirement.
+internal protocol RUMOperationViewTargetHandling: AnyObject {
+    func startOperation(
+        name: String,
+        operationKey: String?,
+        attributes: [AttributeKey: AttributeValue],
+        options: OperationOptions?,
+        explicitTarget: RUMCommandTarget?
+    )
+
+    func succeedOperation(
+        name: String,
+        operationKey: String?,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    )
+
+    func failOperation(
+        name: String,
+        operationKey: String?,
+        reason: RUMFeatureOperationFailureReason,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    )
+}
+
+/// Dispatches explicit Operation targets when the SDK monitor supports them and
+/// otherwise calls the existing inferred API exactly once.
+@MainActor
+internal enum RUMOperationViewTargetBridge {
+    static func startOperation(
+        on monitor: any RUMMonitorProtocol,
+        name: String,
+        operationKey: String?,
+        attributes: [AttributeKey: AttributeValue],
+        options: OperationOptions?,
+        explicitTarget: RUMCommandTarget
+    ) {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMOperationViewTargetHandling else {
+            monitor.startOperation(
+                name: name,
+                operationKey: operationKey,
+                attributes: attributes,
+                options: options
+            )
+            return
+        }
+
+        monitor.startOperation(
+            name: name,
+            operationKey: operationKey,
+            attributes: attributes,
+            options: options,
+            explicitTarget: explicitTarget
+        )
+    }
+
+    static func succeedOperation(
+        on monitor: any RUMMonitorProtocol,
+        name: String,
+        operationKey: String?,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget
+    ) {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMOperationViewTargetHandling else {
+            monitor.succeedOperation(
+                name: name,
+                operationKey: operationKey,
+                attributes: attributes
+            )
+            return
+        }
+
+        monitor.succeedOperation(
+            name: name,
+            operationKey: operationKey,
+            attributes: attributes,
+            explicitTarget: explicitTarget
+        )
+    }
+
+    static func failOperation(
+        on monitor: any RUMMonitorProtocol,
+        name: String,
+        operationKey: String?,
+        reason: RUMFeatureOperationFailureReason,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget
+    ) {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMOperationViewTargetHandling else {
+            monitor.failOperation(
+                name: name,
+                operationKey: operationKey,
+                reason: reason,
+                attributes: attributes
+            )
+            return
+        }
+
+        monitor.failOperation(
+            name: name,
+            operationKey: operationKey,
+            reason: reason,
+            attributes: attributes,
+            explicitTarget: explicitTarget
+        )
+    }
+}
+
+/// Keeps extension-only scene APIs source-compatible with third-party monitor
+/// conformers while allowing the SDK monitor to use exact scene ownership.
+@MainActor
+internal enum RUMSceneTargetedManualViewBridge {
+    static func startView(
+        on monitor: any RUMMonitorViewProtocol,
+        key: String,
+        name: String?,
+        attributes: [AttributeKey: AttributeValue],
+        sceneIdentifier: @autoclosure () -> RUMSceneIdentifier
+    ) {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMSceneTargetedManualViewHandling else {
+            monitor.startView(key: key, name: name, attributes: attributes)
+            return
+        }
+
+        monitor.startView(
+            key: key,
+            name: name,
+            attributes: attributes,
+            sceneIdentifier: sceneIdentifier()
+        )
+    }
+
+    static func stopView(
+        on monitor: any RUMMonitorViewProtocol,
+        key: String,
+        attributes: [AttributeKey: AttributeValue],
+        sceneIdentifier: @autoclosure () -> RUMSceneIdentifier
+    ) {
+        guard #available(iOS 27.0, *), let monitor = monitor as? any RUMSceneTargetedManualViewHandling else {
+            monitor.stopView(key: key, attributes: attributes)
+            return
+        }
+
+        monitor.stopView(
+            key: key,
+            attributes: attributes,
+            sceneIdentifier: sceneIdentifier()
+        )
+    }
+}
+#endif
 
 // swiftlint:enable function_default_parameter_at_end

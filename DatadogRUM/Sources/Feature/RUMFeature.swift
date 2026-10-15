@@ -67,6 +67,14 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
         )
 
         let bundleType = BundleType(bundle: configuration.bundle)
+        let isMultiSceneApplication: Bool = {
+            guard let manifest = configuration.bundle.object(
+                forInfoDictionaryKey: "UIApplicationSceneManifest"
+            ) as? [String: Any] else {
+                return false
+            }
+            return manifest["UIApplicationSupportsMultipleScenes"] as? Bool == true
+        }()
         var watchdogTermination: WatchdogTerminationMonitor?
         if bundleType == .iOSApp,
             configuration.trackWatchdogTerminations {
@@ -282,6 +290,7 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             processID: configuration.processID,
             notificationCenter: configuration.notificationCenter,
             bundleType: bundleType,
+            isMultiSceneApplication: isMultiSceneApplication,
             watchdogTermination: watchdogTermination,
             memoryWarningMonitor: memoryWarningMonitor,
             uuidGenerator: configuration.uuidGenerator,
@@ -306,6 +315,9 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
             isAppHangBacktraceEnabled: isAppHangBacktraceEnabled
         )
         #endif
+        #if os(iOS)
+        monitor.bind(sceneTargetedManualViewHandler: instrumentation.viewsHandler)
+        #endif
         self.requestBuilder = RequestBuilder(
             customIntakeURL: configuration.customEndpoint,
             eventsFilter: RUMViewEventsFilter(telemetry: core.telemetry),
@@ -329,7 +341,8 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 featureScope: featureScope,
                 dateProvider: configuration.dateProvider,
                 commandSubscriber: monitor,
-                viewCache: dependencies.viewCache
+                viewCache: dependencies.viewCache,
+                isMultiSceneApplication: isMultiSceneApplication
             ),
             CrashReportReceiver(
                 featureScope: featureScope,
