@@ -46,6 +46,17 @@ internal final class ResourceAvailabilityStore: @unchecked Sendable {
         return value.identifiers[applicationID]?.contains(identifier) ?? false
     }
 
+    /// Returns whether all resources have unexpired confirmations for this application.
+    func contains(allOf identifiers: some Sequence<String>, forApplicationID applicationID: String) -> Bool {
+        let confirmedIdentifiers: Set<String>
+        if let value = state.value, value.expirationDate > dateProvider.now {
+            confirmedIdentifiers = value.identifiers[applicationID] ?? []
+        } else {
+            confirmedIdentifiers = []
+        }
+        return identifiers.allSatisfy { confirmedIdentifiers.contains($0) }
+    }
+
     /// Records identifiers from a validated reconciliation response.
     func insert(_ identifiers: Set<String>, forApplicationID applicationID: String) {
         guard !identifiers.isEmpty else {

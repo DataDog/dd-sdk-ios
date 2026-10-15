@@ -28,6 +28,7 @@ internal class ResourcesFeature: DatadogRemoteFeature {
         self.writer = ResourcesWriter(scope: scope, availabilityStore: availabilityStore)
         self.requestBuilder = ResourceRequestBuilder(
             customUploadURL: configuration.customEndpoint,
+            availabilityStore: availabilityStore,
             telemetry: core.telemetry
         )
         self.performanceOverride = PerformancePresetOverride(

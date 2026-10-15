@@ -39,6 +39,18 @@ struct ResourceAvailabilityStoreTests {
         #expect(!restored.contains("other", forApplicationID: applicationID))
     }
 
+    @Test("Requires every identifier to be confirmed for the application")
+    func requiresEveryIdentifierToBeConfirmedForTheApplication() {
+        // Given
+        let store = ResourceAvailabilityStore(scope: scope, dateProvider: dateProvider)
+        store.insert(identifiers, forApplicationID: applicationID)
+
+        // When, Then
+        #expect(store.contains(allOf: identifiers, forApplicationID: applicationID))
+        #expect(!store.contains(allOf: ["first", "missing"], forApplicationID: applicationID))
+        #expect(!store.contains(allOf: identifiers, forApplicationID: "other-application"))
+    }
+
     @Test("Expires all applications 30 days after the first confirmation")
     func expiresAllApplications30DaysAfterTheFirstConfirmation() {
         // Given
@@ -50,6 +62,7 @@ struct ResourceAvailabilityStoreTests {
         dateProvider.now = expiration.addingTimeInterval(-1)
         store.insert(["recent"], forApplicationID: "other-application")
         #expect(store.contains("first", forApplicationID: applicationID))
+        #expect(store.contains(allOf: identifiers, forApplicationID: applicationID))
 
         // When
         dateProvider.now = expiration
@@ -57,6 +70,7 @@ struct ResourceAvailabilityStoreTests {
 
         // Then
         #expect(!store.contains("first", forApplicationID: applicationID))
+        #expect(!store.contains(allOf: identifiers, forApplicationID: applicationID))
         #expect(!store.contains("recent", forApplicationID: "other-application"))
         #expect(!restored.contains("first", forApplicationID: applicationID))
         #expect(scope.dataStoreMock.storage[storageKey] == nil)

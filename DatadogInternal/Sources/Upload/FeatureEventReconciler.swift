@@ -8,8 +8,17 @@ import Foundation
 
 /// An optional capability for request builders that can reconcile persisted events before uploading them.
 ///
-/// Core performs reconciliation on the feature's upload queue. Any failure falls back to uploading the
-/// original events, without changing the persisted batch or its upload retry behavior.
+/// The uploader calls ``reconciliation(for:with:execution:)`` on the feature's upload queue to decide whether
+/// to send a reconciliation request, upload the original events, or complete the batch.
+///
+/// If the reconciliation request succeeds, it calls ``response(from:with:)`` to decode the response, then
+/// ``events(from:using:)`` with the original batch to select the events that still need uploading.
+///
+/// It passes those events to ``FeatureRequestBuilder/request(for:with:execution:)`` to build the upload request,
+/// or completes the batch if none remain.
+///
+/// If reconciliation fails, it uploads the original events without changing the persisted batch or its
+/// upload retry behavior.
 public protocol FeatureEventReconciler: FeatureRequestBuilder {
     /// The response used to reconcile events.
     associatedtype Response
