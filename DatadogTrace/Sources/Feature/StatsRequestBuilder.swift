@@ -9,10 +9,9 @@ import DatadogInternal
 
 /// Provides monotonically increasing sequence numbers for uploaded stats payloads.
 ///
-/// The sequence number lets the intake order and uniquely identify the payloads sent by a
-/// single tracer runtime ID. `ClientStatsFeature` takes one for every bucket it stores, which keeps
-/// it across retries and restarts. The request builder has its own provider, under its own runtime
-/// ID, for buckets stored by earlier builds, which have none.
+/// The sequence number lets the intake order and uniquely identify the payloads sent under one
+/// runtime ID. `ClientStatsFeature` takes one for every bucket it stores, so it stays the same
+/// across retries and restarts.
 internal final class StatsSequenceNumberProvider {
     @ReadWriteLock
     private var value: UInt64 = 0
@@ -37,11 +36,6 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
     let customIntakeURL: URL?
     /// Sends telemetry through the SDK core.
     let telemetry: Telemetry
-    /// The runtime ID of payloads for buckets stored by earlier builds, which have no identity. It is
-    /// distinct from the one `ClientStatsFeature` stores, so the two sequence streams never mix.
-    let legacyRuntimeID: String
-    /// Sequence numbers for those payloads, taken at upload, so a retry takes a new one.
-    let legacySequenceNumbers: StatsSequenceNumberProvider
 
     private let encoder = MsgPackEncoder()
     private let decoder = JSONDecoder()
@@ -63,14 +57,15 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
         // and sequence number, assigned when it was flushed. Pieces of a split share it and hold
         // disjoint groups, so those in this batch are merged back into one bucket. Insertion order
         // is preserved, so sequence numbers increase in the order payloads were stored.
-        //
-        // Buckets stored by earlier builds carry no payload identity. As before, those of one
-        // deployment share a client payload, numbered at upload under `legacyRuntimeID`. That stream
-        // is separate, so whichever file is uploaded first, each runtime ID's sequence increases.
         var payloads: [ClientPayloadDraft] = []
         var payloadIndexes: [ExportedBucket.PayloadIdentity: Int] = [:]
-        var legacyPayloadIndexes: [DeploymentIdentity: Int] = [:]
         for bucket in decoded {
+            // We don't intend to support upgrades from earlier internal builds, which stored buckets
+            // without a payload identity. Throwing drops the whole batch, including current buckets
+            // stored in the same file, which is acceptable for a feature that has not been released.
+            guard let payload = bucket.payload else {
+                throw InternalError(description: "[Trace] Client stats bucket has no payload identity.")
+            }
             // Buckets written before this field existed fall back to the upload-time context,
             // which is the previous behaviour and better than dropping the batch.
             let identity = DeploymentIdentity(
@@ -79,35 +74,28 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
                 service: bucket.service ?? context.service
             )
             let wireBucket = ClientStatsBucket(bucket)
-            if let payload = bucket.payload {
-                if let index = payloadIndexes[payload] {
-                    if bucket.isPartial, let existing = payloads[index].buckets.first {
-                        payloads[index].buckets = [
-                            ClientStatsBucket(
-                                start: existing.start,
-                                duration: existing.duration,
-                                stats: existing.stats + wireBucket.stats
-                            )
-                        ]
-                    } else {
-                        payloads[index].buckets.append(wireBucket)
-                    }
-                    payloads[index].receivedPieces += 1
+            if let index = payloadIndexes[payload] {
+                if bucket.isPartial, let existing = payloads[index].buckets.first {
+                    payloads[index].buckets = [
+                        ClientStatsBucket(
+                            start: existing.start,
+                            duration: existing.duration,
+                            stats: existing.stats + wireBucket.stats
+                        )
+                    ]
                 } else {
-                    payloadIndexes[payload] = payloads.count
-                    payloads.append(ClientPayloadDraft(
-                        identity: identity,
-                        payload: payload,
-                        buckets: [wireBucket],
-                        receivedPieces: 1,
-                        pieceCount: bucket.pieceCount ?? 1
-                    ))
+                    payloads[index].buckets.append(wireBucket)
                 }
-            } else if let index = legacyPayloadIndexes[identity] {
-                payloads[index].buckets.append(wireBucket)
+                payloads[index].receivedPieces += 1
             } else {
-                legacyPayloadIndexes[identity] = payloads.count
-                payloads.append(ClientPayloadDraft(identity: identity, payload: nil, buckets: [wireBucket], receivedPieces: 1, pieceCount: 1))
+                payloadIndexes[payload] = payloads.count
+                payloads.append(ClientPayloadDraft(
+                    identity: identity,
+                    payload: payload,
+                    buckets: [wireBucket],
+                    receivedPieces: 1,
+                    pieceCount: bucket.pieceCount ?? 1
+                ))
             }
         }
 
@@ -122,8 +110,8 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
                 version: draft.identity.version,
                 service: draft.identity.service,
                 tracerVersion: context.sdkVersion,
-                runtimeID: draft.payload?.runtimeID ?? legacyRuntimeID,
-                sequenceNumber: draft.payload?.sequence ?? legacySequenceNumbers.next(),
+                runtimeID: draft.payload.runtimeID,
+                sequenceNumber: draft.payload.sequence,
                 stats: draft.buckets
             )
         }
@@ -162,8 +150,7 @@ internal struct StatsRequestBuilder: FeatureRequestBuilder {
     /// A client payload being assembled from a batch.
     private struct ClientPayloadDraft {
         let identity: DeploymentIdentity
-        /// `nil` for buckets stored by earlier builds.
-        let payload: ExportedBucket.PayloadIdentity?
+        let payload: ExportedBucket.PayloadIdentity
         var buckets: [ClientStatsBucket]
         var receivedPieces: Int
         /// The pieces the payload was split into, or `1` when it was not split.
