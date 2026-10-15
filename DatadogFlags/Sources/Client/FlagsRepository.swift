@@ -512,13 +512,14 @@ extension FlagsRepository: FlagsRepositoryProtocol {
             state.latestRequestedContext = nil
             callbacks = state.finishWaitingForInitialFlagsData()
             notifyListeners = stateManager.updateStateWithoutNotifying(.notReady)
+            // Order removal with reset so newer successes enqueue their writes after it.
+            cachePersistenceQueue.async {
+                flagsDataStore.removeFlagsData(forClientNamed: clientName)
+            }
         }
         let pendingCompletions = callbacks.map { $0.prepare() }
-        // Enqueue removal after any already-started cache write to avoid
-        // re-persisting stale flags after reset.
-        cachePersistenceQueue.sync {
-            flagsDataStore.removeFlagsData(forClientNamed: clientName)
-        }
+        // Drain outside the lock: queued writes read the repository state.
+        cachePersistenceQueue.sync {}
         Self.executePendingDiskReadCallbacks(pendingCompletions)
         notifyListeners?()
     }

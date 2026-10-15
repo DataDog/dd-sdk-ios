@@ -413,6 +413,63 @@ final class FlagsRepositoryTests: XCTestCase {
         }
     }
 
+    func testReset_whenNewerSuccessArrivesAfterStateReset_preservesNewerCache() throws {
+        // Given a failed request waiting for the initial cache read
+        let dataStore = DelayedReadDataStore()
+        let fetcher = FlagAssignmentsFetcherMock { _, completion in completion(.failure(.invalidResponse)) }
+        var onTimeoutCancellation: (() -> Void)?
+        let repository = FlagsRepository(
+            clientName: "client",
+            flagAssignmentsFetcher: fetcher,
+            dateProvider: DateProviderMock(),
+            featureScope: FeatureScopeMock(dataStore: dataStore),
+            initializationTimeout: 5,
+            scheduleInitializationTimeout: { _, _ in { onTimeoutCancellation?() } }
+        )
+        defer {
+            dataStore.resumeRead()
+            dataStore.flush()
+            repository.flush()
+        }
+        wait(for: [dataStore.readStarted], timeout: 1)
+        let failedRequestCompleted = expectation(description: "pending failure completed")
+        repository.setEvaluationContext(.mockAny()) { result in
+            guard case .failure(.invalidResponse) = result else {
+                return XCTFail("Expected the original fetch error, got \(result)")
+            }
+            failedRequestCompleted.fulfill()
+        }
+
+        // When reset releases pending failures, a newer request succeeds before reset returns
+        let newerContext = FlagsEvaluationContext(targetingKey: "newer-user")
+        let freshFlags: [String: FlagAssignment] = ["fresh": .mockAny()]
+        fetcher.flagAssignmentsStub = { _, completion in completion(.success(freshFlags)) }
+        onTimeoutCancellation = { [weak repository] in
+            guard let repository else {
+                return XCTFail("Expected repository to remain alive")
+            }
+            // Cancellation runs after reset releases the repository lock, before draining persistence.
+            XCTAssertEqual(repository.state.currentState, .notReady)
+            repository.setEvaluationContext(newerContext) { result in
+                if case .failure(let error) = result {
+                    XCTFail("Expected success, got \(error)")
+                }
+            }
+            repository.flush()
+        }
+        repository.reset()
+        wait(for: [failedRequestCompleted], timeout: 1)
+
+        // Then reset cannot delete the newer success's persisted fallback
+        XCTAssertEqual(repository.state.currentState, .ready)
+        XCTAssertEqual(repository.context, newerContext)
+        XCTAssertEqual(repository.flagAssignments(), freshFlags)
+        let persistedData = try XCTUnwrap(dataStore.value(forKey: "client")?.data())
+        let persistedFlags = try JSONDecoder().decode(FlagsData.self, from: persistedData)
+        XCTAssertEqual(persistedFlags.context, newerContext)
+        XCTAssertEqual(persistedFlags.flags, freshFlags)
+    }
+
     func testPendingFailedContextUpdates_whenCacheReadIsSuperseded_completeBeforeListenersWithoutWaitingForDisk() throws {
         // Given failed requests waiting for the initial cache read
         let scenarios = [
@@ -2431,6 +2488,10 @@ private final class DelayedReadDataStore: DataStore, @unchecked Sendable {
 
     func resumeRead() {
         readSemaphore.signal()
+    }
+
+    func value(forKey key: String) -> DataStoreValueResult? {
+        storage[key]
     }
 }
 
