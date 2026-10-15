@@ -297,6 +297,69 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertEqual(try orchestrator.directory.files().count, 0)
     }
 
+    func testWhenReconciledUploadIsRetried_itPreservesOriginalBatchUntilResolved() throws {
+        // Given
+        var performance = StoragePerformanceMock.readAllFiles
+        performance.maxFileAgeForWrite = .distantFuture
+        orchestrator = FilesOrchestrator(
+            directory: .init(url: temporaryDirectory),
+            performance: performance,
+            dateProvider: dateProvider,
+            telemetry: NOPTelemetry()
+        )
+        writer.write(value: "first", metadata: "first metadata")
+        writer.write(value: "second", metadata: "second metadata")
+        let file = try XCTUnwrap(reader.readFiles(limit: 1).first)
+        let originalEvents = try XCTUnwrap(reader.readBatch(from: file)).events
+        XCTAssertEqual(originalEvents.count, 2)
+
+        let resolved = expectation(description: "Resolve the retried batch")
+        let reconciliationRequest: URLRequest = .mockAny()
+        let uploadRequest: URLRequest = .mockWith(httpMethod: "POST")
+        let builder = FeatureEventReconcilerMock()
+        var executions: [ExecutionContext] = []
+        builder.reconciliationStub = { events, _, execution in
+            XCTAssertEqual(events, originalEvents)
+            XCTAssertEqual(self.reader.readBatch(from: file)?.events, originalEvents)
+            executions.append(execution)
+            if execution.attempt == 0 {
+                return .request(reconciliationRequest)
+            }
+            resolved.fulfill()
+            return .resolved
+        }
+        builder.eventsStub = { events, _ in Array(events.suffix(1)) }
+        builder.requestStub = { events, _, _ in
+            XCTAssertEqual(events, Array(originalEvents.suffix(1)))
+            return uploadRequest
+        }
+        let client = HTTPClientMock { request in
+            .success((.mockResponseWith(statusCode: request == reconciliationRequest ? 200 : 503), nil))
+        }
+        let uploader = DataUploader(httpClient: client, requestBuilder: builder, featureName: .mockAny())
+
+        // When
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: uploader,
+            contextProvider: .mockAny(),
+            uploadConditions: .alwaysUpload(),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
+            featureName: .mockAny(),
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: 1
+        )
+        wait(for: [resolved], timeout: 5)
+        worker.cancelSynchronously()
+
+        // Then
+        XCTAssertEqual(executions.map(\.attempt), [0, 1])
+        XCTAssertEqual(executions.map(\.previousResponseCode), [nil, 503])
+        XCTAssertEqual(client.requestsSent(), [reconciliationRequest, uploadRequest])
+        XCTAssertTrue(try orchestrator.directory.files().isEmpty)
+    }
+
     // MARK: - Upload Interval Changes
 
     func testWhenThereIsNoBatch_thenIntervalIncreases() {
