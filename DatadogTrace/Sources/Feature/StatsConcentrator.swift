@@ -265,6 +265,47 @@ internal struct ExportedBucket: Codable, Sendable {
         return size.estimate
     }
 
+    /// A copy of this bucket whose start is moved to the server clock.
+    ///
+    /// The concentrator buckets spans on the device clock, so they flush on time even when that clock
+    /// is wrong. Spans are shifted by the server time offset when they finish, so `ClientStatsFeature`
+    /// shifts a bucket by the offset of the moment it stores it, and the stored start never changes
+    /// afterwards, across retries, restarts and split pieces. The start is rounded to the nearest
+    /// bucket boundary to stay aligned, so offsets under half a bucket round away, which is within the
+    /// 10-second granularity of the stats.
+    func shiftedToServerClock(by offset: TimeInterval) -> ExportedBucket {
+        ExportedBucket(
+            start: Self.serverStart(of: start, duration: duration, offset: offset),
+            duration: duration,
+            stats: stats,
+            env: env,
+            version: version,
+            service: service,
+            payload: payload,
+            pieceCount: pieceCount
+        )
+    }
+
+    private static func serverStart(of start: UInt64, duration: UInt64, offset: TimeInterval) -> UInt64 {
+        let offsetNanoseconds = (offset * 1_000_000_000).rounded()
+        // A start saturated at `UInt64.max` comes from a pathological span time and stays saturated.
+        guard offsetNanoseconds != 0, offsetNanoseconds.isFinite, start < .max else {
+            return start
+        }
+        // Doubles cover any real start or offset, and multiples of a 10-second bucket stay exact; the
+        // result is clamped so a pathological value cannot trap. A bucket of zero duration has no
+        // boundary to align to.
+        let shifted = Double(start) + offsetNanoseconds
+        let aligned = duration > 0 ? (shifted / Double(duration)).rounded() * Double(duration) : shifted
+        guard aligned > 0 else {
+            return 0
+        }
+        guard aligned < Double(UInt64.max) else {
+            return .max
+        }
+        return UInt64(aligned)
+    }
+
     /// A copy of this bucket uploaded in `payload`.
     func assigning(_ payload: PayloadIdentity) -> ExportedBucket {
         ExportedBucket(
