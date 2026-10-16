@@ -331,13 +331,43 @@ class StatsConcentratorTests: XCTestCase {
         XCTAssertEqual(export.buckets.count, 1)
 
         var runs: [String] = []
-        concentrator.performUnlessCleared(since: export.clearGeneration) { runs.append("before clear") }
+        concentrator.performUnlessCleared(since: export.clearGeneration, writeConsent: .granted) { runs.append("before clear") }
         concentrator.clearAllData()
-        concentrator.performUnlessCleared(since: export.clearGeneration) { runs.append("after clear") }
+        concentrator.performUnlessCleared(since: export.clearGeneration, writeConsent: .granted) { runs.append("after clear") }
         let later = concentrator.flushForStorage(now: 0, force: true)
-        concentrator.performUnlessCleared(since: later.clearGeneration) { runs.append("later export") }
+        concentrator.performUnlessCleared(since: later.clearGeneration, writeConsent: .granted) { runs.append("later export") }
 
         XCTAssertEqual(runs, ["before clear", "later export"])
+    }
+
+    func testWhenConsentIsRevokedAndGrantedAgain_anExportFromBeforeIsNeverWritten() {
+        let concentrator = makeConcentrator(now: 0, initialConsent: .pending)
+        concentrator.add(.mockWith(startTime: 0, duration: 100))
+        let export = concentrator.flushForStorage(now: 0, force: true)
+        XCTAssertEqual(export.buckets.count, 1)
+
+        concentrator.updateConsent(.notGranted)
+        concentrator.updateConsent(.granted)
+        var runs: [String] = []
+        concentrator.performUnlessCleared(since: export.clearGeneration, writeConsent: .granted) { runs.append("before revocation") }
+        concentrator.add(.mockWith(startTime: 0, duration: 100))
+        let later = concentrator.flushForStorage(now: 0, force: true)
+        concentrator.performUnlessCleared(since: later.clearGeneration, writeConsent: .granted) { runs.append("after grant") }
+
+        XCTAssertEqual(runs, ["after grant"])
+    }
+
+    func testWhenTheWriteUsesAConsentNotReceivedYet_itIsSkippedUntilTheConcentratorCatchesUp() {
+        // The message bus can deliver consent changes after the write context already reflects them.
+        let concentrator = makeConcentrator(now: 0, initialConsent: .pending)
+        concentrator.add(.mockWith(startTime: 0, duration: 100))
+        let export = concentrator.flushForStorage(now: 0, force: true)
+
+        var runs: [String] = []
+        concentrator.performUnlessCleared(since: export.clearGeneration, writeConsent: .granted) { runs.append("lagging") }
+        concentrator.performUnlessCleared(since: export.clearGeneration, writeConsent: .pending) { runs.append("same consent") }
+
+        XCTAssertEqual(runs, ["same consent"])
     }
 
     func testWhenAllDataIsCleared_bufferedBucketsAreDroppedAndLaterSpansAreKept() throws {
