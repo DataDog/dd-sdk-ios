@@ -614,6 +614,9 @@ internal final class StatsConcentrator: @unchecked Sendable {
     /// Incremented by `clearAllData()` and by consent revocation, so buckets exported before either
     /// can be told apart.
     private var clearGeneration: UInt64 = 0
+    // TODO: RUM-19013 This only moves forward, and bucketing uses the device wall clock. After the clock
+    // moves backward, new spans go into the bucket from before the change, which the periodic flush does
+    // not export until the clock catches up, and which a forced flush exports with that earlier window.
     private var oldestTs: UInt64
 
     /// The user's current tracking consent. `.granted` and `.pending` are both recording states;
