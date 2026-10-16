@@ -101,15 +101,9 @@ internal enum RUMInternalErrorSource: String, Decodable {
 internal typealias RUMErrorCategory = RUMErrorEvent.Error.Category
 
 /// Exposes monitor state for readers that operate outside the `RUMCommand` pipeline
-/// (e.g. the timer-driven `TimeseriesSessionCollector`), which otherwise have no access to
-/// `command.globalAttributes`, the scope tree's active view, or `RUMSessionScope`'s own session
-/// lifetime rules.
+/// (e.g. the timer-driven `TimeseriesSessionCollector`), which otherwise have no access to the
+/// replay state or `RUMSessionScope`'s own session lifetime rules.
 internal protocol RUMActiveContextReader: AnyObject {
-    /// The current global attributes set through `addAttribute(forKey:value:)` / `addAttributes(_:)`.
-    /// Conformers must guarantee this is safe to read from any thread.
-    var globalAttributes: [AttributeKey: AttributeValue] { get }
-    /// The currently active view, if any. Conformers must guarantee this is safe to read from any thread.
-    var activeView: (id: String?, path: String?, name: String?) { get }
     /// The most recently observed `DatadogContext.hasReplay` value, or `nil` if no command has been
     /// processed yet. Conformers must guarantee this is safe to read from any thread.
     var hasReplay: Bool? { get }
@@ -133,9 +127,6 @@ internal class Monitor: RUMCommandSubscriber {
 
     @ReadWriteLock
     private var attributes: [AttributeKey: AttributeValue] = [:]
-
-    @ReadWriteLock
-    private var activeViewSnapshot: (id: String?, path: String?, name: String?) = (nil, nil, nil)
 
     @ReadWriteLock
     private var sessionActivitySnapshot: (sessionID: String?, sessionStart: TimeInterval?, lastInteraction: TimeInterval?) = (nil, nil, nil)
@@ -197,12 +188,6 @@ internal class Monitor: RUMCommandSubscriber {
             }
 
             if let activeSession = self.applicationScope.activeSession {
-                let viewContext = activeSession.viewScopes.last(where: { $0.isActiveView })?.context ?? activeSession.context
-                self.activeViewSnapshot = (
-                    id: viewContext.activeViewID?.toRUMDataFormat,
-                    path: viewContext.activeViewPath,
-                    name: viewContext.activeViewName
-                )
                 self.sessionActivitySnapshot = (
                     sessionID: activeSession.sessionUUID.toRUMDataFormat,
                     sessionStart: activeSession.sessionStart,
@@ -214,7 +199,6 @@ internal class Monitor: RUMCommandSubscriber {
                     self.applicationScope.dependencies.timeseriesCollector?.noteActivity(sessionID: activeSession.sessionUUID.toRUMDataFormat)
                 }
             } else {
-                self.activeViewSnapshot = (nil, nil, nil)
                 self.sessionActivitySnapshot = (nil, nil, nil)
             }
         }
@@ -271,8 +255,6 @@ internal class Monitor: RUMCommandSubscriber {
 }
 
 extension Monitor: RUMActiveContextReader {
-    var globalAttributes: [AttributeKey: AttributeValue] { attributes }
-    var activeView: (id: String?, path: String?, name: String?) { activeViewSnapshot }
     var hasReplay: Bool? { hasReplaySnapshot }
 
     func isSessionExpired(sessionID: String) -> Bool {
