@@ -268,9 +268,13 @@ internal struct ExportedBucket: Codable, Sendable {
     /// A copy of this bucket whose start is moved to the server clock.
     ///
     /// The concentrator buckets spans on the device clock, so they flush on time even when that clock
-    /// is wrong. Spans are shifted by the server time offset when they finish, so `ClientStatsFeature`
+    /// is wrong. Uploaded spans are shifted by the server time offset too, so `ClientStatsFeature`
     /// shifts a bucket by the offset of the moment it stores it, and the stored start never changes
-    /// afterwards, across retries, restarts and split pieces. The start is rounded to the nearest
+    /// afterwards, across retries, restarts and split pieces.
+    ///
+    /// That offset is intentionally not each span's: a span keeps the context it captured when it
+    /// started, so a span started before the first clock synchronization keeps an offset of 0. The
+    /// offset at storage time is the most accurate one known by then. The start is rounded to the nearest
     /// bucket boundary to stay aligned, so offsets under half a bucket round away, which is within the
     /// 10-second granularity of the stats.
     func shiftedToServerClock(by offset: TimeInterval) -> ExportedBucket {
