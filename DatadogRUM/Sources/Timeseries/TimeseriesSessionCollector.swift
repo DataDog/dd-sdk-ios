@@ -9,9 +9,9 @@ import DatadogInternal
 
 /// Defines the interface for collecting timeseries data during a RUM session.
 internal protocol TimeseriesCollecting: AnyObject {
-    /// Provides global custom attributes, the active view, and the active session's expiry state at sample
-    /// time, so the collector can self-enforce `RUMSessionScope`'s own expiry rules without maintaining a
-    /// shadow copy of that state. Set by `RUMFeature` once `Monitor` is constructed, since the collector is
+    /// Provides the replay state and the active session's expiry state at sample time, so the collector can
+    /// report `session.has_replay` and self-enforce `RUMSessionScope`'s own expiry rules without maintaining
+    /// a shadow copy of that state. Set by `RUMFeature` once `Monitor` is constructed, since the collector is
     /// created before it.
     var activeContextReader: RUMActiveContextReader? { get set }
     func start(sessionID: String, applicationID: String, sessionType: RUMSessionType)

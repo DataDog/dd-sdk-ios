@@ -355,36 +355,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         XCTAssertEqual(events[0].source, .reactNative)
     }
 
-    func testWhenActiveViewExists_itStillWritesEventWithoutView() {
-        // Given
-        memoryReader.vitalData = 1_000_000
-        let scope = FeatureScopeMock(context: .mockWith(additionalContext: []))
-        let collector = TimeseriesSessionCollector(
-            memoryReader: memoryReader,
-            featureScope: scope,
-            batchSize: 2,
-            samplingInterval: 0.05,
-            cpuUsageProvider: { nil },
-            totalRAM: 4_000_000_000
-        )
-        let contextReader = RUMActiveContextReaderMock(activeView: (id: "view-abc", path: "/view/abc", name: "ViewController"))
-        collector.activeContextReader = contextReader
-
-        // When
-        let expectation = self.expectation(description: "batch written")
-        expectation.assertForOverFulfill = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { expectation.fulfill() }
-
-        collector.start(sessionID: "session-view", applicationID: "app-view", sessionType: .user)
-        waitForExpectations(timeout: 2)
-        collector.stop(sessionID: "session-view")
-
-        // Then — `view` is never populated on timeseries events, even when a view is active
-        let events = scope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self)
-        XCTAssertFalse(events.isEmpty)
-        XCTAssertNil(events[0].view)
-    }
-
     func testWhenSessionReplayHasReplay_itAttachesHasReplayToEvent() {
         // Given
         memoryReader.vitalData = 1_000_000
@@ -1066,10 +1036,7 @@ class TimeseriesSessionCollectorTests: XCTestCase {
             cpuUsageProvider: { nil },
             totalRAM: 4_000_000_000
         )
-        let contextReader = RUMActiveContextReaderMock(
-            globalAttributes: ["custom-key": "custom-value"],
-            activeView: (id: "view-abc", path: "/view/abc", name: "ViewController")
-        )
+        let contextReader = RUMActiveContextReaderMock()
         collector.activeContextReader = contextReader
 
         // When
@@ -1474,8 +1441,6 @@ class TimeseriesSessionCollectorTests: XCTestCase {
 }
 
 private class RUMActiveContextReaderMock: RUMActiveContextReader {
-    var globalAttributes: [AttributeKey: AttributeValue]
-    var activeView: (id: String?, path: String?, name: String?)
     @ReadWriteLock
     var sessionActivity: (sessionID: String?, sessionStart: TimeInterval, lastInteraction: TimeInterval)
     @ReadWriteLock
@@ -1483,14 +1448,10 @@ private class RUMActiveContextReaderMock: RUMActiveContextReader {
     private let monotonicClock: MonotonicClock
 
     init(
-        globalAttributes: [AttributeKey: AttributeValue] = [:],
-        activeView: (id: String?, path: String?, name: String?) = (.mockAny(), .mockAny(), nil),
         sessionID: String? = nil,
         hasReplay: Bool? = nil,
         monotonicClock: MonotonicClock = SystemMonotonicClock()
     ) {
-        self.globalAttributes = globalAttributes
-        self.activeView = activeView
         let now = monotonicClock.elapsedTime
         self.sessionActivity = (sessionID, now, now)
         self.hasReplay = hasReplay
