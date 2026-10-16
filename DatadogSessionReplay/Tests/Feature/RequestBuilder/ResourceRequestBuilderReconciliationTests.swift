@@ -74,13 +74,16 @@ struct ResourceRequestBuilderReconciliationTests {
     )
     func decodesConfirmationsAndPreservesRemainingEventsAndMetadata(body: String, remainingIndices: [Int]) throws {
         // When
-        let response = try builder.response(from: Data(body.utf8), with: .mockResponseWith(statusCode: 200))
-        let remaining = try builder.events(from: events, using: response)
+        let remaining = try builder.reconcile(
+            from: events,
+            using: .mockResponseWith(statusCode: 200),
+            data: Data(body.utf8)
+        )
 
         // Then
         #expect(remaining == remainingIndices.map { events[$0] })
-        for identifier in ["first", "second"] {
-            #expect(availabilityStore.contains(identifier, forApplicationID: "application") == response.storedResourceIdentifiers.contains(identifier))
+        for (index, identifier) in ["first", "second"].enumerated() {
+            #expect(availabilityStore.contains(identifier, forApplicationID: "application") == !remainingIndices.contains(index))
         }
         #expect(!availabilityStore.contains("first", forApplicationID: "other-application"))
     }
@@ -89,10 +92,14 @@ struct ResourceRequestBuilderReconciliationTests {
     func keepsResourcesOmittedFromTheLatestResponseEligibleForRetry() throws {
         // Given
         availabilityStore.insert(["first"], forApplicationID: "application")
-        let response = ResourceRequestBuilder.Response(storedResourceIdentifiers: ["second"])
+        let body = #"{"stored_resource_ids":["second"]}"#
 
         // When
-        let remaining = try builder.events(from: events, using: response)
+        let remaining = try builder.reconcile(
+            from: events,
+            using: .mockResponseWith(statusCode: 200),
+            data: Data(body.utf8)
+        )
         let retry = try builder.reconciliation(
             for: events,
             with: .mockAny(),
@@ -116,7 +123,7 @@ struct ResourceRequestBuilderReconciliationTests {
     func rejectsMissingOrMalformedResponseBodies(data: Data?) {
         // When, Then
         #expect(throws: (any Error).self) {
-            try builder.response(from: data, with: .mockResponseWith(statusCode: 200))
+            try builder.reconcile(from: events, using: .mockResponseWith(statusCode: 200), data: data)
         }
     }
 
@@ -127,7 +134,11 @@ struct ResourceRequestBuilderReconciliationTests {
 
         // When, Then
         #expect(throws: DecodingError.self) {
-            try builder.events(from: malformedEvents, using: .init(storedResourceIdentifiers: ["first"]))
+            try builder.reconcile(
+                from: malformedEvents,
+                using: .mockResponseWith(statusCode: 200),
+                data: Data(#"{"stored_resource_ids":["first"]}"#.utf8)
+            )
         }
         #expect(!availabilityStore.contains("first", forApplicationID: "application"))
     }

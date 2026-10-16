@@ -64,7 +64,6 @@ struct DataUploaderReconciliationTests {
         // Given
         let context: DatadogContext = .mockRandom()
         let body: Data = .mockAny()
-        let response: FeatureEventReconcilerMock.Response = [42]
         let builder = FeatureEventReconcilerMock()
         var uploadedEvents: [[Event]] = []
         builder.reconciliationStub = { receivedEvents, receivedContext, _ in
@@ -74,14 +73,10 @@ struct DataUploaderReconciliationTests {
             #expect(receivedContext.ddTags == context.ddTags)
             return .request(reconciliationRequest)
         }
-        builder.responseStub = { data, httpResponse in
-            #expect(data == body)
-            #expect(httpResponse.statusCode == 200)
-            return response
-        }
-        builder.eventsStub = { receivedEvents, receivedResponse in
+        builder.reconcileStub = { receivedEvents, response, data in
             #expect(receivedEvents == events)
-            #expect(receivedResponse == response)
+            #expect(response.statusCode == 200)
+            #expect(data == body)
             return [events[1]]
         }
         builder.requestStub = { events, _, _ in
@@ -105,7 +100,7 @@ struct DataUploaderReconciliationTests {
         // Given
         let builder = FeatureEventReconcilerMock()
         builder.reconciliationStub = { _, _, _ in .request(reconciliationRequest) }
-        builder.eventsStub = { _, _ in [] }
+        builder.reconcileStub = { _, _, _ in [] }
         let (uploader, client) = makeUploader(builder: builder)
 
         // When
@@ -162,10 +157,10 @@ struct DataUploaderReconciliationTests {
     }
 
     @Test(
-        "Uploads original events without decoding unsuccessful reconciliation responses",
+        "Uploads original events without reconciling unsuccessful responses",
         arguments: [199, 300]
     )
-    func uploadsOriginalEventsWithoutDecodingUnsuccessfulReconciliationResponses(code: Int) throws {
+    func uploadsOriginalEventsWithoutReconcilingUnsuccessfulResponses(code: Int) throws {
         // Given
         let builder = FeatureEventReconcilerMock()
         var uploadedEvents: [[Event]] = []
@@ -174,12 +169,11 @@ struct DataUploaderReconciliationTests {
             return uploadRequest
         }
         builder.reconciliationStub = { _, _, _ in .request(reconciliationRequest) }
-        var responseCount = 0
-        builder.responseStub = { _, _ in
-            responseCount += 1
+        var reconcileCount = 0
+        builder.reconcileStub = { _, _, _ in
+            reconcileCount += 1
             return []
         }
-        builder.eventsStub = { _, _ in [] }
         let (uploader, client) = makeUploader(builder: builder, reconciliationCode: code)
 
         // When
@@ -188,13 +182,13 @@ struct DataUploaderReconciliationTests {
         // Then
         #expect(client.requestsSent() == [reconciliationRequest, uploadRequest])
         #expect(uploadedEvents == [events])
-        #expect(responseCount == 0)
+        #expect(reconcileCount == 0)
         #expect(status.responseCode == 202)
         #expect(!status.needsRetry)
     }
 
-    @Test("Uploads original events when the feature rejects the response")
-    func uploadsOriginalEventsWhenTheFeatureRejectsTheResponse() throws {
+    @Test("Uploads original events when the feature cannot reconcile the response")
+    func uploadsOriginalEventsWhenTheFeatureCannotReconcileTheResponse() throws {
         // Given
         let builder = FeatureEventReconcilerMock()
         var uploadedEvents: [[Event]] = []
@@ -203,41 +197,9 @@ struct DataUploaderReconciliationTests {
             return uploadRequest
         }
         builder.reconciliationStub = { _, _, _ in .request(reconciliationRequest) }
-        var responseCount = 0
-        var filterCount = 0
-        builder.responseStub = { _, _ in
-            responseCount += 1
-            throw ErrorMock()
-        }
-        builder.eventsStub = { events, _ in
-            filterCount += 1
-            return events
-        }
-        let (uploader, client) = makeUploader(builder: builder)
-
-        // When
-        _ = try uploader.upload(events: events, context: .mockAny(), previous: nil)
-
-        // Then
-        #expect(client.requestsSent() == [reconciliationRequest, uploadRequest])
-        #expect(uploadedEvents == [events])
-        #expect(responseCount == 1)
-        #expect(filterCount == 0)
-    }
-
-    @Test("Uploads original events when filtering throws")
-    func uploadsOriginalEventsWhenFilteringThrows() throws {
-        // Given
-        let builder = FeatureEventReconcilerMock()
-        var uploadedEvents: [[Event]] = []
-        builder.requestStub = { events, _, _ in
-            uploadedEvents.append(events)
-            return uploadRequest
-        }
-        builder.reconciliationStub = { _, _, _ in .request(reconciliationRequest) }
-        var filterCount = 0
-        builder.eventsStub = { _, _ in
-            filterCount += 1
+        var reconcileCount = 0
+        builder.reconcileStub = { _, _, _ in
+            reconcileCount += 1
             throw ErrorMock()
         }
         let (uploader, client) = makeUploader(builder: builder)
@@ -248,7 +210,7 @@ struct DataUploaderReconciliationTests {
         // Then
         #expect(client.requestsSent() == [reconciliationRequest, uploadRequest])
         #expect(uploadedEvents == [events])
-        #expect(filterCount == 1)
+        #expect(reconcileCount == 1)
     }
 
     @Test("Reconciles the original batch again when the upload needs retrying")
@@ -264,7 +226,7 @@ struct DataUploaderReconciliationTests {
             reconciliationExecutions.append(execution)
             return .request(reconciliationRequest)
         }
-        builder.eventsStub = { _, _ in [events[1]] }
+        builder.reconcileStub = { _, _, _ in [events[1]] }
         builder.requestStub = { events, _, execution in
             uploadedEvents.append(events)
             uploadExecutions.append(execution)

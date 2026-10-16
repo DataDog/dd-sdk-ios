@@ -11,8 +11,8 @@ import Foundation
 /// The uploader calls ``reconciliation(for:with:execution:)`` on the feature's upload queue to decide whether
 /// to send a reconciliation request, upload the original events, or complete the batch.
 ///
-/// If the reconciliation request succeeds, it calls ``response(from:with:)`` to decode the response, then
-/// ``events(from:using:)`` with the original batch to select the events that still need uploading.
+/// If the reconciliation request succeeds, it calls ``reconcile(from:using:data:)`` with the original batch
+/// and the response to select the events that still need uploading.
 ///
 /// It passes those events to ``FeatureRequestBuilder/request(for:with:execution:)`` to build the upload request,
 /// or completes the batch if none remain.
@@ -20,9 +20,6 @@ import Foundation
 /// If reconciliation fails, it uploads the original events without changing the persisted batch or its
 /// upload retry behavior.
 public protocol FeatureEventReconciler: FeatureRequestBuilder {
-    /// The response used to reconcile events.
-    associatedtype Response
-
     /// Determines whether the batch needs a reconciliation request.
     func reconciliation(
         for events: [Event],
@@ -30,11 +27,8 @@ public protocol FeatureEventReconciler: FeatureRequestBuilder {
         execution: ExecutionContext
     ) throws -> EventReconciliation
 
-    /// Validates and decodes a reconciliation response.
-    func response(from data: Data?, with response: HTTPURLResponse) throws -> Response
-
-    /// Returns the events that still need uploading after reconciliation.
-    func events(from events: [Event], using response: Response) throws -> [Event]
+    /// Decodes the reconciliation response and returns the events that still need uploading.
+    func reconcile(from events: [Event], using response: HTTPURLResponse, data: Data?) throws -> [Event]
 }
 
 /// The next step in reconciling a persisted batch.

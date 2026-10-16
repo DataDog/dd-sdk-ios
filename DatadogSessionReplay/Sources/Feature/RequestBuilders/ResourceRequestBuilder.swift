@@ -9,7 +9,7 @@ import Foundation
 import DatadogInternal
 
 internal struct ResourceRequestBuilder: FeatureEventReconciler {
-    struct Response: Decodable {
+    private struct Response: Decodable {
         let storedResourceIdentifiers: Set<String>
 
         private enum CodingKeys: String, CodingKey {
@@ -79,14 +79,11 @@ internal struct ResourceRequestBuilder: FeatureEventReconciler {
         return .skip
     }
 
-    func response(from data: Data?, with response: HTTPURLResponse) throws -> Response {
+    func reconcile(from events: [Event], using response: HTTPURLResponse, data: Data?) throws -> [Event] {
         guard let data else {
             throw InternalError(description: "Resource reconciliation response is missing its body.")
         }
-        return try decoder.decode(Response.self, from: data)
-    }
-
-    func events(from events: [Event], using response: Response) throws -> [Event] {
+        let response = try decoder.decode(Response.self, from: data)
         let resourceRefs = try events.resourceRefs(using: decoder)
 
         guard let applicationID = resourceRefs.applicationID else {

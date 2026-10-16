@@ -72,7 +72,7 @@ internal final class DataUploader: DataUploaderType {
 
     private func reconciledEvents(
         _ events: [Event],
-        with reconciler: some FeatureEventReconciler,
+        with reconciler: any FeatureEventReconciler,
         context: DatadogContext,
         execution: ExecutionContext
     ) -> [Event] {
@@ -87,8 +87,7 @@ internal final class DataUploader: DataUploaderType {
                 guard (200..<300).contains(httpResponse.statusCode) else {
                     return events
                 }
-                let response = try reconciler.response(from: data, with: httpResponse)
-                return try reconciler.events(from: events, using: response)
+                return try reconciler.reconcile(from: events, using: httpResponse, data: data)
             }
         } catch {
             // Reconciliation is optional and should not prevent the batch from being sent

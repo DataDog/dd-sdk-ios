@@ -328,7 +328,7 @@ class DataUploadWorkerTests: XCTestCase {
             resolved.fulfill()
             return .resolved
         }
-        builder.eventsStub = { events, _ in Array(events.suffix(1)) }
+        builder.reconcileStub = { events, _, _ in Array(events.suffix(1)) }
         builder.requestStub = { events, _, _ in
             XCTAssertEqual(events, Array(originalEvents.suffix(1)))
             return uploadRequest

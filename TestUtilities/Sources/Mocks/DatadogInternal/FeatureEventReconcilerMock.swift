@@ -8,11 +8,8 @@ import Foundation
 import DatadogInternal
 
 public final class FeatureEventReconcilerMock: FeatureEventReconciler {
-    public typealias Response = Set<Int>
-
     public var reconciliationStub: ([Event], DatadogContext, ExecutionContext) throws -> EventReconciliation = { _, _, _ in .skip }
-    public var responseStub: (Data?, HTTPURLResponse) throws -> Response = { _, _ in [] }
-    public var eventsStub: ([Event], Response) throws -> [Event] = { events, _ in events }
+    public var reconcileStub: ([Event], HTTPURLResponse, Data?) throws -> [Event] = { events, _, _ in events }
     public var requestStub: ([Event], DatadogContext, ExecutionContext) throws -> URLRequest = { _, _, _ in .mockAny() }
 
     public init() {}
@@ -21,12 +18,8 @@ public final class FeatureEventReconcilerMock: FeatureEventReconciler {
         try reconciliationStub(events, context, execution)
     }
 
-    public func response(from data: Data?, with response: HTTPURLResponse) throws -> Response {
-        try responseStub(data, response)
-    }
-
-    public func events(from events: [Event], using response: Response) throws -> [Event] {
-        try eventsStub(events, response)
+    public func reconcile(from events: [Event], using response: HTTPURLResponse, data: Data?) throws -> [Event] {
+        try reconcileStub(events, response, data)
     }
 
     public func request(for events: [Event], with context: DatadogContext, execution: ExecutionContext) throws -> URLRequest {
