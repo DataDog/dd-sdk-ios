@@ -47,6 +47,7 @@ internal final class DataUploader: DataUploaderType {
             if reconciledEvents.isEmpty {
                 return DataUploadStatus(
                     needsRetry: false,
+                    isReconciled: true,
                     responseCode: nil,
                     userDebugDescription: "[batch resolved by reconciliation]",
                     error: nil,

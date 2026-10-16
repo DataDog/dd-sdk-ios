@@ -297,8 +297,72 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertEqual(try orchestrator.directory.files().count, 0)
     }
 
+    func testWhenBatchesAreResolved_itDeletesThemWithoutReportingUploadsAndContinuesScheduling() throws {
+        // Given
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let telemetry = TelemetryMock()
+        let performance = UploadPerformanceMock(
+            initialUploadDelay: 0.01,
+            minUploadDelay: 0.05,
+            maxUploadDelay: 1,
+            uploadDelayChangeRate: 0
+        )
+        let delay = DataUploadDelay(performance: performance)
+        orchestrator = FilesOrchestrator(
+            directory: .init(url: temporaryDirectory),
+            performance: StoragePerformanceMock.writeEachObjectToNewFileAndReadAllFiles,
+            dateProvider: dateProvider,
+            telemetry: telemetry,
+            metricsData: .init(
+                trackName: "sr-resources",
+                consentLabel: "granted",
+                uploaderPerformance: performance,
+                backgroundTasksEnabled: false
+            )
+        )
+        writer.write(value: "first")
+        writer.write(value: "second")
+        writer.write(value: "third")
+
+        let resolved = expectation(description: "Resolve batches across upload cycles")
+        resolved.expectedFulfillmentCount = 3
+        let uploader = DataUploaderMock(
+            uploadStatus: .mockWith(needsRetry: false, isReconciled: true, responseCode: nil)
+        ) { previousStatus in
+            XCTAssertNil(previousStatus)
+            resolved.fulfill()
+        }
+
+        // When
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: uploader,
+            contextProvider: .mockAny(),
+            uploadConditions: .alwaysUpload(),
+            delay: delay,
+            featureName: "session-replay-resources",
+            telemetry: telemetry,
+            maxBatchesPerUpload: 2
+        )
+        wait(for: [resolved], timeout: 5)
+        worker.cancelSynchronously()
+
+        // Then
+        XCTAssertTrue(try orchestrator.directory.files().isEmpty)
+        XCTAssertEqual(delay.current, performance.minUploadDelay)
+        XCTAssertNil(telemetry.messages.firstMetric(named: UploadQualityMetric.name))
+        let deletions = telemetry.messages.compactMap(\.asMetric).filter { $0.name == BatchDeletedMetric.name }
+        XCTAssertEqual(deletions.count, 3)
+        XCTAssertTrue(deletions.allSatisfy { $0.attributes["batch_removal_reason"] as? String == "reconciled" })
+        XCTAssertFalse(dd.logger.debugMessages.contains { $0.contains("accepted, won't be retransmitted") })
+        XCTAssertEqual(dd.logger.debugMessages.filter { $0.contains("batch resolved by reconciliation") }.count, 3)
+    }
+
     func testWhenReconciledUploadIsRetried_itPreservesOriginalBatchUntilResolved() throws {
         // Given
+        let telemetry = TelemetryMock()
         var performance = StoragePerformanceMock.readAllFiles
         performance.maxFileAgeForWrite = .distantFuture
         orchestrator = FilesOrchestrator(
@@ -347,7 +411,7 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
             featureName: .mockAny(),
-            telemetry: NOPTelemetry(),
+            telemetry: telemetry,
             maxBatchesPerUpload: 1
         )
         wait(for: [resolved], timeout: 5)
@@ -358,6 +422,9 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertEqual(executions.map(\.previousResponseCode), [nil, 503])
         XCTAssertEqual(client.requestsSent(), [reconciliationRequest, uploadRequest])
         XCTAssertTrue(try orchestrator.directory.files().isEmpty)
+        let metrics = telemetry.messages.compactMap(\.asMetric).filter { $0.name == UploadQualityMetric.name }
+        XCTAssertEqual(metrics.count, 1)
+        XCTAssertEqual(metrics.first?.attributes[UploadQualityMetric.failure] as? String, "serviceUnavailable")
     }
 
     // MARK: - Upload Interval Changes

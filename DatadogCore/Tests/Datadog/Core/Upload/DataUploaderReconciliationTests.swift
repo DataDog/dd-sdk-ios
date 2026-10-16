@@ -55,6 +55,7 @@ struct DataUploaderReconciliationTests {
         #expect(client.requestsSent().isEmpty)
         #expect(!status.needsRetry)
         #expect(status.responseCode == nil)
+        #expect(status.isReconciled)
         #expect(status.error == nil)
         #expect(status.attempt == 3)
     }
@@ -91,6 +92,7 @@ struct DataUploaderReconciliationTests {
         // Then
         #expect(client.requestsSent() == [reconciliationRequest, uploadRequest])
         #expect(uploadedEvents == [[events[1]]])
+        #expect(!status.isReconciled)
         #expect(status.responseCode == 202)
         #expect(!status.needsRetry)
     }
@@ -110,6 +112,7 @@ struct DataUploaderReconciliationTests {
         #expect(client.requestsSent() == [reconciliationRequest])
         #expect(!status.needsRetry)
         #expect(status.responseCode == nil)
+        #expect(status.isReconciled)
         #expect(status.error == nil)
     }
 
