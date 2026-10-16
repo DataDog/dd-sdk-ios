@@ -124,9 +124,8 @@ class ClientStatsFeatureTests: XCTestCase {
         stats.flushStats(.teardown)
 
         // When: consent is revoked, then granted again, before the write runs.
-        _ = stats.messageReceiver.receive(message: .context(.mockWith(trackingConsent: .notGranted)), from: core)
-        _ = stats.messageReceiver.receive(message: .context(.mockWith(trackingConsent: .granted)), from: core)
-        core.contextValue = .mockWith(trackingConsent: .granted)
+        core.set(trackingConsent: .notGranted)
+        core.set(trackingConsent: .granted)
         core.runPendingWriteContexts()
 
         // Then: the stats collected before the revocation are not stored, and later ones are.
@@ -142,15 +141,37 @@ class ClientStatsFeatureTests: XCTestCase {
         // either message, so it still believes consent is pending.
         let (core, stats) = try enableClientStats()
         stats.record(.mockWith(resource: "before", startTime: 0, duration: 100))
-        core.contextValue = .mockWith(trackingConsent: .granted)
+        core.holdsMessages = true
+        core.set(trackingConsent: .notGranted)
+        core.set(trackingConsent: .granted)
 
         // When
         stats.flushStats(.teardown)
 
         // Then: nothing is stored under a consent the feature has not seen, since a revocation may precede it.
         XCTAssertTrue(core.exportedBuckets.isEmpty)
-        _ = stats.messageReceiver.receive(message: .context(.mockWith(trackingConsent: .notGranted)), from: core)
-        _ = stats.messageReceiver.receive(message: .context(.mockWith(trackingConsent: .granted)), from: core)
+        core.deliverHeldMessages()
+        stats.record(.mockWith(resource: "after", startTime: 0, duration: 100))
+        stats.flushStats(.teardown)
+        XCTAssertEqual(core.exportedBuckets.flatMap(\.stats).map(\.resource), ["after"])
+    }
+
+    func testWhenConsentReturnsToPendingBeforeTheMessageBusDeliversTheRevocation_aFlushDoesNotStoreUnderIt() throws {
+        // Given: stats collected while consent is pending.
+        let (core, stats) = try enableClientStats()
+        XCTAssertEqual(core.contextValue.trackingConsent, .pending)
+        stats.record(.mockWith(resource: "before", startTime: 0, duration: 100))
+
+        // When: consent is revoked and set to pending again, and the feature has received neither change
+        // when the flush writes. Its last consent and the write context's consent are both pending.
+        core.holdsMessages = true
+        core.set(trackingConsent: .notGranted)
+        core.set(trackingConsent: .pending)
+        stats.flushStats(.teardown)
+
+        // Then: the stats collected before the revocation are not stored, and later ones are.
+        XCTAssertTrue(core.exportedBuckets.isEmpty)
+        core.deliverHeldMessages()
         stats.record(.mockWith(resource: "after", startTime: 0, duration: 100))
         stats.flushStats(.teardown)
         XCTAssertEqual(core.exportedBuckets.flatMap(\.stats).map(\.resource), ["after"])
@@ -486,6 +507,7 @@ class ClientStatsFeatureTests: XCTestCase {
         let core = FeatureRegistrationPassthroughCoreMock()
         let dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
         let feature = ClientStatsFeature(core: core, configuration: config, dateProvider: dateProvider, flushInterval: 0.05)
+        try core.register(feature: feature)
         feature.concentrator.add(.mockWith(startTime: 0, duration: 100))
         dateProvider.advance(bySeconds: 60)
 
@@ -576,7 +598,7 @@ class ClientStatsFeatureTests: XCTestCase {
         let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
 
         // When: consent is revoked, aggregation and flush are gated off.
-        stats.concentrator.updateConsent(.notGranted)
+        core.set(trackingConsent: .notGranted)
         stats.concentrator.add(.mockWith(startTime: 0, duration: 1_000_000_000, isTopLevel: true))
         dateProvider.advance(bySeconds: 60)
         stats.flushStats(.teardown)
@@ -1588,6 +1610,29 @@ private final class FeatureRegistrationPassthroughCoreMock: DatadogCoreProtocol,
 
     func register<T>(feature: T) throws where T: DatadogFeature {
         registeredFeatures.append(feature)
+        // Like the core, send the current context to the new feature.
+        _ = feature.messageReceiver.receive(message: .context(contextValue), from: self)
+    }
+
+    /// When `true`, context messages wait for `deliverHeldMessages()`, like a message bus that lags behind the context.
+    var holdsMessages = false
+    private var heldContexts: [DatadogContext] = []
+
+    /// Changes the consent like the core: the context reflects it right away, and features receive it from the bus.
+    func set(trackingConsent: TrackingConsent) {
+        contextValue.trackingConsent = trackingConsent
+        heldContexts.append(contextValue)
+        if !holdsMessages {
+            deliverHeldMessages()
+        }
+    }
+
+    func deliverHeldMessages() {
+        let contexts = heldContexts
+        heldContexts = []
+        for context in contexts {
+            registeredFeatures.forEach { _ = $0.messageReceiver.receive(message: .context(context), from: self) }
+        }
     }
 
     func feature<T>(named name: String, type: T.Type) -> T? {
