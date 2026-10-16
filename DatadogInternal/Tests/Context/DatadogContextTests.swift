@@ -164,4 +164,15 @@ final class DatadogContextTests: XCTestCase {
 
         XCTAssertEqual(merged, "env:prod,service:app,version:1.0.0")
     }
+
+    func testTrackingConsentRevision_itAdvancesEachTimeConsentIsSet() {
+        var context: DatadogContext = .mockWith(trackingConsent: .pending)
+        let initialRevision = context.trackingConsentRevision
+
+        context.trackingConsent = .notGranted
+        context.trackingConsent = .pending
+
+        XCTAssertEqual(context.trackingConsent, .pending)
+        XCTAssertEqual(context.trackingConsentRevision, initialRevision + 2)
+    }
 }
