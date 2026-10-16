@@ -43,12 +43,15 @@ private final class LiveSetStressCounts: @unchecked Sendable {
 
 final class MemoryLiveSetTests: XCTestCase {
     private var table: OpaquePointer?
+    private var snapshotStorage: OpaquePointer?
     private var generation: UInt64 = 0
 
     override func setUp() {
         super.setUp()
         table = dd_memory_live_set_create()
         XCTAssertNotNil(table)
+        snapshotStorage = dd_memory_live_snapshot_create()
+        XCTAssertNotNil(snapshotStorage)
         generation = dd_memory_live_set_start(table)
         XCTAssertNotEqual(generation, 0)
     }
@@ -56,7 +59,9 @@ final class MemoryLiveSetTests: XCTestCase {
     override func tearDown() {
         dd_memory_live_set_stop(table)
         dd_memory_live_set_destroy(table)
+        dd_memory_live_snapshot_destroy(snapshotStorage)
         table = nil
+        snapshotStorage = nil
         super.tearDown()
     }
 
@@ -97,12 +102,8 @@ final class MemoryLiveSetTests: XCTestCase {
         XCTAssertEqual(snapshot().map(\.size), [42])
         let oldGeneration = generation
         dd_memory_live_set_stop(table)
-        var stoppedOutput = dd_memory_live_sample_t()
-        var stoppedCount = 99
-        XCTAssertFalse(dd_memory_live_set_snapshot(
-            table, oldGeneration, &stoppedOutput, 1, nil, 0, &stoppedCount, nil
-        ))
-        XCTAssertEqual(stoppedCount, 0)
+        XCTAssertFalse(dd_memory_live_set_snapshot(table, oldGeneration, snapshotStorage))
+        XCTAssertEqual(dd_memory_live_snapshot_view(snapshotStorage).count, 0)
         let stoppedDiagnostics = dd_memory_live_set_diagnostics(table)
         XCTAssertFalse(stoppedDiagnostics.is_active)
         XCTAssertEqual(stoppedDiagnostics.occupancy, 1)
@@ -155,46 +156,32 @@ final class MemoryLiveSetTests: XCTestCase {
         XCTAssertEqual(probeLength, 1)
     }
 
-    func testShortOrInconsistentSnapshotFailsWithoutOutOfBoundsWrites() {
+    func testInvalidSnapshotsClearResultsAndRejectInconsistentOccupancy() {
         XCTAssertEqual(insert(0x10000, size: 1), DD_MEMORY_LIVE_SET_INSERTED)
         XCTAssertEqual(insert(0x20000, size: 2), DD_MEMORY_LIVE_SET_INSERTED)
-        let canaryValue = UInt64.max
-        var canary = dd_memory_live_sample_t()
-        canary.size = canaryValue
-        let storage = UnsafeMutablePointer<dd_memory_live_sample_t>.allocate(capacity: 5)
-        storage.initialize(repeating: canary, count: 5)
+        XCTAssertEqual(Set(snapshot().map(\.size)), [1, 2])
         defer {
-            storage.deinitialize(count: 5)
-            storage.deallocate()
             dd_memory_live_set_override_occupancy_for_testing(table, 2)
         }
-        let cases: [(occupancy: UInt64, capacity: Int)] = [(2, 1), (1, 1), (0, 1), (1, 3), (3, 3)]
-        for testCase in cases {
-            storage.update(repeating: canary, count: 5)
-            dd_memory_live_set_override_occupancy_for_testing(table, testCase.occupancy)
-            var count = 99
-            XCTAssertFalse(dd_memory_live_set_snapshot(
-                table, generation, storage.advanced(by: 1), testCase.capacity, nil, 0, &count, nil
-            ))
-            XCTAssertEqual(count, 0)
-            XCTAssertEqual(storage[0].size, canaryValue)
-            for index in (testCase.capacity + 1)..<5 {
-                XCTAssertEqual(storage[index].size, canaryValue)
-            }
-            if testCase.occupancy == 2 {
-                XCTAssertEqual(storage[1].size, canaryValue)
-            }
+        let cases: [UInt64] = [0, 1, 3, UInt64(DD_MEMORY_LIVE_SET_CAPACITY) + 1]
+        for occupancy in cases {
+            dd_memory_live_set_override_occupancy_for_testing(table, occupancy)
+            XCTAssertFalse(dd_memory_live_set_snapshot(table, generation, snapshotStorage))
+            XCTAssertEqual(dd_memory_live_snapshot_view(snapshotStorage).count, 0)
         }
-        dd_memory_live_set_override_occupancy_for_testing(table, 0)
-        var count = 99
-        XCTAssertFalse(dd_memory_live_set_snapshot(table, generation, nil, 0, nil, 0, &count, nil))
-        XCTAssertEqual(count, 0)
+        XCTAssertFalse(dd_memory_live_set_snapshot(table, generation, nil))
+        XCTAssertEqual(dd_memory_live_snapshot_view(nil).count, 0)
+        XCTAssertNil(dd_memory_live_snapshot_view(nil).samples)
+        dd_memory_live_snapshot_destroy(nil)
         dd_memory_live_set_override_occupancy_for_testing(table, 2)
         XCTAssertEqual(dd_memory_live_set_diagnostics(table).snapshot_failures, UInt64(cases.count + 1))
         XCTAssertEqual(Set(snapshot().map { $0.size }), [1, 2])
-        let expectedBytes = UInt64(DD_MEMORY_LIVE_SET_CAPACITY) *
-            UInt64(MemoryLayout<dd_memory_live_sample_t>.stride)
-        XCTAssertEqual(dd_memory_live_set_diagnostics(table).snapshot_bytes_high_water, expectedBytes)
+        let minimumBytes = UInt64(DD_MEMORY_LIVE_SET_CAPACITY) *
+            UInt64(MemoryLayout<dd_memory_live_sample_t>.stride + Int(DD_MEMORY_LIVE_SET_MAX_CLASS_NAME_BYTES))
+        let storageBytes = dd_memory_live_set_diagnostics(table).snapshot_bytes_high_water
+        XCTAssertGreaterThanOrEqual(storageBytes, minimumBytes)
+        _ = snapshot()
+        XCTAssertEqual(dd_memory_live_set_diagnostics(table).snapshot_bytes_high_water, storageBytes)
     }
 
     func testDuplicatePreservesOriginalSampleAndResetsDiagnostics() {
@@ -212,7 +199,7 @@ final class MemoryLiveSetTests: XCTestCase {
         XCTAssertEqual(diagnostics.occupancy, 0)
     }
 
-    func testMaximumSnapshotBuffersCaptureLongestStoredNamesAtFullCapacity() {
+    func testSnapshotCapturesLongestStoredNamesAtFullCapacity() {
         let capacity = Int(DD_MEMORY_LIVE_SET_CAPACITY)
         let name = String(repeating: "a", count: Int(DD_MEMORY_LIVE_SET_MAX_CLASS_NAME_BYTES) - 1)
         let addresses = name.withCString { className in
@@ -226,49 +213,55 @@ final class MemoryLiveSetTests: XCTestCase {
             return
         }
 
-        var output = Array(repeating: dd_memory_live_sample_t(), count: capacity)
-        var names = Array(repeating: CChar(0), count: capacity * Int(DD_MEMORY_LIVE_SET_MAX_CLASS_NAME_BYTES))
-        var count = 0
-        var namesRequired = 0
-        output.withUnsafeMutableBufferPointer { samples in
-            names.withUnsafeMutableBufferPointer { classNames in
-                XCTAssertTrue(dd_memory_live_set_snapshot(
-                    table,
-                    generation,
-                    samples.baseAddress,
-                    samples.count,
-                    classNames.baseAddress,
-                    classNames.count,
-                    &count,
-                    &namesRequired
-                ))
-                XCTAssertEqual(count, capacity)
-                XCTAssertEqual(namesRequired, classNames.count)
-                for entry in samples {
-                    XCTAssertEqual(String(cString: entry.class_name!), name)
-                }
-            }
+        let view = captureSnapshot()
+        XCTAssertEqual(view.count, capacity)
+        let samples = UnsafeBufferPointer(start: view.samples, count: view.count)
+        for entry in samples {
+            XCTAssertEqual(String(cString: entry.class_name!), name)
         }
-        XCTAssertEqual(Set(output.map { UInt(bitPattern: $0.address) }), Set(addresses))
+        XCTAssertEqual(Set(samples.map { UInt(bitPattern: $0.address) }), Set(addresses))
     }
 
-    func testSnapshotReportsNameSizeOnlyWhenSampleStorageIsSufficient() {
+    func testSnapshotStorageCanBeReusedIndependentlyOfTheTable() throws {
+        let otherStorage = try XCTUnwrap(dd_memory_live_snapshot_create())
+        defer { dd_memory_live_snapshot_destroy(otherStorage) }
+        XCTAssertEqual(dd_memory_live_snapshot_view(snapshotStorage).count, 0)
         "ExampleClass".withCString { className in
             var entry = sample(at: 0x10000, size: 1)
             entry.class_name = className
             XCTAssertEqual(dd_memory_live_set_insert(table, generation, &entry), DD_MEMORY_LIVE_SET_INSERTED)
         }
-        var count = 99
-        var namesRequired = 99
-        XCTAssertFalse(dd_memory_live_set_snapshot(table, generation, nil, 0, nil, 0, &count, &namesRequired))
-        XCTAssertEqual(count, 0)
-        XCTAssertEqual(namesRequired, 0)
+        let firstView = captureSnapshot()
+        let firstSamples = try XCTUnwrap(firstView.samples)
+        XCTAssertEqual(firstView.count, 1)
+        XCTAssertTrue(remove(0x10000))
+        "UpdatedClass".withCString { className in
+            var entry = sample(at: 0x10000, size: 2)
+            entry.class_name = className
+            XCTAssertEqual(dd_memory_live_set_insert(table, generation, &entry), DD_MEMORY_LIVE_SET_INSERTED)
+        }
+        XCTAssertTrue(dd_memory_live_set_snapshot(table, generation, otherStorage))
+        let otherView = dd_memory_live_snapshot_view(otherStorage)
+        let otherSamples = try XCTUnwrap(otherView.samples)
+        XCTAssertEqual(otherView.count, 1)
+        XCTAssertEqual(firstSamples.pointee.size, 1)
+        XCTAssertEqual(String(cString: try XCTUnwrap(firstSamples.pointee.class_name)), "ExampleClass")
 
-        var output = dd_memory_live_sample_t()
-        XCTAssertFalse(dd_memory_live_set_snapshot(table, generation, &output, 1, nil, 0, &count, &namesRequired))
-        XCTAssertEqual(count, 0)
-        XCTAssertEqual(namesRequired, "ExampleClass".utf8.count + 1)
-        XCTAssertNil(output.address)
+        let reusedView = captureSnapshot()
+        XCTAssertEqual(reusedView.samples, firstSamples)
+        XCTAssertNotEqual(reusedView.samples, otherSamples)
+        generation = dd_memory_live_set_start(table)
+        dd_memory_live_set_destroy(table)
+        table = nil
+        for view in [reusedView, otherView] {
+            XCTAssertEqual(view.count, 1)
+            let entry = try XCTUnwrap(view.samples).pointee
+            XCTAssertEqual(entry.size, 2)
+            XCTAssertEqual(String(cString: try XCTUnwrap(entry.class_name)), "UpdatedClass")
+        }
+        XCTAssertFalse(dd_memory_live_set_snapshot(nil, generation, snapshotStorage))
+        XCTAssertEqual(dd_memory_live_snapshot_view(snapshotStorage).count, 0)
+        XCTAssertEqual(dd_memory_live_snapshot_view(otherStorage).count, 1)
     }
 
     func testInvalidInputsDoNotEnterTable() {
@@ -613,19 +606,15 @@ final class MemoryLiveSetTests: XCTestCase {
         return entry
     }
 
+    // Sample copies still borrow class-name bytes until the next capture.
     private func snapshot() -> [dd_memory_live_sample_t] {
-        let capacity = Int(DD_MEMORY_LIVE_SET_CAPACITY)
-        let output = UnsafeMutablePointer<dd_memory_live_sample_t>.allocate(capacity: capacity)
-        output.initialize(repeating: dd_memory_live_sample_t(), count: capacity)
-        defer {
-            output.deinitialize(count: capacity)
-            output.deallocate()
-        }
-        var count = 0
-        XCTAssertTrue(dd_memory_live_set_snapshot(
-            table, generation, output, capacity, nil, 0, &count, nil
-        ))
-        return Array(UnsafeBufferPointer(start: output, count: count))
+        let view = captureSnapshot()
+        return Array(UnsafeBufferPointer(start: view.samples, count: view.count))
+    }
+
+    private func captureSnapshot() -> dd_memory_live_snapshot_view_t {
+        XCTAssertTrue(dd_memory_live_set_snapshot(table, generation, snapshotStorage))
+        return dd_memory_live_snapshot_view(snapshotStorage)
     }
 
     private static func taggedSample(at address: UInt) -> dd_memory_live_sample_t {
