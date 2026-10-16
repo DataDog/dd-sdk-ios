@@ -152,8 +152,9 @@ class ClientStatsFeatureTests: XCTestCase {
         // When
         _ = stats.messageReceiver.receive(message: .context(.mockWith(applicationStateHistory: .mockAppInBackground())), from: core)
 
-        // Then: the flush runs on the feature's queue, not on the message bus caller.
-        waitUntil { !core.exportedBuckets.isEmpty }
+        // Then: the flush runs on the feature's queue, not on the message bus caller. Its metric is sent
+        // after the write, so wait for both.
+        waitUntil { core.telemetryMock.messages.firstMetric(named: TraceClientStatsMetric.name) != nil }
         XCTAssertEqual(core.exportedBuckets.flatMap(\.stats).map(\.hits), [1])
         XCTAssertEqual(core.writeContextOnMainThread, [false])
         let metric = try XCTUnwrap(core.telemetryMock.messages.firstMetric(named: TraceClientStatsMetric.name))
@@ -1538,7 +1539,7 @@ private final class FeatureRegistrationPassthroughCoreMock: DatadogCoreProtocol,
     }
 
     func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
-        writeContextBypassConsentValues.append(bypassConsent)
+        _writeContextBypassConsentValues.mutate { $0.append(bypassConsent) }
         _writeContextOnMainThread.mutate { $0.append(Thread.isMainThread) }
         if defersWriteContexts {
             pendingWriteContexts.append { [contextValue, writer] in block(contextValue, writer) }
@@ -1562,6 +1563,7 @@ private final class FeatureRegistrationPassthroughCoreMock: DatadogCoreProtocol,
     @ReadWriteLock
     var writeContextOnMainThread: [Bool] = []
 
+    @ReadWriteLock
     var writeContextBypassConsentValues: [Bool] = []
 
     func context(_ block: @escaping (DatadogContext) -> Void) {
