@@ -132,10 +132,10 @@ internal final class ClientStatsFeature: DatadogRemoteFeature, @unchecked Sendab
                 pieces += split.pieces
                 oversizedGroups += split.oversizedGroups
             }
-            // `Datadog.clearAllData()` may have run since the buckets were exported. Their data was
-            // collected before it, so they must not reach storage after it.
+            // `Datadog.clearAllData()` or a consent revocation may have happened since the buckets were
+            // exported. Their data was collected before it, so they must not reach storage after it.
             var isWritten = false
-            concentrator.performUnlessCleared(since: clearGeneration) {
+            concentrator.performUnlessCleared(since: clearGeneration, writeConsent: context.trackingConsent) {
                 pieces.forEach { writer.write(value: $0) }
                 isWritten = true
             }
