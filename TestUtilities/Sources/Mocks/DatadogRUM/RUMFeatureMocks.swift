@@ -1220,7 +1220,7 @@ public class TimeseriesCollectorMock: TimeseriesCollecting {
     public func pause(sessionID: String) {}
     public func resume(sessionID: String) {}
     public func stop(sessionID: String) {}
-    public func noteActivity(sessionID: String, at time: Date) {}
+    public func noteActivity(sessionID: String) {}
     public func flush() {}
     public func hasCollectedData(sessionID: String) -> Bool { hasData }
 }
