@@ -1180,6 +1180,24 @@ class ClientStatsFeatureTests: XCTestCase {
         }
     }
 
+    func testWhenTheClockSynchronizesAfterSpansFinished_theirBucketUsesTheNewerOffset() throws {
+        // Given: spans finish at startup, before the first clock synchronization, so the offset is still 0.
+        let core = FeatureRegistrationPassthroughCoreMock(context: .mockWith(serverTimeOffset: 0))
+        config.featureFlags[.clientSideStats] = true
+        config.dateProvider = RelativeDateProvider(using: Date(timeIntervalSince1970: 0))
+        Trace.enable(with: config, in: core)
+        let stats = try XCTUnwrap(core.get(feature: ClientStatsFeature.self))
+        stats.record(.mockWith(startTime: 0, duration: 100))
+
+        // When: the synchronization finds the device clock an hour behind before the bucket is stored.
+        core.contextValue = .mockWith(serverTimeOffset: 3_600)
+        stats.flushStats(.teardown)
+
+        // Then: the bucket uses the newer offset. It is intentionally not the offset of each span, which
+        // comes from the context the span captured when it started, so it can still be the unsynchronized 0.
+        XCTAssertEqual(core.exportedBuckets.first?.start, 3_600_000_000_000)
+    }
+
     func testWhenABucketIsStored_itKeepsTheServerOffsetOfThatMomentWhateverTheUploadContext() throws {
         // Given: the device clock is an hour behind when the bucket is stored.
         let core = FeatureRegistrationPassthroughCoreMock(context: .mockWith(serverTimeOffset: 3_600))
@@ -1509,7 +1527,8 @@ class ClientStatsFeatureTests: XCTestCase {
 
 private final class FeatureRegistrationPassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
     private let writer = FileWriterMock()
-    private let contextValue: DatadogContext
+    /// The context of every write context. Tests can change it, for example to simulate a clock synchronization.
+    var contextValue: DatadogContext
     private var registeredFeatures: [DatadogFeature] = []
 
     var remoteConfiguration: RemoteConfiguration?
