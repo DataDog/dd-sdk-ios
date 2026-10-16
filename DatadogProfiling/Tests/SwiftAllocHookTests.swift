@@ -158,6 +158,8 @@ final class SwiftAllocHookTests: XCTestCase {
     }
 
     func testLiveSetTracksRealARCAndResolvesSwiftName() throws {
+        let snapshot = try XCTUnwrap(dd_memory_live_snapshot_create())
+        defer { dd_memory_live_snapshot_destroy(snapshot) }
         let table = try XCTUnwrap(dd_memory_live_set_create())
         let generation = dd_memory_live_set_start(table)
         XCTAssertNotEqual(generation, 0)
@@ -178,33 +180,23 @@ final class SwiftAllocHookTests: XCTestCase {
 
         var retained: PureSwiftAllocationFixture? = PureSwiftAllocationFixture()
         let address = UInt(bitPattern: Unmanaged.passUnretained(try XCTUnwrap(retained)).toOpaque())
-        let output = UnsafeMutablePointer<dd_memory_live_sample_t>.allocate(capacity: 4)
-        output.initialize(repeating: dd_memory_live_sample_t(), count: 4)
-        defer {
-            output.deinitialize(count: 4)
-            output.deallocate()
-        }
-        var count = 0
         withExtendedLifetime(retained) {
-            XCTAssertTrue(dd_memory_live_set_snapshot(
-                table, generation, output, 4, nil, 0, &count, nil
-            ))
-            XCTAssertEqual(count, 1)
+            XCTAssertTrue(dd_memory_live_set_snapshot(table, generation, snapshot))
+            XCTAssertEqual(dd_memory_live_snapshot_view(snapshot).count, 1)
         }
-        var sample = try XCTUnwrap(count == 1 ? output.pointee : nil)
+        let view = dd_memory_live_snapshot_view(snapshot)
+        var sample = try XCTUnwrap(view.count == 1 ? view.samples?.pointee : nil)
         XCTAssertEqual(UInt(bitPattern: sample.address), address)
         XCTAssertNil(sample.class_name)
-        let className = dd_memory_live_sample_class_name(output)
+        let className = dd_memory_live_sample_class_name(view.samples)
         let nameBytes = try XCTUnwrap(className.data)
         let nameBuffer = UnsafeRawBufferPointer(start: nameBytes, count: Int(className.length))
         let name = String(decoding: nameBuffer, as: UTF8.self)
         XCTAssertTrue(name.contains("PureSwiftAllocationFixture"))
 
         retained = nil
-        XCTAssertTrue(dd_memory_live_set_snapshot(
-            table, generation, output, 4, nil, 0, &count, nil
-        ))
-        XCTAssertEqual(count, 0)
+        XCTAssertTrue(dd_memory_live_set_snapshot(table, generation, snapshot))
+        XCTAssertEqual(dd_memory_live_snapshot_view(snapshot).count, 0)
         dd_swift_alloc_hook_stop()
         let nameAfterRelease = dd_memory_live_sample_class_name(&sample)
         let bytesAfterRelease = try XCTUnwrap(nameAfterRelease.data)
